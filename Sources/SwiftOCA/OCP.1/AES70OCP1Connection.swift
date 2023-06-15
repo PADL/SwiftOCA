@@ -37,7 +37,9 @@ public class AES70OCP1Connection: ObservableObject {
     let connectionState = CurrentValueSubject<ConnectionState, Never>(.neverConnected)
     
     /// Keepalive/ping interval (only necessary for UDP)
-    public let keepAliveInterval: OcaUint16 = 10 // TODO: make configurable
+    public var keepAliveInterval: OcaUint16 {
+        return 10
+    }
     public let responseTimeout = TimeInterval(30)
     
     /// Object interning, main thread only
