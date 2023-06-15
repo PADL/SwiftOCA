@@ -1,18 +1,3 @@
 
 \.DS_Store
-
-OCAMicro/OCAMicro/\.vs/
-
-*.user
-
-OCAMicro/OCAMicro/Obj
-
-OCACompliancyTestTool/\.vs/
-
-OCACompliancyTestTool/Out/
-
-OCACompliancyTestTool/Installer/\.vs/
-
-OCACompliancyTestTool/Aes70CompliancyTestTool/\.vs/
-
-OCAMicro/OCAMicro/src/app/OCA_SwiftUI/OCA_SwiftUI.xcodeproj/xcuserdata
+SwiftOCA.xcodeproj/xcuserdata
