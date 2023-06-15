@@ -57,10 +57,10 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
     
     typealias GetValueCallback = (OcaRoot) async throws -> Value
-    private let _getValue: GetValueCallback?
+    private let getValueCallback: GetValueCallback?
     
     typealias SetValueCallback = (OcaRoot, Value) async throws -> Void
-    private let _setValue: SetValueCallback?
+    private let setValueCallback: SetValueCallback?
     
     init(propertyID: OcaPropertyID,
          getMethodID: OcaMethodID,
@@ -71,8 +71,8 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
         self.subject = CurrentValueSubject(State.initial)
-        self._getValue = getValue
-        self._setValue = setValue
+        self.getValueCallback = getValue
+        self.setValueCallback = setValue
     }
     
     public var projectedValue: AnyPublisher<State, Never> {
@@ -85,19 +85,20 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             .eraseToAnyPublisher()
     }
     
-    private func getValue<T: OcaRoot>(_ instance: T) async throws -> Value {
+    private func subscribeAndGetValue(_ instance: OcaRoot) async throws -> Value {
         //try await instance.subscribe()
-        if let _getValue {
-            return try await _getValue(instance)
+        if let getValueCallback {
+            return try await getValueCallback(instance)
         } else {
             return try await instance.sendCommandRrq(methodID: getMethodID)
         }
     }
     
-    private func setValue<T: OcaRoot>(_ instance: T, _ value: Value) async throws {
+    private func setValueIfMutable(_ instance: OcaRoot, _ value: Value) async throws {
         guard let setMethodID else { throw Ocp1Error.status(.notImplemented) }
-        if let _setValue {
-            try await _setValue(instance, value)
+        
+        if let setValueCallback {
+            try await setValueCallback(instance, value)
         } else {
             try await instance.sendCommandRrq(methodID: setMethodID, parameter: value)
         }
@@ -136,7 +137,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             let subject = instance[keyPath: storageKeyPath].subject
             if case .initial = subject.value {
                 instance[keyPath: storageKeyPath].perform(instance) {
-                    try await $0.getValue(instance)
+                    try await $0.subscribeAndGetValue(instance)
                 }
             }
             return subject.value
@@ -146,7 +147,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                 preconditionFailure("setter called with non-success value \(newValue)")
             }
             instance[keyPath: storageKeyPath].perform(instance) {
-                try await $0.setValue(instance, value)
+                try await $0.setValueIfMutable(instance, value)
                 return value
             }
         }
