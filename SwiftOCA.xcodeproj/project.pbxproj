@@ -64,6 +64,11 @@
 		D3E6E1EB2A3ACAED00BF7095 /* BinaryCoder in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E1EA2A3ACAED00BF7095 /* BinaryCoder */; };
 		D3E6E1EE2A3ACB0700BF7095 /* AsyncAlgorithms in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E1ED2A3ACB0700BF7095 /* AsyncAlgorithms */; };
 		D3E6E1F12A3ACB1E00BF7095 /* Socket in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E1F02A3ACB1E00BF7095 /* Socket */; };
+		D3E6E2272A3ACFA100BF7095 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D3E6E2212A3ACFA000BF7095 /* Assets.xcassets */; };
+		D3E6E2282A3ACFA100BF7095 /* SwiftOCATestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2222A3ACFA000BF7095 /* SwiftOCATestApp.swift */; };
+		D3E6E2292A3ACFA100BF7095 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */; };
+		D3E6E22A2A3ACFA100BF7095 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2252A3ACFA100BF7095 /* ContentView.swift */; };
+		D3E6E2342A3AD0A800BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -122,6 +127,12 @@
 		D3E6E1AF2A3ACA6C00BF7095 /* AES70ClassRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70ClassRegistry.swift; sourceTree = "<group>"; };
 		D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1Connection.swift; sourceTree = "<group>"; };
 		D3E6E1B22A3ACA6C00BF7095 /* AES70OCP1SocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1SocketConnection.swift; sourceTree = "<group>"; };
+		D3E6E1F62A3ACF5900BF7095 /* SwiftOCATest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftOCATest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3E6E2212A3ACFA000BF7095 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Examples/SwiftOCATest/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		D3E6E2222A3ACFA000BF7095 /* SwiftOCATestApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwiftOCATestApp.swift; path = Examples/SwiftOCATest/SwiftOCATestApp.swift; sourceTree = SOURCE_ROOT; };
+		D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		D3E6E2252A3ACFA100BF7095 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Examples/SwiftOCATest/ContentView.swift; sourceTree = SOURCE_ROOT; };
+		D3E6E2262A3ACFA100BF7095 /* SwiftOCATest.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = SwiftOCATest.entitlements; path = Examples/SwiftOCATest/SwiftOCATest.entitlements; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -135,6 +146,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D3E6E1F32A3ACF5900BF7095 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D3E6E2342A3AD0A800BF7095 /* libSwiftOCA.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -144,7 +163,9 @@
 				D3E6E16B2A3ACA6C00BF7095 /* OCC */,
 				D3E6E19E2A3ACA6C00BF7095 /* OCF */,
 				D3E6E1A72A3ACA6C00BF7095 /* OCP.1 */,
+				D3E6E1F72A3ACF5900BF7095 /* Examples/SwiftOCATest */,
 				D3E6E1652A3ACA0B00BF7095 /* Products */,
+				D3E6E2332A3AD0A800BF7095 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -152,6 +173,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */,
+				D3E6E1F62A3ACF5900BF7095 /* SwiftOCATest.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -314,6 +336,34 @@
 			path = Sources/OCP.1;
 			sourceTree = "<group>";
 		};
+		D3E6E1F72A3ACF5900BF7095 /* Examples/SwiftOCATest */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E2212A3ACFA000BF7095 /* Assets.xcassets */,
+				D3E6E2252A3ACFA100BF7095 /* ContentView.swift */,
+				D3E6E2232A3ACFA100BF7095 /* Preview Content */,
+				D3E6E2262A3ACFA100BF7095 /* SwiftOCATest.entitlements */,
+				D3E6E2222A3ACFA000BF7095 /* SwiftOCATestApp.swift */,
+			);
+			path = Examples/SwiftOCATest;
+			sourceTree = "<group>";
+		};
+		D3E6E2232A3ACFA100BF7095 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */,
+			);
+			name = "Preview Content";
+			path = "Examples/SwiftOCATest/Preview Content";
+			sourceTree = SOURCE_ROOT;
+		};
+		D3E6E2332A3AD0A800BF7095 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -349,6 +399,23 @@
 			productReference = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
+		D3E6E1F52A3ACF5900BF7095 /* SwiftOCATest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D3E6E2182A3ACF5A00BF7095 /* Build configuration list for PBXNativeTarget "SwiftOCATest" */;
+			buildPhases = (
+				D3E6E1F22A3ACF5900BF7095 /* Sources */,
+				D3E6E1F32A3ACF5900BF7095 /* Frameworks */,
+				D3E6E1F42A3ACF5900BF7095 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SwiftOCATest;
+			productName = SwiftOCATest;
+			productReference = D3E6E1F62A3ACF5900BF7095 /* SwiftOCATest.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -356,9 +423,13 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1420;
 				LastUpgradeCheck = 1420;
 				TargetAttributes = {
 					D3E6E1632A3ACA0B00BF7095 = {
+						CreatedOnToolsVersion = 14.2;
+					};
+					D3E6E1F52A3ACF5900BF7095 = {
 						CreatedOnToolsVersion = 14.2;
 					};
 				};
@@ -382,9 +453,22 @@
 			projectRoot = "";
 			targets = (
 				D3E6E1632A3ACA0B00BF7095 /* SwiftOCA */,
+				D3E6E1F52A3ACF5900BF7095 /* SwiftOCATest */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D3E6E1F42A3ACF5900BF7095 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D3E6E2292A3ACFA100BF7095 /* Preview Assets.xcassets in Resources */,
+				D3E6E2272A3ACFA100BF7095 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		D3E6E1612A3ACA0B00BF7095 /* Sources */ = {
@@ -445,6 +529,15 @@
 				D3E6E1DE2A3ACAA900BF7095 /* DefaultObjectNumbers.swift in Sources */,
 				D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */,
 				D3E6E1BE2A3ACA8200BF7095 /* Command.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3E6E1F22A3ACF5900BF7095 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D3E6E2282A3ACFA100BF7095 /* SwiftOCATestApp.swift in Sources */,
+				D3E6E22A2A3ACFA100BF7095 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -588,6 +681,66 @@
 			};
 			name = Release;
 		};
+		D3E6E2192A3ACF5A00BF7095 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Examples/SwiftOCATest/SwiftOCATest.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Examples/SwiftOCATest/Preview Content\"";
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.padl.SwiftOCATest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D3E6E21A2A3ACF5A00BF7095 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Examples/SwiftOCATest/SwiftOCATest.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Examples/SwiftOCATest/Preview Content\"";
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.padl.SwiftOCATest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -605,6 +758,15 @@
 			buildConfigurations = (
 				D3E6E1692A3ACA0B00BF7095 /* Debug */,
 				D3E6E16A2A3ACA0B00BF7095 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D3E6E2182A3ACF5A00BF7095 /* Build configuration list for PBXNativeTarget "SwiftOCATest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D3E6E2192A3ACF5A00BF7095 /* Debug */,
+				D3E6E21A2A3ACF5A00BF7095 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
