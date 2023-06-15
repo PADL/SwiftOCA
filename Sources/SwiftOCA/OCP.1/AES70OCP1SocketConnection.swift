@@ -38,6 +38,8 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
         guard let socket else {
             throw Ocp1Error.notConnected
         }
+        
+        // TODO: should this be done in a separate task?
         debugPrint("Connecting to \(deviceAddress) on socket \(socket)")
         do {
             try await socket.connect(to: deviceAddress)

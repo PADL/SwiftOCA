@@ -20,51 +20,10 @@ private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 
 extension AES70OCP1Connection {
     @MainActor
-    func isSubscribed(event: OcaEvent,
-                      callback: @escaping AES70SubscriptionCallback) -> Bool {
-        guard let callbacks = subscribers[event] else {
-            return false
-        }
-        return callbacks.contains(callback)
-    }
-    
-    @MainActor
-    @discardableResult
-    private func addSubscriber(event: OcaEvent,
-                               callback: @escaping AES70SubscriptionCallback,
-                               addIfUnsubscribed: Bool) -> Bool {
-        if let callbacks = subscribers[event] {
-            callbacks.add(callback)
-        } else if addIfUnsubscribed {
-            subscribers[event] = NSMutableSet(object: callback)
-        } else {
-            return false
-        }
-        
-        return true
-    }
-    
-    @MainActor
-    private func removeSubscriber(event: OcaEvent,
-                                  callback: @escaping AES70SubscriptionCallback,
-                                  lastSubscriber: inout Bool) throws {
-        guard let callbacks = subscribers[event] else {
-            throw Ocp1Error.status(.parameterError)
-        }
-        
-        guard callbacks.contains(callback) else {
-            throw Ocp1Error.status(.parameterError)
-        }
-        callbacks.remove(callback)
-        
-        lastSubscriber = callbacks.count == 0
-    }
-    
-    @MainActor
     func addSubscription(event: OcaEvent,
                          callback: @escaping AES70SubscriptionCallback) async throws {
-        if addSubscriber(event: event, callback: callback, addIfUnsubscribed: false) {
-            return
+        if subscriptions[event] != nil {
+            throw Ocp1Error.alreadySubscribedToEvent
         }
         
         try await subscriptionManager.addSubscription(event: event,
@@ -72,42 +31,26 @@ extension AES70OCP1Connection {
                                                       subscriberContext: OcaBlob(),
                                                       notificationDeliveryMode: .reliable,
                                                       destinationInformation: OcaNetworkAddress())
-        
-        // handle the caller removing the subscription before the subscription request is processed
-        if !isSubscribed(event: event, callback: callback) {
-            throw Ocp1Error.callbackRemovedBeforeSubscribed
-        }
-        
-        addSubscriber(event: event, callback: callback, addIfUnsubscribed: true)
-    }
-    
-    @MainActor
-    func removeSubscription(event: OcaEvent,
-                            callback: @escaping AES70SubscriptionCallback) async throws {
-        var lastSubscriber: Bool = false
-        try removeSubscriber(event: event, callback: callback, lastSubscriber: &lastSubscriber)
-        
-        if lastSubscriber {
-            try await removeSubscription(event: event)
-        }
+
+        subscriptions[event] = callback
     }
     
     @MainActor
     public func removeSubscription(event: OcaEvent) async throws {
         try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
-        subscribers[event] = nil
+        subscriptions[event] = nil
     }
     
     @MainActor
     public func removeSubscriptions() async throws {
-        for event in subscribers.keys {
+        for event in subscriptions.keys {
             _ = try await removeSubscription(event: event)
         }
     }
     
     @MainActor
     func refreshSubscriptions() async throws {
-        for event in subscribers.keys {
+        for event in subscriptions.keys {
             try await subscriptionManager.addSubscription(event: event,
                                                           subscriber: subscriber,
                                                           subscriberContext: OcaBlob(),

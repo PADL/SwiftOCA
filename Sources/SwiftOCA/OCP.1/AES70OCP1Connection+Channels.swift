@@ -62,10 +62,8 @@ extension AES70OCP1Connection {
             let event = notification.parameters.eventData.event
             debugPrint("processMessage: Received notification for event \(event)")
             Task { @MainActor in
-                if let subscriber = subscribers[event], notification.parameters.parameterCount == 2 {
-                    for callback in subscriber {
-                        (callback as! AES70SubscriptionCallback)(notification.parameters.eventData)
-                    }
+                if let callback = subscriptions[event], notification.parameters.parameterCount == 2 {
+                    callback(notification.parameters.eventData)
                 }
             }
         case let response as Ocp1Response:

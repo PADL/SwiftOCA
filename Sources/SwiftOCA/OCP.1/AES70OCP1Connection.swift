@@ -50,7 +50,7 @@ public class AES70OCP1Connection: ObservableObject {
     
     /// Subscription callbacks, main thread only
     @MainActor
-    var subscribers = [OcaEvent:NSMutableSet]()
+    var subscriptions = [OcaEvent:AES70SubscriptionCallback]()
     
     @MainActor
     private var nextCommandHandle = OcaUint32(100)

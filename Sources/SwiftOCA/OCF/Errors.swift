@@ -19,7 +19,7 @@ import Foundation
 enum Ocp1Error: Error, Equatable {
     case status(OcaStatus)
     case notConnected
-    case callbackRemovedBeforeSubscribed
+    case alreadySubscribedToEvent
     case pduTooShort
     case pduSendingFailed
     case invalidSyncValue

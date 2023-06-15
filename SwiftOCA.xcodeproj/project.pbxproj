@@ -45,7 +45,7 @@
 		D3E6E1D62A3ACA9E00BF7095 /* Manager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1862A3ACA6C00BF7095 /* Manager.swift */; };
 		D3E6E1D72A3ACAA000BF7095 /* Root+Commands.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1832A3ACA6C00BF7095 /* Root+Commands.swift */; };
 		D3E6E1D82A3ACAA900BF7095 /* ModelGUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17C2A3ACA6C00BF7095 /* ModelGUID.swift */; };
-		D3E6E1D92A3ACAA900BF7095 /* MatrixVectorProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1772A3ACA6C00BF7095 /* MatrixVectorProperty.swift */; };
+		D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1772A3ACA6C00BF7095 /* VectorProperty.swift */; };
 		D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1762A3ACA6C00BF7095 /* ApplicationNetworkDataTypes.swift */; };
 		D3E6E1DB2A3ACAA900BF7095 /* EventDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1742A3ACA6C00BF7095 /* EventDataTypes.swift */; };
 		D3E6E1DC2A3ACAA900BF7095 /* BoundedProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1752A3ACA6C00BF7095 /* BoundedProperty.swift */; };
@@ -70,6 +70,8 @@
 		D3E6E22A2A3ACFA100BF7095 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2252A3ACFA100BF7095 /* ContentView.swift */; };
 		D3E6E2342A3AD0A800BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3E6E2372A3AE86200BF7095 /* Semaphore in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E2362A3AE86200BF7095 /* Semaphore */; };
+		D3E6E2392A3BD52E00BF7095 /* AES70OCP1Connection+Discovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2382A3BD52E00BF7095 /* AES70OCP1Connection+Discovery.swift */; };
+		D3E6E23B2A3BD5A100BF7095 /* KeyPathIterable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -83,7 +85,7 @@
 		D3E6E1742A3ACA6C00BF7095 /* EventDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDataTypes.swift; sourceTree = "<group>"; };
 		D3E6E1752A3ACA6C00BF7095 /* BoundedProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundedProperty.swift; sourceTree = "<group>"; };
 		D3E6E1762A3ACA6C00BF7095 /* ApplicationNetworkDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationNetworkDataTypes.swift; sourceTree = "<group>"; };
-		D3E6E1772A3ACA6C00BF7095 /* MatrixVectorProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixVectorProperty.swift; sourceTree = "<group>"; };
+		D3E6E1772A3ACA6C00BF7095 /* VectorProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VectorProperty.swift; sourceTree = "<group>"; };
 		D3E6E1782A3ACA6C00BF7095 /* ManagerDescriptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagerDescriptor.swift; sourceTree = "<group>"; };
 		D3E6E17A2A3ACA6C00BF7095 /* List2D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = List2D.swift; sourceTree = "<group>"; };
 		D3E6E17B2A3ACA6C00BF7095 /* ModelDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDescription.swift; sourceTree = "<group>"; };
@@ -134,6 +136,8 @@
 		D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D3E6E2252A3ACFA100BF7095 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Examples/SwiftOCATest/ContentView.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E2262A3ACFA100BF7095 /* SwiftOCATest.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = SwiftOCATest.entitlements; path = Examples/SwiftOCATest/SwiftOCATest.entitlements; sourceTree = SOURCE_ROOT; };
+		D3E6E2382A3BD52E00BF7095 /* AES70OCP1Connection+Discovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Discovery.swift"; sourceTree = "<group>"; };
+		D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPathIterable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -204,6 +208,8 @@
 				D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */,
 				D3E6E16E2A3ACA6C00BF7095 /* AnyPublisher+Async.swift */,
 				D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */,
+				D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */,
+				D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */,
 			);
 			path = SwiftHelpers;
 			sourceTree = "<group>";
@@ -211,20 +217,19 @@
 		D3E6E1702A3ACA6C00BF7095 /* ControlDataTypes */ = {
 			isa = PBXGroup;
 			children = (
-				D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */,
-				D3E6E1722A3ACA6C00BF7095 /* Property.swift */,
+				D3E6E1812A3ACA6C00BF7095 /* BaseDataTypes.swift */,
+				D3E6E17E2A3ACA6C00BF7095 /* DefaultObjectNumbers.swift */,
 				D3E6E1732A3ACA6C00BF7095 /* NetworkDataTypes.swift */,
 				D3E6E1742A3ACA6C00BF7095 /* EventDataTypes.swift */,
 				D3E6E1752A3ACA6C00BF7095 /* BoundedProperty.swift */,
 				D3E6E1762A3ACA6C00BF7095 /* ApplicationNetworkDataTypes.swift */,
-				D3E6E1772A3ACA6C00BF7095 /* MatrixVectorProperty.swift */,
+				D3E6E1722A3ACA6C00BF7095 /* Property.swift */,
+				D3E6E1772A3ACA6C00BF7095 /* VectorProperty.swift */,
 				D3E6E1782A3ACA6C00BF7095 /* ManagerDescriptor.swift */,
 				D3E6E17A2A3ACA6C00BF7095 /* List2D.swift */,
 				D3E6E17B2A3ACA6C00BF7095 /* ModelDescription.swift */,
 				D3E6E17C2A3ACA6C00BF7095 /* ModelGUID.swift */,
 				D3E6E17D2A3ACA6C00BF7095 /* SearchDataTypes.swift */,
-				D3E6E17E2A3ACA6C00BF7095 /* DefaultObjectNumbers.swift */,
-				D3E6E1812A3ACA6C00BF7095 /* BaseDataTypes.swift */,
 			);
 			path = ControlDataTypes;
 			sourceTree = "<group>";
@@ -333,6 +338,7 @@
 				D3E6E1AF2A3ACA6C00BF7095 /* AES70ClassRegistry.swift */,
 				D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1Connection+Channels.swift */,
 				D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */,
+				D3E6E2382A3BD52E00BF7095 /* AES70OCP1Connection+Discovery.swift */,
 				D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */,
 				D3E6E1AB2A3ACA6C00BF7095 /* AES70OCP1Connection+Messages.swift */,
 				D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */,
@@ -514,7 +520,7 @@
 				D3E6E1E62A3ACAAD00BF7095 /* AnyPublisher+Async.swift in Sources */,
 				D3E6E1B62A3ACA7B00BF7095 /* AES70ClassRegistry.swift in Sources */,
 				D3E6E1C62A3ACA9000BF7095 /* BasicActuators.swift in Sources */,
-				D3E6E1D92A3ACAA900BF7095 /* MatrixVectorProperty.swift in Sources */,
+				D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */,
 				D3E6E1DD2A3ACAA900BF7095 /* List2D.swift in Sources */,
 				D3E6E1BB2A3ACA7B00BF7095 /* AES70OCP1Connection.swift in Sources */,
 				D3E6E1D22A3ACA9E00BF7095 /* SubscriptionManager.swift in Sources */,
@@ -522,6 +528,7 @@
 				D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */,
 				D3E6E1C72A3ACA9000BF7095 /* Actuator.swift in Sources */,
 				D3E6E1DF2A3ACAA900BF7095 /* ModelDescription.swift in Sources */,
+				D3E6E23B2A3BD5A100BF7095 /* KeyPathIterable.swift in Sources */,
 				D3E6E1E12A3ACAA900BF7095 /* ManagerDescriptor.swift in Sources */,
 				D3E6E1E72A3ACAAD00BF7095 /* Data+IntegerCodable.swift in Sources */,
 				D3E6E1D42A3ACA9E00BF7095 /* LibraryManager.swift in Sources */,
@@ -535,6 +542,7 @@
 				D3E6E1CD2A3ACA9600BF7095 /* LevelSensor.swift in Sources */,
 				D3E6E1C12A3ACA8200BF7095 /* Notification.swift in Sources */,
 				D3E6E1B92A3ACA7B00BF7095 /* BinaryCodingConfiguration+OCP1.swift in Sources */,
+				D3E6E2392A3BD52E00BF7095 /* AES70OCP1Connection+Discovery.swift in Sources */,
 				D3E6E1DE2A3ACAA900BF7095 /* DefaultObjectNumbers.swift in Sources */,
 				D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */,
 				D3E6E1BE2A3ACA8200BF7095 /* Command.swift in Sources */,

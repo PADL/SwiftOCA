@@ -85,13 +85,16 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             .eraseToAnyPublisher()
     }
     
-    private func subscribeAndGetValue(_ instance: OcaRoot) async throws -> Value {
-        //try await instance.subscribe()
+    private func getValueAndSubscribe(_ instance: OcaRoot) async throws -> Value {
+        let value: Value
+        
         if let getValueCallback {
-            return try await getValueCallback(instance)
+            value = try await getValueCallback(instance)
         } else {
-            return try await instance.sendCommandRrq(methodID: getMethodID)
+            value = try await instance.sendCommandRrq(methodID: getMethodID)
         }
+        try await instance.subscribe()
+        return value
     }
     
     private func setValueIfMutable(_ instance: OcaRoot, _ value: Value) async throws {
@@ -137,12 +140,13 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             let subject = instance[keyPath: storageKeyPath].subject
             if case .initial = subject.value {
                 instance[keyPath: storageKeyPath].perform(instance) {
-                    try await $0.subscribeAndGetValue(instance)
+                    try await $0.getValueAndSubscribe(instance)
                 }
             }
             return subject.value
         }
         set {
+            //let oldValue = instance[keyPath: storageKeyPath].subject.value
             guard case let .success(value) = newValue else {
                 preconditionFailure("setter called with non-success value \(newValue)")
             }

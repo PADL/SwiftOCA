@@ -67,9 +67,21 @@ public class OcaRoot: ObservableObject {
 }
 
 extension OcaRoot {
+
     private subscript(checkedMirrorDescendant key: String) -> Any {
         return Mirror(reflecting: self).descendant(key)!
     }
+
+    var allKeyPaths: [String: PartialKeyPath<OcaRoot>] {
+        var membersTokeyPaths = [String: PartialKeyPath<OcaRoot
+                                 >]()
+        let mirror = Mirror(reflecting: self)
+        for case (let key?, _) in mirror.children {
+            membersTokeyPaths[key] = \Self.[checkedMirrorDescendant: key] as PartialKeyPath
+        }
+        return membersTokeyPaths
+    }
+
 
     @MainActor
     func propertyDidChange(eventData: Ocp1EventData) {
@@ -78,16 +90,10 @@ extension OcaRoot {
                                                    from: eventData.eventParameters) else { return }
         
         // TODO: Mirror is inefficient
-        
-        let mirror = Mirror(reflecting: self)
-        for case (let key?, _) in mirror.children {
-            let keyPath = \Self.[checkedMirrorDescendant: key]
-
-            if let keyPath = keyPath as? ReferenceWritableKeyPath,
-                  let property = (self as! Self)[keyPath: keyPath] as? OcaPropertyChangeEventNotifiable,
-               property.propertyIDs.contains(propertyID) {
-                try? property.onEvent(eventData)
-                break
+        Mirror.allKeyPaths(for: self).forEach {
+            if $0.value.propertyIDs.contains(propertyID) {
+                try? $0.value.onEvent(eventData)
+                return
             }
         }
     }
@@ -95,13 +101,16 @@ extension OcaRoot {
     public func subscribe() async throws {
         guard let connectionDelegate else { throw Ocp1Error.notConnected }
         let event = OcaEvent(emitterONo: self.objectNumber, eventID: OcaPropertyChangedEventID)
-        try await connectionDelegate.addSubscription(event: event, callback: propertyDidChange)
+        do {
+            try await connectionDelegate.addSubscription(event: event, callback: propertyDidChange)
+        } catch Ocp1Error.alreadySubscribedToEvent {
+        }
     }
     
     public func unsubscribe() async throws {
         guard let connectionDelegate else { throw Ocp1Error.notConnected }
         let event = OcaEvent(emitterONo: self.objectNumber, eventID: OcaPropertyChangedEventID)
-        try await connectionDelegate.removeSubscription(event: event, callback: propertyDidChange)
+        try await connectionDelegate.removeSubscription(event: event)
     }
 }
 
