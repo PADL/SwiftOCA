@@ -69,6 +69,7 @@
 		D3E6E2292A3ACFA100BF7095 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */; };
 		D3E6E22A2A3ACFA100BF7095 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2252A3ACFA100BF7095 /* ContentView.swift */; };
 		D3E6E2342A3AD0A800BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
+		D3E6E2372A3AE86200BF7095 /* Semaphore in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E2362A3AE86200BF7095 /* Semaphore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -141,6 +142,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D3E6E1F12A3ACB1E00BF7095 /* Socket in Frameworks */,
+				D3E6E2372A3AE86200BF7095 /* Semaphore in Frameworks */,
 				D3E6E1EB2A3ACAED00BF7095 /* BinaryCoder in Frameworks */,
 				D3E6E1EE2A3ACB0700BF7095 /* AsyncAlgorithms in Frameworks */,
 			);
@@ -399,6 +401,7 @@
 				D3E6E1EA2A3ACAED00BF7095 /* BinaryCoder */,
 				D3E6E1ED2A3ACB0700BF7095 /* AsyncAlgorithms */,
 				D3E6E1F02A3ACB1E00BF7095 /* Socket */,
+				D3E6E2362A3AE86200BF7095 /* Semaphore */,
 			);
 			productName = SwiftOCA;
 			productReference = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */;
@@ -452,6 +455,7 @@
 				D3E6E1E92A3ACAED00BF7095 /* XCRemoteSwiftPackageReference "swift-binary-coder" */,
 				D3E6E1EC2A3ACB0700BF7095 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 				D3E6E1EF2A3ACB1E00BF7095 /* XCRemoteSwiftPackageReference "Socket" */,
+				D3E6E2352A3AE86200BF7095 /* XCRemoteSwiftPackageReference "Semaphore" */,
 			);
 			productRefGroup = D3E6E1652A3ACA0B00BF7095 /* Products */;
 			projectDirPath = "";
@@ -803,6 +807,14 @@
 				kind = branch;
 			};
 		};
+		D3E6E2352A3AE86200BF7095 /* XCRemoteSwiftPackageReference "Semaphore" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:groue/Semaphore.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.0.8;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -820,6 +832,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D3E6E1EF2A3ACB1E00BF7095 /* XCRemoteSwiftPackageReference "Socket" */;
 			productName = Socket;
+		};
+		D3E6E2362A3AE86200BF7095 /* Semaphore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3E6E2352A3AE86200BF7095 /* XCRemoteSwiftPackageReference "Semaphore" */;
+			productName = Semaphore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

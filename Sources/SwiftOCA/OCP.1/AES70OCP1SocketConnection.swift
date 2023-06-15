@@ -16,7 +16,6 @@
 
 import Foundation
 import Socket
-import BinaryCoder
 
 fileprivate extension Errno {
     var connectionFailed: Bool {

@@ -108,28 +108,24 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             subject.send(.failure(Ocp1Error.notConnected))
             return
         }
-        
-        var cancellables = Set<AnyCancellable>()
-        
-        connectionDelegate.connectionState.sink { connectionState in
-            Task { @MainActor in
-                if connectionState == .connected {
-                    subject.send(.requesting)
-                    
-                    do {
-                        let value = try await block(self)
-                        subject.send(.success(value))
-                    } catch let error {
-                        subject.send(.failure(error))
-                    }
-                    
-                    instance.objectWillChange.send()
-                } else {
-                    // wait for it to be connected
-                    await Task.yield()
-                }
+
+        Task { @MainActor in
+            if connectionDelegate.requestMonitor == nil {
+                precondition(connectionDelegate.responseMonitor == nil)
+                // connection state semaphore will be signalled when we are connected
+                await connectionDelegate.connectionStateSemaphore.wait()
             }
-        }.store(in: &cancellables)
+            subject.send(.requesting)
+            
+            do {
+                let value = try await block(self)
+                subject.send(.success(value))
+            } catch let error {
+                subject.send(.failure(error))
+            }
+            
+            instance.objectWillChange.send()
+        }
     }
     
     public static subscript<T: OcaRoot>(

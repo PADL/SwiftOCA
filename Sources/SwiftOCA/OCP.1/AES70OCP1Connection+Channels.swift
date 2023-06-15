@@ -15,7 +15,6 @@
 //
 
 import Foundation
-import BinaryCoder
 import Socket
 
 extension AES70OCP1Connection {

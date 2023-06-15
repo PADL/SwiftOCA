@@ -15,10 +15,8 @@
 //
 
 import Foundation
-import Combine
 import AsyncAlgorithms
-import BinaryCoder
-import Socket
+import Semaphore
 
 typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData) -> Void
 
@@ -27,14 +25,8 @@ public class AES70OCP1Connection: ObservableObject {
     /// protocol types
     static let MinimumPduSize = 7
     
-    enum ConnectionState {
-        case neverConnected
-        case connected
-        case disconnected
-    }
-    
     @MainActor
-    let connectionState = CurrentValueSubject<ConnectionState, Never>(.neverConnected)
+    let connectionStateSemaphore = AsyncSemaphore(value: 0)
     
     /// Keepalive/ping interval (only necessary for UDP)
     public var keepAliveInterval: OcaUint16 {
@@ -148,18 +140,18 @@ public class AES70OCP1Connection: ObservableObject {
             self.objectWillChange.send()
         }
     
-        connectionState.send(.connected)
+        connectionStateSemaphore.signal()
     }
     
     @MainActor
     func disconnectDevice() async throws {
-        connectionState.send(.disconnected)
         requestMonitor = nil
         responseMonitor = nil
         if let keepAliveTask {
             keepAliveTask.cancel()
             self.keepAliveTask = nil
         }
+        connectionStateSemaphore.signal()
     }
 
     /// API to be impmlemented by concrete classes
