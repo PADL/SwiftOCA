@@ -24,9 +24,10 @@ fileprivate extension Errno {
     }
 }
 
+
 public class AES70OCP1SocketConnection: AES70OCP1Connection {
     private let deviceAddress: any SocketAddress
-    private var socket: Socket? = nil
+    var socket: Socket? = nil
     
     @MainActor
     public init(deviceAddress: any SocketAddress) {
@@ -35,9 +36,6 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
     }
     
     override func connectDevice() async throws {
-        if socket == nil {
-            socket = try await Socket(IPv4Protocol.tcp)
-        }
         guard let socket else {
             throw Ocp1Error.notConnected
         }
@@ -104,5 +102,23 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
         
         debugPrint("Writing \(data.hexEncodedString())")
         return bytesWritten
+    }
+}
+
+public class AES70OCP1UDPConnection: AES70OCP1SocketConnection {
+    override func connectDevice() async throws {
+        if socket == nil {
+            socket = try await Socket(IPv4Protocol.udp)
+        }
+        try await super.connectDevice()
+    }
+}
+
+public class AES70OCP1TCPConnection: AES70OCP1SocketConnection {
+    override func connectDevice() async throws {
+        if socket == nil {
+            socket = try await Socket(IPv4Protocol.tcp)
+        }
+        try await super.connectDevice()
     }
 }
