@@ -39,7 +39,7 @@ public struct OcaMuteView: View {
     }
 
     public var body: some View {
-        HStack {
+        Group {
             if object.state.isWaiting {
                 ProgressView()
             } else {
@@ -47,8 +47,9 @@ public struct OcaMuteView: View {
                 }
                 .toggleStyle(SymbolToggleStyle(systemImage: "speaker.slash.circle.fill", activeColor: .blue))
             }
+        }.refreshable {
+            self.object.state = .initial // forces refresh
         }
-        .padding()
     }
 }
 

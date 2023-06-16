@@ -112,6 +112,11 @@ extension OcaRoot {
         let event = OcaEvent(emitterONo: self.objectNumber, eventID: OcaPropertyChangedEventID)
         try await connectionDelegate.removeSubscription(event: event)
     }
+    
+    public func refresh() async throws {
+        Mirror.allKeyPaths(for: self).forEach { $0.value.refresh() }
+    }
+    
 }
 
 struct OcaGetPathParameters: Codable {

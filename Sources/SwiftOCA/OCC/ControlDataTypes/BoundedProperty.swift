@@ -25,7 +25,7 @@ public struct OcaBoundedPropertyValue<T: Codable>: Codable {
 }
 
 @propertyWrapper
-public struct OcaBoundedProperty<Value: Codable>: OcaPropertyRepresentable, OcaPropertyChangeEventNotifiable {
+public struct OcaBoundedProperty<Value: Codable>: OcaPropertyRepresentable {
     var propertyIDs: [OcaPropertyID] {
         [wrappedValue.propertyID]
     }
@@ -36,6 +36,11 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyRepresentable, OcaP
         return wrappedValue.getPublisher()
     }
 
+    @MainActor
+    func refresh() {
+        wrappedValue.refresh()
+    }
+    
     init(propertyID: OcaPropertyID,
          getMethodID: OcaMethodID,
          setMethodID: OcaMethodID? = nil) {

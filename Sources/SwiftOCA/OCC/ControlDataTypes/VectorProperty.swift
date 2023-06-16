@@ -23,7 +23,7 @@ public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable {
 }
 
 @propertyWrapper
-public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaPropertyRepresentable, OcaPropertyChangeEventNotifiable {
+public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaPropertyRepresentable {
     var propertyIDs: [OcaPropertyID] {
         [xPropertyID, yPropertyID]
     }
@@ -48,6 +48,11 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
                                         setMethodID: setMethodID)
     }
   
+    @MainActor
+    func refresh() {
+        wrappedValue.refresh()
+    }
+
     public var projectedValue: AnyPublisher<OcaProperty<OcaVector2D<Value>>.State, Never> {
         return wrappedValue.getPublisher()
     }
@@ -63,7 +68,7 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         // TODO: support add/delete
         switch eventData.changeType {
         case .currentChanged:
-            guard case .success(var subjectValue) = wrappedValue.wrappedValue else {
+            guard case .success(let subjectValue) = wrappedValue.wrappedValue else {
                 throw Ocp1Error.noInitialValue
             }
 

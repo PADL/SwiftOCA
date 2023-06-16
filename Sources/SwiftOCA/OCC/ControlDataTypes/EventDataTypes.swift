@@ -63,9 +63,3 @@ public struct OcaPropertyChangedEventData<T: Codable>: Codable {
 
 let OcaPropertyChangedEventID = OcaEventID(defLevel: 1, eventIndex: 1)
 
-protocol OcaPropertyChangeEventNotifiable {
-    var propertyIDs: [OcaPropertyID] { get }
-    
-    @MainActor
-    func onEvent(_ eventData: Ocp1EventData) throws
-}

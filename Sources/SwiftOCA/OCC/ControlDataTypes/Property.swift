@@ -18,10 +18,17 @@ import Foundation
 import BinaryCoder
 import Combine
 
-public protocol OcaPropertyRepresentable {}
+protocol OcaPropertyRepresentable {
+    var propertyIDs: [OcaPropertyID] { get }
+    
+    func refresh()
+    
+    @MainActor
+    func onEvent(_ eventData: Ocp1EventData) throws
+}
 
 @propertyWrapper
-public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable, OcaPropertyChangeEventNotifiable {
+public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable {
     var propertyIDs: [OcaPropertyID] {
         [propertyID]
     }
@@ -139,6 +146,18 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable, Oc
         }
     }
     
+    @MainActor
+    func refresh() {
+        self.wrappedValue = .initial
+    }
+    
+    private func refresh(_ instance: OcaRoot) {
+        Task { @MainActor in
+            subject.send(.initial)
+            instance.objectWillChange.send()
+        }
+    }
+    
     public static subscript<T: OcaRoot>(
         _enclosingInstance instance: T,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
@@ -153,12 +172,15 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable, Oc
             return subject.value
         }
         set {
-            guard case let .success(value) = newValue else {
-                preconditionFailure("setter called with non-success value \(newValue)")
-            }
-            instance[keyPath: storageKeyPath].perform(instance) {
-                try await $0.setValueIfMutable(instance, value)
-                return value
+            if case let .success(value) = newValue {
+                instance[keyPath: storageKeyPath].perform(instance) {
+                    try await $0.setValueIfMutable(instance, value)
+                    return value
+                }
+            } else if case .initial = newValue {
+                instance[keyPath: storageKeyPath].refresh(instance)
+            } else {
+                preconditionFailure("setter called with invalid value \(newValue)")
             }
         }
     }

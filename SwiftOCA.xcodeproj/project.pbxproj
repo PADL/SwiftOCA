@@ -241,9 +241,9 @@
 		D3E6E1822A3ACA6C00BF7095 /* ControlClasses */ = {
 			isa = PBXGroup;
 			children = (
+				D3E6E1892A3ACA6C00BF7095 /* Root.swift */,
 				D3E6E1832A3ACA6C00BF7095 /* Root+Commands.swift */,
 				D3E6E1842A3ACA6C00BF7095 /* Managers */,
-				D3E6E1892A3ACA6C00BF7095 /* Root.swift */,
 				D3E6E18A2A3ACA6C00BF7095 /* Agents */,
 				D3E6E18D2A3ACA6C00BF7095 /* Networks */,
 				D3E6E18E2A3ACA6C00BF7095 /* Workers */,
