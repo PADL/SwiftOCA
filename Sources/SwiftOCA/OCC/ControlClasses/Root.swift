@@ -37,11 +37,11 @@ public class OcaRoot: ObservableObject {
     
     @OcaProperty(propertyID: OcaPropertyID("1.4"),
                  getMethodID: OcaMethodID("1.2"))
-    var lockable: OcaProperty<OcaBoolean>.State
+    public var lockable: OcaProperty<OcaBoolean>.State
     
     @OcaProperty(propertyID: OcaPropertyID("1.5"),
                  getMethodID: OcaMethodID("1.5"))
-    var role: OcaProperty<OcaString>.State
+    public var role: OcaProperty<OcaString>.State
     
     required init(objectNumber: OcaONo = OcaInvalidONo) {
         self.objectNumber = objectNumber
