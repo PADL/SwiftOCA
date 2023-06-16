@@ -7,40 +7,25 @@
 
 import SwiftUI
 import SwiftOCA
+import SwiftOCAUI
 import Socket
 
 struct ContentView: View {
     @StateObject var connection: AES70OCP1Connection
-    @StateObject var muteObject: OcaMute
+
+    let id = OcaObjectIdentification(oNo: 0x9008, classIdentification: OcaMute.classIdentification)
 
     init() {
-        let id = OcaObjectIdentification(oNo: 0x9008, classIdentification: OcaMute.classIdentification)
         let connection = AES70OCP1TCPConnection(deviceAddress: IPv4SocketAddress(address: IPv4Address(rawValue: "127.0.0.1")!, port: 65000))
         self._connection = StateObject<AES70OCP1Connection>(wrappedValue: connection)
-        self._muteObject = StateObject(wrappedValue: connection.resolve(object: id) as! OcaMute)
     }
 
     var body: some View {
         HStack {
             Text("Mute")
             Spacer()
-            ZStack {
-                if muteObject.state == .initial || muteObject.state == .requesting {
-                    ProgressView()
-                } else {
-                    Toggle(isOn: .init(get: {
-                        if case let .success(muteState) = muteObject.state {
-                            return muteState == .muted
-                        } else {
-                            return false
-                        }
-                    }, set: { isOn in
-                        debugPrint("---> Setting mute state to \(isOn)")
-                        muteObject.state = .success(isOn ? .muted : .unmuted)
-                    })) {
-                    }
-                }
-            }
+            
+            OcaMuteView(connection, object: id)
         }
         .padding()
         .task {
@@ -49,8 +34,6 @@ struct ContentView: View {
             } catch(let error) {
                 print("Connection error: \(error)")
             }
-        }
-        .onReceive(self.muteObject.$state) { value in
         }
     }
 }

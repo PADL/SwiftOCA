@@ -72,6 +72,9 @@
 		D3E6E2372A3AE86200BF7095 /* Semaphore in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E2362A3AE86200BF7095 /* Semaphore */; };
 		D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */; };
 		D3E6E23B2A3BD5A100BF7095 /* KeyPathIterable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */; };
+		D3E6E24A2A3C0C7700BF7095 /* OcaMuteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2492A3C0C7700BF7095 /* OcaMuteView.swift */; };
+		D3E6E24B2A3C0C8D00BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
+		D3E6E24C2A3C0D6300BF7095 /* libSwiftOCAUI.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -138,6 +141,8 @@
 		D3E6E2262A3ACFA100BF7095 /* SwiftOCATest.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = SwiftOCATest.entitlements; path = Examples/SwiftOCATest/SwiftOCATest.entitlements; sourceTree = SOURCE_ROOT; };
 		D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70Browser.swift; sourceTree = "<group>"; };
 		D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPathIterable.swift; sourceTree = "<group>"; };
+		D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCAUI.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3E6E2492A3C0C7700BF7095 /* OcaMuteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OcaMuteView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -156,7 +161,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D3E6E24C2A3C0D6300BF7095 /* libSwiftOCAUI.dylib in Frameworks */,
 				D3E6E2342A3AD0A800BF7095 /* libSwiftOCA.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3E6E2412A3C0BA000BF7095 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D3E6E24B2A3C0C8D00BF7095 /* libSwiftOCA.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -177,6 +191,7 @@
 		D3E6E15B2A3ACA0B00BF7095 = {
 			isa = PBXGroup;
 			children = (
+				D3E6E2472A3C0C7700BF7095 /* SwiftOCAUI */,
 				D3028C1C2A3AD57900B8DB42 /* Sources/SwiftOCA */,
 				D3E6E1F72A3ACF5900BF7095 /* Examples/SwiftOCATest */,
 				D3E6E1652A3ACA0B00BF7095 /* Products */,
@@ -189,6 +204,7 @@
 			children = (
 				D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */,
 				D3E6E1F62A3ACF5900BF7095 /* SwiftOCATest.app */,
+				D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -393,10 +409,34 @@
 			path = OCF;
 			sourceTree = "<group>";
 		};
+		D3E6E2472A3C0C7700BF7095 /* SwiftOCAUI */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E2482A3C0C7700BF7095 /* Views */,
+			);
+			name = SwiftOCAUI;
+			path = Sources/SwiftOCAUI;
+			sourceTree = "<group>";
+		};
+		D3E6E2482A3C0C7700BF7095 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E2492A3C0C7700BF7095 /* OcaMuteView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
 		D3E6E1602A3ACA0B00BF7095 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3E6E23F2A3C0BA000BF7095 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -446,6 +486,23 @@
 			productReference = D3E6E1F62A3ACF5900BF7095 /* SwiftOCATest.app */;
 			productType = "com.apple.product-type.application";
 		};
+		D3E6E2422A3C0BA000BF7095 /* SwiftOCAUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D3E6E2442A3C0BA000BF7095 /* Build configuration list for PBXNativeTarget "SwiftOCAUI" */;
+			buildPhases = (
+				D3E6E23F2A3C0BA000BF7095 /* Headers */,
+				D3E6E2402A3C0BA000BF7095 /* Sources */,
+				D3E6E2412A3C0BA000BF7095 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SwiftOCAUI;
+			productName = SwiftOCAUI;
+			productReference = D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -460,6 +517,9 @@
 						CreatedOnToolsVersion = 14.2;
 					};
 					D3E6E1F52A3ACF5900BF7095 = {
+						CreatedOnToolsVersion = 14.2;
+					};
+					D3E6E2422A3C0BA000BF7095 = {
 						CreatedOnToolsVersion = 14.2;
 					};
 				};
@@ -485,6 +545,7 @@
 			targets = (
 				D3E6E1632A3ACA0B00BF7095 /* SwiftOCA */,
 				D3E6E1F52A3ACF5900BF7095 /* SwiftOCATest */,
+				D3E6E2422A3C0BA000BF7095 /* SwiftOCAUI */,
 			);
 		};
 /* End PBXProject section */
@@ -571,6 +632,14 @@
 			files = (
 				D3E6E2282A3ACFA100BF7095 /* SwiftOCATestApp.swift in Sources */,
 				D3E6E22A2A3ACFA100BF7095 /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3E6E2402A3C0BA000BF7095 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D3E6E24A2A3C0C7700BF7095 /* OcaMuteView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -774,6 +843,34 @@
 			};
 			name = Release;
 		};
+		D3E6E2452A3C0BA000BF7095 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D3E6E2462A3C0BA000BF7095 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -800,6 +897,15 @@
 			buildConfigurations = (
 				D3E6E2192A3ACF5A00BF7095 /* Debug */,
 				D3E6E21A2A3ACF5A00BF7095 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D3E6E2442A3C0BA000BF7095 /* Build configuration list for PBXNativeTarget "SwiftOCAUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D3E6E2452A3C0BA000BF7095 /* Debug */,
+				D3E6E2462A3C0BA000BF7095 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
