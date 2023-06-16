@@ -31,13 +31,19 @@ protocol OcaPropertyChangeEventNotifiable: OcaPropertyRepresentable {
 
 @propertyWrapper
 public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifiable {
+    /// All property IDs supported by this property
     public var propertyIDs: [OcaPropertyID] {
         [propertyID]
     }
     
-    public let propertyID: OcaPropertyID
-    public let getMethodID: OcaMethodID
-    public let setMethodID: OcaMethodID?
+    /// The OCA property ID
+    let propertyID: OcaPropertyID
+    
+    /// The OCA get method ID
+    let getMethodID: OcaMethodID
+    
+    /// The OCA set method ID, if present
+    let setMethodID: OcaMethodID?
     
     public enum State {
         case initial
@@ -62,6 +68,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         fatalError()
     }
     
+    /// Placeholder only
     public func encode(to encoder: Encoder) throws {
         if case let .success(value) = self.wrappedValue {
             try value.encode(to: encoder)
@@ -70,11 +77,43 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     }
         
+    /// Placeholder only
     public var wrappedValue: State {
         get { fatalError() }
         nonmutating set { fatalError() }
     }
     
+    public var projectedValue: OcaPropertyRepresentable {
+        return self
+    }
+
+    public static subscript<T: OcaRoot>(
+        _enclosingInstance instance: T,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
+        storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
+        get {
+            let subject = instance[keyPath: storageKeyPath].subject
+            if case .initial = subject.value {
+                instance[keyPath: storageKeyPath].perform(instance) {
+                    try await $0.getValueAndSubscribe(instance)
+                }
+            }
+            return subject.value
+        }
+        set {
+            if case let .success(value) = newValue {
+                instance[keyPath: storageKeyPath].perform(instance) {
+                    try await $0.setValueIfMutable(instance, value)
+                    return value
+                }
+            } else if case .initial = newValue {
+                instance[keyPath: storageKeyPath].refresh(instance)
+            } else {
+                preconditionFailure("setter called with invalid value \(newValue)")
+            }
+        }
+    }
+
     /// setValueTransformer is a helper for OcaBoundedProperty
     typealias SetValueTransformer = (OcaRoot, Value) async throws -> Encodable
     private let setValueTransformer: SetValueTransformer?
@@ -89,11 +128,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         self.subject = CurrentValueSubject(State.initial)
         self.setValueTransformer = setValueTransformer
     }
-    
-    public var projectedValue: AnyPublisher<State, Never> {
-        return self.getPublisher()
-    }
-    
+        
     func getPublisher() -> AnyPublisher<State, Never> {
         subject
             .receive(on: DispatchQueue.main)
@@ -159,33 +194,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     }
     
-    public static subscript<T: OcaRoot>(
-        _enclosingInstance instance: T,
-        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
-        storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
-        get {
-            let subject = instance[keyPath: storageKeyPath].subject
-            if case .initial = subject.value {
-                instance[keyPath: storageKeyPath].perform(instance) {
-                    try await $0.getValueAndSubscribe(instance)
-                }
-            }
-            return subject.value
-        }
-        set {
-            if case let .success(value) = newValue {
-                instance[keyPath: storageKeyPath].perform(instance) {
-                    try await $0.setValueIfMutable(instance, value)
-                    return value
-                }
-            } else if case .initial = newValue {
-                instance[keyPath: storageKeyPath].refresh(instance)
-            } else {
-                preconditionFailure("setter called with invalid value \(newValue)")
-            }
-        }
-    }
-
     @MainActor
     func onEvent(_ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)

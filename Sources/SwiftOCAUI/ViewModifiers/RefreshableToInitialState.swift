@@ -33,7 +33,7 @@ private struct RefreshableToInitialState: ViewModifier {
 }
 
 extension View {
-    public func refreshableToInitialState<T: Codable>(_ property: OcaPropertyRepresentable) -> some View {
+    public func refreshableToInitialState(_ property: OcaPropertyRepresentable) -> some View {
         return self.modifier(RefreshableToInitialState(property))
     }
 }

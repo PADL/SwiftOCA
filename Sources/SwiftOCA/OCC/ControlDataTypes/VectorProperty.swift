@@ -52,8 +52,8 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         await wrappedValue.refresh()
     }
 
-    public var projectedValue: AnyPublisher<OcaProperty<OcaVector2D<Value>>.State, Never> {
-        return wrappedValue.getPublisher()
+    public var projectedValue: OcaPropertyRepresentable {
+        return wrappedValue
     }
 
     func onEvent(_ eventData: Ocp1EventData) throws {

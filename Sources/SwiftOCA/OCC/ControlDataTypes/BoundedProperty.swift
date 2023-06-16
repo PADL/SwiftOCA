@@ -32,8 +32,8 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiab
 
     public var wrappedValue: OcaProperty<OcaBoundedPropertyValue<Value>>
     
-    public var projectedValue: AnyPublisher<OcaProperty<OcaBoundedPropertyValue<Value>>.State, Never> {
-        return wrappedValue.getPublisher()
+    public var projectedValue: OcaPropertyRepresentable {
+        return wrappedValue
     }
 
     public func refresh() async {
