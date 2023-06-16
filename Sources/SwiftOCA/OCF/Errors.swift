@@ -30,4 +30,5 @@ enum Ocp1Error: Error, Equatable {
     case serviceResolutionFailed
     case unknownServiceType
     case noInitialValue
+    case unhandledEvent
 }

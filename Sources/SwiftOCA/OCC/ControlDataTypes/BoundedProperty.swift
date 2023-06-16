@@ -53,7 +53,8 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiab
         let decoder = BinaryDecoder(config: .ocp1Configuration)
         let eventData = try decoder.decode(OcaPropertyChangedEventData<Value>.self,
                                            from: eventData.eventParameters)
-        
+        precondition(self.propertyIDs.contains(eventData.propertyID))
+
         
         guard case .success(var value) = wrappedValue.wrappedValue else {
             throw Ocp1Error.noInitialValue
@@ -62,15 +63,12 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiab
         switch eventData.changeType {
         case .currentChanged:
             value.value = eventData.propertyValue
-            break
         case .minChanged:
             value.minValue = eventData.propertyValue
-            break
         case .maxChanged:
             value.maxValue = eventData.propertyValue
-            break
         default:
-            return
+            throw Ocp1Error.unhandledEvent
         }
         
         wrappedValue.wrappedValue = .success(value)

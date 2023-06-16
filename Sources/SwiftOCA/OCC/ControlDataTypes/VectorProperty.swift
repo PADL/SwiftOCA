@@ -58,7 +58,8 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         let decoder = BinaryDecoder(config: .ocp1Configuration)
         let eventData = try decoder.decode(OcaPropertyChangedEventData<Value>.self,
                                            from: eventData.eventParameters)
-        
+        precondition(self.propertyIDs.contains(eventData.propertyID))
+
         // TODO: support add/delete
         switch eventData.changeType {
         case .currentChanged:
@@ -70,9 +71,8 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
             }
             if isX { xy.x = eventData.propertyValue } else { xy.y = eventData.propertyValue }
             wrappedValue.wrappedValue = .success(xy)
-            break
         default:
-            break
+            throw Ocp1Error.unhandledEvent
         }
     }
 }

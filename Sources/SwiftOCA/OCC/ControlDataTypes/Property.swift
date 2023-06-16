@@ -160,14 +160,14 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         
         let decoder = BinaryDecoder(config: .ocp1Configuration)
         let eventData = try decoder.decode(OcaPropertyChangedEventData<Value>.self, from: eventData.eventParameters)
-        guard eventData.propertyID == self.propertyID else { return }
+        precondition(self.propertyIDs.contains(eventData.propertyID))
+
+        // TODO: how to handle items being deleted
         
-        switch eventData.changeType {
-        case .currentChanged:
+        if .currentChanged == eventData.changeType {
             self.subject.send(.success(eventData.propertyValue))
-            break
-        default:
-            break
+        } else {
+            throw Ocp1Error.unhandledEvent
         }
     }
     
@@ -183,7 +183,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                 fallthrough
             case .requesting:
                 await Task.yield()
-                break
             case let .success(value):
                 return try await block(value)
             case let .failure(error):
