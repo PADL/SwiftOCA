@@ -10,12 +10,8 @@ import SwiftOCA
 import SwiftOCAUI
 
 struct ContentView: View {
-    var connection: AES70OCP1Connection
+    @EnvironmentObject var connection: AES70OCP1Connection
     let id = OcaObjectIdentification(oNo: 0x9008, classIdentification: OcaMute.classIdentification)
-
-    init(_ connection: AES70OCP1Connection) {
-        self.connection = connection
-    }
 
     var body: some View {
         HStack {

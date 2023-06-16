@@ -27,7 +27,7 @@ struct SwiftOCATestApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView(connection)
+            ContentView()
                 .task {
                     do {
                         try await self.connection.connect()
@@ -35,6 +35,7 @@ struct SwiftOCATestApp: App {
                         print("Connection error: \(error)")
                     }
                 }
+                .environmentObject(connection)
         }
         .commands {
             CommandGroup(replacing: .toolbar) {
