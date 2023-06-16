@@ -8,7 +8,6 @@
 import SwiftUI
 import SwiftOCA
 import Socket
-import Combine
 
 extension OcaRoot: Identifiable {
     public var id: OcaONo { return self.objectNumber }

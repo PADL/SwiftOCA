@@ -58,7 +58,6 @@
 		D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1812A3ACA6C00BF7095 /* BaseDataTypes.swift */; };
 		D3E6E1E42A3ACAA900BF7095 /* NetworkDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1732A3ACA6C00BF7095 /* NetworkDataTypes.swift */; };
 		D3E6E1E52A3ACAA900BF7095 /* LengthTaggedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */; };
-		D3E6E1E62A3ACAAD00BF7095 /* AnyPublisher+Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E16E2A3ACA6C00BF7095 /* AnyPublisher+Async.swift */; };
 		D3E6E1E72A3ACAAD00BF7095 /* Data+IntegerCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */; };
 		D3E6E1E82A3ACAAD00BF7095 /* Data+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */; };
 		D3E6E1EB2A3ACAED00BF7095 /* BinaryCoder in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E1EA2A3ACAED00BF7095 /* BinaryCoder */; };
@@ -78,12 +77,12 @@
 		D3E6E2562A3C550500BF7095 /* OcaViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2542A3C54CE00BF7095 /* OcaViewRepresentable.swift */; };
 		D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2522A3C4EA300BF7095 /* RefreshableToInitialState.swift */; };
 		D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */; };
+		D3E6E25B2A3D28DD00BF7095 /* AsyncExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCA.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hex.swift"; sourceTree = "<group>"; };
-		D3E6E16E2A3ACA6C00BF7095 /* AnyPublisher+Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AnyPublisher+Async.swift"; sourceTree = "<group>"; };
 		D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+IntegerCodable.swift"; sourceTree = "<group>"; };
 		D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LengthTaggedData.swift; sourceTree = "<group>"; };
 		D3E6E1722A3ACA6C00BF7095 /* Property.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Property.swift; sourceTree = "<group>"; };
@@ -157,6 +156,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D3E6E1F12A3ACB1E00BF7095 /* Socket in Frameworks */,
+				D3E6E25B2A3D28DD00BF7095 /* AsyncExtensions in Frameworks */,
 				D3E6E2372A3AE86200BF7095 /* Semaphore in Frameworks */,
 				D3E6E1EB2A3ACAED00BF7095 /* BinaryCoder in Frameworks */,
 				D3E6E1EE2A3ACB0700BF7095 /* AsyncAlgorithms in Frameworks */,
@@ -407,7 +407,6 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */,
-				D3E6E16E2A3ACA6C00BF7095 /* AnyPublisher+Async.swift */,
 				D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */,
 				D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */,
 				D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */,
@@ -481,6 +480,7 @@
 				D3E6E1ED2A3ACB0700BF7095 /* AsyncAlgorithms */,
 				D3E6E1F02A3ACB1E00BF7095 /* Socket */,
 				D3E6E2362A3AE86200BF7095 /* Semaphore */,
+				D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */,
 			);
 			productName = SwiftOCA;
 			productReference = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */;
@@ -555,6 +555,7 @@
 				D3E6E1EC2A3ACB0700BF7095 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 				D3E6E1EF2A3ACB1E00BF7095 /* XCRemoteSwiftPackageReference "Socket" */,
 				D3E6E2352A3AE86200BF7095 /* XCRemoteSwiftPackageReference "Semaphore" */,
+				D3E6E2592A3D28DD00BF7095 /* XCRemoteSwiftPackageReference "AsyncExtensions" */,
 			);
 			productRefGroup = D3E6E1652A3ACA0B00BF7095 /* Products */;
 			projectDirPath = "";
@@ -611,7 +612,6 @@
 				D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */,
 				D3E6E1D12A3ACA9A00BF7095 /* EventHandler.swift in Sources */,
 				D3E6E1C82A3ACA9000BF7095 /* Gain.swift in Sources */,
-				D3E6E1E62A3ACAAD00BF7095 /* AnyPublisher+Async.swift in Sources */,
 				D3E6E1B62A3ACA7B00BF7095 /* AES70ClassRegistry.swift in Sources */,
 				D3E6E1C62A3ACA9000BF7095 /* BasicActuators.swift in Sources */,
 				D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */,
@@ -976,6 +976,14 @@
 				minimumVersion = 0.0.8;
 			};
 		};
+		D3E6E2592A3D28DD00BF7095 /* XCRemoteSwiftPackageReference "AsyncExtensions" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:sideeffect-io/AsyncExtensions.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -998,6 +1006,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D3E6E2352A3AE86200BF7095 /* XCRemoteSwiftPackageReference "Semaphore" */;
 			productName = Semaphore;
+		};
+		D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3E6E2592A3D28DD00BF7095 /* XCRemoteSwiftPackageReference "AsyncExtensions" */;
+			productName = AsyncExtensions;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "asyncextensions",
+      "kind" : "remoteSourceControl",
+      "location" : "git@github.com:sideeffect-io/AsyncExtensions.git",
+      "state" : {
+        "revision" : "1f0729e4f1f6c7166acfac3cec43b3cbe83be0e6",
+        "version" : "0.5.2"
+      }
+    },
+    {
       "identity" : "semaphore",
       "kind" : "remoteSourceControl",
       "location" : "git@github.com:groue/Semaphore.git",

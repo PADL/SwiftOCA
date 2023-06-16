@@ -16,7 +16,8 @@
 
 import Foundation
 import BinaryCoder
-import Combine
+import AsyncAlgorithms
+import AsyncExtensions
 
 public protocol OcaPropertyRepresentable {
     var propertyIDs: [OcaPropertyID] { get }
@@ -62,7 +63,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     }
     
-    private let subject: CurrentValueSubject<State, Never>
+    private let subject: AsyncCurrentValueSubject<State>
 
     public init(from decoder: Decoder) throws {
         fatalError()
@@ -125,17 +126,10 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         self.propertyID = propertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
-        self.subject = CurrentValueSubject(State.initial)
+        self.subject = AsyncCurrentValueSubject(State.initial)
         self.setValueTransformer = setValueTransformer
     }
         
-    // TODO: is there a way to implement CurrentValuePublisher without Combine, e.g. with AsyncChannel
-    private func getPublisher() -> AnyPublisher<State, Never> {
-        subject
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
-    
     private func getValueAndSubscribe(_ instance: OcaRoot) async throws -> Value {
         let value: Value
         
@@ -213,21 +207,20 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
     
     @MainActor
-    func onCompletion<T>(_ block: @escaping (_ value: Value) async throws -> T) async throws -> T{
-        var value: State
-                
+    func onCompletion<T>(_ block: @escaping (_ value: Value) async throws -> T) async throws -> T {
         repeat {
-            value = try await getPublisher().async()
-            switch value {
-            case .initial:
-                _ = self.wrappedValue
-                fallthrough
-            case .requesting:
-                await Task.yield()
-            case let .success(value):
-                return try await block(value)
-            case let .failure(error):
-                throw error
+            for await value in self.subject {
+                switch value {
+                case .initial:
+                    _ = self.wrappedValue // triggers get
+                    fallthrough
+                case .requesting:
+                    await Task.yield() // continues get
+                case let .success(value):
+                    return try await block(value)
+                case let .failure(error):
+                    throw error
+                }
             }
         } while true
     }
