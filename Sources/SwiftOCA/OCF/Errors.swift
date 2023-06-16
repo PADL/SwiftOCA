@@ -17,6 +17,7 @@
 import Foundation
 
 enum Ocp1Error: Error, Equatable {
+    /// An OCA status received from a device; should not be used for local errors
     case status(OcaStatus)
     case notConnected
     case alreadySubscribedToEvent
