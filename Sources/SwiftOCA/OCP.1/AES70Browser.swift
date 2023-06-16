@@ -92,7 +92,7 @@ fileprivate class AES70ResolverDelegate: NSObject, NetServiceDelegate {
     
     func netServiceDidResolveAddress(_ sender: NetService) {
         Task { @MainActor in
-            guard var addresses = sender.addresses else {
+            guard let addresses = sender.addresses else {
                 await channel.send(.failure(Ocp1Error.serviceResolutionFailed))
                 return
             }
