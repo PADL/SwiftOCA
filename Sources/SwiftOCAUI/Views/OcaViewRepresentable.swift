@@ -18,6 +18,6 @@ import Foundation
 import SwiftUI
 import SwiftOCA
 
-public protocol OcaViewRepresentable {
+public protocol OcaView: View {
     init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification)
 }
