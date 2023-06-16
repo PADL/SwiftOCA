@@ -23,8 +23,8 @@ public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable {
 }
 
 @propertyWrapper
-public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaPropertyRepresentable {
-    var propertyIDs: [OcaPropertyID] {
+public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaPropertyChangeEventNotifiable {
+    public var propertyIDs: [OcaPropertyID] {
         [xPropertyID, yPropertyID]
     }
         
@@ -48,9 +48,8 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
                                         setMethodID: setMethodID)
     }
   
-    @MainActor
-    func refresh() {
-        wrappedValue.refresh()
+    public func refresh() async {
+        await wrappedValue.refresh()
     }
 
     public var projectedValue: AnyPublisher<OcaProperty<OcaVector2D<Value>>.State, Never> {

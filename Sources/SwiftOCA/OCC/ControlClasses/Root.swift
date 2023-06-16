@@ -114,9 +114,10 @@ extension OcaRoot {
     }
     
     public func refresh() async throws {
-        Mirror.allKeyPaths(for: self).forEach { $0.value.refresh() }
+        for keyPath in Mirror.allKeyPaths(for: self) {
+            await keyPath.value.refresh()
+        }
     }
-    
 }
 
 struct OcaGetPathParameters: Codable {

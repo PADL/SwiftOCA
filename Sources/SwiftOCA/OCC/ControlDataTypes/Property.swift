@@ -18,17 +18,19 @@ import Foundation
 import BinaryCoder
 import Combine
 
-protocol OcaPropertyRepresentable {
+public protocol OcaPropertyRepresentable {
     var propertyIDs: [OcaPropertyID] { get }
     
-    func refresh()
-    
+    func refresh() async
+}
+
+protocol OcaPropertyChangeEventNotifiable: OcaPropertyRepresentable {
     @MainActor
     func onEvent(_ eventData: Ocp1EventData) throws
 }
 
 @propertyWrapper
-public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable {
+public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifiable {
     public var propertyIDs: [OcaPropertyID] {
         [propertyID]
     }
@@ -54,6 +56,8 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable {
         }
     }
     
+    private let subject: CurrentValueSubject<State, Never>
+
     public init(from decoder: Decoder) throws {
         fatalError()
     }
@@ -65,9 +69,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable {
             fatalError()
         }
     }
-    
-    private let subject: CurrentValueSubject<State, Never>
-    
+        
     public var wrappedValue: State {
         get { fatalError() }
         nonmutating set { fatalError() }
@@ -146,8 +148,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable {
         }
     }
     
-    @MainActor
-    func refresh() {
+    public func refresh() async {
         self.wrappedValue = .initial
     }
     

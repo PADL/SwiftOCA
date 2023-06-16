@@ -76,6 +76,7 @@
 		D3E6E24B2A3C0C8D00BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3E6E24C2A3C0D6300BF7095 /* libSwiftOCAUI.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */; };
 		D3E6E2512A3C4E2300BF7095 /* ShowProgressIfWaiting.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */; };
+		D3E6E2532A3C4EA300BF7095 /* RefreshableToInitialState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2522A3C4EA300BF7095 /* RefreshableToInitialState.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -145,6 +146,7 @@
 		D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCAUI.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E2492A3C0C7700BF7095 /* OcaMuteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OcaMuteView.swift; sourceTree = "<group>"; };
 		D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowProgressIfWaiting.swift; sourceTree = "<group>"; };
+		D3E6E2522A3C4EA300BF7095 /* RefreshableToInitialState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableToInitialState.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -433,6 +435,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */,
+				D3E6E2522A3C4EA300BF7095 /* RefreshableToInitialState.swift */,
 			);
 			path = ViewModifiers;
 			sourceTree = "<group>";
@@ -601,6 +604,7 @@
 				D3E6E1CE2A3ACA9600BF7095 /* Sensor.swift in Sources */,
 				D3E6E1CF2A3ACA9600BF7095 /* BasicSensors.swift in Sources */,
 				D3E6E1DB2A3ACAA900BF7095 /* EventDataTypes.swift in Sources */,
+				D3E6E2532A3C4EA300BF7095 /* RefreshableToInitialState.swift in Sources */,
 				D3E6E1E22A3ACAA900BF7095 /* SearchDataTypes.swift in Sources */,
 				D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */,
 				D3E6E1D12A3ACA9A00BF7095 /* EventHandler.swift in Sources */,
