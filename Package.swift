@@ -19,7 +19,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.1.0"),
-        .package(url: "git@github.com:groue/Semaphore.git", from: "0.0.8"),
+        .package(url: "https://github.com/groue/Semaphore.git", from: "0.0.8"),
         .package(url: "https://github.com/PureSwift/Socket", .branch("main")),
         .package(url: "https://github.com/PADL/swift-binary-coder", .branch("inferno")),
     ],
