@@ -23,7 +23,7 @@ public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable {
 }
 
 @propertyWrapper
-public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaPropertyChangeEventNotifiable {
+public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaPropertyRepresentable, OcaPropertyChangeEventNotifiable {
     var propertyIDs: [OcaPropertyID] {
         [xPropertyID, yPropertyID]
     }

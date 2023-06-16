@@ -25,7 +25,7 @@ public struct OcaBoundedPropertyValue<T: Codable>: Codable {
 }
 
 @propertyWrapper
-public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiable {
+public struct OcaBoundedProperty<Value: Codable>: OcaPropertyRepresentable, OcaPropertyChangeEventNotifiable {
     var propertyIDs: [OcaPropertyID] {
         [wrappedValue.propertyID]
     }

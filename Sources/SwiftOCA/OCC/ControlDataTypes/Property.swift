@@ -18,8 +18,10 @@ import Foundation
 import BinaryCoder
 import Combine
 
+public protocol OcaPropertyRepresentable {}
+
 @propertyWrapper
-public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifiable {
+public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable, OcaPropertyChangeEventNotifiable {
     var propertyIDs: [OcaPropertyID] {
         [propertyID]
     }
@@ -33,6 +35,16 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         case requesting
         case success(Value)
         case failure(Error)
+        
+        public var isWaiting: Bool {
+            if case .initial = self {
+                return true
+            } else if case .requesting = self {
+                return true
+            } else {
+                return false
+            }
+        }
     }
     
     public init(from decoder: Decoder) throws {
@@ -101,7 +113,8 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         if let setValueCallback {
             try await setValueCallback(instance, value)
         } else {
-            try await instance.sendCommandRrq(methodID: setMethodID, parameter: value)
+            // we'll get a notification so, don't require a reply
+            try await instance.sendCommand(methodID: setMethodID, parameter: value)
         }
     }
     

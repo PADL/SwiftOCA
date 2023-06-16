@@ -78,7 +78,6 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
                 throw error
             }
         }
-        debugPrint("Read \(data.hexEncodedString())")
         return data
     }
     
@@ -101,7 +100,6 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
             }
         }
         
-        debugPrint("Writing \(data.hexEncodedString())")
         return bytesWritten
     }
 }

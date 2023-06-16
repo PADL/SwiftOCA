@@ -33,6 +33,14 @@ extension OcaRoot {
         try await connectionDelegate.sendCommand(command)
     }
     
+    func sendCommand<T: Encodable> (methodID: OcaMethodID, parameter: T) async throws {
+        let parameterData = try encodeParameters([parameter])
+
+        try await sendCommand(methodID: methodID,
+                              parameterCount: 1,
+                              parameterData: parameterData)
+    }
+
     private func sendCommandRrq(methodID: OcaMethodID,
                                 parameterCount: OcaUint8,
                                 parameterData: Data) async throws -> Ocp1Response {

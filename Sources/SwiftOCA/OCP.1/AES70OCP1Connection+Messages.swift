@@ -33,7 +33,7 @@ extension AES70OCP1Connection {
         guard let responseMonitor = await responseMonitor else { throw Ocp1Error.notConnected }
         
         for await response in responseMonitor.channel {
-            debugPrint("awaiting response \(response)")
+            //debugPrint("awaiting response \(response)")
             if response.handle == handle {
                 return response
             }
