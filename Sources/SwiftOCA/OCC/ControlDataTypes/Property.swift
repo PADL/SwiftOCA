@@ -129,6 +129,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         self.setValueTransformer = setValueTransformer
     }
         
+    // TODO: is there a way to implement CurrentValuePublisher without Combine, e.g. with AsyncChannel
     private func getPublisher() -> AnyPublisher<State, Never> {
         subject
             .receive(on: DispatchQueue.main)
