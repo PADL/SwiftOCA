@@ -70,7 +70,7 @@
 		D3E6E22A2A3ACFA100BF7095 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2252A3ACFA100BF7095 /* ContentView.swift */; };
 		D3E6E2342A3AD0A800BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3E6E2372A3AE86200BF7095 /* Semaphore in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E2362A3AE86200BF7095 /* Semaphore */; };
-		D3E6E2392A3BD52E00BF7095 /* AES70OCP1Connection+Discovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2382A3BD52E00BF7095 /* AES70OCP1Connection+Discovery.swift */; };
+		D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */; };
 		D3E6E23B2A3BD5A100BF7095 /* KeyPathIterable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */; };
 /* End PBXBuildFile section */
 
@@ -136,7 +136,7 @@
 		D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D3E6E2252A3ACFA100BF7095 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Examples/SwiftOCATest/ContentView.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E2262A3ACFA100BF7095 /* SwiftOCATest.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = SwiftOCATest.entitlements; path = Examples/SwiftOCATest/SwiftOCATest.entitlements; sourceTree = SOURCE_ROOT; };
-		D3E6E2382A3BD52E00BF7095 /* AES70OCP1Connection+Discovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Discovery.swift"; sourceTree = "<group>"; };
+		D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70Browser.swift; sourceTree = "<group>"; };
 		D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPathIterable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -335,10 +335,10 @@
 		D3E6E1A72A3ACA6C00BF7095 /* OCP.1 */ = {
 			isa = PBXGroup;
 			children = (
+				D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */,
 				D3E6E1AF2A3ACA6C00BF7095 /* AES70ClassRegistry.swift */,
 				D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1Connection+Channels.swift */,
 				D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */,
-				D3E6E2382A3BD52E00BF7095 /* AES70OCP1Connection+Discovery.swift */,
 				D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */,
 				D3E6E1AB2A3ACA6C00BF7095 /* AES70OCP1Connection+Messages.swift */,
 				D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */,
@@ -542,7 +542,7 @@
 				D3E6E1CD2A3ACA9600BF7095 /* LevelSensor.swift in Sources */,
 				D3E6E1C12A3ACA8200BF7095 /* Notification.swift in Sources */,
 				D3E6E1B92A3ACA7B00BF7095 /* BinaryCodingConfiguration+OCP1.swift in Sources */,
-				D3E6E2392A3BD52E00BF7095 /* AES70OCP1Connection+Discovery.swift in Sources */,
+				D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */,
 				D3E6E1DE2A3ACAA900BF7095 /* DefaultObjectNumbers.swift in Sources */,
 				D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */,
 				D3E6E1BE2A3ACA8200BF7095 /* Command.swift in Sources */,

@@ -17,6 +17,10 @@
 import Foundation
 import Socket
 
+#if canImport(Network)
+import Network
+#endif
+
 fileprivate extension Errno {
     var connectionFailed: Bool {
         self == .badFileDescriptor || self == .socketShutdown
@@ -33,6 +37,20 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
         self.deviceAddress = deviceAddress
         super.init()
     }
+
+    //        let connection = AES70OCP1TCPConnection(deviceAddress: IPv4SocketAddress(address: IPv4Address(rawValue: "127.0.0.1")!, port: 65000))
+
+    #if canImport(Network)
+    @MainActor
+    public init?(endpoint: NWEndpoint) {
+        switch endpoint {
+        case .hostPort(let host, let port):
+            return nil
+        default:
+            return nil
+        }
+    }
+    #endif
     
     override func connectDevice() async throws {
         guard let socket else {

@@ -50,6 +50,12 @@ struct ContentView: View {
                 print("Connection error: \(error)")
             }
         }
+        .task {
+            let browser = await AES70Browser(serviceType: .tcp)
+            for await x in await browser.browseResultsChangedChannel {
+                debugPrint("discovered \(x)")
+            }
+        }
         .onReceive(self.muteObject.$state) { value in
         }
     }
