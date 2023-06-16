@@ -176,24 +176,22 @@ public class OcaBlock: OcaWorker {
 }
 
 extension OcaBlock {
+    typealias Members = OcaList<OcaRoot>
+
     @MainActor
-    func resolveMembers<T: OcaRoot>() throws -> AnyPublisher<OcaProperty<[T]>.State, Never> {
+    func resolveMembers() throws -> AnyPublisher<Members, Error> {
         guard let connectionDelegate else { throw Ocp1Error.notConnected }
-        return self.$members.compactMap {
-            var state: OcaProperty<[T]>.State = .initial
-            
+        return self.$members.tryCompactMap {
             switch $0 {
             case .initial:
-                state = .initial
+                return nil
             case .requesting:
-                state = .requesting
+                return nil
             case .success(let value):
-                state = .success(value.compactMap { connectionDelegate.resolve(object: $0) })
+                return value.compactMap { connectionDelegate.resolve(object: $0) }
             case .failure(let error):
-                state = .failure(error)
+                throw error
             }
-
-            return state
         }.eraseToAnyPublisher()
     }
 }

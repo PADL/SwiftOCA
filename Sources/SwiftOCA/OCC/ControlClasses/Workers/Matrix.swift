@@ -85,33 +85,35 @@ public class OcaMatrix: OcaWorker {
 }
 
 extension OcaMatrix {
-    /// resolve members using proxy class
+    /// resolve members using proxy class, members are optional as some may be unset
+
+    typealias SparseMembers = OcaList2D<OcaRoot?>
+    
     @MainActor
-    func resolveMembers<T: OcaRoot>(with proxy: T) throws -> AnyPublisher<OcaProperty<OcaList2D<T?>>.State, Never> {
+    func resolveMembers(with proxy: OcaRoot) throws -> AnyPublisher<SparseMembers, Error> {
         guard let connectionDelegate else { throw Ocp1Error.notConnected }
 
-        return self.$members.compactMap {
+        return self.$members.tryCompactMap {
             switch $0 {
             case .initial:
-                return OcaProperty<OcaList2D<T?>>.State.initial
+                return nil
             case .requesting:
-                return OcaProperty<OcaList2D<T?>>.State.requesting
+                return nil
             case .success(let value):
-                var resolved = OcaList2D<T?>(nX: value.nX, nY: value.nY)
-                let proxyClassID = OcaClassIdentification(classID: type(of: proxy).classID,
-                                                          classVersion: type(of: proxy).classVersion)
+                var resolved = SparseMembers(nX: value.nX, nY: value.nY)
+                let proxyClassID = type(of: proxy).classIdentification
 
                 for x in 0..<Int(value.nX) {
                     for y in 0..<Int(value.nY) {
-                        let id = OcaObjectIdentification(oNo: value.items[x][y],
-                                                         classIdentification: proxyClassID)
-                        resolved.items[x][y] = connectionDelegate.resolve(object: id)
+                        let objectID = OcaObjectIdentification(oNo: value.items[x][y],
+                                                               classIdentification: proxyClassID)
+                        resolved.items[x][y] = connectionDelegate.resolve(object: objectID)
                     }
                 }
                 
-                return OcaProperty<OcaList2D<T?>>.State.success(resolved)
+                return resolved
             case .failure(let error):
-                return OcaProperty<OcaList2D<T?>>.State.failure(error)
+                throw error
             }
         }.eraseToAnyPublisher()
     }
@@ -126,12 +128,10 @@ extension OcaMatrix {
             throw error
         case .success(let proxyObjectNumber):
             let unresolvedProxy = OcaRoot(objectNumber: proxyObjectNumber)
-            var classIdentification = OcaClassIdentification(classID: OcaRoot.classID,
-                                                             classVersion: OcaRoot.classVersion)
+            var classIdentification = OcaRoot.classIdentification
             try await unresolvedProxy.get(classIdentification: &classIdentification)
-            let id = OcaObjectIdentification(oNo: unresolvedProxy.objectNumber,
-                                             classIdentification: classIdentification)
-            let resolvedProxy = connectionDelegate.resolve(object: id) as? T
+            let objectID = OcaObjectIdentification(oNo: unresolvedProxy.objectNumber, classIdentification: classIdentification)
+            let resolvedProxy = connectionDelegate.resolve(object: objectID) as? T
             guard let resolvedProxy else { throw Ocp1Error.status(.badONo) }
             return resolvedProxy
         default:

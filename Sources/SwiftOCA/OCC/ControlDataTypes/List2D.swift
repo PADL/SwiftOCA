@@ -16,7 +16,7 @@
 
 import Foundation
 
-public struct OcaList2D<T: Codable>: Codable {
+public struct OcaList2D<T> {
     let nX, nY: OcaUint16
     var items: Array<Array<T>>
     
@@ -31,7 +31,9 @@ public struct OcaList2D<T: Codable>: Codable {
         }
 
     }
-    
+}
+
+extension OcaList2D: Codable where T: Codable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         self.nX = try container.decode(OcaUint16.self)
@@ -46,5 +48,8 @@ public struct OcaList2D<T: Codable>: Codable {
                 self.items[Int(x)][Int(y)] = try container.decode(T.self)
             }
         }
-    }    
+    }
+}
+
+extension OcaList2D: Equatable where T: Equatable {
 }
