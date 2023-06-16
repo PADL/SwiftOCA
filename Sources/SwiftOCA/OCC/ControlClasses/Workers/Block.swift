@@ -15,7 +15,6 @@
 //
 
 import Foundation
-import Combine
 
 public struct OcaBlockMember: Codable {
     let memberObjectIdentification: OcaObjectIdentification

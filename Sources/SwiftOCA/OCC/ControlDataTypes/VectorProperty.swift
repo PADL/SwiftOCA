@@ -15,7 +15,6 @@
 //
 
 import Foundation
-import Combine
 import BinaryCoder
 
 public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable {
