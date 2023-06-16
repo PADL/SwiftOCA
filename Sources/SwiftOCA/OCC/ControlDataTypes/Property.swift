@@ -146,7 +146,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             return subject.value
         }
         set {
-            //let oldValue = instance[keyPath: storageKeyPath].subject.value
             guard case let .success(value) = newValue else {
                 preconditionFailure("setter called with non-success value \(newValue)")
             }
@@ -173,6 +172,26 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         default:
             break
         }
+    }
+    
+    @MainActor
+    func onCompletion<T>(_ block: @escaping (_ value: Value) async throws -> T) async throws -> T{
+        var value: State
+                
+        repeat {
+            value = try await getPublisher().async()
+            switch value {
+            case .initial:
+                _ = self.wrappedValue
+                break
+            case .requesting:
+                break
+            case let .success(value):
+                return try await block(value)
+            case let .failure(error):
+                throw error
+            }
+        } while true
     }
 }
 

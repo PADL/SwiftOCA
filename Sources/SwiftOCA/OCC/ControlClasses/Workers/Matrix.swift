@@ -90,43 +90,30 @@ extension OcaMatrix {
     typealias SparseMembers = OcaList2D<OcaRoot?>
     
     @MainActor
-    func resolveMembers(with proxy: OcaRoot) throws -> AnyPublisher<SparseMembers, Error> {
+    func resolveMembers(with proxy: OcaRoot) async throws -> SparseMembers {
         guard let connectionDelegate else { throw Ocp1Error.notConnected }
 
-        return self.$members.tryCompactMap {
-            switch $0 {
-            case .initial:
-                return nil
-            case .requesting:
-                return nil
-            case .success(let value):
-                var resolved = SparseMembers(nX: value.nX, nY: value.nY)
-                let proxyClassID = type(of: proxy).classIdentification
+        return try await self._members.onCompletion { value in
+            var resolved = SparseMembers(nX: value.nX, nY: value.nY)
+            let proxyClassID = type(of: proxy).classIdentification
 
-                for x in 0..<Int(value.nX) {
-                    for y in 0..<Int(value.nY) {
-                        let objectID = OcaObjectIdentification(oNo: value.items[x][y],
-                                                               classIdentification: proxyClassID)
-                        resolved.items[x][y] = connectionDelegate.resolve(object: objectID)
-                    }
+            for x in 0..<Int(value.nX) {
+                for y in 0..<Int(value.nY) {
+                    let objectID = OcaObjectIdentification(oNo: value.items[x][y],
+                                                           classIdentification: proxyClassID)
+                    resolved.items[x][y] = connectionDelegate.resolve(object: objectID)
                 }
-                
-                return resolved
-            case .failure(let error):
-                throw error
             }
-        }.eraseToAnyPublisher()
+            
+            return resolved
+        }
     }
 
     @MainActor
     func resolveProxy<T: OcaRoot>() async throws -> T {
         guard let connectionDelegate else { throw Ocp1Error.notConnected }
 
-        let proxy = try await $proxy.async()
-        switch proxy {
-        case .failure(let error):
-            throw error
-        case .success(let proxyObjectNumber):
+        return try await self._proxy.onCompletion { proxyObjectNumber in
             let unresolvedProxy = OcaRoot(objectNumber: proxyObjectNumber)
             var classIdentification = OcaRoot.classIdentification
             try await unresolvedProxy.get(classIdentification: &classIdentification)
@@ -134,8 +121,6 @@ extension OcaMatrix {
             let resolvedProxy = connectionDelegate.resolve(object: objectID) as? T
             guard let resolvedProxy else { throw Ocp1Error.status(.badONo) }
             return resolvedProxy
-        default:
-            throw Ocp1Error.notConnected
         }
     }
 }
