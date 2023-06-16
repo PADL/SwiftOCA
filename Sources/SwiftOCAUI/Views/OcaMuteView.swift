@@ -39,13 +39,12 @@ public struct OcaMuteView: View {
     }
 
     public var body: some View {
-        Toggle(isOn: object.muteState) {
-        }
-        .toggleStyle(SymbolToggleStyle(systemImage: "speaker.slash.circle.fill", activeColor: .blue))
-        .showProgressIfWaiting(object.state)
-        .refreshable {
-            self.object.state = .initial // forces refresh
-        }
+        Toggle(isOn: object.muteState) {}
+            .toggleStyle(SymbolToggleStyle(systemImage: "speaker.slash.circle.fill", activeColor: .blue))
+            .showProgressIfWaiting(object.state)
+            .refreshable {
+                self.object.state = .initial // forces refresh
+            }
     }
 }
 
