@@ -29,7 +29,7 @@ protocol OcaPropertyRepresentable {
 
 @propertyWrapper
 public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable {
-    var propertyIDs: [OcaPropertyID] {
+    public var propertyIDs: [OcaPropertyID] {
         [propertyID]
     }
     

@@ -75,6 +75,7 @@
 		D3E6E24A2A3C0C7700BF7095 /* OcaMuteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2492A3C0C7700BF7095 /* OcaMuteView.swift */; };
 		D3E6E24B2A3C0C8D00BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3E6E24C2A3C0D6300BF7095 /* libSwiftOCAUI.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */; };
+		D3E6E2512A3C4E2300BF7095 /* ShowProgressIfWaiting.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -143,6 +144,7 @@
 		D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPathIterable.swift; sourceTree = "<group>"; };
 		D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCAUI.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E2492A3C0C7700BF7095 /* OcaMuteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OcaMuteView.swift; sourceTree = "<group>"; };
+		D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowProgressIfWaiting.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -412,6 +414,7 @@
 		D3E6E2472A3C0C7700BF7095 /* SwiftOCAUI */ = {
 			isa = PBXGroup;
 			children = (
+				D3E6E24F2A3C4C6100BF7095 /* ViewModifiers */,
 				D3E6E2482A3C0C7700BF7095 /* Views */,
 			);
 			name = SwiftOCAUI;
@@ -424,6 +427,14 @@
 				D3E6E2492A3C0C7700BF7095 /* OcaMuteView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		D3E6E24F2A3C4C6100BF7095 /* ViewModifiers */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */,
+			);
+			path = ViewModifiers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -605,6 +616,7 @@
 				D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */,
 				D3E6E1C72A3ACA9000BF7095 /* Actuator.swift in Sources */,
 				D3E6E1DF2A3ACAA900BF7095 /* ModelDescription.swift in Sources */,
+				D3E6E2512A3C4E2300BF7095 /* ShowProgressIfWaiting.swift in Sources */,
 				D3E6E23B2A3BD5A100BF7095 /* KeyPathIterable.swift in Sources */,
 				D3E6E1E12A3ACAA900BF7095 /* ManagerDescriptor.swift in Sources */,
 				D3E6E1E72A3ACAAD00BF7095 /* Data+IntegerCodable.swift in Sources */,
