@@ -16,6 +16,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftOCA
 
 private struct RefreshableToInitialState: ViewModifier {
     let property: OcaPropertyRepresentable

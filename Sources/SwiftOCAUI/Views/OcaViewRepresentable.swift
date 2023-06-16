@@ -18,24 +18,6 @@ import Foundation
 import SwiftUI
 import SwiftOCA
 
-private struct ShowProgressIfWaitingViewModifier<T: Codable>: ViewModifier {
-    let state: OcaProperty<T>.State
-    
-    init(_ state: OcaProperty<T>.State) {
-        self.state = state
-    }
-    
-    func body(content: Content) -> some View {
-        if state.isWaiting {
-            ProgressView()
-        } else {
-            content
-        }
-    }
-}
-
-extension View {
-    public func showProgressIfWaiting<T: Codable>(_ state: OcaProperty<T>.State) -> some View {
-        return self.modifier(ShowProgressIfWaitingViewModifier<T>(state))
-    }
+public protocol OcaViewRepresentable {
+    init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification)
 }

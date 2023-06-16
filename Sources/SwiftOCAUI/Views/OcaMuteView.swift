@@ -31,7 +31,7 @@ extension OcaMute {
     }
 }
 
-public struct OcaMuteView: View {
+public struct OcaMuteView: View, OcaViewRepresentable {
     @StateObject var object: OcaMute
 
     public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
