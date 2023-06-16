@@ -27,4 +27,6 @@ enum Ocp1Error: Error, Equatable {
     case invalidMessageSize
     case invalidMessageType
     case responseTimeout
+    case serviceResolutionFailed
+    case unknownServiceType
 }

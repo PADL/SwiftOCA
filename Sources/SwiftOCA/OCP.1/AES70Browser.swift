@@ -14,57 +14,167 @@
 // limitations under the License.
 //
 
-#if canImport(Network)
 import Foundation
-import Network
 import AsyncAlgorithms
+import Socket
 
-public actor AES70Browser {
+extension NetService: @unchecked Sendable {}
+
+public class AES70Browser: NSObject, NetServiceBrowserDelegate {
     public enum ServiceType: String {
-        case tcp = "_oca._tcp"
-        case tcpSecure = "_ocasec._tcp"
-        case udp = "_oca._udp"
-        case tcpWebSocket = "_ocaws._tcp"
+        case tcp = "_oca._tcp."
+        case tcpSecure = "_ocasec._tcp."
+        case udp = "_oca._udp."
+        case tcpWebSocket = "_ocaws._tcp."
     }
     
-    public typealias BrowseResultsChange = (Set<NWBrowser.Result>, Set<NWBrowser.Result.Change>)
+    public enum Result {
+        case didNotSearch(Error)
+        case didFind(NetService)
+        case didRemove(NetService)
+    }
     
-    let browser: NWBrowser
+    private let browser: NetServiceBrowser
+    public let channel: AsyncChannel<Result>
     
-    public let stateUpdateChannel: AsyncChannel<NWBrowser.State>
-    public let browseResultsChangedChannel: AsyncChannel<BrowseResultsChange>
-    
-    public init(serviceType: ServiceType) async {
-        self.stateUpdateChannel = AsyncChannel<NWBrowser.State>()
-        self.browseResultsChangedChannel = AsyncChannel<BrowseResultsChange>()
-
-        let descriptor = NWBrowser.Descriptor.bonjour(type: serviceType.rawValue, domain: "local")
-        let params = NWParameters()
-        params.allowLocalEndpointReuse = true
-        params.acceptLocalOnly = true
-        params.allowFastOpen = true
+    public init(serviceType: ServiceType) {
+        self.browser = NetServiceBrowser()
+        self.channel = AsyncChannel<Result>()
+        super.init()
+        self.browser.delegate = self
         
-        self.browser = NWBrowser(for: descriptor, using: params)
-        
-        self.browser.stateUpdateHandler = { state in
-            Task {
-                await self.stateUpdateChannel.send(state)
-            }
+        Task {
+            self.browser.searchForServices(ofType: serviceType.rawValue, inDomain: "local.")
         }
-
-        self.browser.browseResultsChangedHandler = { (results, changes) in
-            Task {
-                await self.browseResultsChangedChannel.send((results, changes))
-            }
-        }
-        
-        self.browser.start(queue: DispatchQueue.global(qos: .default))
     }
     
     deinit {
-        self.stateUpdateChannel.finish()
-        self.browseResultsChangedChannel.finish()
-        self.browser.cancel()
+        browser.stop()
+    }
+    
+    public func netServiceBrowserWillSearch(_ browser: NetServiceBrowser) {
+    }
+    
+    private func netServiceBrowser(_ browser: NetServiceBrowser, didNotSearch error: Error) {
+        Task {
+            await channel.send(Result.didNotSearch(error))
+        }
+    }
+    
+    public func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
+        Task {
+            await channel.send(Result.didFind(service))
+        }
+    }
+    
+    public func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
+        Task {
+            await channel.send(Result.didRemove(service))
+        }
+    }
+    
+    public func netServiceBrowserDidStopSearch(_ browser: NetServiceBrowser) {
+        channel.finish()
     }
 }
-#endif
+
+fileprivate class AES70ResolverDelegate: NSObject, NetServiceDelegate {
+    typealias ResolutionResult = Result<any SocketAddress, Error>
+    let channel: AsyncChannel<ResolutionResult>
+    
+    init(_ channel: AsyncChannel<ResolutionResult>) {
+        self.channel = channel
+    }
+    
+    deinit {
+        channel.finish()
+    }
+    
+    func netServiceDidResolveAddress(_ sender: NetService) {
+        Task { @MainActor in
+            guard var addresses = sender.addresses else {
+                await channel.send(.failure(Ocp1Error.serviceResolutionFailed))
+                return
+            }
+            
+            let socketAddresses = addresses.compactMap {
+                var address = $0
+            
+                return address.withUnsafeMutableBytes { unbound -> (any SocketAddress)? in
+                    unbound.withMemoryRebound(to: sockaddr.self) { cSockAddr -> (any SocketAddress)? in
+                        switch cSockAddr.baseAddress!.pointee.sa_family {
+                        case UInt8(AF_INET):
+                            return IPv4SocketAddress.withUnsafePointer(cSockAddr.baseAddress!)
+                        case UInt8(AF_INET6):
+                            return IPv6SocketAddress.withUnsafePointer(cSockAddr.baseAddress!)
+                        case UInt8(AF_LINK):
+                            return LinkLayerSocketAddress.withUnsafePointer(cSockAddr.baseAddress!)
+                        default:
+                            return nil
+                        }
+                    }
+                }
+            }
+            
+            guard let socketAddress = socketAddresses.first else {
+                await channel.send(.failure(Ocp1Error.serviceResolutionFailed))
+                return
+            }
+            
+            await channel.send(ResolutionResult.success(socketAddress))
+        }
+    }
+    
+    func netService(_ sender: NetService, didNotResolve errorDict: [String : NSNumber]) {
+        let errorCode = errorDict["errorCode"]!.intValue
+        let errorDomain = errorDict["errorDomain"]!.stringValue
+        
+        Task { @MainActor in
+            await channel.send(.failure(NSError(domain: errorDomain, code: errorCode)))
+        }
+    }
+}
+
+fileprivate protocol AES70OCP1ConnectionFactory {}
+
+extension AES70OCP1ConnectionFactory {
+    init(reassigningSelfTo other: Self) async {
+        self = other
+    }
+}
+
+extension AES70OCP1Connection: AES70OCP1ConnectionFactory {
+    public convenience init(_ netService: NetService) async throws {
+        guard let serviceType = AES70Browser.ServiceType(rawValue: netService.type) else {
+            throw Ocp1Error.unknownServiceType
+        }
+        
+        let channel = AsyncChannel<AES70ResolverDelegate.ResolutionResult>()        
+        let delegate = AES70ResolverDelegate(channel)
+        netService.delegate = delegate
+        netService.schedule(in: RunLoop.main, forMode: .default)
+        netService.resolve(withTimeout: 5)
+        
+        for await result in channel {
+            channel.finish()
+            
+            switch result {
+            case .success(let deviceAddress):
+                switch serviceType {
+                case .tcp:
+                    await self.init(reassigningSelfTo: AES70OCP1TCPConnection(deviceAddress: deviceAddress) as! Self)
+                    return
+                case .udp:
+                    await self.init(reassigningSelfTo: AES70OCP1UDPConnection(deviceAddress: deviceAddress) as! Self)
+                    return
+                default:
+                    throw Ocp1Error.unknownServiceType
+                }
+            case .failure(let error):
+                throw error
+            }
+        }
+        
+        throw Ocp1Error.serviceResolutionFailed
+    }
+}
