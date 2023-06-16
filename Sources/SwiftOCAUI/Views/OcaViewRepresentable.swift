@@ -19,5 +19,7 @@ import SwiftUI
 import SwiftOCA
 
 public protocol OcaView: View {
+    /// initialise a view with a connection. the connection cannot be provided as an environment object
+    /// as it needs to be accessed in the initialised to resolve the object
     init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification)
 }
