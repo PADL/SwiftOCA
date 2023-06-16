@@ -183,8 +183,9 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             switch value {
             case .initial:
                 _ = self.wrappedValue
-                break
+                fallthrough
             case .requesting:
+                await Task.yield()
                 break
             case let .success(value):
                 return try await block(value)
