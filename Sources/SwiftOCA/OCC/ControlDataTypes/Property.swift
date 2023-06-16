@@ -129,7 +129,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         self.setValueTransformer = setValueTransformer
     }
         
-    func getPublisher() -> AnyPublisher<State, Never> {
+    private func getPublisher() -> AnyPublisher<State, Never> {
         subject
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
