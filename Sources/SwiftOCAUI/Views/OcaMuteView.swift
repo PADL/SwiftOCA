@@ -17,30 +17,71 @@
 import SwiftUI
 import SwiftOCA
 
+extension OcaMute {
+    var muteState: Binding<Bool> {
+        Binding<Bool>(get: {
+           if case let .success(muteState) = self.state {
+               return muteState == .muted
+           } else {
+               return false
+           }
+       }, set: { isOn in
+           self.state = .success(isOn ? .muted : .unmuted)
+       })
+    }
+}
+
 public struct OcaMuteView: View {
-    @StateObject var muteObject: OcaMute
+    @StateObject var object: OcaMute
 
     public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
-        self._muteObject = StateObject(wrappedValue: connection.resolve(object: object) as! OcaMute)
+        self._object = StateObject(wrappedValue: connection.resolve(object: object) as! OcaMute)
     }
 
     public var body: some View {
         HStack {
-            if muteObject.state == .initial || muteObject.state == .requesting {
+            if object.state.isWaiting {
                 ProgressView()
             } else {
-                Toggle(isOn: .init(get: {
-                    if case let .success(muteState) = muteObject.state {
-                        return muteState == .muted
-                    } else {
-                        return false
-                    }
-                }, set: { isOn in
-                    muteObject.state = .success(isOn ? .muted : .unmuted)
-                })) {
+                Toggle(isOn: object.muteState) {
                 }
+                .toggleStyle(SymbolToggleStyle(systemImage: "speaker.slash.circle.fill", activeColor: .blue))
             }
         }
         .padding()
+    }
+}
+
+// https://www.appcoda.com/swiftui-togglestyle/
+struct SymbolToggleStyle: ToggleStyle {
+    var systemImage: String = "speaker.slash.circle"
+    var activeColor: Color = .green
+
+    func makeBody(configuration: Configuration) -> some View {
+        HStack {
+            configuration.label
+
+            Spacer()
+
+            RoundedRectangle(cornerRadius: 30)
+                .fill(configuration.isOn ? activeColor : Color(.systemGray))
+                .overlay {
+                    Circle()
+                        .fill(.white)
+                        .padding(3)
+                        .overlay {
+                            Image(systemName: systemImage)
+                                .foregroundColor(configuration.isOn ? activeColor : Color(.systemGray))
+                        }
+                        .offset(x: configuration.isOn ? 10 : -10)
+
+                }
+                .frame(width: 50, height: 32)
+                .onTapGesture {
+                    withAnimation(.spring()) {
+                        configuration.isOn.toggle()
+                    }
+                }
+        }
     }
 }
