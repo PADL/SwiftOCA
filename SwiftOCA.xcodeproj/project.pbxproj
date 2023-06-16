@@ -166,6 +166,7 @@
 		D3028C1C2A3AD57900B8DB42 /* Sources/SwiftOCA */ = {
 			isa = PBXGroup;
 			children = (
+				D3E6E23C2A3C0AE200BF7095 /* OCA */,
 				D3E6E16B2A3ACA6C00BF7095 /* OCC */,
 				D3E6E19E2A3ACA6C00BF7095 /* OCF */,
 				D3E6E1A72A3ACA6C00BF7095 /* OCP.1 */,
@@ -195,23 +196,10 @@
 		D3E6E16B2A3ACA6C00BF7095 /* OCC */ = {
 			isa = PBXGroup;
 			children = (
-				D3E6E16C2A3ACA6C00BF7095 /* SwiftHelpers */,
 				D3E6E1702A3ACA6C00BF7095 /* ControlDataTypes */,
 				D3E6E1822A3ACA6C00BF7095 /* ControlClasses */,
 			);
 			path = OCC;
-			sourceTree = "<group>";
-		};
-		D3E6E16C2A3ACA6C00BF7095 /* SwiftHelpers */ = {
-			isa = PBXGroup;
-			children = (
-				D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */,
-				D3E6E16E2A3ACA6C00BF7095 /* AnyPublisher+Async.swift */,
-				D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */,
-				D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */,
-				D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */,
-			);
-			path = SwiftHelpers;
 			sourceTree = "<group>";
 		};
 		D3E6E1702A3ACA6C00BF7095 /* ControlDataTypes */ = {
@@ -335,8 +323,6 @@
 		D3E6E1A72A3ACA6C00BF7095 /* OCP.1 */ = {
 			isa = PBXGroup;
 			children = (
-				D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */,
-				D3E6E1AF2A3ACA6C00BF7095 /* AES70ClassRegistry.swift */,
 				D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1Connection+Channels.swift */,
 				D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */,
 				D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */,
@@ -375,6 +361,36 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D3E6E23C2A3C0AE200BF7095 /* OCA */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E23E2A3C0B2E00BF7095 /* OCF */,
+				D3E6E23D2A3C0B0200BF7095 /* AES70 */,
+			);
+			path = OCA;
+			sourceTree = "<group>";
+		};
+		D3E6E23D2A3C0B0200BF7095 /* AES70 */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */,
+				D3E6E1AF2A3ACA6C00BF7095 /* AES70ClassRegistry.swift */,
+			);
+			path = AES70;
+			sourceTree = "<group>";
+		};
+		D3E6E23E2A3C0B2E00BF7095 /* OCF */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */,
+				D3E6E16E2A3ACA6C00BF7095 /* AnyPublisher+Async.swift */,
+				D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */,
+				D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */,
+				D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */,
+			);
+			path = OCF;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
