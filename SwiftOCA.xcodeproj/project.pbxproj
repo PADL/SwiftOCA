@@ -58,7 +58,6 @@
 		D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1812A3ACA6C00BF7095 /* BaseDataTypes.swift */; };
 		D3E6E1E42A3ACAA900BF7095 /* NetworkDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1732A3ACA6C00BF7095 /* NetworkDataTypes.swift */; };
 		D3E6E1E52A3ACAA900BF7095 /* LengthTaggedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */; };
-		D3E6E1E62A3ACAAD00BF7095 /* AnyPublisher+Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E16E2A3ACA6C00BF7095 /* AnyPublisher+Async.swift */; };
 		D3E6E1E72A3ACAAD00BF7095 /* Data+IntegerCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */; };
 		D3E6E1E82A3ACAAD00BF7095 /* Data+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */; };
 		D3E6E1EB2A3ACAED00BF7095 /* BinaryCoder in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E1EA2A3ACAED00BF7095 /* BinaryCoder */; };
@@ -80,7 +79,6 @@
 /* Begin PBXFileReference section */
 		D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCA.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hex.swift"; sourceTree = "<group>"; };
-		D3E6E16E2A3ACA6C00BF7095 /* AnyPublisher+Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AnyPublisher+Async.swift"; sourceTree = "<group>"; };
 		D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+IntegerCodable.swift"; sourceTree = "<group>"; };
 		D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LengthTaggedData.swift; sourceTree = "<group>"; };
 		D3E6E1722A3ACA6C00BF7095 /* Property.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Property.swift; sourceTree = "<group>"; };
@@ -401,7 +399,6 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */,
-				D3E6E16E2A3ACA6C00BF7095 /* AnyPublisher+Async.swift */,
 				D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */,
 				D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */,
 				D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */,
@@ -594,7 +591,6 @@
 				D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */,
 				D3E6E1D12A3ACA9A00BF7095 /* EventHandler.swift in Sources */,
 				D3E6E1C82A3ACA9000BF7095 /* Gain.swift in Sources */,
-				D3E6E1E62A3ACAAD00BF7095 /* AnyPublisher+Async.swift in Sources */,
 				D3E6E1B62A3ACA7B00BF7095 /* AES70ClassRegistry.swift in Sources */,
 				D3E6E1C62A3ACA9000BF7095 /* BasicActuators.swift in Sources */,
 				D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */,
