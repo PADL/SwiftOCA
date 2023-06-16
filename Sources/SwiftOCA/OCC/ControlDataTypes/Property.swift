@@ -31,10 +31,8 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     public enum State {
         case initial
         case requesting
-        // TODO: rename to set
         case success(Value)
         case failure(Error)
-        // TODO: add, remove, replace member
     }
     
     public init(from decoder: Decoder) throws {
@@ -164,7 +162,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         let eventData = try decoder.decode(OcaPropertyChangedEventData<Value>.self, from: eventData.eventParameters)
         guard eventData.propertyID == self.propertyID else { return }
         
-        // TODO: support add/delete perhaps with new State cases
         switch eventData.changeType {
         case .currentChanged:
             self.subject.send(.success(eventData.propertyValue))

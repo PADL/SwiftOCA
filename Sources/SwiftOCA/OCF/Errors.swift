@@ -29,4 +29,5 @@ enum Ocp1Error: Error, Equatable {
     case responseTimeout
     case serviceResolutionFailed
     case unknownServiceType
+    case noInitialValue
 }
