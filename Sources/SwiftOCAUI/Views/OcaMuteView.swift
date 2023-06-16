@@ -40,7 +40,7 @@ public struct OcaMuteView: View {
 
     public var body: some View {
         Toggle(isOn: object.muteState) {}
-            .toggleStyle(SymbolToggleStyle(systemImage: "speaker.slash.circle.fill", activeColor: .blue))
+            .toggleStyle(SymbolToggleStyle(systemImage: "speaker.slash.circle.fill", activeColor: .accentColor))
             .showProgressIfWaiting(object.state)
             .refreshableToInitialState(object.$state)
     }
