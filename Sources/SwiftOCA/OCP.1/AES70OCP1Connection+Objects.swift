@@ -25,7 +25,7 @@ extension AES70OCP1Connection {
         }
         
         guard let object: T = AES70ClassRegistry.shared.assign(classIdentification: classIdentification,
-                                                                 objectNumber: objectNumber) else {
+                                                               objectNumber: objectNumber) else {
             return nil
         }
      
