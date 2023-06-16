@@ -356,9 +356,9 @@
 			children = (
 				D3E6E2212A3ACFA000BF7095 /* Assets.xcassets */,
 				D3E6E2252A3ACFA100BF7095 /* ContentView.swift */,
+				D3E6E2222A3ACFA000BF7095 /* SwiftOCATestApp.swift */,
 				D3E6E2232A3ACFA100BF7095 /* Preview Content */,
 				D3E6E2262A3ACFA100BF7095 /* SwiftOCATest.entitlements */,
-				D3E6E2222A3ACFA000BF7095 /* SwiftOCATestApp.swift */,
 			);
 			path = Examples/SwiftOCATest;
 			sourceTree = "<group>";
