@@ -43,7 +43,7 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         self.yPropertyID = yPropertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
-        self.wrappedValue = OcaProperty(propertyID: OcaPropertyID("1"), // invalid
+        self.wrappedValue = OcaProperty(propertyID: OcaPropertyID("1"), // deliberately invalid
                                         getMethodID: getMethodID,
                                         setMethodID: setMethodID)
     }
@@ -63,13 +63,20 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         // TODO: support add/delete
         switch eventData.changeType {
         case .currentChanged:
+            guard case .success(var subjectValue) = wrappedValue.wrappedValue else {
+                throw Ocp1Error.noInitialValue
+            }
+
             let isX = eventData.propertyID == self.xPropertyID
             var xy = OcaVector2D<Value>(x: 0, y: 0)
                         
-            if case .success(let subjectValue) = wrappedValue.wrappedValue {
-                if isX { xy.y = subjectValue.y } else { xy.x = subjectValue.x }
+            if isX {
+                xy.x = eventData.propertyValue
+                xy.y = subjectValue.y
+            } else {
+                xy.x = subjectValue.x
+                xy.y = eventData.propertyValue
             }
-            if isX { xy.x = eventData.propertyValue } else { xy.y = eventData.propertyValue }
             wrappedValue.wrappedValue = .success(xy)
         default:
             throw Ocp1Error.unhandledEvent

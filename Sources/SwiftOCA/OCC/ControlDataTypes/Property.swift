@@ -66,23 +66,19 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable, Oc
         nonmutating set { fatalError() }
     }
     
-    typealias GetValueCallback = (OcaRoot) async throws -> Value
-    private let getValueCallback: GetValueCallback?
-    
-    typealias SetValueCallback = (OcaRoot, Value) async throws -> Void
-    private let setValueCallback: SetValueCallback?
+    /// setValueTransformer is a helper for OcaBoundedProperty
+    typealias SetValueTransformer = (OcaRoot, Value) async throws -> Encodable
+    private let setValueTransformer: SetValueTransformer?
     
     init(propertyID: OcaPropertyID,
          getMethodID: OcaMethodID,
          setMethodID: OcaMethodID? = nil,
-         getValue: GetValueCallback? = nil,
-         setValue: SetValueCallback? = nil) {
+         setValueTransformer: SetValueTransformer? = nil) {
         self.propertyID = propertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
         self.subject = CurrentValueSubject(State.initial)
-        self.getValueCallback = getValue
-        self.setValueCallback = setValue
+        self.setValueTransformer = setValueTransformer
     }
     
     public var projectedValue: AnyPublisher<State, Never> {
@@ -98,11 +94,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable, Oc
     private func getValueAndSubscribe(_ instance: OcaRoot) async throws -> Value {
         let value: Value
         
-        if let getValueCallback {
-            value = try await getValueCallback(instance)
-        } else {
-            value = try await instance.sendCommandRrq(methodID: getMethodID)
-        }
+        value = try await instance.sendCommandRrq(methodID: getMethodID)
         try await instance.subscribe()
         return value
     }
@@ -110,12 +102,16 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyRepresentable, Oc
     private func setValueIfMutable(_ instance: OcaRoot, _ value: Value) async throws {
         guard let setMethodID else { throw Ocp1Error.status(.notImplemented) }
         
-        if let setValueCallback {
-            try await setValueCallback(instance, value)
+        let newValue: Encodable
+        
+        if let setValueTransformer {
+            newValue = try await setValueTransformer(instance, value)
         } else {
-            // we'll get a notification so, don't require a reply
-            try await instance.sendCommand(methodID: setMethodID, parameter: value)
+            newValue = value
         }
+        
+        // we'll get a notification so, don't require a reply
+        try await instance.sendCommand(methodID: setMethodID, parameter: newValue)
     }
     
     private func perform(_ instance: OcaRoot, _ block: @escaping (_ storage: Self) async throws -> Value) {

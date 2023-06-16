@@ -32,21 +32,19 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyRepresentable, OcaP
 
     public var wrappedValue: OcaProperty<OcaBoundedPropertyValue<Value>>
     
+    public var projectedValue: AnyPublisher<OcaProperty<OcaBoundedPropertyValue<Value>>.State, Never> {
+        return wrappedValue.getPublisher()
+    }
+
     init(propertyID: OcaPropertyID,
          getMethodID: OcaMethodID,
          setMethodID: OcaMethodID? = nil) {
         self.wrappedValue = OcaProperty(propertyID: propertyID,
                                         getMethodID: getMethodID,
                                         setMethodID: setMethodID,
-                                        setValue: { instance, value in
-            try await instance.sendCommandRrq(methodID: setMethodID!, parameter: value.value)
-        })
+                                        setValueTransformer: { $1.value })
     }
     
-    public var projectedValue: AnyPublisher<OcaProperty<OcaBoundedPropertyValue<Value>>.State, Never> {
-        return wrappedValue.getPublisher()
-    }
-
     func onEvent(_ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
         
