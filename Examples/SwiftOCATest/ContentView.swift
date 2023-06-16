@@ -24,12 +24,5 @@ struct ContentView: View {
             OcaMuteView(connection, object: id)
         }
         .padding()
-        .task {
-            do {
-                try await self.connection.connect()
-            } catch(let error) {
-                print("Connection error: \(error)")
-            }
-        }
     }
 }

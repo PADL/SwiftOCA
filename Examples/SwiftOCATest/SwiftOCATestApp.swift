@@ -25,6 +25,13 @@ struct SwiftOCATestApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView(connection)
+                .task {
+                    do {
+                        try await self.connection.connect()
+                    } catch(let error) {
+                        print("Connection error: \(error)")
+                    }
+                }
         }
     }
 }
