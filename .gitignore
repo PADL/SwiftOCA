@@ -1,3 +1,6 @@
 
 \.DS_Store
-SwiftOCA.xcodeproj/xcuserdata
+SwiftOCA.xcodeproj/project.xcworkspace/xcuserdata/
+SwiftOCA.xcodeproj/xcuserdata/
+Package.resolved
+.build/
