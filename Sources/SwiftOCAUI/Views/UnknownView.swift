@@ -17,27 +17,16 @@
 import SwiftUI
 import SwiftOCA
 
-public var viewMap: [ObjectIdentifier: any OcaView.Type] = [
-    ObjectIdentifier(OcaMute.self) : OcaMuteView.self
-]
-
-public struct OcaDetailView: OcaView {
+struct OcaUnknownView: OcaView {
+    typealias Object = OcaRoot
     @StateObject var object: OcaRoot
 
-    public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
-        self._object = StateObject(wrappedValue: connection.resolve(object: object)! )
-    }
-    
-    public init(_ object: OcaRoot) {
+    init(_ object: OcaRoot) {
         self._object = StateObject(wrappedValue: object)
     }
     
     public var body: some View {
-        // FIXME: don't use type-erased view
-        if let viewType = viewMap[ObjectIdentifier(type(of: object))] {
-            AnyView(viewType.init(object))
-        } else {
-            OcaUnknownView(object)
-        }
+        OcaNavigationLabel(object)
+            .font(.system(size: 45, weight: .bold, design: .default))
     }
 }

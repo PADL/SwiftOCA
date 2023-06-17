@@ -17,18 +17,16 @@
 import SwiftUI
 import SwiftOCA
 
-public struct OcaRootBlockView: View, OcaView {
-    typealias Object = OcaBlock
-    
-    @StateObject var object: Object
+public struct OcaRootBlockView: OcaView {
+    @StateObject var object: OcaBlock
     @State var oNoPath = NavigationPath()
     
     public init(_ connection: AES70OCP1Connection) {
         self._object = StateObject(wrappedValue: connection.rootBlock)
     }
     
-    init(_ object: Object) {
-        self._object = StateObject(wrappedValue: object)
+    public init(_ object: OcaRoot) {
+        self._object = StateObject(wrappedValue: object as! OcaBlock)
     }
 
     public var body: some View {

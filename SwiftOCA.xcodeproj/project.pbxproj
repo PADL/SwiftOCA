@@ -13,6 +13,7 @@
 		D3DA69E62A3DCAA5001250A1 /* Array+Extras.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69E52A3DCAA5001250A1 /* Array+Extras.swift */; };
 		D3DA69EB2A3DCD60001250A1 /* NavigationStackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69EA2A3DCD60001250A1 /* NavigationStackView.swift */; };
 		D3DA69EE2A3DD350001250A1 /* Task+Timeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69EC2A3DD329001250A1 /* Task+Timeout.swift */; };
+		D3DA69F02A3DEE4E001250A1 /* UnknownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69EF2A3DEE4E001250A1 /* UnknownView.swift */; };
 		D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */; };
 		D3E6E1B42A3ACA7B00BF7095 /* AES70OCP1Connection+Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */; };
 		D3E6E1B52A3ACA7B00BF7095 /* AES70OCP1Connection+Subscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */; };
@@ -97,6 +98,7 @@
 		D3DA69E52A3DCAA5001250A1 /* Array+Extras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extras.swift"; sourceTree = "<group>"; };
 		D3DA69EA2A3DCD60001250A1 /* NavigationStackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackView.swift; sourceTree = "<group>"; };
 		D3DA69EC2A3DD329001250A1 /* Task+Timeout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Task+Timeout.swift"; sourceTree = "<group>"; };
+		D3DA69EF2A3DEE4E001250A1 /* UnknownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnknownView.swift; sourceTree = "<group>"; };
 		D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCA.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hex.swift"; sourceTree = "<group>"; };
 		D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+IntegerCodable.swift"; sourceTree = "<group>"; };
@@ -489,6 +491,7 @@
 				D3DA69E32A3DCA75001250A1 /* NavigationLabel.swift */,
 				D3E6E2542A3C54CE00BF7095 /* View.swift */,
 				D3E6E25C2A3D2D2500BF7095 /* DetailView.swift */,
+				D3DA69EF2A3DEE4E001250A1 /* UnknownView.swift */,
 				D3DA69E72A3DCD22001250A1 /* Workers */,
 			);
 			path = Views;
@@ -732,6 +735,7 @@
 				D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */,
 				D3DA69E62A3DCAA5001250A1 /* Array+Extras.swift in Sources */,
 				D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */,
+				D3DA69F02A3DEE4E001250A1 /* UnknownView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
