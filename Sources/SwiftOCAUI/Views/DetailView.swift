@@ -18,7 +18,9 @@ import SwiftUI
 import SwiftOCA
 
 public var viewMap: [ObjectIdentifier: any OcaView.Type] = [
-    ObjectIdentifier(OcaMute.self) : OcaMuteView.self
+    ObjectIdentifier(OcaMute.self) : OcaMuteView.self,
+    ObjectIdentifier(OcaBlock.self) : OcaBlockNavigationStackView.self,
+    ObjectIdentifier(OcaMatrix.self) : OcaMatrixNavigationSplitView.self
 ]
 
 public struct OcaDetailView: OcaView {

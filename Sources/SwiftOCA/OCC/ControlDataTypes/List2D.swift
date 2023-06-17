@@ -17,27 +17,38 @@
 import Foundation
 
 public struct OcaList2D<T> {
-    let nX, nY: OcaUint16
+    public let nX, nY: Int
     var items: Array<Array<T>>
-    
-    public init(nX: OcaUint16, nY: OcaUint16) {
+
+    public init(nX: Int, nY: Int) {
         self.nX = nX
         self.nY = nY
         self.items = Array<Array<T>>()
-        self.items.reserveCapacity(Int(self.nX))
+        self.items.reserveCapacity(self.nX)
         for x in 0..<self.nX {
             self.items[Int(x)] = Array<T>()
-            self.items[Int(x)].reserveCapacity(Int(self.nY))
+            self.items[Int(x)].reserveCapacity(self.nY)
         }
+    }
+    
+    public init(nX: OcaUint16, nY: OcaUint16) {
+        self.init(nX: Int(nX), nY: Int(nY))
+    }
+    
+    public func item(x: Int, y: Int) -> T {
+        items[x][y]
+    }
 
+    public func item(x: OcaUint16, y: OcaUint16) -> T {
+        item(x: Int(x), y: Int(y))
     }
 }
 
 extension OcaList2D: Codable where T: Codable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        self.nX = try container.decode(OcaUint16.self)
-        self.nY = try container.decode(OcaUint16.self)
+        self.nX = Int(try container.decode(OcaUint16.self))
+        self.nY = Int(try container.decode(OcaUint16.self))
     
         self.items = Array<Array<T>>()
         self.items.reserveCapacity(Int(self.nX))
@@ -46,6 +57,17 @@ extension OcaList2D: Codable where T: Codable {
             self.items[Int(x)].reserveCapacity(Int(self.nY))
             for y in 0..<self.nY {
                 self.items[Int(x)][Int(y)] = try container.decode(T.self)
+            }
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(OcaUint16(self.nX))
+        try container.encode(OcaUint16(self.nY))
+        for x in 0..<self.nX {
+            for y in 0..<self.nY {
+                try container.encode(self.items[x][y])
             }
         }
     }

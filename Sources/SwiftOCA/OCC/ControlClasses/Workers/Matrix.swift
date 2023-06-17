@@ -109,7 +109,7 @@ extension OcaMatrix {
     }
 
     @MainActor
-    func resolveProxy<T: OcaRoot>() async throws -> T {
+    public func resolveProxy<T: OcaRoot>() async throws -> T {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
         return try await self._proxy.onCompletion(self) { proxyObjectNumber in

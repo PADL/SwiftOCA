@@ -17,27 +17,28 @@
 import SwiftUI
 import SwiftOCA
 
-struct OcaBlockNavigationStackView: View {
+struct OcaBlockNavigationStackView: OcaView {
     @StateObject var object: OcaBlock
-    @Binding var oNoPath: NavigationPath
+    @Environment(\.navigationPath) var oNoPath
     @State var members: [OcaRoot]?
     @State var membersMap: [OcaONo:OcaRoot]?
     @State var selectedONo: OcaONo? = nil
 
+    init(_ object: OcaRoot) {
+        self._object = StateObject(wrappedValue: object as! OcaBlock)
+    }
+
     public var body: some View {
         Group {
             if let members {
-                NavigationStack(path: $oNoPath) {
+                NavigationStack(path: oNoPath) {
                     List(members, selection: $selectedONo) { member in
                         NavigationLink(value: member.objectNumber) {
                             OcaNavigationLabel(member)
                         }
                     }
                     .navigationDestination(for: OcaONo.self) { oNo in
-                        let object = self.membersMap![oNo]
-                        if let object = object as? OcaBlock {
-                            OcaBlockNavigationStackView(object: object, oNoPath: $oNoPath)
-                        } else if let object {
+                        if let object = self.membersMap![oNo] {
                             OcaDetailView(object)
                         }
                     }

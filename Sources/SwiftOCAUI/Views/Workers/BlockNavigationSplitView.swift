@@ -17,12 +17,16 @@
 import SwiftUI
 import SwiftOCA
 
-struct OcaBlockNavigationSplitView: View {
+struct OcaBlockNavigationSplitView: OcaView {
     @StateObject var object: OcaBlock
-    @Binding var oNoPath: NavigationPath
+    @Environment(\.navigationPath) var oNoPath
     @State var members: [OcaRoot]?
     @State var membersMap: [OcaONo:OcaRoot]?
     @State var selectedONo: OcaONo? = nil
+
+    init(_ object: OcaRoot) {
+        self._object = StateObject(wrappedValue: object as! OcaBlock)
+    }
 
     var selectedObject: OcaRoot? {
         guard let selectedONo = selectedONo,
@@ -45,9 +49,7 @@ struct OcaBlockNavigationSplitView: View {
                     }
                 } detail: {
                     Group {
-                        if let selectedObject = selectedObject as? OcaBlock {
-                            OcaBlockNavigationStackView(object: selectedObject, oNoPath: $oNoPath)
-                        } else if let selectedObject = selectedObject {
+                        if let selectedObject = selectedObject {
                             OcaDetailView(selectedObject)
                         }
                     }

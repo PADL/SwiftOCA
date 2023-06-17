@@ -17,23 +17,13 @@
 import SwiftUI
 import SwiftOCA
 
-extension OcaBlock {
+private struct NavigationPathKey: EnvironmentKey {
+    static let defaultValue = Binding<NavigationPath>(get: { NavigationPath() }, set: { _ in })
 }
 
-public struct OcaBlockView: OcaView {
-    @StateObject var object: OcaBlock
-
-    public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
-        self._object = StateObject(wrappedValue: connection.resolve(object: object) as! OcaBlock )
-    }
-    
-    public init(_ object: OcaRoot) {
-        self._object = StateObject(wrappedValue: object as! OcaBlock)
-    }
-
-    public var body: some View {
-        if object.objectNumber == OcaRootBlockONo {
-        } else {
-        }
+extension EnvironmentValues {
+    var navigationPath: Binding<NavigationPath> {
+        get { self[NavigationPathKey.self] }
+        set { self[NavigationPathKey.self] = newValue }
     }
 }
