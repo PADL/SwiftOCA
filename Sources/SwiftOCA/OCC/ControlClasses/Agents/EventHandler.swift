@@ -23,3 +23,7 @@ public class OcaEventHandler: OcaAgent {
         return .notImplemented
     }
 }
+
+protocol OcaPropertyChangeEventNotifiable: OcaPropertyRepresentable {
+    func onEvent(_ eventData: Ocp1EventData) throws
+}

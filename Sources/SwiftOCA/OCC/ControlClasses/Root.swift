@@ -122,6 +122,14 @@ extension OcaRoot {
             await keyPath.value.refresh(self)
         }
     }
+    
+    var isSubscribed: Bool {
+        get async throws {
+            guard let connectionDelegate else { throw Ocp1Error.notConnected }
+            let event = OcaEvent(emitterONo: self.objectNumber, eventID: OcaPropertyChangedEventID)
+            return await connectionDelegate.isSubscribed(event: event)
+        }
+    }
 }
 
 struct OcaGetPathParameters: Codable {

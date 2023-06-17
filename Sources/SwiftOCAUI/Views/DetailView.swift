@@ -17,28 +17,23 @@
 import SwiftUI
 import SwiftOCA
 
-extension OcaRoot {
-    var navigationLabel: String {
-        if case let .success(role) = role {
-            return role
-        } else {
-            return String(format: "%02X", objectNumber)
-        }
-    }
-}
-
-struct OcaNavigationLabel: View, OcaView {
+public struct OcaDetailView: OcaView {
     typealias Object = OcaRoot
     
     @StateObject var object: Object
+
+    public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
+        self._object = StateObject(wrappedValue: connection.resolve(object: object)! )
+    }
     
-    init(_ object: Object) {
+    init(_ object: OcaRoot) {
         self._object = StateObject(wrappedValue: object)
     }
 
-
     public var body: some View {
-        Text(object.navigationLabel)
+        Group {
+            OcaNavigationLabel(object)
+                .font(.system(size: 45, weight: .bold, design: .default))
+        }
     }
 }
-

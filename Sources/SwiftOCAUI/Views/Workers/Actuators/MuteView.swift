@@ -32,10 +32,12 @@ fileprivate extension OcaMute {
 }
 
 public struct OcaMuteView: OcaView {
-    @StateObject var object: OcaMute
+    typealias Object = OcaMute
+    
+    @StateObject var object: Object
 
-    public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
-        self._object = StateObject(wrappedValue: connection.resolve(object: object) as! OcaMute)
+    init(_ object: Object) {
+        self._object = StateObject(wrappedValue: object)
     }
 
     public var body: some View {

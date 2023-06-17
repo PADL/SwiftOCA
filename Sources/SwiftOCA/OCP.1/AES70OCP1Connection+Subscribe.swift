@@ -20,6 +20,11 @@ private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 
 extension AES70OCP1Connection {
     @MainActor
+    func isSubscribed(event: OcaEvent) -> Bool {
+        return subscriptions[event] != nil
+    }
+    
+    @MainActor
     func addSubscription(event: OcaEvent,
                          callback: @escaping AES70SubscriptionCallback) async throws {
         if subscriptions[event] != nil {

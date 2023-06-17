@@ -17,14 +17,21 @@
 import SwiftUI
 import SwiftOCA
 
-public struct OcaRootView: OcaView {
-    @StateObject var object: OcaRoot
-
-    public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
-        self._object = StateObject(wrappedValue: connection.resolve(object: object)! )
+public struct OcaRootBlockView: View, OcaView {
+    typealias Object = OcaBlock
+    
+    @StateObject var object: Object
+    @State var oNoPath = NavigationPath()
+    
+    public init(_ connection: AES70OCP1Connection) {
+        self._object = StateObject(wrappedValue: connection.rootBlock)
+    }
+    
+    init(_ object: Object) {
+        self._object = StateObject(wrappedValue: object)
     }
 
     public var body: some View {
-        Text(String(format: "%02X", object.objectNumber))
+        OcaNavigationSplitView(object: object, oNoPath: $oNoPath)
     }
 }

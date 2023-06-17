@@ -17,15 +17,16 @@
 import SwiftUI
 import SwiftOCA
 
-public struct OcaRootBlockView: View {
-    @StateObject var object: OcaBlock
-    @State var members: [OcaRoot] = []
-
-    public init(_ connection: AES70OCP1Connection) {
-        self._object = StateObject(wrappedValue: connection.rootBlock)
+// TODO: cache array values in a dictionary
+extension Array where Element: OcaRoot {
+    func object(identifiedBy oNo: OcaONo) -> OcaRoot? {
+        self.first(where: {
+            $0.objectNumber == oNo
+        })
     }
-
-    public var body: some View {
-        OcaBlockView(object: object)
+    
+    var map: [OcaONo: OcaRoot] {
+        Dictionary(uniqueKeysWithValues: self.map { ($0.objectNumber, $0) })
     }
 }
+

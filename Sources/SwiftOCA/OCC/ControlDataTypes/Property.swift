@@ -34,11 +34,6 @@ public extension OcaPropertyRepresentable {
     }
 }
 
-protocol OcaPropertyChangeEventNotifiable: OcaPropertyRepresentable {
-    @MainActor
-    func onEvent(_ eventData: Ocp1EventData) throws
-}
-
 @propertyWrapper
 public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifiable {
     /// All property IDs supported by this property
@@ -152,7 +147,13 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         let value: Value
         
         value = try await instance.sendCommandRrq(methodID: getMethodID)
-        try await instance.subscribe()
+        
+        do {
+            try await instance.subscribe()
+        } catch Ocp1Error.status(.invalidRequest) {
+            // FIXME: in our device implementation not all properties can be subcribed to
+        }
+    
         return value
     }
     
@@ -168,18 +169,21 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             newValue = value
         }
         
-        // we'll get a notification so, don't require a reply
-        try await instance.sendCommand(methodID: setMethodID, parameter: newValue)
+        if try await instance.isSubscribed {
+            // we'll get a notification (hoepfully) so, don't require a reply
+            try await instance.sendCommand(methodID: setMethodID, parameter: newValue)
+        } else {
+            try await instance.sendCommandRrq(methodID: setMethodID, parameter: newValue)
+        }
     }
     
-    @MainActor
     private func perform(_ instance: OcaRoot, _ block: @escaping (_ storage: Self) async throws -> Value) async {
         guard let connectionDelegate = instance.connectionDelegate else {
             subject.send(.failure(Ocp1Error.notConnected))
             return
         }
 
-        if connectionDelegate.requestMonitor == nil {
+        if await connectionDelegate.requestMonitor == nil {
             // connection state semaphore will be signalled when we are connected
             await connectionDelegate.connectionStateSemaphore.wait()
         }
@@ -190,20 +194,22 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             let value = try await block(self)
             subject.send(.success(value))
         } catch let error {
-            debugPrint("performer received error \(error)")
+            debugPrint("property handler received error from device: \(error)")
             subject.send(.failure(error))
         }
         
-        instance.objectWillChange.send()
+        Task { @MainActor in
+            instance.objectWillChange.send()
+        }
     }
     
-    @MainActor
     public func refresh(_ instance: OcaRoot) async {
         subject.send(.initial)
-        instance.objectWillChange.send()
+        Task { @MainActor in
+            instance.objectWillChange.send()
+        }
     }
     
-    @MainActor
     func onEvent(_ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
         
@@ -222,21 +228,31 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     @MainActor
     func onCompletion<T>(_ instance: OcaRoot,
                          _ block: @escaping (_ value: Value) async throws -> T) async throws -> T {
-        repeat {
-            if case .initial = self.subject.value {
-                await perform(instance) {
-                    try await $0.getValueAndSubscribe(instance)
+        let resolveTask = Task.detached {
+            guard let connectionDelegate = instance.connectionDelegate else { throw Ocp1Error.notConnected }
+            return try await withTimeout(seconds: connectionDelegate.responseTimeout) {
+                if case .initial = self.subject.value {
+                    await perform(instance) {
+                        try await $0.getValueAndSubscribe(instance)
+                    }
                 }
+                
+                if case .success(let value) = self.subject.value {
+                    return try await block(value)
+                } else if case .failure(let error) = self.subject.value {
+                    throw error
+                }
+                await Task.yield()
+                fatalError("should not be reached")
             }
-            
-            if case .success(let value) = self.subject.value {
-                return try await block(value)
-            } else if case .failure(let error) = self.subject.value {
-                throw error
-            }
-        } while self.subject.value.isRequesting
+        }
         
-        fatalError("should not be reached")
+        switch await resolveTask.result {
+        case .success(let value):
+            return value
+        case .failure(let error):
+            throw error
+        }
     }
 }
 

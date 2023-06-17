@@ -56,7 +56,6 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         try self.wrappedValue.encode(to: encoder)
     }
 
-    @MainActor
     public func refresh(_ instance: OcaRoot) async {
         await wrappedValue.refresh(instance)
     }
@@ -69,7 +68,6 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         wrappedValue.currentValue
     }
 
-    @MainActor
     func onEvent(_ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
         
