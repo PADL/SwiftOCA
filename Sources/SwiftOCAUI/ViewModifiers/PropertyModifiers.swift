@@ -18,7 +18,7 @@ import Foundation
 import SwiftUI
 import SwiftOCA
 
-struct PropertyModifiers: ViewModifier {
+private struct PropertyModifiers: ViewModifier {
     let property: any OcaPropertyRepresentable
     
     init(_ property: any OcaPropertyRepresentable) {
