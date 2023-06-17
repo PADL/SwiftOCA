@@ -79,6 +79,7 @@
 		D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */; };
 		D3E6E25B2A3D28DD00BF7095 /* AsyncExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */; };
 		D3E6E25D2A3D2D2500BF7095 /* OcaRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E25C2A3D2D2500BF7095 /* OcaRootView.swift */; };
+		D3E6E25F2A3D2FCD00BF7095 /* OcaBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E25E2A3D2FCD00BF7095 /* OcaBlockView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -150,6 +151,7 @@
 		D3E6E2522A3C4EA300BF7095 /* RefreshableToInitialState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableToInitialState.swift; sourceTree = "<group>"; };
 		D3E6E2542A3C54CE00BF7095 /* OcaViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaViewRepresentable.swift; sourceTree = "<group>"; };
 		D3E6E25C2A3D2D2500BF7095 /* OcaRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaRootView.swift; sourceTree = "<group>"; };
+		D3E6E25E2A3D2FCD00BF7095 /* OcaBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaBlockView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -430,6 +432,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E2492A3C0C7700BF7095 /* OcaMuteView.swift */,
+				D3E6E25E2A3D2FCD00BF7095 /* OcaBlockView.swift */,
 				D3E6E25C2A3D2D2500BF7095 /* OcaRootView.swift */,
 				D3E6E2542A3C54CE00BF7095 /* OcaViewRepresentable.swift */,
 			);
@@ -661,6 +664,7 @@
 			files = (
 				D3E6E25D2A3D2D2500BF7095 /* OcaRootView.swift in Sources */,
 				D3E6E24A2A3C0C7700BF7095 /* OcaMuteView.swift in Sources */,
+				D3E6E25F2A3D2FCD00BF7095 /* OcaBlockView.swift in Sources */,
 				D3E6E2562A3C550500BF7095 /* OcaViewRepresentable.swift in Sources */,
 				D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */,
 				D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */,
