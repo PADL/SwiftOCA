@@ -17,15 +17,23 @@
 import SwiftUI
 import SwiftOCA
 
-struct Property: Identifiable {
+struct Property: Identifiable, CustomStringConvertible {
     typealias ID = Int
     
     var id: ID {
         value.propertyIDs.hashValue
     }
     
-    var propertyIDString: String {
-        return value.propertyIDs.map { String(describing: $0) }.joined(separator: ",")
+    var idString: String {
+        value.propertyIDs.map { String(describing: $0) }.joined(separator: ",")
+    }
+    
+    var isRequesting: Bool {
+        value.isRequesting
+    }
+    
+    var description: String {
+        value.description
     }
     
     var name: String
@@ -43,11 +51,19 @@ struct OcaUnknownView: OcaView {
     public var body: some View {
         Table(of: Property.self) {
             TableColumn("Name", value: \.name)
-            TableColumn("ID", value: \.propertyIDString)
-            TableColumn("Value", value: \.value.description)
+            TableColumn("ID", value: \.idString)
+            TableColumn("Value") {
+                if $0.isRequesting {
+                    ProgressView()
+                } else {
+                    Text($0.description)
+                }
+            }
         } rows: {
             let allProperties: [Property] = object.allProperties.map { (propertyName, propertyValue) in
                 Property(name: propertyName, value: propertyValue)
+            }.sorted {
+                $0.idString < $1.idString
             }
             ForEach(allProperties) { property in
                 TableRow(property)
