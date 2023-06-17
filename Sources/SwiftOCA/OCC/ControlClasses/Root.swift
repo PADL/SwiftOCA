@@ -98,8 +98,8 @@ extension OcaRoot {
         }
     }
     
-    public var allProperties: [any OcaPropertyRepresentable] {
-        Mirror.allKeyPaths(for: self).map { $0.value }
+    public var allProperties: [String: any OcaPropertyRepresentable] {
+        Mirror.allKeyPaths(for: self)
     }
     
     public func subscribe() async throws {
