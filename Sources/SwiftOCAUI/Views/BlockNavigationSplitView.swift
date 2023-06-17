@@ -17,30 +17,41 @@
 import SwiftUI
 import SwiftOCA
 
-struct OcaNavigationStackView: View {
+struct OcaBlockNavigationSplitView: View {
     @StateObject var object: OcaBlock
     @Binding var oNoPath: NavigationPath
     @State var members: [OcaRoot]?
     @State var membersMap: [OcaONo:OcaRoot]?
     @State var selectedONo: OcaONo? = nil
 
+    var selectedObject: OcaRoot? {
+        guard let selectedONo = selectedONo,
+              let membersMap,
+              let object = membersMap[selectedONo] else {
+            return nil
+        }
+        
+        return object
+    }
+    
     public var body: some View {
         Group {
             if let members {
-                NavigationStack(path: $oNoPath) {
+                NavigationSplitView {
                     List(members, selection: $selectedONo) { member in
-                        NavigationLink(value: member.objectNumber) {
+                        Group {
                             OcaNavigationLabel(member)
                         }
                     }
-                    .navigationDestination(for: OcaONo.self) { oNo in
-                        let object = self.membersMap![oNo]
-                        if let object = object as? OcaBlock {
-                            OcaNavigationStackView(object: object, oNoPath: $oNoPath)
-                        } else if let object {
-                            OcaDetailView(object)
+                } detail: {
+                    Group {
+                        if let selectedObject = selectedObject as? OcaBlock {
+                            OcaBlockNavigationStackView(object: selectedObject, oNoPath: $oNoPath)
+                        } else if let selectedObject = selectedObject {
+                            OcaDetailView(selectedObject)
                         }
                     }
+                    .id(selectedONo)
                 }
             } else {
                 ProgressView()
@@ -51,7 +62,7 @@ struct OcaNavigationStackView: View {
                 members = try await object.resolveMembers()
                 membersMap = members?.map
             } catch {
-                debugPrint("OcaNavigationStackView: error \(error)")
+                debugPrint("OcaNavigationSplitView: error \(error)")
             }
         }
     }

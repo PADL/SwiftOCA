@@ -30,6 +30,6 @@ public struct OcaRootBlockView: OcaView {
     }
 
     public var body: some View {
-        OcaNavigationSplitView(object: object, oNoPath: $oNoPath)
+        OcaBlockNavigationSplitView(object: object, oNoPath: $oNoPath)
     }
 }
