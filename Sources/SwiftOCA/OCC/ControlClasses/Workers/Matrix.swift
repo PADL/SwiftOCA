@@ -96,8 +96,8 @@ extension OcaMatrix {
             var resolved = SparseMembers(nX: value.nX, nY: value.nY)
             let proxyClassID = type(of: proxy).classIdentification
 
-            for x in 0..<Int(value.nX) {
-                for y in 0..<Int(value.nY) {
+            for x in 0..<value.nX {
+                for y in 0..<value.nY {
                     let objectID = OcaObjectIdentification(oNo: value.items[x][y],
                                                            classIdentification: proxyClassID)
                     resolved.items[x][y] = connectionDelegate.resolve(object: objectID)
