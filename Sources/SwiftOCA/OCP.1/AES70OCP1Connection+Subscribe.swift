@@ -31,6 +31,7 @@ extension AES70OCP1Connection {
             throw Ocp1Error.alreadySubscribedToEvent
         }
         
+        
         try await subscriptionManager.addSubscription(event: event,
                                                       subscriber: subscriber,
                                                       subscriberContext: OcaBlob(),

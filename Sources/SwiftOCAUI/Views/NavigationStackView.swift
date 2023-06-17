@@ -27,30 +27,17 @@ struct OcaNavigationStackView: View {
     public var body: some View {
         NavigationStack(path: $oNoPath) {
             List(members, selection: $selectedONo) { member in
-                if let member = member as? OcaBlock {
-                    //NavigationLink(member.navigationLabel, value: member.objectNumber)
-                    OcaDetailView(member)
-
-                } else {
-                    OcaDetailView(member)
-                }
+                NavigationLink(member.navigationLabel, value: member.objectNumber)
             }
-            /*
             .navigationDestination(for: OcaONo.self) { oNo in
                 let object = self.membersMap[oNo]
                 if let object = object as? OcaBlock {
-                    //OcaNavigationStackView(object: object, oNoPath: $oNoPath)
-                    OcaDetailView(object)
+                    OcaNavigationStackView(object: object, oNoPath: $oNoPath)
                 } else if let object {
                     OcaDetailView(object)
                 }
-            }*/
+            }
         }
-        /*
-        .onChange(of: selectedONo) { newValue in
-            oNoPath.append(newValue!)
-        }
-         */
         .task {
             members = (try? await object.resolveMembers()) ?? []
             membersMap = members.map

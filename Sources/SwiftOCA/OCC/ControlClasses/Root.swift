@@ -103,7 +103,7 @@ extension OcaRoot {
     }
     
     public func subscribe() async throws {
-        guard let connectionDelegate else { throw Ocp1Error.notConnected }
+        guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let event = OcaEvent(emitterONo: self.objectNumber, eventID: OcaPropertyChangedEventID)
         do {
             try await connectionDelegate.addSubscription(event: event, callback: propertyDidChange)
@@ -112,7 +112,7 @@ extension OcaRoot {
     }
     
     public func unsubscribe() async throws {
-        guard let connectionDelegate else { throw Ocp1Error.notConnected }
+        guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let event = OcaEvent(emitterONo: self.objectNumber, eventID: OcaPropertyChangedEventID)
         try await connectionDelegate.removeSubscription(event: event)
     }
@@ -125,7 +125,7 @@ extension OcaRoot {
     
     var isSubscribed: Bool {
         get async throws {
-            guard let connectionDelegate else { throw Ocp1Error.notConnected }
+            guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
             let event = OcaEvent(emitterONo: self.objectNumber, eventID: OcaPropertyChangedEventID)
             return await connectionDelegate.isSubscribed(event: event)
         }

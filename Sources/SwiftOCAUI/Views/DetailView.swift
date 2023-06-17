@@ -31,7 +31,9 @@ public struct OcaDetailView: OcaView {
     }
 
     public var body: some View {
-        Group {
+        if let object = object as? OcaMute {
+            OcaMuteView(object)
+        } else {
             OcaNavigationLabel(object)
                 .font(.system(size: 45, weight: .bold, design: .default))
         }

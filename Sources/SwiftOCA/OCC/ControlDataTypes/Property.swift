@@ -179,7 +179,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     
     private func perform(_ instance: OcaRoot, _ block: @escaping (_ storage: Self) async throws -> Value) async {
         guard let connectionDelegate = instance.connectionDelegate else {
-            subject.send(.failure(Ocp1Error.notConnected))
+            subject.send(.failure(Ocp1Error.noConnectionDelegate))
             return
         }
 
@@ -229,7 +229,10 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     func onCompletion<T>(_ instance: OcaRoot,
                          _ block: @escaping (_ value: Value) async throws -> T) async throws -> T {
         let resolveTask = Task.detached {
-            guard let connectionDelegate = instance.connectionDelegate else { throw Ocp1Error.notConnected }
+            guard let connectionDelegate = instance.connectionDelegate else {
+                throw Ocp1Error.noConnectionDelegate
+            }
+
             return try await withTimeout(seconds: connectionDelegate.responseTimeout) {
                 if case .initial = self.subject.value {
                     await perform(instance) {
@@ -241,9 +244,9 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                     return try await block(value)
                 } else if case .failure(let error) = self.subject.value {
                     throw error
+                } else {
+                    throw Ocp1Error.responseTimeout
                 }
-                await Task.yield()
-                fatalError("should not be reached")
             }
         }
         

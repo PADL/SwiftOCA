@@ -23,7 +23,7 @@ extension OcaRoot {
     private func sendCommand(methodID: OcaMethodID,
                              parameterCount: OcaUint8,
                              parameterData: Data) async throws {
-        guard let connectionDelegate else { throw Ocp1Error.notConnected }
+        guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let command = Ocp1Command(commandSize: 0,
                                   handle: await connectionDelegate.getNextCommandHandle(),
                                   targetONo: self.objectNumber,
@@ -44,7 +44,7 @@ extension OcaRoot {
     private func sendCommandRrq(methodID: OcaMethodID,
                                 parameterCount: OcaUint8,
                                 parameterData: Data) async throws -> Ocp1Response {
-        guard let connectionDelegate else { throw Ocp1Error.notConnected }
+        guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let command = Ocp1Command(commandSize: 0,
                                   handle: await connectionDelegate.getNextCommandHandle(),
                                   targetONo: self.objectNumber,

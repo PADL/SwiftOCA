@@ -36,23 +36,15 @@ struct OcaNavigationSplitView: View {
     public var body: some View {
         NavigationSplitView {
             List(members, selection: $selectedONo) { member in
-                OcaNavigationLabel(member)
-
-                /*
                 Group {
-                    if let member = member as? OcaBlock {
-                        NavigationLink(value: member.objectNumber) {
-                            OcaNavigationStackView(object: member, oNoPath: $oNoPath)
-                        }
-                    } else {
-                        OcaNavigationLabel(member)
-                    }
+                    OcaNavigationLabel(member)
                 }
-                 */
             }
         } detail: {
             Group {
-                if let selectedObject = selectedObject {
+                if let selectedObject = selectedObject as? OcaBlock {
+                    OcaNavigationStackView(object: selectedObject, oNoPath: $oNoPath)
+                } else if let selectedObject = selectedObject {
                     OcaDetailView(selectedObject)
                 }
             }
