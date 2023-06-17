@@ -17,14 +17,11 @@
 import SwiftUI
 import SwiftOCA
 
-public struct OcaRootView: OcaView {
-    @StateObject var object: OcaRoot
-
-    public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
-        self._object = StateObject(wrappedValue: connection.resolve(object: object)! )
-    }
-
-    public var body: some View {
-        Text(String(format: "%02X", object.objectNumber))
+extension OcaRoot: Identifiable {
+    public typealias ID = OcaONo
+    
+    public var id: ID {
+        self.objectNumber
     }
 }
+

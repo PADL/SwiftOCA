@@ -9,10 +9,6 @@ import SwiftUI
 import SwiftOCA
 import Socket
 
-extension OcaRoot: Identifiable {
-    public var id: OcaONo { return self.objectNumber }
-}
-
 @main
 struct SwiftOCATestApp: App {
     

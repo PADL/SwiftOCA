@@ -16,15 +16,13 @@
 
 import SwiftUI
 import SwiftOCA
+import SwiftOCAUI
 
-public struct OcaRootView: OcaView {
-    @StateObject var object: OcaRoot
+struct ContentView: View {
+    @EnvironmentObject var connection: AES70OCP1Connection
+    let id = OcaObjectIdentification(oNo: 0x9008, classIdentification: OcaMute.classIdentification)
 
-    public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
-        self._object = StateObject(wrappedValue: connection.resolve(object: object)! )
-    }
-
-    public var body: some View {
-        Text(String(format: "%02X", object.objectNumber))
+    var body: some View {
+        OcaRootBlockView(connection)
     }
 }

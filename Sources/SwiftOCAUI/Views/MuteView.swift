@@ -17,8 +17,8 @@
 import SwiftUI
 import SwiftOCA
 
-extension OcaMute {
-    var muteState: Binding<Bool> {
+fileprivate extension OcaMute {
+    var isMuted: Binding<Bool> {
         Binding<Bool>(get: {
            if case let .success(muteState) = self.state {
                return muteState == .muted
@@ -39,10 +39,10 @@ public struct OcaMuteView: OcaView {
     }
 
     public var body: some View {
-        Toggle(isOn: object.muteState) {}
+        Toggle(isOn: object.isMuted) {}
             .toggleStyle(SymbolToggleStyle(systemImage: "speaker.slash.circle.fill", activeColor: .accentColor))
-        .showProgressIfWaiting(object.state)
-        .defaultPropertyModifiers(object, property: object.$state)
+            .showProgressIfWaiting(object.state)
+            .defaultPropertyModifiers(object, property: object.$state)
     }
 }
 

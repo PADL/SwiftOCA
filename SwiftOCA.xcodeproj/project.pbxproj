@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */; };
+		D3DA69E02A3DA94F001250A1 /* NavigationLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69DE2A3DA92C001250A1 /* NavigationLabel.swift */; };
 		D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */; };
 		D3E6E1B42A3ACA7B00BF7095 /* AES70OCP1Connection+Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */; };
 		D3E6E1B52A3ACA7B00BF7095 /* AES70OCP1Connection+Subscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */; };
@@ -64,7 +66,7 @@
 		D3E6E1EE2A3ACB0700BF7095 /* AsyncAlgorithms in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E1ED2A3ACB0700BF7095 /* AsyncAlgorithms */; };
 		D3E6E1F12A3ACB1E00BF7095 /* Socket in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E1F02A3ACB1E00BF7095 /* Socket */; };
 		D3E6E2272A3ACFA100BF7095 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D3E6E2212A3ACFA000BF7095 /* Assets.xcassets */; };
-		D3E6E2282A3ACFA100BF7095 /* SwiftOCATestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2222A3ACFA000BF7095 /* SwiftOCATestApp.swift */; };
+		D3E6E2282A3ACFA100BF7095 /* BrowserApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2222A3ACFA000BF7095 /* BrowserApp.swift */; };
 		D3E6E2292A3ACFA100BF7095 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */; };
 		D3E6E22A2A3ACFA100BF7095 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2252A3ACFA100BF7095 /* ContentView.swift */; };
 		D3E6E2342A3AD0A800BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
@@ -74,7 +76,7 @@
 		D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2492A3C0C7700BF7095 /* MuteView.swift */; };
 		D3E6E24B2A3C0C8D00BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3E6E24C2A3C0D6300BF7095 /* libSwiftOCAUI.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */; };
-		D3E6E2562A3C550500BF7095 /* ViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2542A3C54CE00BF7095 /* ViewRepresentable.swift */; };
+		D3E6E2562A3C550500BF7095 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2542A3C54CE00BF7095 /* View.swift */; };
 		D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2522A3C4EA300BF7095 /* RefreshableToInitialState.swift */; };
 		D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */; };
 		D3E6E25B2A3D28DD00BF7095 /* AsyncExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */; };
@@ -85,6 +87,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaRoot+Identifiable.swift"; sourceTree = "<group>"; };
+		D3DA69DE2A3DA92C001250A1 /* NavigationLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationLabel.swift; sourceTree = "<group>"; };
 		D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCA.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hex.swift"; sourceTree = "<group>"; };
 		D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+IntegerCodable.swift"; sourceTree = "<group>"; };
@@ -139,19 +143,19 @@
 		D3E6E1AF2A3ACA6C00BF7095 /* AES70ClassRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70ClassRegistry.swift; sourceTree = "<group>"; };
 		D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1Connection.swift; sourceTree = "<group>"; };
 		D3E6E1B22A3ACA6C00BF7095 /* AES70OCP1SocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1SocketConnection.swift; sourceTree = "<group>"; };
-		D3E6E1F62A3ACF5900BF7095 /* SwiftOCATest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftOCATest.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		D3E6E2212A3ACFA000BF7095 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Examples/SwiftOCATest/Assets.xcassets; sourceTree = SOURCE_ROOT; };
-		D3E6E2222A3ACFA000BF7095 /* SwiftOCATestApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwiftOCATestApp.swift; path = Examples/SwiftOCATest/SwiftOCATestApp.swift; sourceTree = SOURCE_ROOT; };
+		D3E6E1F62A3ACF5900BF7095 /* OCABrowser.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OCABrowser.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3E6E2212A3ACFA000BF7095 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Examples/OCABrowser/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		D3E6E2222A3ACFA000BF7095 /* BrowserApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowserApp.swift; path = Examples/OCABrowser/BrowserApp.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		D3E6E2252A3ACFA100BF7095 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Examples/SwiftOCATest/ContentView.swift; sourceTree = SOURCE_ROOT; };
-		D3E6E2262A3ACFA100BF7095 /* SwiftOCATest.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = SwiftOCATest.entitlements; path = Examples/SwiftOCATest/SwiftOCATest.entitlements; sourceTree = SOURCE_ROOT; };
+		D3E6E2252A3ACFA100BF7095 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Examples/OCABrowser/ContentView.swift; sourceTree = SOURCE_ROOT; };
+		D3E6E2262A3ACFA100BF7095 /* OCABrowser.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = OCABrowser.entitlements; path = Examples/OCABrowser/OCABrowser.entitlements; sourceTree = SOURCE_ROOT; };
 		D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70Browser.swift; sourceTree = "<group>"; };
 		D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPathIterable.swift; sourceTree = "<group>"; };
 		D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCAUI.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E2492A3C0C7700BF7095 /* MuteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MuteView.swift; sourceTree = "<group>"; };
 		D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowProgressIfWaiting.swift; sourceTree = "<group>"; };
 		D3E6E2522A3C4EA300BF7095 /* RefreshableToInitialState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableToInitialState.swift; sourceTree = "<group>"; };
-		D3E6E2542A3C54CE00BF7095 /* ViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewRepresentable.swift; sourceTree = "<group>"; };
+		D3E6E2542A3C54CE00BF7095 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
 		D3E6E25C2A3D2D2500BF7095 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		D3E6E25E2A3D2FCD00BF7095 /* BlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockView.swift; sourceTree = "<group>"; };
 		D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyModifiers.swift; sourceTree = "<group>"; };
@@ -202,12 +206,20 @@
 			path = Sources/SwiftOCA;
 			sourceTree = "<group>";
 		};
+		D3DA69D72A3DA7CD001250A1 /* Conformances */ = {
+			isa = PBXGroup;
+			children = (
+				D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */,
+			);
+			path = Conformances;
+			sourceTree = "<group>";
+		};
 		D3E6E15B2A3ACA0B00BF7095 = {
 			isa = PBXGroup;
 			children = (
 				D3E6E2472A3C0C7700BF7095 /* SwiftOCAUI */,
 				D3028C1C2A3AD57900B8DB42 /* Sources/SwiftOCA */,
-				D3E6E1F72A3ACF5900BF7095 /* Examples/SwiftOCATest */,
+				D3E6E1F72A3ACF5900BF7095 /* Examples/OCABrowser */,
 				D3E6E1652A3ACA0B00BF7095 /* Products */,
 				D3E6E2332A3AD0A800BF7095 /* Frameworks */,
 			);
@@ -217,7 +229,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */,
-				D3E6E1F62A3ACF5900BF7095 /* SwiftOCATest.app */,
+				D3E6E1F62A3ACF5900BF7095 /* OCABrowser.app */,
 				D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */,
 			);
 			name = Products;
@@ -365,16 +377,16 @@
 			path = OCP.1;
 			sourceTree = "<group>";
 		};
-		D3E6E1F72A3ACF5900BF7095 /* Examples/SwiftOCATest */ = {
+		D3E6E1F72A3ACF5900BF7095 /* Examples/OCABrowser */ = {
 			isa = PBXGroup;
 			children = (
 				D3E6E2212A3ACFA000BF7095 /* Assets.xcassets */,
 				D3E6E2252A3ACFA100BF7095 /* ContentView.swift */,
-				D3E6E2222A3ACFA000BF7095 /* SwiftOCATestApp.swift */,
+				D3E6E2222A3ACFA000BF7095 /* BrowserApp.swift */,
 				D3E6E2232A3ACFA100BF7095 /* Preview Content */,
-				D3E6E2262A3ACFA100BF7095 /* SwiftOCATest.entitlements */,
+				D3E6E2262A3ACFA100BF7095 /* OCABrowser.entitlements */,
 			);
-			path = Examples/SwiftOCATest;
+			path = Examples/OCABrowser;
 			sourceTree = "<group>";
 		};
 		D3E6E2232A3ACFA100BF7095 /* Preview Content */ = {
@@ -383,7 +395,7 @@
 				D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */,
 			);
 			name = "Preview Content";
-			path = "Examples/SwiftOCATest/Preview Content";
+			path = "Examples/OCABrowser/Preview Content";
 			sourceTree = SOURCE_ROOT;
 		};
 		D3E6E2332A3AD0A800BF7095 /* Frameworks */ = {
@@ -425,6 +437,7 @@
 		D3E6E2472A3C0C7700BF7095 /* SwiftOCAUI */ = {
 			isa = PBXGroup;
 			children = (
+				D3DA69D72A3DA7CD001250A1 /* Conformances */,
 				D3E6E24F2A3C4C6100BF7095 /* ViewModifiers */,
 				D3E6E2482A3C0C7700BF7095 /* Views */,
 			);
@@ -439,7 +452,8 @@
 				D3E6E2622A3D648400BF7095 /* RootBlockView.swift */,
 				D3E6E25E2A3D2FCD00BF7095 /* BlockView.swift */,
 				D3E6E25C2A3D2D2500BF7095 /* RootView.swift */,
-				D3E6E2542A3C54CE00BF7095 /* ViewRepresentable.swift */,
+				D3E6E2542A3C54CE00BF7095 /* View.swift */,
+				D3DA69DE2A3DA92C001250A1 /* NavigationLabel.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -498,9 +512,9 @@
 			productReference = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		D3E6E1F52A3ACF5900BF7095 /* SwiftOCATest */ = {
+		D3E6E1F52A3ACF5900BF7095 /* OCABrowser */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D3E6E2182A3ACF5A00BF7095 /* Build configuration list for PBXNativeTarget "SwiftOCATest" */;
+			buildConfigurationList = D3E6E2182A3ACF5A00BF7095 /* Build configuration list for PBXNativeTarget "OCABrowser" */;
 			buildPhases = (
 				D3E6E1F22A3ACF5900BF7095 /* Sources */,
 				D3E6E1F32A3ACF5900BF7095 /* Frameworks */,
@@ -510,9 +524,9 @@
 			);
 			dependencies = (
 			);
-			name = SwiftOCATest;
-			productName = SwiftOCATest;
-			productReference = D3E6E1F62A3ACF5900BF7095 /* SwiftOCATest.app */;
+			name = OCABrowser;
+			productName = OCABrowser;
+			productReference = D3E6E1F62A3ACF5900BF7095 /* OCABrowser.app */;
 			productType = "com.apple.product-type.application";
 		};
 		D3E6E2422A3C0BA000BF7095 /* SwiftOCAUI */ = {
@@ -574,7 +588,7 @@
 			projectRoot = "";
 			targets = (
 				D3E6E1632A3ACA0B00BF7095 /* SwiftOCA */,
-				D3E6E1F52A3ACF5900BF7095 /* SwiftOCATest */,
+				D3E6E1F52A3ACF5900BF7095 /* OCABrowser */,
 				D3E6E2422A3C0BA000BF7095 /* SwiftOCAUI */,
 			);
 		};
@@ -659,7 +673,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D3E6E2282A3ACFA100BF7095 /* SwiftOCATestApp.swift in Sources */,
+				D3E6E2282A3ACFA100BF7095 /* BrowserApp.swift in Sources */,
 				D3E6E22A2A3ACFA100BF7095 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -673,8 +687,10 @@
 				D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */,
 				D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */,
 				D3E6E25F2A3D2FCD00BF7095 /* BlockView.swift in Sources */,
-				D3E6E2562A3C550500BF7095 /* ViewRepresentable.swift in Sources */,
+				D3E6E2562A3C550500BF7095 /* View.swift in Sources */,
+				D3DA69E02A3DA94F001250A1 /* NavigationLabel.swift in Sources */,
 				D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */,
+				D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */,
 				D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -829,14 +845,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Examples/SwiftOCATest/SwiftOCATest.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Examples/OCABrowser/OCABrowser.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"Examples/SwiftOCATest/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Examples/OCABrowser/Preview Content\"";
 				DEVELOPMENT_TEAM = T53Q9CN4T9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -846,8 +862,9 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.padl.SwiftOCATest;
+				PRODUCT_BUNDLE_IDENTIFIER = com.padl.OCABrowser;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -861,14 +878,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Examples/SwiftOCATest/SwiftOCATest.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Examples/OCABrowser/OCABrowser.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"Examples/SwiftOCATest/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Examples/OCABrowser/Preview Content\"";
 				DEVELOPMENT_TEAM = T53Q9CN4T9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -878,8 +895,9 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.padl.SwiftOCATest;
+				PRODUCT_BUNDLE_IDENTIFIER = com.padl.OCABrowser;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -897,6 +915,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -912,6 +931,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -939,7 +959,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D3E6E2182A3ACF5A00BF7095 /* Build configuration list for PBXNativeTarget "SwiftOCATest" */ = {
+		D3E6E2182A3ACF5A00BF7095 /* Build configuration list for PBXNativeTarget "OCABrowser" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D3E6E2192A3ACF5A00BF7095 /* Debug */,

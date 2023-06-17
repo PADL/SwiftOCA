@@ -17,14 +17,18 @@
 import SwiftUI
 import SwiftOCA
 
-public struct OcaRootView: OcaView {
+struct OcaNavigationLabel: View {
     @StateObject var object: OcaRoot
-
-    public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
-        self._object = StateObject(wrappedValue: connection.resolve(object: object)! )
+   
+    public init(_ object: OcaRoot) {
+        self._object = StateObject(wrappedValue: object)
     }
 
     public var body: some View {
-        Text(String(format: "%02X", object.objectNumber))
+        if case let .success(role) = object.role {
+            Text(role)
+        } else {
+            Text(String(format: "%02X", object.objectNumber))
+        }
     }
 }
