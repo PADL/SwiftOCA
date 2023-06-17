@@ -98,6 +98,10 @@ extension OcaRoot {
         }
     }
     
+    public var allProperties: [any OcaPropertyRepresentable] {
+        Mirror.allKeyPaths(for: self).map { $0.value }
+    }
+    
     public func subscribe() async throws {
         guard let connectionDelegate else { throw Ocp1Error.notConnected }
         let event = OcaEvent(emitterONo: self.objectNumber, eventID: OcaPropertyChangedEventID)
