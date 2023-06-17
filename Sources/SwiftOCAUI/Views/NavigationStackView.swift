@@ -20,27 +20,39 @@ import SwiftOCA
 struct OcaNavigationStackView: View {
     @StateObject var object: OcaBlock
     @Binding var oNoPath: NavigationPath
-    @State var members: [OcaRoot] = []
-    @State var membersMap: [OcaONo:OcaRoot] = [:]
+    @State var members: [OcaRoot]?
+    @State var membersMap: [OcaONo:OcaRoot]?
     @State var selectedONo: OcaONo? = nil
 
     public var body: some View {
-        NavigationStack(path: $oNoPath) {
-            List(members, selection: $selectedONo) { member in
-                NavigationLink(member.navigationLabel, value: member.objectNumber)
-            }
-            .navigationDestination(for: OcaONo.self) { oNo in
-                let object = self.membersMap[oNo]
-                if let object = object as? OcaBlock {
-                    OcaNavigationStackView(object: object, oNoPath: $oNoPath)
-                } else if let object {
-                    OcaDetailView(object)
+        Group {
+            if let members {
+                NavigationStack(path: $oNoPath) {
+                    List(members, selection: $selectedONo) { member in
+                        NavigationLink(value: member.objectNumber) {
+                            OcaNavigationLabel(member)
+                        }
+                    }
+                    .navigationDestination(for: OcaONo.self) { oNo in
+                        let object = self.membersMap![oNo]
+                        if let object = object as? OcaBlock {
+                            OcaNavigationStackView(object: object, oNoPath: $oNoPath)
+                        } else if let object {
+                            OcaDetailView(object)
+                        }
+                    }
                 }
+            } else {
+                ProgressView()
             }
         }
         .task {
-            members = (try? await object.resolveMembers()) ?? []
-            membersMap = members.map
+            do {
+                members = try await object.resolveMembers()
+                membersMap = members?.map
+            } catch {
+                debugPrint("OcaNavigationStackView: error \(error)")
+            }
         }
     }
 }

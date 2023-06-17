@@ -148,12 +148,11 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         
         value = try await instance.sendCommandRrq(methodID: getMethodID)
         
-        do {
+        // do this in the background, otherwise UI refresh performance is poor
+        Task.detached {
             try await instance.subscribe()
-        } catch Ocp1Error.status(.invalidRequest) {
-            // FIXME: in our device implementation not all properties can be subcribed to
         }
-    
+        
         return value
     }
     
@@ -233,6 +232,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                 throw Ocp1Error.noConnectionDelegate
             }
 
+	    // FIXME: what is the right response timeout given it could be many members?
             return try await withTimeout(seconds: connectionDelegate.responseTimeout) {
                 if case .initial = self.subject.value {
                     await perform(instance) {
@@ -245,6 +245,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                 } else if case .failure(let error) = self.subject.value {
                     throw error
                 } else {
+		    debugPrint("onCompletion: timed out with subject \(self.subject.value)")
                     throw Ocp1Error.responseTimeout
                 }
             }
@@ -273,6 +274,17 @@ extension OcaProperty.State: Equatable where Value: Equatable & Codable {
             return true
         } else {
             return false
+        }
+    }
+}
+
+extension OcaProperty.State: Hashable where Value: Hashable & Codable {
+    public func hash(into hasher: inout Hasher) {
+        switch self {
+        case let .success(value):
+            hasher.combine(value)
+        default:
+            break
         }
     }
 }

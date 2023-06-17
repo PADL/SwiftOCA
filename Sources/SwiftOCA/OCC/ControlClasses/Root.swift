@@ -108,6 +108,8 @@ extension OcaRoot {
         do {
             try await connectionDelegate.addSubscription(event: event, callback: propertyDidChange)
         } catch Ocp1Error.alreadySubscribedToEvent {
+        } catch Ocp1Error.status(.invalidRequest) {
+            // FIXME: in our device implementation not all properties can be subcribed to
         }
     }
     

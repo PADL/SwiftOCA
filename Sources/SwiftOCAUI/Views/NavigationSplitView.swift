@@ -20,12 +20,13 @@ import SwiftOCA
 struct OcaNavigationSplitView: View {
     @StateObject var object: OcaBlock
     @Binding var oNoPath: NavigationPath
-    @State var members: [OcaRoot] = []
-    @State var membersMap: [OcaONo:OcaRoot] = [:]
+    @State var members: [OcaRoot]?
+    @State var membersMap: [OcaONo:OcaRoot]?
     @State var selectedONo: OcaONo? = nil
 
     var selectedObject: OcaRoot? {
         guard let selectedONo = selectedONo,
+              let membersMap,
               let object = membersMap[selectedONo] else {
             return nil
         }
@@ -34,25 +35,35 @@ struct OcaNavigationSplitView: View {
     }
     
     public var body: some View {
-        NavigationSplitView {
-            List(members, selection: $selectedONo) { member in
-                Group {
-                    OcaNavigationLabel(member)
+        Group {
+            if let members {
+                NavigationSplitView {
+                    List(members, selection: $selectedONo) { member in
+                        Group {
+                            OcaNavigationLabel(member)
+                        }
+                    }
+                } detail: {
+                    Group {
+                        if let selectedObject = selectedObject as? OcaBlock {
+                            OcaNavigationStackView(object: selectedObject, oNoPath: $oNoPath)
+                        } else if let selectedObject = selectedObject {
+                            OcaDetailView(selectedObject)
+                        }
+                    }
+                    .id(selectedONo)
                 }
+            } else {
+                ProgressView()
             }
-        } detail: {
-            Group {
-                if let selectedObject = selectedObject as? OcaBlock {
-                    OcaNavigationStackView(object: selectedObject, oNoPath: $oNoPath)
-                } else if let selectedObject = selectedObject {
-                    OcaDetailView(selectedObject)
-                }
-            }
-                .id(selectedONo)
         }
         .task {
-            members = (try? await object.resolveMembers()) ?? []
-            membersMap = members.map
+            do {
+                members = try await object.resolveMembers()
+                membersMap = members?.map
+            } catch {
+                debugPrint("OcaNavigationSplitView: error \(error)")
+            }
         }
     }
 }

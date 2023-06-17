@@ -23,7 +23,7 @@ extension AES70OCP1Connection {
     }
 
     func sendCommand(_ command: Ocp1Command) async throws {
-        debugPrint("sendCommand \(command)")
+        // debugPrint("sendCommand \(command)")
         try await sendMessage(command, type: .ocaCmd)
     }
     
@@ -33,7 +33,7 @@ extension AES70OCP1Connection {
         guard let responseMonitor = await responseMonitor else { throw Ocp1Error.notConnected }
         
         for await response in responseMonitor.channel {
-            //debugPrint("awaiting response \(response)")
+            // debugPrint("awaiting response \(response)")
             if response.handle == handle {
                 return response
             }
@@ -45,7 +45,7 @@ extension AES70OCP1Connection {
     }
 
     func sendCommandRrq(_ command: Ocp1Command) async throws -> Ocp1Response {
-        debugPrint("sendCommandRrq \(command)")
+        // debugPrint("sendCommandRrq \(command)")
         
         try await sendMessage(command, type: .ocaCmdRrq)
         return try await response(for: command.handle)

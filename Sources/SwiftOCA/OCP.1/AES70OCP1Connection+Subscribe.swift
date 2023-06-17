@@ -18,19 +18,31 @@ import Foundation
 
 private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 
+/// Note – these aren't made @MainActor becasue we probably want to run them in the background
+
 extension AES70OCP1Connection {
-    @MainActor
-    func isSubscribed(event: OcaEvent) -> Bool {
-        return subscriptions[event] != nil
-    }
-    
-    @MainActor
-    func addSubscription(event: OcaEvent,
-                         callback: @escaping AES70SubscriptionCallback) async throws {
-        if subscriptions[event] != nil {
-            throw Ocp1Error.alreadySubscribedToEvent
+    func isSubscribed(event: OcaEvent) async -> Bool {
+        let isSubscribedTask = Task { @MainActor in
+            return subscriptions[event] != nil
         }
         
+        switch await isSubscribedTask.result {
+        case .success(let value):
+            return value
+        case .failure:
+            return false
+        }
+    }
+    
+    func addSubscription(event: OcaEvent,
+                         callback: @escaping AES70SubscriptionCallback) async throws {
+        if await subscriptions[event] != nil {
+            throw Ocp1Error.alreadySubscribedToEvent
+        }
+
+        Task { @MainActor in
+            subscriptions[event] = callback
+        }
         
         try await subscriptionManager.addSubscription(event: event,
                                                       subscriber: subscriber,
@@ -38,25 +50,23 @@ extension AES70OCP1Connection {
                                                       notificationDeliveryMode: .reliable,
                                                       destinationInformation: OcaNetworkAddress())
 
-        subscriptions[event] = callback
     }
     
-    @MainActor
     public func removeSubscription(event: OcaEvent) async throws {
         try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
-        subscriptions[event] = nil
+        Task { @MainActor in
+            subscriptions[event] = nil
+        }
     }
     
-    @MainActor
     public func removeSubscriptions() async throws {
-        for event in subscriptions.keys {
+        for event in await subscriptions.keys {
             _ = try await removeSubscription(event: event)
         }
     }
     
-    @MainActor
     func refreshSubscriptions() async throws {
-        for event in subscriptions.keys {
+        for event in await subscriptions.keys {
             try await subscriptionManager.addSubscription(event: event,
                                                           subscriber: subscriber,
                                                           subscriberContext: OcaBlob(),
