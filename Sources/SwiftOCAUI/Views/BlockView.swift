@@ -29,7 +29,11 @@ public struct OcaBlockView: OcaView {
     }
 
     public var body: some View {
-        Text(String(format: "%02X", object.objectNumber))
+        DynamicStack {
+            ForEach(members, id: \.objectNumber) { member in
+                Text(String(format: "%02X", member.objectNumber))
+            }
+        }
             .task {
                 do {
                     members = try await object.resolveMembers()
