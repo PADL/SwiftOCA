@@ -19,7 +19,7 @@ import BinaryCoder
 import AsyncAlgorithms
 import AsyncExtensions
 
-public protocol OcaPropertyRepresentable {
+public protocol OcaPropertyRepresentable: CustomStringConvertible {
     associatedtype Value: Codable
     
     var propertyIDs: [OcaPropertyID] { get }
@@ -69,6 +69,19 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     
     private let subject: AsyncCurrentValueSubject<State>
 
+    public var description: String {
+        switch subject.value {
+        case .initial:
+            return ""
+        case .requesting:
+            return "Requesting"
+        case .success(let value):
+            return String(describing: value)
+        case .failure(let error):
+            return error.localizedDescription
+        }
+    }
+    
     public init(from decoder: Decoder) throws {
         fatalError()
     }

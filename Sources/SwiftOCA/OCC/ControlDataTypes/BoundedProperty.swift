@@ -43,6 +43,10 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiab
         wrappedValue.currentValue
     }
 
+    public var description: String {
+        wrappedValue.description
+    }
+
     init(propertyID: OcaPropertyID,
          getMethodID: OcaMethodID,
          setMethodID: OcaMethodID? = nil) {

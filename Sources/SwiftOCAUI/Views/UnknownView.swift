@@ -17,6 +17,21 @@
 import SwiftUI
 import SwiftOCA
 
+struct Property: Identifiable {
+    typealias ID = Int
+    
+    var id: ID {
+        value.propertyIDs.hashValue
+    }
+    
+    var propertyIDString: String {
+        return value.propertyIDs.map { String(describing: $0) }.joined(separator: ",")
+    }
+    
+    var name: String
+    var value: any OcaPropertyRepresentable
+}
+
 struct OcaUnknownView: OcaView {
     typealias Object = OcaRoot
     @StateObject var object: OcaRoot
@@ -26,7 +41,17 @@ struct OcaUnknownView: OcaView {
     }
     
     public var body: some View {
-        OcaNavigationLabel(object)
-            .font(.system(size: 45, weight: .bold, design: .default))
+        Table(of: Property.self) {
+            TableColumn("Name", value: \.name)
+            TableColumn("ID", value: \.propertyIDString)
+            TableColumn("Value", value: \.value.description)
+        } rows: {
+            let allProperties: [Property] = object.allProperties.map { (propertyName, propertyValue) in
+                Property(name: propertyName, value: propertyValue)
+            }
+            ForEach(allProperties) { property in
+                TableRow(property)
+            }
+        }
     }
 }

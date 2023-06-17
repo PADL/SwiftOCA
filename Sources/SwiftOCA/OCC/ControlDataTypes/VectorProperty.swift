@@ -68,6 +68,10 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         wrappedValue.currentValue
     }
 
+    public var description: String {
+        wrappedValue.description
+    }
+
     func onEvent(_ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
         
