@@ -81,6 +81,7 @@
 		D3E6E25D2A3D2D2500BF7095 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E25C2A3D2D2500BF7095 /* RootView.swift */; };
 		D3E6E25F2A3D2FCD00BF7095 /* BlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E25E2A3D2FCD00BF7095 /* BlockView.swift */; };
 		D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */; };
+		D3E6E2632A3D648400BF7095 /* RootBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2622A3D648400BF7095 /* RootBlockView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -154,6 +155,7 @@
 		D3E6E25C2A3D2D2500BF7095 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		D3E6E25E2A3D2FCD00BF7095 /* BlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockView.swift; sourceTree = "<group>"; };
 		D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyModifiers.swift; sourceTree = "<group>"; };
+		D3E6E2622A3D648400BF7095 /* RootBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootBlockView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -434,6 +436,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E2492A3C0C7700BF7095 /* MuteView.swift */,
+				D3E6E2622A3D648400BF7095 /* RootBlockView.swift */,
 				D3E6E25E2A3D2FCD00BF7095 /* BlockView.swift */,
 				D3E6E25C2A3D2D2500BF7095 /* RootView.swift */,
 				D3E6E2542A3C54CE00BF7095 /* ViewRepresentable.swift */,
@@ -665,6 +668,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D3E6E2632A3D648400BF7095 /* RootBlockView.swift in Sources */,
 				D3E6E25D2A3D2D2500BF7095 /* RootView.swift in Sources */,
 				D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */,
 				D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */,

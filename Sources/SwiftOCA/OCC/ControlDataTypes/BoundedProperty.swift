@@ -35,8 +35,9 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiab
         return wrappedValue
     }
 
-    public func refresh() async {
-        await wrappedValue.refresh()
+    @MainActor
+    public func refresh(_ instance: OcaRoot) async {
+        await wrappedValue.refresh(instance)
     }
     
     public var currentValue: OcaProperty<OcaBoundedPropertyValue<Value>>.State {
@@ -61,6 +62,7 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiab
         try self.wrappedValue.encode(to: encoder)
     }
     
+    @MainActor
     func onEvent(_ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
         

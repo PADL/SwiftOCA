@@ -19,22 +19,24 @@ import SwiftUI
 import SwiftOCA
 
 private struct RefreshableToInitialState: ViewModifier {
+    let object: OcaRoot
     let property: any OcaPropertyRepresentable
     
-    init(_ property: any OcaPropertyRepresentable) {
+    init(_ object: OcaRoot, property: any OcaPropertyRepresentable) {
+        self.object = object
         self.property = property
     }
-    
+
     func body(content: Content) -> some View {
         content
             .refreshable {
-                await self.property.refresh()
+                await property.refresh(object)
             }
     }
 }
 
 extension View {
-    public func refreshableToInitialState(_ property: any OcaPropertyRepresentable) -> some View {
-        return self.modifier(RefreshableToInitialState(property))
+    public func refreshableToInitialState(_ object: OcaRoot, property: any OcaPropertyRepresentable) -> some View {
+        return self.modifier(RefreshableToInitialState(object, property: property))
     }
 }

@@ -92,7 +92,7 @@ extension OcaMatrix {
     public func resolveMembers(with proxy: OcaRoot) async throws -> SparseMembers {
         guard let connectionDelegate else { throw Ocp1Error.notConnected }
 
-        return try await self._members.onCompletion { value in
+        return try await self._members.onCompletion(self) { value in
             var resolved = SparseMembers(nX: value.nX, nY: value.nY)
             let proxyClassID = type(of: proxy).classIdentification
 
@@ -112,7 +112,7 @@ extension OcaMatrix {
     func resolveProxy<T: OcaRoot>() async throws -> T {
         guard let connectionDelegate else { throw Ocp1Error.notConnected }
 
-        return try await self._proxy.onCompletion { proxyObjectNumber in
+        return try await self._proxy.onCompletion(self) { proxyObjectNumber in
             let unresolvedProxy = OcaRoot(objectNumber: proxyObjectNumber)
             var classIdentification = OcaRoot.classIdentification
             try await unresolvedProxy.get(classIdentification: &classIdentification)

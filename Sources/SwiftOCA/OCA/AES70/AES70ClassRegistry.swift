@@ -16,17 +16,6 @@
 
 import Foundation
 
-extension OcaClassID {
-    var parent: OcaClassID? {
-        if self.fieldCount == 1 {
-            return nil
-        }
-        var fields = self.fields
-        fields.removeLast()
-        return OcaClassID(fields)
-    }
-}
-
 public class AES70ClassRegistry {
     public static let shared = AES70ClassRegistry()
 

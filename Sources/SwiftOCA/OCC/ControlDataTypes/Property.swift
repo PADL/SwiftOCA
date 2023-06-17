@@ -25,12 +25,12 @@ public protocol OcaPropertyRepresentable {
     var propertyIDs: [OcaPropertyID] { get }
     var currentValue: OcaProperty<Value>.State { get }
 
-    func refresh() async    
+    func refresh(_ instance: OcaRoot) async
 }
 
 public extension OcaPropertyRepresentable {
-    var isWaiting: Bool {
-        currentValue.isWaiting
+    var isRequesting: Bool {
+        currentValue.isRequesting
     }
 }
 
@@ -61,7 +61,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         case success(Value)
         case failure(Error)
         
-        public var isWaiting: Bool {
+        public var isRequesting: Bool {
             if case .initial = self {
                 return true
             } else if case .requesting = self {
@@ -108,22 +108,26 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         get {
             let subject = instance[keyPath: storageKeyPath].subject
             if case .initial = subject.value {
-                instance[keyPath: storageKeyPath].perform(instance) {
-                    try await $0.getValueAndSubscribe(instance)
+                Task { @MainActor in
+                    await instance[keyPath: storageKeyPath].perform(instance) {
+                        try await $0.getValueAndSubscribe(instance)
+                    }
                 }
             }
             return subject.value
         }
         set {
-            if case let .success(value) = newValue {
-                instance[keyPath: storageKeyPath].perform(instance) {
-                    try await $0.setValueIfMutable(instance, value)
-                    return value
+            Task { @MainActor in
+                if case let .success(value) = newValue {
+                    await instance[keyPath: storageKeyPath].perform(instance) {
+                        try await $0.setValueIfMutable(instance, value)
+                        return value
+                    }
+                } else if case .initial = newValue {
+                    await instance[keyPath: storageKeyPath].refresh(instance)
+                } else {
+                    preconditionFailure("setter called with invalid value \(newValue)")
                 }
-            } else if case .initial = newValue {
-                instance[keyPath: storageKeyPath].refresh(instance)
-            } else {
-                preconditionFailure("setter called with invalid value \(newValue)")
             }
         }
     }
@@ -143,6 +147,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         self.setValueTransformer = setValueTransformer
     }
         
+    @MainActor
     private func getValueAndSubscribe(_ instance: OcaRoot) async throws -> Value {
         let value: Value
         
@@ -151,6 +156,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         return value
     }
     
+    @MainActor
     private func setValueIfMutable(_ instance: OcaRoot, _ value: Value) async throws {
         guard let setMethodID else { throw Ocp1Error.status(.notImplemented) }
         
@@ -166,40 +172,35 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         try await instance.sendCommand(methodID: setMethodID, parameter: newValue)
     }
     
-    private func perform(_ instance: OcaRoot, _ block: @escaping (_ storage: Self) async throws -> Value) {
+    @MainActor
+    private func perform(_ instance: OcaRoot, _ block: @escaping (_ storage: Self) async throws -> Value) async {
         guard let connectionDelegate = instance.connectionDelegate else {
             subject.send(.failure(Ocp1Error.notConnected))
             return
         }
 
-        Task { @MainActor in
-            if connectionDelegate.requestMonitor == nil {
-                precondition(connectionDelegate.responseMonitor == nil)
-                // connection state semaphore will be signalled when we are connected
-                await connectionDelegate.connectionStateSemaphore.wait()
-            }
-            subject.send(.requesting)
-            
-            do {
-                let value = try await block(self)
-                subject.send(.success(value))
-            } catch let error {
-                subject.send(.failure(error))
-            }
-            
-            instance.objectWillChange.send()
+        if connectionDelegate.requestMonitor == nil {
+            // connection state semaphore will be signalled when we are connected
+            await connectionDelegate.connectionStateSemaphore.wait()
         }
+
+        subject.send(.requesting)
+
+        do {
+            let value = try await block(self)
+            subject.send(.success(value))
+        } catch let error {
+            debugPrint("performer received error \(error)")
+            subject.send(.failure(error))
+        }
+        
+        instance.objectWillChange.send()
     }
     
-    public func refresh() async {
-        self.wrappedValue = .initial
-    }
-    
-    private func refresh(_ instance: OcaRoot) {
-        Task { @MainActor in
-            subject.send(.initial)
-            instance.objectWillChange.send()
-        }
+    @MainActor
+    public func refresh(_ instance: OcaRoot) async {
+        subject.send(.initial)
+        instance.objectWillChange.send()
     }
     
     @MainActor
@@ -211,7 +212,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         precondition(self.propertyIDs.contains(eventData.propertyID))
 
         // TODO: how to handle items being deleted
-        
         if .currentChanged == eventData.changeType {
             self.subject.send(.success(eventData.propertyValue))
         } else {
@@ -220,22 +220,23 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
     
     @MainActor
-    func onCompletion<T>(_ block: @escaping (_ value: Value) async throws -> T) async throws -> T {
+    func onCompletion<T>(_ instance: OcaRoot,
+                         _ block: @escaping (_ value: Value) async throws -> T) async throws -> T {
         repeat {
-            for await value in self.subject {
-                switch value {
-                case .initial:
-                    _ = self.wrappedValue // triggers get
-                    fallthrough
-                case .requesting:
-                    await Task.yield() // continues get
-                case let .success(value):
-                    return try await block(value)
-                case let .failure(error):
-                    throw error
+            if case .initial = self.subject.value {
+                await perform(instance) {
+                    try await $0.getValueAndSubscribe(instance)
                 }
             }
-        } while true
+            
+            if case .success(let value) = self.subject.value {
+                return try await block(value)
+            } else if case .failure(let error) = self.subject.value {
+                throw error
+            }
+        } while self.subject.value.isRequesting
+        
+        fatalError("should not be reached")
     }
 }
 

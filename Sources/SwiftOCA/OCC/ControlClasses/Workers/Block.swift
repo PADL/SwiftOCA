@@ -179,7 +179,7 @@ extension OcaBlock {
     public func resolveMembers() async throws -> OcaList<OcaRoot> {
         guard let connectionDelegate else { throw Ocp1Error.notConnected }
 
-        return try await self._members.onCompletion { members in
+        return try await self._members.onCompletion(self) { members in
             members.compactMap { connectionDelegate.resolve(object: $0) }
         }
     }

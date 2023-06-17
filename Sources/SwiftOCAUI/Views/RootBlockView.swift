@@ -14,28 +14,18 @@
 // limitations under the License.
 //
 
-import Foundation
 import SwiftUI
 import SwiftOCA
 
-private struct PropertyModifiers: ViewModifier {
-    let object: OcaRoot
-    let property: any OcaPropertyRepresentable
-    
-    init(_ object: OcaRoot, property: any OcaPropertyRepresentable) {
-        self.object = object
-        self.property = property
+public struct OcaRootBlockView: View {
+    @StateObject var object: OcaBlock
+    @State var members: [OcaRoot] = []
+
+    public init(_ connection: AES70OCP1Connection) {
+        self._object = StateObject(wrappedValue: connection.rootBlock)
     }
 
-    func body(content: Content) -> some View {
-        content
-            .refreshableToInitialState(object, property: property)
-    }
-}
-
-
-extension View {
-    public func defaultPropertyModifiers(_ object: OcaRoot, property: any OcaPropertyRepresentable) -> some View {
-        return self.modifier(PropertyModifiers(object, property: property))
+    public var body: some View {
+        OcaBlockView(object: object)
     }
 }

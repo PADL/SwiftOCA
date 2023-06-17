@@ -119,7 +119,7 @@ extension OcaRoot {
     
     public func refresh() async throws {
         for keyPath in Mirror.allKeyPaths(for: self) {
-            await keyPath.value.refresh()
+            await keyPath.value.refresh(self)
         }
     }
 }

@@ -15,6 +15,7 @@
 //
 
 import Foundation
+import BinaryCoder
 
 public typealias OcaBoolean = Bool
 public typealias OcaBlob = LengthTaggedData
@@ -133,7 +134,12 @@ public struct OcaLibVolIdentifier: Codable {
 public struct OcaClassID: Codable, Hashable, CustomStringConvertible {
     let fields: [OcaUint16]
     
-    init(_ string: OcaString) {
+    static let ProprietaryClassFieldMask = OcaUint16(0x8000)
+    static let ProprietaryTestClassFieldMask = OcaUint16(0xff00)
+    static let ProprietaryClassField = OcaUint16(0xffff)
+    public static let OcaAllianceCompanyID = OcaOrganizationID((0xFA, 0x2E, 0xE9))
+    
+    public init(_ string: OcaString) {
         fields = string.split(separator: ".").map { OcaUint16($0)! }
     }
     
@@ -141,12 +147,75 @@ public struct OcaClassID: Codable, Hashable, CustomStringConvertible {
         self.fields = fields
     }
     
-    var fieldCount: OcaUint16 {
+    public var parent: OcaClassID? {
+        guard self.fieldCount > 1 else {
+            return nil
+        }
+        
+        var parentFieldCount = fields.count - 1
+        if parentFieldCount >= 4, fields[parentFieldCount - 3] == Self.ProprietaryClassField {
+            parentFieldCount = parentFieldCount - 3
+        }
+        
+        let parent = OcaClassID(Array(fields.prefix(parentFieldCount)))
+        precondition(parent.isValid)
+        return parent
+    }
+
+    public var fieldCount: OcaUint16 {
         return OcaUint16(fields.count)
+    }
+    
+    public var defLevel: OcaUint16 {
+        guard isValid else {
+            return 0
+        }
+
+        for field in fields {
+            if field == Self.ProprietaryClassField {
+                precondition(fieldCount >= 5)
+                return fieldCount - 5
+            }
+        }
+        
+        return fieldCount
     }
     
     public var description: String {
         return fields.map { String($0) }.joined(separator: ".")
+    }
+    
+    public var isValid: Bool {
+        var proprietaryClass = false
+        var testClass = false
+        var proprietaryFieldPresent = false
+        
+        guard self.fieldCount > 0, self.fields[0] == 1 else {
+            return false
+        }
+        
+        for i in 0..<fields.count {
+            let field = fields[i]
+            
+            if field != Self.ProprietaryClassField {
+                if proprietaryClass, !proprietaryFieldPresent {
+                    guard (field & Self.ProprietaryClassFieldMask == Self.ProprietaryClassFieldMask) ||
+                            (testClass && field & Self.ProprietaryTestClassFieldMask == Self.ProprietaryTestClassFieldMask) else {
+                        return false
+                    }
+                }
+            } else {
+                guard (fields.count - i) >= 3, !proprietaryClass else {
+                    return false
+                }
+                proprietaryFieldPresent = true
+            }
+            
+            proprietaryClass = field & Self.ProprietaryClassFieldMask == Self.ProprietaryClassFieldMask
+            testClass = (field & Self.ProprietaryTestClassFieldMask == Self.ProprietaryTestClassFieldMask) && field != Self.ProprietaryClassField
+        }
+        
+        return true
     }
 }
 

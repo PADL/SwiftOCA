@@ -15,9 +15,7 @@ struct ContentView: View {
 
     var body: some View {
         HStack {
-            Text("Mute")
-            Spacer()
-            OcaMuteView(connection, object: id)
+            OcaRootBlockView(connection)
         }
         .padding()
     }

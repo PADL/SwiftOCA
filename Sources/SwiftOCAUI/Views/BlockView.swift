@@ -27,6 +27,10 @@ public struct OcaBlockView: OcaView {
     public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
         self._object = StateObject(wrappedValue: connection.resolve(object: object) as! OcaBlock )
     }
+    
+    public init(object: OcaBlock) {
+        self._object = StateObject(wrappedValue: object)
+    }
 
     public var body: some View {
         DynamicStack {
