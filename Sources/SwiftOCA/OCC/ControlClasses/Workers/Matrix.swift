@@ -86,10 +86,10 @@ public class OcaMatrix: OcaWorker {
 extension OcaMatrix {
     /// resolve members using proxy class, members are optional as some may be unset
 
-    typealias SparseMembers = OcaList2D<OcaRoot?>
+    public typealias SparseMembers = OcaList2D<OcaRoot?>
     
     @MainActor
-    func resolveMembers(with proxy: OcaRoot) async throws -> SparseMembers {
+    public func resolveMembers(with proxy: OcaRoot) async throws -> SparseMembers {
         guard let connectionDelegate else { throw Ocp1Error.notConnected }
 
         return try await self._members.onCompletion { value in

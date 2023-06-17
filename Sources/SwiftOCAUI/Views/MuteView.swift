@@ -41,8 +41,9 @@ public struct OcaMuteView: OcaView {
     public var body: some View {
         Toggle(isOn: object.muteState) {}
             .toggleStyle(SymbolToggleStyle(systemImage: "speaker.slash.circle.fill", activeColor: .accentColor))
-            .showProgressIfWaiting(object.state)
-            .refreshableToInitialState(object.$state)
+        .modifier(PropertyModifiers(object.$state))
+        .showProgressIfWaiting(object.state)
+        .defaultPropertyModifiers(object.$state)
     }
 }
 

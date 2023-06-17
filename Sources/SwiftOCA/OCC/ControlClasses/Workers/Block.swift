@@ -176,7 +176,7 @@ public class OcaBlock: OcaWorker {
 
 extension OcaBlock {
     @MainActor
-    func resolveMembers() async throws -> OcaList<OcaRoot> {
+    public func resolveMembers() async throws -> OcaList<OcaRoot> {
         guard let connectionDelegate else { throw Ocp1Error.notConnected }
 
         return try await self._members.onCompletion { members in

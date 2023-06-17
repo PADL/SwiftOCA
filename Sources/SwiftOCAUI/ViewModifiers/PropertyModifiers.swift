@@ -18,7 +18,7 @@ import Foundation
 import SwiftUI
 import SwiftOCA
 
-private struct RefreshableToInitialState: ViewModifier {
+struct PropertyModifiers: ViewModifier {
     let property: any OcaPropertyRepresentable
     
     init(_ property: any OcaPropertyRepresentable) {
@@ -27,14 +27,13 @@ private struct RefreshableToInitialState: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .refreshable {
-                await self.property.refresh()
-            }
+            .refreshableToInitialState(property)
     }
 }
 
+
 extension View {
-    public func refreshableToInitialState(_ property: any OcaPropertyRepresentable) -> some View {
-        return self.modifier(RefreshableToInitialState(property))
+    public func defaultPropertyModifiers(_ property: any OcaPropertyRepresentable) -> some View {
+        return self.modifier(PropertyModifiers(property))
     }
 }

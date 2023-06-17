@@ -71,15 +71,16 @@
 		D3E6E2372A3AE86200BF7095 /* Semaphore in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E2362A3AE86200BF7095 /* Semaphore */; };
 		D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */; };
 		D3E6E23B2A3BD5A100BF7095 /* KeyPathIterable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */; };
-		D3E6E24A2A3C0C7700BF7095 /* OcaMuteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2492A3C0C7700BF7095 /* OcaMuteView.swift */; };
+		D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2492A3C0C7700BF7095 /* MuteView.swift */; };
 		D3E6E24B2A3C0C8D00BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3E6E24C2A3C0D6300BF7095 /* libSwiftOCAUI.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */; };
-		D3E6E2562A3C550500BF7095 /* OcaViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2542A3C54CE00BF7095 /* OcaViewRepresentable.swift */; };
+		D3E6E2562A3C550500BF7095 /* ViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2542A3C54CE00BF7095 /* ViewRepresentable.swift */; };
 		D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2522A3C4EA300BF7095 /* RefreshableToInitialState.swift */; };
 		D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */; };
 		D3E6E25B2A3D28DD00BF7095 /* AsyncExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */; };
-		D3E6E25D2A3D2D2500BF7095 /* OcaRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E25C2A3D2D2500BF7095 /* OcaRootView.swift */; };
-		D3E6E25F2A3D2FCD00BF7095 /* OcaBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E25E2A3D2FCD00BF7095 /* OcaBlockView.swift */; };
+		D3E6E25D2A3D2D2500BF7095 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E25C2A3D2D2500BF7095 /* RootView.swift */; };
+		D3E6E25F2A3D2FCD00BF7095 /* BlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E25E2A3D2FCD00BF7095 /* BlockView.swift */; };
+		D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -146,12 +147,13 @@
 		D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70Browser.swift; sourceTree = "<group>"; };
 		D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPathIterable.swift; sourceTree = "<group>"; };
 		D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCAUI.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		D3E6E2492A3C0C7700BF7095 /* OcaMuteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OcaMuteView.swift; sourceTree = "<group>"; };
+		D3E6E2492A3C0C7700BF7095 /* MuteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MuteView.swift; sourceTree = "<group>"; };
 		D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowProgressIfWaiting.swift; sourceTree = "<group>"; };
 		D3E6E2522A3C4EA300BF7095 /* RefreshableToInitialState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableToInitialState.swift; sourceTree = "<group>"; };
-		D3E6E2542A3C54CE00BF7095 /* OcaViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaViewRepresentable.swift; sourceTree = "<group>"; };
-		D3E6E25C2A3D2D2500BF7095 /* OcaRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaRootView.swift; sourceTree = "<group>"; };
-		D3E6E25E2A3D2FCD00BF7095 /* OcaBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaBlockView.swift; sourceTree = "<group>"; };
+		D3E6E2542A3C54CE00BF7095 /* ViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewRepresentable.swift; sourceTree = "<group>"; };
+		D3E6E25C2A3D2D2500BF7095 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		D3E6E25E2A3D2FCD00BF7095 /* BlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockView.swift; sourceTree = "<group>"; };
+		D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyModifiers.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -431,10 +433,10 @@
 		D3E6E2482A3C0C7700BF7095 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				D3E6E2492A3C0C7700BF7095 /* OcaMuteView.swift */,
-				D3E6E25E2A3D2FCD00BF7095 /* OcaBlockView.swift */,
-				D3E6E25C2A3D2D2500BF7095 /* OcaRootView.swift */,
-				D3E6E2542A3C54CE00BF7095 /* OcaViewRepresentable.swift */,
+				D3E6E2492A3C0C7700BF7095 /* MuteView.swift */,
+				D3E6E25E2A3D2FCD00BF7095 /* BlockView.swift */,
+				D3E6E25C2A3D2D2500BF7095 /* RootView.swift */,
+				D3E6E2542A3C54CE00BF7095 /* ViewRepresentable.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -444,6 +446,7 @@
 			children = (
 				D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */,
 				D3E6E2522A3C4EA300BF7095 /* RefreshableToInitialState.swift */,
+				D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */,
 			);
 			path = ViewModifiers;
 			sourceTree = "<group>";
@@ -662,10 +665,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D3E6E25D2A3D2D2500BF7095 /* OcaRootView.swift in Sources */,
-				D3E6E24A2A3C0C7700BF7095 /* OcaMuteView.swift in Sources */,
-				D3E6E25F2A3D2FCD00BF7095 /* OcaBlockView.swift in Sources */,
-				D3E6E2562A3C550500BF7095 /* OcaViewRepresentable.swift in Sources */,
+				D3E6E25D2A3D2D2500BF7095 /* RootView.swift in Sources */,
+				D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */,
+				D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */,
+				D3E6E25F2A3D2FCD00BF7095 /* BlockView.swift in Sources */,
+				D3E6E2562A3C550500BF7095 /* ViewRepresentable.swift in Sources */,
 				D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */,
 				D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */,
 			);

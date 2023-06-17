@@ -24,14 +24,14 @@ public struct OcaBoundedPropertyValue<T: Codable>: Codable {
 }
 
 @propertyWrapper
-public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiable {
+public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiable, Codable {
     public var propertyIDs: [OcaPropertyID] {
         [wrappedValue.propertyID]
     }
 
     public var wrappedValue: OcaProperty<OcaBoundedPropertyValue<Value>>
     
-    public var projectedValue: OcaPropertyRepresentable {
+    public var projectedValue: any OcaPropertyRepresentable {
         return wrappedValue
     }
 
@@ -39,6 +39,10 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiab
         await wrappedValue.refresh()
     }
     
+    public var currentValue: OcaProperty<OcaBoundedPropertyValue<Value>>.State {
+        wrappedValue.currentValue
+    }
+
     init(propertyID: OcaPropertyID,
          getMethodID: OcaMethodID,
          setMethodID: OcaMethodID? = nil) {
@@ -46,6 +50,15 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiab
                                         getMethodID: getMethodID,
                                         setMethodID: setMethodID,
                                         setValueTransformer: { $1.value })
+    }
+    
+    public init(from decoder: Decoder) throws {
+        fatalError()
+    }
+    
+    /// Placeholder only
+    public func encode(to encoder: Encoder) throws {
+        try self.wrappedValue.encode(to: encoder)
     }
     
     func onEvent(_ eventData: Ocp1EventData) throws {

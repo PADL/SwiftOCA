@@ -20,9 +20,18 @@ import AsyncAlgorithms
 import AsyncExtensions
 
 public protocol OcaPropertyRepresentable {
-    var propertyIDs: [OcaPropertyID] { get }
+    associatedtype Value: Codable
     
-    func refresh() async
+    var propertyIDs: [OcaPropertyID] { get }
+    var currentValue: OcaProperty<Value>.State { get }
+
+    func refresh() async    
+}
+
+public extension OcaPropertyRepresentable {
+    var isWaiting: Bool {
+        currentValue.isWaiting
+    }
 }
 
 protocol OcaPropertyChangeEventNotifiable: OcaPropertyRepresentable {
@@ -84,10 +93,14 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         nonmutating set { fatalError() }
     }
     
-    public var projectedValue: OcaPropertyRepresentable {
-        return self
+    public var projectedValue: any OcaPropertyRepresentable {
+        self
     }
-
+    
+    public var currentValue: State {
+        subject.value
+    }
+    
     public static subscript<T: OcaRoot>(
         _enclosingInstance instance: T,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,

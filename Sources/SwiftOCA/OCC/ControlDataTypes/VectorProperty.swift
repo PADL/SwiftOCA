@@ -22,7 +22,7 @@ public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable {
 }
 
 @propertyWrapper
-public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaPropertyChangeEventNotifiable {
+public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaPropertyChangeEventNotifiable, Codable {
     public var propertyIDs: [OcaPropertyID] {
         [xPropertyID, yPropertyID]
     }
@@ -47,12 +47,25 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
                                         setMethodID: setMethodID)
     }
   
+    public init(from decoder: Decoder) throws {
+        fatalError()
+    }
+    
+    /// Placeholder only
+    public func encode(to encoder: Encoder) throws {
+        try self.wrappedValue.encode(to: encoder)
+    }
+
     public func refresh() async {
         await wrappedValue.refresh()
     }
 
-    public var projectedValue: OcaPropertyRepresentable {
-        return wrappedValue
+    public var projectedValue: any OcaPropertyRepresentable {
+        wrappedValue
+    }
+
+    public var currentValue: OcaProperty<OcaVector2D<Value>>.State {
+        wrappedValue.currentValue
     }
 
     func onEvent(_ eventData: Ocp1EventData) throws {

@@ -21,7 +21,8 @@ extension OcaBlock {
 }
 
 public struct OcaBlockView: OcaView {
-    @StateObject var object: OcaRoot
+    @StateObject var object: OcaBlock
+    @State var members: [OcaRoot] = []
 
     public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
         self._object = StateObject(wrappedValue: connection.resolve(object: object) as! OcaBlock )
@@ -29,6 +30,12 @@ public struct OcaBlockView: OcaView {
 
     public var body: some View {
         Text(String(format: "%02X", object.objectNumber))
+            .task {
+                do {
+                    members = try await object.resolveMembers()
+                } catch {
+                }
+            }
     }
 }
 
