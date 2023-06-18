@@ -172,6 +172,10 @@ public class OcaBlock: OcaWorker {
                        result: inout OcaList<OcaObjectSearchResult>) async throws {
         throw Ocp1Error.status(.notImplemented)
     }
+    
+    public override var isContainer: Bool {
+        true
+    }
 }
 
 extension OcaBlock {
@@ -182,5 +186,11 @@ extension OcaBlock {
         return try await self._members.onCompletion(self) { members in
             members.compactMap { connectionDelegate.resolve(object: $0) }
         }
+    }
+}
+
+extension Array where Element: OcaRoot {
+    public var hasContainerMembers: Bool {
+        return self.contains(where: { $0.isContainer })
     }
 }

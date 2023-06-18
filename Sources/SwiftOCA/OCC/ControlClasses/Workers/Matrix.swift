@@ -81,6 +81,10 @@ public class OcaMatrix: OcaWorker {
     func unlockCurrent() async throws {
         try await sendCommandRrq(methodID: OcaMethodID("3.16"))
     }
+    
+    public override var isContainer: Bool {
+        true
+    }
 }
 
 extension OcaMatrix {

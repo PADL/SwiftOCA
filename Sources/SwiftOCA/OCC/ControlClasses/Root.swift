@@ -73,10 +73,13 @@ public class OcaRoot: ObservableObject {
     func lockReadOnly() async throws {
         try await sendCommandRrq(methodID: OcaMethodID("1.6"))
     }
+    
+    public var isContainer: Bool {
+        false
+    }
 }
 
 extension OcaRoot {
-
     private subscript(checkedMirrorDescendant key: String) -> Any {
         return Mirror(reflecting: self).descendant(key)!
     }
