@@ -43,11 +43,11 @@ extension Mirror {
 
 extension Mirror {
         /// Returns objects properties as a dictionary [property: value]
-    static func allKeyPaths(for object: Any) -> [String: any OcaPropertyChangeEventNotifiable] {
-        var out = [String: any OcaPropertyChangeEventNotifiable]()
+    static func allKeyPaths(for object: Any) -> [String: any OcaPropertyRepresentable] {
+        var out = [String: any OcaPropertyRepresentable]()
         
         Mirror.forEachProperty(of: object) { property, value in
-            guard let value = value as? any OcaPropertyChangeEventNotifiable else {
+            guard let value = value as? any OcaPropertyRepresentable else {
                 return
             }
             out[property.byRemovingFirstCharacter] = value

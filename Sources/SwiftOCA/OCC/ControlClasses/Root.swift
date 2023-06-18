@@ -99,9 +99,12 @@ extension OcaRoot {
                                                    from: eventData.eventParameters) else { return }
         
         // TODO: Mirror is inefficient
-        Mirror.allKeyPaths(for: self).forEach {
-            if $0.value.propertyIDs.contains(propertyID) {
-                try? $0.value.onEvent(eventData)
+        Mirror.allKeyPaths(for: self).forEach { (key, value) in
+            guard let value = value as? (any OcaPropertyChangeEventNotifiable) else {
+                return
+            }
+            if value.propertyIDs.contains(propertyID) {
+                try? value.onEvent(eventData)
                 return
             }
         }
