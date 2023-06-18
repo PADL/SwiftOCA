@@ -21,20 +21,29 @@ public class OcaRoot: ObservableObject {
     typealias Root = OcaRoot
     
     weak var connectionDelegate: AES70OCP1Connection? = nil
-
+    
     // 1.1
     public class var classID: OcaClassID { OcaClassID("1") }
-    
+    private var _classID: StaticProperty<OcaClassID> {
+        StaticProperty<OcaClassID>(propertyIDs: [OcaPropertyID("1.1")], value: Self.classID)
+    }
+
     // 1.2
     public class var classVersion: OcaClassVersionNumber { return 2 }
-    
+    private var _classVersion: StaticProperty<OcaClassVersionNumber> {
+        StaticProperty<OcaClassVersionNumber>(propertyIDs: [OcaPropertyID("1.2")], value: Self.classVersion)
+    }
+
     public class var classIdentification: OcaClassIdentification {
         OcaClassIdentification(classID: classID, classVersion: classVersion)
     }
     
     // 1.3
     public let objectNumber: OcaONo
-    
+    private var _objectNumber: StaticProperty<OcaONo> {
+        StaticProperty<OcaONo>(propertyIDs: [OcaPropertyID("1.3")], value: objectNumber)
+    }
+
     @OcaProperty(propertyID: OcaPropertyID("1.4"),
                  getMethodID: OcaMethodID("1.2"))
     public var lockable: OcaProperty<OcaBoolean>.State
@@ -98,28 +107,8 @@ extension OcaRoot {
         }
     }
     
-    struct StaticProperty<T: Codable>: OcaPropertyRepresentable {
-        typealias Value = T
-        
-        var propertyIDs: [OcaPropertyID]
-        var value: T
-
-        func refresh(_ instance: SwiftOCA.OcaRoot) async {}
-        
-        var description: String {
-            String(describing: value)
-        }
-        
-        var currentValue: OcaProperty<Value>.State {
-            OcaProperty<Value>.State.success(value)
-        }
-    }
-
-    var staticProperties: [String: any OcaPropertyRepresentable] {
-        let classID = StaticProperty<OcaClassID>(propertyIDs: [OcaPropertyID("1.1")], value: Self.classID)
-        let classVersion = StaticProperty<OcaClassVersionNumber>(propertyIDs: [OcaPropertyID("1.2")], value: Self.classVersion)
-        let objectNumber = StaticProperty<OcaONo>(propertyIDs: [OcaPropertyID("1.3")], value: objectNumber)
-        return ["classID": classID, "classVersion": classVersion, "objectNumber": objectNumber]
+    private var staticProperties: [String: any OcaPropertyRepresentable] {
+        return ["classID": _classID, "classVersion": _classVersion, "objectNumber": _objectNumber]
     }
 
     public var allProperties: [String: any OcaPropertyRepresentable] {
@@ -154,6 +143,23 @@ extension OcaRoot {
             guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
             let event = OcaEvent(emitterONo: self.objectNumber, eventID: OcaPropertyChangedEventID)
             return await connectionDelegate.isSubscribed(event: event)
+        }
+    }
+    
+    struct StaticProperty<T: Codable>: OcaPropertyRepresentable {
+        typealias Value = T
+        
+        var propertyIDs: [OcaPropertyID]
+        var value: T
+        
+        func refresh(_ instance: SwiftOCA.OcaRoot) async {}
+        
+        var description: String {
+            String(describing: value)
+        }
+        
+        var currentValue: OcaProperty<Value>.State {
+            OcaProperty<Value>.State.success(value)
         }
     }
 }
