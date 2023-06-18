@@ -49,12 +49,12 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
         try await super.connectDevice()
     }
 
-    override func disconnectDevice() async throws {
+    override func disconnectDevice(clearObjectCache: Bool) async throws {
         if let socket {
             debugPrint("Closing socket \(socket)")
             await socket.close()
         }
-        try await super.disconnectDevice()
+        try await super.disconnectDevice(clearObjectCache: clearObjectCache)
     }
     
     override func read(_ length: Int) async throws -> Data {

@@ -112,7 +112,7 @@ public class AES70OCP1Connection: ObservableObject {
     
     @MainActor
     func reconnectDevice() async throws {
-        try await disconnectDevice()
+        try await disconnectDevice(clearObjectCache: false)
         try await connectDevice()
     }
 
@@ -133,7 +133,13 @@ public class AES70OCP1Connection: ObservableObject {
             }
         }
 
-        try await refreshSubscriptions()
+        // try await refreshSubscriptions()
+        self.subscriptions = [:]
+        
+        // refresh all objects
+        for (_, object) in self.objects {
+            try? await object.refresh()
+        }
         
         // TODO: on connect should we refresh the device tree
         DispatchQueue.main.async {
@@ -144,13 +150,17 @@ public class AES70OCP1Connection: ObservableObject {
     }
     
     @MainActor
-    func disconnectDevice() async throws {
+    func disconnectDevice(clearObjectCache: Bool) async throws {
         requestMonitor = nil
         responseMonitor = nil
         if let keepAliveTask {
             keepAliveTask.cancel()
             self.keepAliveTask = nil
         }
+        if clearObjectCache {
+            self.objects = [:]
+        }
+        
         connectionStateSemaphore.signal()
     }
 
@@ -174,6 +184,6 @@ extension AES70OCP1Connection {
     @MainActor
     public func close() async throws {
         try await removeSubscriptions()
-        try await disconnectDevice()
+        try await disconnectDevice(clearObjectCache: true)
     }
 }
