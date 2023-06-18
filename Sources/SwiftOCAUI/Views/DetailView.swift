@@ -17,7 +17,9 @@
 import SwiftUI
 import SwiftOCA
 
-public var proprietaryClassToViewMap: [ObjectIdentifier: any OcaView.Type] = [:]
+public protocol OcaViewRepresentable: OcaRoot {
+    var viewType: any OcaView.Type { get }
+}
 
 public struct OcaDetailView: OcaView {
     @StateObject var object: OcaRoot
@@ -39,8 +41,9 @@ public struct OcaDetailView: OcaView {
             OcaBlockNavigationStackView(object)
         } else if metatype == OcaMatrix.self {
             OcaMatrixNavigationSplitView(object)
-        } else if let viewType = proprietaryClassToViewMap[ObjectIdentifier(metatype)] {
-            AnyView(viewType.init(object))
+        } else if let object = object as? OcaViewRepresentable {
+            // use type erasure as last resort
+            AnyView(object.viewType.init(object))
         } else {
             OcaUnknownView(object)
         }
