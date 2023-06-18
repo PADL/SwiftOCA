@@ -98,8 +98,32 @@ extension OcaRoot {
         }
     }
     
+    struct StaticProperty<T: Codable>: OcaPropertyRepresentable {
+        typealias Value = T
+        
+        var propertyIDs: [OcaPropertyID]
+        var value: T
+
+        func refresh(_ instance: SwiftOCA.OcaRoot) async {}
+        
+        var description: String {
+            String(describing: value)
+        }
+        
+        var currentValue: OcaProperty<Value>.State {
+            OcaProperty<Value>.State.success(value)
+        }
+    }
+
+    var staticProperties: [String: any OcaPropertyRepresentable] {
+        let classID = StaticProperty<OcaClassID>(propertyIDs: [OcaPropertyID("1.1")], value: Self.classID)
+        let classVersion = StaticProperty<OcaClassVersionNumber>(propertyIDs: [OcaPropertyID("1.2")], value: Self.classVersion)
+        let objectNumber = StaticProperty<OcaONo>(propertyIDs: [OcaPropertyID("1.3")], value: objectNumber)
+        return ["classID": classID, "classVersion": classVersion, "objectNumber": objectNumber]
+    }
+
     public var allProperties: [String: any OcaPropertyRepresentable] {
-        Mirror.allKeyPaths(for: self)
+        self.staticProperties.merging(Mirror.allKeyPaths(for: self)) { (_, new) in new }
     }
     
     public func subscribe() async throws {

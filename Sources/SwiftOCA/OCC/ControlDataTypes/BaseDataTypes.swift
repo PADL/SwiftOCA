@@ -94,7 +94,7 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, CustomStringConvertib
     let defLevel: OcaUint16
     let propertyIndex: OcaUint16
     
-    init(_ string: OcaString) {
+    public init(_ string: OcaString) {
         let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
         defLevel = s[0]
         propertyIndex = s[1]
@@ -223,7 +223,7 @@ public struct OcaMethodID: Codable, Hashable, CustomStringConvertible {
     let defLevel: OcaUint16
     let methodIndex: OcaUint16
     
-    init(_ string: OcaString) {
+    public init(_ string: OcaString) {
         let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
         defLevel = s[0]
         methodIndex = s[1]
