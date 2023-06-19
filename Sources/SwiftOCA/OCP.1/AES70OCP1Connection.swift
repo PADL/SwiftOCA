@@ -59,29 +59,31 @@ public class AES70OCP1Connection: ObservableObject {
     @MainActor
     private var nextCommandHandle = OcaUint32(100)
         
-    class Monitor<Value> {
+    actor Monitor<Value> {
         let channel: AsyncChannel<Value>
-        let task: Task<Void, Error>
+        var task: Task<Void, Error>?
         var lastMessageTime = Date.distantPast
+        let block: (Monitor<Value>) async throws -> Void
         
-        init(onConnectionError: @escaping () async throws -> Void,
-             _ block: @escaping () async throws -> Void) {
+        init(_ block: @escaping (Monitor<Value>) async throws -> Void) {
             self.channel = AsyncChannel()
-            self.task = Task {
-                do {
-                    try await block()
-                } catch Ocp1Error.notConnected {
-                    try await onConnectionError()
-                }
-            }
+            self.task = nil
+            self.block = block
         }
         
+        func run() {
+            task?.cancel()
+            task = Task {
+                try await block(self)
+            }
+        }
+    
         func updateLastMessageTime() {
             self.lastMessageTime = Date()
         }
         
         deinit {
-            task.cancel()
+            task?.cancel()
             channel.finish()
         }
     }
@@ -122,14 +124,29 @@ public class AES70OCP1Connection: ObservableObject {
 
     @MainActor
     func connectDevice() async throws {
-        requestMonitor = Monitor(onConnectionError: reconnectDevice, self.sendMessages)
-        responseMonitor = Monitor(onConnectionError: reconnectDevice, self.receiveMessages)
-        
+        requestMonitor = Monitor() { monitor in
+            do {
+                try await monitor.sendMessages(self)
+            } catch Ocp1Error.notConnected {
+                try await self.reconnectDevice()
+            }
+        }
+        responseMonitor = Monitor() { monitor in
+            do {
+                try await monitor.receiveMessages(self)
+            } catch Ocp1Error.notConnected {
+                try await self.reconnectDevice()
+            }
+        }
+
+        await requestMonitor!.run()
+        await responseMonitor!.run()
+
         if self.keepAliveInterval != 0 {
             keepAliveTask = Task {
                 repeat {
                     if let requestMonitor = self.requestMonitor,
-                       requestMonitor.lastMessageTime + TimeInterval(self.keepAliveInterval) < Date() {
+                       await requestMonitor.lastMessageTime + TimeInterval(self.keepAliveInterval) < Date() {
                         try await self.sendKeepAlive()
                     }
                     try await Task.sleep(nanoseconds: NSEC_PER_SEC * UInt64(self.keepAliveInterval))

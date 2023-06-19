@@ -32,7 +32,7 @@ private extension Ocp1Message {
     }
 }
 
-extension AES70OCP1Connection {
+extension AES70OCP1Connection.Monitor where Value == AES70OCP1Connection.Request {
     func encodeOcp1MessagePdu(_ messages: [Ocp1Message],
                               type messageType: OcaMessageType) throws -> Data {
         var messagePduData = Data([Ocp1SyncValue])
@@ -54,9 +54,9 @@ extension AES70OCP1Connection {
     }
 }
 
-extension AES70OCP1Connection {
+extension AES70OCP1Connection.Monitor where Value == AES70OCP1Connection.Response {
     func decodeOcp1MessagePdu(from ocp1EncodedData: Data, messages: inout [Data]) throws -> OcaMessageType {
-        precondition(ocp1EncodedData.count >= Self.MinimumPduSize)
+        precondition(ocp1EncodedData.count >= AES70OCP1Connection.MinimumPduSize)
         precondition(ocp1EncodedData[0] == Ocp1SyncValue)
         
         /// MinimumPduSize == 7
@@ -64,7 +64,7 @@ extension AES70OCP1Connection {
         /// 1`protocolVersion: OcaUint16`
         /// 3 `pduSize: OcaUint32` (size of PDU not including syncVal)
 
-        guard ocp1EncodedData.count >= Self.MinimumPduSize + 3 else {
+        guard ocp1EncodedData.count >= AES70OCP1Connection.MinimumPduSize + 3 else {
             throw Ocp1Error.invalidPduSize
         }
         
@@ -86,7 +86,7 @@ extension AES70OCP1Connection {
 
         let messageCount: OcaUint16 = ocp1EncodedData.decodeInteger(index: 8)
         
-        var cursor = Self.MinimumPduSize + 3 // start of first message
+        var cursor = AES70OCP1Connection.MinimumPduSize + 3 // start of first message
         
         for _ in 0..<messageCount {
             precondition(cursor < ocp1EncodedData.count)

@@ -16,37 +16,38 @@
 
 import Foundation
 
-extension AES70OCP1Connection {
-    func sendMessages() async throws {
-        guard let requestMonitor = await requestMonitor else { throw Ocp1Error.notConnected }
-        
+extension AES70OCP1Connection.Monitor where Value == AES70OCP1Connection.Request {
+    func sendMessages(_ connection: AES70OCP1Connection) async throws {
         var aggregatedMessagePduData = Data()
         
-        for await (messageType, messages) in requestMonitor.channel {
+        for await (messageType, messages) in channel {
             let messagePduData = try encodeOcp1MessagePdu(messages, type: messageType)
             
-            let sendPacket = pduAggregationInterval == 0 ||
-                Date() > requestMonitor.lastMessageTime + pduAggregationInterval
+            let sendPacket = connection.pduAggregationInterval == 0 ||
+                Date() > lastMessageTime + connection.pduAggregationInterval
             
             if sendPacket ||
-                aggregatedMessagePduData.count + messagePduData.count >= maximumTransmitUnit {
-                guard try await write(aggregatedMessagePduData) == aggregatedMessagePduData.count else {
+                aggregatedMessagePduData.count + messagePduData.count >= connection.maximumTransmitUnit {
+                guard try await connection.write(aggregatedMessagePduData) == aggregatedMessagePduData.count else {
                     throw Ocp1Error.pduSendingFailed
                 }
                 aggregatedMessagePduData.count = 0
-                requestMonitor.updateLastMessageTime()
+                updateLastMessageTime()
             }
             
             aggregatedMessagePduData += messagePduData
         }
     }
+}
 
-    private func receiveMessagePdu(messages: inout [Data]) async throws -> OcaMessageType {
-        var messagePduData = try await read(Self.MinimumPduSize)
+extension AES70OCP1Connection.Monitor where Value == AES70OCP1Connection.Response {
+    private func receiveMessagePdu(_ connection: AES70OCP1Connection,
+                                   messages: inout [Data]) async throws -> OcaMessageType {
+        var messagePduData = try await connection.read(AES70OCP1Connection.MinimumPduSize)
         
         /// just parse enough of the protocol in order to read rest of message
         /// `syncVal: OcaUint8` || `protocolVersion: OcaUint16` || `pduSize: OcaUint32`
-        guard messagePduData.count >= Self.MinimumPduSize else {
+        guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize else {
             debugPrint("receiveMessagePdu: PDU of size \(messagePduData.count) is too short")
             throw Ocp1Error.pduTooShort
         }
@@ -55,16 +56,16 @@ extension AES70OCP1Connection {
             throw Ocp1Error.invalidSyncValue
         }
         let pduSize: OcaUint32 = messagePduData.decodeInteger(index: 3)
-        guard pduSize >= (Self.MinimumPduSize - 1) else { // doesn't include sync byte
+        guard pduSize >= (AES70OCP1Connection.MinimumPduSize - 1) else { // doesn't include sync byte
             debugPrint("receiveMessagePdu: PDU size \(pduSize) is less than minimum PDU size")
             throw Ocp1Error.invalidPduSize
         }
 
-        messagePduData += try await read(Int(pduSize) - (Self.MinimumPduSize - 1))
+        messagePduData += try await connection.read(Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1))
         return try decodeOcp1MessagePdu(from: messagePduData, messages: &messages)
     }
 
-    private func processMessage(_ message: Ocp1Message, monitor: Monitor<Response>) async throws {
+    private func processMessage(_ connection: AES70OCP1Connection, _ message: Ocp1Message) async throws {
         switch message {
         case is Ocp1Command:
             debugPrint("processMessage: Device sent unexpected command \(message); ignoring")
@@ -72,13 +73,13 @@ extension AES70OCP1Connection {
             let event = notification.parameters.eventData.event
             // debugPrint("processMessage: Received notification for event \(event)")
             Task { @MainActor in
-                if let callback = subscriptions[event], notification.parameters.parameterCount == 2 {
+                if let callback = connection.subscriptions[event], notification.parameters.parameterCount == 2 {
                     callback(notification.parameters.eventData)
                 }
             }
         case let response as Ocp1Response:
             // debugPrint("processMessage: response for request \(response.handle)")
-            await monitor.channel.send(response)
+            await channel.send(response)
         case is Ocp1KeepAlive1:
             break
         case is Ocp1KeepAlive2:
@@ -88,33 +89,31 @@ extension AES70OCP1Connection {
         }
     }
     
-    private func receiveMessage() async throws {
-        guard let responseMonitor = await responseMonitor else { throw Ocp1Error.notConnected }
-        
+    private func receiveMessage(_ connection: AES70OCP1Connection) async throws {
         var messagePdus = [Data]()
-        let messageType = try await receiveMessagePdu(messages: &messagePdus)
+        let messageType = try await receiveMessagePdu(connection, messages: &messagePdus)
         let messages = try messagePdus.map {
             try decodeOcp1Message(from: $0, type: messageType)
         }
                
-        responseMonitor.updateLastMessageTime()
+        updateLastMessageTime()
 
         for message in messages {
-            if keepAliveInterval != 0,
-               responseMonitor.lastMessageTime + TimeInterval(3 * self.keepAliveInterval) < Date() {
+            if connection.keepAliveInterval != 0,
+               lastMessageTime + TimeInterval(3 * connection.keepAliveInterval) < Date() {
                 throw Ocp1Error.notConnected
             }
 
-            try await processMessage(message, monitor: responseMonitor)
-            responseMonitor.updateLastMessageTime()
+            try await processMessage(connection, message)
+            updateLastMessageTime()
         }
         
         await Task.yield()
     }
     
-    func receiveMessages() async throws {
+    func receiveMessages(_ connection: AES70OCP1Connection) async throws {
         repeat {
-            try await receiveMessage()
+            try await receiveMessage(connection)
             // rely on exceptions to get us out of the loop
         } while true
     }
