@@ -17,22 +17,25 @@
 import Foundation
 
 extension AES70OCP1Connection {
+    @MainActor
     private func sendMessage(_ message: Ocp1Message, type messageType: OcaMessageType) async throws {
-        guard let requestMonitor = await requestMonitor else { throw Ocp1Error.notConnected }
+        guard let requestMonitor = requestMonitor else { throw Ocp1Error.notConnected }
         await requestMonitor.channel.send((messageType, [message]))
     }
 
+    @MainActor
     func sendCommand(_ command: Ocp1Command) async throws {
         // debugPrint("sendCommand \(command)")
         try await sendMessage(command, type: .ocaCmd)
     }
     
+    @MainActor
     private func response(for handle: OcaUint32) async throws -> Ocp1Response {
-        guard let responseMonitor = await responseMonitor else {
+        guard let responseMonitor = responseMonitor else {
             throw Ocp1Error.notConnected
         }
         
-        let deadline = await Date() + responseTimeout
+        let deadline = Date() + responseTimeout
         repeat {
             for await response in responseMonitor.channel {
                 if response.handle == handle {
@@ -44,11 +47,13 @@ extension AES70OCP1Connection {
         throw Ocp1Error.responseTimeout
     }
 
+    @MainActor
     func sendCommandRrq(_ command: Ocp1Command) async throws -> Ocp1Response {
         try await sendMessage(command, type: .ocaCmdRrq)
         return try await response(for: command.handle)
     }
 
+    @MainActor
     func sendKeepAlive() async throws {
         let message = Ocp1KeepAlive1(heartBeatTime: keepAliveInterval)
         try await sendMessage(message, type: .ocaKeepAlive)

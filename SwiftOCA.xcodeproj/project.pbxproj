@@ -18,14 +18,14 @@
 		D3DA69F42A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */; };
 		D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F62A3FE538001250A1 /* DynamicStack.swift */; };
 		D3DA69FB2A3FEF52001250A1 /* DeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69FA2A3FEF52001250A1 /* DeviceManager.swift */; };
-		D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */; };
+		D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift */; };
 		D3E6E1B42A3ACA7B00BF7095 /* AES70OCP1Connection+Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */; };
 		D3E6E1B52A3ACA7B00BF7095 /* AES70OCP1Connection+Subscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */; };
 		D3E6E1B62A3ACA7B00BF7095 /* AES70ClassRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AF2A3ACA6C00BF7095 /* AES70ClassRegistry.swift */; };
 		D3E6E1B72A3ACA7B00BF7095 /* AES70OCP1Connection+Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AB2A3ACA6C00BF7095 /* AES70OCP1Connection+Messages.swift */; };
 		D3E6E1B82A3ACA7B00BF7095 /* AES70OCP1SocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1B22A3ACA6C00BF7095 /* AES70OCP1SocketConnection.swift */; };
 		D3E6E1B92A3ACA7B00BF7095 /* BinaryCodingConfiguration+OCP1.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AD2A3ACA6C00BF7095 /* BinaryCodingConfiguration+OCP1.swift */; };
-		D3E6E1BA2A3ACA7B00BF7095 /* AES70OCP1Connection+Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1Connection+Monitor.swift */; };
+		D3E6E1BA2A3ACA7B00BF7095 /* AES70OCP1ConnectionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor.swift */; };
 		D3E6E1BB2A3ACA7B00BF7095 /* AES70OCP1Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */; };
 		D3E6E1BC2A3ACA7E00BF7095 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A62A3ACA6C00BF7095 /* Errors.swift */; };
 		D3E6E1BD2A3ACA8200BF7095 /* Response.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A12A3ACA6C00BF7095 /* Response.swift */; };
@@ -149,12 +149,12 @@
 		D3E6E1A42A3ACA6C00BF7095 /* Notification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
 		D3E6E1A52A3ACA6C00BF7095 /* MessageType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageType.swift; sourceTree = "<group>"; };
 		D3E6E1A62A3ACA6C00BF7095 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
-		D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1Connection+Monitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Monitor.swift"; sourceTree = "<group>"; };
+		D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1ConnectionMonitor.swift; sourceTree = "<group>"; };
 		D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Objects.swift"; sourceTree = "<group>"; };
 		D3E6E1AB2A3ACA6C00BF7095 /* AES70OCP1Connection+Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Messages.swift"; sourceTree = "<group>"; };
 		D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Subscribe.swift"; sourceTree = "<group>"; };
 		D3E6E1AD2A3ACA6C00BF7095 /* BinaryCodingConfiguration+OCP1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BinaryCodingConfiguration+OCP1.swift"; sourceTree = "<group>"; };
-		D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Codable.swift"; sourceTree = "<group>"; };
+		D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1ConnectionMonitor+Codable.swift"; sourceTree = "<group>"; };
 		D3E6E1AF2A3ACA6C00BF7095 /* AES70ClassRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70ClassRegistry.swift; sourceTree = "<group>"; };
 		D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1Connection.swift; sourceTree = "<group>"; };
 		D3E6E1B22A3ACA6C00BF7095 /* AES70OCP1SocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1SocketConnection.swift; sourceTree = "<group>"; };
@@ -430,8 +430,8 @@
 		D3E6E1A72A3ACA6C00BF7095 /* OCP.1 */ = {
 			isa = PBXGroup;
 			children = (
-				D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1Connection+Monitor.swift */,
-				D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */,
+				D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor.swift */,
+				D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift */,
 				D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */,
 				D3E6E1AB2A3ACA6C00BF7095 /* AES70OCP1Connection+Messages.swift */,
 				D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */,
@@ -695,7 +695,7 @@
 				D3E6E1CB2A3ACA9000BF7095 /* Switch.swift in Sources */,
 				D3E6E1B72A3ACA7B00BF7095 /* AES70OCP1Connection+Messages.swift in Sources */,
 				D3DA69EE2A3DD350001250A1 /* Task+Timeout.swift in Sources */,
-				D3E6E1BA2A3ACA7B00BF7095 /* AES70OCP1Connection+Monitor.swift in Sources */,
+				D3E6E1BA2A3ACA7B00BF7095 /* AES70OCP1ConnectionMonitor.swift in Sources */,
 				D3E6E1E42A3ACAA900BF7095 /* NetworkDataTypes.swift in Sources */,
 				D3E6E1CE2A3ACA9600BF7095 /* Sensor.swift in Sources */,
 				D3E6E1CF2A3ACA9600BF7095 /* BasicSensors.swift in Sources */,
@@ -729,7 +729,7 @@
 				D3E6E1B92A3ACA7B00BF7095 /* BinaryCodingConfiguration+OCP1.swift in Sources */,
 				D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */,
 				D3E6E1DE2A3ACAA900BF7095 /* DefaultObjectNumbers.swift in Sources */,
-				D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */,
+				D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift in Sources */,
 				D3E6E1BE2A3ACA8200BF7095 /* Command.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
