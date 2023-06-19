@@ -17,20 +17,14 @@
 import SwiftUI
 import SwiftOCA
 
-public struct OcaRootBlockView: View {
-    @StateObject var connection: AES70OCP1Connection
-    @StateObject var object: OcaBlock
-    @State var oNoPath = NavigationPath()
+struct OcaDeviceManagerView: View, OcaView {
+    @StateObject var object: OcaDeviceManager
     
-    public init(_ connection: AES70OCP1Connection) {
-        self._connection = StateObject(wrappedValue: connection)
-        self._object = StateObject(wrappedValue: connection.rootBlock)
+    init(_ object: OcaRoot) {
+        self._object = StateObject(wrappedValue: object as! OcaDeviceManager)
     }
-    
+
     public var body: some View {
-        VStack {
-            OcaBlockNavigationSplitView(object).environment(\.navigationPath, $oNoPath)
-            //OcaDeviceManagerView(connection.deviceManager)
-        }
+        OcaPropertyTableView(object)
     }
 }

@@ -30,6 +30,13 @@ public struct OcaDeviceState: OptionSet, Codable {
     }
 }
 
+public enum OcaResetCause: OcaUint16, Codable {
+    case powerOn = 0
+    case internalError = 1
+    case upgrade = 2
+    case externalRequest = 3
+}
+
 public class OcaDeviceManager: OcaManager {
     public override class var classID: OcaClassID { OcaClassID("1.3.1") }
 
@@ -69,12 +76,17 @@ public class OcaDeviceManager: OcaManager {
                  setMethodID: OcaMethodID("3.12"))
     public var enabled: OcaProperty<OcaBoolean>.State
 
-    @OcaProperty(propertyID: OcaPropertyID("3.8"),
+    @OcaProperty(propertyID: OcaPropertyID("3.9"),
                  getMethodID: OcaMethodID("3.13"))
     public var state: OcaProperty<OcaDeviceState>.State
 
     // TODO: property 3.10 can only be set by events???
-    var busy: OcaBoolean = false
+    @OcaProperty(propertyID: OcaPropertyID("3.10"))
+    public var busy: OcaProperty<OcaBoolean>.State
+
+    @OcaProperty(propertyID: OcaPropertyID("3.11"),
+                 getMethodID: OcaMethodID("3.15"))
+    public var resetCause: OcaProperty<OcaResetCause>.State
     
     @OcaProperty(propertyID: OcaPropertyID("3.12"),
                  getMethodID: OcaMethodID("3.17"),
@@ -82,10 +94,10 @@ public class OcaDeviceManager: OcaManager {
     public var message: OcaProperty<OcaString>.State
 
     @OcaProperty(propertyID: OcaPropertyID("3.13"),
-                 getMethodID: OcaMethodID("3.18"))
+                 getMethodID: OcaMethodID("3.19"))
     public var managers: OcaProperty<OcaList<OcaManagerDescriptor>>.State
 
-    @OcaProperty(propertyID: OcaPropertyID("3.4"),
+    @OcaProperty(propertyID: OcaPropertyID("3.14"),
                  getMethodID: OcaMethodID("3.20"))
     public var deviceRevisionID: OcaProperty<OcaString>.State
     
@@ -93,10 +105,14 @@ public class OcaDeviceManager: OcaManager {
         self.init(objectNumber: OcaDeviceManagerONo)
     }
     
-    //OcaStatus SetResetKey(OcaBlobFixedLen<16> Key, OcaNetworkAddress Address)
-    //OcaStatus GetResetCause(OcaResetCause &resetCause)
-
-    func clearResetCause() async -> OcaStatus {
-        return .notImplemented
+    // 3.14
+    public func setResetKey(key: OcaBlob, address: OcaNetworkAddress) async throws {
+        // TODO: constrain key to 16 bytes
+        throw Ocp1Error.notImplemented
+    }
+    
+    // 3.16
+    public func clearResetCause() async throws {
+        throw Ocp1Error.notImplemented
     }
 }

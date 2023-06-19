@@ -46,7 +46,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     let propertyID: OcaPropertyID
     
     /// The OCA get method ID
-    let getMethodID: OcaMethodID
+    let getMethodID: OcaMethodID?
     
     /// The OCA set method ID, if present
     let setMethodID: OcaMethodID?
@@ -71,15 +71,10 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     private let subject: AsyncCurrentValueSubject<State>
 
     public var description: String {
-        switch subject.value {
-        case .initial:
-            return ""
-        case .requesting:
-            return "Requesting"
-        case .success(let value):
+        if case .success(let value) = subject.value {
             return String(describing: value)
-        case .failure(let error):
-            return error.localizedDescription
+        } else {
+            return ""
         }
     }
     
@@ -146,7 +141,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     private let setValueTransformer: SetValueTransformer?
     
     init(propertyID: OcaPropertyID,
-         getMethodID: OcaMethodID,
+         getMethodID: OcaMethodID? = nil,
          setMethodID: OcaMethodID? = nil,
          setValueTransformer: SetValueTransformer? = nil) {
         self.propertyID = propertyID
@@ -158,6 +153,10 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         
     @MainActor
     private func getValueAndSubscribe(_ instance: OcaRoot) async throws -> Value {
+        guard let getMethodID else {
+            throw Ocp1Error.propertyIsImmutable
+        }
+
         let value: Value
         
         value = try await instance.sendCommandRrq(methodID: getMethodID)
@@ -173,8 +172,8 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     @MainActor
     private func setValueIfMutable(_ instance: OcaRoot, _ value: Value) async throws {
         guard let setMethodID else {
-	    throw Ocp1Error.propertyIsImmutable
-	}
+            throw Ocp1Error.propertyIsImmutable
+        }
         
         let newValue: Encodable
         
@@ -198,14 +197,11 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             return
         }
 
-        if await connectionDelegate.requestMonitor == nil {
-            // connection state semaphore will be signalled when we are connected
-            await connectionDelegate.connectionStateSemaphore.wait()
-        }
-
         subject.send(.requesting)
-
+        
         do {
+            try await connectionDelegate.suspendUntilConnected()
+
             let value = try await block(self)
             subject.send(.success(value))
         } catch let error {
@@ -258,6 +254,8 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             guard let connectionDelegate = instance.connectionDelegate else {
                 throw Ocp1Error.noConnectionDelegate
             }
+
+            try await connectionDelegate.suspendUntilConnected()
 
             return try await withTimeout(seconds: connectionDelegate.responseTimeout) {
                 repeat {

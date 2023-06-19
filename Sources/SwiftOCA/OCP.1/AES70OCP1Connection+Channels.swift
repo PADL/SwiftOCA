@@ -15,7 +15,6 @@
 //
 
 import Foundation
-import Socket
 
 extension AES70OCP1Connection {
     func sendMessages() async throws {
@@ -24,6 +23,7 @@ extension AES70OCP1Connection {
         for await (messageType, messages) in requestMonitor.channel {
             let messagePduData = try encodeOcp1MessagePdu(messages, type: messageType)
             
+            // TODO: batch messages into single write requests
             guard try await write(messagePduData) == messagePduData.count else {
                 throw Ocp1Error.pduSendingFailed
             }

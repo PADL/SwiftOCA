@@ -28,17 +28,13 @@ extension OcaRoot {
 }
 
 struct OcaNavigationLabel: View, OcaView {
-    typealias Object = OcaRoot
+    @StateObject var object: OcaRoot
     
-    @StateObject var object: Object
-    
-    init(_ object: Object) {
+    init(_ object: OcaRoot) {
         self._object = StateObject(wrappedValue: object)
     }
-
 
     public var body: some View {
         Text(object.navigationLabel)
     }
 }
-

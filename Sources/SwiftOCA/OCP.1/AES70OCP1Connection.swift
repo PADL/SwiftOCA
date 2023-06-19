@@ -16,7 +16,7 @@
 
 import Foundation
 import AsyncAlgorithms
-import Semaphore
+import AsyncExtensions
 
 typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData) -> Void
 
@@ -25,14 +25,15 @@ public class AES70OCP1Connection: ObservableObject {
     /// protocol types
     static let MinimumPduSize = 7
     
-    @MainActor
-    let connectionStateSemaphore = AsyncSemaphore(value: 0)
-    
     /// Keepalive/ping interval (only necessary for UDP)
     public var keepAliveInterval: OcaUint16 {
         return 10
     }
-    public let responseTimeout = TimeInterval(30)
+
+    @MainActor
+    public var connectionTimeout = TimeInterval(10)
+    @MainActor
+    public var responseTimeout = TimeInterval(5)
     
     /// Object interning, main thread only
     @MainActor
@@ -46,7 +47,7 @@ public class AES70OCP1Connection: ObservableObject {
     @MainActor
     let subscriptionManager = OcaSubscriptionManager()
     @MainActor
-    let deviceManager = OcaDeviceManager()
+    public let deviceManager = OcaDeviceManager()
     
     /// Subscription callbacks, main thread only
     @MainActor
@@ -142,17 +143,14 @@ public class AES70OCP1Connection: ObservableObject {
         }
         
         // TODO: on connect should we refresh the device tree
+
         DispatchQueue.main.async {
             self.objectWillChange.send()
         }
-    
-        connectionStateSemaphore.signal()
     }
     
     @MainActor
     func disconnectDevice(clearObjectCache: Bool) async throws {
-        requestMonitor = nil
-        responseMonitor = nil
         if let keepAliveTask {
             keepAliveTask.cancel()
             self.keepAliveTask = nil
@@ -160,8 +158,12 @@ public class AES70OCP1Connection: ObservableObject {
         if clearObjectCache {
             self.objects = [:]
         }
+        requestMonitor = nil
+        responseMonitor = nil
         
-        connectionStateSemaphore.signal()
+        DispatchQueue.main.async {
+            self.objectWillChange.send()
+        }
     }
 
     /// API to be impmlemented by concrete classes
@@ -187,3 +189,28 @@ extension AES70OCP1Connection {
         try await disconnectDevice(clearObjectCache: true)
     }
 }
+
+#if canImport(Combine) || canImport(OpenCombine)
+#if canImport(Combine)
+import Combine
+#endif
+#if canImport(OpenCombine)
+import OpenCombine
+#endif
+
+extension AES70OCP1Connection {
+    func suspendUntilConnected() async throws {
+        try await withTimeout(seconds: connectionTimeout) {
+            while await self.requestMonitor == nil {
+                var cancellables = Set<AnyCancellable>()
+                
+                await withCheckedContinuation { continuation in
+                    self.objectWillChange.sink { _ in
+                        continuation.resume()
+                    }.store(in: &cancellables)
+                }
+            }
+        }
+    }
+}
+#endif

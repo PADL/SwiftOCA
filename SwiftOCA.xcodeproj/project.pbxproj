@@ -17,6 +17,7 @@
 		D3DA69F22A3DF884001250A1 /* MatrixNavigationSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F12A3DF884001250A1 /* MatrixNavigationSplitView.swift */; };
 		D3DA69F42A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */; };
 		D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F62A3FE538001250A1 /* DynamicStack.swift */; };
+		D3DA69FB2A3FEF52001250A1 /* DeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69FA2A3FEF52001250A1 /* DeviceManager.swift */; };
 		D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */; };
 		D3E6E1B42A3ACA7B00BF7095 /* AES70OCP1Connection+Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */; };
 		D3E6E1B52A3ACA7B00BF7095 /* AES70OCP1Connection+Subscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */; };
@@ -78,7 +79,6 @@
 		D3E6E2292A3ACFA100BF7095 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */; };
 		D3E6E22A2A3ACFA100BF7095 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2252A3ACFA100BF7095 /* ContentView.swift */; };
 		D3E6E2342A3AD0A800BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
-		D3E6E2372A3AE86200BF7095 /* Semaphore in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E2362A3AE86200BF7095 /* Semaphore */; };
 		D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */; };
 		D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2492A3C0C7700BF7095 /* MuteView.swift */; };
 		D3E6E24B2A3C0C8D00BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
@@ -103,6 +103,7 @@
 		D3DA69F12A3DF884001250A1 /* MatrixNavigationSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixNavigationSplitView.swift; sourceTree = "<group>"; };
 		D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EnvironmentValues+NavigationPath.swift"; sourceTree = "<group>"; };
 		D3DA69F62A3FE538001250A1 /* DynamicStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicStack.swift; sourceTree = "<group>"; };
+		D3DA69FA2A3FEF52001250A1 /* DeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManager.swift; sourceTree = "<group>"; };
 		D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCA.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hex.swift"; sourceTree = "<group>"; };
 		D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+IntegerCodable.swift"; sourceTree = "<group>"; };
@@ -181,7 +182,6 @@
 			files = (
 				D3E6E1F12A3ACB1E00BF7095 /* Socket in Frameworks */,
 				D3E6E25B2A3D28DD00BF7095 /* AsyncExtensions in Frameworks */,
-				D3E6E2372A3AE86200BF7095 /* Semaphore in Frameworks */,
 				D3E6E1EB2A3ACAED00BF7095 /* BinaryCoder in Frameworks */,
 				D3E6E1EE2A3ACB0700BF7095 /* AsyncAlgorithms in Frameworks */,
 			);
@@ -254,6 +254,21 @@
 				D3E6E2492A3C0C7700BF7095 /* MuteView.swift */,
 			);
 			path = Actuators;
+			sourceTree = "<group>";
+		};
+		D3DA69F82A3FEF42001250A1 /* Agents */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Agents;
+			sourceTree = "<group>";
+		};
+		D3DA69F92A3FEF43001250A1 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				D3DA69FA2A3FEF52001250A1 /* DeviceManager.swift */,
+			);
+			path = Managers;
 			sourceTree = "<group>";
 		};
 		D3E6E15B2A3ACA0B00BF7095 = {
@@ -490,6 +505,8 @@
 		D3E6E2482A3C0C7700BF7095 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D3DA69F82A3FEF42001250A1 /* Agents */,
+				D3DA69F92A3FEF43001250A1 /* Managers */,
 				D3DA69F62A3FE538001250A1 /* DynamicStack.swift */,
 				D3DA69E32A3DCA75001250A1 /* NavigationLabel.swift */,
 				D3E6E2542A3C54CE00BF7095 /* View.swift */,
@@ -547,7 +564,6 @@
 				D3E6E1EA2A3ACAED00BF7095 /* BinaryCoder */,
 				D3E6E1ED2A3ACB0700BF7095 /* AsyncAlgorithms */,
 				D3E6E1F02A3ACB1E00BF7095 /* Socket */,
-				D3E6E2362A3AE86200BF7095 /* Semaphore */,
 				D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */,
 			);
 			productName = SwiftOCA;
@@ -622,7 +638,6 @@
 				D3E6E1E92A3ACAED00BF7095 /* XCRemoteSwiftPackageReference "swift-binary-coder" */,
 				D3E6E1EC2A3ACB0700BF7095 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 				D3E6E1EF2A3ACB1E00BF7095 /* XCRemoteSwiftPackageReference "Socket" */,
-				D3E6E2352A3AE86200BF7095 /* XCRemoteSwiftPackageReference "Semaphore" */,
 				D3E6E2592A3D28DD00BF7095 /* XCRemoteSwiftPackageReference "AsyncExtensions" */,
 			);
 			productRefGroup = D3E6E1652A3ACA0B00BF7095 /* Products */;
@@ -728,6 +743,7 @@
 				D3E6E2632A3D648400BF7095 /* RootBlockView.swift in Sources */,
 				D3E6E25D2A3D2D2500BF7095 /* DetailView.swift in Sources */,
 				D3DA69E22A3DADF1001250A1 /* BlockNavigationSplitView.swift in Sources */,
+				D3DA69FB2A3FEF52001250A1 /* DeviceManager.swift in Sources */,
 				D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */,
 				D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */,
 				D3DA69E42A3DCA75001250A1 /* NavigationLabel.swift in Sources */,
@@ -1052,14 +1068,6 @@
 				kind = branch;
 			};
 		};
-		D3E6E2352A3AE86200BF7095 /* XCRemoteSwiftPackageReference "Semaphore" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:groue/Semaphore.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.0.8;
-			};
-		};
 		D3E6E2592A3D28DD00BF7095 /* XCRemoteSwiftPackageReference "AsyncExtensions" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "git@github.com:sideeffect-io/AsyncExtensions.git";
@@ -1085,11 +1093,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D3E6E1EF2A3ACB1E00BF7095 /* XCRemoteSwiftPackageReference "Socket" */;
 			productName = Socket;
-		};
-		D3E6E2362A3AE86200BF7095 /* Semaphore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D3E6E2352A3AE86200BF7095 /* XCRemoteSwiftPackageReference "Semaphore" */;
-			productName = Semaphore;
 		};
 		D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */ = {
 			isa = XCSwiftPackageProductDependency;

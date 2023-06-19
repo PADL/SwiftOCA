@@ -18,8 +18,8 @@ import SwiftUI
 import SwiftOCA
 
 struct OcaBlockNavigationSplitView: OcaView {
-    @StateObject var object: OcaBlock
     @Environment(\.navigationPath) var oNoPath
+    @StateObject var object: OcaBlock
     @State var members: [OcaRoot]?
     @State var membersMap: [OcaONo:OcaRoot]?
     @State var selectedONo: OcaONo? = nil
