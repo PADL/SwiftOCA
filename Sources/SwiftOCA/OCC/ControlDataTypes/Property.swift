@@ -259,11 +259,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
 
             return try await withTimeout(seconds: connectionDelegate.responseTimeout) {
                 repeat {
-                    if case .initial = self.subject.value {
-                        await perform(instance) {
-                            try await $0.getValueAndSubscribe(instance)
-                        }
-                    }
+                    await subscribe(instance)
                     
                     if case .success(let value) = self.subject.value {
                         return try await block(value)

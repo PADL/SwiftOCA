@@ -28,17 +28,17 @@ extension AES70OCP1Connection {
     }
     
     private func response(for handle: OcaUint32) async throws -> Ocp1Response {
-        guard let responseMonitor = await responseMonitor else { throw Ocp1Error.notConnected }
+        guard let responseMonitor = await responseMonitor else {
+            throw Ocp1Error.notConnected
+        }
 
         return try await withTimeout(seconds: responseTimeout) {
             repeat {
                 for await response in responseMonitor.channel {
-                    //debugPrint("awaiting response \(response)")
                     if response.handle == handle {
                         return response
                     }
                 }
-                await Task.yield()
             } while true
         }
     }
