@@ -68,14 +68,14 @@ extension OcaRoot {
             throw Ocp1Error.status(response.statusCode)
         }
         guard response.parameters.parameterCount == responseParameterCount else {
-            throw Ocp1Error.status(.parameterOutOfRange)
+            throw Ocp1Error.responseParameterOutOfRange
         }
         responseParameterData = response.parameters.parameterData
     }
     
     private func encodeParameters<T: Encodable>(_ parameters: [T]) throws -> Data {
         guard parameters.count <= OcaUint8.max else {
-            throw Ocp1Error.status(.parameterOutOfRange)
+            throw Ocp1Error.requestParameterOutOfRange
         }
         var parameterData = Data()
         for parameter in parameters {

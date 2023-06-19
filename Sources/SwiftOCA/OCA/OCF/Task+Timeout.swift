@@ -39,7 +39,7 @@ func withTimeout<R>(
             }
             try Task.checkCancellation()
             // We’ve reached the timeout.
-            throw TimedOutError()
+            throw Ocp1Error.responseTimeout
         }
         // First finished child task wins, cancel the other task.
         let result = try await group.next()!

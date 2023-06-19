@@ -55,7 +55,7 @@ public struct LengthTaggedData: MutableDataProtocol, ContiguousBytes, Equatable,
 extension LengthTaggedData: Encodable {
     public func encode(to encoder: Encoder) throws {
         if wrappedValue.count > UInt16.max {
-            throw Ocp1Error.status(.bufferOverflow)
+            throw Ocp1Error.invalidMessageSize
         }
         var container = encoder.unkeyedContainer()
         try container.encode(UInt16(wrappedValue.count))

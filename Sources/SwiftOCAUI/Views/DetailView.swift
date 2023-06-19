@@ -21,6 +21,12 @@ public protocol OcaViewRepresentable: OcaRoot {
     var viewType: any OcaView.Type { get }
 }
 
+extension Array where Element: OcaRoot {
+    var allContainerMembersAreViewRepresentable: Bool {
+        self.hasContainerMembers && self.allSatisfy { $0 is OcaViewRepresentable }
+    }
+}
+
 public struct OcaDetailView: OcaView {
     @StateObject var object: OcaRoot
 
@@ -35,9 +41,7 @@ public struct OcaDetailView: OcaView {
     public var body: some View {
         let metatype = type(of: object)
         
-        if metatype == OcaMute.self {
-            OcaMuteView(object)
-        } else if metatype == OcaBlock.self {
+        if metatype == OcaBlock.self {
             OcaBlockNavigationStackView(object)
         } else if metatype == OcaMatrix.self {
             OcaMatrixNavigationSplitView(object)

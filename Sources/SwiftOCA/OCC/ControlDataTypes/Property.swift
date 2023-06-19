@@ -172,7 +172,9 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     
     @MainActor
     private func setValueIfMutable(_ instance: OcaRoot, _ value: Value) async throws {
-        guard let setMethodID else { throw Ocp1Error.status(.notImplemented) }
+        guard let setMethodID else {
+	    throw Ocp1Error.propertyIsImmutable
+	}
         
         let newValue: Encodable
         
@@ -257,22 +259,22 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                 throw Ocp1Error.noConnectionDelegate
             }
 
-	    // FIXME: what is the right response timeout given it could be many members?
             return try await withTimeout(seconds: connectionDelegate.responseTimeout) {
-                if case .initial = self.subject.value {
-                    await perform(instance) {
-                        try await $0.getValueAndSubscribe(instance)
+                repeat {
+                    if case .initial = self.subject.value {
+                        await perform(instance) {
+                            try await $0.getValueAndSubscribe(instance)
+                        }
                     }
-                }
-                
-                if case .success(let value) = self.subject.value {
-                    return try await block(value)
-                } else if case .failure(let error) = self.subject.value {
-                    throw error
-                } else {
-                    debugPrint("onCompletion: timed out with subject \(self.subject.value)")
-                    throw Ocp1Error.responseTimeout
-                }
+                    
+                    if case .success(let value) = self.subject.value {
+                        return try await block(value)
+                    } else if case .failure(let error) = self.subject.value {
+                        throw error
+                    } else {
+                        await Task.yield()
+                    }
+                } while true
             }
         }
         

@@ -16,6 +16,7 @@
 		D3DA69F02A3DEE4E001250A1 /* PropertyTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69EF2A3DEE4E001250A1 /* PropertyTableView.swift */; };
 		D3DA69F22A3DF884001250A1 /* MatrixNavigationSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F12A3DF884001250A1 /* MatrixNavigationSplitView.swift */; };
 		D3DA69F42A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */; };
+		D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F62A3FE538001250A1 /* DynamicStack.swift */; };
 		D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */; };
 		D3E6E1B42A3ACA7B00BF7095 /* AES70OCP1Connection+Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */; };
 		D3E6E1B52A3ACA7B00BF7095 /* AES70OCP1Connection+Subscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */; };
@@ -101,6 +102,7 @@
 		D3DA69EF2A3DEE4E001250A1 /* PropertyTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyTableView.swift; sourceTree = "<group>"; };
 		D3DA69F12A3DF884001250A1 /* MatrixNavigationSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixNavigationSplitView.swift; sourceTree = "<group>"; };
 		D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EnvironmentValues+NavigationPath.swift"; sourceTree = "<group>"; };
+		D3DA69F62A3FE538001250A1 /* DynamicStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicStack.swift; sourceTree = "<group>"; };
 		D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCA.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hex.swift"; sourceTree = "<group>"; };
 		D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+IntegerCodable.swift"; sourceTree = "<group>"; };
@@ -488,6 +490,7 @@
 		D3E6E2482A3C0C7700BF7095 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D3DA69F62A3FE538001250A1 /* DynamicStack.swift */,
 				D3DA69E32A3DCA75001250A1 /* NavigationLabel.swift */,
 				D3E6E2542A3C54CE00BF7095 /* View.swift */,
 				D3E6E25C2A3D2D2500BF7095 /* DetailView.swift */,
@@ -729,6 +732,7 @@
 				D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */,
 				D3DA69E42A3DCA75001250A1 /* NavigationLabel.swift in Sources */,
 				D3DA69EB2A3DCD60001250A1 /* BlockNavigationStackView.swift in Sources */,
+				D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */,
 				D3E6E2562A3C550500BF7095 /* View.swift in Sources */,
 				D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */,
 				D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */,

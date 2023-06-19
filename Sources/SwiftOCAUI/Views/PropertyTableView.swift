@@ -34,6 +34,12 @@ struct Property: Identifiable {
     }
 }
 
+extension OcaPropertyRepresentable {
+    var headingText: Text {
+        Text(self.description)
+    }
+}
+
 struct OcaPropertyTableView: OcaView {
     @StateObject var object: OcaRoot
 
@@ -42,33 +48,36 @@ struct OcaPropertyTableView: OcaView {
     }
     
     public var body: some View {
-        Table(of: Property.self) {
-            TableColumn("Name", value: \.name)
-            TableColumn("ID", value: \.idString)
-            TableColumn("Value") {
-                if $0.value.isRequesting {
-                    ProgressView()
-                } else {
-                    Text($0.value.description)
+        VStack {
+            Text(object.navigationLabel).fontWeight(.bold).padding()
+            Table(of: Property.self) {
+                TableColumn("Name", value: \.name)
+                TableColumn("ID", value: \.idString)
+                TableColumn("Value") {
+                    if $0.value.isRequesting {
+                        ProgressView()
+                    } else {
+                        Text($0.value.description)
+                    }
                 }
-            }
-        } rows: {
-            let allPropertyKeyPaths: [Property] = object.allPropertyKeyPaths.map {
-                (propertyName, propertyKeyPath) in
-                return Property(name: propertyName,
-                                keyPath: propertyKeyPath,
-                                value: object[keyPath: propertyKeyPath] as! any OcaPropertyRepresentable)
-            }.sorted {
-                $0.idString < $1.idString
-            }
-            ForEach(allPropertyKeyPaths) { property in
-                TableRow(property)
-            }
-        }.task {
-            await withTaskGroup(of: Void.self) { taskGroup in
-                for property in object.allPropertyKeyPaths {
-                    taskGroup.addTask {
-                        await (object[keyPath: property.value] as! any OcaPropertyRepresentable).subscribe(object)
+            } rows: {
+                let allPropertyKeyPaths: [Property] = object.allPropertyKeyPaths.map {
+                    (propertyName, propertyKeyPath) in
+                    return Property(name: propertyName,
+                                    keyPath: propertyKeyPath,
+                                    value: object[keyPath: propertyKeyPath] as! any OcaPropertyRepresentable)
+                }.sorted {
+                    $0.idString < $1.idString
+                }
+                ForEach(allPropertyKeyPaths) { property in
+                    TableRow(property)
+                }
+            }.task {
+                await withTaskGroup(of: Void.self) { taskGroup in
+                    for property in object.allPropertyKeyPaths {
+                        taskGroup.addTask {
+                            await (object[keyPath: property.value] as! any OcaPropertyRepresentable).subscribe(object)
+                        }
                     }
                 }
             }

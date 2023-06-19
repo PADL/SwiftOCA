@@ -71,7 +71,7 @@ extension AES70OCP1Connection {
         var header = Ocp1Header()
         header.protocolVersion = ocp1EncodedData.decodeInteger(index: 1)
         guard header.protocolVersion == Ocp1ProtocolVersion else {
-            throw Ocp1Error.status(.protocolVersionError)
+            throw Ocp1Error.invalidProtocolVersion
         }
         
         header.pduSize = ocp1EncodedData.decodeInteger(index: 3)
@@ -132,7 +132,7 @@ extension AES70OCP1Connection {
             } else if messageData.count == 4 {
                 message = try decoder.decode(Ocp1KeepAlive2.self, from: messageData)
             } else {
-                throw Ocp1Error.status(.invalidRequest)
+                throw Ocp1Error.invalidKeepAlivePdu
             }
         }
         

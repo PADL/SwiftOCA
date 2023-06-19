@@ -17,7 +17,11 @@
 import SwiftUI
 import SwiftOCA
 
-fileprivate extension OcaMute {
+extension OcaMute: OcaViewRepresentable {
+    public var viewType: any OcaView.Type {
+        OcaMuteView.self
+    }
+    
     var isMuted: Binding<Bool> {
         Binding<Bool>(get: {
            if case let .success(muteState) = self.state {

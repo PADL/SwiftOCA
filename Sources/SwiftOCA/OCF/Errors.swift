@@ -20,6 +20,7 @@ enum Ocp1Error: Error, Equatable {
     /// An OCA status received from a device; should not be used for local errors
     case status(OcaStatus)
     case notConnected
+    case notImplemented
     case noConnectionDelegate
     case alreadySubscribedToEvent
     case pduTooShort
@@ -28,9 +29,15 @@ enum Ocp1Error: Error, Equatable {
     case invalidPduSize
     case invalidMessageSize
     case invalidMessageType
+    case invalidProtocolVersion
+    case invalidKeepAlivePdu
     case responseTimeout
+    case requestParameterOutOfRange
+    case responseParameterOutOfRange
     case serviceResolutionFailed
     case unknownServiceType
     case noInitialValue
     case unhandledEvent
+    case propertyIsImmutable
+    case proxyResolutionFailed
 }

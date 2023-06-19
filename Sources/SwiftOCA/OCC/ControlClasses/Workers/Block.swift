@@ -52,7 +52,7 @@ public class OcaBlock: OcaWorker {
     func constructMember(classID: OcaClassID,
                          constructionParameters: [any Codable],
                          objectNumber: inout OcaONo) async throws {
-        throw Ocp1Error.status(.notImplemented)
+        throw Ocp1Error.notImplemented
     }
     
     // 3.3
@@ -161,7 +161,7 @@ public class OcaBlock: OcaWorker {
     func find(objectsByPath searchPath: OcaString,
               resultFlags: OcaObjectSearchResultFlags,
               result: inout OcaList<OcaObjectSearchResult>) async throws {
-        throw Ocp1Error.status(.notImplemented)
+        throw Ocp1Error.notImplemented
     }
     
     // 3.20
@@ -170,7 +170,7 @@ public class OcaBlock: OcaWorker {
                        searchClassID: OcaClassID,
                        resultFlags: OcaObjectSearchResultFlags,
                        result: inout OcaList<OcaObjectSearchResult>) async throws {
-        throw Ocp1Error.status(.notImplemented)
+        throw Ocp1Error.notImplemented
     }
     
     public override var isContainer: Bool {
@@ -191,6 +191,6 @@ extension OcaBlock {
 
 extension Array where Element: OcaRoot {
     public var hasContainerMembers: Bool {
-        return self.contains(where: { $0.isContainer })
+        return self.allSatisfy { $0.isContainer }
     }
 }

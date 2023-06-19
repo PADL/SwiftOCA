@@ -31,15 +31,23 @@ struct OcaBlockNavigationStackView: OcaView {
     public var body: some View {
         Group {
             if let members {
-                NavigationStack(path: oNoPath) {
-                    List(members, selection: $selectedONo) { member in
-                        NavigationLink(value: member.objectNumber) {
-                            OcaNavigationLabel(member)
+                if members.hasContainerMembers {
+                    NavigationStack(path: oNoPath) {
+                        List(members, selection: $selectedONo) { member in
+                            NavigationLink(value: member.objectNumber) {
+                                OcaNavigationLabel(member)
+                            }
+                        }
+                        .navigationDestination(for: OcaONo.self) { oNo in
+                            if let member = self.membersMap![oNo] {
+                                OcaDetailView(member)
+                            }
                         }
                     }
-                    .navigationDestination(for: OcaONo.self) { oNo in
-                        if let object = self.membersMap![oNo] {
-                            OcaDetailView(object)
+                } else {
+                    DynamicStack {
+                        ForEach(members, id: \.objectNumber) { member in
+                            OcaDetailView(member)
                         }
                     }
                 }
