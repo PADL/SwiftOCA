@@ -157,9 +157,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             throw Ocp1Error.propertyIsImmutable
         }
 
-        let value: Value
-        
-        value = try await instance.sendCommandRrq(methodID: getMethodID)
+        let value: Value = try await instance.sendCommandRrq(methodID: getMethodID)
 
         // do this in the background, otherwise UI refresh performance is poor
         Task.detached {
