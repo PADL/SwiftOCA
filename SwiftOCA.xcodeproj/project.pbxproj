@@ -430,12 +430,12 @@
 		D3E6E1A72A3ACA6C00BF7095 /* OCP.1 */ = {
 			isa = PBXGroup;
 			children = (
+				D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */,
 				D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor.swift */,
 				D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift */,
 				D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */,
 				D3E6E1AB2A3ACA6C00BF7095 /* AES70OCP1Connection+Messages.swift */,
 				D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */,
-				D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */,
 				D3E6E1B22A3ACA6C00BF7095 /* AES70OCP1SocketConnection.swift */,
 				D3E6E1AD2A3ACA6C00BF7095 /* BinaryCodingConfiguration+OCP1.swift */,
 			);

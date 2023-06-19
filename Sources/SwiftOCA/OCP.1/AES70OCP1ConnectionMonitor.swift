@@ -16,38 +16,14 @@
 
 import Foundation
 
-extension AES70OCP1Connection.Monitor where Value == AES70OCP1Connection.Request {
-    func sendMessages(_ connection: AES70OCP1Connection) async throws {
-        var aggregatedMessagePduData = Data()
-        
-        for await (messageType, messages) in channel {
-            let messagePduData = try encodeOcp1MessagePdu(messages, type: messageType)
-            
-            let sendPacket = connection.pduAggregationInterval == 0 ||
-                Date() > lastMessageTime + connection.pduAggregationInterval
-            
-            if sendPacket ||
-                aggregatedMessagePduData.count + messagePduData.count >= connection.maximumTransmitUnit {
-                guard try await connection.write(aggregatedMessagePduData) == aggregatedMessagePduData.count else {
-                    throw Ocp1Error.pduSendingFailed
-                }
-                aggregatedMessagePduData.count = 0
-                updateLastMessageTime()
-            }
-            
-            aggregatedMessagePduData += messagePduData
-        }
-    }
-}
-
-extension AES70OCP1Connection.Monitor where Value == AES70OCP1Connection.Response {
+extension AES70OCP1Connection.Monitor {
     private func receiveMessagePdu(_ connection: AES70OCP1Connection,
                                    messages: inout [Data]) async throws -> OcaMessageType {
-        var messagePduData = try await connection.read(AES70OCP1Connection.MinimumPduSize)
+        var messagePduData = try await connection.read(Self.MinimumPduSize)
         
         /// just parse enough of the protocol in order to read rest of message
         /// `syncVal: OcaUint8` || `protocolVersion: OcaUint16` || `pduSize: OcaUint32`
-        guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize else {
+        guard messagePduData.count >= Self.MinimumPduSize else {
             debugPrint("receiveMessagePdu: PDU of size \(messagePduData.count) is too short")
             throw Ocp1Error.pduTooShort
         }
@@ -56,12 +32,12 @@ extension AES70OCP1Connection.Monitor where Value == AES70OCP1Connection.Respons
             throw Ocp1Error.invalidSyncValue
         }
         let pduSize: OcaUint32 = messagePduData.decodeInteger(index: 3)
-        guard pduSize >= (AES70OCP1Connection.MinimumPduSize - 1) else { // doesn't include sync byte
+        guard pduSize >= (Self.MinimumPduSize - 1) else { // doesn't include sync byte
             debugPrint("receiveMessagePdu: PDU size \(pduSize) is less than minimum PDU size")
             throw Ocp1Error.invalidPduSize
         }
 
-        messagePduData += try await connection.read(Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1))
+        messagePduData += try await connection.read(Int(pduSize) - (Self.MinimumPduSize - 1))
         return try decodeOcp1MessagePdu(from: messagePduData, messages: &messages)
     }
 
@@ -78,7 +54,7 @@ extension AES70OCP1Connection.Monitor where Value == AES70OCP1Connection.Respons
                 }
             }
         case let response as Ocp1Response:
-            // debugPrint("processMessage: response for request \(response.handle)")
+            debugPrint("processMessage: response for request \(response.handle)")
             await channel.send(response)
         case is Ocp1KeepAlive1:
             break
@@ -99,8 +75,9 @@ extension AES70OCP1Connection.Monitor where Value == AES70OCP1Connection.Respons
         updateLastMessageTime()
 
         for message in messages {
-            if connection.keepAliveInterval != 0,
-               lastMessageTime + TimeInterval(3 * connection.keepAliveInterval) < Date() {
+            let keepAliveInterval = await connection.keepAliveInterval
+            if keepAliveInterval != 0,
+               lastMessageReceivedTime + TimeInterval(3 * keepAliveInterval) < Date() {
                 throw Ocp1Error.notConnected
             }
 
@@ -114,7 +91,6 @@ extension AES70OCP1Connection.Monitor where Value == AES70OCP1Connection.Respons
     func receiveMessages(_ connection: AES70OCP1Connection) async throws {
         repeat {
             try await receiveMessage(connection)
-            // rely on exceptions to get us out of the loop
         } while true
     }
 }

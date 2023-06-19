@@ -23,16 +23,13 @@ typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData) -> Void
 public class AES70OCP1Connection: ObservableObject {
     /// This is effectively an actor (most methods are marked @MainActor) except it supports subclasses for different
     /// protocol types
-    static let MinimumPduSize = 7
     
     /// Keepalive/ping interval (only necessary for UDP)
+    @MainActor
     public var keepAliveInterval: OcaUint16 {
         return 10
     }
 
-    var maximumTransmitUnit = 1024
-    var pduAggregationInterval = TimeInterval(0)
-    
     @MainActor
     public var connectionTimeout = TimeInterval(10)
     @MainActor
@@ -59,27 +56,32 @@ public class AES70OCP1Connection: ObservableObject {
     @MainActor
     private var nextCommandHandle = OcaUint32(100)
         
-    actor Monitor<Value> {
-        let channel: AsyncChannel<Value>
+    @MainActor
+    var lastMessageSentTime = Date.distantPast
+    
+    actor Monitor {
+        static let MinimumPduSize = 7
+
+        let channel: AsyncChannel<Ocp1Response>
         var task: Task<Void, Error>?
-        var lastMessageTime = Date.distantPast
-        let block: (Monitor<Value>) async throws -> Void
+        var connection: AES70OCP1Connection?
+        var lastMessageReceivedTime = Date.distantPast
         
-        init(_ block: @escaping (Monitor<Value>) async throws -> Void) {
+        init(_ connection: AES70OCP1Connection) {
             self.channel = AsyncChannel()
             self.task = nil
-            self.block = block
+            self.connection = connection
         }
         
         func run() {
-            task?.cancel()
-            task = Task {
-                try await block(self)
+            precondition(task == nil)
+            task = Task.detached { [unowned self] in
+                try await self.receiveMessages(connection!)
             }
         }
     
         func updateLastMessageTime() {
-            self.lastMessageTime = Date()
+            self.lastMessageReceivedTime = Date()
         }
         
         deinit {
@@ -88,16 +90,9 @@ public class AES70OCP1Connection: ObservableObject {
         }
     }
     
-    /// Request monitor for outgoing PDUs. The monitor itself must run on the main thread but will spawn a task
-    /// which can asynchronously process
-    typealias Request = (OcaMessageType, [Ocp1Message])
+    /// actor for monitoring response and matching them with requests
     @MainActor
-    var requestMonitor: Monitor<Request>? = nil
-
-    /// Response monitor for incoming PDUs replying to outgoing commands.
-    typealias Response = Ocp1Response
-    @MainActor
-    var responseMonitor: Monitor<Response>? = nil
+    var monitor: Monitor? = nil
     
     @MainActor
     private var keepAliveTask: Task<Void, Error>? = nil
@@ -124,29 +119,13 @@ public class AES70OCP1Connection: ObservableObject {
 
     @MainActor
     func connectDevice() async throws {
-        requestMonitor = Monitor() { monitor in
-            do {
-                try await monitor.sendMessages(self)
-            } catch Ocp1Error.notConnected {
-                try await self.reconnectDevice()
-            }
-        }
-        responseMonitor = Monitor() { monitor in
-            do {
-                try await monitor.receiveMessages(self)
-            } catch Ocp1Error.notConnected {
-                try await self.reconnectDevice()
-            }
-        }
-
-        await requestMonitor!.run()
-        await responseMonitor!.run()
+        monitor = Monitor(self)
+        await monitor!.run()
 
         if self.keepAliveInterval != 0 {
-            keepAliveTask = Task {
+            keepAliveTask = Task.detached(priority: .medium) {
                 repeat {
-                    if let requestMonitor = self.requestMonitor,
-                       await requestMonitor.lastMessageTime + TimeInterval(self.keepAliveInterval) < Date() {
+                    if await self.lastMessageSentTime + TimeInterval(self.keepAliveInterval) < Date() {
                         try await self.sendKeepAlive()
                     }
                     try await Task.sleep(nanoseconds: NSEC_PER_SEC * UInt64(self.keepAliveInterval))
@@ -178,8 +157,7 @@ public class AES70OCP1Connection: ObservableObject {
         if clearObjectCache {
             self.objects = [:]
         }
-        requestMonitor = nil
-        responseMonitor = nil
+        monitor = nil
         
         DispatchQueue.main.async {
             self.objectWillChange.send()
@@ -222,7 +200,7 @@ extension AES70OCP1Connection {
     // FIXME: for portability outside of Combine we could use a AsyncPassthroughSubject
     func suspendUntilConnected() async throws {
         try await withTimeout(seconds: connectionTimeout) {
-            while await self.requestMonitor == nil {
+            while await self.monitor == nil {
                 var cancellables = Set<AnyCancellable>()
                 
                 await withCheckedContinuation { continuation in

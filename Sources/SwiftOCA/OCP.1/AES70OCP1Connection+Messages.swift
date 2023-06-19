@@ -18,9 +18,23 @@ import Foundation
 
 extension AES70OCP1Connection {
     @MainActor
+    private func sendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {
+        let messagePduData = try encodeOcp1MessagePdu(messages, type: messageType)
+
+        do {
+            guard try await write(messagePduData) == messagePduData.count else {
+                throw Ocp1Error.pduSendingFailed
+            }
+        } catch Ocp1Error.notConnected {
+            try await self.reconnectDevice()
+        }
+
+        lastMessageSentTime = Date()
+    }
+
+    @MainActor
     private func sendMessage(_ message: Ocp1Message, type messageType: OcaMessageType) async throws {
-        guard let requestMonitor = requestMonitor else { throw Ocp1Error.notConnected }
-        await requestMonitor.channel.send((messageType, [message]))
+        try await sendMessages([message], type: messageType)
     }
 
     @MainActor
@@ -31,13 +45,13 @@ extension AES70OCP1Connection {
     
     @MainActor
     private func response(for handle: OcaUint32) async throws -> Ocp1Response {
-        guard let responseMonitor = responseMonitor else {
+        guard let monitor = monitor else {
             throw Ocp1Error.notConnected
         }
         
         let deadline = Date() + responseTimeout
         repeat {
-            for await response in responseMonitor.channel {
+            for await response in monitor.channel {
                 if response.handle == handle {
                     return response
                 }
