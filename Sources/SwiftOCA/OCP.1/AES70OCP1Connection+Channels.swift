@@ -20,14 +20,22 @@ extension AES70OCP1Connection {
     func sendMessages() async throws {
         guard let requestMonitor = await requestMonitor else { throw Ocp1Error.notConnected }
         
+        var aggregatedMessagePduData = Data()
+        
         for await (messageType, messages) in requestMonitor.channel {
             let messagePduData = try encodeOcp1MessagePdu(messages, type: messageType)
             
-            // TODO: batch messages into single write requests
-            guard try await write(messagePduData) == messagePduData.count else {
-                throw Ocp1Error.pduSendingFailed
+            aggregatedMessagePduData += messagePduData
+
+            if pduAggregationInterval == 0 ||
+                (aggregatedMessagePduData.count + messagePduData.count >= maximumTransmitUnit ||
+                 Date() > requestMonitor.lastMessageTime + pduAggregationInterval) {
+                guard try await write(aggregatedMessagePduData) == aggregatedMessagePduData.count else {
+                    throw Ocp1Error.pduSendingFailed
+                }
+                aggregatedMessagePduData.count = 0
+                requestMonitor.updateLastMessageTime()
             }
-            requestMonitor.updateLastMessageTime()
         }
     }
 

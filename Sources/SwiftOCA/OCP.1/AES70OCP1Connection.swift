@@ -30,6 +30,9 @@ public class AES70OCP1Connection: ObservableObject {
         return 10
     }
 
+    var maximumTransmitUnit = 1024
+    var pduAggregationInterval = TimeInterval(0)
+    
     @MainActor
     public var connectionTimeout = TimeInterval(10)
     @MainActor
