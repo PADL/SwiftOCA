@@ -90,6 +90,7 @@
 		D3E6E25D2A3D2D2500BF7095 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E25C2A3D2D2500BF7095 /* DetailView.swift */; };
 		D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */; };
 		D3E6E2632A3D648400BF7095 /* RootBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2622A3D648400BF7095 /* RootBlockView.swift */; };
+		D3E6E2652A403DAE00BF7095 /* AES70OCP1Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2642A403DAE00BF7095 /* AES70OCP1Monitor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -173,6 +174,7 @@
 		D3E6E25C2A3D2D2500BF7095 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyModifiers.swift; sourceTree = "<group>"; };
 		D3E6E2622A3D648400BF7095 /* RootBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootBlockView.swift; sourceTree = "<group>"; };
+		D3E6E2642A403DAE00BF7095 /* AES70OCP1Monitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1Monitor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -437,6 +439,7 @@
 				D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */,
 				D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */,
 				D3E6E1B22A3ACA6C00BF7095 /* AES70OCP1SocketConnection.swift */,
+				D3E6E2642A403DAE00BF7095 /* AES70OCP1Monitor.swift */,
 				D3E6E1AD2A3ACA6C00BF7095 /* BinaryCodingConfiguration+OCP1.swift */,
 			);
 			path = OCP.1;
@@ -704,6 +707,7 @@
 				D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */,
 				D3E6E1D12A3ACA9A00BF7095 /* EventHandler.swift in Sources */,
 				D3E6E1C82A3ACA9000BF7095 /* Gain.swift in Sources */,
+				D3E6E2652A403DAE00BF7095 /* AES70OCP1Monitor.swift in Sources */,
 				D3E6E1B62A3ACA7B00BF7095 /* AES70ClassRegistry.swift in Sources */,
 				D3E6E1C62A3ACA9000BF7095 /* BasicActuators.swift in Sources */,
 				D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */,
@@ -885,6 +889,7 @@
 		D3E6E1692A3ACA0B00BF7095 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = T53Q9CN4T9;
@@ -893,6 +898,8 @@
 				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -900,6 +907,7 @@
 		D3E6E16A2A3ACA0B00BF7095 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = T53Q9CN4T9;
@@ -908,6 +916,8 @@
 				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -919,6 +929,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Examples/OCABrowser/OCABrowser.entitlements;
 				CODE_SIGN_IDENTITY = "-";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -938,10 +949,14 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.padl.OCABrowser;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Debug;
 		};
@@ -952,6 +967,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Examples/OCABrowser/OCABrowser.entitlements;
 				CODE_SIGN_IDENTITY = "-";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -971,16 +987,21 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.padl.OCABrowser;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Release;
 		};
 		D3E6E2452A3C0BA000BF7095 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = T53Q9CN4T9;
@@ -990,6 +1011,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 13.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -997,6 +1020,7 @@
 		D3E6E2462A3C0BA000BF7095 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = T53Q9CN4T9;
@@ -1006,6 +1030,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 13.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
