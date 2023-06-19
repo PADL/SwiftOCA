@@ -47,7 +47,8 @@ public struct OcaDetailView: OcaView {
             OcaMatrixNavigationSplitView(object)
         } else if let object = object as? OcaViewRepresentable {
             // use type erasure as last resort
-            AnyView(object.viewType.init(object))
+            let view = object.viewType.init(object) as! any OcaView
+            AnyView(erasing: view)
         } else {
             OcaPropertyTableView(object)
         }
