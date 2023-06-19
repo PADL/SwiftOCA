@@ -160,7 +160,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         let value: Value = try await instance.sendCommandRrq(methodID: getMethodID)
 
         // do this in the background, otherwise UI refresh performance is poor
-        Task.detached {
+        Task {
             try await instance.subscribe()
         }
         
@@ -248,34 +248,25 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     @MainActor
     func onCompletion<T>(_ instance: OcaRoot,
                          _ block: @escaping (_ value: Value) async throws -> T) async throws -> T {
-        let resolveTask = Task.detached {
-            guard let connectionDelegate = instance.connectionDelegate else {
-                throw Ocp1Error.noConnectionDelegate
-            }
-
-            try await connectionDelegate.suspendUntilConnected()
-
-            return try await withTimeout(seconds: connectionDelegate.responseTimeout) {
-                repeat {
-                    await subscribe(instance)
-                    
-                    if case .success(let value) = self.subject.value {
-                        return try await block(value)
-                    } else if case .failure(let error) = self.subject.value {
-                        throw error
-                    } else {
-                        await Task.yield()
-                    }
-                } while true
-            }
+        guard let connectionDelegate = instance.connectionDelegate else {
+            throw Ocp1Error.noConnectionDelegate
         }
         
-        switch await resolveTask.result {
-        case .success(let value):
-            return value
-        case .failure(let error):
-            throw error
-        }
+        try await connectionDelegate.suspendUntilConnected()
+        
+        let deadline = Date() + connectionDelegate.responseTimeout
+        repeat {
+            await subscribe(instance)
+            
+            if case .success(let value) = self.subject.value {
+                return try await block(value)
+            } else if case .failure(let error) = self.subject.value {
+                throw error
+            } else {
+                await Task.yield()
+            }
+        } while Date() < deadline
+        throw Ocp1Error.responseTimeout
     }
 }
 

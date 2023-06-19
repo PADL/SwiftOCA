@@ -73,12 +73,8 @@ struct OcaPropertyTableView: OcaView {
                     TableRow(property)
                 }
             }.task {
-                await withTaskGroup(of: Void.self) { taskGroup in
-                    for property in object.allPropertyKeyPaths {
-                        taskGroup.addTask {
-                            await (object[keyPath: property.value] as! any OcaPropertyRepresentable).subscribe(object)
-                        }
-                    }
+                for property in object.allPropertyKeyPaths {
+                    await (object[keyPath: property.value] as! any OcaPropertyRepresentable).subscribe(object)
                 }
             }
         }

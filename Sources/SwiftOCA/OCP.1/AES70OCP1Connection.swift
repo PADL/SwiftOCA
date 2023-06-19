@@ -123,7 +123,7 @@ public class AES70OCP1Connection: ObservableObject {
         responseMonitor = Monitor(onConnectionError: reconnectDevice, self.receiveMessages)
         
         if self.keepAliveInterval != 0 {
-            keepAliveTask = Task.detached {
+            keepAliveTask = Task {
                 repeat {
                     if let requestMonitor = await self.requestMonitor,
                        requestMonitor.lastMessageTime + TimeInterval(self.keepAliveInterval) < Date() {

@@ -31,21 +31,20 @@ extension AES70OCP1Connection {
         guard let responseMonitor = await responseMonitor else {
             throw Ocp1Error.notConnected
         }
-
-        return try await withTimeout(seconds: responseTimeout) {
-            repeat {
-                for await response in responseMonitor.channel {
-                    if response.handle == handle {
-                        return response
-                    }
+        
+        let deadline = await Date() + responseTimeout
+        repeat {
+            for await response in responseMonitor.channel {
+                if response.handle == handle {
+                    return response
                 }
-            } while true
-        }
+            }
+        } while Date() < deadline
+        debugPrint("timed out waiting for response for handle \(handle)")
+        throw Ocp1Error.responseTimeout
     }
 
     func sendCommandRrq(_ command: Ocp1Command) async throws -> Ocp1Response {
-        // debugPrint("sendCommandRrq \(command)")
-        
         try await sendMessage(command, type: .ocaCmdRrq)
         return try await response(for: command.handle)
     }
