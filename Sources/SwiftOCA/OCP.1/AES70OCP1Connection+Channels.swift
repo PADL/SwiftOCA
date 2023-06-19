@@ -25,17 +25,19 @@ extension AES70OCP1Connection {
         for await (messageType, messages) in requestMonitor.channel {
             let messagePduData = try encodeOcp1MessagePdu(messages, type: messageType)
             
-            aggregatedMessagePduData += messagePduData
-
-            if pduAggregationInterval == 0 ||
-                (aggregatedMessagePduData.count + messagePduData.count >= maximumTransmitUnit ||
-                 Date() > requestMonitor.lastMessageTime + pduAggregationInterval) {
+            let sendPacket = pduAggregationInterval == 0 ||
+                Date() > requestMonitor.lastMessageTime + pduAggregationInterval
+            
+            if sendPacket ||
+                aggregatedMessagePduData.count + messagePduData.count >= maximumTransmitUnit {
                 guard try await write(aggregatedMessagePduData) == aggregatedMessagePduData.count else {
                     throw Ocp1Error.pduSendingFailed
                 }
                 aggregatedMessagePduData.count = 0
                 requestMonitor.updateLastMessageTime()
             }
+            
+            aggregatedMessagePduData += messagePduData
         }
     }
 

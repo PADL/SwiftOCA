@@ -128,7 +128,7 @@ public class AES70OCP1Connection: ObservableObject {
         if self.keepAliveInterval != 0 {
             keepAliveTask = Task {
                 repeat {
-                    if let requestMonitor = await self.requestMonitor,
+                    if let requestMonitor = self.requestMonitor,
                        requestMonitor.lastMessageTime + TimeInterval(self.keepAliveInterval) < Date() {
                         try await self.sendKeepAlive()
                     }
