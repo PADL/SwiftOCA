@@ -19,7 +19,7 @@ import Foundation
 public typealias OcaMatrixCoordinate = OcaUint16
 
 public class OcaMatrix: OcaWorker {
-    public override class var classID: OcaClassID { OcaClassID("1.1.4") }
+    public override class var classID: OcaClassID { OcaClassID("1.1.5") }
         
     @OcaVectorProperty(xPropertyID: OcaPropertyID("3.1"),
                        yPropertyID: OcaPropertyID("3.2"),
@@ -97,14 +97,14 @@ extension OcaMatrix {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
         return try await self._members.onCompletion(self) { value in
-            var resolved = SparseMembers(nX: value.nX, nY: value.nY)
+            var resolved = SparseMembers(nX: value.nX, nY: value.nY, defaultValue: nil)
             let proxyClassID = type(of: proxy).classIdentification
 
             for x in 0..<value.nX {
                 for y in 0..<value.nY {
-                    let objectID = OcaObjectIdentification(oNo: value.items[x][y],
+                    let objectID = OcaObjectIdentification(oNo: value[x, y],
                                                            classIdentification: proxyClassID)
-                    resolved.items[x][y] = connectionDelegate.resolve(object: objectID)
+                    resolved[x, y] = connectionDelegate.resolve(object: objectID)
                 }
             }
             
@@ -118,6 +118,7 @@ extension OcaMatrix {
 
         return try await self._proxy.onCompletion(self) { proxyObjectNumber in
             let unresolvedProxy = OcaRoot(objectNumber: proxyObjectNumber)
+            unresolvedProxy.connectionDelegate = self.connectionDelegate
             var classIdentification = OcaRoot.classIdentification
             try await unresolvedProxy.get(classIdentification: &classIdentification)
             let objectID = OcaObjectIdentification(oNo: unresolvedProxy.objectNumber, classIdentification: classIdentification)

@@ -18,29 +18,31 @@ import Foundation
 
 public struct OcaList2D<T> {
     public let nX, nY: Int
-    var items: Array<Array<T>>
+    private var items: [T]
 
-    public init(nX: Int, nY: Int) {
+    public init(nX: Int, nY: Int, defaultValue: T) {
         self.nX = nX
         self.nY = nY
-        self.items = Array<Array<T>>()
-        self.items.reserveCapacity(self.nX)
-        for x in 0..<self.nX {
-            self.items[Int(x)] = Array<T>()
-            self.items[Int(x)].reserveCapacity(self.nY)
-        }
+        self.items = Array(repeating: defaultValue, count: nX * nY) as! [T]
     }
     
-    public init(nX: OcaUint16, nY: OcaUint16) {
-        self.init(nX: Int(nX), nY: Int(nY))
+    public init(nX: OcaUint16, nY: OcaUint16, defaultValue: T) {
+        self.init(nX: Int(nX), nY: Int(nY), defaultValue: defaultValue)
     }
     
-    public func item(x: Int, y: Int) -> T {
-        items[x][y]
+    private func indexIsValid(x: Int, y: Int) -> Bool {
+        return x >= 0 && x < nX && y >= 0 && y < nY
     }
 
-    public func item(x: OcaUint16, y: OcaUint16) -> T {
-        item(x: Int(x), y: Int(y))
+    public subscript(x: Int, y: Int) -> T {
+        get {
+            assert(indexIsValid(x: x, y: y), "Index out of range")
+            return items[(x * nY) + y]
+        }
+        set {
+            assert(indexIsValid(x: x, y: y), "Index out of range")
+            items[(x * nY) + y] = newValue
+        }
     }
 }
 
@@ -50,14 +52,10 @@ extension OcaList2D: Codable where T: Codable {
         self.nX = Int(try container.decode(OcaUint16.self))
         self.nY = Int(try container.decode(OcaUint16.self))
     
-        self.items = Array<Array<T>>()
-        self.items.reserveCapacity(Int(self.nX))
-        for x in 0..<self.nX {
-            self.items[Int(x)] = Array<T>()
-            self.items[Int(x)].reserveCapacity(Int(self.nY))
-            for y in 0..<self.nY {
-                self.items[Int(x)][Int(y)] = try container.decode(T.self)
-            }
+        self.items = [T]()
+        self.items.reserveCapacity(Int(nX * nY))
+        for index in 0..<nX*nY {
+            self.items.insert(try container.decode(T.self), at: index)
         }
     }
     
@@ -65,10 +63,8 @@ extension OcaList2D: Codable where T: Codable {
         var container = encoder.unkeyedContainer()
         try container.encode(OcaUint16(self.nX))
         try container.encode(OcaUint16(self.nY))
-        for x in 0..<self.nX {
-            for y in 0..<self.nY {
-                try container.encode(self.items[x][y])
-            }
+        for index in 0..<nX*nY {
+            try container.encode(self.items[index])
         }
     }
 }

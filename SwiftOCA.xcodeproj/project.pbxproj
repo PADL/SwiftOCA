@@ -271,6 +271,15 @@
 			path = Managers;
 			sourceTree = "<group>";
 		};
+		D3DA69FC2A4021FF001250A1 /* BlocksAndMatrices */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E1932A3ACA6C00BF7095 /* Block.swift */,
+				D3E6E1942A3ACA6C00BF7095 /* Matrix.swift */,
+			);
+			path = BlocksAndMatrices;
+			sourceTree = "<group>";
+		};
 		D3E6E15B2A3ACA0B00BF7095 = {
 			isa = PBXGroup;
 			children = (
@@ -364,9 +373,8 @@
 		D3E6E18E2A3ACA6C00BF7095 /* Workers */ = {
 			isa = PBXGroup;
 			children = (
+				D3DA69FC2A4021FF001250A1 /* BlocksAndMatrices */,
 				D3E6E18F2A3ACA6C00BF7095 /* Sensors */,
-				D3E6E1932A3ACA6C00BF7095 /* Block.swift */,
-				D3E6E1942A3ACA6C00BF7095 /* Matrix.swift */,
 				D3E6E1952A3ACA6C00BF7095 /* Worker.swift */,
 				D3E6E1962A3ACA6C00BF7095 /* Actuators */,
 			);

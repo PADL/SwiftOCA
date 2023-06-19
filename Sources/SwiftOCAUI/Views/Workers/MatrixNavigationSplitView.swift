@@ -29,14 +29,16 @@ struct OcaMatrixNavigationSplitView: OcaView {
     public var body: some View {
         Group {
             if let members {
-                ForEach(0..<members.nX, id: \.self) { x in
-                    GridRow {
-                        ForEach(0..<members.nY, id: \.self) { y in
-                            Group {
-                                if let object = members.item(x: x, y: y) {
-                                    OcaNavigationLabel(object)
-                                } else {
-                                    ProgressView()
+                Grid() {
+                    ForEach(0..<members.nX, id: \.self) { x in
+                        GridRow {
+                            ForEach(0..<members.nY, id: \.self) { y in
+                                Group {
+                                    if let object = members[x, y] {
+                                        OcaNavigationLabel(object)
+                                    } else {
+                                        ProgressView()
+                                    }
                                 }
                             }
                         }

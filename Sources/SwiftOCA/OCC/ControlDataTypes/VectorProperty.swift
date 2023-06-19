@@ -44,7 +44,7 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         self.yPropertyID = yPropertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
-        self.wrappedValue = OcaProperty(propertyID: OcaPropertyID("1"), // deliberately invalid
+        self.wrappedValue = OcaProperty(propertyID: OcaPropertyID("1.1"),
                                         getMethodID: getMethodID,
                                         setMethodID: setMethodID)
     }
