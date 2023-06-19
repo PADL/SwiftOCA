@@ -16,6 +16,8 @@
 
 import Foundation
 
+/// Connection monitor delivers responses keyed by request handle
+
 extension AES70OCP1Connection.Monitor {
     private func receiveMessagePdu(_ connection: AES70OCP1Connection,
                                    messages: inout [Data]) async throws -> OcaMessageType {
@@ -54,7 +56,7 @@ extension AES70OCP1Connection.Monitor {
                 }
             }
         case let response as Ocp1Response:
-            debugPrint("processMessage: response for request \(response.handle)")
+            debugPrint("processMessage: \(Date()): response for request \(response.handle)")
             await channel.send(response)
         case is Ocp1KeepAlive1:
             break
@@ -83,9 +85,7 @@ extension AES70OCP1Connection.Monitor {
 
             try await processMessage(connection, message)
             updateLastMessageTime()
-        }
-        
-        await Task.yield()
+        }        
     }
     
     func receiveMessages(_ connection: AES70OCP1Connection) async throws {

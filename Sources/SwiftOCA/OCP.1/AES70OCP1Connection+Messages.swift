@@ -26,6 +26,7 @@ extension AES70OCP1Connection {
                 throw Ocp1Error.pduSendingFailed
             }
         } catch Ocp1Error.notConnected {
+            // FIXME: reconnect on pduSendingFailed?
             try await self.reconnectDevice()
         }
 
@@ -51,13 +52,11 @@ extension AES70OCP1Connection {
         
         let deadline = Date() + responseTimeout
         repeat {
-            for await response in monitor.channel {
-                if response.handle == handle {
-                    return response
-                }
+            for await response in monitor.channel.filter({ $0.handle == handle }) {
+                return response
             }
         } while Date() < deadline
-        debugPrint("timed out waiting for response for handle \(handle)")
+        debugPrint("response(for:) \(Date()) timed out waiting for response for handle \(handle)")
         throw Ocp1Error.responseTimeout
     }
 

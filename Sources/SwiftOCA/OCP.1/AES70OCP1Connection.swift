@@ -31,9 +31,9 @@ public class AES70OCP1Connection: ObservableObject {
     }
 
     @MainActor
-    public var connectionTimeout = TimeInterval(10)
+    public var connectionTimeout = TimeInterval(3)
     @MainActor
-    public var responseTimeout = TimeInterval(5)
+    public var responseTimeout = TimeInterval(3)
     
     /// Object interning, main thread only
     @MainActor
@@ -53,23 +53,23 @@ public class AES70OCP1Connection: ObservableObject {
     @MainActor
     var subscriptions = [OcaEvent:AES70SubscriptionCallback]()
     
+    // TODO: use SwiftAtomics here?
     @MainActor
     private var nextCommandHandle = OcaUint32(100)
         
     @MainActor
     var lastMessageSentTime = Date.distantPast
     
+    /// Monitor structure for matching requests and responses
     actor Monitor {
         static let MinimumPduSize = 7
 
-        let channel: AsyncChannel<Ocp1Response>
-        var task: Task<Void, Error>?
+        let channel = AsyncBufferedChannel<Ocp1Response>()
+        var task: Task<Void, Error>? = nil
         var connection: AES70OCP1Connection?
         var lastMessageReceivedTime = Date.distantPast
         
         init(_ connection: AES70OCP1Connection) {
-            self.channel = AsyncChannel()
-            self.task = nil
             self.connection = connection
         }
         
@@ -85,8 +85,8 @@ public class AES70OCP1Connection: ObservableObject {
         }
         
         deinit {
-            task?.cancel()
             channel.finish()
+            task?.cancel()
         }
     }
     
@@ -166,11 +166,11 @@ public class AES70OCP1Connection: ObservableObject {
 
     /// API to be impmlemented by concrete classes
     func read(_ length: Int) async throws -> Data {
-        fatalError("read must be implemented by a concrete subclass")
+        fatalError("read must be implemented by a concrete subclass of AES70OCP1Connection")
     }
     
     func write(_ data: Data) async throws -> Int {
-        fatalError("write must be implemented by a concrete subclass")
+        fatalError("write must be implemented by a concrete subclass of AES70OCP1Connection")
     }
 }
 
