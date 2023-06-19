@@ -199,6 +199,7 @@ import OpenCombine
 #endif
 
 extension AES70OCP1Connection {
+    // FIXME: for portability outside of Combine we could use a AsyncPassthroughSubject
     func suspendUntilConnected() async throws {
         try await withTimeout(seconds: connectionTimeout) {
             while await self.requestMonitor == nil {
