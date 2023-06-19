@@ -26,6 +26,7 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
     var currentValue: OcaProperty<Value>.State { get }
 
     func refresh(_ instance: OcaRoot) async
+    func subscribe(_ instance: OcaRoot) async
 }
 
 public extension OcaPropertyRepresentable {
@@ -160,7 +161,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         let value: Value
         
         value = try await instance.sendCommandRrq(methodID: getMethodID)
-        
+
         // do this in the background, otherwise UI refresh performance is poor
         Task.detached {
             try await instance.subscribe()
@@ -215,6 +216,17 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     }
     
+    public func subscribe(_ instance: OcaRoot) async {
+        guard case .initial = subject.value else {
+            return
+        }
+        
+        // FIXME: is this safe to run off main thread?
+        await perform(instance) {
+            try await $0.getValueAndSubscribe(instance)
+        }
+    }
+
     public func refresh(_ instance: OcaRoot) async {
         subject.send(.initial)
         Task { @MainActor in
@@ -258,7 +270,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                 } else if case .failure(let error) = self.subject.value {
                     throw error
                 } else {
-		    debugPrint("onCompletion: timed out with subject \(self.subject.value)")
+                    debugPrint("onCompletion: timed out with subject \(self.subject.value)")
                     throw Ocp1Error.responseTimeout
                 }
             }

@@ -23,6 +23,8 @@ public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable {
 
 @propertyWrapper
 public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaPropertyChangeEventNotifiable, Codable {
+    public typealias WrappedValue = OcaProperty<OcaVector2D<Value>>
+
     public var propertyIDs: [OcaPropertyID] {
         [xPropertyID, yPropertyID]
     }
@@ -32,7 +34,7 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
     public let getMethodID: OcaMethodID
     public let setMethodID: OcaMethodID?
     
-    public var wrappedValue: OcaProperty<OcaVector2D<Value>>
+    public var wrappedValue: WrappedValue
 
     init(xPropertyID: OcaPropertyID,
          yPropertyID: OcaPropertyID,
@@ -64,8 +66,12 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         wrappedValue
     }
 
-    public var currentValue: OcaProperty<OcaVector2D<Value>>.State {
+    public var currentValue: WrappedValue.State {
         wrappedValue.currentValue
+    }
+    
+    public func subscribe(_ instance: OcaRoot) async {
+        await wrappedValue.subscribe(instance)
     }
 
     public var description: String {

@@ -45,7 +45,7 @@ public struct OcaDetailView: OcaView {
             // use type erasure as last resort
             AnyView(object.viewType.init(object))
         } else {
-            OcaUnknownView(object)
+            OcaPropertyTableView(object)
         }
     }
 }

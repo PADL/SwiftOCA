@@ -29,9 +29,9 @@ struct OcaMatrixNavigationSplitView: OcaView {
     public var body: some View {
         Group {
             if let members {
-                ForEach(0..<members.nX) { x in
+                ForEach(0..<members.nX, id: \.self) { x in
                     GridRow {
-                        ForEach(0..<members.nY) { y in
+                        ForEach(0..<members.nY, id: \.self) { y in
                             Group {
                                 if let object = members.item(x: x, y: y) {
                                     OcaNavigationLabel(object)

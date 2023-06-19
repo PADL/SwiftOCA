@@ -25,11 +25,13 @@ public struct OcaBoundedPropertyValue<T: Codable>: Codable {
 
 @propertyWrapper
 public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiable, Codable {
+    public typealias WrappedValue = OcaProperty<OcaBoundedPropertyValue<Value>>
+
     public var propertyIDs: [OcaPropertyID] {
         [wrappedValue.propertyID]
     }
 
-    public var wrappedValue: OcaProperty<OcaBoundedPropertyValue<Value>>
+    public var wrappedValue: WrappedValue
     
     public var projectedValue: any OcaPropertyRepresentable {
         return wrappedValue
@@ -39,8 +41,13 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiab
         await wrappedValue.refresh(instance)
     }
     
-    public var currentValue: OcaProperty<OcaBoundedPropertyValue<Value>>.State {
+    
+    public var currentValue: WrappedValue.State {
         wrappedValue.currentValue
+    }
+
+    public func subscribe(_ instance: OcaRoot) async {
+        _ = await wrappedValue.subscribe(instance)
     }
 
     public var description: String {

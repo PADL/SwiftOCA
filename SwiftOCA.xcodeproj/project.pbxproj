@@ -13,7 +13,7 @@
 		D3DA69E62A3DCAA5001250A1 /* Array+Extras.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69E52A3DCAA5001250A1 /* Array+Extras.swift */; };
 		D3DA69EB2A3DCD60001250A1 /* BlockNavigationStackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69EA2A3DCD60001250A1 /* BlockNavigationStackView.swift */; };
 		D3DA69EE2A3DD350001250A1 /* Task+Timeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69EC2A3DD329001250A1 /* Task+Timeout.swift */; };
-		D3DA69F02A3DEE4E001250A1 /* UnknownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69EF2A3DEE4E001250A1 /* UnknownView.swift */; };
+		D3DA69F02A3DEE4E001250A1 /* PropertyTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69EF2A3DEE4E001250A1 /* PropertyTableView.swift */; };
 		D3DA69F22A3DF884001250A1 /* MatrixNavigationSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F12A3DF884001250A1 /* MatrixNavigationSplitView.swift */; };
 		D3DA69F42A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */; };
 		D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */; };
@@ -79,7 +79,6 @@
 		D3E6E2342A3AD0A800BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3E6E2372A3AE86200BF7095 /* Semaphore in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E2362A3AE86200BF7095 /* Semaphore */; };
 		D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */; };
-		D3E6E23B2A3BD5A100BF7095 /* KeyPathIterable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */; };
 		D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2492A3C0C7700BF7095 /* MuteView.swift */; };
 		D3E6E24B2A3C0C8D00BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3E6E24C2A3C0D6300BF7095 /* libSwiftOCAUI.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */; };
@@ -99,7 +98,7 @@
 		D3DA69E52A3DCAA5001250A1 /* Array+Extras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extras.swift"; sourceTree = "<group>"; };
 		D3DA69EA2A3DCD60001250A1 /* BlockNavigationStackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockNavigationStackView.swift; sourceTree = "<group>"; };
 		D3DA69EC2A3DD329001250A1 /* Task+Timeout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Task+Timeout.swift"; sourceTree = "<group>"; };
-		D3DA69EF2A3DEE4E001250A1 /* UnknownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnknownView.swift; sourceTree = "<group>"; };
+		D3DA69EF2A3DEE4E001250A1 /* PropertyTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyTableView.swift; sourceTree = "<group>"; };
 		D3DA69F12A3DF884001250A1 /* MatrixNavigationSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixNavigationSplitView.swift; sourceTree = "<group>"; };
 		D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EnvironmentValues+NavigationPath.swift"; sourceTree = "<group>"; };
 		D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCA.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -163,7 +162,6 @@
 		D3E6E2252A3ACFA100BF7095 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Examples/OCABrowser/ContentView.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E2262A3ACFA100BF7095 /* OCABrowser.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = OCABrowser.entitlements; path = Examples/OCABrowser/OCABrowser.entitlements; sourceTree = SOURCE_ROOT; };
 		D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70Browser.swift; sourceTree = "<group>"; };
-		D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPathIterable.swift; sourceTree = "<group>"; };
 		D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCAUI.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E2492A3C0C7700BF7095 /* MuteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MuteView.swift; sourceTree = "<group>"; };
 		D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowProgressIfWaiting.swift; sourceTree = "<group>"; };
@@ -471,7 +469,6 @@
 				D3DA69EC2A3DD329001250A1 /* Task+Timeout.swift */,
 				D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */,
 				D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */,
-				D3E6E23A2A3BD5A100BF7095 /* KeyPathIterable.swift */,
 				D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */,
 			);
 			path = OCF;
@@ -494,7 +491,7 @@
 				D3DA69E32A3DCA75001250A1 /* NavigationLabel.swift */,
 				D3E6E2542A3C54CE00BF7095 /* View.swift */,
 				D3E6E25C2A3D2D2500BF7095 /* DetailView.swift */,
-				D3DA69EF2A3DEE4E001250A1 /* UnknownView.swift */,
+				D3DA69EF2A3DEE4E001250A1 /* PropertyTableView.swift */,
 				D3DA69E72A3DCD22001250A1 /* Workers */,
 			);
 			path = Views;
@@ -691,7 +688,6 @@
 				D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */,
 				D3E6E1C72A3ACA9000BF7095 /* Actuator.swift in Sources */,
 				D3E6E1DF2A3ACAA900BF7095 /* ModelDescription.swift in Sources */,
-				D3E6E23B2A3BD5A100BF7095 /* KeyPathIterable.swift in Sources */,
 				D3E6E1E12A3ACAA900BF7095 /* ManagerDescriptor.swift in Sources */,
 				D3E6E1E72A3ACAAD00BF7095 /* Data+IntegerCodable.swift in Sources */,
 				D3E6E1D42A3ACA9E00BF7095 /* LibraryManager.swift in Sources */,
@@ -739,7 +735,7 @@
 				D3DA69E62A3DCAA5001250A1 /* Array+Extras.swift in Sources */,
 				D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */,
 				D3DA69F42A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift in Sources */,
-				D3DA69F02A3DEE4E001250A1 /* UnknownView.swift in Sources */,
+				D3DA69F02A3DEE4E001250A1 /* PropertyTableView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -17,31 +17,24 @@
 import SwiftUI
 import SwiftOCA
 
-struct Property: Identifiable, CustomStringConvertible {
+struct Property: Identifiable {
     typealias ID = Int
     
+    var name: String
+    var keyPath: PartialKeyPath<OcaRoot>
+    var value: any OcaPropertyRepresentable
+
     var id: ID {
         value.propertyIDs.hashValue
     }
     
     var idString: String {
-        value.propertyIDs.map { String(describing: $0) }.joined(separator: ",")
+        // FIXME: breakout vector properties
+        value.propertyIDs.map { String(describing: $0) }.joined(separator: ", ")
     }
-    
-    var isRequesting: Bool {
-        value.isRequesting
-    }
-    
-    var description: String {
-        value.description
-    }
-    
-    var name: String
-    var value: any OcaPropertyRepresentable
 }
 
-struct OcaUnknownView: OcaView {
-    typealias Object = OcaRoot
+struct OcaPropertyTableView: OcaView {
     @StateObject var object: OcaRoot
 
     init(_ object: OcaRoot) {
@@ -53,20 +46,31 @@ struct OcaUnknownView: OcaView {
             TableColumn("Name", value: \.name)
             TableColumn("ID", value: \.idString)
             TableColumn("Value") {
-                if $0.isRequesting {
+                if $0.value.isRequesting {
                     ProgressView()
                 } else {
-                    Text($0.description)
+                    Text($0.value.description)
                 }
             }
         } rows: {
-            let allProperties: [Property] = object.allProperties.map { (propertyName, propertyValue) in
-                Property(name: propertyName, value: propertyValue)
+            let allPropertyKeyPaths: [Property] = object.allPropertyKeyPaths.map {
+                (propertyName, propertyKeyPath) in
+                return Property(name: propertyName,
+                                keyPath: propertyKeyPath,
+                                value: object[keyPath: propertyKeyPath] as! any OcaPropertyRepresentable)
             }.sorted {
                 $0.idString < $1.idString
             }
-            ForEach(allProperties) { property in
+            ForEach(allPropertyKeyPaths) { property in
                 TableRow(property)
+            }
+        }.task {
+            await withTaskGroup(of: Void.self) { taskGroup in
+                for property in object.allPropertyKeyPaths {
+                    taskGroup.addTask {
+                        await (object[keyPath: property.value] as! any OcaPropertyRepresentable).subscribe(object)
+                    }
+                }
             }
         }
     }
