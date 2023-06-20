@@ -16,17 +16,17 @@
 
 import Foundation
 
-public struct OcaList2D<T> {
+public struct OcaList2D<Element> {
     public let nX, nY: Int
-    private var items: [T]
+    public private(set) var items: [Element]
 
-    public init(nX: Int, nY: Int, defaultValue: T) {
+    public init(nX: Int, nY: Int, defaultValue: Element) {
         self.nX = nX
         self.nY = nY
-        self.items = Array(repeating: defaultValue, count: nX * nY) as! [T]
+        self.items = Array(repeating: defaultValue, count: nX * nY) as! [Element]
     }
     
-    public init(nX: OcaUint16, nY: OcaUint16, defaultValue: T) {
+    public init(nX: OcaUint16, nY: OcaUint16, defaultValue: Element) {
         self.init(nX: Int(nX), nY: Int(nY), defaultValue: defaultValue)
     }
     
@@ -34,7 +34,7 @@ public struct OcaList2D<T> {
         return x >= 0 && x < nX && y >= 0 && y < nY
     }
 
-    public subscript(x: Int, y: Int) -> T {
+    public subscript(x: Int, y: Int) -> Element {
         get {
             assert(indexIsValid(x: x, y: y), "Index out of range")
             return items[(x * nY) + y]
@@ -46,16 +46,16 @@ public struct OcaList2D<T> {
     }
 }
 
-extension OcaList2D: Codable where T: Codable {
+extension OcaList2D: Codable where Element: Codable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         self.nX = Int(try container.decode(OcaUint16.self))
         self.nY = Int(try container.decode(OcaUint16.self))
     
-        self.items = [T]()
+        self.items = [Element]()
         self.items.reserveCapacity(Int(nX * nY))
         for index in 0..<nX*nY {
-            self.items.insert(try container.decode(T.self), at: index)
+            self.items.insert(try container.decode(Element.self), at: index)
         }
     }
     
@@ -69,5 +69,8 @@ extension OcaList2D: Codable where T: Codable {
     }
 }
 
-extension OcaList2D: Equatable where T: Equatable {
+extension OcaList2D: Equatable where Element: Equatable {
+}
+
+extension OcaList2D: Hashable where Element: Hashable {
 }

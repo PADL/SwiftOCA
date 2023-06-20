@@ -17,15 +17,16 @@
 import SwiftUI
 import SwiftOCA
 
-// TODO: cache array values in a dictionary
-extension Array where Element: OcaRoot {
-    func object(identifiedBy oNo: OcaONo) -> OcaRoot? {
-        self.first(where: {
-            $0.objectNumber == oNo
-        })
-    }
-    
+extension OcaList2D where Element == OcaRoot? {
     var map: [OcaONo: OcaRoot] {
-        Dictionary(uniqueKeysWithValues: self.map { ($0.objectNumber, $0) })
+        var map = [OcaONo: OcaRoot]()
+        
+        for item in self.items {
+            if let item {
+                map[item.objectNumber] = item
+            }
+        }
+        
+        return map
     }
 }

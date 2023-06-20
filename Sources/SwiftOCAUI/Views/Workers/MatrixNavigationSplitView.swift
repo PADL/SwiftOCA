@@ -21,37 +21,63 @@ struct OcaMatrixNavigationSplitView: OcaView {
     @StateObject var object: OcaMatrix
     @Environment(\.navigationPath) var oNoPath
     @State var members: OcaMatrix.SparseMembers?
+    @State var membersMap: [OcaONo:OcaRoot]?
+    @State var hasContainerMembers = false
 
     init(_ object: OcaRoot) {
         self._object = StateObject(wrappedValue: object as! OcaMatrix)
     }
 
     public var body: some View {
-        Group {
-            if let members {
-                Grid() {
-                    ForEach(0..<members.nX, id: \.self) { x in
+        NavigationStack(path: oNoPath) {
+            Group {
+                if let members {
+                    Grid() {
                         GridRow {
-                            ForEach(0..<members.nY, id: \.self) { y in
-                                Group {
-                                    if let object = members[x, y] {
-                                        OcaNavigationLabel(object)
-                                    } else {
-                                        ProgressView()
+                            ForEach(0..<members.nX, id: \.self) { x in
+                                Text("\(x + 1)").font(.title)
+                            }
+                        }
+                        ForEach(0..<members.nY, id: \.self) { y in
+                            GridRow {
+                                ForEach(0..<members.nX, id: \.self) { x in
+                                    Group {
+                                        if let member = members[x, y] {
+                                            if hasContainerMembers {
+                                                NavigationLink(value: member.objectNumber) {
+                                                    OcaNavigationLabel(member)
+                                                }
+                                            } else {
+                                                OcaDetailView(member)
+                                            }
+                                        } else {
+                                            ProgressView()
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                } else {
+                    ProgressView()
                 }
-            } else {
-                ProgressView()
+            }
+            .navigationDestination(for: OcaONo.self) { oNo in
+                if let member = self.membersMap![oNo] {
+                    OcaDetailView(member)
+                }
             }
         }
         .task {
             do {
-                let proxy = try await object.resolveProxy()
-                members = try await object.resolveMembers(with: proxy)
+                members = try await object.resolveMembers()
+                if let members {
+                    membersMap = members.map
+                    hasContainerMembers = members.hasContainerMembers
+                } else {
+                    membersMap = nil
+                    hasContainerMembers = false
+                }
             } catch {
                 debugPrint("OcaMatrixNavigationSplitView: error \(error)")
             }

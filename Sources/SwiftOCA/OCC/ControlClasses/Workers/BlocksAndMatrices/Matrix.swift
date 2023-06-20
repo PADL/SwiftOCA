@@ -136,3 +136,9 @@ extension OcaMatrix {
         }
     }
 }
+
+extension OcaList2D where Element == OcaRoot? {
+    public var hasContainerMembers: Bool {
+        return self.items.allSatisfy { $0?.isContainer ?? false }
+    }
+}

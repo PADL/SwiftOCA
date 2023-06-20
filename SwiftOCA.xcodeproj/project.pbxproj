@@ -92,6 +92,7 @@
 		D3E6E2632A3D648400BF7095 /* RootBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2622A3D648400BF7095 /* RootBlockView.swift */; };
 		D3E6E2762A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2752A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift */; };
 		D3E6E2782A417AF000BF7095 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2772A417AF000BF7095 /* NetworkManager.swift */; };
+		D3E6E27B2A417FB500BF7095 /* OcaList2D+Extras.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -177,6 +178,7 @@
 		D3E6E2622A3D648400BF7095 /* RootBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootBlockView.swift; sourceTree = "<group>"; };
 		D3E6E2752A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Combine.swift"; sourceTree = "<group>"; };
 		D3E6E2772A417AF000BF7095 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaList2D+Extras.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -228,6 +230,7 @@
 				D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */,
 				D3DA69E52A3DCAA5001250A1 /* Array+Extras.swift */,
 				D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */,
+				D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */,
 			);
 			path = Conformances;
 			sourceTree = "<group>";
@@ -759,6 +762,7 @@
 				D3E6E2632A3D648400BF7095 /* RootBlockView.swift in Sources */,
 				D3E6E25D2A3D2D2500BF7095 /* DetailView.swift in Sources */,
 				D3DA69E22A3DADF1001250A1 /* BlockNavigationSplitView.swift in Sources */,
+				D3E6E27B2A417FB500BF7095 /* OcaList2D+Extras.swift in Sources */,
 				D3DA69FB2A3FEF52001250A1 /* DeviceManager.swift in Sources */,
 				D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */,
 				D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */,
