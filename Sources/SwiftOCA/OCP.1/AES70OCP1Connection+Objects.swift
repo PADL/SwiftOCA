@@ -51,7 +51,6 @@ extension AES70OCP1Connection {
         Task {
             for member in members {
                 await member.memberObject.$role.subscribe(member.memberObject)
-                debugPrint("subscribed \(member)")
             }
         }
     }
