@@ -77,7 +77,6 @@
 		D3E6E2272A3ACFA100BF7095 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D3E6E2212A3ACFA000BF7095 /* Assets.xcassets */; };
 		D3E6E2282A3ACFA100BF7095 /* BrowserApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2222A3ACFA000BF7095 /* BrowserApp.swift */; };
 		D3E6E2292A3ACFA100BF7095 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */; };
-		D3E6E22A2A3ACFA100BF7095 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2252A3ACFA100BF7095 /* ContentView.swift */; };
 		D3E6E2342A3AD0A800BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */; };
 		D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2492A3C0C7700BF7095 /* MuteView.swift */; };
@@ -93,6 +92,7 @@
 		D3E6E2762A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2752A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift */; };
 		D3E6E2782A417AF000BF7095 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2772A417AF000BF7095 /* NetworkManager.swift */; };
 		D3E6E27B2A417FB500BF7095 /* OcaList2D+Extras.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */; };
+		D3E6E27F2A4181BF00BF7095 /* BonjourDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E27D2A4181BB00BF7095 /* BonjourDiscoveryView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -165,7 +165,6 @@
 		D3E6E2212A3ACFA000BF7095 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Examples/OCABrowser/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		D3E6E2222A3ACFA000BF7095 /* BrowserApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowserApp.swift; path = Examples/OCABrowser/BrowserApp.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		D3E6E2252A3ACFA100BF7095 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Examples/OCABrowser/ContentView.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E2262A3ACFA100BF7095 /* OCABrowser.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = OCABrowser.entitlements; path = Examples/OCABrowser/OCABrowser.entitlements; sourceTree = SOURCE_ROOT; };
 		D3E6E2382A3BD52E00BF7095 /* AES70Browser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70Browser.swift; sourceTree = "<group>"; };
 		D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCAUI.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -179,6 +178,7 @@
 		D3E6E2752A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Combine.swift"; sourceTree = "<group>"; };
 		D3E6E2772A417AF000BF7095 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaList2D+Extras.swift"; sourceTree = "<group>"; };
+		D3E6E27D2A4181BB00BF7095 /* BonjourDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDiscoveryView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -455,7 +455,6 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E2212A3ACFA000BF7095 /* Assets.xcassets */,
-				D3E6E2252A3ACFA100BF7095 /* ContentView.swift */,
 				D3E6E2222A3ACFA000BF7095 /* BrowserApp.swift */,
 				D3E6E2232A3ACFA100BF7095 /* Preview Content */,
 				D3E6E2262A3ACFA100BF7095 /* OCABrowser.entitlements */,
@@ -522,6 +521,7 @@
 		D3E6E2482A3C0C7700BF7095 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D3E6E27C2A4181A000BF7095 /* Discovery */,
 				D3DA69F82A3FEF42001250A1 /* Agents */,
 				D3DA69F92A3FEF43001250A1 /* Managers */,
 				D3DA69F62A3FE538001250A1 /* DynamicStack.swift */,
@@ -542,6 +542,14 @@
 				D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */,
 			);
 			path = ViewModifiers;
+			sourceTree = "<group>";
+		};
+		D3E6E27C2A4181A000BF7095 /* Discovery */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E27D2A4181BB00BF7095 /* BonjourDiscoveryView.swift */,
+			);
+			path = Discovery;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -750,7 +758,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D3E6E2282A3ACFA100BF7095 /* BrowserApp.swift in Sources */,
-				D3E6E22A2A3ACFA100BF7095 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -772,6 +779,7 @@
 				D3E6E2562A3C550500BF7095 /* View.swift in Sources */,
 				D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */,
 				D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */,
+				D3E6E27F2A4181BF00BF7095 /* BonjourDiscoveryView.swift in Sources */,
 				D3DA69E62A3DCAA5001250A1 /* Array+Extras.swift in Sources */,
 				D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */,
 				D3DA69F42A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift in Sources */,
