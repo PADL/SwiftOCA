@@ -27,7 +27,7 @@ public class AES70OCP1Connection: ObservableObject {
     /// Keepalive/ping interval (only necessary for UDP)
     @MainActor
     public var keepAliveInterval: OcaUint16 {
-        return 10
+        return 0
     }
 
     @MainActor
@@ -172,7 +172,7 @@ public class AES70OCP1Connection: ObservableObject {
             try? await object.refresh()
         }
         
-        await refreshDeviceTree()
+        await try? refreshDeviceTree()
 
         DispatchQueue.main.async {
             self.objectWillChange.send()

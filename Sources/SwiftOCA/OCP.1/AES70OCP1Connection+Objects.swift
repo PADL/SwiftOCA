@@ -44,11 +44,15 @@ extension AES70OCP1Connection {
         objects[object.objectNumber] = object
         object.connectionDelegate = self
     }
-    
+        
     @MainActor
-    func refreshDeviceTree() async {
-        // TODO: implement, start at root block and descend into each matrix/block
-        // get role name
-        // batch messages
+    func refreshDeviceTree() async throws {
+        let members = try await rootBlock.resolveMembersRecursive(resolveMatrixMembers: true)
+        Task {
+            for member in members {
+                await member.memberObject.$role.subscribe(member.memberObject)
+                debugPrint("subscribed \(member)")
+            }
+        }
     }
 }

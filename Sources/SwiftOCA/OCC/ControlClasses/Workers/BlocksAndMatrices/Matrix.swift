@@ -93,6 +93,12 @@ extension OcaMatrix {
     public typealias SparseMembers = OcaList2D<OcaRoot?>
     
     @MainActor
+    public func resolveMembers() async throws -> SparseMembers {
+        let proxy = try await resolveProxy()
+        return try await resolveMembers(with: proxy)
+    }
+
+    @MainActor
     public func resolveMembers(with proxy: OcaRoot) async throws -> SparseMembers {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 

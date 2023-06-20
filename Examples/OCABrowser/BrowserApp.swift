@@ -16,7 +16,7 @@ struct SwiftOCATestApp: App {
     @Environment(\.refresh) private var refresh
     
     init() {
-        let connection = AES70OCP1TCPConnection(deviceAddress: IPv4SocketAddress(address: IPv4Address(rawValue: "127.0.0.1")!, port: 65000))
+        let connection = AES70OCP1UDPConnection(deviceAddress: IPv4SocketAddress(address: IPv4Address(rawValue: "127.0.0.1")!, port: 65000))
         self._connection = StateObject<AES70OCP1Connection>(wrappedValue: connection)
     }
     

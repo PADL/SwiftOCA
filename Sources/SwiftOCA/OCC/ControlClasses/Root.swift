@@ -17,7 +17,7 @@
 import Foundation
 import BinaryCoder
 
-public class OcaRoot: ObservableObject {
+public class OcaRoot: ObservableObject, CustomStringConvertible {
     typealias Root = OcaRoot
     
     weak var connectionDelegate: AES70OCP1Connection? = nil
@@ -76,6 +76,14 @@ public class OcaRoot: ObservableObject {
     
     public var isContainer: Bool {
         false
+    }
+    
+    public var description: String {
+        if case .success(let value) = self.role {
+            return "\(type(of: self))(objectNumber: \(objectNumber), role: \(value))"
+        } else {
+            return "\(type(of: self))(objectNumber: \(objectNumber))"
+        }
     }
 }
 

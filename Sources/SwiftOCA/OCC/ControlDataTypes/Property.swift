@@ -160,7 +160,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         let value: Value = try await instance.sendCommandRrq(methodID: getMethodID)
 
         // do this in the background, otherwise UI refresh performance is poor
-        Task {
+        Task.detached {
             try await instance.subscribe()
         }
         
