@@ -66,6 +66,7 @@ struct OcaBlockNavigationSplitView: OcaView {
                 
                 if object.objectNumber == OcaRootBlockONo {
                     members?.append(connection.deviceManager)
+                    members?.append(connection.networkManager)
                 }
                 membersMap = members?.map
             } catch {

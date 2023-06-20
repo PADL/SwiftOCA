@@ -48,6 +48,8 @@ public class AES70OCP1Connection: ObservableObject {
     let subscriptionManager = OcaSubscriptionManager()
     @MainActor
     public let deviceManager = OcaDeviceManager()
+    @MainActor
+    public let networkManager = OcaNetworkManager()
     
     /// Subscription callbacks, main thread only
     @MainActor

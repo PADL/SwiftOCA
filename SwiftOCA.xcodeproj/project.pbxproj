@@ -91,6 +91,7 @@
 		D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */; };
 		D3E6E2632A3D648400BF7095 /* RootBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2622A3D648400BF7095 /* RootBlockView.swift */; };
 		D3E6E2762A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2752A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift */; };
+		D3E6E2782A417AF000BF7095 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2772A417AF000BF7095 /* NetworkManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -175,6 +176,7 @@
 		D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyModifiers.swift; sourceTree = "<group>"; };
 		D3E6E2622A3D648400BF7095 /* RootBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootBlockView.swift; sourceTree = "<group>"; };
 		D3E6E2752A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Combine.swift"; sourceTree = "<group>"; };
+		D3E6E2772A417AF000BF7095 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -352,6 +354,7 @@
 				D3E6E1862A3ACA6C00BF7095 /* Manager.swift */,
 				D3E6E1872A3ACA6C00BF7095 /* LibraryManager.swift */,
 				D3E6E1882A3ACA6C00BF7095 /* DeviceManager.swift */,
+				D3E6E2772A417AF000BF7095 /* NetworkManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -679,6 +682,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D3E6E2782A417AF000BF7095 /* NetworkManager.swift in Sources */,
 				D3E6E1B52A3ACA7B00BF7095 /* AES70OCP1Connection+Subscribe.swift in Sources */,
 				D3E6E1C42A3ACA8C00BF7095 /* Worker.swift in Sources */,
 				D3E6E1C52A3ACA8C00BF7095 /* Block.swift in Sources */,
