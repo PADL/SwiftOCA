@@ -81,6 +81,17 @@ public class AES70OCP1Connection: ObservableObject {
             }
         }
         
+        func stop() {
+            precondition(task != nil)
+            self.continuations.forEach {
+                $0.1.resume(throwing: Ocp1Error.notConnected)
+            }
+            self.continuations.removeAll()
+            task?.cancel()
+            task = nil
+            self.lastMessageReceivedTime = Date.distantPast
+        }
+    
         var isCancelled: Bool {
             guard let task else { return true }
             return task.isCancelled
@@ -108,13 +119,6 @@ public class AES70OCP1Connection: ObservableObject {
                 guard let connection else { return true }
                 return await lastMessageReceivedTime + TimeInterval(3 * connection.keepAliveInterval) < Date()
             }
-        }
-        
-        deinit {
-            self.continuations.forEach {
-                $0.1.resume(throwing: Ocp1Error.notConnected)
-            }
-            task?.cancel()
         }
     }
     
@@ -185,7 +189,11 @@ public class AES70OCP1Connection: ObservableObject {
         if clearObjectCache {
             self.objects = [:]
         }
-        monitor = nil
+        
+        if let monitor {
+            await monitor.stop()
+            self.monitor = nil
+        }
         
         DispatchQueue.main.async {
             self.objectWillChange.send()
