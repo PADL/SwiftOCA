@@ -23,7 +23,6 @@ fileprivate extension Errno {
     }
 }
 
-
 public class AES70OCP1SocketConnection: AES70OCP1Connection {
     private let deviceAddress: any SocketAddress
     var socket: Socket? = nil
@@ -55,6 +54,60 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
             await socket.close()
         }
         try await super.disconnectDevice(clearObjectCache: clearObjectCache)
+    }
+}
+
+public class AES70OCP1UDPConnection: AES70OCP1SocketConnection {
+    static let mtu = 1500
+    
+    override func connectDevice() async throws {
+        if socket == nil {
+            Socket.configuration = AsyncSocketConfiguration(monitorPriority: .userInitiated)
+            socket = try await Socket(IPv4Protocol.udp)
+        }
+        try await super.connectDevice()
+    }
+    
+    override func read(_ length: Int) async throws -> Data {
+        guard let socket else {
+            throw Ocp1Error.notConnected
+        }
+        
+        do {
+            return try await socket.receiveMessage(Self.mtu)
+        } catch let error as Errno {
+            if error.connectionFailed {
+                throw Ocp1Error.notConnected
+            } else {
+                throw error
+            }
+        }
+    }
+    
+    override func write(_ data: Data) async throws -> Int {
+        guard let socket else {
+            throw Ocp1Error.notConnected
+        }
+        
+        do {
+            return try await socket.sendMessage(data)
+        } catch let error as Errno {
+            if error.connectionFailed {
+                throw Ocp1Error.notConnected
+            } else {
+                throw error
+            }
+        }
+    }
+}
+
+public class AES70OCP1TCPConnection: AES70OCP1SocketConnection {
+    override func connectDevice() async throws {
+        if socket == nil {
+            Socket.configuration = AsyncSocketConfiguration(monitorPriority: .userInitiated)
+            socket = try await Socket(IPv4Protocol.tcp)
+        }
+        try await super.connectDevice()
     }
     
     override func read(_ length: Int) async throws -> Data {
@@ -101,32 +154,5 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
         }
         
         return bytesWritten
-    }
-}
-
-public class AES70OCP1UDPConnection: AES70OCP1SocketConnection {
-    override func connectDevice() async throws {
-        if socket == nil {
-            Socket.configuration = AsyncSocketConfiguration(monitorPriority: .userInitiated)
-            socket = try await Socket(IPv4Protocol.udp)
-        }
-        try await super.connectDevice()
-    }
-}
-
-public class AES70OCP1TCPConnection: AES70OCP1SocketConnection {
-    /*
-    override public var keepAliveInterval: OcaUint16 {
-        return 0
-    }
-     */
-    
-
-    override func connectDevice() async throws {
-        if socket == nil {
-            Socket.configuration = AsyncSocketConfiguration(monitorPriority: .userInitiated)
-            socket = try await Socket(IPv4Protocol.tcp)
-        }
-        try await super.connectDevice()
     }
 }

@@ -39,7 +39,11 @@ extension AES70OCP1Connection.Monitor {
             throw Ocp1Error.invalidPduSize
         }
 
-        messagePduData += try await connection.read(Int(pduSize) - (Self.MinimumPduSize - 1))
+        let bytesLeft = Int(pduSize) - (Self.MinimumPduSize - 1)
+        if messagePduData.count < bytesLeft {
+            messagePduData += try await connection.read(bytesLeft)
+        }
+    
         return try decodeOcp1MessagePdu(from: messagePduData, messages: &messages)
     }
 

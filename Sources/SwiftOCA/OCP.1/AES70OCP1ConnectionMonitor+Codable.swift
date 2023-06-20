@@ -55,42 +55,42 @@ extension AES70OCP1Connection {
 }
 
 extension AES70OCP1Connection.Monitor {
-    func decodeOcp1MessagePdu(from ocp1EncodedData: Data, messages: inout [Data]) throws -> OcaMessageType {
-        precondition(ocp1EncodedData.count >= Self.MinimumPduSize)
-        precondition(ocp1EncodedData[0] == Ocp1SyncValue)
+    func decodeOcp1MessagePdu(from data: Data, messages: inout [Data]) throws -> OcaMessageType {
+        precondition(data.count >= Self.MinimumPduSize)
+        precondition(data[0] == Ocp1SyncValue)
         
         /// MinimumPduSize == 7
         /// 0 `syncVal: OcaUint8`
         /// 1`protocolVersion: OcaUint16`
         /// 3 `pduSize: OcaUint32` (size of PDU not including syncVal)
 
-        guard ocp1EncodedData.count >= Self.MinimumPduSize + 3 else {
+        guard data.count >= Self.MinimumPduSize + 3 else {
             throw Ocp1Error.invalidPduSize
         }
         
         var header = Ocp1Header()
-        header.protocolVersion = ocp1EncodedData.decodeInteger(index: 1)
+        header.protocolVersion = data.decodeInteger(index: 1)
         guard header.protocolVersion == Ocp1ProtocolVersion else {
             throw Ocp1Error.invalidProtocolVersion
         }
         
-        header.pduSize = ocp1EncodedData.decodeInteger(index: 3)
-        precondition(header.pduSize <= ocp1EncodedData.count - 1)
+        header.pduSize = data.decodeInteger(index: 3)
+        precondition(header.pduSize <= data.count - 1)
         
         /// MinimumPduSize +3 == 10
         /// 7 `messageType: OcaUint8`
         /// 8 `messageCount: OcaUint16`
-        guard let messageType = OcaMessageType(rawValue: ocp1EncodedData[7]) else {
+        guard let messageType = OcaMessageType(rawValue: data[7]) else {
             throw Ocp1Error.invalidMessageType
         }
 
-        let messageCount: OcaUint16 = ocp1EncodedData.decodeInteger(index: 8)
+        let messageCount: OcaUint16 = data.decodeInteger(index: 8)
         
         var cursor = Self.MinimumPduSize + 3 // start of first message
         
         for _ in 0..<messageCount {
-            precondition(cursor < ocp1EncodedData.count)
-            var messageData = ocp1EncodedData.subdata(in: cursor..<Int(header.pduSize) + 1) // because this includes sync byte
+            precondition(cursor < data.count)
+            var messageData = data.subdata(in: cursor..<Int(header.pduSize) + 1) // because this includes sync byte
                 
             if messageType != .ocaKeepAlive {
                 let messageSize: OcaUint32 = messageData.decodeInteger(index: 0)
