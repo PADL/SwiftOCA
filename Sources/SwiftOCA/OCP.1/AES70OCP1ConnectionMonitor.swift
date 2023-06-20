@@ -80,7 +80,7 @@ extension AES70OCP1Connection.Monitor {
             try decodeOcp1Message(from: $0, type: messageType)
         }
                
-        updateLastMessageTime()
+        updateLastMessageReceivedTime()
 
         for message in messages {
             let keepAliveInterval = await connection.keepAliveInterval

@@ -90,6 +90,7 @@
 		D3E6E25D2A3D2D2500BF7095 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E25C2A3D2D2500BF7095 /* DetailView.swift */; };
 		D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */; };
 		D3E6E2632A3D648400BF7095 /* RootBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2622A3D648400BF7095 /* RootBlockView.swift */; };
+		D3E6E2762A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2752A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -173,6 +174,7 @@
 		D3E6E25C2A3D2D2500BF7095 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		D3E6E2602A3D323600BF7095 /* PropertyModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyModifiers.swift; sourceTree = "<group>"; };
 		D3E6E2622A3D648400BF7095 /* RootBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootBlockView.swift; sourceTree = "<group>"; };
+		D3E6E2752A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Combine.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -431,6 +433,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */,
+				D3E6E2752A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift */,
 				D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor.swift */,
 				D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift */,
 				D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */,
@@ -705,6 +708,7 @@
 				D3E6E1D12A3ACA9A00BF7095 /* EventHandler.swift in Sources */,
 				D3E6E1C82A3ACA9000BF7095 /* Gain.swift in Sources */,
 				D3E6E1B62A3ACA7B00BF7095 /* AES70ClassRegistry.swift in Sources */,
+				D3E6E2762A4132AD00BF7095 /* AES70OCP1Connection+Combine.swift in Sources */,
 				D3E6E1C62A3ACA9000BF7095 /* BasicActuators.swift in Sources */,
 				D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */,
 				D3E6E1DD2A3ACAA900BF7095 /* List2D.swift in Sources */,

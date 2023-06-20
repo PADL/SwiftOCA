@@ -110,7 +110,7 @@ public class AES70OCP1Connection: ObservableObject {
             return continuation
         }
     
-        func updateLastMessageTime() {
+        func updateLastMessageReceivedTime() {
             self.lastMessageReceivedTime = Date()
         }
         
@@ -223,29 +223,3 @@ extension AES70OCP1Connection {
         try await disconnectDevice(clearObjectCache: true)
     }
 }
-
-#if canImport(Combine) || canImport(OpenCombine)
-#if canImport(Combine)
-import Combine
-#endif
-#if canImport(OpenCombine)
-import OpenCombine
-#endif
-
-extension AES70OCP1Connection {
-    // FIXME: for portability outside of Combine we could use a AsyncPassthroughSubject
-    func suspendUntilConnected() async throws {
-        try await withTimeout(seconds: connectionTimeout) {
-            while await self.monitor == nil {
-                var cancellables = Set<AnyCancellable>()
-                
-                await withCheckedContinuation { pop in
-                    self.objectWillChange.sink { _ in
-                        pop.resume()
-                    }.store(in: &cancellables)
-                }
-            }
-        }
-    }
-}
-#endif

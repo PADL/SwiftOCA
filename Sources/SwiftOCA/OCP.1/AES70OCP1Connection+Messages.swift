@@ -17,7 +17,8 @@
 import Foundation
 
 extension AES70OCP1Connection {
-    @MainActor func updateLastMessageSentTime() async {
+    @MainActor
+    func updateLastMessageSentTime() async {
         lastMessageSentTime = Date()
     }
     
@@ -28,12 +29,10 @@ extension AES70OCP1Connection {
             guard try await write(messagePduData) == messagePduData.count else {
                 throw Ocp1Error.pduSendingFailed
             }
+            await updateLastMessageSentTime()
         } catch Ocp1Error.notConnected {
-            // FIXME: reconnect on pduSendingFailed?
             try await self.reconnectDevice()
         }
-
-        await updateLastMessageSentTime()
     }
 
     private func sendMessage(_ message: Ocp1Message, type messageType: OcaMessageType) async throws {
@@ -51,7 +50,7 @@ extension AES70OCP1Connection {
         }
         
         return try await withCheckedThrowingContinuation { continuation in
-            Task { @MainActor in
+            Task {
                 do {
                     try await withTimeout(seconds: responseTimeout) {
                         await monitor.push(handle, continuation: continuation)
