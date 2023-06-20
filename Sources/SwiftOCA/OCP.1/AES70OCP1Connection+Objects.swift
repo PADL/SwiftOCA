@@ -44,4 +44,9 @@ extension AES70OCP1Connection {
         objects[object.objectNumber] = object
         object.connectionDelegate = self
     }
+    
+    @MainActor
+    func refreshDeviceTree() async {
+        // TODO: implement
+    }
 }

@@ -173,7 +173,7 @@ public class AES70OCP1Connection: ObservableObject {
             try? await object.refresh()
         }
         
-        // TODO: on connect should we refresh the device tree
+        await refreshDeviceTree()
 
         DispatchQueue.main.async {
             self.objectWillChange.send()
