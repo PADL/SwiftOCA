@@ -31,6 +31,7 @@ enum Ocp1Error: Error, Equatable {
     case invalidMessageType
     case invalidProtocolVersion
     case invalidKeepAlivePdu
+    case invalidHandle
     case responseTimeout
     case requestParameterOutOfRange
     case responseParameterOutOfRange

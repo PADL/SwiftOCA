@@ -251,22 +251,33 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         guard let connectionDelegate = instance.connectionDelegate else {
             throw Ocp1Error.noConnectionDelegate
         }
-        
+                
         try await connectionDelegate.suspendUntilConnected()
+
+        let result = try await withTimeout(seconds: connectionDelegate.responseTimeout) {
+            await Task {
+                repeat {
+                    await subscribe(instance)
+                    
+                    if case .success(let value) = self.subject.value {
+                        return try await block(value)
+                    } else if case .failure(let error) = self.subject.value {
+                        throw error
+                    } else {
+                        await Task.yield()
+                    }
+                } while !Task.isCancelled
+                throw Ocp1Error.responseTimeout
+            }.result
+        }
         
-        let deadline = Date() + connectionDelegate.responseTimeout
-        repeat {
-            await subscribe(instance)
-            
-            if case .success(let value) = self.subject.value {
-                return try await block(value)
-            } else if case .failure(let error) = self.subject.value {
-                throw error
-            } else {
-                await Task.yield()
-            }
-        } while Date() < deadline
-        throw Ocp1Error.responseTimeout
+        switch result {
+        case .success(let value):
+            return value
+        case .failure(let error):
+            debugPrint("property completion handler failed \(error)")
+            throw error
+        }
     }
 }
 

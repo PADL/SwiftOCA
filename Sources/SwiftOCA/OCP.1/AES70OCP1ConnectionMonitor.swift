@@ -50,14 +50,20 @@ extension AES70OCP1Connection.Monitor {
         case let notification as Ocp1Notification:
             let event = notification.parameters.eventData.event
             // debugPrint("processMessage: Received notification for event \(event)")
-            Task { @MainActor in
-                if let callback = connection.subscriptions[event], notification.parameters.parameterCount == 2 {
-                    callback(notification.parameters.eventData)
+            Task {
+                if let callback = await connection.subscriptions[event], notification.parameters.parameterCount == 2 {
+                    await callback(notification.parameters.eventData)
                 }
             }
         case let response as Ocp1Response:
-            debugPrint("processMessage: \(Date()): response for request \(response.handle)")
-            await channel.send(response)
+            //debugPrint("processMessage: \(Date()): response for request \(response.handle)")
+            guard let continuation = self.continuation(for: response.handle) else {
+                throw Ocp1Error.invalidHandle
+            }
+
+            Task {
+                continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
+            }
         case is Ocp1KeepAlive1:
             break
         case is Ocp1KeepAlive2:
@@ -78,19 +84,17 @@ extension AES70OCP1Connection.Monitor {
 
         for message in messages {
             let keepAliveInterval = await connection.keepAliveInterval
-            if keepAliveInterval != 0,
-               lastMessageReceivedTime + TimeInterval(3 * keepAliveInterval) < Date() {
+            if keepAliveInterval != 0, await connectionIsStale {
                 throw Ocp1Error.notConnected
             }
 
             try await processMessage(connection, message)
-            updateLastMessageTime()
         }        
     }
     
     func receiveMessages(_ connection: AES70OCP1Connection) async throws {
         repeat {
             try await receiveMessage(connection)
-        } while true
+        } while !isCancelled
     }
 }

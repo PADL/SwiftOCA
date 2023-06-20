@@ -17,7 +17,10 @@
 import Foundation
 
 extension AES70OCP1Connection {
-    @MainActor
+    @MainActor func updateLastMessageSentTime() async {
+        lastMessageSentTime = Date()
+    }
+    
     private func sendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {
         let messagePduData = try encodeOcp1MessagePdu(messages, type: messageType)
 
@@ -30,45 +33,44 @@ extension AES70OCP1Connection {
             try await self.reconnectDevice()
         }
 
-        lastMessageSentTime = Date()
+        await updateLastMessageSentTime()
     }
 
-    @MainActor
     private func sendMessage(_ message: Ocp1Message, type messageType: OcaMessageType) async throws {
         try await sendMessages([message], type: messageType)
     }
 
-    @MainActor
     func sendCommand(_ command: Ocp1Command) async throws {
         // debugPrint("sendCommand \(command)")
         try await sendMessage(command, type: .ocaCmd)
     }
     
-    @MainActor
     private func response(for handle: OcaUint32) async throws -> Ocp1Response {
-        guard let monitor = monitor else {
+        guard let monitor = await monitor else {
             throw Ocp1Error.notConnected
         }
         
-        let deadline = Date() + responseTimeout
-        repeat {
-            for await response in monitor.channel.filter({ $0.handle == handle }) {
-                return response
+        return try await withCheckedThrowingContinuation { continuation in
+            Task { @MainActor in
+                do {
+                    try await withTimeout(seconds: responseTimeout) {
+                        await monitor.subscribe(handle, to: continuation)
+                    }
+                } catch {
+                    debugPrint("response handled failed \(error)")
+                    throw error
+                }
             }
-        } while Date() < deadline
-        debugPrint("response(for:) \(Date()) timed out waiting for response for handle \(handle)")
-        throw Ocp1Error.responseTimeout
+        }
     }
 
-    @MainActor
     func sendCommandRrq(_ command: Ocp1Command) async throws -> Ocp1Response {
         try await sendMessage(command, type: .ocaCmdRrq)
         return try await response(for: command.handle)
     }
 
-    @MainActor
     func sendKeepAlive() async throws {
-        let message = Ocp1KeepAlive1(heartBeatTime: keepAliveInterval)
+        let message = await Ocp1KeepAlive1(heartBeatTime: keepAliveInterval)
         try await sendMessage(message, type: .ocaKeepAlive)
     }
 }

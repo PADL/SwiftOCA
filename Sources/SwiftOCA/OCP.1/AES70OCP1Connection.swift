@@ -64,10 +64,11 @@ public class AES70OCP1Connection: ObservableObject {
     actor Monitor {
         static let MinimumPduSize = 7
 
-        let channel = AsyncBufferedChannel<Ocp1Response>()
-        var task: Task<Void, Error>? = nil
-        var connection: AES70OCP1Connection?
-        var lastMessageReceivedTime = Date.distantPast
+        typealias Continuation = CheckedContinuation<Ocp1Response, Error>
+        private var continuations = [OcaUint32:Continuation]()
+        private var task: Task<Void, Error>? = nil
+        private let connection: AES70OCP1Connection?
+        private var lastMessageReceivedTime = Date.distantPast
         
         init(_ connection: AES70OCP1Connection) {
             self.connection = connection
@@ -79,13 +80,39 @@ public class AES70OCP1Connection: ObservableObject {
                 try await self.receiveMessages(connection!)
             }
         }
+        
+        var isCancelled: Bool {
+            task!.isCancelled
+        }
+        
+        func subscribe(_ handle: OcaUint32, to continuation: Continuation) {
+            self.continuations[handle] = continuation
+        }
+        
+        func continuation(for handle: OcaUint32) -> Continuation? {
+            let continuation = self.continuations[handle]
+            
+            if continuation != nil {
+                self.continuations.removeValue(forKey: handle)
+            }
+            return continuation
+        }
     
         func updateLastMessageTime() {
             self.lastMessageReceivedTime = Date()
         }
         
+        var connectionIsStale: Bool {
+            get async {
+                guard let connection else { return true }
+                return await lastMessageReceivedTime + TimeInterval(3 * connection.keepAliveInterval) < Date()
+            }
+        }
+        
         deinit {
-            channel.finish()
+            self.continuations.forEach {
+                $0.1.resume(throwing: Ocp1Error.notConnected)
+            }
             task?.cancel()
         }
     }
@@ -123,7 +150,7 @@ public class AES70OCP1Connection: ObservableObject {
         await monitor!.run()
 
         if self.keepAliveInterval != 0 {
-            keepAliveTask = Task.detached(priority: .medium) {
+            keepAliveTask = Task.detached(priority: .background) {
                 repeat {
                     if await self.lastMessageSentTime + TimeInterval(self.keepAliveInterval) < Date() {
                         try await self.sendKeepAlive()
