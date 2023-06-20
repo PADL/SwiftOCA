@@ -90,7 +90,7 @@ public enum OcaStatus: OcaUint8, Codable {
     case bufferOverflow = 14
 }
 
-public struct OcaPropertyID: Codable, Hashable, Equatable, CustomStringConvertible {
+public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, CustomStringConvertible {
     let defLevel: OcaUint16
     let propertyIndex: OcaUint16
     
@@ -102,6 +102,14 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, CustomStringConvertib
     
     public var description: String {
         return "\(defLevel).\(propertyIndex)"
+    }
+    
+    public static func < (lhs: OcaPropertyID, rhs: OcaPropertyID) -> Bool {
+        if lhs.defLevel == rhs.defLevel {
+            return lhs.propertyIndex < rhs.propertyIndex
+        } else {
+            return lhs.defLevel < rhs.defLevel
+        }
     }
 }
 

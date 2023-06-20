@@ -29,8 +29,9 @@ public struct OcaRootBlockView: View {
     
     public var body: some View {
         VStack {
-            OcaBlockNavigationSplitView(object).environment(\.navigationPath, $oNoPath)
-            //OcaDeviceManagerView(connection.deviceManager)
+            OcaBlockNavigationSplitView(object)
+                .environment(\.navigationPath, $oNoPath)
+                .environmentObject(connection)
         }
     }
 }

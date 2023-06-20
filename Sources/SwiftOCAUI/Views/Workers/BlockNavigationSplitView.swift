@@ -18,6 +18,7 @@ import SwiftUI
 import SwiftOCA
 
 struct OcaBlockNavigationSplitView: OcaView {
+    @EnvironmentObject var connection: AES70OCP1Connection
     @Environment(\.navigationPath) var oNoPath
     @StateObject var object: OcaBlock
     @State var members: [OcaRoot]?
@@ -62,6 +63,10 @@ struct OcaBlockNavigationSplitView: OcaView {
         .task {
             do {
                 members = try await object.resolveMembers()
+                
+                if object.objectNumber == OcaRootBlockONo {
+                    members?.append(connection.deviceManager)
+                }
                 membersMap = members?.map
             } catch {
                 debugPrint("OcaNavigationSplitView: error \(error)")

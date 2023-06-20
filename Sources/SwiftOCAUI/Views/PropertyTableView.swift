@@ -67,7 +67,7 @@ struct OcaPropertyTableView: OcaView {
                                     keyPath: propertyKeyPath,
                                     value: object[keyPath: propertyKeyPath] as! any OcaPropertyRepresentable)
                 }.sorted {
-                    $0.idString < $1.idString
+                    $0.value.propertyIDs[0] < $1.value.propertyIDs[0]
                 }
                 ForEach(allPropertyKeyPaths) { property in
                     TableRow(property)
