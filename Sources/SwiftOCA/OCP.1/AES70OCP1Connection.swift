@@ -166,7 +166,6 @@ public class AES70OCP1Connection: ObservableObject {
             }
         }
 
-        // try await refreshSubscriptions()
         self.subscriptions = [:]
         
         // refresh all objects
@@ -174,8 +173,6 @@ public class AES70OCP1Connection: ObservableObject {
             try? await object.refresh()
         }
         
-        try? await refreshDeviceTree()
-
         DispatchQueue.main.async {
             self.objectWillChange.send()
         }
@@ -214,6 +211,7 @@ extension AES70OCP1Connection {
     @MainActor
     public func connect() async throws {
         try await connectDevice()
+        try? await refreshDeviceTree()
     }
 
     @MainActor
