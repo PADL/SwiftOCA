@@ -33,34 +33,6 @@ extension Binding: Equatable where Value == NetService? {
     }
 }
 
-struct OcaBonjourDeviceView: View {
-    @State var connection: AES70OCP1Connection? = nil
-    var service: NetService
-    
-    init(_ service: NetService) {
-        self.service = service
-    }
-    
-    var body: some View {
-        Group {
-            if let connection {
-                OcaRootBlockView(connection)
-            } else {
-                ProgressView()
-            }
-        }.task {
-            do {
-                connection = try await AES70OCP1Connection(service)
-                if let connection {
-                    try await connection.connect()
-                }
-            } catch {
-                debugPrint("OcaBonjourDeviceView: error \(error)")
-            }
-        }
-    }
-}
-
 public struct OcaBonjourDiscoveryView: View {
     let udpBrowser = AES70Browser(serviceType: .udp)
     let tcpBrowser = AES70Browser(serviceType: .tcp)

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */; };
 		D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */; };
 		D3DA69E22A3DADF1001250A1 /* BlockNavigationSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69E12A3DADF1001250A1 /* BlockNavigationSplitView.swift */; };
 		D3DA69E42A3DCA75001250A1 /* NavigationLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69E32A3DCA75001250A1 /* NavigationLabel.swift */; };
@@ -96,6 +97,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDeviceView.swift; sourceTree = "<group>"; };
 		D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaRoot+Identifiable.swift"; sourceTree = "<group>"; };
 		D3DA69E12A3DADF1001250A1 /* BlockNavigationSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockNavigationSplitView.swift; sourceTree = "<group>"; };
 		D3DA69E32A3DCA75001250A1 /* NavigationLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationLabel.swift; sourceTree = "<group>"; };
@@ -548,6 +550,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E27D2A4181BB00BF7095 /* BonjourDiscoveryView.swift */,
+				D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */,
 			);
 			path = Discovery;
 			sourceTree = "<group>";
@@ -773,6 +776,7 @@
 				D3DA69FB2A3FEF52001250A1 /* DeviceManager.swift in Sources */,
 				D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */,
 				D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */,
+				D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */,
 				D3DA69E42A3DCA75001250A1 /* NavigationLabel.swift in Sources */,
 				D3DA69EB2A3DCD60001250A1 /* BlockNavigationStackView.swift in Sources */,
 				D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */,
