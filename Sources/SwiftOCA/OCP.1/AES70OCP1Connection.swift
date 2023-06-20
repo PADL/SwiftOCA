@@ -174,7 +174,7 @@ public class AES70OCP1Connection: ObservableObject {
             try? await object.refresh()
         }
         
-        await try? refreshDeviceTree()
+        try? await refreshDeviceTree()
 
         DispatchQueue.main.async {
             self.objectWillChange.send()
