@@ -57,7 +57,7 @@ extension AES70OCP1Connection.Monitor {
             }
         case let response as Ocp1Response:
             //debugPrint("processMessage: \(Date()): response for request \(response.handle)")
-            guard let continuation = self.continuation(for: response.handle) else {
+            guard let continuation = self.pop(response.handle) else {
                 throw Ocp1Error.invalidHandle
             }
 

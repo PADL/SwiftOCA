@@ -82,14 +82,15 @@ public class AES70OCP1Connection: ObservableObject {
         }
         
         var isCancelled: Bool {
-            task!.isCancelled
+            guard let task else { return true }
+            return task.isCancelled
         }
         
-        func subscribe(_ handle: OcaUint32, to continuation: Continuation) {
+        func push(_ handle: OcaUint32, continuation: Continuation) {
             self.continuations[handle] = continuation
         }
         
-        func continuation(for handle: OcaUint32) -> Continuation? {
+        func pop(_ handle: OcaUint32) -> Continuation? {
             let continuation = self.continuations[handle]
             
             if continuation != nil {
@@ -230,9 +231,9 @@ extension AES70OCP1Connection {
             while await self.monitor == nil {
                 var cancellables = Set<AnyCancellable>()
                 
-                await withCheckedContinuation { continuation in
+                await withCheckedContinuation { pop in
                     self.objectWillChange.sink { _ in
-                        continuation.resume()
+                        pop.resume()
                     }.store(in: &cancellables)
                 }
             }

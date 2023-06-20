@@ -54,7 +54,7 @@ extension AES70OCP1Connection {
             Task { @MainActor in
                 do {
                     try await withTimeout(seconds: responseTimeout) {
-                        await monitor.subscribe(handle, to: continuation)
+                        await monitor.push(handle, continuation: continuation)
                     }
                 } catch {
                     debugPrint("response handled failed \(error)")
