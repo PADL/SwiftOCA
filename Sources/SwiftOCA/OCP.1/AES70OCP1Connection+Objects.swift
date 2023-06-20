@@ -47,6 +47,8 @@ extension AES70OCP1Connection {
     
     @MainActor
     func refreshDeviceTree() async {
-        // TODO: implement
+        // TODO: implement, start at root block and descend into each matrix/block
+        // get role name
+        // batch messages
     }
 }

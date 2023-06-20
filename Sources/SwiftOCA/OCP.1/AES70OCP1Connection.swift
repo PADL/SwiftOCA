@@ -64,11 +64,11 @@ public class AES70OCP1Connection: ObservableObject {
     actor Monitor {
         static let MinimumPduSize = 7
 
+        private let connection: AES70OCP1Connection!
         typealias Continuation = CheckedContinuation<Ocp1Response, Error>
         private var continuations = [OcaUint32:Continuation]()
-        private var task: Task<Void, Error>? = nil
-        private let connection: AES70OCP1Connection?
         private var lastMessageReceivedTime = Date.distantPast
+        private var task: Task<Void, Error>? = nil
         
         init(_ connection: AES70OCP1Connection) {
             self.connection = connection
@@ -77,7 +77,7 @@ public class AES70OCP1Connection: ObservableObject {
         func run() {
             precondition(task == nil)
             task = Task.detached { [unowned self] in
-                try await self.receiveMessages(connection!)
+                try await self.receiveMessages(connection)
             }
         }
         
@@ -87,9 +87,9 @@ public class AES70OCP1Connection: ObservableObject {
                 $0.1.resume(throwing: Ocp1Error.notConnected)
             }
             self.continuations.removeAll()
+            self.lastMessageReceivedTime = Date.distantPast
             task?.cancel()
             task = nil
-            self.lastMessageReceivedTime = Date.distantPast
         }
     
         var isCancelled: Bool {
@@ -116,7 +116,6 @@ public class AES70OCP1Connection: ObservableObject {
         
         var connectionIsStale: Bool {
             get async {
-                guard let connection else { return true }
                 return await lastMessageReceivedTime + TimeInterval(3 * connection.keepAliveInterval) < Date()
             }
         }
@@ -186,15 +185,13 @@ public class AES70OCP1Connection: ObservableObject {
             keepAliveTask.cancel()
             self.keepAliveTask = nil
         }
-        if clearObjectCache {
-            self.objects = [:]
-        }
-        
         if let monitor {
             await monitor.stop()
             self.monitor = nil
         }
-        
+        if clearObjectCache {
+            self.objects = [:]
+        }
         DispatchQueue.main.async {
             self.objectWillChange.send()
         }

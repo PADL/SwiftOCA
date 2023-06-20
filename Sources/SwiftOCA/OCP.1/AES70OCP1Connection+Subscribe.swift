@@ -52,14 +52,14 @@ extension AES70OCP1Connection {
 
     }
     
-    public func removeSubscription(event: OcaEvent) async throws {
+    func removeSubscription(event: OcaEvent) async throws {
         try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
         Task { @MainActor in
             subscriptions[event] = nil
         }
     }
     
-    public func removeSubscriptions() async throws {
+    func removeSubscriptions() async throws {
         for event in await subscriptions.keys {
             _ = try await removeSubscription(event: event)
         }
