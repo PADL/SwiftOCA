@@ -42,6 +42,13 @@ struct OcaBonjourDeviceView: View {
             } catch {
                 debugPrint("OcaBonjourDeviceView: error \(error)")
             }
+        }.onDisappear {
+            Task { @MainActor in
+                if let connection {
+                    try await connection.close()
+                    self.connection = nil
+                }
+            }
         }
     }
 }

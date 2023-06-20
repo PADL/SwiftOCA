@@ -126,8 +126,8 @@ fileprivate class AES70ResolverDelegate: NSObject, NetServiceDelegate {
     }
     
     func netService(_ sender: NetService, didNotResolve errorDict: [String : NSNumber]) {
-        let errorCode = errorDict["errorCode"]!.intValue
-        let errorDomain = errorDict["errorDomain"]!.stringValue
+        let errorCode = errorDict[NetService.errorCode]!.intValue
+        let errorDomain = errorDict[NetService.errorDomain]!.stringValue
         
         Task { @MainActor in
             await channel.send(.failure(NSError(domain: errorDomain, code: errorCode)))
