@@ -20,16 +20,10 @@ import SwiftOCA
 import AsyncAlgorithms
 
 extension NetService: Identifiable {
-    public typealias ID = String
+    public typealias ID = [String]
     
     public var id: ID {
-        return name
-    }
-}
-
-extension Binding: Equatable where Value == NetService? {
-    public static func == (lhs: Binding<Value>, rhs: Binding<Value>) -> Bool {
-        lhs.wrappedValue?.id == rhs.wrappedValue?.id
+        return [domain, type, name, String(port)]
     }
 }
 
