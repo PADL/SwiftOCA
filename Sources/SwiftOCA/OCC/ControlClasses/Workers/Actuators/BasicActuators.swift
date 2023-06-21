@@ -27,8 +27,13 @@ public class OcaBasicActuator: OcaActuator {
     override public class var classID: OcaClassID { OcaClassID("1.1.1.1") }
 }
 
-public class OcaBooleanActuator: OcaGenericBasicActuator<OcaBoolean> {
+public class OcaBooleanActuator: OcaActuator {
     override public class var classID: OcaClassID { OcaClassID("1.1.1.1.1") }
+    
+    @OcaProperty(propertyID: OcaPropertyID("5.1"),
+                 getMethodID: OcaMethodID("5.1"),
+                 setMethodID: OcaMethodID("5.2"))
+    public var setting: OcaProperty<OcaBoolean>.State
 }
 
 public class OcaInt8Actuator: OcaGenericBasicActuator<OcaInt8> {

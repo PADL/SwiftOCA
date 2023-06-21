@@ -19,6 +19,7 @@
 		D3DA69F42A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */; };
 		D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F62A3FE538001250A1 /* DynamicStack.swift */; };
 		D3DA69FB2A3FEF52001250A1 /* DeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69FA2A3FEF52001250A1 /* DeviceManager.swift */; };
+		D3DA69FE2A427C2F001250A1 /* BooleanActuatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69FD2A427C2F001250A1 /* BooleanActuatorView.swift */; };
 		D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift */; };
 		D3E6E1B42A3ACA7B00BF7095 /* AES70OCP1Connection+Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */; };
 		D3E6E1B52A3ACA7B00BF7095 /* AES70OCP1Connection+Subscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */; };
@@ -109,6 +110,7 @@
 		D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EnvironmentValues+NavigationPath.swift"; sourceTree = "<group>"; };
 		D3DA69F62A3FE538001250A1 /* DynamicStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicStack.swift; sourceTree = "<group>"; };
 		D3DA69FA2A3FEF52001250A1 /* DeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManager.swift; sourceTree = "<group>"; };
+		D3DA69FD2A427C2F001250A1 /* BooleanActuatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BooleanActuatorView.swift; sourceTree = "<group>"; };
 		D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCA.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hex.swift"; sourceTree = "<group>"; };
 		D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+IntegerCodable.swift"; sourceTree = "<group>"; };
@@ -261,6 +263,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E2492A3C0C7700BF7095 /* MuteView.swift */,
+				D3DA69FD2A427C2F001250A1 /* BooleanActuatorView.swift */,
 			);
 			path = Actuators;
 			sourceTree = "<group>";
@@ -773,6 +776,7 @@
 				D3E6E25D2A3D2D2500BF7095 /* DetailView.swift in Sources */,
 				D3DA69E22A3DADF1001250A1 /* BlockNavigationSplitView.swift in Sources */,
 				D3E6E27B2A417FB500BF7095 /* OcaList2D+Extras.swift in Sources */,
+				D3DA69FE2A427C2F001250A1 /* BooleanActuatorView.swift in Sources */,
 				D3DA69FB2A3FEF52001250A1 /* DeviceManager.swift in Sources */,
 				D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */,
 				D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */,
