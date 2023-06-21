@@ -94,6 +94,7 @@
 		D3E6E2782A417AF000BF7095 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2772A417AF000BF7095 /* NetworkManager.swift */; };
 		D3E6E27B2A417FB500BF7095 /* OcaList2D+Extras.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */; };
 		D3E6E27F2A4181BF00BF7095 /* BonjourDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E27D2A4181BB00BF7095 /* BonjourDiscoveryView.swift */; };
+		D3E6E2812A43B33D00BF7095 /* PolarityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2802A43B33D00BF7095 /* PolarityView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -181,6 +182,7 @@
 		D3E6E2772A417AF000BF7095 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaList2D+Extras.swift"; sourceTree = "<group>"; };
 		D3E6E27D2A4181BB00BF7095 /* BonjourDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDiscoveryView.swift; sourceTree = "<group>"; };
+		D3E6E2802A43B33D00BF7095 /* PolarityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarityView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -262,6 +264,7 @@
 			children = (
 				D3E6E2492A3C0C7700BF7095 /* MuteView.swift */,
 				D3DA69FD2A427C2F001250A1 /* BooleanActuatorView.swift */,
+				D3E6E2802A43B33D00BF7095 /* PolarityView.swift */,
 			);
 			path = Actuators;
 			sourceTree = "<group>";
@@ -779,6 +782,7 @@
 				D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */,
 				D3DA69E42A3DCA75001250A1 /* NavigationLabel.swift in Sources */,
 				D3DA69EB2A3DCD60001250A1 /* BlockNavigationStackView.swift in Sources */,
+				D3E6E2812A43B33D00BF7095 /* PolarityView.swift in Sources */,
 				D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */,
 				D3E6E2562A3C550500BF7095 /* View.swift in Sources */,
 				D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */,
