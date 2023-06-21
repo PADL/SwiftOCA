@@ -92,7 +92,7 @@ fileprivate class AES70ResolverDelegate: NSObject, NetServiceDelegate {
     
     func netServiceDidResolveAddress(_ sender: NetService) {
         Task { @MainActor in
-            guard let addresses = sender.addresses else {
+            guard let addresses = sender.addresses, !addresses.isEmpty else {
                 await channel.send(.failure(Ocp1Error.serviceResolutionFailed))
                 return
             }
@@ -115,13 +115,10 @@ fileprivate class AES70ResolverDelegate: NSObject, NetServiceDelegate {
                     }
                 }
             }
-            
-            guard let socketAddress = socketAddresses.first else {
-                await channel.send(.failure(Ocp1Error.serviceResolutionFailed))
-                return
+
+            for socketAddress in socketAddresses {
+                await channel.send(ResolutionResult.success(socketAddress))
             }
-            
-            await channel.send(ResolutionResult.success(socketAddress))
         }
     }
     
@@ -160,6 +157,7 @@ extension AES70OCP1Connection: AES70OCP1ConnectionFactory {
             case .success(let deviceAddress):
                 // FIXME: support IPv6
                 if type(of: deviceAddress).family != .ipv4 {
+                    debugPrint("skipping non-IPv4 address \(deviceAddress)")
                     continue
                 }
 
