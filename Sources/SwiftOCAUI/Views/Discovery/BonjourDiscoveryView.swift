@@ -38,13 +38,13 @@ public struct OcaBonjourDiscoveryView: View {
     
     public var body: some View {
         Group {
-            NavigationView {
+            NavigationStack {
                 List(services, selection: $serviceSelection) { service in
                     NavigationLink(destination: OcaBonjourDeviceView(service)) {
                         Text(service.name)
                     }
                 }
-            }.navigationViewStyle(.stack)
+            }
         }
             .task {
                 for await result in chain(udpBrowser.channel, tcpBrowser.channel) {
