@@ -45,7 +45,7 @@ struct OcaBonjourDeviceView: View {
         }.onDisappear {
             Task { @MainActor in
                 if let connection {
-                    try await connection.close()
+                    try await connection.disconnect()
                     self.connection = nil
                 }
             }

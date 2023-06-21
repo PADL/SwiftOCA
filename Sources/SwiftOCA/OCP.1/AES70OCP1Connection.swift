@@ -229,7 +229,7 @@ extension AES70OCP1Connection {
     }
 
     @MainActor
-    public func close() async throws {
+    public func disconnect() async throws {
         try await removeSubscriptions()
         try await disconnectDevice(clearObjectCache: true)
     }
