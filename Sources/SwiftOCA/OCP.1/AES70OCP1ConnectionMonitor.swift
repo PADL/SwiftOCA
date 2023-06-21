@@ -53,21 +53,14 @@ extension AES70OCP1Connection.Monitor {
             debugPrint("processMessage: Device sent unexpected command \(message); ignoring")
         case let notification as Ocp1Notification:
             let event = notification.parameters.eventData.event
-            // debugPrint("processMessage: Received notification for event \(event)")
-            Task {
-                if let callback = await connection.subscriptions[event], notification.parameters.parameterCount == 2 {
+            if let callback = await connection.subscriptions[event],
+               notification.parameters.parameterCount == 2 {
+                Task {
                     await callback(notification.parameters.eventData)
                 }
             }
         case let response as Ocp1Response:
-            //debugPrint("processMessage: \(Date()): response for request \(response.handle)")
-            guard let continuation = self.pop(response.handle) else {
-                throw Ocp1Error.invalidHandle
-            }
-
-            Task {
-                continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
-            }
+            try self.resume(with: response)
         case is Ocp1KeepAlive1:
             break
         case is Ocp1KeepAlive2:

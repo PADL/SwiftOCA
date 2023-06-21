@@ -99,17 +99,20 @@ public class AES70OCP1Connection: ObservableObject {
             return task.isCancelled
         }
         
-        func push(_ handle: OcaUint32, continuation: Continuation) {
+        func subscribe(handle: OcaUint32, continuation: Continuation) {
             self.continuations[handle] = continuation
         }
         
-        func pop(_ handle: OcaUint32) -> Continuation? {
-            let continuation = self.continuations[handle]
-            
-            if continuation != nil {
-                self.continuations.removeValue(forKey: handle)
+        func resume(with response: Ocp1Response) throws {
+            guard let continuation = self.continuations[response.handle] else {
+                throw Ocp1Error.invalidHandle
             }
-            return continuation
+
+            self.continuations.removeValue(forKey: response.handle)
+
+            Task {
+                continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
+            }
         }
     
         func updateLastMessageReceivedTime() {

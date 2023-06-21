@@ -51,13 +51,8 @@ extension AES70OCP1Connection {
         
         return try await withCheckedThrowingContinuation { continuation in
             Task {
-                do {
-                    try await withTimeout(seconds: responseTimeout) {
-                        await monitor.push(handle, continuation: continuation)
-                    }
-                } catch {
-                    debugPrint("response handled failed \(error)")
-                    throw error
+                try await withTimeout(seconds: responseTimeout) {
+                    await monitor.subscribe(handle: handle, continuation: continuation)
                 }
             }
         }
