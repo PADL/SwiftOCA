@@ -201,13 +201,15 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         subject.send(.requesting)
         
         guard await connectionDelegate.isConnected else {
+            debugPrint("property handler called before connection established")
             return
         }
+        
         do {
             let value = try await block(self)
             subject.send(.success(value))
         } catch is CancellationError {
-            // the task may have been cancelled, let's not leave in the error state
+            // if task cancelled due to a view being dismissed, reset state to initial
             subject.send(.initial)
         } catch let error {
             debugPrint("property handler received error from device: \(error)")
