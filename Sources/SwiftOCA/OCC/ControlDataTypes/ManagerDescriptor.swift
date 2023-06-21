@@ -16,9 +16,13 @@
 
 import Foundation
 
-public struct OcaManagerDescriptor: Codable {
+public struct OcaManagerDescriptor: Codable, CustomStringConvertible {
     let objectNumber: OcaONo
     let name: OcaString
     let classID: OcaClassID
     let classVersion: OcaClassVersionNumber
+
+    public var description: String {
+        name
+    }
 }
