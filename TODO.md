@@ -1,4 +1,2 @@
-- implement control views
-- refresh device tree on startup
-- matrix view
-
+- implement control views for common controls
+- WebSocket support
