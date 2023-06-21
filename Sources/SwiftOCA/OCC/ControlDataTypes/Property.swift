@@ -194,7 +194,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             subject.send(.failure(Ocp1Error.noConnectionDelegate))
             return
         }
-
+        
         subject.send(.requesting)
         
         do {
@@ -202,6 +202,9 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
 
             let value = try await block(self)
             subject.send(.success(value))
+        } catch is CancellationError {
+            // the task may have been cancelled, let's not leave in the error state
+            subject.send(.initial)
         } catch let error {
             debugPrint("property handler received error from device: \(error)")
             subject.send(.failure(error))
