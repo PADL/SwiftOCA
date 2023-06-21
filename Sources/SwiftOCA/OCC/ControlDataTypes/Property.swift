@@ -113,8 +113,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             let subject = instance[keyPath: storageKeyPath].subject
             switch subject.value {
             case .initial:
-                fallthrough
-            case .failure:
                 Task { @MainActor in
                     await instance[keyPath: storageKeyPath].perform(instance) {
                         try await $0.getValueAndSubscribe(instance)
