@@ -16,8 +16,12 @@
 
 import Foundation
 
-public struct OcaModelDescription: Codable {
+public struct OcaModelDescription: Codable, CustomStringConvertible {
     let manufacturer: OcaString
     let name: OcaString
     let version: OcaString
+    
+    public var description: String {
+        "\(manufacturer) \(name) \(version)"
+    }
 }
