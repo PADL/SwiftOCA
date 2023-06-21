@@ -203,6 +203,12 @@ public class AES70OCP1Connection: ObservableObject {
             self.objectWillChange.send()
         }
     }
+    
+    var isConnected: Bool {
+        get async {
+            await self.monitor != nil
+        }
+    }
 
     /// API to be impmlemented by concrete classes
     func read(_ length: Int) async throws -> Data {

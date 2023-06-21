@@ -200,9 +200,10 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         
         subject.send(.requesting)
         
+        guard await connectionDelegate.isConnected else {
+            return
+        }
         do {
-            try await connectionDelegate.suspendUntilConnected()
-
             let value = try await block(self)
             subject.send(.success(value))
         } catch is CancellationError {
@@ -257,8 +258,10 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         guard let connectionDelegate = instance.connectionDelegate else {
             throw Ocp1Error.noConnectionDelegate
         }
-                
-        try await connectionDelegate.suspendUntilConnected()
+        
+        guard await connectionDelegate.isConnected else {
+            throw Ocp1Error.notConnected
+        }
 
         let result = try await withTimeout(seconds: connectionDelegate.responseTimeout) {
             await Task {
