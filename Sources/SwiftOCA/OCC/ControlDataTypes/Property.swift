@@ -111,12 +111,17 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
         get {
             let subject = instance[keyPath: storageKeyPath].subject
-            if case .initial = subject.value {
+            switch subject.value {
+            case .initial:
+                fallthrough
+            case .failure:
                 Task { @MainActor in
                     await instance[keyPath: storageKeyPath].perform(instance) {
                         try await $0.getValueAndSubscribe(instance)
                     }
                 }
+            default:
+                break
             }
             return subject.value
         }
