@@ -291,7 +291,6 @@ public struct OcaOrganizationID: Codable, CustomStringConvertible {
     }
     
     public var description: String {
-        // IEEE CID hex representation
-        String(format: "%02X-%02X-%02x", id.0, id.1, id.2)
+        String(format: "%02X%02X%02X", id.0, id.1, id.2)
     }
 }
