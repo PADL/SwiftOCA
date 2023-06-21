@@ -16,7 +16,7 @@
 
 import Foundation
 
-public struct OcaDeviceState: OptionSet, Codable {
+public struct OcaDeviceState: OptionSet, Codable, CustomStringConvertible {
     public static let operational = OcaDeviceState(rawValue: 1 << 0)
     public static let disabled = OcaDeviceState(rawValue: 1 << 1)
     public static let error = OcaDeviceState(rawValue: 1 << 2)
@@ -27,6 +27,18 @@ public struct OcaDeviceState: OptionSet, Codable {
     
     public init(rawValue: OcaBitSet16) {
         self.rawValue = rawValue
+    }
+    
+    static var descriptions: [(Self, String)] = [
+        (.operational, "Operational"),
+        (.disabled, "Disabled"),
+        (.error, "Error"),
+        (.initializing, "Initializing"),
+        (.updating, "Updating"),
+    ]
+
+    public var description: String {
+        Self.descriptions.filter { contains($0.0) }.map { $0.1 }.joined(separator: ", ")
     }
 }
 
