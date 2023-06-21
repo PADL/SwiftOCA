@@ -156,10 +156,15 @@ extension AES70OCP1Connection: AES70OCP1ConnectionFactory {
         netService.resolve(withTimeout: 5)
         
         for await result in channel {
-            channel.finish()
-            
             switch result {
             case .success(let deviceAddress):
+                // FIXME: support IPv6
+                if type(of: deviceAddress).family != .ipv4 {
+                    continue
+                }
+
+                channel.finish()
+
                 switch serviceType {
                 case .tcp:
                     await self.init(reassigningSelfTo: AES70OCP1TCPConnection(deviceAddress: deviceAddress) as! Self)

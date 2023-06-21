@@ -43,6 +43,9 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
         do {
             try await socket.connect(to: deviceAddress)
         } catch Errno.socketIsConnected {
+        } catch {
+            debugPrint("Socket connection error \(error)")
+            throw error
         }
     
         try await super.connectDevice()
