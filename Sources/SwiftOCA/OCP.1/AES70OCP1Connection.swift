@@ -31,9 +31,9 @@ public class AES70OCP1Connection: ObservableObject {
     }
 
     @MainActor
-    public var connectionTimeout = TimeInterval(3)
+    public var connectionTimeout = TimeInterval(5)
     @MainActor
-    public var responseTimeout = TimeInterval(3)
+    public var responseTimeout = TimeInterval(5)
     
     /// Object interning, main thread only
     @MainActor
