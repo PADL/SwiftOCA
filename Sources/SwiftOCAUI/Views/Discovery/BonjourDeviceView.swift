@@ -27,8 +27,6 @@ struct OcaBonjourDeviceView: View {
         self.service = service
     }
     
-    
-    
     var body: some View {
         Group {
             if isConnected {
@@ -49,9 +47,9 @@ struct OcaBonjourDeviceView: View {
         }.onDisappear {
             Task { @MainActor in
                 if let connection {
+                    self.isConnected = false
                     try await connection.disconnect()
                     self.connection = nil
-                    self.isConnected = false
                 }
             }
         }
