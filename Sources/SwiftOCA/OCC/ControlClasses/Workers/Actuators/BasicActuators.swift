@@ -16,11 +16,11 @@
 
 import Foundation
 
-public class OcaGenericBasicActuator<T: Codable>: OcaActuator {
+public class OcaGenericBasicActuator<T: Codable & Numeric>: OcaActuator {
     @OcaBoundedProperty(propertyID: OcaPropertyID("5.1"),
                         getMethodID: OcaMethodID("5.1"),
                         setMethodID: OcaMethodID("5.2"))
-    public var setting: OcaProperty<OcaBoundedPropertyValue<T>>
+    public var setting: OcaBoundedProperty<T>.State
 }
 
 public class OcaBasicActuator: OcaActuator {

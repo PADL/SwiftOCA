@@ -105,37 +105,48 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         subject.value
     }
     
+    /// It's not possible to wrap `subscript(_enclosingInstance:wrapped:storage:)` because we can't
+    /// cast struct key paths to `ReferenceWritableKeyPath`. For property wrapper wrappers, use these internal
+    /// get/set functions.
+
+    func _get(_enclosingInstance instance: OcaRoot) -> State {
+        switch subject.value {
+        case .initial:
+            Task { @MainActor in
+                await perform(instance) {
+                    try await $0.getValueAndSubscribe(instance)
+                }
+            }
+        default:
+            break
+        }
+        return subject.value
+    }
+
+    func _set(_enclosingInstance instance: OcaRoot, _ newValue: State) {
+        Task { @MainActor in
+            if case let .success(value) = newValue {
+                await perform(instance) {
+                    try await $0.setValueIfMutable(instance, value)
+                    return value
+                }
+            } else if case .initial = newValue {
+                await refresh(instance)
+            } else {
+                preconditionFailure("setter called with invalid value \(newValue)")
+            }
+        }
+    }
+        
     public static subscript<T: OcaRoot>(
         _enclosingInstance instance: T,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
         get {
-            let subject = instance[keyPath: storageKeyPath].subject
-            switch subject.value {
-            case .initial:
-                Task { @MainActor in
-                    await instance[keyPath: storageKeyPath].perform(instance) {
-                        try await $0.getValueAndSubscribe(instance)
-                    }
-                }
-            default:
-                break
-            }
-            return subject.value
+            instance[keyPath: storageKeyPath]._get(_enclosingInstance: instance)
         }
         set {
-            Task { @MainActor in
-                if case let .success(value) = newValue {
-                    await instance[keyPath: storageKeyPath].perform(instance) {
-                        try await $0.setValueIfMutable(instance, value)
-                        return value
-                    }
-                } else if case .initial = newValue {
-                    await instance[keyPath: storageKeyPath].refresh(instance)
-                } else {
-                    preconditionFailure("setter called with invalid value \(newValue)")
-                }
-            }
+            instance[keyPath: storageKeyPath]._set(_enclosingInstance: instance, newValue)
         }
     }
 
@@ -239,7 +250,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     }
     
-    func onEvent(_ eventData: Ocp1EventData) throws {
+    func onEvent(_ instance: OcaRoot, _ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
         
         let decoder = BinaryDecoder(config: .ocp1Configuration)

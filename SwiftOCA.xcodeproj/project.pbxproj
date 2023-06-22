@@ -95,6 +95,11 @@
 		D3E6E27B2A417FB500BF7095 /* OcaList2D+Extras.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */; };
 		D3E6E27F2A4181BF00BF7095 /* BonjourDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E27D2A4181BB00BF7095 /* BonjourDiscoveryView.swift */; };
 		D3E6E2812A43B33D00BF7095 /* PolarityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2802A43B33D00BF7095 /* PolarityView.swift */; };
+		D3E6E2832A43B66D00BF7095 /* VariableSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2822A43B66D00BF7095 /* VariableSliderView.swift */; };
+		D3E6E2862A43BA3600BF7095 /* Sliders in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E2852A43BA3600BF7095 /* Sliders */; };
+		D3E6E2882A43BD1900BF7095 /* OcaDB+Linear.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2872A43BD1900BF7095 /* OcaDB+Linear.swift */; };
+		D3E6E28A2A43DB4200BF7095 /* GainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2892A43DB4200BF7095 /* GainView.swift */; };
+		D3E6E2912A441C4A00BF7095 /* DiscreteSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -183,6 +188,10 @@
 		D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaList2D+Extras.swift"; sourceTree = "<group>"; };
 		D3E6E27D2A4181BB00BF7095 /* BonjourDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDiscoveryView.swift; sourceTree = "<group>"; };
 		D3E6E2802A43B33D00BF7095 /* PolarityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarityView.swift; sourceTree = "<group>"; };
+		D3E6E2822A43B66D00BF7095 /* VariableSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableSliderView.swift; sourceTree = "<group>"; };
+		D3E6E2872A43BD1900BF7095 /* OcaDB+Linear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaDB+Linear.swift"; sourceTree = "<group>"; };
+		D3E6E2892A43DB4200BF7095 /* GainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GainView.swift; sourceTree = "<group>"; };
+		D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscreteSliderView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -211,6 +220,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D3E6E24B2A3C0C8D00BF7095 /* libSwiftOCA.dylib in Frameworks */,
+				D3E6E2862A43BA3600BF7095 /* Sliders in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -235,6 +245,7 @@
 				D3DA69E52A3DCAA5001250A1 /* Array+Extras.swift */,
 				D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */,
 				D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */,
+				D3E6E2872A43BD1900BF7095 /* OcaDB+Linear.swift */,
 			);
 			path = Conformances;
 			sourceTree = "<group>";
@@ -265,6 +276,9 @@
 				D3E6E2492A3C0C7700BF7095 /* MuteView.swift */,
 				D3DA69FD2A427C2F001250A1 /* BooleanActuatorView.swift */,
 				D3E6E2802A43B33D00BF7095 /* PolarityView.swift */,
+				D3E6E2822A43B66D00BF7095 /* VariableSliderView.swift */,
+				D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */,
+				D3E6E2892A43DB4200BF7095 /* GainView.swift */,
 			);
 			path = Actuators;
 			sourceTree = "<group>";
@@ -631,6 +645,9 @@
 			dependencies = (
 			);
 			name = SwiftOCAUI;
+			packageProductDependencies = (
+				D3E6E2852A43BA3600BF7095 /* Sliders */,
+			);
 			productName = SwiftOCAUI;
 			productReference = D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
@@ -670,6 +687,7 @@
 				D3E6E1EC2A3ACB0700BF7095 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 				D3E6E1EF2A3ACB1E00BF7095 /* XCRemoteSwiftPackageReference "Socket" */,
 				D3E6E2592A3D28DD00BF7095 /* XCRemoteSwiftPackageReference "AsyncExtensions" */,
+				D3E6E2842A43B8D000BF7095 /* XCRemoteSwiftPackageReference "swiftui-sliders" */,
 			);
 			productRefGroup = D3E6E1652A3ACA0B00BF7095 /* Products */;
 			projectDirPath = "";
@@ -776,8 +794,10 @@
 				D3DA69E22A3DADF1001250A1 /* BlockNavigationSplitView.swift in Sources */,
 				D3E6E27B2A417FB500BF7095 /* OcaList2D+Extras.swift in Sources */,
 				D3DA69FE2A427C2F001250A1 /* BooleanActuatorView.swift in Sources */,
+				D3E6E2912A441C4A00BF7095 /* DiscreteSliderView.swift in Sources */,
 				D3DA69FB2A3FEF52001250A1 /* DeviceManager.swift in Sources */,
 				D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */,
+				D3E6E2832A43B66D00BF7095 /* VariableSliderView.swift in Sources */,
 				D3E6E2612A3D323600BF7095 /* PropertyModifiers.swift in Sources */,
 				D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */,
 				D3DA69E42A3DCA75001250A1 /* NavigationLabel.swift in Sources */,
@@ -788,7 +808,9 @@
 				D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */,
 				D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */,
 				D3E6E27F2A4181BF00BF7095 /* BonjourDiscoveryView.swift in Sources */,
+				D3E6E28A2A43DB4200BF7095 /* GainView.swift in Sources */,
 				D3DA69E62A3DCAA5001250A1 /* Array+Extras.swift in Sources */,
+				D3E6E2882A43BD1900BF7095 /* OcaDB+Linear.swift in Sources */,
 				D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */,
 				D3DA69F42A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift in Sources */,
 				D3DA69F02A3DEE4E001250A1 /* PropertyTableView.swift in Sources */,
@@ -1134,6 +1156,14 @@
 				minimumVersion = 0.5.2;
 			};
 		};
+		D3E6E2842A43B8D000BF7095 /* XCRemoteSwiftPackageReference "swiftui-sliders" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:spacenation/swiftui-sliders.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1156,6 +1186,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D3E6E2592A3D28DD00BF7095 /* XCRemoteSwiftPackageReference "AsyncExtensions" */;
 			productName = AsyncExtensions;
+		};
+		D3E6E2852A43BA3600BF7095 /* Sliders */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3E6E2842A43B8D000BF7095 /* XCRemoteSwiftPackageReference "swiftui-sliders" */;
+			productName = Sliders;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -17,62 +17,78 @@
 import Foundation
 import BinaryCoder
 
-public struct OcaBoundedPropertyValue<T: Codable>: Codable {
-    var value: T
-    var minValue: T?
-    var maxValue: T?
+public struct OcaBoundedPropertyValue<T: Numeric & Codable>: Codable, OcaParameterCountReflectable {
+    static var responseParameterCount: OcaUint8 { 3 }
+    
+    public var value: T
+    public var minValue: T
+    public var maxValue: T
+    
+    public init(value: T, minValue: T, maxValue: T) {
+        self.value = value
+        self.minValue = minValue
+        self.maxValue = maxValue
+    }
 }
 
 @propertyWrapper
-public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiable, Codable {
-    public typealias WrappedValue = OcaProperty<OcaBoundedPropertyValue<Value>>
-
+public struct OcaBoundedProperty<Value: Numeric & Codable>: OcaPropertyChangeEventNotifiable, Codable {
+    public typealias Property = OcaProperty<OcaBoundedPropertyValue<Value>>
+    public typealias State = Property.State
+    
     public var propertyIDs: [OcaPropertyID] {
-        [wrappedValue.propertyID]
+        [_storage.propertyID]
     }
 
-    public var wrappedValue: WrappedValue
+    private let _storage: Property
+    
+    public var wrappedValue: State {
+        get { fatalError() }
+        nonmutating set { fatalError() }
+    }
     
     public var projectedValue: any OcaPropertyRepresentable {
-        return wrappedValue
+        self._storage
     }
 
     public func refresh(_ instance: OcaRoot) async {
-        await wrappedValue.refresh(instance)
+        await _storage.refresh(instance)
     }
     
-    
-    public var currentValue: WrappedValue.State {
-        wrappedValue.currentValue
+    public var currentValue: State {
+        _storage.currentValue
     }
 
     public func subscribe(_ instance: OcaRoot) async {
-        _ = await wrappedValue.subscribe(instance)
+        await _storage.subscribe(instance)
     }
 
     public var description: String {
-        wrappedValue.description
+        _storage.description
     }
 
     init(propertyID: OcaPropertyID,
          getMethodID: OcaMethodID,
          setMethodID: OcaMethodID? = nil) {
-        self.wrappedValue = OcaProperty(propertyID: propertyID,
-                                        getMethodID: getMethodID,
-                                        setMethodID: setMethodID,
-                                        setValueTransformer: { $1.value })
+        self._storage = OcaProperty(propertyID: propertyID,
+                                    getMethodID: getMethodID,
+                                    setMethodID: setMethodID,
+                                    setValueTransformer: { $1.value })
     }
     
-    public init(from decoder: Decoder) throws {
-        fatalError()
+    public static subscript<T: OcaRoot>(
+        _enclosingInstance instance: T,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
+        storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
+        get {
+            instance[keyPath: storageKeyPath]._storage._get(_enclosingInstance: instance)
+        }
+        set {
+            instance[keyPath: storageKeyPath]._storage._set(_enclosingInstance: instance, newValue)
+        }
     }
     
-    /// Placeholder only
-    public func encode(to encoder: Encoder) throws {
-        try self.wrappedValue.encode(to: encoder)
-    }
-    
-    func onEvent(_ eventData: Ocp1EventData) throws {
+    func onEvent(_ instance: OcaRoot, _ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
         
         let decoder = BinaryDecoder(config: .ocp1Configuration)
@@ -80,8 +96,7 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiab
                                            from: eventData.eventParameters)
         precondition(self.propertyIDs.contains(eventData.propertyID))
 
-        
-        guard case .success(var value) = wrappedValue.wrappedValue else {
+        guard case .success(var value) = _storage.currentValue else {
             throw Ocp1Error.noInitialValue
         }
         
@@ -96,6 +111,6 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiab
             throw Ocp1Error.unhandledEvent
         }
         
-        wrappedValue.wrappedValue = .success(value)
+        _storage._set(_enclosingInstance: instance, .success(value))
     }
 }

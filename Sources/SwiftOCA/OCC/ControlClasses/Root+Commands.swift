@@ -19,6 +19,19 @@ import BinaryCoder
 
 // TODO: clean this up so there aren't so many functions!
 
+// FIXME: this is a bit of a hack until we have better reflection support in Swift
+protocol OcaParameterCountReflectable {
+    static var responseParameterCount: OcaUint8 { get }
+}
+
+fileprivate func responseParameterCount(_ type: Any.Type) -> OcaUint8 {
+    guard let type = type as? any OcaParameterCountReflectable.Type else {
+        return 1
+    }
+    
+    return type.responseParameterCount
+}
+
 extension OcaRoot {
     private func sendCommand(methodID: OcaMethodID,
                              parameterCount: OcaUint8,
@@ -187,7 +200,7 @@ extension OcaRoot {
         try await sendCommandRrq(methodID: methodID,
                                  parameterCount: 0,
                                  parameterData: Data(),
-                                 responseParameterCount: 1,
+                                 responseParameterCount: responseParameterCount(U.self),
                                  responseParameterData: &responseParameterData)
         
         let decoder = BinaryDecoder(config: .ocp1Configuration)
@@ -199,40 +212,43 @@ extension OcaRoot {
         var responseParameterData = Data()
         
         try await sendCommandRrq(methodID: methodID,
-                                 parameterCount: 1,
-                                 parameterData: try encodeParameters([parameter]),
-                                 responseParameterCount: 1,
-                                 responseParameterData: &responseParameterData)
-        
-        let decoder = BinaryDecoder(config: .ocp1Configuration)
-        return try decoder.decode(U.self, from: responseParameterData)
-    }
-    
-    func sendCommandRrq<U: Decodable>(methodID: OcaMethodID) async throws -> OcaBoundedPropertyValue<U> {
-        var responseParameterData = Data()
-        
-        try await sendCommandRrq(methodID: methodID,
-                                 parameterCount: 0,
-                                 parameterData: Data(),
-                                 responseParameterCount: 3,
-                                 responseParameterData: &responseParameterData)
-        
-        let decoder = BinaryDecoder(config: .ocp1Configuration)
-        return try decoder.decode(OcaBoundedPropertyValue<U>.self, from: responseParameterData)
-    }
-    
-    func sendCommandRrq<T: Encodable, U: Decodable>(methodID: OcaMethodID,
-                                                    parameters: T) async throws -> U {
-        var responseParameterData = Data()
-        
-        try await sendCommandRrq(methodID: methodID,
-                                 parameterCount: OcaUint8(Mirror(reflecting: parameters).children.count),
-                                 parameters: [parameters],
-                                 responseParameterCount: 1,
+                                 parameterCount: OcaUint8(Mirror(reflecting: parameter).children.count),
+                                 parameters: [parameter],
+                                 responseParameterCount: responseParameterCount(U.self),
                                  responseParameters: &responseParameterData)
         
         let decoder = BinaryDecoder(config: .ocp1Configuration)
         return try decoder.decode(U.self, from: responseParameterData)
     }
+
+    /*
+    func sendCommandRrq<T: Encodable, U: Decodable>(methodID: OcaMethodID,
+                                                    parameter: T) async throws -> OcaVector2D<U> {
+        var responseParameterData = Data()
+        
+        try await sendCommandRrq(methodID: methodID,
+                                 parameterCount: OcaUint8(Mirror(reflecting: parameter).children.count),
+                                 parameters: [parameter],
+                                 responseParameterCount: responseParameterCount(U.self),
+                                 responseParameters: &responseParameterData)
+        
+        let decoder = BinaryDecoder(config: .ocp1Configuration)
+        return try decoder.decode(OcaVector2D<U>.self, from: responseParameterData)
+    }
+
+    func sendCommandRrq<T: Encodable, U: Decodable>(methodID: OcaMethodID,
+                                                    parameter: T) async throws -> OcaBoundedPropertyValue<U> {
+        var responseParameterData = Data()
+        
+        try await sendCommandRrq(methodID: methodID,
+                                 parameterCount: OcaUint8(Mirror(reflecting: parameter).children.count),
+                                 parameters: [parameter],
+                                 responseParameterCount: responseParameterCount(U.self),
+                                 responseParameters: &responseParameterData)
+        
+        let decoder = BinaryDecoder(config: .ocp1Configuration)
+        return try decoder.decode(OcaBoundedPropertyValue<U>.self, from: responseParameterData)
+    }
+     */
 }
 

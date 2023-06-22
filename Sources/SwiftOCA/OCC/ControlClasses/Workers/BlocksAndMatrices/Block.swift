@@ -117,8 +117,7 @@ public class OcaBlock: OcaWorker {
                                                  searchClassID: searchClassID,
                                                  resultFlags: resultFlags)
         
-        return try await sendCommandRrq(methodID: OcaMethodID("3.17"),
-                                        parameters: params)
+        return try await sendCommandRrq(methodID: OcaMethodID("3.17"), parameter: params)
     }
     
     func findRecursive(objectsByRole searchName: OcaString,
@@ -130,8 +129,7 @@ public class OcaBlock: OcaWorker {
                                                  searchClassID: searchClassID,
                                                  resultFlags: resultFlags)
         
-        return try await sendCommandRrq(methodID: OcaMethodID("3.18"),
-                                        parameters: params)
+        return try await sendCommandRrq(methodID: OcaMethodID("3.18"), parameter: params)
     }
     
     // 3.19

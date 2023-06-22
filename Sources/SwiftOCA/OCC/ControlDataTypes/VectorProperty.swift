@@ -17,13 +17,16 @@
 import Foundation
 import BinaryCoder
 
-public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable {
+public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable, OcaParameterCountReflectable {
+    static var responseParameterCount: OcaUint8 { 2 }
+    
     var x, y: T
 }
 
 @propertyWrapper
 public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaPropertyChangeEventNotifiable, Codable {
-    public typealias WrappedValue = OcaProperty<OcaVector2D<Value>>
+    public typealias Property = OcaProperty<OcaVector2D<Value>>
+    public typealias State = Property.State
 
     public var propertyIDs: [OcaPropertyID] {
         [xPropertyID, yPropertyID]
@@ -34,7 +37,32 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
     public let getMethodID: OcaMethodID
     public let setMethodID: OcaMethodID?
     
-    public var wrappedValue: WrappedValue
+    public var _storage: Property
+
+    public var wrappedValue: State {
+        get { fatalError() }
+        nonmutating set { fatalError() }
+    }
+
+    public func refresh(_ instance: OcaRoot) async {
+        await _storage.refresh(instance)
+    }
+
+    public var projectedValue: any OcaPropertyRepresentable {
+        _storage
+    }
+
+    public var currentValue: State {
+        _storage.currentValue
+    }
+    
+    public func subscribe(_ instance: OcaRoot) async {
+        await _storage.subscribe(instance)
+    }
+
+    public var description: String {
+        _storage.description
+    }
 
     init(xPropertyID: OcaPropertyID,
          yPropertyID: OcaPropertyID,
@@ -44,41 +72,24 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         self.yPropertyID = yPropertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
-        self.wrappedValue = OcaProperty(propertyID: OcaPropertyID("1.1"),
-                                        getMethodID: getMethodID,
-                                        setMethodID: setMethodID)
-    }
-  
-    public init(from decoder: Decoder) throws {
-        fatalError()
-    }
-    
-    /// Placeholder only
-    public func encode(to encoder: Encoder) throws {
-        try self.wrappedValue.encode(to: encoder)
+        self._storage = OcaProperty(propertyID: OcaPropertyID("1.1"),
+                                    getMethodID: getMethodID,
+                                    setMethodID: setMethodID)
     }
 
-    public func refresh(_ instance: OcaRoot) async {
-        await wrappedValue.refresh(instance)
+    public static subscript<T: OcaRoot>(
+        _enclosingInstance instance: T,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
+        storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
+        get {
+            instance[keyPath: storageKeyPath]._storage._get(_enclosingInstance: instance)
+        }
+        set {
+            instance[keyPath: storageKeyPath]._storage._set(_enclosingInstance: instance, newValue)
+        }
     }
 
-    public var projectedValue: any OcaPropertyRepresentable {
-        wrappedValue
-    }
-
-    public var currentValue: WrappedValue.State {
-        wrappedValue.currentValue
-    }
-    
-    public func subscribe(_ instance: OcaRoot) async {
-        await wrappedValue.subscribe(instance)
-    }
-
-    public var description: String {
-        wrappedValue.description
-    }
-
-    func onEvent(_ eventData: Ocp1EventData) throws {
+    func onEvent(_ instance: OcaRoot, _ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
         
         let decoder = BinaryDecoder(config: .ocp1Configuration)
@@ -89,7 +100,7 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         // TODO: support add/delete
         switch eventData.changeType {
         case .currentChanged:
-            guard case .success(let subjectValue) = wrappedValue.wrappedValue else {
+            guard case .success(let subjectValue) = _storage.currentValue else {
                 throw Ocp1Error.noInitialValue
             }
 
@@ -103,7 +114,7 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
                 xy.x = subjectValue.x
                 xy.y = eventData.propertyValue
             }
-            wrappedValue.wrappedValue = .success(xy)
+            _storage._set(_enclosingInstance: instance, .success(xy))
         default:
             throw Ocp1Error.unhandledEvent
         }

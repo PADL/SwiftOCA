@@ -23,5 +23,5 @@ public class OcaGain: OcaActuator {
     @OcaBoundedProperty(propertyID: OcaPropertyID("4.1"),
                         getMethodID: OcaMethodID("4.1"),
                         setMethodID: OcaMethodID("4.2"))
-    public var gain: OcaProperty<OcaBoundedPropertyValue<OcaDB>>
+    public var gain: OcaBoundedProperty<OcaDB>.State
 }

@@ -29,8 +29,8 @@ extension OcaBooleanActuator: OcaViewRepresentable {
            } else {
                return false
            }
-       }, set: {
-           self.setting = .success($0)
+       }, set: { newValue in
+           self.setting = .success(newValue)
        })
     }
 }

@@ -25,7 +25,7 @@ public class OcaMatrix: OcaWorker {
                        yPropertyID: OcaPropertyID("3.2"),
                        getMethodID: OcaMethodID("3.1"),
                        setMethodID: OcaMethodID("3.1"))
-    public var currentXY: OcaProperty<OcaVector2D<OcaMatrixCoordinate>>
+    public var currentXY: OcaVectorProperty<OcaMatrixCoordinate>.State
     
     // TODO: GetSize() also returns min/max size which hopefully we can ignore
     
@@ -33,7 +33,7 @@ public class OcaMatrix: OcaWorker {
                        yPropertyID: OcaPropertyID("3.4"),
                        getMethodID: OcaMethodID("3.3"),
                        setMethodID: OcaMethodID("3.4"))
-    public var size: OcaProperty<OcaVector2D<OcaMatrixCoordinate>>
+    public var size: OcaVectorProperty<OcaMatrixCoordinate>.State
     
     @OcaProperty(propertyID: OcaPropertyID("3.5"),
                  getMethodID: OcaMethodID("3.5"),
@@ -55,11 +55,9 @@ public class OcaMatrix: OcaWorker {
                  setMethodID: OcaMethodID("3.14"))
     public var portsPerColumn: OcaProperty<OcaUint8>.State
 
-    func get(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate, memberONo: inout OcaONo) async throws {
+    func get(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate) async throws -> OcaONo {
         let xy = OcaVector2D(x: x, y: y)
-        try await sendCommandRrq(methodID: OcaMethodID("3.7"),
-                                 parameters: xy,
-                                 responseParameters: &memberONo)
+        return try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameter: xy)
     }
     
     func set(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate, memberONo: OcaONo) async throws {
@@ -75,7 +73,7 @@ public class OcaMatrix: OcaWorker {
     
     func lockCurrent(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate) async throws {
         let xy = OcaVector2D(x: x, y: y)
-        try await sendCommandRrq(methodID: OcaMethodID("3.15"), parameters: xy)
+        try await sendCommandRrq(methodID: OcaMethodID("3.15"), parameter: xy)
     }
     
     func unlockCurrent() async throws {

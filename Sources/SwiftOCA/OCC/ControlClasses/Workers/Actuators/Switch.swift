@@ -22,7 +22,7 @@ public class OcaSwitch: OcaActuator {
     @OcaBoundedProperty(propertyID: OcaPropertyID("4.1"),
                         getMethodID: OcaMethodID("4.1"),
                         setMethodID: OcaMethodID("4.2"))
-    public var position: OcaProperty<OcaBoundedPropertyValue<OcaUint16>>
+    public var position: OcaBoundedProperty<OcaUint16>.State
 
     @OcaProperty(propertyID: OcaPropertyID("4.2"),
                         getMethodID: OcaMethodID("4.5"),

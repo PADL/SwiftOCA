@@ -22,11 +22,11 @@ public class OcaPanBalance: OcaActuator {
     @OcaBoundedProperty(propertyID: OcaPropertyID("4.1"),
                         getMethodID: OcaMethodID("4.1"),
                         setMethodID: OcaMethodID("4.2"))
-    public var position: OcaProperty<OcaBoundedPropertyValue<OcaFloat32>>
+    public var position: OcaBoundedProperty<OcaFloat32>.State
 
 
     @OcaBoundedProperty(propertyID: OcaPropertyID("4.2"),
                         getMethodID: OcaMethodID("4.3"),
                         setMethodID: OcaMethodID("4.4"))
-    public var midpointGain: OcaProperty<OcaBoundedPropertyValue<OcaDB>>
+    public var midpointGain: OcaBoundedProperty<OcaDB>.State
 }

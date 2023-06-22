@@ -137,7 +137,7 @@ extension OcaRoot {
         allKeyPaths.forEach { (keyPathString, keyPath) in
             if let value = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable),
                value.propertyIDs.contains(propertyID) {
-                try? value.onEvent(eventData)
+                try? value.onEvent(self, eventData)
                 return
             }
         }

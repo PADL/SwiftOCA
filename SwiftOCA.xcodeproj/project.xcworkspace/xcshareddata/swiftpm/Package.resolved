@@ -53,6 +53,15 @@
         "branch" : "feature/dynamic-lib",
         "revision" : "0abad32db1fc3bf5c7008b523d267c71390df3ac"
       }
+    },
+    {
+      "identity" : "swiftui-sliders",
+      "kind" : "remoteSourceControl",
+      "location" : "git@github.com:spacenation/swiftui-sliders.git",
+      "state" : {
+        "revision" : "d5a7d856655d5c91f891c2b69d982c30fd5c7bdf",
+        "version" : "2.1.0"
+      }
     }
   ],
   "version" : 2
