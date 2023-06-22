@@ -203,7 +203,7 @@ public class AES70OCP1Connection: ObservableObject {
         }
     }
     
-    var isConnected: Bool {
+    public var isConnected: Bool {
         get async {
             await self.monitor != nil
         }

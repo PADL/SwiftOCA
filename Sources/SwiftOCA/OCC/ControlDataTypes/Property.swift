@@ -223,7 +223,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             // if task cancelled due to a view being dismissed, reset state to initial
             subject.send(.initial)
         } catch let error {
-            debugPrint("property handler received error from device: \(error.localizedDescription)")
+            debugPrint("property handler received error from device: \(error)")
             subject.send(.failure(error))
         }
         
@@ -297,7 +297,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         case .success(let value):
             return value
         case .failure(let error):
-            debugPrint("property completion handler failed \(error.localizedDescription)")
+            debugPrint("property completion handler failed \(error)")
             throw error
         }
     }

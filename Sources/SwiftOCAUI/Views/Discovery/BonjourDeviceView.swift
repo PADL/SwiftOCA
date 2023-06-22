@@ -20,16 +20,19 @@ import SwiftOCA
 
 struct OcaBonjourDeviceView: View {
     @State var connection: AES70OCP1Connection? = nil
+    @State var isConnected = false
     var service: NetService
     
     init(_ service: NetService) {
         self.service = service
     }
     
+    
+    
     var body: some View {
         Group {
-            if let connection {
-                OcaRootBlockView(connection)
+            if isConnected {
+                OcaRootBlockView(connection!)
             } else {
                 ProgressView()
             }
@@ -38,6 +41,7 @@ struct OcaBonjourDeviceView: View {
                 connection = try await AES70OCP1Connection(service)
                 if let connection {
                     try await connection.connect()
+                    self.isConnected = true
                 }
             } catch {
                 debugPrint("OcaBonjourDeviceView: error \(error)")
@@ -47,6 +51,7 @@ struct OcaBonjourDeviceView: View {
                 if let connection {
                     try await connection.disconnect()
                     self.connection = nil
+                    self.isConnected = false
                 }
             }
         }

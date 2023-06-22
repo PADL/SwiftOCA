@@ -70,7 +70,7 @@ struct OcaBlockNavigationSplitView: OcaView {
                 }
                 membersMap = members?.map
             } catch {
-                debugPrint("OcaNavigationSplitView: error \(error)")
+                debugPrint("OcaNavigationSplitView: error \(error) when resolving members")
             }
         }
     }
