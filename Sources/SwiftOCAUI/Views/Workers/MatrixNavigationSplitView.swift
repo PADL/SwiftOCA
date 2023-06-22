@@ -53,7 +53,7 @@ struct OcaMatrixNavigationSplitView: OcaView {
                                         } else {
                                             ProgressView()
                                         }
-                                    }
+                                    }.padding(5)
                                 }
                             }
                         }
