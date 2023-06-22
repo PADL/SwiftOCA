@@ -220,35 +220,5 @@ extension OcaRoot {
         let decoder = BinaryDecoder(config: .ocp1Configuration)
         return try decoder.decode(U.self, from: responseParameterData)
     }
-
-    /*
-    func sendCommandRrq<T: Encodable, U: Decodable>(methodID: OcaMethodID,
-                                                    parameter: T) async throws -> OcaVector2D<U> {
-        var responseParameterData = Data()
-        
-        try await sendCommandRrq(methodID: methodID,
-                                 parameterCount: OcaUint8(Mirror(reflecting: parameter).children.count),
-                                 parameters: [parameter],
-                                 responseParameterCount: responseParameterCount(U.self),
-                                 responseParameters: &responseParameterData)
-        
-        let decoder = BinaryDecoder(config: .ocp1Configuration)
-        return try decoder.decode(OcaVector2D<U>.self, from: responseParameterData)
-    }
-
-    func sendCommandRrq<T: Encodable, U: Decodable>(methodID: OcaMethodID,
-                                                    parameter: T) async throws -> OcaBoundedPropertyValue<U> {
-        var responseParameterData = Data()
-        
-        try await sendCommandRrq(methodID: methodID,
-                                 parameterCount: OcaUint8(Mirror(reflecting: parameter).children.count),
-                                 parameters: [parameter],
-                                 responseParameterCount: responseParameterCount(U.self),
-                                 responseParameters: &responseParameterData)
-        
-        let decoder = BinaryDecoder(config: .ocp1Configuration)
-        return try decoder.decode(OcaBoundedPropertyValue<U>.self, from: responseParameterData)
-    }
-     */
 }
 
