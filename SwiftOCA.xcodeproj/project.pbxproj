@@ -100,6 +100,7 @@
 		D3E6E2882A43BD1900BF7095 /* OcaDB+Linear.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2872A43BD1900BF7095 /* OcaDB+Linear.swift */; };
 		D3E6E28A2A43DB4200BF7095 /* GainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2892A43DB4200BF7095 /* GainView.swift */; };
 		D3E6E2912A441C4A00BF7095 /* DiscreteSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */; };
+		D3E6E2932A441D8000BF7095 /* PanBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2922A441D8000BF7095 /* PanBalanceView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -192,6 +193,7 @@
 		D3E6E2872A43BD1900BF7095 /* OcaDB+Linear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaDB+Linear.swift"; sourceTree = "<group>"; };
 		D3E6E2892A43DB4200BF7095 /* GainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GainView.swift; sourceTree = "<group>"; };
 		D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscreteSliderView.swift; sourceTree = "<group>"; };
+		D3E6E2922A441D8000BF7095 /* PanBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanBalanceView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -276,8 +278,7 @@
 				D3E6E2492A3C0C7700BF7095 /* MuteView.swift */,
 				D3DA69FD2A427C2F001250A1 /* BooleanActuatorView.swift */,
 				D3E6E2802A43B33D00BF7095 /* PolarityView.swift */,
-				D3E6E2822A43B66D00BF7095 /* VariableSliderView.swift */,
-				D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */,
+				D3E6E2922A441D8000BF7095 /* PanBalanceView.swift */,
 				D3E6E2892A43DB4200BF7095 /* GainView.swift */,
 			);
 			path = Actuators;
@@ -540,6 +541,7 @@
 		D3E6E2482A3C0C7700BF7095 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D3E6E2942A441D8900BF7095 /* Utility */,
 				D3E6E27C2A4181A000BF7095 /* Discovery */,
 				D3DA69F82A3FEF42001250A1 /* Agents */,
 				D3DA69F92A3FEF43001250A1 /* Managers */,
@@ -570,6 +572,15 @@
 				D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */,
 			);
 			path = Discovery;
+			sourceTree = "<group>";
+		};
+		D3E6E2942A441D8900BF7095 /* Utility */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E2822A43B66D00BF7095 /* VariableSliderView.swift */,
+				D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */,
+			);
+			path = Utility;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -814,6 +825,7 @@
 				D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */,
 				D3DA69F42A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift in Sources */,
 				D3DA69F02A3DEE4E001250A1 /* PropertyTableView.swift in Sources */,
+				D3E6E2932A441D8000BF7095 /* PanBalanceView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

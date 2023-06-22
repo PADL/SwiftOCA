@@ -45,7 +45,7 @@ struct OcaBlockNavigationStackView: OcaView {
                         }
                     }
                 } else {
-                    DynamicStack {
+                    VStack {
                         ForEach(members, id: \.objectNumber) { member in
                             OcaDetailView(member)
                         }
