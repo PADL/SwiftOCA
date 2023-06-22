@@ -20,9 +20,9 @@ import SwiftOCA
 
 private struct RefreshableToInitialState: ViewModifier {
     let object: OcaRoot
-    let property: any OcaPropertyRepresentable
+    let property: (any OcaPropertyRepresentable)?
     
-    init(_ object: OcaRoot, property: any OcaPropertyRepresentable) {
+    init(_ object: OcaRoot, property: (any OcaPropertyRepresentable)? = nil) {
         self.object = object
         self.property = property
     }
@@ -30,13 +30,17 @@ private struct RefreshableToInitialState: ViewModifier {
     func body(content: Content) -> some View {
         content
             .refreshable {
-                await property.refresh(object)
+                if let property {
+                    await property.refresh(object)
+                } else {
+                    await object.refresh()
+                }
             }
     }
 }
 
 extension View {
-    public func refreshableToInitialState(_ object: OcaRoot, property: any OcaPropertyRepresentable) -> some View {
+    public func refreshableToInitialState(_ object: OcaRoot, property: (any OcaPropertyRepresentable)? = nil) -> some View {
         return self.modifier(RefreshableToInitialState(object, property: property))
     }
 }
