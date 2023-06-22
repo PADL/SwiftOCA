@@ -18,17 +18,17 @@ import Foundation
 import SwiftUI
 import SwiftOCA
 
-struct OcaBonjourDeviceView: View {
+public struct OcaBonjourDeviceView: View {
     @State var connection: AES70OCP1Connection? = nil
     @State var isConnected = false
     @State var lastError: Error? = nil
     var service: NetService
     
-    init(_ service: NetService) {
+    public init(_ service: NetService) {
         self.service = service
     }
     
-    var body: some View {
+    public var body: some View {
         Group {
             if isConnected {
                 OcaRootBlockView(connection!)

@@ -1,23 +1,93 @@
 //
-//  SwiftOCATestApp.swift
-//  SwiftOCATest
+// Copyright (c) 2023 PADL Software Pty Ltd
 //
-//  Created by Luke Howard on 15/6/2023.
+// Licensed under the Apache License, Version 2.0 (the License);
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
+
+import Foundation
 import SwiftUI
+import SwiftOCA
 import SwiftOCAUI
+import AsyncAlgorithms
+
+#if os(macOS)
+class BonjourBrowser: ObservableObject {
+    let udpBrowser = AES70Browser(serviceType: .udp)
+    let tcpBrowser = AES70Browser(serviceType: .tcp)
+    @Published var services = [NetService]()
+    
+    init() {
+        Task { @MainActor in
+            for await result in chain(udpBrowser.channel, tcpBrowser.channel) {
+                switch result {
+                case .didFind(let netService):
+                    services.append(netService)
+                    break
+                case .didRemove(let netService):
+                    services.removeAll(where: { $0 == netService })
+                    break
+                case .didNotSearch(let error):
+                    debugPrint("OcaBonjourDiscoveryView: \(error)")
+                    break
+                }
+            }
+        }
+    }
+    
+    @MainActor
+    func service(with id: NetService.ID?) -> NetService? {
+        guard let id else { return nil }
+        return services.first(where: { $0.id == id })
+    }
+}
+#endif
 
 @main
-struct SwiftOCATestApp: App {
-    
+struct SwiftOCABrowser: App {
     @Environment(\.refresh) private var refresh
+    @Environment(\.openWindow) private var openWindow
+    #if os(macOS)
+    @StateObject var browser = BonjourBrowser()
+    #endif
     
+    @SceneBuilder
     var body: some Scene {
-        WindowGroup {
-            OcaBonjourDiscoveryView()
+        Group {
+            WindowGroup(id: "BonjourBrowser", for: String.self) { serviceID in
+#if os(macOS)
+                if let service = browser.service(with: serviceID.wrappedValue) {
+                    OcaBonjourDeviceView(service)
+                } else {
+                    Text("Select a device from the File menu").font(.title)
+                }
+#elseif os(iOS)
+                OcaBonjourDiscoveryView()
+#endif
+            }
         }
         .commands {
+            #if os(macOS)
+            CommandGroup(replacing: .newItem) {
+                Menu("Connect") {
+                    ForEach(browser.services, id: \.id) { service in
+                        Button(service.name) {
+                            openWindow(id: "BonjourBrowser", value: service.id)
+                        }
+                    }
+                }
+            }
+            #endif
             CommandGroup(replacing: .toolbar) {
                 Button("Refresh") {
                     Task {

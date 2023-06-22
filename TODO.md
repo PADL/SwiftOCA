@@ -2,4 +2,3 @@
 - WebSocket support
 - SPI support
 - Linux port
-- on macOS, move list of Bonjour devices to menu item

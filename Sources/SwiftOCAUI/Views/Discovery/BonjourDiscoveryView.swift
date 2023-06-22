@@ -20,10 +20,10 @@ import SwiftOCA
 import AsyncAlgorithms
 
 extension NetService: Identifiable {
-    public typealias ID = [String]
+    public typealias ID = String
     
     public var id: ID {
-        return [domain, type, name, String(port)]
+        return "\(domain)$\(type)$\(name)$\(String(port))"
     }
 }
 
