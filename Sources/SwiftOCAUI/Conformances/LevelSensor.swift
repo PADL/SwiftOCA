@@ -18,7 +18,7 @@ import SwiftUI
 import SwiftOCA
 import Sliders
 
-struct OcaLogGaugeView: View {
+fileprivate struct OcaLogGaugeView: View {
     let gradient = Gradient(colors: [.green, .yellow, .orange, .red])
 
     @Binding var value: OcaBoundedPropertyValue<OcaDB>

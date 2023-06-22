@@ -45,10 +45,19 @@ struct OcaBlockNavigationStackView: OcaView {
                         }
                     }
                 } else {
-                    DynamicStack {
-                        ForEach(members, id: \.objectNumber) { member in
-                            OcaDetailView(member)
-                        }
+                    Grid {
+                        Group {
+                            GridRow {
+                                ForEach(members, id: \.objectNumber) { member in
+                                    OcaNavigationLabel(member)
+                                }
+                            }
+                            GridRow {
+                                ForEach(members, id: \.objectNumber) { member in
+                                    OcaDetailView(member)
+                                }
+                            }
+                        }.frame(width: 100)
                     }
                 }
             } else {

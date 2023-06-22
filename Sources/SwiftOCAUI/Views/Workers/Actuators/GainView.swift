@@ -18,7 +18,7 @@ import SwiftUI
 import SwiftOCA
 import Sliders
 
-struct OcaLogSliderView: View {
+fileprivate struct OcaLogSliderView: View {
     static var step: OcaDB = 0.5
     
     @Binding var value: OcaBoundedPropertyValue<OcaDB>

@@ -48,10 +48,7 @@ public struct OcaDetailView: OcaView {
         } else if let object = object as? OcaViewRepresentable {
             // use type erasure as last resort
             let view = object.viewType.init(object) as! any OcaView
-            VStack {
-                OcaNavigationLabel(object)
-                AnyView(erasing: view)
-            }
+            AnyView(erasing: view)
         } else {
             OcaPropertyTableView(object)
         }
