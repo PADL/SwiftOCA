@@ -195,7 +195,7 @@
 		D3E6E2892A43DB4200BF7095 /* GainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GainView.swift; sourceTree = "<group>"; };
 		D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscreteSliderView.swift; sourceTree = "<group>"; };
 		D3E6E2922A441D8000BF7095 /* PanBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanBalanceView.swift; sourceTree = "<group>"; };
-		D3E6E29A2A44270300BF7095 /* LevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LevelSensor.swift; path = Sources/SwiftOCAUI/Conformances/LevelSensor.swift; sourceTree = SOURCE_ROOT; };
+		D3E6E29A2A44270300BF7095 /* LevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LevelSensor.swift; path = Sources/SwiftOCAUI/Views/Workers/Sensors/LevelSensor.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -261,18 +261,10 @@
 				D3DA69EA2A3DCD60001250A1 /* BlockNavigationStackView.swift */,
 				D3DA69F12A3DF884001250A1 /* MatrixNavigationSplitView.swift */,
 				D3E6E2622A3D648400BF7095 /* RootBlockView.swift */,
+				D3E6E29C2A44382A00BF7095 /* Sensors */,
 				D3DA69E92A3DCD28001250A1 /* Actuators */,
-				D3DA69E82A3DCD27001250A1 /* Sensors */,
 			);
 			path = Workers;
-			sourceTree = "<group>";
-		};
-		D3DA69E82A3DCD27001250A1 /* Sensors */ = {
-			isa = PBXGroup;
-			children = (
-				D3E6E29A2A44270300BF7095 /* LevelSensor.swift */,
-			);
-			path = Sensors;
 			sourceTree = "<group>";
 		};
 		D3DA69E92A3DCD28001250A1 /* Actuators */ = {
@@ -584,6 +576,14 @@
 				D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */,
 			);
 			path = Utility;
+			sourceTree = "<group>";
+		};
+		D3E6E29C2A44382A00BF7095 /* Sensors */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E29A2A44270300BF7095 /* LevelSensor.swift */,
+			);
+			path = Sensors;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
