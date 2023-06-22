@@ -35,6 +35,12 @@ public extension OcaPropertyRepresentable {
     }
 }
 
+extension OcaPropertyRepresentable {
+    var isInitial: Bool {
+        currentValue.isInitial
+    }
+}
+
 @propertyWrapper
 public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifiable {
     /// All property IDs supported by this property
@@ -61,6 +67,14 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             if case .initial = self {
                 return true
             } else if case .loading = self {
+                return true
+            } else {
+                return false
+            }
+        }
+        
+        var isInitial: Bool {
+            if case .initial = self {
                 return true
             } else {
                 return false

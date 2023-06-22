@@ -160,12 +160,22 @@ extension OcaRoot {
         try await connectionDelegate.removeSubscription(event: event)
     }
     
-    public func refresh() async throws {
+    public func refreshAll() async throws {
         for (_, keyPath) in allPropertyKeyPaths {
-            await (self[keyPath: keyPath] as! any OcaPropertyRepresentable).refresh(self)
+            let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
+            await property.refresh(self)
         }
     }
-    
+
+    public func refresh() async throws {
+        for (_, keyPath) in allPropertyKeyPaths {
+            let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
+            if !property.isInitial {
+                await property.refresh(self)
+            }
+        }
+    }
+
     var isSubscribed: Bool {
         get async throws {
             guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
