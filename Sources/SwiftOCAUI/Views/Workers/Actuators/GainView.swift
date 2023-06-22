@@ -53,6 +53,7 @@ struct OcaLogSliderView: View {
     var body: some View {
         OcaVariableSliderView<OcaFloat32>(value: boundedLinear)
             .valueSliderStyle(VerticalValueSliderStyle())
+            .padding(EdgeInsets(top: 100, leading: 0, bottom: 100, trailing: 0))
     }
 }
 

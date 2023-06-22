@@ -26,7 +26,7 @@ private struct ShowProgressIfWaitingViewModifier<T: Codable>: ViewModifier {
     }
     
     func body(content: Content) -> some View {
-        if state.isRequesting {
+        if state.isLoading {
             ProgressView()
         } else {
             content

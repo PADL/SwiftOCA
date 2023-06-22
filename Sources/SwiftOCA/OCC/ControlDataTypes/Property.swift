@@ -30,8 +30,8 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
 }
 
 public extension OcaPropertyRepresentable {
-    var isRequesting: Bool {
-        currentValue.isRequesting
+    var isLoading: Bool {
+        currentValue.isLoading
     }
 }
 
@@ -53,14 +53,14 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     
     public enum State {
         case initial
-        case requesting
+        case loading
         case success(Value)
         case failure(Error)
         
-        public var isRequesting: Bool {
+        public var isLoading: Bool {
             if case .initial = self {
                 return true
-            } else if case .requesting = self {
+            } else if case .loading = self {
                 return true
             } else {
                 return false
@@ -117,6 +117,10 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                     try await $0.getValueAndSubscribe(instance)
                 }
             }
+        case .loading:
+            debugPrint("property \(propertyID) still loading")
+        case .failure(let error):
+            debugPrint("property \(propertyID) error \(error.localizedDescription)")
         default:
             break
         }
@@ -209,7 +213,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             return
         }
         
-        subject.send(.requesting)
+        subject.send(.loading)
         
         guard await connectionDelegate.isConnected else {
             debugPrint("property handler called before connection established")
@@ -223,7 +227,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             // if task cancelled due to a view being dismissed, reset state to initial
             subject.send(.initial)
         } catch let error {
-            debugPrint("property handler received error from device: \(error)")
+            debugPrint("property handler received error from device: \(error.localizedDescription)")
             subject.send(.failure(error))
         }
         
@@ -297,7 +301,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         case .success(let value):
             return value
         case .failure(let error):
-            debugPrint("property completion handler failed \(error)")
+            debugPrint("property completion handler failed \(error.localizedDescription)")
             throw error
         }
     }
@@ -308,8 +312,8 @@ extension OcaProperty.State: Equatable where Value: Equatable & Codable {
         if case .initial = lhs,
            case .initial = rhs {
             return true
-        } else if case .requesting = lhs,
-                  case .requesting = rhs {
+        } else if case .loading = lhs,
+                  case .loading = rhs {
             return true
         } else if case let .success(lhsValue) = lhs,
                   case let .success(rhsValue) = rhs,

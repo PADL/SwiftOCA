@@ -39,7 +39,15 @@ struct OcaLogGaugeView: View {
     var body: some View {
         Gauge(value: boundedLinear.value, in: boundedLinear.minValue...boundedLinear.maxValue) {
             EmptyView()
-        }
+        } currentValueLabel: {
+            EmptyView()
+        } minimumValueLabel: {
+            Text(value.minValue.formatted()).rotationEffect(.degrees(-90))
+        } maximumValueLabel: {
+            Text(value.maxValue.formatted()).rotationEffect(.degrees(-90))
+        }.tint(gradient)
+            .labelStyle(.iconOnly)
+            .rotationEffect(.degrees(90))
     }
 }
 

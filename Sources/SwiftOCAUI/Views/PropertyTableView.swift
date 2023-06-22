@@ -54,7 +54,7 @@ struct OcaPropertyTableView: OcaView {
                 TableColumn("Name", value: \.name)
                 TableColumn("ID", value: \.idString)
                 TableColumn("Value") {
-                    if $0.value.isRequesting {
+                    if $0.value.isLoading {
                         ProgressView()
                     } else {
                         Text($0.value.description)
