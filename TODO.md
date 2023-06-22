@@ -1,2 +1,4 @@
 - implement control views for common controls
 - WebSocket support
+- SPI support
+- Linux port
