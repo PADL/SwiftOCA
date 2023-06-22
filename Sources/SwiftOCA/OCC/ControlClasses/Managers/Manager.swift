@@ -17,9 +17,5 @@
 import Foundation
 
 public class OcaManager: OcaRoot {
-    public override class var classID: OcaClassID { OcaClassID("1.3") }
-    
-    convenience init(_ connectionDelegate: AES70OCP1Connection) {
-        fatalError("must be implemented by subclass")
-    }
+    public override class var classID: OcaClassID { OcaClassID("1.3") }    
 }

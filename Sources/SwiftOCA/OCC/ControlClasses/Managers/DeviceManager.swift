@@ -92,14 +92,24 @@ public class OcaDeviceManager: OcaManager {
                  getMethodID: OcaMethodID("3.13"))
     public var state: OcaProperty<OcaDeviceState>.State
 
-    // TODO: property 3.10 can only be set by events???
     @OcaProperty(propertyID: OcaPropertyID("3.10"))
     public var busy: OcaProperty<OcaBoolean>.State
 
+    // 3.14
+    public func setResetKey(key: OcaBlob, address: OcaNetworkAddress) async throws {
+        // TODO: constrain key to 16 bytes
+        throw Ocp1Error.notImplemented
+    }
+    
     @OcaProperty(propertyID: OcaPropertyID("3.11"),
                  getMethodID: OcaMethodID("3.15"))
     public var resetCause: OcaProperty<OcaResetCause>.State
     
+    // 3.16
+    public func clearResetCause() async throws {
+        throw Ocp1Error.notImplemented
+    }
+
     @OcaProperty(propertyID: OcaPropertyID("3.12"),
                  getMethodID: OcaMethodID("3.17"),
                  setMethodID: OcaMethodID("3.18"))
@@ -115,16 +125,5 @@ public class OcaDeviceManager: OcaManager {
     
     convenience init() {
         self.init(objectNumber: OcaDeviceManagerONo)
-    }
-    
-    // 3.14
-    public func setResetKey(key: OcaBlob, address: OcaNetworkAddress) async throws {
-        // TODO: constrain key to 16 bytes
-        throw Ocp1Error.notImplemented
-    }
-    
-    // 3.16
-    public func clearResetCause() async throws {
-        throw Ocp1Error.notImplemented
     }
 }

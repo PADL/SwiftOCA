@@ -16,6 +16,13 @@
 
 import Foundation
 
+struct OcaGetPathParameters: Codable, OcaParameterCountReflectable {
+    static var responseParameterCount: OcaUint8 { 2 }
+    
+    var namePath: OcaNamePath
+    var oNoPath: OcaONoPath
+}
+
 public class OcaAgent: OcaRoot {
     override public class var classID: OcaClassID { OcaClassID("1.2") }
     

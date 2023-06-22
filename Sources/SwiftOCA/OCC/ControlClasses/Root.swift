@@ -192,8 +192,3 @@ extension OcaRoot {
         }
     }
 }
-
-struct OcaGetPathParameters: Codable {
-    var namePath: OcaNamePath
-    var oNoPath: OcaONoPath
-}
