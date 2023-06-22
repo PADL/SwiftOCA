@@ -117,10 +117,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                     try await $0.getValueAndSubscribe(instance)
                 }
             }
-        case .loading:
-            debugPrint("property \(propertyID) still loading")
-        case .failure(let error):
-            debugPrint("property \(propertyID) error \(error.localizedDescription)")
         default:
             break
         }
