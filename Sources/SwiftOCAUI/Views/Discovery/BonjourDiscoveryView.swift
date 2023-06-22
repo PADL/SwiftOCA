@@ -37,12 +37,10 @@ public struct OcaBonjourDiscoveryView: View {
     }
     
     public var body: some View {
-        Group {
-            NavigationStack {
-                List(services, selection: $serviceSelection) { service in
-                    NavigationLink(destination: OcaBonjourDeviceView(service)) {
-                        Text(service.name)
-                    }
+        NavigationStack {
+            List(services, selection: $serviceSelection) { service in
+                NavigationLink(destination: OcaBonjourDeviceView(service)) {
+                    Text(service.name)
                 }
             }
         }
