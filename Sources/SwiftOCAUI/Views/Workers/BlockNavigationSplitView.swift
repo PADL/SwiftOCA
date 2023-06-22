@@ -20,6 +20,7 @@ import SwiftOCA
 struct OcaBlockNavigationSplitView: OcaView {
     @EnvironmentObject var connection: AES70OCP1Connection
     @Environment(\.navigationPath) var oNoPath
+    @Environment(\.lastError) var lastError
     @StateObject var object: OcaBlock
     @State var members: [OcaRoot]?
     @State var membersMap: [OcaONo:OcaRoot]?
@@ -71,6 +72,7 @@ struct OcaBlockNavigationSplitView: OcaView {
                 membersMap = members?.map
             } catch {
                 debugPrint("OcaNavigationSplitView: error \(error) when resolving members")
+                lastError.wrappedValue = error
             }
         }
     }

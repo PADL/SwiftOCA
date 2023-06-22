@@ -16,7 +16,7 @@
 		D3DA69EE2A3DD350001250A1 /* Task+Timeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69EC2A3DD329001250A1 /* Task+Timeout.swift */; };
 		D3DA69F02A3DEE4E001250A1 /* PropertyTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69EF2A3DEE4E001250A1 /* PropertyTableView.swift */; };
 		D3DA69F22A3DF884001250A1 /* MatrixNavigationSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F12A3DF884001250A1 /* MatrixNavigationSplitView.swift */; };
-		D3DA69F42A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */; };
+		D3DA69F42A3DF988001250A1 /* EnvironmentValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F32A3DF988001250A1 /* EnvironmentValues.swift */; };
 		D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F62A3FE538001250A1 /* DynamicStack.swift */; };
 		D3DA69FB2A3FEF52001250A1 /* DeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69FA2A3FEF52001250A1 /* DeviceManager.swift */; };
 		D3DA69FE2A427C2F001250A1 /* BooleanActuatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69FD2A427C2F001250A1 /* BooleanActuatorView.swift */; };
@@ -115,7 +115,7 @@
 		D3DA69EC2A3DD329001250A1 /* Task+Timeout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Task+Timeout.swift"; sourceTree = "<group>"; };
 		D3DA69EF2A3DEE4E001250A1 /* PropertyTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyTableView.swift; sourceTree = "<group>"; };
 		D3DA69F12A3DF884001250A1 /* MatrixNavigationSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixNavigationSplitView.swift; sourceTree = "<group>"; };
-		D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EnvironmentValues+NavigationPath.swift"; sourceTree = "<group>"; };
+		D3DA69F32A3DF988001250A1 /* EnvironmentValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentValues.swift; sourceTree = "<group>"; };
 		D3DA69F62A3FE538001250A1 /* DynamicStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicStack.swift; sourceTree = "<group>"; };
 		D3DA69FA2A3FEF52001250A1 /* DeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManager.swift; sourceTree = "<group>"; };
 		D3DA69FD2A427C2F001250A1 /* BooleanActuatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BooleanActuatorView.swift; sourceTree = "<group>"; };
@@ -249,7 +249,7 @@
 			children = (
 				D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */,
 				D3DA69E52A3DCAA5001250A1 /* Array+Extras.swift */,
-				D3DA69F32A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift */,
+				D3DA69F32A3DF988001250A1 /* EnvironmentValues.swift */,
 				D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */,
 				D3E6E2872A43BD1900BF7095 /* OcaDB+Linear.swift */,
 			);
@@ -831,7 +831,7 @@
 				D3DA69E62A3DCAA5001250A1 /* Array+Extras.swift in Sources */,
 				D3E6E2882A43BD1900BF7095 /* OcaDB+Linear.swift in Sources */,
 				D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */,
-				D3DA69F42A3DF988001250A1 /* EnvironmentValues+NavigationPath.swift in Sources */,
+				D3DA69F42A3DF988001250A1 /* EnvironmentValues.swift in Sources */,
 				D3DA69F02A3DEE4E001250A1 /* PropertyTableView.swift in Sources */,
 				D3E6E2932A441D8000BF7095 /* PanBalanceView.swift in Sources */,
 			);

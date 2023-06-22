@@ -29,6 +29,7 @@ extension Array where Element: OcaRoot {
 
 public struct OcaDetailView: OcaView {
     @StateObject var object: OcaRoot
+    @Environment(\.lastError) var lastError
 
     public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
         self._object = StateObject(wrappedValue: connection.resolve(object: object)! )

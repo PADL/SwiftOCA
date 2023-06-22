@@ -20,6 +20,7 @@ import SwiftOCA
 struct OcaMatrixNavigationSplitView: OcaView {
     @StateObject var object: OcaMatrix
     @Environment(\.navigationPath) var oNoPath
+    @Environment(\.lastError) var lastError
     @State var members: OcaMatrix.SparseMembers?
     @State var membersMap: [OcaONo:OcaRoot]?
     @State var hasContainerMembers = false
@@ -80,6 +81,7 @@ struct OcaMatrixNavigationSplitView: OcaView {
                 }
             } catch {
                 debugPrint("OcaMatrixNavigationSplitView: error \(error)")
+                lastError.wrappedValue = error
             }
         }
     }

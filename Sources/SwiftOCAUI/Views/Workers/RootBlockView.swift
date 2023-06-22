@@ -18,6 +18,7 @@ import SwiftUI
 import SwiftOCA
 
 public struct OcaRootBlockView: View {
+    @Environment(\.lastError) var lastError
     @StateObject var connection: AES70OCP1Connection
     @StateObject var object: OcaBlock
     @State var oNoPath = NavigationPath()

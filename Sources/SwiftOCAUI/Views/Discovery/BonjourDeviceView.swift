@@ -21,6 +21,7 @@ import SwiftOCA
 struct OcaBonjourDeviceView: View {
     @State var connection: AES70OCP1Connection? = nil
     @State var isConnected = false
+    @State var lastError: Error? = nil
     var service: NetService
     
     init(_ service: NetService) {
@@ -31,6 +32,7 @@ struct OcaBonjourDeviceView: View {
         Group {
             if isConnected {
                 OcaRootBlockView(connection!)
+                    .environment(\.lastError, $lastError)
             } else {
                 ProgressView()
             }
@@ -43,6 +45,7 @@ struct OcaBonjourDeviceView: View {
                 }
             } catch {
                 debugPrint("OcaBonjourDeviceView: error \(error)")
+                lastError = error
             }
         }.onDisappear {
             Task { @MainActor in
@@ -52,6 +55,11 @@ struct OcaBonjourDeviceView: View {
                     self.connection = nil
                 }
             }
+        }
+        .alert(isPresented: Binding.constant(lastError != nil)) {
+            return Alert(title: Text("Error"),
+                         message: Text("\(lastError!.localizedDescription)"),
+                  dismissButton: .default(Text("OK")) { lastError = nil })
         }
     }
 }

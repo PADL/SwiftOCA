@@ -20,6 +20,7 @@ import SwiftOCA
 struct OcaBlockNavigationStackView: OcaView {
     @StateObject var object: OcaBlock
     @Environment(\.navigationPath) var oNoPath
+    @Environment(\.lastError) var lastError
     @State var members: [OcaRoot]?
     @State var membersMap: [OcaONo:OcaRoot]?
     @State var selectedONo: OcaONo? = nil
@@ -70,6 +71,7 @@ struct OcaBlockNavigationStackView: OcaView {
                 membersMap = members?.map
             } catch {
                 debugPrint("OcaNavigationStackView: error \(error)")
+                lastError.wrappedValue = error
             }
         }
     }

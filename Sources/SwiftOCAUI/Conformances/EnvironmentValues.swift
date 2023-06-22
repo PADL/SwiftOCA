@@ -27,3 +27,14 @@ extension EnvironmentValues {
         set { self[NavigationPathKey.self] = newValue }
     }
 }
+
+private struct LastErrorKey: EnvironmentKey {
+    static let defaultValue = Binding<Error?>(get: { nil}, set: { _ in })
+}
+
+extension EnvironmentValues {
+    var lastError: Binding<Error?> {
+        get { self[LastErrorKey.self] }
+        set { self[LastErrorKey.self] = newValue }
+    }
+}
