@@ -19,9 +19,19 @@ import AsyncAlgorithms
 
 typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData) -> Void
 
+public struct AES70OCP1ConnectionOptions {
+    let automaticReconnect: Bool
+    
+    public init(automaticReconnect: Bool = false) {
+        self.automaticReconnect = automaticReconnect
+    }
+}
+
 public class AES70OCP1Connection: ObservableObject {
     /// This is effectively an actor (most methods are marked @MainActor) except it supports subclasses for different
     /// protocol types
+    
+    let options: AES70OCP1ConnectionOptions
     
     /// Keepalive/ping interval (only necessary for UDP)
     @MainActor
@@ -82,7 +92,11 @@ public class AES70OCP1Connection: ObservableObject {
                 do {
                     try await self.receiveMessages(connection)
                 } catch Ocp1Error.notConnected {
-                    try await connection.reconnectDevice()
+                    if connection.options.automaticReconnect {
+                        try await connection.reconnectDevice()
+                    } else {
+                        throw Ocp1Error.notConnected
+                    }
                 }
             }
         }
@@ -138,7 +152,8 @@ public class AES70OCP1Connection: ObservableObject {
     private var keepAliveTask: Task<Void, Error>? = nil
     
     @MainActor
-    public init() {
+    public init(options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()) {
+        self.options = options
         add(object: self.rootBlock)
         add(object: self.subscriptionManager)
         add(object: self.deviceManager)
@@ -177,7 +192,7 @@ public class AES70OCP1Connection: ObservableObject {
         
         // refresh all objects
         for (_, object) in self.objects {
-            try? await object.refresh()
+            await object.refresh()
         }
         
         DispatchQueue.main.async {

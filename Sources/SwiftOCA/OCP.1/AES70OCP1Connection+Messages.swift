@@ -31,7 +31,11 @@ extension AES70OCP1Connection {
             }
             await updateLastMessageSentTime()
         } catch Ocp1Error.notConnected {
-            try await self.reconnectDevice()
+            if options.automaticReconnect {
+                try await reconnectDevice()
+            } else {
+                throw Ocp1Error.notConnected
+            }
         }
     }
 
