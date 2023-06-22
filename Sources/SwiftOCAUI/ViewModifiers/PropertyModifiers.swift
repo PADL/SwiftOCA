@@ -29,7 +29,6 @@ private struct PropertyModifiers: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .refreshableToInitialState(object, property: property)
     }
 }
 

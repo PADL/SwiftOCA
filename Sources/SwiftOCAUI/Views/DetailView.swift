@@ -41,16 +41,18 @@ public struct OcaDetailView: OcaView {
     public var body: some View {
         let metatype = type(of: object)
         
-        if metatype == OcaBlock.self {
-            OcaBlockNavigationStackView(object)
-        } else if metatype == OcaMatrix.self {
-            OcaMatrixNavigationSplitView(object)
-        } else if let object = object as? OcaViewRepresentable {
-            // use type erasure as last resort
-            let view = object.viewType.init(object) as! any OcaView
-            AnyView(erasing: view)
-        } else {
-            OcaPropertyTableView(object)
-        }
+        Group {
+            if metatype == OcaBlock.self {
+                OcaBlockNavigationStackView(object)
+            } else if metatype == OcaMatrix.self {
+                OcaMatrixNavigationSplitView(object)
+            } else if let object = object as? OcaViewRepresentable {
+                // use type erasure as last resort
+                let view = object.viewType.init(object) as! any OcaView
+                AnyView(erasing: view)
+            } else {
+                OcaPropertyTableView(object)
+            }
+        }.refreshableToInitialState(object)
     }
 }
