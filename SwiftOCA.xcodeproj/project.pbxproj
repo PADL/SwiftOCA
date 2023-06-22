@@ -101,6 +101,7 @@
 		D3E6E28A2A43DB4200BF7095 /* GainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2892A43DB4200BF7095 /* GainView.swift */; };
 		D3E6E2912A441C4A00BF7095 /* DiscreteSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */; };
 		D3E6E2932A441D8000BF7095 /* PanBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2922A441D8000BF7095 /* PanBalanceView.swift */; };
+		D3E6E29B2A44270300BF7095 /* LevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29A2A44270300BF7095 /* LevelSensor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -194,6 +195,7 @@
 		D3E6E2892A43DB4200BF7095 /* GainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GainView.swift; sourceTree = "<group>"; };
 		D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscreteSliderView.swift; sourceTree = "<group>"; };
 		D3E6E2922A441D8000BF7095 /* PanBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanBalanceView.swift; sourceTree = "<group>"; };
+		D3E6E29A2A44270300BF7095 /* LevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LevelSensor.swift; path = Sources/SwiftOCAUI/Conformances/LevelSensor.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -268,6 +270,7 @@
 		D3DA69E82A3DCD27001250A1 /* Sensors */ = {
 			isa = PBXGroup;
 			children = (
+				D3E6E29A2A44270300BF7095 /* LevelSensor.swift */,
 			);
 			path = Sensors;
 			sourceTree = "<group>";
@@ -805,6 +808,7 @@
 				D3DA69E22A3DADF1001250A1 /* BlockNavigationSplitView.swift in Sources */,
 				D3E6E27B2A417FB500BF7095 /* OcaList2D+Extras.swift in Sources */,
 				D3DA69FE2A427C2F001250A1 /* BooleanActuatorView.swift in Sources */,
+				D3E6E29B2A44270300BF7095 /* LevelSensor.swift in Sources */,
 				D3E6E2912A441C4A00BF7095 /* DiscreteSliderView.swift in Sources */,
 				D3DA69FB2A3FEF52001250A1 /* DeviceManager.swift in Sources */,
 				D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */,

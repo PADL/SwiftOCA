@@ -17,14 +17,14 @@
 import Foundation
 import BinaryCoder
 
-public struct OcaBoundedPropertyValue<T: Numeric & Codable>: Codable, OcaParameterCountReflectable {
+public struct OcaBoundedPropertyValue<Value: Numeric & Codable>: Codable, OcaParameterCountReflectable {
     static var responseParameterCount: OcaUint8 { 3 }
     
-    public var value: T
-    public var minValue: T
-    public var maxValue: T
+    public var value: Value
+    public var minValue: Value
+    public var maxValue: Value
     
-    public init(value: T, minValue: T, maxValue: T) {
+    public init(value: Value, minValue: Value, maxValue: Value) {
         self.value = value
         self.minValue = minValue
         self.maxValue = maxValue
