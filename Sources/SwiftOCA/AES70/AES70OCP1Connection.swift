@@ -20,6 +20,8 @@ import AsyncAlgorithms
 import Combine
 #elseif canImport(OpenCombine)
 import OpenCombine
+#elseif canImport(SwiftCrossUI)
+import SwiftCrossUI
 #endif
 
 typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData) -> Void
@@ -202,9 +204,7 @@ public class AES70OCP1Connection: ObservableObject {
             await object.refresh()
         }
         
-        DispatchQueue.main.async {
-            self.objectWillChange.send()
-        }
+        self.didChange()
     }
     
     @MainActor
@@ -220,14 +220,22 @@ public class AES70OCP1Connection: ObservableObject {
         if clearObjectCache {
             self.objects = [:]
         }
-        DispatchQueue.main.async {
-            self.objectWillChange.send()
-        }
+        self.didChange()
     }
     
     public var isConnected: Bool {
         get async {
             await self.monitor != nil
+        }
+    }
+
+    private func didChange() {
+        Task { @MainActor in
+#if canImport(Combine) || canImport(OpenCombine)
+            objectWillChange.send()
+#elseif canImport(SwiftCrossUI)
+            didChange.send()
+#endif
         }
     }
 

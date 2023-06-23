@@ -20,9 +20,12 @@ import BinaryCoder
 import Combine
 #elseif canImport(OpenCombine)
 import OpenCombine
+#elseif canImport(SwiftCrossUI)
+import SwiftCrossUI
+typealias ObservableObject = Observable
 #endif
 
-public class OcaRoot: ObservableObject, CustomStringConvertible {
+public class OcaRoot: CustomStringConvertible, ObservableObject {
     typealias Root = OcaRoot
     
     weak var connectionDelegate: AES70OCP1Connection? = nil

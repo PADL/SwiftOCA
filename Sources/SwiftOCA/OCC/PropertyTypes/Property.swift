@@ -216,7 +216,17 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             try await instance.sendCommandRrq(methodID: setMethodID, parameter: newValue)
         }
     }
-    
+
+    private func objectDidChange(_ instance: OcaRoot) {
+        Task { @MainActor in
+#if canImport(Combine) || canImport(OpenCombine)
+            instance.objectWillChange.send()
+#elseif canImport(SwiftCrossUI)
+            instance.didChange.send()
+#endif
+        }
+    }
+
     private func perform(_ instance: OcaRoot, _ block: @escaping (_ storage: Self) async throws -> Value) async {
         guard let connectionDelegate = instance.connectionDelegate else {
             subject.send(.failure(Ocp1Error.noConnectionDelegate))
@@ -240,13 +250,11 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             debugPrint("property handler received error from device: \(error)")
             subject.send(.failure(error))
         }
-        
-        Task { @MainActor in
-            instance.objectWillChange.send()
-        }
-    }
     
-    public func subscribe(_ instance: OcaRoot) async {
+        objectDidChange(instance)
+    }
+   
+   public func subscribe(_ instance: OcaRoot) async {
         guard case .initial = subject.value else {
             return
         }
@@ -259,9 +267,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
 
     public func refresh(_ instance: OcaRoot) async {
         subject.send(.initial)
-        Task { @MainActor in
-            instance.objectWillChange.send()
-        }
+        objectDidChange(instance)
     }
     
     func onEvent(_ instance: OcaRoot, _ eventData: Ocp1EventData) throws {
