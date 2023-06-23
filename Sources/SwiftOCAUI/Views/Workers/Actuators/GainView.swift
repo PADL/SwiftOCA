@@ -51,9 +51,20 @@ fileprivate struct OcaLogSliderView: View {
     }
     
     var body: some View {
-        OcaVariableSliderView<OcaFloat32>(value: boundedLinear)
-            .valueSliderStyle(VerticalValueSliderStyle())
-            .padding(EdgeInsets(top: 100, leading: 0, bottom: 100, trailing: 0))
+        HStack {
+            ForEach(Int(value.minValue / 10)..<Int(value.maxValue / 10), id: \.self) { value in
+                VStack {
+                    Text(String(value)).font(.caption2)
+                        .position(CGPoint(value + 144))
+                }
+                .padding()
+            }
+            /*
+            OcaVariableSliderView<OcaFloat32>(value: boundedLinear)
+                .valueSliderStyle(VerticalValueSliderStyle())
+                .padding(EdgeInsets(top: 100, leading: 0, bottom: 100, trailing: 0))
+             */
+        }
     }
 }
 
