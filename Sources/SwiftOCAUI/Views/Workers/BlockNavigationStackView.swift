@@ -45,20 +45,28 @@ struct OcaBlockNavigationStackView: OcaView {
                             }
                         }
                     }
-                } else {
+                } else if members.allMembersAreViewRepresentable {
                     Grid {
                         Group {
                             GridRow {
-                                ForEach(members, id: \.objectNumber) { member in
+                                ForEach(members, id: \.self.id) { member in
                                     OcaNavigationLabel(member)
                                 }
                             }
                             GridRow {
-                                ForEach(members, id: \.objectNumber) { member in
+                                ForEach(members, id: \.self.id) { member in
                                     OcaDetailView(member)
                                 }
                             }
                         }.frame(width: 100)
+                    }
+                } else {
+                    VStack {
+                        ForEach(members, id: \.self.id) { member in
+                            OcaPropertyTableView(member)
+                                .frame(maxHeight: .infinity)
+                                .scrollDisabled(true)
+                        }
                     }
                 }
             } else {

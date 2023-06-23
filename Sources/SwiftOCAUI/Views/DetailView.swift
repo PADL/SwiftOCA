@@ -22,8 +22,8 @@ public protocol OcaViewRepresentable: OcaRoot {
 }
 
 extension Array where Element: OcaRoot {
-    var allContainerMembersAreViewRepresentable: Bool {
-        self.hasContainerMembers && self.allSatisfy { $0 is OcaViewRepresentable }
+    var allMembersAreViewRepresentable: Bool {
+        self.allSatisfy { $0 is OcaViewRepresentable }
     }
 }
 
