@@ -24,10 +24,7 @@ fileprivate struct OcaLogGaugeView: View {
     @Binding var value: OcaBoundedPropertyValue<OcaDB>
     
     var linear: OcaFloat32 {
-        if value.maxValue == 0.0 {
-            return 0.0
-        }
-        return OcaDBToGain(dB: value.value, minGain: value.minValue, maxGain: value.maxValue)
+        powf(((value.value - value.minValue) / value.absoluteRange), 2.0)
     }
     
     var boundedLinear: OcaBoundedPropertyValue<OcaFloat32> {

@@ -31,6 +31,12 @@ public struct OcaBoundedPropertyValue<Value: Numeric & Codable>: Codable, OcaPar
     }
 }
 
+public extension OcaBoundedPropertyValue {
+    var absoluteRange: Value {
+        self.maxValue - self.minValue
+    }
+}
+
 @propertyWrapper
 public struct OcaBoundedProperty<Value: Numeric & Codable>: OcaPropertyChangeEventNotifiable, Codable {
     public typealias Property = OcaProperty<OcaBoundedPropertyValue<Value>>

@@ -31,7 +31,7 @@ struct OcaLogLegendView: View {
                 ForEach(Int(value.minValue / 10)...Int(value.maxValue / 10), id: \.self) { value in
                     Text(String(value * 10))
                         .font(.caption2)
-                        .frame(maxWidth: 25, alignment: .trailing)
+                        .frame(maxWidth: 20, alignment: .trailing)
                         .position(x: geo.size.width * 0.1, y: geo.size.height * y(value))
                 }
             }
