@@ -57,16 +57,15 @@
 		D3E6E1D52A3ACA9E00BF7095 /* Root.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1892A3ACA6C00BF7095 /* Root.swift */; };
 		D3E6E1D62A3ACA9E00BF7095 /* Manager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1862A3ACA6C00BF7095 /* Manager.swift */; };
 		D3E6E1D72A3ACAA000BF7095 /* Root+Commands.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1832A3ACA6C00BF7095 /* Root+Commands.swift */; };
-		D3E6E1D82A3ACAA900BF7095 /* ModelGUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17C2A3ACA6C00BF7095 /* ModelGUID.swift */; };
 		D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1772A3ACA6C00BF7095 /* VectorProperty.swift */; };
 		D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1762A3ACA6C00BF7095 /* ApplicationNetworkDataTypes.swift */; };
 		D3E6E1DB2A3ACAA900BF7095 /* EventDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1742A3ACA6C00BF7095 /* EventDataTypes.swift */; };
 		D3E6E1DC2A3ACAA900BF7095 /* BoundedProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1752A3ACA6C00BF7095 /* BoundedProperty.swift */; };
 		D3E6E1DD2A3ACAA900BF7095 /* List2D.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17A2A3ACA6C00BF7095 /* List2D.swift */; };
-		D3E6E1DE2A3ACAA900BF7095 /* DefaultObjectNumbers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17E2A3ACA6C00BF7095 /* DefaultObjectNumbers.swift */; };
-		D3E6E1DF2A3ACAA900BF7095 /* ModelDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17B2A3ACA6C00BF7095 /* ModelDescription.swift */; };
+		D3E6E1DE2A3ACAA900BF7095 /* WellKnownObjectNumbers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17E2A3ACA6C00BF7095 /* WellKnownObjectNumbers.swift */; };
+		D3E6E1DF2A3ACAA900BF7095 /* ModelDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17B2A3ACA6C00BF7095 /* ModelDataTypes.swift */; };
 		D3E6E1E02A3ACAA900BF7095 /* Property.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1722A3ACA6C00BF7095 /* Property.swift */; };
-		D3E6E1E12A3ACAA900BF7095 /* ManagerDescriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1782A3ACA6C00BF7095 /* ManagerDescriptor.swift */; };
+		D3E6E1E12A3ACAA900BF7095 /* ManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1782A3ACA6C00BF7095 /* ManagerDataTypes.swift */; };
 		D3E6E1E22A3ACAA900BF7095 /* SearchDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17D2A3ACA6C00BF7095 /* SearchDataTypes.swift */; };
 		D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1812A3ACA6C00BF7095 /* BaseDataTypes.swift */; };
 		D3E6E1E42A3ACAA900BF7095 /* NetworkDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1732A3ACA6C00BF7095 /* NetworkDataTypes.swift */; };
@@ -130,12 +129,11 @@
 		D3E6E1752A3ACA6C00BF7095 /* BoundedProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundedProperty.swift; sourceTree = "<group>"; };
 		D3E6E1762A3ACA6C00BF7095 /* ApplicationNetworkDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationNetworkDataTypes.swift; sourceTree = "<group>"; };
 		D3E6E1772A3ACA6C00BF7095 /* VectorProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VectorProperty.swift; sourceTree = "<group>"; };
-		D3E6E1782A3ACA6C00BF7095 /* ManagerDescriptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagerDescriptor.swift; sourceTree = "<group>"; };
+		D3E6E1782A3ACA6C00BF7095 /* ManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagerDataTypes.swift; sourceTree = "<group>"; };
 		D3E6E17A2A3ACA6C00BF7095 /* List2D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = List2D.swift; sourceTree = "<group>"; };
-		D3E6E17B2A3ACA6C00BF7095 /* ModelDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDescription.swift; sourceTree = "<group>"; };
-		D3E6E17C2A3ACA6C00BF7095 /* ModelGUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelGUID.swift; sourceTree = "<group>"; };
+		D3E6E17B2A3ACA6C00BF7095 /* ModelDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDataTypes.swift; sourceTree = "<group>"; };
 		D3E6E17D2A3ACA6C00BF7095 /* SearchDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchDataTypes.swift; sourceTree = "<group>"; };
-		D3E6E17E2A3ACA6C00BF7095 /* DefaultObjectNumbers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultObjectNumbers.swift; sourceTree = "<group>"; };
+		D3E6E17E2A3ACA6C00BF7095 /* WellKnownObjectNumbers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WellKnownObjectNumbers.swift; sourceTree = "<group>"; };
 		D3E6E1812A3ACA6C00BF7095 /* BaseDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseDataTypes.swift; sourceTree = "<group>"; };
 		D3E6E1832A3ACA6C00BF7095 /* Root+Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+Commands.swift"; sourceTree = "<group>"; };
 		D3E6E1852A3ACA6C00BF7095 /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManager.swift; sourceTree = "<group>"; };
@@ -246,6 +244,24 @@
 			path = Sources/SwiftOCA;
 			sourceTree = "<group>";
 		};
+		D3028C1F2A452E2A00B8DB42 /* PropertyTypes */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E1722A3ACA6C00BF7095 /* Property.swift */,
+				D3E6E1752A3ACA6C00BF7095 /* BoundedProperty.swift */,
+				D3E6E1772A3ACA6C00BF7095 /* VectorProperty.swift */,
+			);
+			path = PropertyTypes;
+			sourceTree = "<group>";
+		};
+		D3028C202A452E5100B8DB42 /* CollectionTypes */ = {
+			isa = PBXGroup;
+			children = (
+				D3E6E17A2A3ACA6C00BF7095 /* List2D.swift */,
+			);
+			path = CollectionTypes;
+			sourceTree = "<group>";
+		};
 		D3DA69D72A3DA7CD001250A1 /* Conformances */ = {
 			isa = PBXGroup;
 			children = (
@@ -331,6 +347,8 @@
 		D3E6E16B2A3ACA6C00BF7095 /* OCC */ = {
 			isa = PBXGroup;
 			children = (
+				D3028C202A452E5100B8DB42 /* CollectionTypes */,
+				D3028C1F2A452E2A00B8DB42 /* PropertyTypes */,
 				D3E6E1702A3ACA6C00BF7095 /* ControlDataTypes */,
 				D3E6E1822A3ACA6C00BF7095 /* ControlClasses */,
 			);
@@ -340,19 +358,14 @@
 		D3E6E1702A3ACA6C00BF7095 /* ControlDataTypes */ = {
 			isa = PBXGroup;
 			children = (
-				D3E6E1812A3ACA6C00BF7095 /* BaseDataTypes.swift */,
-				D3E6E17E2A3ACA6C00BF7095 /* DefaultObjectNumbers.swift */,
-				D3E6E1732A3ACA6C00BF7095 /* NetworkDataTypes.swift */,
-				D3E6E1742A3ACA6C00BF7095 /* EventDataTypes.swift */,
 				D3E6E1762A3ACA6C00BF7095 /* ApplicationNetworkDataTypes.swift */,
-				D3E6E1722A3ACA6C00BF7095 /* Property.swift */,
-				D3E6E1752A3ACA6C00BF7095 /* BoundedProperty.swift */,
-				D3E6E1772A3ACA6C00BF7095 /* VectorProperty.swift */,
-				D3E6E1782A3ACA6C00BF7095 /* ManagerDescriptor.swift */,
-				D3E6E17A2A3ACA6C00BF7095 /* List2D.swift */,
-				D3E6E17B2A3ACA6C00BF7095 /* ModelDescription.swift */,
-				D3E6E17C2A3ACA6C00BF7095 /* ModelGUID.swift */,
+				D3E6E1812A3ACA6C00BF7095 /* BaseDataTypes.swift */,
+				D3E6E1742A3ACA6C00BF7095 /* EventDataTypes.swift */,
+				D3E6E1782A3ACA6C00BF7095 /* ManagerDataTypes.swift */,
+				D3E6E17B2A3ACA6C00BF7095 /* ModelDataTypes.swift */,
+				D3E6E1732A3ACA6C00BF7095 /* NetworkDataTypes.swift */,
 				D3E6E17D2A3ACA6C00BF7095 /* SearchDataTypes.swift */,
+				D3E6E17E2A3ACA6C00BF7095 /* WellKnownObjectNumbers.swift */,
 			);
 			path = ControlDataTypes;
 			sourceTree = "<group>";
@@ -747,7 +760,6 @@
 				D3E6E1C22A3ACA8200BF7095 /* MessageType.swift in Sources */,
 				D3E6E1C32A3ACA8C00BF7095 /* Matrix.swift in Sources */,
 				D3E6E1D72A3ACAA000BF7095 /* Root+Commands.swift in Sources */,
-				D3E6E1D82A3ACAA900BF7095 /* ModelGUID.swift in Sources */,
 				D3E6E1D62A3ACA9E00BF7095 /* Manager.swift in Sources */,
 				D3E6E1B42A3ACA7B00BF7095 /* AES70OCP1Connection+Objects.swift in Sources */,
 				D3E6E1CC2A3ACA9000BF7095 /* PanBalance.swift in Sources */,
@@ -775,8 +787,8 @@
 				D3E6E1BC2A3ACA7E00BF7095 /* Errors.swift in Sources */,
 				D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */,
 				D3E6E1C72A3ACA9000BF7095 /* Actuator.swift in Sources */,
-				D3E6E1DF2A3ACAA900BF7095 /* ModelDescription.swift in Sources */,
-				D3E6E1E12A3ACAA900BF7095 /* ManagerDescriptor.swift in Sources */,
+				D3E6E1DF2A3ACAA900BF7095 /* ModelDataTypes.swift in Sources */,
+				D3E6E1E12A3ACAA900BF7095 /* ManagerDataTypes.swift in Sources */,
 				D3E6E1E72A3ACAAD00BF7095 /* Data+IntegerCodable.swift in Sources */,
 				D3E6E1D42A3ACA9E00BF7095 /* LibraryManager.swift in Sources */,
 				D3E6E1D02A3ACA9A00BF7095 /* Agent.swift in Sources */,
@@ -790,7 +802,7 @@
 				D3E6E1C12A3ACA8200BF7095 /* Notification.swift in Sources */,
 				D3E6E1B92A3ACA7B00BF7095 /* BinaryCodingConfiguration+OCP1.swift in Sources */,
 				D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */,
-				D3E6E1DE2A3ACAA900BF7095 /* DefaultObjectNumbers.swift in Sources */,
+				D3E6E1DE2A3ACAA900BF7095 /* WellKnownObjectNumbers.swift in Sources */,
 				D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift in Sources */,
 				D3E6E1BE2A3ACA8200BF7095 /* Command.swift in Sources */,
 			);
