@@ -37,6 +37,13 @@ public extension OcaBoundedPropertyValue {
     }
 }
 
+public extension OcaBoundedPropertyValue where Value: BinaryFloatingPoint {
+    /// returns value between 0.0 and 1.0
+    var relativeValue: OcaFloat32 {
+        OcaFloat32((self.value + self.maxValue) / self.absoluteRange)
+    }
+}
+
 @propertyWrapper
 public struct OcaBoundedProperty<Value: Numeric & Codable>: OcaPropertyChangeEventNotifiable, Codable {
     public typealias Property = OcaProperty<OcaBoundedPropertyValue<Value>>
