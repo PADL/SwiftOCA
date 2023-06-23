@@ -209,4 +209,12 @@ extension OcaRoot {
             OcaProperty<Value>.State.success(value)
         }
     }
+    
+    func didChange() {
+#if canImport(Combine) || canImport(OpenCombine)
+            objectWillChange.send()
+#elseif canImport(SwiftCrossUI)
+            didChange.send()
+#endif
+    }
 }

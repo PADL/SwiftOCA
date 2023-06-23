@@ -217,16 +217,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     }
 
-    private func objectDidChange(_ instance: OcaRoot) {
-        Task { @MainActor in
-#if canImport(Combine) || canImport(OpenCombine)
-            instance.objectWillChange.send()
-#elseif canImport(SwiftCrossUI)
-            instance.didChange.send()
-#endif
-        }
-    }
-
     private func perform(_ instance: OcaRoot, _ block: @escaping (_ storage: Self) async throws -> Value) async {
         guard let connectionDelegate = instance.connectionDelegate else {
             subject.send(.failure(Ocp1Error.noConnectionDelegate))
@@ -251,7 +241,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             subject.send(.failure(error))
         }
     
-        objectDidChange(instance)
+        instance.didChange()
     }
    
    public func subscribe(_ instance: OcaRoot) async {
@@ -267,7 +257,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
 
     public func refresh(_ instance: OcaRoot) async {
         subject.send(.initial)
-        objectDidChange(instance)
+        instance.didChange()
     }
     
     func onEvent(_ instance: OcaRoot, _ eventData: Ocp1EventData) throws {
