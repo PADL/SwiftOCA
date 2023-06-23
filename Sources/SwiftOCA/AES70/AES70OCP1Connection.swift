@@ -22,6 +22,7 @@ import Combine
 import OpenCombine
 #elseif canImport(SwiftCrossUI)
 import SwiftCrossUI
+fileprivate typealias ObservableObject = Observable
 #endif
 
 typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData) -> Void
@@ -232,9 +233,9 @@ public class AES70OCP1Connection: ObservableObject {
     private func didChange() {
         Task { @MainActor in
 #if canImport(Combine) || canImport(OpenCombine)
-            objectWillChange.send()
+            self.objectWillChange.send()
 #elseif canImport(SwiftCrossUI)
-            didChange.send()
+            self.didChange.send()
 #endif
         }
     }

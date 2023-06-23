@@ -22,7 +22,7 @@ import Combine
 import OpenCombine
 #elseif canImport(SwiftCrossUI)
 import SwiftCrossUI
-typealias ObservableObject = Observable
+fileprivate typealias ObservableObject = Observable
 #endif
 
 public class OcaRoot: CustomStringConvertible, ObservableObject {
