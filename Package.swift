@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.5
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -19,9 +19,11 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.1.0"),
+        .package(url: "https://github.com/apple/swift-foundation", .branch("main")),
         .package(url: "https://github.com/PureSwift/Socket", .branch("main")),
-        .package(url: "https://github.com/sideeffect-io/AsyncExtensions.git", from: "0.5.2"),
         .package(url: "https://github.com/PADL/swift-binary-coder", .branch("inferno")),
+        .package(url: "https://github.com/lhoward/AsyncExtensions", .branch("linux")),
+        .package(url: "https://github.com/OpenCombine/OpenCombine", from: "0.14.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -32,9 +34,10 @@ let package = Package(
 		"Socket",
 		"AsyncExtensions",
 		.product(name: "BinaryCoder", package: "swift-binary-coder"),
-		.product(name: "AsyncAlgorithms", package: "swift-async-algorithms")
+		.product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
+                .product(name: "OpenCombine", package: "OpenCombine", condition: .when(platforms: [.linux])),
+                .product(name: "FoundationPreview", package: "swift-foundation", condition: .when(platforms: [.linux])),
 	    ]),
     ],
     swiftLanguageVersions: [.v5]
 )
-
