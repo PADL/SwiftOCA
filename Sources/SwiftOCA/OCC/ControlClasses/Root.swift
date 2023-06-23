@@ -211,10 +211,12 @@ extension OcaRoot {
     }
     
     func didChange() {
+        Task { @MainActor in
 #if canImport(Combine) || canImport(OpenCombine)
             objectWillChange.send()
 #elseif canImport(SwiftCrossUI)
             didChange.send()
 #endif
+        }
     }
 }

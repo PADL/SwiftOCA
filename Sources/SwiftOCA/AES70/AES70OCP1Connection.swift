@@ -230,14 +230,13 @@ public class AES70OCP1Connection: ObservableObject {
         }
     }
 
+    @MainActor
     private func didChange() {
-        Task { @MainActor in
 #if canImport(Combine) || canImport(OpenCombine)
-            self.objectWillChange.send()
+        self.objectWillChange.send()
 #elseif canImport(SwiftCrossUI)
-            self.didChange.send()
+        self.didChange.send()
 #endif
-        }
     }
 
     /// API to be impmlemented by concrete classes
