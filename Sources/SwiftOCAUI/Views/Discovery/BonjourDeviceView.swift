@@ -43,6 +43,7 @@ public struct OcaBonjourDeviceView: View {
                     try await connection.connect()
                     self.isConnected = true
                 }
+            } catch is CancellationError {
             } catch {
                 debugPrint("OcaBonjourDeviceView: error \(error)")
                 lastError = error
