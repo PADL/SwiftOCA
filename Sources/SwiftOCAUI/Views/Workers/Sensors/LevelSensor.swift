@@ -42,12 +42,12 @@ fileprivate struct OcaLogGaugeView: View {
         } currentValueLabel: {
             EmptyView()
         } minimumValueLabel: {
-            Text(value.minValue.formatted()).rotationEffect(.degrees(-90))
+            Text(value.minValue.formatted()).rotationEffect(.degrees(90))
         } maximumValueLabel: {
-            Text(value.maxValue.formatted()).rotationEffect(.degrees(-90))
+            Text(value.maxValue.formatted()).rotationEffect(.degrees(90))
         }.tint(gradient)
             .labelStyle(.iconOnly)
-            .rotationEffect(.degrees(90))
+            .rotationEffect(.degrees(-90))
     }
 }
 
@@ -62,7 +62,7 @@ extension OcaLevelSensor: OcaViewRepresentable {
                 return readingValue
             } else {
                 // FIXME: constants
-                return OcaBoundedPropertyValue(value: 0.0, minValue: -144.0, maxValue: 20.0)
+                return OcaBoundedPropertyValue(value: 0.0, minValue: -144.0, maxValue: 0.0)
             }
         }, set: { newValue in
         })
