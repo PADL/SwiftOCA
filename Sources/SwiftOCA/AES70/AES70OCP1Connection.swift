@@ -16,8 +16,15 @@
 
 import Foundation
 import AsyncAlgorithms
+#if canImport(Combine)
+import Combine
+#elseif canImport(OpenCombine)
+import OpenCombine
+#endif
 
 typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData) -> Void
+
+fileprivate var NSEC_PER_SEC: UInt64 = 1_000_000_000
 
 public struct AES70OCP1ConnectionOptions {
     let automaticReconnect: Bool

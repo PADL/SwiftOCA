@@ -15,7 +15,6 @@
 //
 
 import Foundation
-import SwiftUI
 
 public enum OcaPolarityState: OcaUint8, Codable {
     case nonInverted = 1

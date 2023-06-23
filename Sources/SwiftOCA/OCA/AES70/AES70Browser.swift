@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+
 import Foundation
 import AsyncAlgorithms
 import Socket
@@ -181,3 +183,5 @@ extension AES70OCP1Connection: AES70OCP1ConnectionFactory {
         throw Ocp1Error.serviceResolutionFailed
     }
 }
+
+#endif

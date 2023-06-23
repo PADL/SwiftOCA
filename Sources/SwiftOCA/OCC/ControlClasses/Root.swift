@@ -16,6 +16,11 @@
 
 import Foundation
 import BinaryCoder
+#if canImport(Combine)
+import Combine
+#elseif canImport(OpenCombine)
+import OpenCombine
+#endif
 
 public class OcaRoot: ObservableObject, CustomStringConvertible {
     typealias Root = OcaRoot

@@ -1,13 +1,6 @@
-//
-//  Task+Timeout.swift
-//  SwiftOCAUI
-//
-//  Created by Luke Howard on 17/6/2023.
-//
-
 // https://forums.swift.org/t/running-an-async-task-with-a-timeout/49733/12
 
-import Foundation.NSDate // for TimeInterval
+import Foundation
 
 struct TimedOutError: Error, Equatable {}
 
