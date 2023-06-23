@@ -239,7 +239,7 @@
 				D3E6E23C2A3C0AE200BF7095 /* OCA */,
 				D3E6E16B2A3ACA6C00BF7095 /* OCC */,
 				D3E6E19E2A3ACA6C00BF7095 /* OCF */,
-				D3E6E1A72A3ACA6C00BF7095 /* OCP.1 */,
+				D3E6E1A72A3ACA6C00BF7095 /* AES70 */,
 			);
 			path = Sources/SwiftOCA;
 			sourceTree = "<group>";
@@ -468,7 +468,7 @@
 			path = Messages;
 			sourceTree = "<group>";
 		};
-		D3E6E1A72A3ACA6C00BF7095 /* OCP.1 */ = {
+		D3E6E1A72A3ACA6C00BF7095 /* AES70 */ = {
 			isa = PBXGroup;
 			children = (
 				D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */,
@@ -480,7 +480,7 @@
 				D3E6E1B22A3ACA6C00BF7095 /* AES70OCP1SocketConnection.swift */,
 				D3E6E1AD2A3ACA6C00BF7095 /* BinaryCodingConfiguration+OCP1.swift */,
 			);
-			path = OCP.1;
+			path = AES70;
 			sourceTree = "<group>";
 		};
 		D3E6E1F72A3ACF5900BF7095 /* Examples/OCABrowser */ = {
