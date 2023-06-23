@@ -31,16 +31,23 @@ fileprivate var NSEC_PER_SEC: UInt64 = 1_000_000_000
 
 public struct AES70OCP1ConnectionOptions {
     let automaticReconnect: Bool
-    
-    public init(automaticReconnect: Bool = false) {
+    let connectionTimeout: TimeInterval
+    let responseTimeout: TimeInterval
+
+    public init(automaticReconnect: Bool = false,
+                connectionTimeout: TimeInterval = 5,
+                responseTimeout: TimeInterval = 5) {
         self.automaticReconnect = automaticReconnect
+        self.connectionTimeout = connectionTimeout
+        self.responseTimeout = responseTimeout
     }
 }
 
 public class AES70OCP1Connection: ObservableObject {
     /// This is effectively an actor (most methods are marked @MainActor) except it supports subclasses for different
     /// protocol types
-    
+
+    @MainActor
     let options: AES70OCP1ConnectionOptions
     
     /// Keepalive/ping interval (only necessary for UDP)
@@ -48,11 +55,6 @@ public class AES70OCP1Connection: ObservableObject {
     public var keepAliveInterval: OcaUint16 {
         return 0
     }
-
-    @MainActor
-    public var connectionTimeout = TimeInterval(5)
-    @MainActor
-    public var responseTimeout = TimeInterval(5)
     
     /// Object interning, main thread only
     @MainActor

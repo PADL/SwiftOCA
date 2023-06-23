@@ -28,9 +28,9 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
     var socket: Socket? = nil
     
     @MainActor
-    public init(deviceAddress: any SocketAddress) {
+    public init(deviceAddress: any SocketAddress, options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()) {
         self.deviceAddress = deviceAddress
-        super.init()
+        super.init(options: options)
     }
 
     override func connectDevice() async throws {
