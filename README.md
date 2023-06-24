@@ -1,9 +1,11 @@
 SwiftOCA
 --------
 
-SwiftOCA is pure Swift implementation of the AES70/OCA control protocol.
+SwiftOCA is pure Swift implementation of the AES70/OCA control protocol. It provides an asynchronous API and supports both macOS and Linux. It also includes a SwiftUI view library.
 
-It is presently a work in progress and is not ready for production use.
+![OCABrowser](Documentation/OCABrowser.png)
+
+Many OCA classes remain to be implemented, and the UI controls aren't going to win any design awards, so consider it a work in progress. Pull requests welcome.
 
 Luke Howard <lukeh@lukktone.com>
 
