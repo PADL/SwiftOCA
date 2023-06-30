@@ -270,6 +270,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         // TODO: how to handle items being deleted
         if .currentChanged == eventData.changeType {
             self.subject.send(.success(eventData.propertyValue))
+            instance.didChange()
         } else {
             throw Ocp1Error.unhandledEvent
         }
