@@ -20,9 +20,6 @@ import BinaryCoder
 import Combine
 #elseif canImport(OpenCombine)
 import OpenCombine
-#elseif canImport(SwiftCrossUI)
-import SwiftCrossUI
-fileprivate typealias ObservableObject = Observable
 #endif
 
 public class OcaRoot: CustomStringConvertible, ObservableObject {
@@ -207,16 +204,6 @@ extension OcaRoot {
         
         var currentValue: OcaProperty<Value>.State {
             OcaProperty<Value>.State.success(value)
-        }
-    }
-    
-    func didChange() {
-        Task { @MainActor in
-#if canImport(Combine) || canImport(OpenCombine)
-            objectWillChange.send()
-#elseif canImport(SwiftCrossUI)
-            didChange.send()
-#endif
         }
     }
 }

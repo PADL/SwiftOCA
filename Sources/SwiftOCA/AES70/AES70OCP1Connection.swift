@@ -20,9 +20,6 @@ import AsyncAlgorithms
 import Combine
 #elseif canImport(OpenCombine)
 import OpenCombine
-#elseif canImport(SwiftCrossUI)
-import SwiftCrossUI
-fileprivate typealias ObservableObject = Observable
 #endif
 
 typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData) -> Void
@@ -207,7 +204,7 @@ public class AES70OCP1Connection: ObservableObject {
             await object.refresh()
         }
         
-        self.didChange()
+        self.objectWillChange.send()
     }
     
     @MainActor
@@ -223,22 +220,14 @@ public class AES70OCP1Connection: ObservableObject {
         if clearObjectCache {
             self.objects = [:]
         }
-        self.didChange()
+
+        self.objectWillChange.send()
     }
     
     public var isConnected: Bool {
         get async {
             await self.monitor != nil
         }
-    }
-
-    @MainActor
-    private func didChange() {
-#if canImport(Combine) || canImport(OpenCombine)
-        self.objectWillChange.send()
-#elseif canImport(SwiftCrossUI)
-        self.didChange.send()
-#endif
     }
 
     /// API to be impmlemented by concrete classes
