@@ -55,6 +55,9 @@ public struct OcaBoundedProperty<Value: Numeric & Codable>: OcaPropertyChangeEve
 
     private let _storage: Property
     
+    @available(*, unavailable, message: """
+               @OcaBoundedProperty is only available on properties of classes
+               """)
     public var wrappedValue: State {
         get { fatalError() }
         nonmutating set { fatalError() }

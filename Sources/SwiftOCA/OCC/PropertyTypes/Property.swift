@@ -98,14 +98,13 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     
     /// Placeholder only
     public func encode(to encoder: Encoder) throws {
-        if case let .success(value) = self.wrappedValue {
-            try value.encode(to: encoder)
-        } else {
-            fatalError()
-        }
+        fatalError()
     }
         
     /// Placeholder only
+    @available(*, unavailable, message: """
+               @OcaProperty is only available on properties of classes
+               """)
     public var wrappedValue: State {
         get { fatalError() }
         nonmutating set { fatalError() }

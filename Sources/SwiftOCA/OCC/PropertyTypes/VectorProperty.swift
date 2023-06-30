@@ -39,6 +39,9 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
     
     public var _storage: Property
 
+    @available(*, unavailable, message: """
+               @OcaVectorProperty is only available on properties of classes
+               """)
     public var wrappedValue: State {
         get { fatalError() }
         nonmutating set { fatalError() }
