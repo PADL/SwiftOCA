@@ -241,7 +241,9 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             subject.send(.failure(error))
         }
     
-        instance.objectWillChange.send()
+        DispatchQueue.main.async {
+            instance.objectWillChange.send()
+        }
     }
    
    public func subscribe(_ instance: OcaRoot) async {
@@ -257,7 +259,9 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
 
     public func refresh(_ instance: OcaRoot) async {
         subject.send(.initial)
-        instance.objectWillChange.send()
+        DispatchQueue.main.async {
+            instance.objectWillChange.send()
+        }
     }
     
     func onEvent(_ instance: OcaRoot, _ eventData: Ocp1EventData) throws {
@@ -270,7 +274,9 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         // TODO: how to handle items being deleted
         if .currentChanged == eventData.changeType {
             self.subject.send(.success(eventData.propertyValue))
-            instance.objectWillChange.send()
+            DispatchQueue.main.async {
+                instance.objectWillChange.send()
+            }
         } else {
             throw Ocp1Error.unhandledEvent
         }
