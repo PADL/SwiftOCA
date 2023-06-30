@@ -40,7 +40,7 @@ extension AES70OCP1Connection {
             throw Ocp1Error.alreadySubscribedToEvent
         }
 
-        Task { @MainActor in
+        await Task { @MainActor in
             subscriptions[event] = callback
         }
         
