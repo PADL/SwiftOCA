@@ -64,16 +64,16 @@ public struct OcaBoundedProperty<Value: Numeric & Codable>: OcaPropertyChangeEve
         self._storage
     }
 
-    public func refresh(_ instance: OcaRoot) async {
-        await _storage.refresh(instance)
+    public func refresh(_ object: OcaRoot) async {
+        await _storage.refresh(object)
     }
     
     public var currentValue: State {
         _storage.currentValue
     }
 
-    public func subscribe(_ instance: OcaRoot) async {
-        await _storage.subscribe(instance)
+    public func subscribe(_ object: OcaRoot) async {
+        await _storage.subscribe(object)
     }
 
     public var description: String {
@@ -90,18 +90,18 @@ public struct OcaBoundedProperty<Value: Numeric & Codable>: OcaPropertyChangeEve
     }
     
     public static subscript<T: OcaRoot>(
-        _enclosingInstance instance: T,
+        _enclosingInstance object: T,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
         get {
-            instance[keyPath: storageKeyPath]._storage._get(_enclosingInstance: instance)
+            object[keyPath: storageKeyPath]._storage._get(_enclosingInstance: object)
         }
         set {
-            instance[keyPath: storageKeyPath]._storage._set(_enclosingInstance: instance, newValue)
+            object[keyPath: storageKeyPath]._storage._set(_enclosingInstance: object, newValue)
         }
     }
     
-    func onEvent(_ instance: OcaRoot, _ eventData: Ocp1EventData) throws {
+    func onEvent(_ object: OcaRoot, _ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
         
         let decoder = BinaryDecoder(config: .ocp1Configuration)
@@ -124,6 +124,6 @@ public struct OcaBoundedProperty<Value: Numeric & Codable>: OcaPropertyChangeEve
             throw Ocp1Error.unhandledEvent
         }
         
-        _storage._set(_enclosingInstance: instance, .success(value))
+        _storage._set(_enclosingInstance: object, .success(value))
     }
 }

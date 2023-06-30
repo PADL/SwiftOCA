@@ -195,8 +195,8 @@ extension OcaRoot {
         var propertyIDs: [OcaPropertyID]
         var value: T
         
-        func refresh(_ instance: SwiftOCA.OcaRoot) async {}
-        func subscribe(_ instance: OcaRoot) async {}
+        func refresh(_ object: SwiftOCA.OcaRoot) async {}
+        func subscribe(_ object: OcaRoot) async {}
 
         var description: String {
             String(describing: value)

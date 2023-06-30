@@ -44,8 +44,8 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         nonmutating set { fatalError() }
     }
 
-    public func refresh(_ instance: OcaRoot) async {
-        await _storage.refresh(instance)
+    public func refresh(_ object: OcaRoot) async {
+        await _storage.refresh(object)
     }
 
     public var projectedValue: any OcaPropertyRepresentable {
@@ -56,8 +56,8 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         _storage.currentValue
     }
     
-    public func subscribe(_ instance: OcaRoot) async {
-        await _storage.subscribe(instance)
+    public func subscribe(_ object: OcaRoot) async {
+        await _storage.subscribe(object)
     }
 
     public var description: String {
@@ -78,18 +78,18 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
     }
 
     public static subscript<T: OcaRoot>(
-        _enclosingInstance instance: T,
+        _enclosingInstance object: T,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
         get {
-            instance[keyPath: storageKeyPath]._storage._get(_enclosingInstance: instance)
+            object[keyPath: storageKeyPath]._storage._get(_enclosingInstance: object)
         }
         set {
-            instance[keyPath: storageKeyPath]._storage._set(_enclosingInstance: instance, newValue)
+            object[keyPath: storageKeyPath]._storage._set(_enclosingInstance: object, newValue)
         }
     }
 
-    func onEvent(_ instance: OcaRoot, _ eventData: Ocp1EventData) throws {
+    func onEvent(_ object: OcaRoot, _ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
         
         let decoder = BinaryDecoder(config: .ocp1Configuration)
@@ -114,7 +114,7 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
                 xy.x = subjectValue.x
                 xy.y = eventData.propertyValue
             }
-            _storage._set(_enclosingInstance: instance, .success(xy))
+            _storage._set(_enclosingInstance: object, .success(xy))
         default:
             throw Ocp1Error.unhandledEvent
         }

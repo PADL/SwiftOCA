@@ -25,8 +25,8 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
     var propertyIDs: [OcaPropertyID] { get }
     var currentValue: OcaProperty<Value>.State { get }
 
-    func refresh(_ instance: OcaRoot) async
-    func subscribe(_ instance: OcaRoot) async
+    func refresh(_ object: OcaRoot) async
+    func subscribe(_ object: OcaRoot) async
 }
 
 public extension OcaPropertyRepresentable {
@@ -123,12 +123,12 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     /// cast struct key paths to `ReferenceWritableKeyPath`. For property wrapper wrappers, use these internal
     /// get/set functions.
 
-    func _get(_enclosingInstance instance: OcaRoot) -> State {
+    func _get(_enclosingInstance object: OcaRoot) -> State {
         switch subject.value {
         case .initial:
             Task { @MainActor in
-                await perform(instance) {
-                    try await $0.getValueAndSubscribe(instance)
+                await perform(object) {
+                    try await $0.getValueAndSubscribe(object)
                 }
             }
         default:
@@ -137,15 +137,15 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         return subject.value
     }
 
-    func _set(_enclosingInstance instance: OcaRoot, _ newValue: State) {
+    func _set(_enclosingInstance object: OcaRoot, _ newValue: State) {
         Task { @MainActor in
             if case let .success(value) = newValue {
-                await perform(instance) {
-                    try await $0.setValueIfMutable(instance, value)
+                await perform(object) {
+                    try await $0.setValueIfMutable(object, value)
                     return value
                 }
             } else if case .initial = newValue {
-                await refresh(instance)
+                await refresh(object)
             } else {
                 preconditionFailure("setter called with invalid value \(newValue)")
             }
@@ -153,14 +153,14 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
         
     public static subscript<T: OcaRoot>(
-        _enclosingInstance instance: T,
+        _enclosingInstance object: T,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
         get {
-            instance[keyPath: storageKeyPath]._get(_enclosingInstance: instance)
+            object[keyPath: storageKeyPath]._get(_enclosingInstance: object)
         }
         set {
-            instance[keyPath: storageKeyPath]._set(_enclosingInstance: instance, newValue)
+            object[keyPath: storageKeyPath]._set(_enclosingInstance: object, newValue)
         }
     }
 
@@ -180,23 +180,23 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
         
     @MainActor
-    private func getValueAndSubscribe(_ instance: OcaRoot) async throws -> Value {
+    private func getValueAndSubscribe(_ object: OcaRoot) async throws -> Value {
         guard let getMethodID else {
             throw Ocp1Error.propertyIsImmutable
         }
 
-        let value: Value = try await instance.sendCommandRrq(methodID: getMethodID)
+        let value: Value = try await object.sendCommandRrq(methodID: getMethodID)
 
         // do this in the background, otherwise UI refresh performance is poor
         Task.detached {
-            try await instance.subscribe()
+            try await object.subscribe()
         }
         
         return value
     }
     
     @MainActor
-    private func setValueIfMutable(_ instance: OcaRoot, _ value: Value) async throws {
+    private func setValueIfMutable(_ object: OcaRoot, _ value: Value) async throws {
         guard let setMethodID else {
             throw Ocp1Error.propertyIsImmutable
         }
@@ -204,21 +204,21 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         let newValue: Encodable
         
         if let setValueTransformer {
-            newValue = try await setValueTransformer(instance, value)
+            newValue = try await setValueTransformer(object, value)
         } else {
             newValue = value
         }
         
-        if try await instance.isSubscribed {
+        if try await object.isSubscribed {
             // we'll get a notification (hoepfully) so, don't require a reply
-            try await instance.sendCommand(methodID: setMethodID, parameter: newValue)
+            try await object.sendCommand(methodID: setMethodID, parameter: newValue)
         } else {
-            try await instance.sendCommandRrq(methodID: setMethodID, parameter: newValue)
+            try await object.sendCommandRrq(methodID: setMethodID, parameter: newValue)
         }
     }
 
-    private func perform(_ instance: OcaRoot, _ block: @escaping (_ storage: Self) async throws -> Value) async {
-        guard let connectionDelegate = instance.connectionDelegate else {
+    private func perform(_ object: OcaRoot, _ block: @escaping (_ storage: Self) async throws -> Value) async {
+        guard let connectionDelegate = object.connectionDelegate else {
             subject.send(.failure(Ocp1Error.noConnectionDelegate))
             return
         }
@@ -242,29 +242,29 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     
         DispatchQueue.main.async {
-            instance.objectWillChange.send()
+            object.objectWillChange.send()
         }
     }
    
-   public func subscribe(_ instance: OcaRoot) async {
+   public func subscribe(_ object: OcaRoot) async {
         guard case .initial = subject.value else {
             return
         }
         
         // FIXME: is this safe to run off main thread?
-        await perform(instance) {
-            try await $0.getValueAndSubscribe(instance)
+        await perform(object) {
+            try await $0.getValueAndSubscribe(object)
         }
     }
 
-    public func refresh(_ instance: OcaRoot) async {
+    public func refresh(_ object: OcaRoot) async {
         subject.send(.initial)
         DispatchQueue.main.async {
-            instance.objectWillChange.send()
+            object.objectWillChange.send()
         }
     }
     
-    func onEvent(_ instance: OcaRoot, _ eventData: Ocp1EventData) throws {
+    func onEvent(_ object: OcaRoot, _ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
         
         let decoder = BinaryDecoder(config: .ocp1Configuration)
@@ -275,7 +275,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         if .currentChanged == eventData.changeType {
             self.subject.send(.success(eventData.propertyValue))
             DispatchQueue.main.async {
-                instance.objectWillChange.send()
+                object.objectWillChange.send()
             }
         } else {
             throw Ocp1Error.unhandledEvent
@@ -283,9 +283,9 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
     
     @MainActor
-    func onCompletion<T>(_ instance: OcaRoot,
+    func onCompletion<T>(_ object: OcaRoot,
                          _ block: @escaping (_ value: Value) async throws -> T) async throws -> T {
-        guard let connectionDelegate = instance.connectionDelegate else {
+        guard let connectionDelegate = object.connectionDelegate else {
             throw Ocp1Error.noConnectionDelegate
         }
         
@@ -296,7 +296,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         let result = try await withTimeout(seconds: connectionDelegate.options.responseTimeout) {
             await Task {
                 repeat {
-                    await subscribe(instance)
+                    await subscribe(object)
                     
                     if case .success(let value) = self.subject.value {
                         return try await block(value)
