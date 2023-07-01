@@ -82,7 +82,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     }
     
-    private let subject: AsyncCurrentValueSubject<State>
+    public let subject: AsyncCurrentValueSubject<State>
 
     public var description: String {
         if case .success(let value) = subject.value {
