@@ -65,18 +65,20 @@ extension OcaGain: OcaViewRepresentable {
     public var viewType: any OcaView.Type {
         OcaGainView.self
     }
-    
-    var gainValue: Binding<OcaBoundedPropertyValue<OcaDB>> {
-        Binding<OcaBoundedPropertyValue<OcaDB>>(get: {
-            if case let .success(gainValue) = self.gain {
+}
+
+private extension Binding where Value == OcaProperty<OcaBoundedPropertyValue<OcaDB>>.State {
+    var value: Binding<OcaBoundedPropertyValue<OcaDB>> {
+        Binding<OcaBoundedPropertyValue<OcaFloat32>>(get: {
+            if case let .success(gainValue) = self.wrappedValue {
                 return gainValue
             } else {
                 // FIXME: constants
-                return OcaBoundedPropertyValue(value: 0.0, minValue: -144.0, maxValue: 20.0)
+                return OcaBoundedPropertyValue(value: 0.0, minValue: -1.0, maxValue: 1.0)
             }
-        }, set: { newValue in
-            self.gain = .success(newValue)
-        })
+       }, set: { newValue in
+           self.wrappedValue = .success(newValue)
+       })
     }
 }
 
@@ -88,7 +90,7 @@ public struct OcaGainView: OcaView {
     }
     
     public var body: some View {
-        OcaLogSliderView(value: object.gainValue)
+        OcaLogSliderView(value: object.$gain.value)
             .showProgressIfWaiting(object.gain)
     }
 }

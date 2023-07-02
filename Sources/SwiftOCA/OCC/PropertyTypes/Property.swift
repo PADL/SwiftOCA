@@ -18,7 +18,6 @@ import Foundation
 import BinaryCoder
 import AsyncAlgorithms
 import AsyncExtensions
-
 #if canImport(SwiftUI)
 import SwiftUI
 #elseif canImport(TokamakShim)
@@ -116,6 +115,16 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         nonmutating set { fatalError() }
     }
     
+#if canImport(SwiftUI) || canImport(TokamakShim)
+    private weak var object: OcaRoot? = nil
+#endif
+
+    mutating func _referenceObject(_enclosingInstance object: OcaRoot) {
+#if canImport(SwiftUI) || canImport(TokamakShim)
+        self.object = object
+#endif
+    }
+
     public var currentValue: State {
         subject.value
     }
@@ -140,14 +149,15 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
 
     func _set(_enclosingInstance object: OcaRoot, _ newValue: State) {
         Task { @MainActor in
-            if case let .success(value) = newValue {
+            switch newValue {
+            case .success(let value):
                 await perform(object) {
                     try await $0.setValueIfMutable(object, value)
                     return value
                 }
-            } else if case .initial = newValue {
+            case .initial:
                 await refresh(object)
-            } else {
+            default:
                 preconditionFailure("setter called with invalid value \(newValue)")
             }
         }
@@ -158,15 +168,11 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
         get {
-#if canImport(SwiftUI) || canImport(TokamakShim)
-            object[keyPath: storageKeyPath]._refObject(_enclosingInstance: object)
-#endif
+            object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
             return object[keyPath: storageKeyPath]._get(_enclosingInstance: object)
         }
         set {
-#if canImport(SwiftUI) || canImport(TokamakShim)
-            object[keyPath: storageKeyPath]._refObject(_enclosingInstance: object)
-#endif
+            object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
             object[keyPath: storageKeyPath]._set(_enclosingInstance: object, newValue)
         }
     }
@@ -327,12 +333,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
     
 #if canImport(SwiftUI) || canImport(TokamakShim)
-    private weak var object: OcaRoot? = nil
-    
-    private mutating func _refObject(_enclosingInstance object: OcaRoot) {
-        self.object = object
-    }
-
     public var projectedValue: Binding<State> {
         Binding(get: { if let object { return _get(_enclosingInstance: object) } else { return subject.value } },
                 set: { if let object { _set(_enclosingInstance: object, $0) } })

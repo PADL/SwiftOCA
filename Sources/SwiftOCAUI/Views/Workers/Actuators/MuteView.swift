@@ -21,16 +21,18 @@ extension OcaMute: OcaViewRepresentable {
     public var viewType: any OcaView.Type {
         OcaMuteView.self
     }
-    
-    var isMuted: Binding<Bool> {
+}
+
+private extension Binding where Value == OcaProperty<OcaMuteState>.State {
+    var value: Binding<Bool> {
         Binding<Bool>(get: {
-           if case let .success(muteState) = self.state {
+           if case let .success(muteState) = self.wrappedValue {
                return muteState == .muted
            } else {
                return false
            }
        }, set: { isOn in
-           self.state = .success(isOn ? .muted : .unmuted)
+           self.wrappedValue = .success(isOn ? .muted : .unmuted)
        })
     }
 }
@@ -43,7 +45,7 @@ public struct OcaMuteView: OcaView {
     }
 
     public var body: some View {
-        Toggle(isOn: object.isMuted) {}
+        Toggle(isOn: object.$state.value) {}
             .toggleStyle(SymbolToggleStyle(systemImage: "speaker.slash.circle.fill", activeColor: .red))
             .padding()
             .showProgressIfWaiting(object.state)

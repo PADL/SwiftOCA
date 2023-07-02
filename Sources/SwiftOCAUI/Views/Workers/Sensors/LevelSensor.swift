@@ -21,7 +21,7 @@ import Sliders
 fileprivate struct OcaLogGaugeView: View {
     let gradient = Gradient(colors: [.green, .yellow, .orange, .red])
 
-    @Binding var value: OcaBoundedPropertyValue<OcaDB>
+    var value: OcaBoundedPropertyValue<OcaDB>
     
     var linear: OcaFloat32 {
         powf(((value.value - value.minValue) / value.absoluteRange), 2.0)
@@ -53,16 +53,13 @@ extension OcaLevelSensor: OcaViewRepresentable {
         OcaLevelSensorView.self
     }
     
-    var readingValue: Binding<OcaBoundedPropertyValue<OcaDB>> {
-        Binding<OcaBoundedPropertyValue<OcaDB>>(get: {
-            if case let .success(readingValue) = self.reading {
-                return readingValue
-            } else {
-                // FIXME: constants
-                return OcaBoundedPropertyValue(value: 0.0, minValue: -144.0, maxValue: 0.0)
-            }
-        }, set: { newValue in
-        })
+    var value: OcaBoundedPropertyValue<OcaDB> {
+        if case let .success(readingValue) = self.reading {
+            return readingValue
+        } else {
+            // FIXME: constants
+            return OcaBoundedPropertyValue(value: 0.0, minValue: -144.0, maxValue: 0.0)
+        }
     }
 }
 
@@ -74,7 +71,7 @@ public struct OcaLevelSensorView: OcaView {
     }
     
     public var body: some View {
-        OcaLogGaugeView(value: object.readingValue)
+        OcaLogGaugeView(value: object.value)
             .showProgressIfWaiting(object.reading)
     }
 }

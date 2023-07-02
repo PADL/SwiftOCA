@@ -16,6 +16,11 @@
 
 import Foundation
 import BinaryCoder
+#if canImport(SwiftUI)
+import SwiftUI
+#elseif canImport(TokamakShim)
+import TokamakShim
+#endif
 
 public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable, OcaParameterCountReflectable {
     static var responseParameterCount: OcaUint8 { 2 }
@@ -37,8 +42,17 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
     public let getMethodID: OcaMethodID
     public let setMethodID: OcaMethodID?
     
-    public var _storage: Property
+    fileprivate var _storage: Property
 
+    public init(from decoder: Decoder) throws {
+        fatalError()
+    }
+    
+    /// Placeholder only
+    public func encode(to encoder: Encoder) throws {
+        fatalError()
+    }
+        
     @available(*, unavailable, message: """
                @OcaVectorProperty is only available on properties of classes
                """)
@@ -49,10 +63,6 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
 
     public func refresh(_ object: OcaRoot) async {
         await _storage.refresh(object)
-    }
-
-    public var projectedValue: any OcaPropertyRepresentable {
-        _storage
     }
 
     public var currentValue: State {
@@ -85,9 +95,11 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
         get {
-            object[keyPath: storageKeyPath]._storage._get(_enclosingInstance: object)
+            object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
+            return object[keyPath: storageKeyPath]._storage._get(_enclosingInstance: object)
         }
         set {
+            object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
             object[keyPath: storageKeyPath]._storage._set(_enclosingInstance: object, newValue)
         }
     }
@@ -122,4 +134,11 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
             throw Ocp1Error.unhandledEvent
         }
     }
+    
+#if canImport(SwiftUI) || canImport(TokamakShim)
+    public var projectedValue: Binding<State> {
+        Binding(get: { _storage.projectedValue.wrappedValue },
+                set: { _storage.projectedValue.wrappedValue = $0 })
+    }
+#endif
 }

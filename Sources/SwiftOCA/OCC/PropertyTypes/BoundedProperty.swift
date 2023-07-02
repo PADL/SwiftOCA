@@ -16,6 +16,11 @@
 
 import Foundation
 import BinaryCoder
+#if canImport(SwiftUI)
+import SwiftUI
+#elseif canImport(TokamakShim)
+import TokamakShim
+#endif
 
 public struct OcaBoundedPropertyValue<Value: Numeric & Codable>: Codable, OcaParameterCountReflectable {
     static var responseParameterCount: OcaUint8 { 3 }
@@ -53,8 +58,17 @@ public struct OcaBoundedProperty<Value: Numeric & Codable>: OcaPropertyChangeEve
         [_storage.propertyID]
     }
 
-    private let _storage: Property
+    fileprivate var _storage: Property
     
+    public init(from decoder: Decoder) throws {
+        fatalError()
+    }
+    
+    /// Placeholder only
+    public func encode(to encoder: Encoder) throws {
+        fatalError()
+    }
+        
     @available(*, unavailable, message: """
                @OcaBoundedProperty is only available on properties of classes
                """)
@@ -63,10 +77,6 @@ public struct OcaBoundedProperty<Value: Numeric & Codable>: OcaPropertyChangeEve
         nonmutating set { fatalError() }
     }
     
-    public var projectedValue: any OcaPropertyRepresentable {
-        self._storage
-    }
-
     public func refresh(_ object: OcaRoot) async {
         await _storage.refresh(object)
     }
@@ -97,9 +107,11 @@ public struct OcaBoundedProperty<Value: Numeric & Codable>: OcaPropertyChangeEve
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
         get {
-            object[keyPath: storageKeyPath]._storage._get(_enclosingInstance: object)
+            object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
+            return object[keyPath: storageKeyPath]._storage._get(_enclosingInstance: object)
         }
         set {
+            object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
             object[keyPath: storageKeyPath]._storage._set(_enclosingInstance: object, newValue)
         }
     }
@@ -129,4 +141,22 @@ public struct OcaBoundedProperty<Value: Numeric & Codable>: OcaPropertyChangeEve
         
         _storage._set(_enclosingInstance: object, .success(value))
     }
+
+#if canImport(SwiftUI) || canImport(TokamakShim)
+    public var projectedValue: Binding<State> {
+        Binding(get: { _storage.projectedValue.wrappedValue },
+                set: { _storage.projectedValue.wrappedValue = $0 })
+    }
+#endif
 }
+
+#if canImport(SwiftUI) || canImport(TokamakShim)
+#if canImport(SwiftUI)
+import SwiftUI
+#elseif canImport(TokamakShim)
+import TokamakShim
+#endif
+
+public extension OcaBoundedProperty {
+}
+#endif

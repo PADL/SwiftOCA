@@ -22,18 +22,20 @@ extension OcaPanBalance: OcaViewRepresentable {
     public var viewType: any OcaView.Type {
         OcaPanBalanceView.self
     }
-    
-    var positionValue: Binding<OcaBoundedPropertyValue<OcaFloat32>> {
+}
+
+private extension Binding where Value == OcaProperty<OcaBoundedPropertyValue<OcaFloat32>>.State {
+    var value: Binding<OcaBoundedPropertyValue<OcaFloat32>> {
         Binding<OcaBoundedPropertyValue<OcaFloat32>>(get: {
-            if case let .success(positionValue) = self.position {
+            if case let .success(positionValue) = self.wrappedValue {
                 return positionValue
             } else {
                 // FIXME: constants
                 return OcaBoundedPropertyValue(value: 0.0, minValue: -1.0, maxValue: 1.0)
             }
-        }, set: { newValue in
-            self.position = .success(newValue)
-        })
+       }, set: { newValue in
+           self.wrappedValue = .success(newValue)
+       })
     }
 }
 
@@ -45,7 +47,7 @@ public struct OcaPanBalanceView: OcaView {
     }
     
     public var body: some View {
-        OcaVariableSliderView(value: object.positionValue)
+        OcaVariableSliderView(value: object.$position.value)
             .valueSliderStyle(HorizontalValueSliderStyle())
             .showProgressIfWaiting(object.position)
     }
