@@ -334,8 +334,18 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     
 #if canImport(SwiftUI) || canImport(TokamakShim)
     public var projectedValue: Binding<State> {
-        Binding(get: { if let object { return _get(_enclosingInstance: object) } else { return subject.value } },
-                set: { if let object { _set(_enclosingInstance: object, $0) } })
+        Binding(
+            get: {
+                if let object {
+                    return _get(_enclosingInstance: object)
+                } else {
+                    return .initial
+                }
+        },
+            set: {
+                guard let object else { return }
+                _set(_enclosingInstance: object, $0)
+            })
     }
 #endif
 }
