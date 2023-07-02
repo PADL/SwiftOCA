@@ -334,7 +334,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
 
     public var projectedValue: Binding<State> {
-        Binding(get: { subject.value },
+        Binding(get: { if let object { return _get(_enclosingInstance: object) } else { return subject.value } },
                 set: { if let object { _set(_enclosingInstance: object, $0) } })
     }
 #endif
