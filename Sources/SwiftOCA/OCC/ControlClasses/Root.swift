@@ -57,6 +57,11 @@ public class OcaRoot: CustomStringConvertible, ObservableObject {
                  getMethodID: OcaMethodID("1.5"))
     public var role: OcaProperty<OcaString>.State
     
+    // necessary because property wrappers are private
+    func _subscribeRole() async {
+        await self._role.subscribe(self)
+    }
+    
     required init(objectNumber: OcaONo = OcaInvalidONo) {
         self.objectNumber = objectNumber
     }

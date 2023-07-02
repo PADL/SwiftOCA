@@ -50,7 +50,7 @@ extension AES70OCP1Connection {
         let members = try await rootBlock.resolveMembersRecursive(resolveMatrixMembers: true)
         Task {
             for member in members {
-                await member.memberObject.$role.subscribe(member.memberObject)
+                await member.memberObject._subscribeRole()
             }
         }
     }

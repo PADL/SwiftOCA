@@ -110,10 +110,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         nonmutating set { fatalError() }
     }
     
-    public var projectedValue: any OcaPropertyRepresentable {
-        self
-    }
-    
     public var currentValue: State {
         subject.value
     }
