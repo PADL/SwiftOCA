@@ -294,3 +294,62 @@ public struct OcaOrganizationID: Codable, CustomStringConvertible {
         String(format: "%02X%02X%02X", id.0, id.1, id.2)
     }
 }
+
+public enum OcaPositionCoordinateSystem: OcaUint8, Codable {
+    case robotic = 1
+    case ituAudioObjectBasedPolar = 2
+    case ituAudioObjectBasedCartesian = 3
+    case ituAudioSceneBasedPolar = 4
+    case ituAudioSceneBasedCartesian = 5
+    case nav = 6
+    case proprietaryBase = 128
+}
+
+public struct OcaPositionDescriptorFieldFlags: OptionSet, Codable {
+    public let rawValue: OcaBitSet16
+
+    public init(rawValue: OcaBitSet16) {
+        self.rawValue = rawValue
+    }
+}
+
+public struct OcaPositionDescriptor: Codable {
+    let coordinateSystem: OcaPositionCoordinateSystem
+    let fieldFlags: OcaPositionDescriptorFieldFlags // which values are valid
+    let values: (OcaFloat32, OcaFloat32, OcaFloat32, OcaFloat32, OcaFloat32, OcaFloat32)
+    
+    enum CodingKeys: CodingKey {
+        case coordinateSystem
+        case fieldFlags
+        case c1
+        case c2
+        case c3
+        case c4
+        case c5
+        case c6
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.container(keyedBy: CodingKeys.self)
+        coordinateSystem = try container.decode(OcaPositionCoordinateSystem.self, forKey: .coordinateSystem)
+        fieldFlags = try container.decode(OcaPositionDescriptorFieldFlags.self, forKey: .fieldFlags)
+        values.0 = try container.decode(OcaFloat32.self, forKey: .c1)
+        values.1 = try container.decode(OcaFloat32.self, forKey: .c2)
+        values.2 = try container.decode(OcaFloat32.self, forKey: .c3)
+        values.3 = try container.decode(OcaFloat32.self, forKey: .c4)
+        values.4 = try container.decode(OcaFloat32.self, forKey: .c5)
+        values.5 = try container.decode(OcaFloat32.self, forKey: .c6)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(coordinateSystem, forKey: .coordinateSystem)
+        try container.encode(fieldFlags, forKey: .fieldFlags)
+        try container.encode(values.0, forKey: .c1)
+        try container.encode(values.1, forKey: .c2)
+        try container.encode(values.2, forKey: .c3)
+        try container.encode(values.3, forKey: .c4)
+        try container.encode(values.4, forKey: .c5)
+        try container.encode(values.5, forKey: .c6)
+    }
+}
