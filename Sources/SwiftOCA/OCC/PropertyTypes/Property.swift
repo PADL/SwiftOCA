@@ -116,13 +116,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         nonmutating set { fatalError() }
     }
     
-#if canImport(SwiftUI) || canImport(TokamakShim)
-    public var projectedValue: Binding<State> {
-        Binding(get: { subject.value },
-                set: { subject.value = $0 })
-    }
-#endif
-    
     public var currentValue: State {
         subject.value
     }
@@ -165,9 +158,15 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
         get {
-            object[keyPath: storageKeyPath]._get(_enclosingInstance: object)
+#if canImport(SwiftUI) || canImport(TokamakShim)
+            object[keyPath: storageKeyPath]._refObject(_enclosingInstance: object)
+#endif
+            return object[keyPath: storageKeyPath]._get(_enclosingInstance: object)
         }
         set {
+#if canImport(SwiftUI) || canImport(TokamakShim)
+            object[keyPath: storageKeyPath]._refObject(_enclosingInstance: object)
+#endif
             object[keyPath: storageKeyPath]._set(_enclosingInstance: object, newValue)
         }
     }
@@ -326,6 +325,19 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             throw error
         }
     }
+    
+#if canImport(SwiftUI) || canImport(TokamakShim)
+    private weak var object: OcaRoot? = nil
+    
+    private mutating func _refObject(_enclosingInstance object: OcaRoot) {
+        self.object = object
+    }
+
+    public var projectedValue: Binding<State> {
+        Binding(get: { subject.value },
+                set: { if let object { _set(_enclosingInstance: object, $0) } })
+    }
+#endif
 }
 
 extension OcaProperty.State: Equatable where Value: Equatable & Codable {
