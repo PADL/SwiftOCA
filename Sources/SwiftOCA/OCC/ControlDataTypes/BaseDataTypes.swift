@@ -321,35 +321,32 @@ public struct OcaPositionDescriptor: Codable {
     enum CodingKeys: CodingKey {
         case coordinateSystem
         case fieldFlags
-        case c1
-        case c2
-        case c3
-        case c4
-        case c5
-        case c6
+        case values
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.container(keyedBy: CodingKeys.self)
         coordinateSystem = try container.decode(OcaPositionCoordinateSystem.self, forKey: .coordinateSystem)
         fieldFlags = try container.decode(OcaPositionDescriptorFieldFlags.self, forKey: .fieldFlags)
-        values.0 = try container.decode(OcaFloat32.self, forKey: .c1)
-        values.1 = try container.decode(OcaFloat32.self, forKey: .c2)
-        values.2 = try container.decode(OcaFloat32.self, forKey: .c3)
-        values.3 = try container.decode(OcaFloat32.self, forKey: .c4)
-        values.4 = try container.decode(OcaFloat32.self, forKey: .c5)
-        values.5 = try container.decode(OcaFloat32.self, forKey: .c6)
+        var coordinateContainer = try container.nestedUnkeyedContainer(forKey: .values)
+        values.0 = try coordinateContainer.decode(OcaFloat32.self)
+        values.1 = try coordinateContainer.decode(OcaFloat32.self)
+        values.2 = try coordinateContainer.decode(OcaFloat32.self)
+        values.3 = try coordinateContainer.decode(OcaFloat32.self)
+        values.4 = try coordinateContainer.decode(OcaFloat32.self)
+        values.5 = try coordinateContainer.decode(OcaFloat32.self)
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(coordinateSystem, forKey: .coordinateSystem)
         try container.encode(fieldFlags, forKey: .fieldFlags)
-        try container.encode(values.0, forKey: .c1)
-        try container.encode(values.1, forKey: .c2)
-        try container.encode(values.2, forKey: .c3)
-        try container.encode(values.3, forKey: .c4)
-        try container.encode(values.4, forKey: .c5)
-        try container.encode(values.5, forKey: .c6)
+        var coordinateContainer = container.nestedUnkeyedContainer(forKey: .values)
+        try coordinateContainer.encode(values.0)
+        try coordinateContainer.encode(values.1)
+        try coordinateContainer.encode(values.2)
+        try coordinateContainer.encode(values.3)
+        try coordinateContainer.encode(values.4)
+        try coordinateContainer.encode(values.5)
     }
 }
