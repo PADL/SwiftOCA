@@ -47,6 +47,5 @@ public struct OcaBooleanView: OcaView {
             .toggleStyle(SymbolToggleStyle(systemImage: "circle.fill", activeColor: .accentColor))
             .padding()
             .showProgressIfWaiting(object.setting)
-            .defaultPropertyModifiers(object, property: object.$setting)
     }
 }

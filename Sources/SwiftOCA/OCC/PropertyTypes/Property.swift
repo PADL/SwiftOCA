@@ -19,6 +19,12 @@ import BinaryCoder
 import AsyncAlgorithms
 import AsyncExtensions
 
+#if canImport(SwiftUI)
+import SwiftUI
+#elseif canImport(TokamakShim)
+import TokamakShim
+#endif
+
 public protocol OcaPropertyRepresentable: CustomStringConvertible {
     associatedtype Value: Codable
     
@@ -109,6 +115,13 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         get { fatalError() }
         nonmutating set { fatalError() }
     }
+    
+#if canImport(SwiftUI) || canImport(TokamakShim)
+    public var projectedValue: Binding<State> {
+        Binding(get: { subject.value },
+                set: { subject.value = $0 })
+    }
+#endif
     
     public var currentValue: State {
         subject.value

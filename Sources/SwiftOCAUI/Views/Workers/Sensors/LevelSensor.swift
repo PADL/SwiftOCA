@@ -76,6 +76,5 @@ public struct OcaLevelSensorView: OcaView {
     public var body: some View {
         OcaLogGaugeView(value: object.readingValue)
             .showProgressIfWaiting(object.reading)
-            .defaultPropertyModifiers(object, property: object.$reading)
     }
 }

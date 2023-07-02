@@ -47,6 +47,5 @@ public struct OcaPolarityView: OcaView {
             .toggleStyle(SymbolToggleStyle(systemImage: "circle.slash", activeColor: .accentColor))
             .padding()
             .showProgressIfWaiting(object.state)
-            .defaultPropertyModifiers(object, property: object.$state)
     }
 }

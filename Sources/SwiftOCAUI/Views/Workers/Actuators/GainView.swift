@@ -90,6 +90,5 @@ public struct OcaGainView: OcaView {
     public var body: some View {
         OcaLogSliderView(value: object.gainValue)
             .showProgressIfWaiting(object.gain)
-            .defaultPropertyModifiers(object, property: object.$gain)
     }
 }
