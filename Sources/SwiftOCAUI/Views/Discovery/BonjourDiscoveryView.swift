@@ -14,28 +14,29 @@
 // limitations under the License.
 //
 
-import Foundation
-import SwiftUI
-import SwiftOCA
 import AsyncAlgorithms
+import Foundation
+import SwiftOCA
+import SwiftUI
 
 extension NetService: Identifiable {
     public typealias ID = String
-    
+
     public var id: ID {
-        return "\(domain)$\(type)$\(name)$\(String(port))"
+        "\(domain)$\(type)$\(name)$\(String(port))"
     }
 }
 
 public struct OcaBonjourDiscoveryView: View {
     let udpBrowser = AES70Browser(serviceType: .udp)
     let tcpBrowser = AES70Browser(serviceType: .tcp)
-    @State var services = [NetService]()
-    @State var serviceSelection: NetService? = nil
-    
-    public init() {
-    }
-    
+    @State
+    var services = [NetService]()
+    @State
+    var serviceSelection: NetService? = nil
+
+    public init() {}
+
     public var body: some View {
         NavigationStack {
             List(services, selection: $serviceSelection) { service in
@@ -44,20 +45,17 @@ public struct OcaBonjourDiscoveryView: View {
                 }
             }
         }
-            .task {
-                for await result in chain(udpBrowser.channel, tcpBrowser.channel) {
-                    switch result {
-                    case .didFind(let netService):
-                        services.append(netService)
-                        break
-                    case .didRemove(let netService):
-                        services.removeAll(where: { $0 == netService })
-                        break
-                    case .didNotSearch(let error):
-                        debugPrint("OcaBonjourDiscoveryView: \(error)")
-                        break
-                    }
+        .task {
+            for await result in chain(udpBrowser.channel, tcpBrowser.channel) {
+                switch result {
+                case let .didFind(netService):
+                    services.append(netService)
+                case let .didRemove(netService):
+                    services.removeAll(where: { $0 == netService })
+                case let .didNotSearch(error):
+                    debugPrint("OcaBonjourDiscoveryView: \(error)")
                 }
             }
+        }
     }
 }

@@ -17,21 +17,26 @@
 import Foundation
 
 public class OcaSwitch: OcaActuator {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.4") }
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.4") }
 
-    @OcaBoundedProperty(propertyID: OcaPropertyID("4.1"),
-                        getMethodID: OcaMethodID("4.1"),
-                        setMethodID: OcaMethodID("4.2"))
+    @OcaBoundedProperty(
+        propertyID: OcaPropertyID("4.1"),
+        getMethodID: OcaMethodID("4.1"),
+        setMethodID: OcaMethodID("4.2")
+    )
     public var position: OcaBoundedProperty<OcaUint16>.State
 
-    @OcaProperty(propertyID: OcaPropertyID("4.2"),
-                        getMethodID: OcaMethodID("4.5"),
-                        setMethodID: OcaMethodID("4.6"))
+    @OcaProperty(
+        propertyID: OcaPropertyID("4.2"),
+        getMethodID: OcaMethodID("4.5"),
+        setMethodID: OcaMethodID("4.6")
+    )
     public var positionNames: OcaProperty<OcaList<OcaString>>.State
 
-    
-    @OcaProperty(propertyID: OcaPropertyID("4.3"),
-                 getMethodID: OcaMethodID("4.9"),
-                 setMethodID: OcaMethodID("4.10"))
+    @OcaProperty(
+        propertyID: OcaPropertyID("4.3"),
+        getMethodID: OcaMethodID("4.9"),
+        setMethodID: OcaMethodID("4.10")
+    )
     public var positionEnableds: OcaProperty<OcaList<OcaBoolean>>.State
 }

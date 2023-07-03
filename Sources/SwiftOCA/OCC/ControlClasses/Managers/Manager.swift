@@ -17,5 +17,5 @@
 import Foundation
 
 public class OcaManager: OcaRoot {
-    public override class var classID: OcaClassID { OcaClassID("1.3") }    
+    override public class var classID: OcaClassID { OcaClassID("1.3") }
 }

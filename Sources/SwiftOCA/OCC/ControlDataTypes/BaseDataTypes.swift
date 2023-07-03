@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import Foundation
 import BinaryCoder
+import Foundation
 
 public typealias OcaBoolean = Bool
 public typealias OcaBlob = LengthTaggedData
@@ -54,7 +54,7 @@ public typealias OcaNetworkAddress = OcaBlob
 public typealias OcaBitSet16 = OcaUint16
 
 public enum OcaBaseDataType: OcaUint8, Codable {
-    case `none` = 0
+    case none = 0
     case ocaBoolean = 1
     case ocaInt8 = 2
     case ocaInt16 = 3
@@ -93,17 +93,17 @@ public enum OcaStatus: OcaUint8, Codable {
 public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, CustomStringConvertible {
     let defLevel: OcaUint16
     let propertyIndex: OcaUint16
-    
+
     public init(_ string: OcaString) {
         let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
         defLevel = s[0]
         propertyIndex = s[1]
     }
-    
+
     public var description: String {
-        return "\(defLevel).\(propertyIndex)"
+        "\(defLevel).\(propertyIndex)"
     }
-    
+
     public static func < (lhs: OcaPropertyID, rhs: OcaPropertyID) -> Bool {
         if lhs.defLevel == rhs.defLevel {
             return lhs.propertyIndex < rhs.propertyIndex
@@ -141,39 +141,39 @@ public struct OcaLibVolIdentifier: Codable {
 
 public struct OcaClassID: Codable, Hashable, CustomStringConvertible {
     let fields: [OcaUint16]
-    
+
     static let ProprietaryClassFieldMask = OcaUint16(0x8000)
-    static let ProprietaryTestClassFieldMask = OcaUint16(0xff00)
-    static let ProprietaryClassField = OcaUint16(0xffff)
+    static let ProprietaryTestClassFieldMask = OcaUint16(0xFF00)
+    static let ProprietaryClassField = OcaUint16(0xFFFF)
     public static let OcaAllianceCompanyID = OcaOrganizationID((0xFA, 0x2E, 0xE9))
-    
+
     public init(_ string: OcaString) {
         fields = string.split(separator: ".").map { OcaUint16($0)! }
     }
-    
+
     init(_ fields: [OcaUint16]) {
         self.fields = fields
     }
-    
+
     public var parent: OcaClassID? {
-        guard self.fieldCount > 1 else {
+        guard fieldCount > 1 else {
             return nil
         }
-        
+
         var parentFieldCount = fields.count - 1
         if parentFieldCount >= 4, fields[parentFieldCount - 3] == Self.ProprietaryClassField {
             parentFieldCount = parentFieldCount - 3
         }
-        
+
         let parent = OcaClassID(Array(fields.prefix(parentFieldCount)))
         precondition(parent.isValid)
         return parent
     }
 
     public var fieldCount: OcaUint16 {
-        return OcaUint16(fields.count)
+        OcaUint16(fields.count)
     }
-    
+
     public var defLevel: OcaUint16 {
         guard isValid else {
             return 0
@@ -185,30 +185,37 @@ public struct OcaClassID: Codable, Hashable, CustomStringConvertible {
                 return fieldCount - 5
             }
         }
-        
+
         return fieldCount
     }
-    
+
     public var description: String {
-        return fields.map { String($0) }.joined(separator: ".")
+        fields.map { String($0) }.joined(separator: ".")
     }
-    
+
     public var isValid: Bool {
         var proprietaryClass = false
         var testClass = false
         var proprietaryFieldPresent = false
-        
-        guard self.fieldCount > 0, self.fields[0] == 1 else {
+
+        guard fieldCount > 0, fields[0] == 1 else {
             return false
         }
-        
+
         for i in 0..<fields.count {
             let field = fields[i]
-            
+
             if field != Self.ProprietaryClassField {
                 if proprietaryClass, !proprietaryFieldPresent {
-                    guard (field & Self.ProprietaryClassFieldMask == Self.ProprietaryClassFieldMask) ||
-                            (testClass && field & Self.ProprietaryTestClassFieldMask == Self.ProprietaryTestClassFieldMask) else {
+                    guard (
+                        field & Self.ProprietaryClassFieldMask == Self
+                            .ProprietaryClassFieldMask
+                    ) ||
+                        (
+                            testClass && field & Self.ProprietaryTestClassFieldMask == Self
+                                .ProprietaryTestClassFieldMask
+                        )
+                    else {
                         return false
                     }
                 }
@@ -218,11 +225,15 @@ public struct OcaClassID: Codable, Hashable, CustomStringConvertible {
                 }
                 proprietaryFieldPresent = true
             }
-            
-            proprietaryClass = field & Self.ProprietaryClassFieldMask == Self.ProprietaryClassFieldMask
-            testClass = (field & Self.ProprietaryTestClassFieldMask == Self.ProprietaryTestClassFieldMask) && field != Self.ProprietaryClassField
+
+            proprietaryClass = field & Self.ProprietaryClassFieldMask == Self
+                .ProprietaryClassFieldMask
+            testClass = (
+                field & Self.ProprietaryTestClassFieldMask == Self
+                    .ProprietaryTestClassFieldMask
+            ) && field != Self.ProprietaryClassField
         }
-        
+
         return true
     }
 }
@@ -230,15 +241,15 @@ public struct OcaClassID: Codable, Hashable, CustomStringConvertible {
 public struct OcaMethodID: Codable, Hashable, CustomStringConvertible {
     let defLevel: OcaUint16
     let methodIndex: OcaUint16
-    
+
     public init(_ string: OcaString) {
         let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
         defLevel = s[0]
         methodIndex = s[1]
     }
-    
+
     public var description: String {
-        return "\(defLevel).\(methodIndex)"
+        "\(defLevel).\(methodIndex)"
     }
 }
 
@@ -255,7 +266,7 @@ public struct OcaClassIdentification: Codable, Hashable {
 public struct OcaObjectIdentification: Codable {
     let oNo: OcaONo
     let classIdentification: OcaClassIdentification
-    
+
     public init(oNo: OcaONo, classIdentification: OcaClassIdentification) {
         self.oNo = oNo
         self.classIdentification = classIdentification
@@ -271,25 +282,25 @@ public struct OcaGlobalTypeIdentifier: Codable {
 
 public struct OcaOrganizationID: Codable, CustomStringConvertible {
     let id: (OcaUint8, OcaUint8, OcaUint8)
-    
+
     init(_ id: (OcaUint8, OcaUint8, OcaUint8)) {
         self.id = id
     }
-    
+
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        self.id.0 = try container.decode(OcaUint8.self)
-        self.id.1 = try container.decode(OcaUint8.self)
-        self.id.2 = try container.decode(OcaUint8.self)
+        id.0 = try container.decode(OcaUint8.self)
+        id.1 = try container.decode(OcaUint8.self)
+        id.2 = try container.decode(OcaUint8.self)
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(self.id.0)
-        try container.encode(self.id.1)
-        try container.encode(self.id.2)
+        try container.encode(id.0)
+        try container.encode(id.1)
+        try container.encode(id.2)
     }
-    
+
     public var description: String {
         String(format: "%02X%02X%02X", id.0, id.1, id.2)
     }

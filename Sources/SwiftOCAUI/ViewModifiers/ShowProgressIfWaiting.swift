@@ -15,16 +15,16 @@
 //
 
 import Foundation
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 private struct ShowProgressIfWaitingViewModifier<T: Codable>: ViewModifier {
     let state: OcaProperty<T>.State
-    
+
     init(_ state: OcaProperty<T>.State) {
         self.state = state
     }
-    
+
     func body(content: Content) -> some View {
         if state.isLoading {
             ProgressView()
@@ -34,8 +34,8 @@ private struct ShowProgressIfWaitingViewModifier<T: Codable>: ViewModifier {
     }
 }
 
-extension View {
-    public func showProgressIfWaiting<T: Codable>(_ state: OcaProperty<T>.State) -> some View {
-        return self.modifier(ShowProgressIfWaitingViewModifier<T>(state))
+public extension View {
+    func showProgressIfWaiting<T: Codable>(_ state: OcaProperty<T>.State) -> some View {
+        modifier(ShowProgressIfWaitingViewModifier<T>(state))
     }
 }

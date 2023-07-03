@@ -14,14 +14,15 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 struct OcaDeviceManagerView: View, OcaView {
-    @StateObject var object: OcaDeviceManager
-    
+    @StateObject
+    var object: OcaDeviceManager
+
     init(_ object: OcaRoot) {
-        self._object = StateObject(wrappedValue: object as! OcaDeviceManager)
+        _object = StateObject(wrappedValue: object as! OcaDeviceManager)
     }
 
     public var body: some View {

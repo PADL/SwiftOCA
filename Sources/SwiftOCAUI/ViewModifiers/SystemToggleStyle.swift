@@ -19,10 +19,12 @@ struct SymbolToggleStyle: ToggleStyle {
                         .padding(3)
                         .overlay {
                             Image(systemName: systemImage)
-                                .foregroundColor(configuration.isOn ? activeColor : Color(.systemGray))
+                                .foregroundColor(
+                                    configuration
+                                        .isOn ? activeColor : Color(.systemGray)
+                                )
                         }
                         .offset(x: configuration.isOn ? 10 : -10)
-
                 }
                 .frame(width: 50, height: 32)
                 .onTapGesture {

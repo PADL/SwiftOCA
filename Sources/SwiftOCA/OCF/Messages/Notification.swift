@@ -32,6 +32,6 @@ struct Ocp1Notification: Ocp1Message, Codable {
     let targetONo: OcaONo
     let methodID: OcaMethodID
     let parameters: Ocp1NtfParams
-    
-    var messageSize: OcaUint32 { return notificationSize }
+
+    var messageSize: OcaUint32 { notificationSize }
 }

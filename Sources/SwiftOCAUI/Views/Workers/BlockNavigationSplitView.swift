@@ -14,32 +14,40 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 struct OcaBlockNavigationSplitView: OcaView {
-    @EnvironmentObject var connection: AES70OCP1Connection
-    @Environment(\.navigationPath) var oNoPath
-    @Environment(\.lastError) var lastError
-    @StateObject var object: OcaBlock
-    @State var members: [OcaRoot]?
-    @State var membersMap: [OcaONo:OcaRoot]?
-    @State var selectedONo: OcaONo? = nil
+    @EnvironmentObject
+    var connection: AES70OCP1Connection
+    @Environment(\.navigationPath)
+    var oNoPath
+    @Environment(\.lastError)
+    var lastError
+    @StateObject
+    var object: OcaBlock
+    @State
+    var members: [OcaRoot]?
+    @State
+    var membersMap: [OcaONo: OcaRoot]?
+    @State
+    var selectedONo: OcaONo? = nil
 
     init(_ object: OcaRoot) {
-        self._object = StateObject(wrappedValue: object as! OcaBlock)
+        _object = StateObject(wrappedValue: object as! OcaBlock)
     }
 
     var selectedObject: OcaRoot? {
         guard let selectedONo = selectedONo,
               let membersMap,
-              let object = membersMap[selectedONo] else {
+              let object = membersMap[selectedONo]
+        else {
             return nil
         }
-        
+
         return object
     }
-    
+
     public var body: some View {
         Group {
             if let members {
@@ -64,10 +72,10 @@ struct OcaBlockNavigationSplitView: OcaView {
         .task {
             do {
                 members = try await object.resolveMembers()
-                
+
                 if object.objectNumber == OcaRootBlockONo {
                     members?.append(connection.deviceManager)
-                    //members?.append(connection.networkManager)
+                    // members?.append(connection.networkManager)
                 }
                 membersMap = members?.map
             } catch {

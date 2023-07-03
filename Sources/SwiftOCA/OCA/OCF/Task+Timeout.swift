@@ -12,17 +12,18 @@ struct TimedOutError: Error, Equatable {}
 ///   - operation: The async operation to perform.
 /// - Returns: Returns the result of `operation` if it completed in time.
 /// - Throws: Throws ``TimedOutError`` if the timeout expires before `operation` completes.
-///   If `operation` throws an error before the timeout expires, that error is propagated to the caller.
+///   If `operation` throws an error before the timeout expires, that error is propagated to the
+/// caller.
 func withTimeout<R>(
     seconds: TimeInterval,
     operation: @escaping @Sendable () async throws -> R
 ) async throws -> R {
-    return try await withThrowingTaskGroup(of: R.self) { group in
+    try await withThrowingTaskGroup(of: R.self) { group in
         let deadline = Date(timeIntervalSinceNow: seconds)
 
         // Start actual work.
         group.addTask {
-            return try await operation()
+            try await operation()
         }
         // Start timeout child task.
         group.addTask {

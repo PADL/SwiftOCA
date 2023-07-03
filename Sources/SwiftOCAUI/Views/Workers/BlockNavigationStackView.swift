@@ -14,19 +14,25 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 struct OcaBlockNavigationStackView: OcaView {
-    @StateObject var object: OcaBlock
-    @Environment(\.navigationPath) var oNoPath
-    @Environment(\.lastError) var lastError
-    @State var members: [OcaRoot]?
-    @State var membersMap: [OcaONo:OcaRoot]?
-    @State var selectedONo: OcaONo? = nil
+    @StateObject
+    var object: OcaBlock
+    @Environment(\.navigationPath)
+    var oNoPath
+    @Environment(\.lastError)
+    var lastError
+    @State
+    var members: [OcaRoot]?
+    @State
+    var membersMap: [OcaONo: OcaRoot]?
+    @State
+    var selectedONo: OcaONo? = nil
 
     init(_ object: OcaRoot) {
-        self._object = StateObject(wrappedValue: object as! OcaBlock)
+        _object = StateObject(wrappedValue: object as! OcaBlock)
     }
 
     public var body: some View {

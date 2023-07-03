@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import Foundation
-import BinaryCoder
 import AsyncAlgorithms
 import AsyncExtensions
+import BinaryCoder
+import Foundation
 #if canImport(SwiftUI)
 import SwiftUI
 #elseif canImport(TokamakShim)
@@ -26,7 +26,7 @@ import TokamakShim
 
 public protocol OcaPropertyRepresentable: CustomStringConvertible {
     associatedtype Value: Codable
-    
+
     var propertyIDs: [OcaPropertyID] { get }
     var currentValue: OcaProperty<Value>.State { get }
 
@@ -52,22 +52,22 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     public var propertyIDs: [OcaPropertyID] {
         [propertyID]
     }
-    
+
     /// The OCA property ID
     let propertyID: OcaPropertyID
-    
+
     /// The OCA get method ID
     let getMethodID: OcaMethodID?
-    
+
     /// The OCA set method ID, if present
     let setMethodID: OcaMethodID?
-    
+
     public enum State {
         case initial
         case loading
         case success(Value)
         case failure(Error)
-        
+
         public var isLoading: Bool {
             if case .initial = self {
                 return true
@@ -77,7 +77,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                 return false
             }
         }
-        
+
         var isInitial: Bool {
             if case .initial = self {
                 return true
@@ -86,51 +86,52 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             }
         }
     }
-    
+
     public let subject: AsyncCurrentValueSubject<State>
 
     public var description: String {
-        if case .success(let value) = subject.value {
+        if case let .success(value) = subject.value {
             return String(describing: value)
         } else {
             return ""
         }
     }
-    
+
     public init(from decoder: Decoder) throws {
         fatalError()
     }
-    
+
     /// Placeholder only
     public func encode(to encoder: Encoder) throws {
         fatalError()
     }
-        
+
     /// Placeholder only
     @available(*, unavailable, message: """
-               @OcaProperty is only available on properties of classes
-               """)
+    @OcaProperty is only available on properties of classes
+    """)
     public var wrappedValue: State {
         get { fatalError() }
         nonmutating set { fatalError() }
     }
-    
-#if canImport(SwiftUI) || canImport(TokamakShim)
-    private weak var object: OcaRoot? = nil
-#endif
+
+    #if canImport(SwiftUI) || canImport(TokamakShim)
+    private weak var object: OcaRoot?
+    #endif
 
     mutating func _referenceObject(_enclosingInstance object: OcaRoot) {
-#if canImport(SwiftUI) || canImport(TokamakShim)
+        #if canImport(SwiftUI) || canImport(TokamakShim)
         self.object = object
-#endif
+        #endif
     }
 
     public var currentValue: State {
         subject.value
     }
-    
+
     /// It's not possible to wrap `subscript(_enclosingInstance:wrapped:storage:)` because we can't
-    /// cast struct key paths to `ReferenceWritableKeyPath`. For property wrapper wrappers, use these internal
+    /// cast struct key paths to `ReferenceWritableKeyPath`. For property wrapper wrappers, use
+    /// these internal
     /// get/set functions.
 
     func _get(_enclosingInstance object: OcaRoot) -> State {
@@ -150,7 +151,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     func _set(_enclosingInstance object: OcaRoot, _ newValue: State) {
         Task { @MainActor in
             switch newValue {
-            case .success(let value):
+            case let .success(value):
                 await perform(object) {
                     try await $0.setValueIfMutable(object, value)
                     return value
@@ -162,11 +163,12 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             }
         }
     }
-        
+
     public static subscript<T: OcaRoot>(
         _enclosingInstance object: T,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
-        storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
+        storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
+    ) -> State {
         get {
             object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
             return object[keyPath: storageKeyPath]._get(_enclosingInstance: object)
@@ -180,18 +182,20 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     /// setValueTransformer is a helper for OcaBoundedProperty
     typealias SetValueTransformer = (OcaRoot, Value) async throws -> Encodable
     private let setValueTransformer: SetValueTransformer?
-    
-    init(propertyID: OcaPropertyID,
-         getMethodID: OcaMethodID? = nil,
-         setMethodID: OcaMethodID? = nil,
-         setValueTransformer: SetValueTransformer? = nil) {
+
+    init(
+        propertyID: OcaPropertyID,
+        getMethodID: OcaMethodID? = nil,
+        setMethodID: OcaMethodID? = nil,
+        setValueTransformer: SetValueTransformer? = nil
+    ) {
         self.propertyID = propertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
-        self.subject = AsyncCurrentValueSubject(State.initial)
+        subject = AsyncCurrentValueSubject(State.initial)
         self.setValueTransformer = setValueTransformer
     }
-        
+
     @MainActor
     private func getValueAndSubscribe(_ object: OcaRoot) async throws -> Value {
         guard let getMethodID else {
@@ -204,24 +208,24 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         Task.detached {
             try await object.subscribe()
         }
-        
+
         return value
     }
-    
+
     @MainActor
     private func setValueIfMutable(_ object: OcaRoot, _ value: Value) async throws {
         guard let setMethodID else {
             throw Ocp1Error.propertyIsImmutable
         }
-        
+
         let newValue: Encodable
-        
+
         if let setValueTransformer {
             newValue = try await setValueTransformer(object, value)
         } else {
             newValue = value
         }
-        
+
         if try await object.isSubscribed {
             // we'll get a notification (hoepfully) so, don't require a reply
             try await object.sendCommand(methodID: setMethodID, parameter: newValue)
@@ -230,40 +234,43 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     }
 
-    private func perform(_ object: OcaRoot, _ block: @escaping (_ storage: Self) async throws -> Value) async {
+    private func perform(
+        _ object: OcaRoot,
+        _ block: @escaping (_ storage: Self) async throws -> Value
+    ) async {
         guard let connectionDelegate = object.connectionDelegate else {
             subject.send(.failure(Ocp1Error.noConnectionDelegate))
             return
         }
-        
+
         subject.send(.loading)
-        
+
         guard await connectionDelegate.isConnected else {
             debugPrint("property handler called before connection established")
             return
         }
-        
+
         do {
             let value = try await block(self)
             subject.send(.success(value))
         } catch is CancellationError {
             // if task cancelled due to a view being dismissed, reset state to initial
             subject.send(.initial)
-        } catch let error {
+        } catch {
             debugPrint("property handler received error from device: \(error)")
             subject.send(.failure(error))
         }
-    
+
         DispatchQueue.main.async {
             object.objectWillChange.send()
         }
     }
-   
-   public func subscribe(_ object: OcaRoot) async {
+
+    public func subscribe(_ object: OcaRoot) async {
         guard case .initial = subject.value else {
             return
         }
-        
+
         // FIXME: is this safe to run off main thread?
         await perform(object) {
             try await $0.getValueAndSubscribe(object)
@@ -276,17 +283,20 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             object.objectWillChange.send()
         }
     }
-    
+
     func onEvent(_ object: OcaRoot, _ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
-        
+
         let decoder = BinaryDecoder(config: .ocp1Configuration)
-        let eventData = try decoder.decode(OcaPropertyChangedEventData<Value>.self, from: eventData.eventParameters)
-        precondition(self.propertyIDs.contains(eventData.propertyID))
+        let eventData = try decoder.decode(
+            OcaPropertyChangedEventData<Value>.self,
+            from: eventData.eventParameters
+        )
+        precondition(propertyIDs.contains(eventData.propertyID))
 
         // TODO: how to handle items being deleted
-        if .currentChanged == eventData.changeType {
-            self.subject.send(.success(eventData.propertyValue))
+        if eventData.changeType == .currentChanged {
+            subject.send(.success(eventData.propertyValue))
             DispatchQueue.main.async {
                 object.objectWillChange.send()
             }
@@ -294,14 +304,16 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             throw Ocp1Error.unhandledEvent
         }
     }
-    
+
     @MainActor
-    func onCompletion<T>(_ object: OcaRoot,
-                         _ block: @escaping (_ value: Value) async throws -> T) async throws -> T {
+    func onCompletion<T>(
+        _ object: OcaRoot,
+        _ block: @escaping (_ value: Value) async throws -> T
+    ) async throws -> T {
         guard let connectionDelegate = object.connectionDelegate else {
             throw Ocp1Error.noConnectionDelegate
         }
-        
+
         guard await connectionDelegate.isConnected else {
             throw Ocp1Error.notConnected
         }
@@ -310,10 +322,10 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             await Task {
                 repeat {
                     await subscribe(object)
-                    
-                    if case .success(let value) = self.subject.value {
+
+                    if case let .success(value) = self.subject.value {
                         return try await block(value)
-                    } else if case .failure(let error) = self.subject.value {
+                    } else if case let .failure(error) = self.subject.value {
                         throw error
                     } else {
                         await Task.yield()
@@ -322,17 +334,17 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                 throw Ocp1Error.responseTimeout
             }.result
         }
-        
+
         switch result {
-        case .success(let value):
+        case let .success(value):
             return value
-        case .failure(let error):
+        case let .failure(error):
             debugPrint("property completion handler failed \(error)")
             throw error
         }
     }
-    
-#if canImport(SwiftUI) || canImport(TokamakShim)
+
+    #if canImport(SwiftUI) || canImport(TokamakShim)
     public var projectedValue: Binding<State> {
         Binding(
             get: {
@@ -341,26 +353,30 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                 } else {
                     return .initial
                 }
-        },
+            },
             set: {
                 guard let object else { return }
                 _set(_enclosingInstance: object, $0)
-            })
+            }
+        )
     }
-#endif
+    #endif
 }
 
 extension OcaProperty.State: Equatable where Value: Equatable & Codable {
     public static func == (lhs: OcaProperty.State, rhs: OcaProperty.State) -> Bool {
         if case .initial = lhs,
-           case .initial = rhs {
+           case .initial = rhs
+        {
             return true
         } else if case .loading = lhs,
-                  case .loading = rhs {
+                  case .loading = rhs
+        {
             return true
         } else if case let .success(lhsValue) = lhs,
                   case let .success(rhsValue) = rhs,
-                  lhsValue == rhsValue {
+                  lhsValue == rhsValue
+        {
             return true
         } else {
             return false

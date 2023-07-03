@@ -23,19 +23,21 @@ private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 extension AES70OCP1Connection {
     func isSubscribed(event: OcaEvent) async -> Bool {
         let isSubscribedTask = Task { @MainActor in
-            return subscriptions[event] != nil
+            subscriptions[event] != nil
         }
-        
+
         switch await isSubscribedTask.result {
-        case .success(let value):
+        case let .success(value):
             return value
         case .failure:
             return false
         }
     }
-    
-    func addSubscription(event: OcaEvent,
-                         callback: @escaping AES70SubscriptionCallback) async throws {
+
+    func addSubscription(
+        event: OcaEvent,
+        callback: @escaping AES70SubscriptionCallback
+    ) async throws {
         if await subscriptions[event] != nil {
             throw Ocp1Error.alreadySubscribedToEvent
         }
@@ -43,35 +45,38 @@ extension AES70OCP1Connection {
         Task { @MainActor in
             subscriptions[event] = callback
         }
-        
-        try await subscriptionManager.addSubscription(event: event,
-                                                      subscriber: subscriber,
-                                                      subscriberContext: OcaBlob(),
-                                                      notificationDeliveryMode: .reliable,
-                                                      destinationInformation: OcaNetworkAddress())
 
+        try await subscriptionManager.addSubscription(
+            event: event,
+            subscriber: subscriber,
+            subscriberContext: OcaBlob(),
+            notificationDeliveryMode: .reliable,
+            destinationInformation: OcaNetworkAddress()
+        )
     }
-    
+
     func removeSubscription(event: OcaEvent) async throws {
         try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
         Task { @MainActor in
             subscriptions[event] = nil
         }
     }
-    
+
     func removeSubscriptions() async throws {
         for event in await subscriptions.keys {
             _ = try await removeSubscription(event: event)
         }
     }
-    
+
     func refreshSubscriptions() async throws {
         for event in await subscriptions.keys {
-            try await subscriptionManager.addSubscription(event: event,
-                                                          subscriber: subscriber,
-                                                          subscriberContext: OcaBlob(),
-                                                          notificationDeliveryMode: .reliable,
-                                                          destinationInformation: OcaNetworkAddress())
+            try await subscriptionManager.addSubscription(
+                event: event,
+                subscriber: subscriber,
+                subscriberContext: OcaBlob(),
+                notificationDeliveryMode: .reliable,
+                destinationInformation: OcaNetworkAddress()
+            )
         }
     }
 }

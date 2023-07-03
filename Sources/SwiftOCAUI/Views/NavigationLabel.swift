@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 extension OcaRoot {
     var navigationLabel: String {
@@ -28,10 +28,11 @@ extension OcaRoot {
 }
 
 struct OcaNavigationLabel: View, OcaView {
-    @StateObject var object: OcaRoot
-    
+    @StateObject
+    var object: OcaRoot
+
     init(_ object: OcaRoot) {
-        self._object = StateObject(wrappedValue: object)
+        _object = StateObject(wrappedValue: object)
     }
 
     public var body: some View {

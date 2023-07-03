@@ -72,7 +72,7 @@ public enum OcaFilterPassband: OcaUint8, Codable {
 }
 
 public enum OcaParametricEQShape: OcaUint8, Codable {
-    case `none` = 0
+    case none = 0
     case peq = 1
     case lowShelv = 2
     case highShelv = 3
@@ -88,7 +88,7 @@ public enum OcaParametricEQShape: OcaUint8, Codable {
 }
 
 public enum OcaDynamicsFunction: OcaUint8, Codable {
-    case `none` = 0
+    case none = 0
     case compress = 1
     case limit = 2
     case expand = 3
@@ -102,7 +102,7 @@ public struct OcaPilotToneDetectorSpec: Codable {
 }
 
 public enum OcaWaveformType: OcaUint8, Codable {
-    case `none` = 0
+    case none = 0
     case dc = 1
     case sine = 2
     case square = 3
@@ -113,13 +113,13 @@ public enum OcaWaveformType: OcaUint8, Codable {
 }
 
 public enum OcaSweepType: OcaUint8, Codable {
-    case `none` = 0
+    case none = 0
     case linear = 1
     case logarithmic = 2
 }
 
 public enum OcaUnitOfMeasure: OcaUint8, Codable {
-    case `none` = 0
+    case none = 0
     case hertz = 1
     case degreeCelsius = 2
     case volt = 3
@@ -136,7 +136,7 @@ public enum OcaPresentationUnit: OcaUint8, Codable {
 public typealias OcaTemperature = OcaFloat32
 
 public enum OcaLevelDetectionLaw: OcaUint8, Codable {
-    case `none` = 0
+    case none = 0
     case rms = 1
     case peak = 2
 }

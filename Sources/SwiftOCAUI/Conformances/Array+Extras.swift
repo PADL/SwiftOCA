@@ -14,17 +14,17 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 // TODO: cache array values in a dictionary
 extension Array where Element: OcaRoot {
     func object(identifiedBy oNo: OcaONo) -> OcaRoot? {
-        self.first(where: {
+        first(where: {
             $0.objectNumber == oNo
         })
     }
-    
+
     var map: [OcaONo: OcaRoot] {
         Dictionary(uniqueKeysWithValues: self.map { ($0.objectNumber, $0) })
     }

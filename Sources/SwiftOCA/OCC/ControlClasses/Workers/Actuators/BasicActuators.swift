@@ -17,9 +17,11 @@
 import Foundation
 
 public class OcaGenericBasicActuator<T: Codable & Numeric>: OcaActuator {
-    @OcaBoundedProperty(propertyID: OcaPropertyID("5.1"),
-                        getMethodID: OcaMethodID("5.1"),
-                        setMethodID: OcaMethodID("5.2"))
+    @OcaBoundedProperty(
+        propertyID: OcaPropertyID("5.1"),
+        getMethodID: OcaMethodID("5.1"),
+        setMethodID: OcaMethodID("5.2")
+    )
     public var setting: OcaBoundedProperty<T>.State
 }
 
@@ -29,10 +31,12 @@ public class OcaBasicActuator: OcaActuator {
 
 public class OcaBooleanActuator: OcaActuator {
     override public class var classID: OcaClassID { OcaClassID("1.1.1.1.1") }
-    
-    @OcaProperty(propertyID: OcaPropertyID("5.1"),
-                 getMethodID: OcaMethodID("5.1"),
-                 setMethodID: OcaMethodID("5.2"))
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("5.1"),
+        getMethodID: OcaMethodID("5.1"),
+        setMethodID: OcaMethodID("5.2")
+    )
     public var setting: OcaProperty<OcaBoolean>.State
 }
 
@@ -49,48 +53,50 @@ public class OcaInt32Actuator: OcaGenericBasicActuator<OcaInt32> {
 }
 
 public class OcaInt64Actuator: OcaGenericBasicActuator<OcaInt64> {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.1.5") }
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.1.5") }
 }
 
 public class OcaUint8Actuator: OcaGenericBasicActuator<OcaUint8> {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.1.6") }
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.1.6") }
 }
 
 public class OcaUint16Actuator: OcaGenericBasicActuator<OcaUint16> {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.1.7") }
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.1.7") }
 }
 
 public class OcaUint32Actuator: OcaGenericBasicActuator<OcaUint32> {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.1.8") }
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.1.8") }
 }
 
 public class OcaUint64Actuator: OcaGenericBasicActuator<OcaUint64> {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.1.9") }
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.1.9") }
 }
 
 public class OcaFloat32Actuator: OcaGenericBasicActuator<OcaFloat32> {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.1.10") }
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.1.10") }
 }
 
 public class OcaFloat64Actuator: OcaGenericBasicActuator<OcaFloat64> {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.1.11") }
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.1.11") }
 }
 
 public class OcaStringActuator: OcaActuator {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.1.12") }
-    @OcaProperty(propertyID: OcaPropertyID("5.1"),
-                 getMethodID: OcaMethodID("5.1"),
-                 setMethodID: OcaMethodID("5.2"))
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.1.12") }
+    @OcaProperty(
+        propertyID: OcaPropertyID("5.1"),
+        getMethodID: OcaMethodID("5.1"),
+        setMethodID: OcaMethodID("5.2")
+    )
     var setting: OcaProperty<String>.State
 }
 
 /*
-public struct OcaBitstring: Codable {
-    // TODO
-}
+ public struct OcaBitstring: Codable {
+     // TODO
+ }
 
-public class OcaBitstringActuator: OcaGenericBasicActuator<OcaBitstring> {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.1.13") }
-}
+ public class OcaBitstringActuator: OcaGenericBasicActuator<OcaBitstring> {
+     public override class var classID: OcaClassID { OcaClassID("1.1.1.1.13") }
+ }
 
-*/
+ */

@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import Foundation
 import BinaryCoder
+import Foundation
 #if canImport(SwiftUI)
 import SwiftUI
 #elseif canImport(TokamakShim)
@@ -24,38 +24,41 @@ import TokamakShim
 
 public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable, OcaParameterCountReflectable {
     static var responseParameterCount: OcaUint8 { 2 }
-    
+
     var x, y: T
 }
 
 @propertyWrapper
-public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaPropertyChangeEventNotifiable, Codable {
+public struct OcaVectorProperty<
+    Value: Codable &
+        FixedWidthInteger
+>: OcaPropertyChangeEventNotifiable, Codable {
     public typealias Property = OcaProperty<OcaVector2D<Value>>
     public typealias State = Property.State
 
     public var propertyIDs: [OcaPropertyID] {
         [xPropertyID, yPropertyID]
     }
-        
+
     public let xPropertyID: OcaPropertyID
     public let yPropertyID: OcaPropertyID
     public let getMethodID: OcaMethodID
     public let setMethodID: OcaMethodID?
-    
+
     fileprivate var _storage: Property
 
     public init(from decoder: Decoder) throws {
         fatalError()
     }
-    
+
     /// Placeholder only
     public func encode(to encoder: Encoder) throws {
         fatalError()
     }
-        
+
     @available(*, unavailable, message: """
-               @OcaVectorProperty is only available on properties of classes
-               """)
+    @OcaVectorProperty is only available on properties of classes
+    """)
     public var wrappedValue: State {
         get { fatalError() }
         nonmutating set { fatalError() }
@@ -68,7 +71,7 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
     public var currentValue: State {
         _storage.currentValue
     }
-    
+
     public func subscribe(_ object: OcaRoot) async {
         await _storage.subscribe(object)
     }
@@ -77,23 +80,28 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
         _storage.description
     }
 
-    init(xPropertyID: OcaPropertyID,
-         yPropertyID: OcaPropertyID,
-         getMethodID: OcaMethodID,
-         setMethodID: OcaMethodID? = nil) {
+    init(
+        xPropertyID: OcaPropertyID,
+        yPropertyID: OcaPropertyID,
+        getMethodID: OcaMethodID,
+        setMethodID: OcaMethodID? = nil
+    ) {
         self.xPropertyID = xPropertyID
         self.yPropertyID = yPropertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
-        self._storage = OcaProperty(propertyID: OcaPropertyID("1.1"),
-                                    getMethodID: getMethodID,
-                                    setMethodID: setMethodID)
+        _storage = OcaProperty(
+            propertyID: OcaPropertyID("1.1"),
+            getMethodID: getMethodID,
+            setMethodID: setMethodID
+        )
     }
 
     public static subscript<T: OcaRoot>(
         _enclosingInstance object: T,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
-        storage storageKeyPath: ReferenceWritableKeyPath<T, Self>) -> State {
+        storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
+    ) -> State {
         get {
             object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
             return object[keyPath: storageKeyPath]._storage._get(_enclosingInstance: object)
@@ -106,22 +114,24 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
 
     func onEvent(_ object: OcaRoot, _ eventData: Ocp1EventData) throws {
         precondition(eventData.event.eventID == OcaPropertyChangedEventID)
-        
+
         let decoder = BinaryDecoder(config: .ocp1Configuration)
-        let eventData = try decoder.decode(OcaPropertyChangedEventData<Value>.self,
-                                           from: eventData.eventParameters)
-        precondition(self.propertyIDs.contains(eventData.propertyID))
+        let eventData = try decoder.decode(
+            OcaPropertyChangedEventData<Value>.self,
+            from: eventData.eventParameters
+        )
+        precondition(propertyIDs.contains(eventData.propertyID))
 
         // TODO: support add/delete
         switch eventData.changeType {
         case .currentChanged:
-            guard case .success(let subjectValue) = _storage.currentValue else {
+            guard case let .success(subjectValue) = _storage.currentValue else {
                 throw Ocp1Error.noInitialValue
             }
 
-            let isX = eventData.propertyID == self.xPropertyID
+            let isX = eventData.propertyID == xPropertyID
             var xy = OcaVector2D<Value>(x: 0, y: 0)
-                        
+
             if isX {
                 xy.x = eventData.propertyValue
                 xy.y = subjectValue.y
@@ -134,11 +144,13 @@ public struct OcaVectorProperty<Value: Codable & FixedWidthInteger>: OcaProperty
             throw Ocp1Error.unhandledEvent
         }
     }
-    
-#if canImport(SwiftUI) || canImport(TokamakShim)
+
+    #if canImport(SwiftUI) || canImport(TokamakShim)
     public var projectedValue: Binding<State> {
-        Binding(get: { _storage.projectedValue.wrappedValue },
-                set: { _storage.projectedValue.wrappedValue = $0 })
+        Binding(
+            get: { _storage.projectedValue.wrappedValue },
+            set: { _storage.projectedValue.wrappedValue = $0 }
+        )
     }
-#endif
+    #endif
 }

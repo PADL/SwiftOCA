@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import SwiftUI
-import SwiftOCA
 import Sliders
+import SwiftOCA
+import SwiftUI
 
 extension OcaPanBalance: OcaViewRepresentable {
     public var viewType: any OcaView.Type {
@@ -33,19 +33,20 @@ private extension Binding where Value == OcaProperty<OcaBoundedPropertyValue<Oca
                 // FIXME: constants
                 return OcaBoundedPropertyValue(value: 0.0, minValue: -1.0, maxValue: 1.0)
             }
-       }, set: { newValue in
-           self.wrappedValue = .success(newValue)
-       })
+        }, set: { newValue in
+            self.wrappedValue = .success(newValue)
+        })
     }
 }
 
 public struct OcaPanBalanceView: OcaView {
-    @StateObject var object: OcaPanBalance
-    
+    @StateObject
+    var object: OcaPanBalance
+
     public init(_ object: OcaRoot) {
-        self._object = StateObject(wrappedValue: object as! OcaPanBalance)
+        _object = StateObject(wrappedValue: object as! OcaPanBalance)
     }
-    
+
     public var body: some View {
         OcaVariableSliderView(value: object.$position.value)
             .valueSliderStyle(HorizontalValueSliderStyle())

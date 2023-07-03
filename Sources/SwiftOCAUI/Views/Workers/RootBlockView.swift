@@ -14,20 +14,24 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 public struct OcaRootBlockView: View {
-    @Environment(\.lastError) var lastError
-    @StateObject var connection: AES70OCP1Connection
-    @StateObject var object: OcaBlock
-    @State var oNoPath = NavigationPath()
-    
+    @Environment(\.lastError)
+    var lastError
+    @StateObject
+    var connection: AES70OCP1Connection
+    @StateObject
+    var object: OcaBlock
+    @State
+    var oNoPath = NavigationPath()
+
     public init(_ connection: AES70OCP1Connection) {
-        self._connection = StateObject(wrappedValue: connection)
-        self._object = StateObject(wrappedValue: connection.rootBlock)
+        _connection = StateObject(wrappedValue: connection)
+        _object = StateObject(wrappedValue: connection.rootBlock)
     }
-    
+
     public var body: some View {
         VStack {
             OcaBlockNavigationSplitView(object)

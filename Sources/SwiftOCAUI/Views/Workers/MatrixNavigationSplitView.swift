@@ -14,26 +14,32 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 struct OcaMatrixNavigationSplitView: OcaView {
-    @StateObject var object: OcaMatrix
-    @Environment(\.navigationPath) var oNoPath
-    @Environment(\.lastError) var lastError
-    @State var members: OcaMatrix.SparseMembers?
-    @State var membersMap: [OcaONo:OcaRoot]?
-    @State var hasContainerMembers = false
+    @StateObject
+    var object: OcaMatrix
+    @Environment(\.navigationPath)
+    var oNoPath
+    @Environment(\.lastError)
+    var lastError
+    @State
+    var members: OcaMatrix.SparseMembers?
+    @State
+    var membersMap: [OcaONo: OcaRoot]?
+    @State
+    var hasContainerMembers = false
 
     init(_ object: OcaRoot) {
-        self._object = StateObject(wrappedValue: object as! OcaMatrix)
+        _object = StateObject(wrappedValue: object as! OcaMatrix)
     }
 
     public var body: some View {
         NavigationStack(path: oNoPath) {
             Group {
                 if let members {
-                    Grid() {
+                    Grid {
                         GridRow {
                             ForEach(0..<members.nX, id: \.self) { x in
                                 Text("\(x + 1)").font(.title)

@@ -15,19 +15,22 @@
 //
 
 import Foundation
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 public struct OcaBonjourDeviceView: View {
-    @State var connection: AES70OCP1Connection? = nil
-    @State var isConnected = false
-    @State var lastError: Error? = nil
+    @State
+    var connection: AES70OCP1Connection? = nil
+    @State
+    var isConnected = false
+    @State
+    var lastError: Error? = nil
     var service: NetService
-    
+
     public init(_ service: NetService) {
         self.service = service
     }
-    
+
     public var body: some View {
         Group {
             if isConnected {
@@ -58,9 +61,11 @@ public struct OcaBonjourDeviceView: View {
             }
         }
         .alert(isPresented: Binding.constant(lastError != nil)) {
-            return Alert(title: Text("Error"),
-                         message: Text("\(lastError!.localizedDescription)"),
-                  dismissButton: .default(Text("OK")) { lastError = nil })
+            Alert(
+                title: Text("Error"),
+                message: Text("\(lastError!.localizedDescription)"),
+                dismissButton: .default(Text("OK")) { lastError = nil }
+            )
         }
     }
 }

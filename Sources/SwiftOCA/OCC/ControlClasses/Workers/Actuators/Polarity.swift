@@ -22,10 +22,12 @@ public enum OcaPolarityState: OcaUint8, Codable {
 }
 
 public class OcaPolarity: OcaActuator {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.3") }
-    
-    @OcaProperty(propertyID: OcaPropertyID("4.1"),
-                 getMethodID: OcaMethodID("4.1"),
-                 setMethodID: OcaMethodID("4.2"))
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.3") }
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("4.1"),
+        getMethodID: OcaMethodID("4.1"),
+        setMethodID: OcaMethodID("4.2")
+    )
     public var state: OcaProperty<OcaPolarityState>.State
 }

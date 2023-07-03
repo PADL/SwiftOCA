@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 extension OcaBooleanActuator: OcaViewRepresentable {
     public var viewType: any OcaView.Type {
@@ -26,22 +26,23 @@ extension OcaBooleanActuator: OcaViewRepresentable {
 private extension Binding where Value == OcaProperty<OcaBoolean>.State {
     var value: Binding<Bool> {
         Binding<Bool>(get: {
-           if case let .success(isOn) = self.wrappedValue {
-               return isOn
-           } else {
-               return false
-           }
-       }, set: { isOn in
-           self.wrappedValue = .success(isOn)
-       })
+            if case let .success(isOn) = self.wrappedValue {
+                return isOn
+            } else {
+                return false
+            }
+        }, set: { isOn in
+            self.wrappedValue = .success(isOn)
+        })
     }
 }
 
 public struct OcaBooleanView: OcaView {
-    @StateObject var object: OcaBooleanActuator
+    @StateObject
+    var object: OcaBooleanActuator
 
     public init(_ object: OcaRoot) {
-        self._object = StateObject(wrappedValue: object as! OcaBooleanActuator)
+        _object = StateObject(wrappedValue: object as! OcaBooleanActuator)
     }
 
     public var body: some View {

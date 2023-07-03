@@ -14,29 +14,31 @@
 // limitations under the License.
 //
 
-import Foundation
 import BinaryCoder
+import Foundation
 
 private extension Ocp1Message {
     func encode(type messageType: OcaMessageType) throws -> Data {
         let encoder = BinaryEncoder(config: BinaryCodingConfiguration.ocp1Configuration)
         var messageData = try encoder.encode(self)
-        
+
         if messageType != .ocaKeepAlive {
             /// replace `commandSize: OcaUint32` with actual command size
             precondition(messageData.count < OcaUint32.max)
             messageData.encodeInteger(OcaUint32(messageData.count), index: 0)
         }
-        
+
         return messageData
     }
 }
 
 extension AES70OCP1Connection {
-    func encodeOcp1MessagePdu(_ messages: [Ocp1Message],
-                              type messageType: OcaMessageType) throws -> Data {
+    func encodeOcp1MessagePdu(
+        _ messages: [Ocp1Message],
+        type messageType: OcaMessageType
+    ) throws -> Data {
         var messagePduData = Data([Ocp1SyncValue])
-        
+
         let header = Ocp1Header(pduType: messageType, messageCount: OcaUint16(messages.count))
         let encoder = BinaryEncoder(config: BinaryCodingConfiguration.ocp1Configuration)
         messagePduData += try encoder.encode(header)
@@ -58,7 +60,7 @@ extension AES70OCP1Connection.Monitor {
     func decodeOcp1MessagePdu(from data: Data, messages: inout [Data]) throws -> OcaMessageType {
         precondition(data.count >= Self.MinimumPduSize)
         precondition(data[0] == Ocp1SyncValue)
-        
+
         /// MinimumPduSize == 7
         /// 0 `syncVal: OcaUint8`
         /// 1`protocolVersion: OcaUint16`
@@ -67,16 +69,16 @@ extension AES70OCP1Connection.Monitor {
         guard data.count >= Self.MinimumPduSize + 3 else {
             throw Ocp1Error.invalidPduSize
         }
-        
+
         var header = Ocp1Header()
         header.protocolVersion = data.decodeInteger(index: 1)
         guard header.protocolVersion == Ocp1ProtocolVersion else {
             throw Ocp1Error.invalidProtocolVersion
         }
-        
+
         header.pduSize = data.decodeInteger(index: 3)
         precondition(header.pduSize <= data.count - 1)
-        
+
         /// MinimumPduSize +3 == 10
         /// 7 `messageType: OcaUint8`
         /// 8 `messageCount: OcaUint16`
@@ -85,35 +87,39 @@ extension AES70OCP1Connection.Monitor {
         }
 
         let messageCount: OcaUint16 = data.decodeInteger(index: 8)
-        
+
         var cursor = Self.MinimumPduSize + 3 // start of first message
-        
+
         for _ in 0..<messageCount {
             precondition(cursor < data.count)
-            var messageData = data.subdata(in: cursor..<Int(header.pduSize) + 1) // because this includes sync byte
-                
+            var messageData = data
+                .subdata(in: cursor..<Int(header.pduSize) + 1) // because this includes sync byte
+
             if messageType != .ocaKeepAlive {
                 let messageSize: OcaUint32 = messageData.decodeInteger(index: 0)
-                
+
                 guard messageSize <= messageData.count else {
                     throw Ocp1Error.invalidMessageSize
                 }
-                
+
                 messageData = messageData.prefix(Int(messageSize))
                 cursor += Int(messageSize)
             }
-            
+
             messages.append(messageData)
-            
+
             if messageType == .ocaKeepAlive {
                 break
             }
         }
-        
+
         return messageType
     }
-    
-    func decodeOcp1Message(from messageData: Data, type messageType: OcaMessageType) throws -> Ocp1Message {
+
+    func decodeOcp1Message(
+        from messageData: Data,
+        type messageType: OcaMessageType
+    ) throws -> Ocp1Message {
         let decoder = BinaryDecoder(config: BinaryCodingConfiguration.ocp1Configuration)
         let message: Ocp1Message
 
@@ -135,7 +141,7 @@ extension AES70OCP1Connection.Monitor {
                 throw Ocp1Error.invalidKeepAlivePdu
             }
         }
-        
+
         return message
     }
 }

@@ -14,38 +14,38 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 func OcaDBToGain(dB: OcaDB, minGain: OcaDB, maxGain: OcaDB) -> OcaFloat32 {
     let gain: OcaFloat32
-    
+
     precondition(maxGain > 0)
-    
+
     if dB == minGain {
         gain = 0.0
     } else {
         gain = powf(10.0, dB / maxGain)
     }
-    
+
     return gain
 }
 
 func OcaGainToDB(gain: OcaFloat32, minGain: OcaDB, maxGain: OcaDB, step: OcaDB? = nil) -> OcaDB {
     var dB: OcaFloat32
-    
+
     if gain == 0.0 {
         dB = minGain
     } else {
         dB = log10(gain) * maxGain
-        if (dB < minGain) {
+        if dB < minGain {
             dB = minGain
         }
     }
-    
+
     if let step {
         dB = round(dB / step) * step
     }
-    
+
     return dB
 }

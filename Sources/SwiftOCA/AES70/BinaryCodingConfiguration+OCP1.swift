@@ -14,16 +14,16 @@
 // limitations under the License.
 //
 
-import Foundation
 import BinaryCoder
+import Foundation
 
 extension BinaryCodingConfiguration {
     static var ocp1Configuration: Self {
-        get {
-            return BinaryCodingConfiguration(endianness: .bigEndian,
-                                             stringEncoding: .utf8,
-                                             stringTypeStrategy: .lengthTagged,
-                                             variableSizedTypeStrategy: .lengthTaggedArrays)
-        }
+        BinaryCodingConfiguration(
+            endianness: .bigEndian,
+            stringEncoding: .utf8,
+            stringTypeStrategy: .lengthTagged,
+            variableSizedTypeStrategy: .lengthTaggedArrays
+        )
     }
 }

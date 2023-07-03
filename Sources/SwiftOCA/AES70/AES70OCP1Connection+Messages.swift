@@ -21,8 +21,11 @@ extension AES70OCP1Connection {
     func updateLastMessageSentTime() async {
         lastMessageSentTime = Date()
     }
-    
-    private func sendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {
+
+    private func sendMessages(
+        _ messages: [Ocp1Message],
+        type messageType: OcaMessageType
+    ) async throws {
         let messagePduData = try encodeOcp1MessagePdu(messages, type: messageType)
 
         do {
@@ -39,7 +42,10 @@ extension AES70OCP1Connection {
         }
     }
 
-    private func sendMessage(_ message: Ocp1Message, type messageType: OcaMessageType) async throws {
+    private func sendMessage(
+        _ message: Ocp1Message,
+        type messageType: OcaMessageType
+    ) async throws {
         try await sendMessages([message], type: messageType)
     }
 
@@ -47,12 +53,12 @@ extension AES70OCP1Connection {
         // debugPrint("sendCommand \(command)")
         try await sendMessage(command, type: .ocaCmd)
     }
-    
+
     private func response(for handle: OcaUint32) async throws -> Ocp1Response {
         guard let monitor = await monitor else {
             throw Ocp1Error.notConnected
         }
-        
+
         return try await withCheckedThrowingContinuation { continuation in
             Task {
                 try await withTimeout(seconds: options.responseTimeout) {

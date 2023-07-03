@@ -18,33 +18,39 @@ import Foundation
 
 extension AES70OCP1Connection {
     @MainActor
-    private func resolve<T: OcaRoot>(classIdentification: OcaClassIdentification,
-                                     objectNumber: OcaONo) -> T? {
+    private func resolve<T: OcaRoot>(
+        classIdentification: OcaClassIdentification,
+        objectNumber: OcaONo
+    ) -> T? {
         if let object = objects[objectNumber] as? T {
             return object
         }
-        
-        guard let object: T = AES70ClassRegistry.shared.assign(classIdentification: classIdentification,
-                                                               objectNumber: objectNumber) else {
+
+        guard let object: T = AES70ClassRegistry.shared.assign(
+            classIdentification: classIdentification,
+            objectNumber: objectNumber
+        ) else {
             return nil
         }
-     
+
         add(object: object)
         return object
     }
-    
+
     @MainActor
     public func resolve<T: OcaRoot>(object: OcaObjectIdentification) -> T? {
-        return resolve(classIdentification: object.classIdentification,
-                       objectNumber: object.oNo)
+        resolve(
+            classIdentification: object.classIdentification,
+            objectNumber: object.oNo
+        )
     }
-    
+
     @MainActor
     func add<T: OcaRoot>(object: T) {
         objects[object.objectNumber] = object
         object.connectionDelegate = self
     }
-        
+
     @MainActor
     func refreshDeviceTree() async throws {
         let members = try await rootBlock.resolveMembersRecursive(resolveMatrixMembers: true)

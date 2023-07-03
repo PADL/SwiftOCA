@@ -14,37 +14,34 @@
 // limitations under the License.
 //
 
-
+import AsyncAlgorithms
 import Foundation
-import SwiftUI
 import SwiftOCA
 import SwiftOCAUI
-import AsyncAlgorithms
+import SwiftUI
 
 #if os(macOS)
 class BonjourBrowser: ObservableObject {
     let udpBrowser = AES70Browser(serviceType: .udp)
     let tcpBrowser = AES70Browser(serviceType: .tcp)
-    @Published var services = [NetService]()
-    
+    @Published
+    var services = [NetService]()
+
     init() {
         Task { @MainActor in
             for await result in chain(udpBrowser.channel, tcpBrowser.channel) {
                 switch result {
-                case .didFind(let netService):
+                case let .didFind(netService):
                     services.append(netService)
-                    break
-                case .didRemove(let netService):
+                case let .didRemove(netService):
                     services.removeAll(where: { $0 == netService })
-                    break
-                case .didNotSearch(let error):
+                case let .didNotSearch(error):
                     debugPrint("OcaBonjourDiscoveryView: \(error)")
-                    break
                 }
             }
         }
     }
-    
+
     @MainActor
     func service(with id: NetService.ID?) -> NetService? {
         guard let id else { return nil }
@@ -55,25 +52,28 @@ class BonjourBrowser: ObservableObject {
 
 @main
 struct SwiftOCABrowser: App {
-    @Environment(\.refresh) private var refresh
-    @Environment(\.openWindow) private var openWindow
+    @Environment(\.refresh)
+    private var refresh
+    @Environment(\.openWindow)
+    private var openWindow
     #if os(macOS)
-    @StateObject var browser = BonjourBrowser()
+    @StateObject
+    var browser = BonjourBrowser()
     #endif
-    
+
     @SceneBuilder
     var body: some Scene {
         Group {
             WindowGroup(id: "BonjourBrowser", for: String.self) { serviceID in
-#if os(macOS)
+                #if os(macOS)
                 if let service = browser.service(with: serviceID.wrappedValue) {
                     OcaBonjourDeviceView(service)
                 } else {
                     Text("Select a device from the File menu").font(.title)
                 }
-#elseif os(iOS)
+                #elseif os(iOS)
                 OcaBonjourDiscoveryView()
-#endif
+                #endif
             }
         }
         .commands {

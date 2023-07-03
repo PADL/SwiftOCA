@@ -31,9 +31,9 @@ public struct OcaObjectSearchResultFlags: OptionSet, Codable {
     public static let containerPath = (1 << 2)
     public static let role = (1 << 3)
     public static let label = (1 << 3)
-    
+
     public let rawValue: OcaBitSet16
-    
+
     public init(rawValue: OcaBitSet16) {
         self.rawValue = rawValue
     }

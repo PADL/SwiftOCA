@@ -14,50 +14,61 @@
 // limitations under the License.
 //
 
-import SwiftUI
-import SwiftOCA
 import Sliders
+import SwiftOCA
+import SwiftUI
 
-fileprivate struct OcaLogSliderView: View {
+private struct OcaLogSliderView: View {
     static var step: OcaDB = 0.5
-    
-    @Binding var value: OcaBoundedPropertyValue<OcaDB>
-    
+
+    @Binding
+    var value: OcaBoundedPropertyValue<OcaDB>
+
     var linear: Binding<OcaFloat32> {
-        Binding<OcaFloat32>(get: {
-            if value.maxValue == 0.0 {
-                return 0.0
-            }
-            return OcaDBToGain(dB: value.value, minGain: value.minValue, maxGain: value.maxValue)
-        },
-                            set: { newValue in
-            value.value = OcaGainToDB(gain: newValue,
-                                      minGain: value.minValue,
-                                      maxGain: value.maxValue,
-                                      step: Self.step)
-        })
-    }
-    
-    var boundedLinear: Binding<OcaBoundedPropertyValue<OcaFloat32>> {
-        return Binding<OcaBoundedPropertyValue<OcaFloat32>>(
+        Binding<OcaFloat32>(
             get: {
-                OcaBoundedPropertyValue<OcaFloat32>(value: linear.wrappedValue / 10,
-                                                    minValue: 0.0,
-                                                    maxValue: 1.0)
+                if value.maxValue == 0.0 {
+                    return 0.0
+                }
+                return OcaDBToGain(
+                    dB: value.value,
+                    minGain: value.minValue,
+                    maxGain: value.maxValue
+                )
+            },
+            set: { newValue in
+                value.value = OcaGainToDB(
+                    gain: newValue,
+                    minGain: value.minValue,
+                    maxGain: value.maxValue,
+                    step: Self.step
+                )
+            }
+        )
+    }
+
+    var boundedLinear: Binding<OcaBoundedPropertyValue<OcaFloat32>> {
+        Binding<OcaBoundedPropertyValue<OcaFloat32>>(
+            get: {
+                OcaBoundedPropertyValue<OcaFloat32>(
+                    value: linear.wrappedValue / 10,
+                    minValue: 0.0,
+                    maxValue: 1.0
+                )
             },
             set: { newValue in
                 linear.wrappedValue = newValue.value * 10
-            })
+            }
+        )
     }
-    
-    
+
     var body: some View {
         HStack {
             OcaLogLegendView(value: value)
             OcaVariableSliderView<OcaFloat32>(value: boundedLinear)
                 .valueSliderStyle(VerticalValueSliderStyle())
         }
-            .padding(EdgeInsets(top: 100, leading: 0, bottom: 100, trailing: 0))
+        .padding(EdgeInsets(top: 100, leading: 0, bottom: 100, trailing: 0))
     }
 }
 
@@ -76,19 +87,20 @@ private extension Binding where Value == OcaProperty<OcaBoundedPropertyValue<Oca
                 // FIXME: constants
                 return OcaBoundedPropertyValue(value: 0.0, minValue: -1.0, maxValue: 1.0)
             }
-       }, set: { newValue in
-           self.wrappedValue = .success(newValue)
-       })
+        }, set: { newValue in
+            self.wrappedValue = .success(newValue)
+        })
     }
 }
 
 public struct OcaGainView: OcaView {
-    @StateObject var object: OcaGain
-    
+    @StateObject
+    var object: OcaGain
+
     public init(_ object: OcaRoot) {
-        self._object = StateObject(wrappedValue: object as! OcaGain)
+        _object = StateObject(wrappedValue: object as! OcaGain)
     }
-    
+
     public var body: some View {
         OcaLogSliderView(value: object.$gain.value)
             .showProgressIfWaiting(object.gain)

@@ -18,29 +18,33 @@ import Foundation
 
 struct OcaGetPathParameters: Codable, OcaParameterCountReflectable {
     static var responseParameterCount: OcaUint8 { 2 }
-    
+
     var namePath: OcaNamePath
     var oNoPath: OcaONoPath
 }
 
 public class OcaAgent: OcaRoot {
     override public class var classID: OcaClassID { OcaClassID("1.2") }
-    
-    @OcaProperty(propertyID: OcaPropertyID("2.1"),
-                 getMethodID: OcaMethodID("2.1"),
-                 setMethodID: OcaMethodID("2.2"))
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("2.1"),
+        getMethodID: OcaMethodID("2.1"),
+        setMethodID: OcaMethodID("2.2")
+    )
     public var label: OcaProperty<OcaString>.State
-    
-    @OcaProperty(propertyID: OcaPropertyID("2.2"),
-                 getMethodID: OcaMethodID("2.3"))
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("2.2"),
+        getMethodID: OcaMethodID("2.3")
+    )
     public var owner: OcaProperty<OcaONo>.State
-    
+
     // 2.4
     func get(path namePath: inout OcaNamePath, oNoPath: inout OcaONoPath) async throws {
         let responseParams: OcaGetPathParameters
-        
+
         responseParams = try await sendCommandRrq(methodID: OcaMethodID("2.4"))
-        
+
         namePath = responseParams.namePath
         oNoPath = responseParams.oNoPath
     }

@@ -17,9 +17,11 @@
 import Foundation
 
 public class OcaLevelSensor: OcaSensor {
-    public override class var classID: OcaClassID { OcaClassID("1.1.2.2") }
+    override public class var classID: OcaClassID { OcaClassID("1.1.2.2") }
 
-    @OcaBoundedProperty(propertyID: OcaPropertyID("4.1"),
-                        getMethodID: OcaMethodID("4.1"))
+    @OcaBoundedProperty(
+        propertyID: OcaPropertyID("4.1"),
+        getMethodID: OcaMethodID("4.1")
+    )
     public var reading: OcaBoundedProperty<OcaDB>.State
 }

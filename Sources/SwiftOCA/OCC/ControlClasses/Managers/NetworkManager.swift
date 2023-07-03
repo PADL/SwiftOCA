@@ -17,24 +17,32 @@
 import Foundation
 
 public class OcaNetworkManager: OcaManager {
-    public override class var classID: OcaClassID { OcaClassID("1.3.6") }
+    override public class var classID: OcaClassID { OcaClassID("1.3.6") }
 
-    @OcaProperty(propertyID: OcaPropertyID("3.1"),
-                 getMethodID: OcaMethodID("3.1"))
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.1"),
+        getMethodID: OcaMethodID("3.1")
+    )
     public var networks: OcaProperty<OcaList<OcaONo>>.State
 
-    @OcaProperty(propertyID: OcaPropertyID("3.2"),
-                 getMethodID: OcaMethodID("3.2"))
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.2"),
+        getMethodID: OcaMethodID("3.2")
+    )
     public var streamNetworks: OcaProperty<OcaList<OcaONo>>.State
 
-    @OcaProperty(propertyID: OcaPropertyID("3.3"),
-                 getMethodID: OcaMethodID("3.3"))
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.3"),
+        getMethodID: OcaMethodID("3.3")
+    )
     public var controlNetworks: OcaProperty<OcaList<OcaONo>>.State
-                                                
-    @OcaProperty(propertyID: OcaPropertyID("3.4"),
-                 getMethodID: OcaMethodID("3.4"))
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.4"),
+        getMethodID: OcaMethodID("3.4")
+    )
     public var mediaTransportNetworks: OcaProperty<OcaList<OcaONo>>.State
-    
+
     convenience init() {
         self.init(objectNumber: OcaNetworkManagerONo)
     }

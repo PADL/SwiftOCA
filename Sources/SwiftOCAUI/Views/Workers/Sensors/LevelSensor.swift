@@ -14,25 +14,27 @@
 // limitations under the License.
 //
 
-import SwiftUI
-import SwiftOCA
 import Sliders
+import SwiftOCA
+import SwiftUI
 
-fileprivate struct OcaLogGaugeView: View {
+private struct OcaLogGaugeView: View {
     let gradient = Gradient(colors: [.green, .yellow, .orange, .red])
 
     var value: OcaBoundedPropertyValue<OcaDB>
-    
+
     var linear: OcaFloat32 {
-        powf(((value.value - value.minValue) / value.absoluteRange), 2.0)
+        powf((value.value - value.minValue) / value.absoluteRange, 2.0)
     }
-    
+
     var boundedLinear: OcaBoundedPropertyValue<OcaFloat32> {
-        OcaBoundedPropertyValue<OcaFloat32>(value: linear / 10,
-                                            minValue: 0.0,
-                                            maxValue: 1.0)
+        OcaBoundedPropertyValue<OcaFloat32>(
+            value: linear / 10,
+            minValue: 0.0,
+            maxValue: 1.0
+        )
     }
-    
+
     var body: some View {
         Gauge(value: boundedLinear.value, in: boundedLinear.minValue...boundedLinear.maxValue) {
             EmptyView()
@@ -52,9 +54,9 @@ extension OcaLevelSensor: OcaViewRepresentable {
     public var viewType: any OcaView.Type {
         OcaLevelSensorView.self
     }
-    
+
     var value: OcaBoundedPropertyValue<OcaDB> {
-        if case let .success(readingValue) = self.reading {
+        if case let .success(readingValue) = reading {
             return readingValue
         } else {
             // FIXME: constants
@@ -64,12 +66,13 @@ extension OcaLevelSensor: OcaViewRepresentable {
 }
 
 public struct OcaLevelSensorView: OcaView {
-    @StateObject var object: OcaLevelSensor
-    
+    @StateObject
+    var object: OcaLevelSensor
+
     public init(_ object: OcaRoot) {
-        self._object = StateObject(wrappedValue: object as! OcaLevelSensor)
+        _object = StateObject(wrappedValue: object as! OcaLevelSensor)
     }
-    
+
     public var body: some View {
         OcaLogGaugeView(value: object.value)
             .showProgressIfWaiting(object.reading)

@@ -23,15 +23,15 @@ public struct OcaList2D<Element> {
     public init(nX: Int, nY: Int, defaultValue: Element) {
         self.nX = nX
         self.nY = nY
-        self.items = Array(repeating: defaultValue, count: nX * nY) as! [Element]
+        items = Array(repeating: defaultValue, count: nX * nY) as! [Element]
     }
-    
+
     public init(nX: OcaUint16, nY: OcaUint16, defaultValue: Element) {
         self.init(nX: Int(nX), nY: Int(nY), defaultValue: defaultValue)
     }
-    
+
     private func indexIsValid(x: Int, y: Int) -> Bool {
-        return x >= 0 && x < nX && y >= 0 && y < nY
+        x >= 0 && x < nX && y >= 0 && y < nY
     }
 
     public subscript(x: Int, y: Int) -> Element {
@@ -49,28 +49,26 @@ public struct OcaList2D<Element> {
 extension OcaList2D: Codable where Element: Codable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        self.nX = Int(try container.decode(OcaUint16.self))
-        self.nY = Int(try container.decode(OcaUint16.self))
-    
-        self.items = [Element]()
-        self.items.reserveCapacity(Int(nX * nY))
-        for index in 0..<nX*nY {
-            self.items.insert(try container.decode(Element.self), at: index)
+        nX = Int(try container.decode(OcaUint16.self))
+        nY = Int(try container.decode(OcaUint16.self))
+
+        items = [Element]()
+        items.reserveCapacity(Int(nX * nY))
+        for index in 0..<nX * nY {
+            items.insert(try container.decode(Element.self), at: index)
         }
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(OcaUint16(self.nX))
-        try container.encode(OcaUint16(self.nY))
-        for index in 0..<nX*nY {
-            try container.encode(self.items[index])
+        try container.encode(OcaUint16(nX))
+        try container.encode(OcaUint16(nY))
+        for index in 0..<nX * nY {
+            try container.encode(items[index])
         }
     }
 }
 
-extension OcaList2D: Equatable where Element: Equatable {
-}
+extension OcaList2D: Equatable where Element: Equatable {}
 
-extension OcaList2D: Hashable where Element: Hashable {
-}
+extension OcaList2D: Hashable where Element: Hashable {}

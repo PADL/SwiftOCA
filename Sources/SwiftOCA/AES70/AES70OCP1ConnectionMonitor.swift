@@ -19,10 +19,12 @@ import Foundation
 /// Connection monitor delivers responses keyed by request handle
 
 extension AES70OCP1Connection.Monitor {
-    private func receiveMessagePdu(_ connection: AES70OCP1Connection,
-                                   messages: inout [Data]) async throws -> OcaMessageType {
+    private func receiveMessagePdu(
+        _ connection: AES70OCP1Connection,
+        messages: inout [Data]
+    ) async throws -> OcaMessageType {
         var messagePduData = try await connection.read(Self.MinimumPduSize)
-        
+
         /// just parse enough of the protocol in order to read rest of message
         /// `syncVal: OcaUint8` || `protocolVersion: OcaUint16` || `pduSize: OcaUint32`
         guard messagePduData.count >= Self.MinimumPduSize else {
@@ -30,7 +32,9 @@ extension AES70OCP1Connection.Monitor {
             throw Ocp1Error.pduTooShort
         }
         guard messagePduData[0] == Ocp1SyncValue else {
-            debugPrint("receiveMessagePdu: PDU has invalid sync value \(messagePduData.prefix(1).hexEncodedString())")
+            debugPrint(
+                "receiveMessagePdu: PDU has invalid sync value \(messagePduData.prefix(1).hexEncodedString())"
+            )
             throw Ocp1Error.invalidSyncValue
         }
         let pduSize: OcaUint32 = messagePduData.decodeInteger(index: 3)
@@ -43,24 +47,28 @@ extension AES70OCP1Connection.Monitor {
         if messagePduData.count < bytesLeft {
             messagePduData += try await connection.read(bytesLeft)
         }
-    
+
         return try decodeOcp1MessagePdu(from: messagePduData, messages: &messages)
     }
 
-    private func processMessage(_ connection: AES70OCP1Connection, _ message: Ocp1Message) async throws {
+    private func processMessage(
+        _ connection: AES70OCP1Connection,
+        _ message: Ocp1Message
+    ) async throws {
         switch message {
         case is Ocp1Command:
             debugPrint("processMessage: Device sent unexpected command \(message); ignoring")
         case let notification as Ocp1Notification:
             let event = notification.parameters.eventData.event
             if let callback = await connection.subscriptions[event],
-               notification.parameters.parameterCount == 2 {
+               notification.parameters.parameterCount == 2
+            {
                 Task {
                     await callback(notification.parameters.eventData)
                 }
             }
         case let response as Ocp1Response:
-            try self.resume(with: response)
+            try resume(with: response)
         case is Ocp1KeepAlive1:
             break
         case is Ocp1KeepAlive2:
@@ -69,14 +77,14 @@ extension AES70OCP1Connection.Monitor {
             fatalError("processMessage: Unknown PDU type")
         }
     }
-    
+
     private func receiveMessage(_ connection: AES70OCP1Connection) async throws {
         var messagePdus = [Data]()
         let messageType = try await receiveMessagePdu(connection, messages: &messagePdus)
         let messages = try messagePdus.map {
             try decodeOcp1Message(from: $0, type: messageType)
         }
-               
+
         updateLastMessageReceivedTime()
 
         for message in messages {
@@ -86,9 +94,9 @@ extension AES70OCP1Connection.Monitor {
             }
 
             try await processMessage(connection, message)
-        }        
+        }
     }
-    
+
     func receiveMessages(_ connection: AES70OCP1Connection) async throws {
         repeat {
             try await receiveMessage(connection)

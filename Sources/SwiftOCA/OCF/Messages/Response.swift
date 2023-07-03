@@ -21,6 +21,6 @@ public struct Ocp1Response: Ocp1Message, Codable {
     let handle: OcaUint32
     let statusCode: OcaStatus
     let parameters: Ocp1Parameters
-    
-    var messageSize: OcaUint32 { return responseSize }
+
+    var messageSize: OcaUint32 { responseSize }
 }

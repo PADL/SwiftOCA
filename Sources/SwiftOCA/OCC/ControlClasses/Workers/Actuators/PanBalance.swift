@@ -17,16 +17,19 @@
 import Foundation
 
 public class OcaPanBalance: OcaActuator {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.6") }
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.6") }
 
-    @OcaBoundedProperty(propertyID: OcaPropertyID("4.1"),
-                        getMethodID: OcaMethodID("4.1"),
-                        setMethodID: OcaMethodID("4.2"))
+    @OcaBoundedProperty(
+        propertyID: OcaPropertyID("4.1"),
+        getMethodID: OcaMethodID("4.1"),
+        setMethodID: OcaMethodID("4.2")
+    )
     public var position: OcaBoundedProperty<OcaFloat32>.State
 
-
-    @OcaBoundedProperty(propertyID: OcaPropertyID("4.2"),
-                        getMethodID: OcaMethodID("4.3"),
-                        setMethodID: OcaMethodID("4.4"))
+    @OcaBoundedProperty(
+        propertyID: OcaPropertyID("4.2"),
+        getMethodID: OcaMethodID("4.3"),
+        setMethodID: OcaMethodID("4.4")
+    )
     public var midpointGain: OcaBoundedProperty<OcaDB>.State
 }

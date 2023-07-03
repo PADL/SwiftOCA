@@ -17,10 +17,10 @@
 import Foundation
 
 public class OcaEventHandler: OcaAgent {
-    public override class var classID: OcaClassID { OcaClassID("1.2.5") }
+    override public class var classID: OcaClassID { OcaClassID("1.2.5") }
 
     func onEvent(context: OcaBlob, eventData: Ocp1EventData) async throws -> OcaStatus {
-        return .notImplemented
+        .notImplemented
     }
 }
 

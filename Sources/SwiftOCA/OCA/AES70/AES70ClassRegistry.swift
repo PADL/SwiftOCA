@@ -20,24 +20,27 @@ public class AES70ClassRegistry {
     public static let shared = AES70ClassRegistry()
 
     /// Mapping of classID to class name
-    private var classIDMap = [OcaClassIdentification:OcaRoot.Type]()
+    private var classIDMap = [OcaClassIdentification: OcaRoot.Type]()
 
     @discardableResult
-    public func register<T: OcaRoot>(classID: OcaClassID = T.classID,
-                                     classVersion: OcaClassVersionNumber = T.classVersion,
-                                     _ type: T.Type) -> OcaStatus {
-        let classIdentification = OcaClassIdentification(classID: classID,
-                                                         classVersion: classVersion)
-        
+    public func register<T: OcaRoot>(
+        classID: OcaClassID = T.classID,
+        classVersion: OcaClassVersionNumber = T.classVersion,
+        _ type: T.Type
+    ) -> OcaStatus {
+        let classIdentification = OcaClassIdentification(
+            classID: classID,
+            classVersion: classVersion
+        )
+
         if classIDMap.keys.contains(classIdentification) {
             return .parameterError
         }
-        
+
         classIDMap[classIdentification] = type.self
         return .ok
     }
-    
-    
+
     private func match(classIdentification: OcaClassIdentification) -> OcaClassIdentification? {
         var classID: OcaClassID? = classIdentification.classID
 
@@ -51,43 +54,47 @@ public class AES70ClassRegistry {
                 if classIDMap.keys.contains(id) {
                     return id
                 }
-                
+
                 classVersion = classVersion - 1
             } while classVersion != 0
-            
+
             classID = classID?.parent
         } while classID != nil
 
         return nil
     }
-    
+
     private func match<T: OcaRoot>(classIdentification: OcaClassIdentification) -> T.Type? {
-        guard let classIdentification = match(classIdentification: classIdentification) else { return nil }
+        guard let classIdentification = match(classIdentification: classIdentification)
+        else { return nil }
         guard let type = classIDMap[classIdentification] else { return nil }
-        
+
         return type as? T.Type
     }
-    
-    func assign<T: OcaRoot>(classIdentification: OcaClassIdentification, objectNumber: OcaONo) -> T? {
+
+    func assign<T: OcaRoot>(
+        classIdentification: OcaClassIdentification,
+        objectNumber: OcaONo
+    ) -> T? {
         guard let type: T.Type = match(classIdentification: classIdentification) else { return nil }
-        
+
         return type.init(objectNumber: objectNumber)
     }
 
     init() {
         // register built-in classes
         register(OcaRoot.self)
-        
+
         // agents
         register(OcaAgent.self)
         register(OcaEventHandler.self)
         register(OcaPhysicalPosition.self)
         register(OcaTimeSource.self)
-        
+
         // managers
         register(OcaManager.self)
         register(OcaDeviceManager.self)
-        //register(OcaLibraryManager.self)
+        // register(OcaLibraryManager.self)
         register(OcaNetworkManager.self)
         register(OcaSubscriptionManager.self)
 
@@ -110,14 +117,14 @@ public class AES70ClassRegistry {
         register(OcaFloat64Actuator.self)
         register(OcaStringActuator.self)
         // TODO: Bitstring support
-        //register(OcaBitstringActuator.self)
-        
+        // register(OcaBitstringActuator.self)
+
         register(OcaGain.self)
         register(OcaMute.self)
         register(OcaPanBalance.self)
         register(OcaPolarity.self)
         register(OcaSwitch.self)
-        
+
         //  sensors
         register(OcaSensor.self)
         register(OcaBasicSensor.self)

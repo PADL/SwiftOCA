@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 extension OcaMute: OcaViewRepresentable {
     public var viewType: any OcaView.Type {
@@ -26,27 +26,31 @@ extension OcaMute: OcaViewRepresentable {
 private extension Binding where Value == OcaProperty<OcaMuteState>.State {
     var value: Binding<Bool> {
         Binding<Bool>(get: {
-           if case let .success(muteState) = self.wrappedValue {
-               return muteState == .muted
-           } else {
-               return false
-           }
-       }, set: { isOn in
-           self.wrappedValue = .success(isOn ? .muted : .unmuted)
-       })
+            if case let .success(muteState) = self.wrappedValue {
+                return muteState == .muted
+            } else {
+                return false
+            }
+        }, set: { isOn in
+            self.wrappedValue = .success(isOn ? .muted : .unmuted)
+        })
     }
 }
 
 public struct OcaMuteView: OcaView {
-    @StateObject var object: OcaMute
+    @StateObject
+    var object: OcaMute
 
     public init(_ object: OcaRoot) {
-        self._object = StateObject(wrappedValue: object as! OcaMute)
+        _object = StateObject(wrappedValue: object as! OcaMute)
     }
 
     public var body: some View {
         Toggle(isOn: object.$state.value) {}
-            .toggleStyle(SymbolToggleStyle(systemImage: "speaker.slash.circle.fill", activeColor: .red))
+            .toggleStyle(SymbolToggleStyle(
+                systemImage: "speaker.slash.circle.fill",
+                activeColor: .red
+            ))
             .padding()
             .showProgressIfWaiting(object.state)
     }

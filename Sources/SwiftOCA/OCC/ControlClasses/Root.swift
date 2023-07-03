@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import Foundation
 import BinaryCoder
+import Foundation
 #if canImport(Combine)
 import Combine
 #elseif canImport(OpenCombine)
@@ -24,9 +24,9 @@ import OpenCombine
 
 public class OcaRoot: CustomStringConvertible, ObservableObject {
     typealias Root = OcaRoot
-    
-    weak var connectionDelegate: AES70OCP1Connection? = nil
-    
+
+    weak var connectionDelegate: AES70OCP1Connection?
+
     // 1.1
     public class var classID: OcaClassID { OcaClassID("1") }
     private var _classID: StaticProperty<OcaClassID> {
@@ -34,62 +34,71 @@ public class OcaRoot: CustomStringConvertible, ObservableObject {
     }
 
     // 1.2
-    public class var classVersion: OcaClassVersionNumber { return 2 }
+    public class var classVersion: OcaClassVersionNumber { 2 }
     private var _classVersion: StaticProperty<OcaClassVersionNumber> {
-        StaticProperty<OcaClassVersionNumber>(propertyIDs: [OcaPropertyID("1.2")], value: Self.classVersion)
+        StaticProperty<OcaClassVersionNumber>(
+            propertyIDs: [OcaPropertyID("1.2")],
+            value: Self.classVersion
+        )
     }
 
     public class var classIdentification: OcaClassIdentification {
         OcaClassIdentification(classID: classID, classVersion: classVersion)
     }
-    
+
     // 1.3
     public let objectNumber: OcaONo
     private var _objectNumber: StaticProperty<OcaONo> {
         StaticProperty<OcaONo>(propertyIDs: [OcaPropertyID("1.3")], value: objectNumber)
     }
 
-    @OcaProperty(propertyID: OcaPropertyID("1.4"),
-                 getMethodID: OcaMethodID("1.2"))
+    @OcaProperty(
+        propertyID: OcaPropertyID("1.4"),
+        getMethodID: OcaMethodID("1.2")
+    )
     public var lockable: OcaProperty<OcaBoolean>.State
-    
-    @OcaProperty(propertyID: OcaPropertyID("1.5"),
-                 getMethodID: OcaMethodID("1.5"))
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("1.5"),
+        getMethodID: OcaMethodID("1.5")
+    )
     public var role: OcaProperty<OcaString>.State
-    
+
     // necessary because property wrappers are private
     func _subscribeRole() async {
-        await self._role.subscribe(self)
+        await _role.subscribe(self)
     }
-    
+
     required init(objectNumber: OcaONo = OcaInvalidONo) {
         self.objectNumber = objectNumber
     }
-    
+
     func get(classIdentification: inout OcaClassIdentification) async throws {
-        try await sendCommandRrq(methodID: OcaMethodID("1.1"),
-                                 responseParameterCount: 1,
-                                 responseParameters: &classIdentification)
+        try await sendCommandRrq(
+            methodID: OcaMethodID("1.1"),
+            responseParameterCount: 1,
+            responseParameters: &classIdentification
+        )
     }
-    
+
     public func lockTotal() async throws {
         try await sendCommandRrq(methodID: OcaMethodID("1.3"))
     }
-    
+
     public func unlock() async throws {
         try await sendCommandRrq(methodID: OcaMethodID("1.4"))
     }
-        
+
     func lockReadOnly() async throws {
         try await sendCommandRrq(methodID: OcaMethodID("1.6"))
     }
-    
+
     public var isContainer: Bool {
         false
     }
-    
+
     public var description: String {
-        if case .success(let value) = self.role {
+        if case let .success(value) = role {
             return "\(type(of: self))(objectNumber: \(objectNumber), role: \(value))"
         } else {
             return "\(type(of: self))(objectNumber: \(objectNumber))"
@@ -97,63 +106,73 @@ public class OcaRoot: CustomStringConvertible, ObservableObject {
     }
 }
 
-fileprivate extension String {
+private extension String {
     func deletingPrefix(_ prefix: String) -> String? {
-        guard self.hasPrefix(prefix) else { return nil }
-        return String(self.dropFirst(prefix.count))
+        guard hasPrefix(prefix) else { return nil }
+        return String(dropFirst(prefix.count))
     }
 }
 
-extension OcaRoot {
+public extension OcaRoot {
     private subscript(checkedMirrorDescendant key: String) -> Any {
-        return Mirror(reflecting: self).descendant(key)!
+        Mirror(reflecting: self).descendant(key)!
     }
 
     private var allKeyPaths: [String: PartialKeyPath<OcaRoot>] {
         // TODO: Mirror is inefficient
         var membersToKeyPaths = [String: PartialKeyPath<OcaRoot>]()
         let mirror = Mirror(reflecting: self)
-        for case (let key?, _) in mirror.children {
+        for case let (key?, _) in mirror.children {
             guard let dictionaryKey = key.deletingPrefix("_") else { continue }
-            membersToKeyPaths[dictionaryKey] = \Self.[checkedMirrorDescendant: key] as PartialKeyPath
+            membersToKeyPaths[dictionaryKey] = \Self
+                .[checkedMirrorDescendant: key] as PartialKeyPath
         }
         return membersToKeyPaths
     }
-    
+
     private var staticPropertyKeyPaths: [String: PartialKeyPath<OcaRoot>] {
         ["classID": \._classID,
          "classVersion": \._classVersion,
          "objectNumber": \._objectNumber]
     }
-    
-    public var allPropertyKeyPaths: [String: PartialKeyPath<OcaRoot>] {
+
+    var allPropertyKeyPaths: [String: PartialKeyPath<OcaRoot>] {
         staticPropertyKeyPaths.merging(
             allKeyPaths.filter { self[keyPath: $0.value] is any OcaPropertyRepresentable },
-            uniquingKeysWith: { old, _ in old })
+            uniquingKeysWith: { old, _ in old }
+        )
     }
 
-    public func property<Value: Codable>(keyPath: PartialKeyPath<OcaRoot>) -> OcaProperty<Value>.State {
+    func property<Value: Codable>(keyPath: PartialKeyPath<OcaRoot>) -> OcaProperty<Value>.State {
         let storageKeyPath = keyPath as! ReferenceWritableKeyPath<OcaRoot, OcaProperty<Value>>
-        let wrappedKeyPath = keyPath.appending(path: \OcaProperty<Value>.currentValue) as! ReferenceWritableKeyPath<OcaRoot, OcaProperty<Value>.State>
-        return OcaProperty<Value>[_enclosingInstance: self, wrapped: wrappedKeyPath, storage: storageKeyPath]
+        let wrappedKeyPath = keyPath
+            .appending(path: \OcaProperty<Value>.currentValue) as! ReferenceWritableKeyPath<
+                OcaRoot,
+                OcaProperty<Value>.State
+            >
+        return OcaProperty<Value>[_enclosingInstance: self, wrapped: wrappedKeyPath,
+                                  storage: storageKeyPath]
     }
-    
+
     @MainActor
-    func propertyDidChange(eventData: Ocp1EventData) {
+    internal func propertyDidChange(eventData: Ocp1EventData) {
         let decoder = BinaryDecoder(config: .ocp1Configuration)
-        guard let propertyID = try? decoder.decode(OcaPropertyID.self,
-                                                   from: eventData.eventParameters) else { return }
-        
-        allKeyPaths.forEach { (keyPathString, keyPath) in
+        guard let propertyID = try? decoder.decode(
+            OcaPropertyID.self,
+            from: eventData.eventParameters
+        ) else { return }
+
+        allKeyPaths.forEach { _, keyPath in
             if let value = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable),
-               value.propertyIDs.contains(propertyID) {
+               value.propertyIDs.contains(propertyID)
+            {
                 try? value.onEvent(self, eventData)
                 return
             }
         }
     }
-        
-    public func subscribe() async throws {
+
+    func subscribe() async throws {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
         do {
@@ -163,21 +182,21 @@ extension OcaRoot {
             // FIXME: in our device implementation not all properties can be subcribed to
         }
     }
-    
-    public func unsubscribe() async throws {
+
+    func unsubscribe() async throws {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
         try await connectionDelegate.removeSubscription(event: event)
     }
-    
-    public func refreshAll() async {
+
+    func refreshAll() async {
         for (_, keyPath) in allPropertyKeyPaths {
             let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
             await property.refresh(self)
         }
     }
 
-    public func refresh() async {
+    func refresh() async {
         for (_, keyPath) in allPropertyKeyPaths {
             let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
             if !property.isInitial {
@@ -186,27 +205,27 @@ extension OcaRoot {
         }
     }
 
-    var isSubscribed: Bool {
+    internal var isSubscribed: Bool {
         get async throws {
             guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
             let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
             return await connectionDelegate.isSubscribed(event: event)
         }
     }
-    
-    struct StaticProperty<T: Codable>: OcaPropertyRepresentable {
+
+    internal struct StaticProperty<T: Codable>: OcaPropertyRepresentable {
         typealias Value = T
-        
+
         var propertyIDs: [OcaPropertyID]
         var value: T
-        
+
         func refresh(_ object: SwiftOCA.OcaRoot) async {}
         func subscribe(_ object: OcaRoot) async {}
 
         var description: String {
             String(describing: value)
         }
-        
+
         var currentValue: OcaProperty<Value>.State {
             OcaProperty<Value>.State.success(value)
         }

@@ -27,6 +27,6 @@ public struct Ocp1Command: Ocp1Message, Codable {
     let targetONo: OcaONo
     let methodID: OcaMethodID
     let parameters: Ocp1Parameters
-    
-    var messageSize: OcaUint32 { return commandSize }
+
+    var messageSize: OcaUint32 { commandSize }
 }

@@ -14,29 +14,40 @@
 // limitations under the License.
 //
 
-import SwiftUI
-import SwiftOCA
-import Sliders
 import Combine
+import Sliders
+import SwiftOCA
+import SwiftUI
 
-struct OcaDiscreteSliderView<Value: FixedWidthInteger & Codable>: View where Value.Stride: FixedWidthInteger {
-    @Binding var value: OcaBoundedPropertyValue<Value>
-    @State var valuePublisher: CurrentValueSubject<Value, Never>
+struct OcaDiscreteSliderView<Value: FixedWidthInteger & Codable>: View
+    where Value.Stride: FixedWidthInteger
+{
+    @Binding
+    var value: OcaBoundedPropertyValue<Value>
+    @State
+    var valuePublisher: CurrentValueSubject<Value, Never>
     var delay = 0.1
 
     var range: ClosedRange<Value> {
         value.minValue...value.maxValue
     }
-    
+
     init(value: Binding<OcaBoundedPropertyValue<Value>>) {
-        self._value = value
-        self._valuePublisher = State(initialValue: CurrentValueSubject<Value, Never>(value.wrappedValue.value))
+        _value = value
+        _valuePublisher =
+            State(initialValue: CurrentValueSubject<Value, Never>(value.wrappedValue.value))
     }
-    
+
     var body: some View {
-        ValueSlider(value: Binding<Value>(get: { valuePublisher.value }, set: { valuePublisher.send($0) } ), in: range)
-            .onReceive(valuePublisher.debounce(for: .seconds(delay), scheduler: RunLoop.main)) { newValue in
-                value.value = newValue
-            }
+        ValueSlider(
+            value: Binding<Value>(get: { valuePublisher.value }, set: { valuePublisher.send($0) }),
+            in: range
+        )
+        .onReceive(
+            valuePublisher
+                .debounce(for: .seconds(delay), scheduler: RunLoop.main)
+        ) { newValue in
+            value.value = newValue
+        }
     }
 }

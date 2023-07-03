@@ -38,16 +38,19 @@ public struct OcaPositionDescriptor: Codable {
     let coordinateSystem: OcaPositionCoordinateSystem
     let fieldFlags: OcaPositionDescriptorFieldFlags // which values are valid
     let values: (OcaFloat32, OcaFloat32, OcaFloat32, OcaFloat32, OcaFloat32, OcaFloat32)
-    
+
     enum CodingKeys: CodingKey {
         case coordinateSystem
         case fieldFlags
         case values
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        coordinateSystem = try container.decode(OcaPositionCoordinateSystem.self, forKey: .coordinateSystem)
+        coordinateSystem = try container.decode(
+            OcaPositionCoordinateSystem.self,
+            forKey: .coordinateSystem
+        )
         fieldFlags = try container.decode(OcaPositionDescriptorFieldFlags.self, forKey: .fieldFlags)
         var coordinateContainer = try container.nestedUnkeyedContainer(forKey: .values)
         values.0 = try coordinateContainer.decode(OcaFloat32.self)
@@ -57,7 +60,7 @@ public struct OcaPositionDescriptor: Codable {
         values.4 = try coordinateContainer.decode(OcaFloat32.self)
         values.5 = try coordinateContainer.decode(OcaFloat32.self)
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(coordinateSystem, forKey: .coordinateSystem)
@@ -73,20 +76,26 @@ public struct OcaPositionDescriptor: Codable {
 }
 
 public class OcaPhysicalPosition: OcaAgent {
-    public override class var classID: OcaClassID { OcaClassID("1.2.17") }
-    
-    public override class var classVersion: OcaClassVersionNumber { 1 }
-    
-    @OcaProperty(propertyID: OcaPropertyID("3.1"),
-                 getMethodID: OcaMethodID("3.1"))
+    override public class var classID: OcaClassID { OcaClassID("1.2.17") }
+
+    override public class var classVersion: OcaClassVersionNumber { 1 }
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.1"),
+        getMethodID: OcaMethodID("3.1")
+    )
     public var coordinateSystem: OcaProperty<OcaPositionCoordinateSystem>.State
 
-    @OcaProperty(propertyID: OcaPropertyID("3.2"),
-                 getMethodID: OcaMethodID("3.2"))
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.2"),
+        getMethodID: OcaMethodID("3.2")
+    )
     public var positionDescriptorFieldFlags: OcaProperty<OcaPositionDescriptorFieldFlags>.State
 
-    @OcaProperty(propertyID: OcaPropertyID("3.3"),
-                 getMethodID: OcaMethodID("3.3"),
-                 setMethodID: OcaMethodID("3.4"))
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.3"),
+        getMethodID: OcaMethodID("3.3"),
+        setMethodID: OcaMethodID("3.4")
+    )
     public var positionDescriptor: OcaBoundedProperty<OcaPositionDescriptor>.State
 }

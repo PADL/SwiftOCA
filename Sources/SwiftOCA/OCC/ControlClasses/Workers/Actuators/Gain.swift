@@ -14,14 +14,15 @@
 // limitations under the License.
 //
 
-
 import Foundation
 
 public class OcaGain: OcaActuator {
-    public override class var classID: OcaClassID { OcaClassID("1.1.1.5") }
-    
-    @OcaBoundedProperty(propertyID: OcaPropertyID("4.1"),
-                        getMethodID: OcaMethodID("4.1"),
-                        setMethodID: OcaMethodID("4.2"))
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.5") }
+
+    @OcaBoundedProperty(
+        propertyID: OcaPropertyID("4.1"),
+        getMethodID: OcaMethodID("4.1"),
+        setMethodID: OcaMethodID("4.2")
+    )
     public var gain: OcaBoundedProperty<OcaDB>.State
 }

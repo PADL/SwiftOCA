@@ -14,17 +14,22 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 struct OcaLogLegendView: View {
     var value: OcaBoundedPropertyValue<OcaDB>
 
     private func y(_ value: Int) -> CGFloat {
         let dB = Float(value * 10)
-        return 1.0 - CGFloat(OcaDBToGain(dB: dB, minGain: self.value.minValue, maxGain: self.value.maxValue)) / 10
+        return 1.0 -
+            CGFloat(OcaDBToGain(
+                dB: dB,
+                minGain: self.value.minValue,
+                maxGain: self.value.maxValue
+            )) / 10
     }
-    
+
     var body: some View {
         GeometryReader { geo in
             ZStack {

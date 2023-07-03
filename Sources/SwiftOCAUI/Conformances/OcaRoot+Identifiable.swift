@@ -14,14 +14,13 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 extension OcaRoot: Identifiable {
     public typealias ID = OcaONo
-    
+
     public var id: ID {
-        self.objectNumber
+        objectNumber
     }
 }
-

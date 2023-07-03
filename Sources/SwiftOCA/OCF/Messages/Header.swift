@@ -16,7 +16,7 @@
 
 import Foundation
 
-let Ocp1SyncValue: OcaUint8 = 0x3b
+let Ocp1SyncValue: OcaUint8 = 0x3B
 let Ocp1ProtocolVersion1: OcaUint16 = 1
 let Ocp1ProtocolVersion: OcaUint16 = Ocp1ProtocolVersion1
 
@@ -25,14 +25,14 @@ struct Ocp1Header: Codable {
     var pduSize: OcaUint32
     var pduType: OcaMessageType
     var messageCount: OcaUint16
-    
+
     init(pduType: OcaMessageType, messageCount: OcaUint16) {
-        self.protocolVersion = Ocp1ProtocolVersion
-        self.pduSize = 0
+        protocolVersion = Ocp1ProtocolVersion
+        pduSize = 0
         self.pduType = pduType
         self.messageCount = messageCount
     }
-    
+
     init() {
         self.init(pduType: .ocaKeepAlive, messageCount: 0)
     }

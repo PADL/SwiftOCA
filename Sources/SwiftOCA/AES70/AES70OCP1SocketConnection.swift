@@ -17,7 +17,7 @@
 import Foundation
 import Socket
 
-fileprivate extension Errno {
+private extension Errno {
     var connectionFailed: Bool {
         self == .badFileDescriptor || self == .socketShutdown
     }
@@ -25,10 +25,13 @@ fileprivate extension Errno {
 
 public class AES70OCP1SocketConnection: AES70OCP1Connection {
     private let deviceAddress: any SocketAddress
-    var socket: Socket? = nil
-    
+    var socket: Socket?
+
     @MainActor
-    public init(deviceAddress: any SocketAddress, options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()) {
+    public init(
+        deviceAddress: any SocketAddress,
+        options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()
+    ) {
         self.deviceAddress = deviceAddress
         super.init(options: options)
     }
@@ -37,7 +40,7 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
         guard let socket else {
             throw Ocp1Error.notConnected
         }
-        
+
         // TODO: should this be done in a separate task?
         debugPrint("Connecting to \(deviceAddress) on socket \(socket)")
         do {
@@ -47,7 +50,7 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
             debugPrint("Socket connection error \(error)")
             throw error
         }
-    
+
         try await super.connectDevice()
     }
 
@@ -62,7 +65,7 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
 
 public class AES70OCP1UDPConnection: AES70OCP1SocketConnection {
     static let mtu = 1500
-    
+
     override func connectDevice() async throws {
         if socket == nil {
             Socket.configuration = AsyncSocketConfiguration(monitorPriority: .userInitiated)
@@ -70,12 +73,12 @@ public class AES70OCP1UDPConnection: AES70OCP1SocketConnection {
         }
         try await super.connectDevice()
     }
-    
+
     override func read(_ length: Int) async throws -> Data {
         guard let socket else {
             throw Ocp1Error.notConnected
         }
-        
+
         do {
             return try await socket.receiveMessage(Self.mtu)
         } catch let error as Errno {
@@ -86,12 +89,12 @@ public class AES70OCP1UDPConnection: AES70OCP1SocketConnection {
             }
         }
     }
-    
+
     override func write(_ data: Data) async throws -> Int {
         guard let socket else {
             throw Ocp1Error.notConnected
         }
-        
+
         do {
             return try await socket.sendMessage(data)
         } catch let error as Errno {
@@ -112,15 +115,15 @@ public class AES70OCP1TCPConnection: AES70OCP1SocketConnection {
         }
         try await super.connectDevice()
     }
-    
+
     override func read(_ length: Int) async throws -> Data {
         guard let socket else {
             throw Ocp1Error.notConnected
         }
-        
+
         var bytesLeft = length
         var data = Data()
-        
+
         do {
             repeat {
                 let fragment = try await socket.read(bytesLeft)
@@ -136,14 +139,14 @@ public class AES70OCP1TCPConnection: AES70OCP1SocketConnection {
         }
         return data
     }
-    
+
     override func write(_ data: Data) async throws -> Int {
         guard let socket else {
             throw Ocp1Error.notConnected
         }
-        
+
         var bytesWritten = 0
-        
+
         do {
             repeat {
                 bytesWritten += try await socket.write(data.subdata(in: bytesWritten..<data.count))
@@ -155,7 +158,7 @@ public class AES70OCP1TCPConnection: AES70OCP1SocketConnection {
                 throw error
             }
         }
-        
+
         return bytesWritten
     }
 }

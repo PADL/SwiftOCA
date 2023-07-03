@@ -25,10 +25,11 @@ public enum OcaSensorReadingState: OcaUint8, Codable {
 }
 
 public class OcaSensor: OcaWorker {
-    public override class var classID: OcaClassID { OcaClassID("1.1.2") }
+    override public class var classID: OcaClassID { OcaClassID("1.1.2") }
 
-    @OcaProperty(propertyID: OcaPropertyID("4.1"),
-                 getMethodID: OcaMethodID("4.1"))
+    @OcaProperty(
+        propertyID: OcaPropertyID("4.1"),
+        getMethodID: OcaMethodID("4.1")
+    )
     public var state: OcaProperty<OcaSensorReadingState>.State
 }
-

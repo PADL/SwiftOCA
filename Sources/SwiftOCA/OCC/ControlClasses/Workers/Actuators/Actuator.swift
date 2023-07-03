@@ -14,14 +14,12 @@
 // limitations under the License.
 //
 
-
 import Foundation
 
 public class OcaActuator: OcaWorker {
     // 3.1
-    public override class var classID: OcaClassID { OcaClassID("1.1.1") }
-    
-    // 3.2
-    public override class var classVersion: OcaClassVersionNumber { OcaClassVersionNumber(2) }
-}
+    override public class var classID: OcaClassID { OcaClassID("1.1.1") }
 
+    // 3.2
+    override public class var classVersion: OcaClassVersionNumber { OcaClassVersionNumber(2) }
+}

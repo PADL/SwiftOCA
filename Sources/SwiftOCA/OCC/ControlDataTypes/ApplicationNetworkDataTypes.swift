@@ -17,7 +17,7 @@
 import Foundation
 
 public enum OcaApplicationNetworkCommand: OcaUint8, Codable {
-    case `none` = 0
+    case none = 0
     case prepare = 1
     case start = 2
     case pause = 3

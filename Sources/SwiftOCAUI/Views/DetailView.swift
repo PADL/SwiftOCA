@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 public protocol OcaViewRepresentable: OcaRoot {
     var viewType: any OcaView.Type { get }
@@ -23,25 +23,27 @@ public protocol OcaViewRepresentable: OcaRoot {
 
 extension Array where Element: OcaRoot {
     var allMembersAreViewRepresentable: Bool {
-        self.allSatisfy { $0 is OcaViewRepresentable }
+        allSatisfy { $0 is OcaViewRepresentable }
     }
 }
 
 public struct OcaDetailView: OcaView {
-    @StateObject var object: OcaRoot
-    @Environment(\.lastError) var lastError
+    @StateObject
+    var object: OcaRoot
+    @Environment(\.lastError)
+    var lastError
 
     public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
-        self._object = StateObject(wrappedValue: connection.resolve(object: object)! )
+        _object = StateObject(wrappedValue: connection.resolve(object: object)!)
     }
-    
+
     public init(_ object: OcaRoot) {
-        self._object = StateObject(wrappedValue: object)
+        _object = StateObject(wrappedValue: object)
     }
-    
+
     public var body: some View {
         let metatype = type(of: object)
-        
+
         Group {
             if metatype == OcaBlock.self {
                 OcaBlockNavigationStackView(object)

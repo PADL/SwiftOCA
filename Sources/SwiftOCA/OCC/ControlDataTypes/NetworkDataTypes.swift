@@ -17,7 +17,7 @@
 import Foundation
 
 public enum OcaNetworkLinkType: OcaUint8, Codable {
-    case `none` = 0
+    case none = 0
     case ethernetWired = 1
     case ethernetWireless = 2
     case usb = 3
@@ -25,7 +25,7 @@ public enum OcaNetworkLinkType: OcaUint8, Codable {
 }
 
 public enum OcaNetworkMediaProtocol: OcaUint8, Codable {
-    case `none` = 0
+    case none = 0
     case av3 = 1
     case avbtp = 2
     case dante = 3
@@ -37,7 +37,7 @@ public enum OcaNetworkMediaProtocol: OcaUint8, Codable {
 }
 
 public enum OcaNetworkControlProtocol: OcaUint8, Codable {
-    case `none` = 0
+    case none = 0
     case ocp01 = 1 // TCP/IP
     case ocp02 = 2 // USB
     case ocp03 = 3 // JSON

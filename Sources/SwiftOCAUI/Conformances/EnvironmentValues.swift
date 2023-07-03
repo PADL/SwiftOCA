@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import SwiftOCA
+import SwiftUI
 
 private struct NavigationPathKey: EnvironmentKey {
     static let defaultValue = Binding<NavigationPath>(get: { NavigationPath() }, set: { _ in })
@@ -29,7 +29,7 @@ extension EnvironmentValues {
 }
 
 private struct LastErrorKey: EnvironmentKey {
-    static let defaultValue = Binding<Error?>(get: { nil}, set: { _ in })
+    static let defaultValue = Binding<Error?>(get: { nil }, set: { _ in })
 }
 
 extension EnvironmentValues {

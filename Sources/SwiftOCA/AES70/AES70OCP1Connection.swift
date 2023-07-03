@@ -14,26 +14,29 @@
 // limitations under the License.
 //
 
-import Foundation
 import AsyncAlgorithms
+import Foundation
 #if canImport(Combine)
 import Combine
 #elseif canImport(OpenCombine)
 import OpenCombine
 #endif
 
-typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData) -> Void
+typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData)
+    -> ()
 
-fileprivate var NSEC_PER_SEC: UInt64 = 1_000_000_000
+private var NSEC_PER_SEC: UInt64 = 1_000_000_000
 
 public struct AES70OCP1ConnectionOptions {
     let automaticReconnect: Bool
     let connectionTimeout: TimeInterval
     let responseTimeout: TimeInterval
 
-    public init(automaticReconnect: Bool = false,
-                connectionTimeout: TimeInterval = 5,
-                responseTimeout: TimeInterval = 5) {
+    public init(
+        automaticReconnect: Bool = false,
+        connectionTimeout: TimeInterval = 5,
+        responseTimeout: TimeInterval = 5
+    ) {
         self.automaticReconnect = automaticReconnect
         self.connectionTimeout = connectionTimeout
         self.responseTimeout = responseTimeout
@@ -41,26 +44,27 @@ public struct AES70OCP1ConnectionOptions {
 }
 
 public class AES70OCP1Connection: ObservableObject {
-    /// This is effectively an actor (most methods are marked @MainActor) except it supports subclasses for different
+    /// This is effectively an actor (most methods are marked @MainActor) except it supports
+    /// subclasses for different
     /// protocol types
 
     @MainActor
     let options: AES70OCP1ConnectionOptions
-    
+
     /// Keepalive/ping interval (only necessary for UDP)
     @MainActor
     public var keepAliveInterval: OcaUint16 {
-        return 0
+        0
     }
-    
+
     /// Object interning, main thread only
     @MainActor
-    var objects = [OcaONo:OcaRoot]()
-    
+    var objects = [OcaONo: OcaRoot]()
+
     /// Root block, immutable
     @MainActor
     public let rootBlock = OcaBlock(objectNumber: OcaRootBlockONo)
-    
+
     /// Well known managers, immutable
     @MainActor
     let subscriptionManager = OcaSubscriptionManager()
@@ -68,32 +72,32 @@ public class AES70OCP1Connection: ObservableObject {
     public let deviceManager = OcaDeviceManager()
     @MainActor
     public let networkManager = OcaNetworkManager()
-    
+
     /// Subscription callbacks, main thread only
     @MainActor
-    var subscriptions = [OcaEvent:AES70SubscriptionCallback]()
-    
+    var subscriptions = [OcaEvent: AES70SubscriptionCallback]()
+
     // TODO: use SwiftAtomics here?
     @MainActor
     private var nextCommandHandle = OcaUint32(100)
-        
+
     @MainActor
     var lastMessageSentTime = Date.distantPast
-    
+
     /// Monitor structure for matching requests and responses
     actor Monitor {
         static let MinimumPduSize = 7
 
         private let connection: AES70OCP1Connection!
         typealias Continuation = CheckedContinuation<Ocp1Response, Error>
-        private var continuations = [OcaUint32:Continuation]()
+        private var continuations = [OcaUint32: Continuation]()
         private var lastMessageReceivedTime = Date.distantPast
-        private var task: Task<Void, Error>? = nil
-        
+        private var task: Task<(), Error>?
+
         init(_ connection: AES70OCP1Connection) {
             self.connection = connection
         }
-        
+
         func run() {
             precondition(task == nil)
             task = Task.detached { [unowned self] in
@@ -109,72 +113,73 @@ public class AES70OCP1Connection: ObservableObject {
                 }
             }
         }
-        
+
         func stop() {
             precondition(task != nil)
-            self.continuations.forEach {
+            continuations.forEach {
                 $0.1.resume(throwing: Ocp1Error.notConnected)
             }
-            self.continuations.removeAll()
-            self.lastMessageReceivedTime = Date.distantPast
+            continuations.removeAll()
+            lastMessageReceivedTime = Date.distantPast
             task?.cancel()
             task = nil
         }
-    
+
         var isCancelled: Bool {
             guard let task else { return true }
             return task.isCancelled
         }
-        
+
         func subscribe(handle: OcaUint32, continuation: Continuation) {
-            self.continuations[handle] = continuation
+            continuations[handle] = continuation
         }
-        
+
         func resume(with response: Ocp1Response) throws {
-            guard let continuation = self.continuations[response.handle] else {
+            guard let continuation = continuations[response.handle] else {
                 throw Ocp1Error.invalidHandle
             }
 
-            self.continuations.removeValue(forKey: response.handle)
+            continuations.removeValue(forKey: response.handle)
 
             Task {
                 continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
             }
         }
-    
+
         func updateLastMessageReceivedTime() {
-            self.lastMessageReceivedTime = Date()
+            lastMessageReceivedTime = Date()
         }
-        
+
         var connectionIsStale: Bool {
             get async {
-                return await lastMessageReceivedTime + TimeInterval(3 * connection.keepAliveInterval) < Date()
+                await lastMessageReceivedTime + TimeInterval(3 * connection.keepAliveInterval) <
+                    Date()
             }
         }
     }
-    
+
     /// actor for monitoring response and matching them with requests
     @MainActor
     var monitor: Monitor? = nil
-    
+
     @MainActor
-    private var keepAliveTask: Task<Void, Error>? = nil
-    
+    private var keepAliveTask: Task<(), Error>? = nil
+
     @MainActor
     public init(options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()) {
         self.options = options
-        add(object: self.rootBlock)
-        add(object: self.subscriptionManager)
-        add(object: self.deviceManager)
+        add(object: rootBlock)
+        add(object: subscriptionManager)
+        add(object: deviceManager)
     }
-    
+
     @MainActor
-    func getNextCommandHandle() async -> OcaUint32{
+    func getNextCommandHandle() async -> OcaUint32 {
         let handle = nextCommandHandle
         nextCommandHandle += 1
         return handle
     }
-    
+
     @MainActor
     func reconnectDevice() async throws {
         try await disconnectDevice(clearObjectCache: false)
@@ -186,10 +191,12 @@ public class AES70OCP1Connection: ObservableObject {
         monitor = Monitor(self)
         await monitor!.run()
 
-        if self.keepAliveInterval != 0 {
+        if keepAliveInterval != 0 {
             keepAliveTask = Task.detached(priority: .background) {
                 repeat {
-                    if await self.lastMessageSentTime + TimeInterval(self.keepAliveInterval) < Date() {
+                    if await self
+                        .lastMessageSentTime + TimeInterval(self.keepAliveInterval) < Date()
+                    {
                         try await self.sendKeepAlive()
                     }
                     try await Task.sleep(nanoseconds: NSEC_PER_SEC * UInt64(self.keepAliveInterval))
@@ -197,16 +204,16 @@ public class AES70OCP1Connection: ObservableObject {
             }
         }
 
-        self.subscriptions = [:]
-        
+        subscriptions = [:]
+
         // refresh all objects
-        for (_, object) in self.objects {
+        for (_, object) in objects {
             await object.refresh()
         }
-        
-        self.objectWillChange.send()
+
+        objectWillChange.send()
     }
-    
+
     @MainActor
     func disconnectDevice(clearObjectCache: Bool) async throws {
         if let keepAliveTask {
@@ -218,15 +225,15 @@ public class AES70OCP1Connection: ObservableObject {
             self.monitor = nil
         }
         if clearObjectCache {
-            self.objects = [:]
+            objects = [:]
         }
 
-        self.objectWillChange.send()
+        objectWillChange.send()
     }
-    
+
     public var isConnected: Bool {
         get async {
-            await self.monitor != nil
+            await monitor != nil
         }
     }
 
@@ -234,22 +241,22 @@ public class AES70OCP1Connection: ObservableObject {
     func read(_ length: Int) async throws -> Data {
         fatalError("read must be implemented by a concrete subclass of AES70OCP1Connection")
     }
-    
+
     func write(_ data: Data) async throws -> Int {
         fatalError("write must be implemented by a concrete subclass of AES70OCP1Connection")
     }
 }
 
 /// Public API
-extension AES70OCP1Connection {
+public extension AES70OCP1Connection {
     @MainActor
-    public func connect() async throws {
+    func connect() async throws {
         try await connectDevice()
         try? await refreshDeviceTree()
     }
 
     @MainActor
-    public func disconnect() async throws {
+    func disconnect() async throws {
         try await removeSubscriptions()
         try await disconnectDevice(clearObjectCache: true)
     }
