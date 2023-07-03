@@ -16,6 +16,62 @@
 
 import Foundation
 
+public enum OcaPositionCoordinateSystem: OcaUint8, Codable {
+    case robotic = 1
+    case ituAudioObjectBasedPolar = 2
+    case ituAudioObjectBasedCartesian = 3
+    case ituAudioSceneBasedPolar = 4
+    case ituAudioSceneBasedCartesian = 5
+    case nav = 6
+    case proprietaryBase = 128
+}
+
+public struct OcaPositionDescriptorFieldFlags: OptionSet, Codable {
+    public let rawValue: OcaBitSet16
+
+    public init(rawValue: OcaBitSet16) {
+        self.rawValue = rawValue
+    }
+}
+
+public struct OcaPositionDescriptor: Codable {
+    let coordinateSystem: OcaPositionCoordinateSystem
+    let fieldFlags: OcaPositionDescriptorFieldFlags // which values are valid
+    let values: (OcaFloat32, OcaFloat32, OcaFloat32, OcaFloat32, OcaFloat32, OcaFloat32)
+    
+    enum CodingKeys: CodingKey {
+        case coordinateSystem
+        case fieldFlags
+        case values
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        coordinateSystem = try container.decode(OcaPositionCoordinateSystem.self, forKey: .coordinateSystem)
+        fieldFlags = try container.decode(OcaPositionDescriptorFieldFlags.self, forKey: .fieldFlags)
+        var coordinateContainer = try container.nestedUnkeyedContainer(forKey: .values)
+        values.0 = try coordinateContainer.decode(OcaFloat32.self)
+        values.1 = try coordinateContainer.decode(OcaFloat32.self)
+        values.2 = try coordinateContainer.decode(OcaFloat32.self)
+        values.3 = try coordinateContainer.decode(OcaFloat32.self)
+        values.4 = try coordinateContainer.decode(OcaFloat32.self)
+        values.5 = try coordinateContainer.decode(OcaFloat32.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(coordinateSystem, forKey: .coordinateSystem)
+        try container.encode(fieldFlags, forKey: .fieldFlags)
+        var coordinateContainer = container.nestedUnkeyedContainer(forKey: .values)
+        try coordinateContainer.encode(values.0)
+        try coordinateContainer.encode(values.1)
+        try coordinateContainer.encode(values.2)
+        try coordinateContainer.encode(values.3)
+        try coordinateContainer.encode(values.4)
+        try coordinateContainer.encode(values.5)
+    }
+}
+
 public class OcaPhysicalPosition: OcaAgent {
     public override class var classID: OcaClassID { OcaClassID("1.2.17") }
     
