@@ -29,3 +29,47 @@ public class OcaBasicSensor: OcaSensor {
 public class OcaBooleanSensor: OcaGenericBasicSensor<OcaBoolean> {
     public override class var classID: OcaClassID { OcaClassID("1.1.2.1.1") }
 }
+
+public class OcaInt8Sensor: OcaGenericBasicSensor<OcaInt8> {
+    public override class var classID: OcaClassID { OcaClassID("1.1.2.1.2") }
+}
+
+public class OcaInt16Sensor: OcaGenericBasicSensor<OcaInt16> {
+    public override class var classID: OcaClassID { OcaClassID("1.1.2.1.3") }
+}
+
+public class OcaInt32Sensor: OcaGenericBasicSensor<OcaInt32> {
+    public override class var classID: OcaClassID { OcaClassID("1.1.2.1.4") }
+}
+
+public class OcaInt64Sensor: OcaGenericBasicSensor<OcaInt64> {
+    public override class var classID: OcaClassID { OcaClassID("1.1.2.1.5") }
+}
+
+public class OcaUint8Sensor: OcaGenericBasicSensor<OcaUint8> {
+    public override class var classID: OcaClassID { OcaClassID("1.1.2.1.6") }
+}
+
+public class OcaUint16Sensor: OcaGenericBasicSensor<OcaUint16> {
+    public override class var classID: OcaClassID { OcaClassID("1.1.2.1.7") }
+}
+
+public class OcaUint32Sensor: OcaGenericBasicSensor<OcaUint32> {
+    public override class var classID: OcaClassID { OcaClassID("1.1.2.1.8") }
+}
+
+public class OcaUint64Sensor: OcaGenericBasicSensor<OcaUint64> {
+    public override class var classID: OcaClassID { OcaClassID("1.1.2.1.9") }
+}
+
+public class OcaFloat32Sensor: OcaGenericBasicSensor<OcaFloat32> {
+    public override class var classID: OcaClassID { OcaClassID("1.1.2.1.10") }
+}
+
+public class OcaFloat64Sensor: OcaGenericBasicSensor<OcaFloat64> {
+    public override class var classID: OcaClassID { OcaClassID("1.1.2.1.11") }
+}
+
+public class OcaStringSensor: OcaGenericBasicSensor<OcaString> {
+    public override class var classID: OcaClassID { OcaClassID("1.1.2.1.12") }
+}

@@ -122,7 +122,17 @@ public class AES70ClassRegistry {
         register(OcaSensor.self)
         register(OcaBasicSensor.self)
         register(OcaBooleanSensor.self)
+        register(OcaInt8Sensor.self)
+        register(OcaInt16Sensor.self)
+        register(OcaInt32Sensor.self)
+        register(OcaInt64Sensor.self)
+        register(OcaUint8Sensor.self)
+        register(OcaUint16Sensor.self)
+        register(OcaUint32Sensor.self)
+        register(OcaUint64Sensor.self)
+        register(OcaFloat32Sensor.self)
+        register(OcaFloat64Sensor.self)
+        register(OcaStringSensor.self)
         register(OcaLevelSensor.self)
     }
-
 }
