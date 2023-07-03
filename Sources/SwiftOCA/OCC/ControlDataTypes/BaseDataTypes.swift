@@ -325,7 +325,7 @@ public struct OcaPositionDescriptor: Codable {
     }
     
     public init(from decoder: Decoder) throws {
-        var container = try decoder.container(keyedBy: CodingKeys.self)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
         coordinateSystem = try container.decode(OcaPositionCoordinateSystem.self, forKey: .coordinateSystem)
         fieldFlags = try container.decode(OcaPositionDescriptorFieldFlags.self, forKey: .fieldFlags)
         var coordinateContainer = try container.nestedUnkeyedContainer(forKey: .values)
