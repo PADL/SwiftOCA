@@ -78,11 +78,19 @@ public class AES70ClassRegistry {
         // register built-in classes
         register(OcaRoot.self)
         
+        // agents
+        register(OcaAgent.self)
+        register(OcaEventHandler.self)
+        register(OcaPhysicalPosition.self)
+        register(OcaTimeSource.self)
+        
         // managers
         register(OcaManager.self)
-        register(OcaSubscriptionManager.self)
         register(OcaDeviceManager.self)
-        
+        //register(OcaLibraryManager.self)
+        register(OcaNetworkManager.self)
+        register(OcaSubscriptionManager.self)
+
         // workers
         register(OcaWorker.self)
         register(OcaBlock.self)

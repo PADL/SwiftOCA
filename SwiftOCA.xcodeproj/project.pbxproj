@@ -388,11 +388,11 @@
 		D3E6E1842A3ACA6C00BF7095 /* Managers */ = {
 			isa = PBXGroup;
 			children = (
-				D3E6E1852A3ACA6C00BF7095 /* SubscriptionManager.swift */,
 				D3E6E1862A3ACA6C00BF7095 /* Manager.swift */,
 				D3E6E1872A3ACA6C00BF7095 /* LibraryManager.swift */,
 				D3E6E1882A3ACA6C00BF7095 /* DeviceManager.swift */,
 				D3E6E2772A417AF000BF7095 /* NetworkManager.swift */,
+				D3E6E1852A3ACA6C00BF7095 /* SubscriptionManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
