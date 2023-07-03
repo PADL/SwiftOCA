@@ -40,21 +40,22 @@ public class AES70ClassRegistry {
     
     private func match(classIdentification: OcaClassIdentification) -> OcaClassIdentification? {
         var classID: OcaClassID? = classIdentification.classID
-        
-        // FIXME check classVersion properly
-        if classIdentification.classVersion < 2 {
-            return nil
-        }
-        
+
         repeat {
-            let id = OcaClassIdentification(classID: classID!, classVersion: 2)
-            
-            if classIDMap.keys.contains(id) {
-                return id
-            }
+            var classVersion = classIdentification.classVersion
+
+            repeat {
+                // FIXME: why are we even looking up by class version?
+                let id = OcaClassIdentification(classID: classID!, classVersion: classVersion)
+
+                if classIDMap.keys.contains(id) {
+                    return id
+                }
+                
+                classVersion = classVersion - 1
+            } while classVersion != 0
             
             classID = classID?.parent
-            
         } while classID != nil
 
         return nil
