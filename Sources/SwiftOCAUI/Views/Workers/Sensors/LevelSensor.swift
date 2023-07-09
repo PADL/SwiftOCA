@@ -23,7 +23,7 @@ private struct OcaScaledGaugeView: View {
     private let gradient = Gradient(colors: [.green, .yellow, .orange, .red])
 
     var value: OcaBoundedPropertyValue<OcaDB>
-    
+
     private var scaled: OcaFloat32 {
         OcaDBToFaderGain(dB: value.value, in: value.range)
     }
