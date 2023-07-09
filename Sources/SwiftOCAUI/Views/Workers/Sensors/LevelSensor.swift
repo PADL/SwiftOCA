@@ -28,11 +28,7 @@ private struct OcaLogGaugeView: View {
     }
 
     var boundedLinear: OcaBoundedPropertyValue<OcaFloat32> {
-        OcaBoundedPropertyValue<OcaFloat32>(
-            value: linear / 10,
-            minValue: 0.0,
-            maxValue: 1.0
-        )
+        OcaBoundedPropertyValue<OcaFloat32>(value: linear / 10, in: 0.0...1.0)
     }
 
     var body: some View {
@@ -60,7 +56,7 @@ extension OcaLevelSensor: OcaViewRepresentable {
             return readingValue
         } else {
             // FIXME: constants
-            return OcaBoundedPropertyValue(value: 0.0, minValue: -144.0, maxValue: 0.0)
+            return OcaBoundedPropertyValue(value: 0.0, in: -144.0...0.0)
         }
     }
 }

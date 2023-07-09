@@ -30,9 +30,9 @@ public struct OcaBoundedPropertyValue<Value: Codable & Comparable>: Codable,
     public var value: Value
     public var range: ClosedRange<Value>
 
-    public init(value: Value, minValue: Value, maxValue: Value) {
+    public init(value: Value, in range: ClosedRange<Value>) {
         self.value = value
-        range = minValue...maxValue
+        self.range = range
     }
 
     fileprivate var minValue: Value {

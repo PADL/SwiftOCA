@@ -30,8 +30,7 @@ private extension Binding where Value == OcaProperty<OcaBoundedPropertyValue<Oca
             if case let .success(positionValue) = self.wrappedValue {
                 return positionValue
             } else {
-                // FIXME: constants
-                return OcaBoundedPropertyValue(value: 0.0, minValue: -1.0, maxValue: 1.0)
+                return OcaBoundedPropertyValue(value: 0.0, in: -1.0...1.0)
             }
         }, set: { newValue in
             self.wrappedValue = .success(newValue)
