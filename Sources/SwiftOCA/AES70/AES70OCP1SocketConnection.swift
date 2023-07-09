@@ -17,20 +17,20 @@
 import Foundation
 import Socket
 
-fileprivate extension Errno {
+private extension Errno {
     var connectionFailed: Bool {
         self == .badFileDescriptor || self == .socketShutdown
     }
 }
 
-fileprivate extension Data {
+private extension Data {
     var socketAddress: any SocketAddress {
         var data = self
         return data.withUnsafeMutableBytes { unbound -> (any SocketAddress) in
             unbound
                 .withMemoryRebound(to: sockaddr.self) { sa -> (any SocketAddress) in
-                    let socketAddress: (any SocketAddress)
-                    
+                    let socketAddress: any SocketAddress
+
                     switch sa.baseAddress!.pointee.sa_family {
                     case UInt8(AF_INET):
                         socketAddress = IPv4SocketAddress.withUnsafePointer(sa.baseAddress!)
@@ -41,7 +41,7 @@ fileprivate extension Data {
                     default:
                         fatalError("unsupported address family")
                     }
-                    
+
                     return socketAddress
                 }
         }
