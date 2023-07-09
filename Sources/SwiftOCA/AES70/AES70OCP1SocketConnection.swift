@@ -24,7 +24,7 @@ private extension Errno {
 }
 
 public class AES70OCP1SocketConnection: AES70OCP1Connection {
-    let monitorInterval: UInt64 = .max
+    let monitorInterval: UInt64 = 30 * NSEC_PER_MSEC
     private let deviceAddress: any SocketAddress
     var socket: Socket?
 
