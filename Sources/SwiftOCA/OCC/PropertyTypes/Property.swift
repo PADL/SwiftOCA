@@ -154,7 +154,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             case let .success(value):
                 await perform(object) {
                     try await $0.setValueIfMutable(object, value)
-                    return value
                 }
             case .initial:
                 await refresh(object)
@@ -196,8 +195,15 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         self.setValueTransformer = setValueTransformer
     }
 
+    private func _send(_ object: OcaRoot, _ state: State) {
+        subject.send(state)
+        DispatchQueue.main.async {
+            object.objectWillChange.send()
+        }
+    }
+
     @MainActor
-    private func getValueAndSubscribe(_ object: OcaRoot) async throws -> Value {
+    private func getValueAndSubscribe(_ object: OcaRoot) async throws {
         guard let getMethodID else {
             throw Ocp1Error.propertyIsImmutable
         }
@@ -209,7 +215,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             try await object.subscribe()
         }
 
-        return value
+        _send(object, .success(value))
     }
 
     @MainActor
@@ -236,14 +242,14 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
 
     private func perform(
         _ object: OcaRoot,
-        _ block: @escaping (_ storage: Self) async throws -> Value
+        _ block: @escaping (_ storage: Self) async throws -> ()
     ) async {
         guard let connectionDelegate = object.connectionDelegate else {
             subject.send(.failure(Ocp1Error.noConnectionDelegate))
             return
         }
 
-        subject.send(.loading)
+        _send(object, .loading)
 
         guard await connectionDelegate.isConnected else {
             debugPrint("property handler called before connection established")
@@ -251,18 +257,13 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
 
         do {
-            let value = try await block(self)
-            subject.send(.success(value))
+            try await block(self)
         } catch is CancellationError {
             // if task cancelled due to a view being dismissed, reset state to initial
-            subject.send(.initial)
+            _send(object, .initial)
         } catch {
             debugPrint("property handler received error from device: \(error)")
-            subject.send(.failure(error))
-        }
-
-        DispatchQueue.main.async {
-            object.objectWillChange.send()
+            _send(object, .failure(error))
         }
     }
 
@@ -278,10 +279,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
 
     public func refresh(_ object: OcaRoot) async {
-        subject.send(.initial)
-        DispatchQueue.main.async {
-            object.objectWillChange.send()
-        }
+        _send(object, .initial)
     }
 
     func onEvent(_ object: OcaRoot, _ eventData: Ocp1EventData) throws {
@@ -296,10 +294,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
 
         // TODO: how to handle items being deleted
         if eventData.changeType == .currentChanged {
-            subject.send(.success(eventData.propertyValue))
-            DispatchQueue.main.async {
-                object.objectWillChange.send()
-            }
+            _send(object, .success(eventData.propertyValue))
         } else {
             throw Ocp1Error.unhandledEvent
         }
