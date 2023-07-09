@@ -18,21 +18,22 @@ import Sliders
 import SwiftOCA
 import SwiftUI
 
-private struct OcaLogGaugeView: View {
-    let gradient = Gradient(colors: [.green, .yellow, .orange, .red])
+private struct OcaScaledGaugeView: View {
+    private let scale: Float = 10.0
+    private let gradient = Gradient(colors: [.green, .yellow, .orange, .red])
 
     var value: OcaBoundedPropertyValue<OcaDB>
-
-    var linear: OcaFloat32 {
-        powf((value.value - value.range.lowerBound) / value.absoluteRange, 2.0)
+    
+    private var scaled: OcaFloat32 {
+        OcaDBToFaderGain(dB: value.value, in: value.range)
     }
 
-    var boundedLinear: OcaBoundedPropertyValue<OcaFloat32> {
-        OcaBoundedPropertyValue<OcaFloat32>(value: linear / 10, in: 0.0...1.0)
+    private var boundedScaled: OcaBoundedPropertyValue<OcaFloat32> {
+        OcaBoundedPropertyValue<OcaFloat32>(value: scaled / scale, in: 0.0...1.0)
     }
 
     var body: some View {
-        Gauge(value: boundedLinear.value, in: boundedLinear.range) {
+        Gauge(value: boundedScaled.value, in: boundedScaled.range) {
             EmptyView()
         } currentValueLabel: {
             EmptyView()
@@ -41,8 +42,10 @@ private struct OcaLogGaugeView: View {
         } maximumValueLabel: {
             Text(value.range.upperBound.formatted()).rotationEffect(.degrees(90))
         }.tint(gradient)
+            .font(.caption2)
             .labelStyle(.iconOnly)
             .rotationEffect(.degrees(-90))
+            .scaledToFit()
     }
 }
 
@@ -70,7 +73,7 @@ public struct OcaLevelSensorView: OcaView {
     }
 
     public var body: some View {
-        OcaLogGaugeView(value: object.value)
+        OcaScaledGaugeView(value: object.value)
             .showProgressIfWaiting(object.reading)
     }
 }
