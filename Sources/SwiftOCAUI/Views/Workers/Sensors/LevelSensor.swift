@@ -35,16 +35,10 @@ private struct OcaScaledGaugeView: View {
     var body: some View {
         Gauge(value: boundedScaled.value, in: boundedScaled.range) {
             EmptyView()
-        } currentValueLabel: {
-            EmptyView()
-        } minimumValueLabel: {
-            Text(value.range.lowerBound.formatted()).rotationEffect(.degrees(90))
-        } maximumValueLabel: {
-            Text(value.range.upperBound.formatted()).rotationEffect(.degrees(90))
         }.tint(gradient)
-            .font(.caption2)
             .labelStyle(.iconOnly)
             .rotationEffect(.degrees(-90))
+            .scaleEffect(6)
             .scaledToFit()
     }
 }
