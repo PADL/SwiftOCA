@@ -21,30 +21,21 @@ private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 /// Note – these aren't made @MainActor becasue we probably want to run them in the background
 
 extension AES70OCP1Connection {
+    @MainActor
     func isSubscribed(event: OcaEvent) async -> Bool {
-        let isSubscribedTask = Task { @MainActor in
-            subscriptions[event] != nil
-        }
-
-        switch await isSubscribedTask.result {
-        case let .success(value):
-            return value
-        case .failure:
-            return false
-        }
+        subscriptions[event] != nil
     }
 
+    @MainActor
     func addSubscription(
         event: OcaEvent,
         callback: @escaping AES70SubscriptionCallback
     ) async throws {
-        if await subscriptions[event] != nil {
+        if subscriptions[event] != nil {
             throw Ocp1Error.alreadySubscribedToEvent
         }
 
-        Task { @MainActor in
-            subscriptions[event] = callback
-        }
+        subscriptions[event] = callback
 
         try await subscriptionManager.addSubscription(
             event: event,
@@ -55,21 +46,23 @@ extension AES70OCP1Connection {
         )
     }
 
+    @MainActor
     func removeSubscription(event: OcaEvent) async throws {
         try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
-        Task { @MainActor in
-            subscriptions[event] = nil
-        }
+        subscriptions[event] = nil
     }
 
+    @MainActor
     func removeSubscriptions() async throws {
-        for event in await subscriptions.keys {
-            _ = try await removeSubscription(event: event)
+        for event in subscriptions.keys {
+            try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
         }
+        subscriptions.removeAll()
     }
 
+    @MainActor
     func refreshSubscriptions() async throws {
-        for event in await subscriptions.keys {
+        for event in subscriptions.keys {
             try await subscriptionManager.addSubscription(
                 event: event,
                 subscriber: subscriber,

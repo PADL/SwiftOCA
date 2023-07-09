@@ -106,7 +106,6 @@ public class AES70OCP1Connection: ObservableObject {
         func run() {
             precondition(task == nil)
             task = Task.detached { [unowned self] in
-                // FIXME: should we ignore errors from receiveMessage()
                 do {
                     try await self.receiveMessages(connection)
                 } catch Ocp1Error.notConnected {
