@@ -57,8 +57,11 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     let setMethodID: OcaMethodID?
 
     public enum State {
+        /// no value retrieved from device yet
         case initial
+        /// value retrieved from device
         case success(Value)
+        /// value could not be retrieved from device
         case failure(Error)
 
         public var hasValueOrError: Bool {
