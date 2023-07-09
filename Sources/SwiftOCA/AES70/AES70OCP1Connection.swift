@@ -25,6 +25,8 @@ import OpenCombine
 typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData)
     -> ()
 
+// FIXME: these don't appear to be available on non-Darwin platforms
+private var NSEC_PER_MSEC: UInt64 = 1_000_000
 private var NSEC_PER_SEC: UInt64 = 1_000_000_000
 
 public struct AES70OCP1ConnectionOptions {
@@ -50,6 +52,9 @@ public class AES70OCP1Connection: ObservableObject {
 
     @MainActor
     let options: AES70OCP1ConnectionOptions
+
+    /// poll() interval in nanoseconds
+    let monitorInterval: UInt64 = 5 * NSEC_PER_MSEC
 
     /// Keepalive/ping interval (only necessary for UDP)
     @MainActor
