@@ -68,7 +68,10 @@ public class AES70OCP1UDPConnection: AES70OCP1SocketConnection {
 
     override func connectDevice() async throws {
         if socket == nil {
-            Socket.configuration = AsyncSocketConfiguration(monitorPriority: .userInitiated)
+            Socket.configuration = AsyncSocketConfiguration(
+                monitorPriority: .userInitiated,
+                monitorInterval: monitorInterval
+            )
             socket = try await Socket(IPv4Protocol.udp)
         }
         try await super.connectDevice()
@@ -110,7 +113,10 @@ public class AES70OCP1UDPConnection: AES70OCP1SocketConnection {
 public class AES70OCP1TCPConnection: AES70OCP1SocketConnection {
     override func connectDevice() async throws {
         if socket == nil {
-            Socket.configuration = AsyncSocketConfiguration(monitorPriority: .userInitiated)
+            Socket.configuration = AsyncSocketConfiguration(
+                monitorPriority: .userInitiated,
+                monitorInterval: monitorInterval
+            )
             socket = try await Socket(IPv4Protocol.tcp)
         }
         try await super.connectDevice()
