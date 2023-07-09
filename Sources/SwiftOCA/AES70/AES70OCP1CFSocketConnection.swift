@@ -15,7 +15,6 @@
 //
 
 import AsyncAlgorithms
-import AsyncExtensions
 import Foundation
 
 private func AES70OCP1CFSocketConnection_DataCallBack(
@@ -37,7 +36,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         fatalError("must be implemented by subclass")
     }
 
-    private var receivedDataChannel = AsyncBufferedChannel<Data>()
+    private var receivedDataChannel = AsyncChannel<Data>()
     private var receivedData = Data()
 
     @MainActor
@@ -67,7 +66,9 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         let data = Unmanaged<CFData>.fromOpaque(cfData).takeUnretainedValue() as Data
         // FIXME: check for data.count == 0
 
-        receivedDataChannel.send(data as Data)
+        Task {
+            await receivedDataChannel.send(data as Data)
+        }
     }
 
     @MainActor
