@@ -27,10 +27,7 @@ private struct OcaLogSliderView: View {
     var linear: Binding<OcaFloat32> {
         Binding<OcaFloat32>(
             get: {
-                if value.range.lowerBound == 0.0 {
-                    return 0.0
-                }
-                return OcaDBToFaderGain(dB: value.value, in: value.range)
+                OcaDBToFaderGain(dB: value.value, in: value.range)
             },
             set: { newValue in
                 value.value = OcaFaderGainToDB(gain: newValue, in: value.range, step: Self.step)
@@ -71,7 +68,7 @@ private extension Binding where Value == OcaProperty<OcaBoundedPropertyValue<Oca
             if case let .success(gainValue) = self.wrappedValue {
                 return gainValue
             } else {
-                return OcaBoundedPropertyValue(value: 0.0, in: -1.0...1.0)
+                return OcaBoundedPropertyValue(value: 0.0, in: -144.0...20.0)
             }
         }, set: { newValue in
             self.wrappedValue = .success(newValue)
