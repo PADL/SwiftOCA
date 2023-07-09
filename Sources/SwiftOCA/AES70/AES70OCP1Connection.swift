@@ -37,7 +37,7 @@ typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData)
 
 // FIXME: these don't appear to be available on non-Darwin platforms
 var NSEC_PER_MSEC: UInt64 = 1_000_000
-private var NSEC_PER_SEC: UInt64 = 1_000_000_000
+var NSEC_PER_SEC: UInt64 = 1_000_000_000
 
 public struct AES70OCP1ConnectionOptions {
     let automaticReconnect: Bool
