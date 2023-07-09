@@ -139,7 +139,7 @@ public struct OcaVectorProperty<
                 xy.x = subjectValue.x
                 xy.y = eventData.propertyValue
             }
-            _storage._set(_enclosingInstance: object, .success(xy))
+            _storage._send(_enclosingInstance: object, .success(xy))
         default:
             throw Ocp1Error.unhandledEvent
         }

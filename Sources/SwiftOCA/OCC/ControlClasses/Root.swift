@@ -199,7 +199,7 @@ public extension OcaRoot {
     func refresh() async {
         for (_, keyPath) in allPropertyKeyPaths {
             let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
-            if !property.isInitial {
+            if property.hasValueOrError {
                 await property.refresh(self)
             }
         }

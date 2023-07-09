@@ -26,10 +26,10 @@ private struct ShowProgressIfWaitingViewModifier<T: Codable>: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        if state.isLoading {
-            ProgressView()
-        } else {
+        if state.hasValueOrError {
             content
+        } else {
+            ProgressView()
         }
     }
 }

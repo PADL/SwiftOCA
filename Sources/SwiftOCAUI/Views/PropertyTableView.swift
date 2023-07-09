@@ -55,10 +55,10 @@ struct OcaPropertyTableView: OcaView {
                 TableColumn("Name", value: \.name)
                 TableColumn("ID", value: \.idString)
                 TableColumn("Value") {
-                    if $0.value.isLoading {
-                        ProgressView()
-                    } else {
+                    if $0.value.hasValueOrError {
                         Text($0.value.description)
+                    } else {
+                        ProgressView()
                     }
                 }
             } rows: {

@@ -146,7 +146,7 @@ public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiab
             throw Ocp1Error.unhandledEvent
         }
 
-        _storage._set(_enclosingInstance: object, .success(value))
+        _storage._send(_enclosingInstance: object, .success(value))
     }
 
     #if canImport(SwiftUI) || canImport(TokamakShim)
