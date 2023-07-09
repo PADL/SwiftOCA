@@ -54,7 +54,7 @@ public class AES70OCP1Connection: ObservableObject {
     let options: AES70OCP1ConnectionOptions
 
     /// poll() interval in nanoseconds
-    let monitorInterval: UInt64 = 5 * NSEC_PER_MSEC
+    let monitorInterval: UInt64 = 30 * NSEC_PER_MSEC
 
     /// Keepalive/ping interval (only necessary for UDP)
     @MainActor
