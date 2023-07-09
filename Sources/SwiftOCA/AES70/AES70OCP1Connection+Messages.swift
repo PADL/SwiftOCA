@@ -62,7 +62,7 @@ extension AES70OCP1Connection {
         return try await withCheckedThrowingContinuation { continuation in
             Task {
                 try await withTimeout(seconds: options.responseTimeout) {
-                    await monitor.subscribe(handle: handle, continuation: continuation)
+                    await monitor.register(handle: handle, continuation: continuation)
                 }
             }
         }

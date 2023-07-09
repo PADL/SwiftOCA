@@ -131,7 +131,7 @@ public class AES70OCP1Connection: ObservableObject {
             return task.isCancelled
         }
 
-        func subscribe(handle: OcaUint32, continuation: Continuation) {
+        func register(handle: OcaUint32, continuation: Continuation) {
             continuations[handle] = continuation
         }
 
@@ -141,7 +141,6 @@ public class AES70OCP1Connection: ObservableObject {
             }
 
             continuations.removeValue(forKey: response.handle)
-
             Task {
                 continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
             }
