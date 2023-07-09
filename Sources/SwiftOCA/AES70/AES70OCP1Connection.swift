@@ -105,7 +105,7 @@ public class AES70OCP1Connection: ObservableObject {
 
         func run() {
             precondition(task == nil)
-            task = Task.detached { [unowned self] in
+            task = Task { [unowned self] in
                 do {
                     try await self.receiveMessages(connection)
                 } catch Ocp1Error.notConnected {
