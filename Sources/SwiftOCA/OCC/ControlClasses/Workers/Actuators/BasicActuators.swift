@@ -16,7 +16,7 @@
 
 import Foundation
 
-public class OcaGenericBasicActuator<T: Codable & Numeric>: OcaActuator {
+public class OcaGenericBasicActuator<T: Codable & Comparable & Numeric>: OcaActuator {
     @OcaBoundedProperty(
         propertyID: OcaPropertyID("5.1"),
         getMethodID: OcaMethodID("5.1"),

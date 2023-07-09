@@ -24,7 +24,7 @@ private struct OcaLogGaugeView: View {
     var value: OcaBoundedPropertyValue<OcaDB>
 
     var linear: OcaFloat32 {
-        powf((value.value - value.minValue) / value.absoluteRange, 2.0)
+        powf((value.value - value.range.lowerBound) / value.absoluteRange, 2.0)
     }
 
     var boundedLinear: OcaBoundedPropertyValue<OcaFloat32> {
@@ -36,14 +36,14 @@ private struct OcaLogGaugeView: View {
     }
 
     var body: some View {
-        Gauge(value: boundedLinear.value, in: boundedLinear.minValue...boundedLinear.maxValue) {
+        Gauge(value: boundedLinear.value, in: boundedLinear.range) {
             EmptyView()
         } currentValueLabel: {
             EmptyView()
         } minimumValueLabel: {
-            Text(value.minValue.formatted()).rotationEffect(.degrees(90))
+            Text(value.range.lowerBound.formatted()).rotationEffect(.degrees(90))
         } maximumValueLabel: {
-            Text(value.maxValue.formatted()).rotationEffect(.degrees(90))
+            Text(value.range.upperBound.formatted()).rotationEffect(.degrees(90))
         }.tint(gradient)
             .labelStyle(.iconOnly)
             .rotationEffect(.degrees(-90))

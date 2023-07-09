@@ -34,7 +34,26 @@ public struct OcaPositionDescriptorFieldFlags: OptionSet, Codable {
     }
 }
 
-public struct OcaPositionDescriptor: Codable {
+public struct OcaPositionDescriptor: Codable, Comparable {
+    public static func < (lhs: OcaPositionDescriptor, rhs: OcaPositionDescriptor) -> Bool {
+        guard lhs.coordinateSystem == rhs.coordinateSystem else {
+            return false
+        }
+        // FIXME: check fieldFlags
+        return lhs.values.0 < rhs.values.0 &&
+            lhs.values.1 < rhs.values.1 &&
+            lhs.values.2 < rhs.values.2 &&
+            lhs.values.3 < rhs.values.3 &&
+            lhs.values.4 < rhs.values.4 &&
+            lhs.values.5 < rhs.values.5
+    }
+
+    public static func == (lhs: OcaPositionDescriptor, rhs: OcaPositionDescriptor) -> Bool {
+        lhs.coordinateSystem == rhs.coordinateSystem &&
+            lhs.fieldFlags == rhs.fieldFlags &&
+            lhs.values == rhs.values
+    }
+
     let coordinateSystem: OcaPositionCoordinateSystem
     let fieldFlags: OcaPositionDescriptorFieldFlags // which values are valid
     let values: (OcaFloat32, OcaFloat32, OcaFloat32, OcaFloat32, OcaFloat32, OcaFloat32)

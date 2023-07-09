@@ -22,17 +22,35 @@ import SwiftUI
 import TokamakShim
 #endif
 
-public struct OcaBoundedPropertyValue<Value: Codable>: Codable, OcaParameterCountReflectable {
+public struct OcaBoundedPropertyValue<Value: Codable & Comparable>: Codable,
+    OcaParameterCountReflectable
+{
     static var responseParameterCount: OcaUint8 { 3 }
 
     public var value: Value
-    public var minValue: Value
-    public var maxValue: Value
+    public var range: ClosedRange<Value>
 
     public init(value: Value, minValue: Value, maxValue: Value) {
         self.value = value
-        self.minValue = minValue
-        self.maxValue = maxValue
+        range = minValue...maxValue
+    }
+
+    fileprivate var minValue: Value {
+        get {
+            range.lowerBound
+        }
+        set {
+            range = newValue...range.upperBound
+        }
+    }
+
+    fileprivate var maxValue: Value {
+        get {
+            range.upperBound
+        }
+        set {
+            range = range.lowerBound...newValue
+        }
     }
 }
 
@@ -50,7 +68,9 @@ public extension OcaBoundedPropertyValue where Value: BinaryFloatingPoint {
 }
 
 @propertyWrapper
-public struct OcaBoundedProperty<Value: Codable>: OcaPropertyChangeEventNotifiable, Codable {
+public struct OcaBoundedProperty<Value: Codable & Comparable>: OcaPropertyChangeEventNotifiable,
+    Codable
+{
     public typealias Property = OcaProperty<OcaBoundedPropertyValue<Value>>
     public typealias State = Property.State
 

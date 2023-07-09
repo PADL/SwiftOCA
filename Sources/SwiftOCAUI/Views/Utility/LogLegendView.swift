@@ -25,15 +25,17 @@ struct OcaLogLegendView: View {
         return 1.0 -
             CGFloat(OcaDBToGain(
                 dB: dB,
-                minGain: self.value.minValue,
-                maxGain: self.value.maxValue
+                in: self.value.range
             )) / 10
     }
 
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                ForEach(Int(value.minValue / 10)...Int(value.maxValue / 10), id: \.self) { value in
+                ForEach(
+                    Int(value.range.lowerBound / 10)...Int(value.range.upperBound / 10),
+                    id: \.self
+                ) { value in
                     Text(String(value * 10))
                         .font(.caption2)
                         .frame(maxWidth: 20, alignment: .trailing)

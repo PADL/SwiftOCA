@@ -27,20 +27,18 @@ private struct OcaLogSliderView: View {
     var linear: Binding<OcaFloat32> {
         Binding<OcaFloat32>(
             get: {
-                if value.maxValue == 0.0 {
+                if value.range.lowerBound == 0.0 {
                     return 0.0
                 }
                 return OcaDBToGain(
                     dB: value.value,
-                    minGain: value.minValue,
-                    maxGain: value.maxValue
+                    in: value.range
                 )
             },
             set: { newValue in
                 value.value = OcaGainToDB(
                     gain: newValue,
-                    minGain: value.minValue,
-                    maxGain: value.maxValue,
+                    in: value.range,
                     step: Self.step
                 )
             }

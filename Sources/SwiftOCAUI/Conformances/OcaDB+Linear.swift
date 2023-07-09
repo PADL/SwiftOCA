@@ -17,29 +17,29 @@
 import SwiftOCA
 import SwiftUI
 
-func OcaDBToGain(dB: OcaDB, minGain: OcaDB, maxGain: OcaDB) -> OcaFloat32 {
+func OcaDBToGain(dB: OcaDB, in range: ClosedRange<OcaDB>) -> OcaFloat32 {
     let gain: OcaFloat32
 
-    precondition(maxGain > 0)
+    precondition(range.upperBound > 0)
 
-    if dB == minGain {
+    if dB == range.lowerBound {
         gain = 0.0
     } else {
-        gain = powf(10.0, dB / maxGain)
+        gain = powf(10.0, dB / range.upperBound)
     }
 
     return gain
 }
 
-func OcaGainToDB(gain: OcaFloat32, minGain: OcaDB, maxGain: OcaDB, step: OcaDB? = nil) -> OcaDB {
+func OcaGainToDB(gain: OcaFloat32, in range: ClosedRange<OcaDB>, step: OcaDB? = nil) -> OcaDB {
     var dB: OcaFloat32
 
     if gain == 0.0 {
-        dB = minGain
+        dB = range.lowerBound
     } else {
-        dB = log10(gain) * maxGain
-        if dB < minGain {
-            dB = minGain
+        dB = log10(gain) * range.upperBound
+        if dB < range.lowerBound {
+            dB = range.lowerBound
         }
     }
 

@@ -28,10 +28,6 @@ struct OcaVariableSliderView<Value: BinaryFloatingPoint & Codable>: View
     var valuePublisher: CurrentValueSubject<Value, Never>
     var delay = 0.1
 
-    var range: ClosedRange<Value> {
-        value.minValue...value.maxValue
-    }
-
     init(value: Binding<OcaBoundedPropertyValue<Value>>) {
         _value = value
         _valuePublisher =
@@ -41,7 +37,7 @@ struct OcaVariableSliderView<Value: BinaryFloatingPoint & Codable>: View
     var body: some View {
         ValueSlider(
             value: Binding<Value>(get: { valuePublisher.value }, set: { valuePublisher.send($0) }),
-            in: range
+            in: value.range
         )
         .onReceive(
             valuePublisher
