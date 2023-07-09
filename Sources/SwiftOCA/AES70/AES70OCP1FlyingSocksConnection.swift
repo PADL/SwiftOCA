@@ -72,9 +72,8 @@ private actor AsyncSocketPoolMonitor {
 }
 
 public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
-    private static var poolIsRunning = false
     private let deviceAddress: any SocketAddress
-    fileprivate var socket: AsyncSocket?
+    fileprivate var asyncSocket: AsyncSocket?
     fileprivate var type: Int32 {
         fatalError("must be implemented by subclass")
     }
@@ -90,14 +89,14 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
     }
 
     deinit {
-        try? socket?.close()
+        try? asyncSocket?.close()
     }
 
     override func connectDevice() async throws {
         let socket = try Socket(domain: Int32(Swift.type(of: deviceAddress).family), type: type)
         try socket.setValue(true, for: BoolSocketOption.localAddressReuse)
         try socket.connect(to: deviceAddress)
-        self.socket = try await AsyncSocket(
+        asyncSocket = try await AsyncSocket(
             socket: socket,
             pool: AsyncSocketPoolMonitor.shared.get()
         )
@@ -105,22 +104,22 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
     }
 
     override func disconnectDevice(clearObjectCache: Bool) async throws {
-        if let socket {
-            try socket.close()
+        if let asyncSocket {
+            try asyncSocket.close()
         }
         try await super.disconnectDevice(clearObjectCache: clearObjectCache)
     }
 
     private func withMappedError<T>(
-        _ block: (_ socket: AsyncSocket) async throws
+        _ block: (_ asyncSocket: AsyncSocket) async throws
             -> T
     ) async throws -> T {
-        guard let socket else {
+        guard let asyncSocket else {
             throw Ocp1Error.notConnected
         }
 
         do {
-            return try await block(socket)
+            return try await block(asyncSocket)
         } catch let error as SocketError {
             if error.connectionFailed {
                 throw Ocp1Error.notConnected
