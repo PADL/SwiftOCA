@@ -22,6 +22,9 @@ import Combine
 import OpenCombine
 #endif
 
+typealias AES70OCP1UDPConnection = AES70OCP1SocketUDPConnection
+typealias AES70OCP1TCPConnection = AES70OCP1SocketTCPConnection
+
 typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData)
     -> ()
 
@@ -139,7 +142,6 @@ public class AES70OCP1Connection: ObservableObject {
             guard let continuation = continuations[response.handle] else {
                 throw Ocp1Error.invalidHandle
             }
-
             continuations.removeValue(forKey: response.handle)
             Task {
                 continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))

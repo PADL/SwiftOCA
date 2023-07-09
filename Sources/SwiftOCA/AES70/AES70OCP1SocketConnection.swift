@@ -17,9 +17,34 @@
 import Foundation
 import Socket
 
-private extension Errno {
+fileprivate extension Errno {
     var connectionFailed: Bool {
         self == .badFileDescriptor || self == .socketShutdown
+    }
+}
+
+fileprivate extension Data {
+    var socketAddress: any SocketAddress {
+        var data = self
+        return data.withUnsafeMutableBytes { unbound -> (any SocketAddress) in
+            unbound
+                .withMemoryRebound(to: sockaddr.self) { sa -> (any SocketAddress) in
+                    let socketAddress: (any SocketAddress)
+                    
+                    switch sa.baseAddress!.pointee.sa_family {
+                    case UInt8(AF_INET):
+                        socketAddress = IPv4SocketAddress.withUnsafePointer(sa.baseAddress!)
+                    case UInt8(AF_INET6):
+                        socketAddress = IPv6SocketAddress.withUnsafePointer(sa.baseAddress!)
+                    case UInt8(AF_LINK):
+                        socketAddress = LinkLayerSocketAddress.withUnsafePointer(sa.baseAddress!)
+                    default:
+                        fatalError("unsupported address family")
+                    }
+                    
+                    return socketAddress
+                }
+        }
     }
 }
 
@@ -30,10 +55,10 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
 
     @MainActor
     public init(
-        deviceAddress: any SocketAddress,
+        deviceAddress: Data,
         options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()
     ) {
-        self.deviceAddress = deviceAddress
+        self.deviceAddress = deviceAddress.socketAddress
         super.init(options: options)
     }
 
@@ -62,9 +87,28 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
         }
         try await super.disconnectDevice(clearObjectCache: clearObjectCache)
     }
+
+    fileprivate func withMappedError<T>(
+        _ block: (_ socket: Socket) async throws
+            -> T
+    ) async throws -> T {
+        guard let socket else {
+            throw Ocp1Error.notConnected
+        }
+
+        do {
+            return try await block(socket)
+        } catch let error as Errno {
+            if error.connectionFailed {
+                throw Ocp1Error.notConnected
+            } else {
+                throw error
+            }
+        }
+    }
 }
 
-public class AES70OCP1UDPConnection: AES70OCP1SocketConnection {
+public class AES70OCP1SocketUDPConnection: AES70OCP1SocketConnection {
     @MainActor
     override public var keepAliveInterval: OcaUint16 {
         1
@@ -81,39 +125,19 @@ public class AES70OCP1UDPConnection: AES70OCP1SocketConnection {
     }
 
     override func read(_ length: Int) async throws -> Data {
-        guard let socket else {
-            throw Ocp1Error.notConnected
-        }
-
-        do {
-            return try await socket.receiveMessage(Self.mtu)
-        } catch let error as Errno {
-            if error.connectionFailed {
-                throw Ocp1Error.notConnected
-            } else {
-                throw error
-            }
+        try await withMappedError { socket in
+            try await socket.receiveMessage(Self.mtu)
         }
     }
 
     override func write(_ data: Data) async throws -> Int {
-        guard let socket else {
-            throw Ocp1Error.notConnected
-        }
-
-        do {
-            return try await socket.sendMessage(data)
-        } catch let error as Errno {
-            if error.connectionFailed {
-                throw Ocp1Error.notConnected
-            } else {
-                throw error
-            }
+        try await withMappedError { socket in
+            try await socket.sendMessage(data)
         }
     }
 }
 
-public class AES70OCP1TCPConnection: AES70OCP1SocketConnection {
+public class AES70OCP1SocketTCPConnection: AES70OCP1SocketConnection {
     override func connectDevice() async throws {
         if socket == nil {
             Socket.configuration = AsyncSocketConfiguration(monitorInterval: monitorInterval)
@@ -123,48 +147,28 @@ public class AES70OCP1TCPConnection: AES70OCP1SocketConnection {
     }
 
     override func read(_ length: Int) async throws -> Data {
-        guard let socket else {
-            throw Ocp1Error.notConnected
-        }
+        try await withMappedError { socket in
+            var bytesLeft = length
+            var data = Data()
 
-        var bytesLeft = length
-        var data = Data()
-
-        do {
             repeat {
                 let fragment = try await socket.read(bytesLeft)
                 bytesLeft -= fragment.count
                 data += fragment
             } while bytesLeft > 0
-        } catch let error as Errno {
-            if error.connectionFailed {
-                throw Ocp1Error.notConnected
-            } else {
-                throw error
-            }
+            return data
         }
-        return data
     }
 
     override func write(_ data: Data) async throws -> Int {
-        guard let socket else {
-            throw Ocp1Error.notConnected
-        }
+        try await withMappedError { socket in
+            var bytesWritten = 0
 
-        var bytesWritten = 0
-
-        do {
             repeat {
                 bytesWritten += try await socket.write(data.subdata(in: bytesWritten..<data.count))
             } while bytesWritten < data.count
-        } catch let error as Errno {
-            if error.connectionFailed {
-                throw Ocp1Error.notConnected
-            } else {
-                throw error
-            }
-        }
 
-        return bytesWritten
+            return bytesWritten
+        }
     }
 }

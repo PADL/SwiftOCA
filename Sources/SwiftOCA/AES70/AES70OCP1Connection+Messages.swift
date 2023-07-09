@@ -50,7 +50,6 @@ extension AES70OCP1Connection {
     }
 
     func sendCommand(_ command: Ocp1Command) async throws {
-        // debugPrint("sendCommand \(command)")
         try await sendMessage(command, type: .ocaCmd)
     }
 

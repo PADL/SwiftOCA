@@ -18,7 +18,6 @@
 
 import AsyncAlgorithms
 import Foundation
-import Socket
 
 extension NetService: @unchecked
 Sendable {}
@@ -89,7 +88,7 @@ public class AES70Browser: NSObject, NetServiceBrowserDelegate {
 }
 
 fileprivate class AES70ResolverDelegate: NSObject, NetServiceDelegate {
-    typealias ResolutionResult = Result<any SocketAddress, Error>
+    typealias ResolutionResult = Result<Data, Error>
     let channel: AsyncChannel<ResolutionResult>
 
     init(_ channel: AsyncChannel<ResolutionResult>) {
@@ -107,29 +106,8 @@ fileprivate class AES70ResolverDelegate: NSObject, NetServiceDelegate {
                 return
             }
 
-            let socketAddresses = addresses.compactMap {
-                var address = $0
-
-                return address.withUnsafeMutableBytes { unbound -> (any SocketAddress)? in
-                    unbound
-                        .withMemoryRebound(to: sockaddr.self) { cSockAddr -> (any SocketAddress)? in
-                            switch cSockAddr.baseAddress!.pointee.sa_family {
-                            case UInt8(AF_INET):
-                                return IPv4SocketAddress.withUnsafePointer(cSockAddr.baseAddress!)
-                            case UInt8(AF_INET6):
-                                return IPv6SocketAddress.withUnsafePointer(cSockAddr.baseAddress!)
-                            case UInt8(AF_LINK):
-                                return LinkLayerSocketAddress
-                                    .withUnsafePointer(cSockAddr.baseAddress!)
-                            default:
-                                return nil
-                            }
-                        }
-                }
-            }
-
-            for socketAddress in socketAddresses {
-                await channel.send(ResolutionResult.success(socketAddress))
+            for address in addresses {
+                await channel.send(ResolutionResult.success(address))
             }
         }
     }
@@ -166,13 +144,15 @@ extension AES70OCP1Connection: AES70OCP1ConnectionFactory {
 
         for await result in channel {
             switch result {
-            case let .success(deviceAddress):
+            case let .success(address):
                 // FIXME: support IPv6
-                if type(of: deviceAddress).family != .ipv4 {
-                    debugPrint("skipping non-IPv4 address \(deviceAddress)")
+                guard address.withUnsafeBytes { unbound -> Bool in
+                    unbound.withMemoryRebound(to: sockaddr.self) { cSockAddr -> Bool in
+                        cSockAddr.baseAddress!.pointee.sa_family == AF_INET
+                    }
+                } == true else {
                     continue
                 }
-
                 channel.finish()
 
                 switch serviceType {
@@ -180,7 +160,7 @@ extension AES70OCP1Connection: AES70OCP1ConnectionFactory {
                     await self
                         .init(
                             reassigningSelfTo: AES70OCP1TCPConnection(
-                                deviceAddress: deviceAddress
+                                deviceAddress: address
                             ) as! Self
                         )
                     return
@@ -188,7 +168,7 @@ extension AES70OCP1Connection: AES70OCP1ConnectionFactory {
                     await self
                         .init(
                             reassigningSelfTo: AES70OCP1UDPConnection(
-                                deviceAddress: deviceAddress
+                                deviceAddress: address
                             ) as! Self
                         )
                     return

@@ -10,6 +10,15 @@
       }
     },
     {
+      "identity" : "flyingfox",
+      "kind" : "remoteSourceControl",
+      "location" : "git@github.com:swhitty/FlyingFox.git",
+      "state" : {
+        "revision" : "8b195ab596666776815c68c614e7f061075945e9",
+        "version" : "0.12.1"
+      }
+    },
+    {
       "identity" : "socket",
       "kind" : "remoteSourceControl",
       "location" : "git@github.com:PureSwift/Socket.git",
