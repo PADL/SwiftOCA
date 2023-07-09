@@ -49,3 +49,17 @@ func OcaGainToDB(gain: OcaFloat32, in range: ClosedRange<OcaDB>, step: OcaDB? = 
 
     return dB
 }
+
+func OcaDBToFaderGain(dB: OcaDB, in range: ClosedRange<OcaDB>) -> OcaFloat32 {
+    let absoluteRange = range.upperBound - range.lowerBound
+    return powf((dB - range.lowerBound) / absoluteRange, 2)
+}
+
+func OcaFaderGainToDB(gain: OcaFloat32, in range: ClosedRange<OcaDB>, step: OcaDB? = nil) -> OcaDB {
+    let absoluteRange = range.upperBound - range.lowerBound
+    var dB = sqrtf(gain) * absoluteRange + range.lowerBound
+    if let step {
+        dB = round(dB / step) * step
+    }
+    return dB
+}

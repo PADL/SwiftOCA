@@ -56,14 +56,12 @@ public struct OcaBoundedPropertyValue<Value: Codable & Comparable>: Codable,
 
 public extension OcaBoundedPropertyValue where Value: BinaryFloatingPoint {
     var absoluteRange: Value {
-        maxValue - minValue
+        range.upperBound - range.lowerBound
     }
-}
 
-public extension OcaBoundedPropertyValue where Value: BinaryFloatingPoint {
     /// returns value between 0.0 and 1.0
     var relativeValue: OcaFloat32 {
-        OcaFloat32((value + maxValue) / absoluteRange)
+        OcaFloat32((value + range.upperBound) / absoluteRange)
     }
 }
 

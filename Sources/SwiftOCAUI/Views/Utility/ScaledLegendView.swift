@@ -17,29 +17,27 @@
 import SwiftOCA
 import SwiftUI
 
-struct OcaLogLegendView: View {
+struct OcaScaledLegendView: View {
     var value: OcaBoundedPropertyValue<OcaDB>
 
+    let scale: Float = 20.0
+
     private func y(_ value: Int) -> CGFloat {
-        let dB = Float(value * 10)
-        return 1.0 -
-            CGFloat(OcaDBToGain(
-                dB: dB,
-                in: self.value.range
-            )) / 10
+        let dB = Float(value) * scale
+        return 1.0 - CGFloat(OcaDBToFaderGain(dB: dB, in: self.value.range))
     }
 
     var body: some View {
         GeometryReader { geo in
             ZStack {
                 ForEach(
-                    Int(value.range.lowerBound / 10)...Int(value.range.upperBound / 10),
+                    Int(value.range.lowerBound / scale)...Int(value.range.upperBound / scale),
                     id: \.self
                 ) { value in
-                    Text(String(value * 10))
+                    Text(String(value * Int(scale)))
                         .font(.caption2)
-                        .frame(maxWidth: 20, alignment: .trailing)
-                        .position(x: geo.size.width * 0.1, y: geo.size.height * y(value))
+                        .frame(maxWidth: 25, alignment: .trailing)
+                        .position(x: geo.size.width * 0.5, y: geo.size.height * y(value))
                 }
             }
         }

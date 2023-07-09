@@ -30,10 +30,10 @@ private struct OcaLogSliderView: View {
                 if value.range.lowerBound == 0.0 {
                     return 0.0
                 }
-                return OcaDBToGain(dB: value.value, in: value.range)
+                return OcaDBToFaderGain(dB: value.value, in: value.range)
             },
             set: { newValue in
-                value.value = OcaGainToDB(gain: newValue, in: value.range, step: Self.step)
+                value.value = OcaFaderGainToDB(gain: newValue, in: value.range, step: Self.step)
             }
         )
     }
@@ -41,21 +41,21 @@ private struct OcaLogSliderView: View {
     var boundedLinear: Binding<OcaBoundedPropertyValue<OcaFloat32>> {
         Binding<OcaBoundedPropertyValue<OcaFloat32>>(
             get: {
-                OcaBoundedPropertyValue<OcaFloat32>(value: linear.wrappedValue / 10, in: 0.0...1.0)
+                OcaBoundedPropertyValue<OcaFloat32>(value: linear.wrappedValue, in: 0.0...1.0)
             },
             set: { newValue in
-                linear.wrappedValue = newValue.value * 10
+                linear.wrappedValue = newValue.value
             }
         )
     }
 
     var body: some View {
         HStack {
-            OcaLogLegendView(value: value)
+            OcaScaledLegendView(value: value)
             OcaVariableSliderView<OcaFloat32>(value: boundedLinear)
                 .valueSliderStyle(VerticalValueSliderStyle())
         }
-        .padding(EdgeInsets(top: 100, leading: 0, bottom: 100, trailing: 0))
+        .padding(EdgeInsets(top: 25, leading: 0, bottom: 0, trailing: 0))
     }
 }
 
