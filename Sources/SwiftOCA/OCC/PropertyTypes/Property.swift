@@ -196,10 +196,10 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
 
     private func _send(_ object: OcaRoot, _ state: State) {
-        subject.send(state)
         DispatchQueue.main.async {
             object.objectWillChange.send()
         }
+        subject.send(state)
     }
 
     @MainActor
