@@ -24,7 +24,7 @@ private extension Errno {
 }
 
 public class AES70OCP1SocketConnection: AES70OCP1Connection {
-    let monitorInterval: UInt64 = 30 * NSEC_PER_MSEC
+    let monitorInterval: UInt64 = 10 * NSEC_PER_MSEC
     private let deviceAddress: any SocketAddress
     var socket: Socket?
 
@@ -65,6 +65,11 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
 }
 
 public class AES70OCP1UDPConnection: AES70OCP1SocketConnection {
+    @MainActor
+    override public var keepAliveInterval: OcaUint16 {
+        1
+    }
+
     static let mtu = 1500
 
     override func connectDevice() async throws {
