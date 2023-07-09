@@ -54,7 +54,7 @@ public class OcaSubscriptionManager: OcaManager {
             notificationDeliveryMode: notificationDeliveryMode,
             destinationInformation: destinationInformation
         )
-        try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameter: params)
+        try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameters: params)
     }
 
     func removeSubscription(event: OcaEvent, subscriber: OcaMethod) async throws {
@@ -64,7 +64,7 @@ public class OcaSubscriptionManager: OcaManager {
         }
 
         let params = RemoveSubscriptionParameters(event: event, subscriber: subscriber)
-        try await sendCommandRrq(methodID: OcaMethodID("3.2"), parameter: params)
+        try await sendCommandRrq(methodID: OcaMethodID("3.2"), parameters: params)
     }
 
     func disableNotifications() async throws {
@@ -100,7 +100,7 @@ public class OcaSubscriptionManager: OcaManager {
             notificationDeliveryMode: notificationDeliveryMode,
             destinationInformation: destinationInformation
         )
-        try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameter: params)
+        try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: params)
     }
 
     func removePropertyChangeSubscription(
@@ -119,7 +119,7 @@ public class OcaSubscriptionManager: OcaManager {
             property: property,
             subscriber: subscriber
         )
-        try await sendCommandRrq(methodID: OcaMethodID("3.6"), parameter: params)
+        try await sendCommandRrq(methodID: OcaMethodID("3.6"), parameters: params)
     }
 
     func getMaximumSubscriberContextLength() async throws -> OcaUint16 {

@@ -269,17 +269,17 @@ extension OcaRoot {
 
     func sendCommandRrq<T: Encodable, U: Decodable>(
         methodID: OcaMethodID,
-        parameter: T
+        parameters: T
     ) async throws -> U {
         var responseParameterData = Data()
 
         try await sendCommandRrq(
             methodID: methodID,
             parameterCount: OcaUint8(
-                Mirror(reflecting: parameter).children
+                Mirror(reflecting: parameters).children
                     .count
             ),
-            parameters: [parameter],
+            parameters: [parameters],
             responseParameterCount: responseParameterCount(U.self),
             responseParameters: &responseParameterData
         )

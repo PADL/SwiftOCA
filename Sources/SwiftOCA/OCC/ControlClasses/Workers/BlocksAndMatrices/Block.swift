@@ -76,14 +76,14 @@ public class OcaBlock: OcaWorker {
     func constructMember(factory factoryONo: OcaONo) async throws -> OcaONo {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.3"),
-            parameter: factoryONo
+            parameters: factoryONo
         )
     }
 
     func delete(member objectNumber: OcaONo) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.4"),
-            parameter: objectNumber
+            parameters: objectNumber
         )
     }
 
@@ -94,7 +94,7 @@ public class OcaBlock: OcaWorker {
     func add(signalPath path: OcaSignalPath) async throws -> OcaUint16 {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.7"),
-            parameter: path
+            parameters: path
         )
     }
 
@@ -147,7 +147,7 @@ public class OcaBlock: OcaWorker {
             resultFlags: resultFlags
         )
 
-        return try await sendCommandRrq(methodID: OcaMethodID("3.17"), parameter: params)
+        return try await sendCommandRrq(methodID: OcaMethodID("3.17"), parameters: params)
     }
 
     func findRecursive(
@@ -163,7 +163,7 @@ public class OcaBlock: OcaWorker {
             resultFlags: resultFlags
         )
 
-        return try await sendCommandRrq(methodID: OcaMethodID("3.18"), parameter: params)
+        return try await sendCommandRrq(methodID: OcaMethodID("3.18"), parameters: params)
     }
 
     // 3.19

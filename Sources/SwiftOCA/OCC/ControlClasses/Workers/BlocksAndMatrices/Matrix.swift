@@ -69,7 +69,7 @@ public class OcaMatrix: OcaWorker {
 
     func get(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate) async throws -> OcaONo {
         let xy = OcaVector2D(x: x, y: y)
-        return try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameter: xy)
+        return try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameters: xy)
     }
 
     func set(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate, memberONo: OcaONo) async throws {
