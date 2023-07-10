@@ -200,16 +200,14 @@ public class AES70OCP1Connection: ObservableObject {
         monitor = Monitor(self)
         await monitor!.run()
 
-        if keepAliveInterval != 0 {
-            keepAliveTask = Task.detached(priority: .background) {
+        if keepAliveInterval > 0 {
+            keepAliveTask = Task.detached(priority: .background) { [self] in
                 repeat {
-                    if await self
-                        .lastMessageSentTime + TimeInterval(self.keepAliveInterval) < Date()
-                    {
-                        try await self.sendKeepAlive()
+                    if await lastMessageSentTime + TimeInterval(self.keepAliveInterval) < Date() {
+                        try await sendKeepAlive()
                     }
-                    try await Task.sleep(nanoseconds: NSEC_PER_SEC * UInt64(self.keepAliveInterval))
-                } while true
+                    try await Task.sleep(nanoseconds: UInt64(self.keepAliveInterval) * NSEC_PER_SEC)
+                } while !Task.isCancelled
             }
         }
 
