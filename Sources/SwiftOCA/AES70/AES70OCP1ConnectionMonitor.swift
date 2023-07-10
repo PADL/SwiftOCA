@@ -37,6 +37,7 @@ extension AES70OCP1Connection.Monitor {
             )
             throw Ocp1Error.invalidSyncValue
         }
+
         let pduSize: OcaUint32 = messagePduData.decodeInteger(index: 3)
         guard pduSize >= (Self.MinimumPduSize - 1) else { // doesn't include sync byte
             debugPrint("receiveMessagePdu: PDU size \(pduSize) is less than minimum PDU size")
@@ -44,7 +45,7 @@ extension AES70OCP1Connection.Monitor {
         }
 
         let bytesLeft = Int(pduSize) - (Self.MinimumPduSize - 1)
-        if messagePduData.count < bytesLeft {
+        if bytesLeft > 0 {
             messagePduData += try await connection.read(bytesLeft)
         }
 
