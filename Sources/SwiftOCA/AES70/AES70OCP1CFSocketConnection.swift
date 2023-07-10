@@ -60,14 +60,12 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         _ address: CFData?,
         _ cfData: UnsafeRawPointer?
     ) {
-        guard let cfData else {
-            return
-        }
+        guard let cfData else { return }
         let data = Unmanaged<CFData>.fromOpaque(cfData).takeUnretainedValue() as Data
-        // FIXME: check for data.count == 0
+        guard data.count > 0 else { return }
 
         Task {
-            await receivedDataChannel.send(data as Data)
+            await receivedDataChannel.send(data)
         }
     }
 
@@ -95,6 +93,13 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
             CFSocketGetNative(cfSocket),
             SOL_SOCKET,
             SO_REUSEADDR,
+            &yes,
+            socklen_t(CInt.Stride())
+        )
+        setsockopt(
+            CFSocketGetNative(cfSocket),
+            SOL_SOCKET,
+            SO_REUSEPORT,
             &yes,
             socklen_t(CInt.Stride())
         )
@@ -140,9 +145,11 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         while receivedData.count < length {
             await drainChannel(atLeast: length)
         }
-        // important: make a copy here, otherwise we will have concurrent access
+
+        // NOTE: make a copy here, otherwise we will have concurrent access
         let data = Data(receivedData.prefix(length))
         receivedData = receivedData.dropFirst(length)
+
         return data
     }
 
@@ -151,7 +158,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         guard let cfSocket else {
             throw Ocp1Error.notConnected
         }
-        let result = CFSocketSendData(cfSocket, deviceAddress as CFData, data as CFData, 0)
+        let result = CFSocketSendData(cfSocket, nil, data as CFData, 0)
         switch result {
         case .success:
             return data.count
