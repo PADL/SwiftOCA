@@ -166,6 +166,10 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
 }
 
 public class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
+    override public var keepAliveInterval: OcaUint16 {
+        1
+    }
+
     override fileprivate var type: Int32 {
         SOCK_DGRAM
     }
