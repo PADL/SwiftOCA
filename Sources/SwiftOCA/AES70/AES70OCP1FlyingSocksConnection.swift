@@ -59,15 +59,22 @@ private actor AsyncSocketPoolMonitor {
 
     private let pool: some AsyncSocketPool = SocketPool.make()
     private var isRunning = false
+    private var task: Task<(), Error>?
 
     func get() async throws -> some AsyncSocketPool {
         guard !isRunning else { return pool }
-        try await pool.prepare()
         defer { isRunning = true }
-        Task {
+        try await pool.prepare()
+        task = Task {
             try await pool.run()
         }
         return pool
+    }
+
+    deinit {
+        if let task {
+            task.cancel()
+        }
     }
 }
 
@@ -144,13 +151,13 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
 }
 
 public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
-    override fileprivate var type: Int32 {
-        SOCK_DGRAM
+    override public var keepAliveInterval: OcaUint16 {
+        1
     }
+
+    override fileprivate var type: Int32 { SOCK_DGRAM }
 }
 
 public class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnection {
-    override fileprivate var type: Int32 {
-        SOCK_STREAM
-    }
+    override fileprivate var type: Int32 { SOCK_STREAM }
 }
