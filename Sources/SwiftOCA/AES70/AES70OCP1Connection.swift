@@ -46,8 +46,8 @@ public struct AES70OCP1ConnectionOptions {
 
     public init(
         automaticReconnect: Bool = false,
-        connectionTimeout: TimeInterval = 5,
-        responseTimeout: TimeInterval = 5
+        connectionTimeout: TimeInterval = 2,
+        responseTimeout: TimeInterval = 2
     ) {
         self.automaticReconnect = automaticReconnect
         self.connectionTimeout = connectionTimeout
