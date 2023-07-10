@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+#if canImport(Darwin)
 
 import AsyncAlgorithms
 import Foundation
@@ -146,11 +146,11 @@ extension AES70OCP1Connection: AES70OCP1ConnectionFactory {
             switch result {
             case let .success(address):
                 // FIXME: support IPv6
-                guard address.withUnsafeBytes { unbound -> Bool in
+                guard address.withUnsafeBytes({ unbound -> Bool in
                     unbound.withMemoryRebound(to: sockaddr.self) { cSockAddr -> Bool in
                         cSockAddr.baseAddress!.pointee.sa_family == AF_INET
                     }
-                } == true else {
+                }) == true else {
                     continue
                 }
                 channel.finish()
