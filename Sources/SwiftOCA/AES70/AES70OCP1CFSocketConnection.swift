@@ -14,8 +14,11 @@
 // limitations under the License.
 //
 
+#if canImport(CoreFoundation)
+
 import AsyncAlgorithms
 import Foundation
+import CoreFoundation
 
 private func AES70OCP1CFSocketConnection_DataCallBack(
     _ socket: CFSocket?,
@@ -187,3 +190,5 @@ public class AES70OCP1CFSocketTCPConnection: AES70OCP1CFSocketConnection {
         SOCK_STREAM
     }
 }
+
+#endif

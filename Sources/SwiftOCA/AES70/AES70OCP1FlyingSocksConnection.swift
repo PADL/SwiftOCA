@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if canImport(FlyingSocks)
+
 import FlyingSocks
 import Foundation
 
@@ -161,3 +163,5 @@ public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
 public class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnection {
     override fileprivate var type: Int32 { SOCK_STREAM }
 }
+
+#endif

@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if canImport(Socket)
+
 import Foundation
 import Socket
 
@@ -171,3 +173,5 @@ public class AES70OCP1SocketTCPConnection: AES70OCP1SocketConnection {
         }
     }
 }
+
+#endif
