@@ -310,6 +310,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                         await Task.yield()
                     }
                 } while !Task.isCancelled
+                debugPrint("property completion handler was cancelled")
                 throw Ocp1Error.responseTimeout
             }.result
         }
