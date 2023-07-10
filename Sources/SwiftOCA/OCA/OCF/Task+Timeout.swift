@@ -2,8 +2,6 @@
 
 import Foundation
 
-struct TimedOutError: Error, Equatable {}
-
 ///
 /// Execute an operation in the current task subject to a timeout.
 ///
@@ -33,6 +31,7 @@ func withTimeout<R>(
             }
             try Task.checkCancellation()
             // We’ve reached the timeout.
+            debugPrint("operation timed out after \(seconds) seconds")
             throw Ocp1Error.responseTimeout
         }
         // First finished child task wins, cancel the other task.
