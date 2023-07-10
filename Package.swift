@@ -19,11 +19,9 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.1.0"),
-        .package(url: "https://github.com/PureSwift/Socket", .branch("main")),
         .package(url: "https://github.com/PADL/swift-binary-coder", .branch("inferno")),
         .package(url: "https://github.com/lhoward/AsyncExtensions", .branch("linux")),
         .package(url: "https://github.com/OpenCombine/OpenCombine.git", from: "0.14.0"),
-        .package(url: "https://github.com/swhitty/FlyingFox", from: "0.12.1"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -31,12 +29,10 @@ let package = Package(
         .target(
             name: "SwiftOCA",
             dependencies: [
-		"Socket",
 		"AsyncExtensions",
 		"OpenCombine",
 		.product(name: "BinaryCoder", package: "swift-binary-coder"),
 		.product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
-		.product(name: "FlyingSocks", package: "FlyingFox"),
 	    ]),
     ],
     swiftLanguageVersions: [.v5]
