@@ -22,15 +22,8 @@ import Combine
 import OpenCombine
 #endif
 
-#if canImport(Socket)
-/// this polls so is not CPU efficient
-typealias AES70OCP1UDPConnection = AES70OCP1SocketUDPConnection
-typealias AES70OCP1TCPConnection = AES70OCP1SocketTCPConnection
-#elseif canImport(FlyingSocks)
-/// this uses kqueue but we appaer to have some bugs
-typealias AES70OCP1UDPConnection = AES70OCP1FlyingSocksUDPConnection
-typealias AES70OCP1TCPConnection = AES70OCP1FlyingSocksTCPConnection
-#endif
+typealias AES70OCP1UDPConnection = AES70OCP1CFSocketUDPConnection
+typealias AES70OCP1TCPConnection = AES70OCP1CFSocketTCPConnection
 
 typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData)
     -> ()
