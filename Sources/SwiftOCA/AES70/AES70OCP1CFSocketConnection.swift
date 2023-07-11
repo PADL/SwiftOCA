@@ -221,11 +221,7 @@ fileprivate extension Data {
 
 fileprivate extension CFData {
     var data: Data {
-        #if canImport(Darwin)
-        self as Data
-        #else
         Data(referencing: unsafeBitCast(self, to: NSData.self))
-        #endif
     }
 }
 
