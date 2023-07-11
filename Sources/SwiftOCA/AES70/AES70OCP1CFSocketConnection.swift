@@ -109,7 +109,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
 
         DispatchQueue.main.async {
             let runLoopSource = CFSocketCreateRunLoopSource(kCFAllocatorDefault, cfSocket, 0)
-            CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode)
+            CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, CFRunLoopMode.defaultMode)
         }
 
         guard CFSocketIsValid(cfSocket),
@@ -181,29 +181,29 @@ public class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
     }
 
     override fileprivate var type: Int32 {
-#if os(Linux)
-        Int32(SOCK_DGRAM.rawValue)
-#else
+#if canImport(Darwin)
         SOCK_DGRAM
+#else
+        Int32(SOCK_DGRAM.rawValue)
 #endif
     }
 }
 
 public class AES70OCP1CFSocketTCPConnection: AES70OCP1CFSocketConnection {
     override fileprivate var type: Int32 {
-#if os(Linux)
-        Int32(SOCK_STREAM.rawValue)
-#else
+#if canImport(Darwin)
         SOCK_STREAM
+#else
+        Int32(SOCK_STREAM.rawValue)
 #endif
     }
 }
 
 fileprivate func isStreamType(_ type: Int32) -> Bool {
-#if os(Linux)
-    let streamType = Int32(SOCK_STREAM.rawValue)
-#else
+#if canImport(Darwin)
     let streamType = SOCK_STREAM
+#else
+    let streamType = Int32(SOCK_STREAM.rawValue)
 #endif
 
     return streamType == type
@@ -220,5 +220,13 @@ fileprivate extension CFData {
         return Data(referencing: unsafeBitCast(self, to: NSData.self))
     }
 }
+
+#if !canImport(Darwin)
+fileprivate extension CFRunLoopMode {
+    static var defaultMode: CFRunLoopMode {
+        kCFRunLoopDefaultMode
+    }
+}
+#endif
 
 #endif
