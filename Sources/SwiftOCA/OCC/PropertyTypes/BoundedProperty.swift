@@ -34,17 +34,18 @@ public struct OcaBoundedPropertyValue<Value: Codable & Comparable>: Codable,
         self.value = value
         self.range = range
     }
-    
+
     enum CodingKeys: CodingKey {
         case value
         case minValue
         case maxValue
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.value = try container.decode(Value.self, forKey: .value)
-        self.range = try container.decode(Value.self, forKey: .minValue)...container.decode(Value.self, forKey: .maxValue)
+        value = try container.decode(Value.self, forKey: .value)
+        range = try container.decode(Value.self, forKey: .minValue)...container
+            .decode(Value.self, forKey: .maxValue)
     }
 
     public func encode(to encoder: Encoder) throws {

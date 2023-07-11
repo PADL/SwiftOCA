@@ -17,8 +17,8 @@
 #if canImport(CoreFoundation)
 
 import AsyncAlgorithms
-import Foundation
 import CoreFoundation
+import Foundation
 
 private func AES70OCP1CFSocketConnection_DataCallBack(
     _ socket: CFSocket?,
@@ -181,43 +181,51 @@ public class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
     }
 
     override fileprivate var type: Int32 {
-#if canImport(Darwin)
+        #if canImport(Darwin)
         SOCK_DGRAM
-#else
+        #else
         Int32(SOCK_DGRAM.rawValue)
-#endif
+        #endif
     }
 }
 
 public class AES70OCP1CFSocketTCPConnection: AES70OCP1CFSocketConnection {
     override fileprivate var type: Int32 {
-#if canImport(Darwin)
+        #if canImport(Darwin)
         SOCK_STREAM
-#else
+        #else
         Int32(SOCK_STREAM.rawValue)
-#endif
+        #endif
     }
 }
 
 fileprivate func isStreamType(_ type: Int32) -> Bool {
-#if canImport(Darwin)
+    #if canImport(Darwin)
     let streamType = SOCK_STREAM
-#else
+    #else
     let streamType = Int32(SOCK_STREAM.rawValue)
-#endif
+    #endif
 
     return streamType == type
 }
 
 fileprivate extension Data {
     var cfData: CFData {
+        #if canImport(Darwin)
+        return self as NSData
+        #else
         return unsafeBitCast(self, to: CFData.self)
+        #endif
     }
 }
 
 fileprivate extension CFData {
     var data: Data {
-        return Data(referencing: unsafeBitCast(self, to: NSData.self))
+        #if canImport(Darwin)
+        self as Data
+        #else
+        Data(referencing: unsafeBitCast(self, to: NSData.self))
+        #endif
     }
 }
 
