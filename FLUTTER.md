@@ -3,16 +3,18 @@ Notes on possible Flutter interface
 
 Presently investigating SwiftUI clones vs Flutter for embedded touchscreen UI. This document collects some notes on integrating the latter with Swift.
 
+```
 - <prefix>/<connectionID>/<oNo>/<method>
 
     prefix          oca/tcp, ocasec/tcp, oca/udp, ocaws/tcp
     connectionID    probably an IP address:port tuple, although could be an ephemeral ID returned from a connection broker
     oNo             object number of object being addressed
     method          method or property
-
+```
 
 e.g.
 
+```
     oca/tcp/127.0.0.1:65000/1234/m/4.1    get (eg) gain value
                                           reply contains gain value
     oca/tcp/127.0.0.1:65000/1234/m/4.2    set (eg) gain value
@@ -21,6 +23,7 @@ e.g.
                                           no reply, but asynchronous events with "p" name
     oca/tcp/127.0.0.1:65000/1234/c/4.1    cancel observing property changes
                                           no reply
+```
 
 Method formats should just be the property value itself, although for bounded values OCA doesn't transmit the bounds in the setter.
 
