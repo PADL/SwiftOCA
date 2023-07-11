@@ -64,7 +64,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         _ cfData: UnsafeRawPointer?
     ) {
         guard let cfData else { return }
-        let data = Unmanaged<CFData>.fromOpaque(cfData).takeUnretainedValue() as Data
+        let data = Unmanaged<CFData>.fromOpaque(cfData).takeUnretainedValue().data
         guard data.count > 0 else { return }
 
         Task {
@@ -81,7 +81,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
             kCFAllocatorDefault,
             AF_INET,
             type,
-            type == SOCK_STREAM ? IPPROTO_TCP : IPPROTO_UDP,
+            isStreamType(type) ? Int32(IPPROTO_TCP) : Int32(IPPROTO_UDP),
             CFSocketCallBackType.dataCallBack.rawValue,
             AES70OCP1CFSocketConnection_DataCallBack,
             &context
@@ -109,11 +109,11 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
 
         DispatchQueue.main.async {
             let runLoopSource = CFSocketCreateRunLoopSource(kCFAllocatorDefault, cfSocket, 0)
-            CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, CFRunLoopMode.defaultMode)
+            CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode)
         }
 
         guard CFSocketIsValid(cfSocket),
-              CFSocketConnectToAddress(cfSocket, deviceAddress as CFData, 0) == .success
+              CFSocketConnectToAddress(cfSocket, deviceAddress.cfData, 0) == .success
         else {
             throw Ocp1Error.notConnected
         }
@@ -161,7 +161,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         guard let cfSocket else {
             throw Ocp1Error.notConnected
         }
-        let result = CFSocketSendData(cfSocket, nil, data as CFData, 0)
+        let result = CFSocketSendData(cfSocket, nil, data.cfData, 0)
         switch result {
         case .success:
             return data.count
@@ -181,13 +181,43 @@ public class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
     }
 
     override fileprivate var type: Int32 {
+#if os(Linux)
+        Int32(SOCK_DGRAM.rawValue)
+#else
         SOCK_DGRAM
+#endif
     }
 }
 
 public class AES70OCP1CFSocketTCPConnection: AES70OCP1CFSocketConnection {
     override fileprivate var type: Int32 {
+#if os(Linux)
+        Int32(SOCK_STREAM.rawValue)
+#else
         SOCK_STREAM
+#endif
+    }
+}
+
+fileprivate func isStreamType(_ type: Int32) -> Bool {
+#if os(Linux)
+    let streamType = Int32(SOCK_STREAM.rawValue)
+#else
+    let streamType = SOCK_STREAM
+#endif
+
+    return streamType == type
+}
+
+fileprivate extension Data {
+    var cfData: CFData {
+        return unsafeBitCast(self, to: CFData.self)
+    }
+}
+
+fileprivate extension CFData {
+    var data: Data {
+        return Data(referencing: unsafeBitCast(self, to: NSData.self))
     }
 }
 
