@@ -214,7 +214,7 @@ fileprivate extension Data {
         #if canImport(Darwin)
         return self as NSData
         #else
-        return unsafeBitCast(self, to: CFData.self)
+        return unsafeBitCast(self as NSData, to: CFData.self)
         #endif
     }
 }
