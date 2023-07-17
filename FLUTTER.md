@@ -1,28 +1,37 @@
 Notes on possible Flutter interface
 -----------------------------------
 
-Presently investigating SwiftUI clones vs Flutter for embedded touchscreen UI. This document collects some notes on integrating the latter with Swift.
+Presently investigating SwiftUI clones vs Flutter for embedded touchscreen UI, via [FlutterSwift](https://github.com/PADL/FlutterSwift). This document collects some notes on integrating the latter with Swift.
 
 ```
-- <prefix>/<connectionID>/<oNo>/<method>
+- <prefix>/<connectionID>/<oNo>/<type>
 
     prefix          oca/tcp, ocasec/tcp, oca/udp, ocaws/tcp
     connectionID    probably an IP address:port tuple, although could be an ephemeral ID returned from a connection broker
     oNo             object number of object being addressed
-    method          method or property
+    type            string "event" or "method"        
 ```
 
-e.g.
+* method channels take a method (e.g. "4.2" to set a gain value) and arguments corresponding to the equivalent OCA types
+* event channels connect the AsyncChannel from the observed property/properties, which are subscribed in the onListen() callback (probably need to use type erasure here to easily handle different types, doesn't make a difference on the Flutter end as types are dynamic)
 
-```
-    oca/tcp/127.0.0.1:65000/1234/m/4.1    get (eg) gain value
-                                          reply contains gain value
-    oca/tcp/127.0.0.1:65000/1234/m/4.2    set (eg) gain value
-                                          no reply
-    oca/tcp/127.0.0.1:65000/1234/o/4.1    begin observing property changes
-                                          no reply, but asynchronous events with "p" name
-    oca/tcp/127.0.0.1:65000/1234/c/4.1    cancel observing property changes
-                                          no reply
+```swift
+public enum OcaPropertyChangeType: OcaUint8, Codable, Equatable {
+    case currentChanged = 1
+    case minChanged = 2
+    case maxChanged = 3
+    case itemAdded = 4
+    case itemChanged = 5
+    case itemDeleted = 6
+}
+
+public struct OcaPropertyChangedEventData<T: Codable>: Codable {
+    let propertyID: OcaPropertyID
+    let propertyValue: T
+    let changeType: OcaPropertyChangeType
+}
+
+typealias FlutterPropertyChangedEventData = OcaPropertyChangedEventData<AnyCodable>
 ```
 
 Method formats should just be the property value itself, although for bounded values OCA doesn't transmit the bounds in the setter.
