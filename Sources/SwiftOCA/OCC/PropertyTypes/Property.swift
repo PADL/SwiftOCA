@@ -73,6 +73,17 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
                 return true
             }
         }
+
+        public func asOptionalResult() -> Result<Value?, Error> {
+            switch self {
+            case .initial:
+                return .success(nil)
+            case let .success(value):
+                return .success(value)
+            case let .failure(error):
+                return .failure(error)
+            }
+        }
     }
 
     public let subject: AsyncCurrentValueSubject<State>
