@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import AsyncExtensions
 import BinaryCoder
 import Foundation
 #if canImport(Combine)
@@ -228,6 +229,10 @@ public extension OcaRoot {
 
         var currentValue: OcaProperty<Value>.State {
             OcaProperty<Value>.State.success(value)
+        }
+
+        var subject: AsyncCurrentValueSubject<State> {
+            AsyncCurrentValueSubject(currentValue)
         }
     }
 }

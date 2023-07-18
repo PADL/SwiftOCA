@@ -26,9 +26,11 @@ import TokamakShim
 
 public protocol OcaPropertyRepresentable: CustomStringConvertible {
     associatedtype Value: Codable
+    typealias State = OcaProperty<Value>.State
 
     var propertyIDs: [OcaPropertyID] { get }
-    var currentValue: OcaProperty<Value>.State { get }
+    var currentValue: State { get }
+    var subject: AsyncCurrentValueSubject<State> { get }
 
     func refresh(_ object: OcaRoot) async
     func subscribe(_ object: OcaRoot) async

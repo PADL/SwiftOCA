@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import AsyncExtensions
 import BinaryCoder
 import Foundation
 #if canImport(SwiftUI)
@@ -95,6 +96,8 @@ public struct OcaBoundedProperty<Value: Codable & Comparable>: OcaPropertyChange
     public var propertyIDs: [OcaPropertyID] {
         [_storage.propertyID]
     }
+
+    public var subject: AsyncCurrentValueSubject<State> { _storage.subject }
 
     fileprivate var _storage: Property
 

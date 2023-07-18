@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import AsyncExtensions
 import BinaryCoder
 import Foundation
 #if canImport(SwiftUI)
@@ -44,6 +45,7 @@ public struct OcaVectorProperty<
     public let yPropertyID: OcaPropertyID
     public let getMethodID: OcaMethodID
     public let setMethodID: OcaMethodID?
+    public var subject: AsyncCurrentValueSubject<State> { _storage.subject }
 
     fileprivate var _storage: Property
 
