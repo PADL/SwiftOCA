@@ -143,7 +143,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     func _get(_enclosingInstance object: OcaRoot) -> State {
         switch subject.value {
         case .initial:
-            Task { @MainActor in
+            Task {
                 await perform(object) {
                     try await $0.getValueAndSubscribe(object)
                 }
@@ -155,7 +155,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
 
     func _set(_enclosingInstance object: OcaRoot, _ newValue: State) {
-        Task { @MainActor in
+        Task {
             switch newValue {
             case let .success(value):
                 await perform(object) {
@@ -201,7 +201,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         self.setValueTransformer = setValueTransformer
     }
 
-    @MainActor
     private func getValueAndSubscribe(_ object: OcaRoot) async throws {
         guard let getMethodID else {
             throw Ocp1Error.propertyIsImmutable
@@ -217,7 +216,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         _send(_enclosingInstance: object, .success(value))
     }
 
-    @MainActor
     private func setValueIfMutable(_ object: OcaRoot, _ value: Value) async throws {
         guard let setMethodID else {
             throw Ocp1Error.propertyIsImmutable
@@ -269,7 +267,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             return
         }
 
-        // FIXME: is this safe to run off main thread?
         await perform(object) {
             try await $0.getValueAndSubscribe(object)
         }
@@ -297,7 +294,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     }
 
-    @MainActor
     func onCompletion<T>(
         _ object: OcaRoot,
         _ block: @escaping (_ value: Value) async throws -> T
