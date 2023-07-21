@@ -51,13 +51,10 @@ extension AES70OCP1Connection {
         object.connectionDelegate = self
     }
 
-    @MainActor
     func refreshDeviceTree() async throws {
         let members = try await rootBlock.resolveMembersRecursive(resolveMatrixMembers: true)
-        Task {
-            for member in members {
-                await member.memberObject._subscribeRole()
-            }
+        for member in members {
+            await member.memberObject._subscribeRole()
         }
     }
 }

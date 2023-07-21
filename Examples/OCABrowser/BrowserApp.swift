@@ -28,27 +28,29 @@ class BonjourBrowser: ObservableObject {
     var services = [NetService]()
 
     init() {
-        Task { @MainActor in
-            for await result in udpBrowser.channel {
-                switch result {
-                case let .didFind(netService):
-                    services.append(netService)
-                case let .didRemove(netService):
-                    services.removeAll(where: { $0 == netService })
-                case let .didNotSearch(error):
-                    debugPrint("OcaBonjourDiscoveryView: \(error)")
+        await withTaskGroup(of: NetService.self) { [self] group in
+            group.addTask {
+                for await result in udpBrowser.channel {
+                    switch result {
+                    case let .didFind(netService):
+                        services.append(netService)
+                    case let .didRemove(netService):
+                        services.removeAll(where: { $0 == netService })
+                    case let .didNotSearch(error):
+                        debugPrint("OcaBonjourDiscoveryView: \(error)")
+                    }
                 }
             }
-        }
-        Task { @MainActor in
-            for await result in tcpBrowser.channel {
-                switch result {
-                case let .didFind(netService):
-                    services.append(netService)
-                case let .didRemove(netService):
-                    services.removeAll(where: { $0 == netService })
-                case let .didNotSearch(error):
-                    debugPrint("OcaBonjourDiscoveryView: \(error)")
+            group.addTask {
+                for await result in tcpBrowser.channel {
+                    switch result {
+                    case let .didFind(netService):
+                        services.append(netService)
+                    case let .didRemove(netService):
+                        services.removeAll(where: { $0 == netService })
+                    case let .didNotSearch(error):
+                        debugPrint("OcaBonjourDiscoveryView: \(error)")
+                    }
                 }
             }
         }

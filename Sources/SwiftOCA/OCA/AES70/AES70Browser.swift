@@ -100,7 +100,7 @@ fileprivate class AES70ResolverDelegate: NSObject, NetServiceDelegate {
     }
 
     func netServiceDidResolveAddress(_ sender: NetService) {
-        Task { @MainActor in
+        Task {
             guard let addresses = sender.addresses, !addresses.isEmpty else {
                 await channel.send(.failure(Ocp1Error.serviceResolutionFailed))
                 return
@@ -116,7 +116,7 @@ fileprivate class AES70ResolverDelegate: NSObject, NetServiceDelegate {
         let errorCode = errorDict[NetService.errorCode]!.intValue
         let errorDomain = errorDict[NetService.errorDomain]!.stringValue
 
-        Task { @MainActor in
+        Task {
             await channel.send(.failure(NSError(domain: errorDomain, code: errorCode)))
         }
     }
