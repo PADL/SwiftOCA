@@ -88,7 +88,6 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
         fatalError("must be implemented by subclass")
     }
 
-    @MainActor
     public init(
         deviceAddress: Data,
         options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()

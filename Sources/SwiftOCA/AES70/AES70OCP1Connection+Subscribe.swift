@@ -18,15 +18,11 @@ import Foundation
 
 private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 
-/// Note – these aren't made @MainActor becasue we probably want to run them in the background
-
 extension AES70OCP1Connection {
-    @MainActor
     func isSubscribed(event: OcaEvent) -> Bool {
         subscriptions[event] != nil
     }
 
-    @MainActor
     func addSubscription(
         event: OcaEvent,
         callback: @escaping AES70SubscriptionCallback
@@ -46,13 +42,11 @@ extension AES70OCP1Connection {
         )
     }
 
-    @MainActor
     func removeSubscription(event: OcaEvent) async throws {
         try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
         subscriptions[event] = nil
     }
 
-    @MainActor
     func removeSubscriptions() async throws {
         for event in subscriptions.keys {
             try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
@@ -60,7 +54,6 @@ extension AES70OCP1Connection {
         subscriptions.removeAll()
     }
 
-    @MainActor
     func refreshSubscriptions() async throws {
         for event in subscriptions.keys {
             try await subscriptionManager.addSubscription(

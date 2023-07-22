@@ -17,7 +17,6 @@
 import Foundation
 
 extension AES70OCP1Connection {
-    @MainActor
     private func resolve<T: OcaRoot>(
         classIdentification: OcaClassIdentification,
         objectNumber: OcaONo
@@ -37,7 +36,6 @@ extension AES70OCP1Connection {
         return object
     }
 
-    @MainActor
     public func resolve<T: OcaRoot>(object: OcaObjectIdentification) -> T? {
         resolve(
             classIdentification: object.classIdentification,
@@ -45,7 +43,6 @@ extension AES70OCP1Connection {
         )
     }
 
-    @MainActor
     func add<T: OcaRoot>(object: T) {
         objects[object.objectNumber] = object
         object.connectionDelegate = self

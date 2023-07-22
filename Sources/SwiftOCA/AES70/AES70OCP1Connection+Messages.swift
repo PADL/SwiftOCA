@@ -17,7 +17,6 @@
 import Foundation
 
 extension AES70OCP1Connection {
-    @MainActor
     func updateLastMessageSentTime() async {
         lastMessageSentTime = Date()
     }

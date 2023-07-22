@@ -56,7 +56,6 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
     private let deviceAddress: any SocketAddress
     var socket: Socket?
 
-    @MainActor
     public init(
         deviceAddress: Data,
         options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()

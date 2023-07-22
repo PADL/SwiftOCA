@@ -48,45 +48,32 @@ public struct AES70OCP1ConnectionOptions {
     }
 }
 
+@MainActor
 public class AES70OCP1Connection: ObservableObject {
-    /// This is effectively an actor (most methods are marked @MainActor) except it supports
-    /// subclasses for different
-    /// protocol types
-
-    @MainActor
     let options: AES70OCP1ConnectionOptions
 
     /// Keepalive/ping interval (only necessary for UDP)
-    @MainActor
     public var keepAliveInterval: OcaUint16 {
         0
     }
 
     /// Object interning, main thread only
-    @MainActor
     var objects = [OcaONo: OcaRoot]()
 
     /// Root block, immutable
-    @MainActor
     public let rootBlock = OcaBlock(objectNumber: OcaRootBlockONo)
 
     /// Well known managers, immutable
-    @MainActor
     let subscriptionManager = OcaSubscriptionManager()
-    @MainActor
     public let deviceManager = OcaDeviceManager()
-    @MainActor
     public let networkManager = OcaNetworkManager()
 
     /// Subscription callbacks, main thread only
-    @MainActor
     var subscriptions = [OcaEvent: AES70SubscriptionCallback]()
 
     // TODO: use SwiftAtomics here?
-    @MainActor
     private var nextCommandHandle = OcaUint32(100)
 
-    @MainActor
     var lastMessageSentTime = Date.distantPast
 
     /// Monitor structure for matching requests and responses
@@ -161,13 +148,10 @@ public class AES70OCP1Connection: ObservableObject {
     }
 
     /// actor for monitoring response and matching them with requests
-    @MainActor
     var monitor: Monitor? = nil
 
-    @MainActor
     private var keepAliveTask: Task<(), Error>? = nil
 
-    @MainActor
     public init(options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()) {
         self.options = options
         add(object: rootBlock)
@@ -175,20 +159,17 @@ public class AES70OCP1Connection: ObservableObject {
         add(object: deviceManager)
     }
 
-    @MainActor
     func getNextCommandHandle() async -> OcaUint32 {
         let handle = nextCommandHandle
         nextCommandHandle += 1
         return handle
     }
 
-    @MainActor
     func reconnectDevice() async throws {
         try await disconnectDevice(clearObjectCache: false)
         try await connectDevice()
     }
 
-    @MainActor
     func connectDevice() async throws {
         monitor = Monitor(self)
         await monitor!.run()
@@ -214,7 +195,6 @@ public class AES70OCP1Connection: ObservableObject {
         objectWillChange.send()
     }
 
-    @MainActor
     func disconnectDevice(clearObjectCache: Bool) async throws {
         if let keepAliveTask {
             keepAliveTask.cancel()
@@ -249,13 +229,11 @@ public class AES70OCP1Connection: ObservableObject {
 
 /// Public API
 public extension AES70OCP1Connection {
-    @MainActor
     func connect() async throws {
         try await connectDevice()
         try? await refreshDeviceTree()
     }
 
-    @MainActor
     func disconnect() async throws {
         try await removeSubscriptions()
         try await disconnectDevice(clearObjectCache: true)

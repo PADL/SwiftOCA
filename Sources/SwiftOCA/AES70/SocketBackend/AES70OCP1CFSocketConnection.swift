@@ -29,8 +29,10 @@ private func AES70OCP1CFSocketConnection_DataCallBack(
     _ info: UnsafeMutableRawPointer?
 ) {
     guard let info else { return }
-    let connection = Unmanaged<AES70OCP1CFSocketConnection>.fromOpaque(info).takeUnretainedValue()
-    connection.dataCallBack(socket, type, address, data)
+    Task { @MainActor in
+        let connection = Unmanaged<AES70OCP1CFSocketConnection>.fromOpaque(info).takeUnretainedValue()
+        connection.dataCallBack(socket, type, address, data)
+    }
 }
 
 public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
@@ -43,7 +45,6 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
     private var receivedDataChannel = AsyncChannel<Data>()
     private var receivedData = Data()
 
-    @MainActor
     public init(
         deviceAddress: Data,
         options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()
@@ -73,7 +74,6 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         }
     }
 
-    @MainActor
     override func connectDevice() async throws {
         var context = CFSocketContext()
         context.info = Unmanaged.passUnretained(self).toOpaque()
@@ -124,7 +124,6 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         try await super.connectDevice()
     }
 
-    @MainActor
     override func disconnectDevice(clearObjectCache: Bool) async throws {
         if let cfSocket {
             CFSocketInvalidate(cfSocket)
@@ -134,7 +133,6 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         try await super.disconnectDevice(clearObjectCache: clearObjectCache)
     }
 
-    @MainActor
     private func drainChannel(atLeast length: Int) async {
         guard receivedData.count < length else { return }
 
@@ -144,7 +142,6 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         }
     }
 
-    @MainActor
     override func read(_ length: Int) async throws -> Data {
         while receivedData.count < length {
             await drainChannel(atLeast: length)
@@ -157,7 +154,6 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         return data
     }
 
-    @MainActor
     override func write(_ data: Data) async throws -> Int {
         guard let cfSocket else {
             throw Ocp1Error.notConnected
