@@ -19,8 +19,6 @@ import BinaryCoder
 import Foundation
 #if canImport(SwiftUI)
 import SwiftUI
-#elseif canImport(TokamakShim)
-import TokamakShim
 #endif
 
 public struct OcaBoundedPropertyValue<Value: Codable & Comparable>: Codable,
@@ -190,7 +188,7 @@ public struct OcaBoundedProperty<Value: Codable & Comparable>: OcaPropertyChange
         _storage._send(_enclosingInstance: object, .success(value))
     }
 
-    #if canImport(SwiftUI) || canImport(TokamakShim)
+    #if canImport(SwiftUI)
     public var projectedValue: Binding<State> {
         Binding(
             get: { _storage.projectedValue.wrappedValue },
@@ -199,13 +197,3 @@ public struct OcaBoundedProperty<Value: Codable & Comparable>: OcaPropertyChange
     }
     #endif
 }
-
-#if canImport(SwiftUI) || canImport(TokamakShim)
-#if canImport(SwiftUI)
-import SwiftUI
-#elseif canImport(TokamakShim)
-import TokamakShim
-#endif
-
-public extension OcaBoundedProperty {}
-#endif

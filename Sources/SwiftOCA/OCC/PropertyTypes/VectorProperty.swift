@@ -19,8 +19,6 @@ import BinaryCoder
 import Foundation
 #if canImport(SwiftUI)
 import SwiftUI
-#elseif canImport(TokamakShim)
-import TokamakShim
 #endif
 
 public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable, OcaParameterCountReflectable {
@@ -147,7 +145,7 @@ public struct OcaVectorProperty<
         }
     }
 
-    #if canImport(SwiftUI) || canImport(TokamakShim)
+    #if canImport(SwiftUI)
     public var projectedValue: Binding<State> {
         Binding(
             get: { _storage.projectedValue.wrappedValue },

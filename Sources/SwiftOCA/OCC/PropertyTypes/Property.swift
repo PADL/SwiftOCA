@@ -20,8 +20,6 @@ import BinaryCoder
 import Foundation
 #if canImport(SwiftUI)
 import SwiftUI
-#elseif canImport(TokamakShim)
-import TokamakShim
 #endif
 
 public protocol OcaPropertyRepresentable: CustomStringConvertible {
@@ -114,12 +112,12 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         nonmutating set { fatalError() }
     }
 
-    #if canImport(SwiftUI) || canImport(TokamakShim)
+    #if canImport(SwiftUI)
     private weak var object: OcaRoot?
     #endif
 
     mutating func _referenceObject(_enclosingInstance object: OcaRoot) {
-        #if canImport(SwiftUI) || canImport(TokamakShim)
+        #if canImport(SwiftUI)
         self.object = object
         #endif
     }
@@ -333,7 +331,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     }
 
-    #if canImport(SwiftUI) || canImport(TokamakShim)
+    #if canImport(SwiftUI)
     public var projectedValue: Binding<State> {
         Binding(
             get: {
