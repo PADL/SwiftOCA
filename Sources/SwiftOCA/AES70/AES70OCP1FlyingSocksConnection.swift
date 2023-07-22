@@ -16,6 +16,7 @@
 
 #if canImport(FlyingSocks)
 
+@_implementationOnly
 import FlyingSocks
 import Foundation
 
@@ -90,8 +91,7 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
     @MainActor
     public init(
         deviceAddress: Data,
-        options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions(),
-        pool: AsyncSocketPool = SocketPool.make()
+        options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()
     ) {
         self.deviceAddress = deviceAddress.socketAddress
         super.init(options: options)

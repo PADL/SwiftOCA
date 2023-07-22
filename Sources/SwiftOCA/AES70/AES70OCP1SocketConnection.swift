@@ -17,6 +17,7 @@
 #if canImport(Socket)
 
 import Foundation
+@_implementationOnly
 import Socket
 
 private extension Errno {
