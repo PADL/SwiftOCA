@@ -29,10 +29,8 @@ private func AES70OCP1CFSocketConnection_DataCallBack(
     _ info: UnsafeMutableRawPointer?
 ) {
     guard let info else { return }
-    Task { @MainActor in
-        let connection = Unmanaged<AES70OCP1CFSocketConnection>.fromOpaque(info).takeUnretainedValue()
-        connection.dataCallBack(socket, type, address, data)
-    }
+    let connection = Unmanaged<AES70OCP1CFSocketConnection>.fromOpaque(info).takeUnretainedValue()
+    connection.dataCallBack(socket, type, address, data)
 }
 
 public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
@@ -59,12 +57,14 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         }
     }
 
-    fileprivate func dataCallBack(
+    fileprivate nonisolated func dataCallBack(
         _ socket: CFSocket?,
         _ type: CFSocketCallBackType,
         _ address: CFData?,
         _ cfData: UnsafeRawPointer?
     ) {
+        precondition(Thread.isMainThread)
+
         guard let cfData else { return }
         let data = Unmanaged<CFData>.fromOpaque(cfData).takeUnretainedValue().data
         guard data.count > 0 else { return }

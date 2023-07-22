@@ -148,9 +148,9 @@ public class AES70OCP1Connection: ObservableObject {
     }
 
     /// actor for monitoring response and matching them with requests
-    var monitor: Monitor? = nil
+    var monitor: Monitor?
 
-    private var keepAliveTask: Task<(), Error>? = nil
+    private var keepAliveTask: Task<(), Error>?
 
     public init(options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()) {
         self.options = options
