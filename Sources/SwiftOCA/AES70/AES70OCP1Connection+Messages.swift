@@ -53,7 +53,7 @@ extension AES70OCP1Connection {
     }
 
     private func response(for handle: OcaUint32) async throws -> Ocp1Response {
-        guard let monitor = await monitor else {
+        guard let monitor = monitor else {
             throw Ocp1Error.notConnected
         }
 
@@ -70,7 +70,7 @@ extension AES70OCP1Connection {
     }
 
     func sendKeepAlive() async throws {
-        let message = await Ocp1KeepAlive1(heartBeatTime: keepAliveInterval)
+        let message = Ocp1KeepAlive1(heartBeatTime: keepAliveInterval)
         try await sendMessage(message, type: .ocaKeepAlive)
     }
 }
