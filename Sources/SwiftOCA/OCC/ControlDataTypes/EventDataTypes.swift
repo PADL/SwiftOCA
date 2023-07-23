@@ -59,6 +59,16 @@ public struct OcaPropertyChangedEventData<T: Codable>: Codable {
     public let propertyID: OcaPropertyID
     public let propertyValue: T
     public let changeType: OcaPropertyChangeType
+
+    public init(
+        propertyID: OcaPropertyID,
+        propertyValue: T,
+        changeType: OcaPropertyChangeType
+    ) {
+        self.propertyID = propertyID
+        self.propertyValue = propertyValue
+        self.changeType = changeType
+    }
 }
 
 let OcaPropertyChangedEventID = OcaEventID(defLevel: 1, eventIndex: 1)
