@@ -17,10 +17,10 @@
 import Foundation
 
 public struct Ocp1Response: Ocp1Message, Codable {
-    let responseSize: OcaUint32
-    let handle: OcaUint32
-    let statusCode: OcaStatus
-    let parameters: Ocp1Parameters
+    public let responseSize: OcaUint32
+    public let handle: OcaUint32
+    public let statusCode: OcaStatus
+    public let parameters: Ocp1Parameters
 
     var messageSize: OcaUint32 { responseSize }
 }

@@ -17,16 +17,16 @@
 import Foundation
 
 public struct Ocp1Parameters: Codable {
-    var parameterCount: OcaUint8
-    var parameterData: Data
+    public var parameterCount: OcaUint8
+    public var parameterData: Data
 }
 
 public struct Ocp1Command: Ocp1Message, Codable {
-    let commandSize: OcaUint32
-    let handle: OcaUint32
-    let targetONo: OcaONo
-    let methodID: OcaMethodID
-    let parameters: Ocp1Parameters
+    public let commandSize: OcaUint32
+    public let handle: OcaUint32
+    public let targetONo: OcaONo
+    public let methodID: OcaMethodID
+    public let parameters: Ocp1Parameters
 
     var messageSize: OcaUint32 { commandSize }
 }
