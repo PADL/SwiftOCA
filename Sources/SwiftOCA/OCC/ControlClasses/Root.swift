@@ -47,6 +47,13 @@ public class OcaRoot: CustomStringConvertible, ObservableObject {
         OcaClassIdentification(classID: classID, classVersion: classVersion)
     }
 
+    public var objectIdentification: OcaObjectIdentification {
+        OcaObjectIdentification(
+            oNo: objectNumber,
+            classIdentification: Self.classIdentification
+        )
+    }
+
     // 1.3
     public let objectNumber: OcaONo
     private var _objectNumber: StaticProperty<OcaONo> {
