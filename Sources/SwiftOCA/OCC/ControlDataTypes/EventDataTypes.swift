@@ -22,8 +22,8 @@ public enum OcaNotificationDeliveryMode: OcaUint8, Codable {
 }
 
 public struct OcaEventID: Codable, Hashable, CustomStringConvertible {
-    let defLevel: OcaUint16
-    let eventIndex: OcaUint16
+    public let defLevel: OcaUint16
+    public let eventIndex: OcaUint16
 
     init(_ string: OcaString) {
         let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
@@ -42,8 +42,8 @@ public struct OcaEventID: Codable, Hashable, CustomStringConvertible {
 }
 
 public struct OcaEvent: Codable, Hashable, Equatable {
-    let emitterONo: OcaONo
-    let eventID: OcaEventID
+    public let emitterONo: OcaONo
+    public let eventID: OcaEventID
 }
 
 public enum OcaPropertyChangeType: OcaUint8, Codable, Equatable {
@@ -56,9 +56,9 @@ public enum OcaPropertyChangeType: OcaUint8, Codable, Equatable {
 }
 
 public struct OcaPropertyChangedEventData<T: Codable>: Codable {
-    let propertyID: OcaPropertyID
-    let propertyValue: T
-    let changeType: OcaPropertyChangeType
+    public let propertyID: OcaPropertyID
+    public let propertyValue: T
+    public let changeType: OcaPropertyChangeType
 }
 
 let OcaPropertyChangedEventID = OcaEventID(defLevel: 1, eventIndex: 1)
