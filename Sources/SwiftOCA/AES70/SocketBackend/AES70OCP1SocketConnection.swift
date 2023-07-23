@@ -53,7 +53,7 @@ private extension Data {
 
 public class AES70OCP1SocketConnection: AES70OCP1Connection {
     let monitorInterval: UInt64 = 10 * NSEC_PER_MSEC
-    private let deviceAddress: any SocketAddress
+    fileprivate let deviceAddress: any SocketAddress
     var socket: Socket?
 
     public init(
@@ -110,7 +110,7 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
     }
 }
 
-public class AES70OCP1SocketUDPConnection: AES70OCP1SocketConnection {
+public class AES70OCP1SocketUDPConnection: AES70OCP1SocketConnection, CustomStringConvertible {
     private static let mtu = 1500
 
     override public var keepAliveInterval: OcaUint16 {
@@ -136,9 +136,13 @@ public class AES70OCP1SocketUDPConnection: AES70OCP1SocketConnection {
             try await socket.sendMessage(data)
         }
     }
+
+    public var description: String {
+        "udp/\(DeviceAddressToString(deviceAddress))"
+    }
 }
 
-public class AES70OCP1SocketTCPConnection: AES70OCP1SocketConnection {
+public class AES70OCP1SocketTCPConnection: AES70OCP1SocketConnection, CustomStringConvertible {
     override func connectDevice() async throws {
         if socket == nil {
             Socket.configuration = AsyncSocketConfiguration(monitorInterval: monitorInterval)
@@ -171,6 +175,16 @@ public class AES70OCP1SocketTCPConnection: AES70OCP1SocketConnection {
 
             return bytesWritten
         }
+    }
+
+    public var description: String {
+        "tcp/\(DeviceAddressToString(deviceAddress))"
+    }
+}
+
+func DeviceAddressToString(_ deviceAddress: any SocketAddress) -> String {
+    deviceAddress.withUnsafePointer { address, _ in
+        DeviceAddressToString(address)
     }
 }
 

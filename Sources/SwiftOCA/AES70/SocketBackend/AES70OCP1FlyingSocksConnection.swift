@@ -82,7 +82,7 @@ private actor AsyncSocketPoolMonitor {
 }
 
 public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
-    private let deviceAddress: any SocketAddress
+    fileprivate let deviceAddress: any SocketAddress
     fileprivate var asyncSocket: AsyncSocket?
     fileprivate var type: Int32 {
         fatalError("must be implemented by subclass")
@@ -151,16 +151,37 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
     }
 }
 
-public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
+public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection,
+    CustomStringConvertible
+{
     override public var keepAliveInterval: OcaUint16 {
         1
     }
 
     override fileprivate var type: Int32 { SOCK_DGRAM }
+
+    public var description: String {
+        "udp/\(DeviceAddressToString(deviceAddress))"
+    }
 }
 
-public class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnection {
+public class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnection,
+    CustomStringConvertible
+{
     override fileprivate var type: Int32 { SOCK_STREAM }
+
+    public var description: String {
+        "tcp/\(DeviceAddressToString(deviceAddress))"
+    }
+}
+
+func DeviceAddressToString(_ deviceAddress: any SocketAddress) -> String {
+    var addr = deviceAddress.makeStorage()
+    return withUnsafePointer(to: &addr) {
+        $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+            DeviceAddressToString($0)
+        }
+    }
 }
 
 #endif

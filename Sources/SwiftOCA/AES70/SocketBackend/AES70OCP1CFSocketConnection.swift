@@ -34,7 +34,7 @@ private func AES70OCP1CFSocketConnection_DataCallBack(
 }
 
 public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
-    private let deviceAddress: Data
+    fileprivate let deviceAddress: Data
     fileprivate var cfSocket: CFSocket?
     fileprivate var type: Int32 {
         fatalError("must be implemented by subclass")
@@ -172,7 +172,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
     }
 }
 
-public class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
+public class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection, CustomStringConvertible {
     override public var keepAliveInterval: OcaUint16 {
         1
     }
@@ -184,15 +184,23 @@ public class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
         Int32(SOCK_DGRAM.rawValue)
         #endif
     }
+
+    public var description: String {
+        "udp/\(DeviceAddressToString(deviceAddress))"
+    }
 }
 
-public class AES70OCP1CFSocketTCPConnection: AES70OCP1CFSocketConnection {
+public class AES70OCP1CFSocketTCPConnection: AES70OCP1CFSocketConnection, CustomStringConvertible {
     override fileprivate var type: Int32 {
         #if canImport(Darwin)
         SOCK_STREAM
         #else
         Int32(SOCK_STREAM.rawValue)
         #endif
+    }
+
+    public var description: String {
+        "tcp/\(DeviceAddressToString(deviceAddress))"
     }
 }
 
@@ -229,5 +237,13 @@ fileprivate extension CFRunLoopMode {
     }
 }
 #endif
+
+fileprivate func DeviceAddressToString(_ deviceAddress: Data) -> String {
+    deviceAddress.withUnsafeBytes { unbound -> String in
+        unbound.withMemoryRebound(to: sockaddr.self) { cSockAddr -> String in
+            DeviceAddressToString(cSockAddr.baseAddress!)
+        }
+    }
+}
 
 #endif

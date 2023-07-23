@@ -193,6 +193,8 @@ public class AES70OCP1Connection: ObservableObject {
         }
 
         objectWillChange.send()
+
+        debugPrint("Connected to \(self)")
     }
 
     func disconnectDevice(clearObjectCache: Bool) async throws {
