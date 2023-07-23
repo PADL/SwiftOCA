@@ -256,11 +256,21 @@ public struct OcaMethodID: Codable, Hashable, CustomStringConvertible {
 public struct OcaMethod: Codable {
     public let oNo: OcaONo
     public let methodID: OcaMethodID
+
+    public init(oNo: OcaONo, methodID: OcaMethodID) {
+        self.oNo = oNo
+        self.methodID = methodID
+    }
 }
 
 public struct OcaClassIdentification: Codable, Hashable {
     public let classID: OcaClassID
     public let classVersion: OcaClassVersionNumber
+
+    public init(classID: OcaClassID, classVersion: OcaClassVersionNumber) {
+        self.classID = classID
+        self.classVersion = classVersion
+    }
 }
 
 public struct OcaObjectIdentification: Codable {
