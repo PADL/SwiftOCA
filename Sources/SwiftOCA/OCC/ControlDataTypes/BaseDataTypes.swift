@@ -119,24 +119,24 @@ public enum OcaPortMode: OcaUint8, Codable {
 }
 
 public struct OcaPortID: Codable {
-    let mode: OcaPortMode
-    let index: OcaUint16
+    public let mode: OcaPortMode
+    public let index: OcaUint16
 }
 
 public struct OcaPort: Codable {
-    let owner: OcaONo
-    let id: OcaPortID
-    let name: OcaString
+    public let owner: OcaONo
+    public let id: OcaPortID
+    public let name: OcaString
 }
 
 public struct OcaSignalPath: Codable {
-    let sourcePort: OcaPort
-    let sinkPort: OcaPort
+    public let sourcePort: OcaPort
+    public let sinkPort: OcaPort
 }
 
 public struct OcaLibVolIdentifier: Codable {
-    let library: OcaONo
-    let id: OcaLibVolID
+    public let library: OcaONo
+    public let id: OcaLibVolID
 }
 
 public struct OcaClassID: Codable, Hashable, CustomStringConvertible {
@@ -239,8 +239,8 @@ public struct OcaClassID: Codable, Hashable, CustomStringConvertible {
 }
 
 public struct OcaMethodID: Codable, Hashable, CustomStringConvertible {
-    let defLevel: OcaUint16
-    let methodIndex: OcaUint16
+    public let defLevel: OcaUint16
+    public let methodIndex: OcaUint16
 
     public init(_ string: OcaString) {
         let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
@@ -254,18 +254,18 @@ public struct OcaMethodID: Codable, Hashable, CustomStringConvertible {
 }
 
 public struct OcaMethod: Codable {
-    let oNo: OcaONo
-    let methodID: OcaMethodID
+    public let oNo: OcaONo
+    public let methodID: OcaMethodID
 }
 
 public struct OcaClassIdentification: Codable, Hashable {
-    let classID: OcaClassID
-    let classVersion: OcaClassVersionNumber
+    public let classID: OcaClassID
+    public let classVersion: OcaClassVersionNumber
 }
 
 public struct OcaObjectIdentification: Codable {
-    let oNo: OcaONo
-    let classIdentification: OcaClassIdentification
+    public let oNo: OcaONo
+    public let classIdentification: OcaClassIdentification
 
     public init(oNo: OcaONo, classIdentification: OcaClassIdentification) {
         self.oNo = oNo
@@ -276,12 +276,12 @@ public struct OcaObjectIdentification: Codable {
 public typealias OcaProtoONo = OcaUint32
 
 public struct OcaGlobalTypeIdentifier: Codable {
-    let authority: OcaOrganizationID
-    let id: OcaUint32
+    public let authority: OcaOrganizationID
+    public let id: OcaUint32
 }
 
 public struct OcaOrganizationID: Codable, CustomStringConvertible {
-    let id: (OcaUint8, OcaUint8, OcaUint8)
+    public let id: (OcaUint8, OcaUint8, OcaUint8)
 
     init(_ id: (OcaUint8, OcaUint8, OcaUint8)) {
         self.id = id
