@@ -62,7 +62,8 @@ extension OcaRoot {
         )
     }
 
-    private func sendCommandRrq(
+    // public for FlutterSwiftOCA to use
+    public func sendCommandRrq(
         methodID: OcaMethodID,
         parameterCount: OcaUint8,
         parameterData: Data
