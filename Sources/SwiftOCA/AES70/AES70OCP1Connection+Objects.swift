@@ -43,6 +43,10 @@ extension AES70OCP1Connection {
         )
     }
 
+    public func resolve<T: OcaRoot>(cachedObject: OcaONo) -> T? {
+        objects[cachedObject] as? T
+    }
+
     func add<T: OcaRoot>(object: T) {
         objects[object.objectNumber] = object
         object.connectionDelegate = self
