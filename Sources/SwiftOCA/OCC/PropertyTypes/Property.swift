@@ -38,6 +38,10 @@ public extension OcaPropertyRepresentable {
     var hasValueOrError: Bool {
         currentValue.hasValueOrError
     }
+
+    func eraseSubjectToAnyAsyncSequence() -> AnyAsyncSequence<State> {
+        subject.eraseToAnyAsyncSequence()
+    }
 }
 
 @propertyWrapper
