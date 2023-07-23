@@ -151,27 +151,23 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
     }
 }
 
-public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection,
-    CustomStringConvertible
-{
+public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
     override public var keepAliveInterval: OcaUint16 {
         1
     }
 
     override fileprivate var type: Int32 { SOCK_DGRAM }
 
-    public var description: String {
-        "udp/\(DeviceAddressToString(deviceAddress))"
+    override public var connectionPrefix: String {
+        "\(OcaUdpConnectionPrefix)/\(DeviceAddressToString(deviceAddress))"
     }
 }
 
-public class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnection,
-    CustomStringConvertible
-{
+public class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnection {
     override fileprivate var type: Int32 { SOCK_STREAM }
 
-    public var description: String {
-        "tcp/\(DeviceAddressToString(deviceAddress))"
+    override public var connectionPrefix: String {
+        "\(OcaTcpConnectionPrefix)/\(DeviceAddressToString(deviceAddress))"
     }
 }
 

@@ -110,7 +110,7 @@ public class AES70OCP1SocketConnection: AES70OCP1Connection {
     }
 }
 
-public class AES70OCP1SocketUDPConnection: AES70OCP1SocketConnection, CustomStringConvertible {
+public class AES70OCP1SocketUDPConnection: AES70OCP1SocketConnection {
     private static let mtu = 1500
 
     override public var keepAliveInterval: OcaUint16 {
@@ -137,12 +137,12 @@ public class AES70OCP1SocketUDPConnection: AES70OCP1SocketConnection, CustomStri
         }
     }
 
-    public var description: String {
-        "udp/\(DeviceAddressToString(deviceAddress))"
+    override public var connectionPrefix: String {
+        "\(OcaUdpConnectionPrefix)/\(DeviceAddressToString(deviceAddress))"
     }
 }
 
-public class AES70OCP1SocketTCPConnection: AES70OCP1SocketConnection, CustomStringConvertible {
+public class AES70OCP1SocketTCPConnection: AES70OCP1SocketConnection {
     override func connectDevice() async throws {
         if socket == nil {
             Socket.configuration = AsyncSocketConfiguration(monitorInterval: monitorInterval)
@@ -177,8 +177,8 @@ public class AES70OCP1SocketTCPConnection: AES70OCP1SocketConnection, CustomStri
         }
     }
 
-    public var description: String {
-        "tcp/\(DeviceAddressToString(deviceAddress))"
+    override public var connectionPrefix: String {
+        "\(OcaTcpConnectionPrefix)/\(DeviceAddressToString(deviceAddress))"
     }
 }
 

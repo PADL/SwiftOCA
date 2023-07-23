@@ -172,7 +172,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
     }
 }
 
-public class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection, CustomStringConvertible {
+public class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
     override public var keepAliveInterval: OcaUint16 {
         1
     }
@@ -185,12 +185,12 @@ public class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection, Custom
         #endif
     }
 
-    public var description: String {
-        "udp/\(DeviceAddressToString(deviceAddress))"
+    override public var connectionPrefix: String {
+        "\(OcaUdpConnectionPrefix)/\(DeviceAddressToString(deviceAddress))"
     }
 }
 
-public class AES70OCP1CFSocketTCPConnection: AES70OCP1CFSocketConnection, CustomStringConvertible {
+public class AES70OCP1CFSocketTCPConnection: AES70OCP1CFSocketConnection {
     override fileprivate var type: Int32 {
         #if canImport(Darwin)
         SOCK_STREAM
@@ -199,8 +199,8 @@ public class AES70OCP1CFSocketTCPConnection: AES70OCP1CFSocketConnection, Custom
         #endif
     }
 
-    public var description: String {
-        "tcp/\(DeviceAddressToString(deviceAddress))"
+    override public var connectionPrefix: String {
+        "\(OcaTcpConnectionPrefix)/\(DeviceAddressToString(deviceAddress))"
     }
 }
 

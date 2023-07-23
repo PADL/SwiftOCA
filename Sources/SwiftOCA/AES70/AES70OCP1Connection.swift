@@ -32,6 +32,11 @@ typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData)
 let NSEC_PER_MSEC: UInt64 = 1_000_000
 let NSEC_PER_SEC: UInt64 = 1_000_000_000
 
+let OcaTcpConnectionPrefix = "oca/tcp"
+let OcaUdpConnectionPrefix = "oca/udp"
+let OcaSecureTcpConnectionPrefix = "ocasec/tcp"
+let OcaWebSocketTcpConnectionPrefix = "ocaws/tcp"
+
 public struct AES70OCP1ConnectionOptions {
     let automaticReconnect: Bool
     let connectionTimeout: TimeInterval
@@ -49,7 +54,7 @@ public struct AES70OCP1ConnectionOptions {
 }
 
 @MainActor
-public class AES70OCP1Connection: ObservableObject {
+public class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
     let options: AES70OCP1ConnectionOptions
 
     /// Keepalive/ping interval (only necessary for UDP)
@@ -75,6 +80,9 @@ public class AES70OCP1Connection: ObservableObject {
     private var nextCommandHandle = OcaUint32(100)
 
     var lastMessageSentTime = Date.distantPast
+    public nonisolated var connectionPrefix: String {
+        fatalError("read must be implemented by a concrete subclass of AES70OCP1Connection")
+    }
 
     /// Monitor structure for matching requests and responses
     actor Monitor {
@@ -217,6 +225,10 @@ public class AES70OCP1Connection: ObservableObject {
         get async {
             monitor != nil
         }
+    }
+
+    public nonisolated var description: String {
+        connectionPrefix
     }
 
     /// API to be impmlemented by concrete classes
