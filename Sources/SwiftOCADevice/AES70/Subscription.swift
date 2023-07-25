@@ -15,25 +15,13 @@
 //
 
 import Foundation
+import SwiftOCA
 
-public struct Ocp1KeepAlive1: Ocp1Message, Codable {
-    public let heartBeatTime: OcaUint16 // sec
-
-    public var messageSize: OcaUint32 { 2 }
-
-    public init(heartBeatTime: OcaUint16) {
-        self.heartBeatTime = heartBeatTime
-    }
+/// A subscription
+struct AES70OCP1Subscription: Codable, Equatable, Hashable {
+    let event: OcaEvent
+    let subscriber: OcaMethod
+    let subscriberContext: OcaBlob
+    let notificationDeliveryMode: OcaNotificationDeliveryMode
+    let destinationInformation: OcaNetworkAddress
 }
-
-public struct Ocp1KeepAlive2: Ocp1Message, Codable {
-    public let heartBeatTime: OcaUint32 // msec
-
-    public var messageSize: OcaUint32 { 4 }
-
-    public init(heartBeatTime: OcaUint32) {
-        self.heartBeatTime = heartBeatTime
-    }
-}
-
-public typealias Ocp1KeepAlive = Ocp1KeepAlive1

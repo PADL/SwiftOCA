@@ -71,7 +71,7 @@ public class OcaSubscriptionManager: OcaManager {
         try await sendCommandRrq(methodID: OcaMethodID("3.3"))
     }
 
-    func renableNotifications() async throws {
+    func reenableNotifications() async throws {
         try await sendCommandRrq(methodID: OcaMethodID("3.4"))
     }
 

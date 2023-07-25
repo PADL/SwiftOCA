@@ -46,26 +46,14 @@ public struct OcaBonjourDiscoveryView: View {
             }
         }
         .task {
-            await withTaskGroup(of: NetService.self) { [self] _ in
-                for await result in udpBrowser.channel {
-                    switch result {
-                    case let .didFind(netService):
-                        services.append(netService)
-                    case let .didRemove(netService):
-                        services.removeAll(where: { $0 == netService })
-                    case let .didNotSearch(error):
-                        debugPrint("OcaBonjourDiscoveryView: \(error)")
-                    }
-                }
-                for await result in tcpBrowser.channel {
-                    switch result {
-                    case let .didFind(netService):
-                        services.append(netService)
-                    case let .didRemove(netService):
-                        services.removeAll(where: { $0 == netService })
-                    case let .didNotSearch(error):
-                        debugPrint("OcaBonjourDiscoveryView: \(error)")
-                    }
+            for await result in merge(udpBrowser.channel, tcpBrowser.channel) {
+                switch result {
+                case let .didFind(netService):
+                    services.append(netService)
+                case let .didRemove(netService):
+                    services.removeAll(where: { $0 == netService })
+                case let .didNotSearch(error):
+                    debugPrint("OcaBonjourDiscoveryView: \(error)")
                 }
             }
         }

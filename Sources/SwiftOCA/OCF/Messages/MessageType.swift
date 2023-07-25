@@ -16,7 +16,7 @@
 
 import Foundation
 
-enum OcaMessageType: OcaUint8, Codable {
+public enum OcaMessageType: OcaUint8, Codable, Sendable {
     case ocaCmd = 0
     case ocaCmdRrq = 1
     case ocaNtf = 2

@@ -16,15 +16,15 @@
 
 import Foundation
 
-let Ocp1SyncValue: OcaUint8 = 0x3B
-let Ocp1ProtocolVersion1: OcaUint16 = 1
-let Ocp1ProtocolVersion: OcaUint16 = Ocp1ProtocolVersion1
+public let Ocp1SyncValue: OcaUint8 = 0x3B
+public let Ocp1ProtocolVersion1: OcaUint16 = 1
+public let Ocp1ProtocolVersion: OcaUint16 = Ocp1ProtocolVersion1
 
-struct Ocp1Header: Codable {
-    var protocolVersion: OcaUint16
-    var pduSize: OcaUint32
-    var pduType: OcaMessageType
-    var messageCount: OcaUint16
+public struct Ocp1Header: Codable, Sendable {
+    public var protocolVersion: OcaUint16
+    public var pduSize: OcaUint32
+    public var pduType: OcaMessageType
+    public var messageCount: OcaUint16
 
     init(pduType: OcaMessageType, messageCount: OcaUint16) {
         protocolVersion = Ocp1ProtocolVersion
@@ -38,11 +38,11 @@ struct Ocp1Header: Codable {
     }
 }
 
-protocol Ocp1MessagePdu: Codable {
+public protocol Ocp1MessagePdu: Codable, Sendable {
     var syncVal: OcaUint8 { get }
     var header: Ocp1Header { get }
 }
 
-protocol Ocp1Message: Codable {
+public protocol Ocp1Message: Codable, Sendable {
     var messageSize: OcaUint32 { get }
 }

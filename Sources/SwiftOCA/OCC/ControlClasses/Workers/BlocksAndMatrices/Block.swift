@@ -17,13 +17,26 @@
 import Foundation
 
 public struct OcaBlockMember: Codable {
-    let memberObjectIdentification: OcaObjectIdentification
-    let containerObjectNumber: OcaONo
+    public let memberObjectIdentification: OcaObjectIdentification
+    public let containerObjectNumber: OcaONo
+
+    public init(
+        memberObjectIdentification: OcaObjectIdentification,
+        containerObjectNumber: OcaONo
+    ) {
+        self.memberObjectIdentification = memberObjectIdentification
+        self.containerObjectNumber = containerObjectNumber
+    }
 }
 
 public struct OcaContainerObjectMember {
-    let memberObject: OcaRoot
-    let containerObjectNumber: OcaONo
+    public let memberObject: OcaRoot
+    public let containerObjectNumber: OcaONo
+
+    public init(memberObject: OcaRoot, containerObjectNumber: OcaONo) {
+        self.memberObject = memberObject
+        self.containerObjectNumber = containerObjectNumber
+    }
 }
 
 public class OcaBlock: OcaWorker {

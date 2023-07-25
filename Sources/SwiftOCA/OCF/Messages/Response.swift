@@ -22,5 +22,17 @@ public struct Ocp1Response: Ocp1Message, Codable {
     public let statusCode: OcaStatus
     public let parameters: Ocp1Parameters
 
-    var messageSize: OcaUint32 { responseSize }
+    public var messageSize: OcaUint32 { responseSize }
+
+    public init(
+        responseSize: OcaUint32 = 0,
+        handle: OcaUint32 = 0,
+        statusCode: OcaStatus = .ok,
+        parameters: Ocp1Parameters = Ocp1Parameters()
+    ) {
+        self.responseSize = responseSize
+        self.handle = handle
+        self.statusCode = statusCode
+        self.parameters = parameters
+    }
 }

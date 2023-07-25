@@ -19,6 +19,7 @@ import Foundation
 public enum Ocp1Error: Error, Equatable {
     /// An OCA status received from a device; should not be used for local errors
     case status(OcaStatus)
+    case bonjourRegistrationFailed
     case notConnected
     case notImplemented
     case noConnectionDelegate
@@ -36,6 +37,7 @@ public enum Ocp1Error: Error, Equatable {
     case requestParameterOutOfRange
     case responseParameterOutOfRange
     case serviceResolutionFailed
+    case unhandledMethod
     case unknownServiceType
     case noInitialValue
     case unhandledEvent

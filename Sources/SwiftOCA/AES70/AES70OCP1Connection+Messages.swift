@@ -25,7 +25,7 @@ extension AES70OCP1Connection {
         _ messages: [Ocp1Message],
         type messageType: OcaMessageType
     ) async throws {
-        let messagePduData = try encodeOcp1MessagePdu(messages, type: messageType)
+        let messagePduData = try Self.encodeOcp1MessagePdu(messages, type: messageType)
 
         do {
             guard try await write(messagePduData) == messagePduData.count else {

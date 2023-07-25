@@ -19,15 +19,6 @@
       }
     },
     {
-      "identity" : "socket",
-      "kind" : "remoteSourceControl",
-      "location" : "git@github.com:PureSwift/Socket.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "489e63b9cf0998f820f9f994f25cd5cb5f602404"
-      }
-    },
-    {
       "identity" : "swift-async-algorithms",
       "kind" : "remoteSourceControl",
       "location" : "git@github.com:apple/swift-async-algorithms.git",
@@ -52,15 +43,6 @@
       "state" : {
         "revision" : "937e904258d22af6e447a0b72c0bc67583ef64a2",
         "version" : "1.0.4"
-      }
-    },
-    {
-      "identity" : "swift-system",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/PureSwift/swift-system",
-      "state" : {
-        "branch" : "feature/dynamic-lib",
-        "revision" : "0abad32db1fc3bf5c7008b523d267c71390df3ac"
       }
     },
     {

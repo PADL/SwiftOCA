@@ -23,11 +23,11 @@ extension AES70OCP1Connection.Monitor {
         _ connection: AES70OCP1Connection,
         messages: inout [Data]
     ) async throws -> OcaMessageType {
-        var messagePduData = try await connection.read(Self.MinimumPduSize)
+        var messagePduData = try await connection.read(AES70OCP1Connection.MinimumPduSize)
 
         /// just parse enough of the protocol in order to read rest of message
         /// `syncVal: OcaUint8` || `protocolVersion: OcaUint16` || `pduSize: OcaUint32`
-        guard messagePduData.count >= Self.MinimumPduSize else {
+        guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize else {
             debugPrint("receiveMessagePdu: PDU of size \(messagePduData.count) is too short")
             throw Ocp1Error.pduTooShort
         }
@@ -39,17 +39,21 @@ extension AES70OCP1Connection.Monitor {
         }
 
         let pduSize: OcaUint32 = messagePduData.decodeInteger(index: 3)
-        guard pduSize >= (Self.MinimumPduSize - 1) else { // doesn't include sync byte
+        guard pduSize >= (AES70OCP1Connection.MinimumPduSize - 1)
+        else { // doesn't include sync byte
             debugPrint("receiveMessagePdu: PDU size \(pduSize) is less than minimum PDU size")
             throw Ocp1Error.invalidPduSize
         }
 
-        let bytesLeft = Int(pduSize) - (Self.MinimumPduSize - 1)
+        let bytesLeft = Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1)
         if bytesLeft > 0 {
             messagePduData += try await connection.read(bytesLeft)
         }
 
-        return try decodeOcp1MessagePdu(from: messagePduData, messages: &messages)
+        return try await AES70OCP1Connection.decodeOcp1MessagePdu(
+            from: messagePduData,
+            messages: &messages
+        )
     }
 
     private func processMessage(
@@ -83,7 +87,7 @@ extension AES70OCP1Connection.Monitor {
         var messagePdus = [Data]()
         let messageType = try await receiveMessagePdu(connection, messages: &messagePdus)
         let messages = try messagePdus.map {
-            try decodeOcp1Message(from: $0, type: messageType)
+            try AES70OCP1Connection.decodeOcp1Message(from: $0, type: messageType)
         }
 
         updateLastMessageReceivedTime()

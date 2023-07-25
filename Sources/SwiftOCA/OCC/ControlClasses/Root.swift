@@ -151,17 +151,6 @@ public extension OcaRoot {
         )
     }
 
-    func property<Value: Codable>(keyPath: PartialKeyPath<OcaRoot>) -> OcaProperty<Value>.State {
-        let storageKeyPath = keyPath as! ReferenceWritableKeyPath<OcaRoot, OcaProperty<Value>>
-        let wrappedKeyPath = keyPath
-            .appending(path: \OcaProperty<Value>.currentValue) as! ReferenceWritableKeyPath<
-                OcaRoot,
-                OcaProperty<Value>.State
-            >
-        return OcaProperty<Value>[_enclosingInstance: self, wrapped: wrappedKeyPath,
-                                  storage: storageKeyPath]
-    }
-
     @MainActor
     internal func propertyDidChange(eventData: Ocp1EventData) {
         let decoder = BinaryDecoder(config: .ocp1Configuration)

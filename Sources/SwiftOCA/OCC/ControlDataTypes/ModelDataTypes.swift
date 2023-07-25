@@ -24,6 +24,12 @@ public struct OcaModelDescription: Codable, CustomStringConvertible {
     public var description: String {
         "\(manufacturer) \(name) \(version)"
     }
+
+    public init(manufacturer: OcaString, name: OcaString, version: OcaString) {
+        self.manufacturer = manufacturer
+        self.name = name
+        self.version = version
+    }
 }
 
 public struct OcaModelGUID: Codable, CustomStringConvertible {
@@ -33,5 +39,11 @@ public struct OcaModelGUID: Codable, CustomStringConvertible {
 
     public var description: String {
         mfrCode.description + String(format: "%08X", modelCode)
+    }
+
+    public init(reserved: OcaUint8, mfrCode: OcaOrganizationID, modelCode: OcaUint32) {
+        self.reserved = reserved
+        self.mfrCode = mfrCode
+        self.modelCode = modelCode
     }
 }

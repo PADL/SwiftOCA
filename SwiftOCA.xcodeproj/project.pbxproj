@@ -11,11 +11,28 @@
 		D306556D2A524D720083F093 /* PhysicalPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556C2A524D720083F093 /* PhysicalPosition.swift */; };
 		D306556F2A5254D70083F093 /* TimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556E2A5254D70083F093 /* TimeSource.swift */; };
 		D31528802A526E24004B9BAD /* WorkerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */; };
+		D33B52882A6FD190001A1BA7 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52872A6FD190001A1BA7 /* Device.swift */; };
+		D33B528C2A6FD206001A1BA7 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
+		D33B52902A6FD332001A1BA7 /* Root.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B528F2A6FD332001A1BA7 /* Root.swift */; };
+		D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */; };
+		D33B52952A6FE075001A1BA7 /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52942A6FE075001A1BA7 /* Controller.swift */; };
+		D33B52972A6FE08D001A1BA7 /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52962A6FE08D001A1BA7 /* Subscription.swift */; };
+		D33B52992A6FE140001A1BA7 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52982A6FE140001A1BA7 /* Logging.swift */; };
+		D33B52A32A702CED001A1BA7 /* Block.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52A22A702CED001A1BA7 /* Block.swift */; };
+		D33B52A52A702D04001A1BA7 /* Worker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52A42A702D04001A1BA7 /* Worker.swift */; };
+		D33B52A82A702D29001A1BA7 /* Manager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52A72A702D29001A1BA7 /* Manager.swift */; };
+		D33B52AA2A702D3F001A1BA7 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52A92A702D3F001A1BA7 /* NetworkManager.swift */; };
+		D33B52AC2A702D4D001A1BA7 /* DeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52AB2A702D4D001A1BA7 /* DeviceManager.swift */; };
+		D33B52AE2A702D92001A1BA7 /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52AD2A702D92001A1BA7 /* SubscriptionManager.swift */; };
+		D33B52B02A703AEA001A1BA7 /* Root+Commands.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52AF2A703AEA001A1BA7 /* Root+Commands.swift */; };
+		D33B52B42A7060BC001A1BA7 /* Actuator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52B32A7060BC001A1BA7 /* Actuator.swift */; };
+		D33B52B62A7060E0001A1BA7 /* BasicActuators.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52B52A7060E0001A1BA7 /* BasicActuators.swift */; };
+		D33B52C62A706235001A1BA7 /* DeviceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52C52A706235001A1BA7 /* DeviceApp.swift */; };
+		D33B52C72A706245001A1BA7 /* libSwiftOCADevice.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */; };
+		D33B52CE2A706FB9001A1BA7 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
+		D33B52CF2A706FB9001A1BA7 /* libSwiftOCA.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		D33B52D42A706FD7001A1BA7 /* FlyingSocks in Frameworks */ = {isa = PBXBuildFile; productRef = D33B52D32A706FD7001A1BA7 /* FlyingSocks */; };
 		D36ECA212A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */; };
-		D36ECA232A5AF9B10015174A /* FlyingSocks in Frameworks */ = {isa = PBXBuildFile; productRef = D36ECA222A5AF9B10015174A /* FlyingSocks */; };
-		D36ECA252A5B13DE0015174A /* AES70OCP1SocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA242A5B13DE0015174A /* AES70OCP1SocketConnection.swift */; };
-		D36ECA272A5B1AA70015174A /* Socket in Frameworks */ = {isa = PBXBuildFile; productRef = D36ECA262A5B1AA70015174A /* Socket */; };
-		D36ECA2A2A5B20480015174A /* FlyingSocks in Frameworks */ = {isa = PBXBuildFile; productRef = D36ECA292A5B20480015174A /* FlyingSocks */; };
 		D36ECA2C2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */; };
 		D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */; };
 		D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */; };
@@ -30,7 +47,7 @@
 		D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69F62A3FE538001250A1 /* DynamicStack.swift */; };
 		D3DA69FB2A3FEF52001250A1 /* DeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69FA2A3FEF52001250A1 /* DeviceManager.swift */; };
 		D3DA69FE2A427C2F001250A1 /* BooleanActuatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69FD2A427C2F001250A1 /* BooleanActuatorView.swift */; };
-		D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift */; };
+		D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */; };
 		D3E6E1B42A3ACA7B00BF7095 /* AES70OCP1Connection+Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */; };
 		D3E6E1B52A3ACA7B00BF7095 /* AES70OCP1Connection+Subscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */; };
 		D3E6E1B62A3ACA7B00BF7095 /* AES70ClassRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AF2A3ACA6C00BF7095 /* AES70ClassRegistry.swift */; };
@@ -112,13 +129,63 @@
 		D3E6E2A02A452D0A00BF7095 /* ScaledLegendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		D33B52D02A706FB9001A1BA7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D3E6E15C2A3ACA0B00BF7095 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D3E6E1632A3ACA0B00BF7095;
+			remoteInfo = SwiftOCA;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D33B52BA2A706201001A1BA7 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		D33B52D22A706FB9001A1BA7 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				D33B52CF2A706FB9001A1BA7 /* libSwiftOCA.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDeviceView.swift; sourceTree = "<group>"; };
 		D306556C2A524D720083F093 /* PhysicalPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhysicalPosition.swift; sourceTree = "<group>"; };
 		D306556E2A5254D70083F093 /* TimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSource.swift; sourceTree = "<group>"; };
 		D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkerDataTypes.swift; sourceTree = "<group>"; };
+		D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCADevice.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		D33B52872A6FD190001A1BA7 /* Device.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
+		D33B528F2A6FD332001A1BA7 /* Root.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Root.swift; sourceTree = "<group>"; };
+		D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProperty.swift; sourceTree = "<group>"; };
+		D33B52942A6FE075001A1BA7 /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
+		D33B52962A6FE08D001A1BA7 /* Subscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Subscription.swift; sourceTree = "<group>"; };
+		D33B52982A6FE140001A1BA7 /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
+		D33B52A22A702CED001A1BA7 /* Block.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Block.swift; sourceTree = "<group>"; };
+		D33B52A42A702D04001A1BA7 /* Worker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Worker.swift; sourceTree = "<group>"; };
+		D33B52A72A702D29001A1BA7 /* Manager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manager.swift; sourceTree = "<group>"; };
+		D33B52A92A702D3F001A1BA7 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		D33B52AB2A702D4D001A1BA7 /* DeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManager.swift; sourceTree = "<group>"; };
+		D33B52AD2A702D92001A1BA7 /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManager.swift; sourceTree = "<group>"; };
+		D33B52AF2A703AEA001A1BA7 /* Root+Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+Commands.swift"; sourceTree = "<group>"; };
+		D33B52B32A7060BC001A1BA7 /* Actuator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actuator.swift; sourceTree = "<group>"; };
+		D33B52B52A7060E0001A1BA7 /* BasicActuators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicActuators.swift; sourceTree = "<group>"; };
+		D33B52BC2A706201001A1BA7 /* OCADevice */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCADevice; sourceTree = BUILT_PRODUCTS_DIR; };
+		D33B52C52A706235001A1BA7 /* DeviceApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceApp.swift; sourceTree = "<group>"; };
 		D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1FlyingSocksConnection.swift; sourceTree = "<group>"; };
-		D36ECA242A5B13DE0015174A /* AES70OCP1SocketConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AES70OCP1SocketConnection.swift; sourceTree = "<group>"; };
 		D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAddressToString.swift; sourceTree = "<group>"; };
 		D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaRoot+Identifiable.swift"; sourceTree = "<group>"; };
@@ -182,7 +249,7 @@
 		D3E6E1AB2A3ACA6C00BF7095 /* AES70OCP1Connection+Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Messages.swift"; sourceTree = "<group>"; };
 		D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Subscribe.swift"; sourceTree = "<group>"; };
 		D3E6E1AD2A3ACA6C00BF7095 /* BinaryCodingConfiguration+OCP1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BinaryCodingConfiguration+OCP1.swift"; sourceTree = "<group>"; };
-		D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1ConnectionMonitor+Codable.swift"; sourceTree = "<group>"; };
+		D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Codable.swift"; sourceTree = "<group>"; };
 		D3E6E1AF2A3ACA6C00BF7095 /* AES70ClassRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70ClassRegistry.swift; sourceTree = "<group>"; };
 		D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1Connection.swift; sourceTree = "<group>"; };
 		D3E6E1F62A3ACF5900BF7095 /* OCABrowser.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OCABrowser.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -213,16 +280,31 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		D33B527F2A6FD171001A1BA7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D33B528C2A6FD206001A1BA7 /* libSwiftOCA.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D33B52B92A706201001A1BA7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D33B52CE2A706FB9001A1BA7 /* libSwiftOCA.dylib in Frameworks */,
+				D33B52C72A706245001A1BA7 /* libSwiftOCADevice.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D3E6E1622A3ACA0B00BF7095 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D36ECA272A5B1AA70015174A /* Socket in Frameworks */,
-				D36ECA2A2A5B20480015174A /* FlyingSocks in Frameworks */,
 				D3E6E25B2A3D28DD00BF7095 /* AsyncExtensions in Frameworks */,
 				D3E6E1EB2A3ACAED00BF7095 /* BinaryCoder in Frameworks */,
 				D3E6E1EE2A3ACB0700BF7095 /* AsyncAlgorithms in Frameworks */,
-				D36ECA232A5AF9B10015174A /* FlyingSocks in Frameworks */,
+				D33B52D42A706FD7001A1BA7 /* FlyingSocks in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,12 +358,130 @@
 			path = CollectionTypes;
 			sourceTree = "<group>";
 		};
+		D33B52852A6FD190001A1BA7 /* Sources/SwiftOCADevice */ = {
+			isa = PBXGroup;
+			children = (
+				D33B529C2A7018CE001A1BA7 /* OCA */,
+				D33B528D2A6FD322001A1BA7 /* OCC */,
+				D33B52862A6FD190001A1BA7 /* AES70 */,
+			);
+			path = Sources/SwiftOCADevice;
+			sourceTree = "<group>";
+		};
+		D33B52862A6FD190001A1BA7 /* AES70 */ = {
+			isa = PBXGroup;
+			children = (
+				D33B52942A6FE075001A1BA7 /* Controller.swift */,
+				D33B52872A6FD190001A1BA7 /* Device.swift */,
+				D33B52982A6FE140001A1BA7 /* Logging.swift */,
+				D33B52962A6FE08D001A1BA7 /* Subscription.swift */,
+			);
+			path = AES70;
+			sourceTree = "<group>";
+		};
+		D33B528D2A6FD322001A1BA7 /* OCC */ = {
+			isa = PBXGroup;
+			children = (
+				D33B52912A6FD39C001A1BA7 /* PropertyTypes */,
+				D33B528E2A6FD327001A1BA7 /* ControlClasses */,
+			);
+			path = OCC;
+			sourceTree = "<group>";
+		};
+		D33B528E2A6FD327001A1BA7 /* ControlClasses */ = {
+			isa = PBXGroup;
+			children = (
+				D33B528F2A6FD332001A1BA7 /* Root.swift */,
+				D33B52AF2A703AEA001A1BA7 /* Root+Commands.swift */,
+				D33B52A62A702D1C001A1BA7 /* Managers */,
+				D33B52A02A702CD6001A1BA7 /* Workers */,
+			);
+			path = ControlClasses;
+			sourceTree = "<group>";
+		};
+		D33B52912A6FD39C001A1BA7 /* PropertyTypes */ = {
+			isa = PBXGroup;
+			children = (
+				D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */,
+			);
+			path = PropertyTypes;
+			sourceTree = "<group>";
+		};
+		D33B529C2A7018CE001A1BA7 /* OCA */ = {
+			isa = PBXGroup;
+			children = (
+				D33B529D2A7018D0001A1BA7 /* OCF */,
+			);
+			path = OCA;
+			sourceTree = "<group>";
+		};
+		D33B529D2A7018D0001A1BA7 /* OCF */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = OCF;
+			sourceTree = "<group>";
+		};
+		D33B52A02A702CD6001A1BA7 /* Workers */ = {
+			isa = PBXGroup;
+			children = (
+				D33B52B22A7060B6001A1BA7 /* Actuators */,
+				D33B52B12A7060B4001A1BA7 /* Sensors */,
+				D33B52A12A702CD8001A1BA7 /* BlocksAndMatrices */,
+				D33B52A42A702D04001A1BA7 /* Worker.swift */,
+			);
+			path = Workers;
+			sourceTree = "<group>";
+		};
+		D33B52A12A702CD8001A1BA7 /* BlocksAndMatrices */ = {
+			isa = PBXGroup;
+			children = (
+				D33B52A22A702CED001A1BA7 /* Block.swift */,
+			);
+			path = BlocksAndMatrices;
+			sourceTree = "<group>";
+		};
+		D33B52A62A702D1C001A1BA7 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				D33B52A72A702D29001A1BA7 /* Manager.swift */,
+				D33B52A92A702D3F001A1BA7 /* NetworkManager.swift */,
+				D33B52AB2A702D4D001A1BA7 /* DeviceManager.swift */,
+				D33B52AD2A702D92001A1BA7 /* SubscriptionManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		D33B52B12A7060B4001A1BA7 /* Sensors */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Sensors;
+			sourceTree = "<group>";
+		};
+		D33B52B22A7060B6001A1BA7 /* Actuators */ = {
+			isa = PBXGroup;
+			children = (
+				D33B52B32A7060BC001A1BA7 /* Actuator.swift */,
+				D33B52B52A7060E0001A1BA7 /* BasicActuators.swift */,
+			);
+			path = Actuators;
+			sourceTree = "<group>";
+		};
+		D33B52C32A706235001A1BA7 /* OCADevice */ = {
+			isa = PBXGroup;
+			children = (
+				D33B52C52A706235001A1BA7 /* DeviceApp.swift */,
+			);
+			name = OCADevice;
+			path = Examples/OCADevice;
+			sourceTree = "<group>";
+		};
 		D37F7E192A6BC015005F035F /* SocketBackend */ = {
 			isa = PBXGroup;
 			children = (
 				D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */,
 				D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */,
-				D36ECA242A5B13DE0015174A /* AES70OCP1SocketConnection.swift */,
 			);
 			path = SocketBackend;
 			sourceTree = "<group>";
@@ -350,6 +550,8 @@
 		D3E6E15B2A3ACA0B00BF7095 = {
 			isa = PBXGroup;
 			children = (
+				D33B52C32A706235001A1BA7 /* OCADevice */,
+				D33B52852A6FD190001A1BA7 /* Sources/SwiftOCADevice */,
 				D3E6E2472A3C0C7700BF7095 /* SwiftOCAUI */,
 				D3028C1C2A3AD57900B8DB42 /* Sources/SwiftOCA */,
 				D3E6E1F72A3ACF5900BF7095 /* Examples/OCABrowser */,
@@ -364,6 +566,8 @@
 				D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */,
 				D3E6E1F62A3ACF5900BF7095 /* OCABrowser.app */,
 				D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */,
+				D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */,
+				D33B52BC2A706201001A1BA7 /* OCADevice */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -501,7 +705,7 @@
 				D37F7E192A6BC015005F035F /* SocketBackend */,
 				D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */,
 				D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor.swift */,
-				D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift */,
+				D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */,
 				D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */,
 				D3E6E1AB2A3ACA6C00BF7095 /* AES70OCP1Connection+Messages.swift */,
 				D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */,
@@ -635,6 +839,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		D33B527D2A6FD171001A1BA7 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D3E6E1602A3ACA0B00BF7095 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -652,6 +863,46 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		D33B52802A6FD171001A1BA7 /* SwiftOCADevice */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D33B52842A6FD171001A1BA7 /* Build configuration list for PBXNativeTarget "SwiftOCADevice" */;
+			buildPhases = (
+				D33B527D2A6FD171001A1BA7 /* Headers */,
+				D33B527E2A6FD171001A1BA7 /* Sources */,
+				D33B527F2A6FD171001A1BA7 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SwiftOCADevice;
+			packageProductDependencies = (
+			);
+			productName = SwiftOCADevice;
+			productReference = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		D33B52BB2A706201001A1BA7 /* OCADevice */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D33B52C02A706201001A1BA7 /* Build configuration list for PBXNativeTarget "OCADevice" */;
+			buildPhases = (
+				D33B52B82A706201001A1BA7 /* Sources */,
+				D33B52B92A706201001A1BA7 /* Frameworks */,
+				D33B52BA2A706201001A1BA7 /* CopyFiles */,
+				D33B52D22A706FB9001A1BA7 /* Embed Libraries */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D33B52D12A706FB9001A1BA7 /* PBXTargetDependency */,
+			);
+			name = OCADevice;
+			packageProductDependencies = (
+			);
+			productName = DeviceApp;
+			productReference = D33B52BC2A706201001A1BA7 /* OCADevice */;
+			productType = "com.apple.product-type.tool";
+		};
 		D3E6E1632A3ACA0B00BF7095 /* SwiftOCA */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D3E6E1682A3ACA0B00BF7095 /* Build configuration list for PBXNativeTarget "SwiftOCA" */;
@@ -669,9 +920,7 @@
 				D3E6E1EA2A3ACAED00BF7095 /* BinaryCoder */,
 				D3E6E1ED2A3ACB0700BF7095 /* AsyncAlgorithms */,
 				D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */,
-				D36ECA222A5AF9B10015174A /* FlyingSocks */,
-				D36ECA262A5B1AA70015174A /* Socket */,
-				D36ECA292A5B20480015174A /* FlyingSocks */,
+				D33B52D32A706FD7001A1BA7 /* FlyingSocks */,
 			);
 			productName = SwiftOCA;
 			productReference = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */;
@@ -724,6 +973,12 @@
 				LastSwiftUpdateCheck = 1420;
 				LastUpgradeCheck = 1420;
 				TargetAttributes = {
+					D33B52802A6FD171001A1BA7 = {
+						CreatedOnToolsVersion = 14.2;
+					};
+					D33B52BB2A706201001A1BA7 = {
+						CreatedOnToolsVersion = 14.2;
+					};
 					D3E6E1632A3ACA0B00BF7095 = {
 						CreatedOnToolsVersion = 14.2;
 					};
@@ -747,7 +1002,6 @@
 			packageReferences = (
 				D3E6E1E92A3ACAED00BF7095 /* XCRemoteSwiftPackageReference "swift-binary-coder" */,
 				D3E6E1EC2A3ACB0700BF7095 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
-				D3E6E1EF2A3ACB1E00BF7095 /* XCRemoteSwiftPackageReference "Socket" */,
 				D3E6E2592A3D28DD00BF7095 /* XCRemoteSwiftPackageReference "AsyncExtensions" */,
 				D3E6E2842A43B8D000BF7095 /* XCRemoteSwiftPackageReference "swiftui-sliders" */,
 				D36ECA282A5B20480015174A /* XCRemoteSwiftPackageReference "FlyingFox" */,
@@ -759,6 +1013,8 @@
 				D3E6E1632A3ACA0B00BF7095 /* SwiftOCA */,
 				D3E6E1F52A3ACF5900BF7095 /* OCABrowser */,
 				D3E6E2422A3C0BA000BF7095 /* SwiftOCAUI */,
+				D33B52802A6FD171001A1BA7 /* SwiftOCADevice */,
+				D33B52BB2A706201001A1BA7 /* OCADevice */,
 			);
 		};
 /* End PBXProject section */
@@ -776,6 +1032,36 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		D33B527E2A6FD171001A1BA7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D33B52B42A7060BC001A1BA7 /* Actuator.swift in Sources */,
+				D33B52882A6FD190001A1BA7 /* Device.swift in Sources */,
+				D33B52A52A702D04001A1BA7 /* Worker.swift in Sources */,
+				D33B52AA2A702D3F001A1BA7 /* NetworkManager.swift in Sources */,
+				D33B52AC2A702D4D001A1BA7 /* DeviceManager.swift in Sources */,
+				D33B52A32A702CED001A1BA7 /* Block.swift in Sources */,
+				D33B52B62A7060E0001A1BA7 /* BasicActuators.swift in Sources */,
+				D33B52992A6FE140001A1BA7 /* Logging.swift in Sources */,
+				D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */,
+				D33B52902A6FD332001A1BA7 /* Root.swift in Sources */,
+				D33B52AE2A702D92001A1BA7 /* SubscriptionManager.swift in Sources */,
+				D33B52952A6FE075001A1BA7 /* Controller.swift in Sources */,
+				D33B52B02A703AEA001A1BA7 /* Root+Commands.swift in Sources */,
+				D33B52A82A702D29001A1BA7 /* Manager.swift in Sources */,
+				D33B52972A6FE08D001A1BA7 /* Subscription.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D33B52B82A706201001A1BA7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D33B52C62A706235001A1BA7 /* DeviceApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D3E6E1612A3ACA0B00BF7095 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -838,8 +1124,7 @@
 				D3E6E1B92A3ACA7B00BF7095 /* BinaryCodingConfiguration+OCP1.swift in Sources */,
 				D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */,
 				D3E6E1DE2A3ACAA900BF7095 /* WellKnownObjectNumbers.swift in Sources */,
-				D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1ConnectionMonitor+Codable.swift in Sources */,
-				D36ECA252A5B13DE0015174A /* AES70OCP1SocketConnection.swift in Sources */,
+				D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */,
 				D3E6E1BE2A3ACA8200BF7095 /* Command.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -890,7 +1175,68 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		D33B52D12A706FB9001A1BA7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D3E6E1632A3ACA0B00BF7095 /* SwiftOCA */;
+			targetProxy = D33B52D02A706FB9001A1BA7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		D33B52822A6FD171001A1BA7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D33B52832A6FD171001A1BA7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		D33B52C12A706201001A1BA7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D33B52C22A706201001A1BA7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		D3E6E1662A3ACA0B00BF7095 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1156,6 +1502,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		D33B52842A6FD171001A1BA7 /* Build configuration list for PBXNativeTarget "SwiftOCADevice" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D33B52822A6FD171001A1BA7 /* Debug */,
+				D33B52832A6FD171001A1BA7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D33B52C02A706201001A1BA7 /* Build configuration list for PBXNativeTarget "OCADevice" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D33B52C12A706201001A1BA7 /* Debug */,
+				D33B52C22A706201001A1BA7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D3E6E15F2A3ACA0B00BF7095 /* Build configuration list for PBXProject "SwiftOCA" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1219,14 +1583,6 @@
 				minimumVersion = 0.1.0;
 			};
 		};
-		D3E6E1EF2A3ACB1E00BF7095 /* XCRemoteSwiftPackageReference "Socket" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:PureSwift/Socket.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		D3E6E2592A3D28DD00BF7095 /* XCRemoteSwiftPackageReference "AsyncExtensions" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "git@github.com:sideeffect-io/AsyncExtensions.git";
@@ -1246,16 +1602,7 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		D36ECA222A5AF9B10015174A /* FlyingSocks */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = FlyingSocks;
-		};
-		D36ECA262A5B1AA70015174A /* Socket */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D3E6E1EF2A3ACB1E00BF7095 /* XCRemoteSwiftPackageReference "Socket" */;
-			productName = Socket;
-		};
-		D36ECA292A5B20480015174A /* FlyingSocks */ = {
+		D33B52D32A706FD7001A1BA7 /* FlyingSocks */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D36ECA282A5B20480015174A /* XCRemoteSwiftPackageReference "FlyingFox" */;
 			productName = FlyingSocks;

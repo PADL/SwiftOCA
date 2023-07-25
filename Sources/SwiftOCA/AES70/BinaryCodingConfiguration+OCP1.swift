@@ -17,7 +17,7 @@
 import BinaryCoder
 import Foundation
 
-extension BinaryCodingConfiguration {
+public extension BinaryCodingConfiguration {
     static var ocp1Configuration: Self {
         BinaryCodingConfiguration(
             endianness: .bigEndian,

@@ -55,6 +55,8 @@ public struct AES70OCP1ConnectionOptions {
 
 @MainActor
 public class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
+    public static let MinimumPduSize = 7
+
     let options: AES70OCP1ConnectionOptions
 
     /// Keepalive/ping interval (only necessary for UDP)
@@ -86,8 +88,6 @@ public class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
 
     /// Monitor structure for matching requests and responses
     actor Monitor {
-        static let MinimumPduSize = 7
-
         private let connection: AES70OCP1Connection!
         typealias Continuation = CheckedContinuation<Ocp1Response, Error>
         private var continuations = [OcaUint32: Continuation]()

@@ -32,8 +32,8 @@ private extension Ocp1Message {
     }
 }
 
-extension AES70OCP1Connection {
-    func encodeOcp1MessagePdu(
+public extension AES70OCP1Connection {
+    static func encodeOcp1MessagePdu(
         _ messages: [Ocp1Message],
         type messageType: OcaMessageType
     ) throws -> Data {
@@ -54,10 +54,11 @@ extension AES70OCP1Connection {
         messagePduData.encodeInteger(OcaUint32(messagePduData.count - 1), index: 3)
         return messagePduData
     }
-}
 
-extension AES70OCP1Connection.Monitor {
-    func decodeOcp1MessagePdu(from data: Data, messages: inout [Data]) throws -> OcaMessageType {
+    static func decodeOcp1MessagePdu(
+        from data: Data,
+        messages: inout [Data]
+    ) throws -> OcaMessageType {
         precondition(data.count >= Self.MinimumPduSize)
         precondition(data[0] == Ocp1SyncValue)
 
@@ -116,7 +117,7 @@ extension AES70OCP1Connection.Monitor {
         return messageType
     }
 
-    func decodeOcp1Message(
+    nonisolated static func decodeOcp1Message(
         from messageData: Data,
         type messageType: OcaMessageType
     ) throws -> Ocp1Message {

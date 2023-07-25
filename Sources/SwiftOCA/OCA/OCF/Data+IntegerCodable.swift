@@ -1,6 +1,6 @@
 import Foundation
 
-extension Data {
+public extension Data {
     enum Endianness {
         case little
         case big

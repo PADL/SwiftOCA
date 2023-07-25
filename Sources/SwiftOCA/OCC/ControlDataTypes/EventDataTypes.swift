@@ -16,12 +16,12 @@
 
 import Foundation
 
-public enum OcaNotificationDeliveryMode: OcaUint8, Codable {
+public enum OcaNotificationDeliveryMode: OcaUint8, Codable, Sendable {
     case reliable = 1
     case fast = 2
 }
 
-public struct OcaEventID: Codable, Hashable, CustomStringConvertible {
+public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible {
     public let defLevel: OcaUint16
     public let eventIndex: OcaUint16
 
@@ -31,7 +31,7 @@ public struct OcaEventID: Codable, Hashable, CustomStringConvertible {
         eventIndex = s[1]
     }
 
-    init(defLevel: OcaUint16, eventIndex: OcaUint16) {
+    public init(defLevel: OcaUint16, eventIndex: OcaUint16) {
         self.defLevel = defLevel
         self.eventIndex = eventIndex
     }
@@ -41,9 +41,14 @@ public struct OcaEventID: Codable, Hashable, CustomStringConvertible {
     }
 }
 
-public struct OcaEvent: Codable, Hashable, Equatable {
+public struct OcaEvent: Codable, Hashable, Equatable, Sendable {
     public let emitterONo: OcaONo
     public let eventID: OcaEventID
+
+    public init(emitterONo: OcaONo, eventID: OcaEventID) {
+        self.emitterONo = emitterONo
+        self.eventID = eventID
+    }
 }
 
 public enum OcaPropertyChangeType: OcaUint8, Codable, Equatable {
@@ -71,4 +76,4 @@ public struct OcaPropertyChangedEventData<T: Codable>: Codable {
     }
 }
 
-let OcaPropertyChangedEventID = OcaEventID(defLevel: 1, eventIndex: 1)
+public let OcaPropertyChangedEventID = OcaEventID(defLevel: 1, eventIndex: 1)

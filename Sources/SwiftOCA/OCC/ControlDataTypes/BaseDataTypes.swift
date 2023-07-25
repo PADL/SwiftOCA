@@ -72,7 +72,7 @@ public enum OcaBaseDataType: OcaUint8, Codable {
     case ocaBit = 16
 }
 
-public enum OcaStatus: OcaUint8, Codable {
+public enum OcaStatus: OcaUint8, Codable, Sendable {
     case ok = 0
     case protocolVersionError = 1
     case deviceError = 2
@@ -238,7 +238,7 @@ public struct OcaClassID: Codable, Hashable, CustomStringConvertible {
     }
 }
 
-public struct OcaMethodID: Codable, Hashable, CustomStringConvertible {
+public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible {
     public let defLevel: OcaUint16
     public let methodIndex: OcaUint16
 
@@ -253,7 +253,7 @@ public struct OcaMethodID: Codable, Hashable, CustomStringConvertible {
     }
 }
 
-public struct OcaMethod: Codable {
+public struct OcaMethod: Codable, Equatable, Hashable {
     public let oNo: OcaONo
     public let methodID: OcaMethodID
 
@@ -293,7 +293,7 @@ public struct OcaGlobalTypeIdentifier: Codable {
 public struct OcaOrganizationID: Codable, CustomStringConvertible {
     public let id: (OcaUint8, OcaUint8, OcaUint8)
 
-    init(_ id: (OcaUint8, OcaUint8, OcaUint8)) {
+    public init(_ id: (OcaUint8, OcaUint8, OcaUint8)) {
         self.id = id
     }
 

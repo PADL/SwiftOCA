@@ -16,7 +16,9 @@
 
 import Foundation
 
-public struct LengthTaggedData: MutableDataProtocol, ContiguousBytes, Equatable, Hashable {
+public struct LengthTaggedData: MutableDataProtocol, ContiguousBytes, Equatable, Hashable,
+    Sendable
+{
     public var startIndex: Data.Index { wrappedValue.startIndex }
     public var endIndex: Data.Index { wrappedValue.endIndex }
     public var regions: CollectionOfOne<LengthTaggedData> { CollectionOfOne(self) }

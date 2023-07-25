@@ -15,25 +15,19 @@
 //
 
 import Foundation
+import SwiftOCA
 
-public struct Ocp1KeepAlive1: Ocp1Message, Codable {
-    public let heartBeatTime: OcaUint16 // sec
-
-    public var messageSize: OcaUint32 { 2 }
-
-    public init(heartBeatTime: OcaUint16) {
-        self.heartBeatTime = heartBeatTime
-    }
+open class OcaBasicActuator: OcaActuator {
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.1") }
 }
 
-public struct Ocp1KeepAlive2: Ocp1Message, Codable {
-    public let heartBeatTime: OcaUint32 // msec
+open class OcaBooleanActuator: OcaActuator {
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.1.1") }
 
-    public var messageSize: OcaUint32 { 4 }
-
-    public init(heartBeatTime: OcaUint32) {
-        self.heartBeatTime = heartBeatTime
-    }
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("5.1"),
+        getMethodID: OcaMethodID("5.1"),
+        setMethodID: OcaMethodID("5.2")
+    )
+    public var setting = false
 }
-
-public typealias Ocp1KeepAlive = Ocp1KeepAlive1
