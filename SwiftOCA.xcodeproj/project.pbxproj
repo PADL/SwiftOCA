@@ -31,6 +31,7 @@
 		D33B52CE2A706FB9001A1BA7 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D33B52CF2A706FB9001A1BA7 /* libSwiftOCA.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D33B52D42A706FD7001A1BA7 /* FlyingSocks in Frameworks */ = {isa = PBXBuildFile; productRef = D33B52D32A706FD7001A1BA7 /* FlyingSocks */; };
+		D351F2012A7132F8008C5513 /* BoundedDeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */; };
 		D36ECA212A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */; };
 		D36ECA2C2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */; };
 		D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */; };
@@ -183,6 +184,7 @@
 		D33B52B52A7060E0001A1BA7 /* BasicActuators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicActuators.swift; sourceTree = "<group>"; };
 		D33B52BC2A706201001A1BA7 /* OCADevice */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCADevice; sourceTree = BUILT_PRODUCTS_DIR; };
 		D33B52C52A706235001A1BA7 /* DeviceApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceApp.swift; sourceTree = "<group>"; };
+		D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundedDeviceProperty.swift; sourceTree = "<group>"; };
 		D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1FlyingSocksConnection.swift; sourceTree = "<group>"; };
 		D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAddressToString.swift; sourceTree = "<group>"; };
@@ -400,6 +402,7 @@
 			isa = PBXGroup;
 			children = (
 				D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */,
+				D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */,
 			);
 			path = PropertyTypes;
 			sourceTree = "<group>";
@@ -1043,6 +1046,7 @@
 				D33B52992A6FE140001A1BA7 /* Logging.swift in Sources */,
 				D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */,
 				D33B52902A6FD332001A1BA7 /* Root.swift in Sources */,
+				D351F2012A7132F8008C5513 /* BoundedDeviceProperty.swift in Sources */,
 				D33B52AE2A702D92001A1BA7 /* SubscriptionManager.swift in Sources */,
 				D33B52952A6FE075001A1BA7 /* Controller.swift in Sources */,
 				D33B52B02A703AEA001A1BA7 /* Root+Commands.swift in Sources */,

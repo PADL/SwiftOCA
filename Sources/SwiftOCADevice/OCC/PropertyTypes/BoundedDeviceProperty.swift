@@ -18,95 +18,67 @@ import BinaryCoder
 import Foundation
 import SwiftOCA
 
-protocol OcaDevicePropertyRepresentable {
-    associatedtype Value: Codable
-
-    // FIXME: support vector properties
-    var propertyID: OcaPropertyID { get }
-    var getMethodID: OcaMethodID? { get }
-    var setMethodID: OcaMethodID? { get }
-    var wrappedValue: Value { get }
-
-    func get(object: OcaRoot) async throws -> Ocp1Response
-    mutating func set(object: OcaRoot, command: Ocp1Command) async throws
-}
-
-extension OcaDevicePropertyRepresentable {
-    public func isNil<Value: Codable>(_ value: Value) -> Bool {
-        if let value = value as? ExpressibleByNilLiteral,
-           let value = value as? Value?,
-           case .none = value
-        {
-            return true
-        } else {
-            return false
-        }
-    }
-}
-
 @propertyWrapper
-public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable {
-    /// The OCA property ID
+public struct OcaBoundedDeviceProperty<
+    Value: Codable &
+        Comparable
+>: OcaDevicePropertyRepresentable {
     public let propertyID: OcaPropertyID
-
-    /// The OCA get method ID
     public let getMethodID: OcaMethodID?
-
-    /// The OCA set method ID, if present
     public let setMethodID: OcaMethodID?
 
-    /// Placeholder only
-    public var wrappedValue: Value {
-        get { _storage }
-        nonmutating set { fatalError() }
+    public typealias Property = OcaDeviceProperty<OcaBoundedPropertyValue<Value>>
+    fileprivate var _storage: Property
+
+    public var wrappedValue: OcaBoundedPropertyValue<Value> {
+        get {
+            _storage.wrappedValue
+        }
+        set {
+            fatalError()
+        }
     }
 
-    private var _storage: Value
-
     public init(
-        wrappedValue: Value,
+        wrappedValue: OcaBoundedPropertyValue<Value>,
         propertyID: OcaPropertyID,
         getMethodID: OcaMethodID? = nil,
         setMethodID: OcaMethodID? = nil
     ) {
-        _storage = wrappedValue
+        _storage = OcaDeviceProperty(
+            wrappedValue: wrappedValue,
+            propertyID: propertyID,
+            getMethodID: getMethodID,
+            setMethodID: setMethodID
+        )
+
         self.propertyID = propertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
-        // self.setCommandDecoder = setCommandDecoder
     }
 
-    public init(
-        propertyID: OcaPropertyID,
-        getMethodID: OcaMethodID? = nil,
-        setMethodID: OcaMethodID? = nil
-    ) where Value: ExpressibleByNilLiteral {
-        _storage = nil
-        self.propertyID = propertyID
-        self.getMethodID = getMethodID
-        self.setMethodID = setMethodID
-        // self.setCommandDecoder = setCommandDecoder
+    private func get(object: OcaRoot) -> OcaBoundedPropertyValue<Value> {
+        _storage.get(object: object)
     }
 
-    func get(object: OcaRoot) -> Value {
-        _storage
-    }
-
-    mutating func set(object: OcaRoot, _ newValue: Value) {
-        _storage = newValue
+    private mutating func set(object: OcaRoot, _ newValue: OcaBoundedPropertyValue<Value>) {
+        _storage.set(object: object, newValue)
     }
 
     func get(object: OcaRoot) async throws -> Ocp1Response {
-        let value: Value = get(object: object)
-        if isNil(value) {
-            throw Ocp1Error.status(.parameterOutOfRange)
-        }
-        return try object.encodeResponse(value)
+        try await _storage.get(object: object)
+    }
+
+    func makeValue(_ value: Value) -> OcaBoundedPropertyValue<Value> {
+        OcaBoundedPropertyValue<Value>(value: value, in: _storage.wrappedValue.range)
     }
 
     mutating func set(object: OcaRoot, command: Ocp1Command) async throws {
-        let newValue: Value = try object.decodeCommand(command)
-        set(object: object, newValue)
+        let value: Value = try object.decodeCommand(command)
+        _storage.set(
+            object: object,
+            makeValue(value)
+        )
     }
 
     func didSet(object: OcaRoot, _ newValue: Value) async throws {
@@ -126,9 +98,9 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
 
     public static subscript<T: OcaRoot>(
         _enclosingInstance object: T,
-        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, Value>,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, OcaBoundedPropertyValue<Value>>,
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
-    ) -> Value {
+    ) -> OcaBoundedPropertyValue<Value> {
         get {
             object[keyPath: storageKeyPath].get(object: object)
         }
@@ -136,7 +108,7 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
             object[keyPath: storageKeyPath].set(object: object, newValue)
             Task {
                 try? await object[keyPath: storageKeyPath]
-                    .didSet(object: object, newValue)
+                    .didSet(object: object, newValue.value)
             }
         }
     }

@@ -43,17 +43,22 @@ extension OcaRoot {
         return count
     }
 
+    private func parameterCount<T: Encodable>(for parameters: T) -> OcaUint8 {
+        if let parameters = parameters as? OcaParameterCountReflectable {
+            return type(of: parameters).responseParameterCount
+        } else {
+            let mirror = Mirror(reflecting: parameters)
+            return parameterCount(for: mirror)
+        }
+    }
+
     func encodeResponse<T: Encodable>(
         _ parameters: T,
         statusCode: OcaStatus = .ok
     ) throws -> Ocp1Response {
         let encoder = BinaryEncoder(config: .ocp1Configuration)
-
-        let mirror = Mirror(reflecting: parameters)
-        let parameterCount = parameterCount(for: mirror)
-
         let parameters = Ocp1Parameters(
-            parameterCount: parameterCount,
+            parameterCount: parameterCount(for: parameters),
             parameterData: try encoder.encode(parameters)
         )
 

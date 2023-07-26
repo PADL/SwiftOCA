@@ -20,7 +20,7 @@ import Foundation
 // TODO: clean this up so there aren't so many functions!
 
 // FIXME: this is a bit of a hack until we have better reflection support in Swift
-protocol OcaParameterCountReflectable {
+public protocol OcaParameterCountReflectable {
     static var responseParameterCount: OcaUint8 { get }
 }
 

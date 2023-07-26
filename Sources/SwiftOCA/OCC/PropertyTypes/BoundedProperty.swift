@@ -24,7 +24,7 @@ import SwiftUI
 public struct OcaBoundedPropertyValue<Value: Codable & Comparable>: Codable,
     OcaParameterCountReflectable
 {
-    static var responseParameterCount: OcaUint8 { 3 }
+    public static var responseParameterCount: OcaUint8 { 3 }
 
     public var value: Value
     public var range: ClosedRange<Value>
