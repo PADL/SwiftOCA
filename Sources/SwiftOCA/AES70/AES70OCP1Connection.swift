@@ -23,7 +23,7 @@ import OpenCombine
 #endif
 
 typealias AES70OCP1UDPConnection = AES70OCP1CFSocketUDPConnection
-typealias AES70OCP1TCPConnection = AES70OCP1CFSocketTCPConnection
+typealias AES70OCP1TCPConnection = AES70OCP1FlyingSocksTCPConnection
 
 typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData)
     -> ()

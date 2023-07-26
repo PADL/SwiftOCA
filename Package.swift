@@ -37,6 +37,7 @@ let package = Package(
                 "OpenCombine",
                 .product(name: "BinaryCoder", package: "swift-binary-coder"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
+                .product(name: "FlyingSocks", package: "FlyingFox"),
             ]
         ),
     ],
