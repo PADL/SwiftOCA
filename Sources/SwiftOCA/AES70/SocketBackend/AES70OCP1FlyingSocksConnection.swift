@@ -39,25 +39,25 @@ private extension SocketError {
 }
 
 private extension Data {
-    var socketAddress: any SocketAddress {
-        withUnsafeBytes { unbound -> (any SocketAddress) in
+    var socketAddress: any FlyingSocks.SocketAddress {
+        withUnsafeBytes { unbound -> (any FlyingSocks.SocketAddress) in
             unbound
                 .withMemoryRebound(
                     to: sockaddr_storage
                         .self
-                ) { storage -> (any SocketAddress) in
+                ) { storage -> (any FlyingSocks.SocketAddress) in
                     var ss = storage.baseAddress!.pointee
                     switch ss.ss_family {
                     case sa_family_t(AF_INET):
                         return withUnsafePointer(to: &ss) {
                             $0.withMemoryRebound(to: sockaddr_in.self, capacity: 1) {
-                                $0.pointee as! any SocketAddress
+                                $0.pointee
                             }
                         }
                     case sa_family_t(AF_INET6):
                         return withUnsafePointer(to: &ss) {
                             $0.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) {
-                                $0.pointee as! any SocketAddress
+                                $0.pointee
                             }
                         }
                     default:
@@ -168,11 +168,11 @@ public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
     }
 
     override fileprivate var type: Int32 {
-#if canImport(Glibc)
+        #if canImport(Glibc)
         Int32(SOCK_DGRAM.rawValue)
-#else
+        #else
         SOCK_DGRAM
-#endif
+        #endif
     }
 
     override public var connectionPrefix: String {
@@ -182,11 +182,11 @@ public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
 
 public class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnection {
     override fileprivate var type: Int32 {
-#if canImport(Glibc)
+        #if canImport(Glibc)
         Int32(SOCK_STREAM.rawValue)
-#else
+        #else
         SOCK_STREAM
-#endif
+        #endif
     }
 
     override public var connectionPrefix: String {
