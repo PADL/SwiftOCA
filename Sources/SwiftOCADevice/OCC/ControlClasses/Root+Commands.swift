@@ -19,7 +19,7 @@ import Foundation
 import SwiftOCA
 
 extension OcaRoot {
-    func decodeCommand<U: Decodable>(_ command: Ocp1Command) throws -> U {
+    func decodeCommand<U: Codable>(_ command: Ocp1Command) throws -> U {
         // FIXME: verify parameterCount
         let decoder = BinaryDecoder(config: .ocp1Configuration)
         return try decoder.decode(U.self, from: command.parameters.parameterData)

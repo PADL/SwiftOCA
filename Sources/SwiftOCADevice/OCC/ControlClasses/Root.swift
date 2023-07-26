@@ -63,16 +63,13 @@ open class OcaRoot: CustomStringConvertible {
         from controller: AES70OCP1Controller
     ) async throws -> Ocp1Response {
         for (_, propertyKeyPath) in allPropertyKeyPaths {
-            guard var property =
-                self[keyPath: propertyKeyPath] as? (any OcaDevicePropertyRepresentable)
-            else {
-                continue
-            }
+            let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
 
             if command.methodID == property.getMethodID {
                 return try await property.get(object: self)
             } else if command.methodID == property.setMethodID {
                 // FIXME: this doesn't actually mutate the value in the class
+                var property = property
                 try await property.set(object: self, command: command)
                 return Ocp1Response()
             }
