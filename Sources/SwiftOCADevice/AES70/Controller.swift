@@ -73,7 +73,7 @@ public final class AES70OCP1Controller {
         }
         var subscriptions = subscriptions[subscription.event.emitterONo]
         if subscriptions == nil {
-            subscriptions = [subscription]
+            subscriptions = NSMutableSet(object: subscription)
             self.subscriptions[subscription.event.emitterONo] = subscriptions
         } else {
             subscriptions?.add(subscription)

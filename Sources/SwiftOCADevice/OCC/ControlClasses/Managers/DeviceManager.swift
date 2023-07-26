@@ -125,6 +125,7 @@ open class OcaDeviceManager: OcaManager {
 
 extension UUID {
     static var platformUUID: String {
+#if canImport(Darwin)
         let platformExpertDevice = IOServiceMatching("IOPlatformExpertDevice")
         let platformExpert: io_service_t = IOServiceGetMatchingService(
             kIOMasterPortDefault,
@@ -139,5 +140,8 @@ extension UUID {
         IOObjectRelease(platformExpert)
 
         return serialNumberAsCFString?.takeUnretainedValue() as! String
+#else
+        ""
+#endif
     }
 }

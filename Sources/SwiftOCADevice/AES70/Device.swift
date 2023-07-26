@@ -30,6 +30,10 @@ import func FlyingSocks.withThrowingTimeout
 import Foundation
 import SwiftOCA
 
+// FIXME: these don't appear to be available on non-Darwin platforms
+let NSEC_PER_MSEC: UInt64 = 1_000_000
+let NSEC_PER_SEC: UInt64 = 1_000_000_000
+
 public actor AES70OCP1Device {
     let pool: AsyncSocketPool
     private var address: sockaddr_storage
@@ -107,8 +111,9 @@ public actor AES70OCP1Device {
         let socket = try await preparePoolAndSocket()
         do {
             try await registerDefaultObjects()
+#if canImport(Darwin)
             try? startBonjour()
-
+#endif
             let task = Task { try await start(on: socket, pool: pool) }
             state = (socket: socket, task: task)
             defer { state = nil }
@@ -139,7 +144,9 @@ public actor AES70OCP1Device {
         guard let (socket, task) = state else { return }
         try? socket.close()
         try? await task.getValue(cancelling: .afterTimeout(seconds: timeout))
+#if canImport(Darwin)
         stopBonjour()
+#endif
         try? await unregisterDefaultObjects()
     }
 
@@ -301,7 +308,7 @@ public actor AES70OCP1Device {
         #endif
     }
 
-    #if os(macOS)
+    #if canImport(Darwin)
     private var netService: CFNetService?
 
     func createNetService() -> CFNetService? {
@@ -452,6 +459,7 @@ extension AES70OCP1Device {
     typealias Continuation = CancellingContinuation<(), Never>
 }
 
+#if canImport(Darwin)
 private func registerCallback(
     _ theService: CFNetService,
     _ error: UnsafeMutablePointer<CFStreamError>?,
@@ -459,3 +467,4 @@ private func registerCallback(
 ) {
     debugPrint("registered network service \(theService)")
 }
+#endif

@@ -51,13 +51,13 @@ private extension Data {
                     case sa_family_t(AF_INET):
                         return withUnsafePointer(to: &ss) {
                             $0.withMemoryRebound(to: sockaddr_in.self, capacity: 1) {
-                                $0.pointee
+                                $0.pointee as! FlyingSocks.SocketAddress
                             }
                         }
                     case sa_family_t(AF_INET6):
                         return withUnsafePointer(to: &ss) {
                             $0.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) {
-                                $0.pointee
+                                $0.pointee as! FlyingSocks.SocketAddress
                             }
                         }
                     default:
