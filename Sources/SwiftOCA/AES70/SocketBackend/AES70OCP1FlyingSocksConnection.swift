@@ -16,9 +16,6 @@
 
 #if canImport(FlyingSocks)
 
-#if canImport(Glibc)
-import Glibc
-#endif
 @_implementationOnly
 import FlyingSocks
 import Foundation
@@ -38,14 +35,20 @@ private extension SocketError {
     }
 }
 
+#if os(Linux)
+// FIXME: why?
+extension sockaddr_in: SocketAddress {}
+extension sockaddr_in6: SocketAddress {}
+#endif
+
 private extension Data {
-    var socketAddress: any FlyingSocks.SocketAddress {
-        try! withUnsafeBytes { unbound -> (any FlyingSocks.SocketAddress) in
+    var socketAddress: any SocketAddress {
+        try! withUnsafeBytes { unbound -> (any SocketAddress) in
             try unbound
                 .withMemoryRebound(
                     to: sockaddr_storage
                         .self
-                ) { storage -> (any FlyingSocks.SocketAddress) in
+                ) { storage -> (any SocketAddress) in
                     let ss = storage.baseAddress!.pointee
                     switch ss.ss_family {
                     case sa_family_t(AF_INET):
