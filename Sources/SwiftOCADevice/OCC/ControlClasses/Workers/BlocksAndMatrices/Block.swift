@@ -26,14 +26,6 @@ open class OcaBlock: OcaWorker {
     )
     public var type: OcaONo = OcaInvalidONo
 
-    /*
-     @OcaDeviceProperty(
-         propertyID: OcaPropertyID("3.2"),
-         getMethodID: OcaMethodID("3.5")
-     )
-     public var members = OcaList<OcaObjectIdentification>()
-     */
-
     public var members = Set<OcaRoot>()
 
     func addMember(_ object: OcaRoot) {
@@ -69,25 +61,38 @@ open class OcaBlock: OcaWorker {
     )
     public var oNoMap = OcaMap<OcaProtoONo, OcaONo>()
 
+    func applyRecursive(
+        members: Set<OcaRoot>,
+        _ block: (_ member: OcaRoot) async throws -> ()
+    ) async throws {
+        for member in members {
+            precondition(member != self)
+            if let member = member as? OcaBlock {
+                try await applyRecursive(members: member.members, block)
+            } else {
+                try await block(member)
+            }
+        }
+    }
+
+    func applyRecursive(
+        _ block: (_ member: OcaRoot) async throws -> ()
+    ) async throws {
+        try await applyRecursive(members: members, block)
+    }
+
     func getRecursive(from controller: AES70OCP1Controller) async throws
         -> OcaList<OcaBlockMember>
     {
         var members = [OcaBlockMember]()
 
-        for member in self.members {
+        try await applyRecursive { member in
             precondition(member != self)
-            if let member = member as? OcaBlock,
-               let recursiveMembers: [OcaBlockMember] = try? await member
-               .getRecursive(from: controller)
-            {
-                members.append(contentsOf: recursiveMembers)
-            } else {
-                members
-                    .append(OcaBlockMember(
-                        memberObjectIdentification: member.objectIdentification,
-                        containerObjectNumber: objectNumber
-                    ))
-            }
+            members
+                .append(OcaBlockMember(
+                    memberObjectIdentification: member.objectIdentification,
+                    containerObjectNumber: objectNumber
+                ))
         }
 
         return members
