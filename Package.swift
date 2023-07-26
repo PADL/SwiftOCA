@@ -17,6 +17,10 @@ let package = Package(
             name: "SwiftOCA",
             targets: ["SwiftOCA"]
         ),
+        .library(
+            name: "SwiftOCADevice",
+            targets: ["SwiftOCADevice"]
+        ),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
