@@ -18,25 +18,63 @@ import BinaryCoder
 import Foundation
 import SwiftOCA
 
-public protocol OcaDevicePropertyRepresentable {
-    associatedtype Value = Codable
+protocol OcaDevicePropertyRepresentable {
+    associatedtype Value: Codable
 
-    var propertyIDs: [OcaPropertyID] { get }
+    // FIXME: support vector properties
+    var propertyID: OcaPropertyID { get }
     var getMethodID: OcaMethodID? { get }
     var setMethodID: OcaMethodID? { get }
     var wrappedValue: Value { get }
 
-    func get(object: OcaRoot) async throws -> Ocp1Response
-    mutating func set(object: OcaRoot, command: Ocp1Command) async throws
+    func get(_enclosingInstance object: OcaRoot) -> Value
+    mutating func set(_enclosingInstance object: OcaRoot, _ newValue: Value)
+}
+
+extension OcaDevicePropertyRepresentable {
+    private func isNil<Value: Codable>(_ value: Value) -> Bool {
+        if let value = value as? ExpressibleByNilLiteral,
+           let value = value as? Value?,
+           case .none = value
+        {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    func get(object: OcaRoot) async throws -> Ocp1Response {
+        let value = get(_enclosingInstance: object)
+        if isNil(value) {
+            throw Ocp1Error.status(.parameterOutOfRange)
+        }
+        return try object.encodeResponse(value)
+    }
+
+    mutating func set(object: OcaRoot, command: Ocp1Command) async throws {
+        let newValue: Value = try object.decodeCommand(command)
+        set(_enclosingInstance: object, newValue)
+        try await didSet(object: object, newValue)
+    }
+
+    fileprivate func didSet(object: OcaRoot, _ newValue: Value) async throws {
+        let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
+        let encoder = BinaryEncoder(config: .ocp1Configuration)
+        let parameters = OcaPropertyChangedEventData<Value>(
+            propertyID: propertyID,
+            propertyValue: newValue,
+            changeType: .currentChanged
+        )
+
+        try await object.deviceDelegate?.notifySubscribers(
+            event,
+            parameters: try encoder.encode(parameters)
+        )
+    }
 }
 
 @propertyWrapper
 public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable {
-    /// All property IDs supported by this property
-    public var propertyIDs: [OcaPropertyID] {
-        [propertyID]
-    }
-
     /// The OCA property ID
     public let propertyID: OcaPropertyID
 
@@ -77,27 +115,12 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
         _storage = nil
     }
 
-    func _get(_enclosingInstance object: OcaRoot) -> Value {
+    func get(_enclosingInstance object: OcaRoot) -> Value {
         _storage
     }
 
-    mutating func _set(_enclosingInstance object: OcaRoot, _ newValue: Value) {
+    mutating func set(_enclosingInstance object: OcaRoot, _ newValue: Value) {
         _storage = newValue
-    }
-
-    private func _didSet(_enclosingInstance object: OcaRoot, _ newValue: Value) async throws {
-        let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
-        let encoder = BinaryEncoder(config: .ocp1Configuration)
-        let parameters = OcaPropertyChangedEventData<Value>(
-            propertyID: propertyID,
-            propertyValue: newValue,
-            changeType: .currentChanged
-        )
-
-        try await object.deviceDelegate?.notifySubscribers(
-            event,
-            parameters: try encoder.encode(parameters)
-        )
     }
 
     public static subscript<T: OcaRoot>(
@@ -106,39 +129,14 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
     ) -> Value {
         get {
-            object[keyPath: storageKeyPath]._get(_enclosingInstance: object)
+            object[keyPath: storageKeyPath].get(_enclosingInstance: object)
         }
         set {
-            object[keyPath: storageKeyPath]._set(_enclosingInstance: object, newValue)
+            object[keyPath: storageKeyPath].set(_enclosingInstance: object, newValue)
             Task {
                 try? await object[keyPath: storageKeyPath]
-                    ._didSet(_enclosingInstance: object, newValue)
+                    .didSet(object: object, newValue)
             }
         }
-    }
-
-    public func get(object: OcaRoot) async throws -> Ocp1Response {
-        let value = _get(_enclosingInstance: object)
-        if isNil(value) {
-            throw Ocp1Error.status(.parameterOutOfRange)
-        }
-        return try object.encodeResponse(value)
-    }
-
-    public mutating func set(object: OcaRoot, command: Ocp1Command) async throws {
-        let newValue: Value = try object.decodeCommand(command)
-        _set(_enclosingInstance: object, newValue)
-        try await _didSet(_enclosingInstance: object, newValue)
-    }
-}
-
-func isNil<Value: Codable>(_ value: Value) -> Bool {
-    if let value = value as? ExpressibleByNilLiteral,
-       let value = value as? Value?,
-       case .none = value
-    {
-        return true
-    } else {
-        return false
     }
 }
