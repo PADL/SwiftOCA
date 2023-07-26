@@ -164,7 +164,7 @@ public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
 
     override fileprivate var type: Int32 {
         #if canImport(Glibc)
-        Int32(SOCK_DGRAM.rawValue)
+        Int32(2) // FIXME: why can't we find the symbol for this?
         #else
         SOCK_DGRAM
         #endif
@@ -178,7 +178,7 @@ public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
 public class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnection {
     override fileprivate var type: Int32 {
         #if canImport(Glibc)
-        Int32(SOCK_STREAM.rawValue)
+        Int32(1) // FIXME: why can't we find the symbol for this?
         #else
         SOCK_STREAM
         #endif
