@@ -77,3 +77,25 @@ public struct OcaPropertyChangedEventData<T: Codable>: Codable {
 }
 
 public let OcaPropertyChangedEventID = OcaEventID(defLevel: 1, eventIndex: 1)
+
+public struct OcaSubscription: Codable, Equatable, Hashable {
+    public let event: OcaEvent
+    public let subscriber: OcaMethod
+    public let subscriberContext: OcaBlob
+    public let notificationDeliveryMode: OcaNotificationDeliveryMode
+    public let destinationInformation: OcaNetworkAddress
+
+    public init(
+        event: OcaEvent,
+        subscriber: OcaMethod,
+        subscriberContext: OcaBlob,
+        notificationDeliveryMode: OcaNotificationDeliveryMode,
+        destinationInformation: OcaNetworkAddress
+    ) {
+        self.event = event
+        self.subscriber = subscriber
+        self.subscriberContext = subscriberContext
+        self.notificationDeliveryMode = notificationDeliveryMode
+        self.destinationInformation = destinationInformation
+    }
+}

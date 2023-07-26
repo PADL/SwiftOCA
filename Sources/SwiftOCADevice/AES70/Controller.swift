@@ -47,18 +47,18 @@ public final class AES70OCP1Controller {
     private func findSubscription(
         _ event: OcaEvent,
         subscriber: OcaMethod? = nil
-    ) -> AES70OCP1Subscription? {
+    ) -> OcaSubscription? {
         guard let subscriptions = subscriptions[event.emitterONo] else {
             return nil
         }
         return subscriptions.first(where: {
-            let subscription = $0 as! AES70OCP1Subscription
+            let subscription = $0 as! OcaSubscription
             return subscription.event == event &&
                 subscriber == nil ? true : subscription.subscriber == subscriber
-        }) as? AES70OCP1Subscription
+        }) as? OcaSubscription
     }
 
-    func hasSubscription(_ subscription: AES70OCP1Subscription) -> Bool {
+    func hasSubscription(_ subscription: OcaSubscription) -> Bool {
         findSubscription(
             subscription.event,
             subscriber: subscription.subscriber
@@ -66,7 +66,7 @@ public final class AES70OCP1Controller {
     }
 
     func addSubscription(
-        _ subscription: AES70OCP1Subscription
+        _ subscription: OcaSubscription
     ) async throws {
         guard !hasSubscription(subscription) else {
             throw Ocp1Error.alreadySubscribedToEvent

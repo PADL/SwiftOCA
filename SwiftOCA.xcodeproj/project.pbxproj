@@ -16,7 +16,6 @@
 		D33B52902A6FD332001A1BA7 /* Root.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B528F2A6FD332001A1BA7 /* Root.swift */; };
 		D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */; };
 		D33B52952A6FE075001A1BA7 /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52942A6FE075001A1BA7 /* Controller.swift */; };
-		D33B52972A6FE08D001A1BA7 /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52962A6FE08D001A1BA7 /* Subscription.swift */; };
 		D33B52992A6FE140001A1BA7 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52982A6FE140001A1BA7 /* Logging.swift */; };
 		D33B52A32A702CED001A1BA7 /* Block.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52A22A702CED001A1BA7 /* Block.swift */; };
 		D33B52A52A702D04001A1BA7 /* Worker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52A42A702D04001A1BA7 /* Worker.swift */; };
@@ -172,7 +171,6 @@
 		D33B528F2A6FD332001A1BA7 /* Root.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Root.swift; sourceTree = "<group>"; };
 		D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProperty.swift; sourceTree = "<group>"; };
 		D33B52942A6FE075001A1BA7 /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
-		D33B52962A6FE08D001A1BA7 /* Subscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Subscription.swift; sourceTree = "<group>"; };
 		D33B52982A6FE140001A1BA7 /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		D33B52A22A702CED001A1BA7 /* Block.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Block.swift; sourceTree = "<group>"; };
 		D33B52A42A702D04001A1BA7 /* Worker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Worker.swift; sourceTree = "<group>"; };
@@ -374,7 +372,6 @@
 				D33B52942A6FE075001A1BA7 /* Controller.swift */,
 				D33B52872A6FD190001A1BA7 /* Device.swift */,
 				D33B52982A6FE140001A1BA7 /* Logging.swift */,
-				D33B52962A6FE08D001A1BA7 /* Subscription.swift */,
 			);
 			path = AES70;
 			sourceTree = "<group>";
@@ -1050,7 +1047,6 @@
 				D33B52952A6FE075001A1BA7 /* Controller.swift in Sources */,
 				D33B52B02A703AEA001A1BA7 /* Root+Commands.swift in Sources */,
 				D33B52A82A702D29001A1BA7 /* Manager.swift in Sources */,
-				D33B52972A6FE08D001A1BA7 /* Subscription.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

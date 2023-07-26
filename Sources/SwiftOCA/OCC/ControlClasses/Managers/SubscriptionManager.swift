@@ -39,13 +39,7 @@ public class OcaSubscriptionManager: OcaManager {
         notificationDeliveryMode: OcaNotificationDeliveryMode,
         destinationInformation: OcaNetworkAddress
     ) async throws {
-        struct AddSubscriptionParameters: Codable {
-            let event: OcaEvent
-            let subscriber: OcaMethod
-            let subscriberContext: OcaBlob
-            let notificationDeliveryMode: OcaNotificationDeliveryMode
-            let destinationInformation: OcaNetworkAddress
-        }
+        typealias AddSubscriptionParameters = OcaSubscription
 
         let params = AddSubscriptionParameters(
             event: event,

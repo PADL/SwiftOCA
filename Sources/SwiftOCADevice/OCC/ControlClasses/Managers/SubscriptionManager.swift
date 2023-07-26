@@ -20,7 +20,7 @@ import SwiftOCA
 public class OcaSubscriptionManager: OcaManager {
     override public class var classID: OcaClassID { OcaClassID("1.3.4") }
 
-    typealias AddSubscriptionParameters = AES70OCP1Subscription
+    typealias AddSubscriptionParameters = OcaSubscription
 
     struct RemoveSubscriptionParameters: Codable {
         let event: OcaEvent
