@@ -16,6 +16,9 @@
 
 #if canImport(FlyingSocks)
 
+#if canImport(Glibc)
+import Glibc
+#endif
 @_implementationOnly
 import FlyingSocks
 import Foundation
@@ -37,18 +40,26 @@ private extension SocketError {
 
 private extension Data {
     var socketAddress: any SocketAddress {
-        try! withUnsafeBytes { unbound -> (any SocketAddress) in
-            try unbound
+        withUnsafeBytes { unbound -> (any SocketAddress) in
+            unbound
                 .withMemoryRebound(
                     to: sockaddr_storage
                         .self
                 ) { storage -> (any SocketAddress) in
-                    let ss = storage.baseAddress!.pointee
+                    var ss = storage.baseAddress!.pointee
                     switch ss.ss_family {
-                    case UInt8(AF_INET):
-                        return try sockaddr_in.make(from: ss)
-                    case UInt8(AF_INET6):
-                        return try sockaddr_in6.make(from: ss)
+                    case sa_family_t(AF_INET):
+                        return withUnsafePointer(to: &ss) {
+                            $0.withMemoryRebound(to: sockaddr_in.self, capacity: 1) {
+                                $0.pointee as! any SocketAddress
+                            }
+                        }
+                    case sa_family_t(AF_INET6):
+                        return withUnsafePointer(to: &ss) {
+                            $0.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) {
+                                $0.pointee as! any SocketAddress
+                            }
+                        }
                     default:
                         fatalError("unsupported address family")
                     }
@@ -156,7 +167,13 @@ public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
         1
     }
 
-    override fileprivate var type: Int32 { SOCK_DGRAM }
+    override fileprivate var type: Int32 {
+#if canImport(Glibc)
+        Int32(SOCK_DGRAM.rawValue)
+#else
+        SOCK_DGRAM
+#endif
+    }
 
     override public var connectionPrefix: String {
         "\(OcaUdpConnectionPrefix)/\(DeviceAddressToString(deviceAddress))"
@@ -164,7 +181,13 @@ public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
 }
 
 public class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnection {
-    override fileprivate var type: Int32 { SOCK_STREAM }
+    override fileprivate var type: Int32 {
+#if canImport(Glibc)
+        Int32(SOCK_STREAM.rawValue)
+#else
+        SOCK_STREAM
+#endif
+    }
 
     override public var connectionPrefix: String {
         "\(OcaTcpConnectionPrefix)/\(DeviceAddressToString(deviceAddress))"
