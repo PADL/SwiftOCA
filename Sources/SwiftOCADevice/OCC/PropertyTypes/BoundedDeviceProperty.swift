@@ -31,12 +31,8 @@ public struct OcaBoundedDeviceProperty<
     fileprivate var _storage: Property
 
     public var wrappedValue: OcaBoundedPropertyValue<Value> {
-        get {
-            _storage.wrappedValue
-        }
-        set {
-            fatalError()
-        }
+        get { _storage.wrappedValue }
+        nonmutating set { fatalError() }
     }
 
     public init(
