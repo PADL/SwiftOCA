@@ -73,7 +73,6 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
         self.propertyID = propertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
-        // self.setCommandDecoder = setCommandDecoder
     }
 
     public init(
@@ -85,7 +84,6 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
         self.propertyID = propertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
-        // self.setCommandDecoder = setCommandDecoder
     }
 
     func get(object: OcaRoot) -> Value {
