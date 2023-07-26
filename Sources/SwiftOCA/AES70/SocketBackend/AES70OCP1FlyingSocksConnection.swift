@@ -40,26 +40,18 @@ private extension SocketError {
 
 private extension Data {
     var socketAddress: any FlyingSocks.SocketAddress {
-        withUnsafeBytes { unbound -> (any FlyingSocks.SocketAddress) in
-            unbound
+        try! withUnsafeBytes { unbound -> (any FlyingSocks.SocketAddress) in
+            try unbound
                 .withMemoryRebound(
                     to: sockaddr_storage
                         .self
                 ) { storage -> (any FlyingSocks.SocketAddress) in
-                    var ss = storage.baseAddress!.pointee
+                    let ss = storage.baseAddress!.pointee
                     switch ss.ss_family {
                     case sa_family_t(AF_INET):
-                        return withUnsafePointer(to: &ss) {
-                            $0.withMemoryRebound(to: sockaddr_in.self, capacity: 1) {
-                                $0.pointee as! FlyingSocks.SocketAddress
-                            }
-                        }
+                        return try sockaddr_in.make(from: ss)
                     case sa_family_t(AF_INET6):
-                        return withUnsafePointer(to: &ss) {
-                            $0.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) {
-                                $0.pointee as! FlyingSocks.SocketAddress
-                            }
-                        }
+                        return try sockaddr_in6.make(from: ss)
                     default:
                         fatalError("unsupported address family")
                     }
