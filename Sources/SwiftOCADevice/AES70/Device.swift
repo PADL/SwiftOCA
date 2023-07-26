@@ -111,9 +111,9 @@ public actor AES70OCP1Device {
         let socket = try await preparePoolAndSocket()
         do {
             try await registerDefaultObjects()
-#if canImport(Darwin)
+            #if canImport(Darwin)
             try? startBonjour()
-#endif
+            #endif
             let task = Task { try await start(on: socket, pool: pool) }
             state = (socket: socket, task: task)
             defer { state = nil }
@@ -144,9 +144,9 @@ public actor AES70OCP1Device {
         guard let (socket, task) = state else { return }
         try? socket.close()
         try? await task.getValue(cancelling: .afterTimeout(seconds: timeout))
-#if canImport(Darwin)
+        #if canImport(Darwin)
         stopBonjour()
-#endif
+        #endif
         try? await unregisterDefaultObjects()
     }
 
