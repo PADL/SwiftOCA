@@ -26,7 +26,7 @@ open class OcaBlock: OcaWorker {
     )
     public var type: OcaONo = OcaInvalidONo
 
-    var members = Set<OcaRoot>()
+    public private(set) var members = Set<OcaRoot>()
 
     open func addMember(_ object: OcaRoot) {
         precondition(object != self)
