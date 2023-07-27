@@ -26,11 +26,14 @@ public enum DeviceApp {
     public static func main() async throws {
         var device: AES70OCP1Device!
 
-        var localAddress = sockaddr_in.inet(port: 65000)
+        var localAddress = sockaddr_storage()
 
-        withUnsafePointer(to: &localAddress) {
-            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { cSockAddr in
-                device = AES70OCP1Device(address: cSockAddr)
+        withUnsafeMutablePointer(to: &localAddress) {
+            $0.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { cSockAddr in
+                cSockAddr.pointee = sockaddr_in.inet(port: 65000)
+                cSockAddr.withMemoryRebound(to: sockaddr.self, capacity: 1) { cSockAddr in
+                    device = AES70OCP1Device(address: cSockAddr)
+                }
             }
         }
 
