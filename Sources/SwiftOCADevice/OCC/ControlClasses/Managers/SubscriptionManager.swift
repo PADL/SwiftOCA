@@ -84,7 +84,8 @@ public class OcaSubscriptionManager: OcaManager {
         try await self.init(
             objectNumber: OcaSubscriptionManagerONo,
             role: "Subscription Manager",
-            deviceDelegate: deviceDelegate
+            deviceDelegate: deviceDelegate,
+            addToRootBlock: true
         )
     }
 }

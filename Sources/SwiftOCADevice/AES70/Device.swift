@@ -44,14 +44,14 @@ public actor AES70OCP1Device {
     var objects = [OcaONo: OcaRoot]()
 
     /// Root block, immutable
-    public var rootBlock: OcaBlock?
-    public var subscriptionManager: OcaSubscriptionManager?
-    public var deviceManager: OcaDeviceManager?
+    public var rootBlock: OcaBlock!
+    public var subscriptionManager: OcaSubscriptionManager!
+    public var deviceManager: OcaDeviceManager!
 
     public init(
         address: Data,
         timeout: TimeInterval = 15
-    ) {
+    ) async throws {
         self.address = sockaddr_storage()
         self.timeout = timeout
         pool = Self.defaultPool(logger: logger)
@@ -61,13 +61,21 @@ public actor AES70OCP1Device {
                 memcpy(dst.baseAddress, src.baseAddress, src.count)
             }
         }
+
+        rootBlock = try await OcaBlock(
+            objectNumber: OcaRootBlockONo,
+            deviceDelegate: self,
+            addToRootBlock: false
+        )
+        subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
+        deviceManager = try await OcaDeviceManager(deviceDelegate: self)
     }
 
     var listeningAddress: Socket.Address? {
         try? state?.socket.sockname()
     }
 
-    public func register(object: OcaRoot) throws {
+    public func register(object: OcaRoot, addToRootBlock: Bool = true) throws {
         precondition(
             object.objectNumber != OcaInvalidONo,
             "cannot register object with invalid ONo"
@@ -76,8 +84,9 @@ public actor AES70OCP1Device {
             throw Ocp1Error.status(.badONo)
         }
         objects[object.objectNumber] = object
-        if object.objectNumber != OcaRootBlockONo {
-            rootBlock?.addMember(object)
+        if addToRootBlock {
+            precondition(object.objectNumber != OcaRootBlockONo)
+            rootBlock.addMember(object)
         }
     }
 
@@ -86,32 +95,9 @@ public actor AES70OCP1Device {
         return nextObjectNumber
     }
 
-    private func registerDefaultObjects() async throws {
-        rootBlock = try await OcaBlock(objectNumber: OcaRootBlockONo, deviceDelegate: self)
-        // pick up any objects that were registered beforehand
-        for object in objects.values {
-            guard object != rootBlock else {
-                continue
-            }
-            rootBlock?.addMember(object)
-        }
-
-        subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
-        deviceManager = try await OcaDeviceManager(deviceDelegate: self)
-    }
-
-    private func unregisterDefaultObjects() async throws {
-        if let subscriptionManager { rootBlock?.removeMember(subscriptionManager) }
-        if let deviceManager { rootBlock?.removeMember(deviceManager) }
-        rootBlock = nil
-        subscriptionManager = nil
-        deviceManager = nil
-    }
-
     public func start() async throws {
         let socket = try await preparePoolAndSocket()
         do {
-            try await registerDefaultObjects()
             #if canImport(Darwin)
             try? startBonjour()
             #endif
@@ -148,7 +134,6 @@ public actor AES70OCP1Device {
         #if canImport(Darwin)
         stopBonjour()
         #endif
-        try? await unregisterDefaultObjects()
     }
 
     func makeSocketAndListen() throws -> Socket {

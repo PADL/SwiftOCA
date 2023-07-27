@@ -37,7 +37,8 @@ open class OcaGenericBasicSensor<T: Codable>: OcaSensor {
             objectNumber: objectNumber,
             lockable: lockable,
             role: role,
-            deviceDelegate: deviceDelegate
+            deviceDelegate: deviceDelegate,
+            addToRootBlock: true
         )
     }
 }

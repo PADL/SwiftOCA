@@ -49,7 +49,8 @@ open class OcaRoot: CustomStringConvertible {
         objectNumber: OcaONo? = nil,
         lockable: OcaBoolean = false,
         role: OcaString = "Root",
-        deviceDelegate: AES70OCP1Device? = nil
+        deviceDelegate: AES70OCP1Device? = nil,
+        addToRootBlock: Bool = true
     ) async throws {
         if let objectNumber {
             precondition(objectNumber != OcaInvalidONo)
@@ -61,7 +62,7 @@ open class OcaRoot: CustomStringConvertible {
         self.role = role
         self.deviceDelegate = deviceDelegate
         if let deviceDelegate {
-            try await deviceDelegate.register(object: self)
+            try await deviceDelegate.register(object: self, addToRootBlock: addToRootBlock)
         }
     }
 

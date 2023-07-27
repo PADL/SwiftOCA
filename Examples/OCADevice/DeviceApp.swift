@@ -26,16 +26,19 @@ public enum DeviceApp {
     public static func main() async throws {
         var device: AES70OCP1Device!
         var localAddress = sockaddr_in.inet(port: 65000)
+        var localAddressData = Data()
 
         withUnsafeBytes(of: &localAddress) { bytes in
-            let data = Data(bytes: bytes.baseAddress!, count: bytes.count)
-            device = AES70OCP1Device(address: data)
+            localAddressData = Data(bytes: bytes.baseAddress!, count: bytes.count)
         }
+
+        device = try await AES70OCP1Device(address: localAddressData)
 
         testActuator = try await SwiftOCADevice.OcaBooleanActuator(
             role: "Test Actuator",
             deviceDelegate: device
         )
+
         try await device.start()
     }
 }
