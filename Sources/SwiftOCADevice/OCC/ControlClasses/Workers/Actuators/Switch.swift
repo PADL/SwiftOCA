@@ -25,7 +25,7 @@ public class OcaSwitch: OcaActuator {
         getMethodID: OcaMethodID("4.1"),
         setMethodID: OcaMethodID("4.2")
     )
-    public var position = OcaBoundedPropertyValue(value: 0, in: 0...1)
+    public var position = OcaBoundedPropertyValue<OcaUint16>(value: 0, in: 0...1)
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("4.2"),
