@@ -24,7 +24,7 @@ public struct OcaBoundedDeviceProperty<
     Value: Codable &
         Comparable
 >: OcaDevicePropertyRepresentable {
-    fileprivate var _storage: Property
+    fileprivate var storage: Property
 
     public let propertyID: OcaPropertyID
     public let getMethodID: OcaMethodID?
@@ -37,8 +37,8 @@ public struct OcaBoundedDeviceProperty<
         nonmutating set { fatalError() }
     }
 
-    public var async: AnyAsyncSequence<OcaBoundedPropertyValue<Value>> {
-        _storage.async
+    var subject: AsyncCurrentValueSubject<OcaBoundedPropertyValue<Value>> {
+        storage.subject
     }
 
     public init(
@@ -47,7 +47,7 @@ public struct OcaBoundedDeviceProperty<
         getMethodID: OcaMethodID? = nil,
         setMethodID: OcaMethodID? = nil
     ) {
-        _storage = OcaDeviceProperty(
+        storage = OcaDeviceProperty(
             wrappedValue: wrappedValue,
             propertyID: propertyID,
             getMethodID: getMethodID,
@@ -60,14 +60,14 @@ public struct OcaBoundedDeviceProperty<
     }
 
     func get(object: OcaRoot) async throws -> Ocp1Response {
-        try await _storage.get(object: object)
+        try await storage.get(object: object)
     }
 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
         let value: Value = try object.decodeCommand(command)
-        _storage.set(
+        storage.set(
             object: object,
-            OcaBoundedPropertyValue<Value>(value: value, in: _storage.wrappedValue.range)
+            OcaBoundedPropertyValue<Value>(value: value, in: storage.wrappedValue.range)
         )
     }
 
@@ -77,10 +77,10 @@ public struct OcaBoundedDeviceProperty<
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
     ) -> OcaBoundedPropertyValue<Value> {
         get {
-            object[keyPath: storageKeyPath]._storage.get(object: object)
+            object[keyPath: storageKeyPath].storage.get(object: object)
         }
         set {
-            object[keyPath: storageKeyPath]._storage.set(object: object, newValue)
+            object[keyPath: storageKeyPath].storage.set(object: object, newValue)
         }
     }
 }

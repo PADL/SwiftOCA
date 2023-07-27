@@ -57,8 +57,9 @@ open class OcaRoot: CustomStringConvertible {
     }
 
     deinit {
-        for task in notificationTasks.values {
-            task.cancel()
+        for (_, propertyKeyPath) in allPropertyKeyPaths {
+            let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
+            property.finish()
         }
     }
 

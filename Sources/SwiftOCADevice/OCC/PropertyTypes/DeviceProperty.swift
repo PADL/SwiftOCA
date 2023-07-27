@@ -28,15 +28,25 @@ protocol OcaDevicePropertyRepresentable {
     var setMethodID: OcaMethodID? { get }
     var wrappedValue: Value { get }
 
-    var async: AnyAsyncSequence<Value> { get }
+    var subject: AsyncCurrentValueSubject<Value> { get }
 
     func get(object: OcaRoot) async throws -> Ocp1Response
     func set(object: OcaRoot, command: Ocp1Command) async throws
 }
 
+extension OcaDevicePropertyRepresentable {
+    func finish() {
+        subject.send(.finished)
+    }
+
+    var async: AnyAsyncSequence<Value> {
+        subject.eraseToAnyAsyncSequence()
+    }
+}
+
 @propertyWrapper
 public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable {
-    private var _storage: AsyncCurrentValueSubject<Value>
+    var subject: AsyncCurrentValueSubject<Value>
 
     /// The OCA property ID
     public let propertyID: OcaPropertyID
@@ -53,17 +63,13 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
         nonmutating set { fatalError() }
     }
 
-    public var async: AnyAsyncSequence<Value> {
-        _storage.eraseToAnyAsyncSequence()
-    }
-
     public init(
         wrappedValue: Value,
         propertyID: OcaPropertyID,
         getMethodID: OcaMethodID? = nil,
         setMethodID: OcaMethodID? = nil
     ) {
-        _storage = AsyncCurrentValueSubject(wrappedValue)
+        subject = AsyncCurrentValueSubject(wrappedValue)
         self.propertyID = propertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
@@ -74,18 +80,18 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
         getMethodID: OcaMethodID? = nil,
         setMethodID: OcaMethodID? = nil
     ) where Value: ExpressibleByNilLiteral {
-        _storage = AsyncCurrentValueSubject(nil)
+        subject = AsyncCurrentValueSubject(nil)
         self.propertyID = propertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
     }
 
     func get(object: OcaRoot) -> Value {
-        _storage.value
+        subject.value
     }
 
     func set(object: OcaRoot, _ newValue: Value) {
-        _storage.send(newValue)
+        subject.send(newValue)
     }
 
     private func isNil<Value: Codable>(_ value: Value) -> Bool {
