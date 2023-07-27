@@ -31,10 +31,8 @@ public enum DeviceApp {
         withUnsafeMutablePointer(to: &localAddress) {
             $0.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { cSockAddr in
                 cSockAddr.pointee = sockaddr_in.inet(port: 65000)
-                cSockAddr.withMemoryRebound(to: sockaddr.self, capacity: 1) { cSockAddr in
-                    device = AES70OCP1Device(address: cSockAddr)
-                }
             }
+            device = AES70OCP1Device(address: $0)
         }
 
         testActuator = try await SwiftOCADevice.OcaBooleanActuator(

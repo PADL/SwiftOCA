@@ -49,13 +49,10 @@ public actor AES70OCP1Device {
     public var deviceManager: OcaDeviceManager?
 
     public init(
-        address: UnsafePointer<sockaddr>,
+        address: UnsafePointer<sockaddr_storage>,
         timeout: TimeInterval = 15
     ) {
-        self.address = address
-            .withMemoryRebound(to: sockaddr_storage.self, capacity: 1) { storage in
-                storage.pointee
-            }
+        self.address = address.pointee
         self.timeout = timeout
         logger = Self.defaultLogger()
         pool = Self.defaultPool(logger: logger)
