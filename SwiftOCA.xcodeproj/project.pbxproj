@@ -34,6 +34,14 @@
 		D351F2012A7132F8008C5513 /* BoundedDeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */; };
 		D351F2032A727411008C5513 /* Mute.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2022A727411008C5513 /* Mute.swift */; };
 		D351F2052A72780A008C5513 /* PanBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2042A72780A008C5513 /* PanBalance.swift */; };
+		D351F2082A7299B0008C5513 /* Agent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2072A7299B0008C5513 /* Agent.swift */; };
+		D351F20C2A729AB3008C5513 /* Sensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F20B2A729AB3008C5513 /* Sensor.swift */; };
+		D351F20E2A729AF2008C5513 /* BasicSensors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F20D2A729AF2008C5513 /* BasicSensors.swift */; };
+		D351F2102A729C36008C5513 /* LevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F20F2A729C36008C5513 /* LevelSensor.swift */; };
+		D351F2122A729CB0008C5513 /* TimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2112A729CB0008C5513 /* TimeSource.swift */; };
+		D351F2142A729D8B008C5513 /* Switch.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2132A729D8B008C5513 /* Switch.swift */; };
+		D351F2162A729DFC008C5513 /* PolarityState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2152A729DFC008C5513 /* PolarityState.swift */; };
+		D351F2182A729E29008C5513 /* Gain.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2172A729E29008C5513 /* Gain.swift */; };
 		D36ECA212A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */; };
 		D36ECA2C2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */; };
 		D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */; };
@@ -189,6 +197,14 @@
 		D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundedDeviceProperty.swift; sourceTree = "<group>"; };
 		D351F2022A727411008C5513 /* Mute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mute.swift; sourceTree = "<group>"; };
 		D351F2042A72780A008C5513 /* PanBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanBalance.swift; sourceTree = "<group>"; };
+		D351F2072A7299B0008C5513 /* Agent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Agent.swift; sourceTree = "<group>"; };
+		D351F20B2A729AB3008C5513 /* Sensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sensor.swift; sourceTree = "<group>"; };
+		D351F20D2A729AF2008C5513 /* BasicSensors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicSensors.swift; sourceTree = "<group>"; };
+		D351F20F2A729C36008C5513 /* LevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSensor.swift; sourceTree = "<group>"; };
+		D351F2112A729CB0008C5513 /* TimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSource.swift; sourceTree = "<group>"; };
+		D351F2132A729D8B008C5513 /* Switch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Switch.swift; sourceTree = "<group>"; };
+		D351F2152A729DFC008C5513 /* PolarityState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarityState.swift; sourceTree = "<group>"; };
+		D351F2172A729E29008C5513 /* Gain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gain.swift; sourceTree = "<group>"; };
 		D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1FlyingSocksConnection.swift; sourceTree = "<group>"; };
 		D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAddressToString.swift; sourceTree = "<group>"; };
@@ -394,6 +410,7 @@
 		D33B528E2A6FD327001A1BA7 /* ControlClasses */ = {
 			isa = PBXGroup;
 			children = (
+				D351F2062A72999D008C5513 /* Agents */,
 				D33B528F2A6FD332001A1BA7 /* Root.swift */,
 				D33B52AF2A703AEA001A1BA7 /* Root+Commands.swift */,
 				D33B52A62A702D1C001A1BA7 /* Managers */,
@@ -459,6 +476,9 @@
 		D33B52B12A7060B4001A1BA7 /* Sensors */ = {
 			isa = PBXGroup;
 			children = (
+				D351F20B2A729AB3008C5513 /* Sensor.swift */,
+				D351F20D2A729AF2008C5513 /* BasicSensors.swift */,
+				D351F20F2A729C36008C5513 /* LevelSensor.swift */,
 			);
 			path = Sensors;
 			sourceTree = "<group>";
@@ -467,9 +487,12 @@
 			isa = PBXGroup;
 			children = (
 				D33B52B32A7060BC001A1BA7 /* Actuator.swift */,
-				D351F2022A727411008C5513 /* Mute.swift */,
 				D33B52B52A7060E0001A1BA7 /* BasicActuators.swift */,
+				D351F2022A727411008C5513 /* Mute.swift */,
 				D351F2042A72780A008C5513 /* PanBalance.swift */,
+				D351F2132A729D8B008C5513 /* Switch.swift */,
+				D351F2152A729DFC008C5513 /* PolarityState.swift */,
+				D351F2172A729E29008C5513 /* Gain.swift */,
 			);
 			path = Actuators;
 			sourceTree = "<group>";
@@ -481,6 +504,15 @@
 			);
 			name = OCADevice;
 			path = Examples/OCADevice;
+			sourceTree = "<group>";
+		};
+		D351F2062A72999D008C5513 /* Agents */ = {
+			isa = PBXGroup;
+			children = (
+				D351F2072A7299B0008C5513 /* Agent.swift */,
+				D351F2112A729CB0008C5513 /* TimeSource.swift */,
+			);
+			path = Agents;
 			sourceTree = "<group>";
 		};
 		D37F7E192A6BC015005F035F /* SocketBackend */ = {
@@ -1043,21 +1075,29 @@
 			buildActionMask = 2147483647;
 			files = (
 				D351F2032A727411008C5513 /* Mute.swift in Sources */,
+				D351F20C2A729AB3008C5513 /* Sensor.swift in Sources */,
 				D33B52B42A7060BC001A1BA7 /* Actuator.swift in Sources */,
 				D33B52882A6FD190001A1BA7 /* Device.swift in Sources */,
+				D351F2082A7299B0008C5513 /* Agent.swift in Sources */,
 				D33B52A52A702D04001A1BA7 /* Worker.swift in Sources */,
 				D33B52AA2A702D3F001A1BA7 /* NetworkManager.swift in Sources */,
+				D351F2122A729CB0008C5513 /* TimeSource.swift in Sources */,
 				D33B52AC2A702D4D001A1BA7 /* DeviceManager.swift in Sources */,
 				D33B52A32A702CED001A1BA7 /* Block.swift in Sources */,
 				D33B52B62A7060E0001A1BA7 /* BasicActuators.swift in Sources */,
 				D33B52992A6FE140001A1BA7 /* Logging.swift in Sources */,
 				D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */,
+				D351F20E2A729AF2008C5513 /* BasicSensors.swift in Sources */,
+				D351F2102A729C36008C5513 /* LevelSensor.swift in Sources */,
 				D33B52902A6FD332001A1BA7 /* Root.swift in Sources */,
+				D351F2182A729E29008C5513 /* Gain.swift in Sources */,
 				D351F2012A7132F8008C5513 /* BoundedDeviceProperty.swift in Sources */,
 				D33B52AE2A702D92001A1BA7 /* SubscriptionManager.swift in Sources */,
 				D33B52952A6FE075001A1BA7 /* Controller.swift in Sources */,
+				D351F2162A729DFC008C5513 /* PolarityState.swift in Sources */,
 				D33B52B02A703AEA001A1BA7 /* Root+Commands.swift in Sources */,
 				D33B52A82A702D29001A1BA7 /* Manager.swift in Sources */,
+				D351F2142A729D8B008C5513 /* Switch.swift in Sources */,
 				D351F2052A72780A008C5513 /* PanBalance.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
