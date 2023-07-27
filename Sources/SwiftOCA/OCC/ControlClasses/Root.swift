@@ -146,7 +146,7 @@ public extension OcaRoot {
 
     var allPropertyKeyPaths: [String: PartialKeyPath<OcaRoot>] {
         staticPropertyKeyPaths.merging(
-            allKeyPaths.filter { self[keyPath: $0.value] is any OcaPropertyRepresentable },
+            allKeyPaths.filter { self[keyPath: $0.value] is any OcaPropertySubjectRepresentable },
             uniquingKeysWith: { old, _ in old }
         )
     }
@@ -210,7 +210,7 @@ public extension OcaRoot {
         }
     }
 
-    internal struct StaticProperty<T: Codable>: OcaPropertyRepresentable {
+    internal struct StaticProperty<T: Codable>: OcaPropertySubjectRepresentable {
         typealias Value = T
 
         var propertyIDs: [OcaPropertyID]
@@ -227,8 +227,8 @@ public extension OcaRoot {
             OcaProperty<Value>.State.success(value)
         }
 
-        var async: AnyAsyncSequence<State> {
-            AsyncCurrentValueSubject(currentValue).eraseToAnyAsyncSequence()
+        var subject: AsyncCurrentValueSubject<State> {
+            AsyncCurrentValueSubject(currentValue)
         }
     }
 }

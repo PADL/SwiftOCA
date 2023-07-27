@@ -24,6 +24,6 @@ public class OcaEventHandler: OcaAgent {
     }
 }
 
-protocol OcaPropertyChangeEventNotifiable: OcaPropertyRepresentable {
+protocol OcaPropertyChangeEventNotifiable: OcaPropertySubjectRepresentable {
     func onEvent(_ object: OcaRoot, _ eventData: Ocp1EventData) throws
 }

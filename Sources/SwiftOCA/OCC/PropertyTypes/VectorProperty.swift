@@ -32,6 +32,8 @@ public struct OcaVectorProperty<
     Value: Codable &
         FixedWidthInteger
 >: OcaPropertyChangeEventNotifiable, Codable {
+    var subject: AsyncCurrentValueSubject<State> { _storage.subject }
+
     fileprivate var _storage: Property
 
     public typealias Property = OcaProperty<OcaVector2D<Value>>
@@ -45,12 +47,6 @@ public struct OcaVectorProperty<
     public let yPropertyID: OcaPropertyID
     public let getMethodID: OcaMethodID
     public let setMethodID: OcaMethodID?
-
-    private var subject: AsyncCurrentValueSubject<State> { _storage.subject }
-
-    public var async: AnyAsyncSequence<State> {
-        subject.eraseToAnyAsyncSequence()
-    }
 
     public init(from decoder: Decoder) throws {
         fatalError()

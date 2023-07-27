@@ -40,6 +40,16 @@ public extension OcaPropertyRepresentable {
     }
 }
 
+protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
+    var subject: AsyncCurrentValueSubject<State> { get }
+}
+
+extension OcaPropertySubjectRepresentable {
+    public var async: AnyAsyncSequence<State> {
+        subject.eraseToAnyAsyncSequence()
+    }
+}
+
 @propertyWrapper
 public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifiable {
     /// All property IDs supported by this property
@@ -85,10 +95,6 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
 
     let subject: AsyncCurrentValueSubject<State>
-
-    public var async: AnyAsyncSequence<State> {
-        subject.eraseToAnyAsyncSequence()
-    }
 
     public var description: String {
         if case let .success(value) = subject.value {
