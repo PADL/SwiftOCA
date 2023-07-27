@@ -18,6 +18,8 @@ import Foundation
 import SwiftOCA
 
 open class OcaRoot: CustomStringConvertible {
+    var notificationTasks = [OcaPropertyID: Task<(), Error>]()
+
     public class var classID: OcaClassID { OcaClassID("1") }
     public class var classVersion: OcaClassVersionNumber { 2 }
     public let objectNumber: OcaONo
@@ -54,6 +56,12 @@ open class OcaRoot: CustomStringConvertible {
         }
     }
 
+    deinit {
+        for task in notificationTasks.values {
+            task.cancel()
+        }
+    }
+
     public var description: String {
         "\(type(of: self))(objectNumber: \(objectNumber), role: \(role))"
     }
@@ -68,8 +76,6 @@ open class OcaRoot: CustomStringConvertible {
             if command.methodID == property.getMethodID {
                 return try await property.get(object: self)
             } else if command.methodID == property.setMethodID {
-                // FIXME: this doesn't actually mutate the value in the class
-                var property = property
                 try await property.set(object: self, command: command)
                 return Ocp1Response()
             }

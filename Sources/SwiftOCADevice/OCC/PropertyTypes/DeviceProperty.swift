@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import AsyncExtensions
 import BinaryCoder
 import Foundation
 import SwiftOCA
@@ -21,14 +22,16 @@ import SwiftOCA
 protocol OcaDevicePropertyRepresentable {
     associatedtype Value: Codable
 
-    // FIXME: support vector properties
+    // FIXME: support vector properties with multiple property IDs
     var propertyID: OcaPropertyID { get }
     var getMethodID: OcaMethodID? { get }
     var setMethodID: OcaMethodID? { get }
     var wrappedValue: Value { get }
 
+    var async: AnyAsyncSequence<Value> { get }
+
     func get(object: OcaRoot) async throws -> Ocp1Response
-    mutating func set(object: OcaRoot, command: Ocp1Command) async throws
+    func set(object: OcaRoot, command: Ocp1Command) async throws
 }
 
 extension OcaDevicePropertyRepresentable {
@@ -46,6 +49,8 @@ extension OcaDevicePropertyRepresentable {
 
 @propertyWrapper
 public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable {
+    private var _storage: AsyncCurrentValueSubject<Value>
+
     /// The OCA property ID
     public let propertyID: OcaPropertyID
 
@@ -57,11 +62,13 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
 
     /// Placeholder only
     public var wrappedValue: Value {
-        get { _storage }
+        get { fatalError() }
         nonmutating set { fatalError() }
     }
 
-    private var _storage: Value
+    public var async: AnyAsyncSequence<Value> {
+        _storage.eraseToAnyAsyncSequence()
+    }
 
     public init(
         wrappedValue: Value,
@@ -69,7 +76,7 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
         getMethodID: OcaMethodID? = nil,
         setMethodID: OcaMethodID? = nil
     ) {
-        _storage = wrappedValue
+        _storage = AsyncCurrentValueSubject(wrappedValue)
         self.propertyID = propertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
@@ -80,18 +87,18 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
         getMethodID: OcaMethodID? = nil,
         setMethodID: OcaMethodID? = nil
     ) where Value: ExpressibleByNilLiteral {
-        _storage = nil
+        _storage = AsyncCurrentValueSubject(nil)
         self.propertyID = propertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
     }
 
     func get(object: OcaRoot) -> Value {
-        _storage
+        _storage.value
     }
 
-    mutating func set(object: OcaRoot, _ newValue: Value) {
-        _storage = newValue
+    func set(object: OcaRoot, _ newValue: Value) {
+        _storage.send(newValue)
     }
 
     func get(object: OcaRoot) async throws -> Ocp1Response {
@@ -102,12 +109,20 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
         return try object.encodeResponse(value)
     }
 
-    mutating func set(object: OcaRoot, command: Ocp1Command) async throws {
+    func set(object: OcaRoot, command: Ocp1Command) async throws {
         let newValue: Value = try object.decodeCommand(command)
         set(object: object, newValue)
+
+        if object.notificationTasks[propertyID] == nil {
+            object.notificationTasks[propertyID] = Task<(), Error> {
+                for try await value in self.async {
+                    try? await notifySubscribers(object: object, value)
+                }
+            }
+        }
     }
 
-    func didSet(object: OcaRoot, _ newValue: Value) async throws {
+    func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {
         let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
         let encoder = BinaryEncoder(config: .ocp1Configuration)
         let parameters = OcaPropertyChangedEventData<Value>(
@@ -132,10 +147,6 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
         }
         set {
             object[keyPath: storageKeyPath].set(object: object, newValue)
-            Task {
-                try? await object[keyPath: storageKeyPath]
-                    .didSet(object: object, newValue)
-            }
         }
     }
 }

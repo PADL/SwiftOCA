@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import AsyncExtensions
 import BinaryCoder
 import Foundation
 import SwiftOCA
@@ -23,16 +24,21 @@ public struct OcaBoundedDeviceProperty<
     Value: Codable &
         Comparable
 >: OcaDevicePropertyRepresentable {
+    fileprivate var _storage: Property
+
     public let propertyID: OcaPropertyID
     public let getMethodID: OcaMethodID?
     public let setMethodID: OcaMethodID?
 
     public typealias Property = OcaDeviceProperty<OcaBoundedPropertyValue<Value>>
-    fileprivate var _storage: Property
 
     public var wrappedValue: OcaBoundedPropertyValue<Value> {
-        get { _storage.wrappedValue }
+        get { fatalError() }
         nonmutating set { fatalError() }
+    }
+
+    public var async: AnyAsyncSequence<OcaBoundedPropertyValue<Value>> {
+        _storage.async
     }
 
     public init(
@@ -53,42 +59,15 @@ public struct OcaBoundedDeviceProperty<
         self.setMethodID = setMethodID
     }
 
-    private func get(object: OcaRoot) -> OcaBoundedPropertyValue<Value> {
-        _storage.get(object: object)
-    }
-
-    private mutating func set(object: OcaRoot, _ newValue: OcaBoundedPropertyValue<Value>) {
-        _storage.set(object: object, newValue)
-    }
-
     func get(object: OcaRoot) async throws -> Ocp1Response {
         try await _storage.get(object: object)
     }
 
-    func makeValue(_ value: Value) -> OcaBoundedPropertyValue<Value> {
-        OcaBoundedPropertyValue<Value>(value: value, in: _storage.wrappedValue.range)
-    }
-
-    mutating func set(object: OcaRoot, command: Ocp1Command) async throws {
+    func set(object: OcaRoot, command: Ocp1Command) async throws {
         let value: Value = try object.decodeCommand(command)
         _storage.set(
             object: object,
-            makeValue(value)
-        )
-    }
-
-    func didSet(object: OcaRoot, _ newValue: Value) async throws {
-        let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
-        let encoder = BinaryEncoder(config: .ocp1Configuration)
-        let parameters = OcaPropertyChangedEventData<Value>(
-            propertyID: propertyID,
-            propertyValue: newValue,
-            changeType: .currentChanged
-        )
-
-        try await object.deviceDelegate?.notifySubscribers(
-            event,
-            parameters: try encoder.encode(parameters)
+            OcaBoundedPropertyValue<Value>(value: value, in: _storage.wrappedValue.range)
         )
     }
 
@@ -98,14 +77,10 @@ public struct OcaBoundedDeviceProperty<
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
     ) -> OcaBoundedPropertyValue<Value> {
         get {
-            object[keyPath: storageKeyPath].get(object: object)
+            object[keyPath: storageKeyPath]._storage.get(object: object)
         }
         set {
-            object[keyPath: storageKeyPath].set(object: object, newValue)
-            Task {
-                try? await object[keyPath: storageKeyPath]
-                    .didSet(object: object, newValue.value)
-            }
+            object[keyPath: storageKeyPath]._storage.set(object: object, newValue)
         }
     }
 }
