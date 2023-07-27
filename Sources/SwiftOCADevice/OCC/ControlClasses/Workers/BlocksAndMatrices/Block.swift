@@ -18,7 +18,7 @@ import Foundation
 import SwiftOCA
 
 open class OcaBlock: OcaWorker {
-    override public class var classID: OcaClassID { OcaClassID("1.1.3") }
+    override open class var classID: OcaClassID { OcaClassID("1.1.3") }
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.1"),
@@ -28,7 +28,7 @@ open class OcaBlock: OcaWorker {
 
     var members = Set<OcaRoot>()
 
-    public func addMember(_ object: OcaRoot) {
+    open func addMember(_ object: OcaRoot) {
         precondition(object != self)
         if let object = object as? OcaWorker {
             object.owner = objectNumber
@@ -36,7 +36,7 @@ open class OcaBlock: OcaWorker {
         members.insert(object)
     }
 
-    public func removeMember(_ object: OcaRoot) {
+    open func removeMember(_ object: OcaRoot) {
         guard members.contains(object) else {
             return
         }
@@ -113,7 +113,7 @@ open class OcaBlock: OcaWorker {
         throw Ocp1Error.notImplemented
     }
 
-    override public func handleCommand(
+    override open func handleCommand(
         _ command: Ocp1Command,
         from controller: AES70OCP1Controller
     ) async throws -> Ocp1Response {

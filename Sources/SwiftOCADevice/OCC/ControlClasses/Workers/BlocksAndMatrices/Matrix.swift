@@ -17,8 +17,8 @@
 import Foundation
 import SwiftOCA
 
-public class OcaMatrix: OcaWorker {
-    override public class var classID: OcaClassID { OcaClassID("1.1.5") }
+open class OcaMatrix: OcaWorker {
+    override open class var classID: OcaClassID { OcaClassID("1.1.5") }
 
     @OcaVectorDeviceProperty(
         xPropertyID: OcaPropertyID("3.1"),
@@ -66,7 +66,7 @@ public class OcaMatrix: OcaWorker {
         var maxYSize: T
     }
 
-    override public func handleCommand(
+    override open func handleCommand(
         _ command: Ocp1Command,
         from controller: AES70OCP1Controller
     ) async throws -> Ocp1Response {

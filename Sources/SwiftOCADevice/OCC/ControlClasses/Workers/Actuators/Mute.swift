@@ -17,8 +17,8 @@
 import Foundation
 import SwiftOCA
 
-public class OcaMute: OcaActuator {
-    override public class var classID: OcaClassID { OcaClassID("1.1.1.2") }
+open class OcaMute: OcaActuator {
+    override open class var classID: OcaClassID { OcaClassID("1.1.1.2") }
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("4.1"),

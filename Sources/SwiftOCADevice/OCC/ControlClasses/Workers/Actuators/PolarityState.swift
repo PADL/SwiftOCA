@@ -17,8 +17,8 @@
 import Foundation
 import SwiftOCA
 
-public class OcaPolarity: OcaActuator {
-    override public class var classID: OcaClassID { OcaClassID("1.1.1.3") }
+open class OcaPolarity: OcaActuator {
+    override open class var classID: OcaClassID { OcaClassID("1.1.1.3") }
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("4.1"),
