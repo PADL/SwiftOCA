@@ -131,10 +131,6 @@ public final class AES70OCP1Controller {
         }
     }
 
-    deinit {
-        keepAliveTask?.cancel()
-    }
-
     func sendMessages(
         _ messages: AnyAsyncSequence<Ocp1Message>,
         type messageType: OcaMessageType
@@ -160,8 +156,15 @@ public final class AES70OCP1Controller {
         try await sendMessage(keepAlive, type: .ocaKeepAlive)
     }
 
-    func close() throws {
+    func close(device: AES70OCP1Device) async throws {
         try socket.close()
+
+        keepAliveTask?.cancel()
+        keepAliveTask = nil
+
+        await device.objects.values.forEach {
+            try? $0.unlock(controller: self)
+        }
     }
 
     nonisolated var identifier: String {

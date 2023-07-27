@@ -250,7 +250,7 @@ public actor AES70OCP1Device {
             logger?.logError(error, on: controller)
         }
         controllers.remove(controller)
-        try? controller.close()
+        try? await controller.close(device: self)
         logger?.logControllerRemoved(controller)
     }
 

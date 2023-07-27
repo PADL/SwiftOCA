@@ -26,14 +26,23 @@ open class OcaBlock: OcaWorker {
     )
     public var type: OcaONo = OcaInvalidONo
 
-    public var members = Set<OcaRoot>()
+    var members = Set<OcaRoot>()
 
-    func addMember(_ object: OcaRoot) {
+    public func addMember(_ object: OcaRoot) {
         precondition(object != self)
+        if let object = object as? OcaWorker {
+            object.owner = objectNumber
+        }
         members.insert(object)
     }
 
-    func removeMember(_ object: OcaRoot) {
+    public func removeMember(_ object: OcaRoot) {
+        guard members.contains(object) else {
+            return
+        }
+        if let object = object as? OcaWorker {
+            object.owner = OcaInvalidONo
+        }
         members.remove(object)
     }
 
@@ -110,12 +119,15 @@ open class OcaBlock: OcaWorker {
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.5"):
+            try ensureReadable(by: controller)
             let members = members.map(\.objectIdentification)
             return try encodeResponse(members)
         case OcaMethodID("3.6"):
+            try ensureReadable(by: controller)
             let members: [OcaBlockMember] = try await getRecursive(from: controller)
             return try encodeResponse(members)
         case OcaMethodID("3.10"):
+            try ensureReadable(by: controller)
             let members: [OcaUint16: OcaSignalPath] = try await getRecursive(from: controller)
             return try encodeResponse(members)
         default:

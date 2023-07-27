@@ -25,7 +25,7 @@ public class OcaMatrix: OcaWorker {
         xPropertyID: OcaPropertyID("3.1"),
         yPropertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.1"),
-        setMethodID: OcaMethodID("3.1")
+        setMethodID: OcaMethodID("3.2")
     )
     public var currentXY: OcaVectorProperty<OcaMatrixCoordinate>.State
 

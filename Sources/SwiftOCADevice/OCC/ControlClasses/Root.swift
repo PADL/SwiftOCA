@@ -28,6 +28,14 @@ open class OcaRoot: CustomStringConvertible {
 
     weak var deviceDelegate: AES70OCP1Device?
 
+    enum LockState {
+        case unlocked
+        case lockedReadonly(AES70OCP1Controller)
+        case lockedTotal(AES70OCP1Controller)
+    }
+
+    var lockState: LockState = .unlocked
+
     public class var classIdentification: OcaClassIdentification {
         OcaClassIdentification(classID: classID, classVersion: classVersion)
     }
@@ -75,8 +83,10 @@ open class OcaRoot: CustomStringConvertible {
             let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
 
             if command.methodID == property.getMethodID {
+                try ensureReadable(by: controller)
                 return try await property.get(object: self)
             } else if command.methodID == property.setMethodID {
+                try ensureWritable(by: controller)
                 try await property.set(object: self, command: command)
                 return Ocp1Response()
             }
@@ -99,13 +109,97 @@ open class OcaRoot: CustomStringConvertible {
             return try encodeResponse(lockable)
         case OcaMethodID("1.5"):
             return try encodeResponse(role)
+        case OcaMethodID("1.6"):
+            try lockReadonly(controller: controller)
+        case OcaMethodID("1.7"):
+            try lockTotal(controller: controller)
+        case OcaMethodID("1.8"):
+            try unlock(controller: controller)
         default:
             return try await handlePropertyAccessor(command, from: controller)
         }
+        return Ocp1Response()
     }
 
     public var isContainer: Bool {
         false
+    }
+
+    func ensureReadable(by controller: AES70OCP1Controller) throws {
+        switch lockState {
+        case .unlocked:
+            break
+        case .lockedReadonly:
+            break
+        case let .lockedTotal(lockholder):
+            guard controller == lockholder else {
+                throw Ocp1Error.status(.locked)
+            }
+        }
+    }
+
+    func ensureWritable(by controller: AES70OCP1Controller) throws {
+        switch lockState {
+        case .unlocked:
+            break
+        case let .lockedReadonly(lockholder):
+            fallthrough
+        case let .lockedTotal(lockholder):
+            guard controller == lockholder else {
+                throw Ocp1Error.status(.locked)
+            }
+        }
+    }
+
+    func lockReadonly(controller: AES70OCP1Controller) throws {
+        if !lockable {
+            throw Ocp1Error.status(.notImplemented)
+        }
+
+        switch lockState {
+        case .unlocked:
+            lockState = .lockedReadonly(controller)
+        case .lockedReadonly:
+            fallthrough
+        case .lockedTotal:
+            throw Ocp1Error.status(.locked)
+        }
+    }
+
+    func lockTotal(controller: AES70OCP1Controller) throws {
+        if !lockable {
+            throw Ocp1Error.status(.notImplemented)
+        }
+
+        switch lockState {
+        case .unlocked:
+            lockState = .lockedTotal(controller)
+        case let .lockedReadonly(lockholder):
+            guard controller == lockholder else {
+                throw Ocp1Error.status(.locked)
+            }
+            lockState = .lockedTotal(controller)
+        case .lockedTotal:
+            throw Ocp1Error.status(.locked)
+        }
+    }
+
+    func unlock(controller: AES70OCP1Controller) throws {
+        if !lockable {
+            throw Ocp1Error.status(.notImplemented)
+        }
+
+        switch lockState {
+        case .unlocked:
+            throw Ocp1Error.status(.invalidRequest)
+        case let .lockedReadonly(lockholder):
+            fallthrough
+        case let .lockedTotal(lockholder):
+            guard controller == lockholder else {
+                throw Ocp1Error.status(.locked)
+            }
+            lockState = .unlocked
+        }
     }
 }
 

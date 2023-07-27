@@ -44,6 +44,15 @@ public struct OcaList2D<Element> {
             items[(x * nY) + y] = newValue
         }
     }
+
+    public func map<T>(
+        defaultValue: T,
+        _ transform: (Element) throws -> T
+    ) rethrows -> OcaList2D<T> {
+        var mapped = OcaList2D<T>(nX: nX, nY: nY, defaultValue: defaultValue)
+        mapped.items = try items.map(transform)
+        return mapped
+    }
 }
 
 extension OcaList2D: Codable where Element: Codable {

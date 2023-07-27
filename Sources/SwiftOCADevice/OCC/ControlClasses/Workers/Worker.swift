@@ -15,5 +15,42 @@
 //
 
 import Foundation
+import SwiftOCA
 
-open class OcaWorker: OcaRoot {}
+open class OcaWorker: OcaRoot {
+    override public class var classID: OcaClassID { OcaClassID("1.1.1") }
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("2.1"),
+        getMethodID: OcaMethodID("2.1"),
+        setMethodID: OcaMethodID("2.2")
+    )
+    public var enabled = true
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("2.2"),
+        getMethodID: OcaMethodID("2.5")
+    )
+    public var ports = [OcaPort]()
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("2.3"),
+        getMethodID: OcaMethodID("2.8"),
+        setMethodID: OcaMethodID("2.9")
+    )
+    public var label = ""
+
+    // 2.4
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("2.4"),
+        getMethodID: OcaMethodID("2.10")
+    )
+    public var owner: OcaONo = OcaInvalidONo
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("2.5"),
+        getMethodID: OcaMethodID("2.11"),
+        setMethodID: OcaMethodID("2.12")
+    )
+    public var latency: OcaTimeInterval?
+}

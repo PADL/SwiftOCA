@@ -31,6 +31,7 @@ public class OcaSubscriptionManager: OcaManager {
         _ subscription: AddSubscriptionParameters,
         from controller: AES70OCP1Controller
     ) async throws {
+        try ensureWritable(by: controller)
         try await controller.addSubscription(subscription)
     }
 
@@ -38,6 +39,7 @@ public class OcaSubscriptionManager: OcaManager {
         _ subscription: RemoveSubscriptionParameters,
         from controller: AES70OCP1Controller
     ) async throws {
+        try ensureWritable(by: controller)
         try await controller.removeSubscription(
             subscription.event,
             subscriber: subscription.subscriber
@@ -45,10 +47,12 @@ public class OcaSubscriptionManager: OcaManager {
     }
 
     func disableNotifications(from controller: AES70OCP1Controller) async throws {
+        try ensureWritable(by: controller)
         controller.notificationsEnabled = false
     }
 
     func reenableNotifications(from controller: AES70OCP1Controller) async throws {
+        try ensureWritable(by: controller)
         controller.notificationsEnabled = true
     }
 
