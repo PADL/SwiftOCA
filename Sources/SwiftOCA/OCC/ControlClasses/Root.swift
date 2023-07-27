@@ -29,13 +29,13 @@ public class OcaRoot: CustomStringConvertible, ObservableObject {
     weak var connectionDelegate: AES70OCP1Connection?
 
     // 1.1
-    public class var classID: OcaClassID { OcaClassID("1") }
+    open class var classID: OcaClassID { OcaClassID("1") }
     private var _classID: StaticProperty<OcaClassID> {
         StaticProperty<OcaClassID>(propertyIDs: [OcaPropertyID("1.1")], value: Self.classID)
     }
 
     // 1.2
-    public class var classVersion: OcaClassVersionNumber { 2 }
+    open class var classVersion: OcaClassVersionNumber { 2 }
     private var _classVersion: StaticProperty<OcaClassVersionNumber> {
         StaticProperty<OcaClassVersionNumber>(
             propertyIDs: [OcaPropertyID("1.2")],

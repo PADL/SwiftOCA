@@ -22,6 +22,7 @@ open class OcaRoot: CustomStringConvertible {
 
     open class var classID: OcaClassID { OcaClassID("1") }
     open class var classVersion: OcaClassVersionNumber { 2 }
+
     public let objectNumber: OcaONo
     public let lockable: OcaBoolean
     public let role: OcaString
