@@ -38,7 +38,7 @@ public actor AES70OCP1Device {
     let pool: AsyncSocketPool
     private var address: sockaddr_storage
     private let timeout: TimeInterval
-    private let logger: Logging?
+    private let logger: Logging? = AES70OCP1Device.defaultLogger()
     private var nextObjectNumber: OcaONo = 4096
     /// Object interning, main thread only
     var objects = [OcaONo: OcaRoot]()
@@ -49,13 +49,19 @@ public actor AES70OCP1Device {
     public var deviceManager: OcaDeviceManager?
 
     public init(
-        address: UnsafePointer<sockaddr_storage>,
+        address: Data,
         timeout: TimeInterval = 15
     ) {
-        self.address = address.pointee
+        self.address = sockaddr_storage()
         self.timeout = timeout
-        logger = Self.defaultLogger()
         pool = Self.defaultPool(logger: logger)
+
+        _ = withUnsafeMutableBytes(of: &self.address) { dst in
+            address.withUnsafeBytes { src in
+                memcpy(dst.baseAddress, src.baseAddress, src.count)
+            }
+        }
+        precondition(Int(self.address.ss_len) == address.count)
     }
 
     var listeningAddress: Socket.Address? {
