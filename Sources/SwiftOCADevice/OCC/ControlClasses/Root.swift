@@ -20,8 +20,8 @@ import SwiftOCA
 open class OcaRoot: CustomStringConvertible {
     var notificationTasks = [OcaPropertyID: Task<(), Error>]()
 
-    public class var classID: OcaClassID { OcaClassID("1") }
-    public class var classVersion: OcaClassVersionNumber { 2 }
+    open class var classID: OcaClassID { OcaClassID("1") }
+    open class var classVersion: OcaClassVersionNumber { 2 }
     public let objectNumber: OcaONo
     public let lockable: OcaBoolean
     public let role: OcaString

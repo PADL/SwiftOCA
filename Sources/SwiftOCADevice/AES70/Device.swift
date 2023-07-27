@@ -61,7 +61,6 @@ public actor AES70OCP1Device {
                 memcpy(dst.baseAddress, src.baseAddress, src.count)
             }
         }
-        precondition(Int(self.address.ss_len) == address.count)
     }
 
     var listeningAddress: Socket.Address? {
