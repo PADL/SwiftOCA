@@ -27,7 +27,6 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.1.0"),
         .package(url: "https://github.com/PADL/swift-binary-coder", branch: "inferno"),
         .package(url: "https://github.com/lhoward/AsyncExtensions", branch: "linux"),
-        .package(url: "https://github.com/OpenCombine/OpenCombine.git", from: "0.14.0"),
         .package(url: "https://github.com/swhitty/FlyingFox", branch: "main"),
     ],
     targets: [
@@ -39,7 +38,6 @@ let package = Package(
             name: "SwiftOCA",
             dependencies: [
                 "AsyncExtensions",
-                "OpenCombine",
                 .product(name: "BinaryCoder", package: "swift-binary-coder"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
                 .product(name: "FlyingSocks", package: "FlyingFox"),
