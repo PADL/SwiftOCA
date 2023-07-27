@@ -227,8 +227,8 @@ public extension OcaRoot {
             OcaProperty<Value>.State.success(value)
         }
 
-        var subject: AsyncCurrentValueSubject<State> {
-            AsyncCurrentValueSubject(currentValue)
+        var async: AnyAsyncSequence<State> {
+            AsyncCurrentValueSubject(currentValue).eraseToAnyAsyncSequence()
         }
     }
 }

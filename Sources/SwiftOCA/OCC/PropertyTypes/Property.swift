@@ -28,7 +28,7 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
 
     var propertyIDs: [OcaPropertyID] { get }
     var currentValue: State { get }
-    var subject: AsyncCurrentValueSubject<State> { get }
+    var async: AnyAsyncSequence<State> { get }
 
     func refresh(_ object: OcaRoot) async
     func subscribe(_ object: OcaRoot) async
@@ -37,10 +37,6 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
 public extension OcaPropertyRepresentable {
     var hasValueOrError: Bool {
         currentValue.hasValueOrError
-    }
-
-    func eraseSubjectToAnyAsyncSequence() -> AnyAsyncSequence<State> {
-        subject.eraseToAnyAsyncSequence()
     }
 }
 
@@ -88,7 +84,11 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     }
 
-    public let subject: AsyncCurrentValueSubject<State>
+    let subject: AsyncCurrentValueSubject<State>
+
+    public var async: AnyAsyncSequence<State> {
+        subject.eraseToAnyAsyncSequence()
+    }
 
     public var description: String {
         if case let .success(value) = subject.value {

@@ -88,6 +88,8 @@ public extension OcaBoundedPropertyValue where Value: BinaryFloatingPoint {
 public struct OcaBoundedProperty<Value: Codable & Comparable>: OcaPropertyChangeEventNotifiable,
     Codable
 {
+    private var subject: AsyncCurrentValueSubject<State> { _storage.subject }
+
     public typealias Property = OcaProperty<OcaBoundedPropertyValue<Value>>
     public typealias State = Property.State
 
@@ -95,7 +97,9 @@ public struct OcaBoundedProperty<Value: Codable & Comparable>: OcaPropertyChange
         [_storage.propertyID]
     }
 
-    public var subject: AsyncCurrentValueSubject<State> { _storage.subject }
+    public var async: AnyAsyncSequence<State> {
+        subject.eraseToAnyAsyncSequence()
+    }
 
     fileprivate var _storage: Property
 
