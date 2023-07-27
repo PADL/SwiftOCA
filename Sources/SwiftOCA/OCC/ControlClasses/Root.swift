@@ -81,6 +81,13 @@ public class OcaRoot: CustomStringConvertible, ObservableObject {
         self.objectNumber = objectNumber
     }
 
+    deinit {
+        for (_, keyPath) in allPropertyKeyPaths {
+            let value = self[keyPath: keyPath] as! (any OcaPropertySubjectRepresentable)
+            value.finish()
+        }
+    }
+
     func get(classIdentification: inout OcaClassIdentification) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("1.1"),

@@ -48,6 +48,10 @@ extension OcaPropertySubjectRepresentable {
     public var async: AnyAsyncSequence<State> {
         subject.eraseToAnyAsyncSequence()
     }
+
+    func finish() {
+        subject.send(.finished)
+    }
 }
 
 @propertyWrapper
