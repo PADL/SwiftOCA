@@ -34,19 +34,6 @@ protocol OcaDevicePropertyRepresentable {
     func set(object: OcaRoot, command: Ocp1Command) async throws
 }
 
-extension OcaDevicePropertyRepresentable {
-    public func isNil<Value: Codable>(_ value: Value) -> Bool {
-        if let value = value as? ExpressibleByNilLiteral,
-           let value = value as? Value?,
-           case .none = value
-        {
-            return true
-        } else {
-            return false
-        }
-    }
-}
-
 @propertyWrapper
 public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable {
     private var _storage: AsyncCurrentValueSubject<Value>
@@ -99,6 +86,17 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
 
     func set(object: OcaRoot, _ newValue: Value) {
         _storage.send(newValue)
+    }
+
+    private func isNil<Value: Codable>(_ value: Value) -> Bool {
+        if let value = value as? ExpressibleByNilLiteral,
+           let value = value as? Value?,
+           case .none = value
+        {
+            return true
+        } else {
+            return false
+        }
     }
 
     func get(object: OcaRoot) async throws -> Ocp1Response {
