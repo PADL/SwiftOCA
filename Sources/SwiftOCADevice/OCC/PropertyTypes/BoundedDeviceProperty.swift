@@ -26,9 +26,9 @@ public struct OcaBoundedDeviceProperty<
 >: OcaDevicePropertyRepresentable {
     fileprivate var storage: Property
 
-    public let propertyID: OcaPropertyID
-    public let getMethodID: OcaMethodID?
-    public let setMethodID: OcaMethodID?
+    public var propertyID: OcaPropertyID { storage.propertyID }
+    public var getMethodID: OcaMethodID? { storage.getMethodID }
+    public var setMethodID: OcaMethodID? { storage.setMethodID }
 
     public typealias Property = OcaDeviceProperty<OcaBoundedPropertyValue<Value>>
 
@@ -53,10 +53,6 @@ public struct OcaBoundedDeviceProperty<
             getMethodID: getMethodID,
             setMethodID: setMethodID
         )
-
-        self.propertyID = propertyID
-        self.getMethodID = getMethodID
-        self.setMethodID = setMethodID
     }
 
     func get(object: OcaRoot) async throws -> Ocp1Response {

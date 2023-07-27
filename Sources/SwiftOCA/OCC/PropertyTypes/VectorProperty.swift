@@ -24,7 +24,12 @@ import SwiftUI
 public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable, OcaParameterCountReflectable {
     public static var responseParameterCount: OcaUint8 { 2 }
 
-    var x, y: T
+    public var x, y: T
+
+    public init(x: T, y: T) {
+        self.x = x
+        self.y = y
+    }
 }
 
 @propertyWrapper

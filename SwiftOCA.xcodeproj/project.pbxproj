@@ -42,6 +42,7 @@
 		D351F2142A729D8B008C5513 /* Switch.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2132A729D8B008C5513 /* Switch.swift */; };
 		D351F2162A729DFC008C5513 /* PolarityState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2152A729DFC008C5513 /* PolarityState.swift */; };
 		D351F2182A729E29008C5513 /* Gain.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2172A729E29008C5513 /* Gain.swift */; };
+		D351F21A2A729F48008C5513 /* VectorDeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2192A729F48008C5513 /* VectorDeviceProperty.swift */; };
 		D36ECA212A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */; };
 		D36ECA2C2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */; };
 		D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */; };
@@ -205,6 +206,7 @@
 		D351F2132A729D8B008C5513 /* Switch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Switch.swift; sourceTree = "<group>"; };
 		D351F2152A729DFC008C5513 /* PolarityState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarityState.swift; sourceTree = "<group>"; };
 		D351F2172A729E29008C5513 /* Gain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gain.swift; sourceTree = "<group>"; };
+		D351F2192A729F48008C5513 /* VectorDeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VectorDeviceProperty.swift; sourceTree = "<group>"; };
 		D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1FlyingSocksConnection.swift; sourceTree = "<group>"; };
 		D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAddressToString.swift; sourceTree = "<group>"; };
@@ -424,6 +426,7 @@
 			children = (
 				D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */,
 				D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */,
+				D351F2192A729F48008C5513 /* VectorDeviceProperty.swift */,
 			);
 			path = PropertyTypes;
 			sourceTree = "<group>";
@@ -1087,6 +1090,7 @@
 				D33B52B62A7060E0001A1BA7 /* BasicActuators.swift in Sources */,
 				D33B52992A6FE140001A1BA7 /* Logging.swift in Sources */,
 				D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */,
+				D351F21A2A729F48008C5513 /* VectorDeviceProperty.swift in Sources */,
 				D351F20E2A729AF2008C5513 /* BasicSensors.swift in Sources */,
 				D351F2102A729C36008C5513 /* LevelSensor.swift in Sources */,
 				D33B52902A6FD332001A1BA7 /* Root.swift in Sources */,
