@@ -52,11 +52,10 @@ public actor AES70OCP1Device {
         address: UnsafePointer<sockaddr>,
         timeout: TimeInterval = 15
     ) {
-        var _address = sockaddr_storage()
-        address.withMemoryRebound(to: sockaddr_storage.self, capacity: 1) { cSockaddrStorage in
-            _address = cSockaddrStorage.pointee
-        }
-        self.address = _address
+        self.address = address
+            .withMemoryRebound(to: sockaddr_storage.self, capacity: 1) { storage in
+                storage.pointee
+            }
         self.timeout = timeout
         logger = Self.defaultLogger()
         pool = Self.defaultPool(logger: logger)
