@@ -94,7 +94,7 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
         subject.send(newValue)
     }
 
-    private func isNil<Value: Codable>(_ value: Value) -> Bool {
+    private func isNil(_ value: Value) -> Bool {
         if let value = value as? ExpressibleByNilLiteral,
            let value = value as? Value?,
            case .none = value

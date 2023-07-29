@@ -21,6 +21,8 @@ import Foundation
 import Combine
 #elseif canImport(OpenCombine)
 import OpenCombine
+#else
+protocol ObservableObject {} // placeholder
 #endif
 
 public class OcaRoot: CustomStringConvertible, ObservableObject {

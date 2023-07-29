@@ -141,9 +141,11 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
 
     func _send(_enclosingInstance object: OcaRoot, _ state: State) {
+#if canImport(Combine) || canImport(OpenCombine)
         DispatchQueue.main.async {
             object.objectWillChange.send()
         }
+#endif
         subject.send(state)
     }
 
