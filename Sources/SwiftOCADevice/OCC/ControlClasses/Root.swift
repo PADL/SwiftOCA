@@ -127,7 +127,7 @@ open class OcaRoot: CustomStringConvertible {
         false
     }
 
-    func ensureReadable(by controller: AES70OCP1Controller) throws {
+    public func ensureReadable(by controller: AES70OCP1Controller) throws {
         switch lockState {
         case .unlocked:
             break
@@ -140,7 +140,7 @@ open class OcaRoot: CustomStringConvertible {
         }
     }
 
-    func ensureWritable(by controller: AES70OCP1Controller) throws {
+    public func ensureWritable(by controller: AES70OCP1Controller) throws {
         switch lockState {
         case .unlocked:
             break
