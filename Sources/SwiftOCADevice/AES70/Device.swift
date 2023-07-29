@@ -68,7 +68,7 @@ public actor AES70OCP1Device {
             addToRootBlock: false
         )
         subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
-        deviceManager = try await OcaDeviceManager(deviceDelegate: self, addToRootBlock: false)
+        deviceManager = try await OcaDeviceManager(deviceDelegate: self)
     }
 
     var listeningAddress: Socket.Address? {

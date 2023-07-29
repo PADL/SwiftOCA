@@ -118,7 +118,8 @@ open class OcaDeviceManager: OcaManager {
         try await self.init(
             objectNumber: OcaDeviceManagerONo,
             role: "Device Manager",
-            deviceDelegate: deviceDelegate
+            deviceDelegate: deviceDelegate,
+            addToRootBlock: false
         )
     }
 }
