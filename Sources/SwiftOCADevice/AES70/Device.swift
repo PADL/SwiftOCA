@@ -58,7 +58,7 @@ public actor AES70OCP1Device {
 
         _ = withUnsafeMutableBytes(of: &self.address) { dst in
             address.withUnsafeBytes { src in
-                memcpy(dst.baseAddress, src.baseAddress, src.count)
+                memcpy(dst.baseAddress!, src.baseAddress!, src.count)
             }
         }
 
