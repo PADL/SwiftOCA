@@ -81,7 +81,7 @@ struct OcaBlockNavigationStackView: OcaView {
         }
         .task {
             do {
-                members = try await object.resolveMembers()
+                members = Array(try await object.resolveMembers())
                 membersMap = members?.map
             } catch {
                 debugPrint("OcaNavigationStackView: error \(error)")

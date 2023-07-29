@@ -206,11 +206,11 @@ public class OcaBlock: OcaWorker {
 
 public extension OcaBlock {
     @MainActor
-    func resolveMembers() async throws -> OcaList<OcaRoot> {
+    func resolveMembers() async throws -> Set<OcaRoot> {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
         return try await _members.onCompletion(self) { members in
-            members.compactMap { connectionDelegate.resolve(object: $0) }
+            Set(members.compactMap { connectionDelegate.resolve(object: $0) })
         }
     }
 

@@ -149,7 +149,7 @@ public class OcaDeviceManager: OcaManager {
     )
     public var deviceRevisionID: OcaProperty<OcaString>.State
 
-    convenience init() async throws {
+    convenience init() {
         self.init(objectNumber: OcaDeviceManagerONo)
     }
 }

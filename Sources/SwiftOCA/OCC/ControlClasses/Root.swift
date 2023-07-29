@@ -79,7 +79,7 @@ public class OcaRoot: CustomStringConvertible, ObservableObject {
         await _role.subscribe(self)
     }
 
-    required init(objectNumber: OcaONo = OcaInvalidONo) {
+    required init(objectNumber: OcaONo) {
         self.objectNumber = objectNumber
     }
 
@@ -239,5 +239,19 @@ public extension OcaRoot {
         var subject: AsyncCurrentValueSubject<State> {
             AsyncCurrentValueSubject(currentValue)
         }
+    }
+}
+
+extension OcaRoot: Equatable {
+    public static func == (lhs: OcaRoot, rhs: OcaRoot) -> Bool {
+        lhs.connectionDelegate == rhs.connectionDelegate &&
+            lhs.objectNumber == rhs.objectNumber
+    }
+}
+
+extension OcaRoot: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        connectionDelegate?.hash(into: &hasher)
+        hasher.combine(objectNumber)
     }
 }

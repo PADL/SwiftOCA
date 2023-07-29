@@ -257,3 +257,15 @@ public extension AES70OCP1Connection {
         try await disconnectDevice(clearObjectCache: true)
     }
 }
+
+extension AES70OCP1Connection: Equatable {
+    public nonisolated static func == (lhs: AES70OCP1Connection, rhs: AES70OCP1Connection) -> Bool {
+        lhs.connectionPrefix == rhs.connectionPrefix
+    }
+}
+
+extension AES70OCP1Connection: Hashable {
+    public nonisolated func hash(into hasher: inout Hasher) {
+        hasher.combine(connectionPrefix)
+    }
+}

@@ -71,11 +71,12 @@ struct OcaBlockNavigationSplitView: OcaView {
         }
         .task {
             do {
-                members = try await object.resolveMembers()
+                members = Array(try await object.resolveMembers())
 
-                if object.objectNumber == OcaRootBlockONo {
+                if object.objectNumber == OcaRootBlockONo,
+                   !(members?.contains(connection.deviceManager) ?? false)
+                {
                     members?.append(connection.deviceManager)
-                    // members?.append(connection.networkManager)
                 }
                 membersMap = members?.map
             } catch {
