@@ -200,9 +200,9 @@ public class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
             await object.refresh()
         }
 
-#if canImport(Combine) || canImport(OpenCombine)
+        #if canImport(Combine) || canImport(OpenCombine)
         objectWillChange.send()
-#endif
+        #endif
 
         debugPrint("Connected to \(self)")
     }
@@ -220,9 +220,9 @@ public class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
             objects = [:]
         }
 
-#if canImport(Combine) || canImport(OpenCombine)
+        #if canImport(Combine) || canImport(OpenCombine)
         objectWillChange.send()
-#endif
+        #endif
     }
 
     public var isConnected: Bool {
