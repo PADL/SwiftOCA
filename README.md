@@ -3,10 +3,10 @@ SwiftOCA
 
 SwiftOCA is pure Swift implementation of the AES70/OCA control protocol, principally used for remote control of professional audio devices. The package consists of two libraries:
 
-* *SwiftOCA*: an OCA controller (client)
-* *SwiftOCADevice*: an OCA device (server)
+* [SwiftOCA](Sources/SwiftOCA): an OCA controller (client)
+* [SwiftOCADevice](Sources/SwiftOCADevice): an OCA device (server)
 
-All APIs use `async/await` and support both macOS and Linux. A sample SwiftUI view library is also included, and a Flutter bridge is under development [here](https://github.com/PADL/FlutterSwiftOCA).
+All APIs use `async/await` and support both macOS and Linux. A sample SwiftUI view library is also included, and a Flutter bridge is under development [here](https://github.com/PADL/FlutterSwiftOCA). Examples can be found in [Examples](Examples).
 
 ![OCABrowser](Documentation/OCABrowser.png)
 
