@@ -106,13 +106,13 @@ public final class AES70OCP1Controller {
             context: subscription.subscriberContext,
             eventData: eventData
         )
-        let notification = Ocp1Notification(
+        let notification = Ocp1Notification1(
             targetONo: subscription.event.emitterONo,
             methodID: subscription.subscriber.methodID,
             parameters: ntfParams
         )
 
-        try await sendMessage(notification, type: .ocaNtf)
+        try await sendMessage(notification, type: .ocaNtf1)
     }
 
     var keepAliveInterval: UInt64 = 0 {

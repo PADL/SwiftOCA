@@ -41,6 +41,7 @@ public enum Ocp1Error: Error, Equatable {
     case unknownServiceType
     case noInitialValue
     case unhandledEvent
+    case unknownPduType
     case propertyIsImmutable
     case proxyResolutionFailed
 }

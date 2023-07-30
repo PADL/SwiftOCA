@@ -38,7 +38,7 @@ public struct Ocp1NtfParams: Codable, Sendable {
     }
 }
 
-public struct Ocp1Notification: Ocp1Message, Codable, Sendable {
+public struct Ocp1Notification1: Ocp1Message, Codable, Sendable {
     let notificationSize: OcaUint32
     let targetONo: OcaONo
     let methodID: OcaMethodID

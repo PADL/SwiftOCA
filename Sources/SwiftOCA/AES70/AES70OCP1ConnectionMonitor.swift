@@ -63,7 +63,7 @@ extension AES70OCP1Connection.Monitor {
         switch message {
         case is Ocp1Command:
             debugPrint("processMessage: device sent unexpected command \(message); ignoring")
-        case let notification as Ocp1Notification:
+        case let notification as Ocp1Notification1:
             let event = notification.parameters.eventData.event
             if let callback = await connection.subscriptions[event],
                notification.parameters.parameterCount == 2
@@ -79,7 +79,7 @@ extension AES70OCP1Connection.Monitor {
         case is Ocp1KeepAlive2:
             break
         default:
-            fatalError("processMessage: unknown PDU type")
+            throw Ocp1Error.unknownPduType
         }
     }
 

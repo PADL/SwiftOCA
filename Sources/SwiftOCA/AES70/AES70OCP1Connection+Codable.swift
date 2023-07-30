@@ -129,8 +129,8 @@ public extension AES70OCP1Connection {
             message = try decoder.decode(Ocp1Command.self, from: messageData)
         case .ocaCmdRrq:
             message = try decoder.decode(Ocp1Command.self, from: messageData)
-        case .ocaNtf:
-            message = try decoder.decode(Ocp1Notification.self, from: messageData)
+        case .ocaNtf1:
+            message = try decoder.decode(Ocp1Notification1.self, from: messageData)
         case .ocaRsp:
             message = try decoder.decode(Ocp1Response.self, from: messageData)
         case .ocaKeepAlive:
@@ -141,6 +141,8 @@ public extension AES70OCP1Connection {
             } else {
                 throw Ocp1Error.invalidKeepAlivePdu
             }
+        case .ocaNtf2:
+            message = try decoder.decode(Ocp1Notification2.self, from: messageData)
         }
 
         return message

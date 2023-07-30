@@ -10,6 +10,7 @@
 		D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */; };
 		D30644012A76CDDE0063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */; };
 		D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644022A76CE310063DA65 /* IdentificationSensor.swift */; };
+		D30644062A770B640063DA65 /* Notification2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644052A770B640063DA65 /* Notification2.swift */; };
 		D306556D2A524D720083F093 /* PhysicalPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556C2A524D720083F093 /* PhysicalPosition.swift */; };
 		D306556F2A5254D70083F093 /* TimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556E2A5254D70083F093 /* TimeSource.swift */; };
 		D31528802A526E24004B9BAD /* WorkerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */; };
@@ -74,7 +75,7 @@
 		D3E6E1BE2A3ACA8200BF7095 /* Command.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A02A3ACA6C00BF7095 /* Command.swift */; };
 		D3E6E1BF2A3ACA8200BF7095 /* Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A22A3ACA6C00BF7095 /* Header.swift */; };
 		D3E6E1C02A3ACA8200BF7095 /* KeepAlive.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A32A3ACA6C00BF7095 /* KeepAlive.swift */; };
-		D3E6E1C12A3ACA8200BF7095 /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A42A3ACA6C00BF7095 /* Notification.swift */; };
+		D3E6E1C12A3ACA8200BF7095 /* Notification1.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A42A3ACA6C00BF7095 /* Notification1.swift */; };
 		D3E6E1C22A3ACA8200BF7095 /* MessageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A52A3ACA6C00BF7095 /* MessageType.swift */; };
 		D3E6E1C32A3ACA8C00BF7095 /* Matrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1942A3ACA6C00BF7095 /* Matrix.swift */; };
 		D3E6E1C42A3ACA8C00BF7095 /* Worker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1952A3ACA6C00BF7095 /* Worker.swift */; };
@@ -180,6 +181,7 @@
 		D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDeviceView.swift; sourceTree = "<group>"; };
 		D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644022A76CE310063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
+		D30644052A770B640063DA65 /* Notification2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification2.swift; sourceTree = "<group>"; };
 		D306556C2A524D720083F093 /* PhysicalPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhysicalPosition.swift; sourceTree = "<group>"; };
 		D306556E2A5254D70083F093 /* TimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSource.swift; sourceTree = "<group>"; };
 		D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkerDataTypes.swift; sourceTree = "<group>"; };
@@ -269,7 +271,7 @@
 		D3E6E1A12A3ACA6C00BF7095 /* Response.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Response.swift; sourceTree = "<group>"; };
 		D3E6E1A22A3ACA6C00BF7095 /* Header.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Header.swift; sourceTree = "<group>"; };
 		D3E6E1A32A3ACA6C00BF7095 /* KeepAlive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeepAlive.swift; sourceTree = "<group>"; };
-		D3E6E1A42A3ACA6C00BF7095 /* Notification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
+		D3E6E1A42A3ACA6C00BF7095 /* Notification1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification1.swift; sourceTree = "<group>"; };
 		D3E6E1A52A3ACA6C00BF7095 /* MessageType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageType.swift; sourceTree = "<group>"; };
 		D3E6E1A62A3ACA6C00BF7095 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1ConnectionMonitor.swift; sourceTree = "<group>"; };
@@ -743,7 +745,8 @@
 				D3E6E1A12A3ACA6C00BF7095 /* Response.swift */,
 				D3E6E1A22A3ACA6C00BF7095 /* Header.swift */,
 				D3E6E1A32A3ACA6C00BF7095 /* KeepAlive.swift */,
-				D3E6E1A42A3ACA6C00BF7095 /* Notification.swift */,
+				D3E6E1A42A3ACA6C00BF7095 /* Notification1.swift */,
+				D30644052A770B640063DA65 /* Notification2.swift */,
 				D3E6E1A52A3ACA6C00BF7095 /* MessageType.swift */,
 			);
 			path = Messages;
@@ -1170,6 +1173,7 @@
 				D3E6E1D22A3ACA9E00BF7095 /* SubscriptionManager.swift in Sources */,
 				D3E6E1BC2A3ACA7E00BF7095 /* Errors.swift in Sources */,
 				D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */,
+				D30644062A770B640063DA65 /* Notification2.swift in Sources */,
 				D3E6E1C72A3ACA9000BF7095 /* Actuator.swift in Sources */,
 				D3E6E1DF2A3ACAA900BF7095 /* ModelDataTypes.swift in Sources */,
 				D3E6E1E12A3ACAA900BF7095 /* ManagerDataTypes.swift in Sources */,
@@ -1184,7 +1188,7 @@
 				D3E6E1BD2A3ACA8200BF7095 /* Response.swift in Sources */,
 				D3E6E1E52A3ACAA900BF7095 /* LengthTaggedData.swift in Sources */,
 				D3E6E1CD2A3ACA9600BF7095 /* LevelSensor.swift in Sources */,
-				D3E6E1C12A3ACA8200BF7095 /* Notification.swift in Sources */,
+				D3E6E1C12A3ACA8200BF7095 /* Notification1.swift in Sources */,
 				D3E6E1B92A3ACA7B00BF7095 /* BinaryCodingConfiguration+OCP1.swift in Sources */,
 				D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */,
 				D3E6E1DE2A3ACAA900BF7095 /* WellKnownObjectNumbers.swift in Sources */,
