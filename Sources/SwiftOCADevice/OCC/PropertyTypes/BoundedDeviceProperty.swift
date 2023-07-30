@@ -37,6 +37,10 @@ public struct OcaBoundedDeviceProperty<
         nonmutating set { fatalError() }
     }
 
+    public var projectedValue: AnyAsyncSequence<Value> {
+        async.map(\.value).eraseToAnyAsyncSequence()
+    }
+
     var subject: AsyncCurrentValueSubject<OcaBoundedPropertyValue<Value>> {
         storage.subject
     }

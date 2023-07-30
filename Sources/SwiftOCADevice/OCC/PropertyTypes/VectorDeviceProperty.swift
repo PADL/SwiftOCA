@@ -39,6 +39,10 @@ public struct OcaVectorDeviceProperty<
         nonmutating set { fatalError() }
     }
 
+    public var projectedValue: AnyAsyncSequence<OcaVector2D<Value>> {
+        async
+    }
+
     var subject: AsyncCurrentValueSubject<OcaVector2D<Value>> {
         storage.subject
     }

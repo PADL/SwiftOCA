@@ -39,12 +39,8 @@ extension OcaDevicePropertyRepresentable {
         subject.send(.finished)
     }
 
-    public var async: AnyAsyncSequence<Value> {
+    var async: AnyAsyncSequence<Value> {
         subject.eraseToAnyAsyncSequence()
-    }
-
-    public var projectedValue: AnyAsyncSequence<Value> {
-        async
     }
 }
 
@@ -65,6 +61,10 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
     public var wrappedValue: Value {
         get { fatalError() }
         nonmutating set { fatalError() }
+    }
+
+    public var projectedValue: AnyAsyncSequence<Value> {
+        async
     }
 
     public init(
