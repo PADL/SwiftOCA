@@ -45,6 +45,15 @@ public struct OcaList2D<Element> {
         }
     }
 
+    public mutating func insert(_ newElement: Element, x: Int, y: Int) {
+        items.insert(newElement, at: (x * nY) + y)
+    }
+
+    @discardableResult
+    public mutating func remove(x: Int, y: Int) -> Element {
+        items.remove(at: (x * nY) + y)
+    }
+
     public func map<T>(
         defaultValue: T,
         _ transform: (Element) throws -> T

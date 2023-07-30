@@ -103,9 +103,10 @@ open class OcaRoot: CustomStringConvertible {
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("1.1"):
-            return try encodeResponse(Self.classID)
+            // use instance method so proxy object can ovveride
+            return try encodeResponse(objectIdentification.classIdentification.classID)
         case OcaMethodID("1.2"):
-            return try encodeResponse(Self.classVersion)
+            return try encodeResponse(objectIdentification.classIdentification.classVersion)
         case OcaMethodID("1.3"):
             return try encodeResponse(objectNumber)
         case OcaMethodID("1.4"):

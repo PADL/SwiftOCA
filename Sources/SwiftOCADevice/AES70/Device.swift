@@ -86,7 +86,7 @@ public actor AES70OCP1Device {
         objects[object.objectNumber] = object
         if addToRootBlock {
             precondition(object.objectNumber != OcaRootBlockONo)
-            rootBlock.addMember(object)
+            rootBlock.add(member: object)
         }
     }
 

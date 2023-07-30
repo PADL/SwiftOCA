@@ -40,8 +40,20 @@ open class OcaMatrix: OcaWorker {
         proxy = try await Proxy(self)
     }
 
+    var proxyClassIdentification: OcaClassIdentification? {
+        members.items.first??.objectIdentification.classIdentification
+    }
+
     public class Proxy: OcaRoot {
         weak var matrix: OcaMatrix?
+
+        override public var objectIdentification: OcaObjectIdentification {
+            let classIdentification = matrix?.proxyClassIdentification ?? Self.classIdentification
+            return OcaObjectIdentification(
+                oNo: objectNumber,
+                classIdentification: classIdentification
+            )
+        }
 
         public init(
             _ matrix: OcaMatrix
@@ -145,6 +157,34 @@ open class OcaMatrix: OcaWorker {
     public var currentXY = OcaVector2D<OcaMatrixCoordinate>(x: 0, y: 0)
 
     public var members = OcaList2D<OcaRoot?>(nX: 0, nY: 0, defaultValue: nil)
+
+    open func add(member object: OcaRoot, at coordinate: OcaVector2D<OcaMatrixCoordinate>) throws {
+        precondition(object != self)
+        guard coordinate.isValid(in: self) else {
+            throw Ocp1Error.status(.parameterOutOfRange)
+        }
+        guard members.items.count == 0 ||
+            proxyClassIdentification == object.objectIdentification.classIdentification
+        else {
+            throw Ocp1Error.status(.parameterError)
+        }
+        if let object = object as? OcaWorker {
+            object.owner = objectNumber
+        }
+        members.insert(object, x: Int(coordinate.x), y: Int(coordinate.y))
+    }
+
+    open func remove(coordinate: OcaVector2D<OcaMatrixCoordinate>) throws {
+        guard coordinate.isValid(in: self) else {
+            throw Ocp1Error.status(.parameterOutOfRange)
+        }
+        if let object = members[Int(coordinate.x), Int(coordinate.y)] as? OcaWorker,
+           object.owner == objectNumber
+        {
+            object.owner = OcaInvalidONo
+        }
+        members.remove(x: Int(coordinate.x), y: Int(coordinate.y))
+    }
 
     func withCurrentObject(_ body: (_ object: OcaRoot) async throws -> ()) async rethrows {
         if currentXY.x == 0xFFFF && currentXY.y == 0xFFFF {
@@ -269,5 +309,12 @@ open class OcaMatrix: OcaWorker {
 
     override public var isContainer: Bool {
         true
+    }
+}
+
+extension OcaVector2D where T == OcaMatrixCoordinate {
+    func isValid(in matrix: OcaMatrix) -> Bool {
+        x != 0xFFFF && x < matrix.members.nX &&
+            y != 0xFFFF && y < matrix.members.nY
     }
 }

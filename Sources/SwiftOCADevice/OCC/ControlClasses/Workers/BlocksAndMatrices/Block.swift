@@ -28,7 +28,7 @@ open class OcaBlock: OcaWorker {
 
     public private(set) var members = Set<OcaRoot>()
 
-    open func addMember(_ object: OcaRoot) {
+    open func add(member object: OcaRoot) {
         precondition(object != self)
         if let object = object as? OcaWorker {
             object.owner = objectNumber
@@ -36,11 +36,11 @@ open class OcaBlock: OcaWorker {
         members.insert(object)
     }
 
-    open func removeMember(_ object: OcaRoot) {
+    open func remove(member object: OcaRoot) {
         guard members.contains(object) else {
             return
         }
-        if let object = object as? OcaWorker {
+        if let object = object as? OcaWorker, object.owner == objectNumber {
             object.owner = OcaInvalidONo
         }
         members.remove(object)
