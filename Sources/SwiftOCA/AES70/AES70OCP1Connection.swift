@@ -22,10 +22,10 @@ import Combine
 import OpenCombine
 #endif
 
-typealias AES70OCP1UDPConnection = AES70OCP1CFSocketUDPConnection
-typealias AES70OCP1TCPConnection = AES70OCP1FlyingSocksTCPConnection
+public typealias AES70OCP1UDPConnection = AES70OCP1CFSocketUDPConnection
+public typealias AES70OCP1TCPConnection = AES70OCP1FlyingSocksTCPConnection
 
-typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData)
+public typealias AES70SubscriptionCallback = @MainActor (Ocp1EventData)
     -> ()
 
 // FIXME: these don't appear to be available on non-Darwin platforms
