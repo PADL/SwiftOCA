@@ -119,15 +119,15 @@ open class OcaBlock: OcaWorker {
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.5"):
-            try ensureReadable(by: controller)
+            try await ensureReadable(by: controller)
             let members = members.map(\.objectIdentification)
             return try encodeResponse(members)
         case OcaMethodID("3.6"):
-            try ensureReadable(by: controller)
+            try await ensureReadable(by: controller)
             let members: [OcaBlockMember] = try await getRecursive(from: controller)
             return try encodeResponse(members)
         case OcaMethodID("3.10"):
-            try ensureReadable(by: controller)
+            try await ensureReadable(by: controller)
             let members: [OcaUint16: OcaSignalPath] = try await getRecursive(from: controller)
             return try encodeResponse(members)
         default:

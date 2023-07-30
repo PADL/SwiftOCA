@@ -86,10 +86,10 @@ open class OcaRoot: CustomStringConvertible {
             let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
 
             if command.methodID == property.getMethodID {
-                try ensureReadable(by: controller)
+                try await ensureReadable(by: controller)
                 return try await property.get(object: self)
             } else if command.methodID == property.setMethodID {
-                try ensureWritable(by: controller)
+                try await ensureWritable(by: controller)
                 try await property.set(object: self, command: command)
                 return Ocp1Response()
             }
@@ -128,7 +128,11 @@ open class OcaRoot: CustomStringConvertible {
         false
     }
 
-    public func ensureReadable(by controller: AES70OCP1Controller) throws {
+    public func ensureReadable(by controller: AES70OCP1Controller) async throws {
+        if let deviceManager = await deviceDelegate?.deviceManager, deviceManager != self {
+            try await deviceManager.ensureReadable(by: controller)
+        }
+
         switch lockState {
         case .unlocked:
             break
@@ -141,7 +145,11 @@ open class OcaRoot: CustomStringConvertible {
         }
     }
 
-    public func ensureWritable(by controller: AES70OCP1Controller) throws {
+    public func ensureWritable(by controller: AES70OCP1Controller) async throws {
+        if let deviceManager = await deviceDelegate?.deviceManager, deviceManager != self {
+            try await deviceManager.ensureWritable(by: controller)
+        }
+
         switch lockState {
         case .unlocked:
             break
@@ -163,9 +171,13 @@ open class OcaRoot: CustomStringConvertible {
         case .unlocked:
             lockState = .lockedNoWrite(controller)
         case .lockedNoWrite:
-            fallthrough
-        case .lockedNoReadWrite:
             throw Ocp1Error.status(.locked)
+        case let .lockedNoReadWrite(lockholder):
+            guard controller == lockholder else {
+                throw Ocp1Error.status(.locked)
+            }
+            // downgrade lock
+            lockState = .lockedNoWrite(controller)
         }
     }
 

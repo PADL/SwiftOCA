@@ -198,7 +198,7 @@ open class OcaMatrix: OcaWorker {
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.3"):
-            try ensureReadable(by: controller)
+            try await ensureReadable(by: controller)
             let size = OcaVector2D<OcaMatrixCoordinate>(
                 x: OcaMatrixCoordinate(members.nX),
                 y: OcaMatrixCoordinate(members.nY)
@@ -213,17 +213,17 @@ open class OcaMatrix: OcaWorker {
             )
             return try encodeResponse(matrixSize)
         case OcaMethodID("3.5"):
-            try ensureReadable(by: controller)
+            try await ensureReadable(by: controller)
             let members = members.map(defaultValue: OcaInvalidONo, \.?.objectNumber)
             return try encodeResponse(members)
         case OcaMethodID("3.7"):
-            try ensureReadable(by: controller)
+            try await ensureReadable(by: controller)
             let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
             let objectNumber = members[Int(coordinates.x), Int(coordinates.y)]?
                 .objectNumber ?? OcaInvalidONo
             return try encodeResponse(objectNumber)
         case OcaMethodID("3.8"):
-            try ensureWritable(by: controller)
+            try await ensureWritable(by: controller)
             struct SetMemberParameters: Codable {
                 var x: OcaMatrixCoordinate
                 var y: OcaMatrixCoordinate
@@ -244,10 +244,10 @@ open class OcaMatrix: OcaWorker {
             }
             members[Int(parameters.x), Int(parameters.y)] = object
         case OcaMethodID("3.9"):
-            try ensureReadable(by: controller)
+            try await ensureReadable(by: controller)
             return try encodeResponse(proxy.objectNumber)
         case OcaMethodID("3.2"):
-            try ensureWritable(by: controller)
+            try await ensureWritable(by: controller)
             let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
             guard coordinates.x < members.nX || coordinates.x == 0xFFFF,
                   coordinates.y < members.nY || coordinates.y == 0xFFFF
