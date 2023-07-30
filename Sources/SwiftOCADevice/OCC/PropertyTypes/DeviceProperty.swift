@@ -42,6 +42,10 @@ extension OcaDevicePropertyRepresentable {
     public var async: AnyAsyncSequence<Value> {
         subject.eraseToAnyAsyncSequence()
     }
+
+    public var projectedValue: AnyAsyncSequence<Value> {
+        async
+    }
 }
 
 @propertyWrapper
