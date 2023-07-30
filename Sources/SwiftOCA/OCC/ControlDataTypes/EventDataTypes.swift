@@ -78,8 +78,6 @@ public struct OcaPropertyChangedEventData<T: Codable>: Codable {
 
 public let OcaPropertyChangedEventID = OcaEventID(defLevel: 1, eventIndex: 1)
 
-public let OcaIdentificationSensorIdentifyEventID = OcaEventID(defLevel: 4, eventIndex: 1)
-
 public struct OcaSubscription: Codable, Equatable, Hashable {
     public let event: OcaEvent
     public let subscriber: OcaMethod
