@@ -25,11 +25,6 @@ public class OcaIdentificationSensor: OcaSensor {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let event = OcaEvent(emitterONo: objectNumber, eventID: Self.identifyEventID)
 
-        do {
-            try await connectionDelegate.addSubscription(event: event, callback: callback)
-        } catch Ocp1Error.alreadySubscribedToEvent {
-        } catch Ocp1Error.status(.invalidRequest) {
-            // FIXME: in our device implementation not all properties can be subcribed to
-        }
+        try await connectionDelegate.addSubscription(event: event, callback: callback)
     }
 }
