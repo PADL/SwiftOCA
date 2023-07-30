@@ -17,6 +17,11 @@
 import AsyncExtensions
 import BinaryCoder
 import Foundation
+#if canImport(Observation)
+import Observation
+#else
+protocol Observable {} // placeholder
+#endif
 #if canImport(Combine)
 import Combine
 #elseif canImport(OpenCombine)
@@ -25,10 +30,13 @@ import OpenCombine
 protocol ObservableObject {} // placeholder
 #endif
 
-public class OcaRoot: CustomStringConvertible, ObservableObject {
+public class OcaRoot: CustomStringConvertible, ObservableObject, Observable {
     typealias Root = OcaRoot
 
     weak var connectionDelegate: AES70OCP1Connection?
+#if canImport(Observation)
+    let observationRegistrar = ObservationRegistrar()
+#endif          
 
     // 1.1
     open class var classID: OcaClassID { OcaClassID("1") }

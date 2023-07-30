@@ -18,6 +18,9 @@ import AsyncAlgorithms
 import AsyncExtensions
 import BinaryCoder
 import Foundation
+#if canImport(Observation)
+import Observation
+#endif
 #if canImport(SwiftUI)
 import SwiftUI
 #endif
@@ -134,6 +137,10 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
     #endif
 
+    #if canImport(Observable)
+    private var wrappedKeyPath: ReferenceWritableKeyPath<OcaRoot, Self>?
+    #endif
+
     public var currentValue: State {
         subject.value
     }
@@ -187,16 +194,30 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
     ) -> State {
         get {
+            #if canImport(Observation)
+            object.observationRegistrar.access(object, keyPath: wrappedKeyPath)
+            object[keyPath: storageKeyPath].wrappedKeyPath = wrappedKeyPath // to pass to event handler
+            #endif
             #if canImport(SwiftUI)
-            object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
+            object[keyPath: storageKeyPath].object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
             #endif
             return object[keyPath: storageKeyPath]._get(_enclosingInstance: object)
         }
         set {
+            #if canImport(Observation)
+            object.observationRegistrar.withMutation(of: object, keyPath: wrappedKeyPath) {
+                #if canImport(SwiftUI)
+                object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
+                #endif
+                object[keyPath: storageKeyPath]._set(_enclosingInstance: object, newValue)
+            }
+            object[keyPath: storageKeyPath].wrappedKeyPath = wrappedKeyPath // to pass to event handler
+            #else
             #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
             #endif
             object[keyPath: storageKeyPath]._set(_enclosingInstance: object, newValue)
+            #endif
         }
     }
 
