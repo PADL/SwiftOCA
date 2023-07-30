@@ -122,13 +122,13 @@ public struct OcaVectorProperty<
         }
     }
 
-    func onEvent(_ object: OcaRoot, _ eventData: Ocp1EventData) throws {
-        precondition(eventData.event.eventID == OcaPropertyChangedEventID)
+    func onEvent(_ object: OcaRoot, event: OcaEvent, eventData data: Data) throws {
+        precondition(event.eventID == OcaPropertyChangedEventID)
 
         let decoder = BinaryDecoder(config: .ocp1Configuration)
         let eventData = try decoder.decode(
             OcaPropertyChangedEventData<Value>.self,
-            from: eventData.eventParameters
+            from: data
         )
         precondition(propertyIDs.contains(eventData.propertyID))
 

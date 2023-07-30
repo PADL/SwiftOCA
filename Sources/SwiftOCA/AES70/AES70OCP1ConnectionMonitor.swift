@@ -69,7 +69,10 @@ extension AES70OCP1Connection.Monitor {
                notification.parameters.parameterCount == 2
             {
                 Task {
-                    await callback(notification.parameters.eventData)
+                    await callback(
+                        notification.parameters.eventData.event,
+                        notification.parameters.eventData.eventParameters
+                    )
                 }
             }
         case let response as Ocp1Response:
@@ -78,6 +81,13 @@ extension AES70OCP1Connection.Monitor {
             fallthrough
         case is Ocp1KeepAlive2:
             break
+        case let notification as Ocp1Notification2:
+            try notification.throwIfException()
+            if let callback = await connection.subscriptions[notification.event] {
+                Task {
+                    await callback(notification.event, notification.data)
+                }
+            }
         default:
             throw Ocp1Error.unknownPduType
         }

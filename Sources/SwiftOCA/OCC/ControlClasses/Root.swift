@@ -161,18 +161,18 @@ public extension OcaRoot {
     }
 
     @MainActor
-    internal func propertyDidChange(eventData: Ocp1EventData) {
+    internal func propertyDidChange(event: OcaEvent, eventData data: Data) {
         let decoder = BinaryDecoder(config: .ocp1Configuration)
         guard let propertyID = try? decoder.decode(
             OcaPropertyID.self,
-            from: eventData.eventParameters
+            from: data
         ) else { return }
 
         allKeyPaths.forEach { _, keyPath in
             if let value = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable),
                value.propertyIDs.contains(propertyID)
             {
-                try? value.onEvent(self, eventData)
+                try? value.onEvent(self, event: event, eventData: data)
                 return
             }
         }

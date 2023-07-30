@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryCoder
 import Foundation
 
 public enum Ocp1Notification2Type: OcaUint8, Codable, Sendable {
@@ -62,5 +63,15 @@ public struct Ocp1Notification2: Ocp1Message, Codable, Sendable {
         self.event = event
         self.notificationType = notificationType
         self.data = data
+    }
+
+    func throwIfException() throws {
+        guard notificationType == .exception else { return }
+        let decoder = BinaryDecoder(config: .ocp1Configuration)
+        let exception = try decoder.decode(
+            Ocp1Notification2ExceptionData.self,
+            from: data
+        )
+        throw Ocp1Error.exception(exception)
     }
 }
