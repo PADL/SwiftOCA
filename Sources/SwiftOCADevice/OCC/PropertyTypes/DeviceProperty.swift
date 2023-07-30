@@ -39,7 +39,7 @@ extension OcaDevicePropertyRepresentable {
         subject.send(.finished)
     }
 
-    var async: AnyAsyncSequence<Value> {
+    public var async: AnyAsyncSequence<Value> {
         subject.eraseToAnyAsyncSequence()
     }
 }
