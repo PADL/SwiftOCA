@@ -30,9 +30,10 @@ open class OcaRoot: CustomStringConvertible {
     weak var deviceDelegate: AES70OCP1Device?
 
     enum LockState {
+        /// AES70-1-2023 uses this confusing `NoReadWrite` and `NoWrite` nomenclature
         case unlocked
-        case lockedReadonly(AES70OCP1Controller)
-        case lockedTotal(AES70OCP1Controller)
+        case lockedNoWrite(AES70OCP1Controller)
+        case lockedNoReadWrite(AES70OCP1Controller)
     }
 
     var lockState: LockState = .unlocked
@@ -112,9 +113,9 @@ open class OcaRoot: CustomStringConvertible {
         case OcaMethodID("1.5"):
             return try encodeResponse(role)
         case OcaMethodID("1.6"):
-            try lockReadonly(controller: controller)
+            try lockNoWrite(controller: controller)
         case OcaMethodID("1.7"):
-            try lockTotal(controller: controller)
+            try lockNoReadWrite(controller: controller)
         case OcaMethodID("1.8"):
             try unlock(controller: controller)
         default:
@@ -131,9 +132,9 @@ open class OcaRoot: CustomStringConvertible {
         switch lockState {
         case .unlocked:
             break
-        case .lockedReadonly:
+        case .lockedNoWrite:
             break
-        case let .lockedTotal(lockholder):
+        case let .lockedNoReadWrite(lockholder):
             guard controller == lockholder else {
                 throw Ocp1Error.status(.locked)
             }
@@ -144,44 +145,44 @@ open class OcaRoot: CustomStringConvertible {
         switch lockState {
         case .unlocked:
             break
-        case let .lockedReadonly(lockholder):
+        case let .lockedNoWrite(lockholder):
             fallthrough
-        case let .lockedTotal(lockholder):
+        case let .lockedNoReadWrite(lockholder):
             guard controller == lockholder else {
                 throw Ocp1Error.status(.locked)
             }
         }
     }
 
-    func lockReadonly(controller: AES70OCP1Controller) throws {
+    func lockNoWrite(controller: AES70OCP1Controller) throws {
         if !lockable {
             throw Ocp1Error.status(.notImplemented)
         }
 
         switch lockState {
         case .unlocked:
-            lockState = .lockedReadonly(controller)
-        case .lockedReadonly:
+            lockState = .lockedNoWrite(controller)
+        case .lockedNoWrite:
             fallthrough
-        case .lockedTotal:
+        case .lockedNoReadWrite:
             throw Ocp1Error.status(.locked)
         }
     }
 
-    func lockTotal(controller: AES70OCP1Controller) throws {
+    func lockNoReadWrite(controller: AES70OCP1Controller) throws {
         if !lockable {
             throw Ocp1Error.status(.notImplemented)
         }
 
         switch lockState {
         case .unlocked:
-            lockState = .lockedTotal(controller)
-        case let .lockedReadonly(lockholder):
+            lockState = .lockedNoReadWrite(controller)
+        case let .lockedNoWrite(lockholder):
             guard controller == lockholder else {
                 throw Ocp1Error.status(.locked)
             }
-            lockState = .lockedTotal(controller)
-        case .lockedTotal:
+            lockState = .lockedNoReadWrite(controller)
+        case .lockedNoReadWrite:
             throw Ocp1Error.status(.locked)
         }
     }
@@ -194,9 +195,9 @@ open class OcaRoot: CustomStringConvertible {
         switch lockState {
         case .unlocked:
             throw Ocp1Error.status(.invalidRequest)
-        case let .lockedReadonly(lockholder):
+        case let .lockedNoWrite(lockholder):
             fallthrough
-        case let .lockedTotal(lockholder):
+        case let .lockedNoReadWrite(lockholder):
             guard controller == lockholder else {
                 throw Ocp1Error.status(.locked)
             }

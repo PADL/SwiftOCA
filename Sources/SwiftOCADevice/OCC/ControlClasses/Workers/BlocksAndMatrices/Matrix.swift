@@ -102,15 +102,15 @@ open class OcaMatrix: OcaWorker {
         switch lockState {
         case .unlocked:
             lockStatePriorToSetCurrentXY = .unlocked
-            lockState = .lockedTotal(controller)
-        case let .lockedReadonly(lockholder):
+            lockState = .lockedNoReadWrite(controller)
+        case let .lockedNoWrite(lockholder):
             fallthrough
-        case let .lockedTotal(lockholder):
+        case let .lockedNoReadWrite(lockholder):
             guard controller == lockholder else {
                 throw Ocp1Error.status(.locked)
             }
             lockStatePriorToSetCurrentXY = lockState
-            lockState = .lockedTotal(controller)
+            lockState = .lockedNoReadWrite(controller)
         }
         proxy.lockState = lockState
     }
@@ -125,9 +125,9 @@ open class OcaMatrix: OcaWorker {
         switch lockState {
         case .unlocked:
             throw Ocp1Error.status(.invalidRequest)
-        case let .lockedReadonly(lockholder):
+        case let .lockedNoWrite(lockholder):
             fallthrough
-        case let .lockedTotal(lockholder):
+        case let .lockedNoReadWrite(lockholder):
             guard controller == lockholder else {
                 throw Ocp1Error.status(.locked)
             }
@@ -258,7 +258,7 @@ open class OcaMatrix: OcaWorker {
             try lockSelfAndProxy(controller: controller)
             fallthrough
         case OcaMethodID("3.15"):
-            try await withCurrentObject { try $0.lockTotal(controller: controller) }
+            try await withCurrentObject { try $0.lockNoReadWrite(controller: controller) }
         case OcaMethodID("3.16"):
             try await withCurrentObject { try $0.unlock(controller: controller) }
         default:
