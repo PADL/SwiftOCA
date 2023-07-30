@@ -21,14 +21,14 @@ public enum Ocp1Notification2Type: OcaUint8, Codable, Sendable {
     case exception = 1
 }
 
-public enum Ocp1Notification2ExceptionType: OcaUint8, Codable, Sendable {
+public enum Ocp1Notification2ExceptionType: OcaUint8, Equatable, Codable, Sendable {
     case unspecified = 0
     case cancelledByDevice = 1
     case objectDeleted = 2
     case deviceError = 3
 }
 
-public struct Ocp1Notification2ExceptionData: Codable, Sendable {
+public struct Ocp1Notification2ExceptionData: Equatable, Codable, Sendable, Error {
     let exceptionType: Ocp1Notification2ExceptionType
     let tryAgain: OcaBoolean
     let exceptionData: OcaBlob
