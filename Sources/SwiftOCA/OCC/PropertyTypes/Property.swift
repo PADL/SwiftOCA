@@ -128,13 +128,11 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
 
     #if canImport(SwiftUI)
     private weak var object: OcaRoot?
-    #endif
 
     mutating func _referenceObject(_enclosingInstance object: OcaRoot) {
-        #if canImport(SwiftUI)
         self.object = object
-        #endif
     }
+    #endif
 
     public var currentValue: State {
         subject.value
@@ -189,11 +187,15 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
     ) -> State {
         get {
+            #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
+            #endif
             return object[keyPath: storageKeyPath]._get(_enclosingInstance: object)
         }
         set {
+            #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
+            #endif
             object[keyPath: storageKeyPath]._set(_enclosingInstance: object, newValue)
         }
     }

@@ -151,11 +151,15 @@ public struct OcaBoundedProperty<Value: Codable & Comparable>: OcaPropertyChange
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
     ) -> State {
         get {
+            #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
+            #endif
             return object[keyPath: storageKeyPath]._storage._get(_enclosingInstance: object)
         }
         set {
+            #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
+            #endif
             object[keyPath: storageKeyPath]._storage._set(_enclosingInstance: object, newValue)
         }
     }
