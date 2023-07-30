@@ -240,9 +240,9 @@ public actor AES70OCP1Device {
         logger?.logControllerRemoved(controller)
     }
 
-    func notifySubscribers(
+    public func notifySubscribers(
         _ event: OcaEvent,
-        parameters: Data
+        parameters: Data = Data()
     ) async throws {
         await withTaskGroup(of: Void.self) { taskGroup in
             for controller in controllers {

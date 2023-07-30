@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */; };
+		D30644012A76CDDE0063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */; };
+		D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644022A76CE310063DA65 /* IdentificationSensor.swift */; };
 		D306556D2A524D720083F093 /* PhysicalPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556C2A524D720083F093 /* PhysicalPosition.swift */; };
 		D306556F2A5254D70083F093 /* TimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556E2A5254D70083F093 /* TimeSource.swift */; };
 		D31528802A526E24004B9BAD /* WorkerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */; };
@@ -176,6 +178,8 @@
 
 /* Begin PBXFileReference section */
 		D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDeviceView.swift; sourceTree = "<group>"; };
+		D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
+		D30644022A76CE310063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D306556C2A524D720083F093 /* PhysicalPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhysicalPosition.swift; sourceTree = "<group>"; };
 		D306556E2A5254D70083F093 /* TimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSource.swift; sourceTree = "<group>"; };
 		D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkerDataTypes.swift; sourceTree = "<group>"; };
@@ -485,6 +489,7 @@
 				D351F20B2A729AB3008C5513 /* Sensor.swift */,
 				D351F20D2A729AF2008C5513 /* BasicSensors.swift */,
 				D351F20F2A729C36008C5513 /* LevelSensor.swift */,
+				D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */,
 			);
 			path = Sensors;
 			sourceTree = "<group>";
@@ -703,6 +708,7 @@
 				D3E6E1902A3ACA6C00BF7095 /* Sensor.swift */,
 				D3E6E1912A3ACA6C00BF7095 /* BasicSensors.swift */,
 				D3E6E1922A3ACA6C00BF7095 /* LevelSensor.swift */,
+				D30644022A76CE310063DA65 /* IdentificationSensor.swift */,
 			);
 			path = Sensors;
 			sourceTree = "<group>";
@@ -1105,6 +1111,7 @@
 				D351F2162A729DFC008C5513 /* PolarityState.swift in Sources */,
 				D33B52B02A703AEA001A1BA7 /* Root+Commands.swift in Sources */,
 				D33B52A82A702D29001A1BA7 /* Manager.swift in Sources */,
+				D30644012A76CDDE0063DA65 /* IdentificationSensor.swift in Sources */,
 				D351F2142A729D8B008C5513 /* Switch.swift in Sources */,
 				D351F2052A72780A008C5513 /* PanBalance.swift in Sources */,
 			);
@@ -1152,6 +1159,7 @@
 				D3E6E1E22A3ACAA900BF7095 /* SearchDataTypes.swift in Sources */,
 				D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */,
 				D3E6E1D12A3ACA9A00BF7095 /* EventHandler.swift in Sources */,
+				D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */,
 				D3E6E1C82A3ACA9000BF7095 /* Gain.swift in Sources */,
 				D3E6E1B62A3ACA7B00BF7095 /* AES70ClassRegistry.swift in Sources */,
 				D3E6E1C62A3ACA9000BF7095 /* BasicActuators.swift in Sources */,
