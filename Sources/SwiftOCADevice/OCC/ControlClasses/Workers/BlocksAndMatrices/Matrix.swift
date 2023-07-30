@@ -17,10 +17,16 @@
 import Foundation
 import SwiftOCA
 
-open class OcaMatrix: OcaWorker {
+private struct OcaMatrixSetMemberParameters: Codable {
+    var x: OcaMatrixCoordinate
+    var y: OcaMatrixCoordinate
+    var memberONo: OcaONo
+}
+
+open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     override open class var classID: OcaClassID { OcaClassID("1.1.5") }
 
-    public private(set) var proxy: Proxy!
+    public private(set) var proxy: Proxy<Member>!
     private var lockStatePriorToSetCurrentXY: LockState?
 
     override public init(
@@ -37,22 +43,14 @@ open class OcaMatrix: OcaWorker {
             deviceDelegate: deviceDelegate,
             addToRootBlock: addToRootBlock
         )
-        proxy = try await Proxy(self)
+        proxy = try await Proxy<Member>(self)
     }
 
-    var proxyClassIdentification: OcaClassIdentification? {
-        members.items.first??.objectIdentification.classIdentification
-    }
-
-    public class Proxy: OcaRoot {
+    public class Proxy<Member: OcaRoot>: OcaRoot {
         weak var matrix: OcaMatrix?
 
-        override public var objectIdentification: OcaObjectIdentification {
-            let classIdentification = matrix?.proxyClassIdentification ?? Self.classIdentification
-            return OcaObjectIdentification(
-                oNo: objectNumber,
-                classIdentification: classIdentification
-            )
+        override public class var classIdentification: OcaClassIdentification {
+            Member.classIdentification
         }
 
         public init(
@@ -158,15 +156,10 @@ open class OcaMatrix: OcaWorker {
 
     public var members = OcaList2D<OcaRoot?>(nX: 0, nY: 0, defaultValue: nil)
 
-    open func add(member object: OcaRoot, at coordinate: OcaVector2D<OcaMatrixCoordinate>) throws {
+    open func add(member object: Member, at coordinate: OcaVector2D<OcaMatrixCoordinate>) throws {
         precondition(object != self)
         guard coordinate.isValid(in: self) else {
             throw Ocp1Error.status(.parameterOutOfRange)
-        }
-        guard members.items.count == 0 ||
-            proxyClassIdentification == object.objectIdentification.classIdentification
-        else {
-            throw Ocp1Error.status(.parameterError)
         }
         if let object = object as? OcaWorker {
             object.owner = objectNumber
@@ -264,12 +257,7 @@ open class OcaMatrix: OcaWorker {
             return try encodeResponse(objectNumber)
         case OcaMethodID("3.8"):
             try await ensureWritable(by: controller)
-            struct SetMemberParameters: Codable {
-                var x: OcaMatrixCoordinate
-                var y: OcaMatrixCoordinate
-                var memberONo: OcaONo
-            }
-            let parameters: SetMemberParameters = try decodeCommand(command)
+            let parameters: OcaMatrixSetMemberParameters = try decodeCommand(command)
             guard parameters.x < members.nX, parameters.y < members.nY else {
                 throw Ocp1Error.status(.parameterOutOfRange)
             }
@@ -313,7 +301,7 @@ open class OcaMatrix: OcaWorker {
 }
 
 extension OcaVector2D where T == OcaMatrixCoordinate {
-    func isValid(in matrix: OcaMatrix) -> Bool {
+    func isValid<Member: OcaRoot>(in matrix: OcaMatrix<Member>) -> Bool {
         x != 0xFFFF && x < matrix.members.nX &&
             y != 0xFFFF && y < matrix.members.nY
     }
