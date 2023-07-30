@@ -20,6 +20,123 @@ import SwiftOCA
 open class OcaMatrix: OcaWorker {
     override open class var classID: OcaClassID { OcaClassID("1.1.5") }
 
+    public private(set) var proxy: Proxy!
+    private var lockStatePriorToSetCurrentXY: LockState?
+
+    override public init(
+        objectNumber: OcaONo? = nil,
+        lockable: OcaBoolean = true,
+        role: OcaString = "Matrix",
+        deviceDelegate: AES70OCP1Device? = nil,
+        addToRootBlock: Bool = true
+    ) async throws {
+        try await super.init(
+            objectNumber: objectNumber,
+            lockable: lockable,
+            role: role,
+            deviceDelegate: deviceDelegate,
+            addToRootBlock: addToRootBlock
+        )
+        proxy = try await Proxy(self)
+    }
+
+    public class Proxy: OcaRoot {
+        weak var matrix: OcaMatrix?
+
+        public init(
+            _ matrix: OcaMatrix
+        ) async throws {
+            try await super.init(
+                lockable: matrix.lockable,
+                role: "\(matrix) Proxy",
+                deviceDelegate: matrix.deviceDelegate,
+                addToRootBlock: false
+            )
+        }
+
+        override open func handleCommand(
+            _ command: Ocp1Command,
+            from controller: AES70OCP1Controller
+        ) async throws -> Ocp1Response {
+            var response: Ocp1Response!
+            var lastStatus: OcaStatus?
+
+            defer { try? matrix?.unlockSelfAndProxy(controller: controller) }
+
+            try await matrix?.withCurrentObject { object in
+                do {
+                    if response != nil, response.parameters.parameterCount > 0 {
+                        // multiple get requests aren't supported
+                        throw Ocp1Error.status(.invalidRequest)
+                    }
+                    response = try await object.handleCommand(command, from: controller)
+                    if lastStatus != .ok {
+                        lastStatus = .partiallySucceeded
+                    }
+                } catch let Ocp1Error.status(status) {
+                    if lastStatus == .ok {
+                        lastStatus = .partiallySucceeded
+                    } else if lastStatus != status {
+                        lastStatus = .processingFailed
+                    } else {
+                        lastStatus = status
+                    }
+                }
+            }
+
+            guard let lastStatus else {
+                throw Ocp1Error.status(.badONo)
+            }
+
+            guard lastStatus == .ok else {
+                throw Ocp1Error.status(lastStatus)
+            }
+
+            return response
+        }
+    }
+
+    private func lockSelfAndProxy(controller: AES70OCP1Controller) throws {
+        guard lockable else { return }
+
+        switch lockState {
+        case .unlocked:
+            lockStatePriorToSetCurrentXY = .unlocked
+            lockState = .lockedTotal(controller)
+        case let .lockedReadonly(lockholder):
+            fallthrough
+        case let .lockedTotal(lockholder):
+            guard controller == lockholder else {
+                throw Ocp1Error.status(.locked)
+            }
+            lockStatePriorToSetCurrentXY = lockState
+            lockState = .lockedTotal(controller)
+        }
+        proxy.lockState = lockState
+    }
+
+    fileprivate func unlockSelfAndProxy(controller: AES70OCP1Controller) throws {
+        guard lockable else { return }
+
+        guard let lockStatePriorToSetCurrentXY else {
+            throw Ocp1Error.status(.invalidRequest)
+        }
+
+        switch lockState {
+        case .unlocked:
+            throw Ocp1Error.status(.invalidRequest)
+        case let .lockedReadonly(lockholder):
+            fallthrough
+        case let .lockedTotal(lockholder):
+            guard controller == lockholder else {
+                throw Ocp1Error.status(.locked)
+            }
+            lockState = lockStatePriorToSetCurrentXY
+            proxy.lockState = lockStatePriorToSetCurrentXY
+            self.lockStatePriorToSetCurrentXY = nil
+        }
+    }
+
     @OcaVectorDeviceProperty(
         xPropertyID: OcaPropertyID("3.1"),
         yPropertyID: OcaPropertyID("3.2"),
@@ -29,19 +146,28 @@ open class OcaMatrix: OcaWorker {
 
     public var members = OcaList2D<OcaRoot?>(nX: 0, nY: 0, defaultValue: nil)
 
-    public var currentObject: OcaRoot? {
-        precondition(currentXY.x < members.nX)
-        precondition(currentXY.y < members.nY)
+    func withCurrentObject(_ body: (_ object: OcaRoot) async throws -> ()) async rethrows {
+        if currentXY.x == 0xFFFF && currentXY.y == 0xFFFF {
+            for object in members.items {
+                if let object { try await body(object) }
+            }
+        } else if currentXY.x == 0xFFFF {
+            for x in 0..<members.nX {
+                if let object = members[x, Int(currentXY.y)] { try await body(object) }
+            }
+        } else if currentXY.y == 0xFFFF {
+            for y in 0..<members.nY {
+                if let object = members[Int(currentXY.x), y] { try await body(object) }
+            }
+        } else {
+            precondition(currentXY.x < members.nX)
+            precondition(currentXY.y < members.nY)
 
-        return members[Int(currentXY.x), Int(currentXY.y)]
+            if let object = members[Int(currentXY.x), Int(currentXY.y)] {
+                try await body(object)
+            }
+        }
     }
-
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("3.6"),
-        getMethodID: OcaMethodID("3.9"),
-        setMethodID: OcaMethodID("3.10")
-    )
-    public var proxy: OcaONo = OcaInvalidONo
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.7"),
@@ -117,17 +243,24 @@ open class OcaMatrix: OcaWorker {
                 }
             }
             members[Int(parameters.x), Int(parameters.y)] = object
+        case OcaMethodID("3.9"):
+            try ensureReadable(by: controller)
+            return try encodeResponse(proxy.objectNumber)
         case OcaMethodID("3.2"):
+            try ensureWritable(by: controller)
             let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
-            guard coordinates.x < members.nX, coordinates.y < members.nY else {
+            guard coordinates.x < members.nX || coordinates.x == 0xFFFF,
+                  coordinates.y < members.nY || coordinates.y == 0xFFFF
+            else {
                 throw Ocp1Error.status(.parameterOutOfRange)
             }
             currentXY = coordinates
+            try lockSelfAndProxy(controller: controller)
             fallthrough
         case OcaMethodID("3.15"):
-            try currentObject?.lockTotal(controller: controller)
+            try await withCurrentObject { try $0.lockTotal(controller: controller) }
         case OcaMethodID("3.16"):
-            try currentObject?.unlock(controller: controller)
+            try await withCurrentObject { try $0.unlock(controller: controller) }
         default:
             return try await super.handleCommand(command, from: controller)
         }

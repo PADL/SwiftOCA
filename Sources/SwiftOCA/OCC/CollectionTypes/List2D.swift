@@ -53,6 +53,10 @@ public struct OcaList2D<Element> {
         mapped.items = try items.map(transform)
         return mapped
     }
+
+    public func forEach(_ body: (Element) throws -> ()) rethrows {
+        try items.forEach(body)
+    }
 }
 
 extension OcaList2D: Codable where Element: Codable {
