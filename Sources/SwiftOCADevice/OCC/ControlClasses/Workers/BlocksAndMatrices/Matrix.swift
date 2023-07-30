@@ -23,19 +23,30 @@ private struct OcaMatrixSetMemberParameters: Codable {
     var memberONo: OcaONo
 }
 
+private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF
+
 open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     override open class var classID: OcaClassID { OcaClassID("1.1.5") }
 
+    public private(set) var members: OcaList2D<Member?>
     public private(set) var proxy: Proxy<Member>!
     private var lockStatePriorToSetCurrentXY: LockState?
 
-    override public init(
+    public init(
+        rows: OcaUint16,
+        columns: OcaUint16,
         objectNumber: OcaONo? = nil,
         lockable: OcaBoolean = true,
         role: OcaString = "Matrix",
         deviceDelegate: AES70OCP1Device? = nil,
         addToRootBlock: Bool = true
     ) async throws {
+        guard rows < OcaMatrixWildcardCoordinate,
+              columns < OcaMatrixWildcardCoordinate
+        else {
+            throw Ocp1Error.status(.parameterOutOfRange)
+        }
+        members = OcaList2D<Member?>(nX: columns, nY: rows, defaultValue: nil)
         try await super.init(
             objectNumber: objectNumber,
             lockable: lockable,
@@ -154,8 +165,6 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     )
     public var currentXY = OcaVector2D<OcaMatrixCoordinate>(x: 0, y: 0)
 
-    public var members = OcaList2D<OcaRoot?>(nX: 0, nY: 0, defaultValue: nil)
-
     open func add(member object: Member, at coordinate: OcaVector2D<OcaMatrixCoordinate>) throws {
         precondition(object != self)
         guard coordinate.isValid(in: self) else {
@@ -180,15 +189,17 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     }
 
     func withCurrentObject(_ body: (_ object: OcaRoot) async throws -> ()) async rethrows {
-        if currentXY.x == 0xFFFF && currentXY.y == 0xFFFF {
+        if currentXY.x == OcaMatrixWildcardCoordinate && currentXY
+            .y == OcaMatrixWildcardCoordinate
+        {
             for object in members.items {
                 if let object { try await body(object) }
             }
-        } else if currentXY.x == 0xFFFF {
+        } else if currentXY.x == OcaMatrixWildcardCoordinate {
             for x in 0..<members.nX {
                 if let object = members[x, Int(currentXY.y)] { try await body(object) }
             }
-        } else if currentXY.y == 0xFFFF {
+        } else if currentXY.y == OcaMatrixWildcardCoordinate {
             for y in 0..<members.nY {
                 if let object = members[Int(currentXY.x), y] { try await body(object) }
             }
@@ -261,11 +272,11 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             guard parameters.x < members.nX, parameters.y < members.nY else {
                 throw Ocp1Error.status(.parameterOutOfRange)
             }
-            let object: OcaRoot?
+            let object: Member?
             if parameters.memberONo == OcaInvalidONo {
                 object = nil
             } else {
-                object = await deviceDelegate?.objects[parameters.memberONo]
+                object = await deviceDelegate?.objects[parameters.memberONo] as? Member
                 if object == nil {
                     throw Ocp1Error.status(.badONo)
                 }
@@ -277,8 +288,8 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         case OcaMethodID("3.2"):
             try await ensureWritable(by: controller)
             let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
-            guard coordinates.x < members.nX || coordinates.x == 0xFFFF,
-                  coordinates.y < members.nY || coordinates.y == 0xFFFF
+            guard coordinates.x < members.nX || coordinates.x == OcaMatrixWildcardCoordinate,
+                  coordinates.y < members.nY || coordinates.y == OcaMatrixWildcardCoordinate
             else {
                 throw Ocp1Error.status(.parameterOutOfRange)
             }
@@ -302,7 +313,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
 extension OcaVector2D where T == OcaMatrixCoordinate {
     func isValid<Member: OcaRoot>(in matrix: OcaMatrix<Member>) -> Bool {
-        x != 0xFFFF && x < matrix.members.nX &&
-            y != 0xFFFF && y < matrix.members.nY
+        x != OcaMatrixWildcardCoordinate && x < matrix.members.nX &&
+            y != OcaMatrixWildcardCoordinate && y < matrix.members.nY
     }
 }
