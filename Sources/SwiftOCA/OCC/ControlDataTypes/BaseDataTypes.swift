@@ -163,6 +163,10 @@ public struct OcaClassID: Codable, Hashable, CustomStringConvertible {
         fields = parent.fields + OcaClassID(string).fields
     }
 
+    public init(parent: OcaClassID, _ integer: OcaUint16) {
+        fields = parent.fields + [integer]
+    }
+
     public var parent: OcaClassID? {
         guard fieldCount > 1 else {
             return nil
