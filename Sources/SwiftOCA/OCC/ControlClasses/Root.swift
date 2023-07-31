@@ -15,7 +15,6 @@
 //
 
 import AsyncExtensions
-import BinaryCoder
 import Foundation
 #if canImport(Combine)
 import Combine
@@ -169,7 +168,7 @@ public extension OcaRoot {
 
     @MainActor
     internal func propertyDidChange(event: OcaEvent, eventData data: Data) {
-        let decoder = BinaryDecoder(config: .ocp1Configuration)
+        let decoder = Ocp1BinaryDecoder()
         guard let propertyID = try? decoder.decode(
             OcaPropertyID.self,
             from: data

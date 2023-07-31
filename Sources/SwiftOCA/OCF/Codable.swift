@@ -15,9 +15,16 @@
 //
 
 import BinaryCoder
-import Foundation
 
-public extension BinaryCodingConfiguration {
+public func Ocp1BinaryEncoder() -> BinaryEncoder {
+    BinaryEncoder(config: .ocp1Configuration)
+}
+
+public func Ocp1BinaryDecoder() -> BinaryDecoder {
+    BinaryDecoder(config: .ocp1Configuration)
+}
+
+extension BinaryCodingConfiguration {
     static var ocp1Configuration: Self {
         BinaryCodingConfiguration(
             endianness: .bigEndian,

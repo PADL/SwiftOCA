@@ -16,7 +16,6 @@
 
 import AsyncAlgorithms
 import AsyncExtensions
-import BinaryCoder
 import Foundation
 #if canImport(SwiftUI)
 import SwiftUI
@@ -297,7 +296,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     func onEvent(_ object: OcaRoot, event: OcaEvent, eventData data: Data) throws {
         precondition(event.eventID == OcaPropertyChangedEventID)
 
-        let decoder = BinaryDecoder(config: .ocp1Configuration)
+        let decoder = Ocp1BinaryDecoder()
         let eventData = try decoder.decode(
             OcaPropertyChangedEventData<Value>.self,
             from: data

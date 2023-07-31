@@ -14,14 +14,13 @@
 // limitations under the License.
 //
 
-import BinaryCoder
 import Foundation
 import SwiftOCA
 
 extension OcaRoot {
     public func decodeCommand<U: Codable>(_ command: Ocp1Command) throws -> U {
         // FIXME: verify parameterCount
-        let decoder = BinaryDecoder(config: .ocp1Configuration)
+        let decoder = Ocp1BinaryDecoder()
         return try decoder.decode(U.self, from: command.parameters.parameterData)
     }
 
@@ -58,7 +57,7 @@ extension OcaRoot {
         _ parameters: T,
         statusCode: OcaStatus = .ok
     ) throws -> Ocp1Response {
-        let encoder = BinaryEncoder(config: .ocp1Configuration)
+        let encoder = Ocp1BinaryEncoder()
         let parameters = Ocp1Parameters(
             parameterCount: parameterCount(for: parameters),
             parameterData: try encoder.encode(parameters)

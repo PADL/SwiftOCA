@@ -13,6 +13,7 @@
 		D30644062A770B640063DA65 /* Notification2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644052A770B640063DA65 /* Notification2.swift */; };
 		D30644092A77EB160063DA65 /* BasicSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644072A77EAEA0063DA65 /* BasicSensor.swift */; };
 		D306440B2A78039B0063DA65 /* MirrorWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306440A2A78039B0063DA65 /* MirrorWrapper.swift */; };
+		D306440D2A781C280063DA65 /* Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306440C2A781C280063DA65 /* Codable.swift */; };
 		D306556D2A524D720083F093 /* PhysicalPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556C2A524D720083F093 /* PhysicalPosition.swift */; };
 		D306556F2A5254D70083F093 /* TimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556E2A5254D70083F093 /* TimeSource.swift */; };
 		D31528802A526E24004B9BAD /* WorkerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */; };
@@ -69,7 +70,6 @@
 		D3E6E1B52A3ACA7B00BF7095 /* AES70OCP1Connection+Subscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */; };
 		D3E6E1B62A3ACA7B00BF7095 /* AES70ClassRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AF2A3ACA6C00BF7095 /* AES70ClassRegistry.swift */; };
 		D3E6E1B72A3ACA7B00BF7095 /* AES70OCP1Connection+Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AB2A3ACA6C00BF7095 /* AES70OCP1Connection+Messages.swift */; };
-		D3E6E1B92A3ACA7B00BF7095 /* BinaryCodingConfiguration+OCP1.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AD2A3ACA6C00BF7095 /* BinaryCodingConfiguration+OCP1.swift */; };
 		D3E6E1BA2A3ACA7B00BF7095 /* AES70OCP1ConnectionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A92A3ACA6C00BF7095 /* AES70OCP1ConnectionMonitor.swift */; };
 		D3E6E1BB2A3ACA7B00BF7095 /* AES70OCP1Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */; };
 		D3E6E1BC2A3ACA7E00BF7095 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A62A3ACA6C00BF7095 /* Errors.swift */; };
@@ -186,6 +186,7 @@
 		D30644052A770B640063DA65 /* Notification2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification2.swift; sourceTree = "<group>"; };
 		D30644072A77EAEA0063DA65 /* BasicSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicSensor.swift; sourceTree = "<group>"; };
 		D306440A2A78039B0063DA65 /* MirrorWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorWrapper.swift; sourceTree = "<group>"; };
+		D306440C2A781C280063DA65 /* Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Codable.swift; sourceTree = "<group>"; };
 		D306556C2A524D720083F093 /* PhysicalPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhysicalPosition.swift; sourceTree = "<group>"; };
 		D306556E2A5254D70083F093 /* TimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSource.swift; sourceTree = "<group>"; };
 		D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkerDataTypes.swift; sourceTree = "<group>"; };
@@ -282,7 +283,6 @@
 		D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Objects.swift"; sourceTree = "<group>"; };
 		D3E6E1AB2A3ACA6C00BF7095 /* AES70OCP1Connection+Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Messages.swift"; sourceTree = "<group>"; };
 		D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Subscribe.swift"; sourceTree = "<group>"; };
-		D3E6E1AD2A3ACA6C00BF7095 /* BinaryCodingConfiguration+OCP1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BinaryCodingConfiguration+OCP1.swift"; sourceTree = "<group>"; };
 		D3E6E1AE2A3ACA6C00BF7095 /* AES70OCP1Connection+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AES70OCP1Connection+Codable.swift"; sourceTree = "<group>"; };
 		D3E6E1AF2A3ACA6C00BF7095 /* AES70ClassRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70ClassRegistry.swift; sourceTree = "<group>"; };
 		D3E6E1B12A3ACA6C00BF7095 /* AES70OCP1Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1Connection.swift; sourceTree = "<group>"; };
@@ -738,6 +738,7 @@
 			children = (
 				D3E6E19F2A3ACA6C00BF7095 /* Messages */,
 				D3E6E1A62A3ACA6C00BF7095 /* Errors.swift */,
+				D306440C2A781C280063DA65 /* Codable.swift */,
 			);
 			path = OCF;
 			sourceTree = "<group>";
@@ -766,7 +767,6 @@
 				D3E6E1AA2A3ACA6C00BF7095 /* AES70OCP1Connection+Objects.swift */,
 				D3E6E1AB2A3ACA6C00BF7095 /* AES70OCP1Connection+Messages.swift */,
 				D3E6E1AC2A3ACA6C00BF7095 /* AES70OCP1Connection+Subscribe.swift */,
-				D3E6E1AD2A3ACA6C00BF7095 /* BinaryCodingConfiguration+OCP1.swift */,
 			);
 			path = AES70;
 			sourceTree = "<group>";
@@ -1156,6 +1156,7 @@
 				D3E6E1D52A3ACA9E00BF7095 /* Root.swift in Sources */,
 				D3E6E1CA2A3ACA9000BF7095 /* Mute.swift in Sources */,
 				D3E6E1E02A3ACAA900BF7095 /* Property.swift in Sources */,
+				D306440D2A781C280063DA65 /* Codable.swift in Sources */,
 				D3E6E1CB2A3ACA9000BF7095 /* Switch.swift in Sources */,
 				D3E6E1B72A3ACA7B00BF7095 /* AES70OCP1Connection+Messages.swift in Sources */,
 				D3DA69EE2A3DD350001250A1 /* Task+Timeout.swift in Sources */,
@@ -1196,7 +1197,6 @@
 				D3E6E1E52A3ACAA900BF7095 /* LengthTaggedData.swift in Sources */,
 				D3E6E1CD2A3ACA9600BF7095 /* LevelSensor.swift in Sources */,
 				D3E6E1C12A3ACA8200BF7095 /* Notification1.swift in Sources */,
-				D3E6E1B92A3ACA7B00BF7095 /* BinaryCodingConfiguration+OCP1.swift in Sources */,
 				D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */,
 				D3E6E1DE2A3ACAA900BF7095 /* WellKnownObjectNumbers.swift in Sources */,
 				D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */,

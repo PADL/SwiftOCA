@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import BinaryCoder
 import Foundation
 
 // TODO: clean this up so there aren't so many functions!
@@ -110,7 +109,7 @@ extension OcaRoot {
         }
         var parameterData = Data()
         for parameter in parameters {
-            let paramData = try BinaryEncoder(config: .ocp1Configuration).encode(parameter)
+            let paramData = try Ocp1BinaryEncoder().encode(parameter)
             parameterData.append(paramData)
         }
 
@@ -137,7 +136,7 @@ extension OcaRoot {
             responseParameterData: &responseParameterData
         )
         if responseParameterCount != 0 {
-            let decoder = BinaryDecoder(config: .ocp1Configuration)
+            let decoder = Ocp1BinaryDecoder()
             responseParameters = try decoder.decode(U.self, from: responseParameterData)
         }
     }
@@ -264,7 +263,7 @@ extension OcaRoot {
             responseParameterData: &responseParameterData
         )
 
-        let decoder = BinaryDecoder(config: .ocp1Configuration)
+        let decoder = Ocp1BinaryDecoder()
         return try decoder.decode(U.self, from: responseParameterData)
     }
 
@@ -285,7 +284,7 @@ extension OcaRoot {
             responseParameters: &responseParameterData
         )
 
-        let decoder = BinaryDecoder(config: .ocp1Configuration)
+        let decoder = Ocp1BinaryDecoder()
         return try decoder.decode(U.self, from: responseParameterData)
     }
 }

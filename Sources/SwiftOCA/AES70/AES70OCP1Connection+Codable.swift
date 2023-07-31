@@ -14,12 +14,11 @@
 // limitations under the License.
 //
 
-import BinaryCoder
 import Foundation
 
 private extension Ocp1Message {
     func encode(type messageType: OcaMessageType) throws -> Data {
-        let encoder = BinaryEncoder(config: BinaryCodingConfiguration.ocp1Configuration)
+        let encoder = Ocp1BinaryEncoder()
         var messageData = try encoder.encode(self)
 
         if messageType != .ocaKeepAlive {
@@ -40,7 +39,7 @@ public extension AES70OCP1Connection {
         var messagePduData = Data([Ocp1SyncValue])
 
         let header = Ocp1Header(pduType: messageType, messageCount: OcaUint16(messages.count))
-        let encoder = BinaryEncoder(config: BinaryCodingConfiguration.ocp1Configuration)
+        let encoder = Ocp1BinaryEncoder()
         messagePduData += try encoder.encode(header)
 
         try messages.forEach {
@@ -121,7 +120,7 @@ public extension AES70OCP1Connection {
         from messageData: Data,
         type messageType: OcaMessageType
     ) throws -> Ocp1Message {
-        let decoder = BinaryDecoder(config: BinaryCodingConfiguration.ocp1Configuration)
+        let decoder = Ocp1BinaryDecoder()
         let message: Ocp1Message
 
         switch messageType {

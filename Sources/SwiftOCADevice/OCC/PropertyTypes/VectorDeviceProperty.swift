@@ -15,7 +15,6 @@
 //
 
 import AsyncExtensions
-import BinaryCoder
 import Foundation
 import SwiftOCA
 
@@ -83,7 +82,7 @@ public struct OcaVectorDeviceProperty<
 
     func notifySubscribers(object: OcaRoot, _ newValue: OcaVector2D<Value>) async throws {
         let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
-        let encoder = BinaryEncoder(config: .ocp1Configuration)
+        let encoder = Ocp1BinaryEncoder()
         let xParameters = OcaPropertyChangedEventData<Value>(
             propertyID: xPropertyID,
             propertyValue: newValue.x,

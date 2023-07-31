@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import BinaryCoder
 import Foundation
 
 public typealias OcaBoolean = Bool
