@@ -57,15 +57,15 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         proxy = try await Proxy<Member>(self)
     }
 
-    public class Proxy<Member: OcaRoot>: OcaRoot {
-        weak var matrix: OcaMatrix?
+    public class Proxy<ProxyMember: OcaRoot>: OcaRoot {
+        weak var matrix: OcaMatrix<ProxyMember>?
 
         override public class var classIdentification: OcaClassIdentification {
             Member.classIdentification
         }
 
         public init(
-            _ matrix: OcaMatrix
+            _ matrix: OcaMatrix<ProxyMember>
         ) async throws {
             try await super.init(
                 lockable: matrix.lockable,
