@@ -94,7 +94,7 @@ public final actor AES70OCP1Controller {
         subscriptions[event.emitterONo]?.remove(subscription)
     }
 
-    func notifySubscribers(
+    func notifySubscribers1(
         _ event: OcaEvent,
         parameters: Data
     ) async throws {
@@ -115,6 +115,19 @@ public final actor AES70OCP1Controller {
         )
 
         try await sendMessage(notification, type: .ocaNtf1)
+    }
+
+    // for EV2 event type support, but how do we signal this?
+    func notifySubscribers2(
+        _ event: OcaEvent,
+        parameters: Data
+    ) async throws {
+        let notification = Ocp1Notification2(
+            event: event,
+            notificationType: .event,
+            data: parameters
+        )
+        try await sendMessage(notification, type: .ocaNtf2)
     }
 
     var connectionIsStale: Bool {

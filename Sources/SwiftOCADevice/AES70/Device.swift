@@ -252,7 +252,7 @@ public actor AES70OCP1Device {
                     continue
                 }
                 taskGroup.addTask {
-                    try? await controller.notifySubscribers(
+                    try? await controller.notifySubscribers1(
                         event,
                         parameters: parameters
                     )
