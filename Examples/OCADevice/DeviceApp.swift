@@ -34,10 +34,24 @@ public enum DeviceApp {
 
         device = try await AES70OCP1Device(address: localAddressData)
 
-        testActuator = try await SwiftOCADevice.OcaBooleanActuator(
-            role: "Test Actuator",
-            deviceDelegate: device
-        )
+        let matrix = try await SwiftOCADevice
+            .OcaMatrix<SwiftOCADevice.OcaBooleanActuator>(
+                rows: 4,
+                columns: 2,
+                deviceDelegate: device
+            )
+
+        for x: OcaMatrixCoordinate in 0..<2 {
+            for y: OcaMatrixCoordinate in 0..<2 {
+                let coordinate = OcaVector2D(x: x, y: y)
+                let actuator = try await SwiftOCADevice.OcaBooleanActuator(
+                    role: "Actuator \(x),\(y)",
+                    deviceDelegate: device,
+                    addToRootBlock: false
+                )
+                try matrix.add(member: actuator, at: coordinate)
+            }
+        }
 
         try await device.start()
     }

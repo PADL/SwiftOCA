@@ -44,12 +44,16 @@ extension OcaRoot {
     }
 
     private func parameterCount<T: Encodable>(for parameters: T) -> OcaUint8 {
+        let parameterCount: OcaUint8
+
         if let parameters = parameters as? OcaParameterCountReflectable {
-            return type(of: parameters).responseParameterCount
+            parameterCount = type(of: parameters).responseParameterCount
         } else {
             let mirror = Mirror(reflecting: parameters)
-            return parameterCount(for: mirror)
+            parameterCount = self.parameterCount(for: mirror)
         }
+
+        return parameterCount
     }
 
     public func encodeResponse<T: Encodable>(

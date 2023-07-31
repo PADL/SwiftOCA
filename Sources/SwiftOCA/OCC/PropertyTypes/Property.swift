@@ -273,7 +273,9 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             // if task cancelled due to a view being dismissed, reset state to initial
             _send(_enclosingInstance: object, .initial)
         } catch {
-            debugPrint("property handler received error from device: \(error)")
+            debugPrint(
+                "property handler for \(object) property \(propertyID) received error from device: \(error)"
+            )
             _send(_enclosingInstance: object, .failure(error))
         }
     }

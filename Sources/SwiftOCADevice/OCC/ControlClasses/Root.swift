@@ -103,22 +103,25 @@ open class OcaRoot: CustomStringConvertible {
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("1.1"):
-            // use instance method so proxy object can ovveride
-            return try encodeResponse(objectIdentification.classIdentification.classID)
+            struct GetClassIdentificationParameters: Codable {
+                let classIdentification: OcaClassIdentification
+            }
+            let response =
+                GetClassIdentificationParameters(
+                    classIdentification: objectIdentification
+                        .classIdentification
+                )
+            return try encodeResponse(response)
         case OcaMethodID("1.2"):
-            return try encodeResponse(objectIdentification.classIdentification.classVersion)
-        case OcaMethodID("1.3"):
-            return try encodeResponse(objectNumber)
-        case OcaMethodID("1.4"):
             return try encodeResponse(lockable)
+        case OcaMethodID("1.3"):
+            try lockNoReadWrite(controller: controller)
+        case OcaMethodID("1.4"):
+            try unlock(controller: controller)
         case OcaMethodID("1.5"):
             return try encodeResponse(role)
         case OcaMethodID("1.6"):
             try lockNoWrite(controller: controller)
-        case OcaMethodID("1.7"):
-            try lockNoReadWrite(controller: controller)
-        case OcaMethodID("1.8"):
-            try unlock(controller: controller)
         default:
             return try await handlePropertyAccessor(command, from: controller)
         }

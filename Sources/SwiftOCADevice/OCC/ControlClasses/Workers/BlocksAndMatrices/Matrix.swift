@@ -18,9 +18,13 @@ import Foundation
 import SwiftOCA
 
 private struct OcaMatrixSetMemberParameters: Codable {
-    var x: OcaMatrixCoordinate
-    var y: OcaMatrixCoordinate
-    var memberONo: OcaONo
+    let x: OcaMatrixCoordinate
+    let y: OcaMatrixCoordinate
+    let memberONo: OcaONo
+}
+
+private struct OcaMatrixGetMembersParameters: Codable {
+    let members: OcaList2D<OcaONo>
 }
 
 private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF
@@ -69,7 +73,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         ) async throws {
             try await super.init(
                 lockable: matrix.lockable,
-                role: "\(matrix) Proxy",
+                role: "\(matrix.role) Proxy",
                 deviceDelegate: matrix.deviceDelegate,
                 addToRootBlock: false
             )
@@ -82,9 +86,17 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             var response: Ocp1Response?
             var lastStatus: OcaStatus?
 
-            defer { try? matrix?.unlockSelfAndProxy(controller: controller) }
+            if command.methodID.defLevel == 1 {
+                /// root object class methods are handled directly, because they refer to the proxy
+                /// object
+                return try await super.handleCommand(command, from: controller)
+            }
 
-            try await matrix?.withCurrentObject { object in
+            guard let matrix else {
+                throw Ocp1Error.status(.deviceError)
+            }
+
+            await matrix.withCurrentObject { object in
                 do {
                     if let response, response.parameters.parameterCount > 0 {
                         // multiple get requests aren't supported
@@ -104,8 +116,12 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
                     } else {
                         lastStatus = status
                     }
+                } catch {
+                    lastStatus = .processingFailed // shouldn't happen
                 }
             }
+
+            try matrix.unlockSelfAndProxy(controller: controller)
 
             if let lastStatus, lastStatus != .ok {
                 throw Ocp1Error.status(lastStatus)
@@ -259,8 +275,9 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             return try encodeResponse(matrixSize)
         case OcaMethodID("3.5"):
             try await ensureReadable(by: controller)
-            let members = members.map(defaultValue: OcaInvalidONo, \.?.objectNumber)
-            return try encodeResponse(members)
+            let members = members
+                .map(defaultValue: OcaInvalidONo) { $0?.objectNumber ?? OcaInvalidONo }
+            return try encodeResponse(OcaMatrixGetMembersParameters(members: members))
         case OcaMethodID("3.7"):
             try await ensureReadable(by: controller)
             let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
