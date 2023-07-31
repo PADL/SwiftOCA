@@ -190,7 +190,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         if let object = object as? OcaWorker {
             object.owner = objectNumber
         }
-        members.insert(object, x: Int(coordinate.x), y: Int(coordinate.y))
+        members[Int(coordinate.x), Int(coordinate.y)] = object
     }
 
     open func remove(coordinate: OcaVector2D<OcaMatrixCoordinate>) throws {
@@ -202,7 +202,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         {
             object.owner = OcaInvalidONo
         }
-        members.remove(x: Int(coordinate.x), y: Int(coordinate.y))
+        members[Int(coordinate.x), Int(coordinate.y)] = nil
     }
 
     func withCurrentObject(_ body: (_ object: OcaRoot) async throws -> ()) async rethrows {

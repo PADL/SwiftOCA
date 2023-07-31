@@ -94,6 +94,7 @@ open class OcaRoot: CustomStringConvertible {
                 return Ocp1Response()
             }
         }
+        debugPrint("unknown property accessor method \(command)")
         throw Ocp1Error.unhandledMethod
     }
 

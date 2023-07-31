@@ -23,7 +23,7 @@ public struct OcaList2D<Element> {
     public init(nX: Int, nY: Int, defaultValue: Element) {
         self.nX = nX
         self.nY = nY
-        items = Array(repeating: defaultValue, count: nX * nY) as! [Element]
+        items = [Element](repeating: defaultValue, count: nX * nY)
     }
 
     public init(nX: OcaUint16, nY: OcaUint16, defaultValue: Element) {
@@ -32,6 +32,10 @@ public struct OcaList2D<Element> {
 
     private func indexIsValid(x: Int, y: Int) -> Bool {
         x >= 0 && x < nX && y >= 0 && y < nY
+    }
+
+    public var count: Int {
+        nX * nY
     }
 
     public subscript(x: Int, y: Int) -> Element {
@@ -76,7 +80,7 @@ extension OcaList2D: Codable where Element: Codable {
 
         items = [Element]()
         items.reserveCapacity(Int(nX * nY))
-        for index in 0..<nX * nY {
+        for index in 0..<count {
             items.insert(try container.decode(Element.self), at: index)
         }
     }
@@ -85,7 +89,7 @@ extension OcaList2D: Codable where Element: Codable {
         var container = encoder.unkeyedContainer()
         try container.encode(OcaUint16(nX))
         try container.encode(OcaUint16(nY))
-        for index in 0..<nX * nY {
+        for index in 0..<count {
             try container.encode(items[index])
         }
     }
