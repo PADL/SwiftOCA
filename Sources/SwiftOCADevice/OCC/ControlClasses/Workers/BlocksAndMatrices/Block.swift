@@ -28,17 +28,21 @@ open class OcaBlock<Member: OcaRoot>: OcaWorker {
 
     public private(set) var members = [Member]()
 
-    open func add(member object: Member) {
+    open func add(member object: Member) throws {
         precondition(object != self)
+        guard !members.contains(object) else {
+            throw Ocp1Error.objectNotUnique
+        }
+
         if let object = object as? OcaWorker {
             object.owner = objectNumber
         }
         members.append(object)
     }
 
-    open func remove(member object: Member) {
+    open func remove(member object: Member) throws {
         guard let index = members.firstIndex(of: object) else {
-            return
+            throw Ocp1Error.objectNotPresent
         }
         if let object = object as? OcaWorker, object.owner == objectNumber {
             object.owner = OcaInvalidONo

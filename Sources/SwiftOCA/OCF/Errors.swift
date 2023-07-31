@@ -20,28 +20,30 @@ public enum Ocp1Error: Error, Equatable {
     /// An OCA status received from a device; should not be used for local errors
     case status(OcaStatus)
     case exception(Ocp1Notification2ExceptionData)
-    case bonjourRegistrationFailed
-    case notConnected
-    case notImplemented
-    case noConnectionDelegate
     case alreadySubscribedToEvent
-    case pduTooShort
-    case pduSendingFailed
-    case invalidSyncValue
-    case invalidPduSize
+    case bonjourRegistrationFailed
+    case invalidHandle
+    case invalidKeepAlivePdu
     case invalidMessageSize
     case invalidMessageType
+    case invalidPduSize
     case invalidProtocolVersion
-    case invalidKeepAlivePdu
-    case invalidHandle
-    case responseTimeout
-    case requestParameterOutOfRange
-    case responseParameterOutOfRange
-    case serviceResolutionFailed
-    case unknownServiceType
+    case invalidSyncValue
+    case noConnectionDelegate
     case noInitialValue
-    case unhandledEvent
-    case unknownPduType
+    case notConnected
+    case notImplemented
+    case objectNotPresent
+    case objectNotUnique
+    case pduSendingFailed
+    case pduTooShort
     case propertyIsImmutable
     case proxyResolutionFailed
+    case requestParameterOutOfRange
+    case responseParameterOutOfRange
+    case responseTimeout
+    case serviceResolutionFailed
+    case unhandledEvent
+    case unknownPduType
+    case unknownServiceType
 }
