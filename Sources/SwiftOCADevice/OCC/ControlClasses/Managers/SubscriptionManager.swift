@@ -48,12 +48,12 @@ public class OcaSubscriptionManager: OcaManager {
 
     func disableNotifications(from controller: AES70OCP1Controller) async throws {
         try await ensureWritable(by: controller)
-        controller.notificationsEnabled = false
+        await controller.disableNotifications()
     }
 
     func reenableNotifications(from controller: AES70OCP1Controller) async throws {
         try await ensureWritable(by: controller)
-        controller.notificationsEnabled = true
+        await controller.enableNotifications()
     }
 
     override public func handleCommand(

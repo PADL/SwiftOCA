@@ -206,10 +206,10 @@ public actor AES70OCP1Device {
         logger?.logControllerAdded(controller)
         controllers.insert(controller)
         do {
-            for try await (message, rrq) in controller.messages {
+            for try await (message, rrq) in await controller.messages {
                 var response: Ocp1Response?
 
-                controller.lastMessageReceivedTime = Date()
+                await controller.updateLastMessageReceivedTime()
 
                 switch message {
                 case let command as Ocp1Command:
@@ -221,9 +221,11 @@ public actor AES70OCP1Device {
                         parameters: commandResponse.parameters
                     )
                 case let keepAlive as Ocp1KeepAlive1:
-                    controller.keepAliveInterval = UInt64(keepAlive.heartBeatTime) * NSEC_PER_SEC
+                    await controller
+                        .setKeepAliveInterval(UInt64(keepAlive.heartBeatTime) * NSEC_PER_SEC)
                 case let keepAlive as Ocp1KeepAlive2:
-                    controller.keepAliveInterval = UInt64(keepAlive.heartBeatTime) * NSEC_PER_MSEC
+                    await controller
+                        .setKeepAliveInterval(UInt64(keepAlive.heartBeatTime) * NSEC_PER_MSEC)
                 default:
                     throw Ocp1Error.invalidMessageType
                 }
@@ -246,7 +248,7 @@ public actor AES70OCP1Device {
     ) async throws {
         await withTaskGroup(of: Void.self) { taskGroup in
             for controller in controllers {
-                guard controller.notificationsEnabled else {
+                guard await controller.notificationsEnabled else {
                     continue
                 }
                 taskGroup.addTask {

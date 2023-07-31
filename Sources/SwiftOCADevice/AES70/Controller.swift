@@ -22,17 +22,18 @@ import Foundation
 import SwiftOCA
 
 /// A remote endpoint
-public final class AES70OCP1Controller {
+public final actor AES70OCP1Controller {
     typealias ControllerMessage = (Ocp1Message, Bool)
 
     let hostname: String
+    var notificationsEnabled = true
+
     private nonisolated let socket: AsyncSocket
     private nonisolated let logger: Logging?
     private let _messages: AsyncThrowingStream<AsyncSyncSequence<[ControllerMessage]>, Error>
     private var keepAliveTask: Task<(), Error>?
     private var subscriptions = [OcaONo: NSMutableSet]()
-    var lastMessageReceivedTime = Date.distantPast
-    var notificationsEnabled = true
+    private var lastMessageReceivedTime = Date.distantPast
 
     var messages: AnyAsyncSequence<ControllerMessage> {
         _messages.joined().eraseToAnyAsyncSequence()
@@ -125,7 +126,7 @@ public final class AES70OCP1Controller {
                             (3 * Double(keepAliveInterval) / Double(NSEC_PER_SEC)) <
                             Date()
                         {
-                            try socket.close() // FIXME: is this thread-safe?
+                            try self.closeSocket()
                             break
                         }
                         try await sendKeepAlive()
@@ -137,6 +138,10 @@ public final class AES70OCP1Controller {
                 keepAliveTask = nil
             }
         }
+    }
+
+    func setKeepAliveInterval(_ keepAliveInterval: UInt64) {
+        self.keepAliveInterval = keepAliveInterval
     }
 
     func sendMessages(
@@ -164,8 +169,12 @@ public final class AES70OCP1Controller {
         try await sendMessage(keepAlive, type: .ocaKeepAlive)
     }
 
-    func close(device: AES70OCP1Device) async throws {
+    private func closeSocket() throws {
         try socket.close()
+    }
+
+    func close(device: AES70OCP1Device) async throws {
+        try closeSocket()
 
         keepAliveTask?.cancel()
         keepAliveTask = nil
@@ -178,16 +187,28 @@ public final class AES70OCP1Controller {
     nonisolated var identifier: String {
         "<\(hostname)>"
     }
+
+    func enableNotifications() {
+        notificationsEnabled = true
+    }
+
+    func disableNotifications() {
+        notificationsEnabled = false
+    }
+
+    func updateLastMessageReceivedTime() {
+        lastMessageReceivedTime = Date()
+    }
 }
 
 extension AES70OCP1Controller: Equatable {
-    public static func == (lhs: AES70OCP1Controller, rhs: AES70OCP1Controller) -> Bool {
+    public nonisolated static func == (lhs: AES70OCP1Controller, rhs: AES70OCP1Controller) -> Bool {
         lhs.socket.socket.file == rhs.socket.socket.file
     }
 }
 
 extension AES70OCP1Controller: Hashable {
-    public func hash(into hasher: inout Hasher) {
+    public nonisolated func hash(into hasher: inout Hasher) {
         socket.socket.file.hash(into: &hasher)
     }
 }
