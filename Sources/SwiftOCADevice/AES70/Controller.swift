@@ -25,16 +25,15 @@ import SwiftOCA
 public final actor AES70OCP1Controller {
     typealias ControllerMessage = (Ocp1Message, Bool)
 
-    let hostname: String
-    var notificationsEnabled = true
-
+    private let hostname: String
     private let socket: AsyncSocket
     private let logger: Logging?
     private let _messages: AsyncThrowingStream<AsyncSyncSequence<[ControllerMessage]>, Error>
     private var keepAliveTask: Task<(), Error>?
     private var subscriptions = [OcaONo: NSMutableSet]()
     private var lastMessageReceivedTime = Date.distantPast
-    private var sockedClosed = false
+    private var socketClosed = false
+    private(set) var notificationsEnabled = true
 
     var messages: AnyAsyncSequence<ControllerMessage> {
         _messages.joined().eraseToAnyAsyncSequence()
@@ -171,9 +170,9 @@ public final actor AES70OCP1Controller {
     }
 
     private func closeSocket() throws {
-        guard !sockedClosed else { return }
+        guard !socketClosed else { return }
         try socket.close()
-        sockedClosed = true
+        socketClosed = true
     }
 
     func close(device: AES70OCP1Device) async throws {
