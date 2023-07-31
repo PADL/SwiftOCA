@@ -17,7 +17,7 @@
 import Foundation
 import SwiftOCA
 
-open class OcaBlock: OcaWorker {
+open class OcaBlock<Member: OcaRoot>: OcaWorker {
     override open class var classID: OcaClassID { OcaClassID("1.1.3") }
 
     @OcaDeviceProperty(
@@ -26,9 +26,9 @@ open class OcaBlock: OcaWorker {
     )
     public var type: OcaONo = OcaInvalidONo
 
-    public private(set) var members = Set<OcaRoot>()
+    public private(set) var members = Set<Member>()
 
-    open func add(member object: OcaRoot) {
+    open func add(member object: Member) {
         precondition(object != self)
         if let object = object as? OcaWorker {
             object.owner = objectNumber
@@ -36,7 +36,7 @@ open class OcaBlock: OcaWorker {
         members.insert(object)
     }
 
-    open func remove(member object: OcaRoot) {
+    open func remove(member object: Member) {
         guard members.contains(object) else {
             return
         }
@@ -71,8 +71,8 @@ open class OcaBlock: OcaWorker {
     public var oNoMap = OcaMap<OcaProtoONo, OcaONo>()
 
     func applyRecursive(
-        members: Set<OcaRoot>,
-        _ block: (_ member: OcaRoot) async throws -> ()
+        members: Set<Member>,
+        _ block: (_ member: Member) async throws -> ()
     ) async throws {
         for member in members {
             precondition(member != self)
@@ -85,7 +85,7 @@ open class OcaBlock: OcaWorker {
     }
 
     func applyRecursive(
-        _ block: (_ member: OcaRoot) async throws -> ()
+        _ block: (_ member: Member) async throws -> ()
     ) async throws {
         try await applyRecursive(members: members, block)
     }

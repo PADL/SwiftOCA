@@ -44,7 +44,7 @@ public actor AES70OCP1Device {
     var objects = [OcaONo: OcaRoot]()
 
     /// Root block, immutable
-    public var rootBlock: OcaBlock!
+    public var rootBlock: OcaBlock<OcaRoot>!
     public var subscriptionManager: OcaSubscriptionManager!
     public var deviceManager: OcaDeviceManager!
 
