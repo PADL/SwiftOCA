@@ -16,7 +16,11 @@
 
 import Foundation
 
-public class OcaGenericBasicSensor<T: Codable & Comparable>: OcaSensor {
+public class OcaBasicSensor: OcaSensor {
+    override public class var classID: OcaClassID { OcaClassID("1.1.2.1") }
+}
+
+public class OcaGenericBasicSensor<T: Codable & Comparable>: OcaBasicSensor {
     @OcaBoundedProperty(
         propertyID: OcaPropertyID("5.1"),
         getMethodID: OcaMethodID("5.1")
@@ -24,11 +28,7 @@ public class OcaGenericBasicSensor<T: Codable & Comparable>: OcaSensor {
     public var reading: OcaBoundedProperty<T>.State
 }
 
-public class OcaBasicSensor: OcaSensor {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1") }
-}
-
-public class OcaBooleanSensor: OcaSensor {
+public class OcaBooleanSensor: OcaBasicSensor {
     override public class var classID: OcaClassID { OcaClassID("1.1.2.1.1") }
 
     @OcaProperty(

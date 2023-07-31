@@ -16,7 +16,11 @@
 
 import Foundation
 
-public class OcaGenericBasicActuator<T: Codable & Comparable & Numeric>: OcaActuator {
+public class OcaBasicActuator: OcaActuator {
+    override public class var classID: OcaClassID { OcaClassID("1.1.1.1") }
+}
+
+public class OcaGenericBasicActuator<T: Codable & Comparable & Numeric>: OcaBasicActuator {
     @OcaBoundedProperty(
         propertyID: OcaPropertyID("5.1"),
         getMethodID: OcaMethodID("5.1"),
@@ -25,11 +29,7 @@ public class OcaGenericBasicActuator<T: Codable & Comparable & Numeric>: OcaActu
     public var setting: OcaBoundedProperty<T>.State
 }
 
-public class OcaBasicActuator: OcaActuator {
-    override public class var classID: OcaClassID { OcaClassID("1.1.1.1") }
-}
-
-public class OcaBooleanActuator: OcaActuator {
+public class OcaBooleanActuator: OcaBasicActuator {
     override public class var classID: OcaClassID { OcaClassID("1.1.1.1.1") }
 
     @OcaProperty(
@@ -80,7 +80,7 @@ public class OcaFloat64Actuator: OcaGenericBasicActuator<OcaFloat64> {
     override public class var classID: OcaClassID { OcaClassID("1.1.1.1.11") }
 }
 
-public class OcaStringActuator: OcaActuator {
+public class OcaStringActuator: OcaBasicActuator {
     override public class var classID: OcaClassID { OcaClassID("1.1.1.1.12") }
     @OcaProperty(
         propertyID: OcaPropertyID("5.1"),
