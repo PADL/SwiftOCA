@@ -64,6 +64,12 @@ public struct OcaBoundedDeviceProperty<
 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
         let value: Value = try object.decodeCommand(command)
+        // check it is in range
+        if value < storage.wrappedValue.range.lowerBound ||
+            value > storage.wrappedValue.range.upperBound
+        {
+            throw Ocp1Error.status(.parameterOutOfRange)
+        }
         storage.set(
             object: object,
             OcaBoundedPropertyValue<Value>(value: value, in: storage.wrappedValue.range)
