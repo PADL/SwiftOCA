@@ -38,7 +38,6 @@ public enum Ocp1Error: Error, Equatable {
     case requestParameterOutOfRange
     case responseParameterOutOfRange
     case serviceResolutionFailed
-    case unhandledMethod
     case unknownServiceType
     case noInitialValue
     case unhandledEvent

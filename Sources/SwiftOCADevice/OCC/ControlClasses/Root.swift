@@ -95,7 +95,7 @@ open class OcaRoot: CustomStringConvertible {
             }
         }
         debugPrint("unknown property accessor method \(command)")
-        throw Ocp1Error.unhandledMethod
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func handleCommand(
