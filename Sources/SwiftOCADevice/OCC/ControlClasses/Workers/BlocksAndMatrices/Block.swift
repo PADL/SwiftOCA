@@ -26,24 +26,24 @@ open class OcaBlock<Member: OcaRoot>: OcaWorker {
     )
     public var type: OcaONo = OcaInvalidONo
 
-    public private(set) var members = Set<Member>()
+    public private(set) var members = [Member]()
 
     open func add(member object: Member) {
         precondition(object != self)
         if let object = object as? OcaWorker {
             object.owner = objectNumber
         }
-        members.insert(object)
+        members.append(object)
     }
 
     open func remove(member object: Member) {
-        guard members.contains(object) else {
+        guard let index = members.firstIndex(of: object) else {
             return
         }
         if let object = object as? OcaWorker, object.owner == objectNumber {
             object.owner = OcaInvalidONo
         }
-        members.remove(object)
+        members.remove(at: index)
     }
 
     @OcaDeviceProperty(
@@ -71,7 +71,7 @@ open class OcaBlock<Member: OcaRoot>: OcaWorker {
     public var oNoMap = OcaMap<OcaProtoONo, OcaONo>()
 
     func applyRecursive(
-        members: Set<Member>,
+        members: [Member],
         _ block: (_ member: Member) async throws -> ()
     ) async throws {
         for member in members {
