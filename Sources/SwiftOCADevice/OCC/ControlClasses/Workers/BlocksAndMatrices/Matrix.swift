@@ -79,20 +79,22 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             _ command: Ocp1Command,
             from controller: AES70OCP1Controller
         ) async throws -> Ocp1Response {
-            var response: Ocp1Response!
+            var response: Ocp1Response?
             var lastStatus: OcaStatus?
 
             defer { try? matrix?.unlockSelfAndProxy(controller: controller) }
 
             try await matrix?.withCurrentObject { object in
                 do {
-                    if response != nil, response.parameters.parameterCount > 0 {
+                    if let response, response.parameters.parameterCount > 0 {
                         // multiple get requests aren't supported
                         throw Ocp1Error.status(.invalidRequest)
                     }
                     response = try await object.handleCommand(command, from: controller)
                     if lastStatus != .ok {
                         lastStatus = .partiallySucceeded
+                    } else {
+                        lastStatus = .ok
                     }
                 } catch let Ocp1Error.status(status) {
                     if lastStatus == .ok {
@@ -105,15 +107,11 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
                 }
             }
 
-            guard let lastStatus else {
-                throw Ocp1Error.status(.badONo)
-            }
-
-            guard lastStatus == .ok else {
+            if let lastStatus, lastStatus != .ok {
                 throw Ocp1Error.status(lastStatus)
             }
 
-            return response
+            return response ?? Ocp1Response()
         }
     }
 
