@@ -161,7 +161,10 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         yPropertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var currentXY = OcaVector2D<OcaMatrixCoordinate>(x: 0, y: 0)
+    public var currentXY = OcaVector2D<OcaMatrixCoordinate>(
+        x: OcaMatrixWildcardCoordinate,
+        y: OcaMatrixWildcardCoordinate
+    )
 
     open func add(member object: Member, at coordinate: OcaVector2D<OcaMatrixCoordinate>) throws {
         precondition(object != self)
