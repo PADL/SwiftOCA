@@ -233,6 +233,9 @@ public actor AES70OCP1Device {
                 if rrq, let response {
                     try await controller.sendMessage(response, type: .ocaRsp)
                 }
+                if let response {
+                    logger?.logResponse(response, on: controller)
+                }
             }
         } catch {
             logger?.logError(error, on: controller)
@@ -384,6 +387,10 @@ extension Logging {
 
     func logCommand(_ command: Ocp1Command, on controller: AES70OCP1Controller) {
         logInfo("\(controller.identifier) command: \(command)")
+    }
+
+    func logResponse(_ response: Ocp1Response, on controller: AES70OCP1Controller) {
+        logInfo("\(controller.identifier) command: \(response)")
     }
 
     func logError(_ error: Error, on controller: AES70OCP1Controller) {
