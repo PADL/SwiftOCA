@@ -33,7 +33,7 @@ public struct OcaBoundedDeviceProperty<
     public typealias Property = OcaDeviceProperty<OcaBoundedPropertyValue<Value>>
 
     public var wrappedValue: OcaBoundedPropertyValue<Value> {
-        get { fatalError() }
+        get { storage.subject.value }
         nonmutating set { fatalError() }
     }
 

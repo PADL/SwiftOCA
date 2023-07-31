@@ -59,7 +59,7 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
 
     /// Placeholder only
     public var wrappedValue: Value {
-        get { fatalError() }
+        get { subject.value }
         nonmutating set { fatalError() }
     }
 

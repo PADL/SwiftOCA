@@ -35,7 +35,7 @@ public struct OcaVectorDeviceProperty<
     public typealias Property = OcaDeviceProperty<OcaVector2D<Value>>
 
     public var wrappedValue: OcaVector2D<Value> {
-        get { fatalError() }
+        get { storage.subject.value }
         nonmutating set { fatalError() }
     }
 
