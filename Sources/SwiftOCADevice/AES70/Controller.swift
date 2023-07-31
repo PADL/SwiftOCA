@@ -121,7 +121,8 @@ public final class AES70OCP1Controller {
             if keepAliveInterval != 0 {
                 keepAliveTask = Task<(), Error> {
                     repeat {
-                        if lastMessageReceivedTime + 3 * Double(keepAliveInterval / NSEC_PER_SEC) <
+                        if lastMessageReceivedTime +
+                            (3 * Double(keepAliveInterval) / Double(NSEC_PER_SEC)) <
                             Date()
                         {
                             try socket.close() // FIXME: is this thread-safe?
