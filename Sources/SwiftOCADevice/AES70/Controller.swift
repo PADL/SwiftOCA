@@ -28,12 +28,13 @@ public final actor AES70OCP1Controller {
     let hostname: String
     var notificationsEnabled = true
 
-    private nonisolated let socket: AsyncSocket
-    private nonisolated let logger: Logging?
+    private let socket: AsyncSocket
+    private let logger: Logging?
     private let _messages: AsyncThrowingStream<AsyncSyncSequence<[ControllerMessage]>, Error>
     private var keepAliveTask: Task<(), Error>?
     private var subscriptions = [OcaONo: NSMutableSet]()
     private var lastMessageReceivedTime = Date.distantPast
+    private var sockedClosed = false
 
     var messages: AnyAsyncSequence<ControllerMessage> {
         _messages.joined().eraseToAnyAsyncSequence()
@@ -170,7 +171,9 @@ public final actor AES70OCP1Controller {
     }
 
     private func closeSocket() throws {
+        guard !sockedClosed else { return }
         try socket.close()
+        sockedClosed = true
     }
 
     func close(device: AES70OCP1Device) async throws {
@@ -199,21 +202,25 @@ public final actor AES70OCP1Controller {
     func updateLastMessageReceivedTime() {
         lastMessageReceivedTime = Date()
     }
+
+    private nonisolated var fileDescriptor: Socket.FileDescriptor {
+        socket.socket.file
+    }
 }
 
 extension AES70OCP1Controller: Equatable {
     public nonisolated static func == (lhs: AES70OCP1Controller, rhs: AES70OCP1Controller) -> Bool {
-        lhs.socket.socket.file == rhs.socket.socket.file
+        lhs.fileDescriptor == rhs.fileDescriptor
     }
 }
 
 extension AES70OCP1Controller: Hashable {
     public nonisolated func hash(into hasher: inout Hasher) {
-        socket.socket.file.hash(into: &hasher)
+        fileDescriptor.hash(into: &hasher)
     }
 }
 
-extension AES70OCP1Controller {
+private extension AES70OCP1Controller {
     static func makeIdentifier(from socket: Socket) -> String {
         guard let peer = try? socket.remotePeer() else {
             return "unknown"
@@ -238,7 +245,7 @@ extension AES70OCP1Controller {
     }
 }
 
-extension AES70OCP1Controller {
+private extension AES70OCP1Controller {
     static func decodeOcp1Messages<S>(from bytes: S) async throws -> ([Ocp1Message], Bool)
         where S: AsyncChunkedSequence, S.Element == UInt8
     {
@@ -274,7 +281,7 @@ extension AES70OCP1Controller {
     }
 }
 
-extension AsyncThrowingStream
+private extension AsyncThrowingStream
     where Element == AsyncSyncSequence<[AES70OCP1Controller.ControllerMessage]>, Failure == Error
 {
     static func decodingMessages<S: AsyncChunkedSequence>(from bytes: S) -> Self
