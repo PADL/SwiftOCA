@@ -11,9 +11,10 @@
 		D30644012A76CDDE0063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */; };
 		D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644022A76CE310063DA65 /* IdentificationSensor.swift */; };
 		D30644062A770B640063DA65 /* Notification2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644052A770B640063DA65 /* Notification2.swift */; };
-		D30644092A77EB160063DA65 /* BasicSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644072A77EAEA0063DA65 /* BasicSensor.swift */; };
+		D30644092A77EB160063DA65 /* BasicSensorViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644072A77EAEA0063DA65 /* BasicSensorViews.swift */; };
 		D306440B2A78039B0063DA65 /* MirrorWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306440A2A78039B0063DA65 /* MirrorWrapper.swift */; };
 		D306440D2A781C280063DA65 /* Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306440C2A781C280063DA65 /* Codable.swift */; };
+		D306440F2A7832900063DA65 /* IdentificationSensorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306440E2A7832900063DA65 /* IdentificationSensorView.swift */; };
 		D306556D2A524D720083F093 /* PhysicalPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556C2A524D720083F093 /* PhysicalPosition.swift */; };
 		D306556F2A5254D70083F093 /* TimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556E2A5254D70083F093 /* TimeSource.swift */; };
 		D31528802A526E24004B9BAD /* WorkerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */; };
@@ -141,7 +142,7 @@
 		D3E6E28A2A43DB4200BF7095 /* GainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2892A43DB4200BF7095 /* GainView.swift */; };
 		D3E6E2912A441C4A00BF7095 /* DiscreteSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */; };
 		D3E6E2932A441D8000BF7095 /* PanBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2922A441D8000BF7095 /* PanBalanceView.swift */; };
-		D3E6E29B2A44270300BF7095 /* LevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29A2A44270300BF7095 /* LevelSensor.swift */; };
+		D3E6E29B2A44270300BF7095 /* LevelSensorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29A2A44270300BF7095 /* LevelSensorView.swift */; };
 		D3E6E29E2A443CF100BF7095 /* SystemToggleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29D2A443CF100BF7095 /* SystemToggleStyle.swift */; };
 		D3E6E2A02A452D0A00BF7095 /* ScaledLegendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */; };
 /* End PBXBuildFile section */
@@ -184,9 +185,10 @@
 		D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644022A76CE310063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644052A770B640063DA65 /* Notification2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification2.swift; sourceTree = "<group>"; };
-		D30644072A77EAEA0063DA65 /* BasicSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicSensor.swift; sourceTree = "<group>"; };
+		D30644072A77EAEA0063DA65 /* BasicSensorViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicSensorViews.swift; sourceTree = "<group>"; };
 		D306440A2A78039B0063DA65 /* MirrorWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorWrapper.swift; sourceTree = "<group>"; };
 		D306440C2A781C280063DA65 /* Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Codable.swift; sourceTree = "<group>"; };
+		D306440E2A7832900063DA65 /* IdentificationSensorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensorView.swift; sourceTree = "<group>"; };
 		D306556C2A524D720083F093 /* PhysicalPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhysicalPosition.swift; sourceTree = "<group>"; };
 		D306556E2A5254D70083F093 /* TimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSource.swift; sourceTree = "<group>"; };
 		D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkerDataTypes.swift; sourceTree = "<group>"; };
@@ -308,7 +310,7 @@
 		D3E6E2892A43DB4200BF7095 /* GainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GainView.swift; sourceTree = "<group>"; };
 		D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscreteSliderView.swift; sourceTree = "<group>"; };
 		D3E6E2922A441D8000BF7095 /* PanBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanBalanceView.swift; sourceTree = "<group>"; };
-		D3E6E29A2A44270300BF7095 /* LevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LevelSensor.swift; path = Sources/SwiftOCAUI/Views/Workers/Sensors/LevelSensor.swift; sourceTree = SOURCE_ROOT; };
+		D3E6E29A2A44270300BF7095 /* LevelSensorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LevelSensorView.swift; path = Sources/SwiftOCAUI/Views/Workers/Sensors/LevelSensorView.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E29D2A443CF100BF7095 /* SystemToggleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemToggleStyle.swift; sourceTree = "<group>"; };
 		D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledLegendView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -889,8 +891,9 @@
 		D3E6E29C2A44382A00BF7095 /* Sensors */ = {
 			isa = PBXGroup;
 			children = (
-				D30644072A77EAEA0063DA65 /* BasicSensor.swift */,
-				D3E6E29A2A44270300BF7095 /* LevelSensor.swift */,
+				D30644072A77EAEA0063DA65 /* BasicSensorViews.swift */,
+				D3E6E29A2A44270300BF7095 /* LevelSensorView.swift */,
+				D306440E2A7832900063DA65 /* IdentificationSensorView.swift */,
 			);
 			path = Sensors;
 			sourceTree = "<group>";
@@ -1216,6 +1219,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D306440F2A7832900063DA65 /* IdentificationSensorView.swift in Sources */,
 				D3DA69F22A3DF884001250A1 /* MatrixNavigationSplitView.swift in Sources */,
 				D3E6E2632A3D648400BF7095 /* RootBlockView.swift in Sources */,
 				D3E6E25D2A3D2D2500BF7095 /* DetailView.swift in Sources */,
@@ -1223,7 +1227,7 @@
 				D3E6E2A02A452D0A00BF7095 /* ScaledLegendView.swift in Sources */,
 				D3E6E27B2A417FB500BF7095 /* OcaList2D+Extras.swift in Sources */,
 				D3DA69FE2A427C2F001250A1 /* BooleanActuatorView.swift in Sources */,
-				D3E6E29B2A44270300BF7095 /* LevelSensor.swift in Sources */,
+				D3E6E29B2A44270300BF7095 /* LevelSensorView.swift in Sources */,
 				D3E6E2912A441C4A00BF7095 /* DiscreteSliderView.swift in Sources */,
 				D3DA69FB2A3FEF52001250A1 /* DeviceManager.swift in Sources */,
 				D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */,
@@ -1234,7 +1238,7 @@
 				D3DA69EB2A3DCD60001250A1 /* BlockNavigationStackView.swift in Sources */,
 				D3E6E2812A43B33D00BF7095 /* PolarityView.swift in Sources */,
 				D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */,
-				D30644092A77EB160063DA65 /* BasicSensor.swift in Sources */,
+				D30644092A77EB160063DA65 /* BasicSensorViews.swift in Sources */,
 				D3E6E2562A3C550500BF7095 /* View.swift in Sources */,
 				D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */,
 				D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */,

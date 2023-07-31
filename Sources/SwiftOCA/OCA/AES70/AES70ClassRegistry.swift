@@ -141,5 +141,6 @@ public class AES70ClassRegistry {
         register(OcaFloat64Sensor.self)
         register(OcaStringSensor.self)
         register(OcaLevelSensor.self)
+        register(OcaIdentificationSensor.self)
     }
 }
