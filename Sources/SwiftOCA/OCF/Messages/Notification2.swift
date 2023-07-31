@@ -53,7 +53,7 @@ public struct Ocp1Notification2: Ocp1Message, Codable, Sendable {
     public var messageSize: OcaUint32 { notificationSize }
 
     public init(
-        notificationSize: OcaUint32,
+        notificationSize: OcaUint32 = 0,
         event: OcaEvent,
         notificationType: Ocp1Notification2Type,
         data: Data
