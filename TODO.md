@@ -9,6 +9,3 @@ SwiftOCA
 SwiftOCADevice
 --------------
 
-- fix property setting / reference writable
-- fix property enumeration on subclasses
-
