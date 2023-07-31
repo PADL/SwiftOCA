@@ -40,10 +40,10 @@ public actor AES70OCP1Device {
     private let timeout: TimeInterval
     private let logger: Logging? = AES70OCP1Device.defaultLogger()
     private var nextObjectNumber: OcaONo = 4096
-    /// Object interning, main thread only
+    private(set) var controllers: Set<AES70OCP1Controller> = []
+
     var objects = [OcaONo: OcaRoot]()
 
-    /// Root block, immutable
     public var rootBlock: OcaBlock<OcaRoot>!
     public var subscriptionManager: OcaSubscriptionManager!
     public var deviceManager: OcaDeviceManager!
@@ -202,14 +202,14 @@ public actor AES70OCP1Device {
         throw SocketError.disconnected
     }
 
-    private(set) var controllers: Set<AES70OCP1Controller> = []
-
     private func handleController(_ controller: AES70OCP1Controller) async {
         logger?.logControllerAdded(controller)
         controllers.insert(controller)
         do {
             for try await (message, rrq) in controller.messages {
                 var response: Ocp1Response?
+
+                controller.lastMessageReceivedTime = Date()
 
                 switch message {
                 case let command as Ocp1Command:
@@ -246,6 +246,9 @@ public actor AES70OCP1Device {
     ) async throws {
         await withTaskGroup(of: Void.self) { taskGroup in
             for controller in controllers {
+                guard controller.notificationsEnabled else {
+                    continue
+                }
                 taskGroup.addTask {
                     try? await controller.notifySubscribers(
                         event,
