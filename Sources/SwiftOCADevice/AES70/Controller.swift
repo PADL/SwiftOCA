@@ -117,15 +117,17 @@ public final actor AES70OCP1Controller {
         try await sendMessage(notification, type: .ocaNtf1)
     }
 
+    var connectionIsStale: Bool {
+        lastMessageReceivedTime + 3 * TimeInterval(keepAliveInterval) /
+            TimeInterval(NSEC_PER_SEC) < Date()
+    }
+
     var keepAliveInterval: UInt64 = 0 {
         didSet {
             if keepAliveInterval != 0 {
                 keepAliveTask = Task<(), Error> {
                     repeat {
-                        if lastMessageReceivedTime +
-                            (3 * Double(keepAliveInterval) / Double(NSEC_PER_SEC)) <
-                            Date()
-                        {
+                        if connectionIsStale {
                             try self.closeSocket()
                             break
                         }
