@@ -11,6 +11,7 @@
 		D30644012A76CDDE0063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */; };
 		D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644022A76CE310063DA65 /* IdentificationSensor.swift */; };
 		D30644062A770B640063DA65 /* Notification2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644052A770B640063DA65 /* Notification2.swift */; };
+		D30644092A77EB160063DA65 /* BasicSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644072A77EAEA0063DA65 /* BasicSensor.swift */; };
 		D306556D2A524D720083F093 /* PhysicalPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556C2A524D720083F093 /* PhysicalPosition.swift */; };
 		D306556F2A5254D70083F093 /* TimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556E2A5254D70083F093 /* TimeSource.swift */; };
 		D31528802A526E24004B9BAD /* WorkerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */; };
@@ -182,6 +183,7 @@
 		D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644022A76CE310063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644052A770B640063DA65 /* Notification2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification2.swift; sourceTree = "<group>"; };
+		D30644072A77EAEA0063DA65 /* BasicSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicSensor.swift; sourceTree = "<group>"; };
 		D306556C2A524D720083F093 /* PhysicalPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhysicalPosition.swift; sourceTree = "<group>"; };
 		D306556E2A5254D70083F093 /* TimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSource.swift; sourceTree = "<group>"; };
 		D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkerDataTypes.swift; sourceTree = "<group>"; };
@@ -884,6 +886,7 @@
 		D3E6E29C2A44382A00BF7095 /* Sensors */ = {
 			isa = PBXGroup;
 			children = (
+				D30644072A77EAEA0063DA65 /* BasicSensor.swift */,
 				D3E6E29A2A44270300BF7095 /* LevelSensor.swift */,
 			);
 			path = Sensors;
@@ -1227,6 +1230,7 @@
 				D3DA69EB2A3DCD60001250A1 /* BlockNavigationStackView.swift in Sources */,
 				D3E6E2812A43B33D00BF7095 /* PolarityView.swift in Sources */,
 				D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */,
+				D30644092A77EB160063DA65 /* BasicSensor.swift in Sources */,
 				D3E6E2562A3C550500BF7095 /* View.swift in Sources */,
 				D3E6E2582A3C550800BF7095 /* ShowProgressIfWaiting.swift in Sources */,
 				D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */,
