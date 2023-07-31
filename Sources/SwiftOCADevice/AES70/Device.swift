@@ -280,7 +280,7 @@ public actor AES70OCP1Device {
         } catch let Ocp1Error.status(status) {
             return .init(responseSize: 0, handle: command.handle, statusCode: status)
         } catch {
-            return .init(responseSize: 0, handle: command.handle, statusCode: .invalidRequest)
+            return .init(responseSize: 0, handle: command.handle, statusCode: .deviceError)
         }
     }
 
