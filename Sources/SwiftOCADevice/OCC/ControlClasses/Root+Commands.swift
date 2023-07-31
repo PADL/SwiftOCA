@@ -26,14 +26,12 @@ extension OcaRoot {
     }
 
     private func parameterCount(for mirror: Mirror) -> OcaUint8 {
-        var count: OcaUint8
+        let count: OcaUint8
 
         switch mirror.displayStyle {
         case .struct:
             fallthrough
         case .class:
-            fallthrough
-        case .enum:
             count = OcaUint8(mirror.children.count)
         // FIXME: we'll probably need to use Echo for Optional
         default:
