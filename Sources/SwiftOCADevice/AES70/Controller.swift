@@ -31,6 +31,7 @@ public final class AES70OCP1Controller {
     private let _messages: AsyncThrowingStream<AsyncSyncSequence<[ControllerMessage]>, Error>
     private var keepAliveTask: Task<(), Error>?
     private var subscriptions = [OcaONo: NSMutableSet]()
+    var lastMessageReceivedTime = Date.distantPast
     var notificationsEnabled = true
 
     var messages: AnyAsyncSequence<ControllerMessage> {
@@ -120,6 +121,12 @@ public final class AES70OCP1Controller {
             if keepAliveInterval != 0 {
                 keepAliveTask = Task<(), Error> {
                     repeat {
+                        if lastMessageReceivedTime + 3 * Double(keepAliveInterval / NSEC_PER_SEC) <
+                            Date()
+                        {
+                            try socket.close() // FIXME: is this thread-safe?
+                            break
+                        }
                         try await sendKeepAlive()
                         try await Task.sleep(nanoseconds: keepAliveInterval)
                     } while !Task.isCancelled
