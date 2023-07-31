@@ -16,11 +16,11 @@
 
 import Foundation
 
-public class OcaBasicSensor: OcaSensor {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1") }
+open class OcaBasicSensor: OcaSensor {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1") }
 }
 
-public class OcaGenericBasicSensor<T: Codable & Comparable>: OcaBasicSensor {
+open class OcaGenericBasicSensor<T: Codable & Comparable>: OcaBasicSensor {
     @OcaBoundedProperty(
         propertyID: OcaPropertyID("5.1"),
         getMethodID: OcaMethodID("5.1")
@@ -28,7 +28,7 @@ public class OcaGenericBasicSensor<T: Codable & Comparable>: OcaBasicSensor {
     public var reading: OcaBoundedProperty<T>.State
 }
 
-public class OcaBooleanSensor: OcaBasicSensor {
+open class OcaBooleanSensor: OcaBasicSensor {
     override public class var classID: OcaClassID { OcaClassID("1.1.2.1.1") }
 
     @OcaProperty(
@@ -38,46 +38,46 @@ public class OcaBooleanSensor: OcaBasicSensor {
     public var reading: OcaProperty<Bool>.State
 }
 
-public class OcaInt8Sensor: OcaGenericBasicSensor<OcaInt8> {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1.2") }
+open class OcaInt8Sensor: OcaGenericBasicSensor<OcaInt8> {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.2") }
 }
 
-public class OcaInt16Sensor: OcaGenericBasicSensor<OcaInt16> {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1.3") }
+open class OcaInt16Sensor: OcaGenericBasicSensor<OcaInt16> {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.3") }
 }
 
-public class OcaInt32Sensor: OcaGenericBasicSensor<OcaInt32> {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1.4") }
+open class OcaInt32Sensor: OcaGenericBasicSensor<OcaInt32> {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.4") }
 }
 
-public class OcaInt64Sensor: OcaGenericBasicSensor<OcaInt64> {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1.5") }
+open class OcaInt64Sensor: OcaGenericBasicSensor<OcaInt64> {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.5") }
 }
 
-public class OcaUint8Sensor: OcaGenericBasicSensor<OcaUint8> {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1.6") }
+open class OcaUint8Sensor: OcaGenericBasicSensor<OcaUint8> {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.6") }
 }
 
-public class OcaUint16Sensor: OcaGenericBasicSensor<OcaUint16> {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1.7") }
+open class OcaUint16Sensor: OcaGenericBasicSensor<OcaUint16> {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.7") }
 }
 
-public class OcaUint32Sensor: OcaGenericBasicSensor<OcaUint32> {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1.8") }
+open class OcaUint32Sensor: OcaGenericBasicSensor<OcaUint32> {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.8") }
 }
 
-public class OcaUint64Sensor: OcaGenericBasicSensor<OcaUint64> {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1.9") }
+open class OcaUint64Sensor: OcaGenericBasicSensor<OcaUint64> {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.9") }
 }
 
-public class OcaFloat32Sensor: OcaGenericBasicSensor<OcaFloat32> {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1.10") }
+open class OcaFloat32Sensor: OcaGenericBasicSensor<OcaFloat32> {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.10") }
 }
 
-public class OcaFloat64Sensor: OcaGenericBasicSensor<OcaFloat64> {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1.11") }
+open class OcaFloat64Sensor: OcaGenericBasicSensor<OcaFloat64> {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.11") }
 }
 
-public class OcaStringSensor: OcaGenericBasicSensor<OcaString> {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1.12") }
+open class OcaStringSensor: OcaGenericBasicSensor<OcaString> {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.12") }
 }

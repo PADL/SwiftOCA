@@ -16,8 +16,8 @@
 
 import Foundation
 
-public class OcaLevelSensor: OcaSensor {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.2") }
+open class OcaLevelSensor: OcaSensor {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.2") }
 
     @OcaBoundedProperty(
         propertyID: OcaPropertyID("4.1"),

@@ -22,7 +22,7 @@ public enum OcaSubscriptionManagerState: OcaUint8, Codable {
     case eventsDisabled = 2
 }
 
-public class OcaSubscriptionManager: OcaManager {
+open class OcaSubscriptionManager: OcaManager {
     override public class var classID: OcaClassID { OcaClassID("1.3.4") }
 
     @OcaProperty(propertyID: OcaPropertyID("3.1"))

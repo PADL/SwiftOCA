@@ -16,8 +16,8 @@
 
 import Foundation
 
-public class OcaPanBalance: OcaActuator {
-    override public class var classID: OcaClassID { OcaClassID("1.1.1.6") }
+open class OcaPanBalance: OcaActuator {
+    override open class var classID: OcaClassID { OcaClassID("1.1.1.6") }
 
     @OcaBoundedProperty(
         propertyID: OcaPropertyID("4.1"),

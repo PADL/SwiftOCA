@@ -49,7 +49,7 @@ public enum OcaResetCause: OcaUint16, Codable {
     case externalRequest = 3
 }
 
-public class OcaDeviceManager: OcaManager {
+open class OcaDeviceManager: OcaManager {
     override public class var classID: OcaClassID { OcaClassID("1.3.1") }
 
     @OcaProperty(

@@ -21,8 +21,8 @@ public enum OcaMuteState: OcaUint8, Codable {
     case unmuted = 2
 }
 
-public class OcaMute: OcaActuator {
-    override public class var classID: OcaClassID { OcaClassID("1.1.1.2") }
+open class OcaMute: OcaActuator {
+    override open class var classID: OcaClassID { OcaClassID("1.1.1.2") }
 
     @OcaProperty(
         propertyID: OcaPropertyID("4.1"),

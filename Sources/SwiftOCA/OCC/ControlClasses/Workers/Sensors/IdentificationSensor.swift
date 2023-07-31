@@ -16,8 +16,8 @@
 
 import Foundation
 
-public class OcaIdentificationSensor: OcaSensor {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.6") }
+open class OcaIdentificationSensor: OcaSensor {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.6") }
 
     public static let identifyEventID = OcaEventID(defLevel: 4, eventIndex: 1)
 

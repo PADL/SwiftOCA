@@ -16,8 +16,8 @@
 
 import Foundation
 
-public class OcaSwitch: OcaActuator {
-    override public class var classID: OcaClassID { OcaClassID("1.1.1.4") }
+open class OcaSwitch: OcaActuator {
+    override open class var classID: OcaClassID { OcaClassID("1.1.1.4") }
 
     @OcaBoundedProperty(
         propertyID: OcaPropertyID("4.1"),

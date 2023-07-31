@@ -16,7 +16,7 @@
 
 import Foundation
 
-public class OcaWorker: OcaRoot {
+open class OcaWorker: OcaRoot {
     override public class var classID: OcaClassID { OcaClassID("1.1.1") }
 
     @OcaProperty(

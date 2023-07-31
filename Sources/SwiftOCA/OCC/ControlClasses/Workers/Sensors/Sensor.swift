@@ -24,8 +24,8 @@ public enum OcaSensorReadingState: OcaUint8, Codable {
     case error = 4
 }
 
-public class OcaSensor: OcaWorker {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2") }
+open class OcaSensor: OcaWorker {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2") }
 
     @OcaProperty(
         propertyID: OcaPropertyID("4.1"),

@@ -25,7 +25,7 @@ import OpenCombine
 protocol ObservableObject {} // placeholder
 #endif
 
-public class OcaRoot: CustomStringConvertible, ObservableObject {
+open class OcaRoot: CustomStringConvertible, ObservableObject {
     typealias Root = OcaRoot
 
     weak var connectionDelegate: AES70OCP1Connection?
@@ -79,7 +79,7 @@ public class OcaRoot: CustomStringConvertible, ObservableObject {
         await _role.subscribe(self)
     }
 
-    required init(objectNumber: OcaONo) {
+    public required init(objectNumber: OcaONo) {
         self.objectNumber = objectNumber
     }
 

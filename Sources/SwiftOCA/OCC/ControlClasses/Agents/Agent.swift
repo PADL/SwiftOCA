@@ -23,7 +23,7 @@ struct OcaGetPathParameters: Codable, OcaParameterCountReflectable {
     var oNoPath: OcaONoPath
 }
 
-public class OcaAgent: OcaRoot {
+open class OcaAgent: OcaRoot {
     override public class var classID: OcaClassID { OcaClassID("1.2") }
 
     @OcaProperty(

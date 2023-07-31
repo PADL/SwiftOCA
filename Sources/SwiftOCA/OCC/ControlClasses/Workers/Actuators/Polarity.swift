@@ -21,8 +21,8 @@ public enum OcaPolarityState: OcaUint8, Codable {
     case inverted = 2
 }
 
-public class OcaPolarity: OcaActuator {
-    override public class var classID: OcaClassID { OcaClassID("1.1.1.3") }
+open class OcaPolarity: OcaActuator {
+    override open class var classID: OcaClassID { OcaClassID("1.1.1.3") }
 
     @OcaProperty(
         propertyID: OcaPropertyID("4.1"),

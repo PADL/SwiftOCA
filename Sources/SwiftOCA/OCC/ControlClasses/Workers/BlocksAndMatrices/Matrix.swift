@@ -18,8 +18,8 @@ import Foundation
 
 public typealias OcaMatrixCoordinate = OcaUint16
 
-public class OcaMatrix: OcaWorker {
-    override public class var classID: OcaClassID { OcaClassID("1.1.5") }
+open class OcaMatrix: OcaWorker {
+    override open class var classID: OcaClassID { OcaClassID("1.1.5") }
 
     @OcaVectorProperty(
         xPropertyID: OcaPropertyID("3.1"),

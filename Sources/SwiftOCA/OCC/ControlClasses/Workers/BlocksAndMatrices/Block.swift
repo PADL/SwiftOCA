@@ -39,8 +39,8 @@ public struct OcaContainerObjectMember {
     }
 }
 
-public class OcaBlock: OcaWorker {
-    override public class var classID: OcaClassID { OcaClassID("1.1.3") }
+open class OcaBlock: OcaWorker {
+    override open class var classID: OcaClassID { OcaClassID("1.1.3") }
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.1"),
