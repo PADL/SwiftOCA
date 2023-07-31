@@ -131,19 +131,26 @@ private extension String {
 }
 
 public extension OcaRoot {
-    private subscript(checkedMirrorDescendant key: String) -> Any {
-        Mirror(reflecting: self).descendant(key)!
+    private subscript(_ wrapper: _MirrorWrapper, checkedMirrorDescendant key: String) -> Any {
+        wrapper.wrappedValue.descendant(key)!
     }
 
     private var allKeyPaths: [String: PartialKeyPath<OcaRoot>] {
         // TODO: Mirror is inefficient
         var membersToKeyPaths = [String: PartialKeyPath<OcaRoot>]()
-        let mirror = Mirror(reflecting: self)
-        for case let (key?, _) in mirror.children {
-            guard let dictionaryKey = key.deletingPrefix("_") else { continue }
-            membersToKeyPaths[dictionaryKey] = \Self
-                .[checkedMirrorDescendant: key] as PartialKeyPath
-        }
+        var mirror: Mirror? = Mirror(reflecting: self)
+
+        repeat {
+            if let mirror {
+                for case let (key?, _) in mirror.children {
+                    guard let dictionaryKey = key.deletingPrefix("_") else { continue }
+                    membersToKeyPaths[dictionaryKey] = \Self
+                        .[_MirrorWrapper(mirror), checkedMirrorDescendant: key] as PartialKeyPath
+                }
+            }
+            mirror = mirror?.superclassMirror
+        } while mirror != nil
+
         return membersToKeyPaths
     }
 
