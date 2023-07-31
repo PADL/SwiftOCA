@@ -17,12 +17,48 @@
 import Foundation
 import SwiftOCA
 
-open class OcaGenericBasicSensor<T: Codable>: OcaSensor {
-    @OcaDeviceProperty
-    public var reading: T
+open class OcaGenericBasicSensor<T: Codable & Comparable>: OcaSensor {
+    @OcaBoundedDeviceProperty
+    public var reading: OcaBoundedPropertyValue<T>
 
     public init(
-        _ initialReading: T,
+        _ initialReading: OcaBoundedPropertyValue<T>,
+        objectNumber: OcaONo? = nil,
+        lockable: OcaBoolean = false,
+        role: OcaString = "Root",
+        deviceDelegate: AES70OCP1Device? = nil,
+        addToRootBlock: Bool = true
+    ) async throws {
+        _reading = OcaBoundedDeviceProperty(
+            wrappedValue: initialReading,
+            propertyID: OcaPropertyID("5.1"),
+            getMethodID: OcaMethodID("5.1")
+        )
+        try await super.init(
+            objectNumber: objectNumber,
+            lockable: lockable,
+            role: role,
+            deviceDelegate: deviceDelegate,
+            addToRootBlock: addToRootBlock
+        )
+    }
+}
+
+open class OcaBasicSensor: OcaSensor {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1") }
+}
+
+open class OcaBooleanSensor: OcaSensor {
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.1") }
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("5.1"),
+        getMethodID: OcaMethodID("5.1")
+    )
+    public var reading = false
+
+    public init(
+        _ initialReading: Bool,
         objectNumber: OcaONo? = nil,
         lockable: OcaBoolean = false,
         role: OcaString = "Root",
@@ -42,14 +78,6 @@ open class OcaGenericBasicSensor<T: Codable>: OcaSensor {
             addToRootBlock: addToRootBlock
         )
     }
-}
-
-open class OcaBasicSensor: OcaSensor {
-    override open class var classID: OcaClassID { OcaClassID("1.1.2.1") }
-}
-
-open class OcaBooleanSensor: OcaGenericBasicSensor<OcaBoolean> {
-    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.1") }
 }
 
 open class OcaInt8Sensor: OcaGenericBasicSensor<OcaInt8> {
