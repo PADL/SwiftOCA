@@ -5,6 +5,7 @@ SwiftOCA
 - WebSocket support
 - SPI support
 - fix class version logic
+- tests
 
 SwiftOCADevice
 --------------
