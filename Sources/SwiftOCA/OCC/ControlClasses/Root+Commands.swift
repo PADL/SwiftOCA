@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryCoder
 import Foundation
 
 // TODO: clean this up so there aren't so many functions!
@@ -118,6 +119,15 @@ extension OcaRoot {
 
     struct NullCodable: Codable {}
 
+    private func decodeResponse<U: Decodable>(_ type: U.Type, from data: Data) throws -> U {
+        let decoder = Ocp1BinaryDecoder()
+        do {
+            return try decoder.decode(U.self, from: data)
+        } catch BinaryDecodingError.eofTooEarly {
+            throw Ocp1Error.pduTooShort
+        }
+    }
+
     func sendCommandRrq<T: Encodable, U: Decodable>(
         methodID: OcaMethodID,
         parameterCount: OcaUint8 = 0,
@@ -136,8 +146,7 @@ extension OcaRoot {
             responseParameterData: &responseParameterData
         )
         if responseParameterCount != 0 {
-            let decoder = Ocp1BinaryDecoder()
-            responseParameters = try decoder.decode(U.self, from: responseParameterData)
+            responseParameters = try decodeResponse(U.self, from: responseParameterData)
         }
     }
 
@@ -263,8 +272,7 @@ extension OcaRoot {
             responseParameterData: &responseParameterData
         )
 
-        let decoder = Ocp1BinaryDecoder()
-        return try decoder.decode(U.self, from: responseParameterData)
+        return try decodeResponse(U.self, from: responseParameterData)
     }
 
     func sendCommandRrq<T: Encodable, U: Decodable>(
@@ -284,7 +292,6 @@ extension OcaRoot {
             responseParameters: &responseParameterData
         )
 
-        let decoder = Ocp1BinaryDecoder()
-        return try decoder.decode(U.self, from: responseParameterData)
+        return try decodeResponse(U.self, from: responseParameterData)
     }
 }

@@ -14,14 +14,19 @@
 // limitations under the License.
 //
 
+import BinaryCoder
 import Foundation
 import SwiftOCA
 
 extension OcaRoot {
-    public func decodeCommand<U: Codable>(_ command: Ocp1Command) throws -> U {
+    public func decodeCommand<U: Decodable>(_ command: Ocp1Command) throws -> U {
         // FIXME: verify parameterCount
         let decoder = Ocp1BinaryDecoder()
-        return try decoder.decode(U.self, from: command.parameters.parameterData)
+        do {
+            return try decoder.decode(U.self, from: command.parameters.parameterData)
+        } catch BinaryDecodingError.eofTooEarly {
+            throw Ocp1Error.pduTooShort
+        }
     }
 
     private func parameterCount(for mirror: Mirror) -> OcaUint8 {
