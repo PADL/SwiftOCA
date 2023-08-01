@@ -64,7 +64,10 @@ let package = Package(
                 "SwiftOCADevice",
                 .product(name: "FlyingSocks", package: "FlyingFox"),
             ],
-            path: "Examples/OCALoopbackDevice"
+            path: "Examples/OCALoopbackDevice",
+            exclude: [
+                "README.md"
+            ]
         ),
     ],
     swiftLanguageVersions: [.v5]
