@@ -169,13 +169,15 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         add(object: deviceManager)
     }
 
-    func getNextCommandHandle() async -> OcaUint32 {
+    // FIXME: why does need to be public for non-debug builds to link?
+    public func getNextCommandHandle() async -> OcaUint32 {
         let handle = nextCommandHandle
         nextCommandHandle += 1
         return handle
     }
 
-    func reconnectDevice() async throws {
+    // FIXME: why does need to be public for non-debug builds to link?
+    public func reconnectDevice() async throws {
         try await disconnectDevice(clearObjectCache: false)
         try await connectDevice()
     }
