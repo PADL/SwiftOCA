@@ -26,7 +26,7 @@ open class OcaGenericBasicSensor<T: Codable & Comparable>: OcaSensor {
         objectNumber: OcaONo? = nil,
         lockable: OcaBoolean = false,
         role: OcaString = "Root",
-        deviceDelegate: AES70OCP1Device? = nil,
+        deviceDelegate: AES70Device? = nil,
         addToRootBlock: Bool = true
     ) async throws {
         _reading = OcaBoundedDeviceProperty(
@@ -62,7 +62,7 @@ open class OcaBooleanSensor: OcaSensor {
         objectNumber: OcaONo? = nil,
         lockable: OcaBoolean = false,
         role: OcaString = "Root",
-        deviceDelegate: AES70OCP1Device? = nil,
+        deviceDelegate: AES70Device? = nil,
         addToRootBlock: Bool = true
     ) async throws {
         _reading = OcaDeviceProperty(

@@ -34,19 +34,19 @@ import SwiftOCA
 let NSEC_PER_MSEC: UInt64 = 1_000_000
 let NSEC_PER_SEC: UInt64 = 1_000_000_000
 
-public actor AES70OCP1Device: AES70Device {
+public actor AES70OCP1Device: AES70DevicePrivate {
+    public internal(set) var objects = [OcaONo: OcaRoot]()
+
+    public var rootBlock: OcaBlock<OcaRoot>!
+    public var subscriptionManager: OcaSubscriptionManager!
+    public var deviceManager: OcaDeviceManager!
+
     let pool: AsyncSocketPool
     private var address: sockaddr_storage
     private let timeout: TimeInterval
     private let logger: Logging? = AES70OCP1Device.defaultLogger()
     private var nextObjectNumber: OcaONo = 4096
     private(set) var controllers: Set<AES70OCP1Controller> = []
-
-    public private(set) var objects = [OcaONo: OcaRoot]()
-
-    public var rootBlock: OcaBlock<OcaRoot>!
-    public var subscriptionManager: OcaSubscriptionManager!
-    public var deviceManager: OcaDeviceManager!
 
     public init(
         address: Data,
@@ -73,21 +73,6 @@ public actor AES70OCP1Device: AES70Device {
 
     var listeningAddress: Socket.Address? {
         try? state?.socket.sockname()
-    }
-
-    public func register(object: OcaRoot, addToRootBlock: Bool = true) throws {
-        precondition(
-            object.objectNumber != OcaInvalidONo,
-            "cannot register object with invalid ONo"
-        )
-        guard objects[object.objectNumber] == nil else {
-            throw Ocp1Error.status(.badONo)
-        }
-        objects[object.objectNumber] = object
-        if addToRootBlock {
-            precondition(object.objectNumber != OcaRootBlockONo)
-            try rootBlock.add(member: object)
-        }
     }
 
     public func allocateObjectNumber() -> OcaONo {
@@ -202,6 +187,13 @@ public actor AES70OCP1Device: AES70Device {
         throw SocketError.disconnected
     }
 
+    func handleCommand(
+        _ command: Ocp1Command,
+        from controller: any AES70Controller
+    ) async -> Ocp1Response {
+        await handleCommand(command, timeout: timeout, from: controller)
+    }
+
     private func handleController(_ controller: AES70OCP1Controller) async {
         logger?.logControllerAdded(controller)
         controllers.insert(controller)
@@ -261,34 +253,6 @@ public actor AES70OCP1Device: AES70Device {
                     )
                 }
             }
-        }
-    }
-
-    func handleCommand(
-        _ command: Ocp1Command,
-        from controller: AES70OCP1Controller
-    ) async -> Ocp1Response {
-        await handleCommand(command, timeout: timeout, from: controller)
-    }
-
-    func handleCommand(
-        _ command: Ocp1Command,
-        timeout: TimeInterval,
-        from controller: AES70OCP1Controller
-    ) async -> Ocp1Response {
-        do {
-            let object = objects[command.targetONo]
-            guard let object else {
-                throw Ocp1Error.status(.badONo)
-            }
-
-            return try await withThrowingTimeout(seconds: timeout) {
-                try await object.handleCommand(command, from: controller)
-            }
-        } catch let Ocp1Error.status(status) {
-            return .init(responseSize: 0, handle: command.handle, statusCode: status)
-        } catch {
-            return .init(responseSize: 0, handle: command.handle, statusCode: .deviceError)
         }
     }
 

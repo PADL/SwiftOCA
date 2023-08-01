@@ -54,7 +54,7 @@ public struct AES70OCP1ConnectionOptions {
 }
 
 @MainActor
-public class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
+open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
     public static let MinimumPduSize = 7
 
     let options: AES70OCP1ConnectionOptions
@@ -82,8 +82,10 @@ public class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
     private var nextCommandHandle = OcaUint32(100)
 
     var lastMessageSentTime = Date.distantPast
-    public nonisolated var connectionPrefix: String {
-        fatalError("read must be implemented by a concrete subclass of AES70OCP1Connection")
+    open nonisolated var connectionPrefix: String {
+        fatalError(
+            "connectionPrefix must be implemented by a concrete subclass of AES70OCP1Connection"
+        )
     }
 
     /// Monitor structure for matching requests and responses
@@ -207,7 +209,7 @@ public class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         debugPrint("Connected to \(self)")
     }
 
-    func disconnectDevice(clearObjectCache: Bool) async throws {
+    open func disconnectDevice(clearObjectCache: Bool) async throws {
         if let keepAliveTask {
             keepAliveTask.cancel()
             self.keepAliveTask = nil
@@ -236,11 +238,11 @@ public class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
     }
 
     /// API to be impmlemented by concrete classes
-    func read(_ length: Int) async throws -> Data {
+    open func read(_ length: Int) async throws -> Data {
         fatalError("read must be implemented by a concrete subclass of AES70OCP1Connection")
     }
 
-    func write(_ data: Data) async throws -> Int {
+    open func write(_ data: Data) async throws -> Int {
         fatalError("write must be implemented by a concrete subclass of AES70OCP1Connection")
     }
 }

@@ -124,7 +124,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         try await super.connectDevice()
     }
 
-    override func disconnectDevice(clearObjectCache: Bool) async throws {
+    override public func disconnectDevice(clearObjectCache: Bool) async throws {
         if let cfSocket {
             CFSocketInvalidate(cfSocket)
             self.cfSocket = nil
@@ -142,7 +142,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         }
     }
 
-    override func read(_ length: Int) async throws -> Data {
+    override public func read(_ length: Int) async throws -> Data {
         while receivedData.count < length {
             await drainChannel(atLeast: length)
         }
@@ -154,7 +154,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         return data
     }
 
-    override func write(_ data: Data) async throws -> Int {
+    override public func write(_ data: Data) async throws -> Int {
         guard let cfSocket else {
             throw Ocp1Error.notConnected
         }
@@ -172,7 +172,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
     }
 }
 
-public class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
+public final class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
     override public var keepAliveInterval: OcaUint16 {
         1
     }
@@ -190,7 +190,7 @@ public class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
     }
 }
 
-public class AES70OCP1CFSocketTCPConnection: AES70OCP1CFSocketConnection {
+public final class AES70OCP1CFSocketTCPConnection: AES70OCP1CFSocketConnection {
     override fileprivate var type: Int32 {
         #if canImport(Darwin)
         SOCK_STREAM

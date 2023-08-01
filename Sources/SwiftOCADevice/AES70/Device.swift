@@ -23,6 +23,8 @@
 //  SOFTWARE.
 //
 
+@_spi(Private) @_implementationOnly
+import func FlyingSocks.withThrowingTimeout
 import Foundation
 import SwiftOCA
 
@@ -46,6 +48,10 @@ public protocol AES70Device: Actor {
     ) async throws
 }
 
+protocol AES70DevicePrivate: AES70Device {
+    var objects: [OcaONo: OcaRoot] { get set }
+}
+
 public extension AES70Device {
     func notifySubscribers(_ event: OcaEvent) async throws {
         try await notifySubscribers(event, parameters: Data())
@@ -53,5 +59,47 @@ public extension AES70Device {
 
     func register(object: OcaRoot) throws {
         try register(object: object, addToRootBlock: true)
+    }
+}
+
+extension AES70DevicePrivate {
+    public func register(object: OcaRoot, addToRootBlock: Bool = true) throws {
+        precondition(
+            object.objectNumber != OcaInvalidONo,
+            "cannot register object with invalid ONo"
+        )
+        guard objects[object.objectNumber] == nil else {
+            throw Ocp1Error.status(.badONo)
+        }
+        objects[object.objectNumber] = object
+        if addToRootBlock {
+            precondition(object.objectNumber != OcaRootBlockONo)
+            try rootBlock.add(member: object)
+        }
+    }
+
+    func handleCommand(
+        _ command: Ocp1Command,
+        timeout: TimeInterval? = nil,
+        from controller: any AES70Controller
+    ) async -> Ocp1Response {
+        do {
+            let object = objects[command.targetONo]
+            guard let object else {
+                throw Ocp1Error.status(.badONo)
+            }
+
+            if let timeout {
+                return try await withThrowingTimeout(seconds: timeout) {
+                    try await object.handleCommand(command, from: controller)
+                }
+            } else {
+                return try await object.handleCommand(command, from: controller)
+            }
+        } catch let Ocp1Error.status(status) {
+            return .init(responseSize: 0, handle: command.handle, statusCode: status)
+        } catch {
+            return .init(responseSize: 0, handle: command.handle, statusCode: .deviceError)
+        }
     }
 }

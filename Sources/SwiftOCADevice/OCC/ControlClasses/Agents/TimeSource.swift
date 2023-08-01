@@ -68,7 +68,7 @@ public class OcaTimeSource: OcaAgent {
 
     override open func handleCommand(
         _ command: Ocp1Command,
-        from controller: AES70OCP1Controller
+        from controller: any AES70Controller
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.1"):

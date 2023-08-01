@@ -114,7 +114,7 @@ open class OcaDeviceManager: OcaManager {
     )
     public var deviceRevisionID = ""
 
-    public convenience init(deviceDelegate: AES70OCP1Device? = nil) async throws {
+    public convenience init(deviceDelegate: AES70Device? = nil) async throws {
         try await self.init(
             objectNumber: OcaDeviceManagerONo,
             role: "Device Manager",

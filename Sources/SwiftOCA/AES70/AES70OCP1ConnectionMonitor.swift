@@ -45,7 +45,7 @@ extension AES70OCP1Connection.Monitor {
             throw Ocp1Error.invalidPduSize
         }
 
-        let bytesLeft = Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1)
+        let bytesLeft = Int(pduSize) + 1 - messagePduData.count
         if bytesLeft > 0 {
             messagePduData += try await connection.read(bytesLeft)
         }

@@ -94,7 +94,7 @@ open class OcaBlock<Member: OcaRoot>: OcaWorker {
         try await applyRecursive(members: members, block)
     }
 
-    func getRecursive(from controller: AES70OCP1Controller) async throws
+    func getRecursive(from controller: any AES70Controller) async throws
         -> OcaList<OcaBlockMember>
     {
         var members = [OcaBlockMember]()
@@ -111,7 +111,7 @@ open class OcaBlock<Member: OcaRoot>: OcaWorker {
         return members
     }
 
-    func getRecursive(from controller: AES70OCP1Controller) async throws
+    func getRecursive(from controller: any AES70Controller) async throws
         -> OcaMap<OcaUint16, OcaSignalPath>
     {
         throw Ocp1Error.notImplemented
@@ -119,7 +119,7 @@ open class OcaBlock<Member: OcaRoot>: OcaWorker {
 
     override open func handleCommand(
         _ command: Ocp1Command,
-        from controller: AES70OCP1Controller
+        from controller: any AES70Controller
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.5"):

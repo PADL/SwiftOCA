@@ -81,7 +81,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
         override open func handleCommand(
             _ command: Ocp1Command,
-            from controller: AES70OCP1Controller
+            from controller: any AES70Controller
         ) async throws -> Ocp1Response {
             var response: Ocp1Response?
             var lastStatus: OcaStatus?
@@ -131,26 +131,26 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         }
     }
 
-    private func lockSelfAndProxy(controller: AES70OCP1Controller) throws {
+    private func lockSelfAndProxy(controller: any AES70Controller) throws {
         guard lockable else { return }
 
         switch lockState {
         case .unlocked:
             lockStatePriorToSetCurrentXY = .unlocked
-            lockState = .lockedNoReadWrite(controller)
+            lockState = .lockedNoReadWrite(controller.id)
         case let .lockedNoWrite(lockholder):
             fallthrough
         case let .lockedNoReadWrite(lockholder):
-            guard controller == lockholder else {
+            guard controller.id == lockholder else {
                 throw Ocp1Error.status(.locked)
             }
             lockStatePriorToSetCurrentXY = lockState
-            lockState = .lockedNoReadWrite(controller)
+            lockState = .lockedNoReadWrite(controller.id)
         }
         proxy.lockState = lockState
     }
 
-    fileprivate func unlockSelfAndProxy(controller: AES70OCP1Controller) throws {
+    fileprivate func unlockSelfAndProxy(controller: any AES70Controller) throws {
         guard lockable else { return }
 
         guard let lockStatePriorToSetCurrentXY else {
@@ -163,7 +163,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         case let .lockedNoWrite(lockholder):
             fallthrough
         case let .lockedNoReadWrite(lockholder):
-            guard controller == lockholder else {
+            guard controller.id == lockholder else {
                 throw Ocp1Error.status(.locked)
             }
             lockState = lockStatePriorToSetCurrentXY
@@ -255,7 +255,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
     override open func handleCommand(
         _ command: Ocp1Command,
-        from controller: AES70OCP1Controller
+        from controller: any AES70Controller
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.3"):

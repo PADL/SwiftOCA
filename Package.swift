@@ -58,6 +58,14 @@ let package = Package(
             ],
             path: "Examples/OCADevice"
         ),
+        .executableTarget(
+            name: "OCALoopbackDevice",
+            dependencies: [
+                "SwiftOCADevice",
+                .product(name: "FlyingSocks", package: "FlyingFox"),
+            ],
+            path: "Examples/OCALoopbackDevice"
+        ),
     ],
     swiftLanguageVersions: [.v5]
 )

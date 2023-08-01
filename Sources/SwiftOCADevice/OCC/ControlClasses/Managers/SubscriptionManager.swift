@@ -29,7 +29,7 @@ public class OcaSubscriptionManager: OcaManager {
 
     func addSubscription(
         _ subscription: AddSubscriptionParameters,
-        from controller: AES70OCP1Controller
+        from controller: any AES70Controller
     ) async throws {
         try await ensureWritable(by: controller)
         try await controller.addSubscription(subscription)
@@ -37,7 +37,7 @@ public class OcaSubscriptionManager: OcaManager {
 
     func removeSubscription(
         _ subscription: RemoveSubscriptionParameters,
-        from controller: AES70OCP1Controller
+        from controller: any AES70Controller
     ) async throws {
         try await ensureWritable(by: controller)
         try await controller.removeSubscription(
@@ -46,19 +46,19 @@ public class OcaSubscriptionManager: OcaManager {
         )
     }
 
-    func disableNotifications(from controller: AES70OCP1Controller) async throws {
+    func disableNotifications(from controller: any AES70Controller) async throws {
         try await ensureWritable(by: controller)
         await controller.disableNotifications()
     }
 
-    func reenableNotifications(from controller: AES70OCP1Controller) async throws {
+    func reenableNotifications(from controller: any AES70Controller) async throws {
         try await ensureWritable(by: controller)
         await controller.enableNotifications()
     }
 
     override public func handleCommand(
         _ command: Ocp1Command,
-        from controller: AES70OCP1Controller
+        from controller: any AES70Controller
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.1"):
@@ -80,7 +80,7 @@ public class OcaSubscriptionManager: OcaManager {
         }
     }
 
-    public convenience init(deviceDelegate: AES70OCP1Device? = nil) async throws {
+    public convenience init(deviceDelegate: AES70Device? = nil) async throws {
         try await self.init(
             objectNumber: OcaSubscriptionManagerONo,
             role: "Subscription Manager",

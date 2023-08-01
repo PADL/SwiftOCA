@@ -117,7 +117,7 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
         try await super.connectDevice()
     }
 
-    override func disconnectDevice(clearObjectCache: Bool) async throws {
+    override public func disconnectDevice(clearObjectCache: Bool) async throws {
         if let asyncSocket {
             try asyncSocket.close()
         }
@@ -143,13 +143,13 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
         }
     }
 
-    override func read(_ length: Int) async throws -> Data {
+    override public func read(_ length: Int) async throws -> Data {
         try await withMappedError { socket in
             try await Data(socket.read(bytes: length))
         }
     }
 
-    override func write(_ data: Data) async throws -> Int {
+    override public func write(_ data: Data) async throws -> Int {
         try await withMappedError { socket in
             try await socket.write(data)
             return data.count
@@ -157,7 +157,7 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
     }
 }
 
-public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
+public final class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
     override public var keepAliveInterval: OcaUint16 {
         1
     }
@@ -175,7 +175,7 @@ public class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
     }
 }
 
-public class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnection {
+public final class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnection {
     override fileprivate var type: Int32 {
         #if canImport(Glibc)
         Int32(1) // FIXME: why can't we find the symbol for this?
