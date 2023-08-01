@@ -42,7 +42,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         objectNumber: OcaONo? = nil,
         lockable: OcaBoolean = true,
         role: OcaString = "Matrix",
-        deviceDelegate: AES70OCP1Device? = nil,
+        deviceDelegate: AES70Device? = nil,
         addToRootBlock: Bool = true
     ) async throws {
         guard rows < OcaMatrixWildcardCoordinate,
