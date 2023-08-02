@@ -77,26 +77,41 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     func applyRecursive<T: OcaRoot>(
         rootObject: OcaBlock,
         keyPath: KeyPath<OcaBlock, [T]>,
-        _ block: (_ member: T) async throws -> ()
-    ) async throws {
+        _ block: (_ member: T) throws -> ()
+    ) rethrows {
         for member in rootObject[keyPath: keyPath] {
             if let member = member as? OcaBlock {
-                try await applyRecursive(rootObject: member, keyPath: keyPath, block)
+                try applyRecursive(rootObject: member, keyPath: keyPath, block)
             } else {
-                try await block(member)
+                try block(member)
             }
         }
     }
 
     func applyRecursive<T: OcaRoot>(
         keyPath: KeyPath<OcaBlock, [T]>,
-        _ block: (_ member: T) async throws -> ()
-    ) async throws {
-        try await applyRecursive(
+        _ block: (_ member: T) throws -> ()
+    ) rethrows {
+        try applyRecursive(
             rootObject: self,
             keyPath: keyPath,
             block
         )
+    }
+
+    func filterRecursive<T: OcaRoot>(
+        keyPath: KeyPath<OcaBlock, [T]>,
+        _ isIncluded: @escaping (T) throws -> Bool
+    ) rethrows -> [T] {
+        var members = [T]()
+
+        try applyRecursive(keyPath: keyPath) { member in
+            if try isIncluded(member) {
+                members.append(member)
+            }
+        }
+
+        return members
     }
 
     func getActionObjectsRecursive(from controller: any AES70Controller) async throws
@@ -104,7 +119,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     {
         var members = [OcaBlockMember]()
 
-        try await applyRecursive(keyPath: \.actionObjects) { (member: ActionObject) in
+        applyRecursive(keyPath: \.actionObjects) { (member: ActionObject) in
             precondition(member != self)
             members
                 .append(OcaBlockMember(
@@ -127,7 +142,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         from controller: any AES70Controller
     ) async throws -> Ocp1Response {
         switch command.methodID {
-        // 3.1 GetType
         // 3.2 ConstructActionObject
         // 3.3 ConstructBlockUsingFactory
         // 3.4 DeleteMember
