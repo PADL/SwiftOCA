@@ -127,7 +127,7 @@ public struct OcaPropertyChangeSubscription: Codable, Equatable, Hashable {
     }
 }
 
-public struct OcaSubscription2: Codable {
+public struct OcaSubscription2: Codable, Equatable, Hashable {
     public let event: OcaEvent
     public let subscriber: OcaMethod
     public let notificationDeliveryMode: OcaNotificationDeliveryMode
@@ -146,7 +146,7 @@ public struct OcaSubscription2: Codable {
     }
 }
 
-public struct OcaPropertyChangeSubscription2: Codable {
+public struct OcaPropertyChangeSubscription2: Codable, Equatable, Hashable {
     public let emitter: OcaONo
     public let property: OcaPropertyID
     public let subscriber: OcaMethod

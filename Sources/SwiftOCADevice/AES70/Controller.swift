@@ -28,7 +28,7 @@ import AsyncExtensions
 import Foundation
 import SwiftOCA
 
-public enum OcaSubscriptionManagerSubscription: Codable {
+public enum OcaSubscriptionManagerSubscription: Codable, Equatable, Hashable {
     case subscription(OcaSubscription)
     case propertyChangeSubscription(OcaPropertyChangeSubscription)
     case subscription2(OcaSubscription2)
