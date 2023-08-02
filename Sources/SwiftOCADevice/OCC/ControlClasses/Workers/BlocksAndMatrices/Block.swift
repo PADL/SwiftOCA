@@ -241,6 +241,9 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         // 3.7 AddSignalPath
         // 3.8 DeleteSignalPath
         // 3.9 GetSignalPaths
+        case OcaMethodID("3.9"):
+            try await ensureReadable(by: controller)
+            return try encodeResponse(signalPaths)
         case OcaMethodID("3.10"):
             try await ensureReadable(by: controller)
             let signalPaths: [OcaUint16: OcaSignalPath] =
