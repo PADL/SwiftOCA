@@ -178,3 +178,99 @@ public class OcaSubscriptionManager: OcaManager {
         )
     }
 }
+
+public enum OcaSubscriptionManagerSubscription: Codable, Equatable, Hashable {
+    case subscription(OcaSubscription)
+    case propertyChangeSubscription(OcaPropertyChangeSubscription)
+    case subscription2(OcaSubscription2)
+    case propertyChangeSubscription2(OcaPropertyChangeSubscription2)
+
+    public enum EventVersion: OcaUint8 {
+        case ev1 = 1
+        case ev2 = 2
+    }
+
+    var version: EventVersion {
+        switch self {
+        case .subscription:
+            fallthrough
+        case .propertyChangeSubscription:
+            return .ev1
+        case .subscription2:
+            fallthrough
+        case .propertyChangeSubscription2:
+            return .ev2
+        }
+    }
+
+    var event: OcaEvent {
+        switch self {
+        case let .subscription(subscription):
+            return subscription.event
+        case let .subscription2(subscription):
+            return subscription.event
+        case let .propertyChangeSubscription(propertyChangeSubscription):
+            return OcaEvent(
+                emitterONo: propertyChangeSubscription.emitter,
+                eventID: OcaPropertyChangedEventID
+            )
+        case let .propertyChangeSubscription2(propertyChangeSubscription):
+            return OcaEvent(
+                emitterONo: propertyChangeSubscription.emitter,
+                eventID: OcaPropertyChangedEventID
+            )
+        }
+    }
+
+    var property: OcaPropertyID? {
+        switch self {
+        case .subscription:
+            fallthrough
+        case .subscription2:
+            return nil
+        case let .propertyChangeSubscription(propertyChangeSubscription):
+            return propertyChangeSubscription.property
+        case let .propertyChangeSubscription2(propertyChangeSubscription):
+            return propertyChangeSubscription.property
+        }
+    }
+
+    var subscriber: OcaMethod {
+        switch self {
+        case let .subscription(subscription):
+            return subscription.subscriber
+        case let .subscription2(subscription):
+            return subscription.subscriber
+        case let .propertyChangeSubscription(propertyChangeSubscription):
+            return propertyChangeSubscription.subscriber
+        case let .propertyChangeSubscription2(propertyChangeSubscription):
+            return propertyChangeSubscription.subscriber
+        }
+    }
+
+    var subscriberContext: OcaBlob {
+        switch self {
+        case let .subscription(subscription):
+            return subscription.subscriberContext
+        case .subscription2:
+            return LengthTaggedData()
+        case let .propertyChangeSubscription(propertyChangeSubscription):
+            return propertyChangeSubscription.subscriberContext
+        case .propertyChangeSubscription2:
+            return LengthTaggedData()
+        }
+    }
+
+    var notificationDeliveryMode: OcaNotificationDeliveryMode {
+        switch self {
+        case let .subscription(subscription):
+            return subscription.notificationDeliveryMode
+        case let .subscription2(subscription):
+            return subscription.notificationDeliveryMode
+        case let .propertyChangeSubscription(propertyChangeSubscription):
+            return propertyChangeSubscription.notificationDeliveryMode
+        case let .propertyChangeSubscription2(propertyChangeSubscription):
+            return propertyChangeSubscription.notificationDeliveryMode
+        }
+    }
+}
