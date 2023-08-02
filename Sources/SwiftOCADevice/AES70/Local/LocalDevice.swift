@@ -36,6 +36,10 @@ public actor AES70LocalDevice: AES70DevicePrivate {
 
     private var task: Task<(), Error>!
 
+    public var controllers: [AES70Controller] {
+        [controller]
+    }
+
     public init() async throws {
         controller = await AES70LocalController(device: self)
 
@@ -52,13 +56,6 @@ public actor AES70LocalDevice: AES70DevicePrivate {
                 try await handleMessagePdu(messagePdu)
             }
         }
-    }
-
-    public func notifySubscribers(_ event: OcaEvent, parameters: Data) async throws {
-        try await controller.notifySubscribers1(
-            event,
-            parameters: parameters
-        )
     }
 
     deinit {

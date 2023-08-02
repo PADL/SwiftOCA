@@ -35,6 +35,10 @@ let NSEC_PER_MSEC: UInt64 = 1_000_000
 let NSEC_PER_SEC: UInt64 = 1_000_000_000
 
 public actor AES70OCP1Device: AES70DevicePrivate {
+    public var controllers: [AES70Controller] {
+        _controllers
+    }
+
     public internal(set) var objects = [OcaONo: OcaRoot]()
 
     public var rootBlock: OcaBlock<OcaRoot>!
@@ -46,7 +50,7 @@ public actor AES70OCP1Device: AES70DevicePrivate {
     private let timeout: TimeInterval
     private let logger: Logging? = AES70OCP1Device.defaultLogger()
     private var nextObjectNumber: OcaONo = 4096
-    private(set) var controllers: Set<AES70OCP1Controller> = []
+    private var _controllers = [AES70OCP1Controller]()
 
     public init(
         address: Data,
@@ -196,7 +200,7 @@ public actor AES70OCP1Device: AES70DevicePrivate {
 
     private func handleController(_ controller: AES70OCP1Controller) async {
         logger?.logControllerAdded(controller)
-        controllers.insert(controller)
+        _controllers.append(controller)
         do {
             for try await (message, rrq) in await controller.messages {
                 var response: Ocp1Response?
@@ -232,47 +236,9 @@ public actor AES70OCP1Device: AES70DevicePrivate {
         } catch {
             logger?.logError(error, on: controller)
         }
-        controllers.remove(controller)
+        _controllers.removeAll(where: { $0 == controller })
         try? await controller.close(device: self)
         logger?.logControllerRemoved(controller)
-    }
-
-    public func notifySubscribers(
-        _ event: OcaEvent,
-        parameters: Data
-    ) async throws {
-        switch subscriptionManager.state {
-        case .eventsDisabled:
-            subscriptionManager.objectsChangedWhilstNotificationsDisabled.insert(event.emitterONo)
-        case .normal:
-            let property: OcaPropertyID?
-
-            if event.eventID == OcaPropertyChangedEventID {
-                property = try Ocp1BinaryDecoder().decode(OcaPropertyID.self, from: parameters)
-            } else {
-                property = nil
-            }
-
-            await withTaskGroup(of: Void.self) { taskGroup in
-                for controller in controllers {
-                    taskGroup.addTask {
-                        try? await controller.notifySubscribers1(
-                            event,
-                            parameters: parameters
-                        )
-                    }
-                    if let property {
-                        taskGroup.addTask {
-                            try? await controller.notifyPropertyChangeSubscribers1(
-                                event.emitterONo,
-                                property: property,
-                                parameters: parameters
-                            )
-                        }
-                    }
-                }
-            }
-        }
     }
 
     static func defaultPool(logger: Logging? = nil) -> AsyncSocketPool {
