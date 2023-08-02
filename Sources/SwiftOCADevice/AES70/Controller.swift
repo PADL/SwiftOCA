@@ -120,7 +120,7 @@ extension AES70ControllerPrivate {
         subscriptions[subscription.event.emitterONo]?.remove(subscription)
     }
 
-    func removeSubscription(
+    public func removeSubscription(
         _ event: OcaEvent,
         property: OcaPropertyID?,
         subscriber: OcaMethod
