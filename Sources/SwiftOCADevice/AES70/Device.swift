@@ -23,9 +23,9 @@ import SwiftOCA
 public actor AES70Device {
     public static let shared = AES70Device()
 
-    var rootBlock: OcaBlock<OcaRoot>!
-    var subscriptionManager: OcaSubscriptionManager!
-    var deviceManager: OcaDeviceManager!
+    public private(set) var rootBlock: OcaBlock<OcaRoot>!
+    public private(set) var subscriptionManager: OcaSubscriptionManager!
+    public private(set) var deviceManager: OcaDeviceManager!
 
     var objects = [OcaONo: OcaRoot]()
     var nextObjectNumber: OcaONo = 4096
@@ -96,7 +96,7 @@ public actor AES70Device {
         }
     }
 
-    func notifySubscribers(
+    public func notifySubscribers(
         _ event: OcaEvent,
         parameters: Data
     ) async throws {
