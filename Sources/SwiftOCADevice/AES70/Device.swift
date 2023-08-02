@@ -91,7 +91,7 @@ extension AES70DevicePrivate {
         objects[object.objectNumber] = object
         if addToRootBlock {
             precondition(object.objectNumber != OcaRootBlockONo)
-            try rootBlock.add(member: object)
+            try rootBlock.add(actionObject: object)
         }
     }
 

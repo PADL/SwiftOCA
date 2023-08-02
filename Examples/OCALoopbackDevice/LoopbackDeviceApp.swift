@@ -51,7 +51,7 @@ public enum DeviceApp {
             }
         }
 
-        let deviceMembers = await device.rootBlock.members
+        let deviceMembers = await device.rootBlock.actionObjects
         for member in deviceMembers {
             debugPrint("Local member: \(member)")
         }
@@ -59,7 +59,7 @@ public enum DeviceApp {
         let connection = AES70LocalDeviceConnection(device: device)
         try await connection.connect() // FIXME: should we do this automatically
 
-        var members = try await connection.rootBlock.resolveMembers()
+        var members = try await connection.rootBlock.resolveActionObjects()
         members.append(connection.deviceManager)
         for member in members {
             debugPrint("Remote member: \(member)")

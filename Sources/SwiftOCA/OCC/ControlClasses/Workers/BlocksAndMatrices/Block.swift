@@ -52,7 +52,7 @@ open class OcaBlock: OcaWorker {
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.5")
     )
-    public var members: OcaProperty<OcaList<OcaObjectIdentification>>.State
+    public var actionObjects: OcaProperty<OcaList<OcaObjectIdentification>>.State
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.3"),
@@ -79,21 +79,21 @@ open class OcaBlock: OcaWorker {
     public var oNoMap: OcaProperty<OcaMap<OcaProtoONo, OcaONo>>.State
 
     // 3.2
-    func constructMember(
+    func constructActionObject(
         classID: OcaClassID,
         constructionParameters: [any Codable]
     ) async throws -> OcaONo {
         throw Ocp1Error.notImplemented
     }
 
-    func constructMember(factory factoryONo: OcaONo) async throws -> OcaONo {
+    func constructActionObject(factory factoryONo: OcaONo) async throws -> OcaONo {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.3"),
             parameters: factoryONo
         )
     }
 
-    func delete(member objectNumber: OcaONo) async throws {
+    func delete(actionObject objectNumber: OcaONo) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.4"),
             parameters: objectNumber
@@ -206,16 +206,16 @@ open class OcaBlock: OcaWorker {
 
 public extension OcaBlock {
     @MainActor
-    func resolveMembers() async throws -> [OcaRoot] {
+    func resolveActionObjects() async throws -> [OcaRoot] {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
-        return try await _members.onCompletion(self) { members in
-            members.compactMap { connectionDelegate.resolve(object: $0) }
+        return try await _actionObjects.onCompletion(self) { actionObjects in
+            actionObjects.compactMap { connectionDelegate.resolve(object: $0) }
         }
     }
 
     @MainActor
-    func resolveMembersRecursive(resolveMatrixMembers: Bool = false) async throws
+    func resolveActionObjectsRecursive(resolveMatrixMembers: Bool = false) async throws
         -> [OcaContainerObjectMember]
     {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }

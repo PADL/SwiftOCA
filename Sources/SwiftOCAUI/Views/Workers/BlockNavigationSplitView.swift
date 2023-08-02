@@ -71,7 +71,7 @@ struct OcaBlockNavigationSplitView: OcaView {
         }
         .task {
             do {
-                members = try await object.resolveMembers()
+                members = try await object.resolveActionObjects()
 
                 if object.objectNumber == OcaRootBlockONo,
                    !(members?.contains(connection.deviceManager) ?? false)
