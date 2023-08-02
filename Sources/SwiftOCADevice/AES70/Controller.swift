@@ -141,33 +141,16 @@ extension AES70ControllerPrivate {
         for subscription in subscriptions {
             let subscription = subscription as! OcaSubscriptionManagerSubscription
 
-            switch subscription {
-            case let .subscription(subscription):
-                let eventData = Ocp1EventData(event: event, eventParameters: parameters)
-                let ntfParams = Ocp1NtfParams(
-                    parameterCount: 2,
-                    context: subscription.subscriberContext,
-                    eventData: eventData
-                )
-                let notification = Ocp1Notification1(
-                    targetONo: subscription.event.emitterONo,
-                    methodID: subscription.subscriber.methodID,
-                    parameters: ntfParams
-                )
+            guard property == subscription.property else {
+                return
+            }
 
-                try await sendMessage(notification, type: .ocaNtf1)
-            case let .subscription2(subscription):
-                let notification = Ocp1Notification2(
+            switch subscription.version {
+            case .ev1:
+                let eventData = Ocp1EventData(
                     event: subscription.event,
-                    notificationType: .event,
-                    data: parameters
+                    eventParameters: parameters
                 )
-                try await sendMessage(notification, type: .ocaNtf2)
-            case let .propertyChangeSubscription(propertyChangeSubscription):
-                guard let property, propertyChangeSubscription.property == property else {
-                    return
-                }
-                let eventData = Ocp1EventData(event: event, eventParameters: parameters)
                 let ntfParams = Ocp1NtfParams(
                     parameterCount: 2,
                     context: subscription.subscriberContext,
@@ -180,11 +163,7 @@ extension AES70ControllerPrivate {
                 )
 
                 try await sendMessage(notification, type: .ocaNtf1)
-            case let .propertyChangeSubscription2(propertyChangeSubscription):
-                guard let property, propertyChangeSubscription.property == property else {
-                    return
-                }
-
+            case .ev2:
                 let notification = Ocp1Notification2(
                     event: subscription.event,
                     notificationType: .event,
