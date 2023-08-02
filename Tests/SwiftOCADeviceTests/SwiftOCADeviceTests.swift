@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-@testable import SwiftOCADevice
 @testable import SwiftOCA
+@testable import SwiftOCADevice
 import XCTest
 
 class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
@@ -63,7 +63,7 @@ final class SwiftOCADeviceTests: XCTestCase {
 
         let controllerExpectation = XCTestExpectation(description: "Check controller properties")
         let members = try await connection.rootBlock.resolveActionObjects()
-        XCTAssertEqual(members.map { $0.objectNumber }, deviceMembers.map { $0.objectNumber })
+        XCTAssertEqual(members.map(\.objectNumber), deviceMembers.map(\.objectNumber))
         controllerExpectation.fulfill()
 
         wait(for: [controllerExpectation], timeout: 1)
