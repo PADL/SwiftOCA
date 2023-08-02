@@ -109,6 +109,19 @@ public enum OcaSubscriptionManagerSubscription: Codable, Equatable, Hashable {
             return LengthTaggedData()
         }
     }
+
+    var notificationDeliveryMode: OcaNotificationDeliveryMode {
+        switch self {
+        case let .subscription(subscription):
+            return subscription.notificationDeliveryMode
+        case let .subscription2(subscription):
+            return subscription.notificationDeliveryMode
+        case let .propertyChangeSubscription(propertyChangeSubscription):
+            return propertyChangeSubscription.notificationDeliveryMode
+        case let .propertyChangeSubscription2(propertyChangeSubscription):
+            return propertyChangeSubscription.notificationDeliveryMode
+        }
+    }
 }
 
 public protocol AES70Controller: Actor {
@@ -190,6 +203,10 @@ extension AES70ControllerPrivate {
         guard !hasSubscription(subscription) else {
             throw Ocp1Error.alreadySubscribedToEvent
         }
+        guard subscription.notificationDeliveryMode == .reliable else {
+            // we don't support "fast" UDP deliveries yet
+            throw Ocp1Error.status(.notImplemented)
+        }
         var subscriptions = subscriptions[subscription.event.emitterONo]
         if subscriptions == nil {
             subscriptions = NSMutableSet(object: subscription)
@@ -261,7 +278,7 @@ extension AES70ControllerPrivate {
     ) async throws {
         for subscription in findSubscriptions(event, version: .ev2) {
             let notification = Ocp1Notification2(
-                event: event,
+                event: subscription.event,
                 notificationType: .event,
                 data: parameters
             )
@@ -277,7 +294,7 @@ extension AES70ControllerPrivate {
         let event = OcaEvent(emitterONo: emitter, eventID: OcaPropertyChangedEventID)
         for subscription in findSubscriptions(event, property: property, version: .ev2) {
             let notification = Ocp1Notification2(
-                event: event,
+                event: subscription.event,
                 notificationType: .event,
                 data: parameters
             )
