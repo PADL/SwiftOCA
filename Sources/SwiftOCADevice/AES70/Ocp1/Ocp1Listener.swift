@@ -34,26 +34,21 @@ import SwiftOCA
 let NSEC_PER_MSEC: UInt64 = 1_000_000
 let NSEC_PER_SEC: UInt64 = 1_000_000_000
 
-public actor AES70OCP1Device: AES70DevicePrivate {
+@AES70Device
+public final class AES70OCP1Listener: AES70Listener {
     public var controllers: [AES70Controller] {
         _controllers
     }
 
-    public internal(set) var objects = [OcaONo: OcaRoot]()
-
-    public var rootBlock: OcaBlock<OcaRoot>!
-    public var subscriptionManager: OcaSubscriptionManager!
-    public var deviceManager: OcaDeviceManager!
-
     let pool: AsyncSocketPool
-    var nextObjectNumber: OcaONo = 4096
 
     private var address: sockaddr_storage
     private let timeout: TimeInterval
-    private let logger: Logging? = AES70OCP1Device.defaultLogger()
+    private let logger: Logging? = AES70OCP1Listener.defaultLogger()
     private var _controllers = [AES70OCP1Controller]()
 
     public init(
+        device: AES70Device,
         address: Data,
         timeout: TimeInterval = 15
     ) async throws {
@@ -66,32 +61,18 @@ public actor AES70OCP1Device: AES70DevicePrivate {
                 memcpy(dst.baseAddress!, src.baseAddress!, src.count)
             }
         }
-
-        rootBlock = try await OcaBlock(
-            objectNumber: OcaRootBlockONo,
-            deviceDelegate: self,
-            addToRootBlock: false
-        )
-        rootBlock.type = 1
-
-        subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
-        deviceManager = try await OcaDeviceManager(deviceDelegate: self)
+        try await device.add(listener: self)
     }
 
     var listeningAddress: Socket.Address? {
         try? state?.socket.sockname()
     }
 
-    public func allocateObjectNumber() -> OcaONo {
-        defer { nextObjectNumber += 1 }
-        return nextObjectNumber
-    }
-
     public func start() async throws {
         let socket = try await preparePoolAndSocket()
         do {
             #if canImport(Darwin)
-            try? startBonjour()
+            try? await startBonjour()
             #endif
             let task = Task { try await start(on: socket, pool: pool) }
             state = (socket: socket, task: task)
@@ -194,13 +175,6 @@ public actor AES70OCP1Device: AES70DevicePrivate {
         throw SocketError.disconnected
     }
 
-    func handleCommand(
-        _ command: Ocp1Command,
-        from controller: any AES70Controller
-    ) async -> Ocp1Response {
-        await handleCommand(command, timeout: timeout, from: controller)
-    }
-
     private func handleController(_ controller: AES70OCP1Controller) async {
         logger?.logControllerAdded(controller)
         _controllers.append(controller)
@@ -213,7 +187,11 @@ public actor AES70OCP1Device: AES70DevicePrivate {
                 switch message {
                 case let command as Ocp1Command:
                     logger?.logCommand(command, on: controller)
-                    let commandResponse = await handleCommand(command, from: controller)
+                    let commandResponse = await AES70Device.shared.handleCommand(
+                        command,
+                        timeout: timeout,
+                        from: controller
+                    )
                     response = Ocp1Response(
                         handle: command.handle,
                         statusCode: commandResponse.statusCode,
@@ -240,7 +218,7 @@ public actor AES70OCP1Device: AES70DevicePrivate {
             logger?.logError(error, on: controller)
         }
         _controllers.removeAll(where: { $0 == controller })
-        try? await controller.close(device: self)
+        try? await controller.close()
         logger?.logControllerRemoved(controller)
     }
 
@@ -257,11 +235,12 @@ public actor AES70OCP1Device: AES70DevicePrivate {
     #if canImport(Darwin)
     private var netService: CFNetService?
 
-    func createNetService() -> CFNetService? {
+    private func createNetService() async -> CFNetService? {
         // FIXME: add support for UDP, WS, etc
 
         let serviceType = "_oca._tcp"
-        let serviceName = (deviceManager?.deviceName ?? "SwiftOCA") + "@" + Host.current()
+        let serviceName = (await AES70Device.shared.deviceManager?.deviceName ?? "SwiftOCA") + "@" +
+            Host.current()
             .localizedName!
         let domain = ""
 
@@ -275,25 +254,29 @@ public actor AES70OCP1Device: AES70DevicePrivate {
         ).takeRetainedValue()
     }
 
-    func startBonjour() throws {
-        var error = CFStreamError()
-        var clientContext = CFNetServiceClientContext()
-        netService = createNetService()
+    private func startBonjour() async throws {
+        netService = await createNetService()
         if let netService {
-            CFNetServiceSetClient(netService, registerCallback, &clientContext)
-            CFNetServiceScheduleWithRunLoop(
-                netService,
-                CFRunLoopGetCurrent(),
-                CFRunLoopMode.commonModes!.rawValue
-            )
-            guard CFNetServiceRegisterWithOptions(netService, 0, &error) else {
-                stopBonjour()
-                throw Ocp1Error.bonjourRegistrationFailed
-            }
+            try scheduleNetService(netService)
         }
     }
 
-    func stopBonjour() {
+    private func scheduleNetService(_ netService: CFNetService) throws {
+        var error = CFStreamError()
+        var clientContext = CFNetServiceClientContext()
+        CFNetServiceSetClient(netService, registerCallback, &clientContext)
+        CFNetServiceScheduleWithRunLoop(
+            netService,
+            CFRunLoopGetCurrent(),
+            CFRunLoopMode.commonModes!.rawValue
+        )
+        guard CFNetServiceRegisterWithOptions(netService, 0, &error) else {
+            stopBonjour()
+            throw Ocp1Error.bonjourRegistrationFailed
+        }
+    }
+
+    private func stopBonjour() {
         if let netService {
             CFNetServiceUnscheduleFromRunLoop(
                 netService,
@@ -305,7 +288,7 @@ public actor AES70OCP1Device: AES70DevicePrivate {
         }
     }
 
-    var port: UInt16? {
+    private var port: UInt16? {
         var port: UInt16?
         switch address.ss_family {
         case sa_family_t(AF_INET):
@@ -379,7 +362,7 @@ extension Logging {
     }
 }
 
-extension AES70OCP1Device {
+extension AES70OCP1Listener {
     public var isListening: Bool { state != nil }
 
     func waitUntilListening(timeout: TimeInterval = 5) async throws {

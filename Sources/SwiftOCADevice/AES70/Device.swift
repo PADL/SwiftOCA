@@ -19,65 +19,36 @@ import func FlyingSocks.withThrowingTimeout
 import Foundation
 import SwiftOCA
 
-public protocol AES70Device: Actor {
-    var controllers: [AES70Controller] { get }
+@globalActor
+public actor AES70Device {
+    public static let shared = AES70Device()
 
-    var rootBlock: OcaBlock<OcaRoot>! { get }
-    var subscriptionManager: OcaSubscriptionManager! { get }
-    var deviceManager: OcaDeviceManager! { get }
+    var rootBlock: OcaBlock<OcaRoot>!
+    var subscriptionManager: OcaSubscriptionManager!
+    var deviceManager: OcaDeviceManager!
 
-    var objects: [OcaONo: OcaRoot] { get }
+    var objects = [OcaONo: OcaRoot]()
+    var nextObjectNumber: OcaONo = 4096
+    var listeners = [AES70Listener]()
 
-    func register(
-        object: OcaRoot,
-        addToRootBlock: Bool
-    ) throws
-
-    func allocateObjectNumber() -> OcaONo
-}
-
-protocol AES70DevicePrivate: AES70Device {
-    var objects: [OcaONo: OcaRoot] { get set }
-    var nextObjectNumber: OcaONo { get set }
-}
-
-public extension AES70Device {
-    func register(object: OcaRoot) throws {
-        try register(object: object, addToRootBlock: true)
-    }
-
-    func notifySubscribers(
-        _ event: OcaEvent,
-        parameters: Data
-    ) async throws {
-        switch subscriptionManager.state {
-        case .eventsDisabled:
-            subscriptionManager.objectsChangedWhilstNotificationsDisabled.insert(event.emitterONo)
-        case .normal:
-            await withTaskGroup(of: Void.self) { taskGroup in
-                for controller in self.controllers {
-                    let controller = controller as! AES70ControllerPrivate
-
-                    taskGroup.addTask {
-                        try? await controller.notifySubscribers(
-                            event,
-                            parameters: parameters
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    func notifySubscribers(_ event: OcaEvent) async throws {
-        try await notifySubscribers(event, parameters: Data())
-    }
-}
-
-extension AES70DevicePrivate {
     public func allocateObjectNumber() -> OcaONo {
         defer { nextObjectNumber += 1 }
         return nextObjectNumber
+    }
+
+    public func add(listener: AES70Listener) async throws {
+        if rootBlock == nil {
+            rootBlock = try await OcaBlock(
+                objectNumber: OcaRootBlockONo,
+                deviceDelegate: self,
+                addToRootBlock: false
+            )
+            rootBlock.type = 1
+            subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
+            deviceManager = try await OcaDeviceManager(deviceDelegate: self)
+        }
+
+        listeners.append(listener)
     }
 
     public func register(object: OcaRoot, addToRootBlock: Bool = true) throws {
@@ -118,5 +89,34 @@ extension AES70DevicePrivate {
         } catch {
             return .init(responseSize: 0, handle: command.handle, statusCode: .deviceError)
         }
+    }
+
+    func notifySubscribers(
+        _ event: OcaEvent,
+        parameters: Data
+    ) async throws {
+        switch subscriptionManager.state {
+        case .eventsDisabled:
+            subscriptionManager.objectsChangedWhilstNotificationsDisabled.insert(event.emitterONo)
+        case .normal:
+            await withTaskGroup(of: Void.self) { taskGroup in
+                for listener in self.listeners {
+                    for controller in await listener.controllers {
+                        let controller = controller as! AES70ControllerPrivate
+
+                        taskGroup.addTask {
+                            try? await controller.notifySubscribers(
+                                event,
+                                parameters: parameters
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    func notifySubscribers(_ event: OcaEvent) async throws {
+        try await notifySubscribers(event, parameters: Data())
     }
 }

@@ -24,7 +24,6 @@ public enum DeviceApp {
     static var testActuator: SwiftOCADevice.OcaBooleanActuator?
 
     public static func main() async throws {
-        var device: AES70OCP1Device!
         var localAddress = sockaddr_in.inet(port: 65000)
         var localAddressData = Data()
 
@@ -32,7 +31,9 @@ public enum DeviceApp {
             localAddressData = Data(bytes: bytes.baseAddress!, count: bytes.count)
         }
 
-        device = try await AES70OCP1Device(address: localAddressData)
+        let device = AES70Device.shared
+        let listener = try await AES70OCP1Listener(address: localAddressData)
+        try await device.add(listener: listener)
 
         class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
             override open class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
@@ -57,6 +58,6 @@ public enum DeviceApp {
         }
 
         // NB: we still need to add objects to the root block because they must have containing block
-        try await device.start()
+        try await listener.start()
     }
 }

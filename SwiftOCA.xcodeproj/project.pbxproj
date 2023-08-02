@@ -18,7 +18,7 @@
 		D306556D2A524D720083F093 /* PhysicalPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556C2A524D720083F093 /* PhysicalPosition.swift */; };
 		D306556F2A5254D70083F093 /* TimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556E2A5254D70083F093 /* TimeSource.swift */; };
 		D31528802A526E24004B9BAD /* WorkerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */; };
-		D33B52882A6FD190001A1BA7 /* Ocp1Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52872A6FD190001A1BA7 /* Ocp1Device.swift */; };
+		D33B52882A6FD190001A1BA7 /* Ocp1Listener.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52872A6FD190001A1BA7 /* Ocp1Listener.swift */; };
 		D33B528C2A6FD206001A1BA7 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D33B52902A6FD332001A1BA7 /* Root.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B528F2A6FD332001A1BA7 /* Root.swift */; };
 		D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */; };
@@ -57,11 +57,12 @@
 		D3C0830F2A7B01AB0020AD57 /* libSwiftOCADevice.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */; };
 		D3C083162A7B021B0020AD57 /* SwiftOCADeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */; };
 		D3C083172A7B02360020AD57 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
-		D3C11DB92A789C0400452B2A /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DB82A789C0400452B2A /* Device.swift */; };
-		D3C11DBB2A789EAA00452B2A /* LocalDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DBA2A789EAA00452B2A /* LocalDevice.swift */; };
+		D3C0831A2A7B0D9B0020AD57 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083182A7B0D2C0020AD57 /* Device.swift */; };
+		D3C11DB92A789C0400452B2A /* Listener.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DB82A789C0400452B2A /* Listener.swift */; };
+		D3C11DBB2A789EAA00452B2A /* LocalListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DBA2A789EAA00452B2A /* LocalListener.swift */; };
 		D3C11DBD2A78A3DC00452B2A /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DBC2A78A3DC00452B2A /* Controller.swift */; };
 		D3C11DBF2A78A9DD00452B2A /* LocalController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DBE2A78A9DD00452B2A /* LocalController.swift */; };
-		D3C11DC32A78AC5800452B2A /* LocalDeviceConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DC22A78AC5800452B2A /* LocalDeviceConnection.swift */; };
+		D3C11DC32A78AC5800452B2A /* LocalConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DC22A78AC5800452B2A /* LocalConnection.swift */; };
 		D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */; };
 		D3DA69E22A3DADF1001250A1 /* BlockNavigationSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69E12A3DADF1001250A1 /* BlockNavigationSplitView.swift */; };
 		D3DA69E42A3DCA75001250A1 /* NavigationLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69E32A3DCA75001250A1 /* NavigationLabel.swift */; };
@@ -208,7 +209,7 @@
 		D306556E2A5254D70083F093 /* TimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSource.swift; sourceTree = "<group>"; };
 		D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkerDataTypes.swift; sourceTree = "<group>"; };
 		D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCADevice.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		D33B52872A6FD190001A1BA7 /* Ocp1Device.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1Device.swift; sourceTree = "<group>"; };
+		D33B52872A6FD190001A1BA7 /* Ocp1Listener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1Listener.swift; sourceTree = "<group>"; };
 		D33B528F2A6FD332001A1BA7 /* Root.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Root.swift; sourceTree = "<group>"; };
 		D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProperty.swift; sourceTree = "<group>"; };
 		D33B52942A6FE075001A1BA7 /* Ocp1Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1Controller.swift; sourceTree = "<group>"; };
@@ -242,11 +243,12 @@
 		D3C082F72A79214B0020AD57 /* Logging.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftOCADeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftOCADeviceTests.swift; sourceTree = "<group>"; };
-		D3C11DB82A789C0400452B2A /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
-		D3C11DBA2A789EAA00452B2A /* LocalDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDevice.swift; sourceTree = "<group>"; };
+		D3C083182A7B0D2C0020AD57 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
+		D3C11DB82A789C0400452B2A /* Listener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Listener.swift; sourceTree = "<group>"; };
+		D3C11DBA2A789EAA00452B2A /* LocalListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalListener.swift; sourceTree = "<group>"; };
 		D3C11DBC2A78A3DC00452B2A /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
 		D3C11DBE2A78A9DD00452B2A /* LocalController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalController.swift; sourceTree = "<group>"; };
-		D3C11DC22A78AC5800452B2A /* LocalDeviceConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDeviceConnection.swift; sourceTree = "<group>"; };
+		D3C11DC22A78AC5800452B2A /* LocalConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalConnection.swift; sourceTree = "<group>"; };
 		D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaRoot+Identifiable.swift"; sourceTree = "<group>"; };
 		D3DA69E12A3DADF1001250A1 /* BlockNavigationSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockNavigationSplitView.swift; sourceTree = "<group>"; };
 		D3DA69E32A3DCA75001250A1 /* NavigationLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationLabel.swift; sourceTree = "<group>"; };
@@ -441,7 +443,8 @@
 				D3C11DC12A78A9F300452B2A /* Ocp1 */,
 				D3C11DC02A78A9F000452B2A /* Local */,
 				D3C11DBC2A78A3DC00452B2A /* Controller.swift */,
-				D3C11DB82A789C0400452B2A /* Device.swift */,
+				D3C11DB82A789C0400452B2A /* Listener.swift */,
+				D3C083182A7B0D2C0020AD57 /* Device.swift */,
 			);
 			path = AES70;
 			sourceTree = "<group>";
@@ -586,9 +589,9 @@
 		D3C11DC02A78A9F000452B2A /* Local */ = {
 			isa = PBXGroup;
 			children = (
+				D3C11DC22A78AC5800452B2A /* LocalConnection.swift */,
 				D3C11DBE2A78A9DD00452B2A /* LocalController.swift */,
-				D3C11DBA2A789EAA00452B2A /* LocalDevice.swift */,
-				D3C11DC22A78AC5800452B2A /* LocalDeviceConnection.swift */,
+				D3C11DBA2A789EAA00452B2A /* LocalListener.swift */,
 			);
 			path = Local;
 			sourceTree = "<group>";
@@ -598,7 +601,7 @@
 			children = (
 				D3C082F72A79214B0020AD57 /* Logging.swift */,
 				D33B52942A6FE075001A1BA7 /* Ocp1Controller.swift */,
-				D33B52872A6FD190001A1BA7 /* Ocp1Device.swift */,
+				D33B52872A6FD190001A1BA7 /* Ocp1Listener.swift */,
 			);
 			path = Ocp1;
 			sourceTree = "<group>";
@@ -1193,17 +1196,18 @@
 				D351F2032A727411008C5513 /* Mute.swift in Sources */,
 				D351F20C2A729AB3008C5513 /* Sensor.swift in Sources */,
 				D33B52B42A7060BC001A1BA7 /* Actuator.swift in Sources */,
-				D33B52882A6FD190001A1BA7 /* Ocp1Device.swift in Sources */,
+				D3C0831A2A7B0D9B0020AD57 /* Device.swift in Sources */,
+				D33B52882A6FD190001A1BA7 /* Ocp1Listener.swift in Sources */,
 				D3C11DBD2A78A3DC00452B2A /* Controller.swift in Sources */,
 				D351F2082A7299B0008C5513 /* Agent.swift in Sources */,
 				D33B52A52A702D04001A1BA7 /* Worker.swift in Sources */,
 				D33B52AA2A702D3F001A1BA7 /* NetworkManager.swift in Sources */,
-				D3C11DC32A78AC5800452B2A /* LocalDeviceConnection.swift in Sources */,
+				D3C11DC32A78AC5800452B2A /* LocalConnection.swift in Sources */,
 				D351F2122A729CB0008C5513 /* TimeSource.swift in Sources */,
 				D33B52AC2A702D4D001A1BA7 /* DeviceManager.swift in Sources */,
 				D33B52A32A702CED001A1BA7 /* Block.swift in Sources */,
 				D33B52B62A7060E0001A1BA7 /* BasicActuators.swift in Sources */,
-				D3C11DB92A789C0400452B2A /* Device.swift in Sources */,
+				D3C11DB92A789C0400452B2A /* Listener.swift in Sources */,
 				D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */,
 				D351F21A2A729F48008C5513 /* VectorDeviceProperty.swift in Sources */,
 				D351F20E2A729AF2008C5513 /* BasicSensors.swift in Sources */,
@@ -1213,7 +1217,7 @@
 				D351F2012A7132F8008C5513 /* BoundedDeviceProperty.swift in Sources */,
 				D33B52AE2A702D92001A1BA7 /* SubscriptionManager.swift in Sources */,
 				D351F21C2A72A26E008C5513 /* Matrix.swift in Sources */,
-				D3C11DBB2A789EAA00452B2A /* LocalDevice.swift in Sources */,
+				D3C11DBB2A789EAA00452B2A /* LocalListener.swift in Sources */,
 				D33B52952A6FE075001A1BA7 /* Ocp1Controller.swift in Sources */,
 				D3C082F82A79214B0020AD57 /* Logging.swift in Sources */,
 				D351F2162A729DFC008C5513 /* PolarityState.swift in Sources */,

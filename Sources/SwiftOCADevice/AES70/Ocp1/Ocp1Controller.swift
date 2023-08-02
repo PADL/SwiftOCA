@@ -98,13 +98,13 @@ actor AES70OCP1Controller: AES70ControllerPrivate {
         socketClosed = true
     }
 
-    func close(device: AES70OCP1Device) async throws {
+    func close() async throws {
         try closeSocket()
 
         keepAliveTask?.cancel()
         keepAliveTask = nil
 
-        await device.objects.values.forEach {
+        await AES70Device.shared.objects.values.forEach {
             try? $0.unlock(controller: self)
         }
     }

@@ -19,38 +19,23 @@ import AsyncExtensions
 import Foundation
 import SwiftOCA
 
-public actor AES70LocalDevice: AES70DevicePrivate {
-    /// channel for receiving requests from the in-process controller
-    var requestChannel = AsyncChannel<Data>()
-    /// channel for sending responses to the in-process controller
-    var responseChannel = AsyncChannel<Data>()
-    var nextObjectNumber: OcaONo = 4096
-
-    public internal(set) var objects = [OcaONo: OcaRoot]()
-
-    public var rootBlock: OcaBlock<OcaRoot>!
-    public var subscriptionManager: OcaSubscriptionManager!
-    public var deviceManager: OcaDeviceManager!
-
-    private var controller: AES70LocalController!
-
-    private var task: Task<(), Error>!
-
+@AES70Device
+public final class AES70LocalListener: AES70Listener {
     public var controllers: [AES70Controller] {
         [controller]
     }
 
-    public init() async throws {
-        controller = await AES70LocalController(device: self)
+    /// channel for receiving requests from the in-process controller
+    var requestChannel = AsyncChannel<Data>()
+    /// channel for sending responses to the in-process controller
+    var responseChannel = AsyncChannel<Data>()
 
-        rootBlock = try await OcaBlock(
-            objectNumber: OcaRootBlockONo,
-            deviceDelegate: self,
-            addToRootBlock: false
-        )
-        rootBlock.type = 1
-        subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
-        deviceManager = try await OcaDeviceManager(deviceDelegate: self)
+    private var controller: AES70LocalController!
+    private var task: Task<(), Error>!
+
+    public init(device: AES70Device) async throws {
+        controller = await AES70LocalController(listener: self)
+        try await device.add(listener: self)
 
         task = Task {
             for await messagePdu in self.requestChannel {
@@ -81,7 +66,7 @@ public actor AES70LocalDevice: AES70DevicePrivate {
             guard let command = message as? Ocp1Command else {
                 continue
             }
-            let commandResponse = await handleCommand(command, from: controller)
+            let commandResponse = await AES70Device.shared.handleCommand(command, from: controller)
             let response = Ocp1Response(
                 handle: command.handle,
                 statusCode: commandResponse.statusCode,
