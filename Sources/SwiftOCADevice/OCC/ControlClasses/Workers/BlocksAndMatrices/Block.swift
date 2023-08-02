@@ -238,9 +238,19 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
             let actionObjects: [OcaBlockMember] =
                 try await getActionObjectsRecursive(from: controller)
             return try encodeResponse(actionObjects)
-        // 3.7 AddSignalPath
-        // 3.8 DeleteSignalPath
-        // 3.9 GetSignalPaths
+        case OcaMethodID("3.7"):
+            try await ensureWritable(by: controller)
+            let path: OcaSignalPath = try decodeCommand(command)
+            let index: OcaUint16 = signalPaths.keys.sorted().last ?? 1
+            signalPaths[index] = path
+            return try encodeResponse(index)
+        case OcaMethodID("3.8"):
+            try await ensureWritable(by: controller)
+            let index: OcaUint16 = try decodeCommand(command)
+            if !signalPaths.keys.contains(index) {
+                throw Ocp1Error.status(.parameterOutOfRange)
+            }
+            signalPaths.removeValue(forKey: index)
         case OcaMethodID("3.9"):
             try await ensureReadable(by: controller)
             return try encodeResponse(signalPaths)
@@ -304,6 +314,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         default:
             return try await super.handleCommand(command, from: controller)
         }
+        return Ocp1Response()
     }
 
     override public var isContainer: Bool {
