@@ -134,29 +134,30 @@ protocol AES70ControllerPrivate: AES70Controller {
 }
 
 extension AES70ControllerPrivate {
-    /// subscriptions are stored keyed by the emitter object number (the object that emits the event)
+    /// subscriptions are stored keyed by the emitter object number (the object that emits the
+    /// event)
     /// each object has a set of subscriptions, note that EV1 and EV2 subscriptions are independent,
     /// i.e. a controller could subscribe to some events with EV1 and others with EV2 (although this
     /// would certainly be unusual). Hence when looking for a matching subscription, we compare the
     /// event ID, the property (in the case it is a property changed event), the subscriber, and the
     /// version.
-    private func findSubscription(
+    private func findSubscriptions(
         _ event: OcaEvent,
         property: OcaPropertyID? = nil,
         subscriber: OcaMethod? = nil,
         version: OcaSubscriptionManagerSubscription.EventVersion
-    ) -> OcaSubscriptionManagerSubscription? {
+    ) -> [OcaSubscriptionManagerSubscription] {
         precondition(property == nil || event.eventID == OcaPropertyChangedEventID)
         guard let subscriptions = subscriptions[event.emitterONo] else {
-            return nil
+            return []
         }
-        return subscriptions.first(where: {
+        return subscriptions.filter {
             let subscription = $0 as! OcaSubscriptionManagerSubscription
             return subscription.event == event &&
                 (subscriber == nil ? true : subscription.subscriber == subscriber) &&
                 subscription.property == property &&
                 subscription.version == version
-        }) as? OcaSubscriptionManagerSubscription
+        } as! [OcaSubscriptionManagerSubscription]
     }
 
     private func hasSubscription(
@@ -165,12 +166,12 @@ extension AES70ControllerPrivate {
         subscriber: OcaMethod? = nil,
         version: OcaSubscriptionManagerSubscription.EventVersion
     ) -> Bool {
-        findSubscription(
+        findSubscriptions(
             event,
             property: property,
             subscriber: subscriber,
             version: version
-        ) != nil
+        ).count > 0
     }
 
     private func hasSubscription(
@@ -204,35 +205,30 @@ extension AES70ControllerPrivate {
         subscriber: OcaMethod,
         version: OcaSubscriptionManagerSubscription.EventVersion
     ) async throws {
-        guard let subscription = findSubscription(event, subscriber: subscriber, version: version)
-        else {
-            return
+        findSubscriptions(event, subscriber: subscriber, version: version).forEach { subscription in
+            subscriptions[event.emitterONo]?.remove(subscription)
         }
-
-        subscriptions[event.emitterONo]?.remove(subscription)
     }
 
     func notifySubscribers1(
         _ event: OcaEvent,
         parameters: Data
     ) async throws {
-        guard let subscription = findSubscription(event, version: .ev1) else {
-            return
+        for subscription in findSubscriptions(event, version: .ev1) {
+            let eventData = Ocp1EventData(event: event, eventParameters: parameters)
+            let ntfParams = Ocp1NtfParams(
+                parameterCount: 2,
+                context: subscription.subscriberContext,
+                eventData: eventData
+            )
+            let notification = Ocp1Notification1(
+                targetONo: subscription.event.emitterONo,
+                methodID: subscription.subscriber.methodID,
+                parameters: ntfParams
+            )
+
+            try await sendMessage(notification, type: .ocaNtf1)
         }
-
-        let eventData = Ocp1EventData(event: event, eventParameters: parameters)
-        let ntfParams = Ocp1NtfParams(
-            parameterCount: 2,
-            context: subscription.subscriberContext,
-            eventData: eventData
-        )
-        let notification = Ocp1Notification1(
-            targetONo: subscription.event.emitterONo,
-            methodID: subscription.subscriber.methodID,
-            parameters: ntfParams
-        )
-
-        try await sendMessage(notification, type: .ocaNtf1)
     }
 
     func notifyPropertyChangeSubscribers1(
@@ -242,39 +238,35 @@ extension AES70ControllerPrivate {
     ) async throws {
         let event = OcaEvent(emitterONo: emitter, eventID: OcaPropertyChangedEventID)
 
-        guard let subscription = findSubscription(event, property: property, version: .ev1) else {
-            return
+        for subscription in findSubscriptions(event, property: property, version: .ev1) {
+            let eventData = Ocp1EventData(event: event, eventParameters: parameters)
+            let ntfParams = Ocp1NtfParams(
+                parameterCount: 2,
+                context: subscription.subscriberContext,
+                eventData: eventData
+            )
+            let notification = Ocp1Notification1(
+                targetONo: subscription.event.emitterONo,
+                methodID: subscription.subscriber.methodID,
+                parameters: ntfParams
+            )
+
+            try await sendMessage(notification, type: .ocaNtf1)
         }
-
-        let eventData = Ocp1EventData(event: event, eventParameters: parameters)
-        let ntfParams = Ocp1NtfParams(
-            parameterCount: 2,
-            context: subscription.subscriberContext,
-            eventData: eventData
-        )
-        let notification = Ocp1Notification1(
-            targetONo: subscription.event.emitterONo,
-            methodID: subscription.subscriber.methodID,
-            parameters: ntfParams
-        )
-
-        try await sendMessage(notification, type: .ocaNtf1)
     }
 
     func notifySubscribers2(
         _ event: OcaEvent,
         parameters: Data
     ) async throws {
-        guard hasSubscription(event, version: .ev2) else {
-            return
+        for subscription in findSubscriptions(event, version: .ev2) {
+            let notification = Ocp1Notification2(
+                event: event,
+                notificationType: .event,
+                data: parameters
+            )
+            try await sendMessage(notification, type: .ocaNtf2)
         }
-
-        let notification = Ocp1Notification2(
-            event: event,
-            notificationType: .event,
-            data: parameters
-        )
-        try await sendMessage(notification, type: .ocaNtf2)
     }
 
     func notifyPropertyChangeSubscribers2(
@@ -283,17 +275,14 @@ extension AES70ControllerPrivate {
         parameters: Data
     ) async throws {
         let event = OcaEvent(emitterONo: emitter, eventID: OcaPropertyChangedEventID)
-
-        guard hasSubscription(event, property: property, version: .ev2) else {
-            return
+        for subscription in findSubscriptions(event, property: property, version: .ev2) {
+            let notification = Ocp1Notification2(
+                event: event,
+                notificationType: .event,
+                data: parameters
+            )
+            try await sendMessage(notification, type: .ocaNtf2)
         }
-
-        let notification = Ocp1Notification2(
-            event: event,
-            notificationType: .event,
-            data: parameters
-        )
-        try await sendMessage(notification, type: .ocaNtf2)
     }
 
     func sendMessage(
