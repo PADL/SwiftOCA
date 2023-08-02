@@ -48,6 +48,7 @@ public actor AES70LocalDevice: AES70DevicePrivate {
             deviceDelegate: self,
             addToRootBlock: false
         )
+        rootBlock.type = 1
         subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
         deviceManager = try await OcaDeviceManager(deviceDelegate: self)
 
