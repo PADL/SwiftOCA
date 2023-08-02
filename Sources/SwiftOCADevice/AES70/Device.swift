@@ -36,22 +36,26 @@ public actor AES70Device {
         return nextObjectNumber
     }
 
-    public func add(listener: AES70Listener) async throws {
-        if rootBlock == nil {
-            rootBlock = try await OcaBlock(
-                objectNumber: OcaRootBlockONo,
-                deviceDelegate: self,
-                addToRootBlock: false
-            )
-            rootBlock.type = 1
-            subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
-            deviceManager = try await OcaDeviceManager(deviceDelegate: self)
+    private func initOnce() async throws {
+        guard rootBlock == nil else {
+            return
         }
+        rootBlock = try await OcaBlock(
+            objectNumber: OcaRootBlockONo,
+            deviceDelegate: self,
+            addToRootBlock: false
+        )
+        rootBlock.type = 1
+        subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
+        deviceManager = try await OcaDeviceManager(deviceDelegate: self)
+    }
 
+    public func add(listener: AES70Listener) async throws {
+        try await initOnce()
         listeners.append(listener)
     }
 
-    public func register(object: OcaRoot, addToRootBlock: Bool = true) throws {
+    public func register(object: OcaRoot, addToRootBlock: Bool = true) async throws {
         precondition(
             object.objectNumber != OcaInvalidONo,
             "cannot register object with invalid ONo"
@@ -62,6 +66,7 @@ public actor AES70Device {
         objects[object.objectNumber] = object
         if addToRootBlock {
             precondition(object.objectNumber != OcaRootBlockONo)
+            try await initOnce()
             try rootBlock.add(actionObject: object)
         }
     }
