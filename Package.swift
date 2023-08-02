@@ -59,7 +59,7 @@ let package = Package(
             path: "Examples/OCADevice"
         ),
         .testTarget(
-            name: "SwiftOCATests",
+            name: "SwiftOCADeviceTests",
             dependencies: [
                 .target(name: "SwiftOCADevice"),
             ]
