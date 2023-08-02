@@ -53,7 +53,7 @@ public enum DeviceApp {
 
         let deviceMembers = await device.rootBlock.actionObjects
         for member in deviceMembers {
-            debugPrint("Local member: \(member)")
+            debugPrint("Local member: \(member) path \(await member.objectNumberPath)")
         }
 
         let connection = AES70LocalDeviceConnection(device: device)

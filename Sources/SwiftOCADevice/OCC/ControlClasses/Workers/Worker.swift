@@ -17,7 +17,7 @@
 import Foundation
 import SwiftOCA
 
-open class OcaWorker: OcaRoot {
+open class OcaWorker: OcaRoot, OcaOwnable {
     override public class var classID: OcaClassID { OcaClassID("1.1.1") }
 
     @OcaDeviceProperty(

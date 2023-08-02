@@ -140,20 +140,42 @@ open class OcaBlock: OcaWorker {
         )
     }
 
-    struct FindObjectsByRoleParameters: Codable {
-        let searchName: OcaString
-        let nameComparisonType: OcaStringComparisonType
-        let searchClassID: OcaClassID
-        let resultFlags: OcaObjectSearchResultFlags
+    public struct FindActionObjectsByRoleParameters: Codable {
+        public let searchName: OcaString
+        public let nameComparisonType: OcaStringComparisonType
+        public let searchClassID: OcaClassID
+        public let resultFlags: OcaObjectSearchResultFlags
+
+        public init(
+            searchName: OcaString,
+            nameComparisonType: OcaStringComparisonType,
+            searchClassID: OcaClassID,
+            resultFlags: OcaObjectSearchResultFlags
+        ) {
+            self.searchName = searchName
+            self.nameComparisonType = nameComparisonType
+            self.searchClassID = searchClassID
+            self.resultFlags = resultFlags
+        }
+    }
+
+    public struct FindActionObjectsByRolePathParameters: Codable {
+        public let searchPath: OcaNamePath
+        public let resultFlags: OcaObjectSearchResultFlags
+
+        public init(searchPath: OcaNamePath, resultFlags: OcaObjectSearchResultFlags) {
+            self.searchPath = searchPath
+            self.resultFlags = resultFlags
+        }
     }
 
     func find(
-        objectsByRole searchName: OcaString,
+        actionObjectsByRole searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID,
         resultFlags: OcaObjectSearchResultFlags
     ) async throws -> OcaList<OcaObjectSearchResult> {
-        let params = FindObjectsByRoleParameters(
+        let params = FindActionObjectsByRoleParameters(
             searchName: searchName,
             nameComparisonType: nameComparisonType,
             searchClassID: searchClassID,
@@ -164,12 +186,12 @@ open class OcaBlock: OcaWorker {
     }
 
     func findRecursive(
-        objectsByRole searchName: OcaString,
+        actionObjectsByRole searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID,
         resultFlags: OcaObjectSearchResultFlags
     ) async throws -> OcaList<OcaObjectSearchResult> {
-        let params = FindObjectsByRoleParameters(
+        let params = FindActionObjectsByRoleParameters(
             searchName: searchName,
             nameComparisonType: nameComparisonType,
             searchClassID: searchClassID,
@@ -181,7 +203,7 @@ open class OcaBlock: OcaWorker {
 
     // 3.19
     func find(
-        objectsByPath searchPath: OcaString,
+        actionObjectsByPath searchPath: OcaString,
         resultFlags: OcaObjectSearchResultFlags,
         result: inout OcaList<OcaObjectSearchResult>
     ) async throws {
@@ -190,7 +212,7 @@ open class OcaBlock: OcaWorker {
 
     // 3.20
     func findRecursive(
-        objectsByLabel searchName: OcaString,
+        actionObjectsByLabel searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID,
         resultFlags: OcaObjectSearchResultFlags,

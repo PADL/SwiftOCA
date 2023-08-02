@@ -17,7 +17,7 @@
 import Foundation
 import SwiftOCA
 
-public class OcaAgent: OcaRoot {
+public class OcaAgent: OcaRoot, OcaOwnable {
     override public class var classID: OcaClassID { OcaClassID("1.2") }
 
     @OcaDeviceProperty(

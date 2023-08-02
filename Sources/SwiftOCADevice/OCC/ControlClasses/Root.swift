@@ -278,3 +278,7 @@ private extension String {
         return String(dropFirst(prefix.count))
     }
 }
+
+protocol OcaOwnable: OcaRoot {
+    var owner: OcaONo { get }
+}
