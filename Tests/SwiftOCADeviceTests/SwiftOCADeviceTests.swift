@@ -40,8 +40,7 @@ final class SwiftOCADeviceTests: XCTestCase {
                 let coordinate = OcaVector2D(x: OcaMatrixCoordinate(x), y: OcaMatrixCoordinate(y))
                 let actuator = try await MyBooleanActuator(
                     role: "Actuator \(x),\(y)",
-                    deviceDelegate: device,
-                    addToRootBlock: false
+                    deviceDelegate: device
                 )
                 try matrix.add(member: actuator, at: coordinate)
             }

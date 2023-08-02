@@ -50,13 +50,13 @@ public enum DeviceApp {
                 let coordinate = OcaVector2D(x: OcaMatrixCoordinate(x), y: OcaMatrixCoordinate(y))
                 let actuator = try await MyBooleanActuator(
                     role: "Actuator \(x),\(y)",
-                    deviceDelegate: device,
-                    addToRootBlock: false
+                    deviceDelegate: device
                 )
                 try matrix.add(member: actuator, at: coordinate)
             }
         }
 
+        // NB: we still need to add objects to the root block because they must have containing block
         try await device.start()
     }
 }
