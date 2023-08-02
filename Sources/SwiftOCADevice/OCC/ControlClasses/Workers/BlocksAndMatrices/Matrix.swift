@@ -187,20 +187,12 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         guard coordinate.isValid(in: self) else {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
-        if let object = object as? OcaWorker {
-            object.owner = objectNumber
-        }
         members[Int(coordinate.x), Int(coordinate.y)] = object
     }
 
     open func remove(coordinate: OcaVector2D<OcaMatrixCoordinate>) throws {
         guard coordinate.isValid(in: self) else {
             throw Ocp1Error.status(.parameterOutOfRange)
-        }
-        if let object = members[Int(coordinate.x), Int(coordinate.y)] as? OcaWorker,
-           object.owner == objectNumber
-        {
-            object.owner = OcaInvalidONo
         }
         members[Int(coordinate.x), Int(coordinate.y)] = nil
     }
