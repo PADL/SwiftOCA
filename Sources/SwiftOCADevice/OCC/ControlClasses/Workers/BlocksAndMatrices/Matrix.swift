@@ -61,7 +61,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         proxy = try await Proxy<Member>(self)
     }
 
-    public class Proxy<ProxyMember: OcaRoot>: OcaRoot {
+    public class Proxy<ProxyMember: OcaRoot>: OcaRoot, OcaOwnable {
         weak var matrix: OcaMatrix<ProxyMember>?
 
         override public class var classIdentification: OcaClassIdentification {
@@ -79,6 +79,10 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             )
         }
 
+        public var owner: OcaONo {
+            matrix?.objectNumber ?? OcaInvalidONo
+        }
+
         override open func handleCommand(
             _ command: Ocp1Command,
             from controller: any AES70Controller
@@ -90,6 +94,14 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
                 /// root object class methods are handled directly, because they refer to the proxy
                 /// object
                 return try await super.handleCommand(command, from: controller)
+            } else if ProxyMember.self is OcaWorker.Type,
+                      command.methodID == OcaMethodID("2.4")
+            {
+                return try encodeResponse(owner)
+            } else if ProxyMember.self is OcaAgent.Type,
+                      command.methodID == OcaMethodID("2.2")
+            {
+                return try encodeResponse(owner)
             }
 
             guard let matrix else {
