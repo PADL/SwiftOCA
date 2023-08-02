@@ -134,6 +134,12 @@ protocol AES70ControllerPrivate: AES70Controller {
 }
 
 extension AES70ControllerPrivate {
+    /// subscriptions are stored keyed by the emitter object number (the object that emits the event)
+    /// each object has a set of subscriptions, note that EV1 and EV2 subscriptions are independent,
+    /// i.e. a controller could subscribe to some events with EV1 and others with EV2 (although this
+    /// would certainly be unusual). Hence when looking for a matching subscription, we compare the
+    /// event ID, the property (in the case it is a property changed event), the subscriber, and the
+    /// version.
     private func findSubscription(
         _ event: OcaEvent,
         property: OcaPropertyID? = nil,

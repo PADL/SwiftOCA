@@ -57,7 +57,7 @@ open class OcaDeviceManager: OcaManager {
         propertyID: OcaPropertyID("3.5"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var version = 1
+    public var version = 2023
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.6"),
