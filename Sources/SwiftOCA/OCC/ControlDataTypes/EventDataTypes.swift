@@ -99,3 +99,5 @@ public struct OcaSubscription: Codable, Equatable, Hashable {
         self.destinationInformation = destinationInformation
     }
 }
+
+public typealias OcaObjectListEventData = OcaList<OcaONo>

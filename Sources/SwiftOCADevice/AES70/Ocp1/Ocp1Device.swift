@@ -241,16 +241,18 @@ public actor AES70OCP1Device: AES70DevicePrivate {
         _ event: OcaEvent,
         parameters: Data
     ) async throws {
-        await withTaskGroup(of: Void.self) { taskGroup in
-            for controller in controllers {
-                guard await controller.notificationsEnabled else {
-                    continue
-                }
-                taskGroup.addTask {
-                    try? await controller.notifySubscribers1(
-                        event,
-                        parameters: parameters
-                    )
+        switch subscriptionManager.state {
+        case .eventsDisabled:
+            subscriptionManager.objectsChangedWhilstNotificationsDisabled.insert(event.emitterONo)
+        case .normal:
+            await withTaskGroup(of: Void.self) { taskGroup in
+                for controller in controllers {
+                    taskGroup.addTask {
+                        try? await controller.notifySubscribers1(
+                            event,
+                            parameters: parameters
+                        )
+                    }
                 }
             }
         }

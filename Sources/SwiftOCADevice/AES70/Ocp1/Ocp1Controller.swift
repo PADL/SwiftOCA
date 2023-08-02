@@ -34,7 +34,6 @@ actor AES70OCP1Controller: AES70ControllerPrivate {
     private var keepAliveTask: Task<(), Error>?
     private var lastMessageReceivedTime = Date.distantPast
     private var socketClosed = false
-    private(set) var notificationsEnabled = true
 
     var messages: AnyAsyncSequence<ControllerMessage> {
         _messages.joined().eraseToAnyAsyncSequence()
@@ -112,14 +111,6 @@ actor AES70OCP1Controller: AES70ControllerPrivate {
 
     nonisolated var identifier: String {
         "<\(hostname)>"
-    }
-
-    public func enableNotifications() {
-        notificationsEnabled = true
-    }
-
-    public func disableNotifications() {
-        notificationsEnabled = false
     }
 
     func updateLastMessageReceivedTime() {

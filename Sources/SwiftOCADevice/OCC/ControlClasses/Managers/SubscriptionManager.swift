@@ -19,8 +19,14 @@ import SwiftOCA
 
 public class OcaSubscriptionManager: OcaManager {
     override public class var classID: OcaClassID { OcaClassID("1.3.4") }
+    override public class var classVersion: OcaClassVersionNumber { 2 }
+
+    @OcaDeviceProperty(propertyID: OcaPropertyID("3.1"))
+    public var state: OcaSubscriptionManagerState = .normal
 
     typealias AddSubscriptionParameters = OcaSubscription
+
+    var objectsChangedWhilstNotificationsDisabled = Set<OcaONo>()
 
     struct RemoveSubscriptionParameters: Codable {
         let event: OcaEvent
@@ -48,12 +54,25 @@ public class OcaSubscriptionManager: OcaManager {
 
     func disableNotifications(from controller: any AES70Controller) async throws {
         try await ensureWritable(by: controller)
-        await controller.disableNotifications()
+        state = .eventsDisabled
+        let event = OcaEvent(
+            emitterONo: objectNumber,
+            eventID: SwiftOCA.OcaSubscriptionManager.NotificationsDisabledEventID
+        )
+        try await deviceDelegate?.notifySubscribers(event)
     }
 
     func reenableNotifications(from controller: any AES70Controller) async throws {
         try await ensureWritable(by: controller)
-        await controller.enableNotifications()
+        let event = OcaEvent(
+            emitterONo: objectNumber,
+            eventID: SwiftOCA.OcaSubscriptionManager.SynchronizeStateEventID
+        )
+        let parameters = try Ocp1BinaryEncoder()
+            .encode(Array(objectsChangedWhilstNotificationsDisabled))
+        try await deviceDelegate?.notifySubscribers(event, parameters: parameters)
+        objectsChangedWhilstNotificationsDisabled.removeAll()
+        state = .normal
     }
 
     override public func handleCommand(

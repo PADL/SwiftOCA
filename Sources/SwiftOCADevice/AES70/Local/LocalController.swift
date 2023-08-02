@@ -38,7 +38,4 @@ actor AES70LocalController: AES70ControllerPrivate {
         )
         await device?.responseChannel.send(messagePduData)
     }
-
-    func disableNotifications() {}
-    func enableNotifications() {}
 }

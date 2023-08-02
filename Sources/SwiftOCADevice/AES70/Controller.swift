@@ -37,9 +37,6 @@ public protocol AES70Controller: Actor {
         _ event: OcaEvent,
         subscriber: OcaMethod
     ) async throws
-
-    func disableNotifications()
-    func enableNotifications()
 }
 
 protocol AES70ControllerPrivate: AES70Controller {

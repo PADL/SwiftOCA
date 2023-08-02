@@ -55,7 +55,7 @@ public actor AES70LocalDevice: AES70DevicePrivate {
     }
 
     public func notifySubscribers(_ event: OcaEvent, parameters: Data) async throws {
-        try await controller.notifySubscribers2(
+        try await controller.notifySubscribers1(
             event,
             parameters: parameters
         )

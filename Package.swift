@@ -66,7 +66,7 @@ let package = Package(
             ],
             path: "Examples/OCALoopbackDevice",
             exclude: [
-                "README.md"
+                "README.md",
             ]
         ),
     ],
