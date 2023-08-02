@@ -24,6 +24,7 @@ public actor AES70LocalDevice: AES70DevicePrivate {
     var requestChannel = AsyncChannel<Data>()
     /// channel for sending responses to the in-process controller
     var responseChannel = AsyncChannel<Data>()
+    var nextObjectNumber: OcaONo = 4096
 
     public internal(set) var objects = [OcaONo: OcaRoot]()
 
@@ -31,7 +32,6 @@ public actor AES70LocalDevice: AES70DevicePrivate {
     public var subscriptionManager: OcaSubscriptionManager!
     public var deviceManager: OcaDeviceManager!
 
-    private var nextObjectNumber: OcaONo = 4096
     private var controller: AES70LocalController!
 
     private var task: Task<(), Error>!
@@ -62,11 +62,6 @@ public actor AES70LocalDevice: AES70DevicePrivate {
         if let task {
             task.cancel()
         }
-    }
-
-    public func allocateObjectNumber() -> OcaONo {
-        defer { nextObjectNumber += 1 }
-        return nextObjectNumber
     }
 
     func handleMessagePdu(_ data: Data) async throws {

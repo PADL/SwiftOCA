@@ -46,10 +46,11 @@ public actor AES70OCP1Device: AES70DevicePrivate {
     public var deviceManager: OcaDeviceManager!
 
     let pool: AsyncSocketPool
+    var nextObjectNumber: OcaONo = 4096
+
     private var address: sockaddr_storage
     private let timeout: TimeInterval
     private let logger: Logging? = AES70OCP1Device.defaultLogger()
-    private var nextObjectNumber: OcaONo = 4096
     private var _controllers = [AES70OCP1Controller]()
 
     public init(

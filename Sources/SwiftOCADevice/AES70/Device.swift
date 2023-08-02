@@ -38,6 +38,7 @@ public protocol AES70Device: Actor {
 
 protocol AES70DevicePrivate: AES70Device {
     var objects: [OcaONo: OcaRoot] { get set }
+    var nextObjectNumber: OcaONo { get set }
 }
 
 public extension AES70Device {
@@ -74,6 +75,11 @@ public extension AES70Device {
 }
 
 extension AES70DevicePrivate {
+    public func allocateObjectNumber() -> OcaONo {
+        defer { nextObjectNumber += 1 }
+        return nextObjectNumber
+    }
+
     public func register(object: OcaRoot, addToRootBlock: Bool = true) throws {
         precondition(
             object.objectNumber != OcaInvalidONo,
