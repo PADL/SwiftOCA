@@ -129,18 +129,15 @@ public struct OcaPropertyChangeSubscription: Codable, Equatable, Hashable {
 
 public struct OcaSubscription2: Codable, Equatable, Hashable {
     public let event: OcaEvent
-    public let subscriber: OcaMethod
     public let notificationDeliveryMode: OcaNotificationDeliveryMode
     public let destinationInformation: OcaNetworkAddress
 
     public init(
         event: OcaEvent,
-        subscriber: OcaMethod,
         notificationDeliveryMode: OcaNotificationDeliveryMode,
         destinationInformation: OcaNetworkAddress
     ) {
         self.event = event
-        self.subscriber = subscriber
         self.notificationDeliveryMode = notificationDeliveryMode
         self.destinationInformation = destinationInformation
     }
@@ -149,20 +146,17 @@ public struct OcaSubscription2: Codable, Equatable, Hashable {
 public struct OcaPropertyChangeSubscription2: Codable, Equatable, Hashable {
     public let emitter: OcaONo
     public let property: OcaPropertyID
-    public let subscriber: OcaMethod
     public let notificationDeliveryMode: OcaNotificationDeliveryMode
     public let destinationInformation: OcaNetworkAddress
 
     public init(
         emitter: OcaONo,
         property: OcaPropertyID,
-        subscriber: OcaMethod,
         notificationDeliveryMode: OcaNotificationDeliveryMode,
         destinationInformation: OcaNetworkAddress
     ) {
         self.emitter = emitter
         self.property = property
-        self.subscriber = subscriber
         self.notificationDeliveryMode = notificationDeliveryMode
         self.destinationInformation = destinationInformation
     }

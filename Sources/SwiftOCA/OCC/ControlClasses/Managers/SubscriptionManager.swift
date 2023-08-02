@@ -153,13 +153,11 @@ open class OcaSubscriptionManager: OcaManager {
 
     func addSubscription2(
         event: OcaEvent,
-        subscriber: OcaMethod,
         notificationDeliveryMode: OcaNotificationDeliveryMode,
         destinationInformation: OcaNetworkAddress
     ) async throws {
         let params = AddSubscription2Parameters(
             event: event,
-            subscriber: subscriber,
             notificationDeliveryMode: notificationDeliveryMode,
             destinationInformation: destinationInformation
         )
@@ -176,14 +174,12 @@ open class OcaSubscriptionManager: OcaManager {
     func addPropertyChangeSubscription2(
         emitter: OcaONo,
         property: OcaPropertyID,
-        subscriber: OcaMethod,
         notificationDeliveryMode: OcaNotificationDeliveryMode,
         destinationInformation: OcaNetworkAddress
     ) async throws {
         let params = AddPropertyChangeSubscription2Parameters(
             emitter: emitter,
             property: property,
-            subscriber: subscriber,
             notificationDeliveryMode: notificationDeliveryMode,
             destinationInformation: destinationInformation
         )

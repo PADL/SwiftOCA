@@ -158,7 +158,7 @@ extension AES70ControllerPrivate {
                 )
                 let notification = Ocp1Notification1(
                     targetONo: subscription.event.emitterONo,
-                    methodID: subscription.subscriber.methodID,
+                    methodID: subscription.subscriber!.methodID,
                     parameters: ntfParams
                 )
 

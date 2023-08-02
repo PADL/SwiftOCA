@@ -235,16 +235,16 @@ public enum OcaSubscriptionManagerSubscription: Codable, Equatable, Hashable {
         }
     }
 
-    var subscriber: OcaMethod {
+    var subscriber: OcaMethod? {
         switch self {
         case let .subscription(subscription):
             return subscription.subscriber
         case let .subscription2(subscription):
-            return subscription.subscriber
+            return nil
         case let .propertyChangeSubscription(propertyChangeSubscription):
             return propertyChangeSubscription.subscriber
         case let .propertyChangeSubscription2(propertyChangeSubscription):
-            return propertyChangeSubscription.subscriber
+            return nil
         }
     }
 
