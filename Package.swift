@@ -58,15 +58,10 @@ let package = Package(
             ],
             path: "Examples/OCADevice"
         ),
-        .executableTarget(
-            name: "OCALoopbackDevice",
+        .testTarget(
+            name: "SwiftOCATests",
             dependencies: [
-                "SwiftOCADevice",
-                .product(name: "FlyingSocks", package: "FlyingFox"),
-            ],
-            path: "Examples/OCALoopbackDevice",
-            exclude: [
-                "README.md",
+                .target(name: "SwiftOCADevice"),
             ]
         ),
     ],
