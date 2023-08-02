@@ -122,101 +122,76 @@ extension AES70ControllerPrivate {
         }
     }
 
-    private func notifySubscribers1(
-        _ event: OcaEvent,
-        parameters: Data
-    ) async throws {
-        for subscription in findSubscriptions(event, version: .ev1) {
-            let eventData = Ocp1EventData(event: event, eventParameters: parameters)
-            let ntfParams = Ocp1NtfParams(
-                parameterCount: 2,
-                context: subscription.subscriberContext,
-                eventData: eventData
-            )
-            let notification = Ocp1Notification1(
-                targetONo: subscription.event.emitterONo,
-                methodID: subscription.subscriber.methodID,
-                parameters: ntfParams
-            )
-
-            try await sendMessage(notification, type: .ocaNtf1)
-        }
-    }
-
-    private func notifyPropertyChangeSubscribers1(
-        _ emitter: OcaONo,
-        property: OcaPropertyID,
-        parameters: Data
-    ) async throws {
-        let event = OcaEvent(emitterONo: emitter, eventID: OcaPropertyChangedEventID)
-
-        for subscription in findSubscriptions(event, property: property, version: .ev1) {
-            let eventData = Ocp1EventData(event: event, eventParameters: parameters)
-            let ntfParams = Ocp1NtfParams(
-                parameterCount: 2,
-                context: subscription.subscriberContext,
-                eventData: eventData
-            )
-            let notification = Ocp1Notification1(
-                targetONo: subscription.event.emitterONo,
-                methodID: subscription.subscriber.methodID,
-                parameters: ntfParams
-            )
-
-            try await sendMessage(notification, type: .ocaNtf1)
-        }
-    }
-
-    private func notifySubscribers2(
-        _ event: OcaEvent,
-        parameters: Data
-    ) async throws {
-        for subscription in findSubscriptions(event, version: .ev2) {
-            let notification = Ocp1Notification2(
-                event: subscription.event,
-                notificationType: .event,
-                data: parameters
-            )
-            try await sendMessage(notification, type: .ocaNtf2)
-        }
-    }
-
-    private func notifyPropertyChangeSubscribers2(
-        _ emitter: OcaONo,
-        property: OcaPropertyID,
-        parameters: Data
-    ) async throws {
-        let event = OcaEvent(emitterONo: emitter, eventID: OcaPropertyChangedEventID)
-        for subscription in findSubscriptions(event, property: property, version: .ev2) {
-            let notification = Ocp1Notification2(
-                event: subscription.event,
-                notificationType: .event,
-                data: parameters
-            )
-            try await sendMessage(notification, type: .ocaNtf2)
-        }
-    }
-
     func notifySubscribers(
         _ event: OcaEvent,
         parameters: Data
     ) async throws {
-        try await notifySubscribers1(event, parameters: parameters)
-        try await notifySubscribers2(event, parameters: parameters)
+        guard let subscriptions = subscriptions[event.emitterONo] else {
+            return
+        }
+
+        let property: OcaPropertyID?
 
         if event.eventID == OcaPropertyChangedEventID {
-            let property = try Ocp1BinaryDecoder().decode(OcaPropertyID.self, from: parameters)
+            property = try Ocp1BinaryDecoder().decode(OcaPropertyID.self, from: parameters)
+        } else {
+            property = nil
+        }
 
-            try await notifyPropertyChangeSubscribers1(
-                event.emitterONo,
-                property: property,
-                parameters: parameters
-            )
-            try await notifyPropertyChangeSubscribers2(
-                event.emitterONo,
-                property: property,
-                parameters: parameters
-            )
+        for subscription in subscriptions {
+            let subscription = subscription as! OcaSubscriptionManagerSubscription
+
+            switch subscription {
+            case let .subscription(subscription):
+                let eventData = Ocp1EventData(event: event, eventParameters: parameters)
+                let ntfParams = Ocp1NtfParams(
+                    parameterCount: 2,
+                    context: subscription.subscriberContext,
+                    eventData: eventData
+                )
+                let notification = Ocp1Notification1(
+                    targetONo: subscription.event.emitterONo,
+                    methodID: subscription.subscriber.methodID,
+                    parameters: ntfParams
+                )
+
+                try await sendMessage(notification, type: .ocaNtf1)
+            case let .subscription2(subscription):
+                let notification = Ocp1Notification2(
+                    event: subscription.event,
+                    notificationType: .event,
+                    data: parameters
+                )
+                try await sendMessage(notification, type: .ocaNtf2)
+            case let .propertyChangeSubscription(propertyChangeSubscription):
+                guard let property, propertyChangeSubscription.property == property else {
+                    return
+                }
+                let eventData = Ocp1EventData(event: event, eventParameters: parameters)
+                let ntfParams = Ocp1NtfParams(
+                    parameterCount: 2,
+                    context: subscription.subscriberContext,
+                    eventData: eventData
+                )
+                let notification = Ocp1Notification1(
+                    targetONo: subscription.event.emitterONo,
+                    methodID: subscription.subscriber.methodID,
+                    parameters: ntfParams
+                )
+
+                try await sendMessage(notification, type: .ocaNtf1)
+            case let .propertyChangeSubscription2(propertyChangeSubscription):
+                guard let property, propertyChangeSubscription.property == property else {
+                    return
+                }
+
+                let notification = Ocp1Notification2(
+                    event: subscription.event,
+                    notificationType: .event,
+                    data: parameters
+                )
+                try await sendMessage(notification, type: .ocaNtf2)
+            }
         }
     }
 
