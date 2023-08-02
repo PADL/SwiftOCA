@@ -77,20 +77,20 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     func applyRecursive<T: OcaRoot>(
         rootObject: OcaBlock,
         keyPath: KeyPath<OcaBlock, [T]>,
-        _ block: (_ member: T) throws -> ()
+        _ block: (_ member: T, _ container: OcaBlock) throws -> ()
     ) rethrows {
         for member in rootObject[keyPath: keyPath] {
             if let member = member as? OcaBlock {
                 try applyRecursive(rootObject: member, keyPath: keyPath, block)
             } else {
-                try block(member)
+                try block(member, rootObject)
             }
         }
     }
 
     func applyRecursive<T: OcaRoot>(
         keyPath: KeyPath<OcaBlock, [T]>,
-        _ block: (_ member: T) throws -> ()
+        _ block: (_ member: T, _ container: OcaBlock) throws -> ()
     ) rethrows {
         try applyRecursive(
             rootObject: self,
@@ -101,14 +101,27 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
 
     func filterRecursive<T: OcaRoot>(
         keyPath: KeyPath<OcaBlock, [T]>,
-        _ isIncluded: @escaping (T) throws -> Bool
+        _ isIncluded: @escaping (T, OcaBlock) throws -> Bool
     ) rethrows -> [T] {
         var members = [T]()
 
-        try applyRecursive(keyPath: keyPath) { member in
-            if try isIncluded(member) {
+        try applyRecursive(keyPath: keyPath) { member, container in
+            if try isIncluded(member, container) {
                 members.append(member)
             }
+        }
+
+        return members
+    }
+
+    func mapRecursive<T: OcaRoot, U>(
+        keyPath: KeyPath<OcaBlock, [T]>,
+        _ transform: (T, OcaBlock) throws -> U
+    ) rethrows -> [U] {
+        var members = [U]()
+
+        try applyRecursive(keyPath: keyPath) { member, container in
+            try members.append(transform(member, container))
         }
 
         return members
@@ -117,18 +130,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     func getActionObjectsRecursive(from controller: any AES70Controller) async throws
         -> OcaList<OcaBlockMember>
     {
-        var members = [OcaBlockMember]()
-
-        applyRecursive(keyPath: \.actionObjects) { (member: ActionObject) in
-            precondition(member != self)
-            members
-                .append(OcaBlockMember(
-                    memberObjectIdentification: member.objectIdentification,
-                    containerObjectNumber: objectNumber
-                ))
+        mapRecursive(keyPath: \.actionObjects) { (member: ActionObject, container: OcaBlock) in
+            OcaBlockMember(
+                memberObjectIdentification: member.objectIdentification,
+                containerObjectNumber: container.objectNumber
+            )
         }
-
-        return members
     }
 
     func getSignalPathsRecursive(from controller: any AES70Controller) async throws
