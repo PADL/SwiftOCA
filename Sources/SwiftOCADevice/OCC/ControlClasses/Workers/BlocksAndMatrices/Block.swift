@@ -75,14 +75,13 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     public var oNoMap = OcaMap<OcaProtoONo, OcaONo>()
 
     func applyRecursive<T: OcaRoot>(
+        rootObject: OcaBlock,
         keyPath: KeyPath<OcaBlock, [T]>,
-        members: [T],
         _ block: (_ member: T) async throws -> ()
     ) async throws {
-        for member in members {
-            precondition(member != self)
+        for member in rootObject[keyPath: keyPath] {
             if let member = member as? OcaBlock {
-                try await applyRecursive(keyPath: keyPath, members: self[keyPath: keyPath], block)
+                try await applyRecursive(rootObject: member, keyPath: keyPath, block)
             } else {
                 try await block(member)
             }
@@ -94,8 +93,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         _ block: (_ member: T) async throws -> ()
     ) async throws {
         try await applyRecursive(
+            rootObject: self,
             keyPath: keyPath,
-            members: self[keyPath: keyPath],
             block
         )
     }
