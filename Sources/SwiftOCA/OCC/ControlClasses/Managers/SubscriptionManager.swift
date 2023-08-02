@@ -35,6 +35,32 @@ open class OcaSubscriptionManager: OcaManager {
         self.init(objectNumber: OcaSubscriptionManagerONo)
     }
 
+    public typealias AddSubscriptionParameters = OcaSubscription
+
+    public struct RemoveSubscriptionParameters: Codable {
+        public let event: OcaEvent
+        public let subscriber: OcaMethod
+
+        public init(event: OcaEvent, subscriber: OcaMethod) {
+            self.event = event
+            self.subscriber = subscriber
+        }
+    }
+
+    public typealias AddPropertyChangeSubscriptionParameters = OcaPropertyChangeSubscription
+
+    public struct RemovePropertyChangeSubscriptionParameters: Codable {
+        public let emitter: OcaONo
+        public let property: OcaPropertyID
+        public let subscriber: OcaMethod
+
+        public init(emitter: OcaONo, property: OcaPropertyID, subscriber: OcaMethod) {
+            self.emitter = emitter
+            self.property = property
+            self.subscriber = subscriber
+        }
+    }
+
     func addSubscription(
         event: OcaEvent,
         subscriber: OcaMethod,
@@ -42,8 +68,6 @@ open class OcaSubscriptionManager: OcaManager {
         notificationDeliveryMode: OcaNotificationDeliveryMode,
         destinationInformation: OcaNetworkAddress
     ) async throws {
-        typealias AddSubscriptionParameters = OcaSubscription
-
         let params = AddSubscriptionParameters(
             event: event,
             subscriber: subscriber,
@@ -55,11 +79,6 @@ open class OcaSubscriptionManager: OcaManager {
     }
 
     func removeSubscription(event: OcaEvent, subscriber: OcaMethod) async throws {
-        struct RemoveSubscriptionParameters: Codable {
-            let event: OcaEvent
-            let subscriber: OcaMethod
-        }
-
         let params = RemoveSubscriptionParameters(event: event, subscriber: subscriber)
         try await sendCommandRrq(methodID: OcaMethodID("3.2"), parameters: params)
     }
@@ -80,15 +99,6 @@ open class OcaSubscriptionManager: OcaManager {
         notificationDeliveryMode: OcaNotificationDeliveryMode,
         destinationInformation: OcaNetworkAddress
     ) async throws {
-        struct AddPropertyChangeSubscriptionParameters: Codable {
-            let emitter: OcaONo
-            let property: OcaPropertyID
-            let subscriber: OcaMethod
-            let subscriberContext: OcaBlob
-            let notificationDeliveryMode: OcaNotificationDeliveryMode
-            let destinationInformation: OcaNetworkAddress
-        }
-
         let params = AddPropertyChangeSubscriptionParameters(
             emitter: emitter,
             property: property,
@@ -105,12 +115,6 @@ open class OcaSubscriptionManager: OcaManager {
         property: OcaPropertyID,
         subscriber: OcaMethod
     ) async throws {
-        struct RemovePropertyChangeSubscriptionParameters: Codable {
-            let emitter: OcaONo
-            let property: OcaPropertyID
-            let subscriber: OcaMethod
-        }
-
         let params = RemovePropertyChangeSubscriptionParameters(
             emitter: emitter,
             property: property,
@@ -123,13 +127,37 @@ open class OcaSubscriptionManager: OcaManager {
         try await sendCommandRrq(methodID: OcaMethodID("3.7"))
     }
 
+    public struct RemoveSubscription2Parameters: Codable {
+        public let event: OcaEvent
+        public let subscriber: OcaMethod
+
+        public init(event: OcaEvent, subscriber: OcaMethod) {
+            self.event = event
+            self.subscriber = subscriber
+        }
+    }
+
+    public struct RemovePropertyChangeSubscription2Parameters: Codable {
+        public let emitter: OcaONo
+        public let property: OcaPropertyID
+        public let subscriber: OcaMethod
+
+        public init(emitter: OcaONo, property: OcaPropertyID, subscriber: OcaMethod) {
+            self.emitter = emitter
+            self.property = property
+            self.subscriber = subscriber
+        }
+    }
+
+    public typealias AddSubscription2Parameters = OcaSubscription2
+
     func addSubscription2(
         event: OcaEvent,
         subscriber: OcaMethod,
         notificationDeliveryMode: OcaNotificationDeliveryMode,
         destinationInformation: OcaNetworkAddress
     ) async throws {
-        let params = OcaAddSubscription2Parameters(
+        let params = AddSubscription2Parameters(
             event: event,
             subscriber: subscriber,
             notificationDeliveryMode: notificationDeliveryMode,
@@ -139,9 +167,11 @@ open class OcaSubscriptionManager: OcaManager {
     }
 
     func removeSubscription2(event: OcaEvent, subscriber: OcaMethod) async throws {
-        let params = OcaRemoveSubscription2Parameters(event: event, subscriber: subscriber)
+        let params = RemoveSubscription2Parameters(event: event, subscriber: subscriber)
         try await sendCommandRrq(methodID: OcaMethodID("3.9"), parameters: params)
     }
+
+    public typealias AddPropertyChangeSubscription2Parameters = OcaPropertyChangeSubscription2
 
     func addPropertyChangeSubscription2(
         emitter: OcaONo,
@@ -150,7 +180,7 @@ open class OcaSubscriptionManager: OcaManager {
         notificationDeliveryMode: OcaNotificationDeliveryMode,
         destinationInformation: OcaNetworkAddress
     ) async throws {
-        let params = OcaAddPropertyChangeSubscription2Parameters(
+        let params = AddPropertyChangeSubscription2Parameters(
             emitter: emitter,
             property: property,
             subscriber: subscriber,
@@ -165,37 +195,11 @@ open class OcaSubscriptionManager: OcaManager {
         property: OcaPropertyID,
         subscriber: OcaMethod
     ) async throws {
-        let params = OcaRemovePropertyChangeSubscription2Parameters(
+        let params = RemovePropertyChangeSubscription2Parameters(
             emitter: emitter,
             property: property,
             subscriber: subscriber
         )
         try await sendCommandRrq(methodID: OcaMethodID("3.11"), parameters: params)
     }
-}
-
-public struct OcaAddSubscription2Parameters: Codable {
-    public let event: OcaEvent
-    public let subscriber: OcaMethod
-    public let notificationDeliveryMode: OcaNotificationDeliveryMode
-    public let destinationInformation: OcaNetworkAddress
-}
-
-public struct OcaRemoveSubscription2Parameters: Codable {
-    public let event: OcaEvent
-    public let subscriber: OcaMethod
-}
-
-public struct OcaAddPropertyChangeSubscription2Parameters: Codable {
-    public let emitter: OcaONo
-    public let property: OcaPropertyID
-    public let subscriber: OcaMethod
-    public let notificationDeliveryMode: OcaNotificationDeliveryMode
-    public let destinationInformation: OcaNetworkAddress
-}
-
-public struct OcaRemovePropertyChangeSubscription2Parameters: Codable {
-    public let emitter: OcaONo
-    public let property: OcaPropertyID
-    public let subscriber: OcaMethod
 }

@@ -28,14 +28,99 @@ import AsyncExtensions
 import Foundation
 import SwiftOCA
 
+public enum OcaSubscriptionManagerSubscription: Codable {
+    case subscription(OcaSubscription)
+    case propertyChangeSubscription(OcaPropertyChangeSubscription)
+    case subscription2(OcaSubscription2)
+    case propertyChangeSubscription2(OcaPropertyChangeSubscription2)
+
+    public enum EventVersion: OcaUint8 {
+        case ev1 = 1
+        case ev2 = 2
+    }
+
+    var version: EventVersion {
+        switch self {
+        case .subscription:
+            fallthrough
+        case .propertyChangeSubscription:
+            return .ev1
+        case .subscription2:
+            fallthrough
+        case .propertyChangeSubscription2:
+            return .ev2
+        }
+    }
+
+    var event: OcaEvent {
+        switch self {
+        case let .subscription(subscription):
+            return subscription.event
+        case let .subscription2(subscription):
+            return subscription.event
+        case let .propertyChangeSubscription(propertyChangeSubscription):
+            return OcaEvent(
+                emitterONo: propertyChangeSubscription.emitter,
+                eventID: OcaPropertyChangedEventID
+            )
+        case let .propertyChangeSubscription2(propertyChangeSubscription):
+            return OcaEvent(
+                emitterONo: propertyChangeSubscription.emitter,
+                eventID: OcaPropertyChangedEventID
+            )
+        }
+    }
+
+    var property: OcaPropertyID? {
+        switch self {
+        case .subscription:
+            fallthrough
+        case .subscription2:
+            return nil
+        case let .propertyChangeSubscription(propertyChangeSubscription):
+            return propertyChangeSubscription.property
+        case let .propertyChangeSubscription2(propertyChangeSubscription):
+            return propertyChangeSubscription.property
+        }
+    }
+
+    var subscriber: OcaMethod {
+        switch self {
+        case let .subscription(subscription):
+            return subscription.subscriber
+        case let .subscription2(subscription):
+            return subscription.subscriber
+        case let .propertyChangeSubscription(propertyChangeSubscription):
+            return propertyChangeSubscription.subscriber
+        case let .propertyChangeSubscription2(propertyChangeSubscription):
+            return propertyChangeSubscription.subscriber
+        }
+    }
+
+    var subscriberContext: OcaBlob {
+        switch self {
+        case let .subscription(subscription):
+            return subscription.subscriberContext
+        case .subscription2:
+            return LengthTaggedData()
+        case let .propertyChangeSubscription(propertyChangeSubscription):
+            return propertyChangeSubscription.subscriberContext
+        case .propertyChangeSubscription2:
+            return LengthTaggedData()
+        }
+    }
+}
+
 public protocol AES70Controller: Actor {
     func addSubscription(
-        _ subscription: OcaSubscription
+        _ subscription: OcaSubscriptionManagerSubscription
     ) async throws
 
     func removeSubscription(
         _ event: OcaEvent,
-        subscriber: OcaMethod
+        property: OcaPropertyID?,
+        subscriber: OcaMethod,
+        version: OcaSubscriptionManagerSubscription.EventVersion
     ) async throws
 }
 
@@ -49,29 +134,51 @@ protocol AES70ControllerPrivate: AES70Controller {
 }
 
 extension AES70ControllerPrivate {
-    func findSubscription(
+    private func findSubscription(
         _ event: OcaEvent,
-        subscriber: OcaMethod? = nil
-    ) -> OcaSubscription? {
+        property: OcaPropertyID? = nil,
+        subscriber: OcaMethod? = nil,
+        version: OcaSubscriptionManagerSubscription.EventVersion
+    ) -> OcaSubscriptionManagerSubscription? {
+        precondition(property == nil || event.eventID == OcaPropertyChangedEventID)
         guard let subscriptions = subscriptions[event.emitterONo] else {
             return nil
         }
         return subscriptions.first(where: {
-            let subscription = $0 as! OcaSubscription
+            let subscription = $0 as! OcaSubscriptionManagerSubscription
             return subscription.event == event &&
-                subscriber == nil ? true : subscription.subscriber == subscriber
-        }) as? OcaSubscription
+                (subscriber == nil ? true : subscription.subscriber == subscriber) &&
+                subscription.property == property &&
+                subscription.version == version
+        }) as? OcaSubscriptionManagerSubscription
     }
 
-    public func hasSubscription(_ subscription: OcaSubscription) -> Bool {
+    private func hasSubscription(
+        _ event: OcaEvent,
+        property: OcaPropertyID? = nil,
+        subscriber: OcaMethod? = nil,
+        version: OcaSubscriptionManagerSubscription.EventVersion
+    ) -> Bool {
         findSubscription(
-            subscription.event,
-            subscriber: subscription.subscriber
+            event,
+            property: property,
+            subscriber: subscriber,
+            version: version
         ) != nil
     }
 
+    private func hasSubscription(
+        _ subscription: OcaSubscriptionManagerSubscription
+    ) -> Bool {
+        hasSubscription(
+            subscription.event,
+            subscriber: subscription.subscriber,
+            version: subscription.version
+        )
+    }
+
     public func addSubscription(
-        _ subscription: OcaSubscription
+        _ subscription: OcaSubscriptionManagerSubscription
     ) async throws {
         guard !hasSubscription(subscription) else {
             throw Ocp1Error.alreadySubscribedToEvent
@@ -87,9 +194,11 @@ extension AES70ControllerPrivate {
 
     public func removeSubscription(
         _ event: OcaEvent,
-        subscriber: OcaMethod
+        property: OcaPropertyID?,
+        subscriber: OcaMethod,
+        version: OcaSubscriptionManagerSubscription.EventVersion
     ) async throws {
-        guard let subscription = findSubscription(event, subscriber: subscriber)
+        guard let subscription = findSubscription(event, subscriber: subscriber, version: version)
         else {
             return
         }
@@ -101,7 +210,7 @@ extension AES70ControllerPrivate {
         _ event: OcaEvent,
         parameters: Data
     ) async throws {
-        guard let subscription = findSubscription(event) else {
+        guard let subscription = findSubscription(event, version: .ev1) else {
             return
         }
 
@@ -120,11 +229,59 @@ extension AES70ControllerPrivate {
         try await sendMessage(notification, type: .ocaNtf1)
     }
 
-    // for EV2 event type support, but how do we signal this?
+    func notifyPropertyChangeSubscribers1(
+        _ emitter: OcaONo,
+        property: OcaPropertyID,
+        parameters: Data
+    ) async throws {
+        let event = OcaEvent(emitterONo: emitter, eventID: OcaPropertyChangedEventID)
+
+        guard let subscription = findSubscription(event, property: property, version: .ev1) else {
+            return
+        }
+
+        let eventData = Ocp1EventData(event: event, eventParameters: parameters)
+        let ntfParams = Ocp1NtfParams(
+            parameterCount: 2,
+            context: subscription.subscriberContext,
+            eventData: eventData
+        )
+        let notification = Ocp1Notification1(
+            targetONo: subscription.event.emitterONo,
+            methodID: subscription.subscriber.methodID,
+            parameters: ntfParams
+        )
+
+        try await sendMessage(notification, type: .ocaNtf1)
+    }
+
     func notifySubscribers2(
         _ event: OcaEvent,
         parameters: Data
     ) async throws {
+        guard hasSubscription(event, version: .ev2) else {
+            return
+        }
+
+        let notification = Ocp1Notification2(
+            event: event,
+            notificationType: .event,
+            data: parameters
+        )
+        try await sendMessage(notification, type: .ocaNtf2)
+    }
+
+    func notifyPropertyChangeSubscribers2(
+        _ emitter: OcaONo,
+        property: OcaPropertyID,
+        parameters: Data
+    ) async throws {
+        let event = OcaEvent(emitterONo: emitter, eventID: OcaPropertyChangedEventID)
+
+        guard hasSubscription(event, property: property, version: .ev2) else {
+            return
+        }
+
         let notification = Ocp1Notification2(
             event: event,
             notificationType: .event,

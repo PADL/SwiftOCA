@@ -245,6 +245,14 @@ public actor AES70OCP1Device: AES70DevicePrivate {
         case .eventsDisabled:
             subscriptionManager.objectsChangedWhilstNotificationsDisabled.insert(event.emitterONo)
         case .normal:
+            let property: OcaPropertyID?
+
+            if event.eventID == OcaPropertyChangedEventID {
+                property = try Ocp1BinaryDecoder().decode(OcaPropertyID.self, from: parameters)
+            } else {
+                property = nil
+            }
+
             await withTaskGroup(of: Void.self) { taskGroup in
                 for controller in controllers {
                     taskGroup.addTask {
@@ -252,6 +260,15 @@ public actor AES70OCP1Device: AES70DevicePrivate {
                             event,
                             parameters: parameters
                         )
+                    }
+                    if let property {
+                        taskGroup.addTask {
+                            try? await controller.notifyPropertyChangeSubscribers1(
+                                event.emitterONo,
+                                property: property,
+                                parameters: parameters
+                            )
+                        }
                     }
                 }
             }

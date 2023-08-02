@@ -101,3 +101,69 @@ public struct OcaSubscription: Codable, Equatable, Hashable {
 }
 
 public typealias OcaObjectListEventData = OcaList<OcaONo>
+
+public struct OcaPropertyChangeSubscription: Codable, Equatable, Hashable {
+    public let emitter: OcaONo
+    public let property: OcaPropertyID
+    public let subscriber: OcaMethod
+    public let subscriberContext: OcaBlob
+    public let notificationDeliveryMode: OcaNotificationDeliveryMode
+    public let destinationInformation: OcaNetworkAddress
+
+    public init(
+        emitter: OcaONo,
+        property: OcaPropertyID,
+        subscriber: OcaMethod,
+        subscriberContext: OcaBlob,
+        notificationDeliveryMode: OcaNotificationDeliveryMode,
+        destinationInformation: OcaNetworkAddress
+    ) {
+        self.emitter = emitter
+        self.property = property
+        self.subscriber = subscriber
+        self.subscriberContext = subscriberContext
+        self.notificationDeliveryMode = notificationDeliveryMode
+        self.destinationInformation = destinationInformation
+    }
+}
+
+public struct OcaSubscription2: Codable {
+    public let event: OcaEvent
+    public let subscriber: OcaMethod
+    public let notificationDeliveryMode: OcaNotificationDeliveryMode
+    public let destinationInformation: OcaNetworkAddress
+
+    public init(
+        event: OcaEvent,
+        subscriber: OcaMethod,
+        notificationDeliveryMode: OcaNotificationDeliveryMode,
+        destinationInformation: OcaNetworkAddress
+    ) {
+        self.event = event
+        self.subscriber = subscriber
+        self.notificationDeliveryMode = notificationDeliveryMode
+        self.destinationInformation = destinationInformation
+    }
+}
+
+public struct OcaPropertyChangeSubscription2: Codable {
+    public let emitter: OcaONo
+    public let property: OcaPropertyID
+    public let subscriber: OcaMethod
+    public let notificationDeliveryMode: OcaNotificationDeliveryMode
+    public let destinationInformation: OcaNetworkAddress
+
+    public init(
+        emitter: OcaONo,
+        property: OcaPropertyID,
+        subscriber: OcaMethod,
+        notificationDeliveryMode: OcaNotificationDeliveryMode,
+        destinationInformation: OcaNetworkAddress
+    ) {
+        self.emitter = emitter
+        self.property = property
+        self.subscriber = subscriber
+        self.notificationDeliveryMode = notificationDeliveryMode
+        self.destinationInformation = destinationInformation
+    }
+}
