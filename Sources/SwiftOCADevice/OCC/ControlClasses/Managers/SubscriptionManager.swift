@@ -39,11 +39,11 @@ public class OcaSubscriptionManager: OcaManager {
         from controller: any AES70Controller
     ) async throws {
         try await ensureWritable(by: controller)
+
         try await controller.removeSubscription(
             subscription.event,
             property: nil,
-            subscriber: subscription.subscriber,
-            version: .ev1
+            subscriber: subscription.subscriber
         )
     }
 
@@ -63,8 +63,7 @@ public class OcaSubscriptionManager: OcaManager {
         try await controller.removeSubscription(
             OcaEvent(emitterONo: subscription.emitter, eventID: OcaPropertyChangedEventID),
             property: subscription.property,
-            subscriber: subscription.subscriber,
-            version: .ev1
+            subscriber: subscription.subscriber
         )
     }
 
@@ -104,12 +103,7 @@ public class OcaSubscriptionManager: OcaManager {
         from controller: any AES70Controller
     ) async throws {
         try await ensureWritable(by: controller)
-        try await controller.removeSubscription(
-            subscription.event,
-            property: nil,
-            subscriber: subscription.subscriber,
-            version: .ev2
-        )
+        try await controller.removeSubscription(.subscription2(subscription))
     }
 
     func addPropertyChangeSubscription2(
@@ -125,12 +119,7 @@ public class OcaSubscriptionManager: OcaManager {
         from controller: any AES70Controller
     ) async throws {
         try await ensureWritable(by: controller)
-        try await controller.removeSubscription(
-            OcaEvent(emitterONo: subscription.emitter, eventID: OcaPropertyChangedEventID),
-            property: subscription.property,
-            subscriber: subscription.subscriber,
-            version: .ev2
-        )
+        try await controller.removeSubscription(.propertyChangeSubscription2(subscription))
     }
 
     override public func handleCommand(
@@ -163,6 +152,31 @@ public class OcaSubscriptionManager: OcaManager {
             let subscription: SwiftOCA.OcaSubscriptionManager
                 .RemovePropertyChangeSubscriptionParameters = try decodeCommand(command)
             try await removePropertyChangeSubscription(subscription, from: controller)
+            return Ocp1Response()
+        case OcaMethodID("3.7"):
+            // Returns maximum byte length of payload of EV1 subscriber context parameter that this
+            // device supports
+            let maximumSubscriberContextLength = OcaUint16(4)
+            return try encodeResponse(maximumSubscriberContextLength)
+        case OcaMethodID("3.8"):
+            let subscription: SwiftOCA.OcaSubscriptionManager
+                .AddSubscription2Parameters = try decodeCommand(command)
+            try await addSubscription2(subscription, from: controller)
+            return Ocp1Response()
+        case OcaMethodID("3.9"):
+            let subscription: SwiftOCA.OcaSubscriptionManager
+                .RemoveSubscription2Parameters = try decodeCommand(command)
+            try await removeSubscription2(subscription, from: controller)
+            return Ocp1Response()
+        case OcaMethodID("3.10"):
+            let subscription: SwiftOCA.OcaSubscriptionManager
+                .AddPropertyChangeSubscription2Parameters = try decodeCommand(command)
+            try await addPropertyChangeSubscription2(subscription, from: controller)
+            return Ocp1Response()
+        case OcaMethodID("3.11"):
+            let subscription: SwiftOCA.OcaSubscriptionManager
+                .RemovePropertyChangeSubscription2Parameters = try decodeCommand(command)
+            try await removePropertyChangeSubscription2(subscription, from: controller)
             return Ocp1Response()
         default:
             return try await super.handleCommand(command, from: controller)

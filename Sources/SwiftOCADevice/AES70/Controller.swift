@@ -25,10 +25,13 @@ public protocol AES70Controller: Actor {
     ) async throws
 
     func removeSubscription(
+        _ subscription: OcaSubscriptionManagerSubscription
+    ) async throws
+
+    func removeSubscription(
         _ event: OcaEvent,
         property: OcaPropertyID?,
-        subscriber: OcaMethod,
-        version: OcaSubscriptionManagerSubscription.EventVersion
+        subscriber: OcaMethod
     ) async throws
 }
 
@@ -112,12 +115,17 @@ extension AES70ControllerPrivate {
     }
 
     public func removeSubscription(
+        _ subscription: OcaSubscriptionManagerSubscription
+    ) async throws {
+        subscriptions[subscription.event.emitterONo]?.remove(subscription)
+    }
+
+    func removeSubscription(
         _ event: OcaEvent,
         property: OcaPropertyID?,
-        subscriber: OcaMethod,
-        version: OcaSubscriptionManagerSubscription.EventVersion
+        subscriber: OcaMethod
     ) async throws {
-        findSubscriptions(event, subscriber: subscriber, version: version).forEach { subscription in
+        for subscription in findSubscriptions(event, subscriber: subscriber, version: .ev1) {
             subscriptions[event.emitterONo]?.remove(subscription)
         }
     }
