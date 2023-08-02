@@ -26,11 +26,11 @@ public enum OcaStringComparisonType: OcaUint8, Codable {
 }
 
 public struct OcaObjectSearchResultFlags: OptionSet, Codable {
-    public static let oNo = (1 << 0)
-    public static let classIdentification = (1 << 1)
-    public static let containerPath = (1 << 2)
-    public static let role = (1 << 3)
-    public static let label = (1 << 3)
+    public static let oNo = OcaObjectSearchResultFlags(rawValue: 1 << 0)
+    public static let classIdentification = OcaObjectSearchResultFlags(rawValue: 1 << 1)
+    public static let containerPath = OcaObjectSearchResultFlags(rawValue: 1 << 2)
+    public static let role = OcaObjectSearchResultFlags(rawValue: 1 << 3)
+    public static let label = OcaObjectSearchResultFlags(rawValue: 1 << 4)
 
     public let rawValue: OcaBitSet16
 
@@ -40,9 +40,23 @@ public struct OcaObjectSearchResultFlags: OptionSet, Codable {
 }
 
 public struct OcaObjectSearchResult: Codable {
-    let oNo: OcaONo
-    let classIdentification: OcaClassIdentification
-    let containerPath: OcaONoPath
-    let role: OcaString
-    let label: OcaString
+    public let oNo: OcaONo?
+    public let classIdentification: OcaClassIdentification?
+    public let containerPath: OcaONoPath?
+    public let role: OcaString?
+    public let label: OcaString?
+
+    public init(
+        oNo: OcaONo?,
+        classIdentification: OcaClassIdentification?,
+        containerPath: OcaONoPath?,
+        role: OcaString?,
+        label: OcaString?
+    ) {
+        self.oNo = oNo
+        self.classIdentification = classIdentification
+        self.containerPath = containerPath
+        self.role = role
+        self.label = label
+    }
 }
