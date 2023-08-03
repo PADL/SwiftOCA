@@ -16,11 +16,16 @@
 
 import Foundation
 
-struct OcaGetPathParameters: Codable, OcaParameterCountReflectable {
-    static var responseParameterCount: OcaUint8 { 2 }
+public struct OcaGetPathParameters: Codable, OcaParameterCountReflectable {
+    public static var responseParameterCount: OcaUint8 { 2 }
 
-    var namePath: OcaNamePath
-    var oNoPath: OcaONoPath
+    public var namePath: OcaNamePath
+    public var oNoPath: OcaONoPath
+
+    public init(namePath: OcaNamePath, oNoPath: OcaONoPath) {
+        self.namePath = namePath
+        self.oNoPath = oNoPath
+    }
 }
 
 open class OcaAgent: OcaRoot {
@@ -39,13 +44,13 @@ open class OcaAgent: OcaRoot {
     )
     public var owner: OcaProperty<OcaONo>.State
 
-    // 2.4
-    func get(path namePath: inout OcaNamePath, oNoPath: inout OcaONoPath) async throws {
-        let responseParams: OcaGetPathParameters
+    var path: (OcaNamePath, OcaONoPath) {
+        get async throws {
+            let responseParams: OcaGetPathParameters
 
-        responseParams = try await sendCommandRrq(methodID: OcaMethodID("2.4"))
+            responseParams = try await sendCommandRrq(methodID: OcaMethodID("2.4"))
 
-        namePath = responseParams.namePath
-        oNoPath = responseParams.oNoPath
+            return (responseParams.namePath, responseParams.oNoPath)
+        }
     }
 }

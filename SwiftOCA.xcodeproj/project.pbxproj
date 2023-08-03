@@ -59,6 +59,7 @@
 		D3C083172A7B02360020AD57 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3C0831A2A7B0D9B0020AD57 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083182A7B0D2C0020AD57 /* Device.swift */; };
 		D3C083292A7C700B0020AD57 /* MediaDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083282A7C700B0020AD57 /* MediaDataTypes.swift */; };
+		D3C0832C2A7C73960020AD57 /* ApplicationNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C0832B2A7C73960020AD57 /* ApplicationNetwork.swift */; };
 		D3C11DB92A789C0400452B2A /* Listener.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DB82A789C0400452B2A /* Listener.swift */; };
 		D3C11DBB2A789EAA00452B2A /* LocalListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DBA2A789EAA00452B2A /* LocalListener.swift */; };
 		D3C11DBD2A78A3DC00452B2A /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DBC2A78A3DC00452B2A /* Controller.swift */; };
@@ -246,6 +247,7 @@
 		D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftOCADeviceTests.swift; sourceTree = "<group>"; };
 		D3C083182A7B0D2C0020AD57 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
 		D3C083282A7C700B0020AD57 /* MediaDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaDataTypes.swift; sourceTree = "<group>"; };
+		D3C0832B2A7C73960020AD57 /* ApplicationNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationNetwork.swift; sourceTree = "<group>"; };
 		D3C11DB82A789C0400452B2A /* Listener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Listener.swift; sourceTree = "<group>"; };
 		D3C11DBA2A789EAA00452B2A /* LocalListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalListener.swift; sourceTree = "<group>"; };
 		D3C11DBC2A78A3DC00452B2A /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
@@ -588,6 +590,14 @@
 			path = Tests/SwiftOCADeviceTests;
 			sourceTree = "<group>";
 		};
+		D3C0832A2A7C73860020AD57 /* ApplicationNetworks */ = {
+			isa = PBXGroup;
+			children = (
+				D3C0832B2A7C73960020AD57 /* ApplicationNetwork.swift */,
+			);
+			path = ApplicationNetworks;
+			sourceTree = "<group>";
+		};
 		D3C11DC02A78A9F000452B2A /* Local */ = {
 			isa = PBXGroup;
 			children = (
@@ -729,6 +739,7 @@
 			children = (
 				D3E6E1892A3ACA6C00BF7095 /* Root.swift */,
 				D3E6E1832A3ACA6C00BF7095 /* Root+Commands.swift */,
+				D3C0832A2A7C73860020AD57 /* ApplicationNetworks */,
 				D3E6E1842A3ACA6C00BF7095 /* Managers */,
 				D3E6E18A2A3ACA6C00BF7095 /* Agents */,
 				D3E6E18D2A3ACA6C00BF7095 /* Networks */,
@@ -1261,6 +1272,7 @@
 				D306556F2A5254D70083F093 /* TimeSource.swift in Sources */,
 				D3E6E1BF2A3ACA8200BF7095 /* Header.swift in Sources */,
 				D3E6E1C02A3ACA8200BF7095 /* KeepAlive.swift in Sources */,
+				D3C0832C2A7C73960020AD57 /* ApplicationNetwork.swift in Sources */,
 				D3E6E1C22A3ACA8200BF7095 /* MessageType.swift in Sources */,
 				D3E6E1C32A3ACA8C00BF7095 /* Matrix.swift in Sources */,
 				D3E6E1D72A3ACAA000BF7095 /* Root+Commands.swift in Sources */,

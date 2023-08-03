@@ -32,4 +32,20 @@ public class OcaAgent: OcaRoot, OcaOwnable {
         getMethodID: OcaMethodID("2.3")
     )
     public var owner = OcaInvalidONo
+
+    override public func handleCommand(
+        _ command: Ocp1Command,
+        from controller: any AES70Controller
+    ) async throws -> Ocp1Response {
+        switch command.methodID {
+        case OcaMethodID("2.4"):
+            let responseParams = OcaGetPathParameters(
+                namePath: await rolePath,
+                oNoPath: await objectNumberPath
+            )
+            return try encodeResponse(responseParams)
+        default:
+            return try await super.handleCommand(command, from: controller)
+        }
+    }
 }
