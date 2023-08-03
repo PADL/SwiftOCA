@@ -74,6 +74,14 @@ public struct OcaBoundedDeviceProperty<
             object: object,
             OcaBoundedPropertyValue<Value>(value: value, in: storage.wrappedValue.range)
         )
+
+        if object.notificationTasks[propertyID] == nil {
+            object.notificationTasks[propertyID] = Task<(), Error> {
+                for try await value in self.async {
+                    try? await storage.notifySubscribers(object: object, value)
+                }
+            }
+        }
     }
 
     public static subscript<T: OcaRoot>(

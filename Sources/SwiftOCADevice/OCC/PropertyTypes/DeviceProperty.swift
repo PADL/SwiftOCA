@@ -95,14 +95,6 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
 
     func set(object: OcaRoot, _ newValue: Value) {
         subject.send(newValue)
-
-        if object.notificationTasks[propertyID] == nil {
-            object.notificationTasks[propertyID] = Task<(), Error> {
-                for try await value in self.async {
-                    try? await notifySubscribers(object: object, value)
-                }
-            }
-        }
     }
 
     private func isNil(_ value: Value) -> Bool {
@@ -127,6 +119,14 @@ public struct OcaDeviceProperty<Value: Codable>: OcaDevicePropertyRepresentable 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
         let newValue: Value = try object.decodeCommand(command)
         set(object: object, newValue)
+
+        if object.notificationTasks[propertyID] == nil {
+            object.notificationTasks[propertyID] = Task<(), Error> {
+                for try await value in self.async {
+                    try? await notifySubscribers(object: object, value)
+                }
+            }
+        }
     }
 
     func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {
