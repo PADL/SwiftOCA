@@ -35,7 +35,7 @@ open class OcaRoot: CustomStringConvertible {
     public let lockable: OcaBoolean
     public let role: OcaString
 
-    weak var deviceDelegate: AES70Device?
+    public internal(set) weak var deviceDelegate: AES70Device?
 
     enum LockState {
         /// AES70-1-2023 uses this confusing `NoReadWrite` and `NoWrite` nomenclature
