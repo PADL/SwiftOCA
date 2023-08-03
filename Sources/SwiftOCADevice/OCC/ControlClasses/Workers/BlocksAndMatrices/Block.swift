@@ -29,7 +29,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
 
     public private(set) var actionObjects = [ActionObject]()
 
-    open func add(actionObject object: ActionObject) throws {
+    open func add(actionObject object: ActionObject) async throws {
         precondition(object != self)
         guard !actionObjects.contains(object) else {
             throw Ocp1Error.objectNotUnique
@@ -38,6 +38,14 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         if let object = object as? OcaWorker {
             object.owner = objectNumber
         }
+
+        if object.deviceDelegate == nil {
+            object.deviceDelegate = deviceDelegate
+            if let deviceDelegate {
+                try await deviceDelegate.register(object: self, addToRootBlock: false)
+            }
+        }
+
         actionObjects.append(object)
     }
 

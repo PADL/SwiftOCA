@@ -32,8 +32,11 @@ public actor AES70Device {
     var listeners = [AES70Listener]()
 
     public func allocateObjectNumber() -> OcaONo {
-        defer { nextObjectNumber += 1 }
-        return nextObjectNumber
+        repeat {
+            nextObjectNumber += 1
+        } while objects[nextObjectNumber] != nil
+
+        return nextObjectNumber - 1
     }
 
     private func initOnce() async throws {
@@ -67,7 +70,7 @@ public actor AES70Device {
         if addToRootBlock {
             precondition(object.objectNumber != OcaRootBlockONo)
             try await initOnce()
-            try rootBlock.add(actionObject: object)
+            try await rootBlock.add(actionObject: object)
         }
     }
 
