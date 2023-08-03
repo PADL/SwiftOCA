@@ -78,7 +78,7 @@ public struct OcaBoundedDeviceProperty<
         if object.notificationTasks[propertyID] == nil {
             object.notificationTasks[propertyID] = Task<(), Error> {
                 for try await value in self.async {
-                    try? await storage.notifySubscribers(object: object, value)
+                    try? await notifySubscribers(object: object, value.value)
                 }
             }
         }
