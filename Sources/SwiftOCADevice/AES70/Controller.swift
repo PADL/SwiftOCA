@@ -149,7 +149,7 @@ extension AES70ControllerPrivate {
         for subscription in subscriptions {
             let subscription = subscription as! OcaSubscriptionManagerSubscription
 
-            guard property == subscription.property else {
+            guard subscription.property == nil || property == subscription.property else {
                 return
             }
 
