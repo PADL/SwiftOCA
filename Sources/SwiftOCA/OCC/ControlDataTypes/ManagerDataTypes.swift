@@ -17,12 +17,24 @@
 import Foundation
 
 public struct OcaManagerDescriptor: Codable, CustomStringConvertible {
-    let objectNumber: OcaONo
-    let name: OcaString
-    let classID: OcaClassID
-    let classVersion: OcaClassVersionNumber
+    public let objectNumber: OcaONo
+    public let name: OcaString
+    public let classID: OcaClassID
+    public let classVersion: OcaClassVersionNumber
 
     public var description: String {
         name
+    }
+
+    public init(
+        objectNumber: OcaONo,
+        name: OcaString,
+        classID: OcaClassID,
+        classVersion: OcaClassVersionNumber
+    ) {
+        self.objectNumber = objectNumber
+        self.name = name
+        self.classID = classID
+        self.classVersion = classVersion
     }
 }

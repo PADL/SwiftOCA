@@ -44,6 +44,7 @@ public typealias OcaTimeInterval = TimeInterval
 
 public typealias OcaList = Array
 public typealias OcaMap = Dictionary
+public typealias OcaMultiMap<K: Hashable, V> = OcaMap<K, [V]>
 
 public typealias OcaNamePath = OcaList<OcaString>
 public typealias OcaONoPath = OcaList<OcaONo>

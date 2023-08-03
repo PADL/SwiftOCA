@@ -17,9 +17,9 @@
 import Foundation
 
 public struct OcaModelDescription: Codable, CustomStringConvertible {
-    let manufacturer: OcaString
-    let name: OcaString
-    let version: OcaString
+    public let manufacturer: OcaString
+    public let name: OcaString
+    public let version: OcaString
 
     public var description: String {
         "\(manufacturer) \(name) \(version)"
@@ -33,9 +33,9 @@ public struct OcaModelDescription: Codable, CustomStringConvertible {
 }
 
 public struct OcaModelGUID: Codable, CustomStringConvertible {
-    let reserved: OcaUint8
-    let mfrCode: OcaOrganizationID
-    let modelCode: OcaUint32 // TODO: should be tuple of OcaUint8
+    public let reserved: OcaUint8
+    public let mfrCode: OcaOrganizationID
+    public let modelCode: OcaUint32 // TODO: should be tuple of OcaUint8
 
     public var description: String {
         mfrCode.description + String(format: "%08X", modelCode)

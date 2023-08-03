@@ -58,6 +58,7 @@
 		D3C083162A7B021B0020AD57 /* SwiftOCADeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */; };
 		D3C083172A7B02360020AD57 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3C0831A2A7B0D9B0020AD57 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083182A7B0D2C0020AD57 /* Device.swift */; };
+		D3C083292A7C700B0020AD57 /* MediaDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083282A7C700B0020AD57 /* MediaDataTypes.swift */; };
 		D3C11DB92A789C0400452B2A /* Listener.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DB82A789C0400452B2A /* Listener.swift */; };
 		D3C11DBB2A789EAA00452B2A /* LocalListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DBA2A789EAA00452B2A /* LocalListener.swift */; };
 		D3C11DBD2A78A3DC00452B2A /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DBC2A78A3DC00452B2A /* Controller.swift */; };
@@ -244,6 +245,7 @@
 		D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftOCADeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftOCADeviceTests.swift; sourceTree = "<group>"; };
 		D3C083182A7B0D2C0020AD57 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
+		D3C083282A7C700B0020AD57 /* MediaDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaDataTypes.swift; sourceTree = "<group>"; };
 		D3C11DB82A789C0400452B2A /* Listener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Listener.swift; sourceTree = "<group>"; };
 		D3C11DBA2A789EAA00452B2A /* LocalListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalListener.swift; sourceTree = "<group>"; };
 		D3C11DBC2A78A3DC00452B2A /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
@@ -712,6 +714,7 @@
 				D3E6E1812A3ACA6C00BF7095 /* BaseDataTypes.swift */,
 				D3E6E1742A3ACA6C00BF7095 /* EventDataTypes.swift */,
 				D3E6E1782A3ACA6C00BF7095 /* ManagerDataTypes.swift */,
+				D3C083282A7C700B0020AD57 /* MediaDataTypes.swift */,
 				D3E6E17B2A3ACA6C00BF7095 /* ModelDataTypes.swift */,
 				D3E6E1732A3ACA6C00BF7095 /* NetworkDataTypes.swift */,
 				D3E6E17D2A3ACA6C00BF7095 /* SearchDataTypes.swift */,
@@ -1280,6 +1283,7 @@
 				D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */,
 				D3E6E1E22A3ACAA900BF7095 /* SearchDataTypes.swift in Sources */,
 				D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */,
+				D3C083292A7C700B0020AD57 /* MediaDataTypes.swift in Sources */,
 				D3E6E1D12A3ACA9A00BF7095 /* EventHandler.swift in Sources */,
 				D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */,
 				D306440B2A78039B0063DA65 /* MirrorWrapper.swift in Sources */,
