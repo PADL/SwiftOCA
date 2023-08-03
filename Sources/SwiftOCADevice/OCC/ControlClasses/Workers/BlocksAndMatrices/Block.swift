@@ -41,13 +41,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
 
         if object.deviceDelegate == nil {
             object.deviceDelegate = deviceDelegate
-            if let deviceDelegate {
-                if object.objectNumber == OcaInvalidONo {
-                    // this can happen depending on order of registration
-                    object.objectNumber = try await deviceDelegate.allocateObjectNumber()
-                }
-                try await deviceDelegate.register(object: object, addToRootBlock: false)
-            }
         }
 
         actionObjects.append(object)
