@@ -30,7 +30,10 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     public private(set) var actionObjects = [ActionObject]()
 
     open func add(actionObject object: ActionObject) async throws {
-        if object.objectNumber == OcaInvalidONo || object == self {
+        if object.objectNumber == OcaInvalidONo {
+            throw Ocp1Error.status(.badONo)
+        }
+        if object == self {
             throw Ocp1Error.status(.parameterError)
         }
 
@@ -50,12 +53,17 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     }
 
     open func remove(actionObject object: ActionObject) throws {
+        if object.objectNumber == OcaInvalidONo {
+            throw Ocp1Error.status(.badONo)
+        }
+
         guard let index = actionObjects.firstIndex(of: object) else {
             throw Ocp1Error.objectNotPresent
         }
         if let object = object as? OcaWorker, object.owner == objectNumber {
             object.owner = OcaInvalidONo
         }
+
         actionObjects.remove(at: index)
     }
 
