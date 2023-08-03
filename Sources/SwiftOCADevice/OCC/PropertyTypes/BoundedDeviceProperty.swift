@@ -78,10 +78,25 @@ public struct OcaBoundedDeviceProperty<
         if object.notificationTasks[propertyID] == nil {
             object.notificationTasks[propertyID] = Task<(), Error> {
                 for try await value in self.async {
-                    try? await storage.notifySubscribers(object: object, value.value)
+                    try? await storage.notifySubscribers(object: object, value)
                 }
             }
         }
+    }
+
+    func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {
+        let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
+        let encoder = Ocp1BinaryEncoder()
+        let parameters = OcaPropertyChangedEventData<Value>(
+            propertyID: propertyID,
+            propertyValue: newValue,
+            changeType: .currentChanged
+        )
+
+        try await object.deviceDelegate?.notifySubscribers(
+            event,
+            parameters: try encoder.encode(parameters)
+        )
     }
 
     public static subscript<T: OcaRoot>(
