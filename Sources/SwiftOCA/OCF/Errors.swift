@@ -33,8 +33,8 @@ public enum Ocp1Error: Error, Equatable {
     case noInitialValue
     case notConnected
     case notImplemented
+    case objectAlreadyContainedByBlock
     case objectNotPresent
-    case objectNotUnique
     case pduSendingFailed
     case pduTooShort
     case propertyIsImmutable

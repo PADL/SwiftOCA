@@ -30,18 +30,22 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     public private(set) var actionObjects = [ActionObject]()
 
     open func add(actionObject object: ActionObject) async throws {
-        if object.objectNumber == OcaInvalidONo {
+        guard object.objectNumber != OcaInvalidONo else {
             throw Ocp1Error.status(.badONo)
         }
-        if object == self {
+
+        guard object != self else {
             throw Ocp1Error.status(.parameterError)
         }
 
         guard !actionObjects.contains(object) else {
-            throw Ocp1Error.objectNotUnique
+            throw Ocp1Error.objectAlreadyContainedByBlock
         }
 
         if let object = object as? OcaWorker {
+            guard object.owner == OcaInvalidONo else {
+                throw Ocp1Error.objectAlreadyContainedByBlock
+            }
             object.owner = objectNumber
         }
 
