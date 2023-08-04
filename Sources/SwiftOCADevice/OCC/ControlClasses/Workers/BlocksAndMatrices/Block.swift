@@ -64,7 +64,10 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         guard let index = actionObjects.firstIndex(of: object) else {
             throw Ocp1Error.objectNotPresent
         }
-        if let object = object as? OcaWorker, object.owner == objectNumber {
+        if let object = object as? OcaWorker {
+            if object.owner != objectNumber {
+                throw Ocp1Error.objectNotPresent
+            }
             object.owner = OcaInvalidONo
         }
 
