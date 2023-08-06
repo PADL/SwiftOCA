@@ -36,6 +36,7 @@ let OcaTcpConnectionPrefix = "oca/tcp"
 let OcaUdpConnectionPrefix = "oca/udp"
 let OcaSecureTcpConnectionPrefix = "ocasec/tcp"
 let OcaWebSocketTcpConnectionPrefix = "ocaws/tcp"
+let OcaSpiConnectionPrefix = "oca/spi"
 
 public struct AES70OCP1ConnectionOptions {
     let automaticReconnect: Bool

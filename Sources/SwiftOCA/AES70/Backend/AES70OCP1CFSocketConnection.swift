@@ -55,6 +55,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         if let cfSocket {
             CFSocketInvalidate(cfSocket)
         }
+        receivedDataChannel.finish()
     }
 
     fileprivate nonisolated func dataCallBack(
