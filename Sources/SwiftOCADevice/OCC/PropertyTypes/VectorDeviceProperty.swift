@@ -70,7 +70,10 @@ public struct OcaVectorDeviceProperty<
     func set(object: OcaRoot, command: Ocp1Command) async throws {
         let newValue: OcaVector2D<Value> = try object.decodeCommand(command)
         storage.set(object: object, newValue)
+        notifySubscribers(object: object)
+    }
 
+    private func notifySubscribers(object: OcaRoot) {
         if object.notificationTasks[propertyID] == nil {
             object.notificationTasks[propertyID] = Task<(), Error> {
                 for try await value in self.async {
@@ -80,7 +83,7 @@ public struct OcaVectorDeviceProperty<
         }
     }
 
-    func notifySubscribers(object: OcaRoot, _ newValue: OcaVector2D<Value>) async throws {
+    private func notifySubscribers(object: OcaRoot, _ newValue: OcaVector2D<Value>) async throws {
         let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
         let encoder = Ocp1BinaryEncoder()
         let xParameters = OcaPropertyChangedEventData<Value>(
@@ -116,6 +119,7 @@ public struct OcaVectorDeviceProperty<
         }
         set {
             object[keyPath: storageKeyPath].storage.set(object: object, newValue)
+            object[keyPath: storageKeyPath].notifySubscribers(object: object)
         }
     }
 }
