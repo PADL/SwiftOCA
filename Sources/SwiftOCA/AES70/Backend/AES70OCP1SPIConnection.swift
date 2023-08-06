@@ -190,7 +190,7 @@ public class AES70OCP1BrooklynSPIConnection: AES70OCP1SPIConnection {
     }
 
     override public var connectionPrefix: String {
-        super.connectionPrefix + "/\(pipeID)"
+        super.connectionPrefix + "/pipe\(pipeID)"
     }
 }
 
