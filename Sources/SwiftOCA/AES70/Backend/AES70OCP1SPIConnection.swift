@@ -27,7 +27,7 @@ public class AES70OCP1SPIConnection: AES70OCP1Connection {
         device: String = "/dev/spidev0.0"
     ) {
         assert(device.hasPrefix("/dev/"))
-        self.device = device
+        self.device = String(device.dropFirst(5))
 
         super.init(options: AES70OCP1ConnectionOptions())
     }
@@ -46,7 +46,7 @@ public class AES70OCP1SPIConnection: AES70OCP1Connection {
     }
 
     override func connectDevice() async throws {
-        let fileDescriptor = open(device, O_RDWR)
+        let fileDescriptor = open("/dev/\(device)", O_RDWR)
         if fileDescriptor < 0 {
             throw Ocp1Error.notConnected
         }
@@ -118,7 +118,7 @@ public class AES70OCP1SPIConnection: AES70OCP1Connection {
     }
 
     override public var connectionPrefix: String {
-        OcaSpiConnectionPrefix + "/" + String(device.dropFirst(5))
+        OcaSpiConnectionPrefix + "/" + device
     }
 }
 
