@@ -60,7 +60,10 @@ public class AES70OCP1SPIConnection: AES70OCP1Connection {
                 close(fileDescriptor)
             }
         )
-        channel?.setLimit(lowWater: .max)
+        guard let channel else {
+            throw Ocp1Error.notConnected
+        }
+        channel.setLimit(lowWater: .max)
 
         try await super.connectDevice()
     }
@@ -141,7 +144,6 @@ public class AES70OCP1BrooklynSPIConnection: AES70OCP1SPIConnection {
                         throw Ocp1Error.invalidSyncValue
                     }
                     let frameLength: UInt16 = frame.decodeInteger(index: 4)
-                    // assume padding
                     let bytesToRead: UInt16 = frameLength + (frameLength + 4) & ~3
                     await receivedDataChannel.send(try await super.read(Int(bytesToRead)))
                 } catch {
