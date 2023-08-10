@@ -15,7 +15,6 @@
 //
 
 import AsyncExtensions
-import Foundation
 import SwiftOCA
 
 open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {

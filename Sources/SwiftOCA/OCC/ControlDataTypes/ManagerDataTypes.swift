@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public struct OcaManagerDescriptor: Codable, CustomStringConvertible {
     public let objectNumber: OcaONo
     public let name: OcaString

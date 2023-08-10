@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public struct OcaBlockMember: Codable {
     public let memberObjectIdentification: OcaObjectIdentification
     public let containerObjectNumber: OcaONo

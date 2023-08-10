@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public struct Ocp1Response: Ocp1Message, Codable {
     public let responseSize: OcaUint32
     public let handle: OcaUint32

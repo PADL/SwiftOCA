@@ -15,7 +15,6 @@
 //
 
 import BinaryCoder
-import Foundation
 import SwiftOCA
 
 extension OcaRoot {

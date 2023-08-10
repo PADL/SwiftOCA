@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public struct OcaList2D<Element> {
     public let nX, nY: Int
     public private(set) var items: [Element]

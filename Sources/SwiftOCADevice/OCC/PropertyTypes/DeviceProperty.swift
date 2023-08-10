@@ -15,7 +15,6 @@
 //
 
 import AsyncExtensions
-import Foundation
 import SwiftOCA
 
 protocol OcaDevicePropertyRepresentable {

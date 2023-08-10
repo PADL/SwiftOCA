@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public enum OcaPositionCoordinateSystem: OcaUint8, Codable {
     case robotic = 1
     case ituAudioObjectBasedPolar = 2

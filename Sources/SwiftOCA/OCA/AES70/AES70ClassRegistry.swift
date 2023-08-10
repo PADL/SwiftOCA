@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public class AES70ClassRegistry {
     public static let shared = AES70ClassRegistry()
 

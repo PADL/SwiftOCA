@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public typealias OcaLibVolID = OcaUint32
 
 public struct OcaLibVolData_ParamSet: Codable {

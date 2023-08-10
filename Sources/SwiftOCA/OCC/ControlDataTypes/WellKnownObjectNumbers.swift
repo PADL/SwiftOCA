@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public let OcaInvalidONo: OcaONo = 0
 
 public let OcaDeviceManagerONo: OcaONo = 1

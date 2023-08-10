@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public enum OcaMuteState: OcaUint8, Codable {
     case muted = 1
     case unmuted = 2

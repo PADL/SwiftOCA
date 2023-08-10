@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public enum OcaTimeSourceAvailability: OcaUint8, Codable {
     case unavailable = 0
     case available = 1

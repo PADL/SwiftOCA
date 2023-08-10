@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public enum OcaNotificationDeliveryMode: OcaUint8, Codable, Sendable {
     case reliable = 1
     case fast = 2

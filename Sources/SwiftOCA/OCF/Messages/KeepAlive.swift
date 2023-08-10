@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public struct Ocp1KeepAlive1: Ocp1Message, Codable {
     public let heartBeatTime: OcaUint16 // sec
 

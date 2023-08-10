@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public struct OcaModelDescription: Codable, CustomStringConvertible {
     public let manufacturer: OcaString
     public let name: OcaString

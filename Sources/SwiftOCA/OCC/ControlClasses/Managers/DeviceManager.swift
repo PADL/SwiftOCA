@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public struct OcaDeviceState: OptionSet, Codable, CustomStringConvertible {
     public static let operational = OcaDeviceState(rawValue: 1 << 0)
     public static let disabled = OcaDeviceState(rawValue: 1 << 1)

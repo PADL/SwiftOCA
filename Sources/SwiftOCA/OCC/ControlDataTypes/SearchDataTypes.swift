@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public enum OcaStringComparisonType: OcaUint8, Codable {
     case exact = 0
     case substring = 1

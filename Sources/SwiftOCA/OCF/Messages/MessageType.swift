@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public enum OcaMessageType: OcaUint8, Codable, Sendable {
     case ocaCmd = 0
     case ocaCmdRrq = 1

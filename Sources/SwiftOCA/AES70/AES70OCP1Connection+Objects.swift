@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 extension AES70OCP1Connection {
     private func resolve<T: OcaRoot>(
         classIdentification: OcaClassIdentification,

@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public enum OcaPolarityState: OcaUint8, Codable {
     case nonInverted = 1
     case inverted = 2

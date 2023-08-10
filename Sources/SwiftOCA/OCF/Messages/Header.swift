@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public let Ocp1SyncValue: OcaUint8 = 0x3B
 public let Ocp1ProtocolVersion1: OcaUint16 = 1
 public let Ocp1ProtocolVersion: OcaUint16 = Ocp1ProtocolVersion1

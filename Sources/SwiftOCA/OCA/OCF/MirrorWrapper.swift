@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 // we don't want to add public Equatable / Hashable conformances to Mirror, so wrap it.
 public struct _MirrorWrapper: Equatable, Hashable {
     public let wrappedValue: Mirror

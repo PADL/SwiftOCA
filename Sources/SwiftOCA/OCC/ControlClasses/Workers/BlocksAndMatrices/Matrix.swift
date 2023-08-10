@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public typealias OcaMatrixCoordinate = OcaUint16
 
 open class OcaMatrix: OcaWorker {

@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 
 extension AES70OCP1Connection {

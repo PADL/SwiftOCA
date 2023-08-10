@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public enum OcaSensorReadingState: OcaUint8, Codable {
     case unknown = 0
     case valid = 1

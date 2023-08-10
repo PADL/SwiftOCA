@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public enum OcaApplicationNetworkCommand: OcaUint8, Codable {
     case none = 0
     case prepare = 1

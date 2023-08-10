@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 open class OcaManager: OcaRoot {
     override public class var classID: OcaClassID { OcaClassID("1.3") }
 }

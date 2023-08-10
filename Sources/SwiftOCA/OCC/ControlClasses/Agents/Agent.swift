@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public struct OcaGetPathParameters: Codable, OcaParameterCountReflectable {
     public static var responseParameterCount: OcaUint8 { 2 }
 

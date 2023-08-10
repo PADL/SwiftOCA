@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public enum OcaSubscriptionManagerState: OcaUint8, Codable {
     case normal = 1
     case eventsDisabled = 2

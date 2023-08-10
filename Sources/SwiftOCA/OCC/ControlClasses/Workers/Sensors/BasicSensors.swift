@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 open class OcaBasicSensor: OcaSensor {
     override open class var classID: OcaClassID { OcaClassID("1.1.2.1") }
 }

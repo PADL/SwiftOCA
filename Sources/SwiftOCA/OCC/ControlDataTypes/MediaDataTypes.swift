@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public typealias OcaMediaConnectorID = OcaUint16
 
 public enum OcaMediaConnectorState: OcaUint8, Codable {

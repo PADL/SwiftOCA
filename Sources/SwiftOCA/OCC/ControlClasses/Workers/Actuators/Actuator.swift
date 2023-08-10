@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 open class OcaActuator: OcaWorker {
     // 3.1
     override open class var classID: OcaClassID { OcaClassID("1.1.1") }
