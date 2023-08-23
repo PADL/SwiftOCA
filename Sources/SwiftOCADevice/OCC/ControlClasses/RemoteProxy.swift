@@ -22,8 +22,8 @@ import SwiftOCA
 /// distribute the object namespace across multiple devices on a board.
 ///
 
-public class OcaRemoteProxy: OcaRoot {
-    private var remoteObject: SwiftOCA.OcaRoot
+public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot {
+    private var remoteObject: T
     private var classIdentification: OcaClassIdentification
 
     override public var objectIdentification: OcaObjectIdentification {
@@ -34,7 +34,7 @@ public class OcaRemoteProxy: OcaRoot {
     }
 
     public init(
-        object remoteObject: SwiftOCA.OcaRoot,
+        object remoteObject: T,
         deviceDelegate: AES70Device? = nil,
         addToRootBlock: Bool = true
     ) async throws {
