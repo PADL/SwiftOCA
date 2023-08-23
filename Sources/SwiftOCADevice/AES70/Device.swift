@@ -28,7 +28,7 @@ public actor AES70Device {
     public private(set) var deviceManager: OcaDeviceManager!
 
     var objects = [OcaONo: OcaRoot]()
-    var nextObjectNumber: OcaONo = 4096
+    var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
     var listeners = [AES70Listener]()
 
     public func allocateObjectNumber() -> OcaONo {

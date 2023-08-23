@@ -31,3 +31,5 @@ public let OcaCodingManagerONo: OcaONo = 12
 public let OcaDiagnosticsManagerONo: OcaONo = 13
 
 public let OcaRootBlockONo: OcaONo = 100
+
+public let OcaMaximumReservedONo: OcaONo = 4095
