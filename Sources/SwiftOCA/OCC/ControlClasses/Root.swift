@@ -89,7 +89,7 @@ open class OcaRoot: CustomStringConvertible, ObservableObject {
         }
     }
 
-    func get(classIdentification: inout OcaClassIdentification) async throws {
+    public func get(classIdentification: inout OcaClassIdentification) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("1.1"),
             responseParameterCount: 1,
