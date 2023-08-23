@@ -27,7 +27,7 @@ protocol ObservableObject {} // placeholder
 open class OcaRoot: CustomStringConvertible, ObservableObject {
     typealias Root = OcaRoot
 
-    weak var connectionDelegate: AES70OCP1Connection?
+    public internal(set) weak var connectionDelegate: AES70OCP1Connection?
 
     // 1.1
     open class var classID: OcaClassID { OcaClassID("1") }

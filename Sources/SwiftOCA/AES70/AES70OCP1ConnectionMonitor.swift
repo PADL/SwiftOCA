@@ -69,7 +69,7 @@ extension AES70OCP1Connection.Monitor {
                notification.parameters.parameterCount == 2
             {
                 Task {
-                    await callback(
+                    try await callback(
                         notification.parameters.eventData.event,
                         notification.parameters.eventData.eventParameters
                     )
@@ -85,7 +85,7 @@ extension AES70OCP1Connection.Monitor {
             try notification.throwIfException()
             if let callback = await connection.subscriptions[notification.event] {
                 Task {
-                    await callback(notification.event, notification.data)
+                    try await callback(notification.event, notification.data)
                 }
             }
         default:

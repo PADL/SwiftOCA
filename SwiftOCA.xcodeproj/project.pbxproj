@@ -157,6 +157,7 @@
 		D3E6E29B2A44270300BF7095 /* LevelSensorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29A2A44270300BF7095 /* LevelSensorView.swift */; };
 		D3E6E29E2A443CF100BF7095 /* SystemToggleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29D2A443CF100BF7095 /* SystemToggleStyle.swift */; };
 		D3E6E2A02A452D0A00BF7095 /* ScaledLegendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */; };
+		D3F294282A959C9100D7F0CD /* RemoteProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F294272A959C9100D7F0CD /* RemoteProxy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -343,6 +344,7 @@
 		D3E6E29A2A44270300BF7095 /* LevelSensorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LevelSensorView.swift; path = Sources/SwiftOCAUI/Views/Workers/Sensors/LevelSensorView.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E29D2A443CF100BF7095 /* SystemToggleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemToggleStyle.swift; sourceTree = "<group>"; };
 		D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledLegendView.swift; sourceTree = "<group>"; };
+		D3F294272A959C9100D7F0CD /* RemoteProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteProxy.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -470,6 +472,7 @@
 				D351F2062A72999D008C5513 /* Agents */,
 				D33B528F2A6FD332001A1BA7 /* Root.swift */,
 				D33B52AF2A703AEA001A1BA7 /* Root+Commands.swift */,
+				D3F294272A959C9100D7F0CD /* RemoteProxy.swift */,
 				D33B52A62A702D1C001A1BA7 /* Managers */,
 				D33B52A02A702CD6001A1BA7 /* Workers */,
 			);
@@ -1228,6 +1231,7 @@
 				D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */,
 				D351F21A2A729F48008C5513 /* VectorDeviceProperty.swift in Sources */,
 				D351F20E2A729AF2008C5513 /* BasicSensors.swift in Sources */,
+				D3F294282A959C9100D7F0CD /* RemoteProxy.swift in Sources */,
 				D351F2102A729C36008C5513 /* LevelSensor.swift in Sources */,
 				D33B52902A6FD332001A1BA7 /* Root.swift in Sources */,
 				D351F2182A729E29008C5513 /* Gain.swift in Sources */,

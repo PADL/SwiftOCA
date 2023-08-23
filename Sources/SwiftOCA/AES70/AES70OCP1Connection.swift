@@ -25,7 +25,7 @@ import OpenCombine
 public typealias AES70OCP1UDPConnection = AES70OCP1CFSocketUDPConnection
 public typealias AES70OCP1TCPConnection = AES70OCP1FlyingSocksTCPConnection
 
-public typealias AES70SubscriptionCallback = @MainActor (OcaEvent, Data)
+public typealias AES70SubscriptionCallback = (OcaEvent, Data) async throws
     -> ()
 
 // FIXME: these don't appear to be available on non-Darwin platforms

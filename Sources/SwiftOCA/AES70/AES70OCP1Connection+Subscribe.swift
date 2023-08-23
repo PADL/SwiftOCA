@@ -21,7 +21,7 @@ extension AES70OCP1Connection {
         subscriptions[event] != nil
     }
 
-    func addSubscription(
+    public func addSubscription(
         event: OcaEvent,
         callback: @escaping AES70SubscriptionCallback
     ) async throws {
@@ -40,7 +40,7 @@ extension AES70OCP1Connection {
         )
     }
 
-    func removeSubscription(event: OcaEvent) async throws {
+    public func removeSubscription(event: OcaEvent) async throws {
         try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
         subscriptions[event] = nil
     }
