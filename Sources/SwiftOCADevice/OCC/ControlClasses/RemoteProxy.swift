@@ -22,7 +22,12 @@ import SwiftOCA
 /// distribute the object namespace across multiple devices on a board.
 ///
 
-public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot {
+private protocol OcaRemoteProxyNumerable {
+    var remoteObjectNumber: OcaONo { get }
+    var remoteConnection: AES70OCP1Connection? { get }
+}
+
+public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot, OcaRemoteProxyNumerable {
     private var remoteObject: T
     private var classIdentification: OcaClassIdentification
 
@@ -31,6 +36,14 @@ public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot {
             oNo: objectNumber,
             classIdentification: classIdentification
         )
+    }
+
+    var remoteObjectNumber: OcaONo {
+        remoteObject.objectNumber
+    }
+
+    var remoteConnection: AES70OCP1Connection? {
+        remoteObject.connectionDelegate
     }
 
     public init(
@@ -108,11 +121,41 @@ public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot {
         let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
         try await connectionDelegate.removeSubscription(event: event)
     }
-    
+
     deinit {
         Task {
             try? await unsubscribe()
         }
+    }
+
+    /// Map a local to a remote object number sharing a connection delegate with ourselves
+    func mapONo(localObjectNumber: OcaONo) async throws -> OcaONo {
+        guard let object = await deviceDelegate?
+            .objects[localObjectNumber] as? OcaRemoteProxyNumerable,
+            object.remoteConnection == remoteObject.connectionDelegate
+        else {
+            throw Ocp1Error.status(.badONo)
+        }
+
+        return object.remoteObjectNumber
+    }
+
+    /// Map a remote object sharing a connection delegate with ourselves, to a local object
+    func mapONo(remoteObjectNumber: OcaONo) async throws -> OcaONo {
+        guard let localObjectNumber = await deviceDelegate?.objects.first(where: {
+            if let object = $0.value as? OcaRemoteProxyNumerable,
+               object.remoteConnection == remoteObject.connectionDelegate,
+               object.remoteObjectNumber == remoteObjectNumber
+            {
+                return true
+            } else {
+                return false
+            }
+        })?.key else {
+            throw Ocp1Error.status(.badONo)
+        }
+
+        return localObjectNumber
     }
 }
 
