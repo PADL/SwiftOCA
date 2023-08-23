@@ -10,3 +10,4 @@ SwiftOCA
 SwiftOCADevice
 --------------
 
+- disjoint namespace support for remote object proxies

@@ -27,7 +27,9 @@ private protocol OcaRemoteProxyNumerable {
     var remoteConnection: AES70OCP1Connection? { get }
 }
 
-public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot, OcaRemoteProxyNumerable {
+public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot, OcaRemoteProxyNumerable,
+    OcaObjectNumberMapper
+{
     private var remoteObject: T
     private var classIdentification: OcaClassIdentification
 
@@ -71,6 +73,8 @@ public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot, OcaRemoteProxyNumerab
             deviceDelegate: deviceDelegate,
             addToRootBlock: addToRootBlock
         )
+
+        remoteObject.objectNumberMapper = self
     }
 
     override public func handleCommand(
@@ -97,7 +101,10 @@ public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot, OcaRemoteProxyNumerab
 
     private func forward(event: OcaEvent, eventData data: Data) async throws {
         try await deviceDelegate?.notifySubscribers(
-            OcaEvent(emitterONo: objectNumber, eventID: event.eventID),
+            OcaEvent(
+                emitterONo: try await map(remoteObjectNumber: event.emitterONo),
+                eventID: event.eventID
+            ),
             parameters: data
         )
     }
@@ -106,7 +113,7 @@ public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot, OcaRemoteProxyNumerab
         guard let connectionDelegate = remoteObject.connectionDelegate
         else { throw Ocp1Error.noConnectionDelegate }
         let event = OcaEvent(
-            emitterONo: remoteObject.objectNumber,
+            emitterONo: try await map(localObjectNumber: objectNumber),
             eventID: OcaPropertyChangedEventID
         )
         do {
@@ -129,7 +136,10 @@ public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot, OcaRemoteProxyNumerab
     }
 
     /// Map a local to a remote object number sharing a connection delegate with ourselves
-    func mapONo(localObjectNumber: OcaONo) async throws -> OcaONo {
+    public func map(localObjectNumber: OcaONo) async throws -> OcaONo {
+        if localObjectNumber == objectNumber {
+            return remoteObjectNumber
+        }
         guard let object = await deviceDelegate?
             .objects[localObjectNumber] as? OcaRemoteProxyNumerable,
             object.remoteConnection == remoteObject.connectionDelegate
@@ -141,7 +151,10 @@ public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot, OcaRemoteProxyNumerab
     }
 
     /// Map a remote object sharing a connection delegate with ourselves, to a local object
-    func mapONo(remoteObjectNumber: OcaONo) async throws -> OcaONo {
+    public func map(remoteObjectNumber: OcaONo) async throws -> OcaONo {
+        if remoteObjectNumber == self.remoteObjectNumber {
+            return objectNumber
+        }
         guard let localObjectNumber = await deviceDelegate?.objects.first(where: {
             if let object = $0.value as? OcaRemoteProxyNumerable,
                object.remoteConnection == remoteObject.connectionDelegate,
