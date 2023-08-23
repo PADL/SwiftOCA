@@ -64,9 +64,9 @@ public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot, OcaRemoteProxyNumerab
         let lockable = remoteObject.lockable.asOptionalResult()
         let role = remoteObject.role.asOptionalResult()
 
-        // FIXME: support overlapping ONo namespaces
         try await super.init(
-            objectNumber: remoteObject.objectNumber,
+            objectNumber: remoteObject.objectNumber < OcaMaximumReservedONo ? remoteObject
+                .objectNumber : nil,
             lockable: lockable.asOptional() ?? false,
             role: role
                 .asOptional() ?? "Remote proxy for \(remoteObject.objectNumber)",

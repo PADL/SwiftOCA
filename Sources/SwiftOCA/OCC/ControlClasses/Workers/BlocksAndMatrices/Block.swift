@@ -46,6 +46,7 @@ open class OcaBlock: OcaWorker {
     )
     public var type: OcaProperty<OcaONo>.State
 
+    // FIXME: map with object number mapper
     @OcaProperty(
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.5")
@@ -70,6 +71,7 @@ open class OcaBlock: OcaWorker {
     )
     public var globalType: OcaProperty<OcaGlobalTypeIdentifier>.State
 
+    // FIXME: map with object number mapper
     @OcaProperty(
         propertyID: OcaPropertyID("3.6"),
         getMethodID: OcaMethodID("3.16")
@@ -87,19 +89,20 @@ open class OcaBlock: OcaWorker {
     func constructActionObject(factory factoryONo: OcaONo) async throws -> OcaONo {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.3"),
-            parameters: factoryONo
+            parameters: try await objectNumberMapper.map(localObjectNumber: factoryONo)
         )
     }
 
     func delete(actionObject objectNumber: OcaONo) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.4"),
-            parameters: objectNumber
+            parameters: try await objectNumberMapper.map(localObjectNumber: objectNumber)
         )
     }
 
     func getRecursive() async throws -> OcaList<OcaBlockMember> {
-        try await sendCommandRrq(methodID: OcaMethodID("3.6"))
+        let members: [OcaBlockMember] = try await sendCommandRrq(methodID: OcaMethodID("3.6"))
+        return try await members.asyncMap { try await $0.toLocal(using: objectNumberMapper) }
     }
 
     func add(signalPath path: OcaSignalPath) async throws -> OcaUint16 {
@@ -180,7 +183,11 @@ open class OcaBlock: OcaWorker {
             resultFlags: resultFlags
         )
 
-        return try await sendCommandRrq(methodID: OcaMethodID("3.17"), parameters: params)
+        let result: [OcaObjectSearchResult] = try await sendCommandRrq(
+            methodID: OcaMethodID("3.17"),
+            parameters: params
+        )
+        return try await result.asyncMap { try await $0.toLocal(using: self.objectNumberMapper) }
     }
 
     func findRecursive(
@@ -196,7 +203,11 @@ open class OcaBlock: OcaWorker {
             resultFlags: resultFlags
         )
 
-        return try await sendCommandRrq(methodID: OcaMethodID("3.18"), parameters: params)
+        let result: [OcaObjectSearchResult] = try await sendCommandRrq(
+            methodID: OcaMethodID("3.18"),
+            parameters: params
+        )
+        return try await result.asyncMap { try await $0.toLocal(using: self.objectNumberMapper) }
     }
 
     // 3.19
@@ -279,5 +290,26 @@ public extension OcaBlock {
 public extension Array where Element: OcaRoot {
     var hasContainerMembers: Bool {
         allSatisfy(\.isContainer)
+    }
+}
+
+private extension OcaObjectSearchResult {
+    func toLocal(using mapper: OcaObjectNumberMapper) async throws -> Self {
+        var result = self
+        if let oNo = oNo {
+            result.oNo = try await mapper.map(remoteObjectNumber: oNo)
+        }
+        return result
+    }
+}
+
+private extension OcaBlockMember {
+    func toLocal(using mapper: OcaObjectNumberMapper) async throws -> Self {
+        OcaBlockMember(
+            memberObjectIdentification: try await mapper
+                .map(remoteObjectIdentification: memberObjectIdentification),
+            containerObjectNumber: try await mapper
+                .map(remoteObjectNumber: containerObjectNumber)
+        )
     }
 }

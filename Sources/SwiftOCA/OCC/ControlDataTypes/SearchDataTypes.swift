@@ -38,7 +38,7 @@ public struct OcaObjectSearchResultFlags: OptionSet, Codable {
 }
 
 public struct OcaObjectSearchResult: Codable {
-    public let oNo: OcaONo?
+    public internal(set) var oNo: OcaONo?
     public let classIdentification: OcaClassIdentification?
     public let containerPath: OcaONoPath?
     public let role: OcaString?
