@@ -104,9 +104,7 @@ actor AES70OCP1Controller: AES70ControllerPrivate {
         keepAliveTask?.cancel()
         keepAliveTask = nil
 
-        await AES70Device.shared.objects.values.forEach {
-            try? $0.unlock(controller: self)
-        }
+        await AES70Device.shared.unlockAll(controller: self)
     }
 
     nonisolated var identifier: String {

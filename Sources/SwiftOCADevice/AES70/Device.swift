@@ -58,6 +58,12 @@ public actor AES70Device {
         listeners.append(listener)
     }
 
+    public func unlockAll(controller: AES70Controller) {
+        objects.values.forEach {
+            try? $0.unlock(controller: controller)
+        }
+    }
+
     public func register(object: OcaRoot, addToRootBlock: Bool = true) async throws {
         precondition(
             object.objectNumber != OcaInvalidONo,
