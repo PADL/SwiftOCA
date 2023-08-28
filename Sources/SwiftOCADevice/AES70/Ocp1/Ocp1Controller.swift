@@ -22,7 +22,7 @@ import Foundation
 import SwiftOCA
 
 /// A remote endpoint
-actor AES70OCP1Controller: AES70ControllerPrivate {
+actor AES70OCP1Controller: _AES70ControllerInternal {
     typealias ControllerMessage = (Ocp1Message, Bool)
 
     var subscriptions = [OcaONo: NSMutableSet]()

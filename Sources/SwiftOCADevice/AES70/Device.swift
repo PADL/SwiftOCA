@@ -110,7 +110,7 @@ public actor AES70Device {
             await withTaskGroup(of: Void.self) { taskGroup in
                 for listener in self.listeners {
                     for controller in await listener.controllers {
-                        let controller = controller as! AES70ControllerPrivate
+                        let controller = controller as! _AES70ControllerInternal
 
                         taskGroup.addTask {
                             try? await controller.notifySubscribers(

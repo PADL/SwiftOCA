@@ -35,7 +35,7 @@ public protocol AES70Controller: Actor {
     ) async throws
 }
 
-protocol AES70ControllerPrivate: AES70Controller {
+public protocol _AES70ControllerInternal: AES70Controller {
     var subscriptions: [OcaONo: NSMutableSet] { get set }
 
     func sendMessages(
@@ -44,7 +44,7 @@ protocol AES70ControllerPrivate: AES70Controller {
     ) async throws
 }
 
-extension AES70ControllerPrivate {
+public extension _AES70ControllerInternal {
     /// subscriptions are stored keyed by the emitter object number (the object that emits the
     /// event)
     /// each object has a set of subscriptions, note that EV1 and EV2 subscriptions are independent,
@@ -95,7 +95,7 @@ extension AES70ControllerPrivate {
         )
     }
 
-    public func addSubscription(
+    func addSubscription(
         _ subscription: OcaSubscriptionManagerSubscription
     ) async throws {
         guard !hasSubscription(subscription) else {
@@ -114,13 +114,13 @@ extension AES70ControllerPrivate {
         }
     }
 
-    public func removeSubscription(
+    func removeSubscription(
         _ subscription: OcaSubscriptionManagerSubscription
     ) async throws {
         subscriptions[subscription.event.emitterONo]?.remove(subscription)
     }
 
-    public func removeSubscription(
+    func removeSubscription(
         _ event: OcaEvent,
         property: OcaPropertyID?,
         subscriber: OcaMethod

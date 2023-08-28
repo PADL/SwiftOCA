@@ -19,7 +19,7 @@ import AsyncExtensions
 import Foundation
 import SwiftOCA
 
-actor AES70LocalController: AES70ControllerPrivate {
+actor AES70LocalController: _AES70ControllerInternal {
     weak var listener: AES70LocalListener?
     var subscriptions = [OcaONo: NSMutableSet]()
 

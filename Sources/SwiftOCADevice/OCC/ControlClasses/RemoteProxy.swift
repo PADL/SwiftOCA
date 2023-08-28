@@ -65,6 +65,8 @@ public class OcaRemoteProxy<T: SwiftOCA.OcaRoot>: OcaRoot, OcaRemoteProxyNumerab
         let role = remoteObject.role.asOptionalResult()
 
         // FIXME: support overlapping ONo namespaces
+        // in order to support this we'll need to map all requests and responses from RPCs
+        // that take object numbers, e.g. block and matrix enumeration.
         try await super.init(
             objectNumber: remoteObject.objectNumber,
             lockable: lockable.asOptional() ?? false,
