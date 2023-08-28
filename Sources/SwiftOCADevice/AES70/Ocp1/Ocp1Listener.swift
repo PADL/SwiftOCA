@@ -48,7 +48,6 @@ public final class AES70OCP1Listener: AES70Listener {
     private var _controllers = [AES70OCP1Controller]()
 
     public init(
-        device: AES70Device,
         address: Data,
         timeout: TimeInterval = 15
     ) async throws {
@@ -61,7 +60,7 @@ public final class AES70OCP1Listener: AES70Listener {
                 memcpy(dst.baseAddress!, src.baseAddress!, src.count)
             }
         }
-        try await device.add(listener: self)
+        try await AES70Device.shared.add(listener: self)
     }
 
     var listeningAddress: Socket.Address? {

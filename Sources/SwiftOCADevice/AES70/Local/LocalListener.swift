@@ -33,9 +33,9 @@ public final class AES70LocalListener: AES70Listener {
     private var controller: AES70LocalController!
     private var task: Task<(), Error>!
 
-    public init(device: AES70Device) async throws {
+    public init() async throws {
         controller = await AES70LocalController(listener: self)
-        try await device.add(listener: self)
+        try await AES70Device.shared.add(listener: self)
 
         task = Task {
             for await messagePdu in self.requestChannel {
