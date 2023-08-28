@@ -80,7 +80,7 @@ public actor AES70Device {
         }
     }
 
-    func handleCommand(
+    public func handleCommand(
         _ command: Ocp1Command,
         timeout: TimeInterval? = nil,
         from controller: any AES70Controller
