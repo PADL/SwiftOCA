@@ -33,18 +33,25 @@ public protocol AES70Controller: Actor {
         property: OcaPropertyID?,
         subscriber: OcaMethod
     ) async throws
+
+    func sendMessage(
+        _ message: Ocp1Message,
+        type messageType: OcaMessageType
+    ) async throws
 }
 
-public protocol _AES70ControllerInternal: AES70Controller {
+public protocol AES70ControllerDefaultSubscribing: AES70Controller {
     var subscriptions: [OcaONo: NSMutableSet] { get set }
+}
 
+protocol AES70ControllerPrivate: AES70ControllerDefaultSubscribing {
     func sendMessages(
         _ messages: AnyAsyncSequence<Ocp1Message>,
         type messageType: OcaMessageType
     ) async throws
 }
 
-public extension _AES70ControllerInternal {
+public extension AES70ControllerDefaultSubscribing {
     /// subscriptions are stored keyed by the emitter object number (the object that emits the
     /// event)
     /// each object has a set of subscriptions, note that EV1 and EV2 subscriptions are independent,
@@ -181,7 +188,9 @@ public extension _AES70ControllerInternal {
             }
         }
     }
+}
 
+extension AES70ControllerPrivate {
     func sendMessage(
         _ message: Ocp1Message,
         type messageType: OcaMessageType
