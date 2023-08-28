@@ -187,7 +187,7 @@ public final class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
     }
 
     override public var connectionPrefix: String {
-        "\(OcaUdpConnectionPrefix)/\(DeviceAddressToString(deviceAddress))"
+        "\(OcaUdpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
     }
 }
 
@@ -201,7 +201,7 @@ public final class AES70OCP1CFSocketTCPConnection: AES70OCP1CFSocketConnection {
     }
 
     override public var connectionPrefix: String {
-        "\(OcaTcpConnectionPrefix)/\(DeviceAddressToString(deviceAddress))"
+        "\(OcaTcpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
     }
 }
 
@@ -239,10 +239,10 @@ fileprivate extension CFRunLoopMode {
 }
 #endif
 
-fileprivate func DeviceAddressToString(_ deviceAddress: Data) -> String {
+fileprivate func deviceAddressToString(_ deviceAddress: Data) -> String {
     deviceAddress.withUnsafeBytes { unbound -> String in
         unbound.withMemoryRebound(to: sockaddr.self) { cSockAddr -> String in
-            DeviceAddressToString(cSockAddr.baseAddress!)
+            deviceAddressToString(cSockAddr.baseAddress!)
         }
     }
 }

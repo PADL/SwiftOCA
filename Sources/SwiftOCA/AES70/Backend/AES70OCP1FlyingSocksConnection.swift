@@ -171,7 +171,7 @@ public final class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnec
     }
 
     override public var connectionPrefix: String {
-        "\(OcaUdpConnectionPrefix)/\(DeviceAddressToString(deviceAddress))"
+        "\(OcaUdpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
     }
 }
 
@@ -185,15 +185,15 @@ public final class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnec
     }
 
     override public var connectionPrefix: String {
-        "\(OcaTcpConnectionPrefix)/\(DeviceAddressToString(deviceAddress))"
+        "\(OcaTcpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
     }
 }
 
-func DeviceAddressToString(_ deviceAddress: any SocketAddress) -> String {
+func deviceAddressToString(_ deviceAddress: any SocketAddress) -> String {
     var addr = deviceAddress.makeStorage()
     return withUnsafePointer(to: &addr) {
         $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-            DeviceAddressToString($0)
+            deviceAddressToString($0)
         }
     }
 }

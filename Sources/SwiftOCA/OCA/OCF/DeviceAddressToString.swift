@@ -16,7 +16,7 @@
 
 import Foundation
 
-func DeviceAddressToString(_ deviceAddress: UnsafePointer<sockaddr>) -> String {
+public func deviceAddressToString(_ deviceAddress: UnsafePointer<sockaddr>) -> String {
     switch deviceAddress.pointee.sa_family {
     case sa_family_t(AF_INET):
         return deviceAddress
