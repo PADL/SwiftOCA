@@ -39,6 +39,7 @@ private extension SocketError {
 // FIXME: why?
 extension sockaddr_in: SocketAddress {}
 extension sockaddr_in6: SocketAddress {}
+extension sockaddr_un: SocketAddress {}
 #endif
 
 private extension Data {
@@ -55,6 +56,8 @@ private extension Data {
                         return try sockaddr_in.make(from: ss)
                     case sa_family_t(AF_INET6):
                         return try sockaddr_in6.make(from: ss)
+                    case sa_family_t(AF_LOCAL):
+                        return try sockaddr_un.make(from: ss)
                     default:
                         fatalError("unsupported address family")
                     }
@@ -94,11 +97,18 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
         fatalError("must be implemented by subclass")
     }
 
-    public init(
+    public convenience init(
         deviceAddress: Data,
         options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()
     ) {
-        self.deviceAddress = deviceAddress.socketAddress
+        self.init(socketAddress: deviceAddress.socketAddress, options: options)
+    }
+
+    fileprivate init(
+        socketAddress: any SocketAddress,
+        options: AES70OCP1ConnectionOptions
+    ) {
+        deviceAddress = socketAddress
         super.init(options: options)
     }
 
@@ -157,7 +167,7 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
     }
 }
 
-public final class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnection {
+public final class AES70OCP1FlyingSocksDatagramConnection: AES70OCP1FlyingSocksConnection {
     override public var keepAliveInterval: OcaUint16 {
         1
     }
@@ -175,13 +185,20 @@ public final class AES70OCP1FlyingSocksUDPConnection: AES70OCP1FlyingSocksConnec
     }
 }
 
-public final class AES70OCP1FlyingSocksTCPConnection: AES70OCP1FlyingSocksConnection {
+public final class AES70OCP1FlyingSocksStreamConnection: AES70OCP1FlyingSocksConnection {
     override fileprivate var type: Int32 {
         #if canImport(Glibc)
         Int32(1) // FIXME: why can't we find the symbol for this?
         #else
         SOCK_STREAM
         #endif
+    }
+
+    public convenience init(
+        path: String,
+        options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()
+    ) {
+        self.init(socketAddress: sockaddr_un.unix(path: path), options: options)
     }
 
     override public var connectionPrefix: String {
