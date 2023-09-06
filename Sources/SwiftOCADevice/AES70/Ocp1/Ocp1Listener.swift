@@ -42,24 +42,40 @@ public final class AES70OCP1Listener: AES70Listener {
 
     let pool: AsyncSocketPool
 
-    private var address: sockaddr_storage
+    private let address: sockaddr_storage
     private let timeout: TimeInterval
     private let logger: Logging? = AES70OCP1Listener.defaultLogger()
     private var _controllers = [AES70OCP1Controller]()
 
-    public init(
+    public convenience init(
         address: Data,
         timeout: TimeInterval = 15
     ) async throws {
-        self.address = sockaddr_storage()
-        self.timeout = timeout
-        pool = Self.defaultPool(logger: logger)
-
-        _ = withUnsafeMutableBytes(of: &self.address) { dst in
+        var storage = sockaddr_storage()
+        _ = withUnsafeMutableBytes(of: &storage) { dst in
             address.withUnsafeBytes { src in
                 memcpy(dst.baseAddress!, src.baseAddress!, src.count)
             }
         }
+        try await self.init(address: storage, timeout: timeout)
+    }
+
+    public convenience init(
+        path: String,
+        timeout: TimeInterval = 15
+    ) async throws {
+        let address = sockaddr_un.unix(path: path).makeStorage()
+        try await self.init(address: address, timeout: timeout)
+    }
+
+    private init(
+        address: sockaddr_storage,
+        timeout: TimeInterval = 15
+    ) async throws {
+        self.address = address
+        self.timeout = timeout
+        pool = Self.defaultPool(logger: logger)
+
         try await AES70Device.shared.add(listener: self)
     }
 
@@ -288,7 +304,9 @@ public final class AES70OCP1Listener: AES70Listener {
     }
 
     private var port: UInt16? {
+        var address = address
         var port: UInt16?
+
         switch address.ss_family {
         case sa_family_t(AF_INET):
             withUnsafePointer(to: &address) {
