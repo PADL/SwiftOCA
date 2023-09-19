@@ -28,6 +28,7 @@ let package = Package(
         .package(url: "https://github.com/PADL/swift-binary-coder", branch: "inferno"),
         .package(url: "https://github.com/lhoward/AsyncExtensions", branch: "linux"),
         .package(url: "https://github.com/swhitty/FlyingFox", branch: "main"),
+        .package(url: "https://github.com/PADL/IORingSwift", branch: "main"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a
@@ -41,6 +42,11 @@ let package = Package(
                 .product(name: "BinaryCoder", package: "swift-binary-coder"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
                 .product(name: "FlyingSocks", package: "FlyingFox"),
+                .product(
+                    name: "IORing",
+                    package: "IORingSwift",
+                    condition: .when(platforms: [.linux])
+                ),
             ]
         ),
         .target(
@@ -48,6 +54,11 @@ let package = Package(
             dependencies: [
                 "SwiftOCA",
                 .product(name: "FlyingSocks", package: "FlyingFox"),
+                .product(
+                    name: "IORing",
+                    package: "IORingSwift",
+                    condition: .when(platforms: [.linux])
+                ),
             ]
         ),
         .executableTarget(
