@@ -34,7 +34,7 @@ extension Logging where Self == PrintLogger {
     }
 }
 
-extension AES70OCP1FlyingListener {
+extension AES70OCP1FlyingSocksListener {
     static func defaultLogger(category: String = "AES70") -> Logging {
         defaultLogger(category: category, forceFallback: false)
     }

@@ -184,7 +184,7 @@ public final class AES70OCP1FlyingSocksListener: AES70Listener {
         try await withThrowingTaskGroup(of: Void.self) { [logger] group in
             for try await socket in socket.sockets {
                 group.addTask {
-                    await self.handleController(AES70OCP1FlyingSocksController(
+                    try await self.handleController(AES70OCP1FlyingSocksController(
                         socket: socket,
                         logger: logger
                     ))

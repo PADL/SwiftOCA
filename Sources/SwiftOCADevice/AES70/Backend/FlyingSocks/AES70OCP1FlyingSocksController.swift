@@ -82,7 +82,7 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate {
         type messageType: OcaMessageType
     ) async throws {
         let messages = try await messages.collect()
-        let messagePduData = try await AES70OCP1Connection.encodeOcp1MessagePdu(
+        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
             messages,
             type: messageType
         )
@@ -176,17 +176,17 @@ private func decodeOcp1Messages<S>(from bytes: S) async throws -> ([Ocp1Message]
         throw Ocp1Error.invalidSyncValue
     }
     let pduSize: OcaUint32 = Data(messagePduData).decodeInteger(index: 3)
-    guard await pduSize >= (AES70OCP1Connection.MinimumPduSize - 1) else {
+    guard pduSize >= (AES70OCP1Connection.MinimumPduSize - 1) else {
         throw Ocp1Error.invalidPduSize
     }
-    let bytesLeft = await Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1)
+    let bytesLeft = Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1)
     guard let remainder = try await iterator.nextChunk(count: bytesLeft) else {
         throw Ocp1Error.pduTooShort
     }
     messagePduData += remainder
 
     var messagePdus = [Data]()
-    let messageType = try await AES70OCP1Connection.decodeOcp1MessagePdu(
+    let messageType = try AES70OCP1Connection.decodeOcp1MessagePdu(
         from: Data(messagePduData),
         messages: &messagePdus
     )
