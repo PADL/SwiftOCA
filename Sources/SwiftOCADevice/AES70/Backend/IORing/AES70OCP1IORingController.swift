@@ -39,7 +39,6 @@ actor AES70OCP1IORingController: AES70ControllerPrivate {
     private var keepAliveTask: Task<(), Error>?
     private var lastMessageReceivedTime = Date.distantPast
 
-    // FIXME: handle crossing PDU boundary
     private func decodeOcp1Messages(from messagePduData: [UInt8]) throws -> ([Ocp1Message], Bool) {
         guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize,
               messagePduData[0] == Ocp1SyncValue
@@ -62,21 +61,13 @@ actor AES70OCP1IORingController: AES70ControllerPrivate {
         return (messages, messageType == .ocaCmdRrq)
     }
 
-    /*
-     /home/lukeh/CVSRoot/padl/SwiftOCA/Sources/SwiftOCADevice/AES70/Backend/IORing/AES70OCP1IORingController.swift:69:51: error: cannot convert value of type 'AsyncLazySequence<[(any Ocp1Message, Bool)]>' to closure result type '[AES70OCP1IORingController.ControllerMessage]' (aka 'Array<(any Ocp1Message, Bool)>')
-                     return messages.map { ($0, rrq) }.async
-
-     */
-
     var messages: AnyAsyncSequence<ControllerMessage> {
         _messages.map { message in
             do {
                 let (messages, rrq) = try await self.decodeOcp1Messages(from: message.buffer)
                 return messages.map { ($0, rrq) }.async
-                /*
-                 } catch Ocp1Error.pduTooShort {
-                     return nil
-                 */
+            } catch Ocp1Error.pduTooShort {
+                return [].async
             } catch {
                 throw error
             }
