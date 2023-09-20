@@ -61,7 +61,7 @@ public struct AES70OCP1ConnectionOptions {
 
 @MainActor
 open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
-    public static nonisolated let MinimumPduSize = 7
+    public nonisolated static let MinimumPduSize = 7
 
     let options: AES70OCP1ConnectionOptions
 

@@ -62,21 +62,21 @@ actor AES70OCP1IORingController: AES70ControllerPrivate {
         return (messages, messageType == .ocaCmdRrq)
     }
 
-/*
-/home/lukeh/CVSRoot/padl/SwiftOCA/Sources/SwiftOCADevice/AES70/Backend/IORing/AES70OCP1IORingController.swift:69:51: error: cannot convert value of type 'AsyncLazySequence<[(any Ocp1Message, Bool)]>' to closure result type '[AES70OCP1IORingController.ControllerMessage]' (aka 'Array<(any Ocp1Message, Bool)>')
-                return messages.map { ($0, rrq) }.async
+    /*
+     /home/lukeh/CVSRoot/padl/SwiftOCA/Sources/SwiftOCADevice/AES70/Backend/IORing/AES70OCP1IORingController.swift:69:51: error: cannot convert value of type 'AsyncLazySequence<[(any Ocp1Message, Bool)]>' to closure result type '[AES70OCP1IORingController.ControllerMessage]' (aka 'Array<(any Ocp1Message, Bool)>')
+                     return messages.map { ($0, rrq) }.async
 
-*/
+     */
 
     var messages: AnyAsyncSequence<ControllerMessage> {
-        self._messages.map { message in
+        _messages.map { message in
             do {
                 let (messages, rrq) = try await self.decodeOcp1Messages(from: message.buffer)
                 return messages.map { ($0, rrq) }.async
-/*
-            } catch Ocp1Error.pduTooShort {
-                return nil
-*/
+                /*
+                 } catch Ocp1Error.pduTooShort {
+                     return nil
+                 */
             } catch {
                 throw error
             }

@@ -323,7 +323,10 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
             throw Ocp1Error.notConnected
         }
 
-        let result = try await withThrowingTimeout(seconds: connectionDelegate.options.responseTimeout) {
+        let result = try await withThrowingTimeout(
+            seconds: connectionDelegate.options
+                .responseTimeout
+        ) {
             await Task {
                 repeat {
                     await subscribe(object)

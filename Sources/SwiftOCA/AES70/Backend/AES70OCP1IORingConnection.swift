@@ -16,11 +16,11 @@
 
 #if canImport(IORing)
 
+import Foundation
 @_implementationOnly
 import IORing
 @_implementationOnly
 import IORingUtils
-import Foundation
 
 fileprivate extension Errno {
     var connectionFailed: Bool {
@@ -66,7 +66,8 @@ public class AES70OCP1IORingConnection: AES70OCP1Connection {
             ring: Self.sharedRing,
             domain: Swift.type(of: deviceAddress).family,
             type: __socket_type(type),
-            protocol: 0)
+            protocol: 0
+        )
         try socket!.setReuseAddr()
         try await socket!.connect(to: deviceAddress)
         try await super.connectDevice()
@@ -138,7 +139,12 @@ public final class AES70OCP1IORingStreamConnection: AES70OCP1IORingConnection {
         options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()
     ) throws {
         self.init(
-            socketAddress: try sockaddr_un(family: sa_family_t(AF_LOCAL), presentationAddress: path), options: options)
+            socketAddress: try sockaddr_un(
+                family: sa_family_t(AF_LOCAL),
+                presentationAddress: path
+            ),
+            options: options
+        )
     }
 
     override public var connectionPrefix: String {
