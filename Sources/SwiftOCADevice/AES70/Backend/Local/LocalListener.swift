@@ -52,7 +52,7 @@ public final class AES70LocalListener: AES70Listener {
 
     func handleMessagePdu(_ data: Data) async throws {
         var messagePdus = [Data]()
-        let messageType = try await AES70OCP1Connection.decodeOcp1MessagePdu(
+        let messageType = try AES70OCP1Connection.decodeOcp1MessagePdu(
             from: data,
             messages: &messagePdus
         )

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-#if canImport(FlyingSocks)
+#if os(macOS) || os(iOS)
 
 @_implementationOnly
 import FlyingSocks

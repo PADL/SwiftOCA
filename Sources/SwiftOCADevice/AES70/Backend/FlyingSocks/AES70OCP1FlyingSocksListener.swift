@@ -1,5 +1,5 @@
 //
-//  Device.swift
+//  AES70OCP1FlyingSocksListener.swift
 //
 //  Copyright (c) 2022 Simon Whitty. All rights reserved.
 //  Portions Copyright (c) 2023 PADL Software Pty Ltd. All rights reserved.
@@ -23,6 +23,8 @@
 //  SOFTWARE.
 //
 
+#if os(macOS) || os(iOS)
+
 @_implementationOnly
 import FlyingSocks
 @_spi(Private) @_implementationOnly
@@ -30,12 +32,8 @@ import func FlyingSocks.withThrowingTimeout
 import Foundation
 import SwiftOCA
 
-// FIXME: these don't appear to be available on non-Darwin platforms
-let NSEC_PER_MSEC: UInt64 = 1_000_000
-let NSEC_PER_SEC: UInt64 = 1_000_000_000
-
 @AES70Device
-public final class AES70OCP1Listener: AES70Listener {
+public final class AES70OCP1FlyingSocksListener: AES70Listener {
     public var controllers: [AES70Controller] {
         _controllers
     }
@@ -44,8 +42,8 @@ public final class AES70OCP1Listener: AES70Listener {
 
     private let address: sockaddr_storage
     private let timeout: TimeInterval
-    private let logger: Logging? = AES70OCP1Listener.defaultLogger()
-    private var _controllers = [AES70OCP1Controller]()
+    private let logger: Logging? = AES70OCP1FlyingSocksListener.defaultLogger()
+    private var _controllers = [AES70OCP1FlyingSocksController]()
 
     public convenience init(
         address: Data,
@@ -168,7 +166,10 @@ public final class AES70OCP1Listener: AES70Listener {
         try await withThrowingDiscardingTaskGroup { [logger] group in
             for try await socket in socket.sockets {
                 group.addTask {
-                    await self.handleController(AES70OCP1Controller(socket: socket, logger: logger))
+                    await self.handleController(AES70OCP1FlyingSocksController(
+                        socket: socket,
+                        logger: logger
+                    ))
                 }
             }
         }
@@ -183,14 +184,17 @@ public final class AES70OCP1Listener: AES70Listener {
         try await withThrowingTaskGroup(of: Void.self) { [logger] group in
             for try await socket in socket.sockets {
                 group.addTask {
-                    await self.handleController(AES70OCP1Controller(socket: socket, logger: logger))
+                    await self.handleController(AES70OCP1FlyingSocksController(
+                        socket: socket,
+                        logger: logger
+                    ))
                 }
             }
         }
         throw SocketError.disconnected
     }
 
-    private func handleController(_ controller: AES70OCP1Controller) async {
+    private func handleController(_ controller: AES70OCP1FlyingSocksController) async {
         logger?.logControllerAdded(controller)
         _controllers.append(controller)
         do {
@@ -254,7 +258,7 @@ public final class AES70OCP1Listener: AES70Listener {
         // FIXME: add support for UDP, WS, etc
 
         let serviceType = "_oca._tcp"
-        let serviceName = (await AES70Device.shared.deviceManager?.deviceName ?? "SwiftOCA") + "@" +
+        let serviceName = await (AES70Device.shared.deviceManager?.deviceName ?? "SwiftOCA") + "@" +
             Host.current()
             .localizedName!
         let domain = ""
@@ -329,23 +333,23 @@ public final class AES70OCP1Listener: AES70Listener {
 }
 
 extension Logging {
-    func logControllerAdded(_ controller: AES70OCP1Controller) {
+    func logControllerAdded(_ controller: AES70OCP1FlyingSocksController) {
         logInfo("\(controller.identifier) controller added")
     }
 
-    func logControllerRemoved(_ controller: AES70OCP1Controller) {
+    func logControllerRemoved(_ controller: AES70OCP1FlyingSocksController) {
         logInfo("\(controller.identifier) controller removed")
     }
 
-    func logCommand(_ command: Ocp1Command, on controller: AES70OCP1Controller) {
+    func logCommand(_ command: Ocp1Command, on controller: AES70OCP1FlyingSocksController) {
         logInfo("\(controller.identifier) command: \(command)")
     }
 
-    func logResponse(_ response: Ocp1Response, on controller: AES70OCP1Controller) {
+    func logResponse(_ response: Ocp1Response, on controller: AES70OCP1FlyingSocksController) {
         logInfo("\(controller.identifier) command: \(response)")
     }
 
-    func logError(_ error: Error, on controller: AES70OCP1Controller) {
+    func logError(_ error: Error, on controller: AES70OCP1FlyingSocksController) {
         logError("\(controller.identifier) error: \(error.localizedDescription)")
     }
 
@@ -379,7 +383,7 @@ extension Logging {
     }
 }
 
-extension AES70OCP1Listener {
+extension AES70OCP1FlyingSocksListener {
     public var isListening: Bool { state != nil }
 
     func waitUntilListening(timeout: TimeInterval = 5) async throws {
@@ -417,4 +421,6 @@ private func registerCallback(
 ) {
     debugPrint("registered network service \(theService)")
 }
+#endif
+
 #endif

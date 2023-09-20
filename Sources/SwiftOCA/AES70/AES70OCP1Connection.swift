@@ -22,8 +22,13 @@ import Combine
 import OpenCombine
 #endif
 
+#if canImport(IORing)
+public typealias AES70OCP1UDPConnection = AES70OCP1IORingDatagramConnection
+public typealias AES70OCP1TCPConnection = AES70OCP1IORingStreamConnection
+#else
 public typealias AES70OCP1UDPConnection = AES70OCP1CFSocketUDPConnection
 public typealias AES70OCP1TCPConnection = AES70OCP1FlyingSocksStreamConnection
+#endif
 
 public typealias AES70SubscriptionCallback = (OcaEvent, Data) async throws
     -> ()
@@ -56,7 +61,7 @@ public struct AES70OCP1ConnectionOptions {
 
 @MainActor
 open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
-    public static let MinimumPduSize = 7
+    public static nonisolated let MinimumPduSize = 7
 
     let options: AES70OCP1ConnectionOptions
 

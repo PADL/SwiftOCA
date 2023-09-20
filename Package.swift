@@ -41,9 +41,14 @@ let package = Package(
                 "AsyncExtensions",
                 .product(name: "BinaryCoder", package: "swift-binary-coder"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
-                .product(name: "FlyingSocks", package: "FlyingFox"),
+                .product(name: "FlyingSocks", package: "FlyingFox", condition: .when(platforms: [.macOS, .iOS])),
                 .product(
                     name: "IORing",
+                    package: "IORingSwift",
+                    condition: .when(platforms: [.linux])
+                ),
+                .product(
+                    name: "IORingUtils",
                     package: "IORingSwift",
                     condition: .when(platforms: [.linux])
                 ),
@@ -53,9 +58,14 @@ let package = Package(
             name: "SwiftOCADevice",
             dependencies: [
                 "SwiftOCA",
-                .product(name: "FlyingSocks", package: "FlyingFox"),
+                .product(name: "FlyingSocks", package: "FlyingFox", condition: .when(platforms: [.macOS, .iOS])),
                 .product(
                     name: "IORing",
+                    package: "IORingSwift",
+                    condition: .when(platforms: [.linux])
+                ),
+                .product(
+                    name: "IORingUtils",
                     package: "IORingSwift",
                     condition: .when(platforms: [.linux])
                 ),

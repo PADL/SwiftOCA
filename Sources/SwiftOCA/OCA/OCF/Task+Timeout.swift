@@ -12,7 +12,7 @@ import Foundation
 /// - Throws: Throws ``TimedOutError`` if the timeout expires before `operation` completes.
 ///   If `operation` throws an error before the timeout expires, that error is propagated to the
 /// caller.
-func withTimeout<R>(
+public func withThrowingTimeout<R>(
     seconds: TimeInterval,
     operation: @escaping @Sendable () async throws -> R
 ) async throws -> R {
@@ -27,7 +27,7 @@ func withTimeout<R>(
         group.addTask {
             let interval = deadline.timeIntervalSinceNow
             if interval > 0 {
-                try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                try await Task.sleep(nanoseconds: UInt64(interval * Double(NSEC_PER_SEC)))
             }
             try Task.checkCancellation()
             // We’ve reached the timeout.

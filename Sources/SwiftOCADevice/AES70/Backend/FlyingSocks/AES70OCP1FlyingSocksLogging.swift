@@ -1,5 +1,5 @@
 //
-//  Logging.swift
+//  AES70OCP1FlyingSocksLogging.swift
 //
 //  Copyright (c) 2022 Simon Whitty. All rights reserved.
 //  Portions Copyright (c) 2023 PADL Software Pty Ltd. All rights reserved.
@@ -23,6 +23,8 @@
 //  SOFTWARE.
 //
 
+#if os(macOS) || os(iOS)
+
 @_implementationOnly
 import FlyingSocks
 
@@ -32,7 +34,7 @@ extension Logging where Self == PrintLogger {
     }
 }
 
-extension AES70OCP1Listener {
+extension AES70OCP1FlyingListener {
     static func defaultLogger(category: String = "AES70") -> Logging {
         defaultLogger(category: category, forceFallback: false)
     }
@@ -48,3 +50,5 @@ extension AES70OCP1Listener {
         #endif
     }
 }
+
+#endif

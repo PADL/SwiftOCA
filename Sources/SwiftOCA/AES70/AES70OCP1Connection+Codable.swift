@@ -32,7 +32,7 @@ private extension Ocp1Message {
 }
 
 public extension AES70OCP1Connection {
-    static func encodeOcp1MessagePdu(
+    static nonisolated func encodeOcp1MessagePdu(
         _ messages: [Ocp1Message],
         type messageType: OcaMessageType
     ) throws -> Data {
@@ -54,7 +54,7 @@ public extension AES70OCP1Connection {
         return messagePduData
     }
 
-    static func decodeOcp1MessagePdu(
+    static nonisolated func decodeOcp1MessagePdu(
         from data: Data,
         messages: inout [Data]
     ) throws -> OcaMessageType {
@@ -116,7 +116,7 @@ public extension AES70OCP1Connection {
         return messageType
     }
 
-    nonisolated static func decodeOcp1Message(
+    static nonisolated func decodeOcp1Message(
         from messageData: Data,
         type messageType: OcaMessageType
     ) throws -> Ocp1Message {

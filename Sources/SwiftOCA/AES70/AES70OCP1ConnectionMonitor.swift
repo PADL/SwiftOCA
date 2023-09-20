@@ -50,7 +50,7 @@ extension AES70OCP1Connection.Monitor {
             messagePduData += try await connection.read(bytesLeft)
         }
 
-        return try await AES70OCP1Connection.decodeOcp1MessagePdu(
+        return try AES70OCP1Connection.decodeOcp1MessagePdu(
             from: messagePduData,
             messages: &messages
         )

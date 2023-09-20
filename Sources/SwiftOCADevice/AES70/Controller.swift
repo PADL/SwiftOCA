@@ -19,6 +19,14 @@ import AsyncExtensions
 import Foundation
 import SwiftOCA
 
+#if os(macOS) || os(iOS)
+typealias AES70OCP1Controller = AES70OCP1FlyingSocksController
+public typealias AES70OCP1Listener = AES70OCP1FlyingSocksListener
+#elseif os(Linux)
+typealias AES70OCP1Controller = AES70OCP1IORingController
+public typealias AES70OCP1Listener = AES70OCP1IORingListener
+#endif
+
 public protocol AES70Controller: Actor {
     func addSubscription(
         _ subscription: OcaSubscriptionManagerSubscription

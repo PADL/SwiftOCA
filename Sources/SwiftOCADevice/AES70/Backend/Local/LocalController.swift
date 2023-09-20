@@ -32,7 +32,7 @@ actor AES70LocalController: AES70ControllerPrivate {
         type messageType: OcaMessageType
     ) async throws {
         let messages = try await messages.collect()
-        let messagePduData = try await AES70OCP1Connection.encodeOcp1MessagePdu(
+        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
             messages,
             type: messageType
         )

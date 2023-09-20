@@ -14,10 +14,12 @@
 // limitations under the License.
 //
 
-@_spi(Private) @_implementationOnly
-import func FlyingSocks.withThrowingTimeout
 import Foundation
 import SwiftOCA
+
+// FIXME: these don't appear to be available on non-Darwin platforms
+let NSEC_PER_MSEC: UInt64 = 1_000_000
+let NSEC_PER_SEC: UInt64 = 1_000_000_000
 
 @globalActor
 public actor AES70Device {

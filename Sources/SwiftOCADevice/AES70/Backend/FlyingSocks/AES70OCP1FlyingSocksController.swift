@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if os(macOS) || os(iOS)
+
 import AsyncAlgorithms
 import AsyncExtensions
 @_implementationOnly
@@ -22,7 +24,7 @@ import Foundation
 import SwiftOCA
 
 /// A remote endpoint
-actor AES70OCP1Controller: AES70ControllerPrivate {
+actor AES70OCP1FlyingSocksController: AES70ControllerPrivate {
     typealias ControllerMessage = (Ocp1Message, Bool)
 
     var subscriptions = [OcaONo: NSMutableSet]()
@@ -39,7 +41,7 @@ actor AES70OCP1Controller: AES70ControllerPrivate {
         _messages.joined().eraseToAnyAsyncSequence()
     }
 
-    init(socket: AsyncSocket, logger: Logging?) {
+    init(socket: AsyncSocket, logger: Logging?) async throws {
         hostname = Self.makeIdentifier(from: socket.socket)
         self.socket = socket
         self.logger = logger
@@ -120,19 +122,22 @@ actor AES70OCP1Controller: AES70ControllerPrivate {
     }
 }
 
-extension AES70OCP1Controller: Equatable {
-    public nonisolated static func == (lhs: AES70OCP1Controller, rhs: AES70OCP1Controller) -> Bool {
+extension AES70OCP1FlyingSocksController: Equatable {
+    public nonisolated static func == (
+        lhs: AES70OCP1FlyingSocksController,
+        rhs: AES70OCP1FlyingSocksController
+    ) -> Bool {
         lhs.fileDescriptor == rhs.fileDescriptor
     }
 }
 
-extension AES70OCP1Controller: Hashable {
+extension AES70OCP1FlyingSocksController: Hashable {
     public nonisolated func hash(into hasher: inout Hasher) {
         fileDescriptor.hash(into: &hasher)
     }
 }
 
-private extension AES70OCP1Controller {
+private extension AES70OCP1FlyingSocksController {
     static func makeIdentifier(from socket: Socket) -> String {
         guard let peer = try? socket.remotePeer() else {
             return "unknown"
@@ -192,12 +197,16 @@ private func decodeOcp1Messages<S>(from bytes: S) async throws -> ([Ocp1Message]
 }
 
 private extension AsyncThrowingStream
-    where Element == AsyncSyncSequence<[AES70OCP1Controller.ControllerMessage]>, Failure == Error
+    where Element == AsyncSyncSequence<[AES70OCP1FlyingSocksController.ControllerMessage]>,
+    Failure == Error
 {
     static func decodingMessages<S: AsyncChunkedSequence>(from bytes: S) -> Self
         where S.Element == UInt8
     {
-        AsyncThrowingStream<AsyncSyncSequence<[AES70OCP1Controller.ControllerMessage]>, Error> {
+        AsyncThrowingStream<
+            AsyncSyncSequence<[AES70OCP1FlyingSocksController.ControllerMessage]>,
+            Error
+        > {
             do {
                 let (messages, rrq) = try await decodeOcp1Messages(from: bytes)
                 return messages.map { ($0, rrq) }.async
@@ -209,3 +218,5 @@ private extension AsyncThrowingStream
         }
     }
 }
+
+#endif
