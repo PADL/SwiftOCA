@@ -168,7 +168,8 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
         _controllers.map(\.1)
     }
 
-    func remove(controller: AES70OCP1IORingDatagramController) {
+    func remove(controller: AES70OCP1IORingDatagramController) async {
+        await AES70Device.shared.unlockAll(controller: controller)
         _controllers[controller.peerAddress] = nil
     }
 
@@ -196,7 +197,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                             try await handle(controller: controller, message: message, rrq: rrq)
                         }
                     } catch {
-                        remove(controller: controller)
+                        await remove(controller: controller)
                     }
                 } catch {}
             }

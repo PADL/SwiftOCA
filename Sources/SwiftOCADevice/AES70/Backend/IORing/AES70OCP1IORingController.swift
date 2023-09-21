@@ -145,8 +145,6 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
     deinit {
         receiveMessageTask?.cancel()
         receiveMessageTask = nil
-
-        await AES70Device.shared.unlockAll(controller: self)
     }
 
     func close() async throws {
@@ -156,6 +154,8 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
 
         keepAliveTask?.cancel()
         keepAliveTask = nil
+
+        await AES70Device.shared.unlockAll(controller: self)
     }
 
     func removeFromDeviceEndpoint() async throws {
@@ -214,10 +214,6 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
     ) async throws {
         self.endpoint = endpoint
         self.peerAddress = AnySocketAddress(peerAddress)
-    }
-
-    deinit {
-        await AES70Device.shared.unlockAll(controller: self)
     }
 
     func removeFromDeviceEndpoint() async throws {
