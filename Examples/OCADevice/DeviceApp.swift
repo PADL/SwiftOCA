@@ -32,7 +32,7 @@ public enum DeviceApp {
         }
 
         let device = AES70Device.shared
-        let listener = try await AES70OCP1Listener(address: localAddressData)
+        let listener = try await AES70OCP1DeviceEndpoint(address: localAddressData)
 
         class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
             override open class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }

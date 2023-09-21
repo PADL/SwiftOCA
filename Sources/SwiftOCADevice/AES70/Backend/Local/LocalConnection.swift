@@ -20,12 +20,12 @@ import Foundation
 import SwiftOCA
 
 public final class AES70LocalConnection: AES70OCP1Connection {
-    let listener: AES70LocalListener
+    let endpoint: AES70LocalDeviceEndpoint
 
     public init(
-        _ listener: AES70LocalListener
+        _ endpoint: AES70LocalDeviceEndpoint
     ) {
-        self.listener = listener
+        self.endpoint = endpoint
         super.init(options: AES70OCP1ConnectionOptions())
     }
 
@@ -35,19 +35,19 @@ public final class AES70LocalConnection: AES70OCP1Connection {
 
     override public func disconnectDevice(clearObjectCache: Bool) async throws {
         try await super.disconnectDevice(clearObjectCache: clearObjectCache)
-        await listener.responseChannel.finish()
-        await listener.requestChannel.finish()
+        await endpoint.responseChannel.finish()
+        await endpoint.requestChannel.finish()
     }
 
     override public func read(_ length: Int) async throws -> Data {
-        for await data in await listener.responseChannel {
+        for await data in await endpoint.responseChannel {
             return data
         }
         throw Ocp1Error.pduTooShort
     }
 
     override public func write(_ data: Data) async throws -> Int {
-        await listener.requestChannel.send(data)
+        await endpoint.requestChannel.send(data)
         return data.count
     }
 }

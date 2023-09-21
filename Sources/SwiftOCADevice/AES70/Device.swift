@@ -31,7 +31,7 @@ public actor AES70Device {
 
     var objects = [OcaONo: OcaRoot]()
     var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
-    var listeners = [AES70Listener]()
+    var endpoints = [AES70DeviceEndpoint]()
 
     public func allocateObjectNumber() -> OcaONo {
         repeat {
@@ -55,9 +55,9 @@ public actor AES70Device {
         deviceManager = try await OcaDeviceManager(deviceDelegate: self)
     }
 
-    public func add(listener: AES70Listener) async throws {
+    public func add(endpoint: AES70DeviceEndpoint) async throws {
         try await initOnce()
-        listeners.append(listener)
+        endpoints.append(endpoint)
     }
 
     public func unlockAll(controller: AES70Controller) {
@@ -116,8 +116,8 @@ public actor AES70Device {
             subscriptionManager.objectsChangedWhilstNotificationsDisabled.insert(event.emitterONo)
         case .normal:
             await withTaskGroup(of: Void.self) { taskGroup in
-                for listener in self.listeners {
-                    for controller in await listener.controllers {
+                for endpoint in self.endpoints {
+                    for controller in await endpoint.controllers {
                         let controller = controller as! AES70ControllerDefaultSubscribing
 
                         taskGroup.addTask {

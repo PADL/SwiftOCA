@@ -20,7 +20,7 @@ import Foundation
 import SwiftOCA
 
 @AES70Device
-public final class AES70LocalListener: AES70Listener {
+public final class AES70LocalDeviceEndpoint: AES70DeviceEndpoint {
     public var controllers: [AES70Controller] {
         [controller]
     }
@@ -34,8 +34,8 @@ public final class AES70LocalListener: AES70Listener {
     private var task: Task<(), Error>!
 
     public init() async throws {
-        controller = await AES70LocalController(listener: self)
-        try await AES70Device.shared.add(listener: self)
+        controller = await AES70LocalController(endpoint: self)
+        try await AES70Device.shared.add(endpoint: self)
 
         task = Task {
             for await messagePdu in self.requestChannel {

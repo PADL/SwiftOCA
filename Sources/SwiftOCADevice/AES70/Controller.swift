@@ -21,10 +21,10 @@ import SwiftOCA
 
 #if os(macOS) || os(iOS)
 typealias AES70OCP1Controller = AES70OCP1FlyingSocksController
-public typealias AES70OCP1Listener = AES70OCP1FlyingSocksListener
+public typealias AES70OCP1DeviceEndpoint = AES70OCP1FlyingSocksDeviceEndpoint
 #elseif os(Linux)
-typealias AES70OCP1Controller = AES70OCP1IORingController
-public typealias AES70OCP1Listener = AES70OCP1IORingListener
+typealias AES70OCP1Controller = AES70OCP1IORingStreamController
+public typealias AES70OCP1DeviceEndpoint = AES70OCP1IORingStreamDeviceEndpoint
 #endif
 
 public protocol AES70Controller: Actor {

@@ -16,6 +16,6 @@
 
 import SwiftOCA
 
-public protocol AES70Listener {
+public protocol AES70DeviceEndpoint {
     var controllers: [AES70Controller] { get async }
 }

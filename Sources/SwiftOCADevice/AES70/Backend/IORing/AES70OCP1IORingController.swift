@@ -16,6 +16,7 @@
 
 #if canImport(IORing)
 
+import AsyncAlgorithms
 import AsyncExtensions
 import Foundation
 @_implementationOnly
@@ -24,22 +25,227 @@ import IORing
 import IORingUtils
 import SwiftOCA
 
-/// A remote endpoint
-actor AES70OCP1IORingController: AES70ControllerPrivate {
-    static let MaximumPduSize = 1500 // FIXME: check this
-
+protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equatable, Hashable {
     typealias ControllerMessage = (Ocp1Message, Bool)
 
+    var peerAddress: AnySocketAddress { get }
+    var keepAliveInterval: UInt64 { get set }
+    var keepAliveTask: Task<(), Error>? { get set }
+    var lastMessageReceivedTime: Date { get set }
+
+    func removeFromDeviceEndpoint() async throws
+
+    func sendMessages(
+        _ messages: AnyAsyncSequence<Ocp1Message>,
+        type messageType: OcaMessageType
+    ) async throws
+}
+
+extension AES70OCP1IORingControllerPrivate {
+    private var connectionIsStale: Bool {
+        lastMessageReceivedTime + 3 * TimeInterval(keepAliveInterval) /
+            TimeInterval(NSEC_PER_SEC) < Date()
+    }
+
+    func setKeepAliveInterval(_ keepAliveInterval: UInt64) {
+        self.keepAliveInterval = keepAliveInterval
+    }
+
+    func updateLastMessageReceivedTime() {
+        lastMessageReceivedTime = Date()
+    }
+
+    private func sendKeepAlive() async throws {
+        let keepAlive = Ocp1KeepAlive1(heartBeatTime: OcaUint16(keepAliveInterval / NSEC_PER_SEC))
+        try await sendMessage(keepAlive, type: .ocaKeepAlive)
+    }
+
+    func keepAliveIntervalDidChange() {
+        if keepAliveInterval != 0 {
+            keepAliveTask = Task<(), Error> {
+                repeat {
+                    if connectionIsStale {
+                        Task {
+                            try? await self.removeFromDeviceEndpoint()
+                        }
+                        break
+                    }
+                    try await sendKeepAlive()
+                    try await Task.sleep(nanoseconds: keepAliveInterval)
+                } while !Task.isCancelled
+            }
+        } else {
+            keepAliveTask?.cancel()
+            keepAliveTask = nil
+        }
+    }
+}
+
+actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
     var subscriptions = [OcaONo: NSMutableSet]()
+    let peerAddress: AnySocketAddress
+    var receiveMessageTask: Task<(), Never>?
+    var keepAliveTask: Task<(), Error>?
+    var lastMessageReceivedTime = Date.distantPast
 
-    private let peerAddress: any SocketAddress
+    var messages: AnyAsyncSequence<ControllerMessage> {
+        _messages.eraseToAnyAsyncSequence()
+    }
+
+    private var _messages = AsyncThrowingChannel<ControllerMessage, Error>()
     private let socket: Socket
-    private let _messages: AnyAsyncSequence<Message>
 
-    private var keepAliveTask: Task<(), Error>?
-    private var lastMessageReceivedTime = Date.distantPast
+    private func receiveMessages(
+        _ messages: inout [Data]
+    ) async throws -> OcaMessageType {
+        var messagePduData = try await socket.read(count: AES70OCP1Connection.MinimumPduSize)
 
-    private func decodeOcp1Messages(from messagePduData: [UInt8]) throws -> ([Ocp1Message], Bool) {
+        guard messagePduData[0] == Ocp1SyncValue else {
+            throw Ocp1Error.invalidSyncValue
+        }
+
+        let pduSize: OcaUint32 = Data(messagePduData).decodeInteger(index: 3)
+        guard pduSize >= (AES70OCP1Connection.MinimumPduSize - 1) else {
+            throw Ocp1Error.invalidPduSize
+        }
+
+        let bytesLeft = Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1)
+
+        messagePduData += try await socket.read(count: bytesLeft)
+
+        return try AES70OCP1Connection.decodeOcp1MessagePdu(
+            from: Data(messagePduData),
+            messages: &messages
+        )
+    }
+
+    init(socket: Socket) async throws {
+        peerAddress = try AnySocketAddress(socket.peerAddress)
+        self.socket = socket
+
+        receiveMessageTask = Task { [self] in
+            do {
+                repeat {
+                    var messagePdus = [Data]()
+                    let messageType = try await receiveMessages(&messagePdus)
+                    for messagePdu in messagePdus {
+                        let message = try AES70OCP1Connection.decodeOcp1Message(
+                            from: messagePdu,
+                            type: messageType
+                        )
+                        await _messages.send((message, messageType == .ocaCmdRrq))
+                    }
+                } while true
+            } catch {
+                _messages.fail(error)
+            }
+        }
+    }
+
+    deinit {
+        receiveMessageTask?.cancel()
+        receiveMessageTask = nil
+
+        await AES70Device.shared.unlockAll(controller: self)
+    }
+
+    func close() async throws {
+        if !socket.isClosed {
+            try await socket.close()
+        }
+
+        keepAliveTask?.cancel()
+        keepAliveTask = nil
+    }
+
+    func removeFromDeviceEndpoint() async throws {
+        try await close()
+    }
+
+    var keepAliveInterval: UInt64 = 0 {
+        didSet {
+            keepAliveIntervalDidChange()
+        }
+    }
+
+    func sendMessages(
+        _ messages: AnyAsyncSequence<Ocp1Message>,
+        type messageType: OcaMessageType
+    ) async throws {
+        let messages = try await messages.collect()
+        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
+            messages,
+            type: messageType
+        )
+        try await socket.write(Array(messagePduData), count: messagePduData.count)
+    }
+
+    nonisolated var identifier: String {
+        "<\((try? socket.peerName) ?? "unknown")>"
+    }
+}
+
+extension AES70OCP1IORingStreamController: Equatable {
+    public nonisolated static func == (
+        lhs: AES70OCP1IORingStreamController,
+        rhs: AES70OCP1IORingStreamController
+    ) -> Bool {
+        lhs.socket == rhs.socket
+    }
+}
+
+extension AES70OCP1IORingStreamController: Hashable {
+    public nonisolated func hash(into hasher: inout Hasher) {
+        socket.hash(into: &hasher)
+    }
+}
+
+actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
+    var subscriptions = [OcaONo: NSMutableSet]()
+    let peerAddress: AnySocketAddress
+    var keepAliveTask: Task<(), Error>?
+    var lastMessageReceivedTime = Date.distantPast
+
+    private weak var endpoint: AES70OCP1IORingDatagramDeviceEndpoint?
+
+    init(
+        endpoint: AES70OCP1IORingDatagramDeviceEndpoint,
+        peerAddress: any SocketAddress
+    ) async throws {
+        self.endpoint = endpoint
+        self.peerAddress = AnySocketAddress(peerAddress)
+    }
+
+    deinit {
+        await AES70Device.shared.unlockAll(controller: self)
+    }
+
+    func removeFromDeviceEndpoint() async throws {
+        await endpoint?.remove(controller: self)
+    }
+
+    var keepAliveInterval: UInt64 = 0 {
+        didSet {
+            keepAliveIntervalDidChange()
+        }
+    }
+
+    func sendMessages(
+        _ messages: AnyAsyncSequence<Ocp1Message>,
+        type messageType: OcaMessageType
+    ) async throws {
+        let messages = try await messages.collect()
+        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
+            messages,
+            type: messageType
+        )
+        let messagePdu = try Message(address: peerAddress, buffer: Array(messagePduData))
+        try await endpoint?.sendMessagePdu(messagePdu)
+    }
+
+    func receiveMessagePdu(_ messagePdu: Message) throws -> [ControllerMessage] {
+        let messagePduData = messagePdu.buffer
+
         guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize,
               messagePduData[0] == Ocp1SyncValue
         else {
@@ -58,110 +264,27 @@ actor AES70OCP1IORingController: AES70ControllerPrivate {
         let messages = try messagePdus.map {
             try AES70OCP1Connection.decodeOcp1Message(from: $0, type: messageType)
         }
-        return (messages, messageType == .ocaCmdRrq)
-    }
 
-    var messages: AnyAsyncSequence<ControllerMessage> {
-        _messages.map { message in
-            do {
-                let (messages, rrq) = try await self.decodeOcp1Messages(from: message.buffer)
-                return messages.map { ($0, rrq) }.async
-            } catch Ocp1Error.pduTooShort {
-                return [].async
-            } catch {
-                throw error
-            }
-        }.joined().eraseToAnyAsyncSequence()
-    }
-
-    init(socket: Socket) async throws {
-        peerAddress = try socket.peerAddress
-        self.socket = socket
-        _messages = try await socket.recvmsg(count: Self.MaximumPduSize)
-    }
-
-    var connectionIsStale: Bool {
-        lastMessageReceivedTime + 3 * TimeInterval(keepAliveInterval) /
-            TimeInterval(NSEC_PER_SEC) < Date()
-    }
-
-    var keepAliveInterval: UInt64 = 0 {
-        didSet {
-            if keepAliveInterval != 0 {
-                keepAliveTask = Task<(), Error> {
-                    repeat {
-                        if connectionIsStale {
-                            Task { try await self.closeSocket() }
-                            break
-                        }
-                        try await sendKeepAlive()
-                        try await Task.sleep(nanoseconds: keepAliveInterval)
-                    } while !Task.isCancelled
-                }
-            } else {
-                keepAliveTask?.cancel()
-                keepAliveTask = nil
-            }
-        }
-    }
-
-    func setKeepAliveInterval(_ keepAliveInterval: UInt64) {
-        self.keepAliveInterval = keepAliveInterval
-    }
-
-    func sendMessages(
-        _ messages: AnyAsyncSequence<Ocp1Message>,
-        type messageType: OcaMessageType
-    ) async throws {
-        let messages = try await messages.collect()
-        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
-            messages,
-            type: messageType
-        )
-        let message = try Message(address: peerAddress, buffer: [UInt8](messagePduData))
-        try await socket.sendmsg(message)
-    }
-
-    private func sendKeepAlive() async throws {
-        let keepAlive = Ocp1KeepAlive1(heartBeatTime: OcaUint16(keepAliveInterval / NSEC_PER_SEC))
-        try await sendMessage(keepAlive, type: .ocaKeepAlive)
-    }
-
-    private func closeSocket() async throws {
-        guard !socket.isClosed else { return }
-        try await socket.close()
-    }
-
-    func close() async throws {
-        try await closeSocket()
-
-        keepAliveTask?.cancel()
-        keepAliveTask = nil
-
-        await AES70Device.shared.unlockAll(controller: self)
+        return messages.map { ($0, messageType == .ocaCmdRrq) }
     }
 
     nonisolated var identifier: String {
-        "<\((try? socket.peerName) ?? "unknown")>"
-    }
-
-    func updateLastMessageReceivedTime() {
-        lastMessageReceivedTime = Date()
+        "<\((try? peerAddress.presentationAddress) ?? "unknown")>"
     }
 }
 
-extension AES70OCP1IORingController: Equatable {
+extension AES70OCP1IORingDatagramController: Equatable {
     public nonisolated static func == (
-        lhs: AES70OCP1IORingController,
-        rhs: AES70OCP1IORingController
+        lhs: AES70OCP1IORingDatagramController,
+        rhs: AES70OCP1IORingDatagramController
     ) -> Bool {
-        lhs.socket == rhs.socket
+        lhs.peerAddress == rhs.peerAddress
     }
 }
 
-extension AES70OCP1IORingController: Hashable {
+extension AES70OCP1IORingDatagramController: Hashable {
     public nonisolated func hash(into hasher: inout Hasher) {
-        socket.hash(into: &hasher)
+        peerAddress.hash(into: &hasher)
     }
 }
 

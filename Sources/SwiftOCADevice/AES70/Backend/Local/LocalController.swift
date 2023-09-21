@@ -20,11 +20,11 @@ import Foundation
 import SwiftOCA
 
 actor AES70LocalController: AES70ControllerPrivate {
-    weak var listener: AES70LocalListener?
+    weak var endpoint: AES70LocalDeviceEndpoint?
     var subscriptions = [OcaONo: NSMutableSet]()
 
-    init(listener: AES70LocalListener) async {
-        self.listener = listener
+    init(endpoint: AES70LocalDeviceEndpoint) async {
+        self.endpoint = endpoint
     }
 
     func sendMessages(
@@ -36,6 +36,6 @@ actor AES70LocalController: AES70ControllerPrivate {
             messages,
             type: messageType
         )
-        await listener?.responseChannel.send(messagePduData)
+        await endpoint?.responseChannel.send(messagePduData)
     }
 }

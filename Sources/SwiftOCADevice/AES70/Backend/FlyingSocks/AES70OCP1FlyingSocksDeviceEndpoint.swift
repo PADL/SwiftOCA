@@ -1,5 +1,5 @@
 //
-//  AES70OCP1FlyingSocksListener.swift
+//  AES70OCP1FlyingSocksDeviceEndpoint.swift
 //
 //  Copyright (c) 2022 Simon Whitty. All rights reserved.
 //  Portions Copyright (c) 2023 PADL Software Pty Ltd. All rights reserved.
@@ -33,7 +33,7 @@ import Foundation
 import SwiftOCA
 
 @AES70Device
-public final class AES70OCP1FlyingSocksListener: AES70Listener {
+public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpoint {
     public var controllers: [AES70Controller] {
         _controllers
     }
@@ -42,7 +42,7 @@ public final class AES70OCP1FlyingSocksListener: AES70Listener {
 
     private let address: sockaddr_storage
     private let timeout: TimeInterval
-    private let logger: Logging? = AES70OCP1FlyingSocksListener.defaultLogger()
+    private let logger: Logging? = AES70OCP1FlyingSocksDeviceEndpoint.defaultLogger()
     private var _controllers = [AES70OCP1FlyingSocksController]()
 
     public convenience init(
@@ -74,7 +74,7 @@ public final class AES70OCP1FlyingSocksListener: AES70Listener {
         self.timeout = timeout
         pool = Self.defaultPool(logger: logger)
 
-        try await AES70Device.shared.add(listener: self)
+        try await AES70Device.shared.add(endpoint: self)
     }
 
     var listeningAddress: Socket.Address? {
@@ -383,7 +383,7 @@ extension Logging {
     }
 }
 
-extension AES70OCP1FlyingSocksListener {
+extension AES70OCP1FlyingSocksDeviceEndpoint {
     public var isListening: Bool { state != nil }
 
     func waitUntilListening(timeout: TimeInterval = 5) async throws {
