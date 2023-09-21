@@ -95,7 +95,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
     private var _messages = AsyncThrowingChannel<ControllerMessage, Error>()
     private let socket: Socket
 
-    func receiveMessagePdus() throws -> [ControllerMessage] {
+    func receiveMessagePdus() async throws -> [ControllerMessage] {
         var messagePduData = try await socket.read(count: AES70OCP1Connection.MinimumPduSize)
 
         guard messagePduData[0] == Ocp1SyncValue else {
@@ -129,9 +129,8 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
         receiveMessageTask = Task { [self] in
             do {
                 repeat {
-                    let (messages, messageType) = try await receiveMessagePdus()
-                    for message in messages {
-                        await _messages.send((message, messageType == .ocaCmdRrq))
+                    try await receiveMessagePdus().asyncForEach {
+                        await _messages.send($0)
                     }
                 } while true
             } catch {
@@ -235,7 +234,7 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
         try await endpoint?.sendMessagePdu(messagePdu)
     }
 
-    func receiveMessagePdus(_ messagePdu: Message) throws -> [ControllerMessage] {
+    func decodeMessages(from messagePdu: Message) throws -> [ControllerMessage] {
         let messagePduData = messagePdu.buffer
 
         guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize,
@@ -277,6 +276,17 @@ extension AES70OCP1IORingDatagramController: Equatable {
 extension AES70OCP1IORingDatagramController: Hashable {
     public nonisolated func hash(into hasher: inout Hasher) {
         peerAddress.hash(into: &hasher)
+    }
+}
+
+// https://www.swiftbysundell.com/articles/async-and-concurrent-forEach-and-map/
+extension Sequence {
+    func asyncForEach(
+        _ operation: (Element) async throws -> ()
+    ) async rethrows {
+        for element in self {
+            try await operation(element)
+        }
     }
 }
 

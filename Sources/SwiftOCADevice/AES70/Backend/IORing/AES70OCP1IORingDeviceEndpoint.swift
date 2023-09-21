@@ -122,9 +122,10 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
         let task = Task {
             let clients = try await socket.accept()
             for try await client in clients {
-                let controller = try await AES70OCP1IORingStreamController(socket: client)
-                // FIXME: use task group?
-                Task { await handleController(controller) }
+                Task {
+                    let controller = try await AES70OCP1IORingStreamController(socket: client)
+                    await handleController(controller)
+                }
             }
         }
         state = (socket: socket, task: task)
@@ -170,7 +171,24 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
 
     func remove(controller: AES70OCP1IORingDatagramController) async {
         await AES70Device.shared.unlockAll(controller: controller)
-	 _controllers[controller.peerAddress] = nil
+        _controllers[controller.peerAddress] = nil
+    }
+
+    func controller(for controllerAddress: AnySocketAddress) async throws
+        -> AES70OCP1IORingDatagramController
+    {
+        var controller: AES70OCP1IORingDatagramController!
+
+        controller = _controllers[controllerAddress]
+        if controller == nil {
+            controller = try await AES70OCP1IORingDatagramController(
+                endpoint: self,
+                peerAddress: controllerAddress
+            )
+            _controllers[controllerAddress] = controller
+        }
+
+        return controller
     }
 
     static let MaximumPduSize = 1500
@@ -178,31 +196,21 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
     public func start() async throws {
         let socket = try makeSocket()
         let task = Task {
-            let messages = try await socket.recvmsg(count: Self.MaximumPduSize)
-            for try await message in messages {
-                do {
-                    let controllerAddress = try AnySocketAddress(bytes: message.name)
-                    var controller: AES70OCP1IORingDatagramController! =
-                        _controllers[controllerAddress]
-                    if controller == nil {
-                        controller = try await AES70OCP1IORingDatagramController(
-                            endpoint: self,
-                            peerAddress: controllerAddress
-                        )
-                        _controllers[controllerAddress] = controller
-                    }
-                    Task {
-                        do {
-                            let messagePdus = try await controller.receiveMessagePdus(message)
-                            for (message, rrq) in messagePdus {
-                                try await handle(controller: controller, message: message, rrq: rrq)
-                            }
-                        } catch {
-			    // FIXME: check which actor this runs on
-                            await remove(controller: controller)
+            let messagePdus = try await socket.recvmsg(count: Self.MaximumPduSize)
+
+            for try await messagePdu in messagePdus {
+                Task { @AES70Device in
+                    let controller =
+                        try await controller(for: AnySocketAddress(bytes: messagePdu.name))
+                    do {
+                        let messages = try await controller.decodeMessages(from: messagePdu)
+                        for (message, rrq) in messages {
+                            try await handle(controller: controller, message: message, rrq: rrq)
                         }
+                    } catch {
+                        await remove(controller: controller)
                     }
-                } catch {}
+                }
             }
         }
         state = (socket: socket, task: task)
@@ -218,7 +226,6 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
         let socket = try Socket(ring: ring, domain: address.family, type: SOCK_DGRAM, protocol: 0)
 
         try socket.setNonBlocking()
-        try socket.setReuseAddr()
         try socket.bind(to: address)
 
         return socket
