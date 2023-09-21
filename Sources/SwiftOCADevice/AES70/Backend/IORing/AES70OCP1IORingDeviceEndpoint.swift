@@ -192,7 +192,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                         _controllers[controllerAddress] = controller
                     }
                     do {
-                        let messagePdus = try await controller.receiveMessagePdu(message)
+                        let messagePdus = try await controller.receiveMessagePdus(message)
                         for (message, rrq) in messagePdus {
                             try await handle(controller: controller, message: message, rrq: rrq)
                         }

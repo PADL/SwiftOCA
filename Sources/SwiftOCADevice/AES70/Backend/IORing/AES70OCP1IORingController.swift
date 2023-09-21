@@ -95,9 +95,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
     private var _messages = AsyncThrowingChannel<ControllerMessage, Error>()
     private let socket: Socket
 
-    private func receiveMessages(
-        _ messages: inout [Data]
-    ) async throws -> OcaMessageType {
+    func receiveMessagePdus() throws -> [ControllerMessage] {
         var messagePduData = try await socket.read(count: AES70OCP1Connection.MinimumPduSize)
 
         guard messagePduData[0] == Ocp1SyncValue else {
@@ -110,13 +108,18 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
         }
 
         let bytesLeft = Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1)
-
         messagePduData += try await socket.read(count: bytesLeft)
 
-        return try AES70OCP1Connection.decodeOcp1MessagePdu(
+        var messagePdus = [Data]()
+        let messageType = try AES70OCP1Connection.decodeOcp1MessagePdu(
             from: Data(messagePduData),
-            messages: &messages
+            messages: &messagePdus
         )
+        let messages = try messagePdus.map {
+            try AES70OCP1Connection.decodeOcp1Message(from: $0, type: messageType)
+        }
+
+        return messages.map { ($0, messageType == .ocaCmdRrq) }
     }
 
     init(socket: Socket) async throws {
@@ -126,13 +129,8 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
         receiveMessageTask = Task { [self] in
             do {
                 repeat {
-                    var messagePdus = [Data]()
-                    let messageType = try await receiveMessages(&messagePdus)
-                    for messagePdu in messagePdus {
-                        let message = try AES70OCP1Connection.decodeOcp1Message(
-                            from: messagePdu,
-                            type: messageType
-                        )
+                    let (messages, messageType) = try await receiveMessagePdus()
+                    for message in messages {
                         await _messages.send((message, messageType == .ocaCmdRrq))
                     }
                 } while true
@@ -140,11 +138,6 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
                 _messages.fail(error)
             }
         }
-    }
-
-    deinit {
-        receiveMessageTask?.cancel()
-        receiveMessageTask = nil
     }
 
     func close() async throws {
@@ -156,6 +149,9 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
         keepAliveTask = nil
 
         await AES70Device.shared.unlockAll(controller: self)
+
+        receiveMessageTask?.cancel()
+        receiveMessageTask = nil
     }
 
     func removeFromDeviceEndpoint() async throws {
@@ -239,7 +235,7 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
         try await endpoint?.sendMessagePdu(messagePdu)
     }
 
-    func receiveMessagePdu(_ messagePdu: Message) throws -> [ControllerMessage] {
+    func receiveMessagePdus(_ messagePdu: Message) throws -> [ControllerMessage] {
         let messagePduData = messagePdu.buffer
 
         guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize,
