@@ -26,10 +26,14 @@ import SwiftOCA
 
 @AES70Device
 public class AES70OCP1IORingDeviceEndpoint: AES70DeviceEndpoint {
+    typealias State = (socket: Socket, task: Task<(), Error>)
+
     let address: any SocketAddress
     let timeout: TimeInterval
     let depth: Int
     let ring: IORing
+
+    var state: State?
 
     public var controllers: [AES70Controller] {
         []
@@ -109,8 +113,6 @@ public class AES70OCP1IORingDeviceEndpoint: AES70DeviceEndpoint {
 public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEndpoint {
     var _controllers = [AES70OCP1IORingStreamController]()
 
-    private(set) var state: (socket: Socket, task: Task<(), Error>)?
-
     override public var controllers: [AES70Controller] {
         _controllers
     }
@@ -162,15 +164,13 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
 public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoint {
     var _controllers = [AnySocketAddress: AES70OCP1IORingDatagramController]()
 
-    private(set) var state: (socket: Socket, task: Task<(), Error>)?
-
     override public var controllers: [AES70Controller] {
         _controllers.map(\.1)
     }
 
     func remove(controller: AES70OCP1IORingDatagramController) async {
         await AES70Device.shared.unlockAll(controller: controller)
-        _controllers[controller.peerAddress] = nil
+	 _controllers[controller.peerAddress] = nil
     }
 
     static let MaximumPduSize = 1500
@@ -191,13 +191,16 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                         )
                         _controllers[controllerAddress] = controller
                     }
-                    do {
-                        let messagePdus = try await controller.receiveMessagePdus(message)
-                        for (message, rrq) in messagePdus {
-                            try await handle(controller: controller, message: message, rrq: rrq)
+                    Task {
+                        do {
+                            let messagePdus = try await controller.receiveMessagePdus(message)
+                            for (message, rrq) in messagePdus {
+                                try await handle(controller: controller, message: message, rrq: rrq)
+                            }
+                        } catch {
+			    // FIXME: check which actor this runs on
+                            await remove(controller: controller)
                         }
-                    } catch {
-                        await remove(controller: controller)
                     }
                 } catch {}
             }
