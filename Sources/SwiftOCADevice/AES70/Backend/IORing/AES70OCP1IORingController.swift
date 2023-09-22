@@ -98,7 +98,13 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
     func receiveMessagePdus() async throws -> [ControllerMessage] {
         var messagePduData = try await socket.read(count: AES70OCP1Connection.MinimumPduSize)
 
-        guard messagePduData[0] == Ocp1SyncValue else {
+        guard messagePduData.count != 0 else {
+            // 0 length on EOF
+            throw Ocp1Error.notConnected
+        }
+
+        guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize,
+              messagePduData[0] == Ocp1SyncValue else {
             throw Ocp1Error.invalidSyncValue
         }
 

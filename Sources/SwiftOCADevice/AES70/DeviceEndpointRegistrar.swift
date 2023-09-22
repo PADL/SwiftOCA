@@ -55,7 +55,7 @@ public final class AES70DeviceEndpointRegistrar {
     {
         let service = try await Service(
             regType: endpoint.serviceType.rawValue,
-            port: endpoint.port.bigEndian
+            port: endpoint.port
         )
         let endpointRegistration = EndpointRegistration(endpoint: endpoint, service: service)
         services.append(endpointRegistration)

@@ -261,7 +261,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
 
     public nonisolated var port: UInt16 {
         var address = address
-        return withUnsafePointer(to: &address) { address in
+        return UInt16(bigEndian: withUnsafePointer(to: &address) { address in
             switch Int32(address.pointee.ss_family) {
             case AF_INET:
                 return address.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
@@ -274,7 +274,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
             default:
                 return 0
             }
-        }
+        })
     }
 }
 
@@ -358,15 +358,5 @@ extension AES70OCP1FlyingSocksDeviceEndpoint {
 
     typealias Continuation = CancellingContinuation<(), Never>
 }
-
-#if canImport(Darwin)
-private func registerCallback(
-    _ theService: CFNetService,
-    _ error: UnsafeMutablePointer<CFStreamError>?,
-    _ info: UnsafeMutableRawPointer?
-) {
-    debugPrint("registered network service \(theService)")
-}
-#endif
 
 #endif
