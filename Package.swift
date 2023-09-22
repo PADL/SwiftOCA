@@ -35,6 +35,9 @@ let package = Package(
         // test suite.
         // Targets can depend on other targets in this package, and on products in packages which
         // this package depends on.
+        .systemLibrary(
+            name: "dnssd"
+        ),
         .target(
             name: "SwiftOCA",
             dependencies: [
@@ -62,6 +65,7 @@ let package = Package(
             name: "SwiftOCADevice",
             dependencies: [
                 "SwiftOCA",
+                "dnssd",
                 .product(
                     name: "FlyingSocks",
                     package: "FlyingFox",

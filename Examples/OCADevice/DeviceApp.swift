@@ -32,7 +32,7 @@ public enum DeviceApp {
         }
 
         let device = AES70Device.shared
-        let listener = try await AES70OCP1DeviceEndpoint(address: localAddressData)
+        let endpoint = try await AES70OCP1DeviceEndpoint(address: localAddressData)
 
         class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
             override open class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
@@ -57,6 +57,6 @@ public enum DeviceApp {
         }
 
         // NB: we still need to add objects to the root block because they must have containing block
-        try await listener.start()
+        try await endpoint.start()
     }
 }

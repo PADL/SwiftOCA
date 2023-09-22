@@ -1,0 +1,4 @@
+module dnssd [system] {
+    header "dnssd.h"
+    link "dns_sd"
+}

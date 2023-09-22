@@ -33,7 +33,7 @@ import Foundation
 import SwiftOCA
 
 @AES70Device
-public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpoint {
+public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoint {
     public var controllers: [AES70Controller] {
         _controllers
     }
@@ -44,6 +44,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpoint {
     private let timeout: TimeInterval
     private let logger: Logging? = AES70OCP1FlyingSocksDeviceEndpoint.defaultLogger()
     private var _controllers = [AES70OCP1FlyingSocksController]()
+    private var endpointRegistrationHandle: AES70DeviceEndpointRegistrar.Handle?
 
     public convenience init(
         address: Data,
@@ -84,9 +85,10 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpoint {
     public func start() async throws {
         let socket = try await preparePoolAndSocket()
         do {
-            #if canImport(Darwin)
-            try? await startBonjour()
-            #endif
+            if port != 0 {
+                endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
+                    .register(endpoint: self)
+            }
             let task = Task { try await start(on: socket, pool: pool) }
             state = (socket: socket, task: task)
             defer { state = nil }
@@ -114,12 +116,14 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpoint {
     }
 
     public func stop(timeout: TimeInterval = 0) async {
+        if let endpointRegistrationHandle {
+            try? await AES70DeviceEndpointRegistrar.shared
+                .deregister(handle: endpointRegistrationHandle)
+        }
+
         guard let (socket, task) = state else { return }
         try? socket.close()
         try? await task.getValue(cancelling: .afterTimeout(seconds: timeout))
-        #if canImport(Darwin)
-        stopBonjour()
-        #endif
     }
 
     func makeSocketAndListen() throws -> Socket {
@@ -251,85 +255,27 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpoint {
         #endif
     }
 
-    #if canImport(Darwin)
-    private var netService: CFNetService?
-
-    private func createNetService() async -> CFNetService? {
-        // FIXME: add support for UDP, WS, etc
-
-        let serviceType = "_oca._tcp"
-        let serviceName = await (AES70Device.shared.deviceManager?.deviceName ?? "SwiftOCA") + "@" +
-            Host.current()
-            .localizedName!
-        let domain = ""
-
-        guard let port else { return nil }
-        return CFNetServiceCreate(
-            nil,
-            domain as CFString,
-            serviceType as CFString,
-            serviceName as CFString,
-            Int32(port)
-        ).takeRetainedValue()
+    public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
+        .tcp
     }
 
-    private func startBonjour() async throws {
-        netService = await createNetService()
-        if let netService {
-            try scheduleNetService(netService)
-        }
-    }
-
-    private func scheduleNetService(_ netService: CFNetService) throws {
-        var error = CFStreamError()
-        var clientContext = CFNetServiceClientContext()
-        CFNetServiceSetClient(netService, registerCallback, &clientContext)
-        CFNetServiceScheduleWithRunLoop(
-            netService,
-            CFRunLoopGetCurrent(),
-            CFRunLoopMode.commonModes!.rawValue
-        )
-        guard CFNetServiceRegisterWithOptions(netService, 0, &error) else {
-            stopBonjour()
-            throw Ocp1Error.bonjourRegistrationFailed
-        }
-    }
-
-    private func stopBonjour() {
-        if let netService {
-            CFNetServiceUnscheduleFromRunLoop(
-                netService,
-                CFRunLoopGetCurrent(),
-                CFRunLoopMode.commonModes!.rawValue
-            )
-            CFNetServiceSetClient(netService, nil, nil)
-            self.netService = nil
-        }
-    }
-
-    private var port: UInt16? {
+    public nonisolated var port: UInt16 {
         var address = address
-        var port: UInt16?
-
-        switch address.ss_family {
-        case sa_family_t(AF_INET):
-            withUnsafePointer(to: &address) {
-                $0.withMemoryRebound(to: sockaddr_in.self, capacity: 1) {
-                    port = UInt16(bigEndian: $0.pointee.sin_port)
+        return withUnsafePointer(to: &address) { address in
+            switch Int32(address.pointee.ss_family) {
+            case AF_INET:
+                return address.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
+                    sin.pointee.sin_port
                 }
-            }
-        case sa_family_t(AF_INET6):
-            withUnsafePointer(to: &address) {
-                $0.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) {
-                    port = UInt16(bigEndian: $0.pointee.sin6_port)
+            case AF_INET6:
+                return address.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { sin6 in
+                    sin6.pointee.sin6_port
                 }
+            default:
+                return 0
             }
-        default:
-            port = nil
         }
-        return port
     }
-    #endif
 }
 
 extension Logging {
