@@ -16,6 +16,7 @@
 
 #if canImport(IORing)
 
+@_implementationOnly
 import ErrNo
 import Foundation
 @_implementationOnly
