@@ -120,7 +120,7 @@ public final class AES70DeviceEndpointRegistrar {
 
         init(
             flags: DNSServiceFlags = 0,
-            interfaceIndex: UInt32 = 0,
+            interfaceIndex: UInt32 = UInt32(kDNSServiceInterfaceIndexAny),
             name: String? = nil,
             regType: String,
             domain: String? = nil,
@@ -167,6 +167,7 @@ public final class AES70DeviceEndpointRegistrar {
                     return
                 }
             }
+
             self.flags = reply.0
             self.name = reply.1
             self.domain = reply.2
@@ -174,6 +175,7 @@ public final class AES70DeviceEndpointRegistrar {
     }
 }
 
+@_cdecl("DNSServiceRegisterBlock_Thunk")
 private func DNSServiceRegisterBlock_Thunk(
     _ sdRef: DNSServiceRef?,
     _ flags: DNSServiceFlags,
@@ -183,8 +185,11 @@ private func DNSServiceRegisterBlock_Thunk(
     _ domain: UnsafePointer<CChar>?,
     _ context: UnsafeMutableRawPointer?
 ) {
-    let block = unsafeBitCast(context, to: DNSServiceRegisterReplyBlock.self)
-    block(sdRef, flags, errorCode, name, regType, domain)
+    let context = context!
+
+    context.withMemoryRebound(to: DNSServiceRegisterReplyBlock.self, capacity: 1) { block in
+        block.pointee(sdRef, flags, errorCode, name, regType, domain)
+    }
     _Block_release(context)
 }
 
@@ -201,18 +206,22 @@ private func DNSServiceRegisterBlock(
     _ txtRecord: UnsafeRawPointer?,
     _ body: @escaping DNSServiceRegisterReplyBlock
 ) -> DNSServiceErrorType {
-    DNSServiceRegister(
-        sdRef,
-        flags,
-        interfaceIndex,
-        name,
-        regType,
-        domain,
-        host,
-        port,
-        txtLen,
-        txtRecord,
-        DNSServiceRegisterBlock_Thunk,
-        _Block_copy(unsafeBitCast(body, to: UnsafeMutableRawPointer.self))
-    )
+    withUnsafePointer(to: body) {
+        $0.withMemoryRebound(to: UnsafeRawPointer.self, capacity: 1) {
+            DNSServiceRegister(
+                sdRef,
+                flags,
+                interfaceIndex,
+                name,
+                regType,
+                domain,
+                host,
+                port,
+                txtLen,
+                txtRecord,
+                DNSServiceRegisterBlock_Thunk,
+                _Block_copy($0)
+            )
+        }
+    }
 }
