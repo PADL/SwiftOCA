@@ -25,7 +25,7 @@ import IORingUtils
 import SwiftOCA
 
 @AES70Device
-public class AES70OCP1IORingDeviceEndpoint: AES70DeviceEndpoint {
+public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoint {
     typealias State = (socket: Socket, task: Task<(), Error>)
 
     let address: any SocketAddress
@@ -34,6 +34,7 @@ public class AES70OCP1IORingDeviceEndpoint: AES70DeviceEndpoint {
     let ring: IORing
 
     var state: State?
+    var endpointRegistrationHandle: AES70DeviceEndpointRegistrar.Handle?
 
     public var controllers: [AES70Controller] {
         []
@@ -107,6 +108,28 @@ public class AES70OCP1IORingDeviceEndpoint: AES70DeviceEndpoint {
             try await controller.sendMessage(response, type: .ocaRsp)
         }
     }
+
+    public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
+        .tcp
+    }
+
+    public nonisolated var port: UInt16 {
+        (try? address.port) ?? 0
+    }
+
+    public func start() async throws {
+        if port != 0 {
+            endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
+                .register(endpoint: self)
+        }
+    }
+
+    public func stop(timeout: TimeInterval = 0) async {
+        if let endpointRegistrationHandle {
+            try? await AES70DeviceEndpointRegistrar.shared
+                .deregister(handle: endpointRegistrationHandle)
+        }
+    }
 }
 
 @AES70Device
@@ -117,7 +140,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
         _controllers
     }
 
-    public func start() async throws {
+    override public func start() async throws {
         let socket = try makeSocketAndListen()
         let task = Task {
             let clients = try await socket.accept()
@@ -129,9 +152,11 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
             }
         }
         state = (socket: socket, task: task)
+        try await super.start()
     }
 
-    public func stop(timeout: TimeInterval = 0) async {
+    override public func stop(timeout: TimeInterval = 0) async {
+        await super.stop(timeout: timeout)
         state?.task.cancel()
         try? await state?.socket.close()
         state = nil
@@ -158,6 +183,10 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
         } catch {}
         _controllers.removeAll(where: { $0 == controller })
         try? await controller.close()
+    }
+
+    override public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
+        .tcp
     }
 }
 
@@ -193,7 +222,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
 
     static let MaximumPduSize = 1500
 
-    public func start() async throws {
+    override public func start() async throws {
         let socket = try makeSocket()
         let task = Task {
             let messagePdus = try await socket.recvmsg(count: Self.MaximumPduSize)
@@ -214,9 +243,11 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
             }
         }
         state = (socket: socket, task: task)
+        try await super.start()
     }
 
-    public func stop(timeout: TimeInterval = 0) async {
+    override public func stop(timeout: TimeInterval = 0) async {
+        await super.stop(timeout: timeout)
         state?.task.cancel()
         try? await state?.socket.close()
         state = nil
@@ -236,6 +267,10 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
             throw Ocp1Error.notConnected
         }
         try await socket.sendmsg(messagePdu)
+    }
+
+    override public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
+        .udp
     }
 }
 

@@ -85,13 +85,13 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
     public func start() async throws {
         let socket = try await preparePoolAndSocket()
         do {
+            let task = Task { try await start(on: socket, pool: pool) }
+            state = (socket: socket, task: task)
+            defer { state = nil }
             if port != 0 {
                 endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
                     .register(endpoint: self)
             }
-            let task = Task { try await start(on: socket, pool: pool) }
-            state = (socket: socket, task: task)
-            defer { state = nil }
             try await task.getValue(cancelling: .whenParentIsCancelled)
         } catch {
             logger?.logCritical("server error: \(error.localizedDescription)")
