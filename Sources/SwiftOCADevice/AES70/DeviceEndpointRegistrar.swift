@@ -89,7 +89,7 @@ public final class AES70DeviceEndpointRegistrar {
             regType: String,
             domain: String? = nil,
             host: String? = nil,
-            port: UInt16,
+            port: UInt16, // in host byte order, unlike DNSServiceRegister() API
             txtLen: UInt16 = 0,
             txtRecord: UnsafeRawPointer? = nil
         ) async throws {
@@ -104,7 +104,7 @@ public final class AES70DeviceEndpointRegistrar {
                     regType,
                     domain,
                     host,
-                    port,
+                    port.bigEndian,
                     txtLen,
                     txtRecord,
                     DNSServiceRegisterBlock_Thunk,
