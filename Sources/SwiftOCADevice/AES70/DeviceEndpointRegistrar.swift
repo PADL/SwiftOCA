@@ -118,7 +118,7 @@ public final class AES70DeviceEndpointRegistrar {
                                 .unknown
                         )
                     return
-                } 
+                }
             }
 
             self.flags = reply.0
@@ -138,11 +138,12 @@ private func DNSServiceRegisterBlock_Thunk(
     _ domain: UnsafePointer<CChar>?,
     _ context: UnsafeMutableRawPointer?
 ) {
-    let service = Unmanaged<AES70DeviceEndpointRegistrar.Service>.fromOpaque(context!).takeRetainedValue()
+    let service = Unmanaged<AES70DeviceEndpointRegistrar.Service>.fromOpaque(context!)
+        .takeRetainedValue()
     let continuation = service.registrationContinuation!
 
     guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else {
-        continuation.resume(throwing: DNSServiceError(rawValue: error) ?? DNSServiceError .unknown)
+        continuation.resume(throwing: DNSServiceError(rawValue: error) ?? DNSServiceError.unknown)
         return
     }
     let reply = (
