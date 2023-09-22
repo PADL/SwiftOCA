@@ -66,45 +66,7 @@ public final class AES70DeviceEndpointRegistrar {
         services.removeAll(where: { ObjectIdentifier($0.service) == handle })
     }
 
-    enum DNSServiceError: Int32, Error {
-        case noError = 0
-        case unknown = -65537
-        case noSuchName = -65538
-        case noMemory = -65539
-        case badParam = -65540
-        case badReference = -65541
-        case badState = -65542
-        case badFlags = -65543
-        case unsupported = -65544
-        case notInitialized = -65545
-        case alreadyRegistered = -65547
-        case nameConflict = -65548
-        case invalid = -65549
-        case firewall = -65550
-        case incompatible = -65551
-        case badInterfaceIndex = -65552
-        case refused = -65553
-        case noSuchRecord = -65554
-        case noAuth = -65555
-        case NoSuchKey = -65556
-        case NATTraversal = -65557
-        case noubleNAT = -65558
-        case badTime = -65559
-        case badSig = -65560
-        case badKey = -65561
-        case transient = -65562
-        case serviceNotRunning = -65563
-        case NATPortMappingUnsupported = -65564
-        case NATPortMappingDisabled = -65565
-        case noRouter = -65566
-        case pollingMode = -65567
-        case timeout = -65568
-        case defunctConnection = -65569
-        case policyDenied = -65570
-        case notPermitted = -65571
-    }
-
-    private class Service {
+    fileprivate final class Service {
         var sdRef: DNSServiceRef!
         var flags: DNSServiceFlags = 0
         var name: String!
@@ -118,6 +80,8 @@ public final class AES70DeviceEndpointRegistrar {
 
         typealias RegisterReply = (DNSServiceFlags, String, String)
 
+        var registrationContinuation: CheckedContinuation<RegisterReply, Error>?
+
         init(
             flags: DNSServiceFlags = 0,
             interfaceIndex: UInt32 = UInt32(kDNSServiceInterfaceIndexAny),
@@ -130,7 +94,9 @@ public final class AES70DeviceEndpointRegistrar {
             txtRecord: UnsafeRawPointer? = nil
         ) async throws {
             let reply: RegisterReply = try await withCheckedThrowingContinuation { continuation in
-                let error = DNSServiceRegisterBlock(
+                self.registrationContinuation = continuation
+
+                let error = DNSServiceRegister(
                     &sdRef,
                     flags,
                     interfaceIndex,
@@ -140,23 +106,10 @@ public final class AES70DeviceEndpointRegistrar {
                     host,
                     port,
                     txtLen,
-                    txtRecord
-                ) { _, flags, error, name, _, domain in
-                    guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else {
-                        continuation
-                            .resume(
-                                throwing: DNSServiceError(rawValue: error) ?? DNSServiceError
-                                    .unknown
-                            )
-                        return
-                    }
-                    let reply: RegisterReply = (
-                        flags,
-                        String(cString: name!),
-                        String(cString: domain!)
-                    )
-                    continuation.resume(returning: reply)
-                }
+                    txtRecord,
+                    DNSServiceRegisterBlock_Thunk,
+                    Unmanaged.passRetained(self).toOpaque()
+                )
 
                 guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else {
                     continuation
@@ -165,7 +118,7 @@ public final class AES70DeviceEndpointRegistrar {
                                 .unknown
                         )
                     return
-                }
+                } 
             }
 
             self.flags = reply.0
@@ -179,49 +132,62 @@ public final class AES70DeviceEndpointRegistrar {
 private func DNSServiceRegisterBlock_Thunk(
     _ sdRef: DNSServiceRef?,
     _ flags: DNSServiceFlags,
-    _ errorCode: DNSServiceErrorType,
+    _ error: DNSServiceErrorType,
     _ name: UnsafePointer<CChar>?,
     _ regType: UnsafePointer<CChar>?,
     _ domain: UnsafePointer<CChar>?,
     _ context: UnsafeMutableRawPointer?
 ) {
-    let context = context!
+    let service = Unmanaged<AES70DeviceEndpointRegistrar.Service>.fromOpaque(context!).takeRetainedValue()
+    let continuation = service.registrationContinuation!
 
-    context.withMemoryRebound(to: DNSServiceRegisterReplyBlock.self, capacity: 1) { block in
-        block.pointee(sdRef, flags, errorCode, name, regType, domain)
+    guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else {
+        continuation.resume(throwing: DNSServiceError(rawValue: error) ?? DNSServiceError .unknown)
+        return
     }
-    _Block_release(context)
+    let reply = (
+        flags,
+        String(cString: name!),
+        String(cString: domain!)
+    )
+    continuation.resume(returning: reply)
+    service.registrationContinuation = nil
 }
 
-private func DNSServiceRegisterBlock(
-    _ sdRef: UnsafeMutablePointer<DNSServiceRef?>,
-    _ flags: DNSServiceFlags,
-    _ interfaceIndex: UInt32,
-    _ name: String?,
-    _ regType: String,
-    _ domain: String?,
-    _ host: String?,
-    _ port: UInt16,
-    _ txtLen: UInt16,
-    _ txtRecord: UnsafeRawPointer?,
-    _ body: @escaping DNSServiceRegisterReplyBlock
-) -> DNSServiceErrorType {
-    withUnsafePointer(to: body) {
-        $0.withMemoryRebound(to: UnsafeRawPointer.self, capacity: 1) {
-            DNSServiceRegister(
-                sdRef,
-                flags,
-                interfaceIndex,
-                name,
-                regType,
-                domain,
-                host,
-                port,
-                txtLen,
-                txtRecord,
-                DNSServiceRegisterBlock_Thunk,
-                _Block_copy($0)
-            )
-        }
-    }
+public enum DNSServiceError: Int32, Error {
+    case noError = 0
+    case unknown = -65537
+    case noSuchName = -65538
+    case noMemory = -65539
+    case badParam = -65540
+    case badReference = -65541
+    case badState = -65542
+    case badFlags = -65543
+    case unsupported = -65544
+    case notInitialized = -65545
+    case alreadyRegistered = -65547
+    case nameConflict = -65548
+    case invalid = -65549
+    case firewall = -65550
+    case incompatible = -65551
+    case badInterfaceIndex = -65552
+    case refused = -65553
+    case noSuchRecord = -65554
+    case noAuth = -65555
+    case NoSuchKey = -65556
+    case NATTraversal = -65557
+    case noubleNAT = -65558
+    case badTime = -65559
+    case badSig = -65560
+    case badKey = -65561
+    case transient = -65562
+    case serviceNotRunning = -65563
+    case NATPortMappingUnsupported = -65564
+    case NATPortMappingDisabled = -65565
+    case noRouter = -65566
+    case pollingMode = -65567
+    case timeout = -65568
+    case defunctConnection = -65569
+    case policyDenied = -65570
+    case notPermitted = -65571
 }
