@@ -104,7 +104,8 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
         }
 
         guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize,
-              messagePduData[0] == Ocp1SyncValue else {
+              messagePduData[0] == Ocp1SyncValue
+        else {
             throw Ocp1Error.invalidSyncValue
         }
 
