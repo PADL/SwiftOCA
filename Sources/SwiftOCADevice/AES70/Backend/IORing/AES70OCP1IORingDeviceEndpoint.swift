@@ -225,7 +225,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
     override public func start() async throws {
         let socket = try makeSocket()
         let task = Task {
-            let messagePdus = try await socket.recvmsg(count: Self.MaximumPduSize)
+            let messagePdus = try await socket.receiveMessages(count: Self.MaximumPduSize)
 
             for try await messagePdu in messagePdus {
                 Task { @AES70Device in
@@ -266,7 +266,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
         guard let socket = state?.socket else {
             throw Ocp1Error.notConnected
         }
-        try await socket.sendmsg(messagePdu)
+        try await socket.sendMessage(messagePdu)
     }
 
     override public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
