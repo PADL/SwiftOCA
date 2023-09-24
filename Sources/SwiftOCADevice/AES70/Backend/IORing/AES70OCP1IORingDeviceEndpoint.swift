@@ -142,13 +142,20 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
 
     override public func start() async throws {
         let socket = try makeSocketAndListen()
+        let clients = try await socket.accept()
         let task = Task {
-            let clients = try await socket.accept()
-            for try await client in clients {
-                Task {
-                    let controller = try await AES70OCP1IORingStreamController(socket: client)
-                    await handleController(controller)
+            do {
+                for try await client in clients {
+                    Task {
+                        let controller = try await AES70OCP1IORingStreamController(socket: client)
+                        await handleController(controller)
+                    }
                 }
+            } catch Errno.invalidArgument {
+                print(
+                    "AES70OCP1IORingStreamDeviceEndpoint: invalid argument when accepting connections, check kernel version supports multishot accept with io_uring"
+                )
+                await self.stop()
             }
         }
         state = (socket: socket, task: task)
