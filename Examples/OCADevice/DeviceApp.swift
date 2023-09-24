@@ -57,6 +57,7 @@ public enum DeviceApp {
         }
 
         // NB: we still need to add objects to the root block because they must have containing block
+        print("Starting OCP.1 endpoint \(endpoint)...")
         try await endpoint.start()
     }
 }

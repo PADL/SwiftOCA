@@ -25,7 +25,9 @@ import IORingUtils
 import SwiftOCA
 
 @AES70Device
-public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoint {
+public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoint,
+    CustomStringConvertible
+{
     typealias State = (socket: Socket, task: Task<(), Error>)
 
     let address: any SocketAddress
@@ -50,6 +52,10 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
         self.depth = depth
         ring = try IORing(depth: depth)
         try await AES70Device.shared.add(endpoint: self)
+    }
+
+    public nonisolated var description: String {
+        "\(type(of: self))(address: \((try? address.presentationAddress) ?? "<unknown>"), timeout: \(timeout), depth: \(depth))"
     }
 
     public convenience init(
