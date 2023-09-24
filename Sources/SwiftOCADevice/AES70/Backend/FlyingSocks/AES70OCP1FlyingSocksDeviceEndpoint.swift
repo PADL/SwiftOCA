@@ -84,7 +84,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
         withUnsafePointer(to: address) { pointer in
             pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { sa in
                 let presentationAddress = deviceAddressToString(sa)
-                return "\(type(of: self))(address: \(presentationAddress), timeout: \(timeout)"
+                return "\(type(of: self))(address: \(presentationAddress), timeout: \(timeout))"
             }
         }
     }
