@@ -33,7 +33,9 @@ import Foundation
 import SwiftOCA
 
 @AES70Device
-public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoint {
+public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoint,
+    CustomStringConvertible
+{
     public var controllers: [AES70Controller] {
         _controllers
     }
@@ -76,6 +78,15 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
         pool = Self.defaultPool(logger: logger)
 
         try await AES70Device.shared.add(endpoint: self)
+    }
+
+    public nonisolated var description: String {
+        withUnsafePointer(to: address) { pointer in
+            pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { sa in
+                let presentationAddress = deviceAddressToString(sa)
+                return "\(type(of: self))(address: \(presentationAddress), timeout: \(timeout)"
+            }
+        }
     }
 
     var listeningAddress: Socket.Address? {
