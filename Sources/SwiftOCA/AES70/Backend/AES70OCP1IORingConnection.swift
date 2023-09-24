@@ -16,22 +16,20 @@
 
 #if canImport(IORing)
 
-@_implementationOnly
-import ErrNo
 import Foundation
 @_implementationOnly
 import IORing
 @_implementationOnly
 import IORingUtils
 
-fileprivate extension ErrNo {
+fileprivate extension Errno {
     var connectionFailed: Bool {
         switch self {
-        case .ECONNREFUSED:
+        case .connectionRefused:
             fallthrough
-        case .ECONNRESET:
+        case .connectionReset:
             fallthrough
-        case .EPIPE:
+        case .brokenPipe:
             return true
         default:
             return false
@@ -90,7 +88,7 @@ public class AES70OCP1IORingConnection: AES70OCP1Connection {
 
         do {
             return try await block(socket)
-        } catch let error as ErrNo {
+        } catch let error as Errno {
             if error.connectionFailed {
                 throw Ocp1Error.notConnected
             } else {
