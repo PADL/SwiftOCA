@@ -87,7 +87,6 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
     var receiveMessageTask: Task<(), Never>?
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = Date.distantPast
-    var socketIsValid = true
 
     var messages: AnyAsyncSequence<ControllerMessage> {
         _messages.eraseToAnyAsyncSequence()
@@ -95,11 +94,12 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
 
     private var _messages = AsyncThrowingChannel<ControllerMessage, Error>()
     private let socket: Socket
+    private var socketRef: Socket?
 
     func receiveMessagePdus() async throws -> [ControllerMessage] {
-        if !socketIsValid { throw Errno.brokenPipe }
+        guard let socketRef else { throw Errno.connectionReset }
 
-        var messagePduData = try await socket.read(count: AES70OCP1Connection.MinimumPduSize)
+        var messagePduData = try await socketRef.read(count: AES70OCP1Connection.MinimumPduSize)
 
         guard messagePduData.count != 0 else {
             // 0 length on EOF
@@ -118,7 +118,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
         }
 
         let bytesLeft = Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1)
-        messagePduData += try await socket.read(count: bytesLeft)
+        messagePduData += try await socketRef.read(count: bytesLeft)
 
         var messagePdus = [Data]()
         let messageType = try AES70OCP1Connection.decodeOcp1MessagePdu(
@@ -133,8 +133,9 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
     }
 
     init(socket: Socket) async throws {
-        peerAddress = try AnySocketAddress(socket.peerAddress)
         self.socket = socket
+        socketRef = socket
+        peerAddress = try AnySocketAddress(self.socket.peerAddress)
 
         receiveMessageTask = Task { [self] in
             do {
@@ -150,9 +151,10 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
     }
 
     func close() async throws {
-        // don't do anything to socket, let final reference close it; if we make it a var,
-        // then we won't be able to access from non-isolated contexts
-        socketIsValid = false
+        // don't make any more requests, but don't zero out the socket (which we need in
+        // non-isolated
+        // contexts to inmplement Equality and Hashable conformances)
+        socketRef = nil
 
         keepAliveTask?.cancel()
         keepAliveTask = nil
@@ -182,8 +184,8 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
             messages,
             type: messageType
         )
-        if !socketIsValid { throw Errno.brokenPipe }
-        try await socket.write(Array(messagePduData), count: messagePduData.count)
+        guard let socketRef else { throw Errno.connectionReset }
+        try await socketRef.write(Array(messagePduData), count: messagePduData.count)
     }
 
     nonisolated var identifier: String {
