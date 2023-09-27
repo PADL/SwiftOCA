@@ -41,7 +41,7 @@ public actor AES70Device {
         return nextObjectNumber - 1
     }
 
-    private func initOnce() async throws {
+    private func _initOnce() async throws {
         guard rootBlock == nil else {
             return
         }
@@ -56,7 +56,6 @@ public actor AES70Device {
     }
 
     public func add(endpoint: AES70DeviceEndpoint) async throws {
-        try await initOnce()
         endpoints.append(endpoint)
     }
 
@@ -77,7 +76,7 @@ public actor AES70Device {
         objects[object.objectNumber] = object
         if addToRootBlock {
             precondition(object.objectNumber != OcaRootBlockONo)
-            try await initOnce()
+            try await _initOnce()
             try await rootBlock.add(actionObject: object)
         }
     }
@@ -111,6 +110,7 @@ public actor AES70Device {
         _ event: OcaEvent,
         parameters: Data
     ) async throws {
+        try await _initOnce()
         switch subscriptionManager.state {
         case .eventsDisabled:
             subscriptionManager.objectsChangedWhilstNotificationsDisabled.insert(event.emitterONo)
