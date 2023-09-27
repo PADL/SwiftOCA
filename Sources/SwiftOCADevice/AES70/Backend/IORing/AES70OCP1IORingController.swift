@@ -94,12 +94,9 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
 
     private var _messages = AsyncThrowingChannel<ControllerMessage, Error>()
     private let socket: Socket
-    private var socketRef: Socket?
 
     func receiveMessagePdus() async throws -> [ControllerMessage] {
-        guard let socketRef else { throw Errno.connectionReset }
-
-        var messagePduData = try await socketRef.read(count: AES70OCP1Connection.MinimumPduSize)
+        var messagePduData = try await socket.read(count: AES70OCP1Connection.MinimumPduSize)
 
         guard messagePduData.count != 0 else {
             // 0 length on EOF
@@ -118,7 +115,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
         }
 
         let bytesLeft = Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1)
-        messagePduData += try await socketRef.read(count: bytesLeft)
+        messagePduData += try await socket.read(count: bytesLeft)
 
         var messagePdus = [Data]()
         let messageType = try AES70OCP1Connection.decodeOcp1MessagePdu(
@@ -134,7 +131,6 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
 
     init(socket: Socket) async throws {
         self.socket = socket
-        socketRef = socket
         peerAddress = try AnySocketAddress(self.socket.peerAddress)
 
         receiveMessageTask = Task { [self] in
@@ -151,10 +147,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
     }
 
     func close() async throws {
-        // don't make any more requests, but don't zero out the socket (which we need in
-        // non-isolated
-        // contexts to inmplement Equality and Hashable conformances)
-        socketRef = nil
+        // don't close the socket, it will be closed when last reference is released
 
         keepAliveTask?.cancel()
         keepAliveTask = nil
@@ -184,8 +177,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
             messages,
             type: messageType
         )
-        guard let socketRef else { throw Errno.connectionReset }
-        try await socketRef.write(Array(messagePduData), count: messagePduData.count)
+        try await socket.write(Array(messagePduData), count: messagePduData.count)
     }
 
     nonisolated var identifier: String {
