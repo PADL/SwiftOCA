@@ -19,6 +19,7 @@
 import Foundation
 @_implementationOnly
 import IORing
+import IORingFoundation
 @_implementationOnly
 import IORingUtils
 
@@ -50,7 +51,7 @@ public class AES70OCP1IORingConnection: AES70OCP1Connection {
         deviceAddress: Data,
         options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()
     ) throws {
-        self.init(socketAddress: try deviceAddress.socketAddress, options: options)
+        try self.init(socketAddress: deviceAddress.socketAddress, options: options)
     }
 
     fileprivate init(
@@ -74,7 +75,7 @@ public class AES70OCP1IORingConnection: AES70OCP1Connection {
     }
 
     override public func disconnectDevice(clearObjectCache: Bool) async throws {
-        try await socket?.close()
+        socket = nil
         try await super.disconnectDevice(clearObjectCache: clearObjectCache)
     }
 
@@ -138,8 +139,8 @@ public final class AES70OCP1IORingStreamConnection: AES70OCP1IORingConnection {
         path: String,
         options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()
     ) throws {
-        self.init(
-            socketAddress: try sockaddr_un(
+        try self.init(
+            socketAddress: sockaddr_un(
                 family: sa_family_t(AF_LOCAL),
                 presentationAddress: path
             ),

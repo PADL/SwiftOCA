@@ -51,6 +51,11 @@ let package = Package(
                     package: "IORingSwift",
                     condition: .when(platforms: [.linux])
                 ),
+                .product(
+                    name: "IORingFoundation",
+                    package: "IORingSwift",
+                    condition: .when(platforms: [.linux])
+                ),
             ]
         ),
         .target(

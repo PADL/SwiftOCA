@@ -87,6 +87,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
     var receiveMessageTask: Task<(), Never>?
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = Date.distantPast
+    var socketIsValid = true
 
     var messages: AnyAsyncSequence<ControllerMessage> {
         _messages.eraseToAnyAsyncSequence()
@@ -96,6 +97,8 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
     private let socket: Socket
 
     func receiveMessagePdus() async throws -> [ControllerMessage] {
+        if !socketIsValid { throw Errno.brokenPipe }
+
         var messagePduData = try await socket.read(count: AES70OCP1Connection.MinimumPduSize)
 
         guard messagePduData.count != 0 else {
@@ -147,9 +150,9 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
     }
 
     func close() async throws {
-        if !socket.isClosed {
-            try await socket.close()
-        }
+        // don't do anything to socket, let final reference close it; if we make it a var,
+        // then we won't be able to access from non-isolated contexts
+        socketIsValid = false
 
         keepAliveTask?.cancel()
         keepAliveTask = nil
@@ -179,6 +182,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
             messages,
             type: messageType
         )
+        if !socketIsValid { throw Errno.brokenPipe }
         try await socket.write(Array(messagePduData), count: messagePduData.count)
     }
 
