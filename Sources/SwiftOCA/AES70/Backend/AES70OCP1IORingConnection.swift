@@ -39,8 +39,6 @@ fileprivate extension Errno {
 }
 
 public class AES70OCP1IORingConnection: AES70OCP1Connection {
-    fileprivate static let sharedRing = try! IORing()
-
     fileprivate let deviceAddress: any SocketAddress
     fileprivate var socket: Socket?
     fileprivate var type: UInt32 {
@@ -64,7 +62,7 @@ public class AES70OCP1IORingConnection: AES70OCP1Connection {
 
     override func connectDevice() async throws {
         socket = try Socket(
-            ring: Self.sharedRing,
+            ring: IORing.shared,
             domain: Swift.type(of: deviceAddress).family,
             type: __socket_type(type),
             protocol: 0

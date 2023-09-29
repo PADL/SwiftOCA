@@ -33,7 +33,6 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
 
     let address: any SocketAddress
     let timeout: TimeInterval
-    let depth: Int
     let ring: IORing
 
     var state: State?
@@ -45,39 +44,35 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
 
     init(
         address: any SocketAddress,
-        timeout: TimeInterval = 15,
-        depth: Int = 64
+        timeout: TimeInterval = 15
     ) async throws {
         self.address = address
         self.timeout = timeout
-        self.depth = depth
-        ring = try IORing(depth: depth)
+        ring = IORing.shared
         try await AES70Device.shared.add(endpoint: self)
     }
 
     public nonisolated var description: String {
-        "\(type(of: self))(address: \((try? address.presentationAddress) ?? "<unknown>"), timeout: \(timeout), depth: \(depth))"
+        "\(type(of: self))(address: \((try? address.presentationAddress) ?? "<unknown>"), timeout: \(timeout))"
     }
 
     public convenience init(
         address: Data,
-        timeout: TimeInterval = 15,
-        depth: Int = 64
+        timeout: TimeInterval = 15
     ) async throws {
         let storage = try sockaddr_storage(bytes: Array(address))
-        try await self.init(address: storage, timeout: timeout, depth: depth)
+        try await self.init(address: storage, timeout: timeout)
     }
 
     public convenience init(
         path: String,
-        timeout: TimeInterval = 15,
-        depth: Int = 64
+        timeout: TimeInterval = 15
     ) async throws {
         let storage = try sockaddr_un(
             family: sa_family_t(AF_LOCAL),
             presentationAddress: path
         )
-        try await self.init(address: storage, timeout: timeout, depth: depth)
+        try await self.init(address: storage, timeout: timeout)
     }
 
     func handle(
@@ -149,21 +144,26 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
 
     override public func start() async throws {
         let socket = try makeSocketAndListen()
-        let clients: AnyAsyncSequence<Socket> = try await socket.accept()
         let task = Task {
-            do {
-                for try await client in clients {
-                    Task {
-                        let controller = try await AES70OCP1IORingStreamController(socket: client)
-                        await handleController(controller)
+            repeat {
+                do {
+                    let clients: AnyAsyncSequence<Socket> = try await socket.accept()
+                    do {
+                        for try await client in clients {
+                            Task {
+                                let controller =
+                                    try await AES70OCP1IORingStreamController(socket: client)
+                                await handleController(controller)
+                            }
+                        }
+                    } catch Errno.invalidArgument {
+                        print(
+                            "AES70OCP1IORingStreamDeviceEndpoint: invalid argument when accepting connections, check kernel version supports multishot accept with io_uring"
+                        )
+                        await self.stop()
                     }
-                }
-            } catch Errno.invalidArgument {
-                print(
-                    "AES70OCP1IORingStreamDeviceEndpoint: invalid argument when accepting connections, check kernel version supports multishot accept with io_uring"
-                )
-                await self.stop()
-            }
+                } catch Errno.canceled {}
+            } while true
         }
         state = (socket: socket, task: task)
         try await super.start()
@@ -182,7 +182,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
         try socket.setReuseAddr()
         try socket.setTcpNoDelay()
         try socket.bind(to: address)
-        try socket.listen(backlog: depth)
+        try socket.listen()
 
         return socket
     }
