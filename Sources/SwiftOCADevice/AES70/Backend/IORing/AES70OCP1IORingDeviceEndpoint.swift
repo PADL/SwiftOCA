@@ -153,7 +153,6 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
                             Task {
                                 let controller =
                                     try await AES70OCP1IORingStreamController(socket: client)
-                                debugPrint("AES70OCP1IORingStreamDeviceEndpoint: accepted client \(controller)")
                                 await handleController(controller)
                             }
                         }
@@ -239,22 +238,30 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
     override public func start() async throws {
         let socket = try makeSocket()
         let task = Task {
-            let messagePdus = try await socket.receiveMessages(count: Self.MaximumPduSize)
+            repeat {
+                do {
+                    let messagePdus = try await socket.receiveMessages(count: Self.MaximumPduSize)
 
-            for try await messagePdu in messagePdus {
-                Task { @AES70Device in
-                    let controller =
-                        try await controller(for: AnySocketAddress(bytes: messagePdu.name))
-                    do {
-                        let messages = try await controller.decodeMessages(from: messagePdu)
-                        for (message, rrq) in messages {
-                            try await handle(controller: controller, message: message, rrq: rrq)
+                    for try await messagePdu in messagePdus {
+                        Task { @AES70Device in
+                            let controller =
+                                try await controller(for: AnySocketAddress(bytes: messagePdu.name))
+                            do {
+                                let messages = try await controller.decodeMessages(from: messagePdu)
+                                for (message, rrq) in messages {
+                                    try await handle(
+                                        controller: controller,
+                                        message: message,
+                                        rrq: rrq
+                                    )
+                                }
+                            } catch {
+                                await remove(controller: controller)
+                            }
                         }
-                    } catch {
-                        await remove(controller: controller)
                     }
-                }
-            }
+                } catch Errno.canceled {}
+            } while true
         }
         state = (socket: socket, task: task)
         try await super.start()
