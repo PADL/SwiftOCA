@@ -42,6 +42,10 @@ public actor AES70Device {
     }
 
     private func _initOnce() async throws {
+        // FIXME: this should not be done from library code. unfortunately no SO_NOSIGPIPE
+        // in Linux, and MSG_NOSIGNAL requires us to use send()
+        signal(SIGPIPE, SIG_IGN)
+
         guard rootBlock == nil else {
             return
         }

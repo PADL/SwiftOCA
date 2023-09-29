@@ -153,6 +153,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
                             Task {
                                 let controller =
                                     try await AES70OCP1IORingStreamController(socket: client)
+                                debugPrint("AES70OCP1IORingStreamDeviceEndpoint: accepted client \(controller)")
                                 await handleController(controller)
                             }
                         }

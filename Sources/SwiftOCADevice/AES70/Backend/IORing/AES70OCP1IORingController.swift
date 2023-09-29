@@ -81,7 +81,7 @@ extension AES70OCP1IORingControllerPrivate {
     }
 }
 
-actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
+actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomStringConvertible {
     var subscriptions = [OcaONo: NSMutableSet]()
     let peerAddress: AnySocketAddress
     var receiveMessageTask: Task<(), Never>?
@@ -94,6 +94,10 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate {
 
     private var _messages = AsyncThrowingChannel<ControllerMessage, Error>()
     private let socket: Socket
+
+    public nonisolated var description: String {
+        "(\(type(of: self)))(socket: \(socket))"
+    }
 
     func receiveMessagePdus() async throws -> [ControllerMessage] {
         var messagePduData = try await socket.read(count: AES70OCP1Connection.MinimumPduSize)
