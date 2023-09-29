@@ -17,6 +17,7 @@
 #if canImport(IORing)
 
 import AsyncAlgorithms
+import AsyncExtensions
 import Foundation
 @_implementationOnly
 import IORing
@@ -148,7 +149,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
 
     override public func start() async throws {
         let socket = try makeSocketAndListen()
-        let clients = try await socket.accept()
+        let clients: AnyAsyncSequence<Socket> = try await socket.accept()
         let task = Task {
             do {
                 for try await client in clients {
@@ -178,7 +179,6 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
     func makeSocketAndListen() throws -> Socket {
         let socket = try Socket(ring: ring, domain: address.family, type: SOCK_STREAM, protocol: 0)
 
-        try socket.setNonBlocking()
         try socket.setReuseAddr()
         try socket.setTcpNoDelay()
         try socket.bind(to: address)
@@ -269,7 +269,6 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
     func makeSocket() throws -> Socket {
         let socket = try Socket(ring: ring, domain: address.family, type: SOCK_DGRAM, protocol: 0)
 
-        try socket.setNonBlocking()
         try socket.bind(to: address)
 
         return socket
