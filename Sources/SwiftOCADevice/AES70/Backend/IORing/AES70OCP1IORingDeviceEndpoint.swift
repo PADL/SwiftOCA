@@ -153,6 +153,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
                             Task {
                                 let controller =
                                     try await AES70OCP1IORingStreamController(socket: client)
+                                debugPrint("AES70OCP1IORingStreamDeviceEndpoint: new stream client \(controller)")
                                 await handleController(controller)
                             }
                         }
@@ -227,6 +228,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                 endpoint: self,
                 peerAddress: controllerAddress
             )
+            debugPrint("AES70OCP1IORingDatagramDeviceEndpoint: new datagram client \(controller!)")
             _controllers[controllerAddress] = controller
         }
 
