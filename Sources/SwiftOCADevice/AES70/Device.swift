@@ -41,14 +41,7 @@ public actor AES70Device {
         return nextObjectNumber - 1
     }
 
-    private func _initOnce() async throws {
-        // FIXME: this should not be done from library code. unfortunately no SO_NOSIGPIPE
-        // in Linux, and MSG_NOSIGNAL requires us to use send()
-        signal(SIGPIPE, SIG_IGN)
-
-        guard rootBlock == nil else {
-            return
-        }
+    public func initializeDefaultObjects() async throws {
         rootBlock = try await OcaBlock(
             objectNumber: OcaRootBlockONo,
             deviceDelegate: self,
@@ -80,7 +73,6 @@ public actor AES70Device {
         objects[object.objectNumber] = object
         if addToRootBlock {
             precondition(object.objectNumber != OcaRootBlockONo)
-            try await _initOnce()
             try await rootBlock.add(actionObject: object)
         }
     }
@@ -114,7 +106,7 @@ public actor AES70Device {
         _ event: OcaEvent,
         parameters: Data
     ) async throws {
-        try await _initOnce()
+        assert(subscriptionManager != nil)
         switch subscriptionManager.state {
         case .eventsDisabled:
             subscriptionManager.objectsChangedWhilstNotificationsDisabled.insert(event.emitterONo)

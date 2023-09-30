@@ -27,11 +27,14 @@ public enum DeviceApp {
         var localAddress = sockaddr_in.inet(port: 65000)
         var localAddressData = Data()
 
+        signal(SIGPIPE, SIG_IGN)
+
         withUnsafeBytes(of: &localAddress) { bytes in
             localAddressData = Data(bytes: bytes.baseAddress!, count: bytes.count)
         }
 
         let device = AES70Device.shared
+        try await device.initializeDefaultObjects()
         let endpoint = try await AES70OCP1DeviceEndpoint(address: localAddressData)
 
         class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
