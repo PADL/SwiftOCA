@@ -3,6 +3,17 @@
 
 import PackageDescription
 
+let EnableASAN = true
+var ASANCFlags: [String] = []
+var ASANSwiftFlags: [String] = []
+var ASANLinkerSettings: [LinkerSetting] = []
+
+if EnableASAN {
+    ASANCFlags.append("-fsanitize=address")
+    ASANSwiftFlags.append("-sanitize=address")
+    ASANLinkerSettings.append(LinkerSetting.linkedLibrary("asan"))
+}
+
 let package = Package(
     name: "SwiftOCA",
     platforms: [
@@ -86,13 +97,22 @@ let package = Package(
                 "SwiftOCADevice",
                 .product(name: "FlyingSocks", package: "FlyingFox"),
             ],
-            path: "Examples/OCADevice"
+            path: "Examples/OCADevice",
+            swiftSettings: [
+                .unsafeFlags(ASANSwiftFlags),
+            ],
+            linkerSettings: [] + ASANLinkerSettings
+
         ),
         .testTarget(
             name: "SwiftOCADeviceTests",
             dependencies: [
                 .target(name: "SwiftOCADevice"),
-            ]
+            ],
+            swiftSettings: [
+                .unsafeFlags(ASANSwiftFlags),
+            ],
+            linkerSettings: [] + ASANLinkerSettings
         ),
     ],
     swiftLanguageVersions: [.v5]
