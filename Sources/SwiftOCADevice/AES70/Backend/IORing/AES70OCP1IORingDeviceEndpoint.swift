@@ -163,7 +163,12 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
                         )
                         await self.stop()
                     }
-                } catch Errno.canceled {}
+                } catch Errno.canceled {
+                    debugPrint("AES70OCP1IORingStreamDeviceEndpoint: received cancelation, trying to accept() again")
+                } catch {
+                    print("AES70OCP1IORingStreamDeviceEndpoint: received error \(error), bailing")
+                    throw error
+                }
             } while true
         }
         state = (socket: socket, task: task)
