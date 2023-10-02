@@ -22,8 +22,8 @@ import Foundation
 extension NetService: @unchecked
 Sendable {}
 
-public class AES70Browser: NSObject, NetServiceBrowserDelegate {
-    public enum ServiceType: String {
+public class AES70Browser: NSObject, NetServiceBrowserDelegate, @unchecked Sendable {
+    public enum ServiceType: String, Sendable {
         case tcp = "_oca._tcp."
         case tcpSecure = "_ocasec._tcp."
         case udp = "_oca._udp."
@@ -87,7 +87,7 @@ public class AES70Browser: NSObject, NetServiceBrowserDelegate {
     }
 }
 
-fileprivate class AES70ResolverDelegate: NSObject, NetServiceDelegate {
+fileprivate final class AES70ResolverDelegate: NSObject, NetServiceDelegate, Sendable {
     typealias ResolutionResult = Result<Data, Error>
     let channel: AsyncChannel<ResolutionResult>
 

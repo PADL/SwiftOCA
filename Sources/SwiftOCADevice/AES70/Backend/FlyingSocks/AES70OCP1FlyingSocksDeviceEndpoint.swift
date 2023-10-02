@@ -25,6 +25,9 @@
 
 #if os(macOS) || os(iOS)
 
+@preconcurrency
+import AsyncExtensions
+@preconcurrency
 @_implementationOnly
 import FlyingSocks
 @_spi(Private) @_implementationOnly
@@ -344,7 +347,7 @@ extension AES70OCP1FlyingSocksDeviceEndpoint {
     public var isListening: Bool { state != nil }
 
     func waitUntilListening(timeout: TimeInterval = 5) async throws {
-        try await withThrowingTimeout(seconds: timeout) {
+        try await FlyingSocks.withThrowingTimeout(seconds: timeout) {
             try await self.doWaitUntilListening()
         }
     }

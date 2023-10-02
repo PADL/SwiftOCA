@@ -23,12 +23,22 @@ extension OcaIdentificationSensor: OcaViewRepresentable {
     }
 }
 
+private final class OcaIdentificationState: ObservableObject {
+    var state: Bool = false
+
+    func beginIdentifying() async {
+        state = true
+        try? await Task.sleep(nanoseconds: 10 * NSEC_PER_SEC)
+        state = false
+    }
+}
+
 public struct OcaIdentificationSensorView: OcaView {
     @StateObject
     var object: OcaIdentificationSensor
 
-    @State
-    var isIdentifying = false
+    @StateObject
+    fileprivate var isIdentifying = OcaIdentificationState()
 
     public init(_ object: OcaRoot) {
         _object = StateObject(wrappedValue: object as! OcaIdentificationSensor)
@@ -36,13 +46,11 @@ public struct OcaIdentificationSensorView: OcaView {
 
     public var body: some View {
         Rectangle()
-            .foregroundColor(isIdentifying ? Color.red : Color.black)
+            .foregroundColor(isIdentifying.state ? Color.red : Color.black)
             .task {
                 try? await self.object.onIdentify { _, _ in
                     Task {
-                        isIdentifying = true
-                        try await Task.sleep(nanoseconds: 10 * NSEC_PER_SEC)
-                        isIdentifying = false
+                        await isIdentifying.beginIdentifying()
                     }
                 }
             }

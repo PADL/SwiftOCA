@@ -16,6 +16,7 @@
 
 #if os(macOS) || os(iOS)
 
+@preconcurrency
 @_implementationOnly
 import FlyingSocks
 import Foundation
@@ -134,7 +135,7 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
         try await super.disconnectDevice(clearObjectCache: clearObjectCache)
     }
 
-    private func withMappedError<T>(
+    private func withMappedError<T: Sendable>(
         _ block: (_ asyncSocket: AsyncSocket) async throws
             -> T
     ) async throws -> T {

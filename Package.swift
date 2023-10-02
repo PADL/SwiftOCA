@@ -14,6 +14,36 @@ if EnableASAN {
     ASANLinkerSettings.append(LinkerSetting.linkedLibrary("asan"))
 }
 
+let TransportDependencies: [Target.Dependency]
+
+#if os(Linux)
+TransportDependencies = [
+    .product(
+        name: "IORing",
+        package: "IORingSwift",
+        condition: .when(platforms: [.linux])
+    ),
+    .product(
+        name: "IORingUtils",
+        package: "IORingSwift",
+        condition: .when(platforms: [.linux])
+    ),
+    .product(
+        name: "IORingFoundation",
+        package: "IORingSwift",
+        condition: .when(platforms: [.linux])
+    ),
+]
+#else
+TransportDependencies = [
+    .product(
+        name: "FlyingSocks",
+        package: "FlyingFox",
+        condition: .when(platforms: [.macOS, .iOS])
+    ),
+]
+#endif
+
 let package = Package(
     name: "SwiftOCA",
     platforms: [
@@ -47,27 +77,7 @@ let package = Package(
                 "AsyncExtensions",
                 .product(name: "BinaryCoder", package: "swift-binary-coder"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
-                .product(
-                    name: "FlyingSocks",
-                    package: "FlyingFox",
-                    condition: .when(platforms: [.macOS, .iOS])
-                ),
-                .product(
-                    name: "IORing",
-                    package: "IORingSwift",
-                    condition: .when(platforms: [.linux])
-                ),
-                .product(
-                    name: "IORingUtils",
-                    package: "IORingSwift",
-                    condition: .when(platforms: [.linux])
-                ),
-                .product(
-                    name: "IORingFoundation",
-                    package: "IORingSwift",
-                    condition: .when(platforms: [.linux])
-                ),
-            ],
+            ] + TransportDependencies,
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency"),
             ]
@@ -77,22 +87,7 @@ let package = Package(
             dependencies: [
                 "SwiftOCA",
                 "dnssd",
-                .product(
-                    name: "FlyingSocks",
-                    package: "FlyingFox",
-                    condition: .when(platforms: [.macOS, .iOS])
-                ),
-                .product(
-                    name: "IORing",
-                    package: "IORingSwift",
-                    condition: .when(platforms: [.linux])
-                ),
-                .product(
-                    name: "IORingUtils",
-                    package: "IORingSwift",
-                    condition: .when(platforms: [.linux])
-                ),
-            ],
+            ] + TransportDependencies,
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency"),
             ]
