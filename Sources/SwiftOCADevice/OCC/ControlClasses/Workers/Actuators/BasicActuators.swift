@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-open class OcaGenericBasicActuator<T: Codable & Comparable & Numeric>: OcaActuator {
+open class OcaGenericBasicActuator<T: Codable & Comparable & Numeric & Sendable>: OcaActuator {
     @OcaBoundedDeviceProperty(
         wrappedValue: OcaBoundedPropertyValue<T>(value: 0, in: 0...1),
         propertyID: OcaPropertyID("5.1"),

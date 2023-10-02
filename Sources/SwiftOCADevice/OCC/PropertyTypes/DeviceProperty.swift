@@ -18,7 +18,7 @@ import AsyncExtensions
 import SwiftOCA
 
 protocol OcaDevicePropertyRepresentable {
-    associatedtype Value: Codable
+    associatedtype Value: Codable & Sendable
 
     // FIXME: support vector properties with multiple property IDs
     var propertyID: OcaPropertyID { get }

@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-open class OcaGenericBasicSensor<T: Codable & Comparable>: OcaSensor {
+open class OcaGenericBasicSensor<T: Codable & Comparable & Sendable>: OcaSensor {
     @OcaBoundedDeviceProperty
     public var reading: OcaBoundedPropertyValue<T>
 

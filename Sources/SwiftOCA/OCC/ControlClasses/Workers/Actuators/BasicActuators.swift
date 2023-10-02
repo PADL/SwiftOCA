@@ -18,7 +18,7 @@ open class OcaBasicActuator: OcaActuator {
     override open class var classID: OcaClassID { OcaClassID("1.1.1.1") }
 }
 
-open class OcaGenericBasicActuator<T: Codable & Comparable & Numeric>: OcaBasicActuator {
+open class OcaGenericBasicActuator<T: Codable & Comparable & Numeric & Sendable>: OcaBasicActuator {
     @OcaBoundedProperty(
         propertyID: OcaPropertyID("5.1"),
         getMethodID: OcaMethodID("5.1"),
