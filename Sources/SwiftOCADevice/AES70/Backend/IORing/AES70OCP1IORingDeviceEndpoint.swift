@@ -178,7 +178,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
     override public func stop(timeout: TimeInterval = 0) async {
         await super.stop(timeout: timeout)
         state?.task.cancel()
-        try? await state?.socket.close()
+        // we're not going to explicitly close the socket, we'll just wait for its refcount to be zero
         state = nil
     }
 
@@ -277,7 +277,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
     override public func stop(timeout: TimeInterval = 0) async {
         await super.stop(timeout: timeout)
         state?.task.cancel()
-        try? await state?.socket.close()
+        // we're not going to explicitly close the socket, we'll just wait for its refcount to be zero
         state = nil
     }
 
