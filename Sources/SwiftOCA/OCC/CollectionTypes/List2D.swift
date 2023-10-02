@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct OcaList2D<Element> {
+public struct OcaList2D<Element: Sendable>: Sendable {
     public let nX, nY: Int
     public private(set) var items: [Element]
 

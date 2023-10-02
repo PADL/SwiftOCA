@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct OcaBlockMember: Codable {
+public struct OcaBlockMember: Codable, Sendable {
     public let memberObjectIdentification: OcaObjectIdentification
     public let containerObjectNumber: OcaONo
 
@@ -27,7 +27,7 @@ public struct OcaBlockMember: Codable {
     }
 }
 
-public struct OcaContainerObjectMember {
+public struct OcaContainerObjectMember: Sendable {
     public let memberObject: OcaRoot
     public let containerObjectNumber: OcaONo
 

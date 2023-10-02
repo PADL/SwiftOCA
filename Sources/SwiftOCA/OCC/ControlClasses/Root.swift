@@ -24,7 +24,7 @@ import OpenCombine
 protocol ObservableObject {} // placeholder
 #endif
 
-open class OcaRoot: CustomStringConvertible, ObservableObject {
+open class OcaRoot: CustomStringConvertible, ObservableObject, Sendable {
     typealias Root = OcaRoot
 
     public internal(set) weak var connectionDelegate: AES70OCP1Connection?
@@ -226,7 +226,7 @@ public extension OcaRoot {
         }
     }
 
-    internal struct StaticProperty<T: Codable>: OcaPropertySubjectRepresentable {
+    internal struct StaticProperty<T: Codable & Sendable>: OcaPropertySubjectRepresentable {
         typealias Value = T
 
         var propertyIDs: [OcaPropertyID]

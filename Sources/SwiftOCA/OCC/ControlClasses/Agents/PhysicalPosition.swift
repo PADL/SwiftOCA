@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaPositionCoordinateSystem: OcaUint8, Codable {
+public enum OcaPositionCoordinateSystem: OcaUint8, Codable, Sendable {
     case robotic = 1
     case ituAudioObjectBasedPolar = 2
     case ituAudioObjectBasedCartesian = 3
@@ -24,7 +24,7 @@ public enum OcaPositionCoordinateSystem: OcaUint8, Codable {
     case proprietaryBase = 128
 }
 
-public struct OcaPositionDescriptorFieldFlags: OptionSet, Codable {
+public struct OcaPositionDescriptorFieldFlags: OptionSet, Codable, Sendable {
     public let rawValue: OcaBitSet16
 
     public init(rawValue: OcaBitSet16) {
@@ -32,7 +32,7 @@ public struct OcaPositionDescriptorFieldFlags: OptionSet, Codable {
     }
 }
 
-public struct OcaPositionDescriptor: Codable, Comparable {
+public struct OcaPositionDescriptor: Codable, Sendable, Comparable {
     public static func < (lhs: OcaPositionDescriptor, rhs: OcaPositionDescriptor) -> Bool {
         guard lhs.coordinateSystem == rhs.coordinateSystem else {
             return false

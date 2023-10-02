@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct Ocp1Response: Ocp1Message, Codable {
+public struct Ocp1Response: Ocp1Message, Codable, Sendable {
     public let responseSize: OcaUint32
     public let handle: OcaUint32
     public let statusCode: OcaStatus

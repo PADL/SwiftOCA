@@ -22,7 +22,7 @@ import SwiftUI
 #endif
 
 public protocol OcaPropertyRepresentable: CustomStringConvertible {
-    associatedtype Value: Codable
+    associatedtype Value: Codable & Sendable
     typealias State = OcaProperty<Value>.State
 
     var propertyIDs: [OcaPropertyID] { get }
@@ -69,7 +69,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable, OcaProp
     /// The OCA set method ID, if present
     let setMethodID: OcaMethodID?
 
-    public enum State {
+    public enum State: Sendable {
         /// no value retrieved from device yet
         case initial
         /// value retrieved from device
