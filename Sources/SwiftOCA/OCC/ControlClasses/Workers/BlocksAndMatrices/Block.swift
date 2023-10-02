@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct OcaBlockMember: Codable {
+public struct OcaBlockMember: Codable, Sendable {
     public let memberObjectIdentification: OcaObjectIdentification
     public let containerObjectNumber: OcaONo
 
@@ -27,7 +27,7 @@ public struct OcaBlockMember: Codable {
     }
 }
 
-public struct OcaContainerObjectMember {
+public struct OcaContainerObjectMember: Sendable {
     public let memberObject: OcaRoot
     public let containerObjectNumber: OcaONo
 
@@ -230,7 +230,7 @@ public extension OcaBlock {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
         return try await _actionObjects.onCompletion(self) { actionObjects in
-            actionObjects.compactMap { connectionDelegate.resolve(object: $0) }
+            await actionObjects.asyncCompactMap { await connectionDelegate.resolve(object: $0) }
         }
     }
 

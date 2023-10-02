@@ -77,7 +77,7 @@ public class AES70OCP1IORingConnection: AES70OCP1Connection {
         try await super.disconnectDevice(clearObjectCache: clearObjectCache)
     }
 
-    private func withMappedError<T>(
+    private func withMappedError<T: Sendable>(
         _ block: (_ socket: Socket) async throws
             -> T
     ) async throws -> T {

@@ -24,11 +24,11 @@ import OpenCombine
 protocol ObservableObject {} // placeholder
 #endif
 
-open class OcaRoot: CustomStringConvertible, ObservableObject {
+open class OcaRoot: CustomStringConvertible, ObservableObject, @unchecked Sendable {
     typealias Root = OcaRoot
 
     public internal(set) weak var connectionDelegate: AES70OCP1Connection?
-    public var objectNumberMapper: OcaObjectNumberMapper = OcaIdentityObjectNumberMapper.shared
+    //public var objectNumberMapper: OcaObjectNumberMapper = OcaIdentityObjectNumberMapper.shared
 
     // 1.1
     open class var classID: OcaClassID { OcaClassID("1") }
@@ -167,7 +167,7 @@ public extension OcaRoot {
         )
     }
 
-    @MainActor
+    @Sendable
     internal func propertyDidChange(event: OcaEvent, eventData data: Data) {
         let decoder = Ocp1BinaryDecoder()
         guard let propertyID = try? decoder.decode(
@@ -226,7 +226,7 @@ public extension OcaRoot {
         }
     }
 
-    internal struct StaticProperty<T: Codable>: OcaPropertySubjectRepresentable {
+    internal struct StaticProperty<T: Codable & Sendable>: OcaPropertySubjectRepresentable {
         typealias Value = T
 
         var propertyIDs: [OcaPropertyID]

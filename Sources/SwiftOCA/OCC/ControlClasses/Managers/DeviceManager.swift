@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct OcaDeviceState: OptionSet, Codable, CustomStringConvertible {
+public struct OcaDeviceState: OptionSet, Codable, Sendable, CustomStringConvertible {
     public static let operational = OcaDeviceState(rawValue: 1 << 0)
     public static let disabled = OcaDeviceState(rawValue: 1 << 1)
     public static let error = OcaDeviceState(rawValue: 1 << 2)
@@ -27,7 +27,7 @@ public struct OcaDeviceState: OptionSet, Codable, CustomStringConvertible {
         self.rawValue = rawValue
     }
 
-    static var descriptions: [(Self, String)] = [
+    static let descriptions: [(Self, String)] = [
         (.operational, "Operational"),
         (.disabled, "Disabled"),
         (.error, "Error"),
@@ -40,7 +40,7 @@ public struct OcaDeviceState: OptionSet, Codable, CustomStringConvertible {
     }
 }
 
-public enum OcaResetCause: OcaUint16, Codable {
+public enum OcaResetCause: OcaUint16, Sendable, Codable {
     case powerOn = 0
     case internalError = 1
     case upgrade = 2

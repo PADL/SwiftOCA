@@ -15,6 +15,7 @@
 //
 
 import AsyncAlgorithms
+@preconcurrency
 import Foundation
 #if canImport(Combine)
 import Combine
@@ -30,7 +31,7 @@ public typealias AES70OCP1UDPConnection = AES70OCP1CFSocketUDPConnection
 public typealias AES70OCP1TCPConnection = AES70OCP1FlyingSocksStreamConnection
 #endif
 
-public typealias AES70SubscriptionCallback = (OcaEvent, Data) async throws
+public typealias AES70SubscriptionCallback = @Sendable (OcaEvent, Data) async throws
     -> ()
 
 // FIXME: these don't appear to be available on non-Darwin platforms
@@ -43,7 +44,7 @@ let OcaSecureTcpConnectionPrefix = "ocasec/tcp"
 let OcaWebSocketTcpConnectionPrefix = "ocaws/tcp"
 let OcaSpiConnectionPrefix = "oca/spi"
 
-public struct AES70OCP1ConnectionOptions {
+public struct AES70OCP1ConnectionOptions: Sendable {
     let automaticReconnect: Bool
     let connectionTimeout: TimeInterval
     let responseTimeout: TimeInterval

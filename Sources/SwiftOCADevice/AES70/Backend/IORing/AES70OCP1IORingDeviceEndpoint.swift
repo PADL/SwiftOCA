@@ -17,6 +17,7 @@
 #if canImport(IORing)
 
 import AsyncAlgorithms
+@preconcurrency
 import AsyncExtensions
 import Foundation
 @_implementationOnly

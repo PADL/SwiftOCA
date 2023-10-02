@@ -15,7 +15,7 @@
 //
 
 // we don't want to add public Equatable / Hashable conformances to Mirror, so wrap it.
-public struct _MirrorWrapper: Equatable, Hashable {
+public struct _MirrorWrapper: Equatable, Hashable, @unchecked Sendable {
     public let wrappedValue: Mirror
 
     public init(_ wrappedValue: Mirror) {

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaStringComparisonType: OcaUint8, Codable {
+public enum OcaStringComparisonType: OcaUint8, Codable, Sendable {
     case exact = 0
     case substring = 1
     case contains = 2
@@ -23,7 +23,7 @@ public enum OcaStringComparisonType: OcaUint8, Codable {
     case containsCaseInsensitive = 5
 }
 
-public struct OcaObjectSearchResultFlags: OptionSet, Codable {
+public struct OcaObjectSearchResultFlags: OptionSet, Codable, Sendable {
     public static let oNo = OcaObjectSearchResultFlags(rawValue: 1 << 0)
     public static let classIdentification = OcaObjectSearchResultFlags(rawValue: 1 << 1)
     public static let containerPath = OcaObjectSearchResultFlags(rawValue: 1 << 2)
@@ -37,7 +37,7 @@ public struct OcaObjectSearchResultFlags: OptionSet, Codable {
     }
 }
 
-public struct OcaObjectSearchResult: Codable {
+public struct OcaObjectSearchResult: Codable, Sendable {
     public let oNo: OcaONo?
     public let classIdentification: OcaClassIdentification?
     public let containerPath: OcaONoPath?

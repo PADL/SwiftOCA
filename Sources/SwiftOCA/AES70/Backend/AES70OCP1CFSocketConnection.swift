@@ -33,6 +33,8 @@ private func AES70OCP1CFSocketConnection_DataCallBack(
     connection.dataCallBack(socket, type, address, data)
 }
 
+extension CFSocket: @unchecked Sendable {}
+
 public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
     fileprivate let deviceAddress: Data
     fileprivate var cfSocket: CFSocket?

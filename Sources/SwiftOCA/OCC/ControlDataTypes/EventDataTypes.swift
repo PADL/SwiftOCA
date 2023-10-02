@@ -49,7 +49,7 @@ public struct OcaEvent: Codable, Hashable, Equatable, Sendable {
     }
 }
 
-public enum OcaPropertyChangeType: OcaUint8, Codable, Equatable {
+public enum OcaPropertyChangeType: OcaUint8, Codable, Equatable, Sendable {
     case currentChanged = 1
     case minChanged = 2
     case maxChanged = 3
@@ -58,7 +58,7 @@ public enum OcaPropertyChangeType: OcaUint8, Codable, Equatable {
     case itemDeleted = 6
 }
 
-public struct OcaPropertyChangedEventData<T: Codable>: Codable {
+public struct OcaPropertyChangedEventData<T: Codable & Sendable>: Codable, Sendable {
     public let propertyID: OcaPropertyID
     public let propertyValue: T
     public let changeType: OcaPropertyChangeType
@@ -76,7 +76,7 @@ public struct OcaPropertyChangedEventData<T: Codable>: Codable {
 
 public let OcaPropertyChangedEventID = OcaEventID(defLevel: 1, eventIndex: 1)
 
-public struct OcaSubscription: Codable, Equatable, Hashable {
+public struct OcaSubscription: Codable, Equatable, Hashable, Sendable {
     public let event: OcaEvent
     public let subscriber: OcaMethod
     public let subscriberContext: OcaBlob
@@ -100,7 +100,7 @@ public struct OcaSubscription: Codable, Equatable, Hashable {
 
 public typealias OcaObjectListEventData = OcaList<OcaONo>
 
-public struct OcaPropertyChangeSubscription: Codable, Equatable, Hashable {
+public struct OcaPropertyChangeSubscription: Codable, Equatable, Hashable, Sendable {
     public let emitter: OcaONo
     public let property: OcaPropertyID
     public let subscriber: OcaMethod
@@ -125,7 +125,7 @@ public struct OcaPropertyChangeSubscription: Codable, Equatable, Hashable {
     }
 }
 
-public struct OcaSubscription2: Codable, Equatable, Hashable {
+public struct OcaSubscription2: Codable, Equatable, Hashable, Sendable {
     public let event: OcaEvent
     public let notificationDeliveryMode: OcaNotificationDeliveryMode
     public let destinationInformation: OcaNetworkAddress
@@ -141,7 +141,7 @@ public struct OcaSubscription2: Codable, Equatable, Hashable {
     }
 }
 
-public struct OcaPropertyChangeSubscription2: Codable, Equatable, Hashable {
+public struct OcaPropertyChangeSubscription2: Codable, Equatable, Hashable, Sendable {
     public let emitter: OcaONo
     public let property: OcaPropertyID
     public let notificationDeliveryMode: OcaNotificationDeliveryMode

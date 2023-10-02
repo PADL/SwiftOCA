@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaPolarityState: OcaUint8, Codable {
+public enum OcaPolarityState: OcaUint8, Codable, Sendable {
     case nonInverted = 1
     case inverted = 2
 }

@@ -16,7 +16,7 @@
 
 public typealias OcaMediaConnectorID = OcaUint16
 
-public enum OcaMediaConnectorState: OcaUint8, Codable {
+public enum OcaMediaConnectorState: OcaUint8, Codable, Sendable {
     case stopped = 0
     case settingUp = 1
     case running = 2
@@ -24,13 +24,13 @@ public enum OcaMediaConnectorState: OcaUint8, Codable {
     case fault = 4
 }
 
-public enum OcaMediaConnectorCommand: OcaUint8, Codable {
+public enum OcaMediaConnectorCommand: OcaUint8, Codable, Sendable {
     case none = 0
     case start = 1
     case pause = 2
 }
 
-public enum OcaMediaStreamCastMode: OcaUint8, Codable {
+public enum OcaMediaStreamCastMode: OcaUint8, Codable, Sendable {
     case none = 0
     case unicast = 1
     case multicast = 2
@@ -40,7 +40,7 @@ public typealias OcaMediaStreamParameters = OcaBlob
 
 public typealias OcaMediaCodingSchemeID = OcaUint16
 
-public struct OcaMediaCoding: Codable {
+public struct OcaMediaCoding: Codable, Sendable {
     public let codingSchemeID: OcaMediaCodingSchemeID
     public let codecParameters: OcaString
     public let clockONO: OcaONo
@@ -56,7 +56,7 @@ public struct OcaMediaCoding: Codable {
     }
 }
 
-public struct OcaMediaConnection: Codable {
+public struct OcaMediaConnection: Codable, Sendable {
     public let secure: OcaBoolean
     public let streamParameters: OcaMediaStreamParameters
     public let streamCastMode: OcaMediaStreamCastMode
@@ -75,7 +75,7 @@ public struct OcaMediaConnection: Codable {
     }
 }
 
-public struct OcaMediaConnectorStatus: Codable {
+public struct OcaMediaConnectorStatus: Codable, Sendable {
     public let connectorID: OcaMediaConnectorID
     public let state: OcaMediaConnectorState
     public let errorCode: OcaUint16
@@ -91,7 +91,7 @@ public struct OcaMediaConnectorStatus: Codable {
     }
 }
 
-public struct OcaMediaSinkConnector: Codable {
+public struct OcaMediaSinkConnector: Codable, Sendable {
     public let IDInternal: OcaMediaConnectorID
     public let IDExternal: OcaString
     public let connection: OcaMediaConnection
@@ -125,7 +125,7 @@ public struct OcaMediaSinkConnector: Codable {
     }
 }
 
-public struct OcaMediaSourceConnector: Codable {
+public struct OcaMediaSourceConnector: Codable, Sendable {
     public let IDInternal: OcaMediaConnectorID
     public let IDExternal: OcaString
     public let connection: OcaMediaConnection

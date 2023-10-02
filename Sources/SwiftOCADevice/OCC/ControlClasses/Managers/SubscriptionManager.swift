@@ -192,7 +192,7 @@ public class OcaSubscriptionManager: OcaManager {
     }
 }
 
-public enum OcaSubscriptionManagerSubscription: Codable, Equatable, Hashable {
+public enum OcaSubscriptionManagerSubscription: Codable, Equatable, Hashable, Sendable {
     case subscription(OcaSubscription)
     case propertyChangeSubscription(OcaPropertyChangeSubscription)
     case subscription2(OcaSubscription2)

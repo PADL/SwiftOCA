@@ -16,7 +16,7 @@
 
 public typealias OcaLibVolID = OcaUint32
 
-public struct OcaLibVolData_ParamSet: Codable {
+public struct OcaLibVolData_ParamSet: Codable, Sendable {
     let targetBlockType: OcaONo
     let parData: OcaBlob
 }

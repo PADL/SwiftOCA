@@ -123,7 +123,7 @@ public extension OcaMatrix {
                         oNo: value[x, y],
                         classIdentification: proxyClassID
                     )
-                    resolved[x, y] = connectionDelegate.resolve(object: objectID)
+                    resolved[x, y] = await connectionDelegate.resolve(object: objectID)
                 }
             }
 
@@ -144,7 +144,7 @@ public extension OcaMatrix {
                 oNo: unresolvedProxy.objectNumber,
                 classIdentification: classIdentification
             )
-            let resolvedProxy = connectionDelegate.resolve(object: objectID) as? T
+            let resolvedProxy = await connectionDelegate.resolve(object: objectID) as? T
             guard let resolvedProxy else {
                 throw Ocp1Error.proxyResolutionFailed
             }

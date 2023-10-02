@@ -20,7 +20,7 @@ import Foundation
 import SwiftUI
 #endif
 
-public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable, OcaParameterCountReflectable {
+public struct OcaVector2D<T: Codable & Sendable & FixedWidthInteger>: Codable, Sendable, OcaParameterCountReflectable {
     public static var responseParameterCount: OcaUint8 { 2 }
 
     public var x, y: T
@@ -33,9 +33,9 @@ public struct OcaVector2D<T: Codable & FixedWidthInteger>: Codable, OcaParameter
 
 @propertyWrapper
 public struct OcaVectorProperty<
-    Value: Codable &
+    Value: Codable & Sendable &
         FixedWidthInteger
->: OcaPropertyChangeEventNotifiable, Codable {
+>: OcaPropertyChangeEventNotifiable, Codable, Sendable {
     var subject: AsyncCurrentValueSubject<State> { _storage.subject }
 
     fileprivate var _storage: Property

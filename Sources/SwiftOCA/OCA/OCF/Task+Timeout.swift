@@ -1,5 +1,6 @@
 // https://forums.swift.org/t/running-an-async-task-with-a-timeout/49733/12
 
+@preconcurrency
 import Foundation
 
 ///
@@ -12,7 +13,7 @@ import Foundation
 /// - Throws: Throws ``TimedOutError`` if the timeout expires before `operation` completes.
 ///   If `operation` throws an error before the timeout expires, that error is propagated to the
 /// caller.
-public func withThrowingTimeout<R>(
+public func withThrowingTimeout<R: Sendable>(
     seconds: TimeInterval,
     operation: @escaping @Sendable () async throws -> R
 ) async throws -> R {

@@ -24,7 +24,7 @@ extension AES70Controller {
     }
 }
 
-open class OcaRoot: CustomStringConvertible {
+open class OcaRoot: CustomStringConvertible, @unchecked Sendable {
     var notificationTasks = [OcaPropertyID: Task<(), Error>]()
 
     open class var classID: OcaClassID { OcaClassID("1") }

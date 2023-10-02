@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct Ocp1KeepAlive1: Ocp1Message, Codable {
+public struct Ocp1KeepAlive1: Ocp1Message, Codable, Sendable {
     public let heartBeatTime: OcaUint16 // sec
 
     public var messageSize: OcaUint32 { 2 }
@@ -24,7 +24,7 @@ public struct Ocp1KeepAlive1: Ocp1Message, Codable {
     }
 }
 
-public struct Ocp1KeepAlive2: Ocp1Message, Codable {
+public struct Ocp1KeepAlive2: Ocp1Message, Codable, Sendable {
     public let heartBeatTime: OcaUint32 // msec
 
     public var messageSize: OcaUint32 { 4 }

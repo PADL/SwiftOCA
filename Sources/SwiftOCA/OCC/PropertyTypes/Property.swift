@@ -22,7 +22,7 @@ import SwiftUI
 #endif
 
 public protocol OcaPropertyRepresentable: CustomStringConvertible {
-    associatedtype Value: Codable
+    associatedtype Value: Codable & Sendable
     typealias State = OcaProperty<Value>.State
 
     var propertyIDs: [OcaPropertyID] { get }
@@ -54,7 +54,7 @@ extension OcaPropertySubjectRepresentable {
 }
 
 @propertyWrapper
-public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifiable {
+public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable, OcaPropertyChangeEventNotifiable {
     /// All property IDs supported by this property
     public var propertyIDs: [OcaPropertyID] {
         [propertyID]
@@ -69,7 +69,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     /// The OCA set method ID, if present
     let setMethodID: OcaMethodID?
 
-    public enum State {
+    public enum State: Sendable {
         /// no value retrieved from device yet
         case initial
         /// value retrieved from device
@@ -200,7 +200,7 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
     }
 
     /// setValueTransformer is a helper for OcaBoundedProperty
-    typealias SetValueTransformer = (OcaRoot, Value) async throws -> Encodable
+    typealias SetValueTransformer = @Sendable (OcaRoot, Value) async throws -> Encodable
     private let setValueTransformer: SetValueTransformer?
 
     init(
@@ -311,9 +311,9 @@ public struct OcaProperty<Value: Codable>: Codable, OcaPropertyChangeEventNotifi
         }
     }
 
-    func onCompletion<T>(
+    func onCompletion<T: Sendable>(
         _ object: OcaRoot,
-        _ block: @escaping (_ value: Value) async throws -> T
+        _ block: @Sendable @escaping (_ value: Value) async throws -> T
     ) async throws -> T {
         guard let connectionDelegate = object.connectionDelegate else {
             throw Ocp1Error.noConnectionDelegate
