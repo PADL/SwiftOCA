@@ -168,7 +168,9 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
 
     var keepAliveInterval: UInt64 = 0 {
         didSet {
-            keepAliveIntervalDidChange()
+            if keepAliveInterval != oldValue {
+                keepAliveIntervalDidChange()
+            }
         }
     }
 

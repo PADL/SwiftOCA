@@ -55,7 +55,7 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate {
 
     var keepAliveInterval: UInt64 = 0 {
         didSet {
-            if keepAliveInterval != 0 {
+            if keepAliveInterval != 0, keepAliveInterval != oldValue {
                 keepAliveTask = Task<(), Error> {
                     repeat {
                         if connectionIsStale {

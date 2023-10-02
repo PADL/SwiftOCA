@@ -3,7 +3,7 @@
 
 import PackageDescription
 
-let EnableASAN = true
+let EnableASAN = false
 var ASANCFlags: [String] = []
 var ASANSwiftFlags: [String] = []
 var ASANLinkerSettings: [LinkerSetting] = []
