@@ -19,6 +19,7 @@
 import Foundation
 @_implementationOnly
 import IORing
+@_implementationOnly
 import IORingFoundation
 @_implementationOnly
 import IORingUtils
