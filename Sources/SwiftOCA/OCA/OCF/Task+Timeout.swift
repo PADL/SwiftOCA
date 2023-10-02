@@ -1,5 +1,6 @@
 // https://forums.swift.org/t/running-an-async-task-with-a-timeout/49733/12
 
+@preconcurrency // spurious on Darwin but not Linux
 import Foundation
 
 ///
