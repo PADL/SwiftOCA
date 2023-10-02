@@ -20,8 +20,8 @@ import SwiftOCA
 @propertyWrapper
 public struct OcaBoundedDeviceProperty<
     Value: Codable &
-        Comparable
->: OcaDevicePropertyRepresentable {
+        Comparable & Sendable
+>: OcaDevicePropertyRepresentable, Sendable {
     fileprivate var storage: Property
 
     public var propertyID: OcaPropertyID { storage.propertyID }

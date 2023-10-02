@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct OcaManagerDescriptor: Codable, CustomStringConvertible {
+public struct OcaManagerDescriptor: Codable, Sendable, CustomStringConvertible {
     public let objectNumber: OcaONo
     public let name: OcaString
     public let classID: OcaClassID

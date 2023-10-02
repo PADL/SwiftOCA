@@ -53,7 +53,7 @@ public typealias OcaNetworkAddress = OcaBlob
 
 public typealias OcaBitSet16 = OcaUint16
 
-public enum OcaBaseDataType: OcaUint8, Codable {
+public enum OcaBaseDataType: OcaUint8, Codable, Sendable {
     case none = 0
     case ocaBoolean = 1
     case ocaInt8 = 2
@@ -90,7 +90,7 @@ public enum OcaStatus: OcaUint8, Codable, Sendable {
     case bufferOverflow = 14
 }
 
-public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, CustomStringConvertible {
+public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable, CustomStringConvertible {
     let defLevel: OcaUint16
     let propertyIndex: OcaUint16
 
@@ -113,33 +113,33 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, CustomStr
     }
 }
 
-public enum OcaPortMode: OcaUint8, Codable {
+public enum OcaPortMode: OcaUint8, Codable, Sendable {
     case input = 1
     case output = 2
 }
 
-public struct OcaPortID: Codable {
+public struct OcaPortID: Codable, Sendable {
     public let mode: OcaPortMode
     public let index: OcaUint16
 }
 
-public struct OcaPort: Codable {
+public struct OcaPort: Codable, Sendable {
     public let owner: OcaONo
     public let id: OcaPortID
     public let name: OcaString
 }
 
-public struct OcaSignalPath: Codable {
+public struct OcaSignalPath: Codable, Sendable {
     public let sourcePort: OcaPort
     public let sinkPort: OcaPort
 }
 
-public struct OcaLibVolIdentifier: Codable {
+public struct OcaLibVolIdentifier: Codable, Sendable {
     public let library: OcaONo
     public let id: OcaLibVolID
 }
 
-public struct OcaClassID: Codable, Hashable, CustomStringConvertible {
+public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible {
     let fields: [OcaUint16]
 
     static let ProprietaryClassFieldMask = OcaUint16(0x8000)
@@ -265,7 +265,7 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible 
     }
 }
 
-public struct OcaMethod: Codable, Equatable, Hashable {
+public struct OcaMethod: Codable, Sendable, Equatable, Hashable {
     public let oNo: OcaONo
     public let methodID: OcaMethodID
 
@@ -275,7 +275,7 @@ public struct OcaMethod: Codable, Equatable, Hashable {
     }
 }
 
-public struct OcaClassIdentification: Codable, Hashable {
+public struct OcaClassIdentification: Codable, Sendable, Hashable {
     public let classID: OcaClassID
     public let classVersion: OcaClassVersionNumber
 
@@ -285,7 +285,7 @@ public struct OcaClassIdentification: Codable, Hashable {
     }
 }
 
-public struct OcaObjectIdentification: Codable {
+public struct OcaObjectIdentification: Codable, Sendable {
     public let oNo: OcaONo
     public let classIdentification: OcaClassIdentification
 
@@ -297,12 +297,12 @@ public struct OcaObjectIdentification: Codable {
 
 public typealias OcaProtoONo = OcaUint32
 
-public struct OcaGlobalTypeIdentifier: Codable {
+public struct OcaGlobalTypeIdentifier: Codable, Sendable {
     public let authority: OcaOrganizationID
     public let id: OcaUint32
 }
 
-public struct OcaOrganizationID: Codable, CustomStringConvertible {
+public struct OcaOrganizationID: Codable, Sendable, CustomStringConvertible {
     public let id: (OcaUint8, OcaUint8, OcaUint8)
 
     public init(_ id: (OcaUint8, OcaUint8, OcaUint8)) {

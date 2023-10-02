@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct OcaModelDescription: Codable, CustomStringConvertible {
+public struct OcaModelDescription: Codable, Sendable, CustomStringConvertible {
     public let manufacturer: OcaString
     public let name: OcaString
     public let version: OcaString
@@ -30,7 +30,7 @@ public struct OcaModelDescription: Codable, CustomStringConvertible {
     }
 }
 
-public struct OcaModelGUID: Codable, CustomStringConvertible {
+public struct OcaModelGUID: Codable, Sendable, CustomStringConvertible {
     public let reserved: OcaUint8
     public let mfrCode: OcaOrganizationID
     public let modelCode: OcaUint32 // TODO: should be tuple of OcaUint8

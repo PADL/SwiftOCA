@@ -23,12 +23,12 @@ public typealias OcaDBz = OcaDB
 public typealias OcaVoltage = OcaFloat32
 public typealias OcaCurrent = OcaFloat32
 
-public struct OcaImpedance: Codable {
+public struct OcaImpedance: Codable, Sendable {
     let magnitude: OcaFloat32
     let phsae: OcaFloat32
 }
 
-public enum OcaDelayUnit: OcaUint8, Codable {
+public enum OcaDelayUnit: OcaUint8, Codable, Sendable {
     case time = 1
     case distance = 2
     case samples = 3
@@ -39,7 +39,7 @@ public enum OcaDelayUnit: OcaUint8, Codable {
     case feet = 8
 }
 
-public struct OcaDelayValue: Codable {
+public struct OcaDelayValue: Codable, Sendable {
     let delayValue: OcaFloat32
     let delayUnit: OcaDelayUnit
 }
@@ -48,7 +48,7 @@ public typealias OcaFrequency = OcaFloat32
 
 public typealias OcaFrequencyResponse = OcaMap<OcaFrequency, OcaDB>
 
-public struct OcaTransferFunction: Codable {
+public struct OcaTransferFunction: Codable, Sendable {
     var frequency: OcaList<OcaFrequency>
     var amplitude: OcaList<OcaFloat32>
     var phase: OcaList<OcaFloat32>
@@ -56,14 +56,14 @@ public struct OcaTransferFunction: Codable {
 
 public typealias OcaPeriod = OcaUint32 // ms
 
-public enum OcaClassicalFilterShape: OcaUint8, Codable {
+public enum OcaClassicalFilterShape: OcaUint8, Codable, Sendable {
     case butterworth = 1
     case bessel = 2
     case chebyshev = 3
     case linkwitzRiley = 4
 }
 
-public enum OcaFilterPassband: OcaUint8, Codable {
+public enum OcaFilterPassband: OcaUint8, Codable, Sendable {
     case hiPass = 1
     case lowPass = 2
     case bandPass = 3
@@ -71,7 +71,7 @@ public enum OcaFilterPassband: OcaUint8, Codable {
     case allPass = 5
 }
 
-public enum OcaParametricEQShape: OcaUint8, Codable {
+public enum OcaParametricEQShape: OcaUint8, Codable, Sendable {
     case none = 0
     case peq = 1
     case lowShelv = 2
@@ -87,7 +87,7 @@ public enum OcaParametricEQShape: OcaUint8, Codable {
     case toneControlHighSliding = 12
 }
 
-public enum OcaDynamicsFunction: OcaUint8, Codable {
+public enum OcaDynamicsFunction: OcaUint8, Codable, Sendable {
     case none = 0
     case compress = 1
     case limit = 2
@@ -95,13 +95,13 @@ public enum OcaDynamicsFunction: OcaUint8, Codable {
     case gate = 4
 }
 
-public struct OcaPilotToneDetectorSpec: Codable {
+public struct OcaPilotToneDetectorSpec: Codable, Sendable {
     let threshold: OcaDBr
     let frequency: OcaFrequency
     let pollInterval: OcaPeriod
 }
 
-public enum OcaWaveformType: OcaUint8, Codable {
+public enum OcaWaveformType: OcaUint8, Codable, Sendable {
     case none = 0
     case dc = 1
     case sine = 2
@@ -112,13 +112,13 @@ public enum OcaWaveformType: OcaUint8, Codable {
     case polarityTest = 7
 }
 
-public enum OcaSweepType: OcaUint8, Codable {
+public enum OcaSweepType: OcaUint8, Codable, Sendable {
     case none = 0
     case linear = 1
     case logarithmic = 2
 }
 
-public enum OcaUnitOfMeasure: OcaUint8, Codable {
+public enum OcaUnitOfMeasure: OcaUint8, Codable, Sendable {
     case none = 0
     case hertz = 1
     case degreeCelsius = 2
@@ -127,7 +127,7 @@ public enum OcaUnitOfMeasure: OcaUint8, Codable {
     case ohm = 5
 }
 
-public enum OcaPresentationUnit: OcaUint8, Codable {
+public enum OcaPresentationUnit: OcaUint8, Codable, Sendable {
     case dBu = 0
     case dBV = 1
     case V = 2
@@ -135,13 +135,13 @@ public enum OcaPresentationUnit: OcaUint8, Codable {
 
 public typealias OcaTemperature = OcaFloat32
 
-public enum OcaLevelDetectionLaw: OcaUint8, Codable {
+public enum OcaLevelDetectionLaw: OcaUint8, Codable, Sendable {
     case none = 0
     case rms = 1
     case peak = 2
 }
 
-public enum OcaLevelMeterLaw: OcaUint8, Codable {
+public enum OcaLevelMeterLaw: OcaUint8, Codable, Sendable {
     case vu = 1
     case standardVU = 2
     case ppm1 = 3

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaApplicationNetworkCommand: OcaUint8, Codable {
+public enum OcaApplicationNetworkCommand: OcaUint8, Codable, Sendable {
     case none = 0
     case prepare = 1
     case start = 2
@@ -23,7 +23,7 @@ public enum OcaApplicationNetworkCommand: OcaUint8, Codable {
     case reset = 5
 }
 
-public enum OcaApplicationNetworkState: OcaUint8, Codable {
+public enum OcaApplicationNetworkState: OcaUint8, Codable, Sendable {
     case unknown = 0
     case notReady = 1
     case readying = 2

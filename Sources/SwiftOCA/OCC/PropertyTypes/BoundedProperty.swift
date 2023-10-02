@@ -20,8 +20,8 @@ import Foundation
 import SwiftUI
 #endif
 
-public struct OcaBoundedPropertyValue<Value: Codable & Comparable>: Codable,
-    OcaParameterCountReflectable
+public struct OcaBoundedPropertyValue<Value: Codable & Comparable & Sendable>: Codable,
+    Sendable, OcaParameterCountReflectable
 {
     public static var responseParameterCount: OcaUint8 { 3 }
 
@@ -84,8 +84,8 @@ public extension OcaBoundedPropertyValue where Value: BinaryFloatingPoint {
 }
 
 @propertyWrapper
-public struct OcaBoundedProperty<Value: Codable & Comparable>: OcaPropertyChangeEventNotifiable,
-    Codable
+public struct OcaBoundedProperty<Value: Codable & Comparable & Sendable>: OcaPropertyChangeEventNotifiable,
+    Codable, Sendable
 {
     var subject: AsyncCurrentValueSubject<State> { _storage.subject }
 
