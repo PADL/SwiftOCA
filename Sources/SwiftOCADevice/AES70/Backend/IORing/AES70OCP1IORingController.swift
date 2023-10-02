@@ -26,9 +26,9 @@ import IORingUtils
 import SwiftOCA
 
 protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equatable, Hashable {
-    typealias ControllerMessage = @Sendable (Ocp1Message, Bool)
+    typealias ControllerMessage = (Ocp1Message, Bool)
 
-        var peerAddress: AnySocketAddress { get }
+    var peerAddress: AnySocketAddress { get }
     var keepAliveInterval: UInt64 { get set }
     var keepAliveTask: Task<(), Error>? { get set }
     var lastMessageReceivedTime: Date { get set }
