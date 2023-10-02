@@ -54,7 +54,9 @@ extension OcaPropertySubjectRepresentable {
 }
 
 @propertyWrapper
-public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable, OcaPropertyChangeEventNotifiable {
+public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
+    OcaPropertyChangeEventNotifiable
+{
     /// All property IDs supported by this property
     public var propertyIDs: [OcaPropertyID] {
         [propertyID]

@@ -90,7 +90,9 @@ public enum OcaStatus: OcaUint8, Codable, Sendable {
     case bufferOverflow = 14
 }
 
-public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable, CustomStringConvertible {
+public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
+    CustomStringConvertible
+{
     let defLevel: OcaUint16
     let propertyIndex: OcaUint16
 

@@ -43,7 +43,9 @@ extension OcaDevicePropertyRepresentable {
 }
 
 @propertyWrapper
-public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRepresentable, Sendable {
+public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRepresentable,
+    Sendable
+{
     var subject: AsyncCurrentValueSubject<Value>
 
     /// The OCA property ID

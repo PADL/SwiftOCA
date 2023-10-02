@@ -154,7 +154,9 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
                             Task {
                                 let controller =
                                     try await AES70OCP1IORingStreamController(socket: client)
-                                debugPrint("AES70OCP1IORingStreamDeviceEndpoint: new stream client \(controller)")
+                                debugPrint(
+                                    "AES70OCP1IORingStreamDeviceEndpoint: new stream client \(controller)"
+                                )
                                 await handleController(controller)
                             }
                         }
@@ -165,7 +167,9 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
                         await self.stop()
                     }
                 } catch Errno.canceled {
-                    debugPrint("AES70OCP1IORingStreamDeviceEndpoint: received cancelation, trying to accept() again")
+                    debugPrint(
+                        "AES70OCP1IORingStreamDeviceEndpoint: received cancelation, trying to accept() again"
+                    )
                 } catch {
                     print("AES70OCP1IORingStreamDeviceEndpoint: received error \(error), bailing")
                     throw error
@@ -179,7 +183,8 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
     override public func stop(timeout: TimeInterval = 0) async {
         await super.stop(timeout: timeout)
         state?.task.cancel()
-        // we're not going to explicitly close the socket, we'll just wait for its refcount to be zero
+        // we're not going to explicitly close the socket, we'll just wait for its refcount to be
+        // zero
         state = nil
     }
 
@@ -278,7 +283,8 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
     override public func stop(timeout: TimeInterval = 0) async {
         await super.stop(timeout: timeout)
         state?.task.cancel()
-        // we're not going to explicitly close the socket, we'll just wait for its refcount to be zero
+        // we're not going to explicitly close the socket, we'll just wait for its refcount to be
+        // zero
         state = nil
     }
 

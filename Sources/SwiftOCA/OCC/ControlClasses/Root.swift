@@ -24,11 +24,12 @@ import OpenCombine
 protocol ObservableObject {} // placeholder
 #endif
 
-open class OcaRoot: CustomStringConvertible, ObservableObject, @unchecked Sendable {
+open class OcaRoot: CustomStringConvertible, ObservableObject, @unchecked
+Sendable {
     typealias Root = OcaRoot
 
     public internal(set) weak var connectionDelegate: AES70OCP1Connection?
-    //public var objectNumberMapper: OcaObjectNumberMapper = OcaIdentityObjectNumberMapper.shared
+    // public var objectNumberMapper: OcaObjectNumberMapper = OcaIdentityObjectNumberMapper.shared
 
     // 1.1
     open class var classID: OcaClassID { OcaClassID("1") }

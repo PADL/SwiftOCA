@@ -84,7 +84,10 @@ public extension OcaBoundedPropertyValue where Value: BinaryFloatingPoint {
 }
 
 @propertyWrapper
-public struct OcaBoundedProperty<Value: Codable & Comparable & Sendable>: OcaPropertyChangeEventNotifiable,
+public struct OcaBoundedProperty<
+    Value: Codable & Comparable &
+        Sendable
+>: OcaPropertyChangeEventNotifiable,
     Codable, Sendable
 {
     var subject: AsyncCurrentValueSubject<State> { _storage.subject }

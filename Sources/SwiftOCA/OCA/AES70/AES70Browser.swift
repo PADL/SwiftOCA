@@ -22,7 +22,8 @@ import Foundation
 extension NetService: @unchecked
 Sendable {}
 
-public class AES70Browser: NSObject, NetServiceBrowserDelegate, @unchecked Sendable {
+public class AES70Browser: NSObject, NetServiceBrowserDelegate, @unchecked
+Sendable {
     public enum ServiceType: String, Sendable {
         case tcp = "_oca._tcp."
         case tcpSecure = "_ocasec._tcp."
