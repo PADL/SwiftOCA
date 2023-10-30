@@ -169,6 +169,22 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible {
         fields = parent.fields + [integer]
     }
 
+    private init(parent: OcaClassID, authority: OcaOrganizationID, _ extraFields: [OcaUint16]) {
+        fields = parent.fields + [
+            Self.ProprietaryClassField,
+            OcaUint16(authority.id.0),
+            OcaUint16(authority.id.1 << 8 | authority.id.2),
+        ] + extraFields
+    }
+
+    public init(parent: OcaClassID, authority: OcaOrganizationID, _ string: String) {
+        self.init(parent: parent, authority: authority, OcaClassID(string).fields)
+    }
+
+    public init(parent: OcaClassID, authority: OcaOrganizationID, _ integer: OcaUint16) {
+        self.init(parent: parent, authority: authority, [integer])
+    }
+
     public var parent: OcaClassID? {
         guard fieldCount > 1 else {
             return nil
