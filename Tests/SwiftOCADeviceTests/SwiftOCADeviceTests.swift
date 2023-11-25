@@ -25,6 +25,7 @@ class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
 final class SwiftOCADeviceTests: XCTestCase {
     func testLoopbackDevice() async throws {
         let device = AES70Device.shared
+        try await device.initializeDefaultObjects()
         let listener = try await AES70LocalDeviceEndpoint()
 
         let matrix = try await SwiftOCADevice
