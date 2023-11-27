@@ -75,6 +75,16 @@ public actor AES70Device {
             precondition(object.objectNumber != OcaRootBlockONo)
             try await rootBlock.add(actionObject: object)
         }
+        if object is OcaManager, let deviceManager, deviceManager != object {
+            let classIdentification = object.objectIdentification.classIdentification
+            let managerDescriptor = OcaManagerDescriptor(
+                objectNumber: object.objectNumber,
+                name: object.description,
+                classID: classIdentification.classID,
+                classVersion: classIdentification.classVersion
+            )
+            deviceManager.managers.append(managerDescriptor)
+        }
     }
 
     public func handleCommand(
