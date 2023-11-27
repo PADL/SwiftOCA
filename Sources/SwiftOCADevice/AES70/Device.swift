@@ -47,8 +47,8 @@ public actor AES70Device {
             deviceDelegate: self,
             addToRootBlock: false
         )
-        rootBlock.type = 1
         subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
+        rootBlock.type = 1
         deviceManager = try await OcaDeviceManager(deviceDelegate: self)
     }
 
