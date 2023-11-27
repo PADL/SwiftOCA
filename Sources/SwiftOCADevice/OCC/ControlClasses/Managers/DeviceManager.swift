@@ -34,7 +34,7 @@ open class OcaDeviceManager: OcaManager {
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.3")
     )
-    public var serialNumber = UUID.platformUUID
+    public var serialNumber = getPlatformUUID()
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.3"),
@@ -124,25 +124,23 @@ open class OcaDeviceManager: OcaManager {
     }
 }
 
-extension UUID {
-    static var platformUUID: String {
-        #if canImport(Darwin)
-        let platformExpertDevice = IOServiceMatching("IOPlatformExpertDevice")
-        let platformExpert: io_service_t = IOServiceGetMatchingService(
-            kIOMasterPortDefault,
-            platformExpertDevice
-        )
-        let serialNumberAsCFString = IORegistryEntryCreateCFProperty(
-            platformExpert,
-            kIOPlatformUUIDKey as CFString,
-            kCFAllocatorDefault,
-            0
-        )
-        IOObjectRelease(platformExpert)
+private func getPlatformUUID() -> String {
+    #if canImport(Darwin)
+    let platformExpertDevice = IOServiceMatching("IOPlatformExpertDevice")
+    let platformExpert: io_service_t = IOServiceGetMatchingService(
+        kIOMasterPortDefault,
+        platformExpertDevice
+    )
+    let serialNumberAsCFString = IORegistryEntryCreateCFProperty(
+        platformExpert,
+        kIOPlatformUUIDKey as CFString,
+        kCFAllocatorDefault,
+        0
+    )
+    IOObjectRelease(platformExpert)
 
-        return serialNumberAsCFString?.takeUnretainedValue() as! String
-        #else
-        ""
-        #endif
-    }
+    return serialNumberAsCFString?.takeUnretainedValue() as! String
+    #else
+    ""
+    #endif
 }
