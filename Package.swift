@@ -97,7 +97,6 @@ let package = Package(
             name: "OCADevice",
             dependencies: [
                 "SwiftOCADevice",
-                .product(name: "FlyingSocks", package: "FlyingFox"),
             ],
             path: "Examples/OCADevice",
             swiftSettings: [

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import FlyingSocks
 import Foundation
 import SwiftOCA
 import SwiftOCADevice
@@ -22,20 +21,22 @@ import SwiftOCADevice
 @main
 public enum DeviceApp {
     static var testActuator: SwiftOCADevice.OcaBooleanActuator?
+    static let port: UInt16 = 65000
 
     public static func main() async throws {
-        var localAddress = sockaddr_in.inet(port: 65000)
-        var localAddressData = Data()
+        var listenAddress = sockaddr_in()
+        listenAddress.sin_family = sa_family_t(AF_INET)
+        listenAddress.sin_addr.s_addr = INADDR_ANY
+        listenAddress.sin_port = port.bigEndian
 
-        signal(SIGPIPE, SIG_IGN)
-
-        withUnsafeBytes(of: &localAddress) { bytes in
-            localAddressData = Data(bytes: bytes.baseAddress!, count: bytes.count)
+        var listenAddressData = Data()
+        withUnsafeBytes(of: &listenAddress) { bytes in
+            listenAddressData = Data(bytes: bytes.baseAddress!, count: bytes.count)
         }
 
         let device = AES70Device.shared
         try await device.initializeDefaultObjects()
-        let endpoint = try await AES70OCP1DeviceEndpoint(address: localAddressData)
+        let endpoint = try await AES70OCP1DeviceEndpoint(address: listenAddressData)
 
         class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
             override open class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
