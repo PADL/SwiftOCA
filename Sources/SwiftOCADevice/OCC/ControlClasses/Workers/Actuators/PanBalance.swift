@@ -31,5 +31,5 @@ open class OcaPanBalance: OcaActuator {
         getMethodID: OcaMethodID("4.3"),
         setMethodID: OcaMethodID("4.4")
     )
-    public var midpointGain = OcaBoundedPropertyValue<OcaFloat32>(value: -3.0, in: -3.0 ... -3.0)
+    public var midpointGain = OcaBoundedPropertyValue<OcaFloat32>(value: 0.0, in: 0.0 ... 0.0)
 }
