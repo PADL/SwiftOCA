@@ -36,7 +36,12 @@ public enum DeviceApp {
 
         let device = AES70Device.shared
         try await device.initializeDefaultObjects()
-        let endpoint = try await AES70OCP1DeviceEndpoint(address: listenAddressData)
+#if os(Linux)
+        let streamEndpoint = try await AES70OCP1IORingStreamDeviceEndpoint(address: listenAddressData)
+        let datagramEndpoint = try await AES70OCP1IORingDatagramDeviceEndpoint(address: listenAddressData)
+#else
+        let streamEndpoint = try await AES70OCP1DeviceEndpoint(address: listenAddressData)
+#endif
 
         class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
             override open class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
@@ -61,7 +66,17 @@ public enum DeviceApp {
         }
 
         // NB: we still need to add objects to the root block because they must have containing block
-        print("Starting OCP.1 endpoint \(endpoint)...")
-        try await endpoint.start()
+        await withThrowingTaskGroup(of: Void.self) { taskGroup in
+            taskGroup.addTask {
+                print("Starting OCP.1 stream endpoint \(streamEndpoint)...")
+                try await streamEndpoint.start()
+            }
+#if os(Linux)
+            taskGroup.addTask {
+                print("Starting OCP.1 datagram endpoint \(datagramEndpoint)...")
+                try await datagramEndpoint.start()
+            }
+#endif
+        }
     }
 }
