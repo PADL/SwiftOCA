@@ -118,15 +118,6 @@ public enum OcaSweepType: OcaUint8, Codable, Sendable {
     case logarithmic = 2
 }
 
-public enum OcaUnitOfMeasure: OcaUint8, Codable, Sendable {
-    case none = 0
-    case hertz = 1
-    case degreeCelsius = 2
-    case volt = 3
-    case ampere = 4
-    case ohm = 5
-}
-
 public enum OcaPresentationUnit: OcaUint8, Codable, Sendable {
     case dBu = 0
     case dBV = 1
@@ -150,4 +141,10 @@ public enum OcaLevelMeterLaw: OcaUint8, Codable, Sendable {
     case rms = 6
     case peak = 7
     case proprietaryValueBase = 128
+}
+
+public enum OcaSamplingRateConverterType: OcaUint8, Codable, Sendable {
+    case none = 0
+    case synchronous = 1
+    case asynchronous = 2
 }

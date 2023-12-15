@@ -40,8 +40,6 @@ public typealias OcaSessionID = OcaUint16
 
 public typealias OcaClassVersionNumber = OcaUint16
 
-public typealias OcaTimeInterval = TimeInterval
-
 public typealias OcaList = Array
 public typealias OcaMap = Dictionary
 public typealias OcaMultiMap<K: Hashable, V> = OcaMap<K, [V]>
@@ -120,7 +118,7 @@ public enum OcaPortMode: OcaUint8, Codable, Sendable {
     case output = 2
 }
 
-public struct OcaPortID: Codable, Sendable {
+public struct OcaPortID: Codable, Sendable, Hashable {
     public let mode: OcaPortMode
     public let index: OcaUint16
 }
@@ -344,4 +342,25 @@ public struct OcaOrganizationID: Codable, Sendable, CustomStringConvertible {
     public var description: String {
         String(format: "%02X%02X%02X", id.0, id.1, id.2)
     }
+}
+
+public enum OcaLockState: OcaUint8, Codable, Sendable {
+    case noLock = 0
+    case lockNoWrite = 1
+    case lockNoReadWrite = 2
+}
+
+public typealias OcaID16 = OcaUint16
+public typealias OcaID32 = OcaUint32
+
+public typealias OcaInterval = Range
+
+public typealias OcaJsonValue = OcaString
+public typealias OcaParameterRecord = OcaJsonValue
+
+public typealias OcaMimeType = OcaString
+
+public enum OcaSecurityType: OcaUint8, Codable, Sendable {
+    case none = 0
+    case `default` = 1
 }

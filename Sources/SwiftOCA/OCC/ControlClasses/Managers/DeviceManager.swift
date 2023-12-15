@@ -49,6 +49,7 @@ public enum OcaResetCause: OcaUint16, Sendable, Codable {
 
 open class OcaDeviceManager: OcaManager {
     override public class var classID: OcaClassID { OcaClassID("1.3.1") }
+    override public class var classVersion: OcaClassVersionNumber { 3 }
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.1"),

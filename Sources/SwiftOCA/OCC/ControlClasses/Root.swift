@@ -38,7 +38,7 @@ Sendable {
     }
 
     // 1.2
-    open class var classVersion: OcaClassVersionNumber { 2 }
+    open class var classVersion: OcaClassVersionNumber { 3 }
     private var _classVersion: StaticProperty<OcaClassVersionNumber> {
         StaticProperty<OcaClassVersionNumber>(
             propertyIDs: [OcaPropertyID("1.2")],
@@ -75,6 +75,12 @@ Sendable {
     )
     public var role: OcaProperty<OcaString>.State
 
+    @OcaProperty(
+        propertyID: OcaPropertyID("1.6"),
+        getMethodID: OcaMethodID("1.7")
+    )
+    public var lockState: OcaProperty<OcaLockState>.State
+
     // necessary because property wrappers are private
     func _subscribeRole() async {
         await _role.subscribe(self)
@@ -107,7 +113,7 @@ Sendable {
         try await sendCommandRrq(methodID: OcaMethodID("1.4"))
     }
 
-    func lockReadOnly() async throws {
+    public func setLockNoWrite() async throws {
         try await sendCommandRrq(methodID: OcaMethodID("1.6"))
     }
 

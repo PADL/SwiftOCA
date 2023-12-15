@@ -45,3 +45,13 @@ public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable {
     let systemInterfaceParameters: OcaBlob
     let myNetworkAddress: OcaNetworkAddress
 }
+
+public typealias OcaAdaptationIdentifier = OcaString
+
+/*
+ public struct OcaNetworkAdvertisingMechanism: Codable, Sendable {
+     let service: OcaNetworkAdvertisingService
+     let parameters: OcaParameterRecord
+     let networkInterfaceAssignment: OcaNetworkInterfaceAssignment
+ }
+ */

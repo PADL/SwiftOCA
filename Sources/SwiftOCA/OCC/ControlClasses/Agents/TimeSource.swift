@@ -32,6 +32,21 @@ public enum OcaTimeProtocol: OcaUint8, Codable, Sendable {
     case genlock = 9
 }
 
+public enum OcaTimeDeliveryMechanism: OcaUint8, Codable, Sendable {
+    case undefined = 0
+    case none = 1
+    case `private` = 2
+    case ntp = 3
+    case sntp = 4
+    case ieee1588v1 = 5
+    case ieee1588v2 = 6
+    case ieee1588v2_1 = 7 // 2.1
+    case ieee8021AS = 8
+    case streamEndpoint = 9
+    case aes11 = 10
+    case expansionBase = 128
+}
+
 public typealias OcaSDPString = OcaString
 
 public enum OcaTimeReferenceType: OcaUint8, Codable, Sendable {
@@ -41,6 +56,9 @@ public enum OcaTimeReferenceType: OcaUint8, Codable, Sendable {
     case gps = 3
     case galileo = 4
     case glonass = 5
+    case beidou = 6
+    case inrss = 7
+    case _expansionBase = 128
 }
 
 public enum OcaTimeSourceSyncStatus: OcaUint8, Codable, Sendable {
@@ -48,6 +66,11 @@ public enum OcaTimeSourceSyncStatus: OcaUint8, Codable, Sendable {
     case unsynchronized = 1
     case synchronizing = 2
     case synchronized = 3
+}
+
+public struct OcaTimeDeliveryParameters_StreamEndpoint: Codable, Sendable {
+    public let endpointOwner: OcaONo
+    public let endpointID: OcaMediaStreamEndpointID
 }
 
 open class OcaTimeSource: OcaAgent {

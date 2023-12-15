@@ -42,6 +42,17 @@ Sendable {
         case unlocked
         case lockedNoWrite(AES70Controller.ID)
         case lockedNoReadWrite(AES70Controller.ID)
+
+        var lockState: OcaLockState {
+            switch self {
+            case .unlocked:
+                return .noLock
+            case .lockNoWrite:
+                return .lockNoWrite
+            case .lockedNoReadWrite:
+                return .lockNoReadWrite
+            }
+        }
     }
 
     var lockState: LockState = .unlocked
@@ -131,6 +142,8 @@ Sendable {
             return try encodeResponse(role)
         case OcaMethodID("1.6"):
             try lockNoWrite(controller: controller)
+        case OcaMethodID("1.7"):
+            return try encodeResponse(lockState.lockState)
         default:
             return try await handlePropertyAccessor(command, from: controller)
         }

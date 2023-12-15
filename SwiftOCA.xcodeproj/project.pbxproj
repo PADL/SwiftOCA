@@ -61,6 +61,22 @@
 		D36ECA212A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */; };
 		D36ECA2C2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */; };
 		D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */; };
+		D3AFD3342B2A505D00A72E9A /* AudioProcessingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3332B2A505D00A72E9A /* AudioProcessingManager.swift */; };
+		D3AFD3362B2A516C00A72E9A /* DeviceTimeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3352B2A516C00A72E9A /* DeviceTimeManager.swift */; };
+		D3AFD3382B2A52D500A72E9A /* TimeDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3372B2A52D500A72E9A /* TimeDataTypes.swift */; };
+		D3AFD33A2B2A558700A72E9A /* MediaClockDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3392B2A558700A72E9A /* MediaClockDataTypes.swift */; };
+		D3AFD33C2B2A566600A72E9A /* MediaStreamDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD33B2B2A566600A72E9A /* MediaStreamDataTypes.swift */; };
+		D3AFD3402B2A8CC000A72E9A /* MiscFrameworkDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD33F2B2A8CC000A72E9A /* MiscFrameworkDataTypes.swift */; };
+		D3AFD3422B2CE91B00A72E9A /* MediaClockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3412B2CE91B00A72E9A /* MediaClockManager.swift */; };
+		D3AFD3442B2CEA3800A72E9A /* LockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3432B2CEA3800A72E9A /* LockManager.swift */; };
+		D3AFD3462B2CED0800A72E9A /* DiagnosticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3452B2CED0800A72E9A /* DiagnosticManager.swift */; };
+		D3AFD3482B2CEE3500A72E9A /* MediaTransportApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3472B2CEE3500A72E9A /* MediaTransportApplication.swift */; };
+		D3AFD34A2B2CEE5B00A72E9A /* NetworkApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3492B2CEE5B00A72E9A /* NetworkApplication.swift */; };
+		D3AFD34C2B2CEF2B00A72E9A /* CounterDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD34B2B2CEF2B00A72E9A /* CounterDataTypes.swift */; };
+		D3AFD34E2B2CF11800A72E9A /* NetworkInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD34D2B2CF11800A72E9A /* NetworkInterface.swift */; };
+		D3AFD3502B2CF84E00A72E9A /* MediaClock3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD34F2B2CF84E00A72E9A /* MediaClock3.swift */; };
+		D3AFD3522B2D005E00A72E9A /* MediaTransportNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3512B2D005E00A72E9A /* MediaTransportNetwork.swift */; };
+		D3AFD3542B2D082B00A72E9A /* ControlNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3532B2D082B00A72E9A /* ControlNetwork.swift */; };
 		D3C0830F2A7B01AB0020AD57 /* libSwiftOCADevice.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */; };
 		D3C083162A7B021B0020AD57 /* SwiftOCADeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */; };
 		D3C083172A7B02360020AD57 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
@@ -266,6 +282,22 @@
 		D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1FlyingSocksConnection.swift; sourceTree = "<group>"; };
 		D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAddressToString.swift; sourceTree = "<group>"; };
+		D3AFD3332B2A505D00A72E9A /* AudioProcessingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProcessingManager.swift; sourceTree = "<group>"; };
+		D3AFD3352B2A516C00A72E9A /* DeviceTimeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTimeManager.swift; sourceTree = "<group>"; };
+		D3AFD3372B2A52D500A72E9A /* TimeDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeDataTypes.swift; sourceTree = "<group>"; };
+		D3AFD3392B2A558700A72E9A /* MediaClockDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClockDataTypes.swift; sourceTree = "<group>"; };
+		D3AFD33B2B2A566600A72E9A /* MediaStreamDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStreamDataTypes.swift; sourceTree = "<group>"; };
+		D3AFD33F2B2A8CC000A72E9A /* MiscFrameworkDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiscFrameworkDataTypes.swift; sourceTree = "<group>"; };
+		D3AFD3412B2CE91B00A72E9A /* MediaClockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClockManager.swift; sourceTree = "<group>"; };
+		D3AFD3432B2CEA3800A72E9A /* LockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockManager.swift; sourceTree = "<group>"; };
+		D3AFD3452B2CED0800A72E9A /* DiagnosticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticManager.swift; sourceTree = "<group>"; };
+		D3AFD3472B2CEE3500A72E9A /* MediaTransportApplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MediaTransportApplication.swift; path = Sources/SwiftOCA/OCC/ControlClasses/Managers/MediaTransportApplication.swift; sourceTree = SOURCE_ROOT; };
+		D3AFD3492B2CEE5B00A72E9A /* NetworkApplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NetworkApplication.swift; path = Sources/SwiftOCA/OCC/ControlClasses/Managers/NetworkApplication.swift; sourceTree = SOURCE_ROOT; };
+		D3AFD34B2B2CEF2B00A72E9A /* CounterDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterDataTypes.swift; sourceTree = "<group>"; };
+		D3AFD34D2B2CF11800A72E9A /* NetworkInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NetworkInterface.swift; path = Sources/SwiftOCA/OCC/ControlDataTypes/NetworkInterface.swift; sourceTree = SOURCE_ROOT; };
+		D3AFD34F2B2CF84E00A72E9A /* MediaClock3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClock3.swift; sourceTree = "<group>"; };
+		D3AFD3512B2D005E00A72E9A /* MediaTransportNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MediaTransportNetwork.swift; path = Sources/SwiftOCA/OCC/ControlClasses/ApplicationNetworks/MediaTransportNetwork.swift; sourceTree = SOURCE_ROOT; };
+		D3AFD3532B2D082B00A72E9A /* ControlNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlNetwork.swift; sourceTree = "<group>"; };
 		D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftOCADeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftOCADeviceTests.swift; sourceTree = "<group>"; };
 		D3C083182A7B0D2C0020AD57 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
@@ -655,7 +687,9 @@
 		D3C0832A2A7C73860020AD57 /* ApplicationNetworks */ = {
 			isa = PBXGroup;
 			children = (
+				D3AFD3512B2D005E00A72E9A /* MediaTransportNetwork.swift */,
 				D3C0832B2A7C73960020AD57 /* ApplicationNetwork.swift */,
+				D3AFD3532B2D082B00A72E9A /* ControlNetwork.swift */,
 			);
 			path = ApplicationNetworks;
 			sourceTree = "<group>";
@@ -764,6 +798,8 @@
 			children = (
 				D3E6E1762A3ACA6C00BF7095 /* ApplicationNetworkDataTypes.swift */,
 				D3E6E1812A3ACA6C00BF7095 /* BaseDataTypes.swift */,
+				D3AFD34B2B2CEF2B00A72E9A /* CounterDataTypes.swift */,
+				D3AFD3372B2A52D500A72E9A /* TimeDataTypes.swift */,
 				D3E6E1742A3ACA6C00BF7095 /* EventDataTypes.swift */,
 				D3E6E1782A3ACA6C00BF7095 /* ManagerDataTypes.swift */,
 				D3C083282A7C700B0020AD57 /* MediaDataTypes.swift */,
@@ -772,6 +808,9 @@
 				D3E6E17D2A3ACA6C00BF7095 /* SearchDataTypes.swift */,
 				D3E6E17E2A3ACA6C00BF7095 /* WellKnownObjectNumbers.swift */,
 				D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */,
+				D3AFD3392B2A558700A72E9A /* MediaClockDataTypes.swift */,
+				D3AFD33B2B2A566600A72E9A /* MediaStreamDataTypes.swift */,
+				D3AFD33F2B2A8CC000A72E9A /* MiscFrameworkDataTypes.swift */,
 			);
 			path = ControlDataTypes;
 			sourceTree = "<group>";
@@ -797,8 +836,13 @@
 				D3E6E1862A3ACA6C00BF7095 /* Manager.swift */,
 				D3E6E1872A3ACA6C00BF7095 /* LibraryManager.swift */,
 				D3E6E1882A3ACA6C00BF7095 /* DeviceManager.swift */,
+				D3AFD3432B2CEA3800A72E9A /* LockManager.swift */,
+				D3AFD3452B2CED0800A72E9A /* DiagnosticManager.swift */,
 				D3E6E2772A417AF000BF7095 /* NetworkManager.swift */,
 				D3E6E1852A3ACA6C00BF7095 /* SubscriptionManager.swift */,
+				D3AFD3332B2A505D00A72E9A /* AudioProcessingManager.swift */,
+				D3AFD3352B2A516C00A72E9A /* DeviceTimeManager.swift */,
+				D3AFD3412B2CE91B00A72E9A /* MediaClockManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -810,6 +854,7 @@
 				D3E6E18C2A3ACA6C00BF7095 /* EventHandler.swift */,
 				D306556C2A524D720083F093 /* PhysicalPosition.swift */,
 				D306556E2A5254D70083F093 /* TimeSource.swift */,
+				D3AFD34F2B2CF84E00A72E9A /* MediaClock3.swift */,
 			);
 			path = Agents;
 			sourceTree = "<group>";
@@ -817,6 +862,9 @@
 		D3E6E18D2A3ACA6C00BF7095 /* Networks */ = {
 			isa = PBXGroup;
 			children = (
+				D3AFD3472B2CEE3500A72E9A /* MediaTransportApplication.swift */,
+				D3AFD3492B2CEE5B00A72E9A /* NetworkApplication.swift */,
+				D3AFD34D2B2CF11800A72E9A /* NetworkInterface.swift */,
 			);
 			path = Networks;
 			sourceTree = "<group>";
@@ -1312,12 +1360,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D3AFD34C2B2CEF2B00A72E9A /* CounterDataTypes.swift in Sources */,
 				D3E6E2782A417AF000BF7095 /* NetworkManager.swift in Sources */,
 				D3E6E1B52A3ACA7B00BF7095 /* AES70OCP1Connection+Subscribe.swift in Sources */,
 				D3E6E1C42A3ACA8C00BF7095 /* Worker.swift in Sources */,
+				D3AFD3342B2A505D00A72E9A /* AudioProcessingManager.swift in Sources */,
 				D3E6E1C52A3ACA8C00BF7095 /* Block.swift in Sources */,
 				D3E6E1E82A3ACAAD00BF7095 /* Data+Hex.swift in Sources */,
+				D3AFD3362B2A516C00A72E9A /* DeviceTimeManager.swift in Sources */,
 				D306556F2A5254D70083F093 /* TimeSource.swift in Sources */,
+				D3AFD3442B2CEA3800A72E9A /* LockManager.swift in Sources */,
 				D3E6E1BF2A3ACA8200BF7095 /* Header.swift in Sources */,
 				D3E6E1C02A3ACA8200BF7095 /* KeepAlive.swift in Sources */,
 				D3C0832C2A7C73960020AD57 /* ApplicationNetwork.swift in Sources */,
@@ -1336,15 +1388,20 @@
 				D3E6E1CB2A3ACA9000BF7095 /* Switch.swift in Sources */,
 				D3E6E1B72A3ACA7B00BF7095 /* AES70OCP1Connection+Messages.swift in Sources */,
 				D3DA69EE2A3DD350001250A1 /* Task+Timeout.swift in Sources */,
+				D3AFD3462B2CED0800A72E9A /* DiagnosticManager.swift in Sources */,
 				D3E6E1BA2A3ACA7B00BF7095 /* AES70OCP1ConnectionMonitor.swift in Sources */,
 				D352C1D22A7FB1F6009FF7CD /* AES70OCP1SPIConnection.swift in Sources */,
 				D3E6E1E42A3ACAA900BF7095 /* NetworkDataTypes.swift in Sources */,
+				D3AFD34A2B2CEE5B00A72E9A /* NetworkApplication.swift in Sources */,
 				D3E6E1CE2A3ACA9600BF7095 /* Sensor.swift in Sources */,
+				D3AFD34E2B2CF11800A72E9A /* NetworkInterface.swift in Sources */,
 				D3E6E1CF2A3ACA9600BF7095 /* BasicSensors.swift in Sources */,
 				D3E6E1DB2A3ACAA900BF7095 /* EventDataTypes.swift in Sources */,
 				D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */,
 				D3E6E1E22A3ACAA900BF7095 /* SearchDataTypes.swift in Sources */,
+				D3AFD3502B2CF84E00A72E9A /* MediaClock3.swift in Sources */,
 				D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */,
+				D3AFD3482B2CEE3500A72E9A /* MediaTransportApplication.swift in Sources */,
 				D3C083292A7C700B0020AD57 /* MediaDataTypes.swift in Sources */,
 				D3E6E1D12A3ACA9A00BF7095 /* EventHandler.swift in Sources */,
 				D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */,
@@ -1352,22 +1409,28 @@
 				D3E6E1C82A3ACA9000BF7095 /* Gain.swift in Sources */,
 				D3E6E1B62A3ACA7B00BF7095 /* AES70ClassRegistry.swift in Sources */,
 				D3E6E1C62A3ACA9000BF7095 /* BasicActuators.swift in Sources */,
+				D3AFD3522B2D005E00A72E9A /* MediaTransportNetwork.swift in Sources */,
 				D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */,
 				D3E6E1DD2A3ACAA900BF7095 /* List2D.swift in Sources */,
 				D36ECA212A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift in Sources */,
+				D3AFD3422B2CE91B00A72E9A /* MediaClockManager.swift in Sources */,
 				D3E6E1BB2A3ACA7B00BF7095 /* AES70OCP1Connection.swift in Sources */,
 				D3E6E1D22A3ACA9E00BF7095 /* SubscriptionManager.swift in Sources */,
+				D3AFD33A2B2A558700A72E9A /* MediaClockDataTypes.swift in Sources */,
 				D3E6E1BC2A3ACA7E00BF7095 /* Errors.swift in Sources */,
+				D3AFD3542B2D082B00A72E9A /* ControlNetwork.swift in Sources */,
 				D3F2942A2A95D31400D7F0CD /* ObjectNumberMapper.swift in Sources */,
 				D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */,
 				D30644062A770B640063DA65 /* Notification2.swift in Sources */,
 				D3E6E1C72A3ACA9000BF7095 /* Actuator.swift in Sources */,
 				D3E6E1DF2A3ACAA900BF7095 /* ModelDataTypes.swift in Sources */,
 				D3E6E1E12A3ACAA900BF7095 /* ManagerDataTypes.swift in Sources */,
+				D3AFD3382B2A52D500A72E9A /* TimeDataTypes.swift in Sources */,
 				D3E6E1E72A3ACAAD00BF7095 /* Data+IntegerCodable.swift in Sources */,
 				D3E6E1D42A3ACA9E00BF7095 /* LibraryManager.swift in Sources */,
 				D3E6E1D02A3ACA9A00BF7095 /* Agent.swift in Sources */,
 				D3E6E1DC2A3ACAA900BF7095 /* BoundedProperty.swift in Sources */,
+				D3AFD33C2B2A566600A72E9A /* MediaStreamDataTypes.swift in Sources */,
 				D306556D2A524D720083F093 /* PhysicalPosition.swift in Sources */,
 				D3E6E1C92A3ACA9000BF7095 /* Polarity.swift in Sources */,
 				D3E6E1D32A3ACA9E00BF7095 /* DeviceManager.swift in Sources */,
@@ -1375,6 +1438,7 @@
 				D3E6E1BD2A3ACA8200BF7095 /* Response.swift in Sources */,
 				D3E6E1E52A3ACAA900BF7095 /* LengthTaggedData.swift in Sources */,
 				D3E6E1CD2A3ACA9600BF7095 /* LevelSensor.swift in Sources */,
+				D3AFD3402B2A8CC000A72E9A /* MiscFrameworkDataTypes.swift in Sources */,
 				D3E6E1C12A3ACA8200BF7095 /* Notification1.swift in Sources */,
 				D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */,
 				D3E6E1DE2A3ACAA900BF7095 /* WellKnownObjectNumbers.swift in Sources */,
