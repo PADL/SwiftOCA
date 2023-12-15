@@ -47,7 +47,7 @@ Sendable {
             switch self {
             case .unlocked:
                 return .noLock
-            case .lockNoWrite:
+            case .lockedNoWrite:
                 return .lockNoWrite
             case .lockedNoReadWrite:
                 return .lockNoReadWrite
