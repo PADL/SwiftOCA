@@ -36,12 +36,14 @@ public enum DeviceApp {
 
         let device = AES70Device.shared
         try await device.initializeDefaultObjects()
-#if os(Linux)
-        let streamEndpoint = try await AES70OCP1IORingStreamDeviceEndpoint(address: listenAddressData)
-        let datagramEndpoint = try await AES70OCP1IORingDatagramDeviceEndpoint(address: listenAddressData)
-#else
+        #if os(Linux)
+        let streamEndpoint =
+            try await AES70OCP1IORingStreamDeviceEndpoint(address: listenAddressData)
+        let datagramEndpoint =
+            try await AES70OCP1IORingDatagramDeviceEndpoint(address: listenAddressData)
+        #else
         let streamEndpoint = try await AES70OCP1DeviceEndpoint(address: listenAddressData)
-#endif
+        #endif
 
         class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
             override open class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
@@ -71,12 +73,12 @@ public enum DeviceApp {
                 print("Starting OCP.1 stream endpoint \(streamEndpoint)...")
                 try await streamEndpoint.start()
             }
-#if os(Linux)
+            #if os(Linux)
             taskGroup.addTask {
                 print("Starting OCP.1 datagram endpoint \(datagramEndpoint)...")
                 try await datagramEndpoint.start()
             }
-#endif
+            #endif
         }
     }
 }
