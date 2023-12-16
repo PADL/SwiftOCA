@@ -265,28 +265,28 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         // 3.3 ConstructBlockUsingFactory
         // 3.4 DeleteMember
         case OcaMethodID("3.5"):
-            try await ensureReadable(by: controller)
+            try await ensureReadable(by: controller, command: command)
             let actionObjects = actionObjects.map(\.objectIdentification)
             return try encodeResponse(actionObjects)
         case OcaMethodID("3.6"):
-            try await ensureReadable(by: controller)
+            try await ensureReadable(by: controller, command: command)
             let actionObjects: [OcaBlockMember] =
                 try await getActionObjectsRecursive(from: controller)
             return try encodeResponse(actionObjects)
         case OcaMethodID("3.7"):
-            try await ensureWritable(by: controller)
+            try await ensureWritable(by: controller, command: command)
             let path: OcaSignalPath = try decodeCommand(command)
             let index = try await add(signalPath: path)
             return try encodeResponse(index)
         case OcaMethodID("3.8"):
-            try await ensureWritable(by: controller)
+            try await ensureWritable(by: controller, command: command)
             let index: OcaUint16 = try decodeCommand(command)
             try await remove(signalPathAt: index)
         case OcaMethodID("3.9"):
-            try await ensureReadable(by: controller)
+            try await ensureReadable(by: controller, command: command)
             return try encodeResponse(signalPaths)
         case OcaMethodID("3.10"):
-            try await ensureReadable(by: controller)
+            try await ensureReadable(by: controller, command: command)
             let signalPaths: [OcaUint16: OcaSignalPath] =
                 try await getSignalPathsRecursive(from: controller)
             return try encodeResponse(signalPaths)

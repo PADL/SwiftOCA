@@ -25,20 +25,21 @@ public class OcaSubscriptionManager: OcaManager {
 
     var objectsChangedWhilstNotificationsDisabled = Set<OcaONo>()
 
-    func addSubscription(
+    private func addSubscription(
         _ subscription: SwiftOCA.OcaSubscriptionManager.AddSubscriptionParameters,
-        from controller: any AES70Controller
+        from controller: any AES70Controller,
+        command: Ocp1Command
     ) async throws {
-        try await ensureWritable(by: controller)
+        try await ensureWritable(by: controller, command: command)
         try await controller.addSubscription(.subscription(subscription))
     }
 
-    func removeSubscription(
+    private func removeSubscription(
         _ subscription: SwiftOCA.OcaSubscriptionManager.RemoveSubscriptionParameters,
-        from controller: any AES70Controller
+        from controller: any AES70Controller,
+        command: Ocp1Command
     ) async throws {
-        try await ensureWritable(by: controller)
-
+        try await ensureWritable(by: controller, command: command)
         try await controller.removeSubscription(
             subscription.event,
             property: nil,
@@ -46,19 +47,21 @@ public class OcaSubscriptionManager: OcaManager {
         )
     }
 
-    func addPropertyChangeSubscription(
+    private func addPropertyChangeSubscription(
         _ subscription: SwiftOCA.OcaSubscriptionManager.AddPropertyChangeSubscriptionParameters,
-        from controller: any AES70Controller
+        from controller: any AES70Controller,
+        command: Ocp1Command
     ) async throws {
-        try await ensureWritable(by: controller)
+        try await ensureWritable(by: controller, command: command)
         try await controller.addSubscription(.propertyChangeSubscription(subscription))
     }
 
-    func removePropertyChangeSubscription(
+    private func removePropertyChangeSubscription(
         _ subscription: SwiftOCA.OcaSubscriptionManager.RemovePropertyChangeSubscriptionParameters,
-        from controller: any AES70Controller
+        from controller: any AES70Controller,
+        command: Ocp1Command
     ) async throws {
-        try await ensureWritable(by: controller)
+        try await ensureWritable(by: controller, command: command)
         try await controller.removeSubscription(
             OcaEvent(emitterONo: subscription.emitter, eventID: OcaPropertyChangedEventID),
             property: subscription.property,
@@ -66,8 +69,11 @@ public class OcaSubscriptionManager: OcaManager {
         )
     }
 
-    func disableNotifications(from controller: any AES70Controller) async throws {
-        try await ensureWritable(by: controller)
+    private func disableNotifications(
+        from controller: any AES70Controller,
+        command: Ocp1Command
+    ) async throws {
+        try await ensureWritable(by: controller, command: command)
         state = .eventsDisabled
         let event = OcaEvent(
             emitterONo: objectNumber,
@@ -76,8 +82,11 @@ public class OcaSubscriptionManager: OcaManager {
         try await deviceDelegate?.notifySubscribers(event)
     }
 
-    func reenableNotifications(from controller: any AES70Controller) async throws {
-        try await ensureWritable(by: controller)
+    private func reenableNotifications(
+        from controller: any AES70Controller,
+        command: Ocp1Command
+    ) async throws {
+        try await ensureWritable(by: controller, command: command)
         let event = OcaEvent(
             emitterONo: objectNumber,
             eventID: SwiftOCA.OcaSubscriptionManager.SynchronizeStateEventID
@@ -89,35 +98,39 @@ public class OcaSubscriptionManager: OcaManager {
         state = .normal
     }
 
-    func addSubscription2(
+    private func addSubscription2(
         _ subscription: SwiftOCA.OcaSubscriptionManager.AddSubscription2Parameters,
-        from controller: any AES70Controller
+        from controller: any AES70Controller,
+        command: Ocp1Command
     ) async throws {
-        try await ensureWritable(by: controller)
+        try await ensureWritable(by: controller, command: command)
         try await controller.addSubscription(.subscription2(subscription))
     }
 
-    func removeSubscription2(
+    private func removeSubscription2(
         _ subscription: SwiftOCA.OcaSubscriptionManager.RemoveSubscription2Parameters,
-        from controller: any AES70Controller
+        from controller: any AES70Controller,
+        command: Ocp1Command
     ) async throws {
-        try await ensureWritable(by: controller)
+        try await ensureWritable(by: controller, command: command)
         try await controller.removeSubscription(.subscription2(subscription))
     }
 
-    func addPropertyChangeSubscription2(
+    private func addPropertyChangeSubscription2(
         _ subscription: SwiftOCA.OcaSubscriptionManager.AddPropertyChangeSubscription2Parameters,
-        from controller: any AES70Controller
+        from controller: any AES70Controller,
+        command: Ocp1Command
     ) async throws {
-        try await ensureWritable(by: controller)
+        try await ensureWritable(by: controller, command: command)
         try await controller.addSubscription(.propertyChangeSubscription2(subscription))
     }
 
-    func removePropertyChangeSubscription2(
+    private func removePropertyChangeSubscription2(
         _ subscription: SwiftOCA.OcaSubscriptionManager.RemovePropertyChangeSubscription2Parameters,
-        from controller: any AES70Controller
+        from controller: any AES70Controller,
+        command: Ocp1Command
     ) async throws {
-        try await ensureWritable(by: controller)
+        try await ensureWritable(by: controller, command: command)
         try await controller.removeSubscription(.propertyChangeSubscription2(subscription))
     }
 
@@ -129,28 +142,36 @@ public class OcaSubscriptionManager: OcaManager {
         case OcaMethodID("3.1"):
             let subscription: SwiftOCA.OcaSubscriptionManager
                 .AddSubscriptionParameters = try decodeCommand(command)
-            try await addSubscription(subscription, from: controller)
+            try await addSubscription(subscription, from: controller, command: command)
             return Ocp1Response()
         case OcaMethodID("3.2"):
             let subscription: SwiftOCA.OcaSubscriptionManager
                 .RemoveSubscriptionParameters = try decodeCommand(command)
-            try await removeSubscription(subscription, from: controller)
+            try await removeSubscription(subscription, from: controller, command: command)
             return Ocp1Response()
         case OcaMethodID("3.3"):
-            try await disableNotifications(from: controller)
+            try await disableNotifications(from: controller, command: command)
             return Ocp1Response()
         case OcaMethodID("3.4"):
-            try await reenableNotifications(from: controller)
+            try await reenableNotifications(from: controller, command: command)
             return Ocp1Response()
         case OcaMethodID("3.5"):
             let subscription: SwiftOCA.OcaSubscriptionManager
                 .AddPropertyChangeSubscriptionParameters = try decodeCommand(command)
-            try await addPropertyChangeSubscription(subscription, from: controller)
+            try await addPropertyChangeSubscription(
+                subscription,
+                from: controller,
+                command: command
+            )
             return Ocp1Response()
         case OcaMethodID("3.6"):
             let subscription: SwiftOCA.OcaSubscriptionManager
                 .RemovePropertyChangeSubscriptionParameters = try decodeCommand(command)
-            try await removePropertyChangeSubscription(subscription, from: controller)
+            try await removePropertyChangeSubscription(
+                subscription,
+                from: controller,
+                command: command
+            )
             return Ocp1Response()
         case OcaMethodID("3.7"):
             // Returns maximum byte length of payload of EV1 subscriber context parameter that this
@@ -160,22 +181,30 @@ public class OcaSubscriptionManager: OcaManager {
         case OcaMethodID("3.8"):
             let subscription: SwiftOCA.OcaSubscriptionManager
                 .AddSubscription2Parameters = try decodeCommand(command)
-            try await addSubscription2(subscription, from: controller)
+            try await addSubscription2(subscription, from: controller, command: command)
             return Ocp1Response()
         case OcaMethodID("3.9"):
             let subscription: SwiftOCA.OcaSubscriptionManager
                 .RemoveSubscription2Parameters = try decodeCommand(command)
-            try await removeSubscription2(subscription, from: controller)
+            try await removeSubscription2(subscription, from: controller, command: command)
             return Ocp1Response()
         case OcaMethodID("3.10"):
             let subscription: SwiftOCA.OcaSubscriptionManager
                 .AddPropertyChangeSubscription2Parameters = try decodeCommand(command)
-            try await addPropertyChangeSubscription2(subscription, from: controller)
+            try await addPropertyChangeSubscription2(
+                subscription,
+                from: controller,
+                command: command
+            )
             return Ocp1Response()
         case OcaMethodID("3.11"):
             let subscription: SwiftOCA.OcaSubscriptionManager
                 .RemovePropertyChangeSubscription2Parameters = try decodeCommand(command)
-            try await removePropertyChangeSubscription2(subscription, from: controller)
+            try await removePropertyChangeSubscription2(
+                subscription,
+                from: controller,
+                command: command
+            )
             return Ocp1Response()
         default:
             return try await super.handleCommand(command, from: controller)

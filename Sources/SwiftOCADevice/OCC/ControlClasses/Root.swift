@@ -105,10 +105,10 @@ Sendable {
             let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
 
             if command.methodID == property.getMethodID {
-                try await ensureReadable(by: controller)
+                try await ensureReadable(by: controller, command: command)
                 return try await property.get(object: self)
             } else if command.methodID == property.setMethodID {
-                try await ensureWritable(by: controller)
+                try await ensureWritable(by: controller, command: command)
                 try await property.set(object: self, command: command)
                 return Ocp1Response()
             }
@@ -154,9 +154,12 @@ Sendable {
         false
     }
 
-    open func ensureReadable(by controller: any AES70Controller) async throws {
+    open func ensureReadable(
+        by controller: any AES70Controller,
+        command: Ocp1Command
+    ) async throws {
         if let deviceManager = await deviceDelegate?.deviceManager, deviceManager != self {
-            try await deviceManager.ensureReadable(by: controller)
+            try await deviceManager.ensureReadable(by: controller, command: command)
         }
 
         switch lockState {
@@ -171,9 +174,12 @@ Sendable {
         }
     }
 
-    open func ensureWritable(by controller: any AES70Controller) async throws {
+    open func ensureWritable(
+        by controller: any AES70Controller,
+        command: Ocp1Command
+    ) async throws {
         if let deviceManager = await deviceDelegate?.deviceManager, deviceManager != self {
-            try await deviceManager.ensureWritable(by: controller)
+            try await deviceManager.ensureWritable(by: controller, command: command)
         }
 
         switch lockState {
