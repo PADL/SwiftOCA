@@ -79,6 +79,19 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     )
     public var signalPaths = OcaMap<OcaUint16, OcaSignalPath>()
 
+    public func add(signalPath path: OcaSignalPath) async throws -> OcaUint16 {
+        let index: OcaUint16 = signalPaths.keys.sorted().last ?? 1
+        signalPaths[index] = path
+        return index
+    }
+
+    public func remove(signalPathAt index: OcaUint16) async throws {
+        if !signalPaths.keys.contains(index) {
+            throw Ocp1Error.status(.parameterOutOfRange)
+        }
+        signalPaths.removeValue(forKey: index)
+    }
+
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.4"),
         getMethodID: OcaMethodID("3.11")
@@ -263,16 +276,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         case OcaMethodID("3.7"):
             try await ensureWritable(by: controller)
             let path: OcaSignalPath = try decodeCommand(command)
-            let index: OcaUint16 = signalPaths.keys.sorted().last ?? 1
-            signalPaths[index] = path
+            let index = try await add(signalPath: path)
             return try encodeResponse(index)
         case OcaMethodID("3.8"):
             try await ensureWritable(by: controller)
             let index: OcaUint16 = try decodeCommand(command)
-            if !signalPaths.keys.contains(index) {
-                throw Ocp1Error.status(.parameterOutOfRange)
-            }
-            signalPaths.removeValue(forKey: index)
+            try await remove(signalPathAt: index)
         case OcaMethodID("3.9"):
             try await ensureReadable(by: controller)
             return try encodeResponse(signalPaths)
