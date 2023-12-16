@@ -100,6 +100,11 @@ public struct OcaMediaStreamEndpointStatus: Codable, Sendable {
      public let streamEndpoint: OcaMediaStreamEndpoint
      public let transportNetwork: OcaMediaTransportNetwork
       */
+
+    public init(state: OcaMediaStreamEndpointState, errorCode: OcaUint16) {
+        self.state = state
+        self.errorCode = errorCode
+    }
 }
 
 public enum OcaMediaFrameFormat: OcaUint8, Codable, Sendable {
@@ -114,11 +119,27 @@ public enum OcaMediaFrameFormat: OcaUint8, Codable, Sendable {
 
 public struct OcaMediaStreamMode: Codable, Sendable {
     public let frameFormat: OcaMediaFrameFormat
-    // public let encodingType: OcaMimeType
+    public let encodingType: OcaMimeType
     public let samplingRate: OcaFrequency
     public let channelCount: OcaUint16
     public let packetTime: OcaTimeInterval
     public let mediaStreamEndpoint: OcaMediaStreamEndpoint
+
+    public init(
+        frameFormat: OcaMediaFrameFormat,
+        encodingType: OcaMimeType,
+        samplingRate: OcaFrequency,
+        channelCount: OcaUint16,
+        packetTime: OcaTimeInterval,
+        mediaStreamEndpoint: OcaMediaStreamEndpoint
+    ) {
+        self.frameFormat = frameFormat
+        self.encodingType = encodingType
+        self.samplingRate = samplingRate
+        self.channelCount = channelCount
+        self.packetTime = packetTime
+        self.mediaStreamEndpoint = mediaStreamEndpoint
+    }
 }
 
 public struct OcaMediaStreamModeCapability: Codable, Sendable {
@@ -133,6 +154,32 @@ public struct OcaMediaStreamModeCapability: Codable, Sendable {
     public let packetTimeList: [OcaTimeInterval]
     public let packetTimeRange: Range<OcaTimeInterval>
     public let mediaStreamEndpoint: OcaMediaStreamEndpoint
+
+    public init(
+        id: OcaID16,
+        name: OcaString,
+        direction: OcaMediaStreamModeCapabilityDirection,
+        frameFormatList: [OcaMediaFrameFormat],
+        encodingTypeList: [OcaMimeType],
+        samplingRateList: [OcaFrequency],
+        channelCountList: [OcaUint16],
+        channelCountRange: Range<OcaUint16>,
+        packetTimeList: [OcaTimeInterval],
+        packetTimeRange: Range<OcaTimeInterval>,
+        mediaStreamEndpoint: OcaMediaStreamEndpoint
+    ) {
+        self.id = id
+        self.name = name
+        self.direction = direction
+        self.frameFormatList = frameFormatList
+        self.encodingTypeList = encodingTypeList
+        self.samplingRateList = samplingRateList
+        self.channelCountList = channelCountList
+        self.channelCountRange = channelCountRange
+        self.packetTimeList = packetTimeList
+        self.packetTimeRange = packetTimeRange
+        self.mediaStreamEndpoint = mediaStreamEndpoint
+    }
 }
 
 public enum OcaMediaStreamModeCapabilityDirection: OcaUint8, Codable, Sendable {
@@ -154,6 +201,26 @@ public struct OcaMediaTransportSession: Codable, Sendable {
      public let transportSessionConnection: OcaMediaTransportSessionConnection
      public let transportSessionAgent: OcaMediaTransportSessionAgent
      */
+
+    public init(
+        idInternal: OcaMediaTransportSessionID,
+        idExternal: OcaBlob,
+        userLabel: OcaString,
+        streamingEnabled: OcaBoolean,
+        adaptationData: OcaAdaptationData,
+        connections: [OcaMediaTransportSessionConnection],
+        connectionStates: [
+            OcaMediaTransportSessionConnectionID: OcaMediaTransportSessionConnectionState,
+        ]
+    ) {
+        self.idInternal = idInternal
+        self.idExternal = idExternal
+        self.userLabel = userLabel
+        self.streamingEnabled = streamingEnabled
+        self.adaptationData = adaptationData
+        self.connections = connections
+        self.connectionStates = connectionStates
+    }
 }
 
 public struct OcaMediaTransportSessionConnection: Codable, Sendable {
@@ -163,6 +230,16 @@ public struct OcaMediaTransportSessionConnection: Codable, Sendable {
     /*
      public let mediaTransportSession: OcaMediaTransportSession
      */
+
+    public init(
+        id: OcaMediaTransportSessionConnectionID,
+        localEndpointID: OcaMediaStreamEndpointID,
+        remoteEndpointID: OcaBlob
+    ) {
+        self.id = id
+        self.localEndpointID = localEndpointID
+        self.remoteEndpointID = remoteEndpointID
+    }
 }
 
 public typealias OcaMediaTransportSessionConnectionID = OcaUint32
@@ -170,6 +247,14 @@ public typealias OcaMediaTransportSessionConnectionID = OcaUint32
 public struct OcaMediaTransportSessionConnectionState: Codable, Sendable {
     public let localEndpointState: OcaMediaStreamEndpointState
     public let remoteEndpointState: OcaMediaStreamEndpointState
+
+    public init(
+        localEndpointState: OcaMediaStreamEndpointState,
+        remoteEndpointState: OcaMediaStreamEndpointState
+    ) {
+        self.localEndpointState = localEndpointState
+        self.remoteEndpointState = remoteEndpointState
+    }
 }
 
 public typealias OcaMediaTransportSessionID = OcaUint32
@@ -185,12 +270,27 @@ public enum OcaMediaTransportSessionState: OcaUint8, Codable, Sendable {
 public struct OcaMediaTransportSessionStatus: Codable, Sendable {
     public let state: OcaMediaTransportSessionState
     public let adaptationData: OcaBlob
+
+    public init(state: OcaMediaTransportSessionState, adaptationData: OcaBlob) {
+        self.state = state
+        self.adaptationData = adaptationData
+    }
 }
 
 public struct OcaMediaTransportTimingParameters: Codable, Sendable {
     public let minReceiveBufferCapacity: OcaTimeInterval
     public let maxReceiveBufferCapacity: OcaTimeInterval
     public let transmissionTimeVariation: OcaTimeInterval
+
+    public init(
+        minReceiveBufferCapacity: OcaTimeInterval,
+        maxReceiveBufferCapacity: OcaTimeInterval,
+        transmissionTimeVariation: OcaTimeInterval
+    ) {
+        self.minReceiveBufferCapacity = minReceiveBufferCapacity
+        self.maxReceiveBufferCapacity = maxReceiveBufferCapacity
+        self.transmissionTimeVariation = transmissionTimeVariation
+    }
 }
 
 public enum OcaNetworkAdvertisingService: OcaUint8, Codable, Sendable {
@@ -204,6 +304,16 @@ public struct OcaNetworkAdvertisingMechanism: Codable, Sendable {
     public let service: OcaNetworkAdvertisingService
     public let parameters: OcaParameterRecord
     public let networkInterfaceAssignment: OcaNetworkInterfaceAssignment
+
+    public init(
+        service: OcaNetworkAdvertisingService,
+        parameters: OcaParameterRecord,
+        networkInterfaceAssignment: OcaNetworkInterfaceAssignment
+    ) {
+        self.service = service
+        self.parameters = parameters
+        self.networkInterfaceAssignment = networkInterfaceAssignment
+    }
 }
 
 public struct OcaNetworkInterfaceAssignment: Codable, Sendable {
@@ -218,6 +328,20 @@ public struct OcaNetworkInterfaceAssignment: Codable, Sendable {
      public let networkInterface: OcaNetworkInterface
      public let networkApplication: OcaNetworkApplication
       */
+
+    public init(
+        id: OcaID16,
+        networkInterfaceONo: OcaONo,
+        networkBindingParameters: OcaBlob,
+        securityKeyIdentities: [OcaString],
+        advertisingMechanisms: [OcaNetworkAdvertisingMechanism]
+    ) {
+        self.id = id
+        self.networkInterfaceONo = networkInterfaceONo
+        self.networkBindingParameters = networkBindingParameters
+        self.securityKeyIdentities = securityKeyIdentities
+        self.advertisingMechanisms = advertisingMechanisms
+    }
 }
 
 public enum OcaNetworkInterfaceCommand: OcaUint8, Codable, Sendable {
@@ -235,4 +359,9 @@ public enum OcaNetworkInterfaceState: OcaUint8, Codable, Sendable {
 public struct OcaNetworkInterfaceStatus: Codable, Sendable {
     public let state: OcaNetworkInterfaceState
     public let adaptationData: OcaAdaptationData
+
+    public init(state: OcaNetworkInterfaceState, adaptationData: OcaAdaptationData) {
+        self.state = state
+        self.adaptationData = adaptationData
+    }
 }

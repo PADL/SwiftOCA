@@ -121,22 +121,43 @@ public enum OcaPortMode: OcaUint8, Codable, Sendable {
 public struct OcaPortID: Codable, Sendable, Hashable {
     public let mode: OcaPortMode
     public let index: OcaUint16
+
+    public init(mode: OcaPortMode, index: OcaUint16) {
+        self.mode = mode
+        self.index = index
+    }
 }
 
 public struct OcaPort: Codable, Sendable {
     public let owner: OcaONo
     public let id: OcaPortID
     public let name: OcaString
+
+    public init(owner: OcaONo, id: OcaPortID, name: OcaString) {
+        self.owner = owner
+        self.id = id
+        self.name = name
+    }
 }
 
 public struct OcaSignalPath: Codable, Sendable {
     public let sourcePort: OcaPort
     public let sinkPort: OcaPort
+
+    public init(sourcePort: OcaPort, sinkPort: OcaPort) {
+        self.sourcePort = sourcePort
+        self.sinkPort = sinkPort
+    }
 }
 
 public struct OcaLibVolIdentifier: Codable, Sendable {
     public let library: OcaONo
     public let id: OcaLibVolID
+
+    public init(library: OcaONo, id: OcaLibVolID) {
+        self.library = library
+        self.id = id
+    }
 }
 
 public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible {
