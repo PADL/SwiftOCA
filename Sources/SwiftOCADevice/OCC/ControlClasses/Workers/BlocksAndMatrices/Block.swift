@@ -80,7 +80,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     public var signalPaths = OcaMap<OcaUint16, OcaSignalPath>()
 
     public func add(signalPath path: OcaSignalPath) async throws -> OcaUint16 {
-        let index: OcaUint16 = signalPaths.keys.sorted().last ?? 1
+        let index: OcaUint16 = 1 + (signalPaths.keys.max() ?? 0)
         signalPaths[index] = path
         return index
     }
