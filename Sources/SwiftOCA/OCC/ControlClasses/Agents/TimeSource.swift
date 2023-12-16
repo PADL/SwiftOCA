@@ -40,8 +40,8 @@ public enum OcaTimeDeliveryMechanism: OcaUint8, Codable, Sendable {
     case sntp = 4
     case ieee1588v1 = 5
     case ieee1588v2 = 6
-    case ieee1588v2_1 = 7 // 2.1
-    case ieee8021AS = 8
+    case ieee1588v2_1 = 7
+    case ieee8021AS = 8 // gPTP
     case streamEndpoint = 9
     case aes11 = 10
     case expansionBase = 128

@@ -36,4 +36,8 @@ open class OcaLockManager: OcaManager {
     public func abortWaits(oNo: OcaONo) async throws {
         try await sendCommandRrq(methodID: OcaMethodID("3.2"), parameters: oNo)
     }
+
+    public convenience init() {
+        self.init(objectNumber: OcaLockManagerONo)
+    }
 }

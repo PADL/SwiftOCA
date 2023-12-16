@@ -28,7 +28,8 @@ public let OcaAudioProcessingManagerONo: OcaONo = 9
 public let OcaDeviceTimeManagerONo: OcaONo = 10
 public let OcaTaskManagerONo: OcaONo = 11
 public let OcaCodingManagerONo: OcaONo = 12
-public let OcaDiagnosticsManagerONo: OcaONo = 13
+public let OcaDiagnosticManagerONo: OcaONo = 13
+public let OcaLockManagerONo: OcaONo = 14
 
 public let OcaRootBlockONo: OcaONo = 100
 

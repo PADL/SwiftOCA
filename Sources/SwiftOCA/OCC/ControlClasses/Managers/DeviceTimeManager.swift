@@ -24,7 +24,7 @@ open class OcaDeviceTimeManager: OcaManager {
         }
     }
 
-    public func setDeviceTimeNTP(_ time: OcaTimeNTP) async throws {
+    public func set(deviceTimeNTP time: OcaTimeNTP) async throws {
         try await sendCommandRrq(methodID: OcaMethodID("3.2"), parameters: time)
     }
 
@@ -47,7 +47,7 @@ open class OcaDeviceTimeManager: OcaManager {
         }
     }
 
-    public func setDeviceTimePTP(_ time: OcaTime) async throws {
+    public func set(deviceTimePTP time: OcaTime) async throws {
         try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameters: time)
     }
 

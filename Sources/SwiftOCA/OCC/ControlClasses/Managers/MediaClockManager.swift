@@ -35,4 +35,8 @@ open class OcaMediaClockManager: OcaManager {
         getMethodID: OcaMethodID("3.3")
     )
     public var clock3s: OcaProperty<OcaList<OcaONo>>.State
+
+    public convenience init() {
+        self.init(objectNumber: OcaMediaClockManagerONo)
+    }
 }
