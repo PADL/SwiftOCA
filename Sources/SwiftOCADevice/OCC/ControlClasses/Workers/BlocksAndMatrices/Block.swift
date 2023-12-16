@@ -446,3 +446,62 @@ private extension OcaRoot {
         )
     }
 }
+
+private extension SwiftOCADevice.OcaWorker {
+    var firstAvailablePortIndex: OcaUint16 {
+        1 + (ports.map(\.id.index).max() ?? 0)
+    }
+}
+
+public extension SwiftOCADevice.OcaBlock where ActionObject: SwiftOCADevice.OcaWorker {
+    func connect(
+        _ outputs: [ActionObject],
+        to inputs: [ActionObject],
+        name: OcaString? = nil,
+        addToBlock: Bool = true
+    ) async throws {
+        precondition(outputs.count == inputs.count)
+
+        for i in 0..<outputs.count {
+            let name = name ?? "\(outputs[i].role) -> \(inputs[i].role)"
+
+            let outputPortID = OcaPortID(mode: .output, index: outputs[i].firstAvailablePortIndex)
+            let outputPort = OcaPort(
+                owner: objectNumber,
+                id: outputPortID,
+                name: "\(name) [Output Port \(i + 1)]"
+            )
+            outputs[i].ports.append(outputPort)
+
+            let inputPortID = OcaPortID(mode: .input, index: inputs[i].firstAvailablePortIndex)
+            let inputPort = OcaPort(
+                owner: objectNumber,
+                id: inputPortID,
+                name: "\(name) [Input Port \(i + 1)]"
+            )
+            inputs[i].ports.append(inputPort)
+
+            let signalPath = OcaSignalPath(sourcePort: outputPort, sinkPort: inputPort)
+            _ = try await add(signalPath: signalPath)
+
+            if addToBlock, outputs[i] != self, !actionObjects.contains(outputs[i]) {
+                try await add(actionObject: outputs[i])
+            }
+        }
+    }
+
+    func connect(
+        _ output: ActionObject,
+        to input: ActionObject,
+        width: Int = 1,
+        name: OcaString? = nil,
+        addToBlock: Bool = true
+    ) async throws {
+        try await connect(
+            Array(repeating: output, count: width),
+            to: Array(repeating: input, count: width),
+            name: name,
+            addToBlock: addToBlock
+        )
+    }
+}
