@@ -188,15 +188,16 @@ public enum OcaMediaStreamModeCapabilityDirection: OcaUint8, Codable, Sendable {
 }
 
 public struct OcaMediaTransportSession: Codable, Sendable {
+    public typealias ConnectionStateMap =
+        [OcaMediaTransportSessionConnectionID: OcaMediaTransportSessionConnectionState]
+
     public let idInternal: OcaMediaTransportSessionID
     public let idExternal: OcaBlob
     public let userLabel: OcaString
     public let streamingEnabled: OcaBoolean
     public let adaptationData: OcaAdaptationData
     public let connections: [OcaMediaTransportSessionConnection]
-    public let connectionStates: [
-        OcaMediaTransportSessionConnectionID: OcaMediaTransportSessionConnectionState
-    ]
+    public let connectionStates: ConnectionStateMap
     /*
      public let transportSessionConnection: OcaMediaTransportSessionConnection
      public let transportSessionAgent: OcaMediaTransportSessionAgent
@@ -209,9 +210,7 @@ public struct OcaMediaTransportSession: Codable, Sendable {
         streamingEnabled: OcaBoolean,
         adaptationData: OcaAdaptationData,
         connections: [OcaMediaTransportSessionConnection],
-        connectionStates: [
-            OcaMediaTransportSessionConnectionID: OcaMediaTransportSessionConnectionState,
-        ]
+        connectionStates: ConnectionStateMap
     ) {
         self.idInternal = idInternal
         self.idExternal = idExternal
