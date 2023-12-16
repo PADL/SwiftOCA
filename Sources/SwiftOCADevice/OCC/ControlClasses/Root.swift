@@ -154,7 +154,7 @@ Sendable {
         false
     }
 
-    public func ensureReadable(by controller: any AES70Controller) async throws {
+    open func ensureReadable(by controller: any AES70Controller) async throws {
         if let deviceManager = await deviceDelegate?.deviceManager, deviceManager != self {
             try await deviceManager.ensureReadable(by: controller)
         }
@@ -171,7 +171,7 @@ Sendable {
         }
     }
 
-    public func ensureWritable(by controller: any AES70Controller) async throws {
+    open func ensureWritable(by controller: any AES70Controller) async throws {
         if let deviceManager = await deviceDelegate?.deviceManager, deviceManager != self {
             try await deviceManager.ensureWritable(by: controller)
         }
