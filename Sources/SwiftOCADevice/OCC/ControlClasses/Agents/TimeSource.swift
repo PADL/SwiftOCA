@@ -70,7 +70,7 @@ public class OcaTimeSource: OcaAgent {
         from controller: any AES70Controller
     ) async throws -> Ocp1Response {
         switch command.methodID {
-        case OcaMethodID("3.1"):
+        case OcaMethodID("3.11"):
             try await reset()
             return Ocp1Response()
         default:
