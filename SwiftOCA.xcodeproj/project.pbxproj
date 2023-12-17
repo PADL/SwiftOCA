@@ -28,6 +28,8 @@
 		D32229D42ABC270900B56B6B /* AES70OCP1IORingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CC2ABC270900B56B6B /* AES70OCP1IORingController.swift */; };
 		D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */; };
 		D33A35A72B2FB1D600FEDC43 /* MediaClock3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */; };
+		D33A35A92B2FB7BE00FEDC43 /* MediaClockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */; };
+		D33A35AB2B2FBD0700FEDC43 /* DeviceTimeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */; };
 		D33B528C2A6FD206001A1BA7 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D33B52902A6FD332001A1BA7 /* Root.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B528F2A6FD332001A1BA7 /* Root.swift */; };
 		D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */; };
@@ -253,6 +255,8 @@
 		D32229CC2ABC270900B56B6B /* AES70OCP1IORingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AES70OCP1IORingController.swift; sourceTree = "<group>"; };
 		D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEndpointRegistrar.swift; sourceTree = "<group>"; };
 		D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClock3.swift; sourceTree = "<group>"; };
+		D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClockManager.swift; sourceTree = "<group>"; };
+		D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTimeManager.swift; sourceTree = "<group>"; };
 		D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCADevice.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D33B528F2A6FD332001A1BA7 /* Root.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Root.swift; sourceTree = "<group>"; };
 		D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProperty.swift; sourceTree = "<group>"; };
@@ -621,6 +625,8 @@
 				D33B52A92A702D3F001A1BA7 /* NetworkManager.swift */,
 				D33B52AB2A702D4D001A1BA7 /* DeviceManager.swift */,
 				D33B52AD2A702D92001A1BA7 /* SubscriptionManager.swift */,
+				D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */,
+				D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -1321,6 +1327,7 @@
 				D33B52A32A702CED001A1BA7 /* Block.swift in Sources */,
 				D33B52B62A7060E0001A1BA7 /* BasicActuators.swift in Sources */,
 				D3C11DB92A789C0400452B2A /* DeviceEndpoint.swift in Sources */,
+				D33A35A92B2FB7BE00FEDC43 /* MediaClockManager.swift in Sources */,
 				D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */,
 				D351F21A2A729F48008C5513 /* VectorDeviceProperty.swift in Sources */,
 				D351F20E2A729AF2008C5513 /* BasicSensors.swift in Sources */,
@@ -1338,6 +1345,7 @@
 				D30644012A76CDDE0063DA65 /* IdentificationSensor.swift in Sources */,
 				D351F2142A729D8B008C5513 /* Switch.swift in Sources */,
 				D351F2052A72780A008C5513 /* PanBalance.swift in Sources */,
+				D33A35AB2B2FBD0700FEDC43 /* DeviceTimeManager.swift in Sources */,
 				D32229CD2ABC270900B56B6B /* LocalConnection.swift in Sources */,
 				D32229CF2ABC270900B56B6B /* LocalController.swift in Sources */,
 				D33A35A72B2FB1D600FEDC43 /* MediaClock3.swift in Sources */,
