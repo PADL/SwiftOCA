@@ -14,39 +14,51 @@
 // limitations under the License.
 //
 
-open class OcaMediaClock3: OcaAgent {
+import SwiftOCA
+
+public class OcaMediaClock3: OcaAgent {
     override public class var classID: OcaClassID { OcaClassID("1.2.15") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.1"),
         setMethodID: OcaMethodID("3.2")
     )
-    public var availability: OcaProperty<OcaMediaClockAvailability>.State
+    public var availability: OcaMediaClockAvailability = .unavailable
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.2")
     )
-    public var timeSourceONo: OcaProperty<OcaONo>.State
+    public var timeSourceONo: OcaONo = OcaInvalidONo
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.5"),
         setMethodID: OcaMethodID("3.6")
     )
-    public var offset: OcaProperty<OcaTime>.State
+    public var offset: OcaTime = .init()
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.4"),
         getMethodID: OcaMethodID("3.3"),
         setMethodID: OcaMethodID("3.4")
     )
-    public var currentRate: OcaProperty<OcaMediaClockRate>.State
+    public var currentRate: OcaMediaClockRate = .init()
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.5"),
         getMethodID: OcaMethodID("3.7")
     )
-    public var supportedRates: OcaProperty<[OcaONo: [OcaMediaClockRate]]>.State
+    public var supportedRates: OcaMultiMap<OcaONo, OcaMediaClockRate> = [:]
+
+    override open func handleCommand(
+        _ command: Ocp1Command,
+        from controller: any AES70Controller
+    ) async throws -> Ocp1Response {
+        switch command.methodID {
+        default:
+            return try await super.handleCommand(command, from: controller)
+        }
+    }
 }

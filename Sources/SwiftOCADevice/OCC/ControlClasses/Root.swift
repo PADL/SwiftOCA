@@ -174,6 +174,8 @@ Sendable {
         }
     }
 
+    /// Important note: when subclassing you will typically want to override ensureWritable() to
+    /// implement your own form of access control.
     open func ensureWritable(
         by controller: any AES70Controller,
         command: Ocp1Command

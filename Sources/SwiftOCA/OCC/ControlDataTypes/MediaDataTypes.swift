@@ -45,6 +45,12 @@ public struct OcaMediaCoding: Codable, Sendable {
     public let codecParameters: OcaString
     public let clockONO: OcaONo
 
+    public init() {
+        codingSchemeID = 0
+        codecParameters = ""
+        clockONO = OcaInvalidONo
+    }
+
     public init(
         codingSchemeID: OcaMediaCodingSchemeID,
         codecParameters: OcaString,

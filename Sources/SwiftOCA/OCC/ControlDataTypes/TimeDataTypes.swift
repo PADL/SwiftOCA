@@ -20,6 +20,18 @@ public struct OcaTime: Codable, Sendable {
     public var negative: OcaBoolean
     public var seconds: OcaUint64
     public var nanoseconds: OcaUint64
+
+    public init() {
+        negative = false
+        seconds = 0
+        nanoseconds = 0
+    }
+
+    public init(negative: OcaBoolean, seconds: OcaUint64, nanoseconds: OcaUint64) {
+        self.negative = negative
+        self.seconds = seconds
+        self.nanoseconds = nanoseconds
+    }
 }
 
 public typealias OcaTimeInterval = TimeInterval

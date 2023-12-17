@@ -37,8 +37,8 @@ public enum OcaMediaStreamEndpointCommand: OcaUint8, Codable, Sendable {
 }
 
 public final class OcaMediaStreamEndpoint: Codable, Sendable {
-    public let idInternal: OcaMediaStreamEndpointID
-    public let idExternal: OcaBlob
+    public let iDInternal: OcaMediaStreamEndpointID
+    public let iDExternal: OcaBlob
     public let direction: OcaIODirection
     public let userLabel: OcaString
     public let networkAssignmentIDs: OcaList<OcaID16>
@@ -52,22 +52,11 @@ public final class OcaMediaStreamEndpoint: Codable, Sendable {
     public let streamCastMode: OcaMediaStreamCastMode
     public let adaptationData: OcaAdaptationData
     public let redundantSetID: OcaID16
-    /*
-     public let mediaStreamEndpointStatus: OcaMediaStreamEndpointStatus
-     public let mediaStreamMode: OcaMediaStreamMode
-     public let mediaStreamModeCapability: OcaMediaStreamModeCapability
-     public let mediaCoding: OcaMediaCoding
-     public let mediaConnection: OcaMediaConnection
-     public let mediaClock3: OcaMediaClock3
-     public let mediaTransportApplication: OcaMediaTransportApplication
-     public let networkInterfaceAssignment: OcaNetworkInterfaceAssignment
-     public let mediaTransportNetwork: OcaMediaTransportNetwork
-      */
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        idInternal = try container.decode(OcaMediaStreamEndpointID.self, forKey: .idInternal)
-        idExternal = try container.decode(OcaBlob.self, forKey: .idExternal)
+        iDInternal = try container.decode(OcaMediaStreamEndpointID.self, forKey: .iDInternal)
+        iDExternal = try container.decode(OcaBlob.self, forKey: .iDExternal)
         direction = try container.decode(OcaIODirection.self, forKey: .direction)
         userLabel = try container.decode(OcaString.self, forKey: .userLabel)
         networkAssignmentIDs = try container.decode([OcaID16].self, forKey: .networkAssignmentIDs)
