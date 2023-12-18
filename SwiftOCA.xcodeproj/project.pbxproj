@@ -87,6 +87,8 @@
 		D3AFD3582B2D226200A72E9A /* NetworkApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3552B2D226200A72E9A /* NetworkApplication.swift */; };
 		D3AFD3592B2D226200A72E9A /* NetworkInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3562B2D226200A72E9A /* NetworkInterface.swift */; };
 		D3AFD35A2B2D226200A72E9A /* MediaTransportApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3572B2D226200A72E9A /* MediaTransportApplication.swift */; };
+		D3AFD35C2B30EC0600A72E9A /* CodingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD35B2B30EC0600A72E9A /* CodingManager.swift */; };
+		D3AFD35E2B30EC2F00A72E9A /* CodingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD35D2B30EC2F00A72E9A /* CodingManager.swift */; };
 		D3C0830F2A7B01AB0020AD57 /* libSwiftOCADevice.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */; };
 		D3C083162A7B021B0020AD57 /* SwiftOCADeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */; };
 		D3C083172A7B02360020AD57 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
@@ -318,6 +320,8 @@
 		D3AFD3552B2D226200A72E9A /* NetworkApplication.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkApplication.swift; sourceTree = "<group>"; };
 		D3AFD3562B2D226200A72E9A /* NetworkInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkInterface.swift; sourceTree = "<group>"; };
 		D3AFD3572B2D226200A72E9A /* MediaTransportApplication.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaTransportApplication.swift; sourceTree = "<group>"; };
+		D3AFD35B2B30EC0600A72E9A /* CodingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodingManager.swift; sourceTree = "<group>"; };
+		D3AFD35D2B30EC2F00A72E9A /* CodingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodingManager.swift; sourceTree = "<group>"; };
 		D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftOCADeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftOCADeviceTests.swift; sourceTree = "<group>"; };
 		D3C083182A7B0D2C0020AD57 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
@@ -649,6 +653,7 @@
 			children = (
 				D33B52A72A702D29001A1BA7 /* Manager.swift */,
 				D33A35AC2B2FC29000FEDC43 /* AudioProcessingManager.swift */,
+				D3AFD35B2B30EC0600A72E9A /* CodingManager.swift */,
 				D33B52AB2A702D4D001A1BA7 /* DeviceManager.swift */,
 				D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */,
 				D33A35AE2B2FC2BB00FEDC43 /* DiagnosticManager.swift */,
@@ -872,6 +877,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E1862A3ACA6C00BF7095 /* Manager.swift */,
+				D3AFD35D2B30EC2F00A72E9A /* CodingManager.swift */,
 				D3E6E1872A3ACA6C00BF7095 /* LibraryManager.swift */,
 				D3E6E1882A3ACA6C00BF7095 /* DeviceManager.swift */,
 				D3AFD3432B2CEA3800A72E9A /* LockManager.swift */,
@@ -1351,6 +1357,7 @@
 				D32229D12ABC270900B56B6B /* AES70OCP1FlyingSocksLogging.swift in Sources */,
 				D33B52AA2A702D3F001A1BA7 /* NetworkManager.swift in Sources */,
 				D32229D02ABC270900B56B6B /* AES70OCP1FlyingSocksDeviceEndpoint.swift in Sources */,
+				D3AFD35C2B30EC0600A72E9A /* CodingManager.swift in Sources */,
 				D351F2122A729CB0008C5513 /* TimeSource.swift in Sources */,
 				D33B52AC2A702D4D001A1BA7 /* DeviceManager.swift in Sources */,
 				D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */,
@@ -1409,6 +1416,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D3AFD34C2B2CEF2B00A72E9A /* CounterDataTypes.swift in Sources */,
+				D3AFD35E2B30EC2F00A72E9A /* CodingManager.swift in Sources */,
 				D3E6E2782A417AF000BF7095 /* NetworkManager.swift in Sources */,
 				D3E6E1B52A3ACA7B00BF7095 /* AES70OCP1Connection+Subscribe.swift in Sources */,
 				D3E6E1C42A3ACA8C00BF7095 /* Worker.swift in Sources */,
