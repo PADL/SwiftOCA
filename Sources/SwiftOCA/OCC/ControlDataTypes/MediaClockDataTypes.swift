@@ -20,15 +20,11 @@ public struct OcaMediaClockRate: Codable, Sendable {
     public let accuracy: OcaFloat32
     public let jitterMax: OcaFloat32
 
-    public init() {
-        self.init(nominalRate: 48000, pullRange: 0.0, accuracy: 0.0, jitterMax: 0.0)
-    }
-
     public init(
-        nominalRate: OcaFrequency,
-        pullRange: OcaFrequency,
-        accuracy: OcaFloat32,
-        jitterMax: OcaFloat32
+        nominalRate: OcaFrequency = 48000.0,
+        pullRange: OcaFrequency = 0.0,
+        accuracy: OcaFloat32 = 0.0,
+        jitterMax: OcaFloat32 = 0.0
     ) {
         self.nominalRate = nominalRate
         self.pullRange = pullRange
