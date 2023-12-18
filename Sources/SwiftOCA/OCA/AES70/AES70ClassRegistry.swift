@@ -88,6 +88,7 @@ public class AES70ClassRegistry {
         register(OcaEventHandler.self)
         register(OcaPhysicalPosition.self)
         register(OcaTimeSource.self)
+        register(OcaMediaClock3.self)
 
         // managers
         register(OcaManager.self)
@@ -95,13 +96,19 @@ public class AES70ClassRegistry {
         // register(OcaLibraryManager.self)
         register(OcaNetworkManager.self)
         register(OcaSubscriptionManager.self)
+        register(OcaLockManager.self)
+        register(OcaDiagnosticManager.self)
+        register(OcaNetworkManager.self)
+        register(OcaAudioProcessingManager.self)
+        register(OcaDeviceTimeManager.self)
+        register(OcaMediaClockManager.self)
 
         // workers
         register(OcaWorker.self)
         register(OcaBlock.self)
         register(OcaMatrix.self)
 
-        //  actuators
+        // actuators
         register(OcaActuator.self)
         register(OcaBasicActuator.self)
         register(OcaBooleanActuator.self)
@@ -123,7 +130,7 @@ public class AES70ClassRegistry {
         register(OcaPolarity.self)
         register(OcaSwitch.self)
 
-        //  sensors
+        // sensors
         register(OcaSensor.self)
         register(OcaBasicSensor.self)
         register(OcaBooleanSensor.self)
@@ -140,5 +147,15 @@ public class AES70ClassRegistry {
         register(OcaStringSensor.self)
         register(OcaLevelSensor.self)
         register(OcaIdentificationSensor.self)
+
+        // application networks
+        register(OcaControlNetwork.self)
+        register(OcaApplicationNetwork.self)
+        register(OcaMediaTransportNetwork.self)
+
+        // networks
+        register(OcaNetworkApplication.self)
+        register(OcaMediaTransportApplication.self)
+        register(OcaNetworkInterface.self)
     }
 }
