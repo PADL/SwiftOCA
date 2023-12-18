@@ -31,7 +31,11 @@ open class OcaNetworkInterface: OcaRoot {
     )
     public var owner: OcaProperty<OcaONo>.State
 
-    // 2.4 getPath
+    public var path: (OcaNamePath, OcaONoPath) {
+        get async throws {
+            try await getPath(methodID: OcaMethodID("2.4"))
+        }
+    }
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.3"),
