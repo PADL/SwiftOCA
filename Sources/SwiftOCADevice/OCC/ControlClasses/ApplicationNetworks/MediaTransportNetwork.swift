@@ -60,30 +60,30 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
         propertyID: OcaPropertyID("3.7"),
         getMethodID: OcaMethodID("3.25")
     )
-    public var alignmentLevel: OcaDBFS = -20.0
+    public var alignmentLevel = OcaBoundedPropertyValue<OcaDBFS>(value: -20.0, in: -20.0 ... -20.0)
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.8"),
         getMethodID: OcaMethodID("3.26")
     )
-    public var alignmentGain: OcaDB = 0.0
+    public var alignmentGain = OcaBoundedPropertyValue<OcaDB>(value: 0.0, in: -0.0...0.0)
 
-    // 3.9 getSourceConnecotrs
-    // 3.10 getSourceConnector
-    // 3.11 getSinkConnectors
-    // 3.12 getSinkConnector
-    // 3.13 getConnectorsStatuses
-    // 3.14 getConnectorStatus
-    // 3.15 addSourceConnector
-    // 3.16 addSinkConnector
-    // 3.17 controlConnector
-    // 3.18 setSourceConnectorPinMap
-    // 3.19 setSinkConnectorPinMap
-    // 3.20 setConnectorConnection
-    // 3.21 setConnectorCoding
-    // 3.22 setConnectorAlignmentLevel
-    // 3.23 setConnectorAlignmentGain
-    // 3.24 deleteConnector
+    // 3.9 getSourceConnectors() -> [OcaMediaSourceConnector]
+    // 3.10 getSourceConnector(OcaMediaConnectorID) -> OcaMediaSourceConnector
+    // 3.11 getSinkConnectors -> [OcaMediaSinkConnector]
+    // 3.12 getSinkConnector(OcaMediaConnectorID)
+    // 3.13 getConnectorsStatuses -> [OcaMediaConnectorStatus]
+    // 3.14 getConnectorStatus(OcaMediaConnectorID) -> OcaMediaConnectorStatus
+    // 3.15 addSourceConnector(OcaMediaSourceConnector, OcaMediaConnectorState)
+    // 3.16 addSinkConnector(OcaMediaSourceConnector, OcaMediaSinkConnector)
+    // 3.17 controlConnector(OcaMediaConnectorID, OcaMediaConnectorCommand)
+    // 3.18 setSourceConnectorPinMap(OcaMediaConnectorID, [OcaUint16:OcaPortID])
+    // 3.19 setSinkConnectorPinMap(OcaMediaConnectorID, [OcaUint16:[OcaPortID]])
+    // 3.20 setConnectorConnection(OcaMediaConnectorID, OcaMediaConnection)
+    // 3.21 setConnectorCoding(OcaMediaConnectorID, OcaMediaCoding)
+    // 3.22 setConnectorAlignmentLevel(OcaMediaConnectorID, OcaDBFS)
+    // 3.23 setConnectorAlignmentGainOcaMediaConnectorID, OcaDB)
+    // 3.24 deleteConnector(OcaMediaConnectorID)
 
     override open func handleCommand(
         _ command: Ocp1Command,
