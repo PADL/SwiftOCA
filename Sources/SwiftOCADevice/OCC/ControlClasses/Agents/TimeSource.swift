@@ -18,8 +18,7 @@ import SwiftOCA
 
 open class OcaTimeSource: OcaAgent {
     override public class var classID: OcaClassID { OcaClassID("1.2.16") }
-
-    override public class var classVersion: OcaClassVersionNumber { 1 }
+    override public class var classVersion: OcaClassVersionNumber { 3 }
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.1"),
@@ -29,17 +28,17 @@ open class OcaTimeSource: OcaAgent {
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.2"),
-        getMethodID: OcaMethodID("3.2"),
+        getMethodID: OcaMethodID("3.1"),
         setMethodID: OcaMethodID("3.3")
     )
-    public var `protocol`: OcaTimeProtocol = .undefined
+    public var timeDeliveryMechanism: OcaTimeDeliveryMechanism = .undefined
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.4"),
         setMethodID: OcaMethodID("3.5")
     )
-    public var parameters: OcaSDPString = ""
+    public var referenceSDPDescription: OcaSDPString = ""
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.4"),
@@ -53,13 +52,34 @@ open class OcaTimeSource: OcaAgent {
         getMethodID: OcaMethodID("3.8"),
         setMethodID: OcaMethodID("3.9")
     )
-    public var referenceID = ""
+    public var referenceID: OcaString = ""
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.6"),
         getMethodID: OcaMethodID("3.10")
     )
     public var syncStatus: OcaTimeSourceSyncStatus = .undefined
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("3.7"),
+        getMethodID: OcaMethodID("3.12"),
+        setMethodID: OcaMethodID("3.13")
+    )
+    public var timeDeliveryParameters: OcaParameterRecord = "{}"
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("3.8"),
+        getMethodID: OcaMethodID("3.14"),
+        setMethodID: OcaMethodID("3.15")
+    )
+    public var `protocol`: OcaTimeProtocol = .undefined
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("3.9"),
+        getMethodID: OcaMethodID("3.16"),
+        setMethodID: OcaMethodID("3.17")
+    )
+    public var parameters: OcaSDPString = ""
 
     open func reset() async throws {
         throw Ocp1Error.status(.notImplemented)

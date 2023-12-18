@@ -75,8 +75,7 @@ public struct OcaTimeDeliveryParameters_StreamEndpoint: Codable, Sendable {
 
 open class OcaTimeSource: OcaAgent {
     override public class var classID: OcaClassID { OcaClassID("1.2.16") }
-
-    override public class var classVersion: OcaClassVersionNumber { 1 }
+    override public class var classVersion: OcaClassVersionNumber { 3 }
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.1"),
@@ -86,17 +85,17 @@ open class OcaTimeSource: OcaAgent {
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.2"),
-        getMethodID: OcaMethodID("3.2"),
+        getMethodID: OcaMethodID("3.1"),
         setMethodID: OcaMethodID("3.3")
     )
-    public var `protocol`: OcaProperty<OcaTimeProtocol>.State
+    public var timeDeliveryMechanism: OcaProperty<OcaTimeDeliveryMechanism>.State
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.4"),
         setMethodID: OcaMethodID("3.5")
     )
-    public var parameters: OcaProperty<OcaSDPString>.State
+    public var referenceSDPDescription: OcaProperty<OcaSDPString>.State
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.4"),
@@ -117,6 +116,27 @@ open class OcaTimeSource: OcaAgent {
         getMethodID: OcaMethodID("3.10")
     )
     public var syncStatus: OcaProperty<OcaTimeSourceSyncStatus>.State
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.7"),
+        getMethodID: OcaMethodID("3.12"),
+        setMethodID: OcaMethodID("3.13")
+    )
+    public var timeDeliveryParameters: OcaProperty<OcaParameterRecord>.State
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.8"),
+        getMethodID: OcaMethodID("3.14"),
+        setMethodID: OcaMethodID("3.15")
+    )
+    public var `protocol`: OcaProperty<OcaTimeProtocol>.State
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.9"),
+        getMethodID: OcaMethodID("3.16"),
+        setMethodID: OcaMethodID("3.17")
+    )
+    public var parameters: OcaProperty<OcaSDPString>.State
 
     public func reset() async throws {
         try await sendCommandRrq(methodID: OcaMethodID("3.11"))
