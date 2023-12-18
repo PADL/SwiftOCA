@@ -85,10 +85,6 @@ public final class OcaMediaStreamEndpoint: Codable, Sendable {
 public struct OcaMediaStreamEndpointStatus: Codable, Sendable {
     public let state: OcaMediaStreamEndpointState
     public let errorCode: OcaUint16
-    /*
-     public let streamEndpoint: OcaMediaStreamEndpoint
-     public let transportNetwork: OcaMediaTransportNetwork
-      */
 
     public init(state: OcaMediaStreamEndpointState, errorCode: OcaUint16) {
         self.state = state
@@ -187,10 +183,6 @@ public struct OcaMediaTransportSession: Codable, Sendable {
     public let adaptationData: OcaAdaptationData
     public let connections: [OcaMediaTransportSessionConnection]
     public let connectionStates: ConnectionStateMap
-    /*
-     public let transportSessionConnection: OcaMediaTransportSessionConnection
-     public let transportSessionAgent: OcaMediaTransportSessionAgent
-     */
 
     public init(
         idInternal: OcaMediaTransportSessionID,
@@ -310,12 +302,6 @@ public struct OcaNetworkInterfaceAssignment: Codable, Sendable {
     public let networkBindingParameters: OcaBlob
     public let securityKeyIdentities: [OcaString]
     public let advertisingMechanisms: [OcaNetworkAdvertisingMechanism]
-    /*
-     public let advertisingMechanism: OcaNetworkAdvertisingMechanism
-     public let mediaStreamEndpoint: OcaMediaStreamEndpoint
-     public let networkInterface: OcaNetworkInterface
-     public let networkApplication: OcaNetworkApplication
-      */
 
     public init(
         id: OcaID16,

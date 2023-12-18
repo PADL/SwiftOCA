@@ -14,11 +14,6 @@
 // limitations under the License.
 //
 
-public enum OcaIODirection: OcaUint8, Codable, Sendable {
-    case input = 1
-    case output = 2
-}
-
 public enum OcaUnitOfMeasure: OcaUint8, Codable, Sendable {
     case none = 0
     case hertz = 1

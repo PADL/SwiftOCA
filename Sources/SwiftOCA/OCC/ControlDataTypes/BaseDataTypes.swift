@@ -111,10 +111,12 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
     }
 }
 
-public enum OcaPortMode: OcaUint8, Codable, Sendable {
+public enum OcaIODirection: OcaUint8, Codable, Sendable {
     case input = 1
     case output = 2
 }
+
+public typealias OcaPortMode = OcaIODirection
 
 public struct OcaPortID: Codable, Sendable, Hashable {
     public let mode: OcaPortMode

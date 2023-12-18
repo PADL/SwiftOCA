@@ -43,22 +43,22 @@ public typealias OcaMediaCodingSchemeID = OcaUint16
 public struct OcaMediaCoding: Codable, Sendable {
     public let codingSchemeID: OcaMediaCodingSchemeID
     public let codecParameters: OcaString
-    public let clockONO: OcaONo
+    public let clockONo: OcaONo
 
     public init() {
         codingSchemeID = 0
         codecParameters = ""
-        clockONO = OcaInvalidONo
+        clockONo = OcaInvalidONo
     }
 
     public init(
         codingSchemeID: OcaMediaCodingSchemeID,
         codecParameters: OcaString,
-        clockONO: OcaONo
+        clockONo: OcaONo
     ) {
         self.codingSchemeID = codingSchemeID
         self.codecParameters = codecParameters
-        self.clockONO = clockONO
+        self.clockONo = clockONo
     }
 }
 
