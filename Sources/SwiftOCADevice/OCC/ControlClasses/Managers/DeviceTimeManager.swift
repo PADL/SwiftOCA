@@ -116,7 +116,7 @@ open class OcaDeviceTimeManager: OcaManager {
             objectNumber: OcaDeviceTimeManagerONo,
             role: "Device Time Manager",
             deviceDelegate: deviceDelegate,
-            addToRootBlock: false
+            addToRootBlock: true
         )
     }
 }

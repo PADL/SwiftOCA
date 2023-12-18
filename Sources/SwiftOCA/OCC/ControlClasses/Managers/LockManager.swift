@@ -18,10 +18,10 @@ open class OcaLockManager: OcaManager {
     override public class var classID: OcaClassID { OcaClassID("1.3.14") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
 
-    private struct LockWaitParameters: Codable {
-        let target: OcaONo
-        let type: OcaLockState
-        let timeout: OcaTimeInterval
+    public struct LockWaitParameters: Codable {
+        public let target: OcaONo
+        public let type: OcaLockState
+        public let timeout: OcaTimeInterval
     }
 
     public func lockWait(

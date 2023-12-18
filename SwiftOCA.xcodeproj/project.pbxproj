@@ -30,6 +30,9 @@
 		D33A35A72B2FB1D600FEDC43 /* MediaClock3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */; };
 		D33A35A92B2FB7BE00FEDC43 /* MediaClockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */; };
 		D33A35AB2B2FBD0700FEDC43 /* DeviceTimeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */; };
+		D33A35AD2B2FC29000FEDC43 /* AudioProcessingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35AC2B2FC29000FEDC43 /* AudioProcessingManager.swift */; };
+		D33A35AF2B2FC2BB00FEDC43 /* DiagnosticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35AE2B2FC2BB00FEDC43 /* DiagnosticManager.swift */; };
+		D33A35B12B2FC30500FEDC43 /* LockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35B02B2FC30500FEDC43 /* LockManager.swift */; };
 		D33B528C2A6FD206001A1BA7 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D33B52902A6FD332001A1BA7 /* Root.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B528F2A6FD332001A1BA7 /* Root.swift */; };
 		D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */; };
@@ -257,6 +260,9 @@
 		D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClock3.swift; sourceTree = "<group>"; };
 		D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClockManager.swift; sourceTree = "<group>"; };
 		D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTimeManager.swift; sourceTree = "<group>"; };
+		D33A35AC2B2FC29000FEDC43 /* AudioProcessingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProcessingManager.swift; sourceTree = "<group>"; };
+		D33A35AE2B2FC2BB00FEDC43 /* DiagnosticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticManager.swift; sourceTree = "<group>"; };
+		D33A35B02B2FC30500FEDC43 /* LockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockManager.swift; sourceTree = "<group>"; };
 		D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCADevice.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D33B528F2A6FD332001A1BA7 /* Root.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Root.swift; sourceTree = "<group>"; };
 		D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProperty.swift; sourceTree = "<group>"; };
@@ -622,11 +628,14 @@
 			isa = PBXGroup;
 			children = (
 				D33B52A72A702D29001A1BA7 /* Manager.swift */,
-				D33B52A92A702D3F001A1BA7 /* NetworkManager.swift */,
+				D33A35AC2B2FC29000FEDC43 /* AudioProcessingManager.swift */,
 				D33B52AB2A702D4D001A1BA7 /* DeviceManager.swift */,
-				D33B52AD2A702D92001A1BA7 /* SubscriptionManager.swift */,
-				D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */,
 				D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */,
+				D33A35AE2B2FC2BB00FEDC43 /* DiagnosticManager.swift */,
+				D33A35B02B2FC30500FEDC43 /* LockManager.swift */,
+				D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */,
+				D33B52A92A702D3F001A1BA7 /* NetworkManager.swift */,
+				D33B52AD2A702D92001A1BA7 /* SubscriptionManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -1310,6 +1319,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D32229CE2ABC270900B56B6B /* LocalDeviceEndpoint.swift in Sources */,
+				D33A35B12B2FC30500FEDC43 /* LockManager.swift in Sources */,
 				D351F2032A727411008C5513 /* Mute.swift in Sources */,
 				D351F20C2A729AB3008C5513 /* Sensor.swift in Sources */,
 				D33B52B42A7060BC001A1BA7 /* Actuator.swift in Sources */,
@@ -1340,8 +1350,10 @@
 				D33B52AE2A702D92001A1BA7 /* SubscriptionManager.swift in Sources */,
 				D351F21C2A72A26E008C5513 /* Matrix.swift in Sources */,
 				D351F2162A729DFC008C5513 /* PolarityState.swift in Sources */,
+				D33A35AD2B2FC29000FEDC43 /* AudioProcessingManager.swift in Sources */,
 				D33B52B02A703AEA001A1BA7 /* Root+Commands.swift in Sources */,
 				D33B52A82A702D29001A1BA7 /* Manager.swift in Sources */,
+				D33A35AF2B2FC2BB00FEDC43 /* DiagnosticManager.swift in Sources */,
 				D30644012A76CDDE0063DA65 /* IdentificationSensor.swift in Sources */,
 				D351F2142A729D8B008C5513 /* Switch.swift in Sources */,
 				D351F2052A72780A008C5513 /* PanBalance.swift in Sources */,

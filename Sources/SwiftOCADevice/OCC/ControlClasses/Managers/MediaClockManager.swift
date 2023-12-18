@@ -53,7 +53,7 @@ open class OcaMediaClockManager: OcaManager {
             objectNumber: OcaMediaClockManagerONo,
             role: "Media Clock Manager",
             deviceDelegate: deviceDelegate,
-            addToRootBlock: false
+            addToRootBlock: true
         )
     }
 }

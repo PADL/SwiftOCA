@@ -62,7 +62,7 @@ open class OcaNetworkManager: OcaManager {
             objectNumber: OcaNetworkManagerONo,
             role: "Network Manager",
             deviceDelegate: deviceDelegate,
-            addToRootBlock: false
+            addToRootBlock: true
         )
     }
 }
