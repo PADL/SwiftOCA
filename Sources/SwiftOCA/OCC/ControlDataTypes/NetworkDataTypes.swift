@@ -148,6 +148,8 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
     }
 }
 
+public typealias OcaNetworkAddress = OcaBlob
+
 public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable {
     public let systemInterfaceParameters: OcaBlob
     public let myNetworkAddress: OcaNetworkAddress

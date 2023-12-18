@@ -47,8 +47,6 @@ public typealias OcaMultiMap<K: Hashable, V> = OcaMap<K, [V]>
 public typealias OcaNamePath = OcaList<OcaString>
 public typealias OcaONoPath = OcaList<OcaONo>
 
-public typealias OcaNetworkAddress = OcaBlob
-
 public typealias OcaBitSet16 = OcaUint16
 
 public enum OcaBaseDataType: OcaUint8, Codable, Sendable {
