@@ -107,8 +107,8 @@ public struct OcaMediaConnectorStatus: Codable, Sendable {
 }
 
 public struct OcaMediaSinkConnector: Codable, Sendable {
-    public let IDInternal: OcaMediaConnectorID
-    public let IDExternal: OcaString
+    public let idInternal: OcaMediaConnectorID
+    public let idExternal: OcaString
     public let connection: OcaMediaConnection
     public let availableCodings: OcaList<OcaMediaCoding>
     public let pinCount: OcaUint16
@@ -118,8 +118,8 @@ public struct OcaMediaSinkConnector: Codable, Sendable {
     public let currentCoding: OcaMediaCoding
 
     public init(
-        IDInternal: OcaMediaConnectorID,
-        IDExternal: OcaString,
+        idInternal: OcaMediaConnectorID,
+        idExternal: OcaString,
         connection: OcaMediaConnection,
         availableCodings: OcaList<OcaMediaCoding>,
         pinCount: OcaUint16,
@@ -128,8 +128,8 @@ public struct OcaMediaSinkConnector: Codable, Sendable {
         alignmentGain: OcaDB,
         currentCoding: OcaMediaCoding
     ) {
-        self.IDInternal = IDInternal
-        self.IDExternal = IDExternal
+        self.idInternal = idInternal
+        self.idExternal = idExternal
         self.connection = connection
         self.availableCodings = availableCodings
         self.pinCount = pinCount
@@ -141,8 +141,8 @@ public struct OcaMediaSinkConnector: Codable, Sendable {
 }
 
 public struct OcaMediaSourceConnector: Codable, Sendable {
-    public let IDInternal: OcaMediaConnectorID
-    public let IDExternal: OcaString
+    public let idInternal: OcaMediaConnectorID
+    public let idExternal: OcaString
     public let connection: OcaMediaConnection
     public let availableCodings: OcaList<OcaMediaCoding>
     public let pinCount: OcaUint16
@@ -151,8 +151,8 @@ public struct OcaMediaSourceConnector: Codable, Sendable {
     public let currentCoding: OcaMediaCoding
 
     public init(
-        IDInternal: OcaMediaConnectorID,
-        IDExternal: OcaString,
+        idInternal: OcaMediaConnectorID,
+        idExternal: OcaString,
         connection: OcaMediaConnection,
         availableCodings: OcaList<OcaMediaCoding>,
         pinCount: OcaUint16,
@@ -160,8 +160,8 @@ public struct OcaMediaSourceConnector: Codable, Sendable {
         alignmentLevel: OcaDBFS,
         currentCoding: OcaMediaCoding
     ) {
-        self.IDInternal = IDInternal
-        self.IDExternal = IDExternal
+        self.idInternal = idInternal
+        self.idExternal = idExternal
         self.connection = connection
         self.availableCodings = availableCodings
         self.pinCount = pinCount
