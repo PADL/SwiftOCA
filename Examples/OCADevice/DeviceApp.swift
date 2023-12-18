@@ -67,7 +67,11 @@ public enum DeviceApp {
             }
         }
 
-        // NB: we still need to add objects to the root block because they must have containing block
+        let controlNetwork = try await SwiftOCADevice.OcaControlNetwork(
+            role: "OCA Control Network",
+            deviceDelegate: device
+        )
+
         await withThrowingTaskGroup(of: Void.self) { taskGroup in
             taskGroup.addTask {
                 print("Starting OCP.1 stream endpoint \(streamEndpoint)...")
