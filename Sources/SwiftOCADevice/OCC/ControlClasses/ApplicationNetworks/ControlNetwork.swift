@@ -14,25 +14,15 @@
 // limitations under the License.
 //
 
-open class OcaAgent: OcaRoot {
-    override public class var classID: OcaClassID { OcaClassID("1.2") }
+import SwiftOCA
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("2.1"),
-        getMethodID: OcaMethodID("2.1"),
-        setMethodID: OcaMethodID("2.2")
+public class OcaControlNetwork: OcaApplicationNetwork {
+    override public class var classID: OcaClassID { OcaClassID("1.4.1") }
+    override public class var classVersion: OcaClassVersionNumber { 1 }
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("3.1"),
+        getMethodID: OcaMethodID("3.1")
     )
-    public var label: OcaProperty<OcaString>.State
-
-    @OcaProperty(
-        propertyID: OcaPropertyID("2.2"),
-        getMethodID: OcaMethodID("2.3")
-    )
-    public var owner: OcaProperty<OcaONo>.State
-
-    public var path: (OcaNamePath, OcaONoPath) {
-        get async throws {
-            try await getPath(methodID: OcaMethodID("2.4"))
-        }
-    }
+    public var `protocol`: OcaNetworkControlProtocol = .ocp01
 }

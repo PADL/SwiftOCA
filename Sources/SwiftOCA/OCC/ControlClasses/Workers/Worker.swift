@@ -53,7 +53,11 @@ open class OcaWorker: OcaRoot {
     public var latency: OcaProperty<OcaTimeInterval?>.State
 
     // 2.3
-    func add(port label: OcaString, mode: OcaPortMode, portID: inout OcaPortID) async throws {
+    public func add(
+        port label: OcaString,
+        mode: OcaPortMode,
+        portID: inout OcaPortID
+    ) async throws {
         struct AddPortParameters: Codable {
             let label: OcaString
             let mode: OcaPortMode
@@ -68,7 +72,7 @@ open class OcaWorker: OcaRoot {
     }
 
     // 2.4
-    func delete(port id: OcaPortID) async throws {
+    public func delete(port id: OcaPortID) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("2.4"),
             parameter: id
@@ -76,7 +80,7 @@ open class OcaWorker: OcaRoot {
     }
 
     // 2.6
-    func get(portID: OcaPortID, name: inout OcaString) async throws {
+    public func get(portID: OcaPortID, name: inout OcaString) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("2.7"),
             parameter: portID,
@@ -86,7 +90,7 @@ open class OcaWorker: OcaRoot {
     }
 
     // 2.7
-    func set(portID: OcaPortID, name: OcaString) async throws {
+    public func set(portID: OcaPortID, name: OcaString) async throws {
         struct SetPortNameParameters: Codable {
             let portID: OcaPortID
             let name: OcaString
@@ -98,13 +102,9 @@ open class OcaWorker: OcaRoot {
         )
     }
 
-    // 2.13
-    func get(path namePath: inout OcaNamePath, oNoPath: inout OcaONoPath) async throws {
-        let responseParams: OcaGetPathParameters
-
-        responseParams = try await sendCommandRrq(methodID: OcaMethodID("2.13"))
-
-        namePath = responseParams.namePath
-        oNoPath = responseParams.oNoPath
+    public var path: (OcaNamePath, OcaONoPath) {
+        get async throws {
+            try await getPath(methodID: OcaMethodID("2.13"))
+        }
     }
 }

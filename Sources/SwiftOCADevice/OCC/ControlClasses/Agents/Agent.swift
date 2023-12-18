@@ -38,11 +38,7 @@ public class OcaAgent: OcaRoot, OcaOwnable {
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("2.4"):
-            let responseParams = OcaGetPathParameters(
-                namePath: await rolePath,
-                oNoPath: await objectNumberPath
-            )
-            return try encodeResponse(responseParams)
+            return try await encodeResponse(path)
         default:
             return try await super.handleCommand(command, from: controller)
         }

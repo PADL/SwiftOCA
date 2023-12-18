@@ -14,61 +14,69 @@
 // limitations under the License.
 //
 
-open class OcaApplicationNetwork: OcaRoot {
+import SwiftOCA
+
+public class OcaApplicationNetwork: OcaRoot {
     override public class var classID: OcaClassID { OcaClassID("1.4") }
     override public class var classVersion: OcaClassVersionNumber { 1 }
 
-    // FIXME: static
-
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("2.1"),
         getMethodID: OcaMethodID("2.1"),
         setMethodID: OcaMethodID("2.2")
     )
-    public var label: OcaProperty<OcaString>.State
+    public var label = ""
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("2.2"),
         getMethodID: OcaMethodID("2.3")
     )
-    public var owner: OcaProperty<OcaONo>.State
+    public var owner = OcaInvalidONo
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("2.3"),
         getMethodID: OcaMethodID("2.4"),
         setMethodID: OcaMethodID("2.5")
     )
-    public var serviceID: OcaProperty<OcaApplicationNetworkServiceID>.State
+    public var serviceID: OcaApplicationNetworkServiceID = .init()
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("2.4"),
         getMethodID: OcaMethodID("2.6"),
         setMethodID: OcaMethodID("2.7")
     )
-    public var systemInterfaces: OcaProperty<OcaList<OcaNetworkSystemInterfaceDescriptor>>.State
+    public var systemInterfaces = [OcaNetworkSystemInterfaceDescriptor]()
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("2.5"),
         getMethodID: OcaMethodID("2.8")
     )
-    public var state: OcaProperty<OcaApplicationNetworkState>.State
+    public var state: OcaApplicationNetworkState = .stopped
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("2.6"),
         getMethodID: OcaMethodID("2.8")
     )
-    public var errorCode: OcaProperty<OcaUint16>.State
+    public var errorCode: OcaUint16 = 0
 
-    public func control(_ command: OcaApplicationNetworkCommand) async throws {
-        try await sendCommandRrq(
-            methodID: OcaMethodID("2.10"),
-            parameters: command
-        )
+    open func control(_ command: OcaApplicationNetworkCommand) async throws {
+        throw Ocp1Error.status(.notImplemented)
     }
 
-    public var path: (OcaNamePath, OcaONoPath) {
-        get async throws {
-            try await getPath(methodID: OcaMethodID("2.11"))
+    override public func handleCommand(
+        _ command: Ocp1Command,
+        from controller: AES70Controller
+    ) async throws -> Ocp1Response {
+        switch command.methodID {
+        case OcaMethodID("2.10"):
+            let params: OcaApplicationNetworkCommand = try decodeCommand(command)
+            try await ensureWritable(by: controller, command: command)
+            try await control(params)
+            return Ocp1Response()
+        case OcaMethodID("2.11"):
+            return try await encodeResponse(path)
+        default:
+            return try await super.handleCommand(command, from: controller)
         }
     }
 }

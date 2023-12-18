@@ -33,9 +33,7 @@ open class OcaNetworkApplication: OcaRoot {
 
     public var path: (OcaNamePath, OcaONoPath) {
         get async throws {
-            let responseParams: OcaGetPathParameters
-            responseParams = try await sendCommandRrq(methodID: OcaMethodID("2.4"))
-            return (responseParams.namePath, responseParams.oNoPath)
+            try await getPath(methodID: OcaMethodID("2.4"))
         }
     }
 

@@ -381,6 +381,12 @@ public extension OcaRoot {
             await makePath(rootObject: self, keyPath: \.role)
         }
     }
+
+    var path: OcaGetPathParameters {
+        get async {
+            OcaGetPathParameters(namePath: await rolePath, oNoPath: await objectNumberPath)
+        }
+    }
 }
 
 private extension OcaRoot {

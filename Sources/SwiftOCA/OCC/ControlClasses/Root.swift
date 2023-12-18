@@ -269,3 +269,23 @@ extension OcaRoot: Hashable {
         hasher.combine(objectNumber)
     }
 }
+
+public struct OcaGetPathParameters: Codable, Sendable, OcaParameterCountReflectable {
+    public static var responseParameterCount: OcaUint8 { 2 }
+
+    public var namePath: OcaNamePath
+    public var oNoPath: OcaONoPath
+
+    public init(namePath: OcaNamePath, oNoPath: OcaONoPath) {
+        self.namePath = namePath
+        self.oNoPath = oNoPath
+    }
+}
+
+extension OcaRoot {
+    func getPath(methodID: OcaMethodID) async throws -> (OcaNamePath, OcaONoPath) {
+        let responseParams: OcaGetPathParameters
+        responseParams = try await sendCommandRrq(methodID: methodID)
+        return (responseParams.namePath, responseParams.oNoPath)
+    }
+}
