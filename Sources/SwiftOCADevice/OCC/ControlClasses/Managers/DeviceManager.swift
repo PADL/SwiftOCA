@@ -18,7 +18,7 @@ import Foundation
 import SwiftOCA
 
 open class OcaDeviceManager: OcaManager {
-    override public class var classID: OcaClassID { OcaClassID("1.3.1") }
+    override open class var classID: OcaClassID { OcaClassID("1.3.1") }
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.1"),

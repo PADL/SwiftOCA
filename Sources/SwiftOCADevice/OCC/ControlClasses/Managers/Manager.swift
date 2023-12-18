@@ -17,5 +17,5 @@
 import SwiftOCA
 
 open class OcaManager: OcaRoot {
-    override public class var classID: OcaClassID { OcaClassID("1.3") }
+    override open class var classID: OcaClassID { OcaClassID("1.3") }
 }

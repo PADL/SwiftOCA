@@ -17,8 +17,8 @@
 import SwiftOCA
 
 open class OcaDeviceTimeManager: OcaManager {
-    override public class var classID: OcaClassID { OcaClassID("1.3.10") }
-    override public class var classVersion: OcaClassVersionNumber { 3 }
+    override open class var classID: OcaClassID { OcaClassID("1.3.10") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     open var deviceTimeNTP: OcaTimeNTP {
         get throws {
