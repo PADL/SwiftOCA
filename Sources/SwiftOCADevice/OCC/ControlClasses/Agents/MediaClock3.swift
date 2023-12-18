@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-public class OcaMediaClock3: OcaAgent {
+open class OcaMediaClock3: OcaAgent {
     override public class var classID: OcaClassID { OcaClassID("1.2.15") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
 

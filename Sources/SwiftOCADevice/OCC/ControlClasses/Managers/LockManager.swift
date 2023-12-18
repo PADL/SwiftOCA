@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-open class OcaLockManager: OcaManager {
+public class OcaLockManager: OcaManager {
     override public class var classID: OcaClassID { OcaClassID("1.3.14") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
 

@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-public class OcaTimeSource: OcaAgent {
+open class OcaTimeSource: OcaAgent {
     override public class var classID: OcaClassID { OcaClassID("1.2.16") }
 
     override public class var classVersion: OcaClassVersionNumber { 1 }
