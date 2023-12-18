@@ -289,3 +289,13 @@ extension OcaRoot {
         return (responseParams.namePath, responseParams.oNoPath)
     }
 }
+
+public struct OcaSetPortNameParameters: Codable, Sendable {
+    public let portID: OcaPortID
+    public let name: OcaString
+
+    public init(portID: OcaPortID, name: OcaString) {
+        self.portID = portID
+        self.name = name
+    }
+}

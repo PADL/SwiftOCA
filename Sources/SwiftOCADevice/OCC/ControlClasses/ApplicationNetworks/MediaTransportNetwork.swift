@@ -14,74 +14,59 @@
 // limitations under the License.
 //
 
-open class OcaMediaTransportNetwork: OcaApplicationNetwork {
+import SwiftOCA
+
+public class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentable {
     override public class var classID: OcaClassID { OcaClassID("1.4.2") }
     override public class var classVersion: OcaClassVersionNumber { 1 }
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var `protocol`: OcaProperty<OcaNetworkMediaProtocol>.State
+    public var `protocol`: OcaNetworkMediaProtocol = .none
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.2")
     )
-    public var ports: OcaProperty<[OcaPort]>.State
+    public var ports = [OcaPort]()
 
-    public func get(portID: OcaPortID, name: inout OcaString) async throws {
-        try await sendCommandRrq(
-            methodID: OcaMethodID("3.3"),
-            parameter: portID,
-            responseParameterCount: 1,
-            responseParameters: &name
-        )
-    }
-
-    public func set(portID: OcaPortID, name: OcaString) async throws {
-        let params = OcaSetPortNameParameters(portID: portID, name: name)
-        try await sendCommandRrq(
-            methodID: OcaMethodID("3.4"),
-            parameters: params
-        )
-    }
-
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.5")
     )
-    public var maxSourceConnectors: OcaProperty<OcaUint16>.State
+    public var maxSourceConnectors: OcaUint16 = 0
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.4"),
         getMethodID: OcaMethodID("3.6")
     )
-    public var maxSinkConnectors: OcaProperty<OcaUint16>.State
+    public var maxSinkConnectors: OcaUint16 = 0
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.5"),
         getMethodID: OcaMethodID("3.7")
     )
-    public var maxPinsPerConnector: OcaProperty<OcaUint16>.State
+    public var maxPinsPerConnector: OcaUint16 = 0
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.6"),
         getMethodID: OcaMethodID("3.8")
     )
-    public var maxPortsPerPin: OcaProperty<OcaUint16>.State
+    public var maxPortsPerPin: OcaUint16 = 0
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.7"),
         getMethodID: OcaMethodID("3.25")
     )
-    public var alignmentLevel: OcaProperty<OcaDBFS>.State
+    public var alignmentLevel: OcaDBFS = -20.0
 
-    @OcaProperty(
+    @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.8"),
         getMethodID: OcaMethodID("3.26")
     )
-    public var alignmentGain: OcaProperty<OcaDB>.State
+    public var alignmentGain: OcaDB = 0.0
 
     // 3.9 getSourceConnecotrs
     // 3.10 getSourceConnector
@@ -99,4 +84,19 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork {
     // 3.22 setConnectorAlignmentLevel
     // 3.23 setConnectorAlignmentGain
     // 3.24 deleteConnector
+
+    override open func handleCommand(
+        _ command: Ocp1Command,
+        from controller: AES70Controller
+    ) async throws -> Ocp1Response {
+        switch command.methodID {
+        case OcaMethodID("3.3"):
+            return try await encodeResponse(handleGetPortName(command, from: controller))
+        case OcaMethodID("3.4"):
+            try await handleSetPortName(command, from: controller)
+            return Ocp1Response()
+        default:
+            return try await super.handleCommand(command, from: controller)
+        }
+    }
 }

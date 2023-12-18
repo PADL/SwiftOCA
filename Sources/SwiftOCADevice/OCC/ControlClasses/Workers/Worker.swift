@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-open class OcaWorker: OcaRoot, OcaOwnable {
+open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable {
     override public class var classID: OcaClassID { OcaClassID("1.1.1") }
 
     @OcaDeviceProperty(
@@ -52,4 +52,19 @@ open class OcaWorker: OcaRoot, OcaOwnable {
         setMethodID: OcaMethodID("2.12")
     )
     public var latency: OcaTimeInterval?
+
+    override open func handleCommand(
+        _ command: Ocp1Command,
+        from controller: AES70Controller
+    ) async throws -> Ocp1Response {
+        switch command.methodID {
+        case OcaMethodID("2.7"):
+            return try await encodeResponse(handleGetPortName(command, from: controller))
+        case OcaMethodID("2.8"):
+            try await handleSetPortName(command, from: controller)
+            return Ocp1Response()
+        default:
+            return try await super.handleCommand(command, from: controller)
+        }
+    }
 }

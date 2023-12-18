@@ -91,11 +91,7 @@ open class OcaWorker: OcaRoot {
 
     // 2.7
     public func set(portID: OcaPortID, name: OcaString) async throws {
-        struct SetPortNameParameters: Codable {
-            let portID: OcaPortID
-            let name: OcaString
-        }
-        let params = SetPortNameParameters(portID: portID, name: name)
+        let params = OcaSetPortNameParameters(portID: portID, name: name)
         try await sendCommandRrq(
             methodID: OcaMethodID("2.7"),
             parameters: params
