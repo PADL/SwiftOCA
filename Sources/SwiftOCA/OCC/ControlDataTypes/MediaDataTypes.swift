@@ -40,6 +40,15 @@ public typealias OcaMediaStreamParameters = OcaBlob
 
 public typealias OcaMediaCodingSchemeID = OcaUint16
 
+// FIXME: this appears to be from CM1
+public enum OcaEncoding: OcaUint8, Codable, Sendable {
+    case none = 0
+    case pcm16 = 1
+    case pcm24 = 2
+    case pcm32 = 3
+    case extensionPoint = 65
+}
+
 public struct OcaMediaCoding: Codable, Sendable {
     public let codingSchemeID: OcaMediaCodingSchemeID
     public let codecParameters: OcaString
