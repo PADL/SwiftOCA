@@ -22,6 +22,9 @@ jobs:
         with:
           swift-version: ${{ matrix.swift }}
       - uses: actions/checkout@v4
+      - name: Linux dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get install liburing-dev
       - name: Build
         run: swift build
       - name: Run tests
