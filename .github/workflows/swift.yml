@@ -6,7 +6,8 @@ name: Swift
 on:
   push:
     branches: [ "main" ]
-G:w: Command not found.
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
