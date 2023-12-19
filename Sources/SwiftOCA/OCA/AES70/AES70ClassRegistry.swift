@@ -43,7 +43,7 @@ public class AES70ClassRegistry {
         var classID: OcaClassID? = classIdentification.classID
 
         repeat {
-            var classVersion = classIdentification.classVersion
+            var classVersion = OcaRoot.classVersion
 
             repeat {
                 // FIXME: why are we even looking up by class version?
