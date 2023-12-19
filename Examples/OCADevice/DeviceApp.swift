@@ -67,7 +67,7 @@ public enum DeviceApp {
             }
         }
 
-        let controlNetwork = try await SwiftOCADevice.OcaControlNetwork(
+        let _ = try await SwiftOCADevice.OcaControlNetwork(
             role: "OCA Control Network",
             deviceDelegate: device
         )
