@@ -6,15 +6,22 @@ name: Swift
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+G:w: Command not found.
 
 jobs:
   build:
-
-    runs-on: macos-13
-
+    name: Swift ${{ matrix.swift }} on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        swift: ["5.9"]
+    runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: swift build -v
+      - uses: swift-actions/setup-swift@v1.25.0
+        with:
+          swift-version: ${{ matrix.swift }}
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build
+      - name: Run tests
+        run: swift test
