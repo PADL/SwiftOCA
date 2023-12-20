@@ -15,13 +15,18 @@ if EnableASAN {
     ASANLinkerSettings.append(LinkerSetting.linkedLibrary("asan"))
 }
 
+let mDNSLibraryTarget: Target
+let TransportPackage: Package.Dependency
 let TransportDependencies: [Target.Dependency]
-let mDNSDependencies: [Target.Dependency]
 
 #if os(Linux)
-mDNSDependencies = [
-    "dnssd",
-]
+mDNSLibraryTarget = Target.systemLibrary(
+    name: "dnssd",
+    providers: [.apt(["libavahi-compat-libdnssd-dev"])]
+)
+
+TransportPackage = .package(url: "https://github.com/PADL/IORingSwift", branch: "main")
+
 TransportDependencies = [
     .product(
         name: "IORing",
@@ -40,7 +45,15 @@ TransportDependencies = [
     ),
 ]
 #else
-mDNSDependencies = []
+// FIXME: [Target] doesn't type check, is there a better way?
+mDNSLibraryTarget = Target.target(
+    name: "__mDNSLibraryTarget__placeholder__",
+    path: "Sources/dnssd",
+    exclude: ["."]
+)
+
+TransportPackage = .package(url: "https://github.com/swhitty/FlyingFox", branch: "main")
+
 TransportDependencies = [
     .product(
         name: "FlyingSocks",
@@ -68,14 +81,10 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.1.0"),
         .package(url: "https://github.com/lhoward/AsyncExtensions", branch: "linux"),
-        .package(url: "https://github.com/swhitty/FlyingFox", branch: "main"),
-        .package(url: "https://github.com/PADL/IORingSwift", branch: "main"),
+        TransportPackage,
     ],
     targets: [
-        .systemLibrary(
-            name: "dnssd",
-            providers: [.apt(["libavahi-compat-libdnssd-dev"])]
-        ),
+        mDNSLibraryTarget,
         .target(
             name: "SwiftOCA",
             dependencies: [
@@ -90,7 +99,8 @@ let package = Package(
             name: "SwiftOCADevice",
             dependencies: [
                 "SwiftOCA",
-            ] + mDNSDependencies + TransportDependencies,
+                "dnssd",
+            ] + TransportDependencies,
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency"),
             ]
