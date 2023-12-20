@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import BinaryCoder
-
 public func Ocp1BinaryEncoder() -> BinaryEncoder {
     BinaryEncoder(config: .ocp1Configuration)
 }

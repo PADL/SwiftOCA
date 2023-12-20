@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import BinaryCoder
 import Foundation
 
 // TODO: clean this up so there aren't so many functions!

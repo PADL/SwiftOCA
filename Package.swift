@@ -62,7 +62,6 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.1.0"),
-        .package(url: "https://github.com/PADL/swift-binary-coder", branch: "inferno"),
         .package(url: "https://github.com/lhoward/AsyncExtensions", branch: "linux"),
         .package(url: "https://github.com/swhitty/FlyingFox", branch: "main"),
         .package(url: "https://github.com/PADL/IORingSwift", branch: "main"),
@@ -76,7 +75,6 @@ let package = Package(
             name: "SwiftOCA",
             dependencies: [
                 "AsyncExtensions",
-                .product(name: "BinaryCoder", package: "swift-binary-coder"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
             ] + TransportDependencies,
             swiftSettings: [
