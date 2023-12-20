@@ -20,7 +20,7 @@ let mDNSDependencies: [Target.Dependency]
 
 #if os(Linux)
 mDNSDependencies = [
-    "dnssd"
+    "dnssd",
 ]
 TransportDependencies = [
     .product(
