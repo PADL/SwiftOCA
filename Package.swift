@@ -16,8 +16,12 @@ if EnableASAN {
 }
 
 let TransportDependencies: [Target.Dependency]
+let mDNSDependencies: [Target.Dependency]
 
 #if os(Linux)
+mDNSDependencies = [
+    "dnssd"
+]
 TransportDependencies = [
     .product(
         name: "IORing",
@@ -36,6 +40,7 @@ TransportDependencies = [
     ),
 ]
 #else
+mDNSDependencies = []
 TransportDependencies = [
     .product(
         name: "FlyingSocks",
@@ -85,8 +90,7 @@ let package = Package(
             name: "SwiftOCADevice",
             dependencies: [
                 "SwiftOCA",
-                "dnssd",
-            ] + TransportDependencies,
+            ] + mDNSDependencies + TransportDependencies,
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency"),
             ]
