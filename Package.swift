@@ -20,11 +20,6 @@ let PlatformTransportPackage: Package.Dependency
 let PlatformDependencies: [Target.Dependency]
 
 #if os(Linux)
-PlatformBonjourLibraryTarget = Target.systemLibrary(
-    name: "dnssd",
-    providers: [.apt(["libavahi-compat-libdnssd-dev"])]
-)
-
 PlatformTransportPackage = .package(url: "https://github.com/PADL/IORingSwift", branch: "main")
 
 PlatformDependencies = [
@@ -46,13 +41,6 @@ PlatformDependencies = [
     ),
 ]
 #else
-// FIXME: [Target] doesn't type check, is there a better way?
-PlatformBonjourLibraryTarget = Target.target(
-    name: "__PlatformBonjourLibraryTarget__placeholder__",
-    path: "Sources/dnssd",
-    exclude: ["."]
-)
-
 PlatformTransportPackage = .package(url: "https://github.com/swhitty/FlyingFox", branch: "main")
 
 PlatformDependencies = [
@@ -85,7 +73,10 @@ let package = Package(
         PlatformTransportPackage,
     ],
     targets: [
-        PlatformBonjourLibraryTarget,
+        .systemLibrary(
+            name: "dnssd",
+            providers: [.apt(["libavahi-compat-libdnssd-dev"])]
+        ),
         .target(
             name: "SwiftOCA",
             dependencies: [
