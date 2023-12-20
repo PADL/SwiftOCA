@@ -1,3 +1,5 @@
+import Foundation
+
 /// A configuration for the binary encoder/decoder.
 public struct BinaryCodingConfiguration {
     /// The endianness to use for fixed-width integers.
