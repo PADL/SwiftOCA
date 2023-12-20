@@ -14,7 +14,10 @@ struct KeyedBinaryDecodingContainer<Key>: KeyedDecodingContainerProtocol where K
         true
     }
 
-    func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
+    func nestedContainer<NestedKey>(
+        keyedBy type: NestedKey.Type,
+        forKey key: Key
+    ) throws -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
         .init(KeyedBinaryDecodingContainer<NestedKey>(state: state, codingPath: codingPath + [key]))
     }
 
@@ -60,5 +63,6 @@ struct KeyedBinaryDecodingContainer<Key>: KeyedDecodingContainerProtocol where K
 
     func decode(_ type: UInt64.Type, forKey key: Key) throws -> UInt64 { try state.decode(type) }
 
-    func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T : Decodable { try state.decode(type, codingPath: codingPath + [key]) }
+    func decode<T>(_ type: T.Type, forKey key: Key) throws -> T
+        where T: Decodable { try state.decode(type, codingPath: codingPath + [key]) }
 }

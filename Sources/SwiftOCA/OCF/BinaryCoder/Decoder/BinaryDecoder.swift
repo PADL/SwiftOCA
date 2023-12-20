@@ -12,10 +12,14 @@ public struct BinaryDecoder {
     }
 
     /// Decodes a value from a flat binary representation.
-    public func decode<Value>(_ type: Value.Type, from data: Data) throws -> Value where Value: Decodable {
+    public func decode<Value>(_ type: Value.Type, from data: Data) throws -> Value
+        where Value: Decodable
+    {
         let state = BinaryDecodingState(config: config, data: data)
         var count: Int? = nil
-        if type is any ArrayRepresentable.Type, config.variableSizedTypeStrategy == .lengthTaggedArrays {
+        if type is any ArrayRepresentable.Type,
+           config.variableSizedTypeStrategy == .lengthTaggedArrays
+        {
             // propagate array count to unkeyed container count
             count = try Int(UInt16(from: BinaryDecoderImpl(state: state, codingPath: [])))
         }

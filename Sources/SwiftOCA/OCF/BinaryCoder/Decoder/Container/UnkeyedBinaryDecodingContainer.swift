@@ -11,6 +11,7 @@ struct UnkeyedBinaryDecodingContainer: UnkeyedDecodingContainer {
             return state.isAtEnd
         }
     }
+
     var count: Int?
 
     init(state: BinaryDecodingState, codingPath: [any CodingKey], count: Int?) {
@@ -19,7 +20,10 @@ struct UnkeyedBinaryDecodingContainer: UnkeyedDecodingContainer {
         self.count = count
     }
 
-    mutating func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
+    mutating func nestedContainer<NestedKey>(
+        keyedBy type: NestedKey
+            .Type
+    ) throws -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
         .init(KeyedBinaryDecodingContainer<NestedKey>(state: state, codingPath: codingPath))
     }
 

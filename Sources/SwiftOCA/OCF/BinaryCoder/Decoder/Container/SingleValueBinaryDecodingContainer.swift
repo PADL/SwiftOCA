@@ -37,5 +37,6 @@ struct SingleValueBinaryDecodingContainer: SingleValueDecodingContainer {
 
     func decode(_ type: UInt64.Type) throws -> UInt64 { try state.decode(type) }
 
-    func decode<T>(_ type: T.Type) throws -> T where T : Decodable { try state.decode(type, codingPath: codingPath) }
+    func decode<T>(_ type: T.Type) throws -> T
+        where T: Decodable { try state.decode(type, codingPath: codingPath) }
 }

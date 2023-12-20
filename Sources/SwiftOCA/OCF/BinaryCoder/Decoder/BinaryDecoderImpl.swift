@@ -12,7 +12,9 @@ struct BinaryDecoderImpl: Decoder {
         self.count = count
     }
 
-    func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> where Key: CodingKey {
+    func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key>
+        where Key: CodingKey
+    {
         .init(KeyedBinaryDecodingContainer(state: state, codingPath: codingPath))
     }
 

@@ -37,7 +37,6 @@ class BinaryDecodingState {
                 }
                 raw.append(byte)
             }
-            break
         case .lengthTagged:
             // TODO: deal with actual number of Unicode code points
             let length = Int(try decodeInteger(UInt16.self))
@@ -46,12 +45,10 @@ class BinaryDecodingState {
                 throw BinaryDecodingError.eofTooEarly
             }
             data.removeFirst(length)
-            break
         default:
             while let byte = data.popFirst() {
                 raw.append(byte)
             }
-            break
         }
         guard let value = String(data: raw, encoding: config.stringEncoding) else {
             throw BinaryDecodingError.stringNotDecodable(raw)
@@ -59,7 +56,9 @@ class BinaryDecodingState {
         return value
     }
 
-    func decodeInteger<Integer>(_ type: Integer.Type) throws -> Integer where Integer: FixedWidthInteger {
+    func decodeInteger<Integer>(_ type: Integer.Type) throws -> Integer
+        where Integer: FixedWidthInteger
+    {
         let byteWidth = Integer.bitWidth / 8
         // TODO: Swift 5.7's `loadUnaligned` should make the `Array` redundant
         // See https://github.com/apple/swift-evolution/blob/main/proposals/0349-unaligned-loads-and-stores.md
@@ -124,7 +123,9 @@ class BinaryDecodingState {
 
     func decode<T>(_ type: T.Type, codingPath: [any CodingKey]) throws -> T where T: Decodable {
         var count: Int? = nil
-        if type is any ArrayRepresentable.Type, config.variableSizedTypeStrategy == .lengthTaggedArrays {
+        if type is any ArrayRepresentable.Type,
+           config.variableSizedTypeStrategy == .lengthTaggedArrays
+        {
             count = try Int(UInt16(from: BinaryDecoderImpl(state: self, codingPath: [])))
         }
         return try T(from: BinaryDecoderImpl(state: self, codingPath: codingPath, count: count))

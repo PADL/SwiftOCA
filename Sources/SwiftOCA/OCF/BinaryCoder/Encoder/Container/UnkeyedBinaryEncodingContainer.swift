@@ -9,7 +9,10 @@ struct UnkeyedBinaryEncodingContainer: UnkeyedEncodingContainer {
         self.codingPath = codingPath
     }
 
-    mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> where NestedKey: CodingKey {
+    mutating func nestedContainer<NestedKey>(
+        keyedBy keyType: NestedKey
+            .Type
+    ) -> KeyedEncodingContainer<NestedKey> where NestedKey: CodingKey {
         .init(KeyedBinaryEncodingContainer<NestedKey>(state: state, codingPath: codingPath))
     }
 

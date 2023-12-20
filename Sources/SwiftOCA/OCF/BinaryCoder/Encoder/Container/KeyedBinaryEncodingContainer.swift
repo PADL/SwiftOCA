@@ -8,7 +8,10 @@ struct KeyedBinaryEncodingContainer<Key>: KeyedEncodingContainerProtocol where K
         self.codingPath = codingPath
     }
 
-    mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey: CodingKey {
+    mutating func nestedContainer<NestedKey>(
+        keyedBy keyType: NestedKey.Type,
+        forKey key: Key
+    ) -> KeyedEncodingContainer<NestedKey> where NestedKey: CodingKey {
         .init(KeyedBinaryEncodingContainer<NestedKey>(state: state, codingPath: codingPath + [key]))
     }
 
@@ -54,7 +57,8 @@ struct KeyedBinaryEncodingContainer<Key>: KeyedEncodingContainerProtocol where K
 
     mutating func encode(_ value: UInt64, forKey key: Key) throws { try state.encode(value) }
 
-    mutating func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable { try state.encode(value, codingPath: codingPath + [key]) }
+    mutating func encode<T>(_ value: T, forKey key: Key) throws
+        where T: Encodable { try state.encode(value, codingPath: codingPath + [key]) }
 
     mutating func encodeIfPresent(_ value: Bool?, forKey key: Key) throws {
         try state.ensureOptionalAllowed()
@@ -154,7 +158,7 @@ struct KeyedBinaryEncodingContainer<Key>: KeyedEncodingContainerProtocol where K
         }
     }
 
-    mutating func encodeIfPresent<T>(_ value: T?, forKey key: Key) throws where T : Encodable {
+    mutating func encodeIfPresent<T>(_ value: T?, forKey key: Key) throws where T: Encodable {
         try state.ensureOptionalAllowed()
         if let value = value {
             try state.encode(value, codingPath: codingPath + [key])

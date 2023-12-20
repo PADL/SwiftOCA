@@ -18,7 +18,7 @@ public enum VariableSizedTypeStrategy {
     var allowsRecursiveTypes: Bool {
         switch self {
         case .untaggedAndAmbiguous,
-                .lengthTaggedArrays: return true
+             .lengthTaggedArrays: return true
         default: return false
         }
     }
@@ -26,7 +26,7 @@ public enum VariableSizedTypeStrategy {
     var allowsOptionalTypes: Bool {
         switch self {
         case .untaggedAndAmbiguous,
-                .lengthTaggedArrays: return true
+             .lengthTaggedArrays: return true
         default: return false
         }
     }
@@ -43,7 +43,7 @@ public enum VariableSizedTypeStrategy {
     var allowsValuesAfterVariableSizedTypes: Bool {
         switch self {
         case .untaggedAndAmbiguous,
-                .lengthTaggedArrays: return true
+             .lengthTaggedArrays: return true
         default: return false
         }
     }

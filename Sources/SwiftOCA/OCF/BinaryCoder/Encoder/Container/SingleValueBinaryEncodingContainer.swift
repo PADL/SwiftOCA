@@ -38,5 +38,6 @@ struct SingleValueBinaryEncodingContainer: SingleValueEncodingContainer {
 
     mutating func encode(_ value: UInt64) throws { try state.encode(value) }
 
-    mutating func encode<T>(_ value: T) throws where T : Encodable { try state.encode(value, codingPath: codingPath) }
+    mutating func encode<T>(_ value: T) throws
+        where T: Encodable { try state.encode(value, codingPath: codingPath) }
 }

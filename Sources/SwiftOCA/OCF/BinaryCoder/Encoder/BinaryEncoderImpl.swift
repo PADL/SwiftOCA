@@ -10,7 +10,9 @@ struct BinaryEncoderImpl: Encoder {
         self.codingPath = codingPath
     }
 
-    func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key: CodingKey {
+    func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key>
+        where Key: CodingKey
+    {
         .init(KeyedBinaryEncodingContainer(state: state, codingPath: codingPath))
     }
 

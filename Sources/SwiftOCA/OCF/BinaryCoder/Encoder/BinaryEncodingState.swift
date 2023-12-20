@@ -3,7 +3,7 @@ import Foundation
 /// The internal state used by the encoders.
 class BinaryEncodingState {
     private let config: BinaryCodingConfiguration
-    private(set) var data: Data = Data()
+    private(set) var data: Data = .init()
 
     /// Whether the encoder has already encountered a variable-sized type.
     /// Depending on the strategy, types after variable-sized types may be
@@ -41,7 +41,7 @@ class BinaryEncodingState {
         guard let encoded = value.data(using: .utf8) else {
             throw BinaryEncodingError.stringNotEncodable(value)
         }
-        
+
         if config.stringTypeStrategy == .lengthTagged {
             let length = UInt16(value.count)
             try encodeInteger(length)
@@ -110,7 +110,7 @@ class BinaryEncodingState {
 
     func encode<T>(_ value: T, codingPath: [any CodingKey]) throws where T: Encodable {
         try ensureNotAfterVariableSizedType()
-        
+
         var isVariableSizedType = value is [Any] || value is Data
         if isVariableSizedType {
             try ensureVariableSizedTypeAllowed(value)
@@ -139,7 +139,7 @@ class BinaryEncodingState {
         }
     }
 
-    private func withCodingTypePath(appending delta: [String], action: () throws -> Void) throws {
+    private func withCodingTypePath(appending delta: [String], action: () throws -> ()) throws {
         codingTypePath += delta
         try ensureNonRecursiveCodingTypePath()
         try action()
@@ -149,7 +149,8 @@ class BinaryEncodingState {
     private func ensureVariableSizedTypeAllowed(_ value: any Encodable) throws {
         let strategy = config.variableSizedTypeStrategy
         guard strategy.allowsSingleVariableSizedType ||
-            value is [Any] && strategy == .lengthTaggedArrays else {
+            value is [Any] && strategy == .lengthTaggedArrays
+        else {
             throw BinaryEncodingError.variableSizedTypeDisallowed
         }
     }
@@ -157,14 +158,16 @@ class BinaryEncodingState {
     private func ensureNotAfterVariableSizedType() throws {
         let strategy = config.variableSizedTypeStrategy
         guard strategy.allowsValuesAfterVariableSizedTypes
-          || (strategy.allowsSingleVariableSizedType && !hasVariableSizedType) else {
+            || (strategy.allowsSingleVariableSizedType && !hasVariableSizedType)
+        else {
             throw BinaryEncodingError.valueAfterVariableSizedTypeDisallowed
         }
     }
 
     private func ensureNonRecursiveCodingTypePath() throws {
         let strategy = config.variableSizedTypeStrategy
-        guard strategy.allowsRecursiveTypes || Set(codingTypePath).count == codingTypePath.count else {
+        guard strategy.allowsRecursiveTypes || Set(codingTypePath).count == codingTypePath.count
+        else {
             throw BinaryEncodingError.recursiveTypeDisallowed
         }
     }

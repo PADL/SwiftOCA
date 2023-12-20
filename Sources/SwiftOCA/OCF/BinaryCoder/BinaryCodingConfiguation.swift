@@ -18,12 +18,14 @@ public struct BinaryCodingConfiguration {
         nullTerminateStrings: Bool = true,
         variableSizedTypeStrategy: VariableSizedTypeStrategy = .untagged
     ) {
-        self.init(endianness: endianness,
-                  stringEncoding: stringEncoding,
-                  stringTypeStrategy: nullTerminateStrings ? .nullTerminate : .none,
-                  variableSizedTypeStrategy: variableSizedTypeStrategy)
+        self.init(
+            endianness: endianness,
+            stringEncoding: stringEncoding,
+            stringTypeStrategy: nullTerminateStrings ? .nullTerminate : .none,
+            variableSizedTypeStrategy: variableSizedTypeStrategy
+        )
     }
-    
+
     public init(
         endianness: Endianness,
         stringEncoding: String.Encoding,
