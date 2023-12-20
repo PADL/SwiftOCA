@@ -26,27 +26,11 @@ open class OcaMediaClockManager: OcaManager {
     )
     public var clockTypesSupported = [OcaMediaClockType]()
 
-    // 3.2 clocks is deprecated in AES70-2017 and not supported by this implementation
-
-    // having to keep clock3Objects and clock3s in sync is not ideal, but it does mean we
-    // don't have to handle event notifications ourselves
-    public private(set) var clock3Objects = Set<OcaMediaClock3>()
-
-    public func add(clock3: OcaMediaClock3) {
-        clock3Objects.insert(clock3)
-        clock3s.append(clock3.objectNumber)
-    }
-
-    public func remove(clock3: OcaMediaClock3) {
-        clock3s.removeAll(where: { $0 == clock3.objectNumber })
-        clock3Objects.remove(clock3)
-    }
-
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.3")
     )
-    public private(set) var clock3s = [OcaONo]()
+    public var clock3s = [OcaMediaClock3]()
 
     public convenience init(deviceDelegate: AES70Device? = nil) async throws {
         try await self.init(

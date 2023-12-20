@@ -30,40 +30,14 @@ open class OcaDeviceTimeManager: OcaManager {
         throw Ocp1Error.notImplemented
     }
 
-    public private(set) var timeSourceObjects = [OcaTimeSource]()
-
-    public func add(timeSource: OcaTimeSource) {
-        timeSourceObjects.append(timeSource)
-        timeSources.append(timeSource.objectNumber)
-    }
-
-    public func remove(timeSource: OcaTimeSource) {
-        timeSources.removeAll(where: { $0 == timeSource.objectNumber })
-        timeSourceObjects.removeAll(where: { $0.objectNumber == timeSource.objectNumber })
-    }
-
-    public func setCurrent(timeSource: OcaTimeSource) throws {
-        guard let index = timeSourceObjects.firstIndex(of: timeSource) else {
-            throw Ocp1Error.status(.badONo)
-        }
-
-        timeSourceObjects.remove(at: index)
-        timeSourceObjects.insert(timeSource, at: 0)
-        currentDeviceTimeSource = timeSource.objectNumber
-    }
-
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.3")
     )
-    public private(set) var timeSources = [OcaONo]()
+    public var timeSources = [OcaTimeSource]()
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("3.2"),
-        getMethodID: OcaMethodID("3.4"),
-        setMethodID: OcaMethodID("3.5")
-    )
-    public private(set) var currentDeviceTimeSource = OcaInvalidONo
+    // property handled explicitly in handleCommand()
+    public var currentDeviceTimeSource: OcaTimeSource?
 
     open var deviceTimePTP: OcaTime {
         get throws {
@@ -88,15 +62,19 @@ open class OcaDeviceTimeManager: OcaManager {
             try await ensureWritable(by: controller, command: command)
             try await set(deviceTimeNTP: deviceTimeNTP)
             return Ocp1Response()
+        case OcaMethodID("3.4"):
+            guard let currentDeviceTimeSource else {
+                throw Ocp1Error.status(.invalidRequest)
+            }
+            return try encodeResponse(currentDeviceTimeSource)
         case OcaMethodID("3.5"):
-            let timeSourceONo: OcaONo = try decodeCommand(command)
-            try await ensureWritable(by: controller, command: command)
-            guard let timeSourceObject = timeSourceObjects
-                .first(where: { $0.objectNumber == timeSourceONo })
+            let newDeviceTimeSourceONo: OcaONo = try decodeCommand(command)
+            guard let newDeviceTimeSource = timeSources
+                .first(where: { $0.objectNumber == newDeviceTimeSourceONo })
             else {
                 throw Ocp1Error.status(.badONo)
             }
-            try setCurrent(timeSource: timeSourceObject)
+            currentDeviceTimeSource = newDeviceTimeSource
             return Ocp1Response()
         case OcaMethodID("3.6"):
             try await ensureReadable(by: controller, command: command)

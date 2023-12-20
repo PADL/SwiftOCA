@@ -60,6 +60,10 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         proxy = try await Proxy<Member>(self)
     }
 
+    public required init(from decoder: Decoder) throws {
+        throw Ocp1Error.objectNotPresent
+    }
+
     public class Proxy<ProxyMember: OcaRoot>: OcaRoot {
         weak var matrix: OcaMatrix<ProxyMember>?
 
@@ -76,6 +80,10 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
                 deviceDelegate: matrix.deviceDelegate,
                 addToRootBlock: false
             )
+        }
+
+        public required init(from decoder: Decoder) throws {
+            throw Ocp1Error.objectNotPresent
         }
 
         private var matrixObjectNumber: OcaONo {

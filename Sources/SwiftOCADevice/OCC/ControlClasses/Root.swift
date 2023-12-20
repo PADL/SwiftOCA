@@ -24,7 +24,7 @@ extension AES70Controller {
     }
 }
 
-open class OcaRoot: CustomStringConvertible, @unchecked
+open class OcaRoot: CustomStringConvertible, Codable, @unchecked
 Sendable {
     var notificationTasks = [OcaPropertyID: Task<(), Error>]()
 
@@ -91,6 +91,15 @@ Sendable {
             let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
             property.finish()
         }
+    }
+
+    public required init(from decoder: Decoder) throws {
+        throw Ocp1Error.objectNotPresent
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(objectNumber)
     }
 
     public var description: String {

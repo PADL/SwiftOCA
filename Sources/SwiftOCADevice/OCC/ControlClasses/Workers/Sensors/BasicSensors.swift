@@ -41,6 +41,10 @@ open class OcaGenericBasicSensor<T: Codable & Comparable & Sendable>: OcaSensor 
             addToRootBlock: addToRootBlock
         )
     }
+
+    public required init(from decoder: Decoder) throws {
+        throw Ocp1Error.objectNotPresent
+    }
 }
 
 open class OcaBasicSensor: OcaSensor {
@@ -76,6 +80,10 @@ open class OcaBooleanSensor: OcaSensor {
             deviceDelegate: deviceDelegate,
             addToRootBlock: addToRootBlock
         )
+    }
+
+    public required init(from decoder: Decoder) throws {
+        throw Ocp1Error.objectNotPresent
     }
 }
 

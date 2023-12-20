@@ -21,41 +21,17 @@ open class OcaNetworkManager: OcaManager {
 
     // networks and streamNetworks are deprecated
 
-    public private(set) var controlNetworkObjects = Set<OcaControlNetwork>()
-
-    public func add(controlNetwork: OcaControlNetwork) {
-        controlNetworkObjects.insert(controlNetwork)
-        controlNetworks.append(controlNetwork.objectNumber)
-    }
-
-    public func remove(controlNetwork: OcaControlNetwork) {
-        controlNetworks.removeAll(where: { $0 == controlNetwork.objectNumber })
-        controlNetworkObjects.remove(controlNetwork)
-    }
-
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.3")
     )
-    public private(set) var controlNetworks = [OcaONo]()
-
-    public private(set) var mediaTransportNetworkObjects = Set<OcaMediaTransportNetwork>()
-
-    public func add(mediaTransportNetwork: OcaMediaTransportNetwork) {
-        mediaTransportNetworkObjects.insert(mediaTransportNetwork)
-        mediaTransportNetworks.append(mediaTransportNetwork.objectNumber)
-    }
-
-    public func remove(mediaTransportNetwork: OcaMediaTransportNetwork) {
-        mediaTransportNetworks.removeAll(where: { $0 == mediaTransportNetwork.objectNumber })
-        mediaTransportNetworkObjects.remove(mediaTransportNetwork)
-    }
+    public var controlNetworks = [OcaControlNetwork]()
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.4"),
         getMethodID: OcaMethodID("3.4")
     )
-    public private(set) var mediaTransportNetworks = [OcaONo]()
+    public var mediaTransportNetworks = [OcaMediaTransportNetwork]()
 
     public convenience init(deviceDelegate: AES70Device? = nil) async throws {
         try await self.init(
