@@ -53,9 +53,20 @@ public final class AES70DeviceEndpointRegistrar {
     public func register(endpoint: any AES70BonjourRegistrableDeviceEndpoint) async throws
         -> Handle
     {
+        let txtRecords: [String: String]
+        if let deviceManager = await AES70Device.shared.deviceManager {
+            txtRecords = [
+                "txtvers": "1",
+                "protovers": "\(deviceManager.version)",
+                "modelGUID": "\(deviceManager.modelGUID)",
+            ]
+        } else {
+            txtRecords = [:]
+        }
         let service = try await Service(
             regType: endpoint.serviceType.rawValue,
-            port: endpoint.port
+            port: endpoint.port,
+            txtRecord: txtRecords
         )
         let endpointRegistration = EndpointRegistration(endpoint: endpoint, service: service)
         services.append(endpointRegistration)
@@ -90,26 +101,35 @@ public final class AES70DeviceEndpointRegistrar {
             domain: String? = nil,
             host: String? = nil,
             port: UInt16, // in host byte order, unlike DNSServiceRegister() API
-            txtLen: UInt16 = 0,
-            txtRecord: UnsafeRawPointer? = nil
+            txtRecord: [String: String] = [:]
         ) async throws {
+            var txtRecordBuffer = [UInt8]()
+
+            for (key, value) in txtRecord {
+                // FIXME: escape
+                let keyValue = "\(key)=\(value)".utf8
+                txtRecordBuffer += [UInt8(keyValue.count)] + keyValue
+            }
+
             let reply: RegisterReply = try await withCheckedThrowingContinuation { continuation in
                 self.registrationContinuation = continuation
 
-                let error = DNSServiceRegister(
-                    &sdRef,
-                    flags,
-                    interfaceIndex,
-                    name,
-                    regType,
-                    domain,
-                    host,
-                    port.bigEndian,
-                    txtLen,
-                    txtRecord,
-                    DNSServiceRegisterBlock_Thunk,
-                    Unmanaged.passRetained(self).toOpaque()
-                )
+                let error = txtRecordBuffer.withUnsafeBufferPointer { txtRecordBufferPointer in
+                    DNSServiceRegister(
+                        &sdRef,
+                        flags,
+                        interfaceIndex,
+                        name,
+                        regType,
+                        domain,
+                        host,
+                        port.bigEndian,
+                        UInt16(txtRecordBufferPointer.count),
+                        txtRecordBufferPointer.baseAddress,
+                        DNSServiceRegisterBlock_Thunk,
+                        Unmanaged.passRetained(self).toOpaque()
+                    )
+                }
 
                 guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else {
                     continuation
