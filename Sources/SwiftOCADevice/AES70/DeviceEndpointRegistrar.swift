@@ -103,12 +103,10 @@ public final class AES70DeviceEndpointRegistrar {
             port: UInt16, // in host byte order, unlike DNSServiceRegister() API
             txtRecord: [String: String] = [:]
         ) async throws {
-            var txtRecordBuffer = [UInt8]()
-
-            for (key, value) in txtRecord {
+            let txtRecordBuffer: [UInt8] = txtRecord.flatMap { key, value in
                 // FIXME: escape
                 let keyValue = "\(key)=\(value)".utf8
-                txtRecordBuffer += [UInt8(keyValue.count)] + keyValue
+                return [UInt8(keyValue.count)] + keyValue
             }
 
             let reply: RegisterReply = try await withCheckedThrowingContinuation { continuation in
