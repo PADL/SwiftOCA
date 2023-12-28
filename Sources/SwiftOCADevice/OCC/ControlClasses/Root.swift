@@ -103,7 +103,8 @@ Sendable {
     }
 
     public var description: String {
-        "\(type(of: self))(objectNumber: \(objectNumber), role: \(role))"
+        let objectNumberString = String(format: "%08x", objectNumber)
+        return "\(type(of: self))(objectNumber: \(objectNumberString), role: \(role))"
     }
 
     func handlePropertyAccessor(
