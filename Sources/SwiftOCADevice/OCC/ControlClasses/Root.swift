@@ -103,7 +103,7 @@ Sendable {
     }
 
     public var description: String {
-        let objectNumberString = String(format: "%08x", objectNumber)
+        let objectNumberString = String(format: "0x%08x", objectNumber)
         return "\(type(of: self))(objectNumber: \(objectNumberString), role: \(role))"
     }
 
