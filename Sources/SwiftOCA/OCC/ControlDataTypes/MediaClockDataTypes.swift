@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct OcaMediaClockRate: Codable, Sendable {
+public struct OcaMediaClockRate: Codable, Sendable, Equatable {
     public let nominalRate: OcaFrequency
     public let pullRange: OcaFrequency
     public let accuracy: OcaFloat32
