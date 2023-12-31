@@ -108,6 +108,12 @@
 		D3AFD3882B32A06700A72E9A /* Endianness.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3752B32A06700A72E9A /* Endianness.swift */; };
 		D3AFD3892B32A06700A72E9A /* StringTypeStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3762B32A06700A72E9A /* StringTypeStrategy.swift */; };
 		D3AFD38A2B32A06700A72E9A /* Documentation.docc in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3772B32A06700A72E9A /* Documentation.docc */; };
+		D3AFD38C2B4150C800A72E9A /* SummingPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD38B2B4150C800A72E9A /* SummingPoint.swift */; };
+		D3AFD38E2B4150F300A72E9A /* SignalInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD38D2B4150F300A72E9A /* SignalInput.swift */; };
+		D3AFD3902B41510E00A72E9A /* SignalOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD38F2B41510E00A72E9A /* SignalOutput.swift */; };
+		D3AFD3922B41513300A72E9A /* SummingPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3912B41513300A72E9A /* SummingPoint.swift */; };
+		D3AFD3942B41514400A72E9A /* SignalInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3932B41514400A72E9A /* SignalInput.swift */; };
+		D3AFD3962B41515000A72E9A /* SignalOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3952B41515000A72E9A /* SignalOutput.swift */; };
 		D3C0830F2A7B01AB0020AD57 /* libSwiftOCADevice.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */; };
 		D3C083162A7B021B0020AD57 /* SwiftOCADeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */; };
 		D3C083172A7B02360020AD57 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
@@ -360,6 +366,12 @@
 		D3AFD3752B32A06700A72E9A /* Endianness.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Endianness.swift; sourceTree = "<group>"; };
 		D3AFD3762B32A06700A72E9A /* StringTypeStrategy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringTypeStrategy.swift; sourceTree = "<group>"; };
 		D3AFD3772B32A06700A72E9A /* Documentation.docc */ = {isa = PBXFileReference; lastKnownFileType = folder.documentationcatalog; path = Documentation.docc; sourceTree = "<group>"; };
+		D3AFD38B2B4150C800A72E9A /* SummingPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummingPoint.swift; sourceTree = "<group>"; };
+		D3AFD38D2B4150F300A72E9A /* SignalInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalInput.swift; sourceTree = "<group>"; };
+		D3AFD38F2B41510E00A72E9A /* SignalOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalOutput.swift; sourceTree = "<group>"; };
+		D3AFD3912B41513300A72E9A /* SummingPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummingPoint.swift; sourceTree = "<group>"; };
+		D3AFD3932B41514400A72E9A /* SignalInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalInput.swift; sourceTree = "<group>"; };
+		D3AFD3952B41515000A72E9A /* SignalOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalOutput.swift; sourceTree = "<group>"; };
 		D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftOCADeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftOCADeviceTests.swift; sourceTree = "<group>"; };
 		D3C083182A7B0D2C0020AD57 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
@@ -723,6 +735,9 @@
 				D351F2132A729D8B008C5513 /* Switch.swift */,
 				D351F2152A729DFC008C5513 /* PolarityState.swift */,
 				D351F2172A729E29008C5513 /* Gain.swift */,
+				D3AFD38D2B4150F300A72E9A /* SignalInput.swift */,
+				D3AFD38F2B41510E00A72E9A /* SignalOutput.swift */,
+				D3AFD38B2B4150C800A72E9A /* SummingPoint.swift */,
 			);
 			path = Actuators;
 			sourceTree = "<group>";
@@ -1041,6 +1056,9 @@
 				D3E6E19B2A3ACA6C00BF7095 /* Polarity.swift */,
 				D3E6E19C2A3ACA6C00BF7095 /* Gain.swift */,
 				D3E6E19D2A3ACA6C00BF7095 /* Actuator.swift */,
+				D3AFD3932B41514400A72E9A /* SignalInput.swift */,
+				D3AFD3952B41515000A72E9A /* SignalOutput.swift */,
+				D3AFD3912B41513300A72E9A /* SummingPoint.swift */,
 			);
 			path = Actuators;
 			sourceTree = "<group>";
@@ -1446,6 +1464,7 @@
 				D351F20C2A729AB3008C5513 /* Sensor.swift in Sources */,
 				D33B52B42A7060BC001A1BA7 /* Actuator.swift in Sources */,
 				D3C0831A2A7B0D9B0020AD57 /* Device.swift in Sources */,
+				D3AFD38E2B4150F300A72E9A /* SignalInput.swift in Sources */,
 				D3C11DBD2A78A3DC00452B2A /* Controller.swift in Sources */,
 				D32229D32ABC270900B56B6B /* AES70OCP1IORingDeviceEndpoint.swift in Sources */,
 				D351F2082A7299B0008C5513 /* Agent.swift in Sources */,
@@ -1469,6 +1488,7 @@
 				D351F2102A729C36008C5513 /* LevelSensor.swift in Sources */,
 				D33B52902A6FD332001A1BA7 /* Root.swift in Sources */,
 				D351F2182A729E29008C5513 /* Gain.swift in Sources */,
+				D3AFD38C2B4150C800A72E9A /* SummingPoint.swift in Sources */,
 				D351F2012A7132F8008C5513 /* BoundedDeviceProperty.swift in Sources */,
 				D32229D22ABC270900B56B6B /* AES70OCP1FlyingSocksController.swift in Sources */,
 				D33B52AE2A702D92001A1BA7 /* SubscriptionManager.swift in Sources */,
@@ -1477,6 +1497,7 @@
 				D33A35AD2B2FC29000FEDC43 /* AudioProcessingManager.swift in Sources */,
 				D33A35B82B2FC9C900FEDC43 /* MediaTransportNetwork.swift in Sources */,
 				D33B52B02A703AEA001A1BA7 /* Root+Commands.swift in Sources */,
+				D3AFD3902B41510E00A72E9A /* SignalOutput.swift in Sources */,
 				D33A35B42B2FC4E500FEDC43 /* ControlNetwork.swift in Sources */,
 				D33B52A82A702D29001A1BA7 /* Manager.swift in Sources */,
 				D33A35AF2B2FC2BB00FEDC43 /* DiagnosticManager.swift in Sources */,
@@ -1526,6 +1547,7 @@
 				D306556F2A5254D70083F093 /* TimeSource.swift in Sources */,
 				D3AFD3782B32A06700A72E9A /* BinaryCodingConfiguation.swift in Sources */,
 				D3AFD3442B2CEA3800A72E9A /* LockManager.swift in Sources */,
+				D3AFD3922B41513300A72E9A /* SummingPoint.swift in Sources */,
 				D3E6E1BF2A3ACA8200BF7095 /* Header.swift in Sources */,
 				D3AFD3582B2D226200A72E9A /* NetworkApplication.swift in Sources */,
 				D3E6E1C02A3ACA8200BF7095 /* KeepAlive.swift in Sources */,
@@ -1542,6 +1564,7 @@
 				D3AFD3832B32A06700A72E9A /* SingleValueBinaryDecodingContainer.swift in Sources */,
 				D3E6E1CA2A3ACA9000BF7095 /* Mute.swift in Sources */,
 				D3F2942C2A95D55F00D7F0CD /* Sequence+AsyncMap.swift in Sources */,
+				D3AFD3962B41515000A72E9A /* SignalOutput.swift in Sources */,
 				D3AFD37A2B32A06700A72E9A /* BinaryEncodingError.swift in Sources */,
 				D3E6E1E02A3ACAA900BF7095 /* Property.swift in Sources */,
 				D306440D2A781C280063DA65 /* Codable.swift in Sources */,
@@ -1568,6 +1591,7 @@
 				D3E6E1D12A3ACA9A00BF7095 /* EventHandler.swift in Sources */,
 				D3AFD35A2B2D226200A72E9A /* MediaTransportApplication.swift in Sources */,
 				D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */,
+				D3AFD3942B41514400A72E9A /* SignalInput.swift in Sources */,
 				D306440B2A78039B0063DA65 /* MirrorWrapper.swift in Sources */,
 				D3AFD3872B32A06700A72E9A /* VariableSizedTypeStrategy.swift in Sources */,
 				D3E6E1C82A3ACA9000BF7095 /* Gain.swift in Sources */,
