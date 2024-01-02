@@ -78,11 +78,11 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
         throw Ocp1Error.notImplemented
     }
 
-    open func getSinkConnectors() async throws -> [OcaMediaSourceConnector] {
+    open func getSinkConnectors() async throws -> [OcaMediaSinkConnector] {
         []
     }
 
-    open func getSinkConnector(_ id: OcaMediaConnectorID) async throws -> OcaMediaSourceConnector {
+    open func getSinkConnector(_ id: OcaMediaConnectorID) async throws -> OcaMediaSinkConnector {
         throw Ocp1Error.notImplemented
     }
 
