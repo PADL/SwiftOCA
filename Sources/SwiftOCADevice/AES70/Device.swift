@@ -41,7 +41,7 @@ public actor AES70Device {
         return nextObjectNumber - 1
     }
 
-    public func initializeDefaultObjects() async throws {
+    public func initializeDefaultObjects(deviceManager: OcaDeviceManager? = nil) async throws {
         rootBlock = try await OcaBlock(
             objectNumber: OcaRootBlockONo,
             deviceDelegate: self,
@@ -49,7 +49,11 @@ public actor AES70Device {
         )
         subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
         rootBlock.type = 1
-        deviceManager = try await OcaDeviceManager(deviceDelegate: self)
+        if let deviceManager {
+            self.deviceManager = deviceManager
+        } else {
+            self.deviceManager = try await OcaDeviceManager(deviceDelegate: self)
+        }
     }
 
     public func add(endpoint: AES70DeviceEndpoint) async throws {
