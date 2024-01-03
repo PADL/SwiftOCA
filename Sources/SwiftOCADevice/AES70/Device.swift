@@ -120,7 +120,11 @@ public actor AES70Device {
         _ event: OcaEvent,
         parameters: Data
     ) async throws {
-        assert(subscriptionManager != nil)
+        // if we are using a custom device manager, it may set properties prior to the subscription
+        // manager being initialized
+        assert(deviceManager == nil || subscriptionManager != nil)
+        guard let subscriptionManager else { return }
+
         switch subscriptionManager.state {
         case .eventsDisabled:
             subscriptionManager.objectsChangedWhilstNotificationsDisabled.insert(event.emitterONo)
