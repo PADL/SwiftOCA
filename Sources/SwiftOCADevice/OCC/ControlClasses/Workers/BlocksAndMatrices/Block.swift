@@ -75,7 +75,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.3"),
-        getMethodID: OcaMethodID("3.16")
+        getMethodID: OcaMethodID("3.9")
     )
     public var signalPaths = OcaMap<OcaUint16, OcaSignalPath>()
 
@@ -282,9 +282,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
             try await ensureWritable(by: controller, command: command)
             let index: OcaUint16 = try decodeCommand(command)
             try await remove(signalPathAt: index)
-        case OcaMethodID("3.9"):
-            try await ensureReadable(by: controller, command: command)
-            return try encodeResponse(signalPaths)
         case OcaMethodID("3.10"):
             try await ensureReadable(by: controller, command: command)
             let signalPaths: [OcaUint16: OcaSignalPath] =
