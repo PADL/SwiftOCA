@@ -27,6 +27,10 @@ public extension OcaRoot {
 
         precondition(objectNumber != OcaInvalidONo)
 
+        guard self is OcaWorker else {
+            return [:]
+        }
+
         dict[objectNumberJSONKey] = objectNumber
         dict[classIDJSONKey] = Self.classID.description
 

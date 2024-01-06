@@ -79,7 +79,7 @@ public enum DeviceApp {
         )
         try block.add(actionObject: gain)
 
-        try await serializeDeserialize(block)
+        try await serializeDeserialize(await device.rootBlock)
 
         let _ = try await SwiftOCADevice.OcaControlNetwork(
             role: "OCA Control Network",
@@ -103,7 +103,7 @@ public enum DeviceApp {
 
 func serializeDeserialize(
     _ object: SwiftOCADevice
-        .OcaBlock<SwiftOCADevice.OcaWorker>
+        .OcaBlock<SwiftOCADevice.OcaRoot>
 ) async throws {
     do {
         let jsonResultData = try JSONSerialization.data(withJSONObject: object.jsonObject)
