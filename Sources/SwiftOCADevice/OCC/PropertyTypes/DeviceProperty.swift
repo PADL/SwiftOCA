@@ -135,7 +135,9 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     }
 
     func getJsonValue(object: OcaRoot) throws -> Any {
-        if let value = subject.value as? [OcaRoot] {
+        if isNil(subject.value) {
+            return NSNull()
+        } else if let value = subject.value as? [OcaRoot] {
             return value.map(\.jsonObject)
         } else if !JSONSerialization.isValidJSONObject(subject.value) {
             let data = try JSONEncoder().encode(subject.value)
