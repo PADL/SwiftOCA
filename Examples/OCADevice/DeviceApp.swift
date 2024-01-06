@@ -56,16 +56,30 @@ public enum DeviceApp {
                 deviceDelegate: device
             )
 
+        let block = try await SwiftOCADevice
+            .OcaBlock<SwiftOCADevice.OcaWorker>(role: "Test Block", deviceDelegate: device)
+
         for x in 0..<matrix.members.nX {
             for y in 0..<matrix.members.nY {
                 let coordinate = OcaVector2D(x: OcaMatrixCoordinate(x), y: OcaMatrixCoordinate(y))
                 let actuator = try await MyBooleanActuator(
                     role: "Actuator \(x),\(y)",
-                    deviceDelegate: device
+                    deviceDelegate: device,
+                    addToRootBlock: false
                 )
+                try block.add(actionObject: actuator)
                 try matrix.add(member: actuator, at: coordinate)
             }
         }
+
+        let gain = try await SwiftOCADevice.OcaGain(
+            role: "Test Gain",
+            deviceDelegate: device,
+            addToRootBlock: false
+        )
+        try block.add(actionObject: gain)
+
+        try await serializeDeserialize(block)
 
         let _ = try await SwiftOCADevice.OcaControlNetwork(
             role: "OCA Control Network",
@@ -84,5 +98,20 @@ public enum DeviceApp {
             }
             #endif
         }
+    }
+}
+
+func serializeDeserialize(
+    _ object: SwiftOCADevice
+        .OcaBlock<SwiftOCADevice.OcaWorker>
+) async throws {
+    do {
+        let jsonResultData = try JSONSerialization.data(withJSONObject: object.jsonObject)
+        print(String(data: jsonResultData, encoding: .utf8)!)
+
+        let decoded = try JSONSerialization.jsonObject(with: jsonResultData) as! [String: Any]
+        try await AES70Device.shared.deserialize(jsonObject: decoded)
+    } catch {
+        debugPrint("coding error: \(error)")
     }
 }

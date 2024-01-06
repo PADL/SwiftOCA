@@ -32,6 +32,7 @@ public enum Ocp1Error: Error, Equatable {
     case notConnected
     case notImplemented
     case objectAlreadyContainedByBlock
+    case objectClassMismatch
     case objectNotPresent
     case pduSendingFailed
     case pduTooShort

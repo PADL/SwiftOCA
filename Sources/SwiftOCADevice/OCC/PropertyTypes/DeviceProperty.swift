@@ -15,6 +15,7 @@
 //
 
 import AsyncExtensions
+import Foundation
 import SwiftOCA
 
 protocol OcaDevicePropertyRepresentable {
@@ -29,7 +30,10 @@ protocol OcaDevicePropertyRepresentable {
     var subject: AsyncCurrentValueSubject<Value> { get }
 
     func get(object: OcaRoot) async throws -> Ocp1Response
+    func getJsonValue(object: OcaRoot) -> Any
+
     func set(object: OcaRoot, command: Ocp1Command) async throws
+    func set(object: OcaRoot, jsonValue: Any, device: AES70Device) async throws
 }
 
 extension OcaDevicePropertyRepresentable {
@@ -40,6 +44,18 @@ extension OcaDevicePropertyRepresentable {
     var async: AnyAsyncSequence<Value> {
         subject.eraseToAnyAsyncSequence()
     }
+}
+
+extension AsyncCurrentValueSubject: AsyncCurrentValueSubjectNilRepresentable
+    where Element: ExpressibleByNilLiteral
+{
+    func sendNil() {
+        send(nil)
+    }
+}
+
+private protocol AsyncCurrentValueSubjectNilRepresentable {
+    func sendNil()
 }
 
 @propertyWrapper
@@ -117,9 +133,41 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         return try object.encodeResponse(value)
     }
 
+    func getJsonValue(object: OcaRoot) -> Any {
+        if let value = subject.value as? [OcaRoot] {
+            return value.map(\.jsonObject)
+        } else {
+            return subject.value
+        }
+    }
+
     func set(object: OcaRoot, command: Ocp1Command) async throws {
         let newValue: Value = try object.decodeCommand(command)
         set(object: object, newValue)
+        notifySubscribers(object: object)
+    }
+
+    func set(object: OcaRoot, jsonValue: Any, device: AES70Device) async throws {
+        if jsonValue is NSNull {
+            if let subject = subject as? AsyncCurrentValueSubjectNilRepresentable {
+                subject.sendNil()
+            } else {
+                throw Ocp1Error.status(.badFormat)
+            }
+        } else if let values = jsonValue as? [[String: Any]] {
+            var objects = [OcaRoot]()
+            for value in values {
+                if let object = try? await AES70Device.shared.deserialize(jsonObject: value) {
+                    objects.append(object)
+                }
+            }
+            subject.send(objects as! Value)
+        } else {
+            guard let newValue = jsonValue as? Value else {
+                throw Ocp1Error.status(.badFormat)
+            }
+            subject.send(newValue)
+        }
         notifySubscribers(object: object)
     }
 

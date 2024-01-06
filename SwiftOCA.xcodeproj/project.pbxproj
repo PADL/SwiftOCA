@@ -27,6 +27,7 @@
 		D32229D32ABC270900B56B6B /* AES70OCP1IORingDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CB2ABC270900B56B6B /* AES70OCP1IORingDeviceEndpoint.swift */; };
 		D32229D42ABC270900B56B6B /* AES70OCP1IORingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CC2ABC270900B56B6B /* AES70OCP1IORingController.swift */; };
 		D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */; };
+		D337713F2B48A829003BD47B /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D337713E2B48A829003BD47B /* Root+JSON.swift */; };
 		D33A35A72B2FB1D600FEDC43 /* MediaClock3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */; };
 		D33A35A92B2FB7BE00FEDC43 /* MediaClockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */; };
 		D33A35AB2B2FBD0700FEDC43 /* DeviceTimeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */; };
@@ -287,6 +288,7 @@
 		D32229CB2ABC270900B56B6B /* AES70OCP1IORingDeviceEndpoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AES70OCP1IORingDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D32229CC2ABC270900B56B6B /* AES70OCP1IORingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AES70OCP1IORingController.swift; sourceTree = "<group>"; };
 		D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEndpointRegistrar.swift; sourceTree = "<group>"; };
+		D337713E2B48A829003BD47B /* Root+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+JSON.swift"; sourceTree = "<group>"; };
 		D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClock3.swift; sourceTree = "<group>"; };
 		D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClockManager.swift; sourceTree = "<group>"; };
 		D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTimeManager.swift; sourceTree = "<group>"; };
@@ -645,6 +647,7 @@
 				D351F2062A72999D008C5513 /* Agents */,
 				D33B528F2A6FD332001A1BA7 /* Root.swift */,
 				D33B52AF2A703AEA001A1BA7 /* Root+Commands.swift */,
+				D337713E2B48A829003BD47B /* Root+JSON.swift */,
 				D33D595C2B2FD04900963157 /* PortsRepresentable.swift */,
 				D33B52A62A702D1C001A1BA7 /* Managers */,
 				D33B52A02A702CD6001A1BA7 /* Workers */,
@@ -1473,6 +1476,7 @@
 				D33B52AA2A702D3F001A1BA7 /* NetworkManager.swift in Sources */,
 				D32229D02ABC270900B56B6B /* AES70OCP1FlyingSocksDeviceEndpoint.swift in Sources */,
 				D3AFD35C2B30EC0600A72E9A /* CodingManager.swift in Sources */,
+				D337713F2B48A829003BD47B /* Root+JSON.swift in Sources */,
 				D351F2122A729CB0008C5513 /* TimeSource.swift in Sources */,
 				D33B52AC2A702D4D001A1BA7 /* DeviceManager.swift in Sources */,
 				D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */,

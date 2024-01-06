@@ -26,9 +26,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     )
     public var type: OcaONo = OcaInvalidONo
 
-    public private(set) var actionObjects = [ActionObject]()
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("3.2")
+    )
+    public var actionObjects = [ActionObject]()
 
-    open func add(actionObject object: ActionObject) async throws {
+    open func add(actionObject object: ActionObject) throws {
         guard object.objectNumber != OcaInvalidONo else {
             throw Ocp1Error.status(.badONo)
         }

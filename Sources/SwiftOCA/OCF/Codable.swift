@@ -32,3 +32,17 @@ extension BinaryCodingConfiguration {
         )
     }
 }
+
+// private API for SwiftOCADevice
+
+public extension Encoder {
+    var _isOcp1BinaryEncoder: Bool {
+        self is BinaryEncoderImpl
+    }
+}
+
+public extension Decoder {
+    var _isOcp1BinaryDecoder: Bool {
+        self is BinaryDecoderImpl
+    }
+}

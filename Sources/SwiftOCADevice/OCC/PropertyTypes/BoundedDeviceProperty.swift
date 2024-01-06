@@ -62,6 +62,44 @@ public struct OcaBoundedDeviceProperty<
         try await storage.get(object: object)
     }
 
+    func getJsonValue(object: OcaRoot) -> Any {
+        let valueDict: [String: Value] =
+            ["v": storage.subject.value.value,
+             "l": storage.subject.value.range.lowerBound,
+             "u": storage.subject.value.range.upperBound]
+
+        return valueDict
+    }
+
+    func set(object: OcaRoot, _ newValue: OcaBoundedPropertyValue<Value>) {
+        storage.set(object: object, newValue)
+        notifySubscribers(object: object)
+    }
+
+    func set(object: OcaRoot, jsonValue: Any, device: AES70Device) async throws {
+        guard let valueDict = jsonValue as? [String: Value] else {
+            throw Ocp1Error.status(.badFormat)
+        }
+
+        let value = valueDict["v"]
+        let lowerBound = valueDict["l"]
+        let upperBound = valueDict["u"]
+        guard let value,
+              let lowerBound,
+              let upperBound,
+              lowerBound <= upperBound,
+              value >= lowerBound,
+              value <= upperBound
+        else {
+            throw Ocp1Error.status(.badFormat)
+        }
+
+        set(
+            object: object,
+            OcaBoundedPropertyValue<Value>(value: value, in: lowerBound...upperBound)
+        )
+    }
+
     func set(object: OcaRoot, command: Ocp1Command) async throws {
         let value: Value = try object.decodeCommand(command)
         // check it is in range

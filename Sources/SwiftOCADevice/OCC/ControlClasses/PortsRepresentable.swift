@@ -85,7 +85,7 @@ public extension SwiftOCADevice.OcaBlock where ActionObject: OcaPortsRepresentab
             _ = try await add(signalPath: signalPath)
 
             if addToBlock, outputs[i] != self, !actionObjects.contains(outputs[i]) {
-                try await add(actionObject: outputs[i])
+                try add(actionObject: outputs[i])
             }
         }
     }

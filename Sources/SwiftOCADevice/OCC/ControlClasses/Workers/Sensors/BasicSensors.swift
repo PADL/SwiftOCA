@@ -24,7 +24,7 @@ open class OcaGenericBasicSensor<T: Codable & Comparable & Sendable>: OcaSensor 
         _ initialReading: OcaBoundedPropertyValue<T>,
         objectNumber: OcaONo? = nil,
         lockable: OcaBoolean = false,
-        role: OcaString = "Root",
+        role: OcaString = "Sensor",
         deviceDelegate: AES70Device? = nil,
         addToRootBlock: Bool = true
     ) async throws {
@@ -43,7 +43,7 @@ open class OcaGenericBasicSensor<T: Codable & Comparable & Sendable>: OcaSensor 
     }
 
     public required init(from decoder: Decoder) throws {
-        throw Ocp1Error.objectNotPresent
+        throw Ocp1Error.notImplemented
     }
 }
 
@@ -83,7 +83,7 @@ open class OcaBooleanSensor: OcaSensor {
     }
 
     public required init(from decoder: Decoder) throws {
-        throw Ocp1Error.objectNotPresent
+        throw Ocp1Error.notImplemented
     }
 }
 

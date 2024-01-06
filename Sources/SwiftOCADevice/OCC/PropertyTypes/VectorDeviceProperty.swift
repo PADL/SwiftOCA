@@ -66,6 +66,33 @@ public struct OcaVectorDeviceProperty<
         try await storage.get(object: object)
     }
 
+    func getJsonValue(object: OcaRoot) -> Any {
+        let valueDict: [String: Value] =
+            ["x": storage.subject.value.x,
+             "y": storage.subject.value.y]
+
+        return valueDict
+    }
+
+    func set(object: OcaRoot, _ newValue: OcaVector2D<Value>) {
+        storage.set(object: object, newValue)
+        notifySubscribers(object: object)
+    }
+
+    func set(object: OcaRoot, jsonValue: Any, device: AES70Device) async throws {
+        guard let valueDict = jsonValue as? [String: Value] else {
+            throw Ocp1Error.status(.badFormat)
+        }
+
+        let x = valueDict["x"]
+        let y = valueDict["y"]
+        guard let x, let y else {
+            throw Ocp1Error.status(.badFormat)
+        }
+
+        set(object: object, OcaVector2D(x: x, y: y))
+    }
+
     func set(object: OcaRoot, command: Ocp1Command) async throws {
         let newValue: OcaVector2D<Value> = try object.decodeCommand(command)
         storage.set(object: object, newValue)

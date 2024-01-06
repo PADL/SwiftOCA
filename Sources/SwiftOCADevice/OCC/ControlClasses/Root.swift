@@ -32,12 +32,12 @@ Sendable {
     open class var classVersion: OcaClassVersionNumber { 2 }
 
     public let objectNumber: OcaONo
-    public let lockable: OcaBoolean
-    public let role: OcaString
+    public var lockable: OcaBoolean
+    public var role: OcaString
 
     public internal(set) weak var deviceDelegate: AES70Device?
 
-    enum LockState {
+    enum LockState: Sendable {
         /// AES70-1-2023 uses this confusing `NoReadWrite` and `NoWrite` nomenclature
         case unlocked
         case lockedNoWrite(AES70Controller.ID)
@@ -93,13 +93,44 @@ Sendable {
         }
     }
 
-    public required init(from decoder: Decoder) throws {
-        throw Ocp1Error.objectNotPresent
+    enum CodingKeys: String, CodingKey {
+        case objectNumber = "oNo"
+        case classIdentification = "1.1"
+        case lockable = "1.2"
+        case role = "1.3"
     }
 
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        try container.encode(objectNumber)
+        if encoder._isOcp1BinaryEncoder {
+            var container = encoder.unkeyedContainer()
+            try container.encode(objectNumber)
+        } else {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(Self.classID.description, forKey: .classIdentification)
+            try container.encode(objectNumber, forKey: .objectNumber)
+            try container.encode(lockable, forKey: .lockable)
+            try container.encode(role, forKey: .role)
+        }
+    }
+
+    public required init(from decoder: Decoder) throws {
+        if decoder._isOcp1BinaryDecoder {
+            throw Ocp1Error.notImplemented
+        } else {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let classID = try OcaClassID(
+                container
+                    .decode(String.self, forKey: .classIdentification)
+            )
+            guard classID == Self.classID else {
+                throw Ocp1Error.objectClassMismatch
+            }
+
+            objectNumber = try container.decode(OcaONo.self, forKey: .objectNumber)
+            lockable = try container.decode(OcaBoolean.self, forKey: .lockable)
+            role = try container.decode(OcaString.self, forKey: .role)
+            deviceDelegate = AES70Device.shared
+        }
     }
 
     public var description: String {

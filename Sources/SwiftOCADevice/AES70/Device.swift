@@ -77,7 +77,7 @@ public actor AES70Device {
         objects[object.objectNumber] = object
         if addToRootBlock {
             precondition(object.objectNumber != OcaRootBlockONo)
-            try await rootBlock.add(actionObject: object)
+            try rootBlock.add(actionObject: object)
         }
         if object is OcaManager, let deviceManager, deviceManager != object {
             let classIdentification = object.objectIdentification.classIdentification

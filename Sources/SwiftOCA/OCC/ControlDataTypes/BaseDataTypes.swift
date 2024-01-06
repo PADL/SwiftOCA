@@ -172,6 +172,20 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible {
         fields = string.split(separator: ".").map { OcaUint16($0)! }
     }
 
+    public init(unsafeString string: OcaString) throws {
+        let fields = try string.split(separator: ".").map {
+            let value = OcaUint16($0)
+            guard let value else {
+                throw Ocp1Error.objectClassMismatch
+            }
+            return value
+        }
+        guard fields.count > 1 else {
+            throw Ocp1Error.objectClassMismatch
+        }
+        self.fields = fields
+    }
+
     init(_ fields: [OcaUint16]) {
         self.fields = fields
     }
