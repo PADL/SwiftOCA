@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+import AsyncAlgorithms
+import AsyncExtensions
 import Foundation
 import SwiftOCA
 
@@ -28,10 +30,14 @@ public actor AES70Device {
     public private(set) var rootBlock: OcaBlock<OcaRoot>!
     public private(set) var subscriptionManager: OcaSubscriptionManager!
     public private(set) var deviceManager: OcaDeviceManager!
+    public var events: AnyAsyncSequence<(OcaEvent, Data)> {
+        eventsChannel.eraseToAnyAsyncSequence()
+    }
 
     var objects = [OcaONo: OcaRoot]()
     var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
     var endpoints = [AES70DeviceEndpoint]()
+    var eventsChannel = AsyncChannel<(OcaEvent, Data)>()
 
     public func allocateObjectNumber() -> OcaONo {
         repeat {
@@ -124,6 +130,8 @@ public actor AES70Device {
         // manager being initialized
         assert(deviceManager == nil || subscriptionManager != nil)
         guard let subscriptionManager else { return }
+
+        Task { await eventsChannel.send((event, parameters)) }
 
         switch subscriptionManager.state {
         case .eventsDisabled:
