@@ -168,7 +168,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         } else if let values = jsonValue as? [[String: Any]] {
             var objects = [OcaRoot]()
             for value in values {
-                if let object = try? await AES70Device.shared.deserialize(jsonObject: value) {
+                if let object = try? await device.deserialize(jsonObject: value) {
                     objects.append(object)
                 }
             }
