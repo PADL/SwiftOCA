@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@_implementationOnly
 import AnyCodable
 import AsyncExtensions
 import Foundation
@@ -135,16 +136,20 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     }
 
     func getJsonValue(object: OcaRoot) throws -> Any {
+        let jsonValue: Any
+
         if isNil(subject.value) {
-            return NSNull()
+            jsonValue = NSNull()
         } else if let value = subject.value as? [OcaRoot] {
-            return value.map(\.jsonObject)
+            jsonValue = value.map(\.jsonObject)
         } else if !JSONSerialization.isValidJSONObject(subject.value) {
             let data = try JSONEncoder().encode(subject.value)
-            return try JSONDecoder().decode(AnyCodable.self, from: data)
+            jsonValue = try JSONDecoder().decode(AnyDecodable.self, from: data).value
         } else {
-            return subject.value
+            jsonValue = subject.value
         }
+
+        return jsonValue
     }
 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
