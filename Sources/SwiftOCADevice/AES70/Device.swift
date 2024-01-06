@@ -170,4 +170,34 @@ public actor AES70Device {
     public func setEventDelegate(_ eventDelegate: AES70DeviceEventDelegate) {
         self.eventDelegate = eventDelegate
     }
+
+    public func resolve<T: OcaRoot>(objectNumber: OcaONo) -> T? {
+        objects[objectNumber] as? T
+    }
+
+    public func resolve<T: OcaRoot>(objectIdentification: OcaObjectIdentification) -> T? {
+        guard let object: T = resolve(objectNumber: objectIdentification.oNo) else {
+            return nil
+        }
+
+        var classID: OcaClassID? = objectIdentification.classIdentification.classID
+
+        repeat {
+            var classVersion = OcaRoot.classVersion
+
+            repeat {
+                let id = OcaClassIdentification(classID: classID!, classVersion: classVersion)
+
+                if id == object.objectIdentification.classIdentification {
+                    return object
+                }
+
+                classVersion = classVersion - 1
+            } while classVersion != 0
+
+            classID = classID?.parent
+        } while classID != nil
+
+        return nil
+    }
 }
