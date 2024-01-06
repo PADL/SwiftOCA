@@ -18,6 +18,10 @@ import Foundation
 import SwiftOCA
 import SwiftOCADevice
 
+final class DeviceEventDelegate: AES70DeviceEventDelegate {
+    public func onEvent(_ event: SwiftOCA.OcaEvent, parameters: Data) async {}
+}
+
 @main
 public enum DeviceApp {
     static var testActuator: SwiftOCADevice.OcaBooleanActuator?
@@ -36,6 +40,8 @@ public enum DeviceApp {
 
         let device = AES70Device.shared
         try await device.initializeDefaultObjects()
+        let delegate = DeviceEventDelegate()
+        await device.setEventDelegate(delegate)
         #if os(Linux)
         let streamEndpoint =
             try await AES70OCP1IORingStreamDeviceEndpoint(address: listenAddressData)

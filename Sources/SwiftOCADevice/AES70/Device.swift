@@ -23,6 +23,13 @@ import SwiftOCA
 let NSEC_PER_MSEC: UInt64 = 1_000_000
 let NSEC_PER_SEC: UInt64 = 1_000_000_000
 
+public protocol AES70DeviceEventDelegate: AnyObject {
+    func onEvent(
+        _ event: OcaEvent,
+        parameters: Data
+    ) async
+}
+
 @globalActor
 public actor AES70Device {
     public static let shared = AES70Device()
@@ -30,23 +37,12 @@ public actor AES70Device {
     public private(set) var rootBlock: OcaBlock<OcaRoot>!
     public private(set) var subscriptionManager: OcaSubscriptionManager!
     public private(set) var deviceManager: OcaDeviceManager!
-    public var events: AnyAsyncSequence<(OcaEvent, Data)> {
-        eventsChannel.eraseToAnyAsyncSequence()
-    }
-
-    public func events<T: OcaRoot>(
-        filteredByType type: T
-            .Type
-    ) -> AnyAsyncSequence<(OcaEvent, Data)> {
-        eventsChannel.filter {
-            await self.objects[$0.0.emitterONo] is T
-        }.eraseToAnyAsyncSequence()
-    }
 
     var objects = [OcaONo: OcaRoot]()
     var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
     var endpoints = [AES70DeviceEndpoint]()
-    var eventsChannel = AsyncChannel<(OcaEvent, Data)>()
+
+    private weak var eventDelegate: AES70DeviceEventDelegate?
 
     public func allocateObjectNumber() -> OcaONo {
         repeat {
@@ -140,7 +136,11 @@ public actor AES70Device {
         assert(deviceManager == nil || subscriptionManager != nil)
         guard let subscriptionManager else { return }
 
-        Task { await eventsChannel.send((event, parameters)) }
+        if let eventDelegate {
+            Task {
+                await eventDelegate.onEvent(event, parameters: parameters)
+            }
+        }
 
         switch subscriptionManager.state {
         case .eventsDisabled:
@@ -165,5 +165,9 @@ public actor AES70Device {
 
     func notifySubscribers(_ event: OcaEvent) async throws {
         try await notifySubscribers(event, parameters: Data())
+    }
+
+    public func setEventDelegate(_ eventDelegate: AES70DeviceEventDelegate) {
+        self.eventDelegate = eventDelegate
     }
 }
