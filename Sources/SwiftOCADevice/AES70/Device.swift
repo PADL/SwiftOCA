@@ -34,6 +34,15 @@ public actor AES70Device {
         eventsChannel.eraseToAnyAsyncSequence()
     }
 
+    public func events<T: OcaRoot>(
+        filteredByType type: T
+            .Type
+    ) -> AnyAsyncSequence<(OcaEvent, Data)> {
+        eventsChannel.filter {
+            await self.objects[$0.0.emitterONo] is T
+        }.eraseToAnyAsyncSequence()
+    }
+
     var objects = [OcaONo: OcaRoot]()
     var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
     var endpoints = [AES70DeviceEndpoint]()
