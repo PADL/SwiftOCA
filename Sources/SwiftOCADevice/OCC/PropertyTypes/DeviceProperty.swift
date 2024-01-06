@@ -165,7 +165,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
             } else {
                 throw Ocp1Error.status(.badFormat)
             }
-        } else if let values = jsonValue as? [[String: Any]] {
+        } else if let values = jsonValue as? [[String: Sendable]] {
             var objects = [OcaRoot]()
             for value in values {
                 if let object = try? await device.deserialize(jsonObject: value) {

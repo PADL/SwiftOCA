@@ -45,7 +45,7 @@ public extension OcaRoot {
 
 public extension AES70Device {
     @discardableResult
-    func deserialize(jsonObject: [String: Any]) async throws -> OcaRoot {
+    func deserialize(jsonObject: [String: Sendable]) async throws -> OcaRoot {
         guard let classID = jsonObject[classIDJSONKey] as? String else {
             throw Ocp1Error.objectClassMismatch
         }
