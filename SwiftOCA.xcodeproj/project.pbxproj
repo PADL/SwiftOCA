@@ -28,6 +28,7 @@
 		D32229D42ABC270900B56B6B /* AES70OCP1IORingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CC2ABC270900B56B6B /* AES70OCP1IORingController.swift */; };
 		D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */; };
 		D337713F2B48A829003BD47B /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D337713E2B48A829003BD47B /* Root+JSON.swift */; };
+		D33771422B48DB3B003BD47B /* AnyCodable in Frameworks */ = {isa = PBXBuildFile; productRef = D33771412B48DB3B003BD47B /* AnyCodable */; };
 		D33A35A72B2FB1D600FEDC43 /* MediaClock3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */; };
 		D33A35A92B2FB7BE00FEDC43 /* MediaClockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */; };
 		D33A35AB2B2FBD0700FEDC43 /* DeviceTimeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */; };
@@ -478,6 +479,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D33771422B48DB3B003BD47B /* AnyCodable in Frameworks */,
 				D33B528C2A6FD206001A1BA7 /* libSwiftOCA.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1273,6 +1275,7 @@
 			);
 			name = SwiftOCADevice;
 			packageProductDependencies = (
+				D33771412B48DB3B003BD47B /* AnyCodable */,
 			);
 			productName = SwiftOCADevice;
 			productReference = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */;
@@ -1417,11 +1420,11 @@
 			);
 			mainGroup = D3E6E15B2A3ACA0B00BF7095;
 			packageReferences = (
-				D3E6E1E92A3ACAED00BF7095 /* XCRemoteSwiftPackageReference "swift-binary-coder" */,
 				D3E6E1EC2A3ACB0700BF7095 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 				D3E6E2592A3D28DD00BF7095 /* XCRemoteSwiftPackageReference "AsyncExtensions" */,
 				D3E6E2842A43B8D000BF7095 /* XCRemoteSwiftPackageReference "swiftui-sliders" */,
 				D36ECA282A5B20480015174A /* XCRemoteSwiftPackageReference "FlyingFox" */,
+				D33771402B48D9E9003BD47B /* XCRemoteSwiftPackageReference "AnyCodable" */,
 			);
 			productRefGroup = D3E6E1652A3ACA0B00BF7095 /* Products */;
 			projectDirPath = "";
@@ -2142,25 +2145,25 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		D33771402B48D9E9003BD47B /* XCRemoteSwiftPackageReference "AnyCodable" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Flight-School/AnyCodable.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.6.7;
+			};
+		};
 		D36ECA282A5B20480015174A /* XCRemoteSwiftPackageReference "FlyingFox" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:swhitty/FlyingFox.git";
+			repositoryURL = "https://github.com/swhitty/FlyingFox.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.9.1;
 			};
 		};
-		D3E6E1E92A3ACAED00BF7095 /* XCRemoteSwiftPackageReference "swift-binary-coder" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:PADL/swift-binary-coder.git";
-			requirement = {
-				branch = inferno;
-				kind = branch;
-			};
-		};
 		D3E6E1EC2A3ACB0700BF7095 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:apple/swift-async-algorithms.git";
+			repositoryURL = "https://github.com/apple/swift-async-algorithms.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.1.0;
@@ -2168,7 +2171,7 @@
 		};
 		D3E6E2592A3D28DD00BF7095 /* XCRemoteSwiftPackageReference "AsyncExtensions" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:sideeffect-io/AsyncExtensions.git";
+			repositoryURL = "https://github.com/sideeffect-io/AsyncExtensions.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.5.2;
@@ -2176,7 +2179,7 @@
 		};
 		D3E6E2842A43B8D000BF7095 /* XCRemoteSwiftPackageReference "swiftui-sliders" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:spacenation/swiftui-sliders.git";
+			repositoryURL = "https://github.com/spacenation/swiftui-sliders.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.0.0;
@@ -2185,6 +2188,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		D33771412B48DB3B003BD47B /* AnyCodable */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D33771402B48D9E9003BD47B /* XCRemoteSwiftPackageReference "AnyCodable" */;
+			productName = AnyCodable;
+		};
 		D33B52D32A706FD7001A1BA7 /* FlyingSocks */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D36ECA282A5B20480015174A /* XCRemoteSwiftPackageReference "FlyingFox" */;

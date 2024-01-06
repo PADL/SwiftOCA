@@ -36,7 +36,7 @@ public extension OcaRoot {
 
         for (_, propertyKeyPath) in allPropertyKeyPaths {
             let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
-            dict[property.propertyID.description] = property.getJsonValue(object: self)
+            dict[property.propertyID.description] = try? property.getJsonValue(object: self)
         }
 
         return dict

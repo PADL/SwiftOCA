@@ -66,7 +66,7 @@ public struct OcaVectorDeviceProperty<
         try await storage.get(object: object)
     }
 
-    func getJsonValue(object: OcaRoot) -> Any {
+    func getJsonValue(object: OcaRoot) throws -> Any {
         let valueDict: [String: Value] =
             ["x": storage.subject.value.x,
              "y": storage.subject.value.y]

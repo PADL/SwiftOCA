@@ -62,7 +62,7 @@ public struct OcaBoundedDeviceProperty<
         try await storage.get(object: object)
     }
 
-    func getJsonValue(object: OcaRoot) -> Any {
+    func getJsonValue(object: OcaRoot) throws -> Any {
         let valueDict: [String: Value] =
             ["v": storage.subject.value.value,
              "l": storage.subject.value.range.lowerBound,

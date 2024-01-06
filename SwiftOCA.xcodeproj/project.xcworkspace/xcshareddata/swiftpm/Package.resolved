@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "anycodable",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Flight-School/AnyCodable.git",
+      "state" : {
+        "revision" : "862808b2070cd908cb04f9aafe7de83d35f81b05",
+        "version" : "0.6.7"
+      }
+    },
+    {
       "identity" : "asyncextensions",
       "kind" : "remoteSourceControl",
       "location" : "git@github.com:sideeffect-io/AsyncExtensions.git",
@@ -25,15 +34,6 @@
       "state" : {
         "revision" : "9cfed92b026c524674ed869a4ff2dcfdeedf8a2a",
         "version" : "0.1.0"
-      }
-    },
-    {
-      "identity" : "swift-binary-coder",
-      "kind" : "remoteSourceControl",
-      "location" : "git@github.com:PADL/swift-binary-coder.git",
-      "state" : {
-        "branch" : "inferno",
-        "revision" : "04f2070af1064759ebba432453c4ad182bc9a5e0"
       }
     },
     {

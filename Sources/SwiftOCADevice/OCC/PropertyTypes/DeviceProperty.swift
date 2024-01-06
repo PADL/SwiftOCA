@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import AnyCodable
 import AsyncExtensions
 import Foundation
 import SwiftOCA
@@ -30,7 +31,7 @@ protocol OcaDevicePropertyRepresentable {
     var subject: AsyncCurrentValueSubject<Value> { get }
 
     func get(object: OcaRoot) async throws -> Ocp1Response
-    func getJsonValue(object: OcaRoot) -> Any
+    func getJsonValue(object: OcaRoot) throws -> Any
 
     func set(object: OcaRoot, command: Ocp1Command) async throws
     func set(object: OcaRoot, jsonValue: Any, device: AES70Device) async throws
@@ -133,9 +134,12 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         return try object.encodeResponse(value)
     }
 
-    func getJsonValue(object: OcaRoot) -> Any {
+    func getJsonValue(object: OcaRoot) throws -> Any {
         if let value = subject.value as? [OcaRoot] {
             return value.map(\.jsonObject)
+        } else if !JSONSerialization.isValidJSONObject(subject.value) {
+            let data = try JSONEncoder().encode(subject.value)
+            return try JSONDecoder().decode(AnyCodable.self, from: data)
         } else {
             return subject.value
         }
@@ -162,6 +166,12 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
                 }
             }
             subject.send(objects as! Value)
+        } else if !JSONSerialization.isValidJSONObject(subject.value),
+                  let jsonValue = jsonValue as? Codable
+        {
+            let data = try JSONEncoder().encode(jsonValue)
+            let decodedValue = try JSONDecoder().decode(Value.self, from: data)
+            subject.send(decodedValue)
         } else {
             guard let newValue = jsonValue as? Value else {
                 throw Ocp1Error.status(.badFormat)
