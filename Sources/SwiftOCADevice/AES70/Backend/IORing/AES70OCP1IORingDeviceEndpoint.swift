@@ -144,7 +144,8 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
     }
 
     override public func run() async throws {
-        socket = try makeSocketAndListen()
+        let socket = try makeSocketAndListen()
+        self.socket = socket
         repeat {
             do {
                 let clients: AnyAsyncSequence<Socket> = try await socket.accept()
@@ -175,7 +176,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
             }
             if Task.isCancelled { break }
         } while true
-        socket = nil
+        self.socket = nil
     }
 
     func makeSocketAndListen() throws -> Socket {
@@ -239,8 +240,9 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
     static let MaximumPduSize = 1500
 
     override public func run() async throws {
-        try await super.start()
-        socket = try makeSocket()
+        try await super.run()
+        let socket = try makeSocket()
+        self.socket = socket
         repeat {
             do {
                 let messagePdus = try await socket.receiveMessages(count: Self.MaximumPduSize)
@@ -266,7 +268,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
             } catch Errno.canceled {}
             if Task.isCancelled { break }
         } while true
-        socket = nil
+        self.socket = nil
     }
 
     func makeSocket() throws -> Socket {
