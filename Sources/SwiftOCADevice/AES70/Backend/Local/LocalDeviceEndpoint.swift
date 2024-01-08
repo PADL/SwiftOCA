@@ -31,22 +31,15 @@ public final class AES70LocalDeviceEndpoint: AES70DeviceEndpoint {
     var responseChannel = AsyncChannel<Data>()
 
     private var controller: AES70LocalController!
-    private var task: Task<(), Error>!
 
     public init() async throws {
         controller = await AES70LocalController(endpoint: self)
         try await AES70Device.shared.add(endpoint: self)
-
-        task = Task {
-            for await messagePdu in self.requestChannel {
-                try await handleMessagePdu(messagePdu)
-            }
-        }
     }
 
-    deinit {
-        if let task {
-            task.cancel()
+    public func run() async throws {
+        for await messagePdu in requestChannel {
+            try await handleMessagePdu(messagePdu)
         }
     }
 

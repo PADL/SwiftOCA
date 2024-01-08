@@ -93,20 +93,18 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
     }
 
     var listeningAddress: Socket.Address? {
-        try? state?.socket.sockname()
+        try? socket?.sockname()
     }
 
-    public func start() async throws {
+    public func run() async throws {
         let socket = try await preparePoolAndSocket()
         do {
-            let task = Task { try await start(on: socket, pool: pool) }
-            state = (socket: socket, task: task)
-            defer { state = nil }
             if port != 0 {
-                endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
+                Task { endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
                     .register(endpoint: self)
+                }
             }
-            try await task.getValue(cancelling: .whenParentIsCancelled)
+            try await start(on: socket, pool: pool)
         } catch {
             logger?.logCritical("server error: \(error.localizedDescription)")
             try? socket.close()
@@ -125,19 +123,17 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
     }
 
     var waiting: Set<Continuation> = []
-    private(set) var state: (socket: Socket, task: Task<(), Error>)? {
+    private(set) var socket: Socket? {
         didSet { isListeningDidUpdate(from: oldValue != nil) }
     }
 
-    public func stop(timeout: TimeInterval = 0) async {
+    private func shutdown(timeout: TimeInterval = 0) async {
         if let endpointRegistrationHandle {
             try? await AES70DeviceEndpointRegistrar.shared
                 .deregister(handle: endpointRegistrationHandle)
         }
 
-        guard let (socket, task) = state else { return }
-        try? socket.close()
-        try? await task.getValue(cancelling: .afterTimeout(seconds: timeout))
+        try? socket?.close()
     }
 
     func makeSocketAndListen() throws -> Socket {
@@ -344,7 +340,7 @@ extension Logging {
 }
 
 extension AES70OCP1FlyingSocksDeviceEndpoint {
-    public var isListening: Bool { state != nil }
+    public var isListening: Bool { socket != nil }
 
     func waitUntilListening(timeout: TimeInterval = 5) async throws {
         try await FlyingSocks.withThrowingTimeout(seconds: timeout) {

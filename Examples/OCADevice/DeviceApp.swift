@@ -95,12 +95,12 @@ public enum DeviceApp {
         await withThrowingTaskGroup(of: Void.self) { taskGroup in
             taskGroup.addTask {
                 print("Starting OCP.1 stream endpoint \(streamEndpoint)...")
-                try await streamEndpoint.start()
+                try await streamEndpoint.run()
             }
             #if os(Linux)
             taskGroup.addTask {
                 print("Starting OCP.1 datagram endpoint \(datagramEndpoint)...")
-                try await datagramEndpoint.start()
+                try await datagramEndpoint.run()
             }
             #endif
         }

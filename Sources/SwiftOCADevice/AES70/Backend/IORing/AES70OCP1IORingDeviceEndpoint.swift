@@ -30,13 +30,11 @@ import SwiftOCA
 public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoint,
     CustomStringConvertible
 {
-    typealias State = (socket: Socket, task: Task<(), Error>)
-
     let address: any SocketAddress
     let timeout: TimeInterval
     let ring: IORing
 
-    var state: State?
+    var socket: Socket?
     var endpointRegistrationHandle: AES70DeviceEndpointRegistrar.Handle?
 
     public var controllers: [AES70Controller] {
@@ -120,14 +118,16 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
         (try? address.port) ?? 0
     }
 
-    public func start() async throws {
+    public func run() async throws {
         if port != 0 {
-            endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
-                .register(endpoint: self)
+            Task {
+                endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
+                    .register(endpoint: self)
+            }
         }
     }
 
-    public func stop(timeout: TimeInterval = 0) async {
+    fileprivate func shutdown(timeout: TimeInterval = 0) async {
         if let endpointRegistrationHandle {
             try? await AES70DeviceEndpointRegistrar.shared
                 .deregister(handle: endpointRegistrationHandle)
@@ -143,50 +143,39 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
         _controllers
     }
 
-    override public func start() async throws {
-        let socket = try makeSocketAndListen()
-        let task = Task {
-            repeat {
+    override public func run() async throws {
+        socket = try makeSocketAndListen()
+        repeat {
+            do {
+                let clients: AnyAsyncSequence<Socket> = try await socket.accept()
                 do {
-                    let clients: AnyAsyncSequence<Socket> = try await socket.accept()
-                    do {
-                        for try await client in clients {
-                            Task {
-                                let controller =
-                                    try await AES70OCP1IORingStreamController(socket: client)
-                                debugPrint(
-                                    "AES70OCP1IORingStreamDeviceEndpoint: new stream client \(controller)"
-                                )
-                                await handleController(controller)
-                            }
+                    for try await client in clients {
+                        Task {
+                            let controller =
+                                try await AES70OCP1IORingStreamController(socket: client)
+                            debugPrint(
+                                "AES70OCP1IORingStreamDeviceEndpoint: new stream client \(controller)"
+                            )
+                            await handleController(controller)
                         }
-                    } catch Errno.invalidArgument {
-                        print(
-                            "AES70OCP1IORingStreamDeviceEndpoint: invalid argument when accepting connections, check kernel version supports multishot accept with io_uring"
-                        )
-                        await self.stop()
                     }
-                } catch Errno.canceled {
-                    debugPrint(
-                        "AES70OCP1IORingStreamDeviceEndpoint: received cancelation, trying to accept() again"
+                } catch Errno.invalidArgument {
+                    print(
+                        "AES70OCP1IORingStreamDeviceEndpoint: invalid argument when accepting connections, check kernel version supports multishot accept with io_uring"
                     )
-                } catch {
-                    print("AES70OCP1IORingStreamDeviceEndpoint: received error \(error), bailing")
-                    throw error
+                    break
                 }
-                if Task.isCancelled { break }
-            } while true
-        }
-        state = (socket: socket, task: task)
-        try await super.start()
-    }
-
-    override public func stop(timeout: TimeInterval = 0) async {
-        await super.stop(timeout: timeout)
-        state?.task.cancel()
-        // we're not going to explicitly close the socket, we'll just wait for its refcount to be
-        // zero
-        state = nil
+            } catch Errno.canceled {
+                debugPrint(
+                    "AES70OCP1IORingStreamDeviceEndpoint: received cancelation, trying to accept() again"
+                )
+            } catch {
+                print("AES70OCP1IORingStreamDeviceEndpoint: received error \(error), bailing")
+                break
+            }
+            if Task.isCancelled { break }
+        } while true
+        socket = nil
     }
 
     func makeSocketAndListen() throws -> Socket {
@@ -249,45 +238,35 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
 
     static let MaximumPduSize = 1500
 
-    override public func start() async throws {
-        let socket = try makeSocket()
-        let task = Task {
-            repeat {
-                do {
-                    let messagePdus = try await socket.receiveMessages(count: Self.MaximumPduSize)
+    override public func run() async throws {
+        try await super.start()
+        socket = try makeSocket()
+        repeat {
+            do {
+                let messagePdus = try await socket.receiveMessages(count: Self.MaximumPduSize)
 
-                    for try await messagePdu in messagePdus {
-                        Task { @AES70Device in
-                            let controller =
-                                try await controller(for: AnySocketAddress(bytes: messagePdu.name))
-                            do {
-                                let messages = try await controller.decodeMessages(from: messagePdu)
-                                for (message, rrq) in messages {
-                                    try await handle(
-                                        controller: controller,
-                                        message: message,
-                                        rrq: rrq
-                                    )
-                                }
-                            } catch {
-                                await remove(controller: controller)
+                for try await messagePdu in messagePdus {
+                    Task { @AES70Device in
+                        let controller =
+                            try await controller(for: AnySocketAddress(bytes: messagePdu.name))
+                        do {
+                            let messages = try await controller.decodeMessages(from: messagePdu)
+                            for (message, rrq) in messages {
+                                try await handle(
+                                    controller: controller,
+                                    message: message,
+                                    rrq: rrq
+                                )
                             }
+                        } catch {
+                            await remove(controller: controller)
                         }
                     }
-                } catch Errno.canceled {}
-                if Task.isCancelled { break }
-            } while true
-        }
-        state = (socket: socket, task: task)
-        try await super.start()
-    }
-
-    override public func stop(timeout: TimeInterval = 0) async {
-        await super.stop(timeout: timeout)
-        state?.task.cancel()
-        // we're not going to explicitly close the socket, we'll just wait for its refcount to be
-        // zero
-        state = nil
+                }
+            } catch Errno.canceled {}
+            if Task.isCancelled { break }
+        } while true
+        socket = nil
     }
 
     func makeSocket() throws -> Socket {
@@ -299,7 +278,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
     }
 
     func sendMessagePdu(_ messagePdu: Message) async throws {
-        guard let socket = state?.socket else {
+        guard let socket else {
             throw Ocp1Error.notConnected
         }
         try await socket.sendMessage(messagePdu)
