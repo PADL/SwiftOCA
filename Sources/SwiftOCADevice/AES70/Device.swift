@@ -23,7 +23,7 @@ import SwiftOCA
 let NSEC_PER_MSEC: UInt64 = 1_000_000
 let NSEC_PER_SEC: UInt64 = 1_000_000_000
 
-public protocol AES70DeviceEventDelegate: AnyObject {
+public protocol AES70DeviceEventDelegate: AnyObject, Sendable {
     func onEvent(
         _ event: OcaEvent,
         parameters: Data
