@@ -174,6 +174,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
                     print("AES70OCP1IORingStreamDeviceEndpoint: received error \(error), bailing")
                     throw error
                 }
+                if Task.isCancelled { break }
             } while true
         }
         state = (socket: socket, task: task)
@@ -274,6 +275,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                         }
                     }
                 } catch Errno.canceled {}
+                if Task.isCancelled { break }
             } while true
         }
         state = (socket: socket, task: task)

@@ -143,6 +143,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
                     try await receiveMessagePdus().asyncForEach {
                         await _messages.send($0)
                     }
+                    if Task.isCancelled { break }
                 } while true
             } catch {
                 _messages.fail(error)
