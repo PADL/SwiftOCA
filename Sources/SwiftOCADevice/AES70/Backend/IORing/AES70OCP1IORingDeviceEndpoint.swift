@@ -144,6 +144,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
     }
 
     override public func run() async throws {
+        try await super.run()
         let socket = try makeSocketAndListen()
         self.socket = socket
         repeat {

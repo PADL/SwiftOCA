@@ -104,7 +104,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
                     .register(endpoint: self)
                 }
             }
-            try await start(on: socket, pool: pool)
+            try await _run(on: socket, pool: pool)
         } catch {
             logger?.logCritical("server error: \(error.localizedDescription)")
             try? socket.close()
@@ -148,7 +148,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
         return socket
     }
 
-    func start(on socket: Socket, pool: AsyncSocketPool) async throws {
+    func _run(on socket: Socket, pool: AsyncSocketPool) async throws {
         let asyncSocket = try AsyncSocket(socket: socket, pool: pool)
 
         return try await withThrowingTaskGroup(of: Void.self) { group in
