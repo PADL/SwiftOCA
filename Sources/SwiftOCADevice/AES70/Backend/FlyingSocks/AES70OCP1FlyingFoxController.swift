@@ -24,19 +24,9 @@ import FlyingSocks
 import Foundation
 import SwiftOCA
 
-/// A remote WebSocket endpoint
-actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
-    var subscriptions = [OcaONo: NSMutableSet]()
-
-    private let input: AsyncStream<WSMessage>
-    private let output: AsyncStream<WSMessage>.Continuation
-    private var endpoint: AES70OCP1FlyingFoxDeviceEndpoint?
-
-    private var keepAliveTask: Task<(), Error>?
-    private var lastMessageReceivedTime = Date.distantPast
-
-    private var messages: AnyAsyncSequence<(Ocp1Message, Bool)> {
-        input.flatMap {
+extension AsyncStream where Element == WSMessage {
+    fileprivate var ocp1DecodedMessages: AnyAsyncSequence<(Ocp1Message, Bool)> {
+        flatMap {
             // TODO: handle OCP.1 PDUs split over multiple frames
             guard case let .data(data) = $0 else {
                 throw Ocp1Error.invalidMessageType
@@ -54,20 +44,30 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
             return messages.map { ($0, messageType == .ocaCmdRrq) }.async
         }.eraseToAnyAsyncSequence()
     }
+}
+
+/// A remote WebSocket endpoint
+actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
+    var subscriptions = [OcaONo: NSMutableSet]()
+
+    private let outputStream: AsyncStream<WSMessage>.Continuation
+    private var endpoint: AES70OCP1FlyingFoxDeviceEndpoint?
+
+    private var keepAliveTask: Task<(), Error>?
+    private var lastMessageReceivedTime = Date.distantPast
 
     init(
-        input: AsyncStream<WSMessage>,
-        output: AsyncStream<WSMessage>.Continuation,
+        inputStream: AsyncStream<WSMessage>,
+        outputStream: AsyncStream<WSMessage>.Continuation,
         endpoint: AES70OCP1FlyingFoxDeviceEndpoint?
     ) {
-        self.input = input
-        self.output = output
+        self.outputStream = outputStream
         self.endpoint = endpoint
 
         Task { @AES70Device in
             await self.endpoint?.register(controller: self)
             do {
-                for try await (message, rrq) in await messages {
+                for try await (message, rrq) in inputStream.ocp1DecodedMessages {
                     var response: Ocp1Response?
 
                     await self.updateLastMessageReceivedTime()
@@ -106,22 +106,22 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
                 await self.endpoint?.logger.logError(error, on: self)
             }
             await self.endpoint?.deregister(controller: self)
-            try? await self.close()
+            await self.close()
         }
     }
 
-    var connectionIsStale: Bool {
+    private var connectionIsStale: Bool {
         lastMessageReceivedTime + 3 * TimeInterval(keepAliveInterval) /
             TimeInterval(NSEC_PER_SEC) < Date()
     }
 
-    var keepAliveInterval: UInt64 = 0 {
+    private var keepAliveInterval: UInt64 = 0 {
         didSet {
             if keepAliveInterval != 0, keepAliveInterval != oldValue {
                 keepAliveTask = Task<(), Error> {
                     repeat {
                         if connectionIsStale {
-                            try await self.close()
+                            await self.close()
                             break
                         }
                         try await sendKeepAlive()
@@ -135,7 +135,7 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
         }
     }
 
-    func setKeepAliveInterval(_ keepAliveInterval: UInt64) {
+    private func setKeepAliveInterval(_ keepAliveInterval: UInt64) {
         self.keepAliveInterval = keepAliveInterval
     }
 
@@ -148,7 +148,7 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
             messages,
             type: messageType
         )
-        output.yield(.data(messagePduData))
+        outputStream.yield(.data(messagePduData))
     }
 
     private func sendKeepAlive() async throws {
@@ -156,8 +156,8 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
         try await sendMessage(keepAlive, type: .ocaKeepAlive)
     }
 
-    func close() async throws {
-        output.finish()
+    private func close() async {
+        outputStream.finish()
 
         keepAliveTask?.cancel()
         keepAliveTask = nil

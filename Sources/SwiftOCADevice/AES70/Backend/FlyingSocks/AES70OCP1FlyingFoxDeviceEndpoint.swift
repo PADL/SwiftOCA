@@ -16,9 +16,7 @@
 
 #if os(macOS) || os(iOS)
 
-@preconcurrency
 import AsyncExtensions
-@preconcurrency
 @_implementationOnly
 import FlyingFox
 @_implementationOnly
@@ -54,8 +52,8 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70BonjourRegistrableDevi
         {
             AsyncStream<WSMessage> { continuation in
                 _ = AES70OCP1FlyingFoxController(
-                    input: client,
-                    output: continuation,
+                    inputStream: client,
+                    outputStream: continuation,
                     endpoint: endpoint
                 )
             }

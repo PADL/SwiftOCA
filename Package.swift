@@ -45,6 +45,11 @@ PlatformTransportPackage = .package(url: "https://github.com/swhitty/FlyingFox",
 
 PlatformDependencies = [
     .product(
+        name: "FlyingFox",
+        package: "FlyingFox",
+        condition: .when(platforms: [.macOS, .iOS])
+    ),
+    .product(
         name: "FlyingSocks",
         package: "FlyingFox",
         condition: .when(platforms: [.macOS, .iOS])
