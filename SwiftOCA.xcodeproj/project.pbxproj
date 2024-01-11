@@ -116,6 +116,9 @@
 		D3AFD3922B41513300A72E9A /* SummingPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3912B41513300A72E9A /* SummingPoint.swift */; };
 		D3AFD3942B41514400A72E9A /* SignalInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3932B41514400A72E9A /* SignalInput.swift */; };
 		D3AFD3962B41515000A72E9A /* SignalOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3952B41515000A72E9A /* SignalOutput.swift */; };
+		D3B325052B4F677700C8335F /* FlyingFox in Frameworks */ = {isa = PBXBuildFile; productRef = D3B325042B4F677700C8335F /* FlyingFox */; };
+		D3B325072B4F679B00C8335F /* AES70OCP1FlyingFoxController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B325062B4F679B00C8335F /* AES70OCP1FlyingFoxController.swift */; };
+		D3B325092B4F6B4900C8335F /* AES70OCP1FlyingFoxDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B325082B4F6B4900C8335F /* AES70OCP1FlyingFoxDeviceEndpoint.swift */; };
 		D3C0830F2A7B01AB0020AD57 /* libSwiftOCADevice.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */; };
 		D3C083162A7B021B0020AD57 /* SwiftOCADeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */; };
 		D3C083172A7B02360020AD57 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
@@ -375,6 +378,8 @@
 		D3AFD3912B41513300A72E9A /* SummingPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummingPoint.swift; sourceTree = "<group>"; };
 		D3AFD3932B41514400A72E9A /* SignalInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalInput.swift; sourceTree = "<group>"; };
 		D3AFD3952B41515000A72E9A /* SignalOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalOutput.swift; sourceTree = "<group>"; };
+		D3B325062B4F679B00C8335F /* AES70OCP1FlyingFoxController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1FlyingFoxController.swift; sourceTree = "<group>"; };
+		D3B325082B4F6B4900C8335F /* AES70OCP1FlyingFoxDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1FlyingFoxDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftOCADeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftOCADeviceTests.swift; sourceTree = "<group>"; };
 		D3C083182A7B0D2C0020AD57 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
@@ -509,6 +514,7 @@
 				D3E6E25B2A3D28DD00BF7095 /* AsyncExtensions in Frameworks */,
 				D3E6E1EE2A3ACB0700BF7095 /* AsyncAlgorithms in Frameworks */,
 				D33B52D42A706FD7001A1BA7 /* FlyingSocks in Frameworks */,
+				D3B325052B4F677700C8335F /* FlyingFox in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -588,6 +594,8 @@
 				D32229C72ABC270900B56B6B /* AES70OCP1FlyingSocksDeviceEndpoint.swift */,
 				D32229C82ABC270900B56B6B /* AES70OCP1FlyingSocksLogging.swift */,
 				D32229C92ABC270900B56B6B /* AES70OCP1FlyingSocksController.swift */,
+				D3B325082B4F6B4900C8335F /* AES70OCP1FlyingFoxDeviceEndpoint.swift */,
+				D3B325062B4F679B00C8335F /* AES70OCP1FlyingFoxController.swift */,
 			);
 			path = FlyingSocks;
 			sourceTree = "<group>";
@@ -1337,6 +1345,7 @@
 				D3E6E1ED2A3ACB0700BF7095 /* AsyncAlgorithms */,
 				D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */,
 				D33B52D32A706FD7001A1BA7 /* FlyingSocks */,
+				D3B325042B4F677700C8335F /* FlyingFox */,
 			);
 			productName = SwiftOCA;
 			productReference = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */;
@@ -1501,8 +1510,10 @@
 				D33B52AE2A702D92001A1BA7 /* SubscriptionManager.swift in Sources */,
 				D351F21C2A72A26E008C5513 /* Matrix.swift in Sources */,
 				D351F2162A729DFC008C5513 /* PolarityState.swift in Sources */,
+				D3B325092B4F6B4900C8335F /* AES70OCP1FlyingFoxDeviceEndpoint.swift in Sources */,
 				D33A35AD2B2FC29000FEDC43 /* AudioProcessingManager.swift in Sources */,
 				D33A35B82B2FC9C900FEDC43 /* MediaTransportNetwork.swift in Sources */,
+				D3B325072B4F679B00C8335F /* AES70OCP1FlyingFoxController.swift in Sources */,
 				D33B52B02A703AEA001A1BA7 /* Root+Commands.swift in Sources */,
 				D3AFD3902B41510E00A72E9A /* SignalOutput.swift in Sources */,
 				D33A35B42B2FC4E500FEDC43 /* ControlNetwork.swift in Sources */,
@@ -2197,6 +2208,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D36ECA282A5B20480015174A /* XCRemoteSwiftPackageReference "FlyingFox" */;
 			productName = FlyingSocks;
+		};
+		D3B325042B4F677700C8335F /* FlyingFox */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D36ECA282A5B20480015174A /* XCRemoteSwiftPackageReference "FlyingFox" */;
+			productName = FlyingFox;
 		};
 		D3E6E1ED2A3ACB0700BF7095 /* AsyncAlgorithms */ = {
 			isa = XCSwiftPackageProductDependency;

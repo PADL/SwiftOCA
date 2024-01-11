@@ -50,6 +50,19 @@ public enum DeviceApp {
         #else
         let streamEndpoint = try await AES70OCP1DeviceEndpoint(address: listenAddressData)
         #endif
+        #if os(macOS) || os(iOS)
+        listenAddress.sin_family = sa_family_t(AF_INET)
+        listenAddress.sin_addr.s_addr = INADDR_ANY
+        listenAddress.sin_port = (port + 1).bigEndian
+
+        listenAddressData = Data()
+        withUnsafeBytes(of: &listenAddress) { bytes in
+            listenAddressData = Data(bytes: bytes.baseAddress!, count: bytes.count)
+        }
+
+        let webSocketEndpoint =
+            try await AES70OCP1WSDeviceEndpoint(address: listenAddressData)
+        #endif
 
         class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
             override open class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
@@ -97,6 +110,12 @@ public enum DeviceApp {
                 print("Starting OCP.1 stream endpoint \(streamEndpoint)...")
                 try await streamEndpoint.run()
             }
+            #if os(macOS) || os(iOS)
+            taskGroup.addTask {
+                print("Starting OCP.1 WebSocket endpoint \(webSocketEndpoint)...")
+                try await webSocketEndpoint.run()
+            }
+            #endif
             #if os(Linux)
             taskGroup.addTask {
                 print("Starting OCP.1 datagram endpoint \(datagramEndpoint)...")

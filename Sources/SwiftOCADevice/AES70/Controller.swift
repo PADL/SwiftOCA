@@ -22,6 +22,7 @@ import SwiftOCA
 #if os(macOS) || os(iOS)
 typealias AES70OCP1Controller = AES70OCP1FlyingSocksController
 public typealias AES70OCP1DeviceEndpoint = AES70OCP1FlyingSocksDeviceEndpoint
+public typealias AES70OCP1WSDeviceEndpoint = AES70OCP1FlyingFoxDeviceEndpoint
 #elseif os(Linux)
 typealias AES70OCP1Controller = AES70OCP1IORingStreamController
 public typealias AES70OCP1DeviceEndpoint = AES70OCP1IORingStreamDeviceEndpoint
@@ -53,6 +54,8 @@ public protocol AES70ControllerDefaultSubscribing: AES70Controller {
 }
 
 protocol AES70ControllerPrivate: AES70ControllerDefaultSubscribing {
+    nonisolated var identifier: String { get }
+
     func sendMessages(
         _ messages: AnyAsyncSequence<Ocp1Message>,
         type messageType: OcaMessageType

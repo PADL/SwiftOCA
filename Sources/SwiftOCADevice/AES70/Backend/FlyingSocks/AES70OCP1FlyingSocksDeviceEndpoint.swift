@@ -47,7 +47,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
 
     private let address: sockaddr_storage
     private let timeout: TimeInterval
-    private let logger: Logging? = AES70OCP1FlyingSocksDeviceEndpoint.defaultLogger()
+    private let logger = AES70OCP1FlyingSocksDeviceEndpoint.defaultLogger()
     private var _controllers = [AES70OCP1FlyingSocksController]()
     private var endpointRegistrationHandle: AES70DeviceEndpointRegistrar.Handle?
 
@@ -92,10 +92,6 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
         }
     }
 
-    var listeningAddress: Socket.Address? {
-        try? socket?.sockname()
-    }
-
     public func run() async throws {
         let socket = try await preparePoolAndSocket()
         do {
@@ -106,7 +102,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
             }
             try await _run(on: socket, pool: pool)
         } catch {
-            logger?.logCritical("server error: \(error.localizedDescription)")
+            logger.logCritical("server error: \(error.localizedDescription)")
             try? socket.close()
             throw error
         }
@@ -117,7 +113,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
             try await pool.prepare()
             return try makeSocketAndListen()
         } catch {
-            logger?.logCritical("server error: \(error.localizedDescription)")
+            logger.logCritical("server error: \(error.localizedDescription)")
             throw error
         }
     }
@@ -144,7 +140,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
         #endif
         try socket.bind(to: address)
         try socket.listen()
-        logger?.logListening(on: socket)
+        logger.logListening(on: socket)
         return socket
     }
 
@@ -195,13 +191,10 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
     @available(iOS, deprecated: 17.0, renamed: "listenForControllersDiscarding(on:)")
     @available(tvOS, deprecated: 17.0, renamed: "listenForControllersDiscarding(on:)")
     private func listenForControllersFallback(on socket: AsyncSocket) async throws {
-        try await withThrowingTaskGroup(of: Void.self) { [logger] group in
+        try await withThrowingTaskGroup(of: Void.self) { group in
             for try await socket in socket.sockets {
                 group.addTask {
-                    try await self.handleController(AES70OCP1FlyingSocksController(
-                        socket: socket,
-                        logger: logger
-                    ))
+                    try await self.handleController(AES70OCP1FlyingSocksController(socket: socket))
                 }
             }
         }
@@ -209,7 +202,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
     }
 
     private func handleController(_ controller: AES70OCP1FlyingSocksController) async {
-        logger?.logControllerAdded(controller)
+        logger.logControllerAdded(controller)
         _controllers.append(controller)
         do {
             for try await (message, rrq) in await controller.messages {
@@ -219,7 +212,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
 
                 switch message {
                 case let command as Ocp1Command:
-                    logger?.logCommand(command, on: controller)
+                    logger.logCommand(command, on: controller)
                     let commandResponse = await AES70Device.shared.handleCommand(
                         command,
                         timeout: timeout,
@@ -244,15 +237,15 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
                     try await controller.sendMessage(response, type: .ocaRsp)
                 }
                 if let response {
-                    logger?.logResponse(response, on: controller)
+                    logger.logResponse(response, on: controller)
                 }
             }
         } catch {
-            logger?.logError(error, on: controller)
+            logger.logError(error, on: controller)
         }
         _controllers.removeAll(where: { $0 == controller })
         try? await controller.close()
-        logger?.logControllerRemoved(controller)
+        logger.logControllerRemoved(controller)
     }
 
     static func defaultPool(logger: Logging? = nil) -> AsyncSocketPool {
@@ -289,23 +282,23 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
 }
 
 extension Logging {
-    func logControllerAdded(_ controller: AES70OCP1FlyingSocksController) {
+    func logControllerAdded(_ controller: AES70ControllerPrivate) {
         logInfo("\(controller.identifier) controller added")
     }
 
-    func logControllerRemoved(_ controller: AES70OCP1FlyingSocksController) {
+    func logControllerRemoved(_ controller: AES70ControllerPrivate) {
         logInfo("\(controller.identifier) controller removed")
     }
 
-    func logCommand(_ command: Ocp1Command, on controller: AES70OCP1FlyingSocksController) {
+    func logCommand(_ command: Ocp1Command, on controller: AES70ControllerPrivate) {
         logInfo("\(controller.identifier) command: \(command)")
     }
 
-    func logResponse(_ response: Ocp1Response, on controller: AES70OCP1FlyingSocksController) {
+    func logResponse(_ response: Ocp1Response, on controller: AES70ControllerPrivate) {
         logInfo("\(controller.identifier) command: \(response)")
     }
 
-    func logError(_ error: Error, on controller: AES70OCP1FlyingSocksController) {
+    func logError(_ error: Error, on controller: AES70ControllerPrivate) {
         logError("\(controller.identifier) error: \(error.localizedDescription)")
     }
 

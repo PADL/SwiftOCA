@@ -38,4 +38,8 @@ actor AES70LocalController: AES70ControllerPrivate {
         )
         await endpoint?.responseChannel.send(messagePduData)
     }
+
+    nonisolated var identifier: String {
+        "local"
+    }
 }

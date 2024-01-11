@@ -31,7 +31,6 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate {
 
     private let hostname: String
     private let socket: AsyncSocket
-    private let logger: Logging?
     private let _messages: AsyncThrowingStream<AsyncSyncSequence<[ControllerMessage]>, Error>
     private var keepAliveTask: Task<(), Error>?
     private var lastMessageReceivedTime = Date.distantPast
@@ -41,10 +40,9 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate {
         _messages.joined().eraseToAnyAsyncSequence()
     }
 
-    init(socket: AsyncSocket, logger: Logging?) async throws {
+    init(socket: AsyncSocket) async throws {
         hostname = Self.makeIdentifier(from: socket.socket)
         self.socket = socket
-        self.logger = logger
         _messages = AsyncThrowingStream.decodingMessages(from: socket.bytes)
     }
 
