@@ -98,19 +98,20 @@ public class AES70OCP1IORingConnection: AES70OCP1Connection {
     }
 
     override public func read(_ length: Int) async throws -> Data {
-        var buffer = [UInt8](repeating: 0, count: length)
+        var data = Data()
         try await withMappedError { socket in
-            if try await socket.read(into: &buffer, count: length) == false {
-                throw Ocp1Error.pduTooShort // FIXME: check this, this is EOF return code
-            }
+            repeat {
+                var tmpBuffer = [UInt8](repeating: 0, count: length - data.count)
+                let count = try await socket.read(into: &tmpBuffer, count: length - data.count)
+                data += Data(tmpBuffer.prefix(count))
+            } while data.count < length
         }
-        return Data(buffer)
+        return data
     }
 
     override public func write(_ data: Data) async throws -> Int {
         try await withMappedError { socket in
             try await socket.write(Array(data), count: data.count)
-            return data.count
         }
     }
 }
