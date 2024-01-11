@@ -120,7 +120,7 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70BonjourRegistrableDevi
             logger: logger
         )
 
-        await httpServer.appendRoute("GET /socket", to: .webSocket(Handler(self)))
+        await httpServer.appendRoute("GET /", to: .webSocket(Handler(self)))
 
         try await AES70Device.shared.add(endpoint: self)
     }
