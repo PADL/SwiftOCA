@@ -154,7 +154,7 @@ Sendable {
                 return Ocp1Response()
             }
         }
-        debugPrint("unknown property accessor method \(command)")
+        await deviceDelegate?.logger.info("unknown property accessor method \(command)")
         throw Ocp1Error.status(.notImplemented)
     }
 

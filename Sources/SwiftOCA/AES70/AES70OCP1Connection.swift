@@ -17,6 +17,7 @@
 import AsyncAlgorithms
 @preconcurrency
 import Foundation
+import Logging
 #if canImport(Combine)
 import Combine
 #elseif canImport(OpenCombine)
@@ -84,6 +85,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
 
     /// Subscription callbacks, main thread only
     var subscriptions = [OcaEvent: AES70SubscriptionCallback]()
+    var logger = Logger(label: "com.padl.SwiftOCA")
 
     // TODO: use SwiftAtomics here?
     private var nextCommandHandle = OcaUint32(100)
@@ -215,7 +217,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         objectWillChange.send()
         #endif
 
-        debugPrint("Connected to \(self)")
+        logger.info("Connected to \(self)")
     }
 
     open func disconnectDevice(clearObjectCache: Bool) async throws {

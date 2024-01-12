@@ -264,7 +264,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         }
 
         guard await connectionDelegate.isConnected else {
-            debugPrint("property handler called before connection established")
+            await connectionDelegate.logger.warning("property handler called before connection established")
             return
         }
 
@@ -274,10 +274,10 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
             // if task cancelled due to a view being dismissed, reset state to initial
             _send(_enclosingInstance: object, .initial)
         } catch {
-            debugPrint(
+            _send(_enclosingInstance: object, .failure(error))
+            await connectionDelegate.logger.warning(
                 "property handler for \(object) property \(propertyID) received error from device: \(error)"
             )
-            _send(_enclosingInstance: object, .failure(error))
         }
     }
 
@@ -341,7 +341,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
                         await Task.yield()
                     }
                 } while !Task.isCancelled
-                debugPrint("property completion handler was cancelled")
+                await connectionDelegate.logger.info("property completion handler was cancelled")
                 throw Ocp1Error.responseTimeout
             }.result
         }
@@ -350,7 +350,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         case let .success(value):
             return value
         case let .failure(error):
-            debugPrint("property completion handler failed \(error)")
+            await connectionDelegate.logger.warning("property completion handler failed \(error)")
             throw error
         }
     }

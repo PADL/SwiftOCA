@@ -17,6 +17,7 @@
 import AsyncAlgorithms
 import AsyncExtensions
 import Foundation
+import Logging
 import SwiftOCA
 
 // FIXME: these don't appear to be available on non-Darwin platforms
@@ -41,6 +42,7 @@ public actor AES70Device {
     var objects = [OcaONo: OcaRoot]()
     var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
     var endpoints = [AES70DeviceEndpoint]()
+    var logger = Logger(label: "com.padl.SwiftOCADevice")
 
     private weak var eventDelegate: AES70DeviceEventDelegate?
 
@@ -83,6 +85,7 @@ public actor AES70Device {
             "cannot register object with invalid ONo"
         )
         guard objects[object.objectNumber] == nil else {
+            logger.warning("attempted to register duplicate object \(object), existing object \(objects[object.objectNumber]!)")
             throw Ocp1Error.status(.badONo)
         }
         objects[object.objectNumber] = object

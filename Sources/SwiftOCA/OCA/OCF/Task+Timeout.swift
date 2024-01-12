@@ -31,8 +31,6 @@ public func withThrowingTimeout<R: Sendable>(
                 try await Task.sleep(nanoseconds: UInt64(interval * Double(NSEC_PER_SEC)))
             }
             try Task.checkCancellation()
-            // We’ve reached the timeout.
-            debugPrint("operation timed out after \(seconds) seconds")
             throw Ocp1Error.responseTimeout
         }
         // First finished child task wins, cancel the other task.

@@ -28,12 +28,12 @@ extension AES70OCP1Connection.Monitor {
         /// just parse enough of the protocol in order to read rest of message
         /// `syncVal: OcaUint8` || `protocolVersion: OcaUint16` || `pduSize: OcaUint32`
         guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize else {
-            debugPrint("receiveMessagePdu: PDU of size \(messagePduData.count) is too short")
+            await connection.logger.warning("PDU of size \(messagePduData.count) is too short")
             throw Ocp1Error.pduTooShort
         }
         guard messagePduData[0] == Ocp1SyncValue else {
-            debugPrint(
-                "receiveMessagePdu: PDU has invalid sync value \(messagePduData.prefix(1).hexEncodedString())"
+            await connection.logger.warning(
+                "PDU has invalid sync value \(messagePduData.prefix(1).hexEncodedString())"
             )
             throw Ocp1Error.invalidSyncValue
         }
@@ -41,7 +41,7 @@ extension AES70OCP1Connection.Monitor {
         let pduSize: OcaUint32 = messagePduData.decodeInteger(index: 3)
         guard pduSize >= (AES70OCP1Connection.MinimumPduSize - 1)
         else { // doesn't include sync byte
-            debugPrint("receiveMessagePdu: PDU size \(pduSize) is less than minimum PDU size")
+            await connection.logger.warning("PDU size \(pduSize) is less than minimum PDU size")
             throw Ocp1Error.invalidPduSize
         }
 
@@ -62,7 +62,7 @@ extension AES70OCP1Connection.Monitor {
     ) async throws {
         switch message {
         case is Ocp1Command:
-            debugPrint("processMessage: device sent unexpected command \(message); ignoring")
+            await connection.logger.warning("device sent unexpected command \(message); ignoring")
         case let notification as Ocp1Notification1:
             let event = notification.parameters.eventData.event
             if let callback = await connection.subscriptions[event],

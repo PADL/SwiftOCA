@@ -24,6 +24,7 @@ import Foundation
 import IORing
 @_implementationOnly
 import IORingUtils
+import Logging
 import SwiftOCA
 
 @AES70Device
@@ -36,6 +37,8 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
 
     var socket: Socket?
     var endpointRegistrationHandle: AES70DeviceEndpointRegistrar.Handle?
+
+    var logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1IORingDeviceEndpoint")
 
     public var controllers: [AES70Controller] {
         []
@@ -155,24 +158,20 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
                         Task {
                             let controller =
                                 try await AES70OCP1IORingStreamController(socket: client)
-                            debugPrint(
-                                "AES70OCP1IORingStreamDeviceEndpoint: new stream client \(controller)"
-                            )
+                            logger.info("new stream client \(controller)")
                             await handleController(controller)
                         }
                     }
                 } catch Errno.invalidArgument {
-                    print(
-                        "AES70OCP1IORingStreamDeviceEndpoint: invalid argument when accepting connections, check kernel version supports multishot accept with io_uring"
+                    logger.warning(
+                        "invalid argument when accepting connections, check kernel version supports multishot accept with io_uring"
                     )
                     break
                 }
             } catch Errno.canceled {
-                debugPrint(
-                    "AES70OCP1IORingStreamDeviceEndpoint: received cancelation, trying to accept() again"
-                )
+                logger.debug("received cancelation, trying to accept() again")
             } catch {
-                print("AES70OCP1IORingStreamDeviceEndpoint: received error \(error), bailing")
+                logger.info("received error \(error), bailing")
                 break
             }
             if Task.isCancelled { break }
@@ -231,7 +230,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                 endpoint: self,
                 peerAddress: controllerAddress
             )
-            debugPrint("AES70OCP1IORingDatagramDeviceEndpoint: new datagram client \(controller!)")
+            logger.info("new datagram client \(controller!)")
             _controllers[controllerAddress] = controller
         }
 
