@@ -40,10 +40,12 @@ public class DatagramProxyDeviceEndpoint<T: Equatable & Hashable>: AES70DeviceEn
         timeout: TimeInterval,
         inputStream: AsyncStream<PeerMessagePDU>,
         outputStream: AsyncStream<PeerMessagePDU>.Continuation
-    ) {
+    ) async throws {
         self.timeout = timeout
         self.inputStream = inputStream
         self.outputStream = outputStream
+
+        try await AES70Device.shared.add(endpoint: self)
     }
 
     public func run() async throws {
