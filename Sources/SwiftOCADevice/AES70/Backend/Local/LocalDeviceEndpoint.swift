@@ -17,58 +17,37 @@
 import AsyncAlgorithms
 import AsyncExtensions
 import Foundation
+import Logging
 import SwiftOCA
 
 @AES70Device
-public final class AES70LocalDeviceEndpoint: AES70DeviceEndpoint {
+public final class AES70LocalDeviceEndpoint: AES70DeviceEndpointPrivate {
+    typealias ControllerType = AES70LocalController
+
+    let logger = Logger(label: "com.padl.SwiftOCADevice.AES70LocalDeviceEndpoint")
+    let timeout: TimeInterval = 0
+
     public var controllers: [AES70Controller] {
         [controller]
     }
 
     /// channel for receiving requests from the in-process controller
-    var requestChannel = AsyncChannel<Data>()
+    let requestChannel = AsyncChannel<Data>()
     /// channel for sending responses to the in-process controller
-    var responseChannel = AsyncChannel<Data>()
+    let responseChannel = AsyncChannel<Data>()
 
     private var controller: AES70LocalController!
+
+    func add(controller: ControllerType) async {}
+
+    func remove(controller: ControllerType) async {}
 
     public init() async throws {
         controller = await AES70LocalController(endpoint: self)
         try await AES70Device.shared.add(endpoint: self)
     }
 
-    public func run() async throws {
-        for await messagePdu in requestChannel {
-            try await handleMessagePdu(messagePdu)
-        }
-    }
-
-    func handleMessagePdu(_ data: Data) async throws {
-        var messagePdus = [Data]()
-        let messageType = try AES70OCP1Connection.decodeOcp1MessagePdu(
-            from: data,
-            messages: &messagePdus
-        )
-
-        for messagePdu in messagePdus {
-            let message = try AES70OCP1Connection.decodeOcp1Message(
-                from: messagePdu,
-                type: messageType
-            )
-
-            guard let command = message as? Ocp1Command else {
-                continue
-            }
-            let commandResponse = await AES70Device.shared.handleCommand(command, from: controller)
-            let response = Ocp1Response(
-                handle: command.handle,
-                statusCode: commandResponse.statusCode,
-                parameters: commandResponse.parameters
-            )
-
-            if messageType == .ocaCmdRrq {
-                try await controller.sendMessage(response, type: .ocaRsp)
-            }
-        }
+    public func run() async {
+        await controller.handle(for: self)
     }
 }

@@ -26,8 +26,6 @@ import IORingUtils
 import SwiftOCA
 
 protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equatable, Hashable {
-    typealias ControllerMessage = (Ocp1Message, Bool)
-
     var peerAddress: AnySocketAddress { get }
     var keepAliveInterval: UInt64 { get set }
     var keepAliveTask: Task<(), Error>? { get set }
@@ -42,42 +40,8 @@ protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equata
 }
 
 extension AES70OCP1IORingControllerPrivate {
-    private var connectionIsStale: Bool {
-        lastMessageReceivedTime + 3 * TimeInterval(keepAliveInterval) /
-            TimeInterval(NSEC_PER_SEC) < Date()
-    }
-
-    func setKeepAliveInterval(_ keepAliveInterval: UInt64) {
-        self.keepAliveInterval = keepAliveInterval
-    }
-
-    func updateLastMessageReceivedTime() {
-        lastMessageReceivedTime = Date()
-    }
-
-    private func sendKeepAlive() async throws {
-        let keepAlive = Ocp1KeepAlive1(heartBeatTime: OcaUint16(keepAliveInterval / NSEC_PER_SEC))
-        try await sendMessage(keepAlive, type: .ocaKeepAlive)
-    }
-
-    func keepAliveIntervalDidChange() {
-        if keepAliveInterval != 0 {
-            keepAliveTask = Task<(), Error> {
-                repeat {
-                    if connectionIsStale {
-                        Task {
-                            try? await self.removeFromDeviceEndpoint()
-                        }
-                        break
-                    }
-                    try await sendKeepAlive()
-                    try await Task.sleep(nanoseconds: keepAliveInterval)
-                } while !Task.isCancelled
-            }
-        } else {
-            keepAliveTask?.cancel()
-            keepAliveTask = nil
-        }
+    func onConnectionBecomingStale() async throws {
+        try await removeFromDeviceEndpoint()
     }
 }
 
@@ -222,6 +186,10 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
 
     private weak var endpoint: AES70OCP1IORingDatagramDeviceEndpoint?
 
+    var messages: AnyAsyncSequence<ControllerMessage> {
+        AsyncEmptySequence<ControllerMessage>().eraseToAnyAsyncSequence()
+    }
+
     init(
         endpoint: AES70OCP1IORingDatagramDeviceEndpoint,
         peerAddress: any SocketAddress
@@ -281,6 +249,8 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
     nonisolated var identifier: String {
         "<\((try? peerAddress.presentationAddress) ?? "unknown")>"
     }
+
+    func close() async throws {}
 }
 
 extension AES70OCP1IORingDatagramController: Equatable {

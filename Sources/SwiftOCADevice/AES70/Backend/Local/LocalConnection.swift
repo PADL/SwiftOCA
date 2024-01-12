@@ -35,12 +35,12 @@ public final class AES70LocalConnection: AES70OCP1Connection {
 
     override public func disconnectDevice(clearObjectCache: Bool) async throws {
         try await super.disconnectDevice(clearObjectCache: clearObjectCache)
-        await endpoint.responseChannel.finish()
-        await endpoint.requestChannel.finish()
+        endpoint.responseChannel.finish()
+        endpoint.requestChannel.finish()
     }
 
     override public func read(_ length: Int) async throws -> Data {
-        for await data in await endpoint.responseChannel {
+        for await data in endpoint.responseChannel {
             return data
         }
         throw Ocp1Error.pduTooShort

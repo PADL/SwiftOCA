@@ -26,15 +26,18 @@ import Logging
 import SwiftOCA
 
 @AES70Device
-public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoint,
+public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70DeviceEndpointPrivate,
+    AES70BonjourRegistrableDeviceEndpoint,
     CustomStringConvertible
 {
+    typealias ControllerType = AES70OCP1FlyingFoxController
+
     public var controllers: [AES70Controller] {
         _controllers
     }
 
     private var httpServer: HTTPServer!
-    var logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1FlyingFoxDeviceEndpoint")
+    let logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1FlyingFoxDeviceEndpoint")
     let timeout: TimeInterval
     private let address: sockaddr_storage
     private var _controllers = [AES70OCP1FlyingFoxController]()
@@ -52,23 +55,20 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70BonjourRegistrableDevi
             -> AsyncStream<WSMessage>
         {
             AsyncStream<WSMessage> { continuation in
-                _ = AES70OCP1FlyingFoxController(
+                let controller = AES70OCP1FlyingFoxController(
                     inputStream: client,
                     outputStream: continuation,
                     endpoint: endpoint
                 )
+
+                let task = Task { @AES70Device in
+                    if let endpoint {
+                        await controller.handle(for: endpoint)
+                    }
+                }
+                continuation.onTermination = { @Sendable _ in task.cancel() }
             }
         }
-    }
-
-    func add(controller: AES70OCP1FlyingFoxController) {
-        _controllers.append(controller)
-        logger.controllerAdded(controller)
-    }
-
-    func remove(controller: AES70OCP1FlyingFoxController) {
-        _controllers.removeAll(where: { $0.id == controller.id })
-        logger.controllerRemoved(controller)
     }
 
     public convenience init(
@@ -165,6 +165,14 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70BonjourRegistrableDevi
                 return 0
             }
         })
+    }
+
+    func add(controller: AES70OCP1FlyingFoxController) async {
+        _controllers.append(controller)
+    }
+
+    func remove(controller: AES70OCP1FlyingFoxController) async {
+        _controllers.removeAll(where: { $0.id == controller.id })
     }
 }
 #endif

@@ -28,12 +28,12 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate {
     typealias ControllerMessage = (Ocp1Message, Bool)
 
     var subscriptions = [OcaONo: NSMutableSet]()
+    var keepAliveTask: Task<(), Error>?
+    var lastMessageReceivedTime = Date.distantPast
 
     private let hostname: String
     private let socket: AsyncSocket
     private let _messages: AsyncThrowingStream<AsyncSyncSequence<[ControllerMessage]>, Error>
-    private var keepAliveTask: Task<(), Error>?
-    private var lastMessageReceivedTime = Date.distantPast
     private var socketClosed = false
 
     var messages: AnyAsyncSequence<ControllerMessage> {
@@ -46,33 +46,16 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate {
         _messages = AsyncThrowingStream.decodingMessages(from: socket.bytes)
     }
 
-    var connectionIsStale: Bool {
-        lastMessageReceivedTime + 3 * TimeInterval(keepAliveInterval) /
-            TimeInterval(NSEC_PER_SEC) < Date()
-    }
-
     var keepAliveInterval: UInt64 = 0 {
         didSet {
-            if keepAliveInterval != 0, keepAliveInterval != oldValue {
-                keepAliveTask = Task<(), Error> {
-                    repeat {
-                        if connectionIsStale {
-                            try self.closeSocket()
-                            break
-                        }
-                        try await sendKeepAlive()
-                        try await Task.sleep(nanoseconds: keepAliveInterval)
-                    } while !Task.isCancelled
-                }
-            } else {
-                keepAliveTask?.cancel()
-                keepAliveTask = nil
+            if keepAliveInterval != oldValue {
+                keepAliveIntervalDidChange()
             }
         }
     }
 
-    func setKeepAliveInterval(_ keepAliveInterval: UInt64) {
-        self.keepAliveInterval = keepAliveInterval
+    func onConnectionBecomingStale() async throws {
+        try closeSocket()
     }
 
     func sendMessages(
@@ -85,11 +68,6 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate {
             type: messageType
         )
         try await socket.write(messagePduData)
-    }
-
-    private func sendKeepAlive() async throws {
-        let keepAlive = Ocp1KeepAlive1(heartBeatTime: OcaUint16(keepAliveInterval / NSEC_PER_SEC))
-        try await sendMessage(keepAlive, type: .ocaKeepAlive)
     }
 
     private func closeSocket() throws {
@@ -109,10 +87,6 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate {
 
     nonisolated var identifier: String {
         "<\(hostname)>"
-    }
-
-    func updateLastMessageReceivedTime() {
-        lastMessageReceivedTime = Date()
     }
 
     private nonisolated var fileDescriptor: Socket.FileDescriptor {

@@ -50,93 +50,37 @@ fileprivate extension AsyncStream where Element == WSMessage {
 actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
     var subscriptions = [OcaONo: NSMutableSet]()
 
+    private let inputStream: AsyncStream<WSMessage>
     private let outputStream: AsyncStream<WSMessage>.Continuation
     private var endpoint: AES70OCP1FlyingFoxDeviceEndpoint?
 
-    private var keepAliveTask: Task<(), Error>?
-    private var lastMessageReceivedTime = Date.distantPast
+    var keepAliveTask: Task<(), Error>?
+    var lastMessageReceivedTime = Date.distantPast
+
+    var messages: AsyncExtensions.AnyAsyncSequence<ControllerMessage> {
+        inputStream.ocp1DecodedMessages.eraseToAnyAsyncSequence()
+    }
 
     init(
         inputStream: AsyncStream<WSMessage>,
         outputStream: AsyncStream<WSMessage>.Continuation,
         endpoint: AES70OCP1FlyingFoxDeviceEndpoint?
     ) {
+        self.inputStream = inputStream
         self.outputStream = outputStream
         self.endpoint = endpoint
-
-        Task { @AES70Device in
-            await self.endpoint?.add(controller: self)
-            do {
-                for try await (message, rrq) in inputStream.ocp1DecodedMessages {
-                    var response: Ocp1Response?
-
-                    await self.updateLastMessageReceivedTime()
-
-                    switch message {
-                    case let command as Ocp1Command:
-                        await self.endpoint?.logger.command(command, on: self)
-                        let commandResponse = await AES70Device.shared.handleCommand(
-                            command,
-                            timeout: self.endpoint?.timeout ?? 0,
-                            from: self
-                        )
-                        response = Ocp1Response(
-                            handle: command.handle,
-                            statusCode: commandResponse.statusCode,
-                            parameters: commandResponse.parameters
-                        )
-                    case let keepAlive as Ocp1KeepAlive1:
-                        await self
-                            .setKeepAliveInterval(UInt64(keepAlive.heartBeatTime) * NSEC_PER_SEC)
-                    case let keepAlive as Ocp1KeepAlive2:
-                        await self
-                            .setKeepAliveInterval(UInt64(keepAlive.heartBeatTime) * NSEC_PER_MSEC)
-                    default:
-                        throw Ocp1Error.invalidMessageType
-                    }
-
-                    if rrq, let response {
-                        try await self.sendMessage(response, type: .ocaRsp)
-                    }
-                    if let response {
-                        await self.endpoint?.logger.response(response, on: self)
-                    }
-                }
-            } catch {
-                await self.endpoint?.logger.controllerError(error, on: self)
-            }
-            await self.endpoint?.remove(controller: self)
-            await self.close()
-        }
     }
 
-    private var connectionIsStale: Bool {
-        lastMessageReceivedTime + 3 * TimeInterval(keepAliveInterval) /
-            TimeInterval(NSEC_PER_SEC) < Date()
-    }
-
-    private var keepAliveInterval: UInt64 = 0 {
+    var keepAliveInterval: UInt64 = 0 {
         didSet {
-            if keepAliveInterval != 0, keepAliveInterval != oldValue {
-                keepAliveTask = Task<(), Error> {
-                    repeat {
-                        if connectionIsStale {
-                            await self.close()
-                            break
-                        }
-                        try await sendKeepAlive()
-                        try await Task.sleep(nanoseconds: keepAliveInterval)
-                    } while !Task.isCancelled
-                }
-            } else {
-                keepAliveTask?.cancel()
-                keepAliveTask = nil
+            if keepAliveInterval != oldValue {
+                keepAliveIntervalDidChange()
             }
         }
     }
 
-    private func setKeepAliveInterval(_ keepAliveInterval: UInt64) {
-        self.keepAliveInterval = keepAliveInterval
+    func onConnectionBecomingStale() async {
+        await close()
     }
 
     func sendMessages(
@@ -151,12 +95,7 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
         outputStream.yield(.data(messagePduData))
     }
 
-    private func sendKeepAlive() async throws {
-        let keepAlive = Ocp1KeepAlive1(heartBeatTime: OcaUint16(keepAliveInterval / NSEC_PER_SEC))
-        try await sendMessage(keepAlive, type: .ocaKeepAlive)
-    }
-
-    private func close() async {
+    func close() async {
         outputStream.finish()
 
         keepAliveTask?.cancel()
@@ -167,10 +106,6 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
 
     nonisolated var identifier: String {
         String(describing: id)
-    }
-
-    func updateLastMessageReceivedTime() {
-        lastMessageReceivedTime = Date()
     }
 }
 

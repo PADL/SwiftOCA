@@ -14,8 +14,20 @@
 // limitations under the License.
 //
 
+import Foundation
+import Logging
 import SwiftOCA
 
 public protocol AES70DeviceEndpoint {
     var controllers: [AES70Controller] { get async }
+}
+
+protocol AES70DeviceEndpointPrivate: AES70DeviceEndpoint {
+    associatedtype ControllerType: AES70ControllerPrivate
+
+    var logger: Logger { get }
+    var timeout: TimeInterval { get }
+
+    func add(controller: ControllerType) async
+    func remove(controller: ControllerType) async
 }

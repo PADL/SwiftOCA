@@ -14,17 +14,40 @@
 // limitations under the License.
 //
 
-import AsyncAlgorithms
 import AsyncExtensions
 import Foundation
 import SwiftOCA
 
 actor AES70LocalController: AES70ControllerPrivate {
+    var lastMessageReceivedTime = Date.distantPast
+    var keepAliveInterval: UInt64 = 0
+    var keepAliveTask: Task<(), Error>?
+
     weak var endpoint: AES70LocalDeviceEndpoint?
     var subscriptions = [OcaONo: NSMutableSet]()
 
     init(endpoint: AES70LocalDeviceEndpoint) async {
         self.endpoint = endpoint
+    }
+
+    var messages: AnyAsyncSequence<ControllerMessage> {
+        endpoint!.requestChannel.flatMap { data in
+            var messagePdus = [Data]()
+
+            let messageType = try AES70OCP1Connection.decodeOcp1MessagePdu(
+                from: data,
+                messages: &messagePdus
+            )
+
+            return try messagePdus.map { messagePdu in
+                let message = try AES70OCP1Connection.decodeOcp1Message(
+                    from: messagePdu,
+                    type: messageType
+                )
+
+                return (message, messageType == .ocaCmdRrq)
+            }.async
+        }.eraseToAnyAsyncSequence()
     }
 
     func sendMessages(
@@ -42,4 +65,8 @@ actor AES70LocalController: AES70ControllerPrivate {
     nonisolated var identifier: String {
         "local"
     }
+
+    func close() throws {}
+
+    func onConnectionBecomingStale() async throws {}
 }

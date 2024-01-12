@@ -37,9 +37,12 @@ import Logging
 import SwiftOCA
 
 @AES70Device
-public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoint,
+public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpointPrivate,
+    AES70BonjourRegistrableDeviceEndpoint,
     CustomStringConvertible
 {
+    typealias ControllerType = AES70OCP1FlyingSocksController
+
     public var controllers: [AES70Controller] {
         _controllers
     }
@@ -47,8 +50,8 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
     let pool: AsyncSocketPool
 
     private let address: sockaddr_storage
-    private let timeout: TimeInterval
-    private var logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1FlyingSocksDeviceEndpoint")
+    let timeout: TimeInterval
+    let logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1FlyingSocksDeviceEndpoint")
 
     private var _controllers = [AES70OCP1FlyingSocksController]()
     private var endpointRegistrationHandle: AES70DeviceEndpointRegistrar.Handle?
@@ -185,7 +188,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
         try await withThrowingDiscardingTaskGroup { [logger] group in
             for try await socket in socket.sockets {
                 group.addTask {
-                    try await self.handleController(AES70OCP1FlyingSocksController(socket: socket))
+                    try await self.handle(AES70OCP1FlyingSocksController(socket: socket))
                 }
             }
         }
@@ -200,58 +203,11 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
         try await withThrowingTaskGroup(of: Void.self) { group in
             for try await socket in socket.sockets {
                 group.addTask {
-                    try await self.handleController(AES70OCP1FlyingSocksController(socket: socket))
+                    try await AES70OCP1FlyingSocksController(socket: socket).handle(for: self)
                 }
             }
         }
         throw SocketError.disconnected
-    }
-
-    private func handleController(_ controller: AES70OCP1FlyingSocksController) async {
-        logger.controllerAdded(controller)
-        _controllers.append(controller)
-        do {
-            for try await (message, rrq) in await controller.messages {
-                var response: Ocp1Response?
-
-                await controller.updateLastMessageReceivedTime()
-
-                switch message {
-                case let command as Ocp1Command:
-                    logger.command(command, on: controller)
-                    let commandResponse = await AES70Device.shared.handleCommand(
-                        command,
-                        timeout: timeout,
-                        from: controller
-                    )
-                    response = Ocp1Response(
-                        handle: command.handle,
-                        statusCode: commandResponse.statusCode,
-                        parameters: commandResponse.parameters
-                    )
-                case let keepAlive as Ocp1KeepAlive1:
-                    await controller
-                        .setKeepAliveInterval(UInt64(keepAlive.heartBeatTime) * NSEC_PER_SEC)
-                case let keepAlive as Ocp1KeepAlive2:
-                    await controller
-                        .setKeepAliveInterval(UInt64(keepAlive.heartBeatTime) * NSEC_PER_MSEC)
-                default:
-                    throw Ocp1Error.invalidMessageType
-                }
-
-                if rrq, let response {
-                    try await controller.sendMessage(response, type: .ocaRsp)
-                }
-                if let response {
-                    logger.response(response, on: controller)
-                }
-            }
-        } catch {
-            logger.controllerError(error, on: controller)
-        }
-        _controllers.removeAll(where: { $0 == controller })
-        try? await controller.close()
-        logger.controllerRemoved(controller)
     }
 
     static func defaultPool(logger: Logging? = nil) -> AsyncSocketPool {
@@ -284,6 +240,14 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
                 return 0
             }
         })
+    }
+
+    func add(controller: ControllerType) async {
+        _controllers.append(controller)
+    }
+
+    func remove(controller: ControllerType) async {
+        _controllers.removeAll(where: { $0 == controller })
     }
 }
 

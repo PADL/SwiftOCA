@@ -38,8 +38,6 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
     var socket: Socket?
     var endpointRegistrationHandle: AES70DeviceEndpointRegistrar.Handle?
 
-    private(set) var logger: Logger!
-
     public var controllers: [AES70Controller] {
         []
     }
@@ -52,7 +50,6 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
         self.timeout = timeout
         ring = IORing.shared
         try await AES70Device.shared.add(endpoint: self)
-        logger = Logger(label: "com.padl.SwiftOCADevice.\(type(of: self))")
     }
 
     public nonisolated var description: String {
@@ -78,46 +75,6 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
         try await self.init(address: storage, timeout: timeout)
     }
 
-    func handle(
-        controller: any AES70OCP1IORingControllerPrivate,
-        message: Ocp1Message,
-        rrq: Bool
-    ) async throws {
-        var response: Ocp1Response?
-
-        await controller.updateLastMessageReceivedTime()
-
-        switch message {
-        case let command as Ocp1Command:
-            logger.command(command, on: controller)
-            let commandResponse = await AES70Device.shared.handleCommand(
-                command,
-                timeout: timeout,
-                from: controller
-            )
-            response = Ocp1Response(
-                handle: command.handle,
-                statusCode: commandResponse.statusCode,
-                parameters: commandResponse.parameters
-            )
-        case let keepAlive as Ocp1KeepAlive1:
-            await controller
-                .setKeepAliveInterval(UInt64(keepAlive.heartBeatTime) * NSEC_PER_SEC)
-        case let keepAlive as Ocp1KeepAlive2:
-            await controller
-                .setKeepAliveInterval(UInt64(keepAlive.heartBeatTime) * NSEC_PER_MSEC)
-        default:
-            throw Ocp1Error.invalidMessageType
-        }
-
-        if rrq, let response {
-            try await controller.sendMessage(response, type: .ocaRsp)
-        }
-        if let response {
-            logger.response(response, on: controller)
-        }
-    }
-
     public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
         .tcp
     }
@@ -127,7 +84,6 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
     }
 
     public func run() async throws {
-        logger.info("starting \(type(of: self)) on \(try! address.presentationAddress)")
         if port != 0 {
             Task {
                 endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
@@ -145,14 +101,21 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
 }
 
 @AES70Device
-public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEndpoint {
-    var _controllers = [AES70OCP1IORingStreamController]()
+public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEndpoint,
+    AES70DeviceEndpointPrivate
+{
+    typealias ControllerType = AES70OCP1IORingStreamController
+
+    let logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1IORingStreamDeviceEndpoint")
+
+    var _controllers = [ControllerType]()
 
     override public var controllers: [AES70Controller] {
         _controllers
     }
 
     override public func run() async throws {
+        logger.info("starting \(type(of: self)) on \(try! address.presentationAddress)")
         try await super.run()
         let socket = try makeSocketAndListen()
         self.socket = socket
@@ -164,8 +127,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
                         Task {
                             let controller =
                                 try await AES70OCP1IORingStreamController(socket: client)
-                            logger.info("new stream client \(controller)")
-                            await handleController(controller)
+                            await controller.handle(for: self)
                         }
                     }
                 } catch Errno.invalidArgument {
@@ -199,43 +161,37 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
         return socket
     }
 
-    func handleController(_ controller: AES70OCP1IORingStreamController) async {
-        logger.controllerAdded(controller)
-        _controllers.append(controller)
-        do {
-            for try await (message, rrq) in await controller.messages {
-                try await handle(controller: controller, message: message, rrq: rrq)
-            }
-        } catch {
-            logger.controllerError(error, on: controller)
-        }
-        _controllers.removeAll(where: { $0 == controller })
-        logger.controllerRemoved(controller)
-        try? await controller.close()
-    }
-
     override public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
         .tcp
+    }
+
+    func add(controller: ControllerType) async {
+        _controllers.append(controller)
+    }
+
+    func remove(controller: ControllerType) async {
+        _controllers.removeAll(where: { $0 == controller })
     }
 }
 
 @AES70Device
-public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoint {
-    var _controllers = [AnySocketAddress: AES70OCP1IORingDatagramController]()
+public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoint,
+    AES70DeviceEndpointPrivate
+{
+    typealias ControllerType = AES70OCP1IORingDatagramController
+
+    let logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1IORingDatagramDeviceEndpoint")
+
+    var _controllers = [AnySocketAddress: ControllerType]()
 
     override public var controllers: [AES70Controller] {
         _controllers.map(\.1)
     }
 
-    func remove(controller: AES70OCP1IORingDatagramController) async {
-        await AES70Device.shared.unlockAll(controller: controller)
-        _controllers[controller.peerAddress] = nil
-    }
-
     func controller(for controllerAddress: AnySocketAddress) async throws
-        -> AES70OCP1IORingDatagramController
+        -> ControllerType
     {
-        var controller: AES70OCP1IORingDatagramController!
+        var controller: ControllerType!
 
         controller = _controllers[controllerAddress]
         if controller == nil {
@@ -254,6 +210,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
     static let MaximumPduSize = 1500
 
     override public func run() async throws {
+        logger.info("starting \(type(of: self)) on \(try! address.presentationAddress)")
         try await super.run()
         let socket = try makeSocket()
         self.socket = socket
@@ -264,19 +221,17 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                 for try await messagePdu in messagePdus {
                     Task { @AES70Device in
                         let controller =
-                            try await controller(for: AnySocketAddress(bytes: messagePdu.name))
+                            try await self.controller(for: AnySocketAddress(bytes: messagePdu.name))
                         do {
                             let messages = try await controller.decodeMessages(from: messagePdu)
                             for (message, rrq) in messages {
-                                try await handle(
-                                    controller: controller,
+                                try await controller.handle(for: self,
                                     message: message,
                                     rrq: rrq
                                 )
                             }
                         } catch {
                             await remove(controller: controller)
-                            logger.controllerRemoved(controller)
                         }
                     }
                 }
@@ -306,6 +261,13 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
 
     override public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
         .udp
+    }
+
+    func add(controller: ControllerType) async {}
+
+    func remove(controller: ControllerType) async {
+        await AES70Device.shared.unlockAll(controller: controller)
+        _controllers[controller.peerAddress] = nil
     }
 }
 
