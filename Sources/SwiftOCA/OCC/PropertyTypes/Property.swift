@@ -264,7 +264,8 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         }
 
         guard await connectionDelegate.isConnected else {
-            await connectionDelegate.logger.warning("property handler called before connection established")
+            await connectionDelegate.logger
+                .warning("property handler called before connection established")
             return
         }
 

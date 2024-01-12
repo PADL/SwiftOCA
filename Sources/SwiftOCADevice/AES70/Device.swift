@@ -85,7 +85,10 @@ public actor AES70Device {
             "cannot register object with invalid ONo"
         )
         guard objects[object.objectNumber] == nil else {
-            logger.warning("attempted to register duplicate object \(object), existing object \(objects[object.objectNumber]!)")
+            logger
+                .warning(
+                    "attempted to register duplicate object \(object), existing object \(objects[object.objectNumber]!)"
+                )
             throw Ocp1Error.status(.badONo)
         }
         objects[object.objectNumber] = object
