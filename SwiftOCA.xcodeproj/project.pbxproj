@@ -27,6 +27,7 @@
 		D32229D32ABC270900B56B6B /* AES70OCP1IORingDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CB2ABC270900B56B6B /* AES70OCP1IORingDeviceEndpoint.swift */; };
 		D32229D42ABC270900B56B6B /* AES70OCP1IORingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CC2ABC270900B56B6B /* AES70OCP1IORingController.swift */; };
 		D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */; };
+		D32C49DD2B5102A300D73201 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = D32C49DC2B5102A300D73201 /* Logging */; };
 		D337713F2B48A829003BD47B /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D337713E2B48A829003BD47B /* Root+JSON.swift */; };
 		D33771422B48DB3B003BD47B /* AnyCodable in Frameworks */ = {isa = PBXBuildFile; productRef = D33771412B48DB3B003BD47B /* AnyCodable */; };
 		D33A35A72B2FB1D600FEDC43 /* MediaClock3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */; };
@@ -515,6 +516,7 @@
 				D3E6E1EE2A3ACB0700BF7095 /* AsyncAlgorithms in Frameworks */,
 				D33B52D42A706FD7001A1BA7 /* FlyingSocks in Frameworks */,
 				D3B325052B4F677700C8335F /* FlyingFox in Frameworks */,
+				D32C49DD2B5102A300D73201 /* Logging in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1346,6 +1348,7 @@
 				D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */,
 				D33B52D32A706FD7001A1BA7 /* FlyingSocks */,
 				D3B325042B4F677700C8335F /* FlyingFox */,
+				D32C49DC2B5102A300D73201 /* Logging */,
 			);
 			productName = SwiftOCA;
 			productReference = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */;
@@ -1434,6 +1437,7 @@
 				D3E6E2842A43B8D000BF7095 /* XCRemoteSwiftPackageReference "swiftui-sliders" */,
 				D36ECA282A5B20480015174A /* XCRemoteSwiftPackageReference "FlyingFox" */,
 				D33771402B48D9E9003BD47B /* XCRemoteSwiftPackageReference "AnyCodable" */,
+				D36ECA282A5B20480015174C /* XCRemoteSwiftPackageReference "swift-log" */,
 			);
 			productRefGroup = D3E6E1652A3ACA0B00BF7095 /* Products */;
 			projectDirPath = "";
@@ -2172,6 +2176,14 @@
 				minimumVersion = 0.9.1;
 			};
 		};
+		D36ECA282A5B20480015174C /* XCRemoteSwiftPackageReference "swift-log" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-log.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		D3E6E1EC2A3ACB0700BF7095 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-async-algorithms.git";
@@ -2199,6 +2211,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		D32C49DC2B5102A300D73201 /* Logging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D36ECA282A5B20480015174C /* XCRemoteSwiftPackageReference "swift-log" */;
+			productName = Logging;
+		};
 		D33771412B48DB3B003BD47B /* AnyCodable */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D33771402B48D9E9003BD47B /* XCRemoteSwiftPackageReference "AnyCodable" */;
