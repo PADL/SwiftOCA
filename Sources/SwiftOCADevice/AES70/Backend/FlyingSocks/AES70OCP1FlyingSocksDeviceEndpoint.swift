@@ -33,6 +33,7 @@ import FlyingSocks
 @_spi(Private) @_implementationOnly
 import func FlyingSocks.withThrowingTimeout
 import Foundation
+import Logging
 import SwiftOCA
 
 @AES70Device
@@ -47,7 +48,8 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
 
     private let address: sockaddr_storage
     private let timeout: TimeInterval
-    private let logger = AES70OCP1FlyingSocksDeviceEndpoint.defaultLogger()
+    private var logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1FlyingSocksDeviceEndpoint")
+
     private var _controllers = [AES70OCP1FlyingSocksController]()
     private var endpointRegistrationHandle: AES70DeviceEndpointRegistrar.Handle?
 
@@ -78,7 +80,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
     ) async throws {
         self.address = address
         self.timeout = timeout
-        pool = Self.defaultPool(logger: logger)
+        pool = Self.defaultPool()
 
         try await AES70Device.shared.add(endpoint: self)
     }
@@ -102,7 +104,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
             }
             try await _run(on: socket, pool: pool)
         } catch {
-            logger.logCritical("server error: \(error.localizedDescription)")
+            logger.critical("server error: \(error.localizedDescription)")
             try? socket.close()
             throw error
         }
@@ -113,7 +115,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
             try await pool.prepare()
             return try makeSocketAndListen()
         } catch {
-            logger.logCritical("server error: \(error.localizedDescription)")
+            logger.critical("server error: \(error.localizedDescription)")
             throw error
         }
     }
@@ -278,36 +280,37 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
     }
 }
 
-extension Logging {
+extension Logger {
     func logControllerAdded(_ controller: AES70ControllerPrivate) {
-        logInfo("\(controller.identifier) controller added")
+        info("\(controller.identifier) controller added")
     }
 
     func logControllerRemoved(_ controller: AES70ControllerPrivate) {
-        logInfo("\(controller.identifier) controller removed")
+        info("\(controller.identifier) controller removed")
     }
 
     func logCommand(_ command: Ocp1Command, on controller: AES70ControllerPrivate) {
-        logInfo("\(controller.identifier) command: \(command)")
+        info("\(controller.identifier) command: \(command)")
     }
 
     func logResponse(_ response: Ocp1Response, on controller: AES70ControllerPrivate) {
-        logInfo("\(controller.identifier) command: \(response)")
+        info("\(controller.identifier) command: \(response)")
     }
 
     func logError(_ error: Error, on controller: AES70ControllerPrivate) {
-        logError("\(controller.identifier) error: \(error.localizedDescription)")
+        info("\(controller.identifier) error: \(error.localizedDescription)")
     }
 
     func logListening(on socket: Socket) {
-        logInfo(Self.makeListening(on: try? socket.sockname()))
+        info("starting server \(Self.makeListening(on: try? socket.sockname()))")
     }
 
     static func makeListening(on addr: Socket.Address?) -> String {
-        var comps = ["starting server"]
         guard let addr = addr else {
-            return comps.joined()
+            return ""
         }
+
+        var comps = [String]()
 
         switch addr {
         case let .ip4(address, port: port):

@@ -22,6 +22,7 @@ import FlyingFox
 @_implementationOnly
 import FlyingSocks
 import Foundation
+import Logging
 import SwiftOCA
 
 @AES70Device
@@ -33,7 +34,7 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70BonjourRegistrableDevi
     }
 
     private var httpServer: HTTPServer!
-    let logger = AES70OCP1FlyingSocksDeviceEndpoint.defaultLogger()
+    var logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1FlyingFoxDeviceEndpoint")
     let timeout: TimeInterval
     private let address: sockaddr_storage
     private var _controllers = [AES70OCP1FlyingFoxController]()
@@ -114,8 +115,7 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70BonjourRegistrableDevi
 
         httpServer = HTTPServer(
             address: address,
-            timeout: timeout,
-            logger: logger
+            timeout: timeout
         )
 
         await httpServer.appendRoute("GET /", to: .webSocket(Handler(self)))
