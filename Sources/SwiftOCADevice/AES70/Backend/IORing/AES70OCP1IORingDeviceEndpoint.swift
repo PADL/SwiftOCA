@@ -179,7 +179,10 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
                 logger.info("received error \(error), bailing")
                 break
             }
-            if Task.isCancelled { break }
+            if Task.isCancelled {
+                logger.info("\(type(of: self)) cancelled, stopping")
+                break
+            }
         } while true
         self.socket = nil
     }
@@ -277,7 +280,10 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                     }
                 }
             } catch Errno.canceled {}
-            if Task.isCancelled { break }
+            if Task.isCancelled {
+                logger.info("\(type(of: self)) cancelled, stopping")
+                break
+            }
         } while true
         self.socket = nil
     }
