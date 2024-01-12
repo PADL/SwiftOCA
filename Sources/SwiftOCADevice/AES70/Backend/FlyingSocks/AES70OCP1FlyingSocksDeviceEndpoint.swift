@@ -201,7 +201,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
     }
 
     private func handleController(_ controller: AES70OCP1FlyingSocksController) async {
-        logger.logControllerAdded(controller)
+        logger.controllerAdded(controller)
         _controllers.append(controller)
         do {
             for try await (message, rrq) in await controller.messages {
@@ -211,7 +211,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
 
                 switch message {
                 case let command as Ocp1Command:
-                    logger.logCommand(command, on: controller)
+                    logger.command(command, on: controller)
                     let commandResponse = await AES70Device.shared.handleCommand(
                         command,
                         timeout: timeout,
@@ -236,15 +236,15 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
                     try await controller.sendMessage(response, type: .ocaRsp)
                 }
                 if let response {
-                    logger.logResponse(response, on: controller)
+                    logger.response(response, on: controller)
                 }
             }
         } catch {
-            logger.logError(error, on: controller)
+            logger.controllerError(error, on: controller)
         }
         _controllers.removeAll(where: { $0 == controller })
         try? await controller.close()
-        logger.logControllerRemoved(controller)
+        logger.controllerRemoved(controller)
     }
 
     static func defaultPool(logger: Logging? = nil) -> AsyncSocketPool {
@@ -281,26 +281,6 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
 }
 
 extension Logger {
-    func logControllerAdded(_ controller: AES70ControllerPrivate) {
-        info("\(controller.identifier) controller added")
-    }
-
-    func logControllerRemoved(_ controller: AES70ControllerPrivate) {
-        info("\(controller.identifier) controller removed")
-    }
-
-    func logCommand(_ command: Ocp1Command, on controller: AES70ControllerPrivate) {
-        info("\(controller.identifier) command: \(command)")
-    }
-
-    func logResponse(_ response: Ocp1Response, on controller: AES70ControllerPrivate) {
-        info("\(controller.identifier) command: \(response)")
-    }
-
-    func logError(_ error: Error, on controller: AES70ControllerPrivate) {
-        info("\(controller.identifier) error: \(error.localizedDescription)")
-    }
-
     func logListening(on socket: Socket) {
         info("starting server \(Self.makeListening(on: try? socket.sockname()))")
     }

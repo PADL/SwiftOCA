@@ -63,12 +63,12 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70BonjourRegistrableDevi
 
     func add(controller: AES70OCP1FlyingFoxController) {
         _controllers.append(controller)
-        logger.logControllerAdded(controller)
+        logger.controllerAdded(controller)
     }
 
     func remove(controller: AES70OCP1FlyingFoxController) {
         _controllers.removeAll(where: { $0.id == controller.id })
-        logger.logControllerRemoved(controller)
+        logger.controllerRemoved(controller)
     }
 
     public convenience init(

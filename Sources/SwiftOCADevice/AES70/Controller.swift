@@ -17,6 +17,7 @@
 import AsyncAlgorithms
 import AsyncExtensions
 import Foundation
+import Logging
 import SwiftOCA
 
 #if os(macOS) || os(iOS)
@@ -208,5 +209,27 @@ extension AES70ControllerPrivate {
     ) async throws {
         let sequence: AsyncSyncSequence<[Ocp1Message]> = [message].async
         try await sendMessages(sequence.eraseToAnyAsyncSequence(), type: messageType)
+    }
+}
+
+extension Logger {
+    func controllerAdded(_ controller: AES70ControllerPrivate) {
+        info("\(controller.identifier) controller added")
+    }
+
+    func controllerRemoved(_ controller: AES70ControllerPrivate) {
+        info("\(controller.identifier) controller removed")
+    }
+
+    func command(_ command: Ocp1Command, on controller: AES70ControllerPrivate) {
+        info("\(controller.identifier) command: \(command)")
+    }
+
+    func response(_ response: Ocp1Response, on controller: AES70ControllerPrivate) {
+        info("\(controller.identifier) command: \(response)")
+    }
+
+    func controllerError(_ error: Error, on controller: AES70ControllerPrivate) {
+        info("\(controller.identifier) error: \(error.localizedDescription)")
     }
 }

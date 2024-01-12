@@ -74,7 +74,7 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
 
                     switch message {
                     case let command as Ocp1Command:
-                        await self.endpoint?.logger.logCommand(command, on: self)
+                        await self.endpoint?.logger.command(command, on: self)
                         let commandResponse = await AES70Device.shared.handleCommand(
                             command,
                             timeout: self.endpoint?.timeout ?? 0,
@@ -99,11 +99,11 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
                         try await self.sendMessage(response, type: .ocaRsp)
                     }
                     if let response {
-                        await self.endpoint?.logger.logResponse(response, on: self)
+                        await self.endpoint?.logger.response(response, on: self)
                     }
                 }
             } catch {
-                await self.endpoint?.logger.logError(error, on: self)
+                await self.endpoint?.logger.controllerError(error, on: self)
             }
             await self.endpoint?.remove(controller: self)
             await self.close()
