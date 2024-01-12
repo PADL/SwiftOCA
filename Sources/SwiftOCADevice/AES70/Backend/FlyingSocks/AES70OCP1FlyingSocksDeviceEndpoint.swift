@@ -87,16 +87,23 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
 
     public nonisolated var description: String {
         withUnsafePointer(to: address) { pointer in
+            pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { _ in
+                "\(type(of: self))(address: \(presentationAddress), timeout: \(timeout))"
+            }
+        }
+    }
+
+    private nonisolated var presentationAddress: String {
+        withUnsafePointer(to: address) { pointer in
             pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { sa in
-                let presentationAddress = deviceAddressToString(sa)
-                return "\(type(of: self))(address: \(presentationAddress), timeout: \(timeout))"
+                deviceAddressToString(sa)
             }
         }
     }
 
     public func run() async throws {
         let socket = try await preparePoolAndSocket()
-        logger.info("starting \(type(of: self)) on \(deviceAddressToString(address))")
+        logger.info("starting \(type(of: self)) on \(presentationAddress)")
         do {
             if port != 0 {
                 Task { endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
