@@ -48,7 +48,7 @@ final class SwiftOCADeviceTests: XCTestCase {
 
         let deviceMembers = await device.rootBlock.actionObjects
         let connection = await AES70LocalConnection(listener)
-        Task { try await listener.run() }
+        Task { await listener.run() }
         try await connection.connect()
 
         let deviceExpectation = XCTestExpectation(description: "Check device properties")

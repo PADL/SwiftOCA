@@ -119,7 +119,7 @@ public actor AES70Device {
                 throw Ocp1Error.status(.badONo)
             }
 
-            if let timeout {
+            if let timeout, timeout > 0 {
                 return try await withThrowingTimeout(seconds: timeout) {
                     try await object.handleCommand(command, from: controller)
                 }
@@ -129,6 +129,10 @@ public actor AES70Device {
         } catch let Ocp1Error.status(status) {
             return .init(responseSize: 0, handle: command.handle, statusCode: status)
         } catch {
+            logger
+                .warning(
+                    "failed to handle command \(command) from controller \(controller): \(error)"
+                )
             return .init(responseSize: 0, handle: command.handle, statusCode: .deviceError)
         }
     }

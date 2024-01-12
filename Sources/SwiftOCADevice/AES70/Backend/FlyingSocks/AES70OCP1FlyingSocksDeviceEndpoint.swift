@@ -188,7 +188,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpointPrivat
         try await withThrowingDiscardingTaskGroup { [logger] group in
             for try await socket in socket.sockets {
                 group.addTask {
-                    try await self.handle(AES70OCP1FlyingSocksController(socket: socket))
+                    try await AES70OCP1FlyingSocksController(socket: socket).handle(for: self)
                 }
             }
         }

@@ -23,7 +23,7 @@ import SwiftOCA
 @AES70Device
 public class DatagramProxyDeviceEndpoint<T: Equatable & Hashable>: AES70DeviceEndpointPrivate {
     typealias ControllerType = DatagramProxyController<T>
-    typealias PeerMessagePDU = (T, [UInt8])
+    public typealias PeerMessagePDU = (T, [UInt8])
 
     public var controllers: [AES70Controller] {
         _controllers.map(\.1)
