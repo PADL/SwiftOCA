@@ -98,20 +98,14 @@ public class AES70OCP1IORingConnection: AES70OCP1Connection {
     }
 
     override public func read(_ length: Int) async throws -> Data {
-        var data = Data()
         try await withMappedError { socket in
-            repeat {
-                var tmpBuffer = [UInt8](repeating: 0, count: length - data.count)
-                let count = try await socket.read(into: &tmpBuffer, count: length - data.count)
-                data += Data(tmpBuffer.prefix(count))
-            } while data.count < length
+            Data(try await socket.read(count: length, awaitingAllRead: true))
         }
-        return data
     }
 
     override public func write(_ data: Data) async throws -> Int {
         try await withMappedError { socket in
-            try await socket.write(Array(data), count: data.count)
+            try await socket.write(Array(data), count: data.count, awaitingAllWritten: true)
         }
     }
 }

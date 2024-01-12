@@ -100,7 +100,10 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
     }
 
     func receiveMessagePdus() async throws -> [ControllerMessage] {
-        var messagePduData = try await socket.read(count: AES70OCP1Connection.MinimumPduSize)
+        var messagePduData = try await socket.read(
+            count: AES70OCP1Connection.MinimumPduSize,
+            awaitingAllRead: true
+        )
 
         guard messagePduData.count != 0 else {
             // 0 length on EOF
@@ -119,7 +122,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
         }
 
         let bytesLeft = Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1)
-        messagePduData += try await socket.read(count: bytesLeft)
+        messagePduData += try await socket.read(count: bytesLeft, awaitingAllRead: true)
 
         var messagePdus = [Data]()
         let messageType = try AES70OCP1Connection.decodeOcp1MessagePdu(
@@ -184,7 +187,11 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
             messages,
             type: messageType
         )
-        try await socket.write(Array(messagePduData), count: messagePduData.count)
+        _ = try await socket.write(
+            Array(messagePduData),
+            count: messagePduData.count,
+            awaitingAllWritten: true
+        )
     }
 
     nonisolated var identifier: String {
