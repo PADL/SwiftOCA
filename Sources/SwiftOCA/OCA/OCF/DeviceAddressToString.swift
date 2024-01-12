@@ -16,6 +16,14 @@
 
 import Foundation
 
+public func deviceAddressToString(_ deviceAddress: Data) -> String {
+    withUnsafeBytes(of: deviceAddress) {
+        $0.withMemoryRebound(to: sockaddr.self) {
+            deviceAddressToString($0.baseAddress!)
+        }
+    }
+}
+
 public func deviceAddressToString(_ deviceAddress: UnsafePointer<sockaddr>) -> String {
     switch deviceAddress.pointee.sa_family {
     case sa_family_t(AF_INET):

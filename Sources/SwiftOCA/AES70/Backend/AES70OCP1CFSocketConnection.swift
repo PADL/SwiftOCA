@@ -242,12 +242,4 @@ fileprivate extension CFRunLoopMode {
 }
 #endif
 
-fileprivate func deviceAddressToString(_ deviceAddress: Data) -> String {
-    deviceAddress.withUnsafeBytes { unbound -> String in
-        unbound.withMemoryRebound(to: sockaddr.self) { cSockAddr -> String in
-            deviceAddressToString(cSockAddr.baseAddress!)
-        }
-    }
-}
-
 #endif

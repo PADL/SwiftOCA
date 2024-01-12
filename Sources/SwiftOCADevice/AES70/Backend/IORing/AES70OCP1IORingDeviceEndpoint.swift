@@ -88,6 +88,7 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
 
         switch message {
         case let command as Ocp1Command:
+            logger.command(command, on: controller)
             let commandResponse = await AES70Device.shared.handleCommand(
                 command,
                 timeout: timeout,
@@ -111,6 +112,9 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
         if rrq, let response {
             try await controller.sendMessage(response, type: .ocaRsp)
         }
+        if let response {
+            logger.response(response, on: controller)
+        }
     }
 
     public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
@@ -122,6 +126,7 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
     }
 
     public func run() async throws {
+        logger.info("starting \(type(of: self)) on \(try! address.presentationAddress)")
         if port != 0 {
             Task {
                 endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
@@ -191,13 +196,17 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
     }
 
     func handleController(_ controller: AES70OCP1IORingStreamController) async {
+        logger.controllerAdded(controller)
         _controllers.append(controller)
         do {
             for try await (message, rrq) in await controller.messages {
                 try await handle(controller: controller, message: message, rrq: rrq)
             }
-        } catch {}
+        } catch {
+            logger.controllerError(error, on: controller)
+        }
         _controllers.removeAll(where: { $0 == controller })
+        logger.controllerRemoved(controller)
         try? await controller.close()
     }
 
@@ -231,6 +240,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                 peerAddress: controllerAddress
             )
             logger.info("new datagram client \(controller!)")
+            logger.controllerAdded(controller)
             _controllers[controllerAddress] = controller
         }
 
@@ -262,6 +272,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                             }
                         } catch {
                             await remove(controller: controller)
+                            logger.controllerRemoved(controller)
                         }
                     }
                 }

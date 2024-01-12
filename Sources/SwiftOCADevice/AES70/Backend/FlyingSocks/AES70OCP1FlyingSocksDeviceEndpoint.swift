@@ -96,6 +96,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
 
     public func run() async throws {
         let socket = try await preparePoolAndSocket()
+        logger.info("starting \(type(of: self)) on \(deviceAddressToString(address))")
         do {
             if port != 0 {
                 Task { endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
@@ -142,7 +143,6 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
         #endif
         try socket.bind(to: address)
         try socket.listen()
-        logger.logListening(on: socket)
         return socket
     }
 
@@ -277,38 +277,6 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70BonjourRegistrableDe
                 return 0
             }
         })
-    }
-}
-
-extension Logger {
-    func logListening(on socket: Socket) {
-        info("starting server \(Self.makeListening(on: try? socket.sockname()))")
-    }
-
-    static func makeListening(on addr: Socket.Address?) -> String {
-        guard let addr = addr else {
-            return ""
-        }
-
-        var comps = [String]()
-
-        switch addr {
-        case let .ip4(address, port: port):
-            if address == "0.0.0.0" {
-                comps.append("port: \(port)")
-            } else {
-                comps.append("\(address):\(port)")
-            }
-        case let .ip6(address, port: port):
-            if address == "::" {
-                comps.append("port: \(port)")
-            } else {
-                comps.append("\(address):\(port)")
-            }
-        case let .unix(path):
-            comps.append("path: \(path)")
-        }
-        return comps.joined(separator: " ")
     }
 }
 

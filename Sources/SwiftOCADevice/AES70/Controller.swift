@@ -222,14 +222,14 @@ extension Logger {
     }
 
     func command(_ command: Ocp1Command, on controller: AES70ControllerPrivate) {
-        info("\(controller.identifier) command: \(command)")
+        trace("\(controller.identifier) command: \(command)")
     }
 
     func response(_ response: Ocp1Response, on controller: AES70ControllerPrivate) {
-        info("\(controller.identifier) command: \(response)")
+        trace("\(controller.identifier) command: \(response)")
     }
 
     func controllerError(_ error: Error, on controller: AES70ControllerPrivate) {
-        info("\(controller.identifier) error: \(error.localizedDescription)")
+        warning("\(controller.identifier) error: \(error.localizedDescription)")
     }
 }
