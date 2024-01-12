@@ -105,6 +105,8 @@ public enum DeviceApp {
             deviceDelegate: device
         )
 
+        signal(SIGPIPE, SIG_IGN)
+
         await withThrowingTaskGroup(of: Void.self) { taskGroup in
             taskGroup.addTask {
                 print("Starting OCP.1 stream endpoint \(streamEndpoint)...")
