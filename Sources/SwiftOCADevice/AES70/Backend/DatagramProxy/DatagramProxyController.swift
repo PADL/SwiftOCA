@@ -30,7 +30,7 @@ actor DatagramProxyController<T: Equatable & Hashable>: AES70ControllerPrivate {
         AsyncEmptySequence<ControllerMessage>().eraseToAnyAsyncSequence()
     }
 
-    public init(with peerID: T, endpoint: DatagramProxyDeviceEndpoint<T>) {
+    init(with peerID: T, endpoint: DatagramProxyDeviceEndpoint<T>) {
         self.peerID = peerID
         self.endpoint = endpoint
     }

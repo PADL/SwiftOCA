@@ -36,7 +36,7 @@ public class DatagramProxyDeviceEndpoint<T: Equatable & Hashable>: AES70DeviceEn
     private var _controllers = [T: ControllerType]()
     private let inputStream: AsyncStream<PeerMessagePDU>
 
-    init(
+    public init(
         timeout: TimeInterval,
         inputStream: AsyncStream<PeerMessagePDU>,
         outputStream: AsyncStream<PeerMessagePDU>.Continuation
