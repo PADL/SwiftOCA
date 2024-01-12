@@ -65,7 +65,7 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
         self.endpoint = endpoint
 
         Task { @AES70Device in
-            await self.endpoint?.register(controller: self)
+            await self.endpoint?.add(controller: self)
             do {
                 for try await (message, rrq) in inputStream.ocp1DecodedMessages {
                     var response: Ocp1Response?
@@ -105,7 +105,7 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
             } catch {
                 await self.endpoint?.logger.logError(error, on: self)
             }
-            await self.endpoint?.deregister(controller: self)
+            await self.endpoint?.remove(controller: self)
             await self.close()
         }
     }

@@ -60,12 +60,12 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70BonjourRegistrableDevi
         }
     }
 
-    func register(controller: AES70OCP1FlyingFoxController) {
+    func add(controller: AES70OCP1FlyingFoxController) {
         _controllers.append(controller)
         logger.logControllerAdded(controller)
     }
 
-    func deregister(controller: AES70OCP1FlyingFoxController) {
+    func remove(controller: AES70OCP1FlyingFoxController) {
         _controllers.removeAll(where: { $0.id == controller.id })
         logger.logControllerRemoved(controller)
     }
