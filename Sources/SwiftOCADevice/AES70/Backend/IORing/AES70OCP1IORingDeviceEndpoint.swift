@@ -223,7 +223,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                         let controller =
                             try await self.controller(for: AnySocketAddress(bytes: messagePdu.name))
                         do {
-                            let messages = try await controller.decodeMessages(from: messagePdu)
+                            let messages = try await controller.decodeMessages(from: messagePdu.buffer)
                             for (message, rrq) in messages {
                                 try await controller.handle(for: self, message: message, rrq: rrq)
                             }
