@@ -24,8 +24,8 @@ import FlyingSocks
 import Foundation
 import SwiftOCA
 
-extension AsyncStream where Element == WSMessage {
-    fileprivate var ocp1DecodedMessages: AnyAsyncSequence<(Ocp1Message, Bool)> {
+fileprivate extension AsyncStream where Element == WSMessage {
+    var ocp1DecodedMessages: AnyAsyncSequence<(Ocp1Message, Bool)> {
         flatMap {
             // TODO: handle OCP.1 PDUs split over multiple frames
             guard case let .data(data) = $0 else {
