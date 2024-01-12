@@ -38,7 +38,7 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
     var socket: Socket?
     var endpointRegistrationHandle: AES70DeviceEndpointRegistrar.Handle?
 
-    var logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1IORingDeviceEndpoint")
+    private(set) var logger: Logger!
 
     public var controllers: [AES70Controller] {
         []
@@ -52,6 +52,7 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
         self.timeout = timeout
         ring = IORing.shared
         try await AES70Device.shared.add(endpoint: self)
+        logger = Logger(label: "com.padl.SwiftOCADevice.\(type(of: self))")
     }
 
     public nonisolated var description: String {
