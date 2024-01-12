@@ -160,6 +160,29 @@ extension AES70ControllerPrivate {
             keepAliveTask = nil
         }
     }
+
+    func decodeMessages(from messagePduData: [UInt8]) throws -> [ControllerMessage] {
+        guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize,
+              messagePduData[0] == Ocp1SyncValue
+        else {
+            throw Ocp1Error.invalidSyncValue
+        }
+        let pduSize: OcaUint32 = Data(messagePduData).decodeInteger(index: 3)
+        guard pduSize >= (AES70OCP1Connection.MinimumPduSize - 1) else {
+            throw Ocp1Error.invalidPduSize
+        }
+
+        var messagePdus = [Data]()
+        let messageType = try AES70OCP1Connection.decodeOcp1MessagePdu(
+            from: Data(messagePduData),
+            messages: &messagePdus
+        )
+        let messages = try messagePdus.map {
+            try AES70OCP1Connection.decodeOcp1Message(from: $0, type: messageType)
+        }
+
+        return messages.map { ($0, messageType == .ocaCmdRrq) }
+    }
 }
 
 public extension AES70ControllerDefaultSubscribing {

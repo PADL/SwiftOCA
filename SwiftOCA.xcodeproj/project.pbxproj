@@ -71,6 +71,8 @@
 		D351F21A2A729F48008C5513 /* VectorDeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2192A729F48008C5513 /* VectorDeviceProperty.swift */; };
 		D351F21C2A72A26E008C5513 /* Matrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F21B2A72A26E008C5513 /* Matrix.swift */; };
 		D352C1D22A7FB1F6009FF7CD /* AES70OCP1SPIConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D352C1D12A7FB1F6009FF7CD /* AES70OCP1SPIConnection.swift */; };
+		D355925D2B51E5FF000F633B /* DatagramProxyDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592592B51E5DB000F633B /* DatagramProxyDeviceEndpoint.swift */; };
+		D355925E2B51E604000F633B /* DatagramProxyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D355925B2B51E5DF000F633B /* DatagramProxyController.swift */; };
 		D36ECA212A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */; };
 		D36ECA2C2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */; };
 		D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */; };
@@ -332,6 +334,8 @@
 		D351F2192A729F48008C5513 /* VectorDeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VectorDeviceProperty.swift; sourceTree = "<group>"; };
 		D351F21B2A72A26E008C5513 /* Matrix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Matrix.swift; sourceTree = "<group>"; };
 		D352C1D12A7FB1F6009FF7CD /* AES70OCP1SPIConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1SPIConnection.swift; sourceTree = "<group>"; };
+		D35592592B51E5DB000F633B /* DatagramProxyDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatagramProxyDeviceEndpoint.swift; sourceTree = "<group>"; };
+		D355925B2B51E5DF000F633B /* DatagramProxyController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatagramProxyController.swift; sourceTree = "<group>"; };
 		D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1FlyingSocksConnection.swift; sourceTree = "<group>"; };
 		D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAddressToString.swift; sourceTree = "<group>"; };
@@ -573,6 +577,7 @@
 		D32229C12ABC270900B56B6B /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				D35592582B51E5C7000F633B /* DatagramProxy */,
 				D32229C22ABC270900B56B6B /* Local */,
 				D32229C62ABC270900B56B6B /* FlyingSocks */,
 				D32229CA2ABC270900B56B6B /* IORing */,
@@ -774,6 +779,15 @@
 				D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */,
 			);
 			path = Agents;
+			sourceTree = "<group>";
+		};
+		D35592582B51E5C7000F633B /* DatagramProxy */ = {
+			isa = PBXGroup;
+			children = (
+				D35592592B51E5DB000F633B /* DatagramProxyDeviceEndpoint.swift */,
+				D355925B2B51E5DF000F633B /* DatagramProxyController.swift */,
+			);
+			path = DatagramProxy;
 			sourceTree = "<group>";
 		};
 		D37F7E192A6BC015005F035F /* Backend */ = {
@@ -1495,6 +1509,7 @@
 				D337713F2B48A829003BD47B /* Root+JSON.swift in Sources */,
 				D351F2122A729CB0008C5513 /* TimeSource.swift in Sources */,
 				D33B52AC2A702D4D001A1BA7 /* DeviceManager.swift in Sources */,
+				D355925D2B51E5FF000F633B /* DatagramProxyDeviceEndpoint.swift in Sources */,
 				D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */,
 				D33D595D2B2FD04900963157 /* PortsRepresentable.swift in Sources */,
 				D33B52A32A702CED001A1BA7 /* Block.swift in Sources */,
@@ -1506,6 +1521,7 @@
 				D351F20E2A729AF2008C5513 /* BasicSensors.swift in Sources */,
 				D32229D42ABC270900B56B6B /* AES70OCP1IORingController.swift in Sources */,
 				D351F2102A729C36008C5513 /* LevelSensor.swift in Sources */,
+				D355925E2B51E604000F633B /* DatagramProxyController.swift in Sources */,
 				D33B52902A6FD332001A1BA7 /* Root.swift in Sources */,
 				D351F2182A729E29008C5513 /* Gain.swift in Sources */,
 				D3AFD38C2B4150C800A72E9A /* SummingPoint.swift in Sources */,
