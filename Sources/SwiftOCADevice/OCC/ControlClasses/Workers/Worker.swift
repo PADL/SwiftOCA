@@ -58,9 +58,9 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable {
         from controller: AES70Controller
     ) async throws -> Ocp1Response {
         switch command.methodID {
-        case OcaMethodID("2.7"):
+        case OcaMethodID("2.6"):
             return try await encodeResponse(handleGetPortName(command, from: controller))
-        case OcaMethodID("2.8"):
+        case OcaMethodID("2.7"):
             try await handleSetPortName(command, from: controller)
             return Ocp1Response()
         default:
