@@ -20,6 +20,8 @@ import Foundation
 import SwiftOCA
 
 public final class AES70LocalConnection: AES70OCP1Connection {
+    nonisolated static var connectionPrefix: String { "oca/local" }
+
     let endpoint: AES70LocalDeviceEndpoint
 
     public init(

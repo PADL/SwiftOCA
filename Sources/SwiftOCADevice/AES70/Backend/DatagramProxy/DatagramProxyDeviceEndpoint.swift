@@ -79,14 +79,14 @@ public class DatagramProxyDeviceEndpoint<T: Equatable & Hashable>: AES70DeviceEn
         controller = _controllers[peerID]
         if controller == nil {
             controller = DatagramProxyController(with: peerID, endpoint: self)
-            logger.info("proxy controller added", controller: controller)
+            logger.info("datagram proxy controller added", controller: controller)
             _controllers[peerID] = controller
         }
 
         return controller
     }
 
-    // only needs for stream-oriented controllers
+    // only needed for stream-oriented controllers
     func add(controller: ControllerType) async {}
 
     func remove(controller: ControllerType) async {

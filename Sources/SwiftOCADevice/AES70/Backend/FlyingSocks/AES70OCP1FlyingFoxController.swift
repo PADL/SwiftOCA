@@ -48,6 +48,8 @@ fileprivate extension AsyncStream where Element == WSMessage {
 
 /// A remote WebSocket endpoint
 actor AES70OCP1FlyingFoxController: AES70ControllerPrivate, CustomStringConvertible {
+    nonisolated static var connectionPrefix: String { "ocaws/tcp" }
+
     var subscriptions = [OcaONo: NSMutableSet]()
 
     private let inputStream: AsyncStream<WSMessage>

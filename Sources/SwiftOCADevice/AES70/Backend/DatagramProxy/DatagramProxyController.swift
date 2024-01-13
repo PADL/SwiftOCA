@@ -21,6 +21,8 @@ import SwiftOCA
 actor DatagramProxyController<T: Equatable & Hashable>: AES70ControllerPrivate,
     CustomStringConvertible
 {
+    nonisolated static var connectionPrefix: String { "oca/udp" }
+
     let peerID: T
     var subscriptions = [OcaONo: NSMutableSet]()
     var keepAliveTask: Task<(), Error>?
@@ -56,7 +58,7 @@ actor DatagramProxyController<T: Equatable & Hashable>: AES70ControllerPrivate,
     }
 
     nonisolated var identifier: String {
-        "<\(String(describing: peerID))>"
+        String(describing: peerID)
     }
 
     public nonisolated var description: String {

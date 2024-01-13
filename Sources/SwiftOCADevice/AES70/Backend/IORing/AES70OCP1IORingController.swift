@@ -38,6 +38,8 @@ protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equata
 }
 
 actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomStringConvertible {
+    static var connectionPrefix: String { "oca/udp" }
+
     var subscriptions = [OcaONo: NSMutableSet]()
     let peerAddress: AnySocketAddress
     var receiveMessageTask: Task<(), Never>?
@@ -149,7 +151,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
     }
 
     nonisolated var identifier: String {
-        "<\((try? socket.peerName) ?? "unknown")>"
+        (try? socket.peerName) ?? "unknown"
     }
 }
 
@@ -169,6 +171,8 @@ extension AES70OCP1IORingStreamController: Hashable {
 }
 
 actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
+    static var connectionPrefix: String { "oca/udp" }
+
     var subscriptions = [OcaONo: NSMutableSet]()
     let peerAddress: AnySocketAddress
     var keepAliveTask: Task<(), Error>?
@@ -212,7 +216,7 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
     }
 
     nonisolated var identifier: String {
-        "<\((try? peerAddress.presentationAddress) ?? "unknown")>"
+        (try? peerAddress.presentationAddress) ?? "unknown"
     }
 
     func close() async throws {}

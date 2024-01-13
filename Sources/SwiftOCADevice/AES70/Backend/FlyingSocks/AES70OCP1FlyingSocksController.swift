@@ -25,6 +25,8 @@ import SwiftOCA
 
 /// A remote endpoint
 actor AES70OCP1FlyingSocksController: AES70ControllerPrivate, CustomStringConvertible {
+    nonisolated static var connectionPrefix: String { "oca/tcp" }
+
     typealias ControllerMessage = (Ocp1Message, Bool)
 
     var subscriptions = [OcaONo: NSMutableSet]()
@@ -84,7 +86,7 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate, CustomStringConver
     }
 
     nonisolated var identifier: String {
-        "<\(address)>"
+        address
     }
 
     public nonisolated var description: String {

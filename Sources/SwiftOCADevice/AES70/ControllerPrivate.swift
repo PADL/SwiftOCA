@@ -24,6 +24,8 @@ import SwiftOCA
 /// support out-of-tree endpoints
 
 protocol AES70ControllerPrivate: AES70ControllerDefaultSubscribing, AnyActor {
+    nonisolated static var connectionPrefix: String { get }
+
     typealias ControllerMessage = (Ocp1Message, Bool)
 
     /// get an identifier used for logging
