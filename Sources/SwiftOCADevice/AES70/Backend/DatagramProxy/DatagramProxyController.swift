@@ -18,7 +18,7 @@ import AsyncExtensions
 import Foundation
 import SwiftOCA
 
-actor DatagramProxyController<T: Equatable & Hashable>: AES70ControllerPrivate,
+actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: AES70ControllerPrivate,
     CustomStringConvertible
 {
     nonisolated static var connectionPrefix: String { "oca/udp" }

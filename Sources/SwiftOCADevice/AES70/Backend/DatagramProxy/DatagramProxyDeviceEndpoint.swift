@@ -20,8 +20,10 @@ import Foundation
 import Logging
 import SwiftOCA
 
+public typealias DatagramProxyPeerIdentifier = Sendable & Equatable & Hashable
+
 @AES70Device
-public class DatagramProxyDeviceEndpoint<T: Equatable & Hashable>: AES70DeviceEndpointPrivate {
+public class DatagramProxyDeviceEndpoint<T: DatagramProxyPeerIdentifier>: AES70DeviceEndpointPrivate {
     public typealias PeerMessagePDU = (T, [UInt8])
 
     public var controllers: [AES70Controller] {
