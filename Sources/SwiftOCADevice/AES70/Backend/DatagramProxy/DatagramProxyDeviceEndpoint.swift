@@ -23,7 +23,9 @@ import SwiftOCA
 public typealias DatagramProxyPeerIdentifier = Sendable & Equatable & Hashable
 
 @AES70Device
-public class DatagramProxyDeviceEndpoint<T: DatagramProxyPeerIdentifier>: AES70DeviceEndpointPrivate {
+public class DatagramProxyDeviceEndpoint<
+    T: DatagramProxyPeerIdentifier
+>: AES70DeviceEndpointPrivate {
     public typealias PeerMessagePDU = (T, [UInt8])
 
     public var controllers: [AES70Controller] {
@@ -33,8 +35,9 @@ public class DatagramProxyDeviceEndpoint<T: DatagramProxyPeerIdentifier>: AES70D
     typealias ControllerType = DatagramProxyController<T>
 
     let timeout: TimeInterval
-    let outputStream: AsyncStream<PeerMessagePDU>.Continuation
+    let device: AES70Device
     let logger = Logger(label: "com.padl.SwiftOCADevice.DatagramProxyDeviceEndpoint")
+    let outputStream: AsyncStream<PeerMessagePDU>.Continuation
 
     private var _controllers = [T: ControllerType]()
     private let inputStream: AsyncStream<PeerMessagePDU>
@@ -42,13 +45,15 @@ public class DatagramProxyDeviceEndpoint<T: DatagramProxyPeerIdentifier>: AES70D
     public init(
         timeout: TimeInterval,
         inputStream: AsyncStream<PeerMessagePDU>,
-        outputStream: AsyncStream<PeerMessagePDU>.Continuation
+        outputStream: AsyncStream<PeerMessagePDU>.Continuation,
+        device: AES70Device = AES70Device.shared
     ) async throws {
         self.timeout = timeout
+        self.device = device
         self.inputStream = inputStream
         self.outputStream = outputStream
 
-        try await AES70Device.shared.add(endpoint: self)
+        try await device.add(endpoint: self)
     }
 
     public func run() async throws {

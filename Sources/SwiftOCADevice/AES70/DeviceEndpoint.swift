@@ -25,6 +25,7 @@ public protocol AES70DeviceEndpoint {
 protocol AES70DeviceEndpointPrivate: AES70DeviceEndpoint {
     associatedtype ControllerType: AES70ControllerPrivate
 
+    var device: AES70Device { get }
     var logger: Logger { get }
     var timeout: TimeInterval { get }
 
@@ -34,7 +35,7 @@ protocol AES70DeviceEndpointPrivate: AES70DeviceEndpoint {
 
 extension AES70DeviceEndpointPrivate {
     func unlockAndRemove(controller: ControllerType) async {
-        await AES70Device.shared.unlockAll(controller: controller)
+        await device.unlockAll(controller: controller)
         await remove(controller: controller)
     }
 }

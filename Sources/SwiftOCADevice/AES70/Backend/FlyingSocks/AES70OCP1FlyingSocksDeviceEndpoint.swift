@@ -52,13 +52,15 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpointPrivat
     private let address: sockaddr_storage
     let timeout: TimeInterval
     let logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1FlyingSocksDeviceEndpoint")
+    let device: AES70Device
 
     private var _controllers = [AES70OCP1FlyingSocksController]()
     private var endpointRegistrationHandle: AES70DeviceEndpointRegistrar.Handle?
 
     public convenience init(
         address: Data,
-        timeout: TimeInterval = 15
+        timeout: TimeInterval = 15,
+        device: AES70Device = AES70Device.shared
     ) async throws {
         var storage = sockaddr_storage()
         _ = withUnsafeMutableBytes(of: &storage) { dst in
@@ -66,26 +68,29 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpointPrivat
                 memcpy(dst.baseAddress!, src.baseAddress!, src.count)
             }
         }
-        try await self.init(address: storage, timeout: timeout)
+        try await self.init(address: storage, timeout: timeout, device: device)
     }
 
     public convenience init(
         path: String,
-        timeout: TimeInterval = 15
+        timeout: TimeInterval = 15,
+        device: AES70Device = AES70Device.shared
     ) async throws {
         let address = sockaddr_un.unix(path: path).makeStorage()
-        try await self.init(address: address, timeout: timeout)
+        try await self.init(address: address, timeout: timeout, device: device)
     }
 
     private init(
         address: sockaddr_storage,
-        timeout: TimeInterval = 15
+        timeout: TimeInterval = 15,
+        device: AES70Device = AES70Device.shared
     ) async throws {
         self.address = address
         self.timeout = timeout
+        self.device = device
         pool = Self.defaultPool()
 
-        try await AES70Device.shared.add(endpoint: self)
+        try await device.add(endpoint: self)
     }
 
     public nonisolated var description: String {
@@ -110,7 +115,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpointPrivat
         do {
             if port != 0 {
                 Task { endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
-                    .register(endpoint: self)
+                    .register(endpoint: self, device: device)
                 }
             }
             try await _run(on: socket, pool: pool)

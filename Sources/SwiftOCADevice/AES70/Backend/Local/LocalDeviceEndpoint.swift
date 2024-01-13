@@ -26,6 +26,7 @@ public final class AES70LocalDeviceEndpoint: AES70DeviceEndpointPrivate {
 
     let logger = Logger(label: "com.padl.SwiftOCADevice.AES70LocalDeviceEndpoint")
     let timeout: TimeInterval = 0
+    let device: AES70Device
 
     public var controllers: [AES70Controller] {
         [controller]
@@ -42,9 +43,12 @@ public final class AES70LocalDeviceEndpoint: AES70DeviceEndpointPrivate {
 
     func remove(controller: ControllerType) async {}
 
-    public init() async throws {
+    public init(
+        device: AES70Device = AES70Device.shared
+    ) async throws {
+        self.device = device
         controller = await AES70LocalController(endpoint: self)
-        try await AES70Device.shared.add(endpoint: self)
+        try await device.add(endpoint: self)
     }
 
     public func run() async {

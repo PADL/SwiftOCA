@@ -71,7 +71,7 @@ extension AES70ControllerPrivate {
         switch message {
         case let command as Ocp1Command:
             endpoint.logger.command(command, on: controller)
-            let commandResponse = await AES70Device.shared.handleCommand(
+            let commandResponse = await endpoint.device.handleCommand(
                 command,
                 timeout: endpoint.timeout,
                 from: controller

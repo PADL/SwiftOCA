@@ -50,11 +50,14 @@ public final class AES70DeviceEndpointRegistrar {
         case tcpWebSocket = "_ocaws._tcp."
     }
 
-    public func register(endpoint: any AES70BonjourRegistrableDeviceEndpoint) async throws
+    public func register(
+        endpoint: any AES70BonjourRegistrableDeviceEndpoint,
+        device: AES70Device
+    ) async throws
         -> Handle
     {
         let txtRecords: [String: String]
-        if let deviceManager = await AES70Device.shared.deviceManager {
+        if let deviceManager = await device.deviceManager {
             txtRecords = [
                 "txtvers": "1",
                 "protovers": "\(deviceManager.version)",

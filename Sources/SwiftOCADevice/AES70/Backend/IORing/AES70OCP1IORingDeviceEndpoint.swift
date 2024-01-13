@@ -33,6 +33,7 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
 {
     let address: any SocketAddress
     let timeout: TimeInterval
+    let device: AES70Device
     let ring: IORing
 
     var socket: Socket?
@@ -44,12 +45,14 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
 
     init(
         address: any SocketAddress,
-        timeout: TimeInterval = 15
+        timeout: TimeInterval = 15,
+        device: AES70Device = AES70Device.shared
     ) async throws {
         self.address = address
         self.timeout = timeout
+        self.device = device
         ring = IORing.shared
-        try await AES70Device.shared.add(endpoint: self)
+        try await device.add(endpoint: self)
     }
 
     public nonisolated var description: String {
@@ -58,21 +61,23 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
 
     public convenience init(
         address: Data,
-        timeout: TimeInterval = 15
+        timeout: TimeInterval = 15,
+        device: AES70Device = AES70Device.shared
     ) async throws {
         let storage = try sockaddr_storage(bytes: Array(address))
-        try await self.init(address: storage, timeout: timeout)
+        try await self.init(address: storage, timeout: timeout, device: device)
     }
 
     public convenience init(
         path: String,
-        timeout: TimeInterval = 15
+        timeout: TimeInterval = 15,
+        device: AES70Device = AES70Device.shared
     ) async throws {
         let storage = try sockaddr_un(
             family: sa_family_t(AF_LOCAL),
             presentationAddress: path
         )
-        try await self.init(address: storage, timeout: timeout)
+        try await self.init(address: storage, timeout: timeout, device: device)
     }
 
     public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
@@ -87,7 +92,7 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
         if port != 0 {
             Task {
                 endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
-                    .register(endpoint: self)
+                    .register(endpoint: self, device: device)
             }
         }
     }

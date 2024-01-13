@@ -36,9 +36,11 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70DeviceEndpointPrivate,
         _controllers
     }
 
-    private var httpServer: HTTPServer!
     let logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1FlyingFoxDeviceEndpoint")
     let timeout: TimeInterval
+    let device: AES70Device
+
+    private var httpServer: HTTPServer!
     private let address: sockaddr_storage
     private var _controllers = [AES70OCP1FlyingFoxController]()
     private var endpointRegistrationHandle: AES70DeviceEndpointRegistrar.Handle?
@@ -73,7 +75,8 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70DeviceEndpointPrivate,
 
     public convenience init(
         address: Data,
-        timeout: TimeInterval = 15
+        timeout: TimeInterval = 15,
+        device: AES70Device = AES70Device.shared
     ) async throws {
         var storage = sockaddr_storage()
         _ = withUnsafeMutableBytes(of: &storage) { dst in
@@ -81,21 +84,24 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70DeviceEndpointPrivate,
                 memcpy(dst.baseAddress!, src.baseAddress!, src.count)
             }
         }
-        try await self.init(address: storage, timeout: timeout)
+        try await self.init(address: storage, timeout: timeout, device: device)
     }
 
     public convenience init(
         path: String,
-        timeout: TimeInterval = 15
+        timeout: TimeInterval = 15,
+        device: AES70Device = AES70Device.shared
     ) async throws {
         let address = sockaddr_un.unix(path: path).makeStorage()
-        try await self.init(address: address, timeout: timeout)
+        try await self.init(address: address, timeout: timeout, device: device)
     }
 
     private init(
         address: sockaddr_storage,
-        timeout: TimeInterval = 15
+        timeout: TimeInterval = 15,
+        device: AES70Device = AES70Device.shared
     ) async throws {
+        self.device = device
         self.address = address
         self.timeout = timeout
 
@@ -120,7 +126,7 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70DeviceEndpointPrivate,
 
         await httpServer.appendRoute("GET /", to: .webSocket(Handler(self)))
 
-        try await AES70Device.shared.add(endpoint: self)
+        try await device.add(endpoint: self)
     }
 
     public nonisolated var description: String {
@@ -136,7 +142,7 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70DeviceEndpointPrivate,
         do {
             if port != 0 {
                 Task { endpointRegistrationHandle = try await AES70DeviceEndpointRegistrar.shared
-                    .register(endpoint: self)
+                    .register(endpoint: self, device: device)
                 }
             }
             try await httpServer.start()
