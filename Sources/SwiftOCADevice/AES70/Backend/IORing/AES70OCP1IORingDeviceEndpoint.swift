@@ -199,8 +199,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                 endpoint: self,
                 peerAddress: controllerAddress
             )
-            logger.info("new datagram client \(controller!)")
-            logger.controllerAdded(controller)
+            logger.info("datagram controller added", controller: controller)
             _controllers[controllerAddress] = controller
         }
 
@@ -219,18 +218,16 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
                 let messagePdus = try await socket.receiveMessages(count: Self.MaximumPduSize)
 
                 for try await messagePdu in messagePdus {
-                    Task { @AES70Device in
-                        let controller =
-                            try await self.controller(for: AnySocketAddress(bytes: messagePdu.name))
-                        do {
-                            let messages = try await controller
-                                .decodeMessages(from: messagePdu.buffer)
-                            for (message, rrq) in messages {
-                                try await controller.handle(for: self, message: message, rrq: rrq)
-                            }
-                        } catch {
-                            await remove(controller: controller)
+                    let controller =
+                        try await controller(for: AnySocketAddress(bytes: messagePdu.name))
+                    do {
+                        let messages = try await controller
+                            .decodeMessages(from: messagePdu.buffer)
+                        for (message, rrq) in messages {
+                            try await controller.handle(for: self, message: message, rrq: rrq)
                         }
+                    } catch {
+                        await unlockAndRemove(controller: controller)
                     }
                 }
             } catch Errno.canceled {}
@@ -264,7 +261,6 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
     func add(controller: ControllerType) async {}
 
     func remove(controller: ControllerType) async {
-        await AES70Device.shared.unlockAll(controller: controller)
         _controllers[controller.peerAddress] = nil
     }
 }

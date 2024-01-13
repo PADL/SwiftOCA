@@ -22,12 +22,13 @@ import SwiftOCA
 
 @AES70Device
 public class DatagramProxyDeviceEndpoint<T: Equatable & Hashable>: AES70DeviceEndpointPrivate {
-    typealias ControllerType = DatagramProxyController<T>
     public typealias PeerMessagePDU = (T, [UInt8])
 
     public var controllers: [AES70Controller] {
         _controllers.map(\.1)
     }
+
+    typealias ControllerType = DatagramProxyController<T>
 
     let timeout: TimeInterval
     let outputStream: AsyncStream<PeerMessagePDU>.Continuation
@@ -50,22 +51,19 @@ public class DatagramProxyDeviceEndpoint<T: Equatable & Hashable>: AES70DeviceEn
 
     public func run() async throws {
         repeat {
-            for try await messagePdu in inputStream {
-                Task { @AES70Device in
-                    let controller =
-                        try await self.controller(for: messagePdu.0)
-                    do {
-                        let messages = try await controller.decodeMessages(from: messagePdu.1)
-                        for (message, rrq) in messages {
-                            try await controller.handle(
-                                for: self,
-                                message: message,
-                                rrq: rrq
-                            )
-                        }
-                    } catch {
-                        await remove(controller: controller)
+            for await messagePdu in inputStream {
+                let controller = controller(for: messagePdu.0)
+                do {
+                    let messages = try await controller.decodeMessages(from: messagePdu.1)
+                    for (message, rrq) in messages {
+                        try await controller.handle(
+                            for: self,
+                            message: message,
+                            rrq: rrq
+                        )
                     }
+                } catch {
+                    await unlockAndRemove(controller: controller)
                 }
             }
             if Task.isCancelled {
@@ -75,24 +73,23 @@ public class DatagramProxyDeviceEndpoint<T: Equatable & Hashable>: AES70DeviceEn
         } while true
     }
 
-    func add(controller: ControllerType) async {}
-
-    private func controller(for peerID: T) async throws -> ControllerType {
+    private func controller(for peerID: T) -> ControllerType {
         var controller: ControllerType!
 
         controller = _controllers[peerID]
         if controller == nil {
             controller = DatagramProxyController(with: peerID, endpoint: self)
-            logger.info("new proxy client \(controller!)")
-            logger.controllerAdded(controller)
+            logger.info("proxy controller added", controller: controller)
             _controllers[peerID] = controller
         }
 
         return controller
     }
 
+    // only needs for stream-oriented controllers
+    func add(controller: ControllerType) async {}
+
     func remove(controller: ControllerType) async {
-        await AES70Device.shared.unlockAll(controller: controller)
         _controllers[controller.peerID] = nil
     }
 }

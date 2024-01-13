@@ -31,18 +31,10 @@ protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equata
     var keepAliveTask: Task<(), Error>? { get set }
     var lastMessageReceivedTime: Date { get set }
 
-    func removeFromDeviceEndpoint() async throws
-
     func sendMessages(
         _ messages: AnyAsyncSequence<Ocp1Message>,
         type messageType: OcaMessageType
     ) async throws
-}
-
-extension AES70OCP1IORingControllerPrivate {
-    func onConnectionBecomingStale() async throws {
-        try await removeFromDeviceEndpoint()
-    }
 }
 
 actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomStringConvertible {
@@ -60,7 +52,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
     private let socket: Socket
 
     public nonisolated var description: String {
-        "(\(type(of: self)))(socket: \(socket))"
+        "\(type(of: self))(socket: \(socket))"
     }
 
     func receiveMessagePdus() async throws -> [ControllerMessage] {
@@ -124,13 +116,11 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
         keepAliveTask?.cancel()
         keepAliveTask = nil
 
-        await AES70Device.shared.unlockAll(controller: self)
-
         receiveMessageTask?.cancel()
         receiveMessageTask = nil
     }
 
-    func removeFromDeviceEndpoint() async throws {
+    func onConnectionBecomingStale() async throws {
         try await close()
     }
 
@@ -198,8 +188,8 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
         self.peerAddress = AnySocketAddress(peerAddress)
     }
 
-    func removeFromDeviceEndpoint() async throws {
-        await endpoint?.remove(controller: self)
+    func onConnectionBecomingStale() async throws {
+        await endpoint?.unlockAndRemove(controller: self)
     }
 
     var keepAliveInterval: UInt64 = 0 {

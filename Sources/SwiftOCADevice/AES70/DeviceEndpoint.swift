@@ -31,3 +31,10 @@ protocol AES70DeviceEndpointPrivate: AES70DeviceEndpoint {
     func add(controller: ControllerType) async
     func remove(controller: ControllerType) async
 }
+
+extension AES70DeviceEndpointPrivate {
+    func unlockAndRemove(controller: ControllerType) async {
+        await AES70Device.shared.unlockAll(controller: controller)
+        await remove(controller: controller)
+    }
+}

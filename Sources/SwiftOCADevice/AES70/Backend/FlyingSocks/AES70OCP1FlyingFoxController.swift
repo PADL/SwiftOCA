@@ -47,7 +47,7 @@ fileprivate extension AsyncStream where Element == WSMessage {
 }
 
 /// A remote WebSocket endpoint
-actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
+actor AES70OCP1FlyingFoxController: AES70ControllerPrivate, CustomStringConvertible {
     var subscriptions = [OcaONo: NSMutableSet]()
 
     private let inputStream: AsyncStream<WSMessage>
@@ -100,12 +100,14 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate {
 
         keepAliveTask?.cancel()
         keepAliveTask = nil
-
-        await AES70Device.shared.unlockAll(controller: self)
     }
 
     nonisolated var identifier: String {
         String(describing: id)
+    }
+
+    public nonisolated var description: String {
+        "\(type(of: self))(id: \(id))"
     }
 }
 

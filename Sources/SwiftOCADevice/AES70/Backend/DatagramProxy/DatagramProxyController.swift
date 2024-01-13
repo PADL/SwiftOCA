@@ -18,7 +18,9 @@ import AsyncExtensions
 import Foundation
 import SwiftOCA
 
-actor DatagramProxyController<T: Equatable & Hashable>: AES70ControllerPrivate {
+actor DatagramProxyController<T: Equatable & Hashable>: AES70ControllerPrivate,
+    CustomStringConvertible
+{
     let peerID: T
     var subscriptions = [OcaONo: NSMutableSet]()
     var keepAliveTask: Task<(), Error>?
@@ -33,10 +35,6 @@ actor DatagramProxyController<T: Equatable & Hashable>: AES70ControllerPrivate {
     init(with peerID: T, endpoint: DatagramProxyDeviceEndpoint<T>) {
         self.peerID = peerID
         self.endpoint = endpoint
-    }
-
-    func removeFromDeviceEndpoint() async throws {
-        await endpoint?.remove(controller: self)
     }
 
     var keepAliveInterval: UInt64 = 0 {
@@ -58,7 +56,11 @@ actor DatagramProxyController<T: Equatable & Hashable>: AES70ControllerPrivate {
     }
 
     nonisolated var identifier: String {
-        String(describing: peerID)
+        "<\(String(describing: peerID))>"
+    }
+
+    public nonisolated var description: String {
+        "\(type(of: self))(peerID: \(String(describing: peerID))"
     }
 
     func onConnectionBecomingStale() async throws {}

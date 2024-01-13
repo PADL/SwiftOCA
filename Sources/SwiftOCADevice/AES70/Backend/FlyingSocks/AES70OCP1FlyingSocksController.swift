@@ -24,14 +24,14 @@ import Foundation
 import SwiftOCA
 
 /// A remote endpoint
-actor AES70OCP1FlyingSocksController: AES70ControllerPrivate {
+actor AES70OCP1FlyingSocksController: AES70ControllerPrivate, CustomStringConvertible {
     typealias ControllerMessage = (Ocp1Message, Bool)
 
     var subscriptions = [OcaONo: NSMutableSet]()
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = Date.distantPast
 
-    private let hostname: String
+    private let address: String
     private let socket: AsyncSocket
     private let _messages: AsyncThrowingStream<AsyncSyncSequence<[ControllerMessage]>, Error>
     private var socketClosed = false
@@ -41,7 +41,7 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate {
     }
 
     init(socket: AsyncSocket) async throws {
-        hostname = Self.makeIdentifier(from: socket.socket)
+        address = Self.makeIdentifier(from: socket.socket)
         self.socket = socket
         _messages = AsyncThrowingStream.decodingMessages(from: socket.bytes)
     }
@@ -81,12 +81,14 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate {
 
         keepAliveTask?.cancel()
         keepAliveTask = nil
-
-        await AES70Device.shared.unlockAll(controller: self)
     }
 
     nonisolated var identifier: String {
-        "<\(hostname)>"
+        "<\(address)>"
+    }
+
+    public nonisolated var description: String {
+        "\(type(of: self))(address: \(address))"
     }
 
     private nonisolated var fileDescriptor: Socket.FileDescriptor {
