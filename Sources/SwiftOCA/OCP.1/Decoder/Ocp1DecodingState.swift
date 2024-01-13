@@ -23,18 +23,38 @@ class Ocp1DecodingState {
     }
 
     func decode(_ type: String.Type) throws -> String {
-        var raw = Data()
-        // TODO: deal with actual number of Unicode code points
-        let length = Int(try decodeInteger(UInt16.self))
-        raw.append(data.prefix(length))
-        guard raw.count == length else {
-            throw Ocp1Error.pduTooShort
+        struct InterospectableIterator<T: Collection>: IteratorProtocol {
+            typealias Element = T.Element
+            var iterator: T.Iterator
+            var position = 0
+
+            init(_ elements: T) { iterator = elements.makeIterator() }
+
+            mutating func next() -> Element? {
+                position += 1
+                return iterator.next()
+            }
         }
-        data.removeFirst(length)
-        guard let value = String(data: raw, encoding: .utf8) else {
-            throw Ocp1Error.stringNotDecodable(raw)
+
+        let scalarCount = try Int(decodeInteger(UInt16.self))
+        var iterator = InterospectableIterator(data)
+        var scalars = [Unicode.Scalar]()
+        var utf8Decoder = UTF8()
+
+        for _ in 0..<scalarCount {
+            switch utf8Decoder.decode(&iterator) {
+            case let .scalarValue(v):
+                scalars.append(v)
+            case .emptyInput:
+                throw Ocp1Error.pduTooShort
+            case .error:
+                throw Ocp1Error.stringNotDecodable([UInt8](data))
+            }
         }
-        return value
+
+        data.removeFirst(iterator.position)
+
+        return String(String.UnicodeScalarView(scalars))
     }
 
     func decodeInteger<Integer>(_ type: Integer.Type) throws -> Integer

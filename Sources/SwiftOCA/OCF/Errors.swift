@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
-
 public enum Ocp1Error: Error, Equatable {
     /// An OCA status received from a device; should not be used for local errors
     case status(OcaStatus)
@@ -55,5 +53,5 @@ public enum Ocp1Error: Error, Equatable {
     case recursiveTypeDisallowed
 
     // decoding errors
-    case stringNotDecodable(Data)
+    case stringNotDecodable([UInt8])
 }
