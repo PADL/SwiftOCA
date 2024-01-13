@@ -64,7 +64,8 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
         receiveMessageTask = Task { [self] in
             do {
                 repeat {
-                    try await receiveMessages { try await socket.read(count: $0, awaitingAllRead: true) }
+                    try await AES70Device
+                        .receiveMessages { try await socket.read(count: $0, awaitingAllRead: true) }
                         .asyncForEach {
                             await _messages.send($0)
                         }

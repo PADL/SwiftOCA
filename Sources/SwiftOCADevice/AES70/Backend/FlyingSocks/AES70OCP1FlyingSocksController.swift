@@ -151,7 +151,7 @@ private extension AsyncThrowingStream
         > {
             do {
                 var iterator = bytes.makeAsyncIterator()
-                return try await receiveMessages { count in
+                return try await AES70Device.receiveMessages { count in
                     try await iterator.nextChunk(count: count) ?? []
                 }.async
             } catch Ocp1Error.pduTooShort {
