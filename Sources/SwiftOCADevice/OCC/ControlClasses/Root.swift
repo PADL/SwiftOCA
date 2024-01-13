@@ -101,7 +101,7 @@ Sendable {
     }
 
     public func encode(to encoder: Encoder) throws {
-        if encoder._isOcp1BinaryEncoder {
+        if encoder._isOcp1Encoder {
             var container = encoder.unkeyedContainer()
             try container.encode(objectNumber)
         } else {
@@ -114,7 +114,7 @@ Sendable {
     }
 
     public required init(from decoder: Decoder) throws {
-        if decoder._isOcp1BinaryDecoder {
+        if decoder._isOcp1Decoder {
             throw Ocp1Error.notImplemented
         } else {
             let container = try decoder.container(keyedBy: CodingKeys.self)

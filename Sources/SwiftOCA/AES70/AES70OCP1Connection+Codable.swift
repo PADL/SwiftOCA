@@ -18,7 +18,7 @@ import Foundation
 
 private extension Ocp1Message {
     func encode(type messageType: OcaMessageType) throws -> Data {
-        let encoder = Ocp1BinaryEncoder()
+        let encoder = Ocp1Encoder()
         var messageData = try encoder.encode(self)
 
         if messageType != .ocaKeepAlive {
@@ -39,7 +39,7 @@ public extension AES70OCP1Connection {
         var messagePduData = Data([Ocp1SyncValue])
 
         let header = Ocp1Header(pduType: messageType, messageCount: OcaUint16(messages.count))
-        let encoder = Ocp1BinaryEncoder()
+        let encoder = Ocp1Encoder()
         messagePduData += try encoder.encode(header)
 
         try messages.forEach {
@@ -120,7 +120,7 @@ public extension AES70OCP1Connection {
         from messageData: Data,
         type messageType: OcaMessageType
     ) throws -> Ocp1Message {
-        let decoder = Ocp1BinaryDecoder()
+        let decoder = Ocp1Decoder()
         let message: Ocp1Message
 
         switch messageType {

@@ -121,7 +121,7 @@ public extension AES70ControllerDefaultSubscribing {
         let property: OcaPropertyID?
 
         if event.eventID == OcaPropertyChangedEventID {
-            property = try Ocp1BinaryDecoder().decode(OcaPropertyID.self, from: parameters)
+            property = try Ocp1Decoder().decode(OcaPropertyID.self, from: parameters)
         } else {
             property = nil
         }

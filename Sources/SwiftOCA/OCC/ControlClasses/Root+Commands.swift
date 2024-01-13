@@ -109,7 +109,7 @@ extension OcaRoot {
         }
         var parameterData = Data()
         for parameter in parameters {
-            let paramData = try Ocp1BinaryEncoder().encode(parameter)
+            let paramData = try Ocp1Encoder().encode(parameter)
             parameterData.append(paramData)
         }
 
@@ -119,12 +119,7 @@ extension OcaRoot {
     struct NullCodable: Codable {}
 
     private func decodeResponse<U: Decodable>(_ type: U.Type, from data: Data) throws -> U {
-        let decoder = Ocp1BinaryDecoder()
-        do {
-            return try decoder.decode(U.self, from: data)
-        } catch BinaryDecodingError.eofTooEarly {
-            throw Ocp1Error.pduTooShort
-        }
+        try Ocp1Decoder().decode(U.self, from: data)
     }
 
     func sendCommandRrq<T: Encodable, U: Decodable>(

@@ -14,35 +14,16 @@
 // limitations under the License.
 //
 
-public func Ocp1BinaryEncoder() -> BinaryEncoder {
-    BinaryEncoder(config: .ocp1Configuration)
-}
-
-public func Ocp1BinaryDecoder() -> BinaryDecoder {
-    BinaryDecoder(config: .ocp1Configuration)
-}
-
-extension BinaryCodingConfiguration {
-    static var ocp1Configuration: Self {
-        BinaryCodingConfiguration(
-            endianness: .bigEndian,
-            stringEncoding: .utf8,
-            stringTypeStrategy: .lengthTagged,
-            variableSizedTypeStrategy: .lengthTaggedArrays
-        )
-    }
-}
-
 // private API for SwiftOCADevice
 
 public extension Encoder {
-    var _isOcp1BinaryEncoder: Bool {
-        self is BinaryEncoderImpl
+    var _isOcp1Encoder: Bool {
+        self is Ocp1EncoderImpl
     }
 }
 
 public extension Decoder {
-    var _isOcp1BinaryDecoder: Bool {
-        self is BinaryDecoderImpl
+    var _isOcp1Decoder: Bool {
+        self is Ocp1DecoderImpl
     }
 }

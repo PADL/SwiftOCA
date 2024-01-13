@@ -1,8 +1,8 @@
-struct SingleValueBinaryDecodingContainer: SingleValueDecodingContainer {
-    private let state: BinaryDecodingState
+struct SingleValueOcp1DecodingContainer: SingleValueDecodingContainer {
+    private let state: Ocp1DecodingState
     let codingPath: [any CodingKey]
 
-    init(state: BinaryDecodingState, codingPath: [any CodingKey] = []) {
+    init(state: Ocp1DecodingState, codingPath: [any CodingKey] = []) {
         self.state = state
         self.codingPath = codingPath
     }

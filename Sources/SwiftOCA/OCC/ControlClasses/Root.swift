@@ -178,7 +178,7 @@ public extension OcaRoot {
 
     @Sendable
     internal func propertyDidChange(event: OcaEvent, eventData data: Data) {
-        let decoder = Ocp1BinaryDecoder()
+        let decoder = Ocp1Decoder()
         guard let propertyID = try? decoder.decode(
             OcaPropertyID.self,
             from: data

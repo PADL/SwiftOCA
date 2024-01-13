@@ -1,10 +1,10 @@
-struct UnkeyedBinaryEncodingContainer: UnkeyedEncodingContainer {
-    private let state: BinaryEncodingState
+struct UnkeyedOcp1EncodingContainer: UnkeyedEncodingContainer {
+    private let state: Ocp1EncodingState
     private(set) var count: Int = 0
 
     let codingPath: [any CodingKey]
 
-    init(state: BinaryEncodingState, codingPath: [any CodingKey]) {
+    init(state: Ocp1EncodingState, codingPath: [any CodingKey]) {
         self.state = state
         self.codingPath = codingPath
     }
@@ -13,15 +13,15 @@ struct UnkeyedBinaryEncodingContainer: UnkeyedEncodingContainer {
         keyedBy keyType: NestedKey
             .Type
     ) -> KeyedEncodingContainer<NestedKey> where NestedKey: CodingKey {
-        .init(KeyedBinaryEncodingContainer<NestedKey>(state: state, codingPath: codingPath))
+        .init(KeyedOcp1EncodingContainer<NestedKey>(state: state, codingPath: codingPath))
     }
 
     mutating func nestedUnkeyedContainer() -> any UnkeyedEncodingContainer {
-        UnkeyedBinaryEncodingContainer(state: state, codingPath: codingPath)
+        UnkeyedOcp1EncodingContainer(state: state, codingPath: codingPath)
     }
 
     mutating func superEncoder() -> Encoder {
-        BinaryEncoderImpl(state: state, codingPath: codingPath)
+        Ocp1EncoderImpl(state: state, codingPath: codingPath)
     }
 
     mutating func encodeNil() throws {

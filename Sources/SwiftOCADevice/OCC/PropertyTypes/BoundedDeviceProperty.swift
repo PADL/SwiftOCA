@@ -127,7 +127,7 @@ public struct OcaBoundedDeviceProperty<
 
     private func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {
         let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
-        let encoder = Ocp1BinaryEncoder()
+        let encoder = Ocp1Encoder()
         let parameters = OcaPropertyChangedEventData<Value>(
             propertyID: propertyID,
             propertyValue: newValue,

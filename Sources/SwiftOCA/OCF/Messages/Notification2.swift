@@ -66,7 +66,7 @@ public struct Ocp1Notification2: Ocp1Message, Codable, Sendable {
 
     func throwIfException() throws {
         guard notificationType == .exception else { return }
-        let decoder = Ocp1BinaryDecoder()
+        let decoder = Ocp1Decoder()
         let exception = try decoder.decode(
             Ocp1Notification2ExceptionData.self,
             from: data

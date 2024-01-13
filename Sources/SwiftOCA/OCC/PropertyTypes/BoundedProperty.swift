@@ -169,7 +169,7 @@ public struct OcaBoundedProperty<
     func onEvent(_ object: OcaRoot, event: OcaEvent, eventData data: Data) throws {
         precondition(event.eventID == OcaPropertyChangedEventID)
 
-        let decoder = Ocp1BinaryDecoder()
+        let decoder = Ocp1Decoder()
         let eventData = try decoder.decode(
             OcaPropertyChangedEventData<Value>.self,
             from: data

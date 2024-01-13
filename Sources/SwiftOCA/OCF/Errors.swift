@@ -14,12 +14,15 @@
 // limitations under the License.
 //
 
+import Foundation
+
 public enum Ocp1Error: Error, Equatable {
     /// An OCA status received from a device; should not be used for local errors
     case status(OcaStatus)
     case exception(Ocp1Notification2ExceptionData)
     case alreadySubscribedToEvent
     case bonjourRegistrationFailed
+    case arrayOrDataTooBig
     case invalidHandle
     case invalidKeepAlivePdu
     case invalidMessageSize
@@ -45,4 +48,12 @@ public enum Ocp1Error: Error, Equatable {
     case unhandledEvent
     case unknownPduType
     case unknownServiceType
+
+    // encoding errors
+    case nilNotEncodable
+    case stringNotEncodable(String)
+    case recursiveTypeDisallowed
+
+    // decoding errors
+    case stringNotDecodable(Data)
 }

@@ -19,12 +19,7 @@ import SwiftOCA
 extension OcaRoot {
     public func decodeCommand<U: Decodable>(_ command: Ocp1Command) throws -> U {
         // FIXME: verify parameterCount
-        let decoder = Ocp1BinaryDecoder()
-        do {
-            return try decoder.decode(U.self, from: command.parameters.parameterData)
-        } catch BinaryDecodingError.eofTooEarly {
-            throw Ocp1Error.pduTooShort
-        }
+        try Ocp1Decoder().decode(U.self, from: command.parameters.parameterData)
     }
 
     private func parameterCount(for mirror: Mirror) -> OcaUint8 {
@@ -60,7 +55,7 @@ extension OcaRoot {
         _ parameters: T,
         statusCode: OcaStatus = .ok
     ) throws -> Ocp1Response {
-        let encoder = Ocp1BinaryEncoder()
+        let encoder = Ocp1Encoder()
         let parameters = Ocp1Parameters(
             parameterCount: parameterCount(for: parameters),
             parameterData: try encoder.encode(parameters)

@@ -1,14 +1,12 @@
 import Foundation
 
 /// The internal state used by the decoders.
-class BinaryDecodingState {
-    private let config: BinaryCodingConfiguration
+class Ocp1DecodingState {
     private var data: Data
 
     var isAtEnd: Bool { data.isEmpty }
 
-    init(config: BinaryCodingConfiguration, data: Data) {
-        self.config = config
+    init(data: Data) {
         self.data = data
     }
 
@@ -19,39 +17,22 @@ class BinaryDecodingState {
 
     func decode(_ type: Bool.Type) throws -> Bool {
         guard let byte = data.popFirst() else {
-            throw BinaryDecodingError.eofTooEarly
+            throw Ocp1Error.pduTooShort
         }
         return byte != 0
     }
 
     func decode(_ type: String.Type) throws -> String {
         var raw = Data()
-        switch config.stringTypeStrategy {
-        case .nullTerminate:
-            while true {
-                guard let byte = data.popFirst() else {
-                    throw BinaryDecodingError.eofTooEarly
-                }
-                if byte == 0 {
-                    break
-                }
-                raw.append(byte)
-            }
-        case .lengthTagged:
-            // TODO: deal with actual number of Unicode code points
-            let length = Int(try decodeInteger(UInt16.self))
-            raw.append(data.prefix(length))
-            guard raw.count == length else {
-                throw BinaryDecodingError.eofTooEarly
-            }
-            data.removeFirst(length)
-        default:
-            while let byte = data.popFirst() {
-                raw.append(byte)
-            }
+        // TODO: deal with actual number of Unicode code points
+        let length = Int(try decodeInteger(UInt16.self))
+        raw.append(data.prefix(length))
+        guard raw.count == length else {
+            throw Ocp1Error.pduTooShort
         }
-        guard let value = String(data: raw, encoding: config.stringEncoding) else {
-            throw BinaryDecodingError.stringNotDecodable(raw)
+        data.removeFirst(length)
+        guard let value = String(data: raw, encoding: .utf8) else {
+            throw Ocp1Error.stringNotDecodable(raw)
         }
         return value
     }
@@ -64,10 +45,10 @@ class BinaryDecodingState {
         // See https://github.com/apple/swift-evolution/blob/main/proposals/0349-unaligned-loads-and-stores.md
         let raw = Array(data.prefix(byteWidth))
         guard raw.count == byteWidth else {
-            throw BinaryDecodingError.eofTooEarly
+            throw Ocp1Error.pduTooShort
         }
         let value = raw.withUnsafeBytes {
-            config.endianness.assume($0.load(as: type))
+            Integer(bigEndian: $0.load(as: type))
         }
         data.removeFirst(byteWidth)
         return value
@@ -123,11 +104,9 @@ class BinaryDecodingState {
 
     func decode<T>(_ type: T.Type, codingPath: [any CodingKey]) throws -> T where T: Decodable {
         var count: Int? = nil
-        if type is any ArrayRepresentable.Type,
-           config.variableSizedTypeStrategy == .lengthTaggedArrays
-        {
-            count = try Int(UInt16(from: BinaryDecoderImpl(state: self, codingPath: [])))
+        if type is any ArrayRepresentable.Type {
+            count = try Int(UInt16(from: Ocp1DecoderImpl(state: self, codingPath: [])))
         }
-        return try T(from: BinaryDecoderImpl(state: self, codingPath: codingPath, count: count))
+        return try T(from: Ocp1DecoderImpl(state: self, codingPath: codingPath, count: count))
     }
 }
