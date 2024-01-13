@@ -41,15 +41,15 @@ class Ocp1DecodingState {
         where Integer: FixedWidthInteger
     {
         let byteWidth = Integer.bitWidth / 8
-        // TODO: Swift 5.7's `loadUnaligned` should make the `Array` redundant
-        // See https://github.com/apple/swift-evolution/blob/main/proposals/0349-unaligned-loads-and-stores.md
-        let raw = Array(data.prefix(byteWidth))
-        guard raw.count == byteWidth else {
+
+        guard data.count >= byteWidth else {
             throw Ocp1Error.pduTooShort
         }
-        let value = raw.withUnsafeBytes {
-            Integer(bigEndian: $0.load(as: type))
+
+        let value = data.prefix(byteWidth).withUnsafeBytes {
+            Integer(bigEndian: $0.loadUnaligned(as: Integer.self))
         }
+
         data.removeFirst(byteWidth)
         return value
     }
