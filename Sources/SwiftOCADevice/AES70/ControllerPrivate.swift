@@ -180,3 +180,39 @@ extension AES70ControllerPrivate {
         try await sendMessages(sequence.eraseToAnyAsyncSequence(), type: messageType)
     }
 }
+
+func receiveMessages(_ getChunk: @Sendable (Int) async throws -> [UInt8]) async throws
+    -> [AES70ControllerPrivate.ControllerMessage]
+{
+    var messagePduData = try await getChunk(AES70OCP1Connection.MinimumPduSize)
+
+    guard messagePduData.count != 0 else {
+        // 0 length on EOF
+        throw Ocp1Error.notConnected
+    }
+
+    guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize,
+          messagePduData[0] == Ocp1SyncValue
+    else {
+        throw Ocp1Error.invalidSyncValue
+    }
+
+    let pduSize: OcaUint32 = Data(messagePduData).decodeInteger(index: 3)
+    guard pduSize >= (AES70OCP1Connection.MinimumPduSize - 1) else {
+        throw Ocp1Error.invalidPduSize
+    }
+
+    let bytesLeft = Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1)
+    messagePduData += try await getChunk(bytesLeft)
+
+    var messagePdus = [Data]()
+    let messageType = try AES70OCP1Connection.decodeOcp1MessagePdu(
+        from: Data(messagePduData),
+        messages: &messagePdus
+    )
+    let messages = try messagePdus.map {
+        try AES70OCP1Connection.decodeOcp1Message(from: $0, type: messageType)
+    }
+
+    return messages.map { ($0, messageType == .ocaCmdRrq) }
+}

@@ -57,43 +57,6 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
         "\(type(of: self))(socket: \(socket))"
     }
 
-    func receiveMessagePdus() async throws -> [ControllerMessage] {
-        var messagePduData = try await socket.read(
-            count: AES70OCP1Connection.MinimumPduSize,
-            awaitingAllRead: true
-        )
-
-        guard messagePduData.count != 0 else {
-            // 0 length on EOF
-            throw Ocp1Error.notConnected
-        }
-
-        guard messagePduData.count >= AES70OCP1Connection.MinimumPduSize,
-              messagePduData[0] == Ocp1SyncValue
-        else {
-            throw Ocp1Error.invalidSyncValue
-        }
-
-        let pduSize: OcaUint32 = Data(messagePduData).decodeInteger(index: 3)
-        guard pduSize >= (AES70OCP1Connection.MinimumPduSize - 1) else {
-            throw Ocp1Error.invalidPduSize
-        }
-
-        let bytesLeft = Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1)
-        messagePduData += try await socket.read(count: bytesLeft, awaitingAllRead: true)
-
-        var messagePdus = [Data]()
-        let messageType = try AES70OCP1Connection.decodeOcp1MessagePdu(
-            from: Data(messagePduData),
-            messages: &messagePdus
-        )
-        let messages = try messagePdus.map {
-            try AES70OCP1Connection.decodeOcp1Message(from: $0, type: messageType)
-        }
-
-        return messages.map { ($0, messageType == .ocaCmdRrq) }
-    }
-
     init(socket: Socket) async throws {
         self.socket = socket
         peerAddress = try AnySocketAddress(self.socket.peerAddress)
@@ -101,9 +64,10 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
         receiveMessageTask = Task { [self] in
             do {
                 repeat {
-                    try await receiveMessagePdus().asyncForEach {
-                        await _messages.send($0)
-                    }
+                    try await receiveMessages { try await socket.read(count: $0, awaitingAllRead: true) }
+                        .asyncForEach {
+                            await _messages.send($0)
+                        }
                     if Task.isCancelled { break }
                 } while true
             } catch {

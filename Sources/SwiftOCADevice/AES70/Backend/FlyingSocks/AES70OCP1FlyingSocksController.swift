@@ -138,40 +138,6 @@ private extension AES70OCP1FlyingSocksController {
     }
 }
 
-private func decodeOcp1Messages<S>(from bytes: S) async throws -> ([Ocp1Message], Bool)
-    where S: AsyncChunkedSequence, S.Element == UInt8
-{
-    var iterator = bytes.makeAsyncIterator()
-
-    guard var messagePduData = try await iterator
-        .nextChunk(count: AES70OCP1Connection.MinimumPduSize)
-    else {
-        throw Ocp1Error.pduTooShort
-    }
-    guard messagePduData[0] == Ocp1SyncValue else {
-        throw Ocp1Error.invalidSyncValue
-    }
-    let pduSize: OcaUint32 = Data(messagePduData).decodeInteger(index: 3)
-    guard pduSize >= (AES70OCP1Connection.MinimumPduSize - 1) else {
-        throw Ocp1Error.invalidPduSize
-    }
-    let bytesLeft = Int(pduSize) - (AES70OCP1Connection.MinimumPduSize - 1)
-    guard let remainder = try await iterator.nextChunk(count: bytesLeft) else {
-        throw Ocp1Error.pduTooShort
-    }
-    messagePduData += remainder
-
-    var messagePdus = [Data]()
-    let messageType = try AES70OCP1Connection.decodeOcp1MessagePdu(
-        from: Data(messagePduData),
-        messages: &messagePdus
-    )
-    let messages = try messagePdus.map {
-        try AES70OCP1Connection.decodeOcp1Message(from: $0, type: messageType)
-    }
-    return (messages, messageType == .ocaCmdRrq)
-}
-
 private extension AsyncThrowingStream
     where Element == AsyncSyncSequence<[AES70OCP1FlyingSocksController.ControllerMessage]>,
     Failure == Error
@@ -184,8 +150,10 @@ private extension AsyncThrowingStream
             Error
         > {
             do {
-                let (messages, rrq) = try await decodeOcp1Messages(from: bytes)
-                return messages.map { ($0, rrq) }.async
+                var iterator = bytes.makeAsyncIterator()
+                return try await receiveMessages { count in
+                    try await iterator.nextChunk(count: count) ?? []
+                }.async
             } catch Ocp1Error.pduTooShort {
                 return nil
             } catch {
