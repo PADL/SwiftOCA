@@ -76,13 +76,13 @@ public enum DeviceApp {
             )
 
         let block = try await SwiftOCADevice
-            .OcaBlock<SwiftOCADevice.OcaWorker>(role: "Test Block", deviceDelegate: device)
+            .OcaBlock<SwiftOCADevice.OcaWorker>(role: "Block", deviceDelegate: device)
 
         for x in 0..<matrix.members.nX {
             for y in 0..<matrix.members.nY {
                 let coordinate = OcaVector2D(x: OcaMatrixCoordinate(x), y: OcaMatrixCoordinate(y))
                 let actuator = try await MyBooleanActuator(
-                    role: "Actuator \(x),\(y)",
+                    role: "Actuator(\(x),\(y))",
                     deviceDelegate: device,
                     addToRootBlock: false
                 )
@@ -92,7 +92,7 @@ public enum DeviceApp {
         }
 
         let gain = try await SwiftOCADevice.OcaGain(
-            role: "Test Gain",
+            role: "Gain",
             deviceDelegate: device,
             addToRootBlock: false
         )
@@ -101,7 +101,7 @@ public enum DeviceApp {
         try await serializeDeserialize(await device.rootBlock)
 
         let _ = try await SwiftOCADevice.OcaControlNetwork(
-            role: "OCA Control Network",
+            role: "Control Network",
             deviceDelegate: device
         )
 

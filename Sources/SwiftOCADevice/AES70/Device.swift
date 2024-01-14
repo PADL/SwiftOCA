@@ -57,6 +57,7 @@ public actor AES70Device {
     public func initializeDefaultObjects(deviceManager: OcaDeviceManager? = nil) async throws {
         rootBlock = try await OcaBlock(
             objectNumber: OcaRootBlockONo,
+            role: "",
             deviceDelegate: self,
             addToRootBlock: false
         )

@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import Foundation
 import SwiftOCA
 
 extension AES70Controller {
@@ -68,7 +69,7 @@ Sendable {
     public init(
         objectNumber: OcaONo? = nil,
         lockable: OcaBoolean = false,
-        role: OcaString = "Root",
+        role: OcaString = UUID().description,
         deviceDelegate: AES70Device? = nil,
         addToRootBlock: Bool = true
     ) async throws {
