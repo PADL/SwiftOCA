@@ -37,6 +37,7 @@ class Ocp1DecodingState {
         }
 
         let scalarCount = try Int(decodeInteger(UInt16.self))
+        guard scalarCount > 0 else { return String() }
         var iterator = InterospectableIterator(data)
         var scalars = [Unicode.Scalar]()
         var utf8Decoder = UTF8()
@@ -52,7 +53,7 @@ class Ocp1DecodingState {
             }
         }
 
-        data.removeFirst(iterator.position)
+        data.removeFirst(iterator.position - 1)
 
         return String(String.UnicodeScalarView(scalars))
     }

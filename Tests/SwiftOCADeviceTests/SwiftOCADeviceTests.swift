@@ -23,6 +23,51 @@ class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
 }
 
 final class SwiftOCADeviceTests: XCTestCase {
+    func testUnicodeStringEncoding() async throws {
+        let string = "✨Unicode✨"
+        let encodedString =
+            Data([0, 9, 226, 156, 168, 85, 110, 105, 99, 111, 100, 101, 226, 156, 168])
+
+        let ocp1Encoder = Ocp1Encoder()
+        XCTAssertEqual(try ocp1Encoder.encode(string), encodedString)
+
+        let ocp1Decoder = Ocp1Decoder()
+        XCTAssertEqual(try ocp1Decoder.decode(String.self, from: encodedString), string)
+    }
+
+    func testUnicodeScalarEncoding() async throws {
+        let string = "🍎"
+        let encodedString = Data([0, 1, 0xF0, 0x9F, 0x8D, 0x8E])
+
+        let ocp1Encoder = Ocp1Encoder()
+        XCTAssertEqual(try ocp1Encoder.encode(string), encodedString)
+
+        let ocp1Decoder = Ocp1Decoder()
+        XCTAssertEqual(try ocp1Decoder.decode(String.self, from: encodedString), string)
+    }
+
+    func testAsciiStringEncoding() async throws {
+        let string = "ASCII"
+        let encodedString = Data([0, 5, 0x41, 0x53, 0x43, 0x49, 0x49])
+
+        let ocp1Encoder = Ocp1Encoder()
+        XCTAssertEqual(try ocp1Encoder.encode(string), encodedString)
+
+        let ocp1Decoder = Ocp1Decoder()
+        XCTAssertEqual(try ocp1Decoder.decode(String.self, from: encodedString), string)
+    }
+
+    func testEmptyStringEncoding() async throws {
+        let string = ""
+        let encodedString = Data([0, 0])
+
+        let ocp1Encoder = Ocp1Encoder()
+        XCTAssertEqual(try ocp1Encoder.encode(string), encodedString)
+
+        let ocp1Decoder = Ocp1Decoder()
+        XCTAssertEqual(try ocp1Decoder.decode(String.self, from: encodedString), string)
+    }
+
     func testLoopbackDevice() async throws {
         let device = AES70Device.shared
         try await device.initializeDefaultObjects()
