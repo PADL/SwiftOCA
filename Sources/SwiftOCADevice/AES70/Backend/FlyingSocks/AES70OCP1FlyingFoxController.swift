@@ -25,7 +25,7 @@ import Foundation
 import SwiftOCA
 
 fileprivate extension AsyncStream where Element == WSMessage {
-    var ocp1DecodedMessages: AnyAsyncSequence<(Ocp1Message, Bool)> {
+    var ocp1DecodedMessages: AnyAsyncSequence<AES70ControllerPrivate.ControllerMessage> {
         flatMap {
             // TODO: handle OCP.1 PDUs split over multiple frames
             guard case let .data(data) = $0 else {

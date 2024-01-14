@@ -190,7 +190,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpointPrivat
     #if compiler(>=5.9)
     @available(macOS 14.0, iOS 17.0, tvOS 17.0, *)
     private func listenForControllersDiscarding(on socket: AsyncSocket) async throws {
-        try await withThrowingDiscardingTaskGroup { [logger] group in
+        try await withThrowingDiscardingTaskGroup { group in
             for try await socket in socket.sockets {
                 group.addTask {
                     try await AES70OCP1FlyingSocksController(socket: socket).handle(for: self)

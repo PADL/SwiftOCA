@@ -27,8 +27,6 @@ import SwiftOCA
 actor AES70OCP1FlyingSocksController: AES70ControllerPrivate, CustomStringConvertible {
     nonisolated static var connectionPrefix: String { "oca/tcp" }
 
-    typealias ControllerMessage = (Ocp1Message, Bool)
-
     var subscriptions = [OcaONo: NSMutableSet]()
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = Date.distantPast
@@ -139,14 +137,14 @@ private extension AES70OCP1FlyingSocksController {
 }
 
 private extension AsyncThrowingStream
-    where Element == AsyncSyncSequence<[AES70OCP1FlyingSocksController.ControllerMessage]>,
+    where Element == AsyncSyncSequence<[AES70ControllerPrivate.ControllerMessage]>,
     Failure == Error
 {
     static func decodingMessages<S: AsyncChunkedSequence>(from bytes: S) -> Self
         where S.Element == UInt8
     {
         AsyncThrowingStream<
-            AsyncSyncSequence<[AES70OCP1FlyingSocksController.ControllerMessage]>,
+            AsyncSyncSequence<[AES70ControllerPrivate.ControllerMessage]>,
             Error
         > {
             do {
