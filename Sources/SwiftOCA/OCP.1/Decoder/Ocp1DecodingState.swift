@@ -31,8 +31,9 @@ class Ocp1DecodingState {
             init(_ elements: T) { iterator = elements.makeIterator() }
 
             mutating func next() -> Element? {
+                guard let element = iterator.next() else { return nil }
                 position += 1
-                return iterator.next()
+                return element
             }
         }
 
@@ -53,7 +54,7 @@ class Ocp1DecodingState {
             }
         }
 
-        data.removeFirst(iterator.position - 1)
+        data.removeFirst(iterator.position)
 
         return String(String.UnicodeScalarView(scalars))
     }
