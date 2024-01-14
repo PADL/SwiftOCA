@@ -343,5 +343,11 @@ private extension String {
 }
 
 protocol OcaOwnable: OcaRoot {
-    var owner: OcaONo { get }
+    var owner: OcaONo { get set }
+}
+
+extension OcaOwnable {
+    public func getOwnerObject<T>() async -> OcaBlock<T>? {
+        await deviceDelegate?.objects[owner] as? OcaBlock<T>
+    }
 }

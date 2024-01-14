@@ -44,7 +44,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
             throw Ocp1Error.objectAlreadyContainedByBlock
         }
 
-        if let object = object as? OcaWorker {
+        if let object = object as? OcaOwnable {
             guard object.owner == OcaInvalidONo else {
                 throw Ocp1Error.objectAlreadyContainedByBlock
             }
@@ -66,7 +66,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         guard let index = actionObjects.firstIndex(of: object) else {
             throw Ocp1Error.objectNotPresent
         }
-        if let object = object as? OcaWorker {
+        if let object = object as? OcaOwnable {
             if object.owner != objectNumber {
                 throw Ocp1Error.objectNotPresent
             }
