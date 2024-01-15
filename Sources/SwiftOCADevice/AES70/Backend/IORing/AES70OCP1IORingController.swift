@@ -18,6 +18,7 @@
 
 import AsyncAlgorithms
 import AsyncExtensions
+import Foundation
 @_implementationOnly
 import IORing
 @_implementationOnly
@@ -34,7 +35,7 @@ protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equata
 }
 
 actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomStringConvertible {
-    static var connectionPrefix: String { "oca/udp" }
+    static var connectionPrefix: String { "oca/tcp" }
 
     var subscriptions = [OcaONo: NSMutableSet]()
     let peerAddress: AnySocketAddress
@@ -157,7 +158,7 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
 
     var keepAliveInterval = Duration.seconds(0) {
         didSet {
-            keepAliveIntervalDidChange(From: oldValue)
+            keepAliveIntervalDidChange(from: oldValue)
         }
     }
 
