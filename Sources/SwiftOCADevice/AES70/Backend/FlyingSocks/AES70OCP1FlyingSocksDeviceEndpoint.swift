@@ -25,9 +25,7 @@
 
 #if os(macOS) || os(iOS)
 
-@preconcurrency
 import AsyncExtensions
-@preconcurrency
 @_implementationOnly
 import FlyingSocks
 @_spi(Private) @_implementationOnly
