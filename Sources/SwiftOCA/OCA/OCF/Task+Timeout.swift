@@ -1,8 +1,5 @@
 // https://forums.swift.org/t/running-an-async-task-with-a-timeout/49733/12
 
-@preconcurrency // spurious on Darwin but not Linux
-import Foundation
-
 ///
 /// Execute an operation in the current task subject to a timeout.
 ///
@@ -14,11 +11,11 @@ import Foundation
 ///   If `operation` throws an error before the timeout expires, that error is propagated to the
 /// caller.
 public func withThrowingTimeout<R: Sendable>(
-    seconds: TimeInterval,
+    of duration: Duration,
     operation: @escaping @Sendable () async throws -> R
 ) async throws -> R {
     try await withThrowingTaskGroup(of: R.self) { group in
-        let deadline = Date(timeIntervalSinceNow: seconds)
+        let deadline = ContinuousClock.now + duration
 
         // Start actual work.
         group.addTask {
@@ -26,9 +23,9 @@ public func withThrowingTimeout<R: Sendable>(
         }
         // Start timeout child task.
         group.addTask {
-            let interval = deadline.timeIntervalSinceNow
-            if interval > 0 {
-                try await Task.sleep(nanoseconds: UInt64(interval * Double(NSEC_PER_SEC)))
+            let interval = deadline - .now
+            if interval > .zero {
+                try await Task.sleep(for: duration)
             }
             try Task.checkCancellation()
             throw Ocp1Error.responseTimeout

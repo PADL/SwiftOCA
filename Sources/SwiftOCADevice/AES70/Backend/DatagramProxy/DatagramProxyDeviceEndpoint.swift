@@ -34,7 +34,7 @@ public class DatagramProxyDeviceEndpoint<
 
     typealias ControllerType = DatagramProxyController<T>
 
-    let timeout: TimeInterval
+    let timeout: Duration
     let device: AES70Device
     let logger = Logger(label: "com.padl.SwiftOCADevice.DatagramProxyDeviceEndpoint")
     let outputStream: AsyncStream<PeerMessagePDU>.Continuation
@@ -43,7 +43,7 @@ public class DatagramProxyDeviceEndpoint<
     private let inputStream: AsyncStream<PeerMessagePDU>
 
     public init(
-        timeout: TimeInterval,
+        timeout: Duration = .seconds(15),
         inputStream: AsyncStream<PeerMessagePDU>,
         outputStream: AsyncStream<PeerMessagePDU>.Continuation,
         device: AES70Device = AES70Device.shared

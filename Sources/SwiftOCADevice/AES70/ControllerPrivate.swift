@@ -35,10 +35,10 @@ protocol AES70ControllerPrivate: AES70ControllerDefaultSubscribing, AnyActor {
     var messages: AnyAsyncSequence<ControllerMessage> { get }
 
     /// last message received time
-    var lastMessageReceivedTime: Date { get set }
+    var lastMessageReceivedTime: ContinuousClock.Instant { get set }
 
     /// keep alive interval
-    var keepAliveInterval: UInt64 { get set }
+    var keepAliveInterval: Duration { get set }
 
     /// keep alive task
     var keepAliveTask: Task<(), Error>? { get set }
@@ -66,7 +66,7 @@ extension AES70ControllerPrivate {
         let controller = self as! Endpoint.ControllerType
         var response: Ocp1Response?
 
-        lastMessageReceivedTime = Date()
+        lastMessageReceivedTime = .now
 
         switch message {
         case let command as Ocp1Command:
@@ -82,9 +82,9 @@ extension AES70ControllerPrivate {
                 parameters: commandResponse.parameters
             )
         case let keepAlive as Ocp1KeepAlive1:
-            keepAliveInterval = UInt64(keepAlive.heartBeatTime) * NSEC_PER_SEC
+            keepAliveInterval = .seconds(keepAlive.heartBeatTime)
         case let keepAlive as Ocp1KeepAlive2:
-            keepAliveInterval = UInt64(keepAlive.heartBeatTime) * NSEC_PER_MSEC
+            keepAliveInterval = .milliseconds(keepAlive.heartBeatTime)
         default:
             endpoint.logger.info("received unknown message \(message)")
             throw Ocp1Error.invalidMessageType
@@ -121,18 +121,21 @@ extension AES70ControllerPrivate {
     }
 
     /// returns `true` if insufficient keepalives were received to keep connection fresh
-    private var connectionIsStale: Bool {
-        lastMessageReceivedTime + 3 * TimeInterval(keepAliveInterval) /
-            TimeInterval(NSEC_PER_SEC) < Date()
+    var connectionIsStale: Bool {
+        ContinuousClock.now - (lastMessageReceivedTime + keepAliveInterval) > .seconds(0)
     }
 
     private func sendKeepAlive() async throws {
-        let keepAlive = Ocp1KeepAlive1(heartBeatTime: OcaUint16(keepAliveInterval / NSEC_PER_SEC))
-        try await sendMessage(keepAlive, type: .ocaKeepAlive)
+        try await sendMessage(
+            Ocp1KeepAlive.keepAlive(interval: keepAliveInterval),
+            type: .ocaKeepAlive
+        )
     }
 
-    func keepAliveIntervalDidChange() {
-        if keepAliveInterval != 0 {
+    func keepAliveIntervalDidChange(from oldValue: Duration) {
+        guard keepAliveInterval != oldValue else { return }
+
+        if keepAliveInterval != .zero {
             keepAliveTask = Task<(), Error> {
                 repeat {
                     if connectionIsStale {
@@ -140,12 +143,12 @@ extension AES70ControllerPrivate {
                         break
                     }
                     try await sendKeepAlive()
-                    try await Task.sleep(nanoseconds: keepAliveInterval)
+                    try await Task.sleep(for: keepAliveInterval)
                 } while !Task.isCancelled
             }
-        } else {
-            keepAliveTask?.cancel()
-            keepAliveTask = nil
+        } else if let keepAliveTask {
+            keepAliveTask.cancel()
+            self.keepAliveTask = nil
         }
     }
 
@@ -222,5 +225,11 @@ extension AES70Device {
         }
 
         return messages.map { ($0, messageType == .ocaCmdRrq) }
+    }
+}
+
+extension Duration {
+    var timeInterval: TimeInterval {
+        TimeInterval(components.seconds) + TimeInterval(components.attoseconds) * 1e-18
     }
 }

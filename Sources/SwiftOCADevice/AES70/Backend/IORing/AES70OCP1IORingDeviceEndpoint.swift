@@ -32,7 +32,7 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
     CustomStringConvertible
 {
     let address: any SocketAddress
-    let timeout: TimeInterval
+    let timeout: Duration
     let device: AES70Device
     let ring: IORing
 
@@ -45,7 +45,7 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
 
     init(
         address: any SocketAddress,
-        timeout: TimeInterval = 15,
+        timeout: Duration = .seconds(15),
         device: AES70Device = AES70Device.shared
     ) async throws {
         self.address = address
@@ -61,7 +61,7 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
 
     public convenience init(
         address: Data,
-        timeout: TimeInterval = 15,
+        timeout: Duration = .seconds(15),
         device: AES70Device = AES70Device.shared
     ) async throws {
         let storage = try sockaddr_storage(bytes: Array(address))
@@ -70,7 +70,7 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
 
     public convenience init(
         path: String,
-        timeout: TimeInterval = 15,
+        timeout: Duration = .seconds(15),
         device: AES70Device = AES70Device.shared
     ) async throws {
         let storage = try sockaddr_un(
@@ -97,7 +97,7 @@ public class AES70OCP1IORingDeviceEndpoint: AES70BonjourRegistrableDeviceEndpoin
         }
     }
 
-    fileprivate func shutdown(timeout: TimeInterval = 0) async {
+    fileprivate func shutdown(timeout: Duration = .seconds(0)) async {
         if let endpointRegistrationHandle {
             try? await AES70DeviceEndpointRegistrar.shared
                 .deregister(handle: endpointRegistrationHandle)

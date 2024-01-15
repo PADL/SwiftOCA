@@ -27,7 +27,7 @@ protocol AES70DeviceEndpointPrivate: AES70DeviceEndpoint {
 
     var device: AES70Device { get }
     var logger: Logger { get }
-    var timeout: TimeInterval { get }
+    var timeout: Duration { get }
 
     func add(controller: ControllerType) async
     func remove(controller: ControllerType) async

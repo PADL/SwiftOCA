@@ -25,7 +25,7 @@ public final class AES70LocalDeviceEndpoint: AES70DeviceEndpointPrivate {
     typealias ControllerType = AES70LocalController
 
     let logger = Logger(label: "com.padl.SwiftOCADevice.AES70LocalDeviceEndpoint")
-    let timeout: TimeInterval = 0
+    let timeout: Duration = .zero
     let device: AES70Device
 
     public var controllers: [AES70Controller] {

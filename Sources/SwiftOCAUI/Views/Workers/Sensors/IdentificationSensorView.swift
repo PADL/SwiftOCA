@@ -28,7 +28,7 @@ private final class OcaIdentificationState: ObservableObject {
 
     func beginIdentifying() async {
         state = true
-        try? await Task.sleep(nanoseconds: 10 * NSEC_PER_SEC)
+        try? await Task.sleep(for: .seconds(10))
         state = false
     }
 }

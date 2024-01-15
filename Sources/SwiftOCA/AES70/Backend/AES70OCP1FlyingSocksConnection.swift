@@ -169,8 +169,8 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
 }
 
 public final class AES70OCP1FlyingSocksDatagramConnection: AES70OCP1FlyingSocksConnection {
-    override public var keepAliveInterval: OcaUint16 {
-        1
+    override public var keepAliveInterval: Duration {
+        .seconds(1)
     }
 
     override fileprivate var type: Int32 {

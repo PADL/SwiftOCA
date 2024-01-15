@@ -103,8 +103,7 @@ extension AES70OCP1Connection.Monitor {
         updateLastMessageReceivedTime()
 
         for message in messages {
-            let keepAliveInterval = await connection.keepAliveInterval
-            if keepAliveInterval != 0, await connectionIsStale {
+            if await connectionIsStale {
                 throw Ocp1Error.notConnected
             }
 

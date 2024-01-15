@@ -26,7 +26,7 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: AES70ControllerPr
     let peerID: T
     var subscriptions = [OcaONo: NSMutableSet]()
     var keepAliveTask: Task<(), Error>?
-    var lastMessageReceivedTime = Date.distantPast
+    var lastMessageReceivedTime = ContinuousClock.now
 
     private weak var endpoint: DatagramProxyDeviceEndpoint<T>?
 
@@ -39,11 +39,9 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: AES70ControllerPr
         self.endpoint = endpoint
     }
 
-    var keepAliveInterval: UInt64 = 1 {
+    var keepAliveInterval = Duration.seconds(1) {
         didSet {
-            if keepAliveInterval != oldValue {
-		keepAliveIntervalDidChange()
-	    }
+            keepAliveIntervalDidChange(from: oldValue)
         }
     }
 

@@ -18,7 +18,7 @@ import Foundation
 
 extension AES70OCP1Connection {
     func updateLastMessageSentTime() async {
-        lastMessageSentTime = Date()
+        lastMessageSentTime = ContinuousClock.now
     }
 
     private func sendMessages(
@@ -70,7 +70,9 @@ extension AES70OCP1Connection {
     }
 
     func sendKeepAlive() async throws {
-        let message = Ocp1KeepAlive1(heartBeatTime: keepAliveInterval)
-        try await sendMessage(message, type: .ocaKeepAlive)
+        try await sendMessage(
+            Ocp1KeepAlive.keepAlive(interval: keepAliveInterval),
+            type: .ocaKeepAlive
+        )
     }
 }

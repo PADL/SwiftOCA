@@ -35,10 +35,6 @@ public typealias AES70OCP1TCPConnection = AES70OCP1FlyingSocksStreamConnection
 public typealias AES70SubscriptionCallback = @Sendable (OcaEvent, Data) async throws
     -> ()
 
-// FIXME: these don't appear to be available on non-Darwin platforms
-let NSEC_PER_MSEC: UInt64 = 1_000_000
-let NSEC_PER_SEC: UInt64 = 1_000_000_000
-
 let OcaTcpConnectionPrefix = "oca/tcp"
 let OcaUdpConnectionPrefix = "oca/udp"
 let OcaSecureTcpConnectionPrefix = "ocasec/tcp"
@@ -47,13 +43,13 @@ let OcaSpiConnectionPrefix = "oca/spi"
 
 public struct AES70OCP1ConnectionOptions: Sendable {
     let automaticReconnect: Bool
-    let connectionTimeout: TimeInterval
-    let responseTimeout: TimeInterval
+    let connectionTimeout: Duration
+    let responseTimeout: Duration
 
     public init(
         automaticReconnect: Bool = false,
-        connectionTimeout: TimeInterval = 2,
-        responseTimeout: TimeInterval = 2
+        connectionTimeout: Duration = .seconds(2),
+        responseTimeout: Duration = .seconds(2)
     ) {
         self.automaticReconnect = automaticReconnect
         self.connectionTimeout = connectionTimeout
@@ -68,8 +64,8 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
     let options: AES70OCP1ConnectionOptions
 
     /// Keepalive/ping interval (only necessary for UDP)
-    public var keepAliveInterval: OcaUint16 {
-        0
+    public var keepAliveInterval: Duration {
+        .zero
     }
 
     /// Object interning, main thread only
@@ -90,7 +86,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
     // TODO: use SwiftAtomics here?
     private var nextCommandHandle = OcaUint32(100)
 
-    var lastMessageSentTime = Date.distantPast
+    var lastMessageSentTime = ContinuousClock.now
     open nonisolated var connectionPrefix: String {
         fatalError(
             "connectionPrefix must be implemented by a concrete subclass of AES70OCP1Connection"
@@ -102,7 +98,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         private let connection: AES70OCP1Connection!
         typealias Continuation = CheckedContinuation<Ocp1Response, Error>
         private var continuations = [OcaUint32: Continuation]()
-        private var lastMessageReceivedTime = Date.distantPast
+        private var lastMessageReceivedTime = ContinuousClock.now
         private var task: Task<(), Error>?
 
         init(_ connection: AES70OCP1Connection) {
@@ -130,7 +126,6 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
                 $0.1.resume(throwing: Ocp1Error.notConnected)
             }
             continuations.removeAll()
-            lastMessageReceivedTime = Date.distantPast
             task?.cancel()
             task = nil
         }
@@ -155,13 +150,16 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         }
 
         func updateLastMessageReceivedTime() {
-            lastMessageReceivedTime = Date()
+            lastMessageReceivedTime = ContinuousClock.now
         }
 
+        /// returns `true` if insufficient keepalives were received to keep connection fresh
         var connectionIsStale: Bool {
             get async {
-                await lastMessageReceivedTime + TimeInterval(3 * connection.keepAliveInterval) <
-                    Date()
+                let keepAliveInterval = await connection.keepAliveInterval
+                return keepAliveInterval > .zero &&
+                    ContinuousClock
+                        .now - (lastMessageReceivedTime + keepAliveInterval) > .seconds(0)
             }
         }
     }
@@ -195,13 +193,13 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         monitor = Monitor(self)
         await monitor!.run()
 
-        if keepAliveInterval > 0 {
+        if keepAliveInterval > .zero {
             keepAliveTask = Task.detached(priority: .background) { [self] in
                 repeat {
-                    if await lastMessageSentTime + TimeInterval(self.keepAliveInterval) < Date() {
+                    if await lastMessageSentTime + keepAliveInterval < ContinuousClock().now {
                         try await sendKeepAlive()
                     }
-                    try await Task.sleep(nanoseconds: UInt64(self.keepAliveInterval) * NSEC_PER_SEC)
+                    try await Task.sleep(for: keepAliveInterval)
                 } while !Task.isCancelled
             }
         }

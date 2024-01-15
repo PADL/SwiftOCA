@@ -21,8 +21,8 @@ import SwiftOCA
 actor AES70LocalController: AES70ControllerPrivate {
     static var connectionPrefix: String { "oca/local" }
 
-    var lastMessageReceivedTime = Date.distantPast
-    var keepAliveInterval: UInt64 = 0
+    var lastMessageReceivedTime = ContinuousClock.now
+    var keepAliveInterval = Duration.seconds(0)
     var keepAliveTask: Task<(), Error>?
 
     weak var endpoint: AES70LocalDeviceEndpoint?

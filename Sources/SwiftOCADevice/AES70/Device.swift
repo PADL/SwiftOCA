@@ -20,10 +20,6 @@ import Foundation
 import Logging
 import SwiftOCA
 
-// FIXME: these don't appear to be available on non-Darwin platforms
-let NSEC_PER_MSEC: UInt64 = 1_000_000
-let NSEC_PER_SEC: UInt64 = 1_000_000_000
-
 public protocol AES70DeviceEventDelegate: AnyObject, Sendable {
     func onEvent(
         _ event: OcaEvent,
@@ -111,7 +107,7 @@ public actor AES70Device {
 
     public func handleCommand(
         _ command: Ocp1Command,
-        timeout: TimeInterval? = nil,
+        timeout: Duration? = nil,
         from controller: any AES70Controller
     ) async -> Ocp1Response {
         do {
@@ -120,8 +116,8 @@ public actor AES70Device {
                 throw Ocp1Error.status(.badONo)
             }
 
-            if let timeout, timeout > 0 {
-                return try await withThrowingTimeout(seconds: timeout) {
+            if let timeout, timeout > .zero {
+                return try await withThrowingTimeout(of: timeout) {
                     try await object.handleCommand(command, from: controller)
                 }
             } else {

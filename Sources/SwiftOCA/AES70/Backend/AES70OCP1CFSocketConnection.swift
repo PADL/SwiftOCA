@@ -177,8 +177,8 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
 }
 
 public final class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
-    override public var keepAliveInterval: OcaUint16 {
-        1
+    override public var keepAliveInterval: Duration {
+        .seconds(1)
     }
 
     override fileprivate var type: Int32 {
