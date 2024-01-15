@@ -165,10 +165,11 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         return handle
     }
 
-    // FIXME: why does need to be public for non-debug builds to link?
-    public func reconnectDevice() async throws {
+    func reconnectDevice() async throws {
         try await disconnectDevice(clearObjectCache: false)
-        try await connectDevice()
+        try await withThrowingTimeout(of: options.connectionTimeout) {
+            try await self.connectDevice()
+        }
     }
 
     private func sendKeepAlives() -> Task<(), Error>? {
@@ -252,7 +253,9 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
 /// Public API
 public extension AES70OCP1Connection {
     func connect() async throws {
-        try await connectDevice()
+        try await withThrowingTimeout(of: options.connectionTimeout) {
+            try await self.connectDevice()
+        }
         try? await refreshDeviceTree()
     }
 

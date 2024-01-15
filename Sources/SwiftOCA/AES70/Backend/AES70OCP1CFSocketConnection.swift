@@ -112,18 +112,20 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
             socklen_t(CInt.Stride())
         )
 
-        DispatchQueue.main.async {
-            let runLoopSource = CFSocketCreateRunLoopSource(kCFAllocatorDefault, cfSocket, 0)
-            CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, CFRunLoopMode.defaultMode)
-        }
-
-        guard CFSocketIsValid(cfSocket),
-              CFSocketConnectToAddress(cfSocket, deviceAddress.cfData, 0) == .success
-        else {
-            throw Ocp1Error.notConnected
-        }
-
         self.cfSocket = cfSocket
+
+        let runLoopSource = CFSocketCreateRunLoopSource(kCFAllocatorDefault, cfSocket, 0)
+        CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
+
+        try await withTaskCancellationHandler(operation: {
+            guard CFSocketIsValid(cfSocket),
+                  CFSocketConnectToAddress(cfSocket, deviceAddress.cfData, 0) == .success
+            else {
+                throw Ocp1Error.notConnected
+            }
+        }, onCancel: {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
+        })
 
         try await super.connectDevice()
     }
