@@ -128,7 +128,7 @@ private func getPlatformUUID() -> String {
     #if canImport(Darwin)
     let platformExpertDevice = IOServiceMatching("IOPlatformExpertDevice")
     let platformExpert: io_service_t = IOServiceGetMatchingService(
-        kIOMasterPortDefault,
+        kIOMainPortDefault,
         platformExpertDevice
     )
     let serialNumberAsCFString = IORegistryEntryCreateCFProperty(
