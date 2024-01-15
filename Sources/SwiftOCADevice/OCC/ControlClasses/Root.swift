@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
 import SwiftOCA
 
 extension AES70Controller {
@@ -69,7 +68,7 @@ Sendable {
     public init(
         objectNumber: OcaONo? = nil,
         lockable: OcaBoolean = false,
-        role: OcaString = UUID().description,
+        role: OcaString? = nil,
         deviceDelegate: AES70Device? = nil,
         addToRootBlock: Bool = true
     ) async throws {
@@ -80,7 +79,7 @@ Sendable {
             self.objectNumber = await deviceDelegate?.allocateObjectNumber() ?? OcaInvalidONo
         }
         self.lockable = lockable
-        self.role = role
+        self.role = role ?? String(self.objectNumber)
         self.deviceDelegate = deviceDelegate
         if let deviceDelegate {
             try await deviceDelegate.register(object: self, addToRootBlock: addToRootBlock)
