@@ -112,6 +112,7 @@ extension AES70ControllerPrivate {
                     rrq: rrq
                 )
             }
+        } catch Ocp1Error.notConnected {
         } catch {
             endpoint.logger.error(error, controller: controller)
         }

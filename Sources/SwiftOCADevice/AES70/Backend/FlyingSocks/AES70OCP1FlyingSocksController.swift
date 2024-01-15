@@ -152,6 +152,8 @@ private extension AsyncThrowingStream
                 }.async
             } catch Ocp1Error.pduTooShort {
                 return nil
+            } catch SocketError.disconnected {
+                throw Ocp1Error.notConnected
             } catch {
                 throw error
             }
