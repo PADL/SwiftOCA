@@ -159,7 +159,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
                 let keepAliveInterval = await connection.keepAliveInterval
                 return keepAliveInterval > .zero &&
                     ContinuousClock
-                        .now - (lastMessageReceivedTime + keepAliveInterval) > .seconds(0)
+                    .now - (lastMessageReceivedTime + keepAliveInterval) > .seconds(0)
             }
         }
     }
