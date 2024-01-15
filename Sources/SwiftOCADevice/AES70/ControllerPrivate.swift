@@ -122,13 +122,14 @@ extension AES70ControllerPrivate {
 
     /// returns `true` if insufficient keepalives were received to keep connection fresh
     var connectionIsStale: Bool {
-        get {
-            (ContinuousClock.now - (lastMessageReceivedTime + keepAliveInterval) > .seconds(0))
-        }
+        ContinuousClock.now - (lastMessageReceivedTime + keepAliveInterval) > .seconds(0)
     }
 
     private func sendKeepAlive() async throws {
-        try await sendMessage(Ocp1KeepAlive.keepAlive(interval: keepAliveInterval), type: .ocaKeepAlive)
+        try await sendMessage(
+            Ocp1KeepAlive.keepAlive(interval: keepAliveInterval),
+            type: .ocaKeepAlive
+        )
     }
 
     func keepAliveIntervalDidChange(from oldValue: Duration) {

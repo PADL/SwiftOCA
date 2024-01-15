@@ -70,6 +70,9 @@ extension AES70OCP1Connection {
     }
 
     func sendKeepAlive() async throws {
-        try await sendMessage(Ocp1KeepAlive.keepAlive(interval: keepAliveInterval), type: .ocaKeepAlive)
+        try await sendMessage(
+            Ocp1KeepAlive.keepAlive(interval: keepAliveInterval),
+            type: .ocaKeepAlive
+        )
     }
 }
