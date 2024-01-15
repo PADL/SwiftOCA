@@ -18,6 +18,7 @@
 
 import AsyncAlgorithms
 @_implementationOnly
+@preconcurrency
 import CoreFoundation
 import Foundation
 
@@ -115,9 +116,9 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
         self.cfSocket = cfSocket
 
         let runLoopSource = CFSocketCreateRunLoopSource(kCFAllocatorDefault, cfSocket, 0)
-        CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
 
         try await withTaskCancellationHandler(operation: {
+            CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
             guard CFSocketIsValid(cfSocket),
                   CFSocketConnectToAddress(cfSocket, deviceAddress.cfData, 0) == .success
             else {
