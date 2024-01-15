@@ -91,7 +91,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
         try await close()
     }
 
-    var keepAliveInterval: UInt64 = 0 {
+    var keepAliveInterval: UInt64 = 1 {
         didSet {
             if keepAliveInterval != oldValue {
                 keepAliveIntervalDidChange()
@@ -163,7 +163,9 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
 
     var keepAliveInterval: UInt64 = 0 {
         didSet {
-            keepAliveIntervalDidChange()
+            if keepAliveInterval != oldValue {
+		keepAliveIntervalDidChange()
+	    }
         }
     }
 

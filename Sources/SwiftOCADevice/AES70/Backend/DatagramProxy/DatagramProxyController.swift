@@ -39,9 +39,11 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: AES70ControllerPr
         self.endpoint = endpoint
     }
 
-    var keepAliveInterval: UInt64 = 0 {
+    var keepAliveInterval: UInt64 = 1 {
         didSet {
-            keepAliveIntervalDidChange()
+            if keepAliveInterval != oldValue {
+		keepAliveIntervalDidChange()
+	    }
         }
     }
 
