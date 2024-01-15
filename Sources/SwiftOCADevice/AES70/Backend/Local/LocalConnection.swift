@@ -35,6 +35,10 @@ public final class AES70LocalConnection: AES70OCP1Connection {
         "oca/local"
     }
 
+    override public var keepAliveInterval: Duration {
+        .zero
+    }
+
     override public func disconnectDevice(clearObjectCache: Bool) async throws {
         try await super.disconnectDevice(clearObjectCache: clearObjectCache)
         endpoint.responseChannel.finish()

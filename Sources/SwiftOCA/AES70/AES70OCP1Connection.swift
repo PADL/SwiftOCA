@@ -64,7 +64,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
     let options: AES70OCP1ConnectionOptions
 
     /// Keepalive/ping interval (only necessary for UDP, but useful for other transports)
-    public var keepAliveInterval: Duration {
+    open var keepAliveInterval: Duration {
         .seconds(1)
     }
 
