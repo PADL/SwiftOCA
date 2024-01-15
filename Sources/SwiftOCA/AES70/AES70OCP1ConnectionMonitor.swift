@@ -127,10 +127,12 @@ extension AES70OCP1Connection.Monitor {
                             .seconds(0)
                         {
                             await connection.logger
-                                .info("no heartbeat packet received in past \(keepAliveThreshold)")
+                                .info(
+                                    "\(connection): no heartbeat packet received in past \(keepAliveThreshold)"
+                                )
                             throw Ocp1Error.responseTimeout
                         }
-                        try await Task.sleep(for: keepAliveThreshold)
+                        try await Task.sleep(for: keepAliveInterval)
                     } while true
                 }
             }

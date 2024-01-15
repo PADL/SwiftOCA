@@ -63,9 +63,9 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
 
     let options: AES70OCP1ConnectionOptions
 
-    /// Keepalive/ping interval (only necessary for UDP)
+    /// Keepalive/ping interval (only necessary for UDP, but useful for other transports)
     public var keepAliveInterval: Duration {
-        .zero
+        .seconds(1)
     }
 
     /// Object interning, main thread only
@@ -99,40 +99,38 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         private weak var connection: AES70OCP1Connection?
         private var continuations = [OcaUint32: Continuation]()
         private(set) var lastMessageReceivedTime = ContinuousClock.now
-        fileprivate var task: Task<(), Error>?
 
         init(_ connection: AES70OCP1Connection) {
             self.connection = connection
         }
 
-        func run() {
-            precondition(task == nil)
-            task = Task { [unowned self] in
-                guard let connection else { throw Ocp1Error.notConnected }
-                do {
-                    try await self.receiveMessages(connection)
-                } catch Ocp1Error.notConnected {
-                    if connection.options.automaticReconnect {
-                        try await connection.reconnectDevice()
-                    } else {
-                        throw Ocp1Error.notConnected
-                    }
+        func run() async throws {
+            guard let connection else { throw Ocp1Error.notConnected }
+            do {
+                try await receiveMessages(connection)
+            } catch Ocp1Error.notConnected {
+                if connection.options.automaticReconnect {
+                    try await connection.reconnectDevice()
+                } else {
+                    resumeAllNotConnected()
+                    throw Ocp1Error.notConnected
                 }
             }
         }
 
         func stop() {
-            precondition(task != nil)
-            continuations.forEach {
-                $0.1.resume(throwing: Ocp1Error.notConnected)
-            }
-            continuations.removeAll()
-            task?.cancel()
-            task = nil
+            resumeAllNotConnected()
         }
 
         func register(handle: OcaUint32, continuation: Continuation) {
             continuations[handle] = continuation
+        }
+
+        func resumeAllNotConnected() {
+            continuations.forEach {
+                $0.1.resume(throwing: Ocp1Error.notConnected)
+            }
+            continuations.removeAll()
         }
 
         func resume(with response: Ocp1Response) throws {
@@ -151,6 +149,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
     /// actor for monitoring response and matching them with requests
     var monitor: Monitor?
 
+    private var monitorTask: Task<(), Error>?
     private var keepAliveTask: Task<(), Error>?
 
     public init(options: AES70OCP1ConnectionOptions = AES70OCP1ConnectionOptions()) {
@@ -187,7 +186,9 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
 
     func connectDevice() async throws {
         monitor = Monitor(self)
-        await monitor!.run()
+        monitorTask = Task {
+            try await monitor!.run()
+        }
         keepAliveTask = sendKeepAlives()
 
         subscriptions = [:]
@@ -213,6 +214,10 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
             await monitor.stop()
             self.monitor = nil
         }
+        if let monitorTask {
+            monitorTask.cancel()
+            self.monitorTask = nil
+        }
         if clearObjectCache {
             objects = [:]
         }
@@ -220,11 +225,13 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         #if canImport(Combine) || canImport(OpenCombine)
         objectWillChange.send()
         #endif
+
+        logger.info("Disconnected from \(self)")
     }
 
     public var isConnected: Bool {
         get async {
-            !(await monitor?.task?.isCancelled ?? true)
+            !(monitorTask?.isCancelled ?? true)
         }
     }
 
