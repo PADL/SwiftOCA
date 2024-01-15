@@ -327,7 +327,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         }
 
         let result = try await withThrowingTimeout(
-            seconds: connectionDelegate.options
+            of: connectionDelegate.options
                 .responseTimeout
         ) {
             await Task {

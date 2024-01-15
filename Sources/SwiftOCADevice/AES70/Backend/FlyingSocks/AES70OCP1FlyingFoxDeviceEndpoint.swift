@@ -37,7 +37,7 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70DeviceEndpointPrivate,
     }
 
     let logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1FlyingFoxDeviceEndpoint")
-    let timeout: TimeInterval
+    let timeout: Duration
     let device: AES70Device
 
     private var httpServer: HTTPServer!
@@ -75,7 +75,7 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70DeviceEndpointPrivate,
 
     public convenience init(
         address: Data,
-        timeout: TimeInterval = 15,
+        timeout: Duration = .seconds(15),
         device: AES70Device = AES70Device.shared
     ) async throws {
         var storage = sockaddr_storage()
@@ -89,7 +89,7 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70DeviceEndpointPrivate,
 
     public convenience init(
         path: String,
-        timeout: TimeInterval = 15,
+        timeout: Duration = .seconds(15),
         device: AES70Device = AES70Device.shared
     ) async throws {
         let address = sockaddr_un.unix(path: path).makeStorage()
@@ -98,7 +98,7 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70DeviceEndpointPrivate,
 
     private init(
         address: sockaddr_storage,
-        timeout: TimeInterval = 15,
+        timeout: Duration = .seconds(15),
         device: AES70Device = AES70Device.shared
     ) async throws {
         self.device = device
@@ -121,7 +121,7 @@ public final class AES70OCP1FlyingFoxDeviceEndpoint: AES70DeviceEndpointPrivate,
 
         httpServer = HTTPServer(
             address: address,
-            timeout: timeout
+            timeout: timeout.timeInterval
         )
 
         await httpServer.appendRoute("GET /", to: .webSocket(Handler(self)))

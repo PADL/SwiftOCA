@@ -29,7 +29,7 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate, CustomStringConver
 
     var subscriptions = [OcaONo: NSMutableSet]()
     var keepAliveTask: Task<(), Error>?
-    var lastMessageReceivedTime = Date.distantPast
+    var lastMessageReceivedTime = ContinuousClock.now
 
     private let address: String
     private let socket: AsyncSocket
@@ -46,11 +46,9 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate, CustomStringConver
         _messages = AsyncThrowingStream.decodingMessages(from: socket.bytes)
     }
 
-    var keepAliveInterval: UInt64 = 0 {
+    var keepAliveInterval = Duration.seconds(0) {
         didSet {
-            if keepAliveInterval != oldValue {
-                keepAliveIntervalDidChange()
-            }
+            keepAliveIntervalDidChange(from: oldValue)
         }
     }
 

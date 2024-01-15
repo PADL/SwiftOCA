@@ -112,7 +112,7 @@ public class AES70OCP1IORingConnection: AES70OCP1Connection {
 
 public final class AES70OCP1IORingDatagramConnection: AES70OCP1IORingConnection {
     override public var keepAliveInterval: OcaUint16 {
-        1
+        .seconds(1)
     }
 
     override fileprivate var type: UInt32 {

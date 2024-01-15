@@ -50,7 +50,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpointPrivat
     let pool: AsyncSocketPool
 
     private let address: sockaddr_storage
-    let timeout: TimeInterval
+    let timeout: Duration
     let logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1FlyingSocksDeviceEndpoint")
     let device: AES70Device
 
@@ -59,7 +59,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpointPrivat
 
     public convenience init(
         address: Data,
-        timeout: TimeInterval = 15,
+        timeout: Duration = .seconds(15),
         device: AES70Device = AES70Device.shared
     ) async throws {
         var storage = sockaddr_storage()
@@ -73,7 +73,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpointPrivat
 
     public convenience init(
         path: String,
-        timeout: TimeInterval = 15,
+        timeout: Duration = .seconds(15),
         device: AES70Device = AES70Device.shared
     ) async throws {
         let address = sockaddr_un.unix(path: path).makeStorage()
@@ -82,7 +82,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpointPrivat
 
     private init(
         address: sockaddr_storage,
-        timeout: TimeInterval = 15,
+        timeout: Duration = .seconds(15),
         device: AES70Device = AES70Device.shared
     ) async throws {
         self.address = address
@@ -141,7 +141,7 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpointPrivat
         didSet { isListeningDidUpdate(from: oldValue != nil) }
     }
 
-    private func shutdown(timeout: TimeInterval = 0) async {
+    private func shutdown(timeout: Duration = .seconds(0)) async {
         if let endpointRegistrationHandle {
             try? await AES70DeviceEndpointRegistrar.shared
                 .deregister(handle: endpointRegistrationHandle)
@@ -259,8 +259,8 @@ public final class AES70OCP1FlyingSocksDeviceEndpoint: AES70DeviceEndpointPrivat
 extension AES70OCP1FlyingSocksDeviceEndpoint {
     public var isListening: Bool { socket != nil }
 
-    func waitUntilListening(timeout: TimeInterval = 5) async throws {
-        try await FlyingSocks.withThrowingTimeout(seconds: timeout) {
+    func waitUntilListening(timeout: Duration = .seconds(5)) async throws {
+        try await SwiftOCA.withThrowingTimeout(of: timeout) {
             try await self.doWaitUntilListening()
         }
     }

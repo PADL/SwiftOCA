@@ -60,7 +60,7 @@ PlatformDependencies = [
 let package = Package(
     name: "SwiftOCA",
     platforms: [
-        .macOS(.v10_15),
+        .macOS(.v13),
     ],
     products: [
         .library(

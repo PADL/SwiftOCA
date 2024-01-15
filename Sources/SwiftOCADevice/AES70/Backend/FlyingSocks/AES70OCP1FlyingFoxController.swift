@@ -57,7 +57,7 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate, CustomStringConverti
     private var endpoint: AES70OCP1FlyingFoxDeviceEndpoint?
 
     var keepAliveTask: Task<(), Error>?
-    var lastMessageReceivedTime = Date.distantPast
+    var lastMessageReceivedTime = ContinuousClock.now
 
     var messages: AsyncExtensions.AnyAsyncSequence<ControllerMessage> {
         inputStream.ocp1DecodedMessages.eraseToAnyAsyncSequence()
@@ -73,11 +73,9 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate, CustomStringConverti
         self.endpoint = endpoint
     }
 
-    var keepAliveInterval: UInt64 = 0 {
+    var keepAliveInterval = Duration.seconds(0) {
         didSet {
-            if keepAliveInterval != oldValue {
-                keepAliveIntervalDidChange()
-            }
+            keepAliveIntervalDidChange(from: oldValue)
         }
     }
 

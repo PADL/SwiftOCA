@@ -18,7 +18,6 @@
 
 import AsyncAlgorithms
 import AsyncExtensions
-import Foundation
 @_implementationOnly
 import IORing
 @_implementationOnly
@@ -27,9 +26,6 @@ import SwiftOCA
 
 protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equatable, Hashable {
     var peerAddress: AnySocketAddress { get }
-    var keepAliveInterval: UInt64 { get set }
-    var keepAliveTask: Task<(), Error>? { get set }
-    var lastMessageReceivedTime: Date { get set }
 
     func sendMessages(
         _ messages: AnyAsyncSequence<Ocp1Message>,
@@ -44,7 +40,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
     let peerAddress: AnySocketAddress
     var receiveMessageTask: Task<(), Never>?
     var keepAliveTask: Task<(), Error>?
-    var lastMessageReceivedTime = Date.distantPast
+    var lastMessageReceivedTime = ContinuousClock.now
 
     var messages: AnyAsyncSequence<ControllerMessage> {
         _messages.eraseToAnyAsyncSequence()
@@ -91,11 +87,9 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
         try await close()
     }
 
-    var keepAliveInterval: UInt64 = 1 {
+    var keepAliveInterval = Duration.seconds(1) {
         didSet {
-            if keepAliveInterval != oldValue {
-                keepAliveIntervalDidChange()
-            }
+            keepAliveIntervalDidChange(from: oldValue)
         }
     }
 
@@ -141,7 +135,7 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
     var subscriptions = [OcaONo: NSMutableSet]()
     let peerAddress: AnySocketAddress
     var keepAliveTask: Task<(), Error>?
-    var lastMessageReceivedTime = Date.distantPast
+    var lastMessageReceivedTime = ContinuousClock.now
 
     private weak var endpoint: AES70OCP1IORingDatagramDeviceEndpoint?
 
@@ -161,11 +155,9 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
         await endpoint?.unlockAndRemove(controller: self)
     }
 
-    var keepAliveInterval: UInt64 = 0 {
+    var keepAliveInterval = Duration.seconds(0) {
         didSet {
-            if keepAliveInterval != oldValue {
-		keepAliveIntervalDidChange()
-	    }
+            keepAliveIntervalDidChange(From: oldValue)
         }
     }
 
