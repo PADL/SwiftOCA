@@ -68,17 +68,20 @@ extension OcaRoot {
         parameterData: Data
     ) async throws -> Ocp1Response {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
-        let command = Ocp1Command(
-            commandSize: 0,
-            handle: await connectionDelegate.getNextCommandHandle(),
-            targetONo: objectNumber,
-            methodID: methodID,
-            parameters: Ocp1Parameters(
-                parameterCount: parameterCount,
-                parameterData: parameterData
+
+        return try await withThrowingTimeout(of: connectionDelegate.options.responseTimeout) {
+            let command = Ocp1Command(
+                commandSize: 0,
+                handle: await connectionDelegate.getNextCommandHandle(),
+                targetONo: self.objectNumber,
+                methodID: methodID,
+                parameters: Ocp1Parameters(
+                    parameterCount: parameterCount,
+                    parameterData: parameterData
+                )
             )
-        )
-        return try await connectionDelegate.sendCommandRrq(command)
+            return try await connectionDelegate.sendCommandRrq(command)
+        }
     }
 
     private func sendCommandRrq(
