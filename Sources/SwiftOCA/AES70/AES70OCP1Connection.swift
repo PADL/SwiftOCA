@@ -83,7 +83,6 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
     var subscriptions = [OcaEvent: AES70SubscriptionCallback]()
     var logger = Logger(label: "com.padl.SwiftOCA")
 
-    // TODO: use SwiftAtomics here?
     private var nextCommandHandle = OcaUint32(100)
 
     var lastMessageSentTime = ContinuousClock.now
@@ -95,11 +94,12 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
 
     /// Monitor structure for matching requests and responses
     actor Monitor {
-        private let connection: AES70OCP1Connection!
         typealias Continuation = CheckedContinuation<Ocp1Response, Error>
+
+        private weak var connection: AES70OCP1Connection?
         private var continuations = [OcaUint32: Continuation]()
-        private var lastMessageReceivedTime = ContinuousClock.now
-        private var task: Task<(), Error>?
+        private(set) var lastMessageReceivedTime = ContinuousClock.now
+        fileprivate var task: Task<(), Error>?
 
         init(_ connection: AES70OCP1Connection) {
             self.connection = connection
@@ -108,6 +108,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         func run() {
             precondition(task == nil)
             task = Task { [unowned self] in
+                guard let connection else { throw Ocp1Error.notConnected }
                 do {
                     try await self.receiveMessages(connection)
                 } catch Ocp1Error.notConnected {
@@ -130,11 +131,6 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
             task = nil
         }
 
-        var isCancelled: Bool {
-            guard let task else { return true }
-            return task.isCancelled
-        }
-
         func register(handle: OcaUint32, continuation: Continuation) {
             continuations[handle] = continuation
         }
@@ -144,23 +140,11 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
                 throw Ocp1Error.invalidHandle
             }
             continuations.removeValue(forKey: response.handle)
-            Task {
-                continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
-            }
+            continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
         }
 
         func updateLastMessageReceivedTime() {
             lastMessageReceivedTime = ContinuousClock.now
-        }
-
-        /// returns `true` if insufficient keepalives were received to keep connection fresh
-        var connectionIsStale: Bool {
-            get async {
-                let keepAliveInterval = await connection.keepAliveInterval
-                return keepAliveInterval > .zero &&
-                    ContinuousClock
-                    .now - (lastMessageReceivedTime + keepAliveInterval) > .seconds(0)
-            }
         }
     }
 
@@ -176,8 +160,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         add(object: deviceManager)
     }
 
-    // FIXME: why does need to be public for non-debug builds to link?
-    public func getNextCommandHandle() async -> OcaUint32 {
+    func getNextCommandHandle() async -> OcaUint32 {
         let handle = nextCommandHandle
         nextCommandHandle += 1
         return handle
@@ -189,20 +172,23 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         try await connectDevice()
     }
 
+    private func sendKeepAlives() -> Task<(), Error>? {
+        guard keepAliveInterval > .zero else { return nil }
+
+        return Task(priority: .background) { [self] in
+            repeat {
+                if lastMessageSentTime + keepAliveInterval < ContinuousClock().now {
+                    try await sendKeepAlive()
+                }
+                try await Task.sleep(for: keepAliveInterval)
+            } while !Task.isCancelled
+        }
+    }
+
     func connectDevice() async throws {
         monitor = Monitor(self)
         await monitor!.run()
-
-        if keepAliveInterval > .zero {
-            keepAliveTask = Task.detached(priority: .background) { [self] in
-                repeat {
-                    if await lastMessageSentTime + keepAliveInterval < ContinuousClock().now {
-                        try await sendKeepAlive()
-                    }
-                    try await Task.sleep(for: keepAliveInterval)
-                } while !Task.isCancelled
-            }
-        }
+        keepAliveTask = sendKeepAlives()
 
         subscriptions = [:]
 
@@ -238,7 +224,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
 
     public var isConnected: Bool {
         get async {
-            monitor != nil
+            !(await monitor?.task?.isCancelled ?? true)
         }
     }
 

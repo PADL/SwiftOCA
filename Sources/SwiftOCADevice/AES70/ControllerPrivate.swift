@@ -121,8 +121,9 @@ extension AES70ControllerPrivate {
     }
 
     /// returns `true` if insufficient keepalives were received to keep connection fresh
-    var connectionIsStale: Bool {
-        ContinuousClock.now - (lastMessageReceivedTime + keepAliveInterval) > .seconds(0)
+    private var connectionIsStale: Bool {
+        let keepAliveThreshold = keepAliveInterval * 3
+        return ContinuousClock.now - (lastMessageReceivedTime + keepAliveThreshold) > .seconds(0)
     }
 
     private func sendKeepAlive() async throws {

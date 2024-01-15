@@ -107,7 +107,7 @@ public enum DeviceApp {
 
         signal(SIGPIPE, SIG_IGN)
 
-        await withThrowingTaskGroup(of: Void.self) { taskGroup in
+        try await withThrowingTaskGroup(of: Void.self) { taskGroup in
             taskGroup.addTask {
                 print("Starting OCP.1 stream endpoint \(streamEndpoint)...")
                 try await streamEndpoint.run()
@@ -124,6 +124,7 @@ public enum DeviceApp {
                 try await datagramEndpoint.run()
             }
             #endif
+            try await taskGroup.next()
         }
     }
 }

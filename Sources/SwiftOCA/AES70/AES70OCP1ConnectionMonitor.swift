@@ -103,17 +103,39 @@ extension AES70OCP1Connection.Monitor {
         updateLastMessageReceivedTime()
 
         for message in messages {
-            if await connectionIsStale {
-                throw Ocp1Error.notConnected
-            }
-
             try await processMessage(connection, message)
         }
     }
 
     func receiveMessages(_ connection: AES70OCP1Connection) async throws {
-        repeat {
-            try await receiveMessage(connection)
-        } while !isCancelled
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            let keepAliveInterval = await connection.keepAliveInterval
+
+            group.addTask { [self] in
+                repeat {
+                    try Task.checkCancellation()
+                    try await receiveMessage(connection)
+                } while true
+            }
+            if keepAliveInterval > .zero {
+                let keepAliveThreshold = keepAliveInterval * 3
+
+                group.addTask { [self] in
+                    repeat {
+                        if await ContinuousClock
+                            .now - (lastMessageReceivedTime + keepAliveThreshold) >
+                            .seconds(0)
+                        {
+                            await connection.logger
+                                .info("no heartbeat packet received in past \(keepAliveThreshold)")
+                            throw Ocp1Error.responseTimeout
+                        }
+                        try await Task.sleep(for: keepAliveThreshold)
+                    } while true
+                }
+            }
+            try await group.next()
+            group.cancelAll()
+        }
     }
 }
