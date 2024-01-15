@@ -376,9 +376,21 @@ public extension OcaRoot {
         }
     }
 
+    var objectNumberPathString: String {
+        get async {
+            await "/" + objectNumberPath.map(\.description).joined(separator: "/")
+        }
+    }
+
     var rolePath: OcaNamePath {
         get async {
             await makePath(rootObject: self, keyPath: \.role)
+        }
+    }
+
+    var rolePathString: String {
+        get async {
+            await "/" + rolePath.joined(separator: "/")
         }
     }
 
