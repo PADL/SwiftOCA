@@ -104,14 +104,14 @@ final class SwiftOCADeviceTests: XCTestCase {
         let path = await matrix.objectNumberPath
         XCTAssertEqual(path, [OcaRootBlockONo, matrix.objectNumber])
         deviceExpectation.fulfill()
-        wait(for: [deviceExpectation], timeout: 1)
+        await fulfillment(of: [deviceExpectation], timeout: 1)
 
         let controllerExpectation = XCTestExpectation(description: "Check controller properties")
         let members = try await connection.rootBlock.resolveActionObjects()
         XCTAssertEqual(members.map(\.objectNumber), deviceMembers.map(\.objectNumber))
         controllerExpectation.fulfill()
 
-        wait(for: [controllerExpectation], timeout: 1)
+        await fulfillment(of: [controllerExpectation], timeout: 1)
 
         try await connection.disconnect()
     }
