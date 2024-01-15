@@ -124,10 +124,10 @@ private extension AES70OCP1FlyingSocksController {
 
     static func makeIdentifier(from peer: Socket.Address) -> String {
         switch peer {
-        case .ip4(let address, port: _):
-            return address
-        case .ip6(let address, port: _):
-            return address
+        case let .ip4(address, port):
+            return "\(address):\(port)"
+        case let .ip6(address, port):
+            return "\(address):\(port)"
         case let .unix(path):
             return path
         }
