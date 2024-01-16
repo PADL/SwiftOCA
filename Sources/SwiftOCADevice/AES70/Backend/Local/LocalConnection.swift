@@ -53,7 +53,8 @@ public final class AES70LocalConnection: AES70OCP1Connection {
     }
 
     override public func write(_ data: Data) async throws -> Int {
-        await endpoint.requestChannel.send(data)
+        // this can't run on the same actor otherwise we can deadlock with read()
+        Task { await endpoint.requestChannel.send(data) }
         return data.count
     }
 }
