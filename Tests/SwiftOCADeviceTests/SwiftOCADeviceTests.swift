@@ -119,8 +119,6 @@ final class SwiftOCADeviceTests: XCTestCase {
 
 /// https://github.com/apple/swift-corelibs-xctest/issues/436
 #if os(Linux)
-import XCTest
-
 extension XCTestCase {
     /// Wait on an array of expectations for up to the specified timeout, and optionally specify
     /// whether they
