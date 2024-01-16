@@ -18,7 +18,7 @@ limitations under the License.
 
 ## BinaryCoder
 
-The following license applies to the code in `Sources/SwiftOCA/OCF/BinaryCoder`, derived from [swift-binary-coder](https://github.com/fwcd/swift-binary-coder). The code is incorporated directly into this repository so as not to preclude library consumers from also using the original BinaryCoder.
+The following license applies to the code in `Sources/SwiftOCA/OCP.1`, derived from [swift-binary-coder](https://github.com/fwcd/swift-binary-coder). The code is incorporated directly into this repository so as not to preclude library consumers from also using the original BinaryCoder.
 
 ```
 MIT License
