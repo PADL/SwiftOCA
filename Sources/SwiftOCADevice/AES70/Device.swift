@@ -107,7 +107,7 @@ public actor AES70Device {
 
     public func handleCommand(
         _ command: Ocp1Command,
-        timeout: Duration? = nil,
+        timeout: Duration = .zero,
         from controller: any AES70Controller
     ) async -> Ocp1Response {
         do {
@@ -116,12 +116,8 @@ public actor AES70Device {
                 throw Ocp1Error.status(.badONo)
             }
 
-            if let timeout, timeout > .zero {
-                return try await withThrowingTimeout(of: timeout) {
-                    try await object.handleCommand(command, from: controller)
-                }
-            } else {
-                return try await object.handleCommand(command, from: controller)
+            return try await withThrowingTimeout(of: timeout) {
+                try await object.handleCommand(command, from: controller)
             }
         } catch let Ocp1Error.status(status) {
             return .init(responseSize: 0, handle: command.handle, statusCode: status)

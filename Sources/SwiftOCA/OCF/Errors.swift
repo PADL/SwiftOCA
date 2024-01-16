@@ -19,8 +19,9 @@ public enum Ocp1Error: Error, Equatable {
     case status(OcaStatus)
     case exception(Ocp1Notification2ExceptionData)
     case alreadySubscribedToEvent
-    case bonjourRegistrationFailed
     case arrayOrDataTooBig
+    case bonjourRegistrationFailed
+    case connectionTimeout
     case invalidHandle
     case invalidKeepAlivePdu
     case invalidMessageSize

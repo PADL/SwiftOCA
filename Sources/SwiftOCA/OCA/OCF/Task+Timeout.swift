@@ -14,7 +14,11 @@ public func withThrowingTimeout<R: Sendable>(
     of duration: Duration,
     operation: @escaping @Sendable () async throws -> R
 ) async throws -> R {
-    try await withThrowingTaskGroup(of: R.self) { group in
+    guard duration != .zero else {
+        return try await operation()
+    }
+
+    return try await withThrowingTaskGroup(of: R.self) { group in
         let deadline = ContinuousClock.now + duration
 
         // Start actual work.

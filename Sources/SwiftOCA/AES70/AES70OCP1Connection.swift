@@ -167,9 +167,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
 
     func reconnectDevice() async throws {
         try await disconnectDevice(clearObjectCache: false)
-        try await withThrowingTimeout(of: options.connectionTimeout) {
-            try await self.connectDevice()
-        }
+        try await connectDeviceWithTimeout()
     }
 
     private func sendKeepAlives() -> Task<(), Error>? {
@@ -182,6 +180,16 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
                 }
                 try await Task.sleep(for: keepAliveInterval)
             } while !Task.isCancelled
+        }
+    }
+
+    private func connectDeviceWithTimeout() async throws {
+        do {
+            try await withThrowingTimeout(of: options.connectionTimeout) {
+                try await self.connectDevice()
+            }
+        } catch Ocp1Error.responseTimeout {
+            throw Ocp1Error.connectionTimeout
         }
     }
 
@@ -253,9 +261,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
 /// Public API
 public extension AES70OCP1Connection {
     func connect() async throws {
-        try await withThrowingTimeout(of: options.connectionTimeout) {
-            try await self.connectDevice()
-        }
+        try await connectDeviceWithTimeout()
         try? await refreshDeviceTree()
     }
 
