@@ -11,10 +11,10 @@ The package consists of three libraries:
 
 All APIs use `async/await` and support both macOS and Linux: on macOS, [FlyingFox](https://github.com/swhitty/FlyingFox) is used for socket I/O, and on Linux, [IORingSwift](https://github.com/PADL/IORingSwift).
 
-| Platform | TCP | UDP | WS client | WS server | Local |
-| -:       | :-  | :-  | :-        | :-        | :-    |
-| macOS    | ✅  | ❌  | ❌        | ✅        | ✅    |
-| Linux    | ✅  | ✅  | ❌        | ❌        | ✅    |
+| Platform | TCP | UDP client | UDP server | WS client | WS server | Local |
+| -:       | :-  | :-         | :-         | :-        | :-        | :-    |
+| macOS    | ✅  | ✅         | ❌         | ❌        | ✅        | ✅    |
+| Linux    | ✅  | ✅         | ✅         | ❌        | ❌        | ✅    |
 
 Example code can be found in [Examples](Examples).
 
