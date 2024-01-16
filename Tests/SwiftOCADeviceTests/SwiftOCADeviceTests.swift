@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import Foundation
 @testable import SwiftOCA
 @testable import SwiftOCADevice
 import XCTest
