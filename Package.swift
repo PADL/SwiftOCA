@@ -74,7 +74,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.1.0"),
-        .package(url: "https://github.com/apple/swift-log", from: "1.0.0"),
+        .package(url: "https://github.com/apple/swift-log", branch: "main"),
         .package(url: "https://github.com/lhoward/AsyncExtensions", branch: "linux"),
         .package(url: "https://github.com/Flight-School/AnyCodable", from: "0.6.7"),
         PlatformTransportPackage,
