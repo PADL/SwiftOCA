@@ -22,31 +22,19 @@ class Ocp1DecodingState {
         return byte != 0
     }
 
+    // https://forums.swift.org/t/decoding-utf8-tagged-with-number-of-code-points/69427
+
     func decode(_ type: String.Type) throws -> String {
-        struct InterospectableIterator<T: Collection>: IteratorProtocol {
-            typealias Element = T.Element
-            var iterator: T.Iterator
-            var position = 0
-
-            init(_ elements: T) { iterator = elements.makeIterator() }
-
-            mutating func next() -> Element? {
-                guard let element = iterator.next() else { return nil }
-                position += 1
-                return element
-            }
-        }
-
         let scalarCount = try Int(decodeInteger(UInt16.self))
-        guard scalarCount > 0 else { return String() }
-        var iterator = InterospectableIterator(data)
-        var scalars = [Unicode.Scalar]()
-        var utf8Decoder = UTF8()
 
+        // Count the number of valid UTF-8 code units.
+        var utf8Count = 0
+        var iterator = data.makeIterator()
+        var utf8Parser = Unicode.UTF8.ForwardParser()
         for _ in 0..<scalarCount {
-            switch utf8Decoder.decode(&iterator) {
-            case let .scalarValue(v):
-                scalars.append(v)
+            switch utf8Parser.parseScalar(from: &iterator) {
+            case let .valid(utf8Buffer):
+                utf8Count += utf8Buffer.count
             case .emptyInput:
                 throw Ocp1Error.pduTooShort
             case .error:
@@ -54,9 +42,13 @@ class Ocp1DecodingState {
             }
         }
 
-        data.removeFirst(iterator.position)
-
-        return String(String.UnicodeScalarView(scalars))
+        // Decode and remove the code units.
+        let utf8Prefix = data.prefix(utf8Count)
+        data.removeFirst(utf8Count)
+        return String(unsafeUninitializedCapacity: utf8Count) {
+            _ = $0.initialize(fromContentsOf: utf8Prefix)
+            return utf8Count
+        }
     }
 
     func decodeInteger<Integer>(_ type: Integer.Type) throws -> Integer
