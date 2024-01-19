@@ -65,8 +65,9 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
     public let subnetMaskLength: OcaUint8
     public let defaultGateway: OcaString
     public let dnsServers: OcaString // comma-separated
+    public let dnsDomainName: OcaString
     public let linkUp: OcaBoolean
-    public let adapterSpeed: OcaUint64
+    public let adapterSpeed: OcaUint64 // 1_000_000 for a 1Gbps link
     public let parametersType: Ocp1IPParametersType
     public let macAddress: EUI48
     public let linkType: OcaNetworkLinkType
@@ -78,6 +79,7 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
         subnetMaskLength: OcaUint8,
         defaultGateway: OcaString,
         dnsServers: OcaString,
+        dnsDomainName: OcaString,
         linkUp: OcaBoolean,
         adapterSpeed: OcaUint64,
         parametersType: Ocp1IPParametersType,
@@ -90,6 +92,7 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
         self.subnetMaskLength = subnetMaskLength
         self.defaultGateway = defaultGateway
         self.dnsServers = dnsServers
+        self.dnsDomainName = dnsDomainName
         self.linkUp = linkUp
         self.adapterSpeed = adapterSpeed
         self.parametersType = parametersType
@@ -105,6 +108,7 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
         subnetMaskLength = try container.decode(OcaUint8.self, forKey: .subnetMaskLength)
         defaultGateway = try container.decode(OcaString.self, forKey: .defaultGateway)
         dnsServers = try container.decode(OcaString.self, forKey: .dnsServers)
+        dnsDomainName = try container.decode(OcaString.self, forKey: .dnsDomainName)
         linkUp = try container.decode(OcaBoolean.self, forKey: .linkUp)
         adapterSpeed = try container.decode(OcaUint64.self, forKey: .adapterSpeed)
         parametersType = try container.decode(Ocp1IPParametersType.self, forKey: .parametersType)
@@ -127,6 +131,7 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
         case subnetMaskLength
         case defaultGateway
         case dnsServers
+        case dnsDomainName
         case linkUp
         case adapterSpeed
         case parametersType
@@ -142,6 +147,7 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
         try container.encode(subnetMaskLength, forKey: .subnetMaskLength)
         try container.encode(defaultGateway, forKey: .defaultGateway)
         try container.encode(dnsServers, forKey: .dnsServers)
+        try container.encode(dnsDomainName, forKey: .dnsDomainName)
         try container.encode(linkUp, forKey: .linkUp)
         try container.encode(adapterSpeed, forKey: .adapterSpeed)
         try container.encode(parametersType, forKey: .parametersType)
