@@ -33,6 +33,8 @@ open class OcaApplicationNetwork: OcaRoot {
     )
     public var owner: OcaProperty<OcaONo>.State
 
+    // ID by which this network object is known on the network
+    // (registered service name); may or may not be the same as the hostname
     @OcaProperty(
         propertyID: OcaPropertyID("2.3"),
         getMethodID: OcaMethodID("2.4"),

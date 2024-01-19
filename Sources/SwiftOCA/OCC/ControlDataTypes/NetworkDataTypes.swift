@@ -20,6 +20,8 @@ import Glibc
 import Darwin
 #endif
 
+// CM3
+
 public enum OcaNetworkLinkType: OcaUint8, Codable, Sendable {
     case none = 0
     case ethernetWired = 1
@@ -152,6 +154,12 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
         try macAddressContainer.encode(macAddress.5)
         try container.encode(linkType, forKey: .linkType)
     }
+
+    public var systemInterfaceParameters: OcaBlob {
+        get throws {
+            OcaBlob(try Ocp1Encoder().encode(self))
+        }
+    }
 }
 
 public typealias OcaNetworkAddress = OcaBlob
@@ -159,43 +167,65 @@ public typealias OcaNetworkAddress = OcaBlob
 public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable {
     public let systemInterfaceParameters: OcaBlob
     public let myNetworkAddress: OcaNetworkAddress
+
+    public init(systemInterfaceParameters: OcaBlob, myNetworkAddress: OcaNetworkAddress) {
+        self.systemInterfaceParameters = systemInterfaceParameters
+        self.myNetworkAddress = myNetworkAddress
+    }
+
+    public init(
+        systemInterfaceParameters: Ocp1SystemInterfaceParameters,
+        myNetworkAddress: Ocp1NetworkAddress
+    ) throws {
+        try self.init(
+            systemInterfaceParameters: systemInterfaceParameters.systemInterfaceParameters,
+            myNetworkAddress: myNetworkAddress.networkAddress
+        )
+    }
 }
 
-public typealias OcaAdaptationIdentifier = OcaString
+public struct Ocp1NetworkAddress: Codable, Sendable {
+    public let address: OcaString
+    public let port: OcaUint16
 
-public typealias Ocp1NetworkAddress = OcaNetworkAddress
+    public init(address: OcaString, port: OcaUint16) {
+        self.address = address
+        self.port = port
+    }
 
-public extension Ocp1NetworkAddress {
-    init(networkAddress: UnsafePointer<sockaddr>) throws {
-        var data = [UInt8]()
+    public init(_ networkAddress: UnsafePointer<sockaddr>) throws {
+        var address: OcaString!
+        var port: OcaUint16 = 0
 
         switch networkAddress.pointee.sa_family {
         case sa_family_t(AF_INET):
             networkAddress.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
-                Swift.withUnsafeBytes(of: sin.pointee.sin_addr.s_addr.bigEndian) {
-                    data.append(contentsOf: $0)
-                }
-                Swift.withUnsafeBytes(of: sin.pointee.sin_port.bigEndian) {
-                    data.append(contentsOf: $0)
-                }
+                address = deviceAddressToString(networkAddress, includePort: false)
+                port = OcaUint16(bigEndian: sin.pointee.sin_port)
             }
         case sa_family_t(AF_INET6):
-            networkAddress.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { sin in
-                Swift.withUnsafeBytes(of: sin.pointee.sin6_addr) {
-                    $0.withContiguousStorageIfAvailable {
-                        data.append(contentsOf: $0)
-                    }
-                }
-                Swift.withUnsafeBytes(of: sin.pointee.sin6_port.bigEndian) {
-                    data.append(contentsOf: $0)
-                }
+            networkAddress.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { sin6 in
+                address = deviceAddressToString(networkAddress, includePort: false)
+                port = OcaUint16(bigEndian: sin6.pointee.sin6_port)
             }
         default:
             throw Ocp1Error.unknownServiceType
         }
-        self.init(data)
+
+        self.address = address
+        self.port = port
+    }
+
+    public var networkAddress: OcaNetworkAddress {
+        get throws {
+            try OcaNetworkAddress(Ocp1Encoder().encode(self))
+        }
     }
 }
+
+public typealias OcaAdaptationIdentifier = OcaString
+
+// CM4
 
 public typealias OcaIP4Address = OcaString
 public typealias OcaIP4AddressAndPrefix = OcaString
