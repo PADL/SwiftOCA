@@ -15,12 +15,12 @@ if EnableASAN {
     ASANLinkerSettings.append(LinkerSetting.linkedLibrary("asan"))
 }
 
-let PlatformBonjourLibraryTarget: Target
-let PlatformTransportPackage: Package.Dependency
+let PlatformPackages: [Package.Dependency]
 let PlatformDependencies: [Target.Dependency]
+let PlatformTargets: [Target]
 
 #if os(Linux)
-PlatformTransportPackage = .package(url: "https://github.com/PADL/IORingSwift", branch: "main")
+PlatformPackages = [.package(url: "https://github.com/PADL/IORingSwift", branch: "main")]
 
 PlatformDependencies = [
     "dnssd",
@@ -40,8 +40,14 @@ PlatformDependencies = [
         condition: .when(platforms: [.linux])
     ),
 ]
+
+PlatformTargets = []
 #else
-PlatformTransportPackage = .package(url: "https://github.com/swhitty/FlyingFox", branch: "main")
+PlatformPackages = [.package(url: "https://github.com/swhitty/FlyingFox", branch: "main"),
+                    .package(
+                        url: "https://github.com/spacenation/swiftui-sliders.git",
+                        from: "2.1.0"
+                    )]
 
 PlatformDependencies = [
     .product(
@@ -53,6 +59,36 @@ PlatformDependencies = [
         name: "FlyingSocks",
         package: "FlyingFox",
         condition: .when(platforms: [.macOS, .iOS])
+    ),
+]
+
+PlatformTargets = [
+    .target(
+        name: "SwiftOCAUI",
+        dependencies: [
+            "SwiftOCA",
+            .product(
+                name: "Sliders",
+                package: "swiftui-sliders",
+                condition: .when(platforms: [.macOS, .iOS])
+            ),
+        ]
+    ),
+    .executableTarget(
+        name: "OCABrowser",
+        dependencies: [
+            "SwiftOCAUI",
+        ],
+        path: "Examples/OCABrowser",
+        resources: [
+            .process("Assets.xcassets"),
+            .process("Preview Content/Preview Assets.xcassets"),
+            .process("OCABrowser.entitlements"),
+        ],
+        swiftSettings: [
+            .unsafeFlags(ASANSwiftFlags),
+        ],
+        linkerSettings: [] + ASANLinkerSettings
     ),
 ]
 #endif
@@ -77,8 +113,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log", branch: "main"),
         .package(url: "https://github.com/lhoward/AsyncExtensions", branch: "linux"),
         .package(url: "https://github.com/Flight-School/AnyCodable", from: "0.6.7"),
-        PlatformTransportPackage,
-    ],
+    ] + PlatformPackages,
     targets: [
         .systemLibrary(
             name: "dnssd",
