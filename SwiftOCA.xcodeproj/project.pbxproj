@@ -56,6 +56,7 @@
 		D33B52CE2A706FB9001A1BA7 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D33B52CF2A706FB9001A1BA7 /* libSwiftOCA.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D33B52D42A706FD7001A1BA7 /* FlyingSocks in Frameworks */ = {isa = PBXBuildFile; productRef = D33B52D32A706FD7001A1BA7 /* FlyingSocks */; };
+		D33BE9A22B5A3F43000CA189 /* NetworkApplicationDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33BE9A12B5A3F43000CA189 /* NetworkApplicationDataTypes.swift */; };
 		D33D595D2B2FD04900963157 /* PortsRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33D595C2B2FD04900963157 /* PortsRepresentable.swift */; };
 		D351F2012A7132F8008C5513 /* BoundedDeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */; };
 		D351F2032A727411008C5513 /* Mute.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2022A727411008C5513 /* Mute.swift */; };
@@ -315,6 +316,7 @@
 		D33B52B52A7060E0001A1BA7 /* BasicActuators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicActuators.swift; sourceTree = "<group>"; };
 		D33B52BC2A706201001A1BA7 /* OCADevice */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCADevice; sourceTree = BUILT_PRODUCTS_DIR; };
 		D33B52C52A706235001A1BA7 /* DeviceApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceApp.swift; sourceTree = "<group>"; };
+		D33BE9A12B5A3F43000CA189 /* NetworkApplicationDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkApplicationDataTypes.swift; sourceTree = "<group>"; };
 		D33D595C2B2FD04900963157 /* PortsRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortsRepresentable.swift; sourceTree = "<group>"; };
 		D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundedDeviceProperty.swift; sourceTree = "<group>"; };
 		D351F2022A727411008C5513 /* Mute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mute.swift; sourceTree = "<group>"; };
@@ -976,6 +978,7 @@
 				D3C083282A7C700B0020AD57 /* MediaDataTypes.swift */,
 				D3E6E17B2A3ACA6C00BF7095 /* ModelDataTypes.swift */,
 				D3E6E1732A3ACA6C00BF7095 /* NetworkDataTypes.swift */,
+				D33BE9A12B5A3F43000CA189 /* NetworkApplicationDataTypes.swift */,
 				D3E6E17D2A3ACA6C00BF7095 /* SearchDataTypes.swift */,
 				D3E6E17E2A3ACA6C00BF7095 /* WellKnownObjectNumbers.swift */,
 				D315287F2A526E24004B9BAD /* WorkerDataTypes.swift */,
@@ -1623,6 +1626,7 @@
 				D3E6E1C62A3ACA9000BF7095 /* BasicActuators.swift in Sources */,
 				D3AFD3522B2D005E00A72E9A /* MediaTransportNetwork.swift in Sources */,
 				D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */,
+				D33BE9A22B5A3F43000CA189 /* NetworkApplicationDataTypes.swift in Sources */,
 				D3AFD37C2B32A06700A72E9A /* UnkeyedOcp1EncodingContainer.swift in Sources */,
 				D3E6E1DD2A3ACAA900BF7095 /* List2D.swift in Sources */,
 				D36ECA212A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift in Sources */,
