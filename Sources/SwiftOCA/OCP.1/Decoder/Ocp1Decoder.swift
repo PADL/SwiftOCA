@@ -31,10 +31,17 @@ public struct Ocp1Decoder {
     public init() {}
 
     /// Decodes a value from a flat Ocp1 representation.
+    public func decode<Value>(_ type: Value.Type, from data: [UInt8]) throws -> Value
+        where Value: Decodable
+    {
+        try decode(type, from: Data(data))
+    }
+
+    /// Decodes a value from a flat Ocp1 representation.
     public func decode<Value>(_ type: Value.Type, from data: Data) throws -> Value
         where Value: Decodable
     {
-        let state = Ocp1DecodingState(data: data)
+        let state = Ocp1DecodingState(data: Data(data))
         var count: Int? = nil
         if type is any ArrayRepresentable.Type {
             // propagate array count to unkeyed container count

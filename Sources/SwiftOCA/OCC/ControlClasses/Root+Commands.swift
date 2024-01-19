@@ -112,7 +112,7 @@ extension OcaRoot {
         }
         var parameterData = Data()
         for parameter in parameters {
-            let paramData = try Ocp1Encoder().encode(parameter)
+            let paramData: Data = try Ocp1Encoder().encode(parameter)
             parameterData.append(paramData)
         }
 

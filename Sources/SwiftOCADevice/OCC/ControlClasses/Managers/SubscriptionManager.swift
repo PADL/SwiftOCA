@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import Foundation
 import SwiftOCA
 
 public class OcaSubscriptionManager: OcaManager {
@@ -91,7 +92,7 @@ public class OcaSubscriptionManager: OcaManager {
             emitterONo: objectNumber,
             eventID: SwiftOCA.OcaSubscriptionManager.SynchronizeStateEventID
         )
-        let parameters = try Ocp1Encoder()
+        let parameters: Data = try Ocp1Encoder()
             .encode(Array(objectsChangedWhilstNotificationsDisabled))
         try await deviceDelegate?.notifySubscribers(event, parameters: parameters)
         objectsChangedWhilstNotificationsDisabled.removeAll()

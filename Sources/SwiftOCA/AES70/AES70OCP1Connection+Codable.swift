@@ -19,7 +19,7 @@ import Foundation
 private extension Ocp1Message {
     func encode(type messageType: OcaMessageType) throws -> Data {
         let encoder = Ocp1Encoder()
-        var messageData = try encoder.encode(self)
+        var messageData: Data = try encoder.encode(self)
 
         if messageType != .ocaKeepAlive {
             /// replace `commandSize: OcaUint32` with actual command size
@@ -40,7 +40,7 @@ public extension AES70OCP1Connection {
 
         let header = Ocp1Header(pduType: messageType, messageCount: OcaUint16(messages.count))
         let encoder = Ocp1Encoder()
-        messagePduData += try encoder.encode(header)
+        messagePduData += try encoder.encode(header) as Data
 
         try messages.forEach {
             messagePduData += try $0.encode(type: messageType)

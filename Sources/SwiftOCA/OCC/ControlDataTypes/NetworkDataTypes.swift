@@ -157,14 +157,14 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
 
     public var systemInterfaceParameters: OcaBlob {
         get throws {
-            OcaBlob(try Ocp1Encoder().encode(self))
+            OcaBlob(try Ocp1Encoder().encode(self) as [UInt8])
         }
     }
 }
 
 public typealias OcaNetworkAddress = OcaBlob
 
-public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable {
+public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable, CustomStringConvertible {
     public let systemInterfaceParameters: OcaBlob
     public let myNetworkAddress: OcaNetworkAddress
 
@@ -181,6 +181,21 @@ public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable {
             systemInterfaceParameters: systemInterfaceParameters.systemInterfaceParameters,
             myNetworkAddress: myNetworkAddress.networkAddress
         )
+    }
+
+    public var description: String {
+        do {
+            let parameters = try Ocp1Decoder()
+                .decode(
+                    Ocp1SystemInterfaceParameters.self,
+                    from: [UInt8](systemInterfaceParameters)
+                )
+            let networkAddress = try Ocp1Decoder()
+                .decode(Ocp1NetworkAddress.self, from: [UInt8](myNetworkAddress))
+            return "\(type(of: self))(systemInterfaceParameters: \(parameters), networkAddress: \(networkAddress))"
+        } catch {
+            return "\(type(of: self))(systemInterfaceParameters: \(systemInterfaceParameters), networkAddress: \(myNetworkAddress))"
+        }
     }
 }
 
@@ -218,7 +233,7 @@ public struct Ocp1NetworkAddress: Codable, Sendable {
 
     public var networkAddress: OcaNetworkAddress {
         get throws {
-            try OcaNetworkAddress(Ocp1Encoder().encode(self))
+            try OcaBlob(Ocp1Encoder().encode(self) as [UInt8])
         }
     }
 }
