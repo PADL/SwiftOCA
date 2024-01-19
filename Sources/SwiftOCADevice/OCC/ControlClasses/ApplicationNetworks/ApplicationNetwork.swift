@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-open class OcaApplicationNetwork: OcaRoot {
+open class OcaApplicationNetwork: OcaRoot, OcaOwnable {
     override public class var classID: OcaClassID { OcaClassID("1.4") }
     override public class var classVersion: OcaClassVersionNumber { 1 }
 

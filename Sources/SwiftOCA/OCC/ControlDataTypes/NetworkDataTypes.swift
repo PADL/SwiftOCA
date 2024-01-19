@@ -14,6 +14,12 @@
 // limitations under the License.
 //
 
+#if canImport(Glibc)
+import Glibc
+#elseif canImport(Darwin)
+import Darwin
+#endif
+
 public enum OcaNetworkLinkType: OcaUint8, Codable, Sendable {
     case none = 0
     case ethernetWired = 1
@@ -156,3 +162,148 @@ public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable {
 }
 
 public typealias OcaAdaptationIdentifier = OcaString
+
+public typealias Ocp1NetworkAddress = OcaNetworkAddress
+
+public extension Ocp1NetworkAddress {
+    init(networkAddress: UnsafePointer<sockaddr>) throws {
+        var data = [UInt8]()
+
+        switch networkAddress.pointee.sa_family {
+        case sa_family_t(AF_INET):
+            networkAddress.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
+                Swift.withUnsafeBytes(of: sin.pointee.sin_addr.s_addr.bigEndian) {
+                    data.append(contentsOf: $0)
+                }
+                Swift.withUnsafeBytes(of: sin.pointee.sin_port.bigEndian) {
+                    data.append(contentsOf: $0)
+                }
+            }
+        case sa_family_t(AF_INET6):
+            networkAddress.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { sin in
+                Swift.withUnsafeBytes(of: sin.pointee.sin6_addr) {
+                    $0.withContiguousStorageIfAvailable {
+                        data.append(contentsOf: $0)
+                    }
+                }
+                Swift.withUnsafeBytes(of: sin.pointee.sin6_port.bigEndian) {
+                    data.append(contentsOf: $0)
+                }
+            }
+        default:
+            throw Ocp1Error.unknownServiceType
+        }
+        self.init(data)
+    }
+}
+
+public typealias OcaIP4Address = OcaString
+public typealias OcaIP4AddressAndPrefix = OcaString
+
+public struct OcaIP4Gateway: Codable, Sendable {
+    public let destinationPrefix: OcaIP4AddressAndPrefix
+    public let gatewayAddress: OcaIP4Address
+    public let metric: OcaUint16
+
+    public init(
+        destinationPrefix: OcaIP4AddressAndPrefix,
+        gatewayAddress: OcaIP4Address,
+        metric: OcaUint16
+    ) {
+        self.destinationPrefix = destinationPrefix
+        self.gatewayAddress = gatewayAddress
+        self.metric = metric
+    }
+}
+
+public enum OcaIP4AutoconfigMode: OcaUint8, Codable, Sendable {
+    case none = 0
+    case dhcp = 1
+    case dhcpLinkLocal = 2
+    case linkLocal = 3
+}
+
+public struct OcaIP4NetworkSettings: Codable, Sendable {
+    public let addressAndPrefix: OcaIP4AddressAndPrefix
+    public let autoconfigMode: OcaIP4AutoconfigMode
+    public let dhcpServerAddress: OcaIP4Address
+    public let defaultGatewayAddress: OcaIP4Address
+    public let additionalGateways: [OcaIP4Gateway]
+    public let dnsServerAddresses: [OcaIP4Address]
+    public let additionalParameters: OcaParameterRecord
+
+    public init(
+        addressAndPrefix: OcaIP4AddressAndPrefix,
+        autoconfigMode: OcaIP4AutoconfigMode,
+        dhcpServerAddress: OcaIP4Address,
+        defaultGatewayAddress: OcaIP4Address,
+        additionalGateways: [OcaIP4Gateway],
+        dnsServerAddresses: [OcaIP4Address],
+        additionalParameters: OcaParameterRecord
+    ) {
+        self.addressAndPrefix = addressAndPrefix
+        self.autoconfigMode = autoconfigMode
+        self.dhcpServerAddress = dhcpServerAddress
+        self.defaultGatewayAddress = defaultGatewayAddress
+        self.additionalGateways = additionalGateways
+        self.dnsServerAddresses = dnsServerAddresses
+        self.additionalParameters = additionalParameters
+    }
+}
+
+public typealias OcaIP6Address = OcaString
+public typealias OcaIP6AddressAndPrefix = OcaString
+
+public struct OcaIP6Gateway: Codable, Sendable {
+    public let destinationPrefix: OcaIP6AddressAndPrefix
+    public let gatewayAddress: OcaIP6Address
+    public let metric: OcaUint16
+
+    public init(
+        destinationPrefix: OcaIP4AddressAndPrefix,
+        gatewayAddress: OcaIP4Address,
+        metric: OcaUint16
+    ) {
+        self.destinationPrefix = destinationPrefix
+        self.gatewayAddress = gatewayAddress
+        self.metric = metric
+    }
+}
+
+public enum OcaIP6AutoconfigMode: OcaUint8, Codable, Sendable {
+    case none = 0
+    case slaac = 1
+    case dhcpStateless = 2
+    case dhcpStateful = 3
+}
+
+public struct OcaIP6NetworkSettings: Codable, Sendable {
+    public let addressAndPrefix: OcaIP6AddressAndPrefix
+    public let autoconfigMode: OcaIP6AutoconfigMode
+    public let linkLocalAddress: OcaIP6Address
+    public let dhcpServerAddress: OcaIP6Address
+    public let defaultGatewayAddress: OcaIP6Address
+    public let additionalGateways: [OcaIP6Gateway]
+    public let dnsServerAddresses: [OcaIP6Address]
+    public let additionalParameters: OcaParameterRecord
+
+    public init(
+        addressAndPrefix: OcaIP6AddressAndPrefix,
+        autoconfigMode: OcaIP6AutoconfigMode,
+        linkLocalAddress: OcaIP6Address,
+        dhcpServerAddress: OcaIP6Address,
+        defaultGatewayAddress: OcaIP6Address,
+        additionalGateways: [OcaIP6Gateway],
+        dnsServerAddresses: [OcaIP6Address],
+        additionalParameters: OcaParameterRecord
+    ) {
+        self.addressAndPrefix = addressAndPrefix
+        self.autoconfigMode = autoconfigMode
+        self.linkLocalAddress = linkLocalAddress
+        self.dhcpServerAddress = dhcpServerAddress
+        self.defaultGatewayAddress = defaultGatewayAddress
+        self.additionalGateways = additionalGateways
+        self.dnsServerAddresses = dnsServerAddresses
+        self.additionalParameters = additionalParameters
+    }
+}
