@@ -14,6 +14,73 @@
 // limitations under the License.
 //
 
+public enum OcaNetworkAdvertisingService: OcaUint8, Codable, Sendable {
+    case dnsSD = 0
+    case mDNS_DNSSD = 1
+    case nmos = 2
+    case expansionBase = 128
+}
+
+public struct OcaNetworkAdvertisingMechanism: Codable, Sendable {
+    public let service: OcaNetworkAdvertisingService
+    public let parameters: OcaParameterRecord
+    public let networkInterfaceAssignment: OcaNetworkInterfaceAssignment
+
+    public init(
+        service: OcaNetworkAdvertisingService,
+        parameters: OcaParameterRecord,
+        networkInterfaceAssignment: OcaNetworkInterfaceAssignment
+    ) {
+        self.service = service
+        self.parameters = parameters
+        self.networkInterfaceAssignment = networkInterfaceAssignment
+    }
+}
+
+public struct OcaNetworkInterfaceAssignment: Codable, Sendable {
+    public let id: OcaID16
+    public let networkInterfaceONo: OcaONo
+    public let networkBindingParameters: OcaBlob
+    public let securityKeyIdentities: [OcaString]
+    public let advertisingMechanisms: [OcaNetworkAdvertisingMechanism]
+
+    public init(
+        id: OcaID16,
+        networkInterfaceONo: OcaONo,
+        networkBindingParameters: OcaBlob,
+        securityKeyIdentities: [OcaString],
+        advertisingMechanisms: [OcaNetworkAdvertisingMechanism]
+    ) {
+        self.id = id
+        self.networkInterfaceONo = networkInterfaceONo
+        self.networkBindingParameters = networkBindingParameters
+        self.securityKeyIdentities = securityKeyIdentities
+        self.advertisingMechanisms = advertisingMechanisms
+    }
+}
+
+public enum OcaNetworkInterfaceCommand: OcaUint8, Codable, Sendable {
+    case start = 0
+    case stop = 1
+    case restart = 2
+}
+
+public enum OcaNetworkInterfaceState: OcaUint8, Codable, Sendable {
+    case notReady = 0
+    case ready = 1
+    case fault = 2
+}
+
+public struct OcaNetworkInterfaceStatus: Codable, Sendable {
+    public let state: OcaNetworkInterfaceState
+    public let adaptationData: OcaAdaptationData
+
+    public init(state: OcaNetworkInterfaceState, adaptationData: OcaAdaptationData) {
+        self.state = state
+        self.adaptationData = adaptationData
+    }
+}
+
 public typealias OcaIP4Address = OcaString
 public typealias OcaIP4AddressAndPrefix = OcaString
 
