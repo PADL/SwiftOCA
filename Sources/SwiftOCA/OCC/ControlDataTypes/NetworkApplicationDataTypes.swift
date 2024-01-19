@@ -22,9 +22,10 @@ public enum OcaNetworkAdvertisingService: OcaUint8, Codable, Sendable {
 }
 
 public struct OcaNetworkAdvertisingMechanism: Codable, Sendable {
+    // e.g. .mDNS_DNSSD
     public let service: OcaNetworkAdvertisingService
+    // JSON-encoded parameters, e.g. ServerAddresses, RegistrationDomain, ServiceType, ServiceName
     public let parameters: OcaParameterRecord
-    public let networkInterfaceAssignment: OcaNetworkInterfaceAssignment
 
     public init(
         service: OcaNetworkAdvertisingService,
@@ -33,15 +34,19 @@ public struct OcaNetworkAdvertisingMechanism: Codable, Sendable {
     ) {
         self.service = service
         self.parameters = parameters
-        self.networkInterfaceAssignment = networkInterfaceAssignment
     }
 }
 
 public struct OcaNetworkInterfaceAssignment: Codable, Sendable {
+    // internal ID
     public let id: OcaID16
+    // ONo of network interface
     public let networkInterfaceONo: OcaONo
+    // assignment-specific, e.g. IP port as encoded UInt16
     public let networkBindingParameters: OcaBlob
+    // zero or more PSK identifies that apply to the IP port
     public let securityKeyIdentities: [OcaString]
+    // list of advertising mechanisms
     public let advertisingMechanisms: [OcaNetworkAdvertisingMechanism]
 
     public init(

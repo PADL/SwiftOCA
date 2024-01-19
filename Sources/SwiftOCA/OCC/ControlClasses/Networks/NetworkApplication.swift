@@ -45,12 +45,14 @@ open class OcaNetworkApplication: OcaRoot {
     public var networkInterfaceAssignments: OcaProperty<OcaList<OcaNetworkInterfaceAssignment>>
         .State
 
+    // "OcaOCP1" for OCP.1
     @OcaProperty(
         propertyID: OcaPropertyID("2.4"),
         getMethodID: OcaMethodID("2.7")
     )
     public var adaptationIdentifier: OcaProperty<OcaAdaptationIdentifier>.State
 
+    // (null) for OCP.1
     @OcaProperty(
         propertyID: OcaPropertyID("2.5"),
         getMethodID: OcaMethodID("2.8"),
