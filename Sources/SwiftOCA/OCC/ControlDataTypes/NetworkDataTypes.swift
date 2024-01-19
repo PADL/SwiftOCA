@@ -198,9 +198,9 @@ public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable, CustomStri
                 )
             let networkAddress = try Ocp1Decoder()
                 .decode(Ocp1NetworkAddress.self, from: [UInt8](myNetworkAddress))
-            return "\(type(of: self))(systemInterfaceParameters: \(parameters), networkAddress: \(networkAddress))"
+            return "\(type(of: self))(systemInterfaceParameters: \(parameters), myNetworkAddress: \(networkAddress))"
         } catch {
-            return "\(type(of: self))(systemInterfaceParameters: \(systemInterfaceParameters), networkAddress: \(myNetworkAddress))"
+            return "\(type(of: self))(systemInterfaceParameters: \(systemInterfaceParameters), myNetworkAddress: \(myNetworkAddress))"
         }
     }
 }
