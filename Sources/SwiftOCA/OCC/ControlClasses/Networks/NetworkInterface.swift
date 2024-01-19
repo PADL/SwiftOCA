@@ -65,12 +65,14 @@ open class OcaNetworkInterface: OcaRoot {
     )
     public var precedence: OcaProperty<OcaUint16>.State
 
+    // "OcaIP4" or "OcaIP6"
     @OcaProperty(
         propertyID: OcaPropertyID("2.7"),
         getMethodID: OcaMethodID("2.13")
     )
     public var adaptationIdentifier: OcaProperty<OcaAdaptationIdentifier>.State
 
+    // encoded OcaIP4NetworkSettings or OcaIP6NetworkSettings
     @OcaProperty(
         propertyID: OcaPropertyID("2.8"),
         getMethodID: OcaMethodID("2.14"),
@@ -78,6 +80,7 @@ open class OcaNetworkInterface: OcaRoot {
     )
     public var activeNetworkSettings: OcaProperty<OcaBlob>.State
 
+    // encoded OcaIP4NetworkSettings or OcaIP6NetworkSettings
     @OcaProperty(
         propertyID: OcaPropertyID("2.9"),
         getMethodID: OcaMethodID("2.15"),
@@ -85,6 +88,7 @@ open class OcaNetworkInterface: OcaRoot {
     )
     public var targetNetworkSettings: OcaProperty<OcaBlob>.State
 
+    // encoded OcaIP4NetworkSettings or OcaIP6NetworkSettings
     @OcaProperty(
         propertyID: OcaPropertyID("2.10"),
         getMethodID: OcaMethodID("2.17")

@@ -22,9 +22,12 @@ public enum OcaNetworkAdvertisingService: OcaUint8, Codable, Sendable {
 }
 
 public struct OcaNetworkAdvertisingMechanism: Codable, Sendable {
-    // e.g. .mDNS_DNSSD
     public let service: OcaNetworkAdvertisingService
-    // JSON-encoded parameters, e.g. ServerAddresses, RegistrationDomain, ServiceType, ServiceName
+    /// JSON-encoded parameters, e.g.
+    /// ServerAddresses: [`1.2.3.4`]
+    /// RegistrationDomain: `.local`
+    /// ServiceType: `_oca._tcp`
+    /// ServiceName: `hostname`
     public let parameters: OcaParameterRecord
 
     public init(
