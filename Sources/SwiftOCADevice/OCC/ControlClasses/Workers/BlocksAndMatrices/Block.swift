@@ -76,6 +76,15 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         actionObjects.remove(at: index)
     }
 
+    open func resolve(_ objectNumbers: OcaList<OcaONo>) throws -> [ActionObject] {
+        try objectNumbers.map { oNo in
+            guard let actionObject = actionObjects.first(where: { $0.objectNumber == oNo }) else {
+                throw Ocp1Error.objectNotPresent
+            }
+            return actionObject
+        }
+    }
+
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.9")
