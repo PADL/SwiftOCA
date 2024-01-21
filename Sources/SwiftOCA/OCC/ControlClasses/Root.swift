@@ -67,19 +67,19 @@ Sendable {
         propertyID: OcaPropertyID("1.4"),
         getMethodID: OcaMethodID("1.2")
     )
-    public var lockable: OcaProperty<OcaBoolean>.State
+    public var lockable: OcaProperty<OcaBoolean>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("1.5"),
         getMethodID: OcaMethodID("1.5")
     )
-    public var role: OcaProperty<OcaString>.State
+    public var role: OcaProperty<OcaString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("1.6"),
         getMethodID: OcaMethodID("1.7")
     )
-    public var lockState: OcaProperty<OcaLockState>.State
+    public var lockState: OcaProperty<OcaLockState>.PropertyValue
 
     // necessary because property wrappers are private
     func _subscribeRole() async {
@@ -248,11 +248,11 @@ public extension OcaRoot {
             String(describing: value)
         }
 
-        var currentValue: OcaProperty<Value>.State {
-            OcaProperty<Value>.State.success(value)
+        var currentValue: OcaProperty<Value>.PropertyValue {
+            OcaProperty<Value>.PropertyValue.success(value)
         }
 
-        var subject: AsyncCurrentValueSubject<State> {
+        var subject: AsyncCurrentValueSubject<PropertyValue> {
             AsyncCurrentValueSubject(currentValue)
         }
     }

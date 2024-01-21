@@ -63,7 +63,7 @@ extension OcaGain: OcaViewRepresentable {
     }
 }
 
-private extension Binding where Value == OcaProperty<OcaBoundedPropertyValue<OcaDB>>.State {
+private extension Binding where Value == OcaProperty<OcaBoundedPropertyValue<OcaDB>>.PropertyValue {
     var value: Binding<OcaBoundedPropertyValue<OcaDB>> {
         Binding<OcaBoundedPropertyValue<OcaDB>>(get: {
             if case let .success(gainValue) = self.wrappedValue {

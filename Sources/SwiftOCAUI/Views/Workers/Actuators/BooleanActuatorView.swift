@@ -23,7 +23,7 @@ extension OcaBooleanActuator: OcaViewRepresentable {
     }
 }
 
-private extension Binding where Value == OcaProperty<OcaBoolean>.State {
+private extension Binding where Value == OcaProperty<OcaBoolean>.PropertyValue {
     var value: Binding<Bool> {
         Binding<Bool>(get: {
             if case let .success(isOn) = self.wrappedValue {

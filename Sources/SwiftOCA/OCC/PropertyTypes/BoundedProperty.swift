@@ -90,10 +90,10 @@ public struct OcaBoundedProperty<
 >: OcaPropertyChangeEventNotifiable,
     Codable, Sendable
 {
-    var subject: AsyncCurrentValueSubject<State> { _storage.subject }
+    var subject: AsyncCurrentValueSubject<PropertyValue> { _storage.subject }
 
     public typealias Property = OcaProperty<OcaBoundedPropertyValue<Value>>
-    public typealias State = Property.State
+    public typealias PropertyValue = Property.PropertyValue
 
     public var propertyIDs: [OcaPropertyID] {
         [_storage.propertyID]
@@ -113,7 +113,7 @@ public struct OcaBoundedProperty<
     @available(*, unavailable, message: """
     @OcaBoundedProperty is only available on properties of classes
     """)
-    public var wrappedValue: State {
+    public var wrappedValue: PropertyValue {
         get { fatalError() }
         nonmutating set { fatalError() }
     }
@@ -122,7 +122,7 @@ public struct OcaBoundedProperty<
         await _storage.refresh(object)
     }
 
-    public var currentValue: State {
+    public var currentValue: PropertyValue {
         _storage.currentValue
     }
 
@@ -149,9 +149,9 @@ public struct OcaBoundedProperty<
 
     public static subscript<T: OcaRoot>(
         _enclosingInstance object: T,
-        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>,
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
-    ) -> State {
+    ) -> PropertyValue {
         get {
             #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
@@ -195,7 +195,7 @@ public struct OcaBoundedProperty<
     }
 
     #if canImport(SwiftUI)
-    public var projectedValue: Binding<State> {
+    public var projectedValue: Binding<PropertyValue> {
         Binding(
             get: { _storage.projectedValue.wrappedValue },
             set: { _storage.projectedValue.wrappedValue = $0 }

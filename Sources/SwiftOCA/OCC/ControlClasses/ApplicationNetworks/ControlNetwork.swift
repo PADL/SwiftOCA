@@ -22,5 +22,5 @@ open class OcaControlNetwork: OcaApplicationNetwork {
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var `protocol`: OcaProperty<OcaNetworkControlProtocol>.State
+    public var `protocol`: OcaProperty<OcaNetworkControlProtocol>.PropertyValue
 }

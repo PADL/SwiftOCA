@@ -23,7 +23,7 @@ open class OcaGenericBasicSensor<T: Codable & Comparable & Sendable>: OcaBasicSe
         propertyID: OcaPropertyID("5.1"),
         getMethodID: OcaMethodID("5.1")
     )
-    public var reading: OcaBoundedProperty<T>.State
+    public var reading: OcaBoundedProperty<T>.PropertyValue
 }
 
 open class OcaBooleanSensor: OcaBasicSensor {
@@ -33,7 +33,7 @@ open class OcaBooleanSensor: OcaBasicSensor {
         propertyID: OcaPropertyID("5.1"),
         getMethodID: OcaMethodID("5.1")
     )
-    public var reading: OcaProperty<Bool>.State
+    public var reading: OcaProperty<Bool>.PropertyValue
 }
 
 open class OcaInt8Sensor: OcaGenericBasicSensor<OcaInt8> {

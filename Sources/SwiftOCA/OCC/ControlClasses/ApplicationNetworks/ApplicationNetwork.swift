@@ -25,13 +25,13 @@ open class OcaApplicationNetwork: OcaRoot {
         getMethodID: OcaMethodID("2.1"),
         setMethodID: OcaMethodID("2.2")
     )
-    public var label: OcaProperty<OcaString>.State
+    public var label: OcaProperty<OcaString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.2"),
         getMethodID: OcaMethodID("2.3")
     )
-    public var owner: OcaProperty<OcaONo>.State
+    public var owner: OcaProperty<OcaONo>.PropertyValue
 
     // ID by which this network object is known on the network
     // (registered service name); may or may not be the same as the hostname
@@ -40,26 +40,27 @@ open class OcaApplicationNetwork: OcaRoot {
         getMethodID: OcaMethodID("2.4"),
         setMethodID: OcaMethodID("2.5")
     )
-    public var serviceID: OcaProperty<OcaApplicationNetworkServiceID>.State
+    public var serviceID: OcaProperty<OcaApplicationNetworkServiceID>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.4"),
         getMethodID: OcaMethodID("2.6"),
         setMethodID: OcaMethodID("2.7")
     )
-    public var systemInterfaces: OcaProperty<OcaList<OcaNetworkSystemInterfaceDescriptor>>.State
+    public var systemInterfaces: OcaProperty<OcaList<OcaNetworkSystemInterfaceDescriptor>>
+        .PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.5"),
         getMethodID: OcaMethodID("2.8")
     )
-    public var state: OcaProperty<OcaApplicationNetworkState>.State
+    public var state: OcaProperty<OcaApplicationNetworkState>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.6"),
         getMethodID: OcaMethodID("2.8")
     )
-    public var errorCode: OcaProperty<OcaUint16>.State
+    public var errorCode: OcaProperty<OcaUint16>.PropertyValue
 
     public func control(_ command: OcaApplicationNetworkCommand) async throws {
         try await sendCommandRrq(

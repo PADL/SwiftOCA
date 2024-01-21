@@ -23,11 +23,11 @@ import SwiftUI
 
 public protocol OcaPropertyRepresentable: CustomStringConvertible {
     associatedtype Value: Codable & Sendable
-    typealias State = OcaProperty<Value>.State
+    typealias PropertyValue = OcaProperty<Value>.PropertyValue
 
     var propertyIDs: [OcaPropertyID] { get }
-    var currentValue: State { get }
-    var async: AnyAsyncSequence<State> { get }
+    var currentValue: PropertyValue { get }
+    var async: AnyAsyncSequence<PropertyValue> { get }
 
     func refresh(_ object: OcaRoot) async
     func subscribe(_ object: OcaRoot) async
@@ -40,11 +40,11 @@ public extension OcaPropertyRepresentable {
 }
 
 protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
-    var subject: AsyncCurrentValueSubject<State> { get }
+    var subject: AsyncCurrentValueSubject<PropertyValue> { get }
 }
 
 extension OcaPropertySubjectRepresentable {
-    public var async: AnyAsyncSequence<State> {
+    public var async: AnyAsyncSequence<PropertyValue> {
         subject.eraseToAnyAsyncSequence()
     }
 
@@ -71,7 +71,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     /// The OCA set method ID, if present
     let setMethodID: OcaMethodID?
 
-    public enum State: Sendable {
+    public enum PropertyValue: Sendable {
         /// no value retrieved from device yet
         case initial
         /// value retrieved from device
@@ -99,7 +99,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         }
     }
 
-    let subject: AsyncCurrentValueSubject<State>
+    let subject: AsyncCurrentValueSubject<PropertyValue>
 
     public var description: String {
         if case let .success(value) = subject.value {
@@ -122,7 +122,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     @available(*, unavailable, message: """
     @OcaProperty is only available on properties of classes
     """)
-    public var wrappedValue: State {
+    public var wrappedValue: PropertyValue {
         get { fatalError() }
         nonmutating set { fatalError() }
     }
@@ -135,11 +135,11 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
     #endif
 
-    public var currentValue: State {
+    public var currentValue: PropertyValue {
         subject.value
     }
 
-    func _send(_enclosingInstance object: OcaRoot, _ state: State) {
+    func _send(_enclosingInstance object: OcaRoot, _ state: PropertyValue) {
         #if canImport(Combine) || canImport(OpenCombine)
         DispatchQueue.main.async {
             object.objectWillChange.send()
@@ -153,7 +153,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     /// these internal
     /// get/set functions.
 
-    func _get(_enclosingInstance object: OcaRoot) -> State {
+    func _get(_enclosingInstance object: OcaRoot) -> PropertyValue {
         switch subject.value {
         case .initial:
             Task {
@@ -167,7 +167,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         return subject.value
     }
 
-    func _set(_enclosingInstance object: OcaRoot, _ newValue: State) {
+    func _set(_enclosingInstance object: OcaRoot, _ newValue: PropertyValue) {
         Task {
             switch newValue {
             case let .success(value):
@@ -184,9 +184,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
     public static subscript<T: OcaRoot>(
         _enclosingInstance object: T,
-        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>,
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
-    ) -> State {
+    ) -> PropertyValue {
         get {
             #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
@@ -214,7 +214,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         self.propertyID = propertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
-        subject = AsyncCurrentValueSubject(State.initial)
+        subject = AsyncCurrentValueSubject(PropertyValue.initial)
         self.setValueTransformer = setValueTransformer
     }
 
@@ -357,7 +357,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
 
     #if canImport(SwiftUI)
-    public var projectedValue: Binding<State> {
+    public var projectedValue: Binding<PropertyValue> {
         Binding(
             get: {
                 if let object {
@@ -375,8 +375,8 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     #endif
 }
 
-extension OcaProperty.State: Equatable where Value: Equatable & Codable {
-    public static func == (lhs: OcaProperty.State, rhs: OcaProperty.State) -> Bool {
+extension OcaProperty.PropertyValue: Equatable where Value: Equatable & Codable {
+    public static func == (lhs: OcaProperty.PropertyValue, rhs: OcaProperty.PropertyValue) -> Bool {
         if case .initial = lhs,
            case .initial = rhs
         {
@@ -392,7 +392,7 @@ extension OcaProperty.State: Equatable where Value: Equatable & Codable {
     }
 }
 
-extension OcaProperty.State: Hashable where Value: Hashable & Codable {
+extension OcaProperty.PropertyValue: Hashable where Value: Hashable & Codable {
     public func hash(into hasher: inout Hasher) {
         switch self {
         case let .success(value):

@@ -21,25 +21,25 @@ open class OcaNetworkManager: OcaManager {
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var networks: OcaProperty<OcaList<OcaONo>>.State
+    public var networks: OcaProperty<OcaList<OcaONo>>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.2")
     )
-    public var streamNetworks: OcaProperty<OcaList<OcaONo>>.State
+    public var streamNetworks: OcaProperty<OcaList<OcaONo>>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.3")
     )
-    public var controlNetworks: OcaProperty<OcaList<OcaONo>>.State
+    public var controlNetworks: OcaProperty<OcaList<OcaONo>>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.4"),
         getMethodID: OcaMethodID("3.4")
     )
-    public var mediaTransportNetworks: OcaProperty<OcaList<OcaONo>>.State
+    public var mediaTransportNetworks: OcaProperty<OcaList<OcaONo>>.PropertyValue
 
     convenience init() {
         self.init(objectNumber: OcaNetworkManagerONo)

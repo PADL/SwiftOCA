@@ -21,5 +21,5 @@ open class OcaLevelSensor: OcaSensor {
         propertyID: OcaPropertyID("4.1"),
         getMethodID: OcaMethodID("4.1")
     )
-    public var reading: OcaBoundedProperty<OcaDB>.State
+    public var reading: OcaBoundedProperty<OcaDB>.PropertyValue
 }

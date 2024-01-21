@@ -27,5 +27,5 @@ open class OcaMute: OcaActuator {
         getMethodID: OcaMethodID("4.1"),
         setMethodID: OcaMethodID("4.2")
     )
-    public var state: OcaProperty<OcaMuteState>.State
+    public var state: OcaProperty<OcaMuteState>.PropertyValue
 }

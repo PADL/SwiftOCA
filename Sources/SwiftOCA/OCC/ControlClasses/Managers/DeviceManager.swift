@@ -55,62 +55,62 @@ open class OcaDeviceManager: OcaManager {
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.2")
     )
-    public var modelGUID: OcaProperty<OcaModelGUID>.State
+    public var modelGUID: OcaProperty<OcaModelGUID>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.3")
     )
-    public var serialNumber: OcaProperty<OcaString>.State
+    public var serialNumber: OcaProperty<OcaString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.6")
     )
-    public var modelDescription: OcaProperty<OcaModelDescription>.State
+    public var modelDescription: OcaProperty<OcaModelDescription>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.4"),
         getMethodID: OcaMethodID("3.4"),
         setMethodID: OcaMethodID("3.5")
     )
-    public var deviceName: OcaProperty<OcaString>.State
+    public var deviceName: OcaProperty<OcaString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.5"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var version: OcaProperty<OcaUint16>.State
+    public var version: OcaProperty<OcaUint16>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.6"),
         getMethodID: OcaMethodID("3.7"),
         setMethodID: OcaMethodID("3.8")
     )
-    public var deviceRole: OcaProperty<OcaString>.State
+    public var deviceRole: OcaProperty<OcaString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.7"),
         getMethodID: OcaMethodID("3.9"),
         setMethodID: OcaMethodID("3.10")
     )
-    public var userInventoryCode: OcaProperty<OcaString>.State
+    public var userInventoryCode: OcaProperty<OcaString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.8"),
         getMethodID: OcaMethodID("3.11"),
         setMethodID: OcaMethodID("3.12")
     )
-    public var enabled: OcaProperty<OcaBoolean>.State
+    public var enabled: OcaProperty<OcaBoolean>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.9"),
         getMethodID: OcaMethodID("3.13")
     )
-    public var state: OcaProperty<OcaDeviceState>.State
+    public var state: OcaProperty<OcaDeviceState>.PropertyValue
 
     @OcaProperty(propertyID: OcaPropertyID("3.10"))
-    public var busy: OcaProperty<OcaBoolean>.State
+    public var busy: OcaProperty<OcaBoolean>.PropertyValue
 
     // 3.14
     public func setResetKey(key: OcaBlob, address: OcaNetworkAddress) async throws {
@@ -122,7 +122,7 @@ open class OcaDeviceManager: OcaManager {
         propertyID: OcaPropertyID("3.11"),
         getMethodID: OcaMethodID("3.15")
     )
-    public var resetCause: OcaProperty<OcaResetCause>.State
+    public var resetCause: OcaProperty<OcaResetCause>.PropertyValue
 
     // 3.16
     public func clearResetCause() async throws {
@@ -134,19 +134,19 @@ open class OcaDeviceManager: OcaManager {
         getMethodID: OcaMethodID("3.17"),
         setMethodID: OcaMethodID("3.18")
     )
-    public var message: OcaProperty<OcaString>.State
+    public var message: OcaProperty<OcaString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.13"),
         getMethodID: OcaMethodID("3.19")
     )
-    public var managers: OcaProperty<OcaList<OcaManagerDescriptor>>.State
+    public var managers: OcaProperty<OcaList<OcaManagerDescriptor>>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.14"),
         getMethodID: OcaMethodID("3.20")
     )
-    public var deviceRevisionID: OcaProperty<OcaString>.State
+    public var deviceRevisionID: OcaProperty<OcaString>.PropertyValue
 
     convenience init() {
         self.init(objectNumber: OcaDeviceManagerONo)

@@ -32,14 +32,14 @@ open class OcaDeviceTimeManager: OcaManager {
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.3")
     )
-    public var timeSources: OcaProperty<OcaList<OcaONo>>.State
+    public var timeSources: OcaProperty<OcaList<OcaONo>>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.4"),
         setMethodID: OcaMethodID("3.5")
     )
-    public var currentDeviceTimeSource: OcaProperty<OcaONo>.State
+    public var currentDeviceTimeSource: OcaProperty<OcaONo>.PropertyValue
 
     public var deviceTimePTP: OcaTime {
         get async throws {

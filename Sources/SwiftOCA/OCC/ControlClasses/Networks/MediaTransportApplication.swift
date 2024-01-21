@@ -48,7 +48,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.3")
     )
-    public var ports: OcaProperty<OcaPort>.State
+    public var ports: OcaProperty<OcaPort>.PropertyValue
 
     public func getPortName() async throws -> OcaString {
         try await sendCommandRrq(methodID: OcaMethodID("3.4"))
@@ -63,7 +63,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
         getMethodID: OcaMethodID("3.6"),
         setMethodID: OcaMethodID("3.7")
     )
-    public var portClockMap: OcaProperty<[OcaPortID: OcaPortClockMapEntry]>.State
+    public var portClockMap: OcaProperty<[OcaPortID: OcaPortClockMapEntry]>.PropertyValue
 
     // 3.8 setPortClockMapEntry
     // 3.9 deletePortClockMapEntry
@@ -72,12 +72,12 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
     @OcaProperty(
         propertyID: OcaPropertyID("3.3")
     )
-    public var maxInputEndpoints: OcaProperty<OcaUint16>.State
+    public var maxInputEndpoints: OcaProperty<OcaUint16>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.4")
     )
-    public var maxOutputEndpoints: OcaProperty<OcaUint16>.State
+    public var maxOutputEndpoints: OcaProperty<OcaUint16>.PropertyValue
 
     // 3.11 getMaxEndpointCounts
 
@@ -85,20 +85,21 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
         propertyID: OcaPropertyID("3.5"),
         getMethodID: OcaMethodID("3.12")
     )
-    public var maxPortsPerChannel: OcaProperty<OcaUint16>.State
+    public var maxPortsPerChannel: OcaProperty<OcaUint16>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.6"),
         getMethodID: OcaMethodID("3.13")
     )
-    public var maxChannelsPerEndpoint: OcaProperty<OcaUint16>.State
+    public var maxChannelsPerEndpoint: OcaProperty<OcaUint16>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.7"),
         getMethodID: OcaMethodID("3.15"),
         setMethodID: OcaMethodID("3.16")
     )
-    public var mediaStreamModeCapabilities: OcaProperty<[OcaMediaStreamModeCapability]>.State
+    public var mediaStreamModeCapabilities: OcaProperty<[OcaMediaStreamModeCapability]>
+        .PropertyValue
 
     // 3.17 getMediaStreamModeCapability
 
@@ -107,20 +108,21 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
         getMethodID: OcaMethodID("3.18"),
         setMethodID: OcaMethodID("3.19")
     )
-    public var transportTimingParameters: OcaProperty<OcaMediaTransportTimingParameters>.State
+    public var transportTimingParameters: OcaProperty<OcaMediaTransportTimingParameters>
+        .PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.9"),
         getMethodID: OcaMethodID("3.20"),
         setMethodID: OcaMethodID("3.14")
     )
-    public var alignmentLevelLimits: OcaProperty<OcaInterval<OcaDBFS>>.State
+    public var alignmentLevelLimits: OcaProperty<OcaInterval<OcaDBFS>>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.10"),
         getMethodID: OcaMethodID("3.21")
     )
-    public var endpoints: OcaProperty<[OcaMediaStreamEndpoint]>.State
+    public var endpoints: OcaProperty<[OcaMediaStreamEndpoint]>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.11"),
@@ -129,7 +131,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
     public var endpointStatuses: OcaProperty<
         [OcaMediaStreamEndpointID: OcaMediaStreamEndpointStatus]
     >
-    .State
+    .PropertyValue
 
     // 3.24 getEndpointStatus
     // 3.25 addEndpoint
@@ -145,7 +147,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
         propertyID: OcaPropertyID("3.12"),
         getMethodID: OcaMethodID("3.34")
     )
-    public var endpointCounterSets: OcaProperty<[OcaID16: OcaCounterSet]>.State
+    public var endpointCounterSets: OcaProperty<[OcaID16: OcaCounterSet]>.PropertyValue
 
     // 3.35 getEndpointCounterSet
     // 3.36 getEndpointCounter
@@ -158,5 +160,5 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
         getMethodID: OcaMethodID("3.40"),
         setMethodID: OcaMethodID("3.41")
     )
-    public var transportSessionControlAgentONos: OcaProperty<[OcaONo]>.State
+    public var transportSessionControlAgentONos: OcaProperty<[OcaONo]>.PropertyValue
 }

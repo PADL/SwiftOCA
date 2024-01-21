@@ -24,7 +24,9 @@ extension OcaPanBalance: OcaViewRepresentable {
     }
 }
 
-private extension Binding where Value == OcaProperty<OcaBoundedPropertyValue<OcaFloat32>>.State {
+private extension Binding
+    where Value == OcaProperty<OcaBoundedPropertyValue<OcaFloat32>>.PropertyValue
+{
     var value: Binding<OcaBoundedPropertyValue<OcaFloat32>> {
         Binding<OcaBoundedPropertyValue<OcaFloat32>>(get: {
             if case let .success(positionValue) = self.wrappedValue {

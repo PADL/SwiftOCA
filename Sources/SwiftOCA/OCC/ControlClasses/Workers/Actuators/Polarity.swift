@@ -27,5 +27,5 @@ open class OcaPolarity: OcaActuator {
         getMethodID: OcaMethodID("4.1"),
         setMethodID: OcaMethodID("4.2")
     )
-    public var state: OcaProperty<OcaPolarityState>.State
+    public var state: OcaProperty<OcaPolarityState>.PropertyValue
 }

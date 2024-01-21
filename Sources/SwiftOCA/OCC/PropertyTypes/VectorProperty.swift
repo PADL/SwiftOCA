@@ -38,12 +38,12 @@ public struct OcaVectorProperty<
     Value: Codable & Sendable &
         FixedWidthInteger
 >: OcaPropertyChangeEventNotifiable, Codable, Sendable {
-    var subject: AsyncCurrentValueSubject<State> { _storage.subject }
+    var subject: AsyncCurrentValueSubject<PropertyValue> { _storage.subject }
 
     fileprivate var _storage: Property
 
     public typealias Property = OcaProperty<OcaVector2D<Value>>
-    public typealias State = Property.State
+    public typealias PropertyValue = Property.PropertyValue
 
     public var propertyIDs: [OcaPropertyID] {
         [xPropertyID, yPropertyID]
@@ -66,7 +66,7 @@ public struct OcaVectorProperty<
     @available(*, unavailable, message: """
     @OcaVectorProperty is only available on properties of classes
     """)
-    public var wrappedValue: State {
+    public var wrappedValue: PropertyValue {
         get { fatalError() }
         nonmutating set { fatalError() }
     }
@@ -75,7 +75,7 @@ public struct OcaVectorProperty<
         await _storage.refresh(object)
     }
 
-    public var currentValue: State {
+    public var currentValue: PropertyValue {
         _storage.currentValue
     }
 
@@ -106,9 +106,9 @@ public struct OcaVectorProperty<
 
     public static subscript<T: OcaRoot>(
         _enclosingInstance object: T,
-        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, State>,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>,
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
-    ) -> State {
+    ) -> PropertyValue {
         get {
             #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
@@ -157,7 +157,7 @@ public struct OcaVectorProperty<
     }
 
     #if canImport(SwiftUI)
-    public var projectedValue: Binding<State> {
+    public var projectedValue: Binding<PropertyValue> {
         Binding(
             get: { _storage.projectedValue.wrappedValue },
             set: { _storage.projectedValue.wrappedValue = $0 }

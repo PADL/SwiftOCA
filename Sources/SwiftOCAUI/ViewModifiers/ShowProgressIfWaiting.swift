@@ -18,9 +18,9 @@ import SwiftOCA
 import SwiftUI
 
 private struct ShowProgressIfWaitingViewModifier<T: Codable>: ViewModifier {
-    let state: OcaProperty<T>.State
+    let state: OcaProperty<T>.PropertyValue
 
-    init(_ state: OcaProperty<T>.State) {
+    init(_ state: OcaProperty<T>.PropertyValue) {
         self.state = state
     }
 
@@ -34,7 +34,7 @@ private struct ShowProgressIfWaitingViewModifier<T: Codable>: ViewModifier {
 }
 
 public extension View {
-    func showProgressIfWaiting<T: Codable>(_ state: OcaProperty<T>.State) -> some View {
+    func showProgressIfWaiting<T: Codable>(_ state: OcaProperty<T>.PropertyValue) -> some View {
         modifier(ShowProgressIfWaitingViewModifier<T>(state))
     }
 }

@@ -25,7 +25,7 @@ open class OcaMatrix: OcaWorker {
         getMethodID: OcaMethodID("3.1"),
         setMethodID: OcaMethodID("3.2")
     )
-    public var currentXY: OcaVectorProperty<OcaMatrixCoordinate>.State
+    public var currentXY: OcaVectorProperty<OcaMatrixCoordinate>.PropertyValue
 
     // TODO: GetSize() also returns min/max size which hopefully we can ignore
 
@@ -35,35 +35,35 @@ open class OcaMatrix: OcaWorker {
         getMethodID: OcaMethodID("3.3"),
         setMethodID: OcaMethodID("3.4")
     )
-    public var size: OcaVectorProperty<OcaMatrixCoordinate>.State
+    public var size: OcaVectorProperty<OcaMatrixCoordinate>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.5"),
         getMethodID: OcaMethodID("3.5"),
         setMethodID: OcaMethodID("3.6")
     )
-    public var members: OcaProperty<OcaList2D<OcaONo>>.State
+    public var members: OcaProperty<OcaList2D<OcaONo>>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.6"),
         getMethodID: OcaMethodID("3.9"),
         setMethodID: OcaMethodID("3.10")
     )
-    public var proxy: OcaProperty<OcaONo>.State
+    public var proxy: OcaProperty<OcaONo>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.7"),
         getMethodID: OcaMethodID("3.11"),
         setMethodID: OcaMethodID("3.12")
     )
-    public var portsPerRow: OcaProperty<OcaUint8>.State
+    public var portsPerRow: OcaProperty<OcaUint8>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.8"),
         getMethodID: OcaMethodID("3.13"),
         setMethodID: OcaMethodID("3.14")
     )
-    public var portsPerColumn: OcaProperty<OcaUint8>.State
+    public var portsPerColumn: OcaProperty<OcaUint8>.PropertyValue
 
     func get(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate) async throws -> OcaONo {
         let xy = OcaVector2D(x: x, y: y)

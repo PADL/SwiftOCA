@@ -23,7 +23,7 @@ extension OcaPolarity: OcaViewRepresentable {
     }
 }
 
-private extension Binding where Value == OcaProperty<OcaPolarityState>.State {
+private extension Binding where Value == OcaProperty<OcaPolarityState>.PropertyValue {
     var value: Binding<Bool> {
         Binding<Bool>(get: {
             if case let .success(isInverted) = self.wrappedValue {

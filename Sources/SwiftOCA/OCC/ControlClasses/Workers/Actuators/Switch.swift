@@ -22,19 +22,19 @@ open class OcaSwitch: OcaActuator {
         getMethodID: OcaMethodID("4.1"),
         setMethodID: OcaMethodID("4.2")
     )
-    public var position: OcaBoundedProperty<OcaUint16>.State
+    public var position: OcaBoundedProperty<OcaUint16>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("4.2"),
         getMethodID: OcaMethodID("4.5"),
         setMethodID: OcaMethodID("4.6")
     )
-    public var positionNames: OcaProperty<OcaList<OcaString>>.State
+    public var positionNames: OcaProperty<OcaList<OcaString>>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("4.3"),
         getMethodID: OcaMethodID("4.9"),
         setMethodID: OcaMethodID("4.10")
     )
-    public var positionEnableds: OcaProperty<OcaList<OcaBoolean>>.State
+    public var positionEnableds: OcaProperty<OcaList<OcaBoolean>>.PropertyValue
 }

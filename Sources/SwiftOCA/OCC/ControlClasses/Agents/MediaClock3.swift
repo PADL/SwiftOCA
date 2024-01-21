@@ -23,30 +23,30 @@ open class OcaMediaClock3: OcaAgent {
         getMethodID: OcaMethodID("3.1"),
         setMethodID: OcaMethodID("3.2")
     )
-    public var availability: OcaProperty<OcaMediaClockAvailability>.State
+    public var availability: OcaProperty<OcaMediaClockAvailability>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.2")
     )
-    public var timeSourceONo: OcaProperty<OcaONo>.State
+    public var timeSourceONo: OcaProperty<OcaONo>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.5"),
         setMethodID: OcaMethodID("3.6")
     )
-    public var offset: OcaProperty<OcaTime>.State
+    public var offset: OcaProperty<OcaTime>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.4"),
         getMethodID: OcaMethodID("3.3"),
         setMethodID: OcaMethodID("3.4")
     )
-    public var currentRate: OcaProperty<OcaMediaClockRate>.State
+    public var currentRate: OcaProperty<OcaMediaClockRate>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.5"),
         getMethodID: OcaMethodID("3.7")
     )
-    public var supportedRates: OcaProperty<[OcaONo: [OcaMediaClockRate]]>.State
+    public var supportedRates: OcaProperty<[OcaONo: [OcaMediaClockRate]]>.PropertyValue
 }

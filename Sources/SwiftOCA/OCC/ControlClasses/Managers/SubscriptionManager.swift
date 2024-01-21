@@ -27,7 +27,7 @@ open class OcaSubscriptionManager: OcaManager {
     public static let SynchronizeStateEventID = OcaEventID(defLevel: 3, eventIndex: 2)
 
     @OcaProperty(propertyID: OcaPropertyID("3.1"))
-    public var state: OcaProperty<OcaSubscriptionManagerState>.State
+    public var state: OcaProperty<OcaSubscriptionManagerState>.PropertyValue
 
     convenience init() {
         self.init(objectNumber: OcaSubscriptionManagerONo)

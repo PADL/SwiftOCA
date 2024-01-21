@@ -22,27 +22,27 @@ open class OcaWorker: OcaRoot {
         getMethodID: OcaMethodID("2.1"),
         setMethodID: OcaMethodID("2.2")
     )
-    public var enabled: OcaProperty<OcaBoolean>.State
+    public var enabled: OcaProperty<OcaBoolean>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.2"),
         getMethodID: OcaMethodID("2.5")
     )
-    public var ports: OcaProperty<OcaList<OcaPort>>.State
+    public var ports: OcaProperty<OcaList<OcaPort>>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.3"),
         getMethodID: OcaMethodID("2.8"),
         setMethodID: OcaMethodID("2.9")
     )
-    public var label: OcaProperty<OcaString>.State
+    public var label: OcaProperty<OcaString>.PropertyValue
 
     // 2.4
     @OcaProperty(
         propertyID: OcaPropertyID("2.4"),
         getMethodID: OcaMethodID("2.10")
     )
-    public var owner: OcaProperty<OcaONo>.State
+    public var owner: OcaProperty<OcaONo>.PropertyValue
 
     // TODO: this is optional, need to check if this works
     @OcaProperty(
@@ -50,7 +50,7 @@ open class OcaWorker: OcaRoot {
         getMethodID: OcaMethodID("2.11"),
         setMethodID: OcaMethodID("2.12")
     )
-    public var latency: OcaProperty<OcaTimeInterval?>.State
+    public var latency: OcaProperty<OcaTimeInterval?>.PropertyValue
 
     // 2.3
     public func add(

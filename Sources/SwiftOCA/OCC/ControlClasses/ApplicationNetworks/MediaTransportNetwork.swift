@@ -22,13 +22,13 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork {
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var `protocol`: OcaProperty<OcaNetworkMediaProtocol>.State
+    public var `protocol`: OcaProperty<OcaNetworkMediaProtocol>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.2")
     )
-    public var ports: OcaProperty<[OcaPort]>.State
+    public var ports: OcaProperty<[OcaPort]>.PropertyValue
 
     public func get(portID: OcaPortID, name: inout OcaString) async throws {
         try await sendCommandRrq(
@@ -51,37 +51,37 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork {
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.5")
     )
-    public var maxSourceConnectors: OcaProperty<OcaUint16>.State
+    public var maxSourceConnectors: OcaProperty<OcaUint16>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.4"),
         getMethodID: OcaMethodID("3.6")
     )
-    public var maxSinkConnectors: OcaProperty<OcaUint16>.State
+    public var maxSinkConnectors: OcaProperty<OcaUint16>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.5"),
         getMethodID: OcaMethodID("3.7")
     )
-    public var maxPinsPerConnector: OcaProperty<OcaUint16>.State
+    public var maxPinsPerConnector: OcaProperty<OcaUint16>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.6"),
         getMethodID: OcaMethodID("3.8")
     )
-    public var maxPortsPerPin: OcaProperty<OcaUint16>.State
+    public var maxPortsPerPin: OcaProperty<OcaUint16>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.7"),
         getMethodID: OcaMethodID("3.25")
     )
-    public var alignmentLevel: OcaProperty<OcaDBFS>.State
+    public var alignmentLevel: OcaProperty<OcaDBFS>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.8"),
         getMethodID: OcaMethodID("3.26")
     )
-    public var alignmentGain: OcaProperty<OcaDB>.State
+    public var alignmentGain: OcaProperty<OcaDB>.PropertyValue
 
     // 3.9 getSourceConnecotrs
     // 3.10 getSourceConnector

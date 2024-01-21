@@ -44,37 +44,37 @@ open class OcaBlock: OcaWorker {
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var type: OcaProperty<OcaONo>.State
+    public var type: OcaProperty<OcaONo>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.5")
     )
-    public var actionObjects: OcaProperty<OcaList<OcaObjectIdentification>>.State
+    public var actionObjects: OcaProperty<OcaList<OcaObjectIdentification>>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.16")
     )
-    public var signalPaths: OcaProperty<OcaMap<OcaUint16, OcaSignalPath>>.State
+    public var signalPaths: OcaProperty<OcaMap<OcaUint16, OcaSignalPath>>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.4"),
         getMethodID: OcaMethodID("3.11")
     )
-    public var mostRecentParamSetIdentifier: OcaProperty<OcaLibVolIdentifier>.State
+    public var mostRecentParamSetIdentifier: OcaProperty<OcaLibVolIdentifier>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.5"),
         getMethodID: OcaMethodID("3.15")
     )
-    public var globalType: OcaProperty<OcaGlobalTypeIdentifier>.State
+    public var globalType: OcaProperty<OcaGlobalTypeIdentifier>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.6"),
         getMethodID: OcaMethodID("3.16")
     )
-    public var oNoMap: OcaProperty<OcaMap<OcaProtoONo, OcaONo>>.State
+    public var oNoMap: OcaProperty<OcaMap<OcaProtoONo, OcaONo>>.PropertyValue
 
     // 3.2
     func constructActionObject(

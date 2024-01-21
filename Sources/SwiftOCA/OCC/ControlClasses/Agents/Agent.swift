@@ -22,13 +22,13 @@ open class OcaAgent: OcaRoot {
         getMethodID: OcaMethodID("2.1"),
         setMethodID: OcaMethodID("2.2")
     )
-    public var label: OcaProperty<OcaString>.State
+    public var label: OcaProperty<OcaString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.2"),
         getMethodID: OcaMethodID("2.3")
     )
-    public var owner: OcaProperty<OcaONo>.State
+    public var owner: OcaProperty<OcaONo>.PropertyValue
 
     public var path: (OcaNamePath, OcaONoPath) {
         get async throws {

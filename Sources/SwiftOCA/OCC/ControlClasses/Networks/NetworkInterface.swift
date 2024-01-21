@@ -23,13 +23,13 @@ open class OcaNetworkInterface: OcaRoot {
         getMethodID: OcaMethodID("2.1"),
         setMethodID: OcaMethodID("2.2")
     )
-    public var label: OcaProperty<OcaString>.State
+    public var label: OcaProperty<OcaString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.2"),
         getMethodID: OcaMethodID("2.3")
     )
-    public var owner: OcaProperty<OcaONo>.State
+    public var owner: OcaProperty<OcaONo>.PropertyValue
 
     public var path: (OcaNamePath, OcaONoPath) {
         get async throws {
@@ -42,35 +42,35 @@ open class OcaNetworkInterface: OcaRoot {
         getMethodID: OcaMethodID("2.5"),
         setMethodID: OcaMethodID("2.6")
     )
-    public var enabled: OcaProperty<OcaBoolean>.State
+    public var enabled: OcaProperty<OcaBoolean>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.4"),
         getMethodID: OcaMethodID("2.7"),
         setMethodID: OcaMethodID("2.8")
     )
-    public var systemIOInterfaceName: OcaProperty<OcaString>.State
+    public var systemIOInterfaceName: OcaProperty<OcaString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.5"),
         getMethodID: OcaMethodID("2.9"),
         setMethodID: OcaMethodID("2.10")
     )
-    public var groupID: OcaProperty<OcaUint16>.State
+    public var groupID: OcaProperty<OcaUint16>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.6"),
         getMethodID: OcaMethodID("2.11"),
         setMethodID: OcaMethodID("2.12")
     )
-    public var precedence: OcaProperty<OcaUint16>.State
+    public var precedence: OcaProperty<OcaUint16>.PropertyValue
 
     // "OcaIP4" or "OcaIP6"
     @OcaProperty(
         propertyID: OcaPropertyID("2.7"),
         getMethodID: OcaMethodID("2.13")
     )
-    public var adaptationIdentifier: OcaProperty<OcaAdaptationIdentifier>.State
+    public var adaptationIdentifier: OcaProperty<OcaAdaptationIdentifier>.PropertyValue
 
     // encoded OcaIP4NetworkSettings or OcaIP6NetworkSettings
     @OcaProperty(
@@ -78,7 +78,7 @@ open class OcaNetworkInterface: OcaRoot {
         getMethodID: OcaMethodID("2.14"),
         setMethodID: OcaMethodID("2.15")
     )
-    public var activeNetworkSettings: OcaProperty<OcaBlob>.State
+    public var activeNetworkSettings: OcaProperty<OcaBlob>.PropertyValue
 
     // encoded OcaIP4NetworkSettings or OcaIP6NetworkSettings
     @OcaProperty(
@@ -86,32 +86,32 @@ open class OcaNetworkInterface: OcaRoot {
         getMethodID: OcaMethodID("2.15"),
         setMethodID: OcaMethodID("2.16")
     )
-    public var targetNetworkSettings: OcaProperty<OcaBlob>.State
+    public var targetNetworkSettings: OcaProperty<OcaBlob>.PropertyValue
 
     // encoded OcaIP4NetworkSettings or OcaIP6NetworkSettings
     @OcaProperty(
         propertyID: OcaPropertyID("2.10"),
         getMethodID: OcaMethodID("2.17")
     )
-    public var networkSettingPending: OcaProperty<OcaBoolean>.State
+    public var networkSettingPending: OcaProperty<OcaBoolean>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.11"),
         getMethodID: OcaMethodID("2.18")
     )
-    public var status: OcaProperty<OcaNetworkInterfaceStatus>.State
+    public var status: OcaProperty<OcaNetworkInterfaceStatus>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.12"),
         getMethodID: OcaMethodID("2.19")
     )
-    public var errorCode: OcaProperty<OcaUint16>.State
+    public var errorCode: OcaProperty<OcaUint16>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.13"),
         getMethodID: OcaMethodID("2.20")
     )
-    public var counterSet: OcaProperty<OcaCounterSet>.State
+    public var counterSet: OcaProperty<OcaCounterSet>.PropertyValue
 
     // 2.21 getCounter
     // 2.22 attachCounterNotifier

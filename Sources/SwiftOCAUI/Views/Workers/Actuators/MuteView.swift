@@ -23,7 +23,7 @@ extension OcaMute: OcaViewRepresentable {
     }
 }
 
-private extension Binding where Value == OcaProperty<OcaMuteState>.State {
+private extension Binding where Value == OcaProperty<OcaMuteState>.PropertyValue {
     var value: Binding<Bool> {
         Binding<Bool>(get: {
             if case let .success(muteState) = self.wrappedValue {

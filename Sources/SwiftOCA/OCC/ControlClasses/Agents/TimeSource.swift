@@ -81,62 +81,62 @@ open class OcaTimeSource: OcaAgent {
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var availability: OcaProperty<OcaTimeSourceAvailability>.State
+    public var availability: OcaProperty<OcaTimeSourceAvailability>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.1"),
         setMethodID: OcaMethodID("3.3")
     )
-    public var timeDeliveryMechanism: OcaProperty<OcaTimeDeliveryMechanism>.State
+    public var timeDeliveryMechanism: OcaProperty<OcaTimeDeliveryMechanism>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.4"),
         setMethodID: OcaMethodID("3.5")
     )
-    public var referenceSDPDescription: OcaProperty<OcaSDPString>.State
+    public var referenceSDPDescription: OcaProperty<OcaSDPString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.4"),
         getMethodID: OcaMethodID("3.6"),
         setMethodID: OcaMethodID("3.7")
     )
-    public var referenceType: OcaProperty<OcaTimeReferenceType>.State
+    public var referenceType: OcaProperty<OcaTimeReferenceType>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.5"),
         getMethodID: OcaMethodID("3.8"),
         setMethodID: OcaMethodID("3.9")
     )
-    public var referenceID: OcaProperty<OcaString>.State
+    public var referenceID: OcaProperty<OcaString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.6"),
         getMethodID: OcaMethodID("3.10")
     )
-    public var syncStatus: OcaProperty<OcaTimeSourceSyncStatus>.State
+    public var syncStatus: OcaProperty<OcaTimeSourceSyncStatus>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.7"),
         getMethodID: OcaMethodID("3.12"),
         setMethodID: OcaMethodID("3.13")
     )
-    public var timeDeliveryParameters: OcaProperty<OcaParameterRecord>.State
+    public var timeDeliveryParameters: OcaProperty<OcaParameterRecord>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.8"),
         getMethodID: OcaMethodID("3.14"),
         setMethodID: OcaMethodID("3.15")
     )
-    public var `protocol`: OcaProperty<OcaTimeProtocol>.State
+    public var `protocol`: OcaProperty<OcaTimeProtocol>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.9"),
         getMethodID: OcaMethodID("3.16"),
         setMethodID: OcaMethodID("3.17")
     )
-    public var parameters: OcaProperty<OcaSDPString>.State
+    public var parameters: OcaProperty<OcaSDPString>.PropertyValue
 
     public func reset() async throws {
         try await sendCommandRrq(methodID: OcaMethodID("3.11"))

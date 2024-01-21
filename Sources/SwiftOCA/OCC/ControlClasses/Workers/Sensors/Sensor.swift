@@ -29,5 +29,5 @@ open class OcaSensor: OcaWorker {
         propertyID: OcaPropertyID("4.1"),
         getMethodID: OcaMethodID("4.1")
     )
-    public var state: OcaProperty<OcaSensorReadingState>.State
+    public var state: OcaProperty<OcaSensorReadingState>.PropertyValue
 }

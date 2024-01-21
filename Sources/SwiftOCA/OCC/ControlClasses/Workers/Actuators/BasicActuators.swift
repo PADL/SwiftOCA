@@ -24,7 +24,7 @@ open class OcaGenericBasicActuator<T: Codable & Comparable & Numeric & Sendable>
         getMethodID: OcaMethodID("5.1"),
         setMethodID: OcaMethodID("5.2")
     )
-    public var setting: OcaBoundedProperty<T>.State
+    public var setting: OcaBoundedProperty<T>.PropertyValue
 }
 
 open class OcaBooleanActuator: OcaBasicActuator {
@@ -35,7 +35,7 @@ open class OcaBooleanActuator: OcaBasicActuator {
         getMethodID: OcaMethodID("5.1"),
         setMethodID: OcaMethodID("5.2")
     )
-    public var setting: OcaProperty<OcaBoolean>.State
+    public var setting: OcaProperty<OcaBoolean>.PropertyValue
 }
 
 open class OcaInt8Actuator: OcaGenericBasicActuator<OcaInt8> {
@@ -85,7 +85,7 @@ open class OcaStringActuator: OcaBasicActuator {
         getMethodID: OcaMethodID("5.1"),
         setMethodID: OcaMethodID("5.2")
     )
-    var setting: OcaProperty<String>.State
+    var setting: OcaProperty<String>.PropertyValue
 }
 
 /*
