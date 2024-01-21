@@ -19,7 +19,7 @@ import Foundation
 public struct OcaTime: Codable, Sendable {
     public var negative: OcaBoolean
     public var seconds: OcaUint64
-    public var nanoseconds: OcaUint64
+    public var nanoseconds: OcaUint32
 
     public init() {
         negative = false
@@ -27,7 +27,7 @@ public struct OcaTime: Codable, Sendable {
         nanoseconds = 0
     }
 
-    public init(negative: OcaBoolean, seconds: OcaUint64, nanoseconds: OcaUint64) {
+    public init(negative: OcaBoolean, seconds: OcaUint64, nanoseconds: OcaUint32) {
         self.negative = negative
         self.seconds = seconds
         self.nanoseconds = nanoseconds
@@ -43,3 +43,5 @@ public enum OcaTimeMode: OcaUint8, Codable, Sendable {
 }
 
 public typealias OcaTimeNTP = OcaUint64
+
+public typealias OcaTimePTP = OcaTime
