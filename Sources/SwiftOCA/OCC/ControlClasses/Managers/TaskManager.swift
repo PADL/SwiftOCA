@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2024 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,28 +14,33 @@
 // limitations under the License.
 //
 
-open class OcaLibraryManager: OcaManager {
-    override public class var classID: OcaClassID { OcaClassID("1.3.8") }
+open class OcaTaskManager: OcaManager {
+    override public class var classID: OcaClassID { OcaClassID("1.3.11") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
 
     @OcaProperty(
-        propertyID: OcaPropertyID("3.1")
+        propertyID: OcaPropertyID("3.1"),
+        getMethodID: OcaMethodID("3.5")
     )
-    public var libraries: OcaProperty<OcaLibraryIdentifier>.PropertyValue
-
-    // 3.1 AddLibrary
-    // 3.2 DeleteLibrary
-    // 3.3 GetLibraryCount
-    // 3.4 GetLibraryList
+    public var state: OcaProperty<OcaTaskManagerState>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.2"),
-        getMethodID: OcaMethodID("3.5"),
-        setMethodID: OcaMethodID("3.6")
+        getMethodID: OcaMethodID("3.9")
     )
-    public var currentPatch: OcaProperty<OcaLibVolIdentifier>.PropertyValue
+    public var tasks: OcaProperty<[OcaTaskID: OcaTask]>.PropertyValue
+
+    // 3.1 Enable
+    // 3.2 ControlAllTasks
+    // 3.3 ControlTaskGroup
+    // 3.4 ControlTask
+    // 3.7 GetTaskStatus
+    // 3.8 AddTask
+    // 3.10 GetTask
+    // 3.11 SetTask
+    // 3.12 DeleteTask
 
     public convenience init() {
-        self.init(objectNumber: OcaLibraryManagerONo)
+        self.init(objectNumber: OcaTaskManagerONo)
     }
 }

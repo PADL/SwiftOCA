@@ -219,6 +219,14 @@
 		D3E6E2A02A452D0A00BF7095 /* ScaledLegendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */; };
 		D3F2942A2A95D31400D7F0CD /* ObjectNumberMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F294292A95D31400D7F0CD /* ObjectNumberMapper.swift */; };
 		D3F2942C2A95D55F00D7F0CD /* Sequence+AsyncMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */; };
+		D3FAC8DE2B5CF25D009E2775 /* FirmwareManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8DD2B5CF25D009E2775 /* FirmwareManager.swift */; };
+		D3FAC8E02B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8DF2B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift */; };
+		D3FAC8E22B5CF3FD009E2775 /* PowerManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8E12B5CF3FD009E2775 /* PowerManagerDataTypes.swift */; };
+		D3FAC8E42B5CF776009E2775 /* PowerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8E32B5CF776009E2775 /* PowerManager.swift */; };
+		D3FAC8E62B5CF926009E2775 /* LibraryManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8E52B5CF926009E2775 /* LibraryManagerDataTypes.swift */; };
+		D3FAC8E82B5CFA42009E2775 /* SecurityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8E72B5CFA42009E2775 /* SecurityManager.swift */; };
+		D3FAC8EA2B5CFBE7009E2775 /* TaskManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8E92B5CFBE7009E2775 /* TaskManager.swift */; };
+		D3FAC8EC2B5CFC11009E2775 /* TaskManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8EB2B5CFC11009E2775 /* TaskManagerDataTypes.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -475,6 +483,14 @@
 		D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledLegendView.swift; sourceTree = "<group>"; };
 		D3F294292A95D31400D7F0CD /* ObjectNumberMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectNumberMapper.swift; sourceTree = "<group>"; };
 		D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sequence+AsyncMap.swift"; sourceTree = "<group>"; };
+		D3FAC8DD2B5CF25D009E2775 /* FirmwareManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareManager.swift; sourceTree = "<group>"; };
+		D3FAC8DF2B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareManagerDataTypes.swift; sourceTree = "<group>"; };
+		D3FAC8E12B5CF3FD009E2775 /* PowerManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerManagerDataTypes.swift; sourceTree = "<group>"; };
+		D3FAC8E32B5CF776009E2775 /* PowerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerManager.swift; sourceTree = "<group>"; };
+		D3FAC8E52B5CF926009E2775 /* LibraryManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryManagerDataTypes.swift; sourceTree = "<group>"; };
+		D3FAC8E72B5CFA42009E2775 /* SecurityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityManager.swift; sourceTree = "<group>"; };
+		D3FAC8E92B5CFBE7009E2775 /* TaskManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskManager.swift; sourceTree = "<group>"; };
+		D3FAC8EB2B5CFC11009E2775 /* TaskManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskManagerDataTypes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -974,6 +990,7 @@
 				D3AFD34B2B2CEF2B00A72E9A /* CounterDataTypes.swift */,
 				D3AFD3372B2A52D500A72E9A /* TimeDataTypes.swift */,
 				D3E6E1742A3ACA6C00BF7095 /* EventDataTypes.swift */,
+				D3FAC8E52B5CF926009E2775 /* LibraryManagerDataTypes.swift */,
 				D3E6E1782A3ACA6C00BF7095 /* ManagerDataTypes.swift */,
 				D3C083282A7C700B0020AD57 /* MediaDataTypes.swift */,
 				D3E6E17B2A3ACA6C00BF7095 /* ModelDataTypes.swift */,
@@ -985,6 +1002,9 @@
 				D3AFD3392B2A558700A72E9A /* MediaClockDataTypes.swift */,
 				D3AFD33B2B2A566600A72E9A /* MediaStreamDataTypes.swift */,
 				D3AFD33F2B2A8CC000A72E9A /* MiscFrameworkDataTypes.swift */,
+				D3FAC8DF2B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift */,
+				D3FAC8E12B5CF3FD009E2775 /* PowerManagerDataTypes.swift */,
+				D3FAC8EB2B5CFC11009E2775 /* TaskManagerDataTypes.swift */,
 			);
 			path = ControlDataTypes;
 			sourceTree = "<group>";
@@ -1008,16 +1028,20 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E1862A3ACA6C00BF7095 /* Manager.swift */,
-				D3AFD35D2B30EC2F00A72E9A /* CodingManager.swift */,
-				D3E6E1872A3ACA6C00BF7095 /* LibraryManager.swift */,
 				D3E6E1882A3ACA6C00BF7095 /* DeviceManager.swift */,
-				D3AFD3432B2CEA3800A72E9A /* LockManager.swift */,
-				D3AFD3452B2CED0800A72E9A /* DiagnosticManager.swift */,
-				D3E6E2772A417AF000BF7095 /* NetworkManager.swift */,
+				D3FAC8E72B5CFA42009E2775 /* SecurityManager.swift */,
+				D3FAC8DD2B5CF25D009E2775 /* FirmwareManager.swift */,
 				D3E6E1852A3ACA6C00BF7095 /* SubscriptionManager.swift */,
+				D3FAC8E32B5CF776009E2775 /* PowerManager.swift */,
+				D3E6E2772A417AF000BF7095 /* NetworkManager.swift */,
+				D3AFD3412B2CE91B00A72E9A /* MediaClockManager.swift */,
+				D3E6E1872A3ACA6C00BF7095 /* LibraryManager.swift */,
 				D3AFD3332B2A505D00A72E9A /* AudioProcessingManager.swift */,
 				D3AFD3352B2A516C00A72E9A /* DeviceTimeManager.swift */,
-				D3AFD3412B2CE91B00A72E9A /* MediaClockManager.swift */,
+				D3FAC8E92B5CFBE7009E2775 /* TaskManager.swift */,
+				D3AFD35D2B30EC2F00A72E9A /* CodingManager.swift */,
+				D3AFD3452B2CED0800A72E9A /* DiagnosticManager.swift */,
+				D3AFD3432B2CEA3800A72E9A /* LockManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -1583,6 +1607,9 @@
 				D3E6E1C22A3ACA8200BF7095 /* MessageType.swift in Sources */,
 				D3E6E1C32A3ACA8C00BF7095 /* Matrix.swift in Sources */,
 				D3AFD3862B32A06700A72E9A /* Ocp1Decoder.swift in Sources */,
+				D3FAC8E22B5CF3FD009E2775 /* PowerManagerDataTypes.swift in Sources */,
+				D3FAC8E82B5CFA42009E2775 /* SecurityManager.swift in Sources */,
+				D3FAC8E42B5CF776009E2775 /* PowerManager.swift in Sources */,
 				D3E6E1D72A3ACAA000BF7095 /* Root+Commands.swift in Sources */,
 				D36ECA2C2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift in Sources */,
 				D3E6E1D62A3ACA9E00BF7095 /* Manager.swift in Sources */,
@@ -1592,6 +1619,7 @@
 				D3AFD3832B32A06700A72E9A /* SingleValueBinaryDecodingContainer.swift in Sources */,
 				D3E6E1CA2A3ACA9000BF7095 /* Mute.swift in Sources */,
 				D3F2942C2A95D55F00D7F0CD /* Sequence+AsyncMap.swift in Sources */,
+				D3FAC8DE2B5CF25D009E2775 /* FirmwareManager.swift in Sources */,
 				D3AFD3962B41515000A72E9A /* SignalOutput.swift in Sources */,
 				D3E6E1E02A3ACAA900BF7095 /* Property.swift in Sources */,
 				D306440D2A781C280063DA65 /* Ocp1CoderAPI.swift in Sources */,
@@ -1612,9 +1640,12 @@
 				D3AFD3502B2CF84E00A72E9A /* MediaClock3.swift in Sources */,
 				D3AFD3802B32A06700A72E9A /* Ocp1DecodingState.swift in Sources */,
 				D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */,
+				D3FAC8EA2B5CFBE7009E2775 /* TaskManager.swift in Sources */,
 				D3AFD37F2B32A06700A72E9A /* Ocp1Encoder.swift in Sources */,
 				D3C083292A7C700B0020AD57 /* MediaDataTypes.swift in Sources */,
+				D3FAC8E62B5CF926009E2775 /* LibraryManagerDataTypes.swift in Sources */,
 				D3E6E1D12A3ACA9A00BF7095 /* EventHandler.swift in Sources */,
+				D3FAC8E02B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift in Sources */,
 				D3AFD35A2B2D226200A72E9A /* MediaTransportApplication.swift in Sources */,
 				D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */,
 				D3AFD3942B41514400A72E9A /* SignalInput.swift in Sources */,
@@ -1660,6 +1691,7 @@
 				D3E6E1C12A3ACA8200BF7095 /* Notification1.swift in Sources */,
 				D3E6E2392A3BD52E00BF7095 /* AES70Browser.swift in Sources */,
 				D3E6E1DE2A3ACAA900BF7095 /* WellKnownObjectNumbers.swift in Sources */,
+				D3FAC8EC2B5CFC11009E2775 /* TaskManagerDataTypes.swift in Sources */,
 				D3E6E1B32A3ACA7B00BF7095 /* AES70OCP1Connection+Codable.swift in Sources */,
 				D3E6E1BE2A3ACA8200BF7095 /* Command.swift in Sources */,
 				D3AFD37B2B32A06700A72E9A /* Ocp1EncoderImpl.swift in Sources */,
