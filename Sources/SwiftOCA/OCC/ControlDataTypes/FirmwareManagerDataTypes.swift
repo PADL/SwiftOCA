@@ -16,7 +16,7 @@
 
 public typealias OcaComponent = OcaUint16
 
-public struct OcaVersion: Codable, Sendable {
+public struct OcaVersion: Equatable, Codable, Sendable {
     public let major: OcaUint32
     public let minor: OcaUint32
     public let build: OcaUint32
