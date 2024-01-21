@@ -227,6 +227,7 @@
 		D3FAC8E82B5CFA42009E2775 /* SecurityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8E72B5CFA42009E2775 /* SecurityManager.swift */; };
 		D3FAC8EA2B5CFBE7009E2775 /* TaskManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8E92B5CFBE7009E2775 /* TaskManager.swift */; };
 		D3FAC8EC2B5CFC11009E2775 /* TaskManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8EB2B5CFC11009E2775 /* TaskManagerDataTypes.swift */; };
+		D3FAC8EE2B5CFE3A009E2775 /* FirmwareManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8ED2B5CFE3A009E2775 /* FirmwareManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -491,6 +492,7 @@
 		D3FAC8E72B5CFA42009E2775 /* SecurityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityManager.swift; sourceTree = "<group>"; };
 		D3FAC8E92B5CFBE7009E2775 /* TaskManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskManager.swift; sourceTree = "<group>"; };
 		D3FAC8EB2B5CFC11009E2775 /* TaskManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskManagerDataTypes.swift; sourceTree = "<group>"; };
+		D3FAC8ED2B5CFE3A009E2775 /* FirmwareManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -737,6 +739,7 @@
 				D33A35AC2B2FC29000FEDC43 /* AudioProcessingManager.swift */,
 				D3AFD35B2B30EC0600A72E9A /* CodingManager.swift */,
 				D33B52AB2A702D4D001A1BA7 /* DeviceManager.swift */,
+				D3FAC8ED2B5CFE3A009E2775 /* FirmwareManager.swift */,
 				D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */,
 				D33A35AE2B2FC2BB00FEDC43 /* DiagnosticManager.swift */,
 				D33A35B02B2FC30500FEDC43 /* LockManager.swift */,
@@ -1516,6 +1519,7 @@
 				D351F2082A7299B0008C5513 /* Agent.swift in Sources */,
 				D35592602B520DFC000F633B /* ControllerDefaultSubscribing.swift in Sources */,
 				D33B52A52A702D04001A1BA7 /* Worker.swift in Sources */,
+				D3FAC8EE2B5CFE3A009E2775 /* FirmwareManager.swift in Sources */,
 				D32229D12ABC270900B56B6B /* AES70OCP1FlyingSocksLogging.swift in Sources */,
 				D33B52AA2A702D3F001A1BA7 /* NetworkManager.swift in Sources */,
 				D32229D02ABC270900B56B6B /* AES70OCP1FlyingSocksDeviceEndpoint.swift in Sources */,
