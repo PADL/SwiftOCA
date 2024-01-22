@@ -111,7 +111,7 @@ open class OcaFirmwareManager: OcaManager {
         throw Ocp1Error.status(.notImplemented)
     }
 
-    public func endUpdateProcess() async throws {
+    open func endUpdateProcess() async throws {
         throw Ocp1Error.status(.notImplemented)
     }
 }
