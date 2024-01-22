@@ -21,4 +21,8 @@ open class OcaDiagnosticManager: OcaManager {
     public convenience init() {
         self.init(objectNumber: OcaDiagnosticManagerONo)
     }
+
+    public func getLockStatus(_ oNo: OcaONo) async throws -> OcaString {
+        try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameter: oNo)
+    }
 }

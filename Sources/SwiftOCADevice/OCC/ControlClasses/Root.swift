@@ -37,7 +37,7 @@ Sendable {
 
     public internal(set) weak var deviceDelegate: AES70Device?
 
-    enum LockState: Sendable {
+    enum LockState: Sendable, CustomStringConvertible {
         /// AES70-1-2023 uses this confusing `NoReadWrite` and `NoWrite` nomenclature
         case unlocked
         case lockedNoWrite(AES70Controller.ID)
@@ -51,6 +51,17 @@ Sendable {
                 return .lockNoWrite
             case .lockedNoReadWrite:
                 return .lockNoReadWrite
+            }
+        }
+
+        var description: String {
+            switch self {
+            case .unlocked:
+                return "Unlocked"
+            case .lockedNoWrite:
+                return "Read locked"
+            case .lockedNoReadWrite:
+                return "Read/write locked"
             }
         }
     }
