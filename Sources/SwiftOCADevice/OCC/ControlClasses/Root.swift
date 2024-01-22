@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import AsyncExtensions
 import SwiftOCA
 
 extension AES70Controller {
@@ -66,7 +67,16 @@ Sendable {
         }
     }
 
-    var lockState: LockState = .unlocked
+    var lockStateSubject = AsyncCurrentValueSubject<LockState>(.unlocked)
+
+    var lockState: LockState {
+        get {
+            lockStateSubject.value
+        }
+        set {
+            lockStateSubject.value = newValue
+        }
+    }
 
     public class var classIdentification: OcaClassIdentification {
         OcaClassIdentification(classID: classID, classVersion: classVersion)
@@ -300,6 +310,22 @@ Sendable {
                 throw Ocp1Error.status(.locked)
             }
             lockState = .unlocked
+        }
+    }
+
+    func setLockState(to lockState: OcaLockState, controller: any AES70Controller) -> Bool {
+        do {
+            switch lockState {
+            case .noLock:
+                try unlock(controller: controller)
+            case .lockNoWrite:
+                try lockNoWrite(controller: controller)
+            case .lockNoReadWrite:
+                try lockNoReadWrite(controller: controller)
+            }
+            return true
+        } catch {
+            return false
         }
     }
 }

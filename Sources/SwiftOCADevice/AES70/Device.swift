@@ -70,7 +70,10 @@ public actor AES70Device {
         endpoints.append(endpoint)
     }
 
-    public func unlockAll(controller: AES70Controller) {
+    public func unlockAll(controller: AES70Controller) async {
+        if let lockManager = resolve(objectNumber: OcaLockManagerONo) as? OcaLockManager {
+            await lockManager.remove(controller: controller)
+        }
         objects.values.forEach {
             try? $0.unlock(controller: controller)
         }
