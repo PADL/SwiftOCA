@@ -2,10 +2,8 @@ SwiftOCA
 --------
 
 - implement (decent) control views for common controls
-- WebSocket support
-- validate SPI Client
+- WebSocket client-side support
 - fix class version logic
-- internationalization support
 - tests
 
 SwiftOCADevice
