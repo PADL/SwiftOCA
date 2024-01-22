@@ -25,8 +25,9 @@ public class OcaLockManager: OcaManager {
         let target: OcaONo
     }
 
-    private class LockWaiter {
-        private var continuation: CheckedContinuation<(), Error>?
+    private final class LockWaiter: @unchecked
+    Sendable {
+        private let continuation: CheckedContinuation<(), Error>
         var task: Task<(), Never>?
 
         init(continuation: CheckedContinuation<(), Error>) {
@@ -34,21 +35,14 @@ public class OcaLockManager: OcaManager {
         }
 
         func didLock() {
-            if let continuation {
-                continuation.resume(returning: ())
-                self.continuation = nil
-            }
+            continuation.resume(returning: ())
         }
 
         func didAbort() {
-            if let continuation {
-                continuation.resume(throwing: CancellationError())
-                self.continuation = nil
-            }
+            continuation.resume(throwing: CancellationError())
         }
 
         deinit {
-            continuation?.resume(throwing: Ocp1Error.status(.timeout))
             task?.cancel()
         }
     }
@@ -100,6 +94,7 @@ public class OcaLockManager: OcaManager {
                 }
             }
         } catch Ocp1Error.responseTimeout {
+            lockWaiters[lockWaiterID]?.didAbort()
             throw Ocp1Error.status(.timeout)
         }
 
