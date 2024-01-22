@@ -291,4 +291,21 @@ extension OcaRoot {
 
         return try decodeResponse(U.self, from: responseParameterData)
     }
+
+    func sendCommandRrq<T: Encodable, U: Decodable>(
+        methodID: OcaMethodID,
+        parameter: T
+    ) async throws -> U {
+        var responseParameterData = Data()
+
+        try await sendCommandRrq(
+            methodID: methodID,
+            parameterCount: 1,
+            parameters: [parameter],
+            responseParameterCount: responseParameterCount(U.self),
+            responseParameters: &responseParameterData
+        )
+
+        return try decodeResponse(U.self, from: responseParameterData)
+    }
 }
