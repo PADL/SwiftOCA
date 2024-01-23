@@ -25,7 +25,7 @@ public protocol AES70ControllerDefaultSubscribing: AES70Controller {
 }
 
 public protocol AES70ControllerLightweightNotifying: AES70ControllerDefaultSubscribing {
-    func sendLightweightNotification(
+    func sendMessage(
         _ message: Ocp1Message,
         type messageType: OcaMessageType,
         to destinationAddress: OcaNetworkAddress
@@ -163,7 +163,7 @@ public extension AES70ControllerDefaultSubscribing {
 
                 if subscription.notificationDeliveryMode == .lightweight {
                     try await (self as! AES70ControllerLightweightNotifying)
-                        .sendLightweightNotification(
+                        .sendMessage(
                             notification,
                             type: .ocaNtf1,
                             to: subscription.destinationInformation
@@ -179,7 +179,7 @@ public extension AES70ControllerDefaultSubscribing {
                 )
                 if subscription.notificationDeliveryMode == .lightweight {
                     try await (self as! AES70ControllerLightweightNotifying)
-                        .sendLightweightNotification(
+                        .sendMessage(
                             notification,
                             type: .ocaNtf2,
                             to: subscription.destinationInformation

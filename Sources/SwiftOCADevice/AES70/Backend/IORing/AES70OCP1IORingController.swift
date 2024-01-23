@@ -34,7 +34,8 @@ protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equata
     ) async throws
 }
 
-actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomStringConvertible {
+actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate,
+    AES70ControllerLightweightNotifying, CustomStringConvertible {
     nonisolated static var connectionPrefix: String { "oca/tcp" }
 
     var subscriptions = [OcaONo: NSMutableSet]()
@@ -49,13 +50,16 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
 
     private var _messages = AsyncThrowingChannel<ControllerMessage, Error>()
     private let socket: Socket
+    private let notificationSocket: Socket
 
     public nonisolated var description: String {
         "\(type(of: self))(socket: \(socket))"
     }
 
-    init(socket: Socket) async throws {
+    init(socket: Socket, notificationSocket: Socket) async throws {
         self.socket = socket
+        self.notificationSocket = notificationSocket
+
         peerAddress = try AnySocketAddress(self.socket.peerAddress)
 
         receiveMessageTask = Task { [self] in
@@ -112,6 +116,34 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
 
     nonisolated var identifier: String {
         (try? socket.peerName) ?? "unknown"
+    }
+
+    func sendMessage(
+        _ message: Ocp1Message,
+        type messageType: OcaMessageType,
+        to destinationAddress: OcaNetworkAddress
+    ) async throws {
+        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
+            [message],
+            type: messageType
+        )
+        let networkAddress = try Ocp1NetworkAddress(networkAddress: destinationAddress)
+        let peerAddress = try sockaddr_storage(
+            family: networkAddress.family,
+            presentationAddress: networkAddress.presentationAddress
+        )
+        let messagePdu = try Message(address: peerAddress, buffer: Array(messagePduData))
+        try await notificationSocket.sendMessage(messagePdu)
+    }
+}
+
+private extension Ocp1NetworkAddress {
+    var presentationAddress: String {
+        (family == sa_family_t(AF_INET6)) ? "[\(address)]:\(port)" : "\(address):\(port)"
+    }
+
+    var family: sa_family_t {
+        address.contains(":") ? sa_family_t(AF_INET6) : sa_family_t(AF_INET)
     }
 }
 

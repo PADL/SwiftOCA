@@ -214,6 +214,10 @@ public struct Ocp1NetworkAddress: Codable, Sendable {
         self.port = port
     }
 
+    public init(networkAddress: OcaNetworkAddress) throws {
+        self = try Ocp1Decoder().decode(Ocp1NetworkAddress.self, from: [UInt8](networkAddress))
+    }
+
     public init(_ networkAddress: UnsafePointer<sockaddr>) throws {
         var address: OcaString!
         var port: OcaUint16 = 0

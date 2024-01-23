@@ -112,6 +112,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
     typealias ControllerType = AES70OCP1IORingStreamController
 
     let logger = Logger(label: "com.padl.SwiftOCADevice.AES70OCP1IORingStreamDeviceEndpoint")
+    var notificationSocket: Socket?
 
     var _controllers = [ControllerType]()
 
@@ -124,6 +125,8 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
         try await super.run()
         let socket = try makeSocketAndListen()
         self.socket = socket
+        let notificationSocket = try makeNotificationSocket()
+        self.notificationSocket = notificationSocket
         repeat {
             do {
                 let clients: AnyAsyncSequence<Socket> = try await socket.accept()
@@ -131,7 +134,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
                     for try await client in clients {
                         Task {
                             let controller =
-                                try await AES70OCP1IORingStreamController(socket: client)
+                                try await AES70OCP1IORingStreamController(socket: client, notificationSocket: notificationSocket)
                             await controller.handle(for: self)
                         }
                     }
@@ -155,7 +158,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
         self.socket = nil
     }
 
-    func makeSocketAndListen() throws -> Socket {
+    private func makeSocketAndListen() throws -> Socket {
         let socket = try Socket(ring: ring, domain: address.family, type: SOCK_STREAM, protocol: 0)
 
         try socket.setReuseAddr()
@@ -164,6 +167,10 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
         try socket.listen()
 
         return socket
+    }
+
+    private func makeNotificationSocket() throws -> Socket {
+        return try Socket(ring: ring, domain: address.family, type: SOCK_DGRAM, protocol: 0)
     }
 
     override public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
@@ -244,7 +251,7 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
         self.socket = nil
     }
 
-    func makeSocket() throws -> Socket {
+    private func makeSocket() throws -> Socket {
         let socket = try Socket(ring: ring, domain: address.family, type: SOCK_DGRAM, protocol: 0)
 
         try socket.bind(to: address)
