@@ -14,6 +14,32 @@
 // limitations under the License.
 //
 
+public struct OcaDeviceState: OptionSet, Codable, Sendable, CustomStringConvertible {
+    public static let operational = OcaDeviceState(rawValue: 1 << 0)
+    public static let disabled = OcaDeviceState(rawValue: 1 << 1)
+    public static let error = OcaDeviceState(rawValue: 1 << 2)
+    public static let initializing = OcaDeviceState(rawValue: 1 << 3)
+    public static let updating = OcaDeviceState(rawValue: 1 << 4)
+
+    public let rawValue: OcaBitSet16
+
+    public init(rawValue: OcaBitSet16) {
+        self.rawValue = rawValue
+    }
+
+    static let descriptions: [(Self, String)] = [
+        (.operational, "Operational"),
+        (.disabled, "Disabled"),
+        (.error, "Error"),
+        (.initializing, "Initializing"),
+        (.updating, "Updating"),
+    ]
+
+    public var description: String {
+        Self.descriptions.filter { contains($0.0) }.map(\.1).joined(separator: ", ")
+    }
+}
+
 public struct OcaManufacturer: Codable, Sendable {
     public let name: OcaString
     public let organizationID: OcaOrganizationID
