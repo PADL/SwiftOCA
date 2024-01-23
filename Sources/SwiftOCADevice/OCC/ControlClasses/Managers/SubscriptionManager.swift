@@ -316,4 +316,17 @@ public enum OcaSubscriptionManagerSubscription: Codable, Equatable, Hashable, Se
             return propertyChangeSubscription.notificationDeliveryMode
         }
     }
+
+    var destinationInformation: OcaNetworkAddress {
+        switch self {
+        case let .subscription(subscription):
+            return subscription.destinationInformation
+        case let .subscription2(subscription):
+            return subscription.destinationInformation
+        case let .propertyChangeSubscription(propertyChangeSubscription):
+            return propertyChangeSubscription.destinationInformation
+        case let .propertyChangeSubscription2(propertyChangeSubscription):
+            return propertyChangeSubscription.destinationInformation
+        }
+    }
 }

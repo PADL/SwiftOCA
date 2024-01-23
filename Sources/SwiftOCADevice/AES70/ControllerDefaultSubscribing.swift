@@ -81,7 +81,7 @@ public extension AES70ControllerDefaultSubscribing {
         guard !hasSubscription(subscription) else {
             throw Ocp1Error.alreadySubscribedToEvent
         }
-        guard subscription.notificationDeliveryMode == .reliable else {
+        guard subscription.notificationDeliveryMode == .normal else {
             // we don't support "fast" UDP deliveries yet
             throw Ocp1Error.status(.notImplemented)
         }

@@ -35,7 +35,7 @@ extension AES70OCP1Connection {
             event: event,
             subscriber: subscriber,
             subscriberContext: OcaBlob(),
-            notificationDeliveryMode: .reliable,
+            notificationDeliveryMode: .normal,
             destinationInformation: OcaNetworkAddress()
         )
     }
@@ -58,7 +58,7 @@ extension AES70OCP1Connection {
                 event: event,
                 subscriber: subscriber,
                 subscriberContext: OcaBlob(),
-                notificationDeliveryMode: .reliable,
+                notificationDeliveryMode: .normal,
                 destinationInformation: OcaNetworkAddress()
             )
         }
