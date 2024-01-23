@@ -19,10 +19,11 @@ import SwiftOCA
 extension OcaRoot {
     public func decodeCommand<U: Decodable>(_ command: Ocp1Command) throws -> U {
         let response = try Ocp1Decoder().decode(U.self, from: command.parameters.parameterData)
-        if command.parameters.parameterCount != parameterCount(for: response) {
+        let responseParameterCount = parameterCount(for: response)
+        if command.parameters.parameterCount != responseParameterCount {
             Task {
-                await deviceDelegate?.logger.info(
-                    "OcaRoot.decodeCommand: unexpected parameter count for \(response), got \(parameterCount(for: response)), expected \(command.parameters.parameterCount)"
+                await deviceDelegate?.logger.trace(
+                    "OcaRoot.decodeCommand: unexpected parameter count \(responseParameterCount), expected \(command.parameters.parameterCount)"
                 )
             }
         }
