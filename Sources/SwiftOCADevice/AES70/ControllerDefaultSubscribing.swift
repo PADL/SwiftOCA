@@ -24,6 +24,14 @@ public protocol AES70ControllerDefaultSubscribing: AES70Controller {
     var subscriptions: [OcaONo: NSMutableSet] { get set }
 }
 
+public protocol AES70ControllerLightweightNotifying: AES70ControllerDefaultSubscribing {
+    func sendLightweightNotification(
+        _ message: Ocp1Message,
+        type messageType: OcaMessageType,
+        to destinationAddress: OcaNetworkAddress
+    ) async throws
+}
+
 public extension AES70ControllerDefaultSubscribing {
     /// subscriptions are stored keyed by the emitter object number (the object that emits the
     /// event)
@@ -81,9 +89,12 @@ public extension AES70ControllerDefaultSubscribing {
         guard !hasSubscription(subscription) else {
             throw Ocp1Error.alreadySubscribedToEvent
         }
-        guard subscription.notificationDeliveryMode == .normal else {
-            // we don't support "fast" UDP deliveries yet
-            throw Ocp1Error.status(.notImplemented)
+        guard self is AES70ControllerLightweightNotifying ||
+            subscription.notificationDeliveryMode == .normal
+        else {
+            // only controllers implementing AES70ControllerLightweightNotifying support
+            // lightweight/fast notifications
+            throw Ocp1Error.status(.parameterError)
         }
         var subscriptions = subscriptions[subscription.event.emitterONo]
         if subscriptions == nil {
@@ -150,14 +161,32 @@ public extension AES70ControllerDefaultSubscribing {
                     parameters: ntfParams
                 )
 
-                try await sendMessage(notification, type: .ocaNtf1)
+                if subscription.notificationDeliveryMode == .lightweight {
+                    try await (self as! AES70ControllerLightweightNotifying)
+                        .sendLightweightNotification(
+                            notification,
+                            type: .ocaNtf1,
+                            to: subscription.destinationInformation
+                        )
+                } else {
+                    try await sendMessage(notification, type: .ocaNtf1)
+                }
             case .ev2:
                 let notification = Ocp1Notification2(
                     event: subscription.event,
                     notificationType: .event,
                     data: parameters
                 )
-                try await sendMessage(notification, type: .ocaNtf2)
+                if subscription.notificationDeliveryMode == .lightweight {
+                    try await (self as! AES70ControllerLightweightNotifying)
+                        .sendLightweightNotification(
+                            notification,
+                            type: .ocaNtf2,
+                            to: subscription.destinationInformation
+                        )
+                } else {
+                    try await sendMessage(notification, type: .ocaNtf2)
+                }
             }
         }
     }
