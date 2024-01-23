@@ -35,7 +35,7 @@ protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equata
 }
 
 actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomStringConvertible {
-    static var connectionPrefix: String { "oca/tcp" }
+    nonisolated static var connectionPrefix: String { "oca/tcp" }
 
     var subscriptions = [OcaONo: NSMutableSet]()
     let peerAddress: AnySocketAddress
@@ -131,7 +131,7 @@ extension AES70OCP1IORingStreamController: Hashable {
 }
 
 actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
-    static var connectionPrefix: String { "oca/udp" }
+    nonisolated static var connectionPrefix: String { "oca/udp" }
 
     var subscriptions = [OcaONo: NSMutableSet]()
     let peerAddress: AnySocketAddress

@@ -19,7 +19,7 @@ import Foundation
 import SwiftOCA
 
 actor AES70LocalController: AES70ControllerPrivate {
-    static var connectionPrefix: String { "oca/local" }
+    nonisolated static var connectionPrefix: String { "oca/local" }
 
     var lastMessageReceivedTime = ContinuousClock.now
     var keepAliveInterval = Duration.seconds(0)
