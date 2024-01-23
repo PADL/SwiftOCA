@@ -148,7 +148,42 @@ open class OcaDeviceManager: OcaManager {
     )
     public var deviceRevisionID: OcaProperty<OcaString>.PropertyValue
 
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.15"),
+        getMethodID: OcaMethodID("3.21")
+    )
+    public var manufacturer: OcaProperty<OcaManufacturer>.PropertyValue
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.16"),
+        getMethodID: OcaMethodID("3.22")
+    )
+    public var product: OcaProperty<OcaProduct>.PropertyValue
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.17"),
+        getMethodID: OcaMethodID("3.23")
+    )
+    public var operationalState: OcaProperty<OcaDeviceOperationalState>.PropertyValue
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.18"),
+        getMethodID: OcaMethodID("3.24"),
+        setMethodID: OcaMethodID("3.25")
+    )
+    public var loggingEnabled: OcaProperty<OcaBoolean>.PropertyValue
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.19"),
+        getMethodID: OcaMethodID("3.26")
+    )
+    public var mostRecentPatchDatasetONo: OcaProperty<OcaONo>.PropertyValue
+
     convenience init() {
         self.init(objectNumber: OcaDeviceManagerONo)
+    }
+
+    public func applyPatch(datasetONo: OcaONo) async throws {
+        try await sendCommandRrq(methodID: OcaMethodID("3.27"), parameter: datasetONo)
     }
 }

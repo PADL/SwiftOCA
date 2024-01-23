@@ -19,6 +19,7 @@ import SwiftOCA
 
 open class OcaDeviceManager: OcaManager {
     override open class var classID: OcaClassID { OcaClassID("1.3.1") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.1"),
@@ -114,6 +115,41 @@ open class OcaDeviceManager: OcaManager {
     )
     public var deviceRevisionID = ""
 
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("3.15"),
+        getMethodID: OcaMethodID("3.21")
+    )
+    public var manufacturer = OcaManufacturer()
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("3.16"),
+        getMethodID: OcaMethodID("3.22")
+    )
+    public var product = OcaProduct()
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("3.17"),
+        getMethodID: OcaMethodID("3.23")
+    )
+    public var operationalState = OcaDeviceOperationalState()
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("3.18"),
+        getMethodID: OcaMethodID("3.24"),
+        setMethodID: OcaMethodID("3.25")
+    )
+    public var loggingEnabled = false
+
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("3.19"),
+        getMethodID: OcaMethodID("3.26")
+    )
+    public var mostRecentPatchDatasetONo: OcaONo = OcaInvalidONo
+
+    open func applyPatch(datasetONo: OcaONo) async throws {
+        throw Ocp1Error.status(.notImplemented)
+    }
+
     public convenience init(deviceDelegate: AES70Device? = nil) async throws {
         try await self.init(
             objectNumber: OcaDeviceManagerONo,
@@ -121,6 +157,21 @@ open class OcaDeviceManager: OcaManager {
             deviceDelegate: deviceDelegate,
             addToRootBlock: false
         )
+    }
+
+    override public func handleCommand(
+        _ command: Ocp1Command,
+        from controller: AES70Controller
+    ) async throws -> Ocp1Response {
+        switch command.methodID {
+        case OcaMethodID("3.27"):
+            let oNo: OcaONo = try decodeCommand(command)
+            try await ensureWritable(by: controller, command: command)
+            try await applyPatch(datasetONo: oNo)
+            return Ocp1Response()
+        default:
+            return try await super.handleCommand(command, from: controller)
+        }
     }
 }
 

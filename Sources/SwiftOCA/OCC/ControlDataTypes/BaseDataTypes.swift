@@ -356,6 +356,10 @@ public struct OcaGlobalTypeIdentifier: Codable, Sendable {
 public struct OcaOrganizationID: Codable, Sendable, CustomStringConvertible {
     public let id: (OcaUint8, OcaUint8, OcaUint8)
 
+    public init() {
+        id = (0, 0, 0)
+    }
+
     public init(_ id: (OcaUint8, OcaUint8, OcaUint8)) {
         self.id = id
     }
