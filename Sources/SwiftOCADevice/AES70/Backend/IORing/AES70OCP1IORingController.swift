@@ -129,10 +129,16 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate,
             type: messageType
         )
         let networkAddress = try Ocp1NetworkAddress(networkAddress: destinationAddress)
-        let peerAddress = try sockaddr_storage(
-            family: networkAddress.family,
-            presentationAddress: networkAddress.presentationAddress
-        )
+        let peerAddress: SocketAddress
+        if networkAddress.address.isEmpty {
+            // empty string means send to controller address but via UDP
+            peerAddress = self.peerAddress
+        } else {
+            peerAddress = try sockaddr_storage(
+                family: networkAddress.family,
+                presentationAddress: networkAddress.presentationAddress
+            )
+        }
         let messagePdu = try Message(address: peerAddress, buffer: Array(messagePduData))
         try await notificationSocket.sendMessage(messagePdu)
     }
