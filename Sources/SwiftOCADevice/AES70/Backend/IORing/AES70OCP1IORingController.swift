@@ -35,7 +35,8 @@ protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equata
 }
 
 actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate,
-    AES70ControllerLightweightNotifying, CustomStringConvertible {
+    AES70ControllerLightweightNotifying, CustomStringConvertible
+{
     nonisolated static var connectionPrefix: String { "oca/tcp" }
 
     var subscriptions = [OcaONo: NSMutableSet]()

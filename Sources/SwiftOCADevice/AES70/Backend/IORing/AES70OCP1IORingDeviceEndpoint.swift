@@ -134,7 +134,10 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
                     for try await client in clients {
                         Task {
                             let controller =
-                                try await AES70OCP1IORingStreamController(socket: client, notificationSocket: notificationSocket)
+                                try await AES70OCP1IORingStreamController(
+                                    socket: client,
+                                    notificationSocket: notificationSocket
+                                )
                             await controller.handle(for: self)
                         }
                     }
@@ -170,7 +173,7 @@ public final class AES70OCP1IORingStreamDeviceEndpoint: AES70OCP1IORingDeviceEnd
     }
 
     private func makeNotificationSocket() throws -> Socket {
-        return try Socket(ring: ring, domain: address.family, type: SOCK_DGRAM, protocol: 0)
+        try Socket(ring: ring, domain: address.family, type: SOCK_DGRAM, protocol: 0)
     }
 
     override public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
