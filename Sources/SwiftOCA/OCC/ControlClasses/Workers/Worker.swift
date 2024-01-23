@@ -16,6 +16,7 @@
 
 open class OcaWorker: OcaRoot {
     override public class var classID: OcaClassID { OcaClassID("1.1.1") }
+    override public class var classVersion: OcaClassVersionNumber { 3 }
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.1"),
@@ -52,6 +53,13 @@ open class OcaWorker: OcaRoot {
     )
     public var latency: OcaProperty<OcaTimeInterval?>.PropertyValue
 
+    @OcaProperty(
+        propertyID: OcaPropertyID("2.6"),
+        getMethodID: OcaMethodID("2.14"),
+        setMethodID: OcaMethodID("2.15")
+    )
+    public var portClockMap: OcaProperty<OcaMap<OcaPortID, OcaPortClockMapEntry>>.PropertyValue
+
     // 2.3
     public func add(
         port label: OcaString,
@@ -80,12 +88,10 @@ open class OcaWorker: OcaRoot {
     }
 
     // 2.6
-    public func get(portID: OcaPortID, name: inout OcaString) async throws {
+    public func get(portID: OcaPortID) async throws -> OcaString {
         try await sendCommandRrq(
             methodID: OcaMethodID("2.7"),
-            parameter: portID,
-            responseParameterCount: 1,
-            responseParameters: &name
+            parameter: portID
         )
     }
 
@@ -102,5 +108,31 @@ open class OcaWorker: OcaRoot {
         get async throws {
             try await getPath(methodID: OcaMethodID("2.13"))
         }
+    }
+
+    public func get(portID: OcaPortID) async throws -> OcaPortClockMapEntry {
+        try await sendCommandRrq(
+            methodID: OcaMethodID("2.16"),
+            parameter: portID
+        )
+    }
+
+    public typealias SetPortClockMapEntryParameters = OcaSetPortClockMapEntryParameters
+
+    public func set(portID: OcaPortID, portClockMapEntry: OcaPortClockMapEntry) async throws {
+        try await sendCommandRrq(
+            methodID: OcaMethodID("2.16"),
+            parameters: SetPortClockMapEntryParameters(
+                portID: portID,
+                portClockMapEntry: portClockMapEntry
+            )
+        )
+    }
+
+    public func deletePortClockMapEntry(portID: OcaPortID) async throws {
+        try await sendCommandRrq(
+            methodID: OcaMethodID("2.16"),
+            parameter: portID
+        )
     }
 }

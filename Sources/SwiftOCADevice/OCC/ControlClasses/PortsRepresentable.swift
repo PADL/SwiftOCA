@@ -105,3 +105,39 @@ public extension SwiftOCADevice.OcaBlock where ActionObject: OcaPortsRepresentab
         )
     }
 }
+
+public protocol OcaPortClockMapRepresentable: OcaRoot {
+    var portClockMap: OcaMap<OcaPortID, OcaPortClockMapEntry> { get set }
+}
+
+extension OcaPortClockMapRepresentable {
+    func handleSetPortClockMapEntry(
+        _ command: Ocp1Command,
+        from controller: AES70Controller
+    ) async throws {
+        let parameters: OcaSetPortClockMapEntryParameters = try decodeCommand(command)
+        try await ensureWritable(by: controller, command: command)
+        portClockMap[parameters.portID] = parameters.portClockMapEntry
+    }
+
+    func handleDeletePortClockMapEntry(
+        _ command: Ocp1Command,
+        from controller: AES70Controller
+    ) async throws {
+        let portID: OcaPortID = try decodeCommand(command)
+        try await ensureWritable(by: controller, command: command)
+        portClockMap.removeValue(forKey: portID)
+    }
+
+    func handleGetPortClockMapEntry(
+        _ command: Ocp1Command,
+        from controller: AES70Controller
+    ) async throws -> OcaPortClockMapEntry {
+        let portID: OcaPortID = try decodeCommand(command)
+        try await ensureReadable(by: controller, command: command)
+        guard let portClockMapEntry = portClockMap[portID] else {
+            throw Ocp1Error.status(.invalidRequest)
+        }
+        return portClockMapEntry
+    }
+}

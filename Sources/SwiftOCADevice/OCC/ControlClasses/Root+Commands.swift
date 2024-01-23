@@ -18,8 +18,13 @@ import SwiftOCA
 
 extension OcaRoot {
     public func decodeCommand<U: Decodable>(_ command: Ocp1Command) throws -> U {
-        // FIXME: verify parameterCount
-        try Ocp1Decoder().decode(U.self, from: command.parameters.parameterData)
+        let response = try Ocp1Decoder().decode(U.self, from: command.parameters.parameterData)
+        if command.parameters.parameterCount != parameterCount(for: response) {
+            debugPrint(
+                "OcaRoot.decodeCommand: unexpected parameter count for \(response), got \(parameterCount(for: response)), expected \(command.parameters.parameterCount)"
+            )
+        }
+        return response
     }
 
     private func parameterCount(for mirror: Mirror) -> OcaUint8 {
@@ -38,7 +43,7 @@ extension OcaRoot {
         return count
     }
 
-    private func parameterCount<T: Encodable>(for parameters: T) -> OcaUint8 {
+    private func parameterCount<T>(for parameters: T) -> OcaUint8 {
         let parameterCount: OcaUint8
 
         if let parameters = parameters as? OcaParameterCountReflectable {

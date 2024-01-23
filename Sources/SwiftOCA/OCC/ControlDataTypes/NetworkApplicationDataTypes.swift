@@ -14,6 +14,21 @@
 // limitations under the License.
 //
 
+public struct OcaPortClockMapEntry: Codable, Sendable {
+    public let clockONo: OcaONo
+    public let srcType: OcaSamplingRateConverterType
+}
+
+public struct OcaSetPortClockMapEntryParameters: Codable, Sendable {
+    public let portID: OcaPortID
+    public let portClockMapEntry: OcaPortClockMapEntry
+
+    public init(portID: OcaPortID, portClockMapEntry: OcaPortClockMapEntry) {
+        self.portID = portID
+        self.portClockMapEntry = portClockMapEntry
+    }
+}
+
 public enum OcaNetworkAdvertisingService: OcaUint8, Codable, Sendable {
     case dnsSD = 0
     case mDNS_DNSSD = 1

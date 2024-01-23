@@ -14,11 +14,6 @@
 // limitations under the License.
 //
 
-public struct OcaPortClockMapEntry: Codable, Sendable {
-    public let clockONo: OcaONo
-    public let srcType: OcaSamplingRateConverterType
-}
-
 open class OcaMediaTransportApplication: OcaNetworkApplication {
     override public class var classID: OcaClassID { OcaClassID("1.7.1") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
@@ -63,11 +58,33 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
         getMethodID: OcaMethodID("3.6"),
         setMethodID: OcaMethodID("3.7")
     )
-    public var portClockMap: OcaProperty<[OcaPortID: OcaPortClockMapEntry]>.PropertyValue
+    public var portClockMap: OcaProperty<OcaMap<OcaPortID, OcaPortClockMapEntry>>.PropertyValue
 
-    // 3.8 setPortClockMapEntry
-    // 3.9 deletePortClockMapEntry
-    // 3.10 getPortClockMapEntry
+    public func get(portID: OcaPortID) async throws -> OcaPortClockMapEntry {
+        try await sendCommandRrq(
+            methodID: OcaMethodID("3.10"),
+            parameter: portID
+        )
+    }
+
+    public typealias SetPortClockMapEntryParameters = OcaSetPortClockMapEntryParameters
+
+    public func set(portID: OcaPortID, portClockMapEntry: OcaPortClockMapEntry) async throws {
+        try await sendCommandRrq(
+            methodID: OcaMethodID("3.8"),
+            parameters: SetPortClockMapEntryParameters(
+                portID: portID,
+                portClockMapEntry: portClockMapEntry
+            )
+        )
+    }
+
+    public func deletePortClockMapEntry(portID: OcaPortID) async throws {
+        try await sendCommandRrq(
+            methodID: OcaMethodID("3.9"),
+            parameter: portID
+        )
+    }
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.3")
