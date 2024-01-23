@@ -140,11 +140,29 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate,
 
 private extension Ocp1NetworkAddress {
     var presentationAddress: String {
-        (family == sa_family_t(AF_INET6)) ? "[\(address)]:\(port)" : "\(address):\(port)"
+        get throws {
+            switch family {
+            case sa_family_t(AF_INET):
+                return "\(address):\(port)"
+            case sa_family_t(AF_INET6):
+                return "[\(address)]:\(port)"
+            case sa_family_t(AF_LOCAL):
+                return address
+            default:
+                throw Ocp1Error.status(.parameterError)
+            }
+        }
     }
 
     var family: sa_family_t {
-        address.contains(":") ? sa_family_t(AF_INET6) : sa_family_t(AF_INET)
+        if address.hasPrefix("[") && address.contains("]") {
+            return sa_family_t(AF_INET6)
+        } else if address.contains("/") {
+            // presuming we have an absolute path to distinguish from IPv4 address
+            return sa_family_t(AF_LOCAL)
+        } else {
+            return sa_family_t(AF_INET)
+        }
     }
 }
 
