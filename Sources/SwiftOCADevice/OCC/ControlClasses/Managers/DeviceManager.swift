@@ -159,7 +159,7 @@ open class OcaDeviceManager: OcaManager {
         )
     }
 
-    override public func handleCommand(
+    override open func handleCommand(
         _ command: Ocp1Command,
         from controller: AES70Controller
     ) async throws -> Ocp1Response {
