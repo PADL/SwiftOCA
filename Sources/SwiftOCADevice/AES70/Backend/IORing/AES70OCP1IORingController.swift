@@ -25,8 +25,12 @@ import IORing
 import IORingUtils
 import SwiftOCA
 
-protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equatable, Hashable {
+protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate,
+    AES70ControllerLightweightNotifying, Actor, Equatable, Hashable
+{
     var peerAddress: AnySocketAddress { get }
+
+    func sendMessagePdu(_ messagePdu: Message) async throws
 
     func sendMessages(
         _ messages: AnyAsyncSequence<Ocp1Message>,
@@ -34,9 +38,32 @@ protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate, Actor, Equata
     ) async throws
 }
 
-actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate,
-    AES70ControllerLightweightNotifying, CustomStringConvertible
-{
+extension AES70OCP1IORingControllerPrivate {
+    func sendMessage(
+        _ message: Ocp1Message,
+        type messageType: OcaMessageType,
+        to destinationAddress: OcaNetworkAddress
+    ) async throws {
+        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
+            [message],
+            type: messageType
+        )
+        let networkAddress = try Ocp1NetworkAddress(networkAddress: destinationAddress)
+        let peerAddress: SocketAddress
+        if networkAddress.address.isEmpty {
+            // empty string means send to controller address but via UDP
+            peerAddress = self.peerAddress
+        } else {
+            peerAddress = try sockaddr_storage(
+                family: networkAddress.family,
+                presentationAddress: networkAddress.presentationAddress
+            )
+        }
+        try await sendMessagePdu(Message(address: peerAddress, buffer: Array(messagePduData)))
+    }
+}
+
+actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomStringConvertible {
     nonisolated static var connectionPrefix: String { "oca/tcp" }
 
     var subscriptions = [OcaONo: NSMutableSet]()
@@ -51,7 +78,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate,
 
     private var _messages = AsyncThrowingChannel<ControllerMessage, Error>()
     private let socket: Socket
-    private let notificationSocket: Socket
+    let notificationSocket: Socket
 
     public nonisolated var description: String {
         "\(type(of: self))(socket: \(socket))"
@@ -115,32 +142,12 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate,
         )
     }
 
-    nonisolated var identifier: String {
-        (try? socket.peerName) ?? "unknown"
+    func sendMessagePdu(_ messagePdu: Message) async throws {
+        try await notificationSocket.sendMessage(messagePdu)
     }
 
-    func sendMessage(
-        _ message: Ocp1Message,
-        type messageType: OcaMessageType,
-        to destinationAddress: OcaNetworkAddress
-    ) async throws {
-        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
-            [message],
-            type: messageType
-        )
-        let networkAddress = try Ocp1NetworkAddress(networkAddress: destinationAddress)
-        let peerAddress: SocketAddress
-        if networkAddress.address.isEmpty {
-            // empty string means send to controller address but via UDP
-            peerAddress = self.peerAddress
-        } else {
-            peerAddress = try sockaddr_storage(
-                family: networkAddress.family,
-                presentationAddress: networkAddress.presentationAddress
-            )
-        }
-        let messagePdu = try Message(address: peerAddress, buffer: Array(messagePduData))
-        try await notificationSocket.sendMessage(messagePdu)
+    nonisolated var identifier: String {
+        (try? socket.peerName) ?? "unknown"
     }
 }
 
@@ -228,7 +235,10 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
             messages,
             type: messageType
         )
-        let messagePdu = try Message(address: peerAddress, buffer: Array(messagePduData))
+        try await sendMessagePdu(Message(address: peerAddress, buffer: Array(messagePduData)))
+    }
+
+    func sendMessagePdu(_ messagePdu: Message) async throws {
         try await endpoint?.sendMessagePdu(messagePdu)
     }
 
