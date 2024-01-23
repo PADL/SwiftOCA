@@ -130,7 +130,7 @@ public extension AES70ControllerDefaultSubscribing {
             let subscription = subscription as! OcaSubscriptionManagerSubscription
 
             guard subscription.property == nil || property == subscription.property else {
-                return
+                continue
             }
 
             switch subscription.version {
