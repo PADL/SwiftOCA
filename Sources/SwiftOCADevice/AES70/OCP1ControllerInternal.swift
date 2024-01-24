@@ -125,11 +125,6 @@ extension OCP1ControllerInternal {
         lastMessageReceivedTime + (heartbeatTime * 3) < now
     }
 
-    /// returns `true` if we haven't sent any message for `keepAliveThreshold`
-    private func connectionNeedsKeepAlive(_ now: ContinuousClock.Instant) -> Bool {
-        lastMessageSentTime + heartbeatTime < now
-    }
-
     private func sendKeepAlive() async throws {
         try await sendMessage(
             Ocp1KeepAlive.keepAlive(interval: heartbeatTime),
@@ -150,10 +145,14 @@ extension OCP1ControllerInternal {
                         try? await onConnectionBecomingStale()
                         break
                     }
-                    if connectionNeedsKeepAlive(now) {
+                    let timeSinceLastMessageSent = now - lastMessageSentTime
+                    var sleepTime = heartbeatTime
+                    if timeSinceLastMessageSent >= heartbeatTime {
                         try await sendKeepAlive()
+                    } else {
+                        sleepTime -= timeSinceLastMessageSent
                     }
-                    try await Task.sleep(for: heartbeatTime)
+                    try await Task.sleep(for: sleepTime)
                 } while !Task.isCancelled
             }
         } else if heartbeatTime == .zero, let keepAliveTask {
