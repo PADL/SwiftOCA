@@ -25,7 +25,7 @@ import Foundation
 import SwiftOCA
 
 fileprivate extension AsyncStream where Element == WSMessage {
-    var ocp1DecodedMessages: AnyAsyncSequence<AES70ControllerPrivate.ControllerMessage> {
+    var ocp1DecodedMessages: AnyAsyncSequence<AES70OCP1ControllerPrivate.ControllerMessage> {
         flatMap {
             // TODO: handle OCP.1 PDUs split over multiple frames
             guard case let .data(data) = $0 else {
@@ -47,7 +47,7 @@ fileprivate extension AsyncStream where Element == WSMessage {
 }
 
 /// A remote WebSocket endpoint
-actor AES70OCP1FlyingFoxController: AES70ControllerPrivate, CustomStringConvertible {
+actor AES70OCP1FlyingFoxController: AES70OCP1ControllerPrivate, CustomStringConvertible {
     nonisolated static var connectionPrefix: String { "ocaws/tcp" }
 
     var subscriptions = [OcaONo: NSMutableSet]()
@@ -85,10 +85,9 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate, CustomStringConverti
     }
 
     func sendMessages(
-        _ messages: AnyAsyncSequence<Ocp1Message>,
+        _ messages: [Ocp1Message],
         type messageType: OcaMessageType
     ) async throws {
-        let messages = try await messages.collect()
         let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
             messages,
             type: messageType

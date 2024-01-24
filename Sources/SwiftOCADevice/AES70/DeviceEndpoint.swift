@@ -23,7 +23,7 @@ public protocol AES70DeviceEndpoint {
 }
 
 protocol AES70DeviceEndpointPrivate: AES70DeviceEndpoint {
-    associatedtype ControllerType: AES70ControllerPrivate
+    associatedtype ControllerType: AES70OCP1ControllerPrivate
 
     var device: AES70Device { get }
     var logger: Logger { get }

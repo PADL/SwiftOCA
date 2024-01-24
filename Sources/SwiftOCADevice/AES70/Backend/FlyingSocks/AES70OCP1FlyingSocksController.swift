@@ -24,7 +24,7 @@ import Foundation
 import SwiftOCA
 
 /// A remote endpoint
-actor AES70OCP1FlyingSocksController: AES70ControllerPrivate, CustomStringConvertible {
+actor AES70OCP1FlyingSocksController: AES70OCP1ControllerPrivate, CustomStringConvertible {
     nonisolated static var connectionPrefix: String { "oca/tcp" }
 
     var subscriptions = [OcaONo: NSMutableSet]()
@@ -58,10 +58,9 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate, CustomStringConver
     }
 
     func sendMessages(
-        _ messages: AnyAsyncSequence<Ocp1Message>,
+        _ messages: [Ocp1Message],
         type messageType: OcaMessageType
     ) async throws {
-        let messages = try await messages.collect()
         let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
             messages,
             type: messageType
@@ -136,14 +135,14 @@ private extension AES70OCP1FlyingSocksController {
 }
 
 private extension AsyncThrowingStream
-    where Element == AsyncSyncSequence<[AES70ControllerPrivate.ControllerMessage]>,
+    where Element == AsyncSyncSequence<[AES70OCP1ControllerPrivate.ControllerMessage]>,
     Failure == Error
 {
     static func decodingMessages<S: AsyncChunkedSequence>(from bytes: S) -> Self
         where S.Element == UInt8
     {
         AsyncThrowingStream<
-            AsyncSyncSequence<[AES70ControllerPrivate.ControllerMessage]>,
+            AsyncSyncSequence<[AES70OCP1ControllerPrivate.ControllerMessage]>,
             Error
         > {
             do {

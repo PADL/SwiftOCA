@@ -25,7 +25,7 @@ import IORing
 import IORingUtils
 import SwiftOCA
 
-protocol AES70OCP1IORingControllerPrivate: AES70ControllerPrivate,
+protocol AES70OCP1IORingControllerPrivate: AES70OCP1ControllerPrivate,
     AES70ControllerLightweightNotifying, Actor, Equatable, Hashable
 {
     var peerAddress: AnySocketAddress { get }
@@ -128,10 +128,9 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
     }
 
     func sendMessages(
-        _ messages: AnyAsyncSequence<Ocp1Message>,
+        _ messages: [Ocp1Message],
         type messageType: OcaMessageType
     ) async throws {
-        let messages = try await messages.collect()
         let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
             messages,
             type: messageType
@@ -229,10 +228,9 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
     }
 
     func sendMessages(
-        _ messages: AnyAsyncSequence<Ocp1Message>,
+        _ messages: [Ocp1Message],
         type messageType: OcaMessageType
     ) async throws {
-        let messages = try await messages.collect()
         let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
             messages,
             type: messageType
