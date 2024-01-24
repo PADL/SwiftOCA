@@ -100,10 +100,11 @@ public enum DeviceApp {
 
         try await serializeDeserialize(await device.rootBlock)
 
-        let _ = try await SwiftOCADevice.OcaControlNetwork(
+        let controlNetwork = try await SwiftOCADevice.OcaControlNetwork(
             role: "Control Network",
             deviceDelegate: device
         )
+        controlNetwork.state = .running
 
         signal(SIGPIPE, SIG_IGN)
 
