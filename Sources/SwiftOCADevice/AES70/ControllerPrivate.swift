@@ -126,13 +126,12 @@ extension AES70ControllerPrivate {
 
     /// returns `true` if insufficient keepalives were received to keep connection fresh
     private func connectionIsStale(_ now: ContinuousClock.Instant) -> Bool {
-        let keepAliveThreshold = heartbeatTime * 3
-        return now - (lastMessageReceivedTime + keepAliveThreshold) > .seconds(0)
+        lastMessageReceivedTime + (heartbeatTime * 3) < now
     }
 
     /// returns `true` if we haven't sent any message for `keepAliveThreshold`
     private func connectionNeedsKeepAlive(_ now: ContinuousClock.Instant) -> Bool {
-        now - (lastMessageSentTime + heartbeatTime) > .seconds(0)
+        lastMessageSentTime + heartbeatTime < now
     }
 
     private func sendKeepAlive() async throws {
