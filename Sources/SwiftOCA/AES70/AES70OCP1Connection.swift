@@ -170,19 +170,6 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         try await connectDeviceWithTimeout()
     }
 
-    private func sendKeepAlives() -> Task<(), Error>? {
-        guard heartbeatTime > .zero else { return nil }
-
-        return Task(priority: .background) { [self] in
-            repeat {
-                if lastMessageSentTime + heartbeatTime < ContinuousClock().now {
-                    try await sendKeepAlive()
-                }
-                try await Task.sleep(for: heartbeatTime)
-            } while !Task.isCancelled
-        }
-    }
-
     private func connectDeviceWithTimeout() async throws {
         do {
             try await withThrowingTimeout(of: options.connectionTimeout) {
@@ -198,7 +185,6 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
         monitorTask = Task {
             try await monitor!.run()
         }
-        keepAliveTask = sendKeepAlives()
 
         subscriptions = [:]
 

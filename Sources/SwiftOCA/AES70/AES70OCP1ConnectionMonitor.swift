@@ -107,6 +107,31 @@ extension AES70OCP1Connection.Monitor {
         }
     }
 
+    private func keepAlive(_ connection: AES70OCP1Connection) async throws {
+        let heartbeatTime = await connection.heartbeatTime
+        let keepAliveThreshold = heartbeatTime * 3
+
+        repeat {
+            let now = ContinuousClock.now
+            if now - lastMessageReceivedTime >= keepAliveThreshold {
+                await connection.logger
+                    .info(
+                        "\(connection): no heartbeat packet received in past \(keepAliveThreshold)"
+                    )
+                throw Ocp1Error.responseTimeout
+            }
+
+            let timeSinceLastMessageSent = await now - connection.lastMessageSentTime
+            var sleepTime = heartbeatTime
+            if timeSinceLastMessageSent >= heartbeatTime {
+                try await connection.sendKeepAlive()
+            } else {
+                sleepTime -= timeSinceLastMessageSent
+            }
+            try await Task.sleep(for: sleepTime)
+        } while true
+    }
+
     func receiveMessages(_ connection: AES70OCP1Connection) async throws {
         try await withThrowingTaskGroup(of: Void.self) { group in
             let heartbeatTime = await connection.heartbeatTime
@@ -118,22 +143,8 @@ extension AES70OCP1Connection.Monitor {
                 } while true
             }
             if heartbeatTime > .zero {
-                let keepAliveThreshold = heartbeatTime * 3
-
-                group.addTask { [self] in
-                    repeat {
-                        if await ContinuousClock
-                            .now - (lastMessageReceivedTime + keepAliveThreshold) >
-                            .seconds(0)
-                        {
-                            await connection.logger
-                                .info(
-                                    "\(connection): no heartbeat packet received in past \(keepAliveThreshold)"
-                                )
-                            throw Ocp1Error.responseTimeout
-                        }
-                        try await Task.sleep(for: heartbeatTime)
-                    } while true
+                group.addTask(priority: .background) {
+                    try await self.keepAlive(connection)
                 }
             }
             try await group.next()
