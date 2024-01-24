@@ -26,7 +26,7 @@ extension AES70Controller {
 }
 
 open class OcaRoot: CustomStringConvertible, Codable, @unchecked
-Sendable {
+Sendable, OcaKeyPathMarkerProtocol {
     var notificationTasks = [OcaPropertyID: Task<(), Error>]()
 
     open class var classID: OcaClassID { OcaClassID("1") }
@@ -108,7 +108,7 @@ Sendable {
     }
 
     deinit {
-        for (_, propertyKeyPath) in allPropertyKeyPaths {
+        for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
             let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
             property.finish()
         }
@@ -163,7 +163,7 @@ Sendable {
         _ command: Ocp1Command,
         from controller: any AES70Controller
     ) async throws -> Ocp1Response {
-        for (_, propertyKeyPath) in allPropertyKeyPaths {
+        for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
             let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
 
             if command.methodID == property.getMethodID {
@@ -342,39 +342,17 @@ extension OcaRoot: Hashable {
     }
 }
 
-extension OcaRoot {
-    private subscript(_ wrapper: _MirrorWrapper, checkedMirrorDescendant key: String) -> Any {
-        wrapper.wrappedValue.descendant(key)!
-    }
+protocol OcaKeyPathMarkerProtocol: AnyObject {}
 
-    private var allKeyPaths: [String: PartialKeyPath<OcaRoot>] {
-        // TODO: Mirror is inefficient
-        var membersToKeyPaths = [String: PartialKeyPath<OcaRoot>]()
-        var mirror: Mirror? = Mirror(reflecting: self)
-
-        repeat {
-            if let mirror {
-                for case let (key?, _) in mirror.children {
-                    guard let dictionaryKey = key.deletingPrefix("_") else { continue }
-                    membersToKeyPaths[dictionaryKey] = \Self
-                        .[_MirrorWrapper(mirror), checkedMirrorDescendant: key] as PartialKeyPath
-                }
+extension OcaKeyPathMarkerProtocol where Self: OcaRoot {
+    var allDevicePropertyKeyPaths: [String: PartialKeyPath<Self>] {
+        _allKeyPaths(value: self).reduce(into: [:]) {
+            if $1.key.hasPrefix("_") {
+                $0[String($1.key.dropFirst())] = $1.value
             }
-            mirror = mirror?.superclassMirror
-        } while mirror != nil
-
-        return membersToKeyPaths
-    }
-
-    var allPropertyKeyPaths: [String: PartialKeyPath<OcaRoot>] {
-        allKeyPaths.filter { self[keyPath: $0.value] is any OcaDevicePropertyRepresentable }
-    }
-}
-
-private extension String {
-    func deletingPrefix(_ prefix: String) -> String? {
-        guard hasPrefix(prefix) else { return nil }
-        return String(dropFirst(prefix.count))
+        }.filter {
+            self[keyPath: $0.value] is any OcaDevicePropertyRepresentable
+        }
     }
 }
 

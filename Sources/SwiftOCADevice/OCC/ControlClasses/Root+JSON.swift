@@ -34,7 +34,7 @@ public extension OcaRoot {
         dict[objectNumberJSONKey] = objectNumber
         dict[classIDJSONKey] = Self.classID.description
 
-        for (_, propertyKeyPath) in allPropertyKeyPaths {
+        for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
             let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
             dict[property.propertyID.description] = try? property.getJsonValue(object: self)
         }
@@ -66,7 +66,7 @@ public extension AES70Device {
             throw Ocp1Error.objectClassMismatch
         }
 
-        for (_, propertyKeyPath) in object.allPropertyKeyPaths {
+        for (_, propertyKeyPath) in object.allDevicePropertyKeyPaths {
             let property = object[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
             guard let value = jsonObject[property.propertyID.description] else {
                 throw Ocp1Error.status(.badFormat)

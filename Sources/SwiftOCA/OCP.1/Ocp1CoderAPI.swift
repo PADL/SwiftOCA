@@ -29,3 +29,16 @@ public extension Decoder {
 }
 
 public protocol Ocp1LongList {}
+
+public func _ocp1ParameterCount<T>(type: T.Type) -> OcaUint8 {
+    var count: OcaUint8 = 0
+    _forEachField(of: type) { _, _, _, _ in
+        count += 1
+        return true
+    }
+    return count
+}
+
+public func _ocp1ParameterCount<T>(value: T) -> OcaUint8 {
+    _ocp1ParameterCount(type: type(of: value))
+}

@@ -16,10 +16,13 @@
 
 import SwiftOCA
 
-extension OcaRoot {
-    public func decodeCommand<U: Decodable>(_ command: Ocp1Command) throws -> U {
+public extension OcaRoot {
+    func decodeCommand<U: Decodable>(
+        _ command: Ocp1Command,
+        responseParameterCount: OcaUint8? = nil
+    ) throws -> U {
         let response = try Ocp1Decoder().decode(U.self, from: command.parameters.parameterData)
-        let responseParameterCount = parameterCount(for: response)
+        let responseParameterCount = responseParameterCount ?? _ocp1ParameterCount(type: U.self)
         if command.parameters.parameterCount != responseParameterCount {
             Task {
                 await deviceDelegate?.logger.trace(
@@ -30,42 +33,14 @@ extension OcaRoot {
         return response
     }
 
-    private func parameterCount(for mirror: Mirror) -> OcaUint8 {
-        let count: OcaUint8
-
-        switch mirror.displayStyle {
-        case .struct:
-            fallthrough
-        case .class:
-            count = OcaUint8(mirror.children.count)
-        // FIXME: we'll probably need to use Echo for Optional
-        default:
-            count = 1
-        }
-
-        return count
-    }
-
-    private func parameterCount<T>(for parameters: T) -> OcaUint8 {
-        let parameterCount: OcaUint8
-
-        if let parameters = parameters as? OcaParameterCountReflectable {
-            parameterCount = type(of: parameters).responseParameterCount
-        } else {
-            let mirror = Mirror(reflecting: parameters)
-            parameterCount = self.parameterCount(for: mirror)
-        }
-
-        return parameterCount
-    }
-
-    public func encodeResponse<T: Encodable>(
+    func encodeResponse<T: Encodable>(
         _ parameters: T,
+        parameterCount: OcaUint8? = nil,
         statusCode: OcaStatus = .ok
     ) throws -> Ocp1Response {
         let encoder = Ocp1Encoder()
         let parameters = Ocp1Parameters(
-            parameterCount: parameterCount(for: parameters),
+            parameterCount: parameterCount ?? _ocp1ParameterCount(value: parameters),
             parameterData: try encoder.encode(parameters)
         )
 
