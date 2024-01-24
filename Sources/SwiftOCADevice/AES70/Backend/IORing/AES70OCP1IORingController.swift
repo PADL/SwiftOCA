@@ -25,29 +25,20 @@ import IORing
 import IORingUtils
 import SwiftOCA
 
-protocol AES70OCP1IORingControllerPrivate: AES70OCP1ControllerPrivate,
-    AES70ControllerLightweightNotifying, Actor, Equatable, Hashable
+protocol AES70OCP1IORingControllerPrivate: OCP1ControllerInternal,
+    OCP1ControllerInternalLightweightNotifyingInternal, Actor,
+    Equatable, Hashable
 {
     var peerAddress: AnySocketAddress { get }
 
     func sendMessagePdu(_ messagePdu: Message) async throws
-
-    func sendMessages(
-        _ messages: AnyAsyncSequence<Ocp1Message>,
-        type messageType: OcaMessageType
-    ) async throws
 }
 
 extension AES70OCP1IORingControllerPrivate {
-    func sendMessage(
-        _ message: Ocp1Message,
-        type messageType: OcaMessageType,
+    func sendOcp1EncodedData(
+        _ data: Data,
         to destinationAddress: OcaNetworkAddress
     ) async throws {
-        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
-            [message],
-            type: messageType
-        )
         let networkAddress = try Ocp1NetworkAddress(networkAddress: destinationAddress)
         let peerAddress: SocketAddress
         if networkAddress.address.isEmpty {
@@ -59,7 +50,7 @@ extension AES70OCP1IORingControllerPrivate {
                 presentationAddress: networkAddress.presentationAddress
             )
         }
-        try await sendMessagePdu(Message(address: peerAddress, buffer: Array(messagePduData)))
+        try await sendMessagePdu(Message(address: peerAddress, buffer: [UInt8](data)))
     }
 }
 
@@ -127,17 +118,10 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
         }
     }
 
-    func sendMessages(
-        _ messages: [Ocp1Message],
-        type messageType: OcaMessageType
-    ) async throws {
-        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
-            messages,
-            type: messageType
-        )
+    func sendOcp1EncodedData(_ data: Data) async throws {
         _ = try await socket.write(
-            Array(messagePduData),
-            count: messagePduData.count,
+            [UInt8](data),
+            count: data.count,
             awaitingAllWritten: true
         )
     }
@@ -227,19 +211,8 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
         }
     }
 
-    func sendMessages(
-        _ messages: [Ocp1Message],
-        type messageType: OcaMessageType
-    ) async throws {
-        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
-            messages,
-            type: messageType
-        )
-        try await sendMessagePdu(Message(address: peerAddress, buffer: Array(messagePduData)))
-    }
-
-    func sendMessagePdu(_ messagePdu: Message) async throws {
-        try await endpoint?.sendMessagePdu(messagePdu)
+    func sendOcp1EncodedData(_ data: Data) async throws {
+        try await sendMessagePdu(Message(address: peerAddress, buffer: [UInt8](data)))
     }
 
     nonisolated var identifier: String {

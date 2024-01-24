@@ -18,7 +18,7 @@ import AsyncExtensions
 import Foundation
 import SwiftOCA
 
-actor AES70LocalController: AES70OCP1ControllerPrivate {
+actor AES70LocalController: OCP1ControllerInternal {
     nonisolated static var connectionPrefix: String { "oca/local" }
 
     var lastMessageReceivedTime = ContinuousClock.now
@@ -53,15 +53,8 @@ actor AES70LocalController: AES70OCP1ControllerPrivate {
         }.eraseToAnyAsyncSequence()
     }
 
-    func sendMessages(
-        _ messages: [Ocp1Message],
-        type messageType: OcaMessageType
-    ) async throws {
-        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
-            messages,
-            type: messageType
-        )
-        await endpoint?.responseChannel.send(messagePduData)
+    func sendOcp1EncodedData(_ data: Data) async throws {
+        await endpoint?.responseChannel.send(data)
     }
 
     nonisolated var identifier: String {

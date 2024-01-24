@@ -76,7 +76,7 @@
 		D355925E2B51E604000F633B /* DatagramProxyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D355925B2B51E5DF000F633B /* DatagramProxyController.swift */; };
 		D35592602B520DFC000F633B /* ControllerDefaultSubscribing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */; };
 		D35592622B520E21000F633B /* Logger+Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592612B520E21000F633B /* Logger+Controller.swift */; };
-		D35592642B520E48000F633B /* ControllerPrivate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592632B520E48000F633B /* ControllerPrivate.swift */; };
+		D35592642B520E48000F633B /* OCP1ControllerInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592632B520E48000F633B /* OCP1ControllerInternal.swift */; };
 		D36ECA212A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */; };
 		D36ECA2C2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */; };
 		D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */; };
@@ -347,7 +347,7 @@
 		D355925B2B51E5DF000F633B /* DatagramProxyController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatagramProxyController.swift; sourceTree = "<group>"; };
 		D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerDefaultSubscribing.swift; sourceTree = "<group>"; };
 		D35592612B520E21000F633B /* Logger+Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logger+Controller.swift"; sourceTree = "<group>"; };
-		D35592632B520E48000F633B /* ControllerPrivate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerPrivate.swift; sourceTree = "<group>"; };
+		D35592632B520E48000F633B /* OCP1ControllerInternal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCP1ControllerInternal.swift; sourceTree = "<group>"; };
 		D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1FlyingSocksConnection.swift; sourceTree = "<group>"; };
 		D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAddressToString.swift; sourceTree = "<group>"; };
@@ -658,7 +658,7 @@
 			children = (
 				D32229C12ABC270900B56B6B /* Backend */,
 				D3C11DBC2A78A3DC00452B2A /* Controller.swift */,
-				D35592632B520E48000F633B /* ControllerPrivate.swift */,
+				D35592632B520E48000F633B /* OCP1ControllerInternal.swift */,
 				D35592612B520E21000F633B /* Logger+Controller.swift */,
 				D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */,
 				D3C11DB82A789C0400452B2A /* DeviceEndpoint.swift */,
@@ -1548,7 +1548,7 @@
 				D351F2102A729C36008C5513 /* LevelSensor.swift in Sources */,
 				D355925E2B51E604000F633B /* DatagramProxyController.swift in Sources */,
 				D33B52902A6FD332001A1BA7 /* Root.swift in Sources */,
-				D35592642B520E48000F633B /* ControllerPrivate.swift in Sources */,
+				D35592642B520E48000F633B /* OCP1ControllerInternal.swift in Sources */,
 				D351F2182A729E29008C5513 /* Gain.swift in Sources */,
 				D3AFD38C2B4150C800A72E9A /* SummingPoint.swift in Sources */,
 				D351F2012A7132F8008C5513 /* BoundedDeviceProperty.swift in Sources */,

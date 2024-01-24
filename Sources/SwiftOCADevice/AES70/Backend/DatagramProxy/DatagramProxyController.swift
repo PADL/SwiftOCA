@@ -18,7 +18,7 @@ import AsyncExtensions
 import Foundation
 import SwiftOCA
 
-actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: AES70OCP1ControllerPrivate,
+actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: OCP1ControllerInternal,
     CustomStringConvertible
 {
     nonisolated static var connectionPrefix: String { "oca/udp" }
@@ -46,15 +46,8 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: AES70OCP1Controll
         }
     }
 
-    func sendMessages(
-        _ messages: [Ocp1Message],
-        type messageType: OcaMessageType
-    ) async throws {
-        let messagePduData = try AES70OCP1Connection.encodeOcp1MessagePdu(
-            messages,
-            type: messageType
-        )
-        endpoint?.outputStream.yield((peerID, [UInt8](messagePduData)))
+    func sendOcp1EncodedData(_ data: Data) async throws {
+        endpoint?.outputStream.yield((peerID, [UInt8](data)))
     }
 
     nonisolated var identifier: String {

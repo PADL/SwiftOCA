@@ -19,23 +19,23 @@ import Logging
 import SwiftOCA
 
 extension Logger {
-    func info(_ message: String, controller: AES70OCP1ControllerPrivate) {
+    func info(_ message: String, controller: OCP1ControllerInternal) {
         info("<\(type(of: controller).connectionPrefix)/\(controller.identifier)> \(message)")
     }
 
-    func command(_ command: Ocp1Command, on controller: AES70OCP1ControllerPrivate) {
+    func command(_ command: Ocp1Command, on controller: OCP1ControllerInternal) {
         trace(
             "<\(type(of: controller).connectionPrefix)/\(controller.identifier)> command \(command)"
         )
     }
 
-    func response(_ response: Ocp1Response, on controller: AES70OCP1ControllerPrivate) {
+    func response(_ response: Ocp1Response, on controller: OCP1ControllerInternal) {
         trace(
             "<\(type(of: controller).connectionPrefix)/\(controller.identifier)> response \(response)"
         )
     }
 
-    func error(_ error: Error, controller: AES70OCP1ControllerPrivate) {
+    func error(_ error: Error, controller: OCP1ControllerInternal) {
         warning(
             "<\(type(of: controller).connectionPrefix)/\(controller.identifier)> error \(error)"
         )

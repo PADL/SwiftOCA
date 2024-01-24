@@ -23,7 +23,7 @@ import SwiftOCA
 /// AES70ControllerPrivate should eventually be merged into AES70Controller once we are ready to
 /// support out-of-tree endpoints
 
-protocol AES70OCP1ControllerPrivate: AES70ControllerDefaultSubscribing, AnyActor {
+protocol OCP1ControllerInternal: AES70ControllerDefaultSubscribing, AnyActor {
     nonisolated static var connectionPrefix: String { get }
 
     typealias ControllerMessage = (Ocp1Message, Bool)
@@ -46,11 +46,7 @@ protocol AES70OCP1ControllerPrivate: AES70ControllerDefaultSubscribing, AnyActor
     /// keep alive task
     var keepAliveTask: Task<(), Error>? { get set }
 
-    /// encode and send a set of messages
-    func sendMessages(
-        _ messages: [Ocp1Message],
-        type messageType: OcaMessageType
-    ) async throws
+    func sendOcp1EncodedData(_ data: Data) async throws
 
     /// cleanup
     func onConnectionBecomingStale() async throws
@@ -59,7 +55,7 @@ protocol AES70OCP1ControllerPrivate: AES70ControllerDefaultSubscribing, AnyActor
     func close() async throws
 }
 
-extension AES70OCP1ControllerPrivate {
+extension OCP1ControllerInternal {
     /// handle a single message
     func handle<Endpoint: AES70DeviceEndpointPrivate>(
         for endpoint: Endpoint,
@@ -195,8 +191,18 @@ extension AES70OCP1ControllerPrivate {
         type messageType: OcaMessageType
     ) async throws {
         try await sendMessages([message], type: messageType)
-        // FIXME: this isn't necessarily the ideal place to update this if sendMessages() has other callers
+    }
+
+    func sendMessages(
+        _ messages: [Ocp1Message],
+        type messageType: OcaMessageType
+    ) async throws {
         lastMessageSentTime = .now
+
+        try await sendOcp1EncodedData(AES70OCP1Connection.encodeOcp1MessagePdu(
+            messages,
+            type: messageType
+        ))
     }
 }
 
@@ -208,7 +214,7 @@ extension AES70Device {
     #endif
 
     static func receiveMessages(_ getChunk: GetChunk) async throws
-        -> [AES70OCP1ControllerPrivate.ControllerMessage]
+        -> [OCP1ControllerInternal.ControllerMessage]
     {
         var messagePduData = try await getChunk(AES70OCP1Connection.MinimumPduSize)
 
@@ -247,5 +253,25 @@ extension AES70Device {
 extension Duration {
     var timeInterval: TimeInterval {
         TimeInterval(components.seconds) + TimeInterval(components.attoseconds) * 1e-18
+    }
+}
+
+protocol OCP1ControllerInternalLightweightNotifyingInternal: AES70ControllerLightweightNotifying {
+    func sendOcp1EncodedData(
+        _ data: Data,
+        to destinationAddress: OcaNetworkAddress
+    ) async throws
+}
+
+extension OCP1ControllerInternalLightweightNotifyingInternal {
+    func sendMessage(
+        _ message: Ocp1Message,
+        type messageType: OcaMessageType,
+        to destinationAddress: OcaNetworkAddress
+    ) async throws {
+        try await sendOcp1EncodedData(AES70OCP1Connection.encodeOcp1MessagePdu(
+            [message],
+            type: messageType
+        ), to: destinationAddress)
     }
 }
