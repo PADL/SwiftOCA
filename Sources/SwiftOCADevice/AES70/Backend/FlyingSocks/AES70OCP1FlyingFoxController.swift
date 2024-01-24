@@ -58,6 +58,7 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate, CustomStringConverti
 
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = ContinuousClock.now
+    var lastMessageSentTime = ContinuousClock.now
 
     var messages: AsyncExtensions.AnyAsyncSequence<ControllerMessage> {
         inputStream.ocp1DecodedMessages.eraseToAnyAsyncSequence()

@@ -71,6 +71,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
     var receiveMessageTask: Task<(), Never>?
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = ContinuousClock.now
+    var lastMessageSentTime = ContinuousClock.now
 
     var messages: AnyAsyncSequence<ControllerMessage> {
         _messages.eraseToAnyAsyncSequence()
@@ -201,6 +202,7 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
     let peerAddress: AnySocketAddress
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = ContinuousClock.now
+    var lastMessageSentTime = ContinuousClock.now
 
     private weak var endpoint: AES70OCP1IORingDatagramDeviceEndpoint?
 

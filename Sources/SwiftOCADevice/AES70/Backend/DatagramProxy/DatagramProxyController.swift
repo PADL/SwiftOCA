@@ -27,6 +27,7 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: AES70ControllerPr
     var subscriptions = [OcaONo: NSMutableSet]()
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = ContinuousClock.now
+    var lastMessageSentTime = ContinuousClock.now
 
     private weak var endpoint: DatagramProxyDeviceEndpoint<T>?
 

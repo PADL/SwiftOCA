@@ -30,6 +30,7 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate, CustomStringConver
     var subscriptions = [OcaONo: NSMutableSet]()
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = ContinuousClock.now
+    var lastMessageSentTime = ContinuousClock.now
 
     private let address: String
     private let socket: AsyncSocket

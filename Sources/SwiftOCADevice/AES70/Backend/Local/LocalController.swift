@@ -22,6 +22,7 @@ actor AES70LocalController: AES70ControllerPrivate {
     nonisolated static var connectionPrefix: String { "oca/local" }
 
     var lastMessageReceivedTime = ContinuousClock.now
+    var lastMessageSentTime = ContinuousClock.now
     var keepAliveInterval = Duration.seconds(0)
     var keepAliveTask: Task<(), Error>?
 

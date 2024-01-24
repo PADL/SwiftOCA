@@ -34,6 +34,9 @@ protocol AES70ControllerPrivate: AES70ControllerDefaultSubscribing, AnyActor {
     /// a sequence of (message, isRrq) where isRrq indicates if a response is required
     var messages: AnyAsyncSequence<ControllerMessage> { get }
 
+    /// last message sent time
+    var lastMessageSentTime: ContinuousClock.Instant { get set }
+
     /// last message received time
     var lastMessageReceivedTime: ContinuousClock.Instant { get set }
 
@@ -57,7 +60,7 @@ protocol AES70ControllerPrivate: AES70ControllerDefaultSubscribing, AnyActor {
 }
 
 extension AES70ControllerPrivate {
-    /// handle a singlam essage
+    /// handle a single message
     func handle<Endpoint: AES70DeviceEndpointPrivate>(
         for endpoint: Endpoint,
         message: Ocp1Message,
@@ -122,9 +125,14 @@ extension AES70ControllerPrivate {
     }
 
     /// returns `true` if insufficient keepalives were received to keep connection fresh
-    private var connectionIsStale: Bool {
+    private func connectionIsStale(_ now: ContinuousClock.Instant) -> Bool {
         let keepAliveThreshold = keepAliveInterval * 3
-        return ContinuousClock.now - (lastMessageReceivedTime + keepAliveThreshold) > .seconds(0)
+        return now - (lastMessageReceivedTime + keepAliveThreshold) > .seconds(0)
+    }
+
+    /// returns `true` if we haven't sent any message for `keepAliveThreshold`
+    private func connectionNeedsKeepAlive(_ now: ContinuousClock.Instant) -> Bool {
+        now - (lastMessageSentTime + keepAliveInterval) > .seconds(0)
     }
 
     private func sendKeepAlive() async throws {
@@ -134,21 +142,27 @@ extension AES70ControllerPrivate {
         )
     }
 
+    /// AES70-3 notes that both controller and device send `KeepAlive` messages if they haven't
+    /// yet received (or sent) another message during `HeartbeatTime`.
     func keepAliveIntervalDidChange(from oldValue: Duration) {
-        guard keepAliveInterval != oldValue else { return }
-
-        if keepAliveInterval != .zero {
+        if keepAliveInterval != .zero, (keepAliveInterval != oldValue || keepAliveTask == nil) {
+            // if we have a keepalive interval and it has changed, or we haven't yet started
+            // the keepalive task, (re)start it
             keepAliveTask = Task<(), Error> {
                 repeat {
-                    if connectionIsStale {
+                    let now = ContinuousClock.now
+                    if connectionIsStale(now) {
                         try? await onConnectionBecomingStale()
                         break
                     }
-                    try await sendKeepAlive()
+                    if connectionNeedsKeepAlive(now) {
+                        try await sendKeepAlive()
+                    }
                     try await Task.sleep(for: keepAliveInterval)
                 } while !Task.isCancelled
             }
-        } else if let keepAliveTask {
+        } else if keepAliveInterval == .zero, let keepAliveTask {
+            // otherwise if the new interval is zero, cancel the task (if any)
             keepAliveTask.cancel()
             self.keepAliveTask = nil
         }
@@ -183,6 +197,8 @@ extension AES70ControllerPrivate {
     ) async throws {
         let sequence: AsyncSyncSequence<[Ocp1Message]> = [message].async
         try await sendMessages(sequence.eraseToAnyAsyncSequence(), type: messageType)
+        // FIXME: this isn't necessarily the ideal place to update this if sendMessages() has other callers
+        lastMessageSentTime = .now
     }
 }
 
