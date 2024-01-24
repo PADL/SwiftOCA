@@ -351,6 +351,11 @@ public typealias OcaProtoONo = OcaUint32
 public struct OcaGlobalTypeIdentifier: Codable, Sendable {
     public let authority: OcaOrganizationID
     public let id: OcaUint32
+
+    public init(authority: OcaOrganizationID, id: OcaUint32) {
+        self.authority = authority
+        self.id = id
+    }
 }
 
 public struct OcaOrganizationID: Codable, Sendable, CustomStringConvertible {
