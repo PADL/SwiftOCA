@@ -58,7 +58,7 @@ open class OcaApplicationNetwork: OcaRoot {
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.6"),
-        getMethodID: OcaMethodID("2.8")
+        getMethodID: OcaMethodID("2.9")
     )
     public var errorCode: OcaProperty<OcaUint16>.PropertyValue
 
