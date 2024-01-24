@@ -71,7 +71,6 @@
 		D351F2182A729E29008C5513 /* Gain.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2172A729E29008C5513 /* Gain.swift */; };
 		D351F21A2A729F48008C5513 /* VectorDeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2192A729F48008C5513 /* VectorDeviceProperty.swift */; };
 		D351F21C2A72A26E008C5513 /* Matrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F21B2A72A26E008C5513 /* Matrix.swift */; };
-		D352C1D22A7FB1F6009FF7CD /* AES70OCP1SPIConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D352C1D12A7FB1F6009FF7CD /* AES70OCP1SPIConnection.swift */; };
 		D355925D2B51E5FF000F633B /* DatagramProxyDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592592B51E5DB000F633B /* DatagramProxyDeviceEndpoint.swift */; };
 		D355925E2B51E604000F633B /* DatagramProxyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D355925B2B51E5DF000F633B /* DatagramProxyController.swift */; };
 		D35592602B520DFC000F633B /* ControllerDefaultSubscribing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */; };
@@ -342,7 +341,6 @@
 		D351F2172A729E29008C5513 /* Gain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gain.swift; sourceTree = "<group>"; };
 		D351F2192A729F48008C5513 /* VectorDeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VectorDeviceProperty.swift; sourceTree = "<group>"; };
 		D351F21B2A72A26E008C5513 /* Matrix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Matrix.swift; sourceTree = "<group>"; };
-		D352C1D12A7FB1F6009FF7CD /* AES70OCP1SPIConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AES70OCP1SPIConnection.swift; sourceTree = "<group>"; };
 		D35592592B51E5DB000F633B /* DatagramProxyDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatagramProxyDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D355925B2B51E5DF000F633B /* DatagramProxyController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatagramProxyController.swift; sourceTree = "<group>"; };
 		D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerDefaultSubscribing.swift; sourceTree = "<group>"; };
@@ -826,7 +824,6 @@
 			children = (
 				D36ECA2B2A5B24B30015174A /* AES70OCP1CFSocketConnection.swift */,
 				D36ECA202A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift */,
-				D352C1D12A7FB1F6009FF7CD /* AES70OCP1SPIConnection.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -1640,7 +1637,6 @@
 				D3DA69EE2A3DD350001250A1 /* Task+Timeout.swift in Sources */,
 				D3AFD3462B2CED0800A72E9A /* DiagnosticManager.swift in Sources */,
 				D3E6E1BA2A3ACA7B00BF7095 /* AES70OCP1ConnectionMonitor.swift in Sources */,
-				D352C1D22A7FB1F6009FF7CD /* AES70OCP1SPIConnection.swift in Sources */,
 				D3E6E1E42A3ACAA900BF7095 /* NetworkDataTypes.swift in Sources */,
 				D3AFD3792B32A06700A72E9A /* Ocp1EncodingState.swift in Sources */,
 				D3E6E1CE2A3ACA9600BF7095 /* Sensor.swift in Sources */,
