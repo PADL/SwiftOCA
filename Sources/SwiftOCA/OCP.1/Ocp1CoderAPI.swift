@@ -27,3 +27,5 @@ public extension Decoder {
         self is Ocp1DecoderImpl
     }
 }
+
+public protocol Ocp1LongList {}

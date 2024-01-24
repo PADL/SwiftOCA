@@ -115,10 +115,18 @@ class Ocp1EncodingState {
         case let data as Data:
             self.data += data
         case let array as [Encodable]:
-            if array.count > UInt16.max {
-                throw Ocp1Error.arrayOrDataTooBig
+            if value is Ocp1LongList {
+                // FIXME: can't support 2^32 length because on 32-bit platforms count is Int32
+                if array.count > Int(Int32.max) {
+                    throw Ocp1Error.arrayOrDataTooBig
+                }
+                try encodeInteger(Int32(array.count))
+            } else {
+                if array.count > Int(UInt16.max) {
+                    throw Ocp1Error.arrayOrDataTooBig
+                }
+                try encodeInteger(UInt16(array.count))
             }
-            try encodeInteger(UInt16(array.count))
             fallthrough
         default:
             try withCodingTypePath(appending: [String(describing: type(of: value))]) {
