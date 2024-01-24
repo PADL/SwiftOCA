@@ -45,6 +45,9 @@ struct OcaPropertyTableView: OcaView {
     var object: OcaRoot
 
     init(_ object: OcaRoot) {
+        if !(object is OcaViewRepresentable) {
+            debugPrint("Object \(object.objectIdentification) does not have a custom SwiftUI view")
+        }
         _object = StateObject(wrappedValue: object)
     }
 

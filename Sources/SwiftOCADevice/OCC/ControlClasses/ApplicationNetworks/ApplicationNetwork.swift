@@ -55,7 +55,7 @@ open class OcaApplicationNetwork: OcaRoot, OcaOwnable {
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("2.6"),
-        getMethodID: OcaMethodID("2.9")
+        getMethodID: OcaMethodID("2.8")
     )
     public var errorCode: OcaUint16 = 0
 
