@@ -21,7 +21,7 @@ import SwiftOCA
 actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: OCP1ControllerInternal,
     CustomStringConvertible
 {
-    nonisolated static var connectionPrefix: String { "oca/udp" }
+    nonisolated static var connectionPrefix: String { "oca/proxy" }
 
     let peerID: T
     var subscriptions = [OcaONo: NSMutableSet]()
