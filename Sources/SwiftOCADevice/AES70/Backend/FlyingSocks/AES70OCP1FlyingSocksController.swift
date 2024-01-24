@@ -47,9 +47,9 @@ actor AES70OCP1FlyingSocksController: AES70ControllerPrivate, CustomStringConver
         _messages = AsyncThrowingStream.decodingMessages(from: socket.bytes)
     }
 
-    var keepAliveInterval = Duration.seconds(0) {
+    var heartbeatTime = Duration.seconds(0) {
         didSet {
-            keepAliveIntervalDidChange(from: oldValue)
+            heartbeatTimeDidChange(from: oldValue)
         }
     }
 

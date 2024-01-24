@@ -71,7 +71,7 @@ extension AES70OCP1Connection {
 
     func sendKeepAlive() async throws {
         try await sendMessage(
-            Ocp1KeepAlive.keepAlive(interval: keepAliveInterval),
+            Ocp1KeepAlive.keepAlive(interval: heartbeatTime),
             type: .ocaKeepAlive
         )
     }

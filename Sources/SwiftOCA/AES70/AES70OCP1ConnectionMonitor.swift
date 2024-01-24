@@ -109,7 +109,7 @@ extension AES70OCP1Connection.Monitor {
 
     func receiveMessages(_ connection: AES70OCP1Connection) async throws {
         try await withThrowingTaskGroup(of: Void.self) { group in
-            let keepAliveInterval = await connection.keepAliveInterval
+            let heartbeatTime = await connection.heartbeatTime
 
             group.addTask { [self] in
                 repeat {
@@ -117,8 +117,8 @@ extension AES70OCP1Connection.Monitor {
                     try await receiveMessage(connection)
                 } while true
             }
-            if keepAliveInterval > .zero {
-                let keepAliveThreshold = keepAliveInterval * 3
+            if heartbeatTime > .zero {
+                let keepAliveThreshold = heartbeatTime * 3
 
                 group.addTask { [self] in
                     repeat {
@@ -132,7 +132,7 @@ extension AES70OCP1Connection.Monitor {
                                 )
                             throw Ocp1Error.responseTimeout
                         }
-                        try await Task.sleep(for: keepAliveInterval)
+                        try await Task.sleep(for: heartbeatTime)
                     } while true
                 }
             }

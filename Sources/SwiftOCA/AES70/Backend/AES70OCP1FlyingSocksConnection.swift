@@ -169,7 +169,7 @@ public class AES70OCP1FlyingSocksConnection: AES70OCP1Connection {
 }
 
 public final class AES70OCP1FlyingSocksDatagramConnection: AES70OCP1FlyingSocksConnection {
-    override public var keepAliveInterval: Duration {
+    override public var heartbeatTime: Duration {
         .seconds(1)
     }
 

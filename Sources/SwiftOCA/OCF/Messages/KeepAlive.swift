@@ -37,8 +37,8 @@ public struct Ocp1KeepAlive2: Ocp1Message, Codable, Sendable {
 public typealias Ocp1KeepAlive = Ocp1KeepAlive1
 
 public extension Ocp1KeepAlive {
-    static func keepAlive(interval keepAliveInterval: Duration) -> Ocp1Message {
-        let seconds = keepAliveInterval.seconds
+    static func keepAlive(interval heartbeatTime: Duration) -> Ocp1Message {
+        let seconds = heartbeatTime.seconds
         return Ocp1KeepAlive1(heartBeatTime: OcaUint16(seconds == 0 ? 1 : seconds))
     }
 }

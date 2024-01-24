@@ -74,9 +74,9 @@ actor AES70OCP1FlyingFoxController: AES70ControllerPrivate, CustomStringConverti
         self.endpoint = endpoint
     }
 
-    var keepAliveInterval = Duration.seconds(0) {
+    var heartbeatTime = Duration.seconds(0) {
         didSet {
-            keepAliveIntervalDidChange(from: oldValue)
+            heartbeatTimeDidChange(from: oldValue)
         }
     }
 

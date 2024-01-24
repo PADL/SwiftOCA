@@ -35,7 +35,7 @@ public final class AES70LocalConnection: AES70OCP1Connection {
         "oca/local"
     }
 
-    override public var keepAliveInterval: Duration {
+    override public var heartbeatTime: Duration {
         .zero
     }
 

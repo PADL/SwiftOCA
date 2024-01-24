@@ -180,7 +180,7 @@ public class AES70OCP1CFSocketConnection: AES70OCP1Connection {
 }
 
 public final class AES70OCP1CFSocketUDPConnection: AES70OCP1CFSocketConnection {
-    override public var keepAliveInterval: Duration {
+    override public var heartbeatTime: Duration {
         .seconds(1)
     }
 

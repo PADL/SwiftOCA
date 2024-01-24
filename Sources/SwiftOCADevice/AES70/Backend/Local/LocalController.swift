@@ -23,7 +23,7 @@ actor AES70LocalController: AES70ControllerPrivate {
 
     var lastMessageReceivedTime = ContinuousClock.now
     var lastMessageSentTime = ContinuousClock.now
-    var keepAliveInterval = Duration.seconds(0)
+    var heartbeatTime = Duration.seconds(0)
     var keepAliveTask: Task<(), Error>?
 
     weak var endpoint: AES70LocalDeviceEndpoint?

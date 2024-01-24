@@ -64,7 +64,7 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
     let options: AES70OCP1ConnectionOptions
 
     /// Keepalive/ping interval (only necessary for UDP, but useful for other transports)
-    open var keepAliveInterval: Duration {
+    open var heartbeatTime: Duration {
         .seconds(1)
     }
 
@@ -171,14 +171,14 @@ open class AES70OCP1Connection: CustomStringConvertible, ObservableObject {
     }
 
     private func sendKeepAlives() -> Task<(), Error>? {
-        guard keepAliveInterval > .zero else { return nil }
+        guard heartbeatTime > .zero else { return nil }
 
         return Task(priority: .background) { [self] in
             repeat {
-                if lastMessageSentTime + keepAliveInterval < ContinuousClock().now {
+                if lastMessageSentTime + heartbeatTime < ContinuousClock().now {
                     try await sendKeepAlive()
                 }
-                try await Task.sleep(for: keepAliveInterval)
+                try await Task.sleep(for: heartbeatTime)
             } while !Task.isCancelled
         }
     }

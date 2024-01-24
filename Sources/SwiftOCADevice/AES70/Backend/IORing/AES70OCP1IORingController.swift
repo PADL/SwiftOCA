@@ -121,9 +121,9 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
         try await close()
     }
 
-    var keepAliveInterval = Duration.seconds(1) {
+    var heartbeatTime = Duration.seconds(1) {
         didSet {
-            keepAliveIntervalDidChange(from: oldValue)
+            heartbeatTimeDidChange(from: oldValue)
         }
     }
 
@@ -222,9 +222,9 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
         await endpoint?.unlockAndRemove(controller: self)
     }
 
-    var keepAliveInterval = Duration.seconds(0) {
+    var heartbeatTime = Duration.seconds(0) {
         didSet {
-            keepAliveIntervalDidChange(from: oldValue)
+            heartbeatTimeDidChange(from: oldValue)
         }
     }
 

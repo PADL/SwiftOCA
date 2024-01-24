@@ -40,9 +40,9 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: AES70ControllerPr
         self.endpoint = endpoint
     }
 
-    var keepAliveInterval = Duration.seconds(1) {
+    var heartbeatTime = Duration.seconds(1) {
         didSet {
-            keepAliveIntervalDidChange(from: oldValue)
+            heartbeatTimeDidChange(from: oldValue)
         }
     }
 

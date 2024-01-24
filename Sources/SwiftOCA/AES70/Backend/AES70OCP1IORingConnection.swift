@@ -111,7 +111,7 @@ public class AES70OCP1IORingConnection: AES70OCP1Connection {
 }
 
 public final class AES70OCP1IORingDatagramConnection: AES70OCP1IORingConnection {
-    override public var keepAliveInterval: Duration {
+    override public var heartbeatTime: Duration {
         .seconds(1)
     }
 

@@ -41,7 +41,7 @@ protocol AES70ControllerPrivate: AES70ControllerDefaultSubscribing, AnyActor {
     var lastMessageReceivedTime: ContinuousClock.Instant { get set }
 
     /// keep alive interval
-    var keepAliveInterval: Duration { get set }
+    var heartbeatTime: Duration { get set }
 
     /// keep alive task
     var keepAliveTask: Task<(), Error>? { get set }
@@ -85,9 +85,9 @@ extension AES70ControllerPrivate {
                 parameters: commandResponse.parameters
             )
         case let keepAlive as Ocp1KeepAlive1:
-            keepAliveInterval = .seconds(keepAlive.heartBeatTime)
+            heartbeatTime = .seconds(keepAlive.heartBeatTime)
         case let keepAlive as Ocp1KeepAlive2:
-            keepAliveInterval = .milliseconds(keepAlive.heartBeatTime)
+            heartbeatTime = .milliseconds(keepAlive.heartBeatTime)
         default:
             endpoint.logger.info("received unknown message \(message)")
             throw Ocp1Error.invalidMessageType
@@ -126,26 +126,26 @@ extension AES70ControllerPrivate {
 
     /// returns `true` if insufficient keepalives were received to keep connection fresh
     private func connectionIsStale(_ now: ContinuousClock.Instant) -> Bool {
-        let keepAliveThreshold = keepAliveInterval * 3
+        let keepAliveThreshold = heartbeatTime * 3
         return now - (lastMessageReceivedTime + keepAliveThreshold) > .seconds(0)
     }
 
     /// returns `true` if we haven't sent any message for `keepAliveThreshold`
     private func connectionNeedsKeepAlive(_ now: ContinuousClock.Instant) -> Bool {
-        now - (lastMessageSentTime + keepAliveInterval) > .seconds(0)
+        now - (lastMessageSentTime + heartbeatTime) > .seconds(0)
     }
 
     private func sendKeepAlive() async throws {
         try await sendMessage(
-            Ocp1KeepAlive.keepAlive(interval: keepAliveInterval),
+            Ocp1KeepAlive.keepAlive(interval: heartbeatTime),
             type: .ocaKeepAlive
         )
     }
 
     /// AES70-3 notes that both controller and device send `KeepAlive` messages if they haven't
     /// yet received (or sent) another message during `HeartbeatTime`.
-    func keepAliveIntervalDidChange(from oldValue: Duration) {
-        if keepAliveInterval != .zero, (keepAliveInterval != oldValue || keepAliveTask == nil) {
+    func heartbeatTimeDidChange(from oldValue: Duration) {
+        if heartbeatTime != .zero, heartbeatTime != oldValue || keepAliveTask == nil {
             // if we have a keepalive interval and it has changed, or we haven't yet started
             // the keepalive task, (re)start it
             keepAliveTask = Task<(), Error> {
@@ -158,10 +158,10 @@ extension AES70ControllerPrivate {
                     if connectionNeedsKeepAlive(now) {
                         try await sendKeepAlive()
                     }
-                    try await Task.sleep(for: keepAliveInterval)
+                    try await Task.sleep(for: heartbeatTime)
                 } while !Task.isCancelled
             }
-        } else if keepAliveInterval == .zero, let keepAliveTask {
+        } else if heartbeatTime == .zero, let keepAliveTask {
             // otherwise if the new interval is zero, cancel the task (if any)
             keepAliveTask.cancel()
             self.keepAliveTask = nil
