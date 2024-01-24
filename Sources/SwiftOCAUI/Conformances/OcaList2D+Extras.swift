@@ -17,7 +17,7 @@
 import SwiftOCA
 import SwiftUI
 
-extension OcaList2D where Element == OcaRoot? {
+extension OcaArray2D where Element == OcaRoot? {
     var map: [OcaONo: OcaRoot] {
         var map = [OcaONo: OcaRoot]()
 

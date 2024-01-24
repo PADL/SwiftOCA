@@ -42,7 +42,7 @@ open class OcaMatrix: OcaWorker {
         getMethodID: OcaMethodID("3.5"),
         setMethodID: OcaMethodID("3.6")
     )
-    public var members: OcaProperty<OcaList2D<OcaONo>>.PropertyValue
+    public var members: OcaProperty<OcaArray2D<OcaONo>>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.6"),
@@ -101,7 +101,7 @@ open class OcaMatrix: OcaWorker {
 public extension OcaMatrix {
     /// resolve members using proxy class, members are optional as some may be unset
 
-    typealias SparseMembers = OcaList2D<OcaRoot?>
+    typealias SparseMembers = OcaArray2D<OcaRoot?>
 
     @MainActor
     func resolveMembers() async throws -> SparseMembers {
@@ -153,7 +153,7 @@ public extension OcaMatrix {
     }
 }
 
-public extension OcaList2D where Element == OcaRoot? {
+public extension OcaArray2D where Element == OcaRoot? {
     var hasContainerMembers: Bool {
         items.allSatisfy { $0?.isContainer ?? false }
     }

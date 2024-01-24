@@ -128,6 +128,7 @@
 		D3C11DB92A789C0400452B2A /* DeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DB82A789C0400452B2A /* DeviceEndpoint.swift */; };
 		D3C11DBD2A78A3DC00452B2A /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DBC2A78A3DC00452B2A /* Controller.swift */; };
 		D3D8FA382B60546E0054FD3C /* DeviceManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA372B60546E0054FD3C /* DeviceManagerDataTypes.swift */; };
+		D3D8FA3A2B608FD60054FD3C /* List2D.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA392B608FD60054FD3C /* List2D.swift */; };
 		D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */; };
 		D3DA69E22A3DADF1001250A1 /* BlockNavigationSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69E12A3DADF1001250A1 /* BlockNavigationSplitView.swift */; };
 		D3DA69E42A3DCA75001250A1 /* NavigationLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69E32A3DCA75001250A1 /* NavigationLabel.swift */; };
@@ -179,7 +180,7 @@
 		D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1762A3ACA6C00BF7095 /* ApplicationNetworkDataTypes.swift */; };
 		D3E6E1DB2A3ACAA900BF7095 /* EventDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1742A3ACA6C00BF7095 /* EventDataTypes.swift */; };
 		D3E6E1DC2A3ACAA900BF7095 /* BoundedProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1752A3ACA6C00BF7095 /* BoundedProperty.swift */; };
-		D3E6E1DD2A3ACAA900BF7095 /* List2D.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17A2A3ACA6C00BF7095 /* List2D.swift */; };
+		D3E6E1DD2A3ACAA900BF7095 /* Array2D.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17A2A3ACA6C00BF7095 /* Array2D.swift */; };
 		D3E6E1DE2A3ACAA900BF7095 /* WellKnownObjectNumbers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17E2A3ACA6C00BF7095 /* WellKnownObjectNumbers.swift */; };
 		D3E6E1DF2A3ACAA900BF7095 /* ModelDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17B2A3ACA6C00BF7095 /* ModelDataTypes.swift */; };
 		D3E6E1E02A3ACAA900BF7095 /* Property.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1722A3ACA6C00BF7095 /* Property.swift */; };
@@ -396,6 +397,7 @@
 		D3C11DB82A789C0400452B2A /* DeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEndpoint.swift; sourceTree = "<group>"; };
 		D3C11DBC2A78A3DC00452B2A /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
 		D3D8FA372B60546E0054FD3C /* DeviceManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManagerDataTypes.swift; sourceTree = "<group>"; };
+		D3D8FA392B608FD60054FD3C /* List2D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = List2D.swift; sourceTree = "<group>"; };
 		D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaRoot+Identifiable.swift"; sourceTree = "<group>"; };
 		D3DA69E12A3DADF1001250A1 /* BlockNavigationSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockNavigationSplitView.swift; sourceTree = "<group>"; };
 		D3DA69E32A3DCA75001250A1 /* NavigationLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationLabel.swift; sourceTree = "<group>"; };
@@ -419,7 +421,7 @@
 		D3E6E1762A3ACA6C00BF7095 /* ApplicationNetworkDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationNetworkDataTypes.swift; sourceTree = "<group>"; };
 		D3E6E1772A3ACA6C00BF7095 /* VectorProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VectorProperty.swift; sourceTree = "<group>"; };
 		D3E6E1782A3ACA6C00BF7095 /* ManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagerDataTypes.swift; sourceTree = "<group>"; };
-		D3E6E17A2A3ACA6C00BF7095 /* List2D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = List2D.swift; sourceTree = "<group>"; };
+		D3E6E17A2A3ACA6C00BF7095 /* Array2D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Array2D.swift; sourceTree = "<group>"; };
 		D3E6E17B2A3ACA6C00BF7095 /* ModelDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDataTypes.swift; sourceTree = "<group>"; };
 		D3E6E17D2A3ACA6C00BF7095 /* SearchDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchDataTypes.swift; sourceTree = "<group>"; };
 		D3E6E17E2A3ACA6C00BF7095 /* WellKnownObjectNumbers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WellKnownObjectNumbers.swift; sourceTree = "<group>"; };
@@ -583,7 +585,8 @@
 		D3028C202A452E5100B8DB42 /* CollectionTypes */ = {
 			isa = PBXGroup;
 			children = (
-				D3E6E17A2A3ACA6C00BF7095 /* List2D.swift */,
+				D3E6E17A2A3ACA6C00BF7095 /* Array2D.swift */,
+				D3D8FA392B608FD60054FD3C /* List2D.swift */,
 			);
 			path = CollectionTypes;
 			sourceTree = "<group>";
@@ -1630,6 +1633,7 @@
 				D3AFD3962B41515000A72E9A /* SignalOutput.swift in Sources */,
 				D3E6E1E02A3ACAA900BF7095 /* Property.swift in Sources */,
 				D306440D2A781C280063DA65 /* Ocp1CoderAPI.swift in Sources */,
+				D3D8FA3A2B608FD60054FD3C /* List2D.swift in Sources */,
 				D3E6E1CB2A3ACA9000BF7095 /* Switch.swift in Sources */,
 				D3E6E1B72A3ACA7B00BF7095 /* AES70OCP1Connection+Messages.swift in Sources */,
 				D3AFD3592B2D226200A72E9A /* NetworkInterface.swift in Sources */,
@@ -1666,7 +1670,7 @@
 				D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */,
 				D33BE9A22B5A3F43000CA189 /* NetworkApplicationDataTypes.swift in Sources */,
 				D3AFD37C2B32A06700A72E9A /* UnkeyedOcp1EncodingContainer.swift in Sources */,
-				D3E6E1DD2A3ACAA900BF7095 /* List2D.swift in Sources */,
+				D3E6E1DD2A3ACAA900BF7095 /* Array2D.swift in Sources */,
 				D36ECA212A5AEB9B0015174A /* AES70OCP1FlyingSocksConnection.swift in Sources */,
 				D3AFD3422B2CE91B00A72E9A /* MediaClockManager.swift in Sources */,
 				D3E6E1BB2A3ACA7B00BF7095 /* AES70OCP1Connection.swift in Sources */,

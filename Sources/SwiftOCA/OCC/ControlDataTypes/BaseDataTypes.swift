@@ -40,7 +40,9 @@ public typealias OcaSessionID = OcaUint16
 
 public typealias OcaClassVersionNumber = OcaUint16
 
-public typealias OcaList = Array
+public typealias Ocp1List = Array
+
+public typealias OcaList = Ocp1List
 public typealias OcaMap = Dictionary
 public typealias OcaMultiMap<K: Hashable, V> = OcaMap<K, [V]>
 

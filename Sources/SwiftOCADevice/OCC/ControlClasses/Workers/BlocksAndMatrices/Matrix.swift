@@ -23,7 +23,7 @@ private struct OcaMatrixSetMemberParameters: Codable {
 }
 
 private struct OcaMatrixGetMembersParameters: Codable {
-    let members: OcaList2D<OcaONo>
+    let members: OcaArray2D<OcaONo>
 }
 
 private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF
@@ -31,7 +31,7 @@ private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF
 open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     override open class var classID: OcaClassID { OcaClassID("1.1.5") }
 
-    public private(set) var members: OcaList2D<Member?>
+    public private(set) var members: OcaArray2D<Member?>
     public private(set) var proxy: Proxy<Member>!
     private var lockStatePriorToSetCurrentXY: LockState?
 
@@ -49,7 +49,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         else {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
-        members = OcaList2D<Member?>(nX: columns, nY: rows, defaultValue: nil)
+        members = OcaArray2D<Member?>(nX: columns, nY: rows, defaultValue: nil)
         try await super.init(
             objectNumber: objectNumber,
             lockable: lockable,
