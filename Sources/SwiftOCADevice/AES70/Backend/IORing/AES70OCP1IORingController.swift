@@ -31,7 +31,7 @@ protocol AES70OCP1IORingControllerPrivate: OCP1ControllerInternal,
 {
     var peerAddress: AnySocketAddress { get }
 
-    func sendMessagePdu(_ messagePdu: Message) async throws
+    func sendOcp1EncodedMessage(_ message: Message) async throws
 }
 
 extension AES70OCP1IORingControllerPrivate {
@@ -50,7 +50,7 @@ extension AES70OCP1IORingControllerPrivate {
                 presentationAddress: networkAddress.presentationAddress
             )
         }
-        try await sendMessagePdu(Message(address: peerAddress, buffer: [UInt8](data)))
+        try await sendOcp1EncodedMessage(Message(address: peerAddress, buffer: [UInt8](data)))
     }
 }
 
@@ -126,7 +126,7 @@ actor AES70OCP1IORingStreamController: AES70OCP1IORingControllerPrivate, CustomS
         )
     }
 
-    func sendMessagePdu(_ messagePdu: Message) async throws {
+    func sendOcp1EncodedMessage(_ messagePdu: Message) async throws {
         try await notificationSocket.sendMessage(messagePdu)
     }
 
@@ -212,7 +212,11 @@ actor AES70OCP1IORingDatagramController: AES70OCP1IORingControllerPrivate {
     }
 
     func sendOcp1EncodedData(_ data: Data) async throws {
-        try await sendMessagePdu(Message(address: peerAddress, buffer: [UInt8](data)))
+        try await sendOcp1EncodedMessage(Message(address: peerAddress, buffer: [UInt8](data)))
+    }
+
+    func sendOcp1EncodedMessage(_ messagePdu: Message) async throws {
+        try await endpoint?.sendOcp1EncodedMessage(messagePdu)
     }
 
     nonisolated var identifier: String {

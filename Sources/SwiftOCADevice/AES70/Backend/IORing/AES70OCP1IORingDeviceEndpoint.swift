@@ -262,11 +262,11 @@ public class AES70OCP1IORingDatagramDeviceEndpoint: AES70OCP1IORingDeviceEndpoin
         return socket
     }
 
-    func sendMessagePdu(_ messagePdu: Message) async throws {
+    func sendOcp1EncodedMessage(_ message: Message) async throws {
         guard let socket else {
             throw Ocp1Error.notConnected
         }
-        try await socket.sendMessage(messagePdu)
+        try await socket.sendMessage(message)
     }
 
     override public nonisolated var serviceType: AES70DeviceEndpointRegistrar.ServiceType {
