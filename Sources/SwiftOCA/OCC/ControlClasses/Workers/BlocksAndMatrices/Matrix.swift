@@ -70,17 +70,16 @@ open class OcaMatrix: OcaWorker {
         return try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameters: xy)
     }
 
+    public struct SetMemberParameters: Codable, Sendable {
+        public let x: OcaMatrixCoordinate
+        public let y: OcaMatrixCoordinate
+        public let memberONo: OcaONo
+    }
+
     func set(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate, memberONo: OcaONo) async throws {
-        struct SetMemberParameters: Codable {
-            var xy: OcaVector2D<OcaMatrixCoordinate> // this is really two separate parameters,
-            // hence parameterCount
-            var memberONo: OcaONo
-        }
-        let xy = OcaVector2D(x: x, y: y)
         try await sendCommandRrq(
             methodID: OcaMethodID("3.8"),
-            parameterCount: 3,
-            parameters: SetMemberParameters(xy: xy, memberONo: memberONo)
+            parameters: SetMemberParameters(x: x, y: y, memberONo: memberONo)
         )
     }
 

@@ -25,7 +25,7 @@ protocol ObservableObject {} // placeholder
 #endif
 
 open class OcaRoot: CustomStringConvertible, ObservableObject, @unchecked
-Sendable {
+Sendable, OcaKeyPathMarkerProtocol {
     typealias Root = OcaRoot
 
     public internal(set) weak var connectionDelegate: AES70OCP1Connection?
@@ -132,37 +132,19 @@ Sendable {
     }
 }
 
-private extension String {
-    func deletingPrefix(_ prefix: String) -> String? {
-        guard hasPrefix(prefix) else { return nil }
-        return String(dropFirst(prefix.count))
+protocol OcaKeyPathMarkerProtocol: AnyObject {}
+
+private extension OcaKeyPathMarkerProtocol where Self: OcaRoot {
+    var allKeyPaths: [String: PartialKeyPath<Self>] {
+        _allKeyPaths(value: self).reduce(into: [:]) {
+            if $1.key.hasPrefix("_") {
+                $0[String($1.key.dropFirst())] = $1.value
+            }
+        }
     }
 }
 
 public extension OcaRoot {
-    private subscript(_ wrapper: _MirrorWrapper, checkedMirrorDescendant key: String) -> Any {
-        wrapper.wrappedValue.descendant(key)!
-    }
-
-    private var allKeyPaths: [String: PartialKeyPath<OcaRoot>] {
-        // TODO: Mirror is inefficient
-        var membersToKeyPaths = [String: PartialKeyPath<OcaRoot>]()
-        var mirror: Mirror? = Mirror(reflecting: self)
-
-        repeat {
-            if let mirror {
-                for case let (key?, _) in mirror.children {
-                    guard let dictionaryKey = key.deletingPrefix("_") else { continue }
-                    membersToKeyPaths[dictionaryKey] = \Self
-                        .[_MirrorWrapper(mirror), checkedMirrorDescendant: key] as PartialKeyPath
-                }
-            }
-            mirror = mirror?.superclassMirror
-        } while mirror != nil
-
-        return membersToKeyPaths
-    }
-
     private var staticPropertyKeyPaths: [String: PartialKeyPath<OcaRoot>] {
         ["classID": \._classID,
          "classVersion": \._classVersion,
@@ -272,9 +254,7 @@ extension OcaRoot: Hashable {
     }
 }
 
-public struct OcaGetPathParameters: Codable, Sendable, OcaParameterCountReflectable {
-    public static var responseParameterCount: OcaUint8 { 2 }
-
+public struct OcaGetPathParameters: Codable, Sendable {
     public var namePath: OcaNamePath
     public var oNoPath: OcaONoPath
 

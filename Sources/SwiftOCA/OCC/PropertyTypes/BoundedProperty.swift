@@ -20,11 +20,7 @@ import Foundation
 import SwiftUI
 #endif
 
-public struct OcaBoundedPropertyValue<Value: Codable & Comparable & Sendable>: Codable,
-    Sendable, OcaParameterCountReflectable
-{
-    public static var responseParameterCount: OcaUint8 { 3 }
-
+public struct OcaBoundedPropertyValue<Value: Codable & Comparable & Sendable>: Codable, Sendable {
     public var value: Value
     public var range: ClosedRange<Value>
 

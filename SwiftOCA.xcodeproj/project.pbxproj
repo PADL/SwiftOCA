@@ -12,7 +12,6 @@
 		D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644022A76CE310063DA65 /* IdentificationSensor.swift */; };
 		D30644062A770B640063DA65 /* Notification2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644052A770B640063DA65 /* Notification2.swift */; };
 		D30644092A77EB160063DA65 /* BasicSensorViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644072A77EAEA0063DA65 /* BasicSensorViews.swift */; };
-		D306440B2A78039B0063DA65 /* MirrorWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306440A2A78039B0063DA65 /* MirrorWrapper.swift */; };
 		D306440D2A781C280063DA65 /* Ocp1CoderAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306440C2A781C280063DA65 /* Ocp1CoderAPI.swift */; };
 		D306440F2A7832900063DA65 /* IdentificationSensorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306440E2A7832900063DA65 /* IdentificationSensorView.swift */; };
 		D306556D2A524D720083F093 /* PhysicalPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D306556C2A524D720083F093 /* PhysicalPosition.swift */; };
@@ -128,6 +127,10 @@
 		D3C11DBD2A78A3DC00452B2A /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DBC2A78A3DC00452B2A /* Controller.swift */; };
 		D3D8FA382B60546E0054FD3C /* DeviceManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA372B60546E0054FD3C /* DeviceManagerDataTypes.swift */; };
 		D3D8FA3A2B608FD60054FD3C /* List2D.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA392B608FD60054FD3C /* List2D.swift */; };
+		D3D8FA462B61D6A50054FD3C /* KeyPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA422B61D6A50054FD3C /* KeyPath.swift */; };
+		D3D8FA492B61D6A50054FD3C /* ReflectionMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA452B61D6A50054FD3C /* ReflectionMirror.swift */; };
+		D3D8FA562B61EF550054FD3C /* KeyPathShims.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA552B61EF550054FD3C /* KeyPathShims.swift */; };
+		D3D8FA572B61EF690054FD3C /* libKeyPathShims.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D8FA4F2B61EF2C0054FD3C /* libKeyPathShims.a */; platformFilters = (macos, ); };
 		D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */; };
 		D3DA69E22A3DADF1001250A1 /* BlockNavigationSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69E12A3DADF1001250A1 /* BlockNavigationSplitView.swift */; };
 		D3DA69E42A3DCA75001250A1 /* NavigationLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69E32A3DCA75001250A1 /* NavigationLabel.swift */; };
@@ -206,7 +209,7 @@
 		D3E6E25D2A3D2D2500BF7095 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E25C2A3D2D2500BF7095 /* DetailView.swift */; };
 		D3E6E2632A3D648400BF7095 /* RootBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2622A3D648400BF7095 /* RootBlockView.swift */; };
 		D3E6E2782A417AF000BF7095 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2772A417AF000BF7095 /* NetworkManager.swift */; };
-		D3E6E27B2A417FB500BF7095 /* OcaList2D+Extras.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */; };
+		D3E6E27B2A417FB500BF7095 /* OcaArray2D+Extras.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2792A417FAE00BF7095 /* OcaArray2D+Extras.swift */; };
 		D3E6E27F2A4181BF00BF7095 /* BonjourDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E27D2A4181BB00BF7095 /* BonjourDiscoveryView.swift */; };
 		D3E6E2812A43B33D00BF7095 /* PolarityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2802A43B33D00BF7095 /* PolarityView.swift */; };
 		D3E6E2832A43B66D00BF7095 /* VariableSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2822A43B66D00BF7095 /* VariableSliderView.swift */; };
@@ -245,6 +248,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = D33B52802A6FD171001A1BA7;
 			remoteInfo = SwiftOCADevice;
+		};
+		D3D8FA582B61EF690054FD3C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D3E6E15C2A3ACA0B00BF7095 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D3D8FA4E2B61EF2C0054FD3C;
+			remoteInfo = KeyPathShims;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -287,7 +297,6 @@
 		D30644022A76CE310063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644052A770B640063DA65 /* Notification2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification2.swift; sourceTree = "<group>"; };
 		D30644072A77EAEA0063DA65 /* BasicSensorViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicSensorViews.swift; sourceTree = "<group>"; };
-		D306440A2A78039B0063DA65 /* MirrorWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorWrapper.swift; sourceTree = "<group>"; };
 		D306440C2A781C280063DA65 /* Ocp1CoderAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CoderAPI.swift; sourceTree = "<group>"; };
 		D306440E2A7832900063DA65 /* IdentificationSensorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensorView.swift; sourceTree = "<group>"; };
 		D306556C2A524D720083F093 /* PhysicalPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhysicalPosition.swift; sourceTree = "<group>"; };
@@ -396,6 +405,10 @@
 		D3C11DBC2A78A3DC00452B2A /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
 		D3D8FA372B60546E0054FD3C /* DeviceManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManagerDataTypes.swift; sourceTree = "<group>"; };
 		D3D8FA392B608FD60054FD3C /* List2D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = List2D.swift; sourceTree = "<group>"; };
+		D3D8FA422B61D6A50054FD3C /* KeyPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyPath.swift; sourceTree = "<group>"; };
+		D3D8FA452B61D6A50054FD3C /* ReflectionMirror.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReflectionMirror.swift; sourceTree = "<group>"; };
+		D3D8FA4F2B61EF2C0054FD3C /* libKeyPathShims.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libKeyPathShims.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3D8FA552B61EF550054FD3C /* KeyPathShims.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyPathShims.swift; sourceTree = "<group>"; };
 		D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaRoot+Identifiable.swift"; sourceTree = "<group>"; };
 		D3DA69E12A3DADF1001250A1 /* BlockNavigationSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockNavigationSplitView.swift; sourceTree = "<group>"; };
 		D3DA69E32A3DCA75001250A1 /* NavigationLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationLabel.swift; sourceTree = "<group>"; };
@@ -473,7 +486,7 @@
 		D3E6E25C2A3D2D2500BF7095 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		D3E6E2622A3D648400BF7095 /* RootBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootBlockView.swift; sourceTree = "<group>"; };
 		D3E6E2772A417AF000BF7095 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
-		D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaList2D+Extras.swift"; sourceTree = "<group>"; };
+		D3E6E2792A417FAE00BF7095 /* OcaArray2D+Extras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaArray2D+Extras.swift"; sourceTree = "<group>"; };
 		D3E6E27D2A4181BB00BF7095 /* BonjourDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDiscoveryView.swift; sourceTree = "<group>"; };
 		D3E6E2802A43B33D00BF7095 /* PolarityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarityView.swift; sourceTree = "<group>"; };
 		D3E6E2822A43B66D00BF7095 /* VariableSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableSliderView.swift; sourceTree = "<group>"; };
@@ -525,10 +538,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D3D8FA4D2B61EF2C0054FD3C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D3E6E1622A3ACA0B00BF7095 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D3D8FA572B61EF690054FD3C /* libKeyPathShims.a in Frameworks */,
 				D3E6E25B2A3D28DD00BF7095 /* AsyncExtensions in Frameworks */,
 				D3E6E1EE2A3ACB0700BF7095 /* AsyncAlgorithms in Frameworks */,
 				D33B52D42A706FD7001A1BA7 /* FlyingSocks in Frameworks */,
@@ -813,6 +834,7 @@
 			isa = PBXGroup;
 			children = (
 				D306440C2A781C280063DA65 /* Ocp1CoderAPI.swift */,
+				D3D8FA412B61D6040054FD3C /* ReflectionMirror */,
 				D3AFD3612B32A06700A72E9A /* Encoder */,
 				D3AFD36B2B32A06700A72E9A /* Decoder */,
 			);
@@ -888,13 +910,31 @@
 			path = ApplicationNetworks;
 			sourceTree = "<group>";
 		};
+		D3D8FA412B61D6040054FD3C /* ReflectionMirror */ = {
+			isa = PBXGroup;
+			children = (
+				D3D8FA422B61D6A50054FD3C /* KeyPath.swift */,
+				D3D8FA452B61D6A50054FD3C /* ReflectionMirror.swift */,
+			);
+			path = ReflectionMirror;
+			sourceTree = "<group>";
+		};
+		D3D8FA532B61EF550054FD3C /* KeyPathShims */ = {
+			isa = PBXGroup;
+			children = (
+				D3D8FA552B61EF550054FD3C /* KeyPathShims.swift */,
+			);
+			name = KeyPathShims;
+			path = Sources/KeyPathShims;
+			sourceTree = "<group>";
+		};
 		D3DA69D72A3DA7CD001250A1 /* Conformances */ = {
 			isa = PBXGroup;
 			children = (
 				D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */,
 				D3DA69E52A3DCAA5001250A1 /* Array+Extras.swift */,
 				D3DA69F32A3DF988001250A1 /* EnvironmentValues.swift */,
-				D3E6E2792A417FAE00BF7095 /* OcaList2D+Extras.swift */,
+				D3E6E2792A417FAE00BF7095 /* OcaArray2D+Extras.swift */,
 				D3E6E2872A43BD1900BF7095 /* OcaDB+Linear.swift */,
 			);
 			path = Conformances;
@@ -952,6 +992,7 @@
 		D3E6E15B2A3ACA0B00BF7095 = {
 			isa = PBXGroup;
 			children = (
+				D3D8FA532B61EF550054FD3C /* KeyPathShims */,
 				D33B52C32A706235001A1BA7 /* OCADevice */,
 				D33B52852A6FD190001A1BA7 /* Sources/SwiftOCADevice */,
 				D3E6E2472A3C0C7700BF7095 /* SwiftOCAUI */,
@@ -972,6 +1013,7 @@
 				D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */,
 				D33B52BC2A706201001A1BA7 /* OCADevice */,
 				D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */,
+				D3D8FA4F2B61EF2C0054FD3C /* libKeyPathShims.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1203,7 +1245,6 @@
 				D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */,
 				D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */,
 				D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */,
-				D306440A2A78039B0063DA65 /* MirrorWrapper.swift */,
 				D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */,
 			);
 			path = OCF;
@@ -1280,6 +1321,13 @@
 
 /* Begin PBXHeadersBuildPhase section */
 		D33B527D2A6FD171001A1BA7 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3D8FA4B2B61EF2C0054FD3C /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1363,6 +1411,23 @@
 			productReference = D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		D3D8FA4E2B61EF2C0054FD3C /* KeyPathShims */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D3D8FA502B61EF2C0054FD3C /* Build configuration list for PBXNativeTarget "KeyPathShims" */;
+			buildPhases = (
+				D3D8FA4B2B61EF2C0054FD3C /* Headers */,
+				D3D8FA4C2B61EF2C0054FD3C /* Sources */,
+				D3D8FA4D2B61EF2C0054FD3C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KeyPathShims;
+			productName = KeyPathShims;
+			productReference = D3D8FA4F2B61EF2C0054FD3C /* libKeyPathShims.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		D3E6E1632A3ACA0B00BF7095 /* SwiftOCA */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D3E6E1682A3ACA0B00BF7095 /* Build configuration list for PBXNativeTarget "SwiftOCA" */;
@@ -1374,6 +1439,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				D3D8FA592B61EF690054FD3C /* PBXTargetDependency */,
 			);
 			name = SwiftOCA;
 			packageProductDependencies = (
@@ -1444,6 +1510,9 @@
 						CreatedOnToolsVersion = 14.2;
 						LastSwiftMigration = 1420;
 					};
+					D3D8FA4E2B61EF2C0054FD3C = {
+						CreatedOnToolsVersion = 15.2;
+					};
 					D3E6E1632A3ACA0B00BF7095 = {
 						CreatedOnToolsVersion = 14.2;
 					};
@@ -1482,6 +1551,7 @@
 				D33B52802A6FD171001A1BA7 /* SwiftOCADevice */,
 				D33B52BB2A706201001A1BA7 /* OCADevice */,
 				D3C0830A2A7B01AB0020AD57 /* SwiftOCADeviceTests */,
+				D3D8FA4E2B61EF2C0054FD3C /* KeyPathShims */,
 			);
 		};
 /* End PBXProject section */
@@ -1589,6 +1659,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D3D8FA4C2B61EF2C0054FD3C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D3D8FA562B61EF550054FD3C /* KeyPathShims.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D3E6E1612A3ACA0B00BF7095 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1656,12 +1734,12 @@
 				D3AFD35A2B2D226200A72E9A /* MediaTransportApplication.swift in Sources */,
 				D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */,
 				D3AFD3942B41514400A72E9A /* SignalInput.swift in Sources */,
-				D306440B2A78039B0063DA65 /* MirrorWrapper.swift in Sources */,
 				D3E6E1C82A3ACA9000BF7095 /* Gain.swift in Sources */,
 				D3E6E1B62A3ACA7B00BF7095 /* AES70ClassRegistry.swift in Sources */,
 				D3AFD3842B32A06700A72E9A /* KeyedBinaryDecodingContainer.swift in Sources */,
 				D3AFD3852B32A06700A72E9A /* UnkeyedBinaryDecodingContainer.swift in Sources */,
 				D3E6E1C62A3ACA9000BF7095 /* BasicActuators.swift in Sources */,
+				D3D8FA462B61D6A50054FD3C /* KeyPath.swift in Sources */,
 				D3AFD3522B2D005E00A72E9A /* MediaTransportNetwork.swift in Sources */,
 				D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */,
 				D33BE9A22B5A3F43000CA189 /* NetworkApplicationDataTypes.swift in Sources */,
@@ -1689,6 +1767,7 @@
 				D3AFD33C2B2A566600A72E9A /* MediaStreamDataTypes.swift in Sources */,
 				D306556D2A524D720083F093 /* PhysicalPosition.swift in Sources */,
 				D3E6E1C92A3ACA9000BF7095 /* Polarity.swift in Sources */,
+				D3D8FA492B61D6A50054FD3C /* ReflectionMirror.swift in Sources */,
 				D3E6E1D32A3ACA9E00BF7095 /* DeviceManager.swift in Sources */,
 				D31528802A526E24004B9BAD /* WorkerDataTypes.swift in Sources */,
 				D3E6E1BD2A3ACA8200BF7095 /* Response.swift in Sources */,
@@ -1724,7 +1803,7 @@
 				D3E6E25D2A3D2D2500BF7095 /* DetailView.swift in Sources */,
 				D3DA69E22A3DADF1001250A1 /* BlockNavigationSplitView.swift in Sources */,
 				D3E6E2A02A452D0A00BF7095 /* ScaledLegendView.swift in Sources */,
-				D3E6E27B2A417FB500BF7095 /* OcaList2D+Extras.swift in Sources */,
+				D3E6E27B2A417FB500BF7095 /* OcaArray2D+Extras.swift in Sources */,
 				D3DA69FE2A427C2F001250A1 /* BooleanActuatorView.swift in Sources */,
 				D3E6E29B2A44270300BF7095 /* LevelSensorView.swift in Sources */,
 				D3E6E2912A441C4A00BF7095 /* DiscreteSliderView.swift in Sources */,
@@ -1764,6 +1843,14 @@
 			isa = PBXTargetDependency;
 			target = D33B52802A6FD171001A1BA7 /* SwiftOCADevice */;
 			targetProxy = D3C083102A7B01AB0020AD57 /* PBXContainerItemProxy */;
+		};
+		D3D8FA592B61EF690054FD3C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilters = (
+				macos,
+			);
+			target = D3D8FA4E2B61EF2C0054FD3C /* KeyPathShims */;
+			targetProxy = D3D8FA582B61EF690054FD3C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1869,6 +1956,41 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		D3D8FA512B61EF2C0054FD3C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				EXECUTABLE_PREFIX = lib;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				OTHER_SWIFT_FLAGS = "-parse-stdlib";
+				"OTHER_SWIFT_FLAGS[arch=*]" = "-parse-stdlib";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D3D8FA522B61EF2C0054FD3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				EXECUTABLE_PREFIX = lib;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				OTHER_SWIFT_FLAGS = "-parse-stdlib";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -1998,6 +2120,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
@@ -2018,6 +2141,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
@@ -2167,6 +2291,15 @@
 			buildConfigurations = (
 				D3C083122A7B01AB0020AD57 /* Debug */,
 				D3C083132A7B01AB0020AD57 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D3D8FA502B61EF2C0054FD3C /* Build configuration list for PBXNativeTarget "KeyPathShims" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D3D8FA512B61EF2C0054FD3C /* Debug */,
+				D3D8FA522B61EF2C0054FD3C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

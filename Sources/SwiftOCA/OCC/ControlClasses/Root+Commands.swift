@@ -18,19 +18,6 @@ import Foundation
 
 // TODO: clean this up so there aren't so many functions!
 
-// FIXME: this is a bit of a hack until we have better reflection support in Swift
-public protocol OcaParameterCountReflectable {
-    static var responseParameterCount: OcaUint8 { get }
-}
-
-private func responseParameterCount(_ type: Any.Type) -> OcaUint8 {
-    guard let type = type as? any OcaParameterCountReflectable.Type else {
-        return 1
-    }
-
-    return type.responseParameterCount
-}
-
 extension OcaRoot {
     private func sendCommand(
         methodID: OcaMethodID,
@@ -184,10 +171,7 @@ extension OcaRoot {
     ) async throws {
         try await sendCommandRrq(
             methodID: methodID,
-            parameterCount: OcaUint8(
-                Mirror(reflecting: parameters).children
-                    .count
-            ),
+            parameterCount: _ocp1ParameterCount(value: parameters),
             parameters: [parameters],
             responseParameterCount: responseParameterCount,
             responseParameters: &responseParameters
@@ -201,15 +185,9 @@ extension OcaRoot {
     ) async throws {
         try await sendCommandRrq(
             methodID: methodID,
-            parameterCount: OcaUint8(
-                Mirror(reflecting: parameters).children
-                    .count
-            ),
+            parameterCount: _ocp1ParameterCount(value: parameters),
             parameters: [parameters],
-            responseParameterCount: OcaUint8(
-                Mirror(reflecting: responseParameters)
-                    .children.count
-            ),
+            responseParameterCount: _ocp1ParameterCount(type: U.self),
             responseParameters: &responseParameters
         )
     }
@@ -236,10 +214,7 @@ extension OcaRoot {
         var placeholder = NullCodable()
         try await sendCommandRrq(
             methodID: methodID,
-            parameterCount: OcaUint8(
-                Mirror(reflecting: parameters).children
-                    .count
-            ),
+            parameterCount: _ocp1ParameterCount(value: parameters),
             parameters: [parameters],
             responseParameterCount: 0,
             responseParameters: &placeholder
@@ -265,7 +240,7 @@ extension OcaRoot {
             methodID: methodID,
             parameterCount: 0,
             parameterData: Data(),
-            responseParameterCount: responseParameterCount(U.self),
+            responseParameterCount: _ocp1ParameterCount(type: U.self),
             responseParameterData: &responseParameterData
         )
 
@@ -280,12 +255,9 @@ extension OcaRoot {
 
         try await sendCommandRrq(
             methodID: methodID,
-            parameterCount: OcaUint8(
-                Mirror(reflecting: parameters).children
-                    .count
-            ),
+            parameterCount: _ocp1ParameterCount(value: parameters),
             parameters: [parameters],
-            responseParameterCount: responseParameterCount(U.self),
+            responseParameterCount: _ocp1ParameterCount(type: U.self),
             responseParameters: &responseParameterData
         )
 
@@ -302,7 +274,7 @@ extension OcaRoot {
             methodID: methodID,
             parameterCount: 1,
             parameters: [parameter],
-            responseParameterCount: responseParameterCount(U.self),
+            responseParameterCount: _ocp1ParameterCount(type: U.self),
             responseParameters: &responseParameterData
         )
 

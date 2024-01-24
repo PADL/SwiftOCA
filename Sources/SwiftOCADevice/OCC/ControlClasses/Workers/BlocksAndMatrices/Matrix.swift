@@ -16,16 +16,6 @@
 
 import SwiftOCA
 
-private struct OcaMatrixSetMemberParameters: Codable {
-    let x: OcaMatrixCoordinate
-    let y: OcaMatrixCoordinate
-    let memberONo: OcaONo
-}
-
-private struct OcaMatrixGetMembersParameters: Codable {
-    let members: OcaArray2D<OcaONo>
-}
-
 private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF
 
 open class OcaMatrix<Member: OcaRoot>: OcaWorker {
@@ -288,7 +278,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             try await ensureReadable(by: controller, command: command)
             let members = members
                 .map(defaultValue: OcaInvalidONo) { $0?.objectNumber ?? OcaInvalidONo }
-            return try encodeResponse(OcaMatrixGetMembersParameters(members: members))
+            return try encodeResponse(members)
         case OcaMethodID("3.7"):
             try await ensureReadable(by: controller, command: command)
             let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
@@ -297,7 +287,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             return try encodeResponse(objectNumber)
         case OcaMethodID("3.8"):
             try await ensureWritable(by: controller, command: command)
-            let parameters: OcaMatrixSetMemberParameters = try decodeCommand(command)
+            let parameters: SwiftOCA.OcaMatrix.SetMemberParameters = try decodeCommand(command)
             guard parameters.x < members.nX, parameters.y < members.nY else {
                 throw Ocp1Error.status(.parameterOutOfRange)
             }
