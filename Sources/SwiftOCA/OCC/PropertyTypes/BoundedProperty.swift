@@ -60,6 +60,7 @@ public extension OcaBoundedPropertyValue where Value: BinaryFloatingPoint {
 }
 
 private let OcaBoundedPropertyGetterParameterCount: OcaUint8 = 3
+private let OcaBoundedPropertySetterParameterCount: OcaUint8 = 1
 
 @propertyWrapper
 public struct OcaBoundedProperty<
@@ -144,7 +145,11 @@ public struct OcaBoundedProperty<
             #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
             #endif
-            object[keyPath: storageKeyPath]._storage._set(_enclosingInstance: object, newValue)
+            object[keyPath: storageKeyPath]._storage._set(
+                _enclosingInstance: object,
+                newValue,
+                parameterCount: OcaBoundedPropertySetterParameterCount
+            )
         }
     }
 
@@ -191,7 +196,11 @@ public struct OcaBoundedProperty<
             },
             set: {
                 guard let object = _storage.object else { return }
-                _storage._set(_enclosingInstance: object, $0)
+                _storage._set(
+                    _enclosingInstance: object,
+                    $0,
+                    parameterCount: OcaBoundedPropertySetterParameterCount
+                )
             }
         )
     }

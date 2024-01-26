@@ -176,7 +176,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     func _set(
         _enclosingInstance object: OcaRoot,
         _ newValue: PropertyValue,
-        parameterCount: OcaUint8? = nil
+        parameterCount: OcaUint8
     ) {
         Task {
             switch newValue {
@@ -208,7 +208,8 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
             #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
             #endif
-            object[keyPath: storageKeyPath]._set(_enclosingInstance: object, newValue)
+            object[keyPath: storageKeyPath]
+                ._set(_enclosingInstance: object, newValue, parameterCount: 1)
         }
     }
 
@@ -253,7 +254,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     private func setValueIfMutable(
         _ object: OcaRoot,
         _ value: Value,
-        parameterCount: OcaUint8? = nil
+        parameterCount: OcaUint8
     ) async throws {
         guard let setMethodID else {
             throw Ocp1Error.propertyIsImmutable
@@ -272,13 +273,13 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
             // we'll get a notification (hoepfully) so, don't require a reply
             try await object.sendCommand(
                 methodID: setMethodID,
-                parameterCount: parameterCount ?? 1,
+                parameterCount: parameterCount,
                 parameters: newValue
             )
         } else {
             try await object.sendCommandRrq(
                 methodID: setMethodID,
-                parameterCount: parameterCount ?? 1,
+                parameterCount: parameterCount,
                 parameters: newValue
             )
         }
@@ -404,7 +405,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
             },
             set: {
                 guard let object else { return }
-                _set(_enclosingInstance: object, $0)
+                _set(_enclosingInstance: object, $0, parameterCount: 1)
             }
         )
     }

@@ -21,6 +21,7 @@ import SwiftOCA
 /// bounded property getters have three parameters: the value itself, and the lower and upper bounds
 
 private let OcaBoundedPropertyGetterParameterCount: OcaUint8 = 3
+private let OcaBoundedPropertySetterParameterCount: OcaUint8 = 1
 
 @propertyWrapper
 public struct OcaBoundedDeviceProperty<
@@ -105,7 +106,10 @@ public struct OcaBoundedDeviceProperty<
     }
 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
-        let value: Value = try object.decodeCommand(command, responseParameterCount: 1)
+        let value: Value = try object.decodeCommand(
+            command,
+            responseParameterCount: OcaBoundedPropertySetterParameterCount
+        )
         // check it is in range
         if value < storage.wrappedValue.minValue ||
             value > storage.wrappedValue.maxValue
