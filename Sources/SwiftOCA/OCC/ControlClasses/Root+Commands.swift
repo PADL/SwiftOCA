@@ -52,29 +52,6 @@ extension OcaRoot {
         )
     }
 
-    // public for FlutterSwiftOCA to use
-    public func sendCommandRrq(
-        methodID: OcaMethodID,
-        parameterCount: OcaUint8,
-        parameterData: Data
-    ) async throws -> Ocp1Response {
-        guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
-
-        return try await withThrowingTimeout(of: connectionDelegate.options.responseTimeout) {
-            let command = Ocp1Command(
-                commandSize: 0,
-                handle: await connectionDelegate.getNextCommandHandle(),
-                targetONo: self.objectNumber,
-                methodID: methodID,
-                parameters: Ocp1Parameters(
-                    parameterCount: parameterCount,
-                    parameterData: parameterData
-                )
-            )
-            return try await connectionDelegate.sendCommandRrq(command)
-        }
-    }
-
     private func sendCommandRrq(
         methodID: OcaMethodID,
         parameterCount: OcaUint8,
@@ -82,11 +59,18 @@ extension OcaRoot {
         responseParameterCount: OcaUint8,
         responseParameterData: inout Data
     ) async throws {
-        let response = try await sendCommandRrq(
-            methodID: methodID,
-            parameterCount: parameterCount,
-            parameterData: parameterData
-        )
+        guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
+
+        let response = try await withThrowingTimeout(
+            of: connectionDelegate.options
+                .responseTimeout
+        ) {
+            try await self.sendCommandRrq(
+                methodID: methodID,
+                parameterCount: parameterCount,
+                parameterData: parameterData
+            )
+        }
 
         guard response.statusCode == .ok else {
             throw Ocp1Error.status(response.statusCode)
@@ -286,5 +270,30 @@ extension OcaRoot {
         )
 
         return try decodeResponse(U.self, from: responseParameterData)
+    }
+}
+
+public extension OcaRoot {
+    // public for FlutterSwiftOCA to use
+    func sendCommandRrq(
+        methodID: OcaMethodID,
+        parameterCount: OcaUint8,
+        parameterData: Data
+    ) async throws -> Ocp1Response {
+        guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
+
+        return try await withThrowingTimeout(of: connectionDelegate.options.responseTimeout) {
+            let command = Ocp1Command(
+                commandSize: 0,
+                handle: await connectionDelegate.getNextCommandHandle(),
+                targetONo: self.objectNumber,
+                methodID: methodID,
+                parameters: Ocp1Parameters(
+                    parameterCount: parameterCount,
+                    parameterData: parameterData
+                )
+            )
+            return try await connectionDelegate.sendCommandRrq(command)
+        }
     }
 }
