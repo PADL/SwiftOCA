@@ -29,6 +29,9 @@ public struct OcaVector2D<T: Codable & Sendable & FixedWidthInteger>: Codable, S
     }
 }
 
+// for both getter and setter, because we're combining two properties into one
+private let OcaVectorPropertyParameterCount: OcaUint8 = 2
+
 @propertyWrapper
 public struct OcaVectorProperty<
     Value: Codable & Sendable &
@@ -109,13 +112,21 @@ public struct OcaVectorProperty<
             #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
             #endif
-            return object[keyPath: storageKeyPath]._storage._get(_enclosingInstance: object)
+            return object[keyPath: storageKeyPath]._storage
+                ._get(
+                    _enclosingInstance: object,
+                    responseParameterCount: OcaVectorPropertyParameterCount
+                )
         }
         set {
             #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
             #endif
-            object[keyPath: storageKeyPath]._storage._set(_enclosingInstance: object, newValue)
+            object[keyPath: storageKeyPath]._storage._set(
+                _enclosingInstance: object,
+                newValue,
+                parameterCount: OcaVectorPropertyParameterCount
+            )
         }
     }
 
@@ -155,8 +166,24 @@ public struct OcaVectorProperty<
     #if canImport(SwiftUI)
     public var projectedValue: Binding<PropertyValue> {
         Binding(
-            get: { _storage.projectedValue.wrappedValue },
-            set: { _storage.projectedValue.wrappedValue = $0 }
+            get: {
+                if let object = _storage.object {
+                    return _storage._get(
+                        _enclosingInstance: object,
+                        responseParameterCount: OcaVectorPropertyParameterCount
+                    )
+                } else {
+                    return .initial
+                }
+            },
+            set: {
+                guard let object = _storage.object else { return }
+                _storage._set(
+                    _enclosingInstance: object,
+                    $0,
+                    parameterCount: OcaVectorPropertyParameterCount
+                )
+            }
         )
     }
     #endif

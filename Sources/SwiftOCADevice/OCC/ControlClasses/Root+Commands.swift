@@ -17,7 +17,7 @@
 import SwiftOCA
 
 public extension OcaRoot {
-    func decodeCommand<U: Decodable>(
+    static func decodeCommand<U: Decodable>(
         _ command: Ocp1Command,
         responseParameterCount: OcaUint8? = nil
     ) throws -> U {
@@ -25,7 +25,7 @@ public extension OcaRoot {
         let responseParameterCount = responseParameterCount ?? _ocp1ParameterCount(type: U.self)
         if command.parameters.parameterCount != responseParameterCount {
             Task {
-                await deviceDelegate?.logger.trace(
+                await OcaDevice.shared.logger.trace(
                     "OcaRoot.decodeCommand: unexpected parameter count \(responseParameterCount), expected \(command.parameters.parameterCount)"
                 )
             }
@@ -33,7 +33,7 @@ public extension OcaRoot {
         return response
     }
 
-    func encodeResponse<T: Encodable>(
+    static func encodeResponse<T: Encodable>(
         _ parameters: T,
         parameterCount: OcaUint8? = nil,
         statusCode: OcaStatus = .ok
@@ -45,5 +45,20 @@ public extension OcaRoot {
         )
 
         return Ocp1Response(statusCode: statusCode, parameters: parameters)
+    }
+
+    func decodeCommand<U: Decodable>(
+        _ command: Ocp1Command,
+        responseParameterCount: OcaUint8? = nil
+    ) throws -> U {
+        try Self.decodeCommand(command, responseParameterCount: responseParameterCount)
+    }
+
+    func encodeResponse<T: Encodable>(
+        _ parameters: T,
+        parameterCount: OcaUint8? = nil,
+        statusCode: OcaStatus = .ok
+    ) throws -> Ocp1Response {
+        try Self.encodeResponse(parameters, parameterCount: parameterCount, statusCode: statusCode)
     }
 }

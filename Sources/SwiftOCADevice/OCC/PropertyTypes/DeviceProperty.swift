@@ -23,7 +23,6 @@ import SwiftOCA
 protocol OcaDevicePropertyRepresentable {
     associatedtype Value: Codable & Sendable
 
-    // FIXME: support vector properties with multiple property IDs
     var propertyID: OcaPropertyID { get }
     var getMethodID: OcaMethodID? { get }
     var setMethodID: OcaMethodID? { get }
@@ -31,8 +30,10 @@ protocol OcaDevicePropertyRepresentable {
 
     var subject: AsyncCurrentValueSubject<Value> { get }
 
-    func get(object: OcaRoot) async throws -> Ocp1Response
-    func getJsonValue(object: OcaRoot) throws -> Any
+    func getOcp1Response() async throws -> Ocp1Response
+    func getJsonValue() throws -> Any
+
+    /// setters take an object so that subscribers can be notified
 
     func set(object: OcaRoot, command: Ocp1Command) async throws
     func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws
@@ -108,7 +109,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         self.setMethodID = setMethodID
     }
 
-    func get(object: OcaRoot) -> Value {
+    func get() -> Value {
         subject.value
     }
 
@@ -127,15 +128,19 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         }
     }
 
-    func get(object: OcaRoot) async throws -> Ocp1Response {
-        let value: Value = get(object: object)
+    func getOcp1Response() async throws -> SwiftOCA.Ocp1Response {
+        try await getOcp1Response(parameterCount: 1)
+    }
+
+    func getOcp1Response(parameterCount: OcaUint8) async throws -> Ocp1Response {
+        let value: Value = get()
         if isNil(value) {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
-        return try object.encodeResponse(value)
+        return try OcaRoot.encodeResponse(value, parameterCount: parameterCount)
     }
 
-    func getJsonValue(object: OcaRoot) throws -> Any {
+    func getJsonValue() throws -> Any {
         let jsonValue: Any
 
         if isNil(subject.value) {
@@ -153,7 +158,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     }
 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
-        let newValue: Value = try object.decodeCommand(command)
+        let newValue: Value = try OcaRoot.decodeCommand(command, responseParameterCount: 1)
         set(object: object, newValue)
         notifySubscribers(object: object)
     }
@@ -218,7 +223,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
     ) -> Value {
         get {
-            object[keyPath: storageKeyPath].get(object: object)
+            object[keyPath: storageKeyPath].get()
         }
         set {
             object[keyPath: storageKeyPath].set(object: object, newValue)

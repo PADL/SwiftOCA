@@ -17,12 +17,16 @@
 import AsyncExtensions
 import SwiftOCA
 
+private let OcaVectorPropertyParameterCount: OcaUint8 = 2
+
 @propertyWrapper
 public struct OcaVectorDeviceProperty<
     Value: Codable &
         Comparable & FixedWidthInteger & Sendable
 >: OcaDevicePropertyRepresentable, Sendable {
     fileprivate var storage: Property
+
+    // FIXME: support vector properties with multiple property IDs
 
     public var propertyID: OcaPropertyID { storage.propertyID }
     public var xPropertyID: OcaPropertyID { propertyID }
@@ -62,11 +66,11 @@ public struct OcaVectorDeviceProperty<
         self.yPropertyID = yPropertyID
     }
 
-    func get(object: OcaRoot) async throws -> Ocp1Response {
-        try await storage.get(object: object)
+    func getOcp1Response() async throws -> Ocp1Response {
+        try await storage.getOcp1Response(parameterCount: OcaVectorPropertyParameterCount)
     }
 
-    func getJsonValue(object: OcaRoot) throws -> Any {
+    func getJsonValue() throws -> Any {
         let valueDict: [String: Value] =
             ["x": storage.subject.value.x,
              "y": storage.subject.value.y]
@@ -94,7 +98,8 @@ public struct OcaVectorDeviceProperty<
     }
 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
-        let newValue: OcaVector2D<Value> = try object.decodeCommand(command)
+        let newValue: OcaVector2D<Value> = try object
+            .decodeCommand(command, responseParameterCount: OcaVectorPropertyParameterCount)
         storage.set(object: object, newValue)
         notifySubscribers(object: object)
     }
@@ -140,7 +145,7 @@ public struct OcaVectorDeviceProperty<
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
     ) -> OcaVector2D<Value> {
         get {
-            object[keyPath: storageKeyPath].storage.get(object: object)
+            object[keyPath: storageKeyPath].storage.get()
         }
         set {
             object[keyPath: storageKeyPath].storage.set(object: object, newValue)

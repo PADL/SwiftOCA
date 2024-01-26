@@ -38,12 +38,16 @@ extension OcaRoot {
         try await connectionDelegate.sendCommand(command)
     }
 
-    func sendCommand<T: Encodable>(methodID: OcaMethodID, parameter: T) async throws {
-        let parameterData = try encodeParameters([parameter])
+    func sendCommand<T: Encodable>(
+        methodID: OcaMethodID,
+        parameterCount: OcaUint8,
+        parameters: T
+    ) async throws {
+        let parameterData = try encodeParameters([parameters])
 
         try await sendCommand(
             methodID: methodID,
-            parameterCount: 1,
+            parameterCount: parameterCount,
             parameterData: parameterData
         )
     }
@@ -233,14 +237,17 @@ extension OcaRoot {
     }
 
     // this variant avoids having to allocate inout response type
-    func sendCommandRrq<U: Decodable>(methodID: OcaMethodID) async throws -> U {
+    func sendCommandRrq<U: Decodable>(
+        methodID: OcaMethodID,
+        responseParameterCount: OcaUint8? = nil
+    ) async throws -> U {
         var responseParameterData = Data()
 
         try await sendCommandRrq(
             methodID: methodID,
             parameterCount: 0,
             parameterData: Data(),
-            responseParameterCount: _ocp1ParameterCount(type: U.self),
+            responseParameterCount: responseParameterCount ?? _ocp1ParameterCount(type: U.self),
             responseParameterData: &responseParameterData
         )
 

@@ -18,6 +18,10 @@
 import AsyncExtensions
 import SwiftOCA
 
+/// bounded property getters have three parameters: the value itself, and the lower and upper bounds
+
+private let OcaBoundedPropertyGetterParameterCount: OcaUint8 = 3
+
 @propertyWrapper
 public struct OcaBoundedDeviceProperty<
     Value: Codable &
@@ -58,11 +62,11 @@ public struct OcaBoundedDeviceProperty<
         )
     }
 
-    func get(object: OcaRoot) async throws -> Ocp1Response {
-        try await storage.get(object: object)
+    func getOcp1Response() async throws -> Ocp1Response {
+        try await storage.getOcp1Response(parameterCount: OcaBoundedPropertyGetterParameterCount)
     }
 
-    func getJsonValue(object: OcaRoot) throws -> Any {
+    func getJsonValue() throws -> Any {
         let valueDict: [String: Value] =
             ["v": storage.subject.value.value,
              "l": storage.subject.value.range.lowerBound,
@@ -101,10 +105,10 @@ public struct OcaBoundedDeviceProperty<
     }
 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
-        let value: Value = try object.decodeCommand(command)
+        let value: Value = try object.decodeCommand(command, responseParameterCount: 1)
         // check it is in range
-        if value < storage.wrappedValue.range.lowerBound ||
-            value > storage.wrappedValue.range.upperBound
+        if value < storage.wrappedValue.minValue ||
+            value > storage.wrappedValue.maxValue
         {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
@@ -145,7 +149,7 @@ public struct OcaBoundedDeviceProperty<
         storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
     ) -> OcaBoundedPropertyValue<Value> {
         get {
-            object[keyPath: storageKeyPath].storage.get(object: object)
+            object[keyPath: storageKeyPath].storage.get()
         }
         set {
             object[keyPath: storageKeyPath].storage.set(object: object, newValue)

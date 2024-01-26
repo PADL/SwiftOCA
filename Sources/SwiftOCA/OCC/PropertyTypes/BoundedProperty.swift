@@ -59,6 +59,8 @@ public extension OcaBoundedPropertyValue where Value: BinaryFloatingPoint {
     }
 }
 
+private let OcaBoundedPropertyGetterParameterCount: OcaUint8 = 3
+
 @propertyWrapper
 public struct OcaBoundedProperty<
     Value: Codable & Comparable &
@@ -132,7 +134,11 @@ public struct OcaBoundedProperty<
             #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
             #endif
-            return object[keyPath: storageKeyPath]._storage._get(_enclosingInstance: object)
+            return object[keyPath: storageKeyPath]._storage
+                ._get(
+                    _enclosingInstance: object,
+                    responseParameterCount: OcaBoundedPropertyGetterParameterCount
+                )
         }
         set {
             #if canImport(SwiftUI)
@@ -173,8 +179,20 @@ public struct OcaBoundedProperty<
     #if canImport(SwiftUI)
     public var projectedValue: Binding<PropertyValue> {
         Binding(
-            get: { _storage.projectedValue.wrappedValue },
-            set: { _storage.projectedValue.wrappedValue = $0 }
+            get: {
+                if let object = _storage.object {
+                    return _storage._get(
+                        _enclosingInstance: object,
+                        responseParameterCount: OcaBoundedPropertyGetterParameterCount
+                    )
+                } else {
+                    return .initial
+                }
+            },
+            set: {
+                guard let object = _storage.object else { return }
+                _storage._set(_enclosingInstance: object, $0)
+            }
         )
     }
     #endif

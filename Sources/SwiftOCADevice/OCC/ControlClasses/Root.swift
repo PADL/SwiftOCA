@@ -168,7 +168,7 @@ Sendable, OcaKeyPathMarkerProtocol {
 
             if command.methodID == property.getMethodID {
                 try await ensureReadable(by: controller, command: command)
-                return try await property.get(object: self)
+                return try await property.getOcp1Response()
             } else if command.methodID == property.setMethodID {
                 try await ensureWritable(by: controller, command: command)
                 try await property.set(object: self, command: command)
