@@ -20,7 +20,7 @@
 		D32229CD2ABC270900B56B6B /* LocalConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C32ABC270900B56B6B /* LocalConnection.swift */; };
 		D32229CE2ABC270900B56B6B /* LocalDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C42ABC270900B56B6B /* LocalDeviceEndpoint.swift */; };
 		D32229CF2ABC270900B56B6B /* LocalController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C52ABC270900B56B6B /* LocalController.swift */; };
-		D32229D02ABC270900B56B6B /* Ocp11FlyingSocksDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C72ABC270900B56B6B /* Ocp11FlyingSocksDeviceEndpoint.swift */; };
+		D32229D02ABC270900B56B6B /* Ocp1FlyingSocksDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C72ABC270900B56B6B /* Ocp1FlyingSocksDeviceEndpoint.swift */; };
 		D32229D12ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C82ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift */; };
 		D32229D22ABC270900B56B6B /* Ocp1FlyingSocksController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C92ABC270900B56B6B /* Ocp1FlyingSocksController.swift */; };
 		D32229D32ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CB2ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift */; };
@@ -305,7 +305,7 @@
 		D32229C32ABC270900B56B6B /* LocalConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalConnection.swift; sourceTree = "<group>"; };
 		D32229C42ABC270900B56B6B /* LocalDeviceEndpoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D32229C52ABC270900B56B6B /* LocalController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalController.swift; sourceTree = "<group>"; };
-		D32229C72ABC270900B56B6B /* Ocp11FlyingSocksDeviceEndpoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp11FlyingSocksDeviceEndpoint.swift; sourceTree = "<group>"; };
+		D32229C72ABC270900B56B6B /* Ocp1FlyingSocksDeviceEndpoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D32229C82ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksLogging.swift; sourceTree = "<group>"; };
 		D32229C92ABC270900B56B6B /* Ocp1FlyingSocksController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksController.swift; sourceTree = "<group>"; };
 		D32229CB2ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1IORingDeviceEndpoint.swift; sourceTree = "<group>"; };
@@ -633,7 +633,7 @@
 		D32229C62ABC270900B56B6B /* FlyingSocks */ = {
 			isa = PBXGroup;
 			children = (
-				D32229C72ABC270900B56B6B /* Ocp11FlyingSocksDeviceEndpoint.swift */,
+				D32229C72ABC270900B56B6B /* Ocp1FlyingSocksDeviceEndpoint.swift */,
 				D32229C82ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift */,
 				D32229C92ABC270900B56B6B /* Ocp1FlyingSocksController.swift */,
 				D3B325082B4F6B4900C8335F /* Ocp1FlyingFoxDeviceEndpoint.swift */,
@@ -1587,7 +1587,7 @@
 				D3FAC8EE2B5CFE3A009E2775 /* FirmwareManager.swift in Sources */,
 				D32229D12ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift in Sources */,
 				D33B52AA2A702D3F001A1BA7 /* NetworkManager.swift in Sources */,
-				D32229D02ABC270900B56B6B /* Ocp11FlyingSocksDeviceEndpoint.swift in Sources */,
+				D32229D02ABC270900B56B6B /* Ocp1FlyingSocksDeviceEndpoint.swift in Sources */,
 				D35592622B520E21000F633B /* Logger+Controller.swift in Sources */,
 				D3AFD35C2B30EC0600A72E9A /* CodingManager.swift in Sources */,
 				D337713F2B48A829003BD47B /* Root+JSON.swift in Sources */,
