@@ -22,49 +22,29 @@ import SwiftUI
 
 public struct OcaBoundedPropertyValue<Value: Codable & Comparable & Sendable>: Codable, Sendable {
     public var value: Value
-    public var range: ClosedRange<Value>
+    public var minValue: Value
+    public var maxValue: Value
+
+    public var range: ClosedRange<Value> {
+        get {
+            minValue...maxValue
+        }
+        set {
+            minValue = newValue.lowerBound
+            maxValue = newValue.upperBound
+        }
+    }
 
     public init(value: Value, in range: ClosedRange<Value>) {
         self.value = value
-        self.range = range
+        minValue = range.lowerBound
+        maxValue = range.upperBound
     }
 
-    enum CodingKeys: CodingKey {
-        case value
-        case minValue
-        case maxValue
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        value = try container.decode(Value.self, forKey: .value)
-        range = try container.decode(Value.self, forKey: .minValue)...container
-            .decode(Value.self, forKey: .maxValue)
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(value, forKey: .value)
-        try container.encode(range.lowerBound, forKey: .minValue)
-        try container.encode(range.upperBound, forKey: .maxValue)
-    }
-
-    fileprivate var minValue: Value {
-        get {
-            range.lowerBound
-        }
-        set {
-            range = newValue...range.upperBound
-        }
-    }
-
-    fileprivate var maxValue: Value {
-        get {
-            range.upperBound
-        }
-        set {
-            range = range.lowerBound...newValue
-        }
+    public init(value: Value, minValue: Value, maxValue: Value) {
+        self.value = value
+        self.minValue = minValue
+        self.maxValue = maxValue
     }
 }
 
