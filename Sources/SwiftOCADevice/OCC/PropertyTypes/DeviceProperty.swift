@@ -200,7 +200,6 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
 
     private func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {
         let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
-        let encoder = Ocp1Encoder()
         let parameters = OcaPropertyChangedEventData<Value>(
             propertyID: propertyID,
             propertyValue: newValue,
@@ -209,7 +208,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
 
         try await object.deviceDelegate?.notifySubscribers(
             event,
-            parameters: try encoder.encode(parameters)
+            parameters: parameters
         )
     }
 

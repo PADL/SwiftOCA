@@ -111,7 +111,6 @@ public struct OcaVectorDeviceProperty<
 
     private func notifySubscribers(object: OcaRoot, _ newValue: OcaVector2D<Value>) async throws {
         let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
-        let encoder = Ocp1Encoder()
         let xParameters = OcaPropertyChangedEventData<Value>(
             propertyID: xPropertyID,
             propertyValue: newValue.x,
@@ -120,7 +119,7 @@ public struct OcaVectorDeviceProperty<
 
         try await object.deviceDelegate?.notifySubscribers(
             event,
-            parameters: try encoder.encode(xParameters)
+            parameters: xParameters
         )
 
         let yParameters = OcaPropertyChangedEventData<Value>(
@@ -131,7 +130,7 @@ public struct OcaVectorDeviceProperty<
 
         try await object.deviceDelegate?.notifySubscribers(
             event,
-            parameters: try encoder.encode(yParameters)
+            parameters: yParameters
         )
     }
 

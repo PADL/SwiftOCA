@@ -133,6 +133,16 @@ public actor OcaDevice {
         }
     }
 
+    public func notifySubscribers<T: Codable & Sendable>(
+        _ event: OcaEvent,
+        parameters: OcaPropertyChangedEventData<T>
+    ) async throws {
+        try await notifySubscribers(
+            event,
+            parameters: try Ocp1Encoder().encode(parameters)
+        )
+    }
+
     public func notifySubscribers(
         _ event: OcaEvent,
         parameters: Data
