@@ -121,6 +121,16 @@ public extension OcaControllerDefaultSubscribing {
         }
     }
 
+    func notifySubscribers<T: Codable & Sendable>(
+        _ event: OcaEvent,
+        parameters: OcaPropertyChangedEventData<T>
+    ) async throws {
+        try await notifySubscribers(
+            event,
+            parameters: try Ocp1Encoder().encode(parameters)
+        )
+    }
+
     func notifySubscribers(
         _ event: OcaEvent,
         parameters: Data
