@@ -21,13 +21,13 @@ public struct OcaRootBlockView: View {
     @Environment(\.lastError)
     var lastError
     @StateObject
-    var connection: AES70OCP1Connection
+    var connection: Ocp1Connection
     @StateObject
     var object: OcaBlock
     @State
     var oNoPath = NavigationPath()
 
-    public init(_ connection: AES70OCP1Connection) {
+    public init(_ connection: Ocp1Connection) {
         _connection = StateObject(wrappedValue: connection)
         _object = StateObject(wrappedValue: connection.rootBlock)
     }

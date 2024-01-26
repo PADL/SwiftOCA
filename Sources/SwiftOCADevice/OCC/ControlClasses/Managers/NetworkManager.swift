@@ -33,7 +33,7 @@ open class OcaNetworkManager: OcaManager {
     )
     public var mediaTransportNetworks = [OcaMediaTransportNetwork]()
 
-    public convenience init(deviceDelegate: AES70Device? = nil) async throws {
+    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
         try await self.init(
             objectNumber: OcaNetworkManagerONo,
             role: "Network Manager",

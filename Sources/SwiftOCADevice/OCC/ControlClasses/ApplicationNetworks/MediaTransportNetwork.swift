@@ -155,7 +155,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
 
     override open func handleCommand(
         _ command: Ocp1Command,
-        from controller: AES70Controller
+        from controller: OcaController
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.3"):

@@ -20,7 +20,7 @@ open class OcaDiagnosticManager: OcaManager {
     override open class var classID: OcaClassID { OcaClassID("1.3.13") }
     override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    public convenience init(deviceDelegate: AES70Device? = nil) async throws {
+    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
         try await self.init(
             objectNumber: OcaDiagnosticManagerONo,
             role: "Diagnostic Manager",
@@ -31,7 +31,7 @@ open class OcaDiagnosticManager: OcaManager {
 
     override public func handleCommand(
         _ command: Ocp1Command,
-        from controller: AES70Controller
+        from controller: OcaController
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.1"):

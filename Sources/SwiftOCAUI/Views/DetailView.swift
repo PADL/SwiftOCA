@@ -33,7 +33,7 @@ public struct OcaDetailView: OcaView {
     @Environment(\.lastError)
     var lastError
 
-    public init(_ connection: AES70OCP1Connection, object: OcaObjectIdentification) {
+    public init(_ connection: Ocp1Connection, object: OcaObjectIdentification) {
         _object = StateObject(wrappedValue: connection.resolve(object: object)!)
     }
 

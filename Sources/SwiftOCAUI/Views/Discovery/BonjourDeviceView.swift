@@ -19,7 +19,7 @@ import SwiftUI
 
 public struct OcaBonjourDeviceView: View {
     @State
-    var connection: AES70OCP1Connection? = nil
+    var connection: Ocp1Connection? = nil
     @State
     var isConnected = false
     @State
@@ -40,7 +40,7 @@ public struct OcaBonjourDeviceView: View {
             }
         }.task {
             do {
-                connection = try await AES70OCP1Connection(service)
+                connection = try await Ocp1Connection(service)
                 if let connection {
                     try await connection.connect()
                     self.isConnected = true

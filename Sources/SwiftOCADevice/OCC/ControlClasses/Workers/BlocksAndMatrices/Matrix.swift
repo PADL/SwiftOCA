@@ -31,7 +31,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         objectNumber: OcaONo? = nil,
         lockable: OcaBoolean = true,
         role: OcaString = "Matrix",
-        deviceDelegate: AES70Device? = nil,
+        deviceDelegate: OcaDevice? = nil,
         addToRootBlock: Bool = true
     ) async throws {
         guard rows < OcaMatrixWildcardCoordinate,
@@ -82,7 +82,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
         override open func handleCommand(
             _ command: Ocp1Command,
-            from controller: any AES70Controller
+            from controller: any OcaController
         ) async throws -> Ocp1Response {
             var response: Ocp1Response?
             var lastStatus: OcaStatus?
@@ -140,7 +140,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         }
     }
 
-    private func lockSelfAndProxy(controller: any AES70Controller) throws {
+    private func lockSelfAndProxy(controller: any OcaController) throws {
         guard lockable else { return }
 
         switch lockState {
@@ -159,7 +159,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         proxy.lockState = lockState
     }
 
-    fileprivate func unlockSelfAndProxy(controller: any AES70Controller) throws {
+    fileprivate func unlockSelfAndProxy(controller: any OcaController) throws {
         guard lockable else { return }
 
         guard let lockStatePriorToSetCurrentXY else {
@@ -256,7 +256,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
     override open func handleCommand(
         _ command: Ocp1Command,
-        from controller: any AES70Controller
+        from controller: any OcaController
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.3"):

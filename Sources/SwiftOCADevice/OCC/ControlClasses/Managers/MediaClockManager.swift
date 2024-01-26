@@ -32,7 +32,7 @@ open class OcaMediaClockManager: OcaManager {
     )
     public var clock3s = [OcaMediaClock3]()
 
-    public convenience init(deviceDelegate: AES70Device? = nil) async throws {
+    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
         try await self.init(
             objectNumber: OcaMediaClockManagerONo,
             role: "Media Clock Manager",

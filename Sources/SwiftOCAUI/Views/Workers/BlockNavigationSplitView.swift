@@ -19,7 +19,7 @@ import SwiftUI
 
 struct OcaBlockNavigationSplitView: OcaView {
     @EnvironmentObject
-    var connection: AES70OCP1Connection
+    var connection: Ocp1Connection
     @Environment(\.navigationPath)
     var oNoPath
     @Environment(\.lastError)

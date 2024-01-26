@@ -32,7 +32,7 @@ open class OcaCodingManager: OcaManager {
     )
     public var availableDecodingSchemes: [OcaMediaCodingSchemeID: OcaString] = [:]
 
-    public convenience init(deviceDelegate: AES70Device? = nil) async throws {
+    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
         try await self.init(
             objectNumber: OcaCodingManagerONo,
             role: "Coding Manager",

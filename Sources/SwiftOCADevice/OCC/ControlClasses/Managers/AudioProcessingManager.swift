@@ -20,7 +20,7 @@ open class OcaAudioProcessingManager: OcaManager {
     override open class var classID: OcaClassID { OcaClassID("1.3.9") }
     override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    public convenience init(deviceDelegate: AES70Device? = nil) async throws {
+    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
         try await self.init(
             objectNumber: OcaAudioProcessingManagerONo,
             role: "Audio Processing Manager",

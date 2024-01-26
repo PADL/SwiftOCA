@@ -19,7 +19,7 @@ open class OcaIdentificationSensor: OcaSensor {
 
     public static let identifyEventID = OcaEventID(defLevel: 4, eventIndex: 1)
 
-    public func onIdentify(_ callback: @escaping AES70SubscriptionCallback) async throws {
+    public func onIdentify(_ callback: @escaping OcaSubscriptionCallback) async throws {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let event = OcaEvent(emitterONo: objectNumber, eventID: Self.identifyEventID)
 

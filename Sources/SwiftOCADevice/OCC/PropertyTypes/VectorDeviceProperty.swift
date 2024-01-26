@@ -79,7 +79,7 @@ public struct OcaVectorDeviceProperty<
         notifySubscribers(object: object)
     }
 
-    func set(object: OcaRoot, jsonValue: Any, device: AES70Device) async throws {
+    func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
         guard let valueDict = jsonValue as? [String: Value] else {
             throw Ocp1Error.status(.badFormat)
         }

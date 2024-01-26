@@ -17,7 +17,7 @@
 import AsyncExtensions
 import SwiftOCA
 
-extension AES70Controller {
+extension OcaController {
     typealias ID = ObjectIdentifier
 
     nonisolated var id: ID {
@@ -36,13 +36,13 @@ Sendable, OcaKeyPathMarkerProtocol {
     public var lockable: OcaBoolean
     public var role: OcaString
 
-    public internal(set) weak var deviceDelegate: AES70Device?
+    public internal(set) weak var deviceDelegate: OcaDevice?
 
     enum LockState: Sendable, CustomStringConvertible {
-        /// AES70-1-2023 uses this confusing `NoReadWrite` and `NoWrite` nomenclature
+        /// Oca-1-2023 uses this confusing `NoReadWrite` and `NoWrite` nomenclature
         case unlocked
-        case lockedNoWrite(AES70Controller.ID)
-        case lockedNoReadWrite(AES70Controller.ID)
+        case lockedNoWrite(OcaController.ID)
+        case lockedNoReadWrite(OcaController.ID)
 
         var lockState: OcaLockState {
             switch self {
@@ -90,7 +90,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         objectNumber: OcaONo? = nil,
         lockable: OcaBoolean = false,
         role: OcaString? = nil,
-        deviceDelegate: AES70Device? = nil,
+        deviceDelegate: OcaDevice? = nil,
         addToRootBlock: Bool = true
     ) async throws {
         if let objectNumber {
@@ -150,7 +150,7 @@ Sendable, OcaKeyPathMarkerProtocol {
             objectNumber = try container.decode(OcaONo.self, forKey: .objectNumber)
             lockable = try container.decode(OcaBoolean.self, forKey: .lockable)
             role = try container.decode(OcaString.self, forKey: .role)
-            deviceDelegate = AES70Device.shared
+            deviceDelegate = OcaDevice.shared
         }
     }
 
@@ -161,7 +161,7 @@ Sendable, OcaKeyPathMarkerProtocol {
 
     func handlePropertyAccessor(
         _ command: Ocp1Command,
-        from controller: any AES70Controller
+        from controller: any OcaController
     ) async throws -> Ocp1Response {
         for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
             let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
@@ -181,7 +181,7 @@ Sendable, OcaKeyPathMarkerProtocol {
 
     open func handleCommand(
         _ command: Ocp1Command,
-        from controller: any AES70Controller
+        from controller: any OcaController
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("1.1"):
@@ -217,7 +217,7 @@ Sendable, OcaKeyPathMarkerProtocol {
     }
 
     open func ensureReadable(
-        by controller: any AES70Controller,
+        by controller: any OcaController,
         command: Ocp1Command
     ) async throws {
         if let deviceManager = await deviceDelegate?.deviceManager, deviceManager != self {
@@ -239,7 +239,7 @@ Sendable, OcaKeyPathMarkerProtocol {
     /// Important note: when subclassing you will typically want to override ensureWritable() to
     /// implement your own form of access control.
     open func ensureWritable(
-        by controller: any AES70Controller,
+        by controller: any OcaController,
         command: Ocp1Command
     ) async throws {
         if let deviceManager = await deviceDelegate?.deviceManager, deviceManager != self {
@@ -258,7 +258,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    func lockNoWrite(controller: any AES70Controller) throws {
+    func lockNoWrite(controller: any OcaController) throws {
         if !lockable {
             throw Ocp1Error.status(.notImplemented)
         }
@@ -277,7 +277,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    func lockNoReadWrite(controller: any AES70Controller) throws {
+    func lockNoReadWrite(controller: any OcaController) throws {
         if !lockable {
             throw Ocp1Error.status(.notImplemented)
         }
@@ -295,7 +295,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    func unlock(controller: any AES70Controller) throws {
+    func unlock(controller: any OcaController) throws {
         if !lockable {
             throw Ocp1Error.status(.notImplemented)
         }
@@ -313,7 +313,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    func setLockState(to lockState: OcaLockState, controller: any AES70Controller) -> Bool {
+    func setLockState(to lockState: OcaLockState, controller: any OcaController) -> Bool {
         do {
             switch lockState {
             case .noLock:

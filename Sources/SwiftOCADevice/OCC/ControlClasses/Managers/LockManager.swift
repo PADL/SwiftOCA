@@ -21,7 +21,7 @@ public class OcaLockManager: OcaManager {
     override public class var classVersion: OcaClassVersionNumber { 3 }
 
     private struct LockWaiterID: Hashable {
-        let controller: AES70Controller.ID
+        let controller: OcaController.ID
         let target: OcaONo
     }
 
@@ -49,8 +49,8 @@ public class OcaLockManager: OcaManager {
 
     private var lockWaiters = [LockWaiterID: LockWaiter]()
 
-    @AES70Device
-    func remove(controller: AES70Controller) {
+    @OcaDevice
+    func remove(controller: OcaController) {
         for kv in lockWaiters.filter({ kv in
             kv.key.controller == controller.id
         }) {
@@ -58,9 +58,9 @@ public class OcaLockManager: OcaManager {
         }
     }
 
-    @AES70Device
+    @OcaDevice
     private func lockWait(
-        controller: AES70Controller,
+        controller: OcaController,
         target: OcaONo,
         type: OcaLockState,
         timeout: OcaTimeInterval
@@ -101,8 +101,8 @@ public class OcaLockManager: OcaManager {
         lockWaiters.removeValue(forKey: lockWaiterID)
     }
 
-    @AES70Device
-    private func abortWaits(controller: AES70Controller, oNo target: OcaONo) async throws {
+    @OcaDevice
+    private func abortWaits(controller: OcaController, oNo target: OcaONo) async throws {
         let lockWaiterID = LockWaiterID(controller: controller.id, target: target)
 
         guard let lockWaiter = lockWaiters[lockWaiterID] else {
@@ -115,7 +115,7 @@ public class OcaLockManager: OcaManager {
 
     override public func handleCommand(
         _ command: Ocp1Command,
-        from controller: AES70Controller
+        from controller: OcaController
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.1"):
@@ -136,7 +136,7 @@ public class OcaLockManager: OcaManager {
         }
     }
 
-    public convenience init(deviceDelegate: AES70Device? = nil) async throws {
+    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
         try await self.init(
             objectNumber: OcaLockManagerONo,
             role: "Lock Manager",

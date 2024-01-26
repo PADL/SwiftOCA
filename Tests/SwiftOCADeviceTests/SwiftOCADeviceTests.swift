@@ -69,9 +69,9 @@ final class SwiftOCADeviceTests: XCTestCase {
     }
 
     func testLoopbackDevice() async throws {
-        let device = AES70Device.shared
+        let device = OcaDevice.shared
         try await device.initializeDefaultObjects()
-        let listener = try await AES70LocalDeviceEndpoint()
+        let listener = try await OcaLocalDeviceEndpoint()
 
         let matrix = try await SwiftOCADevice
             .OcaMatrix<MyBooleanActuator>(
@@ -92,7 +92,7 @@ final class SwiftOCADeviceTests: XCTestCase {
         }
 
         let deviceMembers = await device.rootBlock.actionObjects
-        let connection = await AES70LocalConnection(listener)
+        let connection = await OcaLocalConnection(listener)
         Task { await listener.run() }
         try await connection.connect()
 

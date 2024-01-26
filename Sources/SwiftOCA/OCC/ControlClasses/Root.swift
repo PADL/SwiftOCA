@@ -28,7 +28,7 @@ open class OcaRoot: CustomStringConvertible, ObservableObject, @unchecked
 Sendable, OcaKeyPathMarkerProtocol {
     typealias Root = OcaRoot
 
-    public internal(set) weak var connectionDelegate: AES70OCP1Connection?
+    public internal(set) weak var connectionDelegate: Ocp1Connection?
     // public var objectNumberMapper: OcaObjectNumberMapper = OcaIdentityObjectNumberMapper.shared
 
     // 1.1

@@ -58,7 +58,7 @@ open class OcaDeviceManager: OcaManager {
         propertyID: OcaPropertyID("3.5"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var version: OcaUint16 = AES70Version.aes70_2023.rawValue
+    public var version: OcaUint16 = OcaProtocolVersion.aes70_2023.rawValue
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.6"),
@@ -150,7 +150,7 @@ open class OcaDeviceManager: OcaManager {
         throw Ocp1Error.status(.notImplemented)
     }
 
-    public convenience init(deviceDelegate: AES70Device? = nil) async throws {
+    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
         try await self.init(
             objectNumber: OcaDeviceManagerONo,
             role: "Device Manager",
@@ -161,7 +161,7 @@ open class OcaDeviceManager: OcaManager {
 
     override open func handleCommand(
         _ command: Ocp1Command,
-        from controller: AES70Controller
+        from controller: OcaController
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.27"):

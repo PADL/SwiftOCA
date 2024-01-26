@@ -18,7 +18,7 @@ import Foundation
 import SwiftOCA
 import SwiftOCADevice
 
-final class DeviceEventDelegate: AES70DeviceEventDelegate {
+final class DeviceEventDelegate: OcaDeviceEventDelegate {
     public func onEvent(_ event: SwiftOCA.OcaEvent, parameters: Data) async {}
 }
 
@@ -38,17 +38,17 @@ public enum DeviceApp {
             listenAddressData = Data(bytes: bytes.baseAddress!, count: bytes.count)
         }
 
-        let device = AES70Device.shared
+        let device = OcaDevice.shared
         try await device.initializeDefaultObjects()
         let delegate = DeviceEventDelegate()
         await device.setEventDelegate(delegate)
         #if os(Linux)
         let streamEndpoint =
-            try await AES70OCP1IORingStreamDeviceEndpoint(address: listenAddressData)
+            try await Ocp1IORingStreamDeviceEndpoint(address: listenAddressData)
         let datagramEndpoint =
-            try await AES70OCP1IORingDatagramDeviceEndpoint(address: listenAddressData)
+            try await Ocp1IORingDatagramDeviceEndpoint(address: listenAddressData)
         #else
-        let streamEndpoint = try await AES70OCP1DeviceEndpoint(address: listenAddressData)
+        let streamEndpoint = try await Ocp1DeviceEndpoint(address: listenAddressData)
         #endif
         #if os(macOS) || os(iOS)
         listenAddress.sin_family = sa_family_t(AF_INET)
@@ -61,7 +61,7 @@ public enum DeviceApp {
         }
 
         let webSocketEndpoint =
-            try await AES70OCP1WSDeviceEndpoint(address: listenAddressData)
+            try await Ocp1WSDeviceEndpoint(address: listenAddressData)
         #endif
 
         class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
@@ -139,7 +139,7 @@ func serializeDeserialize(
         print(String(data: jsonResultData, encoding: .utf8)!)
 
         let decoded = try JSONSerialization.jsonObject(with: jsonResultData) as! [String: Any]
-        try await AES70Device.shared.deserialize(jsonObject: decoded)
+        try await OcaDevice.shared.deserialize(jsonObject: decoded)
     } catch {
         debugPrint("coding error: \(error)")
     }

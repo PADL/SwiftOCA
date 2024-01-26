@@ -34,7 +34,7 @@ open class OcaAgent: OcaRoot, OcaOwnable {
 
     override public func handleCommand(
         _ command: Ocp1Command,
-        from controller: any AES70Controller
+        from controller: any OcaController
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("2.4"):

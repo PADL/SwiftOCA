@@ -51,7 +51,7 @@ class Ocp1EncodingState {
             throw Ocp1Error.stringNotEncodable(value)
         }
 
-        // AES70-3-2018: the Len part of the OcaString shall define the string length
+        // Oca-3-2018: the Len part of the OcaString shall define the string length
         // (i.e. the number of Unicode codepoints), not the byte length.
         let length = UInt16(value.unicodeScalars.count)
         try encodeInteger(length)

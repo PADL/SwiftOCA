@@ -27,7 +27,7 @@ extension OcaPortsRepresentable {
 
     func handleGetPortName(
         _ command: Ocp1Command,
-        from controller: AES70Controller
+        from controller: OcaController
     ) async throws -> OcaString {
         let portID: OcaPortID = try decodeCommand(command)
         try await ensureReadable(by: controller, command: command)
@@ -39,7 +39,7 @@ extension OcaPortsRepresentable {
 
     func handleSetPortName(
         _ command: Ocp1Command,
-        from controller: AES70Controller
+        from controller: OcaController
     ) async throws {
         let params: OcaSetPortNameParameters = try decodeCommand(command)
         try await ensureWritable(by: controller, command: command)
@@ -113,7 +113,7 @@ public protocol OcaPortClockMapRepresentable: OcaRoot {
 extension OcaPortClockMapRepresentable {
     func handleSetPortClockMapEntry(
         _ command: Ocp1Command,
-        from controller: AES70Controller
+        from controller: OcaController
     ) async throws {
         let parameters: OcaSetPortClockMapEntryParameters = try decodeCommand(command)
         try await ensureWritable(by: controller, command: command)
@@ -122,7 +122,7 @@ extension OcaPortClockMapRepresentable {
 
     func handleDeletePortClockMapEntry(
         _ command: Ocp1Command,
-        from controller: AES70Controller
+        from controller: OcaController
     ) async throws {
         let portID: OcaPortID = try decodeCommand(command)
         try await ensureWritable(by: controller, command: command)
@@ -131,7 +131,7 @@ extension OcaPortClockMapRepresentable {
 
     func handleGetPortClockMapEntry(
         _ command: Ocp1Command,
-        from controller: AES70Controller
+        from controller: OcaController
     ) async throws -> OcaPortClockMapEntry {
         let portID: OcaPortID = try decodeCommand(command)
         try await ensureReadable(by: controller, command: command)

@@ -54,7 +54,7 @@ open class OcaMediaClock3: OcaAgent {
 
     override open func handleCommand(
         _ command: Ocp1Command,
-        from controller: any AES70Controller
+        from controller: any OcaController
     ) async throws -> Ocp1Response {
         switch command.methodID {
         default:

@@ -28,7 +28,7 @@ public class OcaSubscriptionManager: OcaManager {
 
     private func addSubscription(
         _ subscription: SwiftOCA.OcaSubscriptionManager.AddSubscriptionParameters,
-        from controller: any AES70Controller,
+        from controller: any OcaController,
         command: Ocp1Command
     ) async throws {
         try await ensureWritable(by: controller, command: command)
@@ -37,7 +37,7 @@ public class OcaSubscriptionManager: OcaManager {
 
     private func removeSubscription(
         _ subscription: SwiftOCA.OcaSubscriptionManager.RemoveSubscriptionParameters,
-        from controller: any AES70Controller,
+        from controller: any OcaController,
         command: Ocp1Command
     ) async throws {
         try await ensureWritable(by: controller, command: command)
@@ -50,7 +50,7 @@ public class OcaSubscriptionManager: OcaManager {
 
     private func addPropertyChangeSubscription(
         _ subscription: SwiftOCA.OcaSubscriptionManager.AddPropertyChangeSubscriptionParameters,
-        from controller: any AES70Controller,
+        from controller: any OcaController,
         command: Ocp1Command
     ) async throws {
         try await ensureWritable(by: controller, command: command)
@@ -59,7 +59,7 @@ public class OcaSubscriptionManager: OcaManager {
 
     private func removePropertyChangeSubscription(
         _ subscription: SwiftOCA.OcaSubscriptionManager.RemovePropertyChangeSubscriptionParameters,
-        from controller: any AES70Controller,
+        from controller: any OcaController,
         command: Ocp1Command
     ) async throws {
         try await ensureWritable(by: controller, command: command)
@@ -71,7 +71,7 @@ public class OcaSubscriptionManager: OcaManager {
     }
 
     private func disableNotifications(
-        from controller: any AES70Controller,
+        from controller: any OcaController,
         command: Ocp1Command
     ) async throws {
         try await ensureWritable(by: controller, command: command)
@@ -84,7 +84,7 @@ public class OcaSubscriptionManager: OcaManager {
     }
 
     private func reenableNotifications(
-        from controller: any AES70Controller,
+        from controller: any OcaController,
         command: Ocp1Command
     ) async throws {
         try await ensureWritable(by: controller, command: command)
@@ -101,7 +101,7 @@ public class OcaSubscriptionManager: OcaManager {
 
     private func addSubscription2(
         _ subscription: SwiftOCA.OcaSubscriptionManager.AddSubscription2Parameters,
-        from controller: any AES70Controller,
+        from controller: any OcaController,
         command: Ocp1Command
     ) async throws {
         try await ensureWritable(by: controller, command: command)
@@ -110,7 +110,7 @@ public class OcaSubscriptionManager: OcaManager {
 
     private func removeSubscription2(
         _ subscription: SwiftOCA.OcaSubscriptionManager.RemoveSubscription2Parameters,
-        from controller: any AES70Controller,
+        from controller: any OcaController,
         command: Ocp1Command
     ) async throws {
         try await ensureWritable(by: controller, command: command)
@@ -119,7 +119,7 @@ public class OcaSubscriptionManager: OcaManager {
 
     private func addPropertyChangeSubscription2(
         _ subscription: SwiftOCA.OcaSubscriptionManager.AddPropertyChangeSubscription2Parameters,
-        from controller: any AES70Controller,
+        from controller: any OcaController,
         command: Ocp1Command
     ) async throws {
         try await ensureWritable(by: controller, command: command)
@@ -128,7 +128,7 @@ public class OcaSubscriptionManager: OcaManager {
 
     private func removePropertyChangeSubscription2(
         _ subscription: SwiftOCA.OcaSubscriptionManager.RemovePropertyChangeSubscription2Parameters,
-        from controller: any AES70Controller,
+        from controller: any OcaController,
         command: Ocp1Command
     ) async throws {
         try await ensureWritable(by: controller, command: command)
@@ -137,7 +137,7 @@ public class OcaSubscriptionManager: OcaManager {
 
     override public func handleCommand(
         _ command: Ocp1Command,
-        from controller: any AES70Controller
+        from controller: any OcaController
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.1"):
@@ -212,7 +212,7 @@ public class OcaSubscriptionManager: OcaManager {
         }
     }
 
-    public convenience init(deviceDelegate: AES70Device? = nil) async throws {
+    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
         try await self.init(
             objectNumber: OcaSubscriptionManagerONo,
             role: "Subscription Manager",

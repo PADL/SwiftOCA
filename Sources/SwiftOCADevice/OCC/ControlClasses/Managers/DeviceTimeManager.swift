@@ -51,7 +51,7 @@ open class OcaDeviceTimeManager: OcaManager {
 
     override public func handleCommand(
         _ command: Ocp1Command,
-        from controller: AES70Controller
+        from controller: OcaController
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.1"):
@@ -89,7 +89,7 @@ open class OcaDeviceTimeManager: OcaManager {
         }
     }
 
-    public convenience init(deviceDelegate: AES70Device? = nil) async throws {
+    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
         try await self.init(
             objectNumber: OcaDeviceTimeManagerONo,
             role: "Device Time Manager",

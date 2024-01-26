@@ -35,7 +35,7 @@ protocol OcaDevicePropertyRepresentable {
     func getJsonValue(object: OcaRoot) throws -> Any
 
     func set(object: OcaRoot, command: Ocp1Command) async throws
-    func set(object: OcaRoot, jsonValue: Any, device: AES70Device) async throws
+    func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws
 }
 
 extension OcaDevicePropertyRepresentable {
@@ -158,7 +158,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         notifySubscribers(object: object)
     }
 
-    func set(object: OcaRoot, jsonValue: Any, device: AES70Device) async throws {
+    func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
         if jsonValue is NSNull {
             if let subject = subject as? AsyncCurrentValueSubjectNilRepresentable {
                 subject.sendNil()

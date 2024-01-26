@@ -21,8 +21,8 @@ import SwiftUI
 
 #if os(macOS)
 class BonjourBrowser: ObservableObject {
-    let udpBrowser = AES70Browser(serviceType: .udp)
-    let tcpBrowser = AES70Browser(serviceType: .tcp)
+    let udpBrowser = OcaBrowser(serviceType: .udp)
+    let tcpBrowser = OcaBrowser(serviceType: .tcp)
     @Published
     var services = [NetService]()
 
