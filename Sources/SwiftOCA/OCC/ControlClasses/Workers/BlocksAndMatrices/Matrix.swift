@@ -70,7 +70,7 @@ open class OcaMatrix: OcaWorker {
         return try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameters: xy)
     }
 
-    public struct SetMemberParameters: Codable, Sendable {
+    public struct SetMemberParameters: Ocp1ParametersReflectable {
         public let x: OcaMatrixCoordinate
         public let y: OcaMatrixCoordinate
         public let memberONo: OcaONo
@@ -85,7 +85,7 @@ open class OcaMatrix: OcaWorker {
 
     func lockCurrent(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate) async throws {
         let xy = OcaVector2D(x: x, y: y)
-        try await sendCommandRrq(methodID: OcaMethodID("3.15"), parameter: xy)
+        try await sendCommandRrq(methodID: OcaMethodID("3.15"), parameters: xy)
     }
 
     func unlockCurrent() async throws {
@@ -137,8 +137,7 @@ public extension OcaMatrix {
         return try await _proxy.onCompletion(self) { proxyObjectNumber in
             let unresolvedProxy = OcaRoot(objectNumber: proxyObjectNumber)
             unresolvedProxy.connectionDelegate = self.connectionDelegate
-            var classIdentification = OcaRoot.classIdentification
-            try await unresolvedProxy.get(classIdentification: &classIdentification)
+            let classIdentification = try await unresolvedProxy.getClassIdentification()
             let objectID = OcaObjectIdentification(
                 oNo: unresolvedProxy.objectNumber,
                 classIdentification: classIdentification

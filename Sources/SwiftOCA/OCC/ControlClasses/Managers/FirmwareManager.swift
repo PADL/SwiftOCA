@@ -33,10 +33,10 @@ open class OcaFirmwareManager: OcaManager {
     }
 
     public func beginActiveImageUpdate(component: OcaComponent) async throws {
-        try await sendCommandRrq(methodID: OcaMethodID("3.3"), parameter: component)
+        try await sendCommandRrq(methodID: OcaMethodID("3.3"), parameters: component)
     }
 
-    public struct AddImageDataParameters: Codable {
+    public struct AddImageDataParameters: Ocp1ParametersReflectable {
         public let id: OcaUint32
         public let imageData: OcaBlob
 
@@ -52,14 +52,14 @@ open class OcaFirmwareManager: OcaManager {
     }
 
     public func verifyImage(_ verifyData: OcaBlob) async throws {
-        try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameter: verifyData)
+        try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: verifyData)
     }
 
     public func endActiveImageUpdate() async throws {
         try await sendCommandRrq(methodID: OcaMethodID("3.6"))
     }
 
-    public struct BeginPassiveComponentUpdateParameters: Codable {
+    public struct BeginPassiveComponentUpdateParameters: Ocp1ParametersReflectable {
         public let component: OcaComponent
         public let serverAddress: OcaNetworkAddress
         public let updateFileName: OcaString

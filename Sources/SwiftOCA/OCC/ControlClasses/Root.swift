@@ -97,12 +97,8 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    public func get(classIdentification: inout OcaClassIdentification) async throws {
-        try await sendCommandRrq(
-            methodID: OcaMethodID("1.1"),
-            responseParameterCount: 1,
-            responseParameters: &classIdentification
-        )
+    public func getClassIdentification() async throws -> OcaClassIdentification {
+        try await sendCommandRrq(methodID: OcaMethodID("1.1"))
     }
 
     public func lockTotal() async throws {
@@ -254,7 +250,7 @@ extension OcaRoot: Hashable {
     }
 }
 
-public struct OcaGetPathParameters: Codable, Sendable {
+public struct OcaGetPathParameters: Ocp1ParametersReflectable {
     public var namePath: OcaNamePath
     public var oNoPath: OcaONoPath
 
@@ -272,7 +268,15 @@ extension OcaRoot {
     }
 }
 
-public struct OcaSetPortNameParameters: Codable, Sendable {
+public struct OcaGetPortNameParameters: Ocp1ParametersReflectable {
+    public let portID: OcaPortID
+
+    public init(portID: OcaPortID) {
+        self.portID = portID
+    }
+}
+
+public struct OcaSetPortNameParameters: Ocp1ParametersReflectable {
     public let portID: OcaPortID
     public let name: OcaString
 

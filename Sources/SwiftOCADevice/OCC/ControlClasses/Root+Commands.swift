@@ -18,11 +18,10 @@ import SwiftOCA
 
 public extension OcaRoot {
     static func decodeCommand<U: Decodable>(
-        _ command: Ocp1Command,
-        responseParameterCount: OcaUint8? = nil
+        _ command: Ocp1Command
     ) throws -> U {
+        let responseParameterCount = _ocp1ParameterCount(type: U.self)
         let response = try Ocp1Decoder().decode(U.self, from: command.parameters.parameterData)
-        let responseParameterCount = responseParameterCount ?? _ocp1ParameterCount(type: U.self)
         if command.parameters.parameterCount != responseParameterCount {
             Task {
                 await OcaDevice.shared.logger.trace(
@@ -33,32 +32,30 @@ public extension OcaRoot {
         return response
     }
 
+    func decodeCommand<U: Decodable>(
+        _ command: Ocp1Command
+    ) throws -> U {
+        try Self.decodeCommand(command)
+    }
+
     static func encodeResponse<T: Encodable>(
         _ parameters: T,
-        parameterCount: OcaUint8? = nil,
         statusCode: OcaStatus = .ok
     ) throws -> Ocp1Response {
+        let parameterCount = _ocp1ParameterCount(type: T.self)
         let encoder = Ocp1Encoder()
         let parameters = Ocp1Parameters(
-            parameterCount: parameterCount ?? _ocp1ParameterCount(value: parameters),
+            parameterCount: parameterCount,
             parameterData: try encoder.encode(parameters)
         )
 
         return Ocp1Response(statusCode: statusCode, parameters: parameters)
     }
 
-    func decodeCommand<U: Decodable>(
-        _ command: Ocp1Command,
-        responseParameterCount: OcaUint8? = nil
-    ) throws -> U {
-        try Self.decodeCommand(command, responseParameterCount: responseParameterCount)
-    }
-
     func encodeResponse<T: Encodable>(
         _ parameters: T,
-        parameterCount: OcaUint8? = nil,
         statusCode: OcaStatus = .ok
     ) throws -> Ocp1Response {
-        try Self.encodeResponse(parameters, parameterCount: parameterCount, statusCode: statusCode)
+        try Self.encodeResponse(parameters, statusCode: statusCode)
     }
 }

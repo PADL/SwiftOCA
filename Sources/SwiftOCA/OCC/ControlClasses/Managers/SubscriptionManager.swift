@@ -35,7 +35,7 @@ open class OcaSubscriptionManager: OcaManager {
 
     public typealias AddSubscriptionParameters = OcaSubscription
 
-    public struct RemoveSubscriptionParameters: Codable {
+    public struct RemoveSubscriptionParameters: Ocp1ParametersReflectable {
         public let event: OcaEvent
         public let subscriber: OcaMethod
 
@@ -47,7 +47,7 @@ open class OcaSubscriptionManager: OcaManager {
 
     public typealias AddPropertyChangeSubscriptionParameters = OcaPropertyChangeSubscription
 
-    public struct RemovePropertyChangeSubscriptionParameters: Codable {
+    public struct RemovePropertyChangeSubscriptionParameters: Ocp1ParametersReflectable {
         public let emitter: OcaONo
         public let property: OcaPropertyID
         public let subscriber: OcaMethod

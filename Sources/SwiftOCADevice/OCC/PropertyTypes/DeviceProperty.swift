@@ -128,16 +128,12 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         }
     }
 
-    func getOcp1Response() async throws -> SwiftOCA.Ocp1Response {
-        try await getOcp1Response(parameterCount: 1)
-    }
-
-    func getOcp1Response(parameterCount: OcaUint8) async throws -> Ocp1Response {
+    func getOcp1Response() async throws -> Ocp1Response {
         let value: Value = get()
         if isNil(value) {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
-        return try OcaRoot.encodeResponse(value, parameterCount: parameterCount)
+        return try OcaRoot.encodeResponse(value)
     }
 
     func getJsonValue() throws -> Any {
@@ -158,7 +154,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     }
 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
-        let newValue: Value = try OcaRoot.decodeCommand(command, responseParameterCount: 1)
+        let newValue: Value = try OcaRoot.decodeCommand(command)
         set(object: object, newValue)
         notifySubscribers(object: object)
     }

@@ -20,7 +20,9 @@ import Foundation
 import SwiftUI
 #endif
 
-public struct OcaVector2D<T: Codable & Sendable & FixedWidthInteger>: Codable, Sendable {
+public struct OcaVector2D<T: Codable & Sendable & FixedWidthInteger>: Ocp1ParametersReflectable,
+    Codable, Sendable
+{
     public var x, y: T
 
     public init(x: T, y: T) {
@@ -28,9 +30,6 @@ public struct OcaVector2D<T: Codable & Sendable & FixedWidthInteger>: Codable, S
         self.y = y
     }
 }
-
-// for both getter and setter, because we're combining two properties into one
-private let OcaVectorPropertyParameterCount: OcaUint8 = 2
 
 @propertyWrapper
 public struct OcaVectorProperty<
@@ -113,20 +112,13 @@ public struct OcaVectorProperty<
             object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
             #endif
             return object[keyPath: storageKeyPath]._storage
-                ._get(
-                    _enclosingInstance: object,
-                    responseParameterCount: OcaVectorPropertyParameterCount
-                )
+                ._get(_enclosingInstance: object)
         }
         set {
             #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
             #endif
-            object[keyPath: storageKeyPath]._storage._set(
-                _enclosingInstance: object,
-                newValue,
-                parameterCount: OcaVectorPropertyParameterCount
-            )
+            object[keyPath: storageKeyPath]._storage._set(_enclosingInstance: object, newValue)
         }
     }
 
@@ -168,21 +160,14 @@ public struct OcaVectorProperty<
         Binding(
             get: {
                 if let object = _storage.object {
-                    return _storage._get(
-                        _enclosingInstance: object,
-                        responseParameterCount: OcaVectorPropertyParameterCount
-                    )
+                    return _storage._get(_enclosingInstance: object)
                 } else {
                     return .initial
                 }
             },
             set: {
                 guard let object = _storage.object else { return }
-                _storage._set(
-                    _enclosingInstance: object,
-                    $0,
-                    parameterCount: OcaVectorPropertyParameterCount
-                )
+                _storage._set(_enclosingInstance: object, $0)
             }
         )
     }

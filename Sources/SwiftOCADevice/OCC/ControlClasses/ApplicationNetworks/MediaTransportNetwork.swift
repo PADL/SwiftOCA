@@ -191,84 +191,84 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
             let connectorStatus = try await getConnectorStatus(id)
             return try encodeResponse(connectorStatus)
         case OcaMethodID("3.15"):
-            struct AddSourceConnectorParams: Codable, Sendable {
+            struct AddSourceConnectorParameters: Ocp1ParametersReflectable {
                 var connector: OcaMediaSourceConnector
                 let initialStatus: OcaMediaConnectorState
             }
-            var params: AddSourceConnectorParams = try decodeCommand(command)
+            var params: AddSourceConnectorParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await addSource(connector: &params.connector, initialStatus: params.initialStatus)
             return try encodeResponse(params.connector)
         case OcaMethodID("3.16"):
-            struct AddSinkConnectorParams: Codable, Sendable {
+            struct AddSinkConnectorParameters: Ocp1ParametersReflectable {
                 let initialStatus: OcaMediaConnectorState
                 var connector: OcaMediaSinkConnector
             }
-            var params: AddSinkConnectorParams = try decodeCommand(command)
+            var params: AddSinkConnectorParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await addSink(initialStatus: params.initialStatus, connector: &params.connector)
             return try encodeResponse(params.connector)
         case OcaMethodID("3.17"):
-            struct ControlConnectorParams: Codable, Sendable {
+            struct ControlConnectorParameters: Ocp1ParametersReflectable {
                 let id: OcaMediaConnectorID
                 let command: OcaMediaConnectorCommand
             }
-            let params: ControlConnectorParams = try decodeCommand(command)
+            let params: ControlConnectorParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await controlConnector(params.id, command: params.command)
             return Ocp1Response()
         case OcaMethodID("3.18"):
-            struct SetSourceConnectorPinMapParams: Codable, Sendable {
+            struct SetSourceConnectorPinMapParameters: Ocp1ParametersReflectable {
                 let id: OcaMediaConnectorID
                 let pinMap: [OcaUint16: OcaPortID]
             }
-            let params: SetSourceConnectorPinMapParams = try decodeCommand(command)
+            let params: SetSourceConnectorPinMapParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await setSourceConnector(params.id, pinMap: params.pinMap)
             return Ocp1Response()
         case OcaMethodID("3.19"):
-            struct SetSinkConnectorPinMapParams: Codable, Sendable {
+            struct SetSinkConnectorPinMapParameters: Ocp1ParametersReflectable {
                 let id: OcaMediaConnectorID
                 let pinMap: [OcaUint16: [OcaPortID]]
             }
-            let params: SetSinkConnectorPinMapParams = try decodeCommand(command)
+            let params: SetSinkConnectorPinMapParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await setSinkConnector(params.id, pinMap: params.pinMap)
             return Ocp1Response()
         case OcaMethodID("3.20"):
-            struct SetConnectorConnectionParams: Codable, Sendable {
+            struct SetConnectorConnectionParameters: Ocp1ParametersReflectable {
                 let id: OcaMediaConnectorID
                 let connection: OcaMediaConnection
             }
-            let params: SetConnectorConnectionParams = try decodeCommand(command)
+            let params: SetConnectorConnectionParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await setConnector(params.id, connection: params.connection)
             return Ocp1Response()
 
         case OcaMethodID("3.21"):
-            struct SetConnectorCodingParams: Codable, Sendable {
+            struct SetConnectorCodingParameters: Ocp1ParametersReflectable {
                 let id: OcaMediaConnectorID
                 let coding: OcaMediaCoding
             }
-            let params: SetConnectorCodingParams = try decodeCommand(command)
+            let params: SetConnectorCodingParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await setConnector(params.id, coding: params.coding)
             return Ocp1Response()
         case OcaMethodID("3.22"):
-            struct SetConnectorAlignmentLevelParams: Codable, Sendable {
+            struct SetConnectorAlignmentLevelParameters: Ocp1ParametersReflectable {
                 let id: OcaMediaConnectorID
                 let alignmentLevel: OcaDBFS
             }
-            let params: SetConnectorAlignmentLevelParams = try decodeCommand(command)
+            let params: SetConnectorAlignmentLevelParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await setConnector(params.id, alignmentLevel: params.alignmentLevel)
             return Ocp1Response()
         case OcaMethodID("3.23"):
-            struct SetConnectorAlignmentGainParams: Codable, Sendable {
+            struct SetConnectorAlignmentGainParameters: Ocp1ParametersReflectable {
                 let id: OcaMediaConnectorID
                 let alignmentGain: OcaDB
             }
-            let params: SetConnectorAlignmentGainParams = try decodeCommand(command)
+            let params: SetConnectorAlignmentGainParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await setConnector(params.id, alignmentGain: params.alignmentGain)
             return Ocp1Response()

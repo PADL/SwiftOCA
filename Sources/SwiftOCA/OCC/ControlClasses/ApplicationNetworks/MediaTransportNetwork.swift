@@ -30,12 +30,11 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork {
     )
     public var ports: OcaProperty<[OcaPort]>.PropertyValue
 
-    public func get(portID: OcaPortID, name: inout OcaString) async throws {
-        try await sendCommandRrq(
+    public func get(portID: OcaPortID) async throws -> OcaString {
+        let params = OcaGetPortNameParameters(portID: portID)
+        return try await sendCommandRrq(
             methodID: OcaMethodID("3.3"),
-            parameter: portID,
-            responseParameterCount: 1,
-            responseParameters: &name
+            parameters: params
         )
     }
 

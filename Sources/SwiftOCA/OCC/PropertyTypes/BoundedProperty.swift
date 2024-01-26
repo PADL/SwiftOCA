@@ -20,7 +20,10 @@ import Foundation
 import SwiftUI
 #endif
 
-public struct OcaBoundedPropertyValue<Value: Codable & Comparable & Sendable>: Codable, Sendable {
+public struct OcaBoundedPropertyValue<
+    Value: Codable & Comparable &
+        Sendable
+>: Ocp1ParametersReflectable, Codable, Sendable {
     public var value: Value
     public var minValue: Value
     public var maxValue: Value
@@ -58,9 +61,6 @@ public extension OcaBoundedPropertyValue where Value: BinaryFloatingPoint {
         OcaFloat32((value + range.upperBound) / absoluteRange)
     }
 }
-
-private let OcaBoundedPropertyGetterParameterCount: OcaUint8 = 3
-private let OcaBoundedPropertySetterParameterCount: OcaUint8 = 1
 
 @propertyWrapper
 public struct OcaBoundedProperty<
@@ -137,8 +137,7 @@ public struct OcaBoundedProperty<
             #endif
             return object[keyPath: storageKeyPath]._storage
                 ._get(
-                    _enclosingInstance: object,
-                    responseParameterCount: OcaBoundedPropertyGetterParameterCount
+                    _enclosingInstance: object
                 )
         }
         set {
@@ -147,8 +146,7 @@ public struct OcaBoundedProperty<
             #endif
             object[keyPath: storageKeyPath]._storage._set(
                 _enclosingInstance: object,
-                newValue,
-                parameterCount: OcaBoundedPropertySetterParameterCount
+                newValue
             )
         }
     }
@@ -186,21 +184,14 @@ public struct OcaBoundedProperty<
         Binding(
             get: {
                 if let object = _storage.object {
-                    return _storage._get(
-                        _enclosingInstance: object,
-                        responseParameterCount: OcaBoundedPropertyGetterParameterCount
-                    )
+                    return _storage._get(_enclosingInstance: object)
                 } else {
                     return .initial
                 }
             },
             set: {
                 guard let object = _storage.object else { return }
-                _storage._set(
-                    _enclosingInstance: object,
-                    $0,
-                    parameterCount: OcaBoundedPropertySetterParameterCount
-                )
+                _storage._set(_enclosingInstance: object, $0)
             }
         )
     }

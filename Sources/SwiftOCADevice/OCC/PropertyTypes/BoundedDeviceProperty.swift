@@ -18,11 +18,6 @@
 import AsyncExtensions
 import SwiftOCA
 
-/// bounded property getters have three parameters: the value itself, and the lower and upper bounds
-
-private let OcaBoundedPropertyGetterParameterCount: OcaUint8 = 3
-private let OcaBoundedPropertySetterParameterCount: OcaUint8 = 1
-
 @propertyWrapper
 public struct OcaBoundedDeviceProperty<
     Value: Codable &
@@ -64,7 +59,7 @@ public struct OcaBoundedDeviceProperty<
     }
 
     func getOcp1Response() async throws -> Ocp1Response {
-        try await storage.getOcp1Response(parameterCount: OcaBoundedPropertyGetterParameterCount)
+        try await storage.getOcp1Response()
     }
 
     func getJsonValue() throws -> Any {
@@ -106,10 +101,7 @@ public struct OcaBoundedDeviceProperty<
     }
 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
-        let value: Value = try object.decodeCommand(
-            command,
-            responseParameterCount: OcaBoundedPropertySetterParameterCount
-        )
+        let value: Value = try object.decodeCommand(command)
         // check it is in range
         if value < storage.wrappedValue.minValue ||
             value > storage.wrappedValue.maxValue

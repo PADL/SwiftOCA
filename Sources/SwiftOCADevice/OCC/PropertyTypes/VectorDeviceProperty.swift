@@ -17,8 +17,6 @@
 import AsyncExtensions
 import SwiftOCA
 
-private let OcaVectorPropertyParameterCount: OcaUint8 = 2
-
 @propertyWrapper
 public struct OcaVectorDeviceProperty<
     Value: Codable &
@@ -67,7 +65,7 @@ public struct OcaVectorDeviceProperty<
     }
 
     func getOcp1Response() async throws -> Ocp1Response {
-        try await storage.getOcp1Response(parameterCount: OcaVectorPropertyParameterCount)
+        try await storage.getOcp1Response()
     }
 
     func getJsonValue() throws -> Any {
@@ -98,8 +96,7 @@ public struct OcaVectorDeviceProperty<
     }
 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
-        let newValue: OcaVector2D<Value> = try object
-            .decodeCommand(command, responseParameterCount: OcaVectorPropertyParameterCount)
+        let newValue: OcaVector2D<Value> = try object.decodeCommand(command)
         storage.set(object: object, newValue)
         notifySubscribers(object: object)
     }

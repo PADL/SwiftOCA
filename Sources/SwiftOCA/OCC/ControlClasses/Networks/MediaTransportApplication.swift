@@ -18,24 +18,22 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
     override public class var classID: OcaClassID { OcaClassID("1.7.1") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
 
-    func add(port label: OcaString, mode: OcaIODirection, portID: inout OcaPortID) async throws {
-        struct AddPortParameters: Codable {
+    func add(port label: OcaString, mode: OcaIODirection) async throws -> OcaPortID {
+        struct AddPortParameters: Ocp1ParametersReflectable {
             let label: OcaString
             let mode: OcaPortMode
         }
         let params = AddPortParameters(label: label, mode: mode)
-        try await sendCommandRrq(
+        return try await sendCommandRrq(
             methodID: OcaMethodID("3.1"),
-            parameters: params,
-            responseParameterCount: 1,
-            responseParameters: &portID
+            parameters: params
         )
     }
 
     func delete(port id: OcaPortID) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.2"),
-            parameter: id
+            parameters: id
         )
     }
 
@@ -63,7 +61,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
     public func get(portID: OcaPortID) async throws -> OcaPortClockMapEntry {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.10"),
-            parameter: portID
+            parameters: portID
         )
     }
 
@@ -82,7 +80,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
     public func deletePortClockMapEntry(portID: OcaPortID) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.9"),
-            parameter: portID
+            parameters: portID
         )
     }
 

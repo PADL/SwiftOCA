@@ -154,17 +154,13 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     /// get/set functions.
 
     func _get(
-        _enclosingInstance object: OcaRoot,
-        responseParameterCount: OcaUint8
+        _enclosingInstance object: OcaRoot
     ) -> PropertyValue {
         switch subject.value {
         case .initial:
             Task {
                 await perform(object) {
-                    try await $0.getValueAndSubscribe(
-                        object,
-                        responseParameterCount: responseParameterCount
-                    )
+                    try await $0.getValueAndSubscribe(object)
                 }
             }
         default:
@@ -175,14 +171,13 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
     func _set(
         _enclosingInstance object: OcaRoot,
-        _ newValue: PropertyValue,
-        parameterCount: OcaUint8
+        _ newValue: PropertyValue
     ) {
         Task {
             switch newValue {
             case let .success(value):
                 await perform(object) {
-                    try await $0.setValueIfMutable(object, value, parameterCount: parameterCount)
+                    try await $0.setValueIfMutable(object, value)
                 }
             case .initial:
                 await refresh(object)
@@ -202,14 +197,14 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
             object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
             #endif
             return object[keyPath: storageKeyPath]
-                ._get(_enclosingInstance: object, responseParameterCount: 1)
+                ._get(_enclosingInstance: object)
         }
         set {
             #if canImport(SwiftUI)
             object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
             #endif
             object[keyPath: storageKeyPath]
-                ._set(_enclosingInstance: object, newValue, parameterCount: 1)
+                ._set(_enclosingInstance: object, newValue)
         }
     }
 
@@ -231,17 +226,13 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
 
     private func getValueAndSubscribe(
-        _ object: OcaRoot,
-        responseParameterCount: OcaUint8
+        _ object: OcaRoot
     ) async throws {
         guard let getMethodID else {
             throw Ocp1Error.propertyIsImmutable
         }
 
-        let value: Value = try await object.sendCommandRrq(
-            methodID: getMethodID,
-            responseParameterCount: responseParameterCount
-        )
+        let value: Value = try await object.sendCommandRrq(methodID: getMethodID)
 
         // do this in the background, otherwise UI refresh performance is poor
         Task.detached {
@@ -253,8 +244,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
     private func setValueIfMutable(
         _ object: OcaRoot,
-        _ value: Value,
-        parameterCount: OcaUint8
+        _ value: Value
     ) async throws {
         guard let setMethodID else {
             throw Ocp1Error.propertyIsImmutable
@@ -273,13 +263,11 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
             // we'll get a notification (hoepfully) so, don't require a reply
             try await object.sendCommand(
                 methodID: setMethodID,
-                parameterCount: parameterCount,
                 parameters: newValue
             )
         } else {
             try await object.sendCommandRrq(
                 methodID: setMethodID,
-                parameterCount: parameterCount,
                 parameters: newValue
             )
         }
@@ -314,19 +302,12 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
 
     public func subscribe(_ object: OcaRoot) async {
-        await subscribe(object, responseParameterCount: 1)
-    }
-
-    func subscribe(_ object: OcaRoot, responseParameterCount: OcaUint8) async {
         guard case .initial = subject.value else {
             return
         }
 
         await perform(object) {
-            try await $0.getValueAndSubscribe(
-                object,
-                responseParameterCount: responseParameterCount
-            )
+            try await $0.getValueAndSubscribe(object)
         }
     }
 
@@ -398,14 +379,14 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         Binding(
             get: {
                 if let object {
-                    return _get(_enclosingInstance: object, responseParameterCount: 1)
+                    return _get(_enclosingInstance: object)
                 } else {
                     return .initial
                 }
             },
             set: {
                 guard let object else { return }
-                _set(_enclosingInstance: object, $0, parameterCount: 1)
+                _set(_enclosingInstance: object, $0)
             }
         )
     }

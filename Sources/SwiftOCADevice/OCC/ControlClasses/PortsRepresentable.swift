@@ -29,9 +29,10 @@ extension OcaPortsRepresentable {
         _ command: Ocp1Command,
         from controller: OcaController
     ) async throws -> OcaString {
-        let portID: OcaPortID = try decodeCommand(command)
+        // because portID is a struct, but we only want a single
+        let params: OcaGetPortNameParameters = try decodeCommand(command)
         try await ensureReadable(by: controller, command: command)
-        guard let portName = ports.first(where: { $0.id == portID })?.name else {
+        guard let portName = ports.first(where: { $0.id == params.portID })?.name else {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
         return portName

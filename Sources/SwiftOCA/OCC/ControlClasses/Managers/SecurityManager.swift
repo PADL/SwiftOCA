@@ -36,7 +36,7 @@ open class OcaSecurityManager: OcaManager {
         try await sendCommandRrq(methodID: OcaMethodID("3.2"))
     }
 
-    public struct AddPreSharedKeyParameters: Codable {
+    public struct AddPreSharedKeyParameters: Ocp1ParametersReflectable {
         public let identity: OcaString
         public let key: OcaBlob
 
@@ -57,6 +57,6 @@ open class OcaSecurityManager: OcaManager {
     }
 
     public func deletePreSharedKey(identity: OcaString) async throws {
-        try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameter: identity)
+        try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: identity)
     }
 }

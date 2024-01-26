@@ -38,7 +38,7 @@ open class OcaPowerManager: OcaManager {
     public var activePowerSupplies: OcaProperty<[OcaONo]>.PropertyValue
 
     // 3.5 exchangePowerSupply(old, new, powerOffOld)
-    public struct ExchangePowerSupplyParameters: Codable {
+    public struct ExchangePowerSupplyParameters: Ocp1ParametersReflectable {
         public let oldPsu: OcaONo
         public let newPsu: OcaONo
         public let powerOffOld: OcaBoolean

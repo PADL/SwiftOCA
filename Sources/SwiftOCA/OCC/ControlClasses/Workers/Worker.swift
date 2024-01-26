@@ -63,19 +63,16 @@ open class OcaWorker: OcaRoot {
     // 2.3
     public func add(
         port label: OcaString,
-        mode: OcaPortMode,
-        portID: inout OcaPortID
-    ) async throws {
-        struct AddPortParameters: Codable {
+        mode: OcaPortMode
+    ) async throws -> OcaPortID {
+        struct AddPortParameters: Ocp1ParametersReflectable {
             let label: OcaString
             let mode: OcaPortMode
         }
         let params = AddPortParameters(label: label, mode: mode)
-        try await sendCommandRrq(
+        return try await sendCommandRrq(
             methodID: OcaMethodID("2.3"),
-            parameters: params,
-            responseParameterCount: 1,
-            responseParameters: &portID
+            parameters: params
         )
     }
 
@@ -83,15 +80,16 @@ open class OcaWorker: OcaRoot {
     public func delete(port id: OcaPortID) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("2.4"),
-            parameter: id
+            parameters: id
         )
     }
 
     // 2.6
     public func get(portID: OcaPortID) async throws -> OcaString {
-        try await sendCommandRrq(
+        let params = OcaGetPortNameParameters(portID: portID)
+        return try await sendCommandRrq(
             methodID: OcaMethodID("2.7"),
-            parameter: portID
+            parameters: params
         )
     }
 
@@ -113,7 +111,7 @@ open class OcaWorker: OcaRoot {
     public func get(portID: OcaPortID) async throws -> OcaPortClockMapEntry {
         try await sendCommandRrq(
             methodID: OcaMethodID("2.16"),
-            parameter: portID
+            parameters: portID
         )
     }
 
@@ -132,7 +130,7 @@ open class OcaWorker: OcaRoot {
     public func deletePortClockMapEntry(portID: OcaPortID) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("2.16"),
-            parameter: portID
+            parameters: portID
         )
     }
 }

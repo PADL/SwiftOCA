@@ -16,10 +16,8 @@
 
 import Foundation
 
-// TODO: clean this up so there aren't so many functions!
-
-extension OcaRoot {
-    private func sendCommand(
+private extension OcaRoot {
+    func sendCommand(
         methodID: OcaMethodID,
         parameterCount: OcaUint8,
         parameterData: Data
@@ -38,21 +36,7 @@ extension OcaRoot {
         try await connectionDelegate.sendCommand(command)
     }
 
-    func sendCommand<T: Encodable>(
-        methodID: OcaMethodID,
-        parameterCount: OcaUint8,
-        parameters: T
-    ) async throws {
-        let parameterData = try encodeParameters([parameters])
-
-        try await sendCommand(
-            methodID: methodID,
-            parameterCount: parameterCount,
-            parameterData: parameterData
-        )
-    }
-
-    private func sendCommandRrq(
+    func sendCommandRrq(
         methodID: OcaMethodID,
         parameterCount: OcaUint8,
         parameterData: Data,
@@ -81,7 +65,7 @@ extension OcaRoot {
         responseParameterData = response.parameters.parameterData
     }
 
-    private func encodeParameters<T: Encodable>(_ parameters: [T]) throws -> Data {
+    func encodeParameters<T: Encodable>(_ parameters: [T]) throws -> Data {
         guard parameters.count <= OcaUint8.max else {
             throw Ocp1Error.requestParameterOutOfRange
         }
@@ -94,182 +78,73 @@ extension OcaRoot {
         return parameterData
     }
 
-    struct NullCodable: Codable {}
-
-    private func decodeResponse<U: Decodable>(_ type: U.Type, from data: Data) throws -> U {
+    func decodeResponse<U: Decodable>(_ type: U.Type, from data: Data) throws -> U {
         try Ocp1Decoder().decode(U.self, from: data)
     }
+}
+
+extension OcaRoot {
+    /// Send a command, not expecting a response
+    func sendCommand<T: Encodable>(
+        methodID: OcaMethodID,
+        parameterCount: OcaUint8 = _ocp1ParameterCount(type: T.self),
+        parameters: T
+    ) async throws {
+        let parameterData = try encodeParameters([parameters])
+
+        try await sendCommand(
+            methodID: methodID,
+            parameterCount: parameterCount,
+            parameterData: parameterData
+        )
+    }
+}
+
+extension OcaRoot {
+    struct Placeholder: Codable {}
 
     func sendCommandRrq<T: Encodable, U: Decodable>(
         methodID: OcaMethodID,
-        parameterCount: OcaUint8 = 0,
-        parameters: [T] = [NullCodable()],
-        responseParameterCount: OcaUint8 = 0,
-        responseParameters: inout U
-    ) async throws {
-        let parameterData = try encodeParameters(parameters)
+        parameters: T = Placeholder()
+    ) async throws -> U {
+        let parameterData = try encodeParameters([parameters])
         var responseParameterData = Data()
 
         try await sendCommandRrq(
             methodID: methodID,
-            parameterCount: parameterCount,
+            parameterCount: _ocp1ParameterCount(type: T.self),
             parameterData: parameterData,
-            responseParameterCount: responseParameterCount,
+            responseParameterCount: _ocp1ParameterCount(type: U.self),
             responseParameterData: &responseParameterData
         )
-        if responseParameterCount != 0 {
-            responseParameters = try decodeResponse(U.self, from: responseParameterData)
-        }
-    }
-
-    func sendCommandRrq<T: Encodable, U: Decodable>(
-        methodID: OcaMethodID,
-        parameter: T,
-        responseParameterCount: OcaUint8,
-        responseParameters: inout U
-    ) async throws {
-        try await sendCommandRrq(
-            methodID: methodID,
-            parameterCount: 1,
-            parameters: [parameter],
-            responseParameterCount: responseParameterCount,
-            responseParameters: &responseParameters
-        )
-    }
-
-    func sendCommandRrq<T: Encodable>(
-        methodID: OcaMethodID,
-        parameter: T
-    ) async throws {
-        var placeholder = NullCodable()
-        try await sendCommandRrq(
-            methodID: methodID,
-            parameterCount: 1,
-            parameters: [parameter],
-            responseParameterCount: 0,
-            responseParameters: &placeholder
-        )
-    }
-
-    func sendCommandRrq<T: Encodable, U: Decodable>(
-        methodID: OcaMethodID,
-        parameters: T,
-        responseParameterCount: OcaUint8,
-        responseParameters: inout U
-    ) async throws {
-        try await sendCommandRrq(
-            methodID: methodID,
-            parameterCount: _ocp1ParameterCount(value: parameters),
-            parameters: [parameters],
-            responseParameterCount: responseParameterCount,
-            responseParameters: &responseParameters
-        )
-    }
-
-    func sendCommandRrq<T: Encodable, U: Decodable>(
-        methodID: OcaMethodID,
-        parameters: T,
-        responseParameters: inout U
-    ) async throws {
-        try await sendCommandRrq(
-            methodID: methodID,
-            parameterCount: _ocp1ParameterCount(value: parameters),
-            parameters: [parameters],
-            responseParameterCount: _ocp1ParameterCount(type: U.self),
-            responseParameters: &responseParameters
-        )
-    }
-
-    func sendCommandRrq<T: Encodable>(
-        methodID: OcaMethodID,
-        parameterCount: OcaUint8,
-        parameters: T
-    ) async throws {
-        var placeholder = NullCodable()
-        try await sendCommandRrq(
-            methodID: methodID,
-            parameterCount: parameterCount,
-            parameters: [parameters],
-            responseParameterCount: 0,
-            responseParameters: &placeholder
-        )
+        return try decodeResponse(U.self, from: responseParameterData)
     }
 
     func sendCommandRrq<T: Encodable>(
         methodID: OcaMethodID,
         parameters: T
     ) async throws {
-        var placeholder = NullCodable()
+        let parameterData = try encodeParameters([parameters])
+        var responseParameterData = Data()
+
         try await sendCommandRrq(
             methodID: methodID,
-            parameterCount: _ocp1ParameterCount(value: parameters),
-            parameters: [parameters],
+            parameterCount: _ocp1ParameterCount(type: T.self),
+            parameterData: parameterData,
             responseParameterCount: 0,
-            responseParameters: &placeholder
+            responseParameterData: &responseParameterData
         )
     }
 
     func sendCommandRrq(methodID: OcaMethodID) async throws {
-        var placeholder = NullCodable()
-        try await sendCommandRrq(
-            methodID: methodID,
-            parameterCount: 0,
-            parameters: [placeholder],
-            responseParameterCount: 0,
-            responseParameters: &placeholder
-        )
-    }
-
-    // this variant avoids having to allocate inout response type
-    func sendCommandRrq<U: Decodable>(
-        methodID: OcaMethodID,
-        responseParameterCount: OcaUint8? = nil
-    ) async throws -> U {
         var responseParameterData = Data()
-
         try await sendCommandRrq(
             methodID: methodID,
             parameterCount: 0,
             parameterData: Data(),
-            responseParameterCount: responseParameterCount ?? _ocp1ParameterCount(type: U.self),
+            responseParameterCount: 0,
             responseParameterData: &responseParameterData
         )
-
-        return try decodeResponse(U.self, from: responseParameterData)
-    }
-
-    func sendCommandRrq<T: Encodable, U: Decodable>(
-        methodID: OcaMethodID,
-        parameters: T
-    ) async throws -> U {
-        var responseParameterData = Data()
-
-        try await sendCommandRrq(
-            methodID: methodID,
-            parameterCount: _ocp1ParameterCount(value: parameters),
-            parameters: [parameters],
-            responseParameterCount: _ocp1ParameterCount(type: U.self),
-            responseParameters: &responseParameterData
-        )
-
-        return try decodeResponse(U.self, from: responseParameterData)
-    }
-
-    func sendCommandRrq<T: Encodable, U: Decodable>(
-        methodID: OcaMethodID,
-        parameter: T
-    ) async throws -> U {
-        var responseParameterData = Data()
-
-        try await sendCommandRrq(
-            methodID: methodID,
-            parameterCount: 1,
-            parameters: [parameter],
-            responseParameterCount: _ocp1ParameterCount(type: U.self),
-            responseParameters: &responseParameterData
-        )
-
-        return try decodeResponse(U.self, from: responseParameterData)
     }
 }
 

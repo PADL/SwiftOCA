@@ -158,6 +158,6 @@ open class OcaDeviceManager: OcaManager {
     }
 
     public func applyPatch(datasetONo: OcaONo) async throws {
-        try await sendCommandRrq(methodID: OcaMethodID("3.27"), parameter: datasetONo)
+        try await sendCommandRrq(methodID: OcaMethodID("3.27"), parameters: datasetONo)
     }
 }

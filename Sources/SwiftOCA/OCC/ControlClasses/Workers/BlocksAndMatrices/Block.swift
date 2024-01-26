@@ -112,7 +112,7 @@ open class OcaBlock: OcaWorker {
     func delete(signalPath index: OcaUint16) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.8"),
-            parameter: index
+            parameters: index
         )
     }
 
@@ -123,7 +123,7 @@ open class OcaBlock: OcaWorker {
     func apply(paramSet identifier: OcaLibVolIdentifier) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.12"),
-            parameter: identifier
+            parameters: identifier
         )
     }
 
@@ -134,11 +134,11 @@ open class OcaBlock: OcaWorker {
     func store(currentParamSet identifier: OcaLibVolIdentifier) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.14"),
-            parameter: identifier
+            parameters: identifier
         )
     }
 
-    public struct FindActionObjectsByRoleParameters: Codable {
+    public struct FindActionObjectsByRoleParameters: Ocp1ParametersReflectable {
         public let searchName: OcaString
         public let nameComparisonType: OcaStringComparisonType
         public let searchClassID: OcaClassID
@@ -157,7 +157,7 @@ open class OcaBlock: OcaWorker {
         }
     }
 
-    public struct FindActionObjectsByRolePathParameters: Codable {
+    public struct FindActionObjectsByRolePathParameters: Ocp1ParametersReflectable {
         public let searchPath: OcaNamePath
         public let resultFlags: OcaObjectSearchResultFlags
 

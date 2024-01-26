@@ -29,14 +29,19 @@ public extension Decoder {
 }
 
 public protocol Ocp1LongList {}
+public protocol Ocp1ParametersReflectable: Codable {}
 
 public func _ocp1ParameterCount<T>(type: T.Type) -> OcaUint8 {
-    var count: OcaUint8 = 0
-    _forEachField(of: type) { _, _, _, _ in
-        count += 1
-        return true
+    if type is Ocp1ParametersReflectable.Type {
+        var count: OcaUint8 = 0
+        _forEachField(of: type) { _, _, _, _ in
+            count += 1
+            return true
+        }
+        return count
+    } else {
+        return 1
     }
-    return count
 }
 
 public func _ocp1ParameterCount<T>(value: T) -> OcaUint8 {

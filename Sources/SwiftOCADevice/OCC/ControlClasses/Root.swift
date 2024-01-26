@@ -185,7 +185,7 @@ Sendable, OcaKeyPathMarkerProtocol {
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("1.1"):
-            struct GetClassIdentificationParameters: Codable {
+            struct GetClassIdentificationParameters: Ocp1ParametersReflectable {
                 let classIdentification: OcaClassIdentification
             }
             let response =

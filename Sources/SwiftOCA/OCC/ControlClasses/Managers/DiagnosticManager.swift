@@ -23,6 +23,6 @@ open class OcaDiagnosticManager: OcaManager {
     }
 
     public func getLockStatus(_ oNo: OcaONo) async throws -> OcaString {
-        try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameter: oNo)
+        try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameters: oNo)
     }
 }
