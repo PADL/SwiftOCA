@@ -189,8 +189,10 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 
         subscriptions = [:]
 
-        // send keepalive to open UDP connection
-        try await sendKeepAlive()
+        if heartbeatTime > .zero {
+            // send keepalive to open UDP connection
+            try await sendKeepAlive()
+        }
 
         // refresh all objects
         for (_, object) in objects {
