@@ -189,6 +189,9 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 
         subscriptions = [:]
 
+        // send keepalive to open UDP connection
+        try await sendKeepAlive()
+
         // refresh all objects
         for (_, object) in objects {
             await object.refresh()
@@ -197,9 +200,6 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
         #if canImport(Combine) || canImport(OpenCombine)
         objectWillChange.send()
         #endif
-
-        // make sure for UDP clients that we send a heartbeat first
-        lastMessageSentTime -= heartbeatTime
 
         logger.info("Connected to \(self)")
     }
