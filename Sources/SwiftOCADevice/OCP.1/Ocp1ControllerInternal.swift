@@ -54,6 +54,14 @@ protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, AnyActor {
     func close() async throws
 }
 
+/// When using UDP, the Controller sends a Keep-alive message to the Device before sending other
+/// messages. A Device using UDP ignores all messages received from a Controller prior to receipt of
+/// a Keep-alive message from that Controller.
+protocol Ocp1ControllerDatagramSemantics: Actor {
+    var isOpen: Bool { get }
+    func didOpen()
+}
+
 extension Ocp1ControllerInternal {
     /// handle a single message
     func handle<Endpoint: OcaDeviceEndpointPrivate>(
@@ -65,6 +73,14 @@ extension Ocp1ControllerInternal {
         var response: Ocp1Response?
 
         lastMessageReceivedTime = .now
+
+        if let datagramController = self as? Ocp1ControllerDatagramSemantics {
+            if message is Ocp1KeepAlive1 || message is Ocp1KeepAlive2 {
+                await datagramController.didOpen()
+            } else if await datagramController.isOpen == false {
+                throw Ocp1Error.invalidMessageType
+            }
+        }
 
         switch message {
         case let command as Ocp1Command:

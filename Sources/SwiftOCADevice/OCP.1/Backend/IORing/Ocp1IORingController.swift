@@ -178,7 +178,7 @@ extension Ocp1IORingStreamController: Hashable {
     }
 }
 
-actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate {
+actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerDatagramSemantics {
     nonisolated static var connectionPrefix: String { "oca/udp" }
 
     var subscriptions = [OcaONo: NSMutableSet]()
@@ -187,6 +187,7 @@ actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate {
     var lastMessageReceivedTime = ContinuousClock.now
     var lastMessageSentTime = ContinuousClock.now
 
+    private(set) var isOpen: Bool = false
     private weak var endpoint: Ocp1IORingDatagramDeviceEndpoint?
 
     var messages: AnyAsyncSequence<ControllerMessage> {
@@ -224,6 +225,10 @@ actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate {
     }
 
     func close() async throws {}
+
+    func didOpen() {
+        isOpen = true
+    }
 }
 
 extension Ocp1IORingDatagramController: Equatable {

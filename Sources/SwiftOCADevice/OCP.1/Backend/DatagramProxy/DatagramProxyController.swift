@@ -19,6 +19,7 @@ import Foundation
 import SwiftOCA
 
 actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInternal,
+    Ocp1ControllerDatagramSemantics,
     CustomStringConvertible
 {
     nonisolated static var connectionPrefix: String { "oca/dg-proxy" }
@@ -29,6 +30,7 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
     var lastMessageReceivedTime = ContinuousClock.now
     var lastMessageSentTime = ContinuousClock.now
 
+    private(set) var isOpen: Bool = false
     private weak var endpoint: DatagramProxyDeviceEndpoint<T>?
 
     var messages: AnyAsyncSequence<ControllerMessage> {
@@ -61,4 +63,8 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
     func onConnectionBecomingStale() async throws {}
 
     func close() async throws {}
+
+    func didOpen() {
+        isOpen = true
+    }
 }

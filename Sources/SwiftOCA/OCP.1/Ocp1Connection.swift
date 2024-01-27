@@ -86,6 +86,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     private var nextCommandHandle = OcaUint32(100)
 
     var lastMessageSentTime = ContinuousClock.now
+
     open nonisolated var connectionPrefix: String {
         fatalError(
             "connectionPrefix must be implemented by a concrete subclass of Ocp1Connection"
@@ -196,6 +197,9 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
         #if canImport(Combine) || canImport(OpenCombine)
         objectWillChange.send()
         #endif
+
+        // make sure for UDP clients that we send a heartbeat first
+        lastMessageSentTime -= heartbeatTime
 
         logger.info("Connected to \(self)")
     }
