@@ -65,17 +65,8 @@ private extension OcaRoot {
         responseParameterData = response.parameters.parameterData
     }
 
-    func encodeParameters<T: Encodable>(_ parameters: [T]) throws -> Data {
-        guard parameters.count <= OcaUint8.max else {
-            throw Ocp1Error.requestParameterOutOfRange
-        }
-        var parameterData = Data()
-        for parameter in parameters {
-            let paramData: Data = try Ocp1Encoder().encode(parameter)
-            parameterData.append(paramData)
-        }
-
-        return parameterData
+    func encodeParameters<T: Encodable>(_ parameters: T) throws -> Data {
+        try Ocp1Encoder().encode(parameters)
     }
 
     func decodeResponse<U: Decodable>(_ type: U.Type, from data: Data) throws -> U {
@@ -90,7 +81,7 @@ extension OcaRoot {
         parameterCount: OcaUint8 = _ocp1ParameterCount(type: T.self),
         parameters: T
     ) async throws {
-        let parameterData = try encodeParameters([parameters])
+        let parameterData = try encodeParameters(parameters)
 
         try await sendCommand(
             methodID: methodID,
@@ -103,11 +94,11 @@ extension OcaRoot {
 extension OcaRoot {
     struct Placeholder: Codable {}
 
-    func sendCommandRrq<T: Encodable, U: Decodable>(
+    final func sendCommandRrq<T: Encodable, U: Decodable>(
         methodID: OcaMethodID,
         parameters: T = Placeholder()
     ) async throws -> U {
-        let parameterData = try encodeParameters([parameters])
+        let parameterData = try encodeParameters(parameters)
         var responseParameterData = Data()
 
         try await sendCommandRrq(
@@ -120,11 +111,11 @@ extension OcaRoot {
         return try decodeResponse(U.self, from: responseParameterData)
     }
 
-    func sendCommandRrq<T: Encodable>(
+    final func sendCommandRrq<T: Encodable>(
         methodID: OcaMethodID,
         parameters: T
     ) async throws {
-        let parameterData = try encodeParameters([parameters])
+        let parameterData = try encodeParameters(parameters)
         var responseParameterData = Data()
 
         try await sendCommandRrq(
@@ -136,7 +127,7 @@ extension OcaRoot {
         )
     }
 
-    func sendCommandRrq(methodID: OcaMethodID) async throws {
+    final func sendCommandRrq(methodID: OcaMethodID) async throws {
         var responseParameterData = Data()
         try await sendCommandRrq(
             methodID: methodID,
@@ -150,7 +141,7 @@ extension OcaRoot {
 
 public extension OcaRoot {
     // public for FlutterSwiftOCA to use
-    func sendCommandRrq(
+    final func sendCommandRrq(
         methodID: OcaMethodID,
         parameterCount: OcaUint8,
         parameterData: Data
