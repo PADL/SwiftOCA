@@ -29,7 +29,6 @@ Sendable, OcaKeyPathMarkerProtocol {
     typealias Root = OcaRoot
 
     public internal(set) weak var connectionDelegate: Ocp1Connection?
-    // public var objectNumberMapper: OcaObjectNumberMapper = OcaIdentityObjectNumberMapper.shared
 
     // 1.1
     open class var classID: OcaClassID { OcaClassID("1") }

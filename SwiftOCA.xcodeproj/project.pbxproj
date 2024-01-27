@@ -222,7 +222,6 @@
 		D3E6E29B2A44270300BF7095 /* LevelSensorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29A2A44270300BF7095 /* LevelSensorView.swift */; };
 		D3E6E29E2A443CF100BF7095 /* SystemToggleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29D2A443CF100BF7095 /* SystemToggleStyle.swift */; };
 		D3E6E2A02A452D0A00BF7095 /* ScaledLegendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */; };
-		D3F2942A2A95D31400D7F0CD /* ObjectNumberMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F294292A95D31400D7F0CD /* ObjectNumberMapper.swift */; };
 		D3F2942C2A95D55F00D7F0CD /* Sequence+AsyncMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */; };
 		D3FAC8DE2B5CF25D009E2775 /* FirmwareManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8DD2B5CF25D009E2775 /* FirmwareManager.swift */; };
 		D3FAC8E02B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8DF2B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift */; };
@@ -499,7 +498,6 @@
 		D3E6E29A2A44270300BF7095 /* LevelSensorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LevelSensorView.swift; path = Sources/SwiftOCAUI/Views/Workers/Sensors/LevelSensorView.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E29D2A443CF100BF7095 /* SystemToggleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemToggleStyle.swift; sourceTree = "<group>"; };
 		D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledLegendView.swift; sourceTree = "<group>"; };
-		D3F294292A95D31400D7F0CD /* ObjectNumberMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectNumberMapper.swift; sourceTree = "<group>"; };
 		D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sequence+AsyncMap.swift"; sourceTree = "<group>"; };
 		D3FAC8DD2B5CF25D009E2775 /* FirmwareManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareManager.swift; sourceTree = "<group>"; };
 		D3FAC8DF2B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareManagerDataTypes.swift; sourceTree = "<group>"; };
@@ -1063,7 +1061,6 @@
 			children = (
 				D3E6E1892A3ACA6C00BF7095 /* Root.swift */,
 				D3E6E1832A3ACA6C00BF7095 /* Root+Commands.swift */,
-				D3F294292A95D31400D7F0CD /* ObjectNumberMapper.swift */,
 				D3C0832A2A7C73860020AD57 /* ApplicationNetworks */,
 				D3E6E1842A3ACA6C00BF7095 /* Managers */,
 				D3E6E18A2A3ACA6C00BF7095 /* Agents */,
@@ -1740,7 +1737,6 @@
 				D3AFD33A2B2A558700A72E9A /* MediaClockDataTypes.swift in Sources */,
 				D3E6E1BC2A3ACA7E00BF7095 /* Errors.swift in Sources */,
 				D3AFD3542B2D082B00A72E9A /* ControlNetwork.swift in Sources */,
-				D3F2942A2A95D31400D7F0CD /* ObjectNumberMapper.swift in Sources */,
 				D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */,
 				D30644062A770B640063DA65 /* Notification2.swift in Sources */,
 				D3E6E1C72A3ACA9000BF7095 /* Actuator.swift in Sources */,
