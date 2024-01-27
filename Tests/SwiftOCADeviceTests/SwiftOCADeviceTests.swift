@@ -22,7 +22,95 @@ class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
     override open class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
 }
 
+extension OcaGetPortNameParameters: Equatable {
+    public static func == (lhs: OcaGetPortNameParameters, rhs: OcaGetPortNameParameters) -> Bool {
+        lhs.portID == rhs.portID
+    }
+}
+
+extension Ocp1Parameters: Equatable {
+    public static func == (lhs: Ocp1Parameters, rhs: Ocp1Parameters) -> Bool {
+        lhs.parameterData == rhs.parameterData && lhs.parameterCount == rhs.parameterCount
+    }
+}
+
+extension Ocp1Command: Equatable {
+    public static func == (lhs: SwiftOCA.Ocp1Command, rhs: SwiftOCA.Ocp1Command) -> Bool {
+        lhs.commandSize == rhs.commandSize &&
+            lhs.handle == rhs.handle &&
+            lhs.targetONo == rhs.targetONo &&
+            lhs.methodID == rhs.methodID &&
+            lhs.parameters == rhs.parameters
+    }
+}
+
 final class SwiftOCADeviceTests: XCTestCase {
+    func testSingleFieldOcp1Encoding() async throws {
+        let parameters = OcaGetPortNameParameters(portID: OcaPortID(mode: .input, index: 2))
+        let encodedParameters: [UInt8] = try Ocp1Encoder().encode(parameters)
+        XCTAssertEqual(encodedParameters, [0x01, 0x00, 0x02])
+
+        let command = Ocp1Command(
+            commandSize: 0,
+            handle: 100,
+            targetONo: 5000,
+            methodID: OcaMethodID("2.6"),
+            parameters: Ocp1Parameters(
+                parameterCount: _ocp1ParameterCount(value: parameters),
+                parameterData: Data(encodedParameters)
+            )
+        )
+        let encodedCommand: [UInt8] = try Ocp1Encoder().encode(command)
+        XCTAssertEqual(
+            encodedCommand,
+            [0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 19, 136, 0, 2, 0, 6, 1, 1, 0, 2]
+        )
+
+        let decodedCommand = try Ocp1Decoder().decode(Ocp1Command.self, from: encodedCommand)
+        XCTAssertEqual(command, decodedCommand)
+
+        let decodedParameters = try Ocp1Decoder()
+            .decode(OcaGetPortNameParameters.self, from: decodedCommand.parameters.parameterData)
+        XCTAssertEqual(parameters, decodedParameters)
+    }
+
+    func testMultipleFieldOcp1Encoding() async throws {
+        let parameters = OcaBoundedPropertyValue<OcaInt64>(value: -100, minValue: -200, maxValue: 0)
+        let encodedParameters: [UInt8] = try Ocp1Encoder().encode(parameters)
+        XCTAssertEqual(
+            encodedParameters,
+            [255, 255, 255, 255, 255, 255, 255, 156, 255, 255, 255, 255, 255, 255, 255, 56, 0, 0, 0,
+             0, 0, 0, 0, 0]
+        )
+
+        let command = Ocp1Command(
+            commandSize: 0,
+            handle: 101,
+            targetONo: 5001,
+            methodID: OcaMethodID("4.1"),
+            parameters: Ocp1Parameters(
+                parameterCount: _ocp1ParameterCount(value: parameters),
+                parameterData: Data(encodedParameters)
+            )
+        )
+        let encodedCommand: [UInt8] = try Ocp1Encoder().encode(command)
+        XCTAssertEqual(
+            encodedCommand,
+            [0, 0, 0, 0, 0, 0, 0, 101, 0, 0, 19, 137, 0, 4, 0, 1, 3, 255, 255, 255, 255, 255, 255,
+             255, 156, 255, 255, 255, 255, 255, 255, 255, 56, 0, 0, 0, 0, 0, 0, 0, 0]
+        )
+
+        let decodedCommand = try Ocp1Decoder().decode(Ocp1Command.self, from: encodedCommand)
+        XCTAssertEqual(command, decodedCommand)
+
+        let decodedParameters = try Ocp1Decoder()
+            .decode(
+                OcaBoundedPropertyValue<OcaInt64>.self,
+                from: decodedCommand.parameters.parameterData
+            )
+        XCTAssertEqual(parameters, decodedParameters)
+    }
+
     func testUnicodeStringEncoding() async throws {
         let string = "✨Unicode✨"
         let encodedString =
