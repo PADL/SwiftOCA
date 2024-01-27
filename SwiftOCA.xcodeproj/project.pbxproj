@@ -130,7 +130,7 @@
 		D3D8FA462B61D6A50054FD3C /* KeyPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA422B61D6A50054FD3C /* KeyPath.swift */; };
 		D3D8FA492B61D6A50054FD3C /* ReflectionMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA452B61D6A50054FD3C /* ReflectionMirror.swift */; };
 		D3D8FA562B61EF550054FD3C /* KeyPathShims.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA552B61EF550054FD3C /* KeyPathShims.swift */; };
-		D3D8FA572B61EF690054FD3C /* libKeyPathShims.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D8FA4F2B61EF2C0054FD3C /* libKeyPathShims.a */; platformFilters = (macos, ); };
+		D3D8FA572B61EF690054FD3C /* libKeyPathShims.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D8FA4F2B61EF2C0054FD3C /* libKeyPathShims.a */; };
 		D3D8FA5B2B639D4C0054FD3C /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA5A2B639D4C0054FD3C /* Controller.swift */; };
 		D3DA69DD2A3DA844001250A1 /* OcaRoot+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */; };
 		D3DA69E22A3DADF1001250A1 /* BlockNavigationSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DA69E12A3DADF1001250A1 /* BlockNavigationSplitView.swift */; };
@@ -1834,9 +1834,6 @@
 		};
 		D3D8FA592B61EF690054FD3C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			platformFilters = (
-				macos,
-			);
 			target = D3D8FA4E2B61EF2C0054FD3C /* KeyPathShims */;
 			targetProxy = D3D8FA582B61EF690054FD3C /* PBXContainerItemProxy */;
 		};
@@ -1951,6 +1948,7 @@
 		D3D8FA512B61EF2C0054FD3C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = T53Q9CN4T9;
@@ -1962,6 +1960,8 @@
 				"OTHER_SWIFT_FLAGS[arch=*]" = "-parse-stdlib";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "xrsimulator xros watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -1969,6 +1969,7 @@
 		D3D8FA522B61EF2C0054FD3C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = T53Q9CN4T9;
@@ -1979,6 +1980,8 @@
 				OTHER_SWIFT_FLAGS = "-parse-stdlib";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "xrsimulator xros watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
