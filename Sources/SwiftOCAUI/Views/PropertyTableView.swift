@@ -56,7 +56,7 @@ struct OcaPropertyTableView: OcaView {
                 TableColumn("ID", value: \.idString)
                 TableColumn("Value") {
                     if $0.value.hasValueOrError {
-                        Text($0.value.description)
+                        Text($0.value.description).help($0.value.description)
                     } else {
                         ProgressView()
                     }
