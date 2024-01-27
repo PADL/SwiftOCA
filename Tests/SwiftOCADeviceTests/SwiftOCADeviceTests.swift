@@ -44,6 +44,12 @@ extension Ocp1Command: Equatable {
     }
 }
 
+extension Character {
+    var ascii: UInt8 {
+        UInt8(unicodeScalars.first!.value)
+    }
+}
+
 final class SwiftOCADeviceTests: XCTestCase {
     func testSingleFieldOcp1Encoding() async throws {
         let parameters = OcaGetPortNameParameters(portID: OcaPortID(mode: .input, index: 2))
@@ -109,6 +115,96 @@ final class SwiftOCADeviceTests: XCTestCase {
                 from: decodedCommand.parameters.parameterData
             )
         XCTAssertEqual(parameters, decodedParameters)
+    }
+
+    func testVector_AES70_3_2023_8_2_4() async throws {
+        let value = OcaCounter(id: 3, value: 100, innitialValue: 0, role: "Errors", notifiers: [])
+        let referenceValue = [
+            0,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            100,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            6,
+            Character("E").ascii,
+            Character("r").ascii,
+            Character("r").ascii,
+            Character("o").ascii,
+            Character("r").ascii,
+            Character("s").ascii,
+            0,
+            0,
+        ]
+        let encodedValue: [UInt8] = try Ocp1Encoder().encode(value)
+
+        XCTAssertEqual(encodedValue, referenceValue)
+    }
+
+    func testVector_AES70_3_2023_9_4_8() async throws {
+        let propertyChangedEventData = OcaPropertyChangedEventData(
+            propertyID: OcaPropertyID("4.1"),
+            propertyValue: OcaDB(-22.0),
+            changeType: .currentChanged
+        )
+        let event = OcaEvent(emitterONo: 10001, eventID: OcaEventID("1.1"))
+        let notification = try Ocp1Notification2(
+            event: event,
+            notificationType: .event,
+            data: Ocp1Encoder().encode(propertyChangedEventData)
+        )
+        let pdu = try Ocp1Connection.encodeOcp1MessagePdu([notification], type: .ocaNtf2)
+
+        let referenceValue: [UInt8] = [
+            0x3B, // SyncVal
+            0x00, // Protocol Version
+            0x01, // Protocol Version = 1
+            0x00, // PduSize
+            0x00, // PduSize
+            0x00, // PduSize
+            0x1F, // PduSize = 31
+            0x05, // PduType = 5 (notification2)
+            0x00, // Message Count
+            0x01, // Message Count = 1
+            0x00, // Notification Size
+            0x00, // Notification Size
+            0x00, // Notification Size
+            0x16, // Notification Size = 22
+            0x00, // Emitter ONo
+            0x00, // Emitter ONo
+            0x27, // Emitter ONo
+            0x11, // Emitter ONo = 10001
+            0x00, // Event ID DefLevel
+            0x01, // Event ID DefLevel = 1
+            0x00, // Event ID EventIndex
+            0x01, // Event ID EventIndex = 1
+            0x00, // Notification Type = 0 (event)
+            0x00, // Property ID DefLevel
+            0x04, // Property ID DefLevel = 4
+            0x00, // Property ID PropertyIndex
+            0x01, // Property ID PropertyIndex = 1
+            0xC1, // Property Value
+            0xB0, // Property Value
+            0x00, // Property Value
+            0x00, // Property Value = -22.0
+            0x01, // Change Type = 1
+        ]
+        let encodedValue: [UInt8] = try Ocp1Encoder().encode(pdu)
+
+        XCTAssertEqual(encodedValue, referenceValue)
     }
 
     func testUnicodeStringEncoding() async throws {

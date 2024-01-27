@@ -47,7 +47,7 @@ public extension Ocp1Connection {
         }
         /// MinimumPduSize == 7
         /// 0 `syncVal: OcaUint8`
-        /// 1`protocolVersion: OcaUint16`
+        /// 1 `protocolVersion: OcaUint16`
         /// 3 `pduSize: OcaUint32` (size of PDU not including syncVal)
         precondition(messagePduData.count < OcaUint32.max)
         messagePduData.encodeInteger(OcaUint32(messagePduData.count - 1), index: 3)
@@ -63,7 +63,7 @@ public extension Ocp1Connection {
 
         /// MinimumPduSize == 7
         /// 0 `syncVal: OcaUint8`
-        /// 1`protocolVersion: OcaUint16`
+        /// 1 `protocolVersion: OcaUint16`
         /// 3 `pduSize: OcaUint32` (size of PDU not including syncVal)
 
         guard data.count >= Self.MinimumPduSize + 3 else {
