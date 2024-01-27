@@ -150,8 +150,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
     /// It's not possible to wrap `subscript(_enclosingInstance:wrapped:storage:)` because we can't
     /// cast struct key paths to `ReferenceWritableKeyPath`. For property wrapper wrappers, use
-    /// these internal
-    /// get/set functions.
+    /// these internal get/set functions.
 
     func _get(
         _enclosingInstance object: OcaRoot
