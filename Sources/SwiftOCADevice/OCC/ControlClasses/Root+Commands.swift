@@ -32,7 +32,7 @@ public extension OcaRoot {
         return response
     }
 
-    func decodeCommand<U: Decodable>(
+    final func decodeCommand<U: Decodable>(
         _ command: Ocp1Command
     ) throws -> U {
         try Self.decodeCommand(command)
@@ -52,7 +52,7 @@ public extension OcaRoot {
         return Ocp1Response(statusCode: statusCode, parameters: parameters)
     }
 
-    func encodeResponse<T: Encodable>(
+    final func encodeResponse<T: Encodable>(
         _ parameters: T,
         statusCode: OcaStatus = .ok
     ) throws -> Ocp1Response {
