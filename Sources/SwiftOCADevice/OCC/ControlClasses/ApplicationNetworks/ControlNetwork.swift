@@ -25,4 +25,14 @@ open class OcaControlNetwork: OcaApplicationNetwork {
         getMethodID: OcaMethodID("3.1")
     )
     public var `protocol`: OcaNetworkControlProtocol = .ocp01
+
+    public convenience init(
+        deviceDelegate: OcaDevice? = nil
+    ) async throws {
+        try await self.init(
+            role: "Control Network",
+            deviceDelegate: deviceDelegate,
+            addToRootBlock: true
+        )
+    }
 }
