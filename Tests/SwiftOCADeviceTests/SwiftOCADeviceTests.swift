@@ -271,8 +271,9 @@ final class SwiftOCADeviceTests: XCTestCase {
                 addToRootBlock: true
             )
 
-        for x in 0..<matrix.members.nX {
-            for y in 0..<matrix.members.nY {
+        let matrixMembers = await matrix.members
+        for x in 0..<matrixMembers.nX {
+            for y in 0..<matrixMembers.nY {
                 let coordinate = OcaVector2D(x: OcaMatrixCoordinate(x), y: OcaMatrixCoordinate(y))
                 let actuator = try await MyBooleanActuator(
                     role: "Actuator \(x),\(y)",

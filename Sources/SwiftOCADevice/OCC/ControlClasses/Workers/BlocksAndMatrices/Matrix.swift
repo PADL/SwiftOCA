@@ -21,8 +21,13 @@ private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF
 open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     override open class var classID: OcaClassID { OcaClassID("1.1.5") }
 
+    @OcaDevice
     public private(set) var members: OcaArray2D<Member?>
+
+    @OcaDevice
     public private(set) var proxy: Proxy<Member>!
+
+    @OcaDevice
     private var lockStatePriorToSetCurrentXY: LockState?
 
     public init(
@@ -80,7 +85,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             matrix?.objectNumber ?? OcaInvalidONo
         }
 
-        actor CommandBox {
+        fileprivate actor CommandBox {
             var response: Ocp1Response?
             var lastStatus: OcaStatus?
 
@@ -209,21 +214,64 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         y: OcaMatrixWildcardCoordinate
     )
 
-    @OcaDevice
-    open func add(member object: Member, at coordinate: OcaVector2D<OcaMatrixCoordinate>) throws {
-        precondition(object != self)
-        guard coordinate.isValid(in: self) else {
-            throw Ocp1Error.status(.parameterOutOfRange)
-        }
-        members[Int(coordinate.x), Int(coordinate.y)] = object
+    private func notifySubscribers(
+        object: Member,
+        changeType: OcaPropertyChangeType
+    ) async throws {
+        let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
+        let parameters = OcaPropertyChangedEventData<Member>(
+            propertyID: OcaPropertyID("3.5"),
+            propertyValue: object,
+            changeType: changeType
+        )
+
+        try await deviceDelegate?.notifySubscribers(
+            event,
+            parameters: parameters
+        )
     }
 
     @OcaDevice
-    open func remove(coordinate: OcaVector2D<OcaMatrixCoordinate>) throws {
-        guard coordinate.isValid(in: self) else {
+    private func isValid(coordinate: OcaVector2D<OcaMatrixCoordinate>) async -> Bool {
+        coordinate.x < members.nX && coordinate.y < members.nY
+    }
+
+    @OcaDevice
+    open func add(
+        member object: Member,
+        at coordinate: OcaVector2D<OcaMatrixCoordinate>
+    ) async throws {
+        precondition(object != self)
+        guard await isValid(coordinate: coordinate) else {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
+        members[Int(coordinate.x), Int(coordinate.y)] = object
+        try? await notifySubscribers(object: object, changeType: .itemAdded)
+    }
+
+    @OcaDevice
+    open func remove(coordinate: OcaVector2D<OcaMatrixCoordinate>) async throws {
+        guard await isValid(coordinate: coordinate) else {
+            throw Ocp1Error.status(.parameterOutOfRange)
+        }
+        guard let oldMember = members[Int(coordinate.x), Int(coordinate.y)] else {
+            throw Ocp1Error.status(.parameterError)
+        }
         members[Int(coordinate.x), Int(coordinate.y)] = nil
+        try? await notifySubscribers(object: oldMember, changeType: .itemDeleted)
+    }
+
+    @OcaDevice
+    open func set(
+        member object: Member,
+        at coordinate: OcaVector2D<OcaMatrixCoordinate>
+    ) async throws {
+        precondition(object != self)
+        guard await isValid(coordinate: coordinate) else {
+            throw Ocp1Error.status(.parameterOutOfRange)
+        }
+        members[Int(coordinate.x), Int(coordinate.y)] = object
+        try? await notifySubscribers(object: object, changeType: .itemChanged)
     }
 
     @OcaDevice
@@ -283,6 +331,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         case OcaMethodID("3.3"):
             try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
+            let members = await members
             let size = OcaVector2D<OcaMatrixCoordinate>(
                 x: OcaMatrixCoordinate(members.nX),
                 y: OcaMatrixCoordinate(members.nY)
@@ -299,38 +348,38 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         case OcaMethodID("3.5"):
             try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
-            let members = members
+            let members = await members
                 .map(defaultValue: OcaInvalidONo) { $0?.objectNumber ?? OcaInvalidONo }
             return try encodeResponse(members)
         case OcaMethodID("3.7"):
             let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
             try await ensureReadable(by: controller, command: command)
-            let objectNumber = members[Int(coordinates.x), Int(coordinates.y)]?
+            let objectNumber = await members[Int(coordinates.x), Int(coordinates.y)]?
                 .objectNumber ?? OcaInvalidONo
             return try encodeResponse(objectNumber)
         case OcaMethodID("3.8"):
             let parameters: SwiftOCA.OcaMatrix.SetMemberParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
+            let members = await members
             guard parameters.x < members.nX, parameters.y < members.nY else {
                 throw Ocp1Error.status(.parameterOutOfRange)
             }
-            let object: Member?
             if parameters.memberONo == OcaInvalidONo {
-                object = nil
-            } else {
-                object = await deviceDelegate?.objects[parameters.memberONo] as? Member
-                if object == nil {
-                    throw Ocp1Error.status(.badONo)
-                }
+                throw Ocp1Error.status(.badONo)
             }
-            members[Int(parameters.x), Int(parameters.y)] = object
+            let object = await deviceDelegate?.objects[parameters.memberONo] as? Member
+            guard let object else {
+                throw Ocp1Error.status(.badONo)
+            }
+            try await set(member: object, at: OcaVector2D(x: parameters.x, y: parameters.y))
         case OcaMethodID("3.9"):
             try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
-            return try encodeResponse(proxy.objectNumber)
+            return try await encodeResponse(proxy.objectNumber)
         case OcaMethodID("3.2"):
             let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
+            let members = await members
             guard coordinates.x < members.nX || coordinates.x == OcaMatrixWildcardCoordinate,
                   coordinates.y < members.nY || coordinates.y == OcaMatrixWildcardCoordinate
             else {
@@ -353,12 +402,5 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
     override public var isContainer: Bool {
         true
-    }
-}
-
-extension OcaVector2D where T == OcaMatrixCoordinate {
-    func isValid<Member: OcaRoot>(in matrix: OcaMatrix<Member>) -> Bool {
-        x != OcaMatrixWildcardCoordinate && x < matrix.members.nX &&
-            y != OcaMatrixWildcardCoordinate && y < matrix.members.nY
     }
 }

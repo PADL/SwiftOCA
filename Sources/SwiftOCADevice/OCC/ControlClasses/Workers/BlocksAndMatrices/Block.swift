@@ -26,13 +26,27 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     )
     public var type: OcaONo = OcaInvalidONo
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("3.2")
-    )
-    public var actionObjects = [ActionObject]()
+    public private(set) var actionObjects = [ActionObject]()
+
+    private func notifySubscribers(
+        object: ActionObject,
+        changeType: OcaPropertyChangeType
+    ) async throws {
+        let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
+        let parameters = OcaPropertyChangedEventData<ActionObject>(
+            propertyID: OcaPropertyID("3.2"),
+            propertyValue: object,
+            changeType: changeType
+        )
+
+        try await deviceDelegate?.notifySubscribers(
+            event,
+            parameters: parameters
+        )
+    }
 
     @OcaDevice
-    open func add(actionObject object: ActionObject) throws {
+    open func add(actionObject object: ActionObject) async throws {
         guard object.objectNumber != OcaInvalidONo else {
             throw Ocp1Error.status(.badONo)
         }
@@ -57,10 +71,11 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         }
 
         actionObjects.append(object)
+        try? await notifySubscribers(object: object, changeType: .itemAdded)
     }
 
     @OcaDevice
-    open func remove(actionObject object: ActionObject) throws {
+    open func remove(actionObject object: ActionObject) async throws {
         if object.objectNumber == OcaInvalidONo {
             throw Ocp1Error.status(.badONo)
         }
@@ -76,6 +91,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         }
 
         actionObjects.remove(at: index)
+        try? await notifySubscribers(object: object, changeType: .itemDeleted)
     }
 
     @OcaDevice

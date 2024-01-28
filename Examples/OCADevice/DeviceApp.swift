@@ -78,8 +78,9 @@ public enum DeviceApp {
         let block = try await SwiftOCADevice
             .OcaBlock<SwiftOCADevice.OcaWorker>(role: "Block", deviceDelegate: device)
 
-        for x in 0..<matrix.members.nX {
-            for y in 0..<matrix.members.nY {
+        let members = await matrix.members
+        for x in 0..<members.nX {
+            for y in 0..<members.nY {
                 let coordinate = OcaVector2D(x: OcaMatrixCoordinate(x), y: OcaMatrixCoordinate(y))
                 let actuator = try await MyBooleanActuator(
                     role: "Actuator(\(x),\(y))",
