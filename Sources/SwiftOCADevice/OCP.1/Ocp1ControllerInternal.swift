@@ -78,6 +78,7 @@ extension Ocp1ControllerInternal {
             if message is Ocp1KeepAlive1 || message is Ocp1KeepAlive2 {
                 await datagramController.didOpen()
             } else if await datagramController.isOpen == false {
+                endpoint.logger.info("received non-keepalive message \(message) before open")
                 throw Ocp1Error.invalidMessageType
             }
         }
