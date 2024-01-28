@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import Foundation
 import SwiftOCA
 
 private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF
@@ -390,5 +391,12 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
     override public var isContainer: Bool {
         true
+    }
+
+    override public var jsonObject: [String: Any] {
+        var jsonObject = super.jsonObject
+        let membersJson = members.map(defaultValue: nil, \.?.objectNumber)
+        jsonObject["3.5"] = try? JSONEncoder().reencodeAsValidJSONObject(membersJson)
+        return jsonObject
     }
 }

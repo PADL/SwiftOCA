@@ -385,6 +385,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     override public var isContainer: Bool {
         true
     }
+
+    override public var jsonObject: [String: Any] {
+        var jsonObject = super.jsonObject
+        jsonObject["3.2"] = actionObjects.map(\.jsonObject)
+        return jsonObject
+    }
 }
 
 public extension OcaRoot {

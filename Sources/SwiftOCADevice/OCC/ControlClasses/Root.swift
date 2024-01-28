@@ -335,6 +335,26 @@ Sendable, OcaKeyPathMarkerProtocol {
             return false
         }
     }
+
+    public var jsonObject: [String: Any] {
+        var dict = [String: Any]()
+
+        precondition(objectNumber != OcaInvalidONo)
+
+        guard self is OcaWorker else {
+            return [:]
+        }
+
+        dict[objectNumberJSONKey] = objectNumber
+        dict[classIDJSONKey] = Self.classID.description
+
+        for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
+            let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
+            dict[property.propertyID.description] = try? property.getJsonValue()
+        }
+
+        return dict
+    }
 }
 
 extension OcaRoot: Equatable {
