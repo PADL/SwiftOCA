@@ -76,9 +76,9 @@ public struct OcaVectorDeviceProperty<
         return valueDict
     }
 
-    func set(object: OcaRoot, _ newValue: OcaVector2D<Value>) {
-        storage.set(object: object, newValue)
-        notifySubscribers(object: object)
+    private func setAndNotifySubscribers(object: OcaRoot, _ newValue: OcaVector2D<Value>) async {
+        storage.subject.send(newValue)
+        try? await notifySubscribers(object: object, newValue)
     }
 
     func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
@@ -92,23 +92,12 @@ public struct OcaVectorDeviceProperty<
             throw Ocp1Error.status(.badFormat)
         }
 
-        set(object: object, OcaVector2D(x: x, y: y))
+        await setAndNotifySubscribers(object: object, OcaVector2D(x: x, y: y))
     }
 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
         let newValue: OcaVector2D<Value> = try object.decodeCommand(command)
-        storage.set(object: object, newValue)
-        notifySubscribers(object: object)
-    }
-
-    private func notifySubscribers(object: OcaRoot) {
-        if object.notificationTasks[propertyID] == nil {
-            object.notificationTasks[propertyID] = Task<(), Error> {
-                for try await value in self.async {
-                    try? await notifySubscribers(object: object, value)
-                }
-            }
-        }
+        await setAndNotifySubscribers(object: object, newValue)
     }
 
     private func notifySubscribers(object: OcaRoot, _ newValue: OcaVector2D<Value>) async throws {
@@ -145,8 +134,11 @@ public struct OcaVectorDeviceProperty<
             object[keyPath: storageKeyPath].storage.get()
         }
         set {
-            object[keyPath: storageKeyPath].storage.set(object: object, newValue)
-            object[keyPath: storageKeyPath].notifySubscribers(object: object)
+            let property = object[keyPath: storageKeyPath]
+
+            Task {
+                await property.setAndNotifySubscribers(object: object, newValue)
+            }
         }
     }
 }

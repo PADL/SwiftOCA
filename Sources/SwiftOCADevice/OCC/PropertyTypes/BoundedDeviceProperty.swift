@@ -71,9 +71,12 @@ public struct OcaBoundedDeviceProperty<
         return valueDict
     }
 
-    func set(object: OcaRoot, _ newValue: OcaBoundedPropertyValue<Value>) {
-        storage.set(object: object, newValue)
-        notifySubscribers(object: object)
+    private func setAndNotifySubscribers(
+        object: OcaRoot,
+        _ newValue: OcaBoundedPropertyValue<Value>
+    ) async {
+        storage.subject.send(newValue)
+        try? await notifySubscribers(object: object, newValue.value)
     }
 
     func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
@@ -94,7 +97,7 @@ public struct OcaBoundedDeviceProperty<
             throw Ocp1Error.status(.badFormat)
         }
 
-        set(
+        await setAndNotifySubscribers(
             object: object,
             OcaBoundedPropertyValue<Value>(value: value, in: lowerBound...upperBound)
         )
@@ -108,21 +111,10 @@ public struct OcaBoundedDeviceProperty<
         {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
-        storage.set(
+        await setAndNotifySubscribers(
             object: object,
             OcaBoundedPropertyValue<Value>(value: value, in: storage.wrappedValue.range)
         )
-        notifySubscribers(object: object)
-    }
-
-    private func notifySubscribers(object: OcaRoot) {
-        if object.notificationTasks[propertyID] == nil {
-            object.notificationTasks[propertyID] = Task<(), Error> {
-                for try await value in self.async {
-                    try? await notifySubscribers(object: object, value.value)
-                }
-            }
-        }
     }
 
     private func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {
@@ -148,8 +140,11 @@ public struct OcaBoundedDeviceProperty<
             object[keyPath: storageKeyPath].storage.get()
         }
         set {
-            object[keyPath: storageKeyPath].storage.set(object: object, newValue)
-            object[keyPath: storageKeyPath].notifySubscribers(object: object)
+            let property = object[keyPath: storageKeyPath]
+
+            Task {
+                await property.setAndNotifySubscribers(object: object, newValue)
+            }
         }
     }
 }

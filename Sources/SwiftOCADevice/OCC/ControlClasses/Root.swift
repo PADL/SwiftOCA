@@ -27,8 +27,6 @@ extension OcaController {
 
 open class OcaRoot: CustomStringConvertible, Codable, @unchecked
 Sendable, OcaKeyPathMarkerProtocol {
-    var notificationTasks = [OcaPropertyID: Task<(), Error>]()
-
     open class var classID: OcaClassID { OcaClassID("1") }
     open class var classVersion: OcaClassVersionNumber { 2 }
 

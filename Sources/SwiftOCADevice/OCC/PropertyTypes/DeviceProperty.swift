@@ -113,8 +113,9 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         subject.value
     }
 
-    func set(object: OcaRoot, _ newValue: Value) {
+    private func setAndNotifySubscribers(object: OcaRoot, _ newValue: Value) async {
         subject.send(newValue)
+        try? await notifySubscribers(object: object, newValue)
     }
 
     private func isNil(_ value: Value) -> Bool {
@@ -155,8 +156,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
 
     func set(object: OcaRoot, command: Ocp1Command) async throws {
         let newValue: Value = try OcaRoot.decodeCommand(command)
-        set(object: object, newValue)
-        notifySubscribers(object: object)
+        await setAndNotifySubscribers(object: object, newValue)
     }
 
     func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
@@ -173,29 +173,18 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
                     objects.append(object)
                 }
             }
-            subject.send(objects as! Value)
+            await setAndNotifySubscribers(object: object, objects as! Value)
         } else if !JSONSerialization.isValidJSONObject(subject.value),
                   let jsonValue = jsonValue as? Codable
         {
             let data = try JSONEncoder().encode(jsonValue)
             let decodedValue = try JSONDecoder().decode(Value.self, from: data)
-            subject.send(decodedValue)
+            await setAndNotifySubscribers(object: object, decodedValue)
         } else {
             guard let newValue = jsonValue as? Value else {
                 throw Ocp1Error.status(.badFormat)
             }
-            subject.send(newValue)
-        }
-        notifySubscribers(object: object)
-    }
-
-    private func notifySubscribers(object: OcaRoot) {
-        if object.notificationTasks[propertyID] == nil {
-            object.notificationTasks[propertyID] = Task<(), Error> {
-                for try await value in self.async {
-                    try? await notifySubscribers(object: object, value)
-                }
-            }
+            await setAndNotifySubscribers(object: object, newValue)
         }
     }
 
@@ -222,8 +211,10 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
             object[keyPath: storageKeyPath].get()
         }
         set {
-            object[keyPath: storageKeyPath].set(object: object, newValue)
-            object[keyPath: storageKeyPath].notifySubscribers(object: object)
+            Task {
+                await object[keyPath: storageKeyPath]
+                    .setAndNotifySubscribers(object: object, newValue)
+            }
         }
     }
 }
