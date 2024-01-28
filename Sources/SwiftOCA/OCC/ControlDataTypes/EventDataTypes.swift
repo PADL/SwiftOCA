@@ -76,7 +76,7 @@ public struct OcaPropertyChangedEventData<T: Codable & Sendable>: Codable, Senda
 
 public let OcaPropertyChangedEventID = OcaEventID(defLevel: 1, eventIndex: 1)
 
-public struct OcaSubscription: Codable, Equatable, Hashable, Sendable {
+public struct OcaSubscription: Ocp1ParametersReflectable, Codable, Equatable, Hashable, Sendable {
     public let event: OcaEvent
     public let subscriber: OcaMethod
     public let subscriberContext: OcaBlob
@@ -100,7 +100,7 @@ public struct OcaSubscription: Codable, Equatable, Hashable, Sendable {
 
 public typealias OcaObjectListEventData = OcaList<OcaONo>
 
-public struct OcaPropertyChangeSubscription: Codable, Equatable, Hashable, Sendable {
+public struct OcaPropertyChangeSubscription: Ocp1ParametersReflectable, Codable, Equatable, Hashable, Sendable {
     public let emitter: OcaONo
     public let property: OcaPropertyID
     public let subscriber: OcaMethod
@@ -125,7 +125,7 @@ public struct OcaPropertyChangeSubscription: Codable, Equatable, Hashable, Senda
     }
 }
 
-public struct OcaSubscription2: Codable, Equatable, Hashable, Sendable {
+public struct OcaSubscription2: Ocp1ParametersReflectable, Codable, Equatable, Hashable, Sendable {
     public let event: OcaEvent
     public let notificationDeliveryMode: OcaNotificationDeliveryMode
     public let destinationInformation: OcaNetworkAddress
@@ -141,7 +141,7 @@ public struct OcaSubscription2: Codable, Equatable, Hashable, Sendable {
     }
 }
 
-public struct OcaPropertyChangeSubscription2: Codable, Equatable, Hashable, Sendable {
+public struct OcaPropertyChangeSubscription2: Ocp1ParametersReflectable, Codable, Equatable, Hashable, Sendable {
     public let emitter: OcaONo
     public let property: OcaPropertyID
     public let notificationDeliveryMode: OcaNotificationDeliveryMode
