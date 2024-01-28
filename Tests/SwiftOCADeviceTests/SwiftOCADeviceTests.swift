@@ -271,7 +271,7 @@ final class SwiftOCADeviceTests: XCTestCase {
                     role: "Actuator \(x),\(y)",
                     deviceDelegate: device
                 )
-                try matrix.add(member: actuator, at: coordinate)
+                try await matrix.add(member: actuator, at: coordinate)
             }
         }
 
