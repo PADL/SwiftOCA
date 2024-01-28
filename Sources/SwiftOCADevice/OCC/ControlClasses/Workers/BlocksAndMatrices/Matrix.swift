@@ -80,37 +80,21 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             matrix?.objectNumber ?? OcaInvalidONo
         }
 
-        override open func handleCommand(
-            _ command: Ocp1Command,
-            from controller: any OcaController
-        ) async throws -> Ocp1Response {
+        actor CommandBox {
             var response: Ocp1Response?
             var lastStatus: OcaStatus?
 
-            if command.methodID.defLevel == 1 {
-                /// root object class methods are handled directly, because they refer to the proxy
-                /// object
-                return try await super.handleCommand(command, from: controller)
-            } else if ProxyMember.self is OcaWorker.Type,
-                      command.methodID == OcaMethodID("2.4")
-            {
-                return try encodeResponse(matrixObjectNumber)
-            } else if ProxyMember.self is OcaAgent.Type,
-                      command.methodID == OcaMethodID("2.2")
-            {
-                return try encodeResponse(matrixObjectNumber)
-            }
+            func handleCommand(
+                _ command: Ocp1Command,
+                from controller: any OcaController,
+                object: ProxyMember
+            ) async throws {
+                if let response, response.parameters.parameterCount > 0 {
+                    // we have an existing response for a get request, multiple gets are unsupported
+                    throw Ocp1Error.status(.invalidRequest)
+                }
 
-            guard let matrix else {
-                throw Ocp1Error.status(.deviceError)
-            }
-
-            await matrix.withCurrentObject { object in
                 do {
-                    if let response, response.parameters.parameterCount > 0 {
-                        // multiple get requests aren't supported
-                        throw Ocp1Error.status(.invalidRequest)
-                    }
                     response = try await object.handleCommand(command, from: controller)
                     if lastStatus != .ok {
                         lastStatus = .partiallySucceeded
@@ -130,13 +114,45 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
                 }
             }
 
-            try await matrix.unlockSelfAndProxy(controller: controller)
+            func getResponse() async throws -> Ocp1Response {
+                if let lastStatus, lastStatus != .ok {
+                    throw Ocp1Error.status(lastStatus)
+                }
 
-            if let lastStatus, lastStatus != .ok {
-                throw Ocp1Error.status(lastStatus)
+                return response ?? Ocp1Response()
+            }
+        }
+
+        override open func handleCommand(
+            _ command: Ocp1Command,
+            from controller: any OcaController
+        ) async throws -> Ocp1Response {
+            if command.methodID.defLevel == 1 {
+                /// root object class methods are handled directly, because they refer to the proxy
+                /// object
+                return try await super.handleCommand(command, from: controller)
+            } else if ProxyMember.self is OcaWorker.Type,
+                      command.methodID == OcaMethodID("2.4")
+            {
+                return try encodeResponse(matrixObjectNumber)
+            } else if ProxyMember.self is OcaAgent.Type,
+                      command.methodID == OcaMethodID("2.2")
+            {
+                return try encodeResponse(matrixObjectNumber)
             }
 
-            return response ?? Ocp1Response()
+            guard let matrix else {
+                throw Ocp1Error.status(.deviceError)
+            }
+
+            let box = CommandBox()
+
+            try await matrix.withCurrentObject { object in
+                try await box.handleCommand(command, from: controller, object: object)
+            }
+
+            try await matrix.unlockSelfAndProxy(controller: controller)
+            return try await box.getResponse()
         }
     }
 
@@ -211,7 +227,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     }
 
     @OcaDevice
-    func withCurrentObject(_ body: (_ object: OcaRoot) async throws -> ()) async rethrows {
+    func withCurrentObject(_ body: @Sendable (_ object: Member) async throws -> ()) async rethrows {
         if currentXY.x == OcaMatrixWildcardCoordinate && currentXY
             .y == OcaMatrixWildcardCoordinate
         {
