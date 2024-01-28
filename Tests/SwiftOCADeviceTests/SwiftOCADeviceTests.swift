@@ -257,11 +257,18 @@ final class SwiftOCADeviceTests: XCTestCase {
         try await device.initializeDefaultObjects()
         let listener = try await OcaLocalDeviceEndpoint()
 
+        let testBlock = try await SwiftOCADevice
+            .OcaBlock<MyBooleanActuator>(
+                objectNumber: 10001,
+                deviceDelegate: device,
+                addToRootBlock: true
+            )
         let matrix = try await SwiftOCADevice
             .OcaMatrix<MyBooleanActuator>(
                 rows: 4,
                 columns: 2,
-                deviceDelegate: device
+                deviceDelegate: device,
+                addToRootBlock: true
             )
 
         for x in 0..<matrix.members.nX {
@@ -269,13 +276,16 @@ final class SwiftOCADeviceTests: XCTestCase {
                 let coordinate = OcaVector2D(x: OcaMatrixCoordinate(x), y: OcaMatrixCoordinate(y))
                 let actuator = try await MyBooleanActuator(
                     role: "Actuator \(x),\(y)",
-                    deviceDelegate: device
+                    deviceDelegate: device,
+                    addToRootBlock: false
                 )
                 try await matrix.add(member: actuator, at: coordinate)
+                try await testBlock.add(actionObject: actuator)
             }
         }
 
         let deviceMembers = await device.rootBlock.actionObjects
+        let testBlockMembers = testBlock.actionObjects
         let connection = await OcaLocalConnection(listener)
         Task { await listener.run() }
         try await connection.connect()
@@ -290,12 +300,30 @@ final class SwiftOCADeviceTests: XCTestCase {
         deviceExpectation.fulfill()
         await fulfillment(of: [deviceExpectation], timeout: 1)
 
-        let controllerExpectation = XCTestExpectation(description: "Check controller properties")
+        let controllerExpectation =
+            XCTestExpectation(description: "Check rootBlock controller properties")
         let members = try await connection.rootBlock.resolveActionObjects()
         XCTAssertEqual(members.map(\.objectNumber), deviceMembers.map(\.objectNumber))
         controllerExpectation.fulfill()
 
         await fulfillment(of: [controllerExpectation], timeout: 1)
+
+        let controllerExpectation2 =
+            XCTestExpectation(description: "Check test block controller properties")
+        let clientTestBlock: SwiftOCA.OcaBlock? = await connection
+            .resolve(object: OcaObjectIdentification(
+                oNo: 10001,
+                classIdentification: SwiftOCA.OcaBlock.classIdentification
+            ))
+        XCTAssertNotNil(clientTestBlock)
+        let resolvedClientTestBlockActionObjects = try await clientTestBlock!.resolveActionObjects()
+        XCTAssertEqual(
+            resolvedClientTestBlockActionObjects.map(\.objectNumber),
+            testBlockMembers.map(\.objectNumber)
+        )
+        controllerExpectation2.fulfill()
+
+        await fulfillment(of: [controllerExpectation2], timeout: 1)
 
         try await connection.disconnect()
     }
