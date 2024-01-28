@@ -286,7 +286,7 @@ final class SwiftOCADeviceTests: XCTestCase {
         }
 
         let deviceMembers = await device.rootBlock.actionObjects
-        let testBlockMembers = testBlock.actionObjects
+        let testBlockMembers = await testBlock.actionObjects
         let connection = await OcaLocalConnection(listener)
         Task { await listener.run() }
         try await connection.connect()
@@ -297,7 +297,7 @@ final class SwiftOCADeviceTests: XCTestCase {
         oNo = await connection.subscriptionManager.objectNumber
         XCTAssertEqual(oNo, OcaSubscriptionManagerONo)
         let path = await matrix.objectNumberPath
-        XCTAssertEqual(path, [OcaRootBlockONo, matrix.objectNumber])
+        Task { @OcaDevice in XCTAssertEqual(path, [OcaRootBlockONo, matrix.objectNumber]) }
         deviceExpectation.fulfill()
         await fulfillment(of: [deviceExpectation], timeout: 1)
 

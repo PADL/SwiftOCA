@@ -49,7 +49,6 @@ public class OcaLockManager: OcaManager {
 
     private var lockWaiters = [LockWaiterID: LockWaiter]()
 
-    @OcaDevice
     func remove(controller: OcaController) {
         for kv in lockWaiters.filter({ kv in
             kv.key.controller == controller.id
@@ -58,7 +57,6 @@ public class OcaLockManager: OcaManager {
         }
     }
 
-    @OcaDevice
     private func lockWait(
         controller: OcaController,
         target: OcaONo,
@@ -76,16 +74,16 @@ public class OcaLockManager: OcaManager {
         let lockWaiterID = LockWaiterID(controller: controller.id, target: target.objectNumber)
 
         do {
-            try await withThrowingTimeout(of: .seconds(timeout)) {
+            try await withThrowingTimeout(of: .seconds(timeout)) { @OcaDevice in
                 try await withCheckedThrowingContinuation { continuation in
                     let lockWaiter = LockWaiter(continuation: continuation)
-                    self.lockWaiters[lockWaiterID] = lockWaiter
+                    Task { @OcaDevice in self.lockWaiters[lockWaiterID] = lockWaiter }
 
                     lockWaiter.task = Task {
                         for await _ in target.lockStateSubject
                             .filter({ $0.lockState == .noLock })
                         {
-                            if await target.setLockState(to: type, controller: controller) {
+                            if target.setLockState(to: type, controller: controller) {
                                 lockWaiter.didLock()
                                 break
                             }
@@ -101,7 +99,6 @@ public class OcaLockManager: OcaManager {
         lockWaiters.removeValue(forKey: lockWaiterID)
     }
 
-    @OcaDevice
     private func abortWaits(controller: OcaController, oNo target: OcaONo) async throws {
         let lockWaiterID = LockWaiterID(controller: controller.id, target: target)
 

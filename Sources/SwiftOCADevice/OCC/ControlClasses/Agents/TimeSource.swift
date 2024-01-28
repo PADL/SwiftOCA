@@ -81,7 +81,6 @@ open class OcaTimeSource: OcaAgent {
     )
     public var parameters: OcaSDPString = ""
 
-    @OcaDevice
     open func reset() async throws {
         throw Ocp1Error.status(.notImplemented)
     }

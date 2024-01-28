@@ -60,7 +60,7 @@ public extension OcaDevice {
             throw Ocp1Error.objectNotPresent
         }
 
-        guard try object.objectIdentification.classIdentification
+        guard try await object.objectIdentification.classIdentification
             .classID == OcaClassID(unsafeString: classID)
         else {
             throw Ocp1Error.objectClassMismatch

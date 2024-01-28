@@ -58,7 +58,7 @@ public actor OcaDevice {
             addToRootBlock: false
         )
         subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
-        rootBlock.type = 1
+        Task { @OcaDevice in await rootBlock.type = 1 }
         if let deviceManager {
             self.deviceManager = deviceManager
         } else {
@@ -97,14 +97,14 @@ public actor OcaDevice {
             try await rootBlock.add(actionObject: object)
         }
         if object is OcaManager, let deviceManager, deviceManager != object {
-            let classIdentification = object.objectIdentification.classIdentification
+            let classIdentification = await object.objectIdentification.classIdentification
             let managerDescriptor = OcaManagerDescriptor(
                 objectNumber: object.objectNumber,
                 name: object.description,
                 classID: classIdentification.classID,
                 classVersion: classIdentification.classVersion
             )
-            deviceManager.managers.append(managerDescriptor)
+            Task { @OcaDevice in deviceManager.managers.append(managerDescriptor) }
         }
     }
 
@@ -158,7 +158,7 @@ public actor OcaDevice {
             }
         }
 
-        switch subscriptionManager.state {
+        switch await subscriptionManager.state {
         case .eventsDisabled:
             await subscriptionManager
                 .enqueueObjectChangedWhilstNotificationsDisabled(event.emitterONo)
@@ -192,7 +192,7 @@ public actor OcaDevice {
         objects[objectNumber] as? T
     }
 
-    public func resolve<T: OcaRoot>(objectIdentification: OcaObjectIdentification) -> T? {
+    public func resolve<T: OcaRoot>(objectIdentification: OcaObjectIdentification) async -> T? {
         guard let object: T = resolve(objectNumber: objectIdentification.oNo) else {
             return nil
         }
@@ -205,7 +205,7 @@ public actor OcaDevice {
             repeat {
                 let id = OcaClassIdentification(classID: classID!, classVersion: classVersion)
 
-                if id == object.objectIdentification.classIdentification {
+                if await id == object.objectIdentification.classIdentification {
                     return object
                 }
 
