@@ -100,7 +100,10 @@ public struct OcaSubscription: Ocp1ParametersReflectable, Codable, Equatable, Ha
 
 public typealias OcaObjectListEventData = OcaList<OcaONo>
 
-public struct OcaPropertyChangeSubscription: Ocp1ParametersReflectable, Codable, Equatable, Hashable, Sendable {
+public struct OcaPropertyChangeSubscription: Ocp1ParametersReflectable, Codable, Equatable,
+    Hashable,
+    Sendable
+{
     public let emitter: OcaONo
     public let property: OcaPropertyID
     public let subscriber: OcaMethod
@@ -141,7 +144,9 @@ public struct OcaSubscription2: Ocp1ParametersReflectable, Codable, Equatable, H
     }
 }
 
-public struct OcaPropertyChangeSubscription2: Ocp1ParametersReflectable, Codable, Equatable, Hashable, Sendable {
+public struct OcaPropertyChangeSubscription2: Ocp1ParametersReflectable, Codable, Equatable,
+    Hashable, Sendable
+{
     public let emitter: OcaONo
     public let property: OcaPropertyID
     public let notificationDeliveryMode: OcaNotificationDeliveryMode
