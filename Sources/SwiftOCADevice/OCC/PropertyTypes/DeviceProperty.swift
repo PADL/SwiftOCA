@@ -211,9 +211,10 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
             object[keyPath: storageKeyPath].get()
         }
         set {
+            let property = object[keyPath: storageKeyPath]
+
             Task {
-                await object[keyPath: storageKeyPath]
-                    .setAndNotifySubscribers(object: object, newValue)
+                await property.setAndNotifySubscribers(object: object, newValue)
             }
         }
     }
