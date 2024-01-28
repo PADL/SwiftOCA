@@ -81,7 +81,7 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     }
 
     public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
-        .tcp
+        .none
     }
 
     public nonisolated var port: UInt16 {
