@@ -44,6 +44,7 @@ public final class OcaDeviceEndpointRegistrar {
 
     // FIXME: copied from OcaBrowser.swift
     public enum ServiceType: String {
+        case none = ""
         case tcp = "_oca._tcp."
         case tcpSecure = "_ocasec._tcp."
         case udp = "_oca._udp."
