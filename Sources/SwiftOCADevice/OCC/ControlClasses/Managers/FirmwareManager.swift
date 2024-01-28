@@ -32,6 +32,7 @@ open class OcaFirmwareManager: OcaManager {
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.2"):
+            try decodeNullCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await startUpdateProcess()
             return Ocp1Response()
@@ -52,6 +53,7 @@ open class OcaFirmwareManager: OcaManager {
             try await verifyImage(verifyData)
             return Ocp1Response()
         case OcaMethodID("3.6"):
+            try decodeNullCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await endActiveImageUpdate()
             return Ocp1Response()
@@ -66,6 +68,7 @@ open class OcaFirmwareManager: OcaManager {
             )
             return Ocp1Response()
         case OcaMethodID("3.8"):
+            try decodeNullCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await endUpdateProcess()
             return Ocp1Response()

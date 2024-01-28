@@ -277,24 +277,29 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         // 3.3 ConstructBlockUsingFactory
         // 3.4 DeleteMember
         case OcaMethodID("3.5"):
+            try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
             let actionObjects = actionObjects.map(\.objectIdentification)
             return try encodeResponse(actionObjects)
         case OcaMethodID("3.6"):
+            try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
             let actionObjects: [OcaBlockMember] =
                 try await getActionObjectsRecursive(from: controller)
             return try encodeResponse(actionObjects)
         case OcaMethodID("3.7"):
+            try decodeNullCommand(command)
             try await ensureWritable(by: controller, command: command)
             let path: OcaSignalPath = try decodeCommand(command)
             let index = try await add(signalPath: path)
             return try encodeResponse(index)
         case OcaMethodID("3.8"):
+            try decodeNullCommand(command)
             try await ensureWritable(by: controller, command: command)
             let index: OcaUint16 = try decodeCommand(command)
             try await remove(signalPathAt: index)
         case OcaMethodID("3.10"):
+            try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
             let signalPaths: [OcaUint16: OcaSignalPath] =
                 try await getSignalPathsRecursive(from: controller)
@@ -304,6 +309,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         case OcaMethodID("3.17"):
             let params: SwiftOCA.OcaBlock
                 .FindActionObjectsByRoleParameters = try decodeCommand(command)
+            try await ensureReadable(by: controller, command: command)
             let searchResult = try await find(
                 actionObjectsByRole: params.searchName,
                 nameComparisonType: params.nameComparisonType,
@@ -314,6 +320,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         case OcaMethodID("3.18"):
             let params: SwiftOCA.OcaBlock
                 .FindActionObjectsByRoleParameters = try decodeCommand(command)
+            try await ensureReadable(by: controller, command: command)
             let searchResult = try await findRecursive(
                 actionObjectsByRole: params.searchName,
                 nameComparisonType: params.nameComparisonType,
@@ -324,6 +331,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         case OcaMethodID("3.19"):
             let params: SwiftOCA.OcaBlock
                 .FindActionObjectsByRoleParameters = try decodeCommand(command)
+            try await ensureReadable(by: controller, command: command)
             let searchResult = try await findRecursive(
                 actionObjectsByLabel: params.searchName,
                 nameComparisonType: params.nameComparisonType,
@@ -334,6 +342,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         case OcaMethodID("3.20"):
             let params: SwiftOCA.OcaBlock
                 .FindActionObjectsByRolePathParameters = try decodeCommand(command)
+            try await ensureReadable(by: controller, command: command)
             let searchResult = try await find(
                 actionObjectsByRolePath: params.searchPath,
                 resultFlags: params.resultFlags

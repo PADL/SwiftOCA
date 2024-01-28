@@ -91,6 +91,7 @@ open class OcaTimeSource: OcaAgent {
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.11"):
+            try decodeNullCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await reset()
             return Ocp1Response()

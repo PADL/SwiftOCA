@@ -151,9 +151,11 @@ public class OcaSubscriptionManager: OcaManager {
             try await removeSubscription(subscription, from: controller, command: command)
             return Ocp1Response()
         case OcaMethodID("3.3"):
+            try decodeNullCommand(command)
             try await disableNotifications(from: controller, command: command)
             return Ocp1Response()
         case OcaMethodID("3.4"):
+            try decodeNullCommand(command)
             try await reenableNotifications(from: controller, command: command)
             return Ocp1Response()
         case OcaMethodID("3.5"):
@@ -175,6 +177,7 @@ public class OcaSubscriptionManager: OcaManager {
             )
             return Ocp1Response()
         case OcaMethodID("3.7"):
+            try decodeNullCommand(command)
             // Returns maximum byte length of payload of EV1 subscriber context parameter that this
             // device supports
             let maximumSubscriberContextLength = OcaUint16(4)

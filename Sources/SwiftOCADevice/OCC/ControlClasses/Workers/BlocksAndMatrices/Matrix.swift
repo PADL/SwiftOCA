@@ -260,6 +260,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     ) async throws -> Ocp1Response {
         switch command.methodID {
         case OcaMethodID("3.3"):
+            try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
             let size = OcaVector2D<OcaMatrixCoordinate>(
                 x: OcaMatrixCoordinate(members.nX),
@@ -275,19 +276,20 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             )
             return try encodeResponse(matrixSize)
         case OcaMethodID("3.5"):
+            try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
             let members = members
                 .map(defaultValue: OcaInvalidONo) { $0?.objectNumber ?? OcaInvalidONo }
             return try encodeResponse(members)
         case OcaMethodID("3.7"):
-            try await ensureReadable(by: controller, command: command)
             let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
+            try await ensureReadable(by: controller, command: command)
             let objectNumber = members[Int(coordinates.x), Int(coordinates.y)]?
                 .objectNumber ?? OcaInvalidONo
             return try encodeResponse(objectNumber)
         case OcaMethodID("3.8"):
-            try await ensureWritable(by: controller, command: command)
             let parameters: SwiftOCA.OcaMatrix.SetMemberParameters = try decodeCommand(command)
+            try await ensureWritable(by: controller, command: command)
             guard parameters.x < members.nX, parameters.y < members.nY else {
                 throw Ocp1Error.status(.parameterOutOfRange)
             }
@@ -302,11 +304,12 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             }
             members[Int(parameters.x), Int(parameters.y)] = object
         case OcaMethodID("3.9"):
+            try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
             return try encodeResponse(proxy.objectNumber)
         case OcaMethodID("3.2"):
-            try await ensureWritable(by: controller, command: command)
             let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
+            try await ensureWritable(by: controller, command: command)
             guard coordinates.x < members.nX || coordinates.x == OcaMatrixWildcardCoordinate,
                   coordinates.y < members.nY || coordinates.y == OcaMatrixWildcardCoordinate
             else {
@@ -316,8 +319,10 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             try lockSelfAndProxy(controller: controller)
             fallthrough
         case OcaMethodID("3.15"):
+            try decodeNullCommand(command)
             try await withCurrentObject { try $0.lockNoReadWrite(controller: controller) }
         case OcaMethodID("3.16"):
+            try decodeNullCommand(command)
             try await withCurrentObject { try $0.unlock(controller: controller) }
         default:
             return try await super.handleCommand(command, from: controller)

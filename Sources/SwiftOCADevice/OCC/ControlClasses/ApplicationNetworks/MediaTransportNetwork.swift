@@ -164,6 +164,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
             try await handleSetPortName(command, from: controller)
             return Ocp1Response()
         case OcaMethodID("3.9"):
+            try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
             let sourceConnectors = try await getSourceConnectors()
             return try encodeResponse(sourceConnectors)
@@ -173,6 +174,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
             let sourceConnector = try await getSourceConnector(id)
             return try encodeResponse(sourceConnector)
         case OcaMethodID("3.11"):
+            try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
             let sinkConnectors = try await getSinkConnectors()
             return try encodeResponse(sinkConnectors)
@@ -182,6 +184,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
             let sinkConnector = try await getSinkConnector(id)
             return try encodeResponse(sinkConnector)
         case OcaMethodID("3.13"):
+            try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
             let connectorStatuses = try await getConnectorsStatuses()
             return try encodeResponse(connectorStatuses)

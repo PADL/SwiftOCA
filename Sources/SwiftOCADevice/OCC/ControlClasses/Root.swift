@@ -167,6 +167,7 @@ Sendable, OcaKeyPathMarkerProtocol {
             let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
 
             if command.methodID == property.getMethodID {
+                try decodeNullCommand(command)
                 try await ensureReadable(by: controller, command: command)
                 return try await property.getOcp1Response()
             } else if command.methodID == property.setMethodID {

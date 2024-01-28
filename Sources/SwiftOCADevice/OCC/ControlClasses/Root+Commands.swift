@@ -28,6 +28,7 @@ public extension OcaRoot {
                     "OcaRoot.decodeCommand: unexpected parameter count \(responseParameterCount), expected \(command.parameters.parameterCount)"
                 )
             }
+            throw Ocp1Error.status(.parameterOutOfRange)
         }
         return response
     }
@@ -36,6 +37,16 @@ public extension OcaRoot {
         _ command: Ocp1Command
     ) throws -> U {
         try Self.decodeCommand(command)
+    }
+
+    final func decodeNullCommand(
+        _ command: Ocp1Command
+    ) throws {
+        guard command.parameters.parameterCount == 0,
+              command.parameters.parameterData.isEmpty
+        else {
+            throw Ocp1Error.status(.parameterOutOfRange)
+        }
     }
 
     static func encodeResponse<T: Encodable>(
