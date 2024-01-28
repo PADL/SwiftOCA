@@ -65,7 +65,7 @@ private protocol AsyncCurrentValueSubjectNilRepresentable {
 public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRepresentable,
     Sendable
 {
-    var subject: AsyncCurrentValueSubject<Value>
+    let subject: AsyncCurrentValueSubject<Value>
 
     /// The OCA property ID
     public let propertyID: OcaPropertyID
