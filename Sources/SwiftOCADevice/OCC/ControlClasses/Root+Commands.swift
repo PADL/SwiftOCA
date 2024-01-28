@@ -25,7 +25,7 @@ public extension OcaRoot {
         if command.parameters.parameterCount != responseParameterCount {
             Task {
                 await OcaDevice.shared.logger.trace(
-                    "OcaRoot.decodeCommand: unexpected parameter count \(responseParameterCount), expected \(command.parameters.parameterCount)"
+                    "OcaRoot.decodeCommand(\(command)): unexpected parameter count \(responseParameterCount), expected \(command.parameters.parameterCount)"
                 )
             }
             throw Ocp1Error.status(.parameterOutOfRange)
@@ -45,6 +45,11 @@ public extension OcaRoot {
         guard command.parameters.parameterCount == 0,
               command.parameters.parameterData.isEmpty
         else {
+            Task {
+                await OcaDevice.shared.logger.trace(
+                    "OcaRoot.decodeCommand(\(command)): unexpected parameter count \(command.parameters.parameterCount), expected none"
+                )
+            }
             throw Ocp1Error.status(.parameterOutOfRange)
         }
     }
