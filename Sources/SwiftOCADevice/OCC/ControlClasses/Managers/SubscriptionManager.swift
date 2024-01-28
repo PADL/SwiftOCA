@@ -26,6 +26,10 @@ public class OcaSubscriptionManager: OcaManager {
 
     private var objectsChangedWhilstNotificationsDisabled = Set<OcaONo>()
 
+    /// note these functions don't need to be marked @OcaDevice because they do not
+    /// mutate any state in the subscription manager, only the controller (which is
+    /// the controller's responsibility to handle)
+
     private func addSubscription(
         _ subscription: SwiftOCA.OcaSubscriptionManager.AddSubscriptionParameters,
         from controller: any OcaController,
@@ -83,28 +87,6 @@ public class OcaSubscriptionManager: OcaManager {
         try await deviceDelegate?.notifySubscribers(event)
     }
 
-    @OcaDevice
-    func enqueueObjectChangedWhilstNotificationsDisabled(_ emitterONo: OcaONo) {
-        objectsChangedWhilstNotificationsDisabled.insert(emitterONo)
-    }
-
-    @OcaDevice
-    private func reenableNotifications(
-        from controller: any OcaController,
-        command: Ocp1Command
-    ) async throws {
-        try await ensureWritable(by: controller, command: command)
-        let event = OcaEvent(
-            emitterONo: objectNumber,
-            eventID: SwiftOCA.OcaSubscriptionManager.SynchronizeStateEventID
-        )
-        let parameters: Data = try Ocp1Encoder()
-            .encode(Array(objectsChangedWhilstNotificationsDisabled))
-        try await deviceDelegate?.notifySubscribers(event, parameters: parameters)
-        objectsChangedWhilstNotificationsDisabled.removeAll()
-        state = .normal
-    }
-
     private func addSubscription2(
         _ subscription: SwiftOCA.OcaSubscriptionManager.AddSubscription2Parameters,
         from controller: any OcaController,
@@ -139,6 +121,31 @@ public class OcaSubscriptionManager: OcaManager {
     ) async throws {
         try await ensureWritable(by: controller, command: command)
         try await controller.removeSubscription(.propertyChangeSubscription2(subscription))
+    }
+
+    /// the following two functions, however, _do_ mutate state on the subscription manager
+    /// and must run on the @OcaDevice global actor
+
+    @OcaDevice
+    func enqueueObjectChangedWhilstNotificationsDisabled(_ emitterONo: OcaONo) {
+        objectsChangedWhilstNotificationsDisabled.insert(emitterONo)
+    }
+
+    @OcaDevice
+    private func reenableNotifications(
+        from controller: any OcaController,
+        command: Ocp1Command
+    ) async throws {
+        try await ensureWritable(by: controller, command: command)
+        let event = OcaEvent(
+            emitterONo: objectNumber,
+            eventID: SwiftOCA.OcaSubscriptionManager.SynchronizeStateEventID
+        )
+        let parameters: Data = try Ocp1Encoder()
+            .encode(Array(objectsChangedWhilstNotificationsDisabled))
+        try await deviceDelegate?.notifySubscribers(event, parameters: parameters)
+        objectsChangedWhilstNotificationsDisabled.removeAll()
+        state = .normal
     }
 
     override public func handleCommand(

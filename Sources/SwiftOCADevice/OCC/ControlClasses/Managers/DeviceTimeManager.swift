@@ -20,8 +20,9 @@ open class OcaDeviceTimeManager: OcaManager {
     override open class var classID: OcaClassID { OcaClassID("1.3.10") }
     override open class var classVersion: OcaClassVersionNumber { 3 }
 
+    @OcaDevice
     open var deviceTimeNTP: OcaTimeNTP {
-        get throws {
+        get async throws {
             throw Ocp1Error.notImplemented
         }
     }
@@ -42,7 +43,7 @@ open class OcaDeviceTimeManager: OcaManager {
 
     @OcaDevice
     open var deviceTimePTP: OcaTime {
-        get throws {
+        get async throws {
             throw Ocp1Error.notImplemented
         }
     }
@@ -60,7 +61,7 @@ open class OcaDeviceTimeManager: OcaManager {
         case OcaMethodID("3.1"):
             try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
-            return try encodeResponse(deviceTimeNTP)
+            return try await encodeResponse(deviceTimeNTP)
         case OcaMethodID("3.2"):
             let deviceTimeNTP: OcaTimeNTP = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
