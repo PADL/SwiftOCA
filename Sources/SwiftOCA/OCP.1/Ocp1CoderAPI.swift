@@ -39,6 +39,8 @@ public func _ocp1ParameterCount<T>(type: T.Type) -> OcaUint8 {
             return true
         }
         return count
+    } else if type is OcaRoot.Placeholder.Type {
+        return 0
     } else {
         return 1
     }
