@@ -171,7 +171,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     }
 
     @OcaDevice
-    func mapRecursive<T: OcaRoot, U>(
+    func mapRecursive<T: OcaRoot, U: Sendable>(
         keyPath: KeyPath<OcaBlock, [T]>,
         _ transform: (T, OcaBlock) async throws -> U
     ) async rethrows -> [U] {
