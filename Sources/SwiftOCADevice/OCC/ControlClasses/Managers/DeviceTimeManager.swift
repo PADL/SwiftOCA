@@ -26,6 +26,7 @@ open class OcaDeviceTimeManager: OcaManager {
         }
     }
 
+    @OcaDevice
     open func set(deviceTimeNTP time: OcaTimeNTP) async throws {
         throw Ocp1Error.notImplemented
     }
@@ -39,12 +40,14 @@ open class OcaDeviceTimeManager: OcaManager {
     // property handled explicitly in handleCommand()
     public var currentDeviceTimeSource: OcaTimeSource?
 
+    @OcaDevice
     open var deviceTimePTP: OcaTime {
         get throws {
             throw Ocp1Error.notImplemented
         }
     }
 
+    @OcaDevice
     open func set(deviceTimePTP time: OcaTime) async throws {
         throw Ocp1Error.notImplemented
     }
@@ -83,7 +86,7 @@ open class OcaDeviceTimeManager: OcaManager {
         case OcaMethodID("3.6"):
             try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
-            return try encodeResponse(deviceTimePTP)
+            return try await encodeResponse(deviceTimePTP)
         case OcaMethodID("3.7"):
             let deviceTimePTP: OcaTime = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)

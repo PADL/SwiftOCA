@@ -86,8 +86,8 @@ public enum DeviceApp {
                     deviceDelegate: device,
                     addToRootBlock: false
                 )
-                try block.add(actionObject: actuator)
-                try matrix.add(member: actuator, at: coordinate)
+                try await block.add(actionObject: actuator)
+                try await matrix.add(member: actuator, at: coordinate)
             }
         }
 
@@ -96,7 +96,7 @@ public enum DeviceApp {
             deviceDelegate: device,
             addToRootBlock: false
         )
-        try block.add(actionObject: gain)
+        try await block.add(actionObject: gain)
 
         try await serializeDeserialize(await device.rootBlock)
 

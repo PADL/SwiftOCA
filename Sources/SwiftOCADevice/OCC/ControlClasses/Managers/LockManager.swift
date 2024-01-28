@@ -85,7 +85,7 @@ public class OcaLockManager: OcaManager {
                         for await _ in target.lockStateSubject
                             .filter({ $0.lockState == .noLock })
                         {
-                            if target.setLockState(to: type, controller: controller) {
+                            if await target.setLockState(to: type, controller: controller) {
                                 lockWaiter.didLock()
                                 break
                             }

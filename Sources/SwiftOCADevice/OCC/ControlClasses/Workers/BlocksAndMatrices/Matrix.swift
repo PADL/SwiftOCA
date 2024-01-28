@@ -130,7 +130,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
                 }
             }
 
-            try matrix.unlockSelfAndProxy(controller: controller)
+            try await matrix.unlockSelfAndProxy(controller: controller)
 
             if let lastStatus, lastStatus != .ok {
                 throw Ocp1Error.status(lastStatus)
@@ -140,6 +140,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         }
     }
 
+    @OcaDevice
     private func lockSelfAndProxy(controller: any OcaController) throws {
         guard lockable else { return }
 
@@ -159,6 +160,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         proxy.lockState = lockState
     }
 
+    @OcaDevice
     fileprivate func unlockSelfAndProxy(controller: any OcaController) throws {
         guard lockable else { return }
 
@@ -191,6 +193,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         y: OcaMatrixWildcardCoordinate
     )
 
+    @OcaDevice
     open func add(member object: Member, at coordinate: OcaVector2D<OcaMatrixCoordinate>) throws {
         precondition(object != self)
         guard coordinate.isValid(in: self) else {
@@ -199,6 +202,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         members[Int(coordinate.x), Int(coordinate.y)] = object
     }
 
+    @OcaDevice
     open func remove(coordinate: OcaVector2D<OcaMatrixCoordinate>) throws {
         guard coordinate.isValid(in: self) else {
             throw Ocp1Error.status(.parameterOutOfRange)
@@ -206,6 +210,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         members[Int(coordinate.x), Int(coordinate.y)] = nil
     }
 
+    @OcaDevice
     func withCurrentObject(_ body: (_ object: OcaRoot) async throws -> ()) async rethrows {
         if currentXY.x == OcaMatrixWildcardCoordinate && currentXY
             .y == OcaMatrixWildcardCoordinate
@@ -316,14 +321,14 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
                 throw Ocp1Error.status(.parameterOutOfRange)
             }
             currentXY = coordinates
-            try lockSelfAndProxy(controller: controller)
+            try await lockSelfAndProxy(controller: controller)
             fallthrough
         case OcaMethodID("3.15"):
             try decodeNullCommand(command)
-            try await withCurrentObject { try $0.lockNoReadWrite(controller: controller) }
+            try await withCurrentObject { try await $0.lockNoReadWrite(controller: controller) }
         case OcaMethodID("3.16"):
             try decodeNullCommand(command)
-            try await withCurrentObject { try $0.unlock(controller: controller) }
+            try await withCurrentObject { try await $0.unlock(controller: controller) }
         default:
             return try await super.handleCommand(command, from: controller)
         }

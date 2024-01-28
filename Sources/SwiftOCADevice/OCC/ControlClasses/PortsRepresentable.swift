@@ -25,6 +25,7 @@ extension OcaPortsRepresentable {
         1 + (ports.map(\.id.index).max() ?? 0)
     }
 
+    @OcaDevice
     func handleGetPortName(
         _ command: Ocp1Command,
         from controller: OcaController
@@ -38,6 +39,7 @@ extension OcaPortsRepresentable {
         return portName
     }
 
+    @OcaDevice
     func handleSetPortName(
         _ command: Ocp1Command,
         from controller: OcaController
@@ -55,6 +57,7 @@ extension OcaPortsRepresentable {
 }
 
 public extension SwiftOCADevice.OcaBlock where ActionObject: OcaPortsRepresentable {
+    @OcaDevice
     func connect(
         _ outputs: [ActionObject],
         to inputs: [ActionObject],
@@ -112,6 +115,7 @@ public protocol OcaPortClockMapRepresentable: OcaRoot {
 }
 
 extension OcaPortClockMapRepresentable {
+    @OcaDevice
     func handleSetPortClockMapEntry(
         _ command: Ocp1Command,
         from controller: OcaController
@@ -121,6 +125,7 @@ extension OcaPortClockMapRepresentable {
         portClockMap[parameters.portID] = parameters.portClockMapEntry
     }
 
+    @OcaDevice
     func handleDeletePortClockMapEntry(
         _ command: Ocp1Command,
         from controller: OcaController
@@ -130,6 +135,7 @@ extension OcaPortClockMapRepresentable {
         portClockMap.removeValue(forKey: portID)
     }
 
+    @OcaDevice
     func handleGetPortClockMapEntry(
         _ command: Ocp1Command,
         from controller: OcaController

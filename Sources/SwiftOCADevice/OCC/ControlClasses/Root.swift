@@ -159,6 +159,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         return "\(type(of: self))(objectNumber: \(objectNumberString), role: \(role))"
     }
 
+    /// property accessors do not need ot be actor-isolated because they use AsyncChannel
     func handlePropertyAccessor(
         _ command: Ocp1Command,
         from controller: any OcaController
@@ -196,16 +197,22 @@ Sendable, OcaKeyPathMarkerProtocol {
                 )
             return try encodeResponse(response)
         case OcaMethodID("1.2"):
+            try decodeNullCommand(command)
             return try encodeResponse(lockable)
         case OcaMethodID("1.3"):
-            try lockNoReadWrite(controller: controller)
+            try decodeNullCommand(command)
+            try await lockNoReadWrite(controller: controller)
         case OcaMethodID("1.4"):
-            try unlock(controller: controller)
+            try decodeNullCommand(command)
+            try await unlock(controller: controller)
         case OcaMethodID("1.5"):
+            try decodeNullCommand(command)
             return try encodeResponse(role)
         case OcaMethodID("1.6"):
-            try lockNoWrite(controller: controller)
+            try decodeNullCommand(command)
+            try await lockNoWrite(controller: controller)
         case OcaMethodID("1.7"):
+            try decodeNullCommand(command)
             return try encodeResponse(lockState.lockState)
         default:
             return try await handlePropertyAccessor(command, from: controller)
@@ -217,6 +224,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         false
     }
 
+    @OcaDevice
     open func ensureReadable(
         by controller: any OcaController,
         command: Ocp1Command
@@ -239,6 +247,7 @@ Sendable, OcaKeyPathMarkerProtocol {
 
     /// Important note: when subclassing you will typically want to override ensureWritable() to
     /// implement your own form of access control.
+    @OcaDevice
     open func ensureWritable(
         by controller: any OcaController,
         command: Ocp1Command
@@ -259,6 +268,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
+    @OcaDevice
     func lockNoWrite(controller: any OcaController) throws {
         if !lockable {
             throw Ocp1Error.status(.notImplemented)
@@ -278,6 +288,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
+    @OcaDevice
     func lockNoReadWrite(controller: any OcaController) throws {
         if !lockable {
             throw Ocp1Error.status(.notImplemented)
@@ -296,6 +307,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
+    @OcaDevice
     func unlock(controller: any OcaController) throws {
         if !lockable {
             throw Ocp1Error.status(.notImplemented)
@@ -314,6 +326,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
+    @OcaDevice
     func setLockState(to lockState: OcaLockState, controller: any OcaController) -> Bool {
         do {
             switch lockState {

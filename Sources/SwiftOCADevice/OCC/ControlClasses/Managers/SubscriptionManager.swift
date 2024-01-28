@@ -24,7 +24,7 @@ public class OcaSubscriptionManager: OcaManager {
     @OcaDeviceProperty(propertyID: OcaPropertyID("3.1"))
     public var state: OcaSubscriptionManagerState = .normal
 
-    var objectsChangedWhilstNotificationsDisabled = Set<OcaONo>()
+    private var objectsChangedWhilstNotificationsDisabled = Set<OcaONo>()
 
     private func addSubscription(
         _ subscription: SwiftOCA.OcaSubscriptionManager.AddSubscriptionParameters,
@@ -83,6 +83,12 @@ public class OcaSubscriptionManager: OcaManager {
         try await deviceDelegate?.notifySubscribers(event)
     }
 
+    @OcaDevice
+    func enqueueObjectChangedWhilstNotificationsDisabled(_ emitterONo: OcaONo) {
+        objectsChangedWhilstNotificationsDisabled.insert(emitterONo)
+    }
+
+    @OcaDevice
     private func reenableNotifications(
         from controller: any OcaController,
         command: Ocp1Command

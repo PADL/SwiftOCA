@@ -74,8 +74,8 @@ public actor OcaDevice {
         if let lockManager = resolve(objectNumber: OcaLockManagerONo) as? OcaLockManager {
             await lockManager.remove(controller: controller)
         }
-        objects.values.forEach {
-            try? $0.unlock(controller: controller)
+        for object in objects.values {
+            try? await object.unlock(controller: controller)
         }
     }
 
@@ -94,7 +94,7 @@ public actor OcaDevice {
         objects[object.objectNumber] = object
         if addToRootBlock {
             precondition(object.objectNumber != OcaRootBlockONo)
-            try rootBlock.add(actionObject: object)
+            try await rootBlock.add(actionObject: object)
         }
         if object is OcaManager, let deviceManager, deviceManager != object {
             let classIdentification = object.objectIdentification.classIdentification
@@ -160,7 +160,8 @@ public actor OcaDevice {
 
         switch subscriptionManager.state {
         case .eventsDisabled:
-            subscriptionManager.objectsChangedWhilstNotificationsDisabled.insert(event.emitterONo)
+            await subscriptionManager
+                .enqueueObjectChangedWhilstNotificationsDisabled(event.emitterONo)
         case .normal:
             await withTaskGroup(of: Void.self) { taskGroup in
                 for endpoint in self.endpoints {
