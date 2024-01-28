@@ -76,6 +76,34 @@ public struct OcaPropertyChangedEventData<T: Codable & Sendable>: Codable, Senda
 
 public let OcaPropertyChangedEventID = OcaEventID(defLevel: 1, eventIndex: 1)
 
+public enum OcaGrouperStatusChangeType: OcaUint8, Codable, Equatable, Sendable {
+    case citizenAdded = 1
+    case citizenDeleted = 2
+    case citizenConnectionLost = 3
+    case citizenConnectionReEstablished = 4
+    case citizenError = 5
+    case enrollment = 6
+    case unEnrollment = 7
+}
+
+public struct OcaGrouperStatusChangeEventData: Codable, Sendable {
+    public let groupIndex: OcaUint16
+    public let citizenIndex: OcaUint16
+    public let changeType: OcaGrouperStatusChangeType
+
+    public init(
+        groupIndex: OcaUint16,
+        citizenIndex: OcaUint16,
+        changeType: OcaGrouperStatusChangeType
+    ) {
+        self.groupIndex = groupIndex
+        self.citizenIndex = citizenIndex
+        self.changeType = changeType
+    }
+}
+
+public let OcaGrouperStatusChangeEventID = OcaEventID(defLevel: 3, eventIndex: 1)
+
 public struct OcaSubscription: Ocp1ParametersReflectable, Codable, Equatable, Hashable, Sendable {
     public let event: OcaEvent
     public let subscriber: OcaMethod

@@ -22,6 +22,7 @@ public protocol OcaPortsRepresentable: OcaRoot {
 }
 
 extension OcaPortsRepresentable {
+    @OcaDevice
     var firstAvailablePortIndex: OcaUint16 {
         1 + (ports.map(\.id.index).max() ?? 0)
     }
