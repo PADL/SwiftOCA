@@ -410,3 +410,15 @@ public enum OcaSecurityType: OcaUint8, Codable, Sendable {
     case none = 0
     case `default` = 1
 }
+
+public typealias OcaNetworkHostID = OcaBlob
+
+public struct OcaOPath: Codable, Sendable {
+    public let hostID: OcaNetworkHostID
+    public let oNo: OcaONo
+
+    public init(hostID: OcaNetworkHostID, oNo: OcaONo) {
+        self.hostID = hostID
+        self.oNo = oNo
+    }
+}

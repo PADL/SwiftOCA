@@ -58,6 +58,9 @@
 		D33D595D2B2FD04900963157 /* PortsRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33D595C2B2FD04900963157 /* PortsRepresentable.swift */; };
 		D34B5FA42B670576000C8DD1 /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA32B670576000C8DD1 /* Root+JSON.swift */; };
 		D34B5FA62B67204D000C8DD1 /* Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA52B67204D000C8DD1 /* Connection.swift */; };
+		D34B5F9E2B65FD0D000C8DD1 /* Grouper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5F9D2B65FD0D000C8DD1 /* Grouper.swift */; };
+		D34B5FA02B65FD1D000C8DD1 /* Grouper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5F9F2B65FD1D000C8DD1 /* Grouper.swift */; };
+		D34B5FA22B65FD74000C8DD1 /* GrouperDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA12B65FD74000C8DD1 /* GrouperDataTypes.swift */; };
 		D351F2012A7132F8008C5513 /* BoundedDeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */; };
 		D351F2032A727411008C5513 /* Mute.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2022A727411008C5513 /* Mute.swift */; };
 		D351F2052A72780A008C5513 /* PanBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2042A72780A008C5513 /* PanBalance.swift */; };
@@ -339,6 +342,9 @@
 		D33D595C2B2FD04900963157 /* PortsRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortsRepresentable.swift; sourceTree = "<group>"; };
 		D34B5FA32B670576000C8DD1 /* Root+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+JSON.swift"; sourceTree = "<group>"; };
 		D34B5FA52B67204D000C8DD1 /* Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connection.swift; sourceTree = "<group>"; };
+		D34B5F9D2B65FD0D000C8DD1 /* Grouper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grouper.swift; sourceTree = "<group>"; };
+		D34B5F9F2B65FD1D000C8DD1 /* Grouper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grouper.swift; sourceTree = "<group>"; };
+		D34B5FA12B65FD74000C8DD1 /* GrouperDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrouperDataTypes.swift; sourceTree = "<group>"; };
 		D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundedDeviceProperty.swift; sourceTree = "<group>"; };
 		D351F2022A727411008C5513 /* Mute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mute.swift; sourceTree = "<group>"; };
 		D351F2042A72780A008C5513 /* PanBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanBalance.swift; sourceTree = "<group>"; };
@@ -809,6 +815,7 @@
 			isa = PBXGroup;
 			children = (
 				D351F2072A7299B0008C5513 /* Agent.swift */,
+				D34B5F9F2B65FD1D000C8DD1 /* Grouper.swift */,
 				D351F2112A729CB0008C5513 /* TimeSource.swift */,
 				D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */,
 			);
@@ -1054,6 +1061,7 @@
 				D3FAC8DF2B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift */,
 				D3FAC8E12B5CF3FD009E2775 /* PowerManagerDataTypes.swift */,
 				D3FAC8EB2B5CFC11009E2775 /* TaskManagerDataTypes.swift */,
+				D34B5FA12B65FD74000C8DD1 /* GrouperDataTypes.swift */,
 			);
 			path = ControlDataTypes;
 			sourceTree = "<group>";
@@ -1098,6 +1106,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E18B2A3ACA6C00BF7095 /* Agent.swift */,
+				D34B5F9D2B65FD0D000C8DD1 /* Grouper.swift */,
 				D3E6E18C2A3ACA6C00BF7095 /* EventHandler.swift */,
 				D306556C2A524D720083F093 /* PhysicalPosition.swift */,
 				D306556E2A5254D70083F093 /* TimeSource.swift */,
@@ -1591,6 +1600,7 @@
 				D351F21A2A729F48008C5513 /* VectorDeviceProperty.swift in Sources */,
 				D351F20E2A729AF2008C5513 /* BasicSensors.swift in Sources */,
 				D32229D42ABC270900B56B6B /* Ocp1IORingController.swift in Sources */,
+				D34B5FA02B65FD1D000C8DD1 /* Grouper.swift in Sources */,
 				D351F2102A729C36008C5513 /* LevelSensor.swift in Sources */,
 				D355925E2B51E604000F633B /* DatagramProxyController.swift in Sources */,
 				D33B52902A6FD332001A1BA7 /* Root.swift in Sources */,
@@ -1706,6 +1716,7 @@
 				D3AFD3802B32A06700A72E9A /* Ocp1DecodingState.swift in Sources */,
 				D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */,
 				D3FAC8EA2B5CFBE7009E2775 /* TaskManager.swift in Sources */,
+				D34B5F9E2B65FD0D000C8DD1 /* Grouper.swift in Sources */,
 				D3AFD37F2B32A06700A72E9A /* Ocp1Encoder.swift in Sources */,
 				D3C083292A7C700B0020AD57 /* MediaDataTypes.swift in Sources */,
 				D3FAC8E62B5CF926009E2775 /* LibraryManagerDataTypes.swift in Sources */,
@@ -1734,6 +1745,7 @@
 				D3AFD3542B2D082B00A72E9A /* ControlNetwork.swift in Sources */,
 				D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */,
 				D30644062A770B640063DA65 /* Notification2.swift in Sources */,
+				D34B5FA22B65FD74000C8DD1 /* GrouperDataTypes.swift in Sources */,
 				D3E6E1C72A3ACA9000BF7095 /* Actuator.swift in Sources */,
 				D3E6E1DF2A3ACAA900BF7095 /* ModelDataTypes.swift in Sources */,
 				D34B5FA62B67204D000C8DD1 /* Connection.swift in Sources */,
