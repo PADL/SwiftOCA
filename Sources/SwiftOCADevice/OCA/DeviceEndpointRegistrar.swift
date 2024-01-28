@@ -61,8 +61,8 @@ public final class OcaDeviceEndpointRegistrar {
         if let deviceManager = await device.deviceManager {
             txtRecords = [
                 "txtvers": "1",
-                "protovers": "\(deviceManager.version)",
-                "modelGUID": "\(deviceManager.modelGUID)",
+                "protovers": "\(await deviceManager.version)",
+                "modelGUID": "\(await deviceManager.modelGUID)",
             ]
         } else {
             txtRecords = [:]

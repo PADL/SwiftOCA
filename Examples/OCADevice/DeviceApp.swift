@@ -102,7 +102,7 @@ public enum DeviceApp {
         try await serializeDeserialize(await device.rootBlock)
 
         let controlNetwork = try await SwiftOCADevice.OcaControlNetwork(deviceDelegate: device)
-        controlNetwork.state = .running
+        Task { @OcaDevice in controlNetwork.state = .running }
 
         signal(SIGPIPE, SIG_IGN)
 
@@ -133,7 +133,7 @@ func serializeDeserialize(
         .OcaBlock<SwiftOCADevice.OcaRoot>
 ) async throws {
     do {
-        let jsonResultData = try JSONSerialization.data(withJSONObject: object.jsonObject)
+        let jsonResultData = try await JSONSerialization.data(withJSONObject: object.jsonObject)
         print(String(data: jsonResultData, encoding: .utf8)!)
 
         let decoded = try JSONSerialization.jsonObject(with: jsonResultData) as! [String: Any]

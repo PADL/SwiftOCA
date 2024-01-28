@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDevice
 public protocol OcaPortsRepresentable: OcaRoot {
     var ports: [OcaPort] { get set }
 }
@@ -57,7 +58,6 @@ extension OcaPortsRepresentable {
 }
 
 public extension SwiftOCADevice.OcaBlock where ActionObject: OcaPortsRepresentable {
-    @OcaDevice
     func connect(
         _ outputs: [ActionObject],
         to inputs: [ActionObject],
@@ -110,12 +110,12 @@ public extension SwiftOCADevice.OcaBlock where ActionObject: OcaPortsRepresentab
     }
 }
 
+@OcaDevice
 public protocol OcaPortClockMapRepresentable: OcaRoot {
     var portClockMap: OcaMap<OcaPortID, OcaPortClockMapEntry> { get set }
 }
 
 extension OcaPortClockMapRepresentable {
-    @OcaDevice
     func handleSetPortClockMapEntry(
         _ command: Ocp1Command,
         from controller: OcaController
@@ -125,7 +125,6 @@ extension OcaPortClockMapRepresentable {
         portClockMap[parameters.portID] = parameters.portClockMapEntry
     }
 
-    @OcaDevice
     func handleDeletePortClockMapEntry(
         _ command: Ocp1Command,
         from controller: OcaController
@@ -135,7 +134,6 @@ extension OcaPortClockMapRepresentable {
         portClockMap.removeValue(forKey: portID)
     }
 
-    @OcaDevice
     func handleGetPortClockMapEntry(
         _ command: Ocp1Command,
         from controller: OcaController

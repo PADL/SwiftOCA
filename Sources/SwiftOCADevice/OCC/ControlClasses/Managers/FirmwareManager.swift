@@ -86,32 +86,26 @@ open class OcaFirmwareManager: OcaManager {
         )
     }
 
-    @OcaDevice
     open func startUpdateProcess() async throws {
         throw Ocp1Error.status(.notImplemented)
     }
 
-    @OcaDevice
     open func beginActiveImageUpdate(component: OcaComponent) async throws {
         throw Ocp1Error.status(.notImplemented)
     }
 
-    @OcaDevice
     open func addImageData(id: OcaUint32, _ imageData: OcaBlob) async throws {
         throw Ocp1Error.status(.notImplemented)
     }
 
-    @OcaDevice
     open func verifyImage(_ verifyData: OcaBlob) async throws {
         throw Ocp1Error.status(.notImplemented)
     }
 
-    @OcaDevice
     open func endActiveImageUpdate() async throws {
         throw Ocp1Error.status(.notImplemented)
     }
 
-    @OcaDevice
     open func beginPassiveComponentUpdate(
         component: OcaComponent,
         serverAddress: OcaNetworkAddress,
@@ -120,7 +114,6 @@ open class OcaFirmwareManager: OcaManager {
         throw Ocp1Error.status(.notImplemented)
     }
 
-    @OcaDevice
     open func endUpdateProcess() async throws {
         throw Ocp1Error.status(.notImplemented)
     }

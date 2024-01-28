@@ -16,32 +16,12 @@
 
 import Foundation
 import SwiftOCA
+@_implementationOnly
+import AnyCodable
 
-private let objectNumberJSONKey = "_oNo"
-private let classIDJSONKey = "_classID"
-private let actionObjectsJSONKey = "_members"
-
-public extension OcaRoot {
-    var jsonObject: [String: Any] {
-        var dict = [String: Any]()
-
-        precondition(objectNumber != OcaInvalidONo)
-
-        guard self is OcaWorker else {
-            return [:]
-        }
-
-        dict[objectNumberJSONKey] = objectNumber
-        dict[classIDJSONKey] = Self.classID.description
-
-        for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
-            let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
-            dict[property.propertyID.description] = try? property.getJsonValue()
-        }
-
-        return dict
-    }
-}
+let objectNumberJSONKey = "_oNo"
+let classIDJSONKey = "_classID"
+let actionObjectsJSONKey = "_members"
 
 public extension OcaDevice {
     @discardableResult
@@ -60,7 +40,7 @@ public extension OcaDevice {
             throw Ocp1Error.objectNotPresent
         }
 
-        guard try object.objectIdentification.classIdentification
+        guard try await object.objectIdentification.classIdentification
             .classID == OcaClassID(unsafeString: classID)
         else {
             throw Ocp1Error.objectClassMismatch
@@ -76,5 +56,12 @@ public extension OcaDevice {
         }
 
         return object
+    }
+}
+
+extension JSONEncoder {
+    func reencodeAsValidJSONObject<T: Codable>(_ value: T) throws -> Any {
+        let data = try encode(value)
+        return try JSONDecoder().decode(AnyDecodable.self, from: data).value
     }
 }

@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import Foundation
 import SwiftOCA
 
 private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF
@@ -21,13 +22,10 @@ private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF
 open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     override open class var classID: OcaClassID { OcaClassID("1.1.5") }
 
-    @OcaDevice
     public private(set) var members: OcaArray2D<Member?>
 
-    @OcaDevice
     public private(set) var proxy: Proxy<Member>!
 
-    @OcaDevice
     private var lockStatePriorToSetCurrentXY: LockState?
 
     public init(
@@ -156,12 +154,11 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
                 try await box.handleCommand(command, from: controller, object: object)
             }
 
-            try await matrix.unlockSelfAndProxy(controller: controller)
+            try matrix.unlockSelfAndProxy(controller: controller)
             return try await box.getResponse()
         }
     }
 
-    @OcaDevice
     private func lockSelfAndProxy(controller: any OcaController) throws {
         guard lockable else { return }
 
@@ -181,7 +178,6 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         proxy.lockState = lockState
     }
 
-    @OcaDevice
     fileprivate func unlockSelfAndProxy(controller: any OcaController) throws {
         guard lockable else { return }
 
@@ -231,12 +227,10 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         )
     }
 
-    @OcaDevice
     private func isValid(coordinate: OcaVector2D<OcaMatrixCoordinate>) async -> Bool {
         coordinate.x < members.nX && coordinate.y < members.nY
     }
 
-    @OcaDevice
     open func add(
         member object: Member,
         at coordinate: OcaVector2D<OcaMatrixCoordinate>
@@ -249,7 +243,6 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         try? await notifySubscribers(object: object, changeType: .itemAdded)
     }
 
-    @OcaDevice
     open func remove(coordinate: OcaVector2D<OcaMatrixCoordinate>) async throws {
         guard await isValid(coordinate: coordinate) else {
             throw Ocp1Error.status(.parameterOutOfRange)
@@ -261,7 +254,6 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         try? await notifySubscribers(object: oldMember, changeType: .itemDeleted)
     }
 
-    @OcaDevice
     open func set(
         member object: Member,
         at coordinate: OcaVector2D<OcaMatrixCoordinate>
@@ -274,7 +266,6 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         try? await notifySubscribers(object: object, changeType: .itemChanged)
     }
 
-    @OcaDevice
     func withCurrentObject(_ body: @Sendable (_ object: Member) async throws -> ()) async rethrows {
         if currentXY.x == OcaMatrixWildcardCoordinate && currentXY
             .y == OcaMatrixWildcardCoordinate
@@ -331,7 +322,6 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         case OcaMethodID("3.3"):
             try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
-            let members = await members
             let size = OcaVector2D<OcaMatrixCoordinate>(
                 x: OcaMatrixCoordinate(members.nX),
                 y: OcaMatrixCoordinate(members.nY)
@@ -348,19 +338,18 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         case OcaMethodID("3.5"):
             try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
-            let members = await members
+            let members = members
                 .map(defaultValue: OcaInvalidONo) { $0?.objectNumber ?? OcaInvalidONo }
             return try encodeResponse(members)
         case OcaMethodID("3.7"):
             let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
             try await ensureReadable(by: controller, command: command)
-            let objectNumber = await members[Int(coordinates.x), Int(coordinates.y)]?
+            let objectNumber = members[Int(coordinates.x), Int(coordinates.y)]?
                 .objectNumber ?? OcaInvalidONo
             return try encodeResponse(objectNumber)
         case OcaMethodID("3.8"):
             let parameters: SwiftOCA.OcaMatrix.SetMemberParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
-            let members = await members
             guard parameters.x < members.nX, parameters.y < members.nY else {
                 throw Ocp1Error.status(.parameterOutOfRange)
             }
@@ -375,18 +364,18 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         case OcaMethodID("3.9"):
             try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
-            return try await encodeResponse(proxy.objectNumber)
+            return try encodeResponse(proxy.objectNumber)
         case OcaMethodID("3.2"):
             let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
-            let members = await members
+            let members = members
             guard coordinates.x < members.nX || coordinates.x == OcaMatrixWildcardCoordinate,
                   coordinates.y < members.nY || coordinates.y == OcaMatrixWildcardCoordinate
             else {
                 throw Ocp1Error.status(.parameterOutOfRange)
             }
             currentXY = coordinates
-            try await lockSelfAndProxy(controller: controller)
+            try lockSelfAndProxy(controller: controller)
             fallthrough
         case OcaMethodID("3.15"):
             try decodeNullCommand(command)
@@ -402,5 +391,12 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
     override public var isContainer: Bool {
         true
+    }
+
+    override public var jsonObject: [String: Any] {
+        var jsonObject = super.jsonObject
+        let membersJson = members.map(defaultValue: nil, \.?.objectNumber)
+        jsonObject["3.5"] = try? JSONEncoder().reencodeAsValidJSONObject(membersJson)
+        return jsonObject
     }
 }

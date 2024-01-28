@@ -126,12 +126,10 @@ public class OcaSubscriptionManager: OcaManager {
     /// the following two functions, however, _do_ mutate state on the subscription manager
     /// and must run on the @OcaDevice global actor
 
-    @OcaDevice
     func enqueueObjectChangedWhilstNotificationsDisabled(_ emitterONo: OcaONo) {
         objectsChangedWhilstNotificationsDisabled.insert(emitterONo)
     }
 
-    @OcaDevice
     private func reenableNotifications(
         from controller: any OcaController,
         command: Ocp1Command

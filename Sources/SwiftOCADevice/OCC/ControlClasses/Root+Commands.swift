@@ -17,7 +17,7 @@
 import SwiftOCA
 
 public extension OcaRoot {
-    static func decodeCommand<U: Decodable>(
+    nonisolated static func decodeCommand<U: Decodable>(
         _ command: Ocp1Command
     ) throws -> U {
         let responseParameterCount = _ocp1ParameterCount(type: U.self)
@@ -33,13 +33,13 @@ public extension OcaRoot {
         return response
     }
 
-    final func decodeCommand<U: Decodable>(
+    final nonisolated func decodeCommand<U: Decodable>(
         _ command: Ocp1Command
     ) throws -> U {
         try Self.decodeCommand(command)
     }
 
-    final func decodeNullCommand(
+    final nonisolated func decodeNullCommand(
         _ command: Ocp1Command
     ) throws {
         guard command.parameters.parameterCount == 0,
@@ -54,7 +54,7 @@ public extension OcaRoot {
         }
     }
 
-    static func encodeResponse<T: Encodable>(
+    nonisolated static func encodeResponse<T: Encodable>(
         _ parameters: T,
         statusCode: OcaStatus = .ok
     ) throws -> Ocp1Response {
@@ -68,7 +68,7 @@ public extension OcaRoot {
         return Ocp1Response(statusCode: statusCode, parameters: parameters)
     }
 
-    final func encodeResponse<T: Encodable>(
+    final nonisolated func encodeResponse<T: Encodable>(
         _ parameters: T,
         statusCode: OcaStatus = .ok
     ) throws -> Ocp1Response {

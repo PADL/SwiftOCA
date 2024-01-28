@@ -285,8 +285,15 @@ final class SwiftOCADeviceTests: XCTestCase {
             }
         }
 
-        let deviceMembers = await device.rootBlock.actionObjects
-        let testBlockMembers = testBlock.actionObjects
+        let jsonSerializationExpectation =
+            XCTestExpectation(description: "Ensure JSON serialization round-trips")
+        let jsonObject = await device.rootBlock.jsonObject
+        let jsonResultData = try JSONSerialization.data(withJSONObject: jsonObject)
+        let decoded = try JSONSerialization.jsonObject(with: jsonResultData) as! [String: Any]
+        XCTAssertEqual(decoded as NSDictionary, jsonObject as NSDictionary)
+        jsonSerializationExpectation.fulfill()
+        await fulfillment(of: [jsonSerializationExpectation], timeout: 1)
+
         let connection = await OcaLocalConnection(listener)
         Task { await listener.run() }
         try await connection.connect()
@@ -297,13 +304,14 @@ final class SwiftOCADeviceTests: XCTestCase {
         oNo = await connection.subscriptionManager.objectNumber
         XCTAssertEqual(oNo, OcaSubscriptionManagerONo)
         let path = await matrix.objectNumberPath
-        XCTAssertEqual(path, [OcaRootBlockONo, matrix.objectNumber])
+        Task { @OcaDevice in XCTAssertEqual(path, [OcaRootBlockONo, matrix.objectNumber]) }
         deviceExpectation.fulfill()
         await fulfillment(of: [deviceExpectation], timeout: 1)
 
         let controllerExpectation =
             XCTestExpectation(description: "Check rootBlock controller properties")
         let members = try await connection.rootBlock.resolveActionObjects()
+        let deviceMembers = await device.rootBlock.actionObjects
         XCTAssertEqual(members.map(\.objectNumber), deviceMembers.map(\.objectNumber))
         controllerExpectation.fulfill()
 
@@ -318,6 +326,7 @@ final class SwiftOCADeviceTests: XCTestCase {
             ))
         XCTAssertNotNil(clientTestBlock)
         let resolvedClientTestBlockActionObjects = try await clientTestBlock!.resolveActionObjects()
+        let testBlockMembers = await testBlock.actionObjects
         XCTAssertEqual(
             resolvedClientTestBlockActionObjects.map(\.objectNumber),
             testBlockMembers.map(\.objectNumber)

@@ -25,14 +25,15 @@ extension OcaController {
     }
 }
 
+@OcaDevice
 open class OcaRoot: CustomStringConvertible, Codable, @unchecked
 Sendable, OcaKeyPathMarkerProtocol {
-    open class var classID: OcaClassID { OcaClassID("1") }
-    open class var classVersion: OcaClassVersionNumber { 2 }
+    open nonisolated class var classID: OcaClassID { OcaClassID("1") }
+    open nonisolated class var classVersion: OcaClassVersionNumber { 2 }
 
-    public let objectNumber: OcaONo
-    public var lockable: OcaBoolean
-    public var role: OcaString
+    public nonisolated let objectNumber: OcaONo
+    public nonisolated let lockable: OcaBoolean
+    public nonisolated let role: OcaString
 
     public internal(set) weak var deviceDelegate: OcaDevice?
 
@@ -119,7 +120,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         case role = "1.3"
     }
 
-    public func encode(to encoder: Encoder) throws {
+    public nonisolated func encode(to encoder: Encoder) throws {
         if encoder._isOcp1Encoder {
             var container = encoder.unkeyedContainer()
             try container.encode(objectNumber)
@@ -132,7 +133,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    public required init(from decoder: Decoder) throws {
+    public required nonisolated init(from decoder: Decoder) throws {
         if decoder._isOcp1Decoder {
             throw Ocp1Error.notImplemented
         } else {
@@ -152,7 +153,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    public var description: String {
+    public nonisolated var description: String {
         let objectNumberString = String(format: "0x%08x", objectNumber)
         return "\(type(of: self))(objectNumber: \(objectNumberString), role: \(role))"
     }
@@ -199,16 +200,16 @@ Sendable, OcaKeyPathMarkerProtocol {
             return try encodeResponse(lockable)
         case OcaMethodID("1.3"):
             try decodeNullCommand(command)
-            try await lockNoReadWrite(controller: controller)
+            try lockNoReadWrite(controller: controller)
         case OcaMethodID("1.4"):
             try decodeNullCommand(command)
-            try await unlock(controller: controller)
+            try unlock(controller: controller)
         case OcaMethodID("1.5"):
             try decodeNullCommand(command)
             return try encodeResponse(role)
         case OcaMethodID("1.6"):
             try decodeNullCommand(command)
-            try await lockNoWrite(controller: controller)
+            try lockNoWrite(controller: controller)
         case OcaMethodID("1.7"):
             try decodeNullCommand(command)
             return try encodeResponse(lockState.lockState)
@@ -222,7 +223,6 @@ Sendable, OcaKeyPathMarkerProtocol {
         false
     }
 
-    @OcaDevice
     open func ensureReadable(
         by controller: any OcaController,
         command: Ocp1Command
@@ -245,7 +245,6 @@ Sendable, OcaKeyPathMarkerProtocol {
 
     /// Important note: when subclassing you will typically want to override ensureWritable() to
     /// implement your own form of access control.
-    @OcaDevice
     open func ensureWritable(
         by controller: any OcaController,
         command: Ocp1Command
@@ -266,7 +265,6 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    @OcaDevice
     func lockNoWrite(controller: any OcaController) throws {
         if !lockable {
             throw Ocp1Error.status(.notImplemented)
@@ -286,7 +284,6 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    @OcaDevice
     func lockNoReadWrite(controller: any OcaController) throws {
         if !lockable {
             throw Ocp1Error.status(.notImplemented)
@@ -305,7 +302,6 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    @OcaDevice
     func unlock(controller: any OcaController) throws {
         if !lockable {
             throw Ocp1Error.status(.notImplemented)
@@ -324,7 +320,6 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    @OcaDevice
     func setLockState(to lockState: OcaLockState, controller: any OcaController) -> Bool {
         do {
             switch lockState {
@@ -340,16 +335,36 @@ Sendable, OcaKeyPathMarkerProtocol {
             return false
         }
     }
+
+    public var jsonObject: [String: Any] {
+        var dict = [String: Any]()
+
+        precondition(objectNumber != OcaInvalidONo)
+
+        guard self is OcaWorker else {
+            return [:]
+        }
+
+        dict[objectNumberJSONKey] = objectNumber
+        dict[classIDJSONKey] = Self.classID.description
+
+        for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
+            let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
+            dict[property.propertyID.description] = try? property.getJsonValue()
+        }
+
+        return dict
+    }
 }
 
 extension OcaRoot: Equatable {
-    public static func == (lhs: OcaRoot, rhs: OcaRoot) -> Bool {
+    public nonisolated static func == (lhs: OcaRoot, rhs: OcaRoot) -> Bool {
         lhs.objectNumber == rhs.objectNumber
     }
 }
 
 extension OcaRoot: Hashable {
-    public func hash(into hasher: inout Hasher) {
+    public nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(objectNumber)
     }
 }
@@ -368,6 +383,7 @@ extension OcaKeyPathMarkerProtocol where Self: OcaRoot {
     }
 }
 
+@OcaDevice
 public protocol OcaOwnable: OcaRoot {
     var owner: OcaONo { get set }
 }

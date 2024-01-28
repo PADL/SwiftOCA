@@ -146,7 +146,6 @@ open class OcaDeviceManager: OcaManager {
     )
     public var mostRecentPatchDatasetONo: OcaONo = OcaInvalidONo
 
-    @OcaDevice
     open func applyPatch(datasetONo: OcaONo) async throws {
         throw Ocp1Error.status(.notImplemented)
     }

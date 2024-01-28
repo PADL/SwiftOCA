@@ -59,7 +59,6 @@ open class OcaApplicationNetwork: OcaRoot, OcaOwnable {
     )
     public var errorCode: OcaUint16 = 0
 
-    @OcaDevice
     open func control(_ command: OcaApplicationNetworkCommand) async throws {
         throw Ocp1Error.status(.notImplemented)
     }

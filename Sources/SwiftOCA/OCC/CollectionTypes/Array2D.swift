@@ -72,23 +72,56 @@ public struct OcaArray2D<Element: Sendable>: Sendable {
 
 extension OcaArray2D: Codable where Element: Codable {
     public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        nX = Int(try container.decode(OcaUint16.self))
-        nY = Int(try container.decode(OcaUint16.self))
+        if decoder._isOcp1Decoder {
+            var container = try decoder.unkeyedContainer()
+            nX = Int(try container.decode(OcaUint16.self))
+            nY = Int(try container.decode(OcaUint16.self))
 
-        items = [Element]()
-        items.reserveCapacity(Int(nX * nY))
-        for index in 0..<count {
-            items.insert(try container.decode(Element.self), at: index)
+            items = [Element]()
+            items.reserveCapacity(Int(nX * nY))
+            for index in 0..<count {
+                items.insert(try container.decode(Element.self), at: index)
+            }
+        } else {
+            var container = try decoder.unkeyedContainer()
+            let items = try container.decode([[Element]].self)
+            var columnCount: Int?
+
+            guard items.allSatisfy({ row in
+                if let columnCount {
+                    return row.count == columnCount
+                } else {
+                    columnCount = row.count
+                    return true
+                }
+            }) else {
+                throw DecodingError
+                    .dataCorrupted(DecodingError.Context(
+                        codingPath: decoder.codingPath,
+                        debugDescription: "OcaArray2D must have consistent dimensions"
+                    ))
+            }
+
+            nX = columnCount ?? 0
+            nY = items.count
+            self.items = items.reduce([], +)
         }
     }
 
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        try container.encode(OcaUint16(nX))
-        try container.encode(OcaUint16(nY))
-        for index in 0..<count {
-            try container.encode(items[index])
+        if encoder._isOcp1Encoder {
+            var container = encoder.unkeyedContainer()
+            try container.encode(OcaUint16(nX))
+            try container.encode(OcaUint16(nY))
+            for index in 0..<count {
+                try container.encode(items[index])
+            }
+        } else {
+            var columnContainer = encoder.unkeyedContainer()
+            for x in 0..<nX {
+                var rowContainer = columnContainer.nestedUnkeyedContainer()
+                try rowContainer.encode(contentsOf: items[(x * nY)..<(x * nY + nY)])
+            }
         }
     }
 }

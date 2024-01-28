@@ -45,7 +45,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         )
     }
 
-    @OcaDevice
     open func add(actionObject object: ActionObject) async throws {
         guard object.objectNumber != OcaInvalidONo else {
             throw Ocp1Error.status(.badONo)
@@ -74,7 +73,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         try? await notifySubscribers(object: object, changeType: .itemAdded)
     }
 
-    @OcaDevice
     open func remove(actionObject object: ActionObject) async throws {
         if object.objectNumber == OcaInvalidONo {
             throw Ocp1Error.status(.badONo)
@@ -94,7 +92,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         try? await notifySubscribers(object: object, changeType: .itemDeleted)
     }
 
-    @OcaDevice
     open func resolve(_ objectNumbers: OcaList<OcaONo>) throws -> [ActionObject] {
         try objectNumbers.map { oNo in
             guard let actionObject = actionObjects.first(where: { $0.objectNumber == oNo }) else {
@@ -110,14 +107,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     )
     public var signalPaths = OcaMap<OcaUint16, OcaSignalPath>()
 
-    @OcaDevice
     public func add(signalPath path: OcaSignalPath) async throws -> OcaUint16 {
         let index: OcaUint16 = 1 + (signalPaths.keys.max() ?? 0)
         signalPaths[index] = path
         return index
     }
 
-    @OcaDevice
     public func remove(signalPathAt index: OcaUint16) async throws {
         if !signalPaths.keys.contains(index) {
             throw Ocp1Error.status(.parameterOutOfRange)
@@ -143,7 +138,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     )
     public var oNoMap = OcaMap<OcaProtoONo, OcaONo>()
 
-    @OcaDevice
     func applyRecursive<T: OcaRoot>(
         rootObject: OcaBlock,
         keyPath: KeyPath<OcaBlock, [T]>,
@@ -158,7 +152,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         }
     }
 
-    @OcaDevice
     func applyRecursive<T: OcaRoot>(
         keyPath: KeyPath<OcaBlock, [T]>,
         _ block: (_ member: T, _ container: OcaBlock) async throws -> ()
@@ -170,7 +163,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         )
     }
 
-    @OcaDevice
     func filterRecursive<T: OcaRoot>(
         keyPath: KeyPath<OcaBlock, [T]>,
         _ isIncluded: @escaping (T, OcaBlock) async throws -> Bool
@@ -186,7 +178,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         return members
     }
 
-    @OcaDevice
     func mapRecursive<T: OcaRoot, U: Sendable>(
         keyPath: KeyPath<OcaBlock, [T]>,
         _ transform: (T, OcaBlock) async throws -> U
@@ -200,7 +191,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         return members
     }
 
-    @OcaDevice
     func getActionObjectsRecursive(from controller: any OcaController) async throws
         -> OcaList<OcaBlockMember>
     {
@@ -212,14 +202,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         }
     }
 
-    @OcaDevice
     func getSignalPathsRecursive(from controller: any OcaController) async throws
         -> OcaMap<OcaUint16, OcaSignalPath>
     {
         throw Ocp1Error.notImplemented
     }
 
-    @OcaDevice
     func find(
         actionObjectsByRole searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
@@ -238,7 +226,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         }.eraseToAnyAsyncSequence()
     }
 
-    @OcaDevice
     func findRecursive(
         actionObjectsByRole searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
@@ -257,7 +244,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         }.eraseToAnyAsyncSequence()
     }
 
-    @OcaDevice
     func find(
         actionObjectsByRolePath searchPath: OcaNamePath,
         resultFlags: OcaObjectSearchResultFlags
@@ -269,7 +255,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         }.eraseToAnyAsyncSequence()
     }
 
-    @OcaDevice
     func findRecursive(
         actionObjectsByLabel searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
@@ -400,6 +385,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     override public var isContainer: Bool {
         true
     }
+
+    override public var jsonObject: [String: Any] {
+        var jsonObject = super.jsonObject
+        jsonObject["3.2"] = actionObjects.map(\.jsonObject)
+        return jsonObject
+    }
 }
 
 public extension OcaRoot {
@@ -451,7 +442,6 @@ public extension OcaRoot {
 }
 
 private extension OcaRoot {
-    @OcaDevice
     func compare<T: OcaRoot>(
         searchName: OcaString,
         keyPath: KeyPath<T, String>,
@@ -480,7 +470,6 @@ private extension OcaRoot {
         }
     }
 
-    @OcaDevice
     func makeSearchResult(with resultFlags: OcaObjectSearchResultFlags) async
         -> OcaObjectSearchResult
     {
