@@ -57,9 +57,9 @@ private actor OcaConnectionBroker {
             let options = Ocp1ConnectionOptions(automaticReconnect: true)
 
             switch addr.pointee.ai_socktype {
-            case SOCK_STREAM:
+            case SwiftOCA.SOCK_STREAM:
                 connection = try await Ocp1TCPConnection(deviceAddress: data, options: options)
-            case SOCK_DGRAM:
+            case SwiftOCA.SOCK_DGRAM:
                 connection = try await Ocp1UDPConnection(deviceAddress: data, options: options)
             default:
                 continue
