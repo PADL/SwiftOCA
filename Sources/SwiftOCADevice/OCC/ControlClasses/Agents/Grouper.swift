@@ -36,6 +36,14 @@ fileprivate actor OcaConnectionBroker {
         connections[objectPath.hostID] = connection
         return connection
     }
+
+    func isOnline(_ objectPath: OcaOPath) async -> Bool {
+        if let connection = connections[objectPath.hostID] {
+            return await connection.isConnected
+        }
+
+        return false
+    }
 }
 
 open class OcaGrouper: OcaAgent {
@@ -118,11 +126,13 @@ open class OcaGrouper: OcaAgent {
             }
 
             var online: OcaBoolean {
+                get async {
                 switch self {
                 case .local:
                     return true
-                case .remote:
-                    return false
+                case .remote(let path):
+                    return await OcaConnectionBroker.shared.isOnline(path)
+                }
                 }
             }
 
@@ -133,7 +143,7 @@ open class OcaGrouper: OcaAgent {
                     }
                     self = .local(object)
                 } else {
-                    throw Ocp1Error.notImplemented
+                    self = .remote(objectPath)
                 }
             }
         }
@@ -147,7 +157,9 @@ open class OcaGrouper: OcaAgent {
         }
 
         var ocaGrouperCitizen: OcaGrouperCitizen {
-            OcaGrouperCitizen(index: index, objectPath: target.objectPath, online: target.online)
+            get async {
+            OcaGrouperCitizen(index: index, objectPath: target.objectPath, online: await target.online)
+            }
         }
     }
 
@@ -217,10 +229,12 @@ open class OcaGrouper: OcaAgent {
 
     var citizenCount: OcaUint16 { OcaUint16(citizens.count) }
 
-    func getCitizenList() -> [OcaGrouperCitizen] {
-        citizens.map { _, value in
-            value.ocaGrouperCitizen
+    func getCitizenList() async -> [OcaGrouperCitizen] {
+        var citizens = [OcaGrouperCitizen]()
+        for (_, value) in self.citizens {
+            await citizens.append(value.ocaGrouperCitizen)
         }
+        return citizens
     }
 
     func getEnrollment(_ enrollment: OcaGrouperEnrollment) -> OcaBoolean {
@@ -272,11 +286,11 @@ open class OcaGrouper: OcaAgent {
         enrollments.filter { $0.0.index == group.index }.map(\.1)
     }
 
-    func getGroupMemberList(index: OcaUint16) throws -> [OcaGrouperCitizen] {
+    func getGroupMemberList(index: OcaUint16) async throws -> [OcaGrouperCitizen] {
         guard let group = groups[index] else {
             throw Ocp1Error.status(.invalidRequest)
         }
-        return try getGroupMemberList(group: group).map(\.ocaGrouperCitizen)
+        return try await getGroupMemberList(group: group).asyncMap { await $0.ocaGrouperCitizen }
     }
 
     override open func handleCommand(
@@ -317,7 +331,7 @@ open class OcaGrouper: OcaAgent {
         case OcaMethodID("3.8"):
             try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
-            return try encodeResponse(getCitizenList())
+            return try await encodeResponse(getCitizenList())
         case OcaMethodID("3.9"):
             let enrollment: OcaGrouperEnrollment = try decodeCommand(command)
             try await ensureReadable(by: controller, command: command)
@@ -330,7 +344,7 @@ open class OcaGrouper: OcaAgent {
         case OcaMethodID("3.11"):
             let index: OcaUint16 = try decodeCommand(command)
             try await ensureReadable(by: controller, command: command)
-            return try encodeResponse(getGroupMemberList(index: index))
+            return try await encodeResponse(getGroupMemberList(index: index))
         default:
             return try await super.handleCommand(command, from: controller)
         }
@@ -473,7 +487,7 @@ private extension OcaGrouper {
         changeType: OcaPropertyChangeType
     ) async throws {
         let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-        let parameters = OcaPropertyChangedEventData<OcaGrouperCitizen>(
+        let parameters = await OcaPropertyChangedEventData<OcaGrouperCitizen>(
             propertyID: OcaPropertyID("3.3"),
             propertyValue: citizen.ocaGrouperCitizen,
             changeType: changeType
