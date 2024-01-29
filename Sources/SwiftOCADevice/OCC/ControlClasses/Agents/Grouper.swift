@@ -52,14 +52,23 @@ private actor OcaConnectionBroker {
         }
 
         for addr in sequence(first: firstAddr, next: { $0.pointee.ai_next }) {
+            let connection: Ocp1Connection
             let data = Data(bytes: addr.pointee.ai_addr, count: Int(addr.pointee.ai_addrlen))
-            let connection = try await Ocp1UDPConnection(deviceAddress: data)
+            let options = Ocp1ConnectionOptions(automaticReconnect: true)
+
+            switch addr.pointee.ai_socktype {
+            case SOCK_STREAM:
+                connection = try await Ocp1TCPConnection(deviceAddress: data, options: options)
+            case SOCK_DGRAM:
+                connection = try await Ocp1UDPConnection(deviceAddress: data, options: options)
+            default:
+                continue
+            }
 
             try await connection.connect()
 
             connections[objectPath.hostID] = connection
 
-            // check class ID of remote object matches
             let classID = try await connection.getClassID(objectNumber: objectPath.oNo)
             guard classID.isSubclass(of: T.classID) else {
                 throw Ocp1Error.status(.invalidRequest)
@@ -108,11 +117,12 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
         public init(grouper: OcaGrouper, index: OcaUint16, name: OcaString) async throws {
             self.index = index
             self.name = name
-            if grouper.mode == .masterSlave {
+            switch grouper.mode {
+            case .masterSlave:
                 let proxy = try await Proxy(grouper)
                 self.proxy = proxy
                 proxy.group = self
-            } else {
+            case .peerToPeer:
                 proxy = nil
             }
         }
