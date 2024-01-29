@@ -79,10 +79,6 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             throw Ocp1Error.objectNotPresent
         }
 
-        private var matrixObjectNumber: OcaONo {
-            matrix?.objectNumber ?? OcaInvalidONo
-        }
-
         fileprivate actor CommandBox {
             var response: Ocp1Response?
             var lastStatus: OcaStatus?
@@ -134,16 +130,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
                 /// root object class methods are handled directly, because they refer to the proxy
                 /// object
                 return try await super.handleCommand(command, from: controller)
-            } else if ProxyMember.self is OcaWorker.Type,
-                      command.methodID == OcaMethodID("2.4")
-            {
-                return try encodeResponse(matrixObjectNumber)
-            } else if ProxyMember.self is OcaAgent.Type,
-                      command.methodID == OcaMethodID("2.2")
-            {
-                return try encodeResponse(matrixObjectNumber)
             }
-
             guard let matrix else {
                 throw Ocp1Error.status(.deviceError)
             }
