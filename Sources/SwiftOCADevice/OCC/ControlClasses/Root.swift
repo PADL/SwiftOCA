@@ -158,8 +158,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         return "\(type(of: self))(objectNumber: \(objectNumberString), role: \(role))"
     }
 
-    /// property accessors do not need ot be actor-isolated because they use AsyncChannel
-    func handlePropertyAccessor(
+    private func handlePropertyAccessor(
         _ command: Ocp1Command,
         from controller: any OcaController
     ) async throws -> Ocp1Response {
