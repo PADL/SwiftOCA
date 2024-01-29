@@ -346,8 +346,7 @@ open class OcaGrouper: OcaAgent {
                     let response = try await object.handleCommand(command, from: controller)
                     if response.parameters.parameterCount > 0 {
                         throw Ocp1Error.status(.invalidRequest)
-                    }
-                    if lastStatus != .ok {
+                    } else if lastStatus != .ok {
                         lastStatus = .partiallySucceeded
                     } else {
                         lastStatus = .ok
