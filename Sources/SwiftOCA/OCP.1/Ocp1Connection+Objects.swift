@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-extension Ocp1Connection {
+public extension Ocp1Connection {
     private func resolve<T: OcaRoot>(
         classIdentification: OcaClassIdentification,
         objectNumber: OcaONo
@@ -34,26 +34,45 @@ extension Ocp1Connection {
         return object
     }
 
-    public func resolve<T: OcaRoot>(object: OcaObjectIdentification) -> T? {
+    func resolve<T: OcaRoot>(object: OcaObjectIdentification) -> T? {
         resolve(
             classIdentification: object.classIdentification,
             objectNumber: object.oNo
         )
     }
 
-    public func resolve<T: OcaRoot>(cachedObject: OcaONo) -> T? {
+    func resolve<T: OcaRoot>(cachedObject: OcaONo) -> T? {
         objects[cachedObject] as? T
     }
 
-    func add<T: OcaRoot>(object: T) {
+    internal func add<T: OcaRoot>(object: T) {
         objects[object.objectNumber] = object
         object.connectionDelegate = self
     }
 
-    func refreshDeviceTree() async throws {
+    internal func refreshDeviceTree() async throws {
         let members = try await rootBlock.resolveActionObjectsRecursive(resolveMatrixMembers: true)
         for member in members {
             await member.memberObject._subscribeRole()
         }
+    }
+
+    @_spi(SwiftOCAPrivate)
+    func getClassID(objectNumber: OcaONo) async throws -> OcaClassID {
+        let command = Ocp1Command(
+            commandSize: 0,
+            handle: await getNextCommandHandle(),
+            targetONo: objectNumber,
+            methodID: OcaMethodID("1.1"),
+            parameters: Ocp1Parameters()
+        )
+        let response = try await sendCommandRrq(command)
+        guard response.statusCode == .ok else {
+            throw Ocp1Error.status(response.statusCode)
+        }
+        guard response.parameters.parameterCount == 1 else {
+            throw Ocp1Error.responseParameterOutOfRange
+        }
+        return try Ocp1Decoder().decode(OcaClassID.self, from: response.parameters.parameterData)
     }
 }

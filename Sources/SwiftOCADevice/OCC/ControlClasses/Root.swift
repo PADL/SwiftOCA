@@ -15,6 +15,7 @@
 //
 
 import AsyncExtensions
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 extension OcaController {

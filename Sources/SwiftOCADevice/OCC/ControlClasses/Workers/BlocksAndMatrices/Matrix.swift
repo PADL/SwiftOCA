@@ -79,7 +79,12 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             throw Ocp1Error.objectNotPresent
         }
 
-        fileprivate actor CommandBox {
+        deinit {
+            Task { try await matrix?.deviceDelegate?.deregister(objectNumber: objectNumber) }
+        }
+
+        @OcaDevice
+        fileprivate final class Box {
             var response: Ocp1Response?
             var lastStatus: OcaStatus?
 
@@ -113,7 +118,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
                 }
             }
 
-            func getResponse() async throws -> Ocp1Response {
+            func getResponse() throws -> Ocp1Response {
                 if let lastStatus, lastStatus != .ok {
                     throw Ocp1Error.status(lastStatus)
                 }
@@ -135,14 +140,14 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
                 throw Ocp1Error.status(.deviceError)
             }
 
-            let box = CommandBox()
+            let box = Box()
 
             try await matrix.withCurrentObject { object in
                 try await box.handleCommand(command, from: controller, object: object)
             }
 
             try matrix.unlockSelfAndProxy(controller: controller)
-            return try await box.getResponse()
+            return try box.getResponse()
         }
     }
 

@@ -14,9 +14,73 @@
 // limitations under the License.
 //
 
+import Foundation
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
-open class OcaGrouper: OcaAgent {
+private actor OcaConnectionBroker {
+    static let shared = OcaConnectionBroker()
+
+    private var connections = [OcaNetworkHostID: Ocp1Connection]()
+
+    func connection<T: OcaRoot>(
+        for objectPath: OcaOPath,
+        type: T.Type
+    ) async throws -> Ocp1Connection {
+        if let connection = connections[objectPath.hostID] {
+            return connection
+        }
+
+        // CM2: OcaNetworkHostID (deprecated)
+        // CM3: ServiceID from OcaControlNetwork (let's asssume this is a hostname)
+        // CM4: OcaControlNetwork ServiceName
+
+        var addrInfo: UnsafeMutablePointer<addrinfo>?
+
+        try withUnsafeBytes(of: objectPath.hostID) { bytes in
+            if getaddrinfo(bytes.baseAddress, nil, nil, &addrInfo) < 0 {
+                throw Ocp1Error.remoteDeviceResolutionFailed
+            }
+        }
+
+        defer {
+            freeaddrinfo(addrInfo)
+        }
+
+        guard let firstAddr = addrInfo else {
+            throw Ocp1Error.remoteDeviceResolutionFailed
+        }
+
+        for addr in sequence(first: firstAddr, next: { $0.pointee.ai_next }) {
+            let data = Data(bytes: addr.pointee.ai_addr, count: Int(addr.pointee.ai_addrlen))
+            let connection = try await Ocp1UDPConnection(deviceAddress: data)
+
+            try await connection.connect()
+
+            connections[objectPath.hostID] = connection
+
+            // check class ID of remote object matches
+            let classID = try await connection.getClassID(objectNumber: objectPath.oNo)
+            guard classID.isSubclass(of: T.classID) else {
+                throw Ocp1Error.status(.invalidRequest)
+            }
+
+            return connection
+        }
+
+        throw Ocp1Error.remoteDeviceResolutionFailed
+    }
+
+    func isOnline(_ objectPath: OcaOPath) async -> Bool {
+        if let connection = connections[objectPath.hostID] {
+            return await connection.isConnected
+        }
+
+        return false
+    }
+}
+
+open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
     override public class var classID: OcaClassID { OcaClassID("1.2.2") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
 
@@ -66,52 +130,34 @@ open class OcaGrouper: OcaAgent {
         }
     }
 
-    // at some point, when remote connections are supported, then we will maintain a lookaside
-    // table (either globally or in the device?) that maps a OcaOPath hostID to an OcaConnection.
-
     @OcaDevice
     final class Citizen: Sendable {
         enum Target {
             case local(OcaRoot)
             case remote(OcaOPath)
 
-            var objectPath: OcaOPath {
-                switch self {
-                case let .local(object):
-                    return OcaOPath(hostID: OcaBlob(), oNo: object.objectNumber)
-                case let .remote(path):
-                    return path
-                }
-            }
-
-            var classIdentification: OcaClassIdentification {
-                get async throws {
-                    switch self {
-                    case let .local(object):
-                        return await object.objectIdentification.classIdentification
-                    case .remote:
-                        throw Ocp1Error.notImplemented
-                    }
-                }
-            }
-
-            var online: OcaBoolean {
-                switch self {
-                case .local:
-                    return true
-                case .remote:
-                    return false
-                }
-            }
-
             init(_ objectPath: OcaOPath, device: OcaDevice) async throws {
                 if objectPath.hostID.isEmpty {
                     guard let object = await device.resolve(objectNumber: objectPath.oNo) else {
                         throw Ocp1Error.status(.badONo)
                     }
+                    guard await object.objectIdentification.classIdentification
+                        .isSubclass(of: CitizenType.classIdentification)
+                    else {
+                        throw Ocp1Error.status(.invalidRequest)
+                    }
                     self = .local(object)
                 } else {
-                    throw Ocp1Error.notImplemented
+                    self = .remote(objectPath)
+                }
+            }
+
+            var oNo: OcaONo {
+                switch self {
+                case let .local(object):
+                    return object.objectNumber
+                case let .remote(path):
+                    return path.oNo
                 }
             }
         }
@@ -124,8 +170,34 @@ open class OcaGrouper: OcaAgent {
             self.target = target
         }
 
+        var objectPath: OcaOPath {
+            switch target {
+            case let .local(object):
+                return OcaOPath(hostID: OcaBlob(), oNo: object.objectNumber)
+            case let .remote(path):
+                return path
+            }
+        }
+
+        var online: OcaBoolean {
+            get async {
+                switch target {
+                case .local:
+                    return true
+                case let .remote(path):
+                    return await OcaConnectionBroker.shared.isOnline(path)
+                }
+            }
+        }
+
         var ocaGrouperCitizen: OcaGrouperCitizen {
-            OcaGrouperCitizen(index: index, objectPath: target.objectPath, online: target.online)
+            get async {
+                OcaGrouperCitizen(
+                    index: index,
+                    objectPath: objectPath,
+                    online: await online
+                )
+            }
         }
     }
 
@@ -195,10 +267,12 @@ open class OcaGrouper: OcaAgent {
 
     var citizenCount: OcaUint16 { OcaUint16(citizens.count) }
 
-    func getCitizenList() -> [OcaGrouperCitizen] {
-        citizens.map { _, value in
-            value.ocaGrouperCitizen
+    func getCitizenList() async -> [OcaGrouperCitizen] {
+        var citizens = [OcaGrouperCitizen]()
+        for (_, value) in self.citizens {
+            await citizens.append(value.ocaGrouperCitizen)
         }
+        return citizens
     }
 
     func getEnrollment(_ enrollment: OcaGrouperEnrollment) -> OcaBoolean {
@@ -215,18 +289,6 @@ open class OcaGrouper: OcaAgent {
         }
 
         if isMember {
-            let citizenClassIdentification = try await citizen.target.classIdentification
-            if let existingCitizens: [Citizen] = try? getGroupMemberList(group: group),
-               let existingCitizen = existingCitizens.first
-            {
-                if try await citizenClassIdentification != existingCitizen.target
-                    .classIdentification
-                {
-                    throw Ocp1Error.status(.invalidRequest)
-                }
-            } else {
-                group.proxy?.citizenClassIdentification = citizenClassIdentification
-            }
             enrollments.append((group, citizen))
         } else {
             guard getEnrollment(enrollment) else { throw Ocp1Error.status(.invalidRequest) }
@@ -250,11 +312,12 @@ open class OcaGrouper: OcaAgent {
         enrollments.filter { $0.0.index == group.index }.map(\.1)
     }
 
-    func getGroupMemberList(index: OcaUint16) throws -> [OcaGrouperCitizen] {
+    func getGroupMemberList(index: OcaUint16) async throws -> [OcaGrouperCitizen] {
         guard let group = groups[index] else {
             throw Ocp1Error.status(.invalidRequest)
         }
-        return try getGroupMemberList(group: group).map(\.ocaGrouperCitizen)
+        return try await getGroupMemberList(group: group)
+            .asyncMap { @Sendable in await $0.ocaGrouperCitizen }
     }
 
     override open func handleCommand(
@@ -295,7 +358,7 @@ open class OcaGrouper: OcaAgent {
         case OcaMethodID("3.8"):
             try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)
-            return try encodeResponse(getCitizenList())
+            return try await encodeResponse(getCitizenList())
         case OcaMethodID("3.9"):
             let enrollment: OcaGrouperEnrollment = try decodeCommand(command)
             try await ensureReadable(by: controller, command: command)
@@ -308,16 +371,15 @@ open class OcaGrouper: OcaAgent {
         case OcaMethodID("3.11"):
             let index: OcaUint16 = try decodeCommand(command)
             try await ensureReadable(by: controller, command: command)
-            return try encodeResponse(getGroupMemberList(index: index))
+            return try await encodeResponse(getGroupMemberList(index: index))
         default:
             return try await super.handleCommand(command, from: controller)
         }
     }
 
     public class Proxy: OcaRoot {
-        weak var grouper: OcaGrouper?
+        weak var grouper: OcaGrouper<CitizenType>?
         weak var group: Group?
-        var citizenClassIdentification: OcaClassIdentification?
 
         init(
             _ grouper: OcaGrouper
@@ -334,16 +396,36 @@ open class OcaGrouper: OcaAgent {
             throw Ocp1Error.objectNotPresent
         }
 
-        fileprivate actor CommandBox {
+        @OcaDevice
+        fileprivate final class Box {
             var lastStatus: OcaStatus?
 
             func handleCommand(
                 _ command: Ocp1Command,
                 from controller: any OcaController,
-                object: OcaRoot
-            ) async throws {
+                target: Citizen.Target
+            ) async {
                 do {
-                    let response = try await object.handleCommand(command, from: controller)
+                    let command = Ocp1Command(
+                        commandSize: command.commandSize,
+                        handle: command.handle,
+                        targetONo: target.oNo, // map from proxy to target object number
+                        methodID: command.methodID,
+                        parameters: command.parameters
+                    )
+                    let response: Ocp1Response
+
+                    switch target {
+                    case let .local(object):
+                        response = try await object.handleCommand(command, from: controller)
+                    case let .remote(path):
+                        let connection = try await OcaConnectionBroker.shared.connection(
+                            for: path,
+                            type: CitizenType.self
+                        )
+                        response = try await connection.sendCommandRrq(command)
+                    }
+
                     if response.parameters.parameterCount > 0 {
                         throw Ocp1Error.status(.invalidRequest)
                     } else if lastStatus != .ok {
@@ -364,19 +446,12 @@ open class OcaGrouper: OcaAgent {
                 }
             }
 
-            func getResponse() async throws -> Ocp1Response {
+            func getResponse() throws -> Ocp1Response {
                 if let lastStatus, lastStatus != .ok {
                     throw Ocp1Error.status(lastStatus)
                 }
                 return Ocp1Response()
             }
-        }
-
-        override public var objectIdentification: OcaObjectIdentification {
-            OcaObjectIdentification(
-                oNo: objectNumber,
-                classIdentification: citizenClassIdentification ?? Self.classIdentification
-            )
         }
 
         override open func handleCommand(
@@ -391,18 +466,19 @@ open class OcaGrouper: OcaAgent {
                 throw Ocp1Error.status(.deviceError)
             }
 
-            let box = CommandBox()
+            let box = Box()
 
             for citizen in try grouper?.getGroupMemberList(group: group) ?? [] {
-                switch citizen.target {
-                case let .local(object):
-                    try await box.handleCommand(command, from: controller, object: object)
-                case .remote:
-                    throw Ocp1Error.notImplemented
+                await box.handleCommand(command, from: controller, target: citizen.target)
+                if let lastStatus = box.lastStatus, lastStatus != .ok {
+                    await deviceDelegate?.logger
+                        .info(
+                            "\(controller): failed to proxy group command \(command): \(lastStatus)"
+                        )
                 }
             }
 
-            return try await box.getResponse()
+            return try box.getResponse()
         }
     }
 }
@@ -446,7 +522,7 @@ private extension OcaGrouper {
         changeType: OcaPropertyChangeType
     ) async throws {
         let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-        let parameters = OcaPropertyChangedEventData<OcaGrouperCitizen>(
+        let parameters = await OcaPropertyChangedEventData<OcaGrouperCitizen>(
             propertyID: OcaPropertyID("3.3"),
             propertyValue: citizen.ocaGrouperCitizen,
             changeType: changeType

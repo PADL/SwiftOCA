@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-@testable import SwiftOCA
+@testable @_spi(SwiftOCAPrivate) import SwiftOCA
 @testable import SwiftOCADevice
 import XCTest
 

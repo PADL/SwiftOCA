@@ -22,7 +22,7 @@ class AnyKeyPath {
 }
 
 public extension Swift.AnyKeyPath {
-    @_spi(SwiftOCA_KeyPathShims)
+    @_spi(SwiftOCAPrivate)
     static func _create(
         capacityInBytes bytes: Int,
         initializedBy body: (UnsafeMutableRawBufferPointer) -> ()

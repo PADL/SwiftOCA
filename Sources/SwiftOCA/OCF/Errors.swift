@@ -41,6 +41,7 @@ public enum Ocp1Error: Error, Equatable {
     case propertyIsImmutable
     case proxyResolutionFailed
     case requestParameterOutOfRange
+    case remoteDeviceResolutionFailed
     case responseParameterOutOfRange
     case responseTimeout
     case serviceResolutionFailed

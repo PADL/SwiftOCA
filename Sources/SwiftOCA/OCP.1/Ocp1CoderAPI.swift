@@ -16,12 +16,14 @@
 
 // private API for SwiftOCADevice
 
+@_spi(SwiftOCAPrivate)
 public extension Encoder {
     var _isOcp1Encoder: Bool {
         self is Ocp1EncoderImpl
     }
 }
 
+@_spi(SwiftOCAPrivate)
 public extension Decoder {
     var _isOcp1Decoder: Bool {
         self is Ocp1DecoderImpl
@@ -31,6 +33,7 @@ public extension Decoder {
 public protocol Ocp1LongList {}
 public protocol Ocp1ParametersReflectable: Codable {}
 
+@_spi(SwiftOCAPrivate)
 public func _ocp1ParameterCount<T>(type: T.Type) -> OcaUint8 {
     if type is Ocp1ParametersReflectable.Type {
         var count: OcaUint8 = 0
@@ -46,6 +49,7 @@ public func _ocp1ParameterCount<T>(type: T.Type) -> OcaUint8 {
     }
 }
 
+@_spi(SwiftOCAPrivate)
 public func _ocp1ParameterCount<T>(value: T) -> OcaUint8 {
     _ocp1ParameterCount(type: type(of: value))
 }

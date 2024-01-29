@@ -235,6 +235,22 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible {
         return parent
     }
 
+    public func isSubclass(of classID: OcaClassID) -> Bool {
+        if self == classID {
+            return true
+        }
+
+        var parent: OcaClassID? = parent
+
+        while parent != nil {
+            if parent == classID {
+                return true
+            }
+            parent = parent?.parent
+        }
+        return false
+    }
+
     public var fieldCount: OcaUint16 {
         OcaUint16(fields.count)
     }
@@ -335,6 +351,11 @@ public struct OcaClassIdentification: Codable, Sendable, Hashable {
     public init(classID: OcaClassID, classVersion: OcaClassVersionNumber) {
         self.classID = classID
         self.classVersion = classVersion
+    }
+
+    public func isSubclass(of classIdentification: OcaClassIdentification) -> Bool {
+        classID.isSubclass(of: classIdentification.classID) && classVersion >= classIdentification
+            .classVersion
     }
 }
 

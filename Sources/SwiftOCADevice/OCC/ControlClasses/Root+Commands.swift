@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 public extension OcaRoot {

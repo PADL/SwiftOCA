@@ -79,7 +79,7 @@ public actor OcaDevice {
         }
     }
 
-    public func register(object: OcaRoot, addToRootBlock: Bool = true) async throws {
+    public func register<T: OcaRoot>(object: T, addToRootBlock: Bool = true) async throws {
         precondition(
             object.objectNumber != OcaInvalidONo,
             "cannot register object with invalid ONo"
@@ -108,7 +108,14 @@ public actor OcaDevice {
         }
     }
 
-    public func deregister(object: OcaRoot) async throws {
+    public func deregister(objectNumber: OcaONo) async throws {
+        guard let object = objects[objectNumber] else {
+            throw Ocp1Error.status(.badONo)
+        }
+        try await deregister(object: object)
+    }
+
+    public func deregister<T: OcaRoot>(object: T) async throws {
         precondition(object != deviceManager)
         precondition(object != subscriptionManager)
         precondition(
@@ -120,9 +127,13 @@ public actor OcaDevice {
             "this object was not registered with this device"
         )
         if object is OcaManager, let deviceManager, deviceManager != object {
-            Task { @OcaDevice in deviceManager.managers.removeAll(where: { $0.objectNumber == object.objectNumber }) }
+            Task { @OcaDevice in
+                deviceManager.managers.removeAll(where: { $0.objectNumber == object.objectNumber })
+            }
         }
-        if let object = object as? OcaOwnable, let owner = await objects[object.owner] as? OcaBlock {
+        if let object = object as? OcaOwnable,
+           let owner = await objects[object.owner] as? OcaBlock
+        {
             try await owner.delete(actionObject: owner)
         }
         objects[object.objectNumber] = nil
