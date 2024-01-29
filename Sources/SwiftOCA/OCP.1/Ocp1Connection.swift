@@ -36,11 +36,13 @@ public typealias OcaSubscriptionCallback = @Sendable (OcaEvent, Data) async thro
     -> ()
 
 #if canImport(Darwin)
-let SOCK_STREAM = Darwin.SOCK_STREAM
-let SOCK_DGRAM = Darwin.SOCK_DGRAM
+@_spi(SwiftOCAPrivate) public let SOCK_STREAM = Darwin.SOCK_STREAM
+@_spi(SwiftOCAPrivate) public let SOCK_DGRAM = Darwin.SOCK_DGRAM
 #elseif canImport(Glibc)
-let SOCK_STREAM = Int32(Glibc.SOCK_STREAM.rawValue)
-let SOCK_DGRAM = Int32(Glibc.SOCK_DGRAM.rawValue)
+@_implementationOnly
+import CoreFoundation
+@_spi(SwiftOCAPrivate) public let SOCK_STREAM = Int32(CoreFoundation.SOCK_STREAM.rawValue)
+@_spi(SwiftOCAPrivate) public let SOCK_DGRAM = Int32(CoreFoundation.SOCK_DGRAM.rawValue)
 #endif
 
 let OcaTcpConnectionPrefix = "oca/tcp"

@@ -42,7 +42,7 @@ fileprivate extension Errno {
 public class Ocp1IORingConnection: Ocp1Connection {
     fileprivate let deviceAddress: any SocketAddress
     fileprivate var socket: Socket?
-    fileprivate var type: UInt32 {
+    fileprivate var type: Int32 {
         fatalError("must be implemented by subclass")
     }
 
@@ -65,7 +65,7 @@ public class Ocp1IORingConnection: Ocp1Connection {
         socket = try Socket(
             ring: IORing.shared,
             domain: Swift.type(of: deviceAddress).family,
-            type: __socket_type(type),
+            type: __socket_type(UInt32(type)),
             protocol: 0
         )
         try socket!.setReuseAddr()
@@ -115,8 +115,8 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
         .seconds(1)
     }
 
-    override fileprivate var type: UInt32 {
-        2 // SOCK_STREAM
+    override fileprivate var type: Int32 {
+        SOCK_DGRAM
     }
 
     override public var connectionPrefix: String {
@@ -125,8 +125,8 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
 }
 
 public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
-    override fileprivate var type: UInt32 {
-        1 // SOCK_STREAM
+    override fileprivate var type: Int32 {
+        SOCK_STREAM
     }
 
     public convenience init(
