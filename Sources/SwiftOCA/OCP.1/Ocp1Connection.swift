@@ -35,6 +35,14 @@ public typealias Ocp1TCPConnection = Ocp1FlyingSocksStreamConnection
 public typealias OcaSubscriptionCallback = @Sendable (OcaEvent, Data) async throws
     -> ()
 
+#if canImport(Darwin)
+let SOCK_STREAM = Darwin.SOCK_STREAM
+let SOCK_DGRAM = Darwin.SOCK_DGRAM
+#else
+let SOCK_STREAM = Int32(Glibc.SOCK_STREAM.rawValue)
+let SOCK_DGRAM = Int32(Glibc.SOCK_DGRAM.rawValue)
+#endif
+
 let OcaTcpConnectionPrefix = "oca/tcp"
 let OcaUdpConnectionPrefix = "oca/udp"
 let OcaSecureTcpConnectionPrefix = "ocasec/tcp"

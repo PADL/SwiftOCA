@@ -185,11 +185,7 @@ public final class Ocp1CFSocketUDPConnection: Ocp1CFSocketConnection {
     }
 
     override fileprivate var type: Int32 {
-        #if canImport(Darwin)
         SOCK_DGRAM
-        #else
-        Int32(SOCK_DGRAM.rawValue)
-        #endif
     }
 
     override public var connectionPrefix: String {
@@ -199,11 +195,7 @@ public final class Ocp1CFSocketUDPConnection: Ocp1CFSocketConnection {
 
 public final class Ocp1CFSocketTCPConnection: Ocp1CFSocketConnection {
     override fileprivate var type: Int32 {
-        #if canImport(Darwin)
         SOCK_STREAM
-        #else
-        Int32(SOCK_STREAM.rawValue)
-        #endif
     }
 
     override public var connectionPrefix: String {
@@ -212,13 +204,7 @@ public final class Ocp1CFSocketTCPConnection: Ocp1CFSocketConnection {
 }
 
 fileprivate func isStreamType(_ type: Int32) -> Bool {
-    #if canImport(Darwin)
-    let streamType = SOCK_STREAM
-    #else
-    let streamType = Int32(SOCK_STREAM.rawValue)
-    #endif
-
-    return streamType == type
+    type == SOCK_STREAM
 }
 
 fileprivate extension Data {
