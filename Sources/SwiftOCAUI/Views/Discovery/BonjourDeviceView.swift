@@ -32,8 +32,8 @@ public struct OcaBonjourDeviceView: View {
 
     public var body: some View {
         Group {
-            if isConnected {
-                OcaRootBlockView(connection!)
+            if let connection, isConnected {
+                OcaRootBlockView(connection)
                     .environment(\.lastError, $lastError)
             } else {
                 ProgressView()
@@ -51,7 +51,7 @@ public struct OcaBonjourDeviceView: View {
                 lastError = error
             }
         }.onDisappear {
-            Task { @MainActor in
+            Task { @OcaConnection in
                 if let connection {
                     self.isConnected = false
                     try await connection.disconnect()

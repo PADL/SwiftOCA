@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+import AsyncExtensions
+import Combine
 import SwiftOCA
 import SwiftUI
 
@@ -22,21 +24,26 @@ public struct OcaRootBlockView: View {
     var lastError
     @StateObject
     var connection: Ocp1Connection
-    @StateObject
-    var object: OcaBlock
     @State
     var oNoPath = NavigationPath()
+    @State
+    var object: OcaRoot? = nil
 
     public init(_ connection: Ocp1Connection) {
         _connection = StateObject(wrappedValue: connection)
-        _object = StateObject(wrappedValue: connection.rootBlock)
     }
 
     public var body: some View {
         VStack {
-            OcaBlockNavigationSplitView(object)
-                .environment(\.navigationPath, $oNoPath)
-                .environmentObject(connection)
+            if let object {
+                OcaBlockNavigationSplitView(object)
+                    .environment(\.navigationPath, $oNoPath)
+                    .environmentObject(connection)
+            } else {
+                ProgressView()
+            }
+        }.task {
+            object = await connection.rootBlock
         }
     }
 }

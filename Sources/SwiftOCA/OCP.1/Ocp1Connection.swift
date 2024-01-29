@@ -57,7 +57,7 @@ public struct Ocp1ConnectionOptions: Sendable {
     }
 }
 
-@MainActor
+@OcaConnection
 open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     public nonisolated static let MinimumPduSize = 7
 

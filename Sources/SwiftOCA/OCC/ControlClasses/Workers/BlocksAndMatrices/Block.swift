@@ -225,7 +225,7 @@ open class OcaBlock: OcaWorker {
 }
 
 public extension OcaBlock {
-    @MainActor
+    @OcaConnection
     func resolveActionObjects() async throws -> [OcaRoot] {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
@@ -234,7 +234,7 @@ public extension OcaBlock {
         }
     }
 
-    @MainActor
+    @OcaConnection
     func resolveActionObjectsRecursive(resolveMatrixMembers: Bool = false) async throws
         -> [OcaContainerObjectMember]
     {

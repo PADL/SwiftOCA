@@ -57,6 +57,7 @@
 		D33BE9A22B5A3F43000CA189 /* NetworkApplicationDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33BE9A12B5A3F43000CA189 /* NetworkApplicationDataTypes.swift */; };
 		D33D595D2B2FD04900963157 /* PortsRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33D595C2B2FD04900963157 /* PortsRepresentable.swift */; };
 		D34B5FA42B670576000C8DD1 /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA32B670576000C8DD1 /* Root+JSON.swift */; };
+		D34B5FA62B67204D000C8DD1 /* Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA52B67204D000C8DD1 /* Connection.swift */; };
 		D351F2012A7132F8008C5513 /* BoundedDeviceProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */; };
 		D351F2032A727411008C5513 /* Mute.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2022A727411008C5513 /* Mute.swift */; };
 		D351F2052A72780A008C5513 /* PanBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D351F2042A72780A008C5513 /* PanBalance.swift */; };
@@ -147,7 +148,7 @@
 		D3E6E1B32A3ACA7B00BF7095 /* Ocp1Connection+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AE2A3ACA6C00BF7095 /* Ocp1Connection+Codable.swift */; };
 		D3E6E1B42A3ACA7B00BF7095 /* Ocp1Connection+Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AA2A3ACA6C00BF7095 /* Ocp1Connection+Objects.swift */; };
 		D3E6E1B52A3ACA7B00BF7095 /* Ocp1Connection+Subscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AC2A3ACA6C00BF7095 /* Ocp1Connection+Subscribe.swift */; };
-		D3E6E1B62A3ACA7B00BF7095 /* OcaClassRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AF2A3ACA6C00BF7095 /* OcaClassRegistry.swift */; };
+		D3E6E1B62A3ACA7B00BF7095 /* ClassRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AF2A3ACA6C00BF7095 /* ClassRegistry.swift */; };
 		D3E6E1B72A3ACA7B00BF7095 /* Ocp1Connection+Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1AB2A3ACA6C00BF7095 /* Ocp1Connection+Messages.swift */; };
 		D3E6E1BA2A3ACA7B00BF7095 /* Ocp1ConnectionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1A92A3ACA6C00BF7095 /* Ocp1ConnectionMonitor.swift */; };
 		D3E6E1BB2A3ACA7B00BF7095 /* Ocp1Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1B12A3ACA6C00BF7095 /* Ocp1Connection.swift */; };
@@ -199,7 +200,7 @@
 		D3E6E2282A3ACFA100BF7095 /* BrowserApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2222A3ACFA000BF7095 /* BrowserApp.swift */; };
 		D3E6E2292A3ACFA100BF7095 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */; };
 		D3E6E2342A3AD0A800BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
-		D3E6E2392A3BD52E00BF7095 /* OcaBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2382A3BD52E00BF7095 /* OcaBrowser.swift */; };
+		D3E6E2392A3BD52E00BF7095 /* Browser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2382A3BD52E00BF7095 /* Browser.swift */; };
 		D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2492A3C0C7700BF7095 /* MuteView.swift */; };
 		D3E6E24B2A3C0C8D00BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3E6E24C2A3C0D6300BF7095 /* libSwiftOCAUI.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */; };
@@ -337,6 +338,7 @@
 		D33BE9A12B5A3F43000CA189 /* NetworkApplicationDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkApplicationDataTypes.swift; sourceTree = "<group>"; };
 		D33D595C2B2FD04900963157 /* PortsRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortsRepresentable.swift; sourceTree = "<group>"; };
 		D34B5FA32B670576000C8DD1 /* Root+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+JSON.swift"; sourceTree = "<group>"; };
+		D34B5FA52B67204D000C8DD1 /* Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connection.swift; sourceTree = "<group>"; };
 		D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundedDeviceProperty.swift; sourceTree = "<group>"; };
 		D351F2022A727411008C5513 /* Mute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mute.swift; sourceTree = "<group>"; };
 		D351F2042A72780A008C5513 /* PanBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanBalance.swift; sourceTree = "<group>"; };
@@ -471,14 +473,14 @@
 		D3E6E1AB2A3ACA6C00BF7095 /* Ocp1Connection+Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Ocp1Connection+Messages.swift"; sourceTree = "<group>"; };
 		D3E6E1AC2A3ACA6C00BF7095 /* Ocp1Connection+Subscribe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Ocp1Connection+Subscribe.swift"; sourceTree = "<group>"; };
 		D3E6E1AE2A3ACA6C00BF7095 /* Ocp1Connection+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Ocp1Connection+Codable.swift"; sourceTree = "<group>"; };
-		D3E6E1AF2A3ACA6C00BF7095 /* OcaClassRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaClassRegistry.swift; sourceTree = "<group>"; };
+		D3E6E1AF2A3ACA6C00BF7095 /* ClassRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassRegistry.swift; sourceTree = "<group>"; };
 		D3E6E1B12A3ACA6C00BF7095 /* Ocp1Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1Connection.swift; sourceTree = "<group>"; };
 		D3E6E1F62A3ACF5900BF7095 /* OCABrowser.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OCABrowser.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E2212A3ACFA000BF7095 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Examples/OCABrowser/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		D3E6E2222A3ACFA000BF7095 /* BrowserApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowserApp.swift; path = Examples/OCABrowser/BrowserApp.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D3E6E2262A3ACFA100BF7095 /* OCABrowser.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = OCABrowser.entitlements; path = Examples/OCABrowser/OCABrowser.entitlements; sourceTree = SOURCE_ROOT; };
-		D3E6E2382A3BD52E00BF7095 /* OcaBrowser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaBrowser.swift; sourceTree = "<group>"; };
+		D3E6E2382A3BD52E00BF7095 /* Browser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Browser.swift; sourceTree = "<group>"; };
 		D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCAUI.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E2492A3C0C7700BF7095 /* MuteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MuteView.swift; sourceTree = "<group>"; };
 		D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowProgressIfWaiting.swift; sourceTree = "<group>"; };
@@ -1206,19 +1208,12 @@
 		D3E6E23C2A3C0AE200BF7095 /* OCA */ = {
 			isa = PBXGroup;
 			children = (
+				D3E6E1AF2A3ACA6C00BF7095 /* ClassRegistry.swift */,
+				D34B5FA52B67204D000C8DD1 /* Connection.swift */,
+				D3E6E2382A3BD52E00BF7095 /* Browser.swift */,
 				D3E6E23E2A3C0B2E00BF7095 /* OCF */,
-				D3E6E23D2A3C0B0200BF7095 /* OCP.1 */,
 			);
 			path = OCA;
-			sourceTree = "<group>";
-		};
-		D3E6E23D2A3C0B0200BF7095 /* OCP.1 */ = {
-			isa = PBXGroup;
-			children = (
-				D3E6E2382A3BD52E00BF7095 /* OcaBrowser.swift */,
-				D3E6E1AF2A3ACA6C00BF7095 /* OcaClassRegistry.swift */,
-			);
-			path = OCP.1;
 			sourceTree = "<group>";
 		};
 		D3E6E23E2A3C0B2E00BF7095 /* OCF */ = {
@@ -1720,7 +1715,7 @@
 				D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */,
 				D3AFD3942B41514400A72E9A /* SignalInput.swift in Sources */,
 				D3E6E1C82A3ACA9000BF7095 /* Gain.swift in Sources */,
-				D3E6E1B62A3ACA7B00BF7095 /* OcaClassRegistry.swift in Sources */,
+				D3E6E1B62A3ACA7B00BF7095 /* ClassRegistry.swift in Sources */,
 				D3AFD3842B32A06700A72E9A /* KeyedBinaryDecodingContainer.swift in Sources */,
 				D3AFD3852B32A06700A72E9A /* UnkeyedBinaryDecodingContainer.swift in Sources */,
 				D3E6E1C62A3ACA9000BF7095 /* BasicActuators.swift in Sources */,
@@ -1741,6 +1736,7 @@
 				D30644062A770B640063DA65 /* Notification2.swift in Sources */,
 				D3E6E1C72A3ACA9000BF7095 /* Actuator.swift in Sources */,
 				D3E6E1DF2A3ACAA900BF7095 /* ModelDataTypes.swift in Sources */,
+				D34B5FA62B67204D000C8DD1 /* Connection.swift in Sources */,
 				D3AFD37D2B32A06700A72E9A /* KeyedOcp1EncodingContainer.swift in Sources */,
 				D3E6E1E12A3ACAA900BF7095 /* ManagerDataTypes.swift in Sources */,
 				D3AFD3382B2A52D500A72E9A /* TimeDataTypes.swift in Sources */,
@@ -1760,7 +1756,7 @@
 				D3AFD3402B2A8CC000A72E9A /* MiscFrameworkDataTypes.swift in Sources */,
 				D3E6E1C12A3ACA8200BF7095 /* Notification1.swift in Sources */,
 				D3D8FA382B60546E0054FD3C /* DeviceManagerDataTypes.swift in Sources */,
-				D3E6E2392A3BD52E00BF7095 /* OcaBrowser.swift in Sources */,
+				D3E6E2392A3BD52E00BF7095 /* Browser.swift in Sources */,
 				D3E6E1DE2A3ACAA900BF7095 /* WellKnownObjectNumbers.swift in Sources */,
 				D3FAC8EC2B5CFC11009E2775 /* TaskManagerDataTypes.swift in Sources */,
 				D3E6E1B32A3ACA7B00BF7095 /* Ocp1Connection+Codable.swift in Sources */,

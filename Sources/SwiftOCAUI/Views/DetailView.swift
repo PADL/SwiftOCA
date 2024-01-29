@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import Combine
 import SwiftOCA
 import SwiftUI
 
@@ -28,34 +29,48 @@ extension Array where Element: OcaRoot {
 }
 
 public struct OcaDetailView: OcaView {
-    @StateObject
-    var object: OcaRoot
+    let connection: Ocp1Connection
+    let objectIdentification: OcaObjectIdentification
+
     @Environment(\.lastError)
     var lastError
+    @State
+    var object: OcaRoot? = nil
 
-    public init(_ connection: Ocp1Connection, object: OcaObjectIdentification) {
-        _object = StateObject(wrappedValue: connection.resolve(object: object)!)
+    public init(
+        _ connection: Ocp1Connection,
+        objectIdentification: OcaObjectIdentification
+    ) {
+        self.connection = connection
+        self.objectIdentification = objectIdentification
     }
 
-    public init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object)
+    public init(_ object: SwiftOCA.OcaRoot) {
+        self.init(object.connectionDelegate!, objectIdentification: object.objectIdentification)
     }
 
     public var body: some View {
-        let metatype = type(of: object)
-
         Group {
-            if metatype == OcaBlock.self {
-                OcaBlockNavigationStackView(object)
-            } else if metatype == OcaMatrix.self {
-                OcaMatrixNavigationSplitView(object)
-            } else if let object = object as? OcaViewRepresentable {
-                // use type erasure as last resort
-                let view = object.viewType.init(object) as! any OcaView
-                AnyView(erasing: view)
+            if let object {
+                let metatype = type(of: object)
+                Group {
+                    if metatype == OcaBlock.self {
+                        OcaBlockNavigationStackView(object)
+                    } else if metatype == OcaMatrix.self {
+                        OcaMatrixNavigationSplitView(object)
+                    } else if let object = object as? OcaViewRepresentable {
+                        // use type erasure as last resort
+                        AnyView(erasing: object.viewType.init(object))
+                    } else {
+                        OcaPropertyTableView(object)
+                    }
+                }.refreshableToInitialState(object)
             } else {
-                OcaPropertyTableView(object)
+                ProgressView()
             }
-        }.refreshableToInitialState(object)
+        }
+        .task {
+            object = await connection.resolve(object: objectIdentification)
+        }
     }
 }
