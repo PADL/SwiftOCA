@@ -17,7 +17,7 @@
 import Foundation
 
 public func deviceAddressToString(_ deviceAddress: Data) -> String {
-    withUnsafeBytes(of: deviceAddress) {
+    deviceAddress.withUnsafeBytes {
         $0.withMemoryRebound(to: sockaddr.self) {
             deviceAddressToString($0.baseAddress!)
         }
