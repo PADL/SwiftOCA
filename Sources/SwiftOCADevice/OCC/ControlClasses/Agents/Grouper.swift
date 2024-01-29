@@ -14,7 +14,29 @@
 // limitations under the License.
 //
 
+import Foundation
 import SwiftOCA
+
+fileprivate actor OcaConnectionBroker {
+    static let shared = OcaConnectionBroker()
+
+    private var connections = [OcaNetworkHostID: Ocp1Connection]()
+
+    func connection(for objectPath: OcaOPath) async throws -> Ocp1Connection {
+        if let connection = connections[objectPath.hostID] {
+            return connection
+        }
+
+        // FIXME: need to translate host ID formate
+
+        let connection = try await Ocp1UDPConnection(deviceAddress: Data(objectPath.hostID))
+
+        try await connection.connect()
+
+        connections[objectPath.hostID] = connection
+        return connection
+    }
+}
 
 open class OcaGrouper: OcaAgent {
     override public class var classID: OcaClassID { OcaClassID("1.2.2") }
@@ -340,10 +362,20 @@ open class OcaGrouper: OcaAgent {
             func handleCommand(
                 _ command: Ocp1Command,
                 from controller: any OcaController,
-                object: OcaRoot
+                target: Citizen.Target
             ) async throws {
                 do {
-                    let response = try await object.handleCommand(command, from: controller)
+                    let response: Ocp1Response
+
+                    switch target {
+                    case let .local(object):
+                        response = try await object.handleCommand(command, from: controller)
+                    case .remote(let path):
+                        let connection = try await OcaConnectionBroker.shared.connection(for: path)
+                        let command = Ocp1Command(commandSize: command.commandSize, handle: command.handle, targetONo: path.oNo, methodID: command.methodID, parameters: command.parameters)
+                        response = try await connection.sendCommandRrq(command)
+                    }
+
                     if response.parameters.parameterCount > 0 {
                         throw Ocp1Error.status(.invalidRequest)
                     } else if lastStatus != .ok {
@@ -394,12 +426,7 @@ open class OcaGrouper: OcaAgent {
             let box = CommandBox()
 
             for citizen in try grouper?.getGroupMemberList(group: group) ?? [] {
-                switch citizen.target {
-                case let .local(object):
-                    try await box.handleCommand(command, from: controller, object: object)
-                case .remote:
-                    throw Ocp1Error.notImplemented
-                }
+                try await box.handleCommand(command, from: controller, target: citizen.target)
             }
 
             return try await box.getResponse()

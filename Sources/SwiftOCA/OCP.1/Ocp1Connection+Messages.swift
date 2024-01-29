@@ -48,7 +48,7 @@ extension Ocp1Connection {
         try await sendMessages([message], type: messageType)
     }
 
-    func sendCommand(_ command: Ocp1Command) async throws {
+    public func sendCommand(_ command: Ocp1Command) async throws {
         try await sendMessage(command, type: .ocaCmd)
     }
 
@@ -64,7 +64,7 @@ extension Ocp1Connection {
         }
     }
 
-    func sendCommandRrq(_ command: Ocp1Command) async throws -> Ocp1Response {
+    public func sendCommandRrq(_ command: Ocp1Command) async throws -> Ocp1Response {
         try await sendMessage(command, type: .ocaCmdRrq)
         return try await response(for: command.handle)
     }
