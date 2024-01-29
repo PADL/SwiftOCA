@@ -73,7 +73,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         try? await notifySubscribers(object: object, changeType: .itemAdded)
     }
 
-    open func remove(actionObject object: ActionObject) async throws {
+    open func delete(actionObject object: ActionObject) async throws {
         if object.objectNumber == OcaInvalidONo {
             throw Ocp1Error.status(.badONo)
         }
@@ -113,7 +113,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         return index
     }
 
-    public func remove(signalPathAt index: OcaUint16) async throws {
+    public func delete(signalPathAt index: OcaUint16) async throws {
         if !signalPaths.keys.contains(index) {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
@@ -313,7 +313,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
             try decodeNullCommand(command)
             try await ensureWritable(by: controller, command: command)
             let index: OcaUint16 = try decodeCommand(command)
-            try await remove(signalPathAt: index)
+            try await delete(signalPathAt: index)
         case OcaMethodID("3.10"):
             try decodeNullCommand(command)
             try await ensureReadable(by: controller, command: command)

@@ -108,6 +108,26 @@ public actor OcaDevice {
         }
     }
 
+    public func deregister(object: OcaRoot) async throws {
+        precondition(object != deviceManager)
+        precondition(object != subscriptionManager)
+        precondition(
+            object.objectNumber != OcaInvalidONo,
+            "cannot deregister object with invalid ONo"
+        )
+        precondition(
+            objects[object.objectNumber] != nil,
+            "this object was not registered with this device"
+        )
+        if object is OcaManager, let deviceManager, deviceManager != object {
+            Task { @OcaDevice in deviceManager.managers.removeAll(where: { $0.objectNumber == object.objectNumber }) }
+        }
+        if let object = object as? OcaOwnable, let owner = await objects[object.owner] as? OcaBlock {
+            try await owner.delete(actionObject: owner)
+        }
+        objects[object.objectNumber] = nil
+    }
+
     public func handleCommand(
         _ command: Ocp1Command,
         timeout: Duration = .zero,

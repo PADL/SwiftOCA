@@ -20,45 +20,54 @@ open class OcaGrouper: OcaAgent {
     override public class var classID: OcaClassID { OcaClassID("1.2.2") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
 
+    // AES70-2023 only allows actuator groupers so we don't expose the property setter
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.12")
-        // setMethodID: OcaMethodID("3.13")
     )
-    public private(set) var actuatorOrSensor = true
+    public var actuatorOrSensor = true
 
+    // masterSlave vs peerToPeer is an implementation choice but cannot be set by the controller,
+    // hence the property setter is also not exposed here
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.14")
-        // setMethodID: OcaMethodID("3.15")
     )
-    public private(set) var mode: OcaGrouperMode = .masterSlave
+    public var mode: OcaGrouperMode = .masterSlave
 
     @OcaDevice
     final class Group: Sendable {
         let index: OcaUint16
         let name: OcaString
-        let proxy: Proxy
+        let proxy: Proxy?
 
         public init(grouper: OcaGrouper, index: OcaUint16, name: OcaString) async throws {
             self.index = index
             self.name = name
-            proxy = try await Proxy(grouper)
-            proxy.group = self
+            if grouper.mode == .masterSlave {
+                let proxy = try await Proxy(grouper)
+                self.proxy = proxy
+                proxy.group = self
+            } else {
+                proxy = nil
+            }
         }
 
         var proxyONo: OcaONo {
-            proxy.objectNumber
+            proxy?.objectNumber ?? OcaInvalidONo
         }
 
         var ocaGrouperGroup: OcaGrouperGroup {
             OcaGrouperGroup(
                 index: index,
                 name: name,
-                proxyONo: proxy.objectNumber
+                proxyONo: proxyONo
             )
         }
     }
+
+    // at some point, when remote connections are supported, then we will maintain a lookaside
+    // table (either globally or in the device?) that maps a OcaOPath hostID to an OcaConnection.
 
     @OcaDevice
     final class Citizen: Sendable {
@@ -87,7 +96,12 @@ open class OcaGrouper: OcaAgent {
             }
 
             var online: OcaBoolean {
-                true
+                switch self {
+                case .local:
+                    return true
+                case .remote:
+                    return false
+                }
             }
 
             init(_ objectPath: OcaOPath, device: OcaDevice) async throws {
@@ -143,6 +157,9 @@ open class OcaGrouper: OcaAgent {
     func deleteGroup(index: OcaUint16) async throws {
         guard let group = groups[index] else {
             throw Ocp1Error.status(.invalidRequest)
+        }
+        if let proxy = group.proxy {
+            try await deviceDelegate?.deregister(object: proxy)
         }
         try await notifySubscribers(group: group, changeType: .itemDeleted)
         groups[index] = nil
@@ -208,7 +225,7 @@ open class OcaGrouper: OcaAgent {
                     throw Ocp1Error.status(.invalidRequest)
                 }
             } else {
-                group.proxy.citizenClassIdentification = citizenClassIdentification
+                group.proxy?.citizenClassIdentification = citizenClassIdentification
             }
             enrollments.append((group, citizen))
         } else {
