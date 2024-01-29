@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import Foundation
-import SwiftOCA
 @_implementationOnly
 import AnyCodable
+import Foundation
+import SwiftOCA
 
 let objectNumberJSONKey = "_oNo"
 let classIDJSONKey = "_classID"
