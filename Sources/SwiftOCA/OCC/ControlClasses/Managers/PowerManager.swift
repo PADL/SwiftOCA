@@ -29,13 +29,13 @@ open class OcaPowerManager: OcaManager {
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.3")
     )
-    public var powerSupplies: OcaProperty<[OcaONo]>.PropertyValue
+    public var powerSupplies: OcaListProperty<OcaONo>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.4")
     )
-    public var activePowerSupplies: OcaProperty<[OcaONo]>.PropertyValue
+    public var activePowerSupplies: OcaListProperty<OcaONo>.PropertyValue
 
     // 3.5 exchangePowerSupply(old, new, powerOffOld)
     public struct ExchangePowerSupplyParameters: Ocp1ParametersReflectable {

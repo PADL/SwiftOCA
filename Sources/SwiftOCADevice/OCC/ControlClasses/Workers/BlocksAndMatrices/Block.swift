@@ -29,13 +29,13 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     public private(set) var actionObjects = [ActionObject]()
 
     private func notifySubscribers(
-        object: ActionObject,
+        actionObjects: [ActionObject],
         changeType: OcaPropertyChangeType
     ) async throws {
-        let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
-        let parameters = OcaPropertyChangedEventData<ActionObject>(
+        let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
+        let parameters = OcaPropertyChangedEventData<[ActionObject]>(
             propertyID: OcaPropertyID("3.2"),
-            propertyValue: object,
+            propertyValue: actionObjects,
             changeType: changeType
         )
 
@@ -70,7 +70,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         }
 
         actionObjects.append(object)
-        try? await notifySubscribers(object: object, changeType: .itemAdded)
+        try? await notifySubscribers(actionObjects: actionObjects, changeType: .itemAdded)
     }
 
     open func delete(actionObject object: ActionObject) async throws {
@@ -89,7 +89,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         }
 
         actionObjects.remove(at: index)
-        try? await notifySubscribers(object: object, changeType: .itemDeleted)
+        try? await notifySubscribers(actionObjects: actionObjects, changeType: .itemDeleted)
     }
 
     open func resolve(_ objectNumbers: OcaList<OcaONo>) throws -> [ActionObject] {

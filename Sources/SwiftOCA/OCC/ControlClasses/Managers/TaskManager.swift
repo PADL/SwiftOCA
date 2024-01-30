@@ -28,7 +28,7 @@ open class OcaTaskManager: OcaManager {
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.9")
     )
-    public var tasks: OcaProperty<[OcaTaskID: OcaTask]>.PropertyValue
+    public var tasks: OcaMapProperty<OcaTaskID, OcaTask>.PropertyValue
 
     // 3.1 Enable
     // 3.2 ControlAllTasks

@@ -114,7 +114,7 @@ open class OcaDeviceManager: OcaManager {
         propertyID: OcaPropertyID("3.13"),
         getMethodID: OcaMethodID("3.19")
     )
-    public var managers: OcaProperty<OcaList<OcaManagerDescriptor>>.PropertyValue
+    public var managers: OcaListProperty<OcaManagerDescriptor>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.14"),

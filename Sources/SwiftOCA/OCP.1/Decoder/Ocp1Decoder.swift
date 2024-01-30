@@ -23,8 +23,23 @@
 
 import Foundation
 
-protocol ArrayRepresentable {}
-extension Array: ArrayRepresentable {}
+protocol Ocp1ListRepresentable {
+    associatedtype Element: Codable
+}
+
+extension Array: Ocp1ListRepresentable where Element: Codable {
+    typealias Element = Array.Element
+}
+
+protocol Ocp1MapRepresentable {
+    associatedtype Key: Codable & Hashable
+    associatedtype Value: Codable
+}
+
+extension Dictionary: Ocp1MapRepresentable where Key: Codable & Hashable, Value: Codable {
+    typealias Key = Dictionary.Key
+    typealias Value = Dictionary.Value
+}
 
 /// A decoder that decodes Swift structures from a flat Ocp1 representation.
 public struct Ocp1Decoder {
@@ -43,7 +58,7 @@ public struct Ocp1Decoder {
     {
         let state = Ocp1DecodingState(data: Data(data))
         var count: Int? = nil
-        if type is any ArrayRepresentable.Type {
+        if type is any Ocp1ListRepresentable.Type {
             // propagate array count to unkeyed container count
             count = try Int(UInt16(from: Ocp1DecoderImpl(state: state, codingPath: [])))
         }

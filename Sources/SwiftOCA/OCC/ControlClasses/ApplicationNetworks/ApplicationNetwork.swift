@@ -47,7 +47,7 @@ open class OcaApplicationNetwork: OcaRoot {
         getMethodID: OcaMethodID("2.6"),
         setMethodID: OcaMethodID("2.7")
     )
-    public var systemInterfaces: OcaProperty<OcaList<OcaNetworkSystemInterfaceDescriptor>>
+    public var systemInterfaces: OcaListProperty<OcaNetworkSystemInterfaceDescriptor>
         .PropertyValue
 
     @OcaProperty(

@@ -42,7 +42,7 @@ open class OcaNetworkApplication: OcaRoot {
         getMethodID: OcaMethodID("2.5"),
         setMethodID: OcaMethodID("2.6")
     )
-    public var networkInterfaceAssignments: OcaProperty<OcaList<OcaNetworkInterfaceAssignment>>
+    public var networkInterfaceAssignments: OcaListProperty<OcaNetworkInterfaceAssignment>
         .PropertyValue
 
     // "OcaOcp1" for OCP.1

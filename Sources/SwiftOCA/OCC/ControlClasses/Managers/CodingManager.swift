@@ -22,14 +22,14 @@ open class OcaCodingManager: OcaManager {
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var availableEncodingSchemes: OcaProperty<[OcaMediaCodingSchemeID: OcaString]>
+    public var availableEncodingSchemes: OcaMapProperty<OcaMediaCodingSchemeID, OcaString>
         .PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.2")
     )
-    public var availableDecodingSchemes: OcaProperty<[OcaMediaCodingSchemeID: OcaString]>
+    public var availableDecodingSchemes: OcaMapProperty<OcaMediaCodingSchemeID, OcaString>
         .PropertyValue
 
     public convenience init() {

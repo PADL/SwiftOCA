@@ -29,12 +29,12 @@ open class OcaSwitch: OcaActuator {
         getMethodID: OcaMethodID("4.5"),
         setMethodID: OcaMethodID("4.6")
     )
-    public var positionNames: OcaProperty<OcaList<OcaString>>.PropertyValue
+    public var positionNames: OcaListProperty<OcaString>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("4.3"),
         getMethodID: OcaMethodID("4.9"),
         setMethodID: OcaMethodID("4.10")
     )
-    public var positionEnableds: OcaProperty<OcaList<OcaBoolean>>.PropertyValue
+    public var positionEnableds: OcaListProperty<OcaBoolean>.PropertyValue
 }

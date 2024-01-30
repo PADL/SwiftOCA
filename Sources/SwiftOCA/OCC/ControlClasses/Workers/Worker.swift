@@ -29,7 +29,7 @@ open class OcaWorker: OcaRoot {
         propertyID: OcaPropertyID("2.2"),
         getMethodID: OcaMethodID("2.5")
     )
-    public var ports: OcaProperty<OcaList<OcaPort>>.PropertyValue
+    public var ports: OcaListProperty<OcaPort>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.3"),
@@ -58,7 +58,7 @@ open class OcaWorker: OcaRoot {
         getMethodID: OcaMethodID("2.14"),
         setMethodID: OcaMethodID("2.15")
     )
-    public var portClockMap: OcaProperty<OcaMap<OcaPortID, OcaPortClockMapEntry>>.PropertyValue
+    public var portClockMap: OcaMapProperty<OcaPortID, OcaPortClockMapEntry>.PropertyValue
 
     // 2.3
     public func add(

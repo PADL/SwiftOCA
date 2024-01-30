@@ -22,7 +22,7 @@ open class OcaFirmwareManager: OcaManager {
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var componentVersions: OcaProperty<[OcaVersion]>.PropertyValue
+    public var componentVersions: OcaListProperty<OcaVersion>.PropertyValue
 
     public convenience init() {
         self.init(objectNumber: OcaFirmwareManagerONo)

@@ -56,7 +56,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
         getMethodID: OcaMethodID("3.6"),
         setMethodID: OcaMethodID("3.7")
     )
-    public var portClockMap: OcaProperty<OcaMap<OcaPortID, OcaPortClockMapEntry>>.PropertyValue
+    public var portClockMap: OcaMapProperty<OcaPortID, OcaPortClockMapEntry>.PropertyValue
 
     public func get(portID: OcaPortID) async throws -> OcaPortClockMapEntry {
         try await sendCommandRrq(
@@ -113,7 +113,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
         getMethodID: OcaMethodID("3.15"),
         setMethodID: OcaMethodID("3.16")
     )
-    public var mediaStreamModeCapabilities: OcaProperty<[OcaMediaStreamModeCapability]>
+    public var mediaStreamModeCapabilities: OcaListProperty<OcaMediaStreamModeCapability>
         .PropertyValue
 
     // 3.17 getMediaStreamModeCapability
@@ -137,7 +137,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
         propertyID: OcaPropertyID("3.10"),
         getMethodID: OcaMethodID("3.21")
     )
-    public var endpoints: OcaProperty<[OcaMediaStreamEndpoint]>.PropertyValue
+    public var endpoints: OcaListProperty<OcaMediaStreamEndpoint>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.11"),
@@ -162,7 +162,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
         propertyID: OcaPropertyID("3.12"),
         getMethodID: OcaMethodID("3.34")
     )
-    public var endpointCounterSets: OcaProperty<[OcaID16: OcaCounterSet]>.PropertyValue
+    public var endpointCounterSets: OcaMapProperty<OcaID16, OcaCounterSet>.PropertyValue
 
     // 3.35 getEndpointCounterSet
     // 3.36 getEndpointCounter
@@ -175,5 +175,5 @@ open class OcaMediaTransportApplication: OcaNetworkApplication {
         getMethodID: OcaMethodID("3.40"),
         setMethodID: OcaMethodID("3.41")
     )
-    public var transportSessionControlAgentONos: OcaProperty<[OcaONo]>.PropertyValue
+    public var transportSessionControlAgentONos: OcaListProperty<OcaONo>.PropertyValue
 }

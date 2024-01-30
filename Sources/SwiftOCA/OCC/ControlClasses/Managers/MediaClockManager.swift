@@ -22,19 +22,19 @@ open class OcaMediaClockManager: OcaManager {
         propertyID: OcaPropertyID("3.1"),
         getMethodID: OcaMethodID("3.2")
     )
-    public var clockTypesSupported: OcaProperty<OcaList<OcaMediaClockType>>.PropertyValue
+    public var clockTypesSupported: OcaListProperty<OcaMediaClockType>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.1")
     )
-    public var clocks: OcaProperty<OcaList<OcaONo>>.PropertyValue
+    public var clocks: OcaListProperty<OcaONo>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.3")
     )
-    public var clock3s: OcaProperty<OcaList<OcaONo>>.PropertyValue
+    public var clock3s: OcaListProperty<OcaONo>.PropertyValue
 
     public convenience init() {
         self.init(objectNumber: OcaMediaClockManagerONo)

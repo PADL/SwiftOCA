@@ -50,13 +50,13 @@ open class OcaBlock: OcaWorker {
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.5")
     )
-    public var actionObjects: OcaProperty<OcaList<OcaObjectIdentification>>.PropertyValue
+    public var actionObjects: OcaListProperty<OcaObjectIdentification>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.3"),
         getMethodID: OcaMethodID("3.16")
     )
-    public var signalPaths: OcaProperty<OcaMap<OcaUint16, OcaSignalPath>>.PropertyValue
+    public var signalPaths: OcaMapProperty<OcaUint16, OcaSignalPath>.PropertyValue
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.4"),
@@ -74,7 +74,7 @@ open class OcaBlock: OcaWorker {
         propertyID: OcaPropertyID("3.6"),
         getMethodID: OcaMethodID("3.16")
     )
-    public var oNoMap: OcaProperty<OcaMap<OcaProtoONo, OcaONo>>.PropertyValue
+    public var oNoMap: OcaMapProperty<OcaProtoONo, OcaONo>.PropertyValue
 
     // 3.2
     func constructActionObject(

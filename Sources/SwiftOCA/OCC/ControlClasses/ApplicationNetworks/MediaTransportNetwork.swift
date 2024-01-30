@@ -28,7 +28,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork {
         propertyID: OcaPropertyID("3.2"),
         getMethodID: OcaMethodID("3.2")
     )
-    public var ports: OcaProperty<[OcaPort]>.PropertyValue
+    public var ports: OcaListProperty<OcaPort>.PropertyValue
 
     public func get(portID: OcaPortID) async throws -> OcaString {
         let params = OcaGetPortNameParameters(portID: portID)

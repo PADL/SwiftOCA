@@ -48,5 +48,5 @@ open class OcaMediaClock3: OcaAgent {
         propertyID: OcaPropertyID("3.5"),
         getMethodID: OcaMethodID("3.7")
     )
-    public var supportedRates: OcaProperty<[OcaONo: [OcaMediaClockRate]]>.PropertyValue
+    public var supportedRates: OcaMapProperty<OcaONo, [OcaMediaClockRate]>.PropertyValue
 }

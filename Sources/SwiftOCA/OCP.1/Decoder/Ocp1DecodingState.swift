@@ -141,7 +141,7 @@ class Ocp1DecodingState {
 
     func decode<T>(_ type: T.Type, codingPath: [any CodingKey]) throws -> T where T: Decodable {
         var count: Int? = nil
-        if type is any ArrayRepresentable.Type {
+        if type is any Ocp1ListRepresentable.Type {
             if type is any Ocp1LongList.Type {
                 // FIXME: can't support 2^32 length because on 32-bit platforms count is Int32
                 count = try Int(Int32(from: Ocp1DecoderImpl(state: self, codingPath: [])))

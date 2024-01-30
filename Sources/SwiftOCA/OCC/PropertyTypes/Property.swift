@@ -336,10 +336,22 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         )
         precondition(propertyIDs.contains(eventData.propertyID))
 
-        // TODO: how to handle items being deleted
-        if eventData.changeType == .currentChanged {
+        switch eventData.changeType {
+        case .itemAdded:
+            fallthrough
+        case .itemChanged:
+            fallthrough
+        case .itemDeleted:
+            if !(
+                Value.self is any Ocp1ListRepresentable.Type || Value
+                    .self is any Ocp1MapRepresentable.Type
+            ) {
+                throw Ocp1Error.status(.parameterError)
+            }
+            fallthrough
+        case .currentChanged:
             _send(_enclosingInstance: object, .success(eventData.propertyValue))
-        } else {
+        default:
             throw Ocp1Error.unhandledEvent
         }
     }

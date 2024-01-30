@@ -203,13 +203,13 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     )
 
     private func notifySubscribers(
-        object: Member,
+        members: OcaArray2D<Member?>,
         changeType: OcaPropertyChangeType
     ) async throws {
-        let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
-        let parameters = OcaPropertyChangedEventData<Member>(
+        let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
+        let parameters = OcaPropertyChangedEventData<OcaArray2D<Member?>>(
             propertyID: OcaPropertyID("3.5"),
-            propertyValue: object,
+            propertyValue: members,
             changeType: changeType
         )
 
@@ -232,18 +232,18 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
         members[Int(coordinate.x), Int(coordinate.y)] = object
-        try? await notifySubscribers(object: object, changeType: .itemAdded)
+        try? await notifySubscribers(members: members, changeType: .itemAdded)
     }
 
     open func remove(coordinate: OcaVector2D<OcaMatrixCoordinate>) async throws {
         guard await isValid(coordinate: coordinate) else {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
-        guard let oldMember = members[Int(coordinate.x), Int(coordinate.y)] else {
+        guard members[Int(coordinate.x), Int(coordinate.y)] != nil else {
             throw Ocp1Error.status(.parameterError)
         }
         members[Int(coordinate.x), Int(coordinate.y)] = nil
-        try? await notifySubscribers(object: oldMember, changeType: .itemDeleted)
+        try? await notifySubscribers(members: members, changeType: .itemDeleted)
     }
 
     open func set(
@@ -255,7 +255,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
         members[Int(coordinate.x), Int(coordinate.y)] = object
-        try? await notifySubscribers(object: object, changeType: .itemChanged)
+        try? await notifySubscribers(members: members, changeType: .itemChanged)
     }
 
     func withCurrentObject(_ body: @Sendable (_ object: Member) async throws -> ()) async rethrows {
