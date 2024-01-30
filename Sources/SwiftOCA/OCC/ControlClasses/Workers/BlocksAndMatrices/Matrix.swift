@@ -135,11 +135,10 @@ public extension OcaMatrix {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
         return try await _proxy.onCompletion(self) { proxyObjectNumber in
-            let unresolvedProxy = OcaRoot(objectNumber: proxyObjectNumber)
-            unresolvedProxy.connectionDelegate = self.connectionDelegate
-            let classIdentification = try await unresolvedProxy.getClassIdentification()
+            let classIdentification = try await connectionDelegate
+                .getClassIdentification(objectNumber: proxyObjectNumber)
             let objectID = OcaObjectIdentification(
-                oNo: unresolvedProxy.objectNumber,
+                oNo: proxyObjectNumber,
                 classIdentification: classIdentification
             )
             let resolvedProxy = await connectionDelegate.resolve(object: objectID) as? T

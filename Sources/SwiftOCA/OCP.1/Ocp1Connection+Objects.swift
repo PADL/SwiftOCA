@@ -58,21 +58,9 @@ public extension Ocp1Connection {
     }
 
     @_spi(SwiftOCAPrivate)
-    func getClassID(objectNumber: OcaONo) async throws -> OcaClassID {
-        let command = Ocp1Command(
-            commandSize: 0,
-            handle: await getNextCommandHandle(),
-            targetONo: objectNumber,
-            methodID: OcaMethodID("1.1"),
-            parameters: Ocp1Parameters()
-        )
-        let response = try await sendCommandRrq(command)
-        guard response.statusCode == .ok else {
-            throw Ocp1Error.status(response.statusCode)
-        }
-        guard response.parameters.parameterCount == 1 else {
-            throw Ocp1Error.responseParameterOutOfRange
-        }
-        return try Ocp1Decoder().decode(OcaClassID.self, from: response.parameters.parameterData)
+    func getClassIdentification(objectNumber: OcaONo) async throws -> OcaClassIdentification {
+        let proxy = OcaRoot(objectNumber: objectNumber)
+        proxy.connectionDelegate = self
+        return try await proxy.getClassIdentification()
     }
 }

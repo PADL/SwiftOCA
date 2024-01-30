@@ -78,7 +78,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    public class var classIdentification: OcaClassIdentification {
+    public nonisolated class var classIdentification: OcaClassIdentification {
         OcaClassIdentification(classID: classID, classVersion: classVersion)
     }
 

@@ -69,8 +69,9 @@ private actor OcaConnectionBroker {
 
             connections[objectPath.hostID] = connection
 
-            let classID = try await connection.getClassID(objectNumber: objectPath.oNo)
-            guard classID.isSubclass(of: T.classID) else {
+            let classIdentification = try await connection
+                .getClassIdentification(objectNumber: objectPath.oNo)
+            guard classIdentification.isSubclass(of: T.classIdentification) else {
                 throw Ocp1Error.status(.invalidRequest)
             }
 
@@ -229,7 +230,9 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
         return nextCitizenIndex
     }
 
-    func addGroup(name: OcaString) async throws -> SwiftOCA.OcaGrouper.AddGroupParameters {
+    func addGroup(name: OcaString) async throws -> SwiftOCA.OcaGrouper<SwiftOCA.OcaRoot>
+        .AddGroupParameters
+    {
         let group = try await Group(grouper: self, index: allocateGroupIndex(), name: name)
         groups[group.index] = group
         try await notifySubscribers(group: group, changeType: .itemAdded)
