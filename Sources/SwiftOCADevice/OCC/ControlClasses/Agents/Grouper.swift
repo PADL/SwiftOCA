@@ -54,7 +54,7 @@ private actor OcaConnectionBroker {
         for addr in sequence(first: firstAddr, next: { $0.pointee.ai_next }) {
             let connection: Ocp1Connection
             let data = Data(bytes: addr.pointee.ai_addr, count: Int(addr.pointee.ai_addrlen))
-            let options = Ocp1ConnectionOptions(automaticReconnect: true)
+            let options = Ocp1ConnectionOptions()
 
             switch addr.pointee.ai_socktype {
             case SwiftOCA.SOCK_STREAM:
@@ -416,19 +416,20 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
             func handleCommand(
                 _ command: Ocp1Command,
                 from controller: any OcaController,
-                target: Citizen.Target
+                proxy: Proxy,
+                citizen: Citizen
             ) async {
                 do {
                     let command = Ocp1Command(
                         commandSize: command.commandSize,
                         handle: command.handle,
-                        targetONo: target.oNo, // map from proxy to target object number
+                        targetONo: citizen.target.oNo, // map from proxy to target object number
                         methodID: command.methodID,
                         parameters: command.parameters
                     )
                     let response: Ocp1Response
 
-                    switch target {
+                    switch citizen.target {
                     case let .local(object):
                         response = try await object.handleCommand(command, from: controller)
                     case let .remote(path):
@@ -436,7 +437,28 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
                             for: path,
                             type: CitizenType.self
                         )
-                        response = try await connection.sendCommandRrq(command)
+                        do {
+                            response = try await connection.sendCommandRrq(command)
+                        } catch Ocp1Error.notConnected {
+                            try? await proxy.grouper?.notifySubscribers(
+                                group: proxy.group,
+                                citizen: citizen,
+                                changeType: .citizenConnectionLost
+                            )
+                            try await connection.disconnectDevice(clearObjectCache: false)
+                            Task { @OcaConnection in
+                                if await !connection.isConnected {
+                                    // check connected in case we are racing
+                                    try await connection.connect()
+                                    try? await proxy.grouper?.notifySubscribers(
+                                        group: proxy.group,
+                                        citizen: citizen,
+                                        changeType: .citizenConnectionReEstablished
+                                    )
+                                }
+                            }
+                            throw Ocp1Error.status(.deviceError)
+                        }
                     }
 
                     if response.parameters.parameterCount > 0 {
@@ -482,7 +504,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
             let box = Box()
 
             for citizen in try grouper?.getGroupMemberList(group: group) ?? [] {
-                await box.handleCommand(command, from: controller, target: citizen.target)
+                await box.handleCommand(command, from: controller, proxy: self, citizen: citizen)
                 if let lastStatus = box.lastStatus, lastStatus != .ok {
                     await deviceDelegate?.logger
                         .info(
@@ -555,7 +577,7 @@ private extension OcaGrouper {
             propertyID: OcaPropertyID("3.4"),
             propertyValue: enrollments.map { OcaGrouperEnrollment(
                 groupIndex: $0.0.index,
-                citizenIndex:$0.1.index
+                citizenIndex: $0.1.index
             ) },
             changeType: changeType
         )
