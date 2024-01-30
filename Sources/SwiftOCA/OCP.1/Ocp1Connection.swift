@@ -165,7 +165,6 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     var monitor: Monitor?
 
     private var monitorTask: Task<(), Error>?
-    private var keepAliveTask: Task<(), Error>?
 
     public init(options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()) {
         self.options = options
@@ -221,10 +220,6 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     }
 
     open func disconnectDevice(clearObjectCache: Bool) async throws {
-        if let keepAliveTask {
-            keepAliveTask.cancel()
-            self.keepAliveTask = nil
-        }
         if let monitor {
             await monitor.stop()
             self.monitor = nil
