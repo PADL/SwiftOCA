@@ -15,3 +15,4 @@
 //
 
 public typealias OcaListProperty<Element: Codable> = OcaProperty<OcaList<Element>>
+public typealias OcaList2DProperty<Element: Codable> = OcaProperty<OcaList2D<Element>>

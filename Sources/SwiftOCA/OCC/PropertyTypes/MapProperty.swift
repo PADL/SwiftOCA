@@ -16,3 +16,6 @@
 
 public typealias OcaMapProperty<Key: Codable & Hashable, Value: Codable> =
     OcaProperty<OcaMap<Key, Value>>
+
+public typealias OcaMultiMapProperty<Key: Codable & Hashable, Value: Codable> =
+    OcaProperty<OcaMultiMap<Key, Value>>

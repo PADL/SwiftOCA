@@ -23,24 +23,6 @@
 
 import Foundation
 
-protocol Ocp1ListRepresentable {
-    associatedtype Element: Codable
-}
-
-extension Array: Ocp1ListRepresentable where Element: Codable {
-    typealias Element = Array.Element
-}
-
-protocol Ocp1MapRepresentable {
-    associatedtype Key: Codable & Hashable
-    associatedtype Value: Codable
-}
-
-extension Dictionary: Ocp1MapRepresentable where Key: Codable & Hashable, Value: Codable {
-    typealias Key = Dictionary.Key
-    typealias Value = Dictionary.Value
-}
-
 /// A decoder that decodes Swift structures from a flat Ocp1 representation.
 public struct Ocp1Decoder {
     public init() {}

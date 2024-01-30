@@ -14,6 +14,32 @@
 // limitations under the License.
 //
 
+protocol Ocp1ListRepresentable {
+    associatedtype Element: Codable
+}
+
+extension Array: Ocp1ListRepresentable where Element: Codable {
+    typealias Element = Element
+}
+
+protocol Ocp1MapRepresentable {
+    associatedtype Key: Codable & Hashable
+    associatedtype Value: Codable
+}
+
+extension Dictionary: Ocp1MapRepresentable where Key: Codable & Hashable, Value: Codable {
+    typealias Key = Key
+    typealias Value = Value
+}
+
+protocol Ocp1Array2DRepresentable {
+    associatedtype Element: Codable
+}
+
+extension OcaArray2D: Ocp1Array2DRepresentable where Element: Codable {
+    typealias Element = Element
+}
+
 // private API for SwiftOCADevice
 
 @_spi(SwiftOCAPrivate)

@@ -344,7 +344,8 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         case .itemDeleted:
             if !(
                 Value.self is any Ocp1ListRepresentable.Type || Value
-                    .self is any Ocp1MapRepresentable.Type
+                    .self is any Ocp1MapRepresentable.Type || Value
+                    .self is any Ocp1Array2DRepresentable.Type
             ) {
                 throw Ocp1Error.status(.parameterError)
             }
