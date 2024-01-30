@@ -162,7 +162,12 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     }
 
     private func makeSocketAndListen() throws -> Socket {
-        let socket = try Socket(ring: ring, domain: address.family, type: Glibc.SOCK_STREAM, protocol: 0)
+        let socket = try Socket(
+            ring: ring,
+            domain: address.family,
+            type: Glibc.SOCK_STREAM,
+            protocol: 0
+        )
 
         try socket.setReuseAddr()
         try socket.setTcpNoDelay()
@@ -255,7 +260,12 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     }
 
     private func makeSocket() throws -> Socket {
-        let socket = try Socket(ring: ring, domain: address.family, type: Glibc.SOCK_DGRAM, protocol: 0)
+        let socket = try Socket(
+            ring: ring,
+            domain: address.family,
+            type: Glibc.SOCK_DGRAM,
+            protocol: 0
+        )
 
         try socket.bind(to: address)
 
