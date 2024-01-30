@@ -537,7 +537,7 @@ private extension OcaGrouper {
         let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
         let parameters = OcaPropertyChangedEventData<[OcaGrouperCitizen]>(
             propertyID: OcaPropertyID("3.3"),
-            propertyValue: citizens.map(\.ocaGrouperCitizen),
+            propertyValue: await citizens.asyncMap { @Sendable in await $0.ocaGrouperCitizen },
             changeType: changeType
         )
         try await deviceDelegate?.notifySubscribers(
