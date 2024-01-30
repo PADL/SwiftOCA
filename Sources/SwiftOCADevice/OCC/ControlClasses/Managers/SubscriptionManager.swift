@@ -140,7 +140,9 @@ public class OcaSubscriptionManager: OcaManager {
             eventID: SwiftOCA.OcaSubscriptionManager.SynchronizeStateEventID
         )
         let parameters: Data = try Ocp1Encoder()
-            .encode(Array(objectsChangedWhilstNotificationsDisabled))
+            .encode(
+                OcaObjectListEventData(objectList: Array(objectsChangedWhilstNotificationsDisabled))
+            )
         try await deviceDelegate?.notifySubscribers(event, parameters: parameters)
         objectsChangedWhilstNotificationsDisabled.removeAll()
         state = .normal

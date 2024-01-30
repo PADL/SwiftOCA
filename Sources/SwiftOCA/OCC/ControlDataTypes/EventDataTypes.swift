@@ -76,6 +76,84 @@ public struct OcaPropertyChangedEventData<T: Codable & Sendable>: Codable, Senda
 
 public let OcaPropertyChangedEventID = OcaEventID(defLevel: 1, eventIndex: 1)
 
+public struct OcaMediaConnectorStatusChangedEventData: Codable, Sendable {
+    public let connectorStatus: OcaMediaConnectorStatus
+
+    public init(connectorStatus: OcaMediaConnectorStatus) {
+        self.connectorStatus = connectorStatus
+    }
+}
+
+public struct OcaTaskStateChangedEventData: Codable, Sendable {
+    public let taskID: OcaTaskID
+    public let programID: OcaLibVolIdentifier
+    public let status: OcaTaskStatus
+
+    public init(taskID: OcaTaskID, programID: OcaLibVolIdentifier, status: OcaTaskStatus) {
+        self.taskID = taskID
+        self.programID = programID
+        self.status = status
+    }
+}
+
+public typealias OcaMediaConnectorElement = OcaBitSet16
+
+public struct OcaMediaSourceConnectorChangedEventData: Codable, Sendable {
+    public let sourceConnector: OcaMediaSourceConnector
+    public let changeType: OcaPropertyChangeType
+    public let changedElement: OcaMediaConnectorElement
+
+    public init(
+        sourceConnector: OcaMediaSourceConnector,
+        changeType: OcaPropertyChangeType,
+        changedElement: OcaMediaConnectorElement
+    ) {
+        self.sourceConnector = sourceConnector
+        self.changeType = changeType
+        self.changedElement = changedElement
+    }
+}
+
+public struct OcaMediaSinkConnectorChangedEventData: Codable, Sendable {
+    public let sinkConnector: OcaMediaSinkConnector
+    public let changeType: OcaPropertyChangeType
+    public let changedElement: OcaMediaConnectorElement
+
+    public init(
+        sinkConnector: OcaMediaSinkConnector,
+        changeType: OcaPropertyChangeType,
+        changedElement: OcaMediaConnectorElement
+    ) {
+        self.sinkConnector = sinkConnector
+        self.changeType = changeType
+        self.changedElement = changedElement
+    }
+}
+
+public struct OcaObjectListEventData: Codable, Sendable {
+    public let objectList: OcaList<OcaONo>
+
+    public init(objectList: OcaList<OcaONo>) {
+        self.objectList = objectList
+    }
+}
+
+public struct OcaObservationEventData: Codable, Sendable {
+    public let reading: OcaFloat64
+
+    public init(reading: OcaFloat64) {
+        self.reading = reading
+    }
+}
+
+public struct OcaObservationListEventData: Codable, Sendable {
+    public let reading: OcaList<OcaFloat64>
+
+    public init(reading: OcaList<OcaFloat64>) {
+        self.reading = reading
+    }
+}
+
 public enum OcaGrouperStatusChangeType: OcaUint8, Codable, Equatable, Sendable {
     case citizenAdded = 1
     case citizenDeleted = 2
@@ -125,8 +203,6 @@ public struct OcaSubscription: Ocp1ParametersReflectable, Codable, Equatable, Ha
         self.destinationInformation = destinationInformation
     }
 }
-
-public typealias OcaObjectListEventData = OcaList<OcaONo>
 
 public struct OcaPropertyChangeSubscription: Ocp1ParametersReflectable, Codable, Equatable,
     Hashable,
