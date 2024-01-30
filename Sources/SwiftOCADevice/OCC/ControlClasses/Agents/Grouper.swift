@@ -235,7 +235,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
     {
         let group = try await Group(grouper: self, index: allocateGroupIndex(), name: name)
         groups[group.index] = group
-        try await notifySubscribers(group: group, changeType: .itemAdded)
+        try await notifySubscribers(groups: Array(groups.values), changeType: .itemAdded)
         return SwiftOCA.OcaGrouper.AddGroupParameters(index: group.index, proxyONo: group.proxyONo)
     }
 
@@ -246,7 +246,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
         if let proxy = group.proxy {
             try await deviceDelegate?.deregister(object: proxy)
         }
-        try await notifySubscribers(group: group, changeType: .itemDeleted)
+        try await notifySubscribers(groups: Array(groups.values), changeType: .itemDeleted)
         groups[index] = nil
     }
 
@@ -265,7 +265,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
             target: Citizen.Target(citizen.objectPath, device: deviceDelegate)
         )
         try await notifySubscribers(citizen: citizen, changeType: .citizenAdded)
-        try await notifySubscribers(citizen: citizen, changeType: .itemAdded)
+        try await notifySubscribers(citizens: Array(citizens.values), changeType: .itemAdded)
         return citizen.index
     }
 
@@ -274,7 +274,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
             throw Ocp1Error.status(.invalidRequest)
         }
         try await notifySubscribers(citizen: citizen, changeType: .citizenDeleted)
-        try await notifySubscribers(citizen: citizen, changeType: .itemDeleted)
+        try await notifySubscribers(citizens: Array(citizens.values), changeType: .itemDeleted)
         citizens[index] = nil
     }
 
@@ -316,7 +316,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
             changeType: isMember ? .enrollment : .unEnrollment
         )
         try await notifySubscribers(
-            enrollment: (group, citizen),
+            enrollments: enrollments,
             changeType: isMember ? .itemAdded : .itemDeleted
         )
     }
@@ -515,13 +515,13 @@ private extension OcaGrouper {
     }
 
     private func notifySubscribers(
-        group: Group,
+        groups: [Group],
         changeType: OcaPropertyChangeType
     ) async throws {
         let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-        let parameters = OcaPropertyChangedEventData<OcaGrouperGroup>(
+        let parameters = OcaPropertyChangedEventData<[OcaGrouperGroup]>(
             propertyID: OcaPropertyID("3.2"),
-            propertyValue: group.ocaGrouperGroup,
+            propertyValue: groups.map(\.ocaGrouperGroup),
             changeType: changeType
         )
         try await deviceDelegate?.notifySubscribers(
@@ -531,13 +531,13 @@ private extension OcaGrouper {
     }
 
     private func notifySubscribers(
-        citizen: Citizen,
+        citizens: [Citizen],
         changeType: OcaPropertyChangeType
     ) async throws {
         let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-        let parameters = await OcaPropertyChangedEventData<OcaGrouperCitizen>(
+        let parameters = OcaPropertyChangedEventData<[OcaGrouperCitizen]>(
             propertyID: OcaPropertyID("3.3"),
-            propertyValue: citizen.ocaGrouperCitizen,
+            propertyValue: citizens.map(\.ocaGrouperCitizen),
             changeType: changeType
         )
         try await deviceDelegate?.notifySubscribers(
@@ -547,16 +547,16 @@ private extension OcaGrouper {
     }
 
     private func notifySubscribers(
-        enrollment: Enrollment,
+        enrollments: [Enrollment],
         changeType: OcaPropertyChangeType
     ) async throws {
         let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-        let parameters = OcaPropertyChangedEventData<OcaGrouperEnrollment>(
+        let parameters = OcaPropertyChangedEventData<[OcaGrouperEnrollment]>(
             propertyID: OcaPropertyID("3.4"),
-            propertyValue: OcaGrouperEnrollment(
-                groupIndex: enrollment.0.index,
-                citizenIndex: enrollment.1.index
-            ),
+            propertyValue: enrollments.map { OcaGrouperEnrollment(
+                groupIndex: $0.0.index,
+                citizenIndex:$0.1.index
+            ) },
             changeType: changeType
         )
         try await deviceDelegate?.notifySubscribers(
