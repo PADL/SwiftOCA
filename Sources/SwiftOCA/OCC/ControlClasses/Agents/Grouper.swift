@@ -69,10 +69,26 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
     )
     public var mode: OcaProperty<OcaGrouperMode>.PropertyValue
 
-    func getGroupMemberList(index: OcaUint16) async throws -> [OcaGrouperCitizen] {
-        try await sendCommandRrq(methodID: OcaMethodID("3.11"), parameters: index)
+    public func addGroup(name: OcaString) async throws -> (OcaUint16, CitizenType?) {
+        let parameters: AddGroupParameters = try await sendCommandRrq(methodID: OcaMethodID("3.1"))
+        let group = OcaGrouperGroup(
+            index: parameters.index,
+            name: name,
+            proxyONo: parameters.proxyONo
+        )
+        if group.proxyONo != OcaInvalidONo {
+            return try await (group.index, resolveProxy(for: group))
+        } else {
+            return (group.index, nil)
+        }
     }
 
+    public func getGroupMemberList(index: OcaUint16) async throws -> [OcaGrouperCitizen] {
+        try await sendCommandRrq(methodID: OcaMethodID("3.11"), parameters: index)
+    }
+}
+
+extension OcaGrouper {
     @OcaConnection
     func resolveProxy(for group: OcaGrouperGroup) async throws -> CitizenType {
         guard group.proxyONo != OcaInvalidONo else { throw Ocp1Error.status(.invalidRequest) }
