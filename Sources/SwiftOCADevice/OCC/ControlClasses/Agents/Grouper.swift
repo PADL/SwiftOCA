@@ -31,16 +31,17 @@ private actor OcaConnectionBroker {
             return connection
         }
 
+        let serviceNameOrID = try Ocp1Decoder()
+            .decode(OcaString.self, from: Data(objectPath.hostID))
+
         // CM2: OcaNetworkHostID (deprecated)
         // CM3: ServiceID from OcaControlNetwork (let's asssume this is a hostname)
         // CM4: OcaControlNetwork ServiceName
 
         var addrInfo: UnsafeMutablePointer<addrinfo>?
 
-        try withUnsafeBytes(of: objectPath.hostID) { bytes in
-            if getaddrinfo(bytes.baseAddress, nil, nil, &addrInfo) < 0 {
-                throw Ocp1Error.remoteDeviceResolutionFailed
-            }
+        if getaddrinfo(serviceNameOrID, nil, nil, &addrInfo) < 0 {
+            throw Ocp1Error.remoteDeviceResolutionFailed
         }
 
         defer {
