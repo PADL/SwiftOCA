@@ -89,6 +89,7 @@ public class OcaClassRegistry {
         register(OcaPhysicalPosition.self)
         register(OcaTimeSource.self)
         register(OcaMediaClock3.self)
+        register(OcaGrouper.self)
 
         // managers
         register(OcaManager.self)
