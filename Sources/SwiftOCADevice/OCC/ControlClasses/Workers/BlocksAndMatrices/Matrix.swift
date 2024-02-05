@@ -73,6 +73,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
                 deviceDelegate: matrix.deviceDelegate,
                 addToRootBlock: false
             )
+            self.matrix = matrix
         }
 
         public required init(from decoder: Decoder) throws {
