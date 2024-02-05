@@ -268,3 +268,17 @@ public struct OcaPropertyChangeSubscription2: Ocp1ParametersReflectable, Codable
         self.destinationInformation = destinationInformation
     }
 }
+
+public typealias OcaGroupExceptionEventData = OcaList<OcaGroupException>
+
+public struct OcaGroupException: Codable, Sendable {
+    public let oNo: OcaONo
+    public let methodID: OcaMethodID
+    public let status: OcaStatus
+
+    public init(oNo: OcaONo, methodID: OcaMethodID, status: OcaStatus) {
+        self.oNo = oNo
+        self.methodID = methodID
+        self.status = status
+    }
+}

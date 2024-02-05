@@ -231,9 +231,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
         return nextCitizenIndex
     }
 
-    func addGroup(name: OcaString) async throws -> SwiftOCA.OcaGrouper<SwiftOCA.OcaRoot>
-        .AddGroupParameters
-    {
+    func addGroup(name: OcaString) async throws -> SwiftOCA.OcaGrouper.AddGroupParameters {
         let group = try await Group(grouper: self, index: allocateGroupIndex(), name: name)
         groups[group.index] = group
         try await notifySubscribers(groups: Array(groups.values), changeType: .itemAdded)
@@ -464,7 +462,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
                     }
 
                     if response.parameters.parameterCount > 0 {
-                        throw Ocp1Error.status(.invalidRequest)
+                        throw Ocp1Error.invalidProxyMethodResponse
                     } else if lastStatus != .ok {
                         lastStatus = .partiallySucceeded
                     } else {
@@ -496,7 +494,12 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
             from controller: any OcaController
         ) async throws -> Ocp1Response {
             if command.methodID.defLevel == 1 {
-                return try await super.handleCommand(command, from: controller)
+                if command.methodID.methodIndex == 1 {
+                    let response = CitizenType.classIdentification
+                    return try encodeResponse(response)
+                } else {
+                    return try await super.handleCommand(command, from: controller)
+                }
             }
 
             guard let group else {

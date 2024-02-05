@@ -92,7 +92,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             ) async throws {
                 if let response, response.parameters.parameterCount > 0 {
                     // we have an existing response for a get request, multiple gets are unsupported
-                    throw Ocp1Error.status(.invalidRequest)
+                    throw Ocp1Error.invalidProxyMethodResponse
                 }
 
                 do {
@@ -129,9 +129,12 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             from controller: any OcaController
         ) async throws -> Ocp1Response {
             if command.methodID.defLevel == 1 {
-                /// root object class methods are handled directly, because they refer to the proxy
-                /// object
-                return try await super.handleCommand(command, from: controller)
+                if command.methodID.methodIndex == 1 {
+                    let response = ProxyMember.classIdentification
+                    return try encodeResponse(response)
+                } else {
+                    return try await super.handleCommand(command, from: controller)
+                }
             }
             guard let matrix else {
                 throw Ocp1Error.status(.deviceError)
