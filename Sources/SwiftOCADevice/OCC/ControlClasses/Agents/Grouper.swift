@@ -404,6 +404,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
                 deviceDelegate: grouper.deviceDelegate,
                 addToRootBlock: false
             )
+            self.grouper = grouper
         }
 
         public required init(from decoder: Decoder) throws {
