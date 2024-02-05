@@ -18,8 +18,12 @@
 @testable import SwiftOCADevice
 import XCTest
 
-class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
-    override open class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
+final class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator, OcaGroupPeerToPeerMember {
+    weak var group: SwiftOCADevice.OcaGroup<MyBooleanActuator>?
+
+    override class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
+
+    func set(to value: Bool) async { setting = value }
 }
 
 extension OcaGetPortNameParameters: Equatable {
@@ -252,14 +256,17 @@ final class SwiftOCADeviceTests: XCTestCase {
         XCTAssertEqual(try ocp1Decoder.decode(String.self, from: encodedString), string)
     }
 
+    let testBlockONo: OcaONo = 10001
+    let testGroupONo: OcaONo = 5001
+
     func testLoopbackDevice() async throws {
-        let device = OcaDevice.shared
+        let device = OcaDevice()
         try await device.initializeDefaultObjects()
-        let listener = try await OcaLocalDeviceEndpoint()
+        let endpoint = try await OcaLocalDeviceEndpoint(device: device)
 
         let testBlock = try await SwiftOCADevice
             .OcaBlock<MyBooleanActuator>(
-                objectNumber: 10001,
+                objectNumber: testBlockONo,
                 deviceDelegate: device,
                 addToRootBlock: true
             )
@@ -294,8 +301,8 @@ final class SwiftOCADeviceTests: XCTestCase {
         jsonSerializationExpectation.fulfill()
         await fulfillment(of: [jsonSerializationExpectation], timeout: 1)
 
-        let connection = await OcaLocalConnection(listener)
-        Task { try? await listener.run() }
+        let connection = await OcaLocalConnection(endpoint)
+        let endpointTask = Task { try? await endpoint.run() }
         try await connection.connect()
 
         let deviceExpectation = XCTestExpectation(description: "Check device properties")
@@ -321,7 +328,7 @@ final class SwiftOCADeviceTests: XCTestCase {
             XCTestExpectation(description: "Check test block controller properties")
         let clientTestBlock: SwiftOCA.OcaBlock? = await connection
             .resolve(object: OcaObjectIdentification(
-                oNo: 10001,
+                oNo: testBlockONo,
                 classIdentification: SwiftOCA.OcaBlock.classIdentification
             ))
         XCTAssertNotNil(clientTestBlock)
@@ -336,6 +343,177 @@ final class SwiftOCADeviceTests: XCTestCase {
         await fulfillment(of: [controllerExpectation2], timeout: 1)
 
         try await connection.disconnect()
+        endpointTask.cancel()
+    }
+
+    func testPeerToPeerGroup() async throws {
+        let device = OcaDevice()
+        try await device.initializeDefaultObjects()
+        let endpoint = try await OcaLocalDeviceEndpoint(device: device)
+
+        let testBlock = try await SwiftOCADevice
+            .OcaBlock<MyBooleanActuator>(
+                objectNumber: testBlockONo,
+                deviceDelegate: device,
+                addToRootBlock: true
+            )
+
+        let group = try await _OcaPeerToPeerGroup<MyBooleanActuator>(
+            objectNumber: testGroupONo,
+            deviceDelegate: device,
+            addToRootBlock: true
+        )
+
+        for i in 0..<10 {
+            let actuator = try await MyBooleanActuator(
+                role: "Actuator \(i)",
+                deviceDelegate: device,
+                addToRootBlock: false
+            )
+            try await testBlock.add(actionObject: actuator)
+            try await group.add(member: actuator)
+        }
+
+        let connection = await OcaLocalConnection(endpoint)
+        let endpointTask = Task { try? await endpoint.run() }
+        try await connection.connect()
+
+        let controllerExpectation =
+            XCTestExpectation(description: "Check test block controller properties")
+        let clientTestBlock: SwiftOCA.OcaBlock? = await connection
+            .resolve(object: OcaObjectIdentification(
+                oNo: testBlockONo,
+                classIdentification: SwiftOCA.OcaBlock.classIdentification
+            ))
+        XCTAssertNotNil(clientTestBlock)
+        let resolvedClientTestBlockActionObjects = try await clientTestBlock!.resolveActionObjects()
+        let testBlockMembers = await testBlock.actionObjects
+        XCTAssertEqual(
+            resolvedClientTestBlockActionObjects.map(\.objectNumber),
+            testBlockMembers.map(\.objectNumber)
+        )
+        controllerExpectation.fulfill()
+        await fulfillment(of: [controllerExpectation], timeout: 1)
+
+        let allActuators = resolvedClientTestBlockActionObjects
+            .compactMap { $0 as? SwiftOCA.OcaBooleanActuator }
+        let anActuator = allActuators.first
+        XCTAssertNotNil(anActuator)
+
+        for object in allActuators {
+            try await object.subscribe()
+        }
+
+        anActuator!.setting = .success(true)
+
+        let deviceActuatorExpectation =
+            XCTestExpectation(description: "All device actuators in group are set to true")
+        try await Task.sleep(for: .milliseconds(100))
+        for object in await testBlock.actionObjects {
+            let settingValue = await object.setting
+            XCTAssertTrue(settingValue)
+        }
+        deviceActuatorExpectation.fulfill()
+        await fulfillment(of: [deviceActuatorExpectation], timeout: 1)
+
+        XCTAssertTrue(allActuators.allSatisfy { $0.setting == .success(true) })
+        try await connection.disconnect()
+        endpointTask.cancel()
+    }
+
+    func testGroupControllerGroup() async throws {
+        let device = OcaDevice()
+        try await device.initializeDefaultObjects()
+        let endpoint = try await OcaLocalDeviceEndpoint(device: device)
+
+        let testBlock = try await SwiftOCADevice
+            .OcaBlock<MyBooleanActuator>(
+                objectNumber: testBlockONo,
+                deviceDelegate: device,
+                addToRootBlock: true
+            )
+
+        let group = try await _OcaGroupControllerGroup<MyBooleanActuator>(
+            objectNumber: testGroupONo,
+            deviceDelegate: device,
+            addToRootBlock: true
+        )
+
+        for i in 0..<10 {
+            let actuator = try await MyBooleanActuator(
+                role: "Actuator \(i)",
+                deviceDelegate: device,
+                addToRootBlock: false
+            )
+            try await testBlock.add(actionObject: actuator)
+            try await group.add(member: actuator)
+        }
+
+        let connection = await OcaLocalConnection(endpoint)
+        let endpointTask = Task { try? await endpoint.run() }
+        try await connection.connect()
+
+        let controllerExpectation =
+            XCTestExpectation(description: "Check test block controller properties")
+        let clientTestBlock: SwiftOCA.OcaBlock? = await connection
+            .resolve(object: OcaObjectIdentification(
+                oNo: testBlockONo,
+                classIdentification: SwiftOCA.OcaBlock.classIdentification
+            ))
+        XCTAssertNotNil(clientTestBlock)
+
+        let resolvedClientTestBlockActionObjects = try await clientTestBlock!.resolveActionObjects()
+        let testBlockMembers = await testBlock.actionObjects
+        XCTAssertEqual(
+            resolvedClientTestBlockActionObjects.map(\.objectNumber),
+            testBlockMembers.map(\.objectNumber)
+        )
+        controllerExpectation.fulfill()
+        await fulfillment(of: [controllerExpectation], timeout: 1)
+
+        let allActuators = resolvedClientTestBlockActionObjects
+            .compactMap { $0 as? SwiftOCA.OcaBooleanActuator }
+        let anActuator = allActuators.first
+        XCTAssertNotNil(anActuator)
+
+        for object in allActuators {
+            try await object.subscribe()
+        }
+
+        let clientGroupExpectation =
+            XCTestExpectation(description: "Resolved actuator group proxy and set setting to true")
+
+        let clientGroupObject: SwiftOCA.OcaGroup? = await connection
+            .resolve(object: OcaObjectIdentification(
+                oNo: testGroupONo,
+                classIdentification: SwiftOCA.OcaGroup.classIdentification
+            ))
+        XCTAssertNotNil(clientGroupObject)
+
+        if let clientGroupObject {
+            let clientGroupProxy: SwiftOCA.OcaBooleanActuator = try await clientGroupObject
+                .resolveGroupController()
+            XCTAssertNotNil(clientGroupProxy)
+            clientGroupProxy.setting = .success(true)
+            clientGroupExpectation.fulfill()
+        }
+
+        await fulfillment(of: [clientGroupExpectation], timeout: 1)
+
+        let deviceActuatorExpectation =
+            XCTestExpectation(description: "All device actuators in group are set to true")
+        try await Task.sleep(for: .milliseconds(100))
+
+        for object in await testBlock.actionObjects {
+            let settingValue = await object.setting
+            XCTAssertTrue(settingValue)
+        }
+        deviceActuatorExpectation.fulfill()
+        await fulfillment(of: [deviceActuatorExpectation], timeout: 1)
+
+        XCTAssertTrue(allActuators.allSatisfy { $0.setting == .success(true) })
+        try await connection.disconnect()
+        endpointTask.cancel()
     }
 }
 

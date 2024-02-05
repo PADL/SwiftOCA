@@ -163,10 +163,21 @@ public actor OcaDevice {
             }
 
             return try await withThrowingTimeout(of: timeout) {
-                try await object.handleCommand(command, from: controller)
+                if command.methodID.defLevel > 1,
+                   let peerToPeerObject = object as? any OcaGroupPeerToPeerMember
+                {
+                    return try await peerToPeerObject.handleCommandForEachPeerToPeerMember(
+                        command,
+                        from: controller
+                    )
+                } else {
+                    return try await object.handleCommand(command, from: controller)
+                }
             }
         } catch let Ocp1Error.status(status) {
             return .init(responseSize: 0, handle: command.handle, statusCode: status)
+        } catch Ocp1Error.invalidProxyMethodResponse {
+            return .init(responseSize: 0, handle: command.handle, statusCode: .invalidRequest)
         } catch {
             logger
                 .warning(

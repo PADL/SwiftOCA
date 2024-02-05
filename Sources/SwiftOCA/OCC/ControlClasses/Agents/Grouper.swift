@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
+open class OcaGrouper: OcaAgent {
     override public class var classID: OcaClassID { OcaClassID("1.2.2") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
 
@@ -69,7 +69,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
     )
     public var mode: OcaProperty<OcaGrouperMode>.PropertyValue
 
-    public func addGroup(name: OcaString) async throws -> (OcaUint16, CitizenType?) {
+    public func addGroup<T: OcaRoot>(name: OcaString) async throws -> (OcaUint16, T?) {
         let parameters: AddGroupParameters = try await sendCommandRrq(methodID: OcaMethodID("3.1"))
         let group = OcaGrouperGroup(
             index: parameters.index,
@@ -90,7 +90,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
 
 extension OcaGrouper {
     @OcaConnection
-    func resolveProxy(for group: OcaGrouperGroup) async throws -> CitizenType {
+    func resolveProxy<T: OcaRoot>(for group: OcaGrouperGroup) async throws -> T {
         guard group.proxyONo != OcaInvalidONo else { throw Ocp1Error.status(.invalidRequest) }
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
@@ -100,7 +100,7 @@ extension OcaGrouper {
             oNo: group.proxyONo,
             classIdentification: classIdentification
         )
-        let resolvedProxy = connectionDelegate.resolve(object: objectID) as? CitizenType
+        let resolvedProxy = connectionDelegate.resolve(object: objectID) as? T
         guard let resolvedProxy else {
             throw Ocp1Error.proxyResolutionFailed
         }

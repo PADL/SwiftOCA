@@ -30,6 +30,7 @@ public enum Ocp1Error: Error, Equatable {
     case invalidMessageType
     case invalidPduSize
     case invalidProtocolVersion
+    case invalidProxyMethodResponse
     case invalidSyncValue
     case noConnectionDelegate
     case noInitialValue
