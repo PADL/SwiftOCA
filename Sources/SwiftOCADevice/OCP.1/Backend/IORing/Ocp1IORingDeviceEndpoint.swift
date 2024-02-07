@@ -159,6 +159,7 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
             }
         } while true
         self.socket = nil
+        try await device.remove(endpoint: self)
     }
 
     private func makeSocketAndListen() throws -> Socket {
@@ -257,6 +258,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
             }
         } while true
         self.socket = nil
+        try await device.remove(endpoint: self)
     }
 
     private func makeSocket() throws -> Socket {

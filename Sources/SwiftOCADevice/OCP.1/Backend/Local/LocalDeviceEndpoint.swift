@@ -51,7 +51,8 @@ public final class OcaLocalDeviceEndpoint: OcaDeviceEndpointPrivate {
         try await device.add(endpoint: self)
     }
 
-    public func run() async {
+    public func run() async throws {
         await controller.handle(for: self)
+        try await device.remove(endpoint: self)
     }
 }

@@ -18,7 +18,7 @@ import Foundation
 import Logging
 import SwiftOCA
 
-public protocol OcaDeviceEndpoint {
+public protocol OcaDeviceEndpoint: AnyObject {
     var controllers: [OcaController] { get async }
 }
 

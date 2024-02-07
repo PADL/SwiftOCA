@@ -22,6 +22,8 @@ public enum Ocp1Error: Error, Equatable {
     case arrayOrDataTooBig
     case bonjourRegistrationFailed
     case connectionTimeout
+    case endpointAlreadyRegistered
+    case endpointNotRegistered
     case invalidHandle
     case invalidKeepAlivePdu
     case invalidMessageSize

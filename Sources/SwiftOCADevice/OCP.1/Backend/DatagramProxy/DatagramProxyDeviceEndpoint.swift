@@ -78,6 +78,7 @@ public class DatagramProxyDeviceEndpoint<
                 break
             }
         } while true
+        try await device.remove(endpoint: self)
     }
 
     private func controller(for peerID: T) -> ControllerType {

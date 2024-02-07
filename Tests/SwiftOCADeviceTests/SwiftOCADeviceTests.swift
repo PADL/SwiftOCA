@@ -295,7 +295,7 @@ final class SwiftOCADeviceTests: XCTestCase {
         await fulfillment(of: [jsonSerializationExpectation], timeout: 1)
 
         let connection = await OcaLocalConnection(listener)
-        Task { await listener.run() }
+        Task { try? await listener.run() }
         try await connection.connect()
 
         let deviceExpectation = XCTestExpectation(description: "Check device properties")

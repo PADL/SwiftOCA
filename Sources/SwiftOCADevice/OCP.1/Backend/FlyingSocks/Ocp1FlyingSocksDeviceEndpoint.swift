@@ -122,6 +122,7 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
             try? socket.close()
             throw error
         }
+        try await device.remove(endpoint: self)
     }
 
     func preparePoolAndSocket() async throws -> Socket {
