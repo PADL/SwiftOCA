@@ -235,7 +235,7 @@ public extension OcaBlock {
     }
 
     @OcaConnection
-    func resolveActionObjectsRecursive(resolveMatrixMembers: Bool = false) async throws
+    func resolveActionObjectsRecursive() async throws
         -> [OcaContainerObjectMember]
     {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
@@ -249,27 +249,6 @@ public extension OcaBlock {
                 memberObject: memberObject,
                 containerObjectNumber: member.containerObjectNumber
             )
-        }
-
-        if resolveMatrixMembers {
-            for member in containerMembers {
-                guard let member = member.memberObject as? OcaMatrix else {
-                    continue
-                }
-
-                let matrixMembers = try await member.resolveMembers()
-
-                for x in 0..<matrixMembers.nX {
-                    for y in 0..<matrixMembers.nY {
-                        guard let object = matrixMembers[x, y] else { continue }
-                        containerMembers.append(OcaContainerObjectMember(
-                            memberObject: object,
-                            containerObjectNumber: member
-                                .objectNumber
-                        ))
-                    }
-                }
-            }
         }
 
         return containerMembers
