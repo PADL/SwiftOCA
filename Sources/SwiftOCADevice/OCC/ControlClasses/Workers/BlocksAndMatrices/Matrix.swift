@@ -80,10 +80,6 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
             throw Ocp1Error.objectNotPresent
         }
 
-        deinit {
-            Task { try await matrix?.deviceDelegate?.deregister(objectNumber: objectNumber) }
-        }
-
         @OcaDevice
         fileprivate final class Box {
             var response: Ocp1Response?
