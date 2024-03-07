@@ -1,5 +1,4 @@
 {
-  "originHash" : "4460bfc390b61744159b58ef32ed45d7a5e1d8b6f541e56906f1231dc6bb2b05",
   "pins" : [
     {
       "identity" : "anycodable",
@@ -13,7 +12,7 @@
     {
       "identity" : "asyncextensions",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/sideeffect-io/AsyncExtensions.git",
+      "location" : "git@github.com:sideeffect-io/AsyncExtensions.git",
       "state" : {
         "revision" : "1f0729e4f1f6c7166acfac3cec43b3cbe83be0e6",
         "version" : "0.5.2"
@@ -22,16 +21,16 @@
     {
       "identity" : "flyingfox",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swhitty/FlyingFox.git",
+      "location" : "git@github.com:swhitty/FlyingFox.git",
       "state" : {
-        "revision" : "00e4d51c57b4fbe4f011650f2f965d3bea1ba7c1",
-        "version" : "0.13.0"
+        "revision" : "8b195ab596666776815c68c614e7f061075945e9",
+        "version" : "0.12.1"
       }
     },
     {
       "identity" : "swift-async-algorithms",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-async-algorithms.git",
+      "location" : "git@github.com:apple/swift-async-algorithms.git",
       "state" : {
         "revision" : "9cfed92b026c524674ed869a4ff2dcfdeedf8a2a",
         "version" : "0.1.0"
@@ -42,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections.git",
       "state" : {
-        "revision" : "94cf62b3ba8d4bed62680a282d4c25f9c63c2efb",
-        "version" : "1.1.0"
+        "revision" : "937e904258d22af6e447a0b72c0bc67583ef64a2",
+        "version" : "1.0.4"
       }
     },
     {
@@ -58,12 +57,12 @@
     {
       "identity" : "swiftui-sliders",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/spacenation/swiftui-sliders.git",
+      "location" : "git@github.com:spacenation/swiftui-sliders.git",
       "state" : {
         "revision" : "d5a7d856655d5c91f891c2b69d982c30fd5c7bdf",
         "version" : "2.1.0"
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }
