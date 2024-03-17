@@ -463,7 +463,7 @@ private extension OcaRoot {
         case .contains:
             return value.contains(searchName)
         case .exactCaseInsensitive:
-            return value.lowercased().hasPrefix(searchName.lowercased())
+            return value.lowercased() == searchName.lowercased()
         case .substringCaseInsensitive:
             return value.lowercased().hasPrefix(searchName.lowercased())
         case .containsCaseInsensitive:
