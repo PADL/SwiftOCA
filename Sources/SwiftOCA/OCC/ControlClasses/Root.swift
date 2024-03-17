@@ -247,6 +247,11 @@ public extension OcaRoot {
             )
         }
         #endif
+        
+        @discardableResult
+        func getValue(_ object: OcaRoot) async throws -> Value {
+            value
+        }
     }
 }
 
