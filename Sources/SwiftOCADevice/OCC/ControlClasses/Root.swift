@@ -393,3 +393,8 @@ public extension OcaOwnable {
         await deviceDelegate?.objects[owner] as? OcaBlock<T>
     }
 }
+
+@OcaDevice
+protocol OcaLabelRepresentable: OcaRoot {
+    var label: OcaString { get set }
+}

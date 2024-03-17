@@ -16,7 +16,9 @@
 
 import SwiftOCA
 
-open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMapRepresentable {
+open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMapRepresentable,
+    OcaLabelRepresentable
+{
     override public class var classID: OcaClassID { OcaClassID("1.1.1") }
 
     @OcaDeviceProperty(

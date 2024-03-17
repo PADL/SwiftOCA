@@ -491,7 +491,7 @@ private extension OcaRoot {
         if resultFlags.contains(.role) {
             role = self.role
         }
-        if resultFlags.contains(.label), let worker = self as? OcaWorker {
+        if resultFlags.contains(.label), let worker = self as? OcaLabelRepresentable {
             label = worker.label
         }
 
