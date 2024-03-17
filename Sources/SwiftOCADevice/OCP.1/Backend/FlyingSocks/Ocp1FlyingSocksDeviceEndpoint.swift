@@ -214,7 +214,7 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
         throw SocketError.disconnected
     }
 
-    static func defaultPool(logger: Logging? = nil) -> AsyncSocketPool {
+    static func defaultPool(logger: some FlyingSocks.Logging = .disabled) -> AsyncSocketPool {
         #if canImport(Darwin)
         return .kQueue(logger: logger)
         #elseif canImport(CSystemLinux)
