@@ -54,7 +54,7 @@ open class OcaBlock: OcaWorker {
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.3"),
-        getMethodID: OcaMethodID("3.16")
+        getMethodID: OcaMethodID("3.9")
     )
     public var signalPaths: OcaMapProperty<OcaUint16, OcaSignalPath>.PropertyValue
 
@@ -84,54 +84,54 @@ open class OcaBlock: OcaWorker {
         throw Ocp1Error.notImplemented
     }
 
-    func constructActionObject(factory factoryONo: OcaONo) async throws -> OcaONo {
+    public func constructActionObject(factory factoryONo: OcaONo) async throws -> OcaONo {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.3"),
             parameters: factoryONo
         )
     }
 
-    func delete(actionObject objectNumber: OcaONo) async throws {
+    public func delete(actionObject objectNumber: OcaONo) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.4"),
             parameters: objectNumber
         )
     }
 
-    func getRecursive() async throws -> OcaList<OcaBlockMember> {
+    public func getRecursive() async throws -> OcaList<OcaBlockMember> {
         try await sendCommandRrq(methodID: OcaMethodID("3.6"))
     }
 
-    func add(signalPath path: OcaSignalPath) async throws -> OcaUint16 {
+    public func add(signalPath path: OcaSignalPath) async throws -> OcaUint16 {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.7"),
             parameters: path
         )
     }
 
-    func delete(signalPath index: OcaUint16) async throws {
+    public func delete(signalPath index: OcaUint16) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.8"),
             parameters: index
         )
     }
 
-    func getRecursive() async throws -> OcaMap<OcaUint16, OcaSignalPath> {
+    public func getRecursive() async throws -> OcaMap<OcaUint16, OcaSignalPath> {
         try await sendCommandRrq(methodID: OcaMethodID("3.10"))
     }
 
-    func apply(paramSet identifier: OcaLibVolIdentifier) async throws {
+    public func apply(paramSet identifier: OcaLibVolIdentifier) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.12"),
             parameters: identifier
         )
     }
 
-    func get() async throws -> OcaLibVolData_ParamSet {
+    public func get() async throws -> OcaLibVolData_ParamSet {
         try await sendCommandRrq(methodID: OcaMethodID("3.13"))
     }
 
-    func store(currentParamSet identifier: OcaLibVolIdentifier) async throws {
+    public func store(currentParamSet identifier: OcaLibVolIdentifier) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.14"),
             parameters: identifier
@@ -157,17 +157,7 @@ open class OcaBlock: OcaWorker {
         }
     }
 
-    public struct FindActionObjectsByRolePathParameters: Ocp1ParametersReflectable {
-        public let searchPath: OcaNamePath
-        public let resultFlags: OcaObjectSearchResultFlags
-
-        public init(searchPath: OcaNamePath, resultFlags: OcaObjectSearchResultFlags) {
-            self.searchPath = searchPath
-            self.resultFlags = resultFlags
-        }
-    }
-
-    func find(
+    public func find(
         actionObjectsByRole searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID,
@@ -183,7 +173,7 @@ open class OcaBlock: OcaWorker {
         return try await sendCommandRrq(methodID: OcaMethodID("3.17"), parameters: params)
     }
 
-    func findRecursive(
+    public func findRecursive(
         actionObjectsByRole searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID,
@@ -199,24 +189,40 @@ open class OcaBlock: OcaWorker {
         return try await sendCommandRrq(methodID: OcaMethodID("3.18"), parameters: params)
     }
 
-    // 3.19
-    func find(
-        actionObjectsByPath searchPath: OcaString,
-        resultFlags: OcaObjectSearchResultFlags,
-        result: inout OcaList<OcaObjectSearchResult>
-    ) async throws {
-        throw Ocp1Error.notImplemented
+    public struct FindActionObjectsByPathParameters: Ocp1ParametersReflectable {
+        public let searchPath: OcaNamePath
+        public let resultFlags: OcaObjectSearchResultFlags
+
+        public init(searchPath: OcaNamePath, resultFlags: OcaObjectSearchResultFlags) {
+            self.searchPath = searchPath
+            self.resultFlags = resultFlags
+        }
     }
 
-    // 3.20
-    func findRecursive(
+    public func findRecursive(
         actionObjectsByLabel searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID,
-        resultFlags: OcaObjectSearchResultFlags,
-        result: inout OcaList<OcaObjectSearchResult>
+        resultFlags: OcaObjectSearchResultFlags
+    ) async throws -> OcaList<OcaObjectSearchResult> {
+        let params = FindActionObjectsByRoleParameters(
+            searchName: searchName,
+            nameComparisonType: nameComparisonType,
+            searchClassID: searchClassID,
+            resultFlags: resultFlags
+        )
+        return try await sendCommandRrq(methodID: OcaMethodID("3.19"), parameters: params)
+    }
+
+    public func find(
+        actionObjectsByPath searchPath: OcaNamePath,
+        resultFlags: OcaObjectSearchResultFlags
     ) async throws {
-        throw Ocp1Error.notImplemented
+        let params = FindActionObjectsByPathParameters(
+            searchPath: searchPath,
+            resultFlags: resultFlags
+        )
+        return try await sendCommandRrq(methodID: OcaMethodID("3.20"), parameters: params)
     }
 
     override public var isContainer: Bool {

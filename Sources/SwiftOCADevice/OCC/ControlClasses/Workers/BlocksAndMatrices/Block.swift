@@ -357,7 +357,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
             return try await encodeResponse(searchResult.collect())
         case OcaMethodID("3.20"):
             let params: SwiftOCA.OcaBlock
-                .FindActionObjectsByRolePathParameters = try decodeCommand(command)
+                .FindActionObjectsByPathParameters = try decodeCommand(command)
             try await ensureReadable(by: controller, command: command)
             let searchResult = try await find(
                 actionObjectsByRolePath: params.searchPath,
