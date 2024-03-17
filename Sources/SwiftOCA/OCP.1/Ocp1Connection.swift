@@ -59,15 +59,18 @@ public struct Ocp1ConnectionOptions: Sendable {
     let automaticReconnect: Bool
     let connectionTimeout: Duration
     let responseTimeout: Duration
+    let refreshDeviceTreeOnConnection: Bool
 
     public init(
         automaticReconnect: Bool = false,
         connectionTimeout: Duration = .seconds(2),
-        responseTimeout: Duration = .seconds(2)
+        responseTimeout: Duration = .seconds(2),
+        refreshDeviceTreeOnConnection: Bool = true
     ) {
         self.automaticReconnect = automaticReconnect
         self.connectionTimeout = connectionTimeout
         self.responseTimeout = responseTimeout
+        self.refreshDeviceTreeOnConnection = refreshDeviceTreeOnConnection
     }
 }
 
@@ -263,7 +266,9 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 public extension Ocp1Connection {
     func connect() async throws {
         try await connectDeviceWithTimeout()
-        try? await refreshDeviceTree()
+        if options.refreshDeviceTreeOnConnection {
+            try? await refreshDeviceTree()
+        }
     }
 
     func disconnect() async throws {
