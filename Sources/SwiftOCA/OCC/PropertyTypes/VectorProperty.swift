@@ -172,9 +172,4 @@ public struct OcaVectorProperty<
         )
     }
     #endif
-
-    @_spi(SwiftOCAPrivate) @discardableResult
-    public func getValue(_ object: OcaRoot) async throws -> OcaVector2D<Value> {
-        try await _storage.getValue(object)
-    }
 }
