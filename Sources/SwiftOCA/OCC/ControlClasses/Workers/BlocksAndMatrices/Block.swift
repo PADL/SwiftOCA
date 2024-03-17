@@ -217,7 +217,7 @@ open class OcaBlock: OcaWorker {
     public func find(
         actionObjectsByPath searchPath: OcaNamePath,
         resultFlags: OcaObjectSearchResultFlags
-    ) async throws {
+    ) async throws -> OcaList<OcaObjectSearchResult> {
         let params = FindActionObjectsByPathParameters(
             searchPath: searchPath,
             resultFlags: resultFlags
