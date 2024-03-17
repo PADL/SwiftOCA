@@ -155,8 +155,14 @@ public struct OcaVectorProperty<
         }
     }
 
-    #if canImport(SwiftUI)
-    public var projectedValue: Binding<PropertyValue> {
+    public var projectedValue: Self {
+        self
+    }
+}
+
+#if canImport(SwiftUI)
+public extension OcaVectorProperty {
+    var binding: Binding<PropertyValue> {
         Binding(
             get: {
                 if let object = _storage.object {
@@ -171,5 +177,5 @@ public struct OcaVectorProperty<
             }
         )
     }
-    #endif
 }
+#endif

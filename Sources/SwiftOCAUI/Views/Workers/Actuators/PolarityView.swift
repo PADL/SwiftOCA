@@ -46,7 +46,7 @@ public struct OcaPolarityView: OcaView {
     }
 
     public var body: some View {
-        Toggle(isOn: object.$state.value) {}
+        Toggle(isOn: object.$state.binding.value) {}
             .toggleStyle(SymbolToggleStyle(systemImage: "circle.slash", activeColor: .accentColor))
             .padding()
             .showProgressIfWaiting(object.state)

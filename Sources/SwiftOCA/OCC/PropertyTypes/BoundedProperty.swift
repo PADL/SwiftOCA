@@ -179,8 +179,14 @@ public struct OcaBoundedProperty<
         _storage._send(_enclosingInstance: object, .success(value))
     }
 
-    #if canImport(SwiftUI)
-    public var projectedValue: Binding<PropertyValue> {
+    public var projectedValue: Self {
+        self
+    }
+}
+
+#if canImport(SwiftUI)
+public extension OcaBoundedProperty {
+    var binding: Binding<PropertyValue> {
         Binding(
             get: {
                 if let object = _storage.object {
@@ -195,5 +201,5 @@ public struct OcaBoundedProperty<
             }
         )
     }
-    #endif
 }
+#endif

@@ -23,6 +23,9 @@ import OpenCombine
 #else
 protocol ObservableObject {} // placeholder
 #endif
+#if canImport(SwiftUI)
+import SwiftUI
+#endif
 
 open class OcaRoot: CustomStringConvertible, ObservableObject, @unchecked
 Sendable, OcaKeyPathMarkerProtocol {
@@ -232,6 +235,18 @@ public extension OcaRoot {
         var subject: AsyncCurrentValueSubject<PropertyValue> {
             AsyncCurrentValueSubject(currentValue)
         }
+
+        #if canImport(SwiftUI)
+        var binding: Binding<PropertyValue> {
+            Binding(
+                get: {
+                    currentValue
+                },
+                set: { _ in
+                }
+            )
+        }
+        #endif
     }
 }
 

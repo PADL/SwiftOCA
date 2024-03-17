@@ -49,7 +49,7 @@ public struct OcaPanBalanceView: OcaView {
     }
 
     public var body: some View {
-        OcaVariableSliderView(value: object.$position.value)
+        OcaVariableSliderView(value: object.$position.binding.value)
             .valueSliderStyle(HorizontalValueSliderStyle())
             .showProgressIfWaiting(object.position)
     }

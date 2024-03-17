@@ -31,6 +31,10 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
 
     func refresh(_ object: OcaRoot) async
     func subscribe(_ object: OcaRoot) async
+
+    #if canImport(SwiftUI)
+    var binding: Binding<PropertyValue> { get }
+    #endif
 }
 
 public extension OcaPropertyRepresentable {
@@ -399,23 +403,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         }
     }
 
-    #if canImport(SwiftUI)
-    public var projectedValue: Binding<PropertyValue> {
-        Binding(
-            get: {
-                if let object {
-                    return _get(_enclosingInstance: object)
-                } else {
-                    return .initial
-                }
-            },
-            set: {
-                guard let object else { return }
-                _set(_enclosingInstance: object, $0)
-            }
-        )
+    public var projectedValue: Self {
+        self
     }
-    #endif
 }
 
 extension OcaProperty.PropertyValue: Equatable where Value: Equatable & Codable {
@@ -445,3 +435,23 @@ extension OcaProperty.PropertyValue: Hashable where Value: Hashable & Codable {
         }
     }
 }
+
+#if canImport(SwiftUI)
+public extension OcaProperty {
+    var binding: Binding<PropertyValue> {
+        Binding(
+            get: {
+                if let object {
+                    return _get(_enclosingInstance: object)
+                } else {
+                    return .initial
+                }
+            },
+            set: {
+                guard let object else { return }
+                _set(_enclosingInstance: object, $0)
+            }
+        )
+    }
+}
+#endif
