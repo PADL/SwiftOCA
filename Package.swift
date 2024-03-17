@@ -46,7 +46,7 @@ PlatformProducts = []
 PlatformTargets = []
 #elseif os(macOS) || os(iOS)
 PlatformPackageDependencies = [
-    .package(url: "https://github.com/swhitty/FlyingFox", branch: "main"),
+    .package(url: "https://github.com/swhitty/FlyingFox", from: "0.13.0"),
     .package(
         url: "https://github.com/spacenation/swiftui-sliders.git",
         from: "2.1.0"
