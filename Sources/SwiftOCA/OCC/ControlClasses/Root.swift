@@ -83,11 +83,6 @@ Sendable, OcaKeyPathMarkerProtocol {
     )
     public var lockState: OcaProperty<OcaLockState>.PropertyValue
 
-    // necessary because property wrappers are private
-    func _subscribeRole() async {
-        await _role.subscribe(self)
-    }
-
     public required init(objectNumber: OcaONo) {
         self.objectNumber = objectNumber
     }

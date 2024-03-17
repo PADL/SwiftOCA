@@ -53,7 +53,7 @@ public extension Ocp1Connection {
     internal func refreshDeviceTree() async throws {
         let members = try await rootBlock.resolveActionObjectsRecursive()
         for member in members {
-            await member.memberObject._subscribeRole()
+            await member.memberObject.$role.subscribe(member.memberObject)
         }
     }
 
