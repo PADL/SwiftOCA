@@ -25,7 +25,7 @@ public typealias OcaCurrent = OcaFloat32
 
 public struct OcaImpedance: Codable, Sendable {
     let magnitude: OcaFloat32
-    let phsae: OcaFloat32
+    let phase: OcaFloat32
 }
 
 public enum OcaDelayUnit: OcaUint8, Codable, Sendable {
