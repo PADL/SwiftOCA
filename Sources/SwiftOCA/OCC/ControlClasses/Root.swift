@@ -232,6 +232,11 @@ public extension OcaRoot {
         var subject: AsyncCurrentValueSubject<PropertyValue> {
             AsyncCurrentValueSubject(currentValue)
         }
+
+        @discardableResult
+        func getValue(_ object: OcaRoot) async throws -> Value {
+            value
+        }
     }
 }
 

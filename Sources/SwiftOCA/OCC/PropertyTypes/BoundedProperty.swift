@@ -196,4 +196,9 @@ public struct OcaBoundedProperty<
         )
     }
     #endif
+
+    @_spi(SwiftOCAPrivate) @discardableResult
+    public func getValue(_ object: OcaRoot) async throws -> OcaBoundedPropertyValue<Value> {
+        try await _storage.getValue(object)
+    }
 }

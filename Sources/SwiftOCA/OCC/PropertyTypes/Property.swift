@@ -31,6 +31,9 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
 
     func refresh(_ object: OcaRoot) async
     func subscribe(_ object: OcaRoot) async
+
+    @_spi(SwiftOCAPrivate) @discardableResult
+    func getValue(_ object: OcaRoot) async throws -> Value
 }
 
 public extension OcaPropertyRepresentable {
@@ -237,21 +240,26 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         self.setValueTransformer = setValueTransformer
     }
 
-    private func getValueAndSubscribe(
-        _ object: OcaRoot
-    ) async throws {
+    @_spi(SwiftOCAPrivate) @discardableResult
+    public func getValue(_ object: OcaRoot) async throws -> Value {
         guard let getMethodID else {
             throw Ocp1Error.propertyIsImmutable
         }
 
         let value: Value = try await object.sendCommandRrq(methodID: getMethodID)
+        _send(_enclosingInstance: object, .success(value))
+        return value
+    }
+
+    private func getValueAndSubscribe(
+        _ object: OcaRoot
+    ) async throws {
+        try await getValue(object)
 
         // do this in the background, otherwise UI refresh performance is poor
         Task.detached {
             try await object.subscribe()
         }
-
-        _send(_enclosingInstance: object, .success(value))
     }
 
     private func setValueIfMutable(
