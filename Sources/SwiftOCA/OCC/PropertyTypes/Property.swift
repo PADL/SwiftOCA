@@ -44,6 +44,18 @@ public extension OcaPropertyRepresentable {
     var hasValueOrError: Bool {
         currentValue.hasValueOrError
     }
+
+    @_spi(SwiftOCAPrivate)
+    func getValueCached(_ object: OcaRoot) async throws -> Value {
+        switch currentValue {
+        case .initial:
+            return try await getValue(object)
+        case let .success(value):
+            return value
+        case let .failure(error):
+            throw error
+        }
+    }
 }
 
 protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
