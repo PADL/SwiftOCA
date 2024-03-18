@@ -213,7 +213,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID,
         resultFlags: OcaObjectSearchResultFlags
-    ) async throws -> AnyAsyncSequence<OcaObjectSearchResult> {
+    ) async throws -> [OcaObjectSearchResult] {
         actionObjects.filter { member in
             member.compare(
                 searchName: searchName,
@@ -223,7 +223,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
             )
         }.async.map { member in
             await member.makeSearchResult(with: resultFlags)
-        }.eraseToAnyAsyncSequence()
+        }.collect()
     }
 
     func findRecursive(
@@ -231,7 +231,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID,
         resultFlags: OcaObjectSearchResultFlags
-    ) async throws -> AnyAsyncSequence<OcaObjectSearchResult> {
+    ) async throws -> [OcaObjectSearchResult] {
         await filterRecursive(keyPath: \.actionObjects) { member, _ in
             member.compare(
                 searchName: searchName,
@@ -241,14 +241,14 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
             )
         }.async.map { member in
             await member.makeSearchResult(with: resultFlags)
-        }.eraseToAnyAsyncSequence()
+        }.collect()
     }
 
     func find(
         actionObjectsByRolePath searchPath: OcaNamePath,
         resultFlags: OcaObjectSearchResultFlags
-    ) async throws -> AnyAsyncSequence<OcaObjectSearchResult> {
-        return await filterRecursive(keyPath: \.actionObjects) { member, container in
+    ) async throws -> [OcaObjectSearchResult] {
+        await filterRecursive(keyPath: \.actionObjects) { member, container in
             let containingPath = await container.rolePath
             if container.objectNumber == OcaRootBlockONo, searchPath.count == 1 {
                 return member.role == searchPath[0]
@@ -257,7 +257,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
             }
         }.async.map { member in
             await member.makeSearchResult(with: resultFlags)
-        }.eraseToAnyAsyncSequence()
+        }.collect()
     }
 
     func findRecursive(
@@ -265,7 +265,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID,
         resultFlags: OcaObjectSearchResultFlags
-    ) async throws -> AnyAsyncSequence<OcaObjectSearchResult> {
+    ) async throws -> [OcaObjectSearchResult] {
         await filterRecursive(keyPath: \.actionObjects) { member, _ in
             if let agent = member as? OcaAgent {
                 return agent.compare(
@@ -286,7 +286,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
             }
         }.async.map { member in
             await member.makeSearchResult(with: resultFlags)
-        }.eraseToAnyAsyncSequence()
+        }.collect()
     }
 
     override open func handleCommand(
@@ -337,7 +337,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
                 searchClassID: params.searchClassID,
                 resultFlags: params.resultFlags
             )
-            return try await encodeResponse(searchResult.collect())
+            return try await encodeResponse(searchResult)
         case OcaMethodID("3.18"):
             let params: SwiftOCA.OcaBlock
                 .FindActionObjectsByRoleParameters = try decodeCommand(command)
@@ -348,7 +348,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
                 searchClassID: params.searchClassID,
                 resultFlags: params.resultFlags
             )
-            return try await encodeResponse(searchResult.collect())
+            return try await encodeResponse(searchResult)
         case OcaMethodID("3.19"):
             let params: SwiftOCA.OcaBlock
                 .FindActionObjectsByRoleParameters = try decodeCommand(command)
@@ -359,7 +359,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
                 searchClassID: params.searchClassID,
                 resultFlags: params.resultFlags
             )
-            return try await encodeResponse(searchResult.collect())
+            return try await encodeResponse(searchResult)
         case OcaMethodID("3.20"):
             let params: SwiftOCA.OcaBlock
                 .FindActionObjectsByPathParameters = try decodeCommand(command)
@@ -368,7 +368,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
                 actionObjectsByRolePath: params.searchPath,
                 resultFlags: params.resultFlags
             )
-            return try await encodeResponse(searchResult.collect())
+            return try await encodeResponse(searchResult)
         // 3.21 GetConfigurability
         // 3.22 GetMostRecentParamDatasetONo
         // 3.23 ApplyParamDataset
