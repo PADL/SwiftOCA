@@ -169,8 +169,12 @@ open class OcaBlock: OcaWorker {
             searchClassID: searchClassID,
             resultFlags: resultFlags
         )
-
-        return try await sendCommandRrq(methodID: OcaMethodID("3.17"), parameters: params)
+        let userInfo = [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
+        return try await sendCommandRrq(
+            methodID: OcaMethodID("3.17"),
+            parameters: params,
+            userInfo: userInfo
+        )
     }
 
     public func findRecursive(
@@ -185,8 +189,12 @@ open class OcaBlock: OcaWorker {
             searchClassID: searchClassID,
             resultFlags: resultFlags
         )
-
-        return try await sendCommandRrq(methodID: OcaMethodID("3.18"), parameters: params)
+        let userInfo = [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
+        return try await sendCommandRrq(
+            methodID: OcaMethodID("3.18"),
+            parameters: params,
+            userInfo: userInfo
+        )
     }
 
     public struct FindActionObjectsByPathParameters: Ocp1ParametersReflectable {
@@ -211,7 +219,12 @@ open class OcaBlock: OcaWorker {
             searchClassID: searchClassID,
             resultFlags: resultFlags
         )
-        return try await sendCommandRrq(methodID: OcaMethodID("3.19"), parameters: params)
+        let userInfo = [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
+        return try await sendCommandRrq(
+            methodID: OcaMethodID("3.19"),
+            parameters: params,
+            userInfo: userInfo
+        )
     }
 
     public func find(
@@ -222,7 +235,12 @@ open class OcaBlock: OcaWorker {
             searchPath: searchPath,
             resultFlags: resultFlags
         )
-        return try await sendCommandRrq(methodID: OcaMethodID("3.20"), parameters: params)
+        let userInfo = [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
+        return try await sendCommandRrq(
+            methodID: OcaMethodID("3.20"),
+            parameters: params,
+            userInfo: userInfo
+        )
     }
 
     override public var isContainer: Bool {

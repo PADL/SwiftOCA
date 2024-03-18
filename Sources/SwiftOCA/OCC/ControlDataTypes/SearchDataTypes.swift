@@ -57,4 +57,52 @@ public struct OcaObjectSearchResult: Codable, Sendable {
         self.role = role
         self.label = label
     }
+
+    enum CodingKeys: CodingKey {
+        case oNo
+        case classIdentification
+        case containerPath
+        case role
+        case label
+    }
+
+    static var FlagsUserInfoKey: CodingUserInfoKey {
+        CodingUserInfoKey(rawValue: "com.padl.SwiftOCA.FlagsUserInfoKey")!
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let searchResultFlags = decoder
+            .userInfo[Self.FlagsUserInfoKey] as? OcaObjectSearchResultFlags ??
+            OcaObjectSearchResultFlags([.oNo, .classIdentification, .containerPath, .role, .label])
+
+        if searchResultFlags.contains(.oNo) {
+            oNo = try container.decodeIfPresent(OcaONo.self, forKey: .oNo)
+        } else {
+            oNo = OcaInvalidONo
+        }
+        if searchResultFlags.contains(.classIdentification) {
+            classIdentification = try container.decodeIfPresent(
+                OcaClassIdentification.self,
+                forKey: .classIdentification
+            )
+        } else {
+            classIdentification = nil
+        }
+        if searchResultFlags.contains(.containerPath) {
+            containerPath = try container.decodeIfPresent(OcaONoPath.self, forKey: .containerPath)
+        } else {
+            containerPath = nil
+        }
+        if searchResultFlags.contains(.role) {
+            role = try container.decodeIfPresent(OcaString.self, forKey: .role)
+        } else {
+            role = nil
+        }
+        if searchResultFlags.contains(.label) {
+            label = try container.decodeIfPresent(OcaString.self, forKey: .label)
+        } else {
+            label = nil
+        }
+    }
 }

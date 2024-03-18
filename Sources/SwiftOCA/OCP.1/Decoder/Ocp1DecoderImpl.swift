@@ -26,23 +26,34 @@ struct Ocp1DecoderImpl: Decoder {
     private let state: Ocp1DecodingState
 
     let codingPath: [any CodingKey]
-    var userInfo: [CodingUserInfoKey: Any] { [:] }
+    let userInfo: [CodingUserInfoKey: Any]
     let count: Int?
 
-    init(state: Ocp1DecodingState, codingPath: [any CodingKey], count: Int? = nil) {
+    init(
+        state: Ocp1DecodingState,
+        codingPath: [any CodingKey],
+        userInfo: [CodingUserInfoKey: Any],
+        count: Int? = nil
+    ) {
         self.state = state
         self.codingPath = codingPath
+        self.userInfo = userInfo
         self.count = count
     }
 
     func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key>
         where Key: CodingKey
     {
-        .init(KeyedOcp1DecodingContainer(state: state, codingPath: codingPath))
+        .init(KeyedOcp1DecodingContainer(state: state, codingPath: codingPath, userInfo: userInfo))
     }
 
     func unkeyedContainer() throws -> any UnkeyedDecodingContainer {
-        UnkeyedOcp1DecodingContainer(state: state, codingPath: codingPath, count: count)
+        UnkeyedOcp1DecodingContainer(
+            state: state,
+            codingPath: codingPath,
+            userInfo: userInfo,
+            count: count
+        )
     }
 
     func singleValueContainer() throws -> any SingleValueDecodingContainer {

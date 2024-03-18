@@ -25,11 +25,17 @@ struct KeyedOcp1DecodingContainer<Key>: KeyedDecodingContainerProtocol where Key
     private let state: Ocp1DecodingState
 
     let codingPath: [any CodingKey]
+    let userInfo: [CodingUserInfoKey: Any]
     var allKeys: [Key] { [] }
 
-    init(state: Ocp1DecodingState, codingPath: [any CodingKey]) {
+    init(
+        state: Ocp1DecodingState,
+        codingPath: [any CodingKey],
+        userInfo: [CodingUserInfoKey: Any]
+    ) {
         self.state = state
         self.codingPath = codingPath
+        self.userInfo = userInfo
     }
 
     func contains(_ key: Key) -> Bool {
@@ -41,19 +47,28 @@ struct KeyedOcp1DecodingContainer<Key>: KeyedDecodingContainerProtocol where Key
         keyedBy type: NestedKey.Type,
         forKey key: Key
     ) throws -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
-        .init(KeyedOcp1DecodingContainer<NestedKey>(state: state, codingPath: codingPath + [key]))
+        .init(KeyedOcp1DecodingContainer<NestedKey>(
+            state: state,
+            codingPath: codingPath + [key],
+            userInfo: userInfo
+        ))
     }
 
     func nestedUnkeyedContainer(forKey key: Key) throws -> any UnkeyedDecodingContainer {
-        UnkeyedOcp1DecodingContainer(state: state, codingPath: codingPath, count: nil)
+        UnkeyedOcp1DecodingContainer(
+            state: state,
+            codingPath: codingPath,
+            userInfo: userInfo,
+            count: nil
+        )
     }
 
     func superDecoder() throws -> any Decoder {
-        Ocp1DecoderImpl(state: state, codingPath: codingPath)
+        Ocp1DecoderImpl(state: state, codingPath: codingPath, userInfo: userInfo)
     }
 
     func superDecoder(forKey key: Key) throws -> any Decoder {
-        Ocp1DecoderImpl(state: state, codingPath: codingPath)
+        Ocp1DecoderImpl(state: state, codingPath: codingPath, userInfo: userInfo)
     }
 
     func decodeNil(forKey key: Key) throws -> Bool { try state.decodeNil() }

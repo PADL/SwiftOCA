@@ -32,8 +32,11 @@ class Ocp1EncodingState {
     /// recursive types.
     private var codingTypePath: [String] = []
 
-    init(data: Data = .init()) {
+    let userInfo: [CodingUserInfoKey: Any]
+
+    init(data: Data = .init(), userInfo: [CodingUserInfoKey: Any]) {
         self.data = data
+        self.userInfo = userInfo
     }
 
     func encodeNil() throws {

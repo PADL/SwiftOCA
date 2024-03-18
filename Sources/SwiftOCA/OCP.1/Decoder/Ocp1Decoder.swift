@@ -25,6 +25,8 @@ import Foundation
 
 /// A decoder that decodes Swift structures from a flat Ocp1 representation.
 public struct Ocp1Decoder {
+    public var userInfo: [CodingUserInfoKey: Any] = [:]
+
     public init() {}
 
     /// Decodes a value from a flat Ocp1 representation.
@@ -38,12 +40,22 @@ public struct Ocp1Decoder {
     public func decode<Value>(_ type: Value.Type, from data: Data) throws -> Value
         where Value: Decodable
     {
-        let state = Ocp1DecodingState(data: Data(data))
+        let state = Ocp1DecodingState(data: Data(data), userInfo: userInfo)
         var count: Int? = nil
         if type is any Ocp1ListRepresentable.Type {
             // propagate array count to unkeyed container count
-            count = try Int(UInt16(from: Ocp1DecoderImpl(state: state, codingPath: [])))
+            count =
+                try Int(UInt16(from: Ocp1DecoderImpl(
+                    state: state,
+                    codingPath: [],
+                    userInfo: userInfo
+                )))
         }
-        return try Value(from: Ocp1DecoderImpl(state: state, codingPath: [], count: count))
+        return try Value(from: Ocp1DecoderImpl(
+            state: state,
+            codingPath: [],
+            userInfo: userInfo,
+            count: count
+        ))
     }
 }

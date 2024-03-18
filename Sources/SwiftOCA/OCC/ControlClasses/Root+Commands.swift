@@ -65,12 +65,23 @@ private extension OcaRoot {
         responseParameterData = response.parameters.parameterData
     }
 
-    func encodeParameters<T: Encodable>(_ parameters: T) throws -> Data {
-        try Ocp1Encoder().encode(parameters)
+    func encodeParameters<T: Encodable>(
+        _ parameters: T,
+        userInfo: [CodingUserInfoKey: Any]? = nil
+    ) throws -> Data {
+        var encoder = Ocp1Encoder()
+        if let userInfo { encoder.userInfo = userInfo }
+        return try encoder.encode(parameters)
     }
 
-    func decodeResponse<U: Decodable>(_ type: U.Type, from data: Data) throws -> U {
-        try Ocp1Decoder().decode(U.self, from: data)
+    func decodeResponse<U: Decodable>(
+        _ type: U.Type,
+        from data: Data,
+        userInfo: [CodingUserInfoKey: Any]? = nil
+    ) throws -> U {
+        var decoder = Ocp1Decoder()
+        if let userInfo { decoder.userInfo = userInfo }
+        return try decoder.decode(U.self, from: data)
     }
 }
 
@@ -79,9 +90,10 @@ extension OcaRoot {
     func sendCommand<T: Encodable>(
         methodID: OcaMethodID,
         parameterCount: OcaUint8 = _ocp1ParameterCount(type: T.self),
-        parameters: T
+        parameters: T,
+        userInfo: [CodingUserInfoKey: Any]? = nil
     ) async throws {
-        let parameterData = try encodeParameters(parameters)
+        let parameterData = try encodeParameters(parameters, userInfo: userInfo)
 
         try await sendCommand(
             methodID: methodID,
@@ -96,9 +108,10 @@ extension OcaRoot {
 
     final func sendCommandRrq<T: Encodable, U: Decodable>(
         methodID: OcaMethodID,
-        parameters: T = Placeholder()
+        parameters: T = Placeholder(),
+        userInfo: [CodingUserInfoKey: Any]? = nil
     ) async throws -> U {
-        let parameterData = try encodeParameters(parameters)
+        let parameterData = try encodeParameters(parameters, userInfo: userInfo)
         var responseParameterData = Data()
 
         try await sendCommandRrq(
@@ -108,14 +121,15 @@ extension OcaRoot {
             responseParameterCount: _ocp1ParameterCount(type: U.self),
             responseParameterData: &responseParameterData
         )
-        return try decodeResponse(U.self, from: responseParameterData)
+        return try decodeResponse(U.self, from: responseParameterData, userInfo: userInfo)
     }
 
     final func sendCommandRrq<T: Encodable>(
         methodID: OcaMethodID,
-        parameters: T
+        parameters: T,
+        userInfo: [CodingUserInfoKey: Any]? = nil
     ) async throws {
-        let parameterData = try encodeParameters(parameters)
+        let parameterData = try encodeParameters(parameters, userInfo: userInfo)
         var responseParameterData = Data()
 
         try await sendCommandRrq(
@@ -127,7 +141,9 @@ extension OcaRoot {
         )
     }
 
-    final func sendCommandRrq(methodID: OcaMethodID) async throws {
+    final func sendCommandRrq(
+        methodID: OcaMethodID
+    ) async throws {
         var responseParameterData = Data()
         try await sendCommandRrq(
             methodID: methodID,
