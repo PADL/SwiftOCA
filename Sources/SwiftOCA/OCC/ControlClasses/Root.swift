@@ -309,4 +309,6 @@ public struct OcaSetPortNameParameters: Ocp1ParametersReflectable {
 
 public protocol OcaOwnable: OcaRoot {
     var owner: OcaProperty<OcaONo>.PropertyValue { get set }
+
+    var path: (OcaNamePath, OcaONoPath) { get async throws }
 }
