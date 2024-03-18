@@ -32,6 +32,8 @@ Sendable, OcaKeyPathMarkerProtocol {
     typealias Root = OcaRoot
 
     public internal(set) weak var connectionDelegate: Ocp1Connection?
+    @_spi(SwiftOCAPrivate)
+    public internal(set) var onPropertyEvent: ((_ event: OcaEvent, _ data: Data) -> ())?
 
     // 1.1
     open class var classID: OcaClassID { OcaClassID("1") }
@@ -152,7 +154,7 @@ public extension OcaRoot {
     }
 
     @Sendable
-    internal func propertyDidChange(event: OcaEvent, eventData data: Data) {
+    private func _onPropertyEvent(event: OcaEvent, eventData data: Data) {
         let decoder = Ocp1Decoder()
         guard let propertyID = try? decoder.decode(
             OcaPropertyID.self,
@@ -167,13 +169,15 @@ public extension OcaRoot {
                 return
             }
         }
+
+        if let onPropertyEvent { onPropertyEvent(event, data) }
     }
 
     func subscribe() async throws {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
         do {
-            try await connectionDelegate.addSubscription(event: event, callback: propertyDidChange)
+            try await connectionDelegate.addSubscription(event: event, callback: _onPropertyEvent)
         } catch Ocp1Error.alreadySubscribedToEvent {
         } catch Ocp1Error.status(.invalidRequest) {
             // FIXME: in our device implementation not all properties can be subcribed to
