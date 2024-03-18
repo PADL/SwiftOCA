@@ -33,7 +33,7 @@ Sendable, OcaKeyPathMarkerProtocol {
 
     public internal(set) weak var connectionDelegate: Ocp1Connection?
     @_spi(SwiftOCAPrivate)
-    public internal(set) var onPropertyEvent: ((_ event: OcaEvent, _ data: Data) -> ())?
+    public var onPropertyEvent: ((_ event: OcaEvent, _ data: Data) -> ())?
 
     // 1.1
     open class var classID: OcaClassID { OcaClassID("1") }
