@@ -337,7 +337,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
                 searchClassID: params.searchClassID,
                 resultFlags: params.resultFlags
             )
-            return try await encodeResponse(searchResult)
+            return try encodeResponse(searchResult)
         case OcaMethodID("3.18"):
             let params: SwiftOCA.OcaBlock
                 .FindActionObjectsByRoleParameters = try decodeCommand(command)
@@ -348,7 +348,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
                 searchClassID: params.searchClassID,
                 resultFlags: params.resultFlags
             )
-            return try await encodeResponse(searchResult)
+            return try encodeResponse(searchResult)
         case OcaMethodID("3.19"):
             let params: SwiftOCA.OcaBlock
                 .FindActionObjectsByRoleParameters = try decodeCommand(command)
@@ -359,7 +359,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
                 searchClassID: params.searchClassID,
                 resultFlags: params.resultFlags
             )
-            return try await encodeResponse(searchResult)
+            return try encodeResponse(searchResult)
         case OcaMethodID("3.20"):
             let params: SwiftOCA.OcaBlock
                 .FindActionObjectsByPathParameters = try decodeCommand(command)
@@ -368,7 +368,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
                 actionObjectsByRolePath: params.searchPath,
                 resultFlags: params.resultFlags
             )
-            return try await encodeResponse(searchResult)
+            return try encodeResponse(searchResult)
         // 3.21 GetConfigurability
         // 3.22 GetMostRecentParamDatasetONo
         // 3.23 ApplyParamDataset
