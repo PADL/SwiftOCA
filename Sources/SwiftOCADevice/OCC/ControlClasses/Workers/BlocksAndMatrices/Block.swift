@@ -214,7 +214,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         searchClassID: OcaClassID,
         resultFlags: OcaObjectSearchResultFlags
     ) async throws -> [OcaObjectSearchResult] {
-        actionObjects.filter { member in
+        await actionObjects.filter { member in
             member.compare(
                 searchName: searchName,
                 keyPath: \.role,
