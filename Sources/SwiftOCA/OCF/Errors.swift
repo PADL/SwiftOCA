@@ -42,6 +42,7 @@ public enum Ocp1Error: Error, Equatable {
     case pduSendingFailed
     case pduTooShort
     case propertyIsImmutable
+    case propertyIsSettableOnly
     case proxyResolutionFailed
     case requestParameterOutOfRange
     case remoteDeviceResolutionFailed

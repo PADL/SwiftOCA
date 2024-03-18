@@ -243,8 +243,11 @@ public extension OcaRoot {
         }
         #endif
 
-        @discardableResult
-        func getValue(_ object: OcaRoot) async throws -> Value {
+        @_spi(SwiftOCAPrivate) @discardableResult
+        public func _getValue(
+            _ object: OcaRoot,
+            flags: _OcaPropertyResolutionFlags
+        ) async throws -> Value {
             value
         }
     }

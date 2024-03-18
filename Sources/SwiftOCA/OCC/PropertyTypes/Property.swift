@@ -21,6 +21,32 @@ import Foundation
 import SwiftUI
 #endif
 
+/// these private flags are for use by `ocacli` which doesn't cache or subscribe to events
+/// by default; other API consumers should use the default behaviour
+@_spi(SwiftOCAPrivate)
+public struct _OcaPropertyResolutionFlags: OptionSet {
+    public typealias RawValue = UInt32
+
+    public let rawValue: RawValue
+
+    public init(rawValue: RawValue) {
+        self.rawValue = rawValue
+    }
+
+    /// return a cached value, if one is preent
+    public static let returnCachedValue = _OcaPropertyResolutionFlags(rawValue: 1 << 0)
+    /// if previous error was cached, return that
+    public static let throwCachedError = _OcaPropertyResolutionFlags(rawValue: 1 << 1)
+    /// cache new values
+    public static let cacheValue = _OcaPropertyResolutionFlags(rawValue: 1 << 2)
+    /// subscribe to property events
+    public static let subscribeEvents = _OcaPropertyResolutionFlags(rawValue: 1 << 3)
+
+    public static let defaultFlags =
+        _OcaPropertyResolutionFlags([.returnCachedValue, .throwCachedError, .cacheValue,
+                                     .subscribeEvents])
+}
+
 public protocol OcaPropertyRepresentable: CustomStringConvertible {
     associatedtype Value: Codable & Sendable
     typealias PropertyValue = OcaProperty<Value>.PropertyValue
@@ -37,24 +63,12 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
     #endif
 
     @_spi(SwiftOCAPrivate) @discardableResult
-    func getValue(_ object: OcaRoot) async throws -> Value
+    func _getValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws -> Value
 }
 
 public extension OcaPropertyRepresentable {
     var hasValueOrError: Bool {
         currentValue.hasValueOrError
-    }
-
-    @_spi(SwiftOCAPrivate)
-    func getValueCached(_ object: OcaRoot) async throws -> Value {
-        switch currentValue {
-        case .initial:
-            return try await getValue(object)
-        case let .success(value):
-            return value
-        case let .failure(error):
-            throw error
-        }
     }
 }
 
@@ -64,12 +78,12 @@ protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
     var subject: AsyncCurrentValueSubject<PropertyValue> { get }
 }
 
-extension OcaPropertySubjectRepresentable {
-    public var async: AnyAsyncSequence<PropertyValue> {
+public extension OcaPropertySubjectRepresentable {
+    var async: AnyAsyncSequence<PropertyValue> {
         subject.eraseToAnyAsyncSequence()
     }
 
-    func finish() {
+    internal func finish() {
         subject.send(.finished)
     }
 }
@@ -194,7 +208,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         case .initial:
             Task {
                 await perform(object) {
-                    try await $0.getValueAndSubscribe(object)
+                    try await $0._getValue(object)
                 }
             }
         default:
@@ -260,25 +274,35 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
 
     @_spi(SwiftOCAPrivate) @discardableResult
-    public func getValue(_ object: OcaRoot) async throws -> Value {
+    public func _getValue(
+        _ object: OcaRoot,
+        flags: _OcaPropertyResolutionFlags = .defaultFlags
+    ) async throws -> Value {
         guard let getMethodID else {
-            throw Ocp1Error.propertyIsImmutable
+            throw Ocp1Error.propertyIsSettableOnly
         }
 
-        let value: Value = try await object.sendCommandRrq(methodID: getMethodID)
-        _send(_enclosingInstance: object, .success(value))
-        return value
-    }
-
-    private func getValueAndSubscribe(
-        _ object: OcaRoot
-    ) async throws {
-        try await getValue(object)
-
-        // do this in the background, otherwise UI refresh performance is poor
-        Task.detached {
-            try await object.subscribe()
+        if flags.contains(.subscribeEvents) {
+            let isSubscribed = (try? await object.isSubscribed) ?? false
+            if !isSubscribed {
+                Task.detached { try await object.subscribe() }
+            }
         }
+
+        if flags.contains(.returnCachedValue), hasValueOrError {
+            if case let .success(value) = currentValue {
+                return value
+            } else if flags.contains(.throwCachedError), case let .failure(error) = currentValue {
+                throw error
+            }
+        }
+
+        let returnValue: Value = try await object.sendCommandRrq(methodID: getMethodID)
+        if flags.contains(.cacheValue) {
+            _send(_enclosingInstance: object, .success(returnValue))
+        }
+
+        return returnValue
     }
 
     private func setValueIfMutable(
@@ -346,7 +370,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         }
 
         await perform(object) {
-            try await $0.getValueAndSubscribe(object)
+            try await $0._getValue(object)
         }
     }
 
