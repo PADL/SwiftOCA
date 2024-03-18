@@ -248,9 +248,13 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         actionObjectsByRolePath searchPath: OcaNamePath,
         resultFlags: OcaObjectSearchResultFlags
     ) async throws -> AnyAsyncSequence<OcaObjectSearchResult> {
-        let containingPath = await rolePath
-        return await filterRecursive(keyPath: \.actionObjects) { member, _ in
-            await member.rolePath == containingPath + searchPath
+        return await filterRecursive(keyPath: \.actionObjects) { member, container in
+            let containingPath = await container.rolePath
+            if container.objectNumber == OcaRootBlockONo, searchPath.count == 1 {
+                return member.role == searchPath[0]
+            } else {
+                return await member.rolePath == containingPath + searchPath
+            }
         }.async.map { member in
             await member.makeSearchResult(with: resultFlags)
         }.eraseToAnyAsyncSequence()
