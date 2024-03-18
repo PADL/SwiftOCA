@@ -17,7 +17,12 @@
 import AsyncExtensions
 import SwiftOCA
 
-open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
+@OcaDevice
+private protocol OcaContainer: OcaRoot {
+    var members: [OcaRoot] { get }
+}
+
+open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaContainer {
     override open class var classID: OcaClassID { OcaClassID("1.1.3") }
 
     @OcaDeviceProperty(
@@ -27,6 +32,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     public var type: OcaONo = OcaInvalidONo
 
     public private(set) var actionObjects = [ActionObject]()
+
+    fileprivate var members: [OcaRoot] { actionObjects }
 
     private func notifySubscribers(
         actionObjects: [ActionObject],
@@ -138,38 +145,49 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     )
     public var oNoMap = OcaMap<OcaProtoONo, OcaONo>()
 
-    func applyRecursive<T: OcaRoot>(
-        rootObject: OcaBlock,
-        keyPath: KeyPath<OcaBlock, [T]>,
-        _ block: (_ member: T, _ container: OcaBlock) async throws -> ()
+    private typealias BlockApplyFunction<U> = (
+        _ member: OcaRoot,
+        _ container: OcaContainer
+    ) async throws -> U
+
+    private func applyRecursive(
+        rootObject: OcaContainer,
+        maxDepth: Int,
+        depth: Int,
+        _ block: BlockApplyFunction<()>
     ) async rethrows {
-        for member in rootObject[keyPath: keyPath] {
-            if let member = member as? OcaBlock {
-                try await applyRecursive(rootObject: member, keyPath: keyPath, block)
-            } else {
-                try await block(member, rootObject)
+        for member in rootObject.members {
+            try await block(member, rootObject)
+            if let member = member as? OcaContainer, maxDepth == -1 || depth < maxDepth {
+                try await applyRecursive(
+                    rootObject: member,
+                    maxDepth: maxDepth,
+                    depth: depth + 1,
+                    block
+                )
             }
         }
     }
 
-    func applyRecursive<T: OcaRoot>(
-        keyPath: KeyPath<OcaBlock, [T]>,
-        _ block: (_ member: T, _ container: OcaBlock) async throws -> ()
+    private func applyRecursive(
+        maxDepth: Int = -1,
+        _ block: BlockApplyFunction<()>
     ) async rethrows {
         try await applyRecursive(
             rootObject: self,
-            keyPath: keyPath,
+            maxDepth: maxDepth,
+            depth: 1,
             block
         )
     }
 
-    func filterRecursive<T: OcaRoot>(
-        keyPath: KeyPath<OcaBlock, [T]>,
-        _ isIncluded: @escaping (T, OcaBlock) async throws -> Bool
-    ) async rethrows -> [T] {
-        var members = [T]()
+    private func filterRecursive(
+        maxDepth: Int = -1,
+        _ isIncluded: @escaping (OcaRoot, OcaContainer) async throws -> Bool
+    ) async rethrows -> [OcaRoot] {
+        var members = [OcaRoot]()
 
-        try await applyRecursive(keyPath: keyPath) { member, container in
+        try await applyRecursive(maxDepth: maxDepth) { member, container in
             if try await isIncluded(member, container) {
                 members.append(member)
             }
@@ -178,13 +196,13 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         return members
     }
 
-    func mapRecursive<T: OcaRoot, U: Sendable>(
-        keyPath: KeyPath<OcaBlock, [T]>,
-        _ transform: (T, OcaBlock) async throws -> U
+    private func mapRecursive<U: Sendable>(
+        maxDepth: Int = -1,
+        _ transform: BlockApplyFunction<U>
     ) async rethrows -> [U] {
         var members = [U]()
 
-        try await applyRecursive(keyPath: keyPath) { member, container in
+        try await applyRecursive(maxDepth: maxDepth) { member, container in
             try await members.append(transform(member, container))
         }
 
@@ -194,7 +212,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
     func getActionObjectsRecursive(from controller: any OcaController) async throws
         -> OcaList<OcaBlockMember>
     {
-        await mapRecursive(keyPath: \.actionObjects) { (member: ActionObject, container: OcaBlock) in
+        await mapRecursive(maxDepth: -1) { member, container in
             OcaBlockMember(
                 memberObjectIdentification: member.objectIdentification,
                 containerObjectNumber: container.objectNumber
@@ -232,7 +250,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         searchClassID: OcaClassID,
         resultFlags: OcaObjectSearchResultFlags
     ) async throws -> [OcaObjectSearchResult] {
-        await filterRecursive(keyPath: \.actionObjects) { member, _ in
+        await filterRecursive { member, _ in
             member.compare(
                 searchName: searchName,
                 keyPath: \.role,
@@ -248,13 +266,9 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         actionObjectsByRolePath searchPath: OcaNamePath,
         resultFlags: OcaObjectSearchResultFlags
     ) async throws -> [OcaObjectSearchResult] {
-        await filterRecursive(keyPath: \.actionObjects) { member, container in
-            let containingPath = await container.rolePath
-            if container.objectNumber == OcaRootBlockONo, searchPath.count == 1 {
-                return member.role == searchPath[0]
-            } else {
-                return await member.rolePath == containingPath + searchPath
-            }
+        let selfRolePath = await rolePath
+        return await filterRecursive(maxDepth: searchPath.count) { member, _ in
+            await member.rolePath == selfRolePath + searchPath
         }.async.map { member in
             await member.makeSearchResult(with: resultFlags)
         }.collect()
@@ -266,7 +280,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker {
         searchClassID: OcaClassID,
         resultFlags: OcaObjectSearchResultFlags
     ) async throws -> [OcaObjectSearchResult] {
-        await filterRecursive(keyPath: \.actionObjects) { member, _ in
+        await filterRecursive { member, _ in
             if let agent = member as? OcaAgent {
                 return agent.compare(
                     searchName: searchName,
