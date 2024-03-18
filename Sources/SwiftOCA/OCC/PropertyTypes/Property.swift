@@ -58,6 +58,8 @@ public extension OcaPropertyRepresentable {
     }
 }
 
+@_spi(SwiftOCAPrivate)
+public
 protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
     var subject: AsyncCurrentValueSubject<PropertyValue> { get }
 }
@@ -131,7 +133,8 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         }
     }
 
-    let subject: AsyncCurrentValueSubject<PropertyValue>
+    @_spi(SwiftOCAPrivate)
+    public let subject: AsyncCurrentValueSubject<PropertyValue>
 
     public var description: String {
         if case let .success(value) = subject.value {

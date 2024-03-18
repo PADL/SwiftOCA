@@ -69,7 +69,8 @@ public struct OcaBoundedProperty<
 >: OcaPropertyChangeEventNotifiable,
     Codable, Sendable
 {
-    var subject: AsyncCurrentValueSubject<PropertyValue> { _storage.subject }
+    @_spi(SwiftOCAPrivate)
+    public var subject: AsyncCurrentValueSubject<PropertyValue> { _storage.subject }
 
     public typealias Property = OcaProperty<OcaBoundedPropertyValue<Value>>
     public typealias PropertyValue = Property.PropertyValue
