@@ -132,19 +132,6 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
                 return .failure(error)
             }
         }
-
-        public var jsonEncoded: Data {
-            get throws {
-                switch self {
-                case .initial:
-                    throw Ocp1Error.noInitialValue
-                case let .success(value):
-                    return try JSONEncoder().encode(value)
-                case let .failure(error):
-                    throw error
-                }
-            }
-        }
     }
 
     @_spi(SwiftOCAPrivate)
