@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaNetworkApplication: OcaRoot {
+open class OcaNetworkApplication: OcaRoot, OcaOwnable {
     override public class var classID: OcaClassID { OcaClassID("1.7") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
 

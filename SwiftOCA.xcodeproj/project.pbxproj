@@ -1002,8 +1002,8 @@
 		D3DA69FC2A4021FF001250A1 /* BlocksAndMatrices */ = {
 			isa = PBXGroup;
 			children = (
-				D3E6E1932A3ACA6C00BF7095 /* Block.swift */,
 				D3E6E1942A3ACA6C00BF7095 /* Matrix.swift */,
+				D3E6E1932A3ACA6C00BF7095 /* Block.swift */,
 			);
 			path = BlocksAndMatrices;
 			sourceTree = "<group>";

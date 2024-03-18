@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaAgent: OcaRoot {
+open class OcaAgent: OcaRoot, OcaOwnable {
     override public class var classID: OcaClassID { OcaClassID("1.2") }
 
     @OcaProperty(
