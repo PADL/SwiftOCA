@@ -256,6 +256,15 @@ public extension OcaRoot {
             value
         }
     }
+
+    var jsonObject: [String: Any] {
+        get async {
+            for (_, keyPath) in allPropertyKeyPaths {
+                let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
+                await property.refresh(self)
+            }
+        }
+    }
 }
 
 extension OcaRoot: Equatable {

@@ -84,6 +84,7 @@
 		D36ECA212A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA202A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift */; };
 		D36ECA2C2A5B24B30015174A /* Ocp1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */; };
 		D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */; };
+		D39542302BA8FFC0003A025C /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D395422F2BA8FFC0003A025C /* Root+JSON.swift */; };
 		D3A0BE7C2B717BEC00A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7B2B717BEC00A5AA05 /* Group.swift */; };
 		D3A0BE7E2B71921900A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7D2B71921900A5AA05 /* Group.swift */; };
 		D3AFD3342B2A505D00A72E9A /* AudioProcessingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3332B2A505D00A72E9A /* AudioProcessingManager.swift */; };
@@ -372,6 +373,7 @@
 		D36ECA202A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksConnection.swift; sourceTree = "<group>"; };
 		D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAddressToString.swift; sourceTree = "<group>"; };
+		D395422F2BA8FFC0003A025C /* Root+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+JSON.swift"; sourceTree = "<group>"; };
 		D3A0BE7B2B717BEC00A5AA05 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		D3A0BE7D2B71921900A5AA05 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		D3AFD3332B2A505D00A72E9A /* AudioProcessingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProcessingManager.swift; sourceTree = "<group>"; };
@@ -1081,6 +1083,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E1892A3ACA6C00BF7095 /* Root.swift */,
+				D395422F2BA8FFC0003A025C /* Root+JSON.swift */,
 				D3E6E1832A3ACA6C00BF7095 /* Root+Commands.swift */,
 				D3C0832A2A7C73860020AD57 /* ApplicationNetworks */,
 				D3E6E1842A3ACA6C00BF7095 /* Managers */,
@@ -1676,6 +1679,7 @@
 			files = (
 				D3AFD34C2B2CEF2B00A72E9A /* CounterDataTypes.swift in Sources */,
 				D3AFD3812B32A06700A72E9A /* Ocp1DecoderImpl.swift in Sources */,
+				D39542302BA8FFC0003A025C /* Root+JSON.swift in Sources */,
 				D3AFD37E2B32A06700A72E9A /* SingleValueOcp1EncodingContainer.swift in Sources */,
 				D3AFD35E2B30EC2F00A72E9A /* CodingManager.swift in Sources */,
 				D3E6E2782A417AF000BF7095 /* NetworkManager.swift in Sources */,
