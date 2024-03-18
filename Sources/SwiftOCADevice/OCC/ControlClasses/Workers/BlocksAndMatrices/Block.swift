@@ -403,6 +403,7 @@ public extension OcaRoot {
         rootObject: T,
         keyPath: KeyPath<T, U>
     ) async -> [U] {
+        guard rootObject.objectNumber != OcaRootBlockONo else { return [] }
         var path = [rootObject[keyPath: keyPath]]
 
         if let object = rootObject as? OcaOwnable,
