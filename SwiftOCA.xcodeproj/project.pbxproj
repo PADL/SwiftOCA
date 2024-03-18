@@ -26,8 +26,8 @@
 		D32229D32ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CB2ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift */; };
 		D32229D42ABC270900B56B6B /* Ocp1IORingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CC2ABC270900B56B6B /* Ocp1IORingController.swift */; };
 		D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */; };
+		D32437CF2BA9276700C89102 /* AnyCodable in Frameworks */ = {isa = PBXBuildFile; productRef = D32437CE2BA9276700C89102 /* AnyCodable */; };
 		D32C49DD2B5102A300D73201 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = D32C49DC2B5102A300D73201 /* Logging */; };
-		D33771422B48DB3B003BD47B /* AnyCodable in Frameworks */ = {isa = PBXBuildFile; productRef = D33771412B48DB3B003BD47B /* AnyCodable */; };
 		D33A35A72B2FB1D600FEDC43 /* MediaClock3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */; };
 		D33A35A92B2FB7BE00FEDC43 /* MediaClockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */; };
 		D33A35AB2B2FBD0700FEDC43 /* DeviceTimeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */; };
@@ -84,6 +84,7 @@
 		D36ECA212A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA202A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift */; };
 		D36ECA2C2A5B24B30015174A /* Ocp1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */; };
 		D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */; };
+		D39542302BA8FFC0003A025C /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D395422F2BA8FFC0003A025C /* Root+JSON.swift */; };
 		D3A0BE7C2B717BEC00A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7B2B717BEC00A5AA05 /* Group.swift */; };
 		D3A0BE7E2B71921900A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7D2B71921900A5AA05 /* Group.swift */; };
 		D3AFD3342B2A505D00A72E9A /* AudioProcessingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3332B2A505D00A72E9A /* AudioProcessingManager.swift */; };
@@ -372,6 +373,7 @@
 		D36ECA202A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksConnection.swift; sourceTree = "<group>"; };
 		D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAddressToString.swift; sourceTree = "<group>"; };
+		D395422F2BA8FFC0003A025C /* Root+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+JSON.swift"; sourceTree = "<group>"; };
 		D3A0BE7B2B717BEC00A5AA05 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		D3A0BE7D2B71921900A5AA05 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		D3AFD3332B2A505D00A72E9A /* AudioProcessingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProcessingManager.swift; sourceTree = "<group>"; };
@@ -531,7 +533,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D33771422B48DB3B003BD47B /* AnyCodable in Frameworks */,
 				D33B528C2A6FD206001A1BA7 /* libSwiftOCA.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -571,6 +572,7 @@
 				D33B52D42A706FD7001A1BA7 /* FlyingSocks in Frameworks */,
 				D3B325052B4F677700C8335F /* FlyingFox in Frameworks */,
 				D32C49DD2B5102A300D73201 /* Logging in Frameworks */,
+				D32437CF2BA9276700C89102 /* AnyCodable in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1081,6 +1083,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E1892A3ACA6C00BF7095 /* Root.swift */,
+				D395422F2BA8FFC0003A025C /* Root+JSON.swift */,
 				D3E6E1832A3ACA6C00BF7095 /* Root+Commands.swift */,
 				D3C0832A2A7C73860020AD57 /* ApplicationNetworks */,
 				D3E6E1842A3ACA6C00BF7095 /* Managers */,
@@ -1366,7 +1369,6 @@
 			);
 			name = SwiftOCADevice;
 			packageProductDependencies = (
-				D33771412B48DB3B003BD47B /* AnyCodable */,
 			);
 			productName = SwiftOCADevice;
 			productReference = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */;
@@ -1448,6 +1450,7 @@
 				D33B52D32A706FD7001A1BA7 /* FlyingSocks */,
 				D3B325042B4F677700C8335F /* FlyingFox */,
 				D32C49DC2B5102A300D73201 /* Logging */,
+				D32437CE2BA9276700C89102 /* AnyCodable */,
 			);
 			productName = SwiftOCA;
 			productReference = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */;
@@ -1676,6 +1679,7 @@
 			files = (
 				D3AFD34C2B2CEF2B00A72E9A /* CounterDataTypes.swift in Sources */,
 				D3AFD3812B32A06700A72E9A /* Ocp1DecoderImpl.swift in Sources */,
+				D39542302BA8FFC0003A025C /* Root+JSON.swift in Sources */,
 				D3AFD37E2B32A06700A72E9A /* SingleValueOcp1EncodingContainer.swift in Sources */,
 				D3AFD35E2B30EC2F00A72E9A /* CodingManager.swift in Sources */,
 				D3E6E2782A417AF000BF7095 /* NetworkManager.swift in Sources */,
@@ -2405,15 +2409,15 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		D32437CE2BA9276700C89102 /* AnyCodable */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D33771402B48D9E9003BD47B /* XCRemoteSwiftPackageReference "AnyCodable" */;
+			productName = AnyCodable;
+		};
 		D32C49DC2B5102A300D73201 /* Logging */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D36ECA282A5B20480015174C /* XCRemoteSwiftPackageReference "swift-log" */;
 			productName = Logging;
-		};
-		D33771412B48DB3B003BD47B /* AnyCodable */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D33771402B48D9E9003BD47B /* XCRemoteSwiftPackageReference "AnyCodable" */;
-			productName = AnyCodable;
 		};
 		D33B52D32A706FD7001A1BA7 /* FlyingSocks */ = {
 			isa = XCSwiftPackageProductDependency;

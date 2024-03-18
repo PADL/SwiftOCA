@@ -17,11 +17,8 @@
 @_implementationOnly
 import AnyCodable
 import Foundation
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
-
-let objectNumberJSONKey = "_oNo"
-let classIDJSONKey = "_classID"
-let actionObjectsJSONKey = "_members"
 
 public extension OcaDevice {
     @discardableResult
@@ -56,12 +53,5 @@ public extension OcaDevice {
         }
 
         return object
-    }
-}
-
-extension JSONEncoder {
-    func reencodeAsValidJSONObject<T: Codable>(_ value: T) throws -> Any {
-        let data = try encode(value)
-        return try JSONDecoder().decode(AnyDecodable.self, from: data).value
     }
 }

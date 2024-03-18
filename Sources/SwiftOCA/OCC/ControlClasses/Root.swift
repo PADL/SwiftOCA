@@ -124,6 +124,29 @@ Sendable, OcaKeyPathMarkerProtocol {
             return "\(type(of: self))(objectNumber: \(objectNumberString))"
         }
     }
+
+    open var jsonObject: [String: Any] {
+        get async {
+            var dict = [String: Any]()
+
+            precondition(objectNumber != OcaInvalidONo)
+
+            guard self is OcaWorker else {
+                return [:]
+            }
+
+            dict[objectNumberJSONKey] = objectNumber
+            dict[classIDJSONKey] = Self.classID.description
+
+            for (_, propertyKeyPath) in allPropertyKeyPaths {
+                let property =
+                    self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
+                dict[property.propertyIDs[0].description] = try? property.getJsonValue()
+            }
+
+            return dict
+        }
+    }
 }
 
 protocol OcaKeyPathMarkerProtocol: AnyObject {}
@@ -254,6 +277,11 @@ public extension OcaRoot {
             flags: _OcaPropertyResolutionFlags
         ) async throws -> Value {
             value
+        }
+
+        @_spi(SwiftOCAPrivate)
+        public func getJsonValue() throws -> Any? {
+            currentValue
         }
     }
 }

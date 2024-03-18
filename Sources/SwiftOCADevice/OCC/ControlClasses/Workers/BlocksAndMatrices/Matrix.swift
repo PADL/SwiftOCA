@@ -15,6 +15,7 @@
 //
 
 import Foundation
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF

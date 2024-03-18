@@ -18,6 +18,7 @@
 import AnyCodable
 import AsyncExtensions
 import Foundation
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 protocol OcaDevicePropertyRepresentable {

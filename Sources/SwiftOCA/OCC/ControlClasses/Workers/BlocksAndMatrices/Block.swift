@@ -246,6 +246,14 @@ open class OcaBlock: OcaWorker {
     override public var isContainer: Bool {
         true
     }
+
+    override public var jsonObject: [String: Any] {
+        get async {
+            var jsonObject = await super.jsonObject
+            jsonObject["3.2"] = try? await resolveActionObjects().asyncMap { await $0.jsonObject }
+            return jsonObject
+        }
+    }
 }
 
 public extension OcaBlock {

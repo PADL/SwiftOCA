@@ -191,6 +191,20 @@ public struct OcaBoundedProperty<
     ) async throws -> OcaBoundedPropertyValue<Value> {
         try await _storage._getValue(object, flags: flags)
     }
+
+    @_spi(SwiftOCAPrivate)
+    public func getJsonValue() throws -> Any? {
+        guard case let .success(value) = subject.value else {
+            return nil
+        }
+
+        let valueDict: [String: Value] =
+            ["v": value.value,
+             "l": value.range.lowerBound,
+             "u": value.range.upperBound]
+
+        return valueDict
+    }
 }
 
 #if canImport(SwiftUI)

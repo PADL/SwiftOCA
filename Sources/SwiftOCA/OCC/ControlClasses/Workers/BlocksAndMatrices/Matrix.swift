@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+import Foundation // for JSONEncoder
+
 public typealias OcaMatrixCoordinate = OcaUint16
 
 open class OcaMatrix: OcaWorker {
@@ -92,8 +94,18 @@ open class OcaMatrix: OcaWorker {
         try await sendCommandRrq(methodID: OcaMethodID("3.16"))
     }
 
+    // FIXME: is this really a container? the AES70 spec doesn't seem to thing so
     override public var isContainer: Bool {
         true
+    }
+
+    override public var jsonObject: [String: Any] {
+        get async {
+            var jsonObject = await super.jsonObject
+            let membersJson = try? await resolveMembers().map(defaultValue: nil, \.?.objectNumber)
+            jsonObject["3.5"] = try? JSONEncoder().reencodeAsValidJSONObject(membersJson)
+            return jsonObject
+        }
     }
 }
 

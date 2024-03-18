@@ -167,6 +167,19 @@ public struct OcaVectorProperty<
     ) async throws -> OcaVector2D<Value> {
         try await _storage._getValue(object, flags: flags)
     }
+
+    @_spi(SwiftOCAPrivate)
+    public func getJsonValue() throws -> Any? {
+        guard case let .success(value) = subject.value else {
+            return nil
+        }
+
+        let valueDict: [String: Value] =
+            ["x": value.x,
+             "y": value.y]
+
+        return valueDict
+    }
 }
 
 #if canImport(SwiftUI)

@@ -79,6 +79,8 @@ public extension OcaPropertyRepresentable {
 public
 protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
     var subject: AsyncCurrentValueSubject<PropertyValue> { get }
+
+    func getJsonValue() throws -> Any?
 }
 
 public extension OcaPropertySubjectRepresentable {
@@ -445,6 +447,36 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
     public var projectedValue: Self {
         self
+    }
+
+    private func isNil(_ value: Value) -> Bool {
+        if let value = value as? ExpressibleByNilLiteral,
+           let value = value as? Value?,
+           case .none = value
+        {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    @_spi(SwiftOCAPrivate)
+    public func getJsonValue() throws -> Any? {
+        guard case let .success(value) = subject.value else {
+            return nil
+        }
+
+        let jsonValue: Any
+
+        if isNil(value) {
+            jsonValue = NSNull()
+        } else if JSONSerialization.isValidJSONObject(value) {
+            jsonValue = value
+        } else {
+            jsonValue = try JSONEncoder().reencodeAsValidJSONObject(value)
+        }
+
+        return jsonValue
     }
 }
 
