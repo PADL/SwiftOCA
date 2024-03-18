@@ -16,43 +16,89 @@
 
 private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 
-extension Ocp1Connection {
+public extension Ocp1Connection {
+    /// a token that can be used by the client to unsubscribe
+    final class SubscriptionCancellable: Hashable {
+        public static func == (
+            lhs: Ocp1Connection.SubscriptionCancellable,
+            rhs: Ocp1Connection.SubscriptionCancellable
+        ) -> Bool {
+            ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            ObjectIdentifier(self).hash(into: &hasher)
+        }
+
+        let event: OcaEvent
+        let callback: OcaSubscriptionCallback
+
+        init(event: OcaEvent, callback: @escaping OcaSubscriptionCallback) {
+            self.event = event
+            self.callback = callback
+        }
+    }
+
     func isSubscribed(event: OcaEvent) -> Bool {
         subscriptions[event] != nil
     }
 
-    public func addSubscription(
+    func isSubscribed(_ cancellable: SubscriptionCancellable) -> Bool {
+        guard let eventSubscriptions = subscriptions[cancellable.event] else { return false }
+        return eventSubscriptions.subscriptions.contains(cancellable)
+    }
+
+    func addSubscription(
         event: OcaEvent,
         callback: @escaping OcaSubscriptionCallback
-    ) async throws {
-        if subscriptions[event] != nil {
-            throw Ocp1Error.alreadySubscribedToEvent
+    ) async throws -> SubscriptionCancellable {
+        let cancellable = SubscriptionCancellable(event: event, callback: callback)
+        if let eventSubscriptions = subscriptions[event] {
+            if eventSubscriptions.subscriptions.contains(cancellable) {
+                throw Ocp1Error.alreadySubscribedToEvent
+            }
+            eventSubscriptions.subscriptions.insert(cancellable)
+        } else {
+            let eventSubscriptions = EventSubscriptions()
+            eventSubscriptions.subscriptions.insert(cancellable)
+            subscriptions[event] = eventSubscriptions
+
+            try await subscriptionManager.addSubscription(
+                event: event,
+                subscriber: subscriber,
+                subscriberContext: OcaBlob(),
+                notificationDeliveryMode: .normal,
+                destinationInformation: OcaNetworkAddress()
+            )
         }
 
-        subscriptions[event] = callback
-
-        try await subscriptionManager.addSubscription(
-            event: event,
-            subscriber: subscriber,
-            subscriberContext: OcaBlob(),
-            notificationDeliveryMode: .normal,
-            destinationInformation: OcaNetworkAddress()
-        )
+        return cancellable
     }
 
-    public func removeSubscription(event: OcaEvent) async throws {
-        try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
-        subscriptions[event] = nil
+    func removeSubscription(_ cancellable: SubscriptionCancellable) async throws {
+        guard let eventSubscriptions = subscriptions[cancellable.event],
+              eventSubscriptions.subscriptions.contains(cancellable)
+        else {
+            throw Ocp1Error.notSubscribedToEvent
+        }
+
+        eventSubscriptions.subscriptions.remove(cancellable)
+        if eventSubscriptions.subscriptions.isEmpty {
+            try await subscriptionManager.removeSubscription(
+                event: cancellable.event,
+                subscriber: subscriber
+            )
+        }
     }
 
-    func removeSubscriptions() async throws {
+    internal func removeSubscriptions() async throws {
         for event in subscriptions.keys {
             try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
         }
         subscriptions.removeAll()
     }
 
-    func refreshSubscriptions() async throws {
+    internal func refreshSubscriptions() async throws {
         for event in subscriptions.keys {
             try await subscriptionManager.addSubscription(
                 event: event,

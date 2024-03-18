@@ -65,14 +65,17 @@ extension Ocp1Connection.Monitor {
             await connection.logger.warning("device sent unexpected command \(message); ignoring")
         case let notification as Ocp1Notification1:
             let event = notification.parameters.eventData.event
-            if let callback = await connection.subscriptions[event],
+            if let eventSubscriptions = await connection.subscriptions[event],
+               !eventSubscriptions.subscriptions.isEmpty,
                notification.parameters.parameterCount == 2
             {
                 Task {
-                    try await callback(
-                        notification.parameters.eventData.event,
-                        notification.parameters.eventData.eventParameters
-                    )
+                    for eventSubscription in eventSubscriptions.subscriptions {
+                        try await eventSubscription.callback(
+                            notification.parameters.eventData.event,
+                            notification.parameters.eventData.eventParameters
+                        )
+                    }
                 }
             }
         case let response as Ocp1Response:
@@ -83,11 +86,19 @@ extension Ocp1Connection.Monitor {
             break
         case let notification as Ocp1Notification2:
             try notification.throwIfException()
-            if let callback = await connection.subscriptions[notification.event] {
+            if let eventSubscriptions = await connection.subscriptions[notification.event],
+               !eventSubscriptions.subscriptions.isEmpty
+            {
                 Task {
-                    try await callback(notification.event, notification.data)
+                    for eventSubscription in eventSubscriptions.subscriptions {
+                        try await eventSubscription.callback(
+                            notification.event,
+                            notification.data
+                        )
+                    }
                 }
             }
+
         default:
             throw Ocp1Error.unknownPduType
         }

@@ -36,6 +36,7 @@ public enum Ocp1Error: Error, Equatable {
     case noInitialValue
     case notConnected
     case notImplemented
+    case notSubscribedToEvent
     case objectAlreadyContainedByBlock
     case objectClassMismatch
     case objectNotPresent

@@ -32,8 +32,7 @@ Sendable, OcaKeyPathMarkerProtocol {
     typealias Root = OcaRoot
 
     public internal(set) weak var connectionDelegate: Ocp1Connection?
-    @_spi(SwiftOCAPrivate)
-    public var onPropertyEvent: ((_ event: OcaEvent, _ data: Data) -> ())?
+    fileprivate var subscriptionCancellable: Ocp1Connection.SubscriptionCancellable?
 
     // 1.1
     open class var classID: OcaClassID { OcaClassID("1") }
@@ -154,7 +153,7 @@ public extension OcaRoot {
     }
 
     @Sendable
-    private func _onPropertyEvent(event: OcaEvent, eventData data: Data) {
+    private func onPropertyEvent(event: OcaEvent, eventData data: Data) {
         let decoder = Ocp1Decoder()
         guard let propertyID = try? decoder.decode(
             OcaPropertyID.self,
@@ -169,15 +168,17 @@ public extension OcaRoot {
                 return
             }
         }
-
-        if let onPropertyEvent { onPropertyEvent(event, data) }
     }
 
     func subscribe() async throws {
+        guard subscriptionCancellable == nil else { throw Ocp1Error.alreadySubscribedToEvent }
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
         do {
-            try await connectionDelegate.addSubscription(event: event, callback: _onPropertyEvent)
+            subscriptionCancellable = try await connectionDelegate.addSubscription(
+                event: event,
+                callback: onPropertyEvent
+            )
         } catch Ocp1Error.alreadySubscribedToEvent {
         } catch Ocp1Error.status(.invalidRequest) {
             // FIXME: in our device implementation not all properties can be subcribed to
@@ -185,9 +186,9 @@ public extension OcaRoot {
     }
 
     func unsubscribe() async throws {
+        guard let subscriptionCancellable else { throw Ocp1Error.notSubscribedToEvent }
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
-        let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-        try await connectionDelegate.removeSubscription(event: event)
+        try await connectionDelegate.removeSubscription(subscriptionCancellable)
     }
 
     func refreshAll() async {

@@ -96,8 +96,12 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     public let deviceManager = OcaDeviceManager()
     public let networkManager = OcaNetworkManager()
 
+    final class EventSubscriptions {
+        var subscriptions = Set<SubscriptionCancellable>()
+    }
+
     /// Subscription callbacks, main thread only
-    var subscriptions = [OcaEvent: OcaSubscriptionCallback]()
+    var subscriptions = [OcaEvent: EventSubscriptions]()
     var logger = Logger(label: "com.padl.SwiftOCA")
 
     private var nextCommandHandle = OcaUint32(100)
