@@ -125,28 +125,36 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
+    @_spi(SwiftOCAPrivate)
+    public func _getJsonValue(
+        _ object: OcaRoot,
+        flags: _OcaPropertyResolutionFlags = .defaultFlags
+    ) async -> [String: Any] {
+        var dict = [String: Any]()
+
+        precondition(objectNumber != OcaInvalidONo)
+
+        guard self is OcaWorker else {
+            return [:]
+        }
+
+        dict[objectNumberJSONKey] = objectNumber
+        dict[classIDJSONKey] = Self.classID.description
+
+        for (_, propertyKeyPath) in allPropertyKeyPaths {
+            let property =
+                self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
+            if let jsonValue = try? await property._getJsonValue(object, flags: flags) {
+                dict.merge(jsonValue) { current, _ in current }
+            }
+        }
+
+        return dict
+    }
+
     open var jsonObject: [String: Any] {
         get async {
-            var dict = [String: Any]()
-
-            precondition(objectNumber != OcaInvalidONo)
-
-            guard self is OcaWorker else {
-                return [:]
-            }
-
-            dict[objectNumberJSONKey] = objectNumber
-            dict[classIDJSONKey] = Self.classID.description
-
-            for (_, propertyKeyPath) in allPropertyKeyPaths {
-                let property =
-                    self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
-                if let jsonValue = try? await property._getJsonValue(self, flags: .defaultFlags) {
-                    dict.merge(jsonValue) { current, _ in current }
-                }
-            }
-
-            return dict
+            await _getJsonValue(self)
         }
     }
 }
