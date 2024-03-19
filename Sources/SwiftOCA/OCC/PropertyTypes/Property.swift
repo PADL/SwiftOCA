@@ -486,12 +486,26 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     public func _setJsonValue(_ object: OcaRoot, _ jsonValue: Any) async throws {
         if jsonValue is NSNull {
             throw Ocp1Error.nilNotEncodable
-        } else if let jsonValue = jsonValue as? String,
+        } else if let jsonValue = jsonValue as? OcaString,
                   let caseIterableValueType = Value.self as? any CaseIterable.Type
         {
             let caseIterableValue: Value? = caseIterableValueType.value(for: jsonValue) as! Value?
             guard let caseIterableValue else { throw Ocp1Error.status(.badFormat) }
             try await setValueIfMutable(object, caseIterableValue)
+        } else if let jsonValue = jsonValue as? OcaString, Value.self is OcaBoolean.Type {
+            let booleanValue = NSString(string: jsonValue).boolValue
+            try await setValueIfMutable(object, booleanValue as! Value)
+        } else if let jsonValue = jsonValue as? OcaString,
+                  let fixedIntegerType = Value.self as? any FixedWidthInteger.Type
+        {
+            guard let fixedIntegerValue = Int(jsonValue),
+                  let fixedIntegerValue = fixedIntegerType.init(exactly: fixedIntegerValue)
+            else { throw Ocp1Error.status(.badFormat) }
+            try await setValueIfMutable(object, fixedIntegerValue as! Value)
+        } else if let jsonValue = jsonValue as? OcaString, Value.self is OcaFloat32.Type {
+            guard let floatingPointValue = OcaFloat32(jsonValue)
+            else { throw Ocp1Error.status(.badFormat) }
+            try await setValueIfMutable(object, floatingPointValue as! Value)
         } else if !JSONSerialization.isValidJSONObject(subject.value),
                   let jsonValue = jsonValue as? Codable
         {
