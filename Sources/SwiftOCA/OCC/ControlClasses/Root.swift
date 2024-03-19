@@ -171,7 +171,7 @@ public extension OcaRoot {
     }
 
     func subscribe() async throws {
-        guard subscriptionCancellable == nil else { throw Ocp1Error.alreadySubscribedToEvent }
+        guard subscriptionCancellable == nil else { return } // already subscribed
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
         do {

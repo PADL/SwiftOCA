@@ -311,7 +311,7 @@ final class SwiftOCADeviceTests: XCTestCase {
         oNo = await connection.subscriptionManager.objectNumber
         XCTAssertEqual(oNo, OcaSubscriptionManagerONo)
         let path = await matrix.objectNumberPath
-        Task { @OcaDevice in XCTAssertEqual(path, [OcaRootBlockONo, matrix.objectNumber]) }
+        Task { @OcaDevice in XCTAssertEqual(path, [matrix.objectNumber]) }
         deviceExpectation.fulfill()
         await fulfillment(of: [deviceExpectation], timeout: 1)
 
