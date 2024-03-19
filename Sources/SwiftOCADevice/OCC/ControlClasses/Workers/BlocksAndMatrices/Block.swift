@@ -18,11 +18,11 @@ import AsyncExtensions
 import SwiftOCA
 
 @OcaDevice
-private protocol OcaContainer: OcaRoot {
+private protocol OcaBlockContainer: OcaRoot {
     var members: [OcaRoot] { get }
 }
 
-open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaContainer {
+open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     override open class var classID: OcaClassID { OcaClassID("1.1.3") }
 
     @OcaDeviceProperty(
@@ -147,18 +147,18 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaContainer {
 
     private typealias BlockApplyFunction<U> = (
         _ member: OcaRoot,
-        _ container: OcaContainer
+        _ container: OcaBlockContainer
     ) async throws -> U
 
     private func applyRecursive(
-        rootObject: OcaContainer,
+        rootObject: OcaBlockContainer,
         maxDepth: Int,
         depth: Int,
         _ block: BlockApplyFunction<()>
     ) async rethrows {
         for member in rootObject.members {
             try await block(member, rootObject)
-            if let member = member as? OcaContainer, maxDepth == -1 || depth < maxDepth {
+            if let member = member as? OcaBlockContainer, maxDepth == -1 || depth < maxDepth {
                 try await applyRecursive(
                     rootObject: member,
                     maxDepth: maxDepth,
@@ -183,7 +183,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaContainer {
 
     private func filterRecursive(
         maxDepth: Int = -1,
-        _ isIncluded: @escaping (OcaRoot, OcaContainer) async throws -> Bool
+        _ isIncluded: @escaping (OcaRoot, OcaBlockContainer) async throws -> Bool
     ) async rethrows -> [OcaRoot] {
         var members = [OcaRoot]()
 
