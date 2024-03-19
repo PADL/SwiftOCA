@@ -137,9 +137,6 @@ Sendable, OcaKeyPathMarkerProtocol {
             return [:]
         }
 
-        dict[objectNumberJSONKey] = objectNumber
-        dict[classIDJSONKey] = Self.classID.description
-
         for (_, propertyKeyPath) in allPropertyKeyPaths {
             let property =
                 self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)

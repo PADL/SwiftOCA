@@ -20,6 +20,10 @@ import Foundation
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+let objectNumberJSONKey = "_oNo"
+let classIDJSONKey = "_classID"
+let actionObjectsJSONKey = "_members"
+
 public extension OcaDevice {
     @discardableResult
     func deserialize(jsonObject: [String: Sendable]) async throws -> OcaRoot {

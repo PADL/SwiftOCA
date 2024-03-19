@@ -19,13 +19,6 @@ import AsyncExtensions
 import Foundation
 
 @_spi(SwiftOCAPrivate)
-public let objectNumberJSONKey = "_oNo"
-@_spi(SwiftOCAPrivate)
-public let classIDJSONKey = "_classID"
-@_spi(SwiftOCAPrivate)
-public let actionObjectsJSONKey = "_members"
-
-@_spi(SwiftOCAPrivate)
 public extension JSONEncoder {
     func reencodeAsValidJSONObject<T: Codable>(_ value: T) throws -> Any {
         let data = try encode(value)
