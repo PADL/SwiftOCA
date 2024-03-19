@@ -181,6 +181,11 @@ public struct OcaVectorProperty<
 
         return valueDict
     }
+
+    @_spi(SwiftOCAPrivate)
+    public func _setJsonValue(_ object: OcaRoot, _ jsonValue: Any) async throws {
+        throw Ocp1Error.notImplemented
+    }
 }
 
 #if canImport(SwiftUI)

@@ -198,8 +198,16 @@ public struct OcaBoundedProperty<
         flags: _OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> [String: Any] {
         let value = try await _getValue(object, flags: flags)
-
         return [_storage.propertyID.description: value.value]
+    }
+
+    @_spi(SwiftOCAPrivate)
+    public func _setJsonValue(_ object: OcaRoot, _ jsonValue: Any) async throws {
+        if let jsonValue = jsonValue as? OcaBoundedPropertyValue<Value> {
+            try await _storage._setJsonValue(object, jsonValue.value)
+        } else {
+            try await _storage._setJsonValue(object, jsonValue)
+        }
     }
 }
 

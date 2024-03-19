@@ -292,6 +292,11 @@ public extension OcaRoot {
         ) async throws -> [String: Any] {
             [propertyIDs[0].description: String(describing: value)]
         }
+
+        @_spi(SwiftOCAPrivate)
+        public func _setJsonValue(_ object: OcaRoot, _ jsonValue: Any) async throws {
+            throw Ocp1Error.propertyIsImmutable
+        }
     }
 }
 

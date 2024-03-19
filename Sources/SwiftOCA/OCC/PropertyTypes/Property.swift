@@ -82,6 +82,8 @@ protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
 
     func _getJsonValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws
         -> [String: Any]
+
+    func _setJsonValue(_ object: OcaRoot, _ jsonValue: Any) async throws
 }
 
 public extension OcaPropertySubjectRepresentable {
@@ -478,6 +480,41 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         }
 
         return [propertyID.description: jsonValue]
+    }
+
+    @_spi(SwiftOCAPrivate)
+    public func _setJsonValue(_ object: OcaRoot, _ jsonValue: Any) async throws {
+        if jsonValue is NSNull {
+            throw Ocp1Error.nilNotEncodable
+        } else if let jsonValue = jsonValue as? String,
+                  let caseIterableValueType = Value.self as? any CaseIterable.Type
+        {
+            let caseIterableValue: Value? = caseIterableValueType.value(for: jsonValue) as! Value?
+            guard let caseIterableValue else { throw Ocp1Error.status(.badFormat) }
+            try await setValueIfMutable(object, caseIterableValue)
+        } else if !JSONSerialization.isValidJSONObject(subject.value),
+                  let jsonValue = jsonValue as? Codable
+        {
+            let data = try JSONEncoder().encode(jsonValue)
+            let decodedValue = try JSONDecoder().decode(Value.self, from: data)
+            try await setValueIfMutable(object, decodedValue)
+        } else {
+            guard let newValue = jsonValue as? Value else {
+                throw Ocp1Error.status(.badFormat)
+            }
+            try await setValueIfMutable(object, newValue)
+        }
+    }
+}
+
+private extension CaseIterable {
+    static func value(for string: String) -> Self? {
+        for aCase in allCases {
+            if String(describing: aCase) == string {
+                return aCase
+            }
+        }
+        return nil
     }
 }
 
