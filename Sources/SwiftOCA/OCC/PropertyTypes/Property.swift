@@ -320,6 +320,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
                 methodID: setMethodID,
                 parameters: newValue
             )
+
+            // if we're not expecting an event, then be sure to update it here
+            _send(_enclosingInstance: object, .success(value))
         }
     }
 
