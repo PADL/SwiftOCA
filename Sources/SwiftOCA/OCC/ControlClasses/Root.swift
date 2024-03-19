@@ -281,7 +281,14 @@ public extension OcaRoot {
 
         @_spi(SwiftOCAPrivate)
         public func getJsonValue() throws -> Any? {
-            value
+            let jsonValue: Any
+
+            if JSONSerialization.isValidJSONObject(value) {
+                jsonValue = value
+            } else {
+                jsonValue = try JSONEncoder().reencodeAsValidJSONObject(value)
+            }
+            return jsonValue
         }
     }
 }
