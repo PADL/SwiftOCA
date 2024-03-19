@@ -340,12 +340,6 @@ final class SwiftOCADeviceTests: XCTestCase {
         )
         controllerExpectation2.fulfill()
 
-        let controllerExpectation3 =
-            XCTestExpectation(description: "Check test block controller-side JSON export")
-        let controllerJsonObject = await clientTestBlock!.jsonObject
-        debugPrint("\(controllerJsonObject)")
-        controllerExpectation3.fulfill()
-
         await fulfillment(of: [controllerExpectation2], timeout: 1)
 
         try await connection.disconnect()
