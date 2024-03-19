@@ -125,8 +125,7 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    @_spi(SwiftOCAPrivate)
-    public func _getJsonValue(
+    private func _getJsonValue(
         flags: _OcaPropertyResolutionFlags = .defaultFlags
     ) async -> [String: Any] {
         var dict = [String: Any]()
