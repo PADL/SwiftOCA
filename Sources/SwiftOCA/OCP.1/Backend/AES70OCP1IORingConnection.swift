@@ -78,7 +78,7 @@ public class Ocp1IORingConnection: Ocp1Connection {
         try await super.disconnectDevice(clearObjectCache: clearObjectCache)
     }
 
-    private func withMappedError<T: Sendable>(
+    fileprivate func withMappedError<T: Sendable>(
         _ block: (_ socket: Socket) async throws
             -> T
     ) async throws -> T {
@@ -96,18 +96,6 @@ public class Ocp1IORingConnection: Ocp1Connection {
             }
         }
     }
-
-    override public func read(_ length: Int) async throws -> Data {
-        try await withMappedError { socket in
-            Data(try await socket.read(count: length, awaitingAllRead: true))
-        }
-    }
-
-    override public func write(_ data: Data) async throws -> Int {
-        try await withMappedError { socket in
-            try await socket.write(Array(data), count: data.count, awaitingAllWritten: true)
-        }
-    }
 }
 
 public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
@@ -117,6 +105,19 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
 
     override fileprivate var type: Int32 {
         SOCK_DGRAM
+    }
+
+    override public func read(_ length: Int) async throws -> Data {
+        try await withMappedError { socket in
+            Data(try await socket.receive(count: length))
+        }
+    }
+
+    override public func write(_ data: Data) async throws -> Int {
+        try await withMappedError { socket in
+            try await socket.send(Array(data))
+            return data.count
+        }
     }
 
     override public var connectionPrefix: String {
@@ -140,6 +141,18 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
             ),
             options: options
         )
+    }
+
+    override public func read(_ length: Int) async throws -> Data {
+        try await withMappedError { socket in
+            Data(try await socket.read(count: length, awaitingAllRead: true))
+        }
+    }
+
+    override public func write(_ data: Data) async throws -> Int {
+        try await withMappedError { socket in
+            try await socket.write(Array(data), count: data.count, awaitingAllWritten: true)
+        }
     }
 
     override public var connectionPrefix: String {
