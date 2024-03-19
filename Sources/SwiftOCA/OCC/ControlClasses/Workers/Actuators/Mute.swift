@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaMuteState: OcaUint8, Codable, Sendable {
+public enum OcaMuteState: OcaUint8, Codable, Sendable, CaseIterable {
     case muted = 1
     case unmuted = 2
 }
