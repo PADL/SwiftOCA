@@ -72,6 +72,9 @@ public extension OcaPropertyRepresentable {
     }
 }
 
+/// this is private API because it allows the underlying storage to be accessed without
+/// updating the value on the controlled device. it's useful for the `ocacli` command
+/// line tool which manages its own cache but shouldn't be used by applications generally
 @_spi(SwiftOCAPrivate)
 public
 protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
