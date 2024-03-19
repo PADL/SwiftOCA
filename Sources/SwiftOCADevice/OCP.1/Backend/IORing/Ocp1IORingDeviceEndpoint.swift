@@ -135,6 +135,7 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
                         Task {
                             let controller =
                                 try await Ocp1IORingStreamController(
+                                    endpoint: self,
                                     socket: client,
                                     notificationSocket: notificationSocket
                                 )
@@ -240,7 +241,10 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 
                 for try await messagePdu in messagePdus {
                     let controller =
-                        try await controller(for: AnySocketAddress(bytes: messagePdu.name))
+                        try await controller(
+                            endpoint: self,
+                            for: AnySocketAddress(bytes: messagePdu.name)
+                        )
                     do {
                         let messages = try await controller
                             .decodeMessages(from: messagePdu.buffer)

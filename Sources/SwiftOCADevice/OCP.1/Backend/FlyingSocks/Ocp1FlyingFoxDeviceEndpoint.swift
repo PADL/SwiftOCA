@@ -58,9 +58,9 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
         {
             AsyncStream<WSMessage> { continuation in
                 let controller = Ocp1FlyingFoxController(
+                    endpoint: endpoint,
                     inputStream: client,
-                    outputStream: continuation,
-                    endpoint: endpoint
+                    outputStream: continuation
                 )
 
                 let task = Task { @OcaDevice in

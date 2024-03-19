@@ -23,12 +23,16 @@ import SwiftOCA
 /// support out-of-tree endpoints
 
 protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, AnyActor {
+    associatedtype Endpoint: OcaDeviceEndpointPrivate
+
     nonisolated static var connectionPrefix: String { get }
 
     typealias ControllerMessage = (Ocp1Message, Bool)
 
     /// get an identifier used for logging
     nonisolated var identifier: String { get }
+
+    var endpoint: Endpoint? { get }
 
     /// a sequence of (message, isRrq) where isRrq indicates if a response is required
     var messages: AnyAsyncSequence<ControllerMessage> { get }
@@ -151,7 +155,7 @@ extension Ocp1ControllerInternal {
     /// Oca-3 notes that both controller and device send `KeepAlive` messages if they haven't
     /// yet received (or sent) another message during `HeartbeatTime`.
     func heartbeatTimeDidChange(from oldValue: Duration) {
-        if heartbeatTime != .zero, heartbeatTime != oldValue || keepAliveTask == nil {
+        if (heartbeatTime != .zero && heartbeatTime != oldValue) || keepAliveTask == nil {
             // if we have a keepalive interval and it has changed, or we haven't yet started
             // the keepalive task, (re)start it
             keepAliveTask = Task<(), Error> {
@@ -159,6 +163,8 @@ extension Ocp1ControllerInternal {
                     let now = ContinuousClock.now
                     if connectionIsStale(now) {
                         try? await onConnectionBecomingStale()
+                        await endpoint?.remove(controller: self as! Endpoint.ControllerType)
+                        endpoint?.logger.info("expired controller", controller: self)
                         break
                     }
                     let timeSinceLastMessageSent = now - lastMessageSentTime

@@ -23,7 +23,7 @@ import FlyingSocks
 import Foundation
 import SwiftOCA
 
-/// A remote endpoint
+/// A remote controller
 actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible {
     nonisolated static var connectionPrefix: String { "oca/tcp" }
 
@@ -31,6 +31,7 @@ actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = ContinuousClock.now
     var lastMessageSentTime = ContinuousClock.now
+    weak var endpoint: Ocp1FlyingSocksDeviceEndpoint?
 
     private let address: String
     private let socket: AsyncSocket
@@ -41,8 +42,9 @@ actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible
         _messages.joined().eraseToAnyAsyncSequence()
     }
 
-    init(socket: AsyncSocket) async throws {
+    init(endpoint: Ocp1FlyingSocksDeviceEndpoint, socket: AsyncSocket) async throws {
         address = Self.makeIdentifier(from: socket.socket)
+        self.endpoint = endpoint
         self.socket = socket
         _messages = AsyncThrowingStream.decodingMessages(from: socket.bytes)
     }
@@ -54,7 +56,7 @@ actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible
     }
 
     func onConnectionBecomingStale() async throws {
-        try closeSocket()
+        try await close()
     }
 
     func sendOcp1EncodedData(_ data: Data) async throws {

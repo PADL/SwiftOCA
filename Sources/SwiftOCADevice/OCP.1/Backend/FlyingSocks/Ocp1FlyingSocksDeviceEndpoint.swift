@@ -192,7 +192,8 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
         try await withThrowingDiscardingTaskGroup { group in
             for try await socket in socket.sockets {
                 group.addTask {
-                    try await Ocp1FlyingSocksController(socket: socket).handle(for: self)
+                    try await Ocp1FlyingSocksController(endpoint: self, socket: socket)
+                        .handle(for: self)
                 }
             }
         }
@@ -207,7 +208,8 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
         try await withThrowingTaskGroup(of: Void.self) { group in
             for try await socket in socket.sockets {
                 group.addTask {
-                    try await Ocp1FlyingSocksController(socket: socket).handle(for: self)
+                    try await Ocp1FlyingSocksController(endpoint: self, socket: socket)
+                        .handle(for: self)
                 }
             }
         }

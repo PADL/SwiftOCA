@@ -63,6 +63,7 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = ContinuousClock.now
     var lastMessageSentTime = ContinuousClock.now
+    weak var endpoint: Ocp1IORingStreamDeviceEndpoint?
 
     var messages: AnyAsyncSequence<ControllerMessage> {
         _messages.eraseToAnyAsyncSequence()
@@ -76,9 +77,14 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
         "\(type(of: self))(socket: \(socket))"
     }
 
-    init(socket: Socket, notificationSocket: Socket) async throws {
+    init(
+        endpoint: Ocp1IORingStreamDeviceEndpoint,
+        socket: Socket,
+        notificationSocket: Socket
+    ) async throws {
         self.socket = socket
         self.notificationSocket = notificationSocket
+        self.endpoint = endpoint
 
         peerAddress = try AnySocketAddress(self.socket.peerAddress)
 

@@ -54,7 +54,7 @@ actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
 
     private let inputStream: AsyncStream<WSMessage>
     private let outputStream: AsyncStream<WSMessage>.Continuation
-    private var endpoint: Ocp1FlyingFoxDeviceEndpoint?
+    var endpoint: Ocp1FlyingFoxDeviceEndpoint?
 
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = ContinuousClock.now
@@ -65,9 +65,9 @@ actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
     }
 
     init(
+        endpoint: Ocp1FlyingFoxDeviceEndpoint?,
         inputStream: AsyncStream<WSMessage>,
-        outputStream: AsyncStream<WSMessage>.Continuation,
-        endpoint: Ocp1FlyingFoxDeviceEndpoint?
+        outputStream: AsyncStream<WSMessage>.Continuation
     ) {
         self.inputStream = inputStream
         self.outputStream = outputStream

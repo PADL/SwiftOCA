@@ -31,7 +31,7 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
     var lastMessageSentTime = ContinuousClock.now
 
     private(set) var isOpen: Bool = false
-    private weak var endpoint: DatagramProxyDeviceEndpoint<T>?
+    weak var endpoint: DatagramProxyDeviceEndpoint<T>?
 
     var messages: AnyAsyncSequence<ControllerMessage> {
         AsyncEmptySequence<ControllerMessage>().eraseToAnyAsyncSequence()
