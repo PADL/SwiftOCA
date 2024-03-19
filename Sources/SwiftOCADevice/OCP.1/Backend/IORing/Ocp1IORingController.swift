@@ -194,7 +194,7 @@ actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerD
     var lastMessageSentTime = ContinuousClock.now
 
     private(set) var isOpen: Bool = false
-    private weak var endpoint: Ocp1IORingDatagramDeviceEndpoint?
+    weak var endpoint: Ocp1IORingDatagramDeviceEndpoint?
 
     var messages: AnyAsyncSequence<ControllerMessage> {
         AsyncEmptySequence<ControllerMessage>().eraseToAnyAsyncSequence()

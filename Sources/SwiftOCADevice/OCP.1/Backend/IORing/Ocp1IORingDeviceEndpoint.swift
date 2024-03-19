@@ -241,10 +241,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 
                 for try await messagePdu in messagePdus {
                     let controller =
-                        try await controller(
-                            endpoint: self,
-                            for: AnySocketAddress(bytes: messagePdu.name)
-                        )
+                        try await controller(for: AnySocketAddress(bytes: messagePdu.name))
                     do {
                         let messages = try await controller
                             .decodeMessages(from: messagePdu.buffer)
