@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaSensorReadingState: OcaUint8, Codable, Sendable {
+public enum OcaSensorReadingState: OcaUint8, Codable, Sendable, CaseIterable {
     case unknown = 0
     case valid = 1
     case underrange = 2

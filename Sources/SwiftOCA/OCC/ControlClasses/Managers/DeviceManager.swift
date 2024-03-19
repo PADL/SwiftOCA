@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaResetCause: OcaUint16, Sendable, Codable {
+public enum OcaResetCause: OcaUint8, Sendable, Codable, CaseIterable {
     case powerOn = 0
     case internalError = 1
     case upgrade = 2

@@ -28,7 +28,7 @@ public struct OcaImpedance: Codable, Sendable {
     let phase: OcaFloat32
 }
 
-public enum OcaDelayUnit: OcaUint8, Codable, Sendable {
+public enum OcaDelayUnit: OcaUint8, Codable, Sendable, CaseIterable {
     case time = 1
     case distance = 2
     case samples = 3
@@ -56,14 +56,14 @@ public struct OcaTransferFunction: Codable, Sendable {
 
 public typealias OcaPeriod = OcaUint32 // ms
 
-public enum OcaClassicalFilterShape: OcaUint8, Codable, Sendable {
+public enum OcaClassicalFilterShape: OcaUint8, Codable, Sendable, CaseIterable {
     case butterworth = 1
     case bessel = 2
     case chebyshev = 3
     case linkwitzRiley = 4
 }
 
-public enum OcaFilterPassband: OcaUint8, Codable, Sendable {
+public enum OcaFilterPassband: OcaUint8, Codable, Sendable, CaseIterable {
     case hiPass = 1
     case lowPass = 2
     case bandPass = 3
@@ -71,7 +71,7 @@ public enum OcaFilterPassband: OcaUint8, Codable, Sendable {
     case allPass = 5
 }
 
-public enum OcaParametricEQShape: OcaUint8, Codable, Sendable {
+public enum OcaParametricEQShape: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case peq = 1
     case lowShelv = 2
@@ -87,7 +87,7 @@ public enum OcaParametricEQShape: OcaUint8, Codable, Sendable {
     case toneControlHighSliding = 12
 }
 
-public enum OcaDynamicsFunction: OcaUint8, Codable, Sendable {
+public enum OcaDynamicsFunction: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case compress = 1
     case limit = 2
@@ -101,7 +101,7 @@ public struct OcaPilotToneDetectorSpec: Codable, Sendable {
     let pollInterval: OcaPeriod
 }
 
-public enum OcaWaveformType: OcaUint8, Codable, Sendable {
+public enum OcaWaveformType: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case dc = 1
     case sine = 2
@@ -112,13 +112,13 @@ public enum OcaWaveformType: OcaUint8, Codable, Sendable {
     case polarityTest = 7
 }
 
-public enum OcaSweepType: OcaUint8, Codable, Sendable {
+public enum OcaSweepType: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case linear = 1
     case logarithmic = 2
 }
 
-public enum OcaPresentationUnit: OcaUint8, Codable, Sendable {
+public enum OcaPresentationUnit: OcaUint8, Codable, Sendable, CaseIterable {
     case dBu = 0
     case dBV = 1
     case V = 2
@@ -126,13 +126,13 @@ public enum OcaPresentationUnit: OcaUint8, Codable, Sendable {
 
 public typealias OcaTemperature = OcaFloat32
 
-public enum OcaLevelDetectionLaw: OcaUint8, Codable, Sendable {
+public enum OcaLevelDetectionLaw: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case rms = 1
     case peak = 2
 }
 
-public enum OcaLevelMeterLaw: OcaUint8, Codable, Sendable {
+public enum OcaLevelMeterLaw: OcaUint8, Codable, Sendable, CaseIterable {
     case vu = 1
     case standardVU = 2
     case ppm1 = 3
@@ -143,7 +143,7 @@ public enum OcaLevelMeterLaw: OcaUint8, Codable, Sendable {
     case proprietaryValueBase = 128
 }
 
-public enum OcaSamplingRateConverterType: OcaUint8, Codable, Sendable {
+public enum OcaSamplingRateConverterType: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case synchronous = 1
     case asynchronous = 2

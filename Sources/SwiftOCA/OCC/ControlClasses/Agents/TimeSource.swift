@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-public enum OcaTimeSourceAvailability: OcaUint8, Codable, Sendable {
+public enum OcaTimeSourceAvailability: OcaUint8, Codable, Sendable, CaseIterable {
     case unavailable = 0
     case available = 1
 }
 
-public enum OcaTimeProtocol: OcaUint8, Codable, Sendable {
+public enum OcaTimeProtocol: OcaUint8, Codable, Sendable, CaseIterable {
     case undefined = 0
     case none = 1
     case `private` = 2
@@ -32,7 +32,7 @@ public enum OcaTimeProtocol: OcaUint8, Codable, Sendable {
     case genlock = 9
 }
 
-public enum OcaTimeDeliveryMechanism: OcaUint8, Codable, Sendable {
+public enum OcaTimeDeliveryMechanism: OcaUint8, Codable, Sendable, CaseIterable {
     case undefined = 0
     case none = 1
     case `private` = 2
@@ -49,7 +49,7 @@ public enum OcaTimeDeliveryMechanism: OcaUint8, Codable, Sendable {
 
 public typealias OcaSDPString = OcaString
 
-public enum OcaTimeReferenceType: OcaUint8, Codable, Sendable {
+public enum OcaTimeReferenceType: OcaUint8, Codable, Sendable, CaseIterable {
     case undefined = 0
     case local = 1
     case `private` = 2
@@ -61,7 +61,7 @@ public enum OcaTimeReferenceType: OcaUint8, Codable, Sendable {
     case _expansionBase = 128
 }
 
-public enum OcaTimeSourceSyncStatus: OcaUint8, Codable, Sendable {
+public enum OcaTimeSourceSyncStatus: OcaUint8, Codable, Sendable, CaseIterable {
     case undefined = 0
     case unsynchronized = 1
     case synchronizing = 2

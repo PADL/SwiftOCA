@@ -29,7 +29,7 @@ public struct OcaSetPortClockMapEntryParameters: Ocp1ParametersReflectable {
     }
 }
 
-public enum OcaNetworkAdvertisingService: OcaUint8, Codable, Sendable {
+public enum OcaNetworkAdvertisingService: OcaUint8, Codable, Sendable, CaseIterable {
     case dnsSD = 0
     case mDNS_DNSSD = 1
     case nmos = 2
@@ -82,13 +82,13 @@ public struct OcaNetworkInterfaceAssignment: Codable, Sendable {
     }
 }
 
-public enum OcaNetworkInterfaceCommand: OcaUint8, Codable, Sendable {
+public enum OcaNetworkInterfaceCommand: OcaUint8, Codable, Sendable, CaseIterable {
     case start = 0
     case stop = 1
     case restart = 2
 }
 
-public enum OcaNetworkInterfaceState: OcaUint8, Codable, Sendable {
+public enum OcaNetworkInterfaceState: OcaUint8, Codable, Sendable, CaseIterable {
     case notReady = 0
     case ready = 1
     case fault = 2
@@ -123,7 +123,7 @@ public struct OcaIP4Gateway: Codable, Sendable {
     }
 }
 
-public enum OcaIP4AutoconfigMode: OcaUint8, Codable, Sendable {
+public enum OcaIP4AutoconfigMode: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case dhcp = 1
     case dhcpLinkLocal = 2
@@ -177,7 +177,7 @@ public struct OcaIP6Gateway: Codable, Sendable {
     }
 }
 
-public enum OcaIP6AutoconfigMode: OcaUint8, Codable, Sendable {
+public enum OcaIP6AutoconfigMode: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case slaac = 1
     case dhcpStateless = 2

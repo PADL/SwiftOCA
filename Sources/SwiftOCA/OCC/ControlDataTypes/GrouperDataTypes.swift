@@ -38,7 +38,7 @@ public struct OcaGrouperCitizen: Codable, Sendable {
     }
 }
 
-public enum OcaGrouperMode: OcaUint8, Codable, Sendable {
+public enum OcaGrouperMode: OcaUint8, Codable, Sendable, CaseIterable {
     case masterSlave = 1
     case peerToPeer = 2
 }

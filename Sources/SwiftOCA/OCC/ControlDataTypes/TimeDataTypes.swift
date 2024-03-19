@@ -37,7 +37,7 @@ public struct OcaTime: Codable, Sendable {
 public typealias OcaTimeInterval = TimeInterval
 
 // TODO: check OcaTimeMode encoding
-public enum OcaTimeMode: OcaUint8, Codable, Sendable {
+public enum OcaTimeMode: OcaUint8, Codable, Sendable, CaseIterable {
     case absolute = 1
     case relative = 2
 }

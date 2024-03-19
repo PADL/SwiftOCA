@@ -89,7 +89,7 @@ public struct OcaProduct: Codable, Sendable {
     }
 }
 
-public enum OcaDeviceGenericState: OcaUint8, Codable, Sendable {
+public enum OcaDeviceGenericState: OcaUint8, Codable, Sendable, CaseIterable {
     case normalOperation = 0
     case initializing = 1
     case updating = 2

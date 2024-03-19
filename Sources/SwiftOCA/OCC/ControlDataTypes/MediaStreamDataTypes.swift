@@ -16,7 +16,7 @@
 
 public typealias OcaMediaStreamEndpointID = OcaUint32
 
-public enum OcaMediaStreamEndpointState: OcaUint8, Codable, Sendable {
+public enum OcaMediaStreamEndpointState: OcaUint8, Codable, Sendable, CaseIterable {
     case unknown = 0
     case notReady = 1
     case ready = 2
@@ -25,7 +25,7 @@ public enum OcaMediaStreamEndpointState: OcaUint8, Codable, Sendable {
     case errorHalt = 5
 }
 
-public enum OcaMediaStreamEndpointCommand: OcaUint8, Codable, Sendable {
+public enum OcaMediaStreamEndpointCommand: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case setReady = 1
     case connect = 2
@@ -92,7 +92,7 @@ public struct OcaMediaStreamEndpointStatus: Codable, Sendable {
     }
 }
 
-public enum OcaMediaFrameFormat: OcaUint8, Codable, Sendable {
+public enum OcaMediaFrameFormat: OcaUint8, Codable, Sendable, CaseIterable {
     case undefined = 0
     case rtp = 1
     case aaf = 2
@@ -169,7 +169,7 @@ public struct OcaMediaStreamModeCapability: Codable, Sendable {
     }
 }
 
-public enum OcaMediaStreamModeCapabilityDirection: OcaUint8, Codable, Sendable {
+public enum OcaMediaStreamModeCapabilityDirection: OcaUint8, Codable, Sendable, CaseIterable {
     case input = 1
     case output = 2
 }
@@ -241,7 +241,7 @@ public struct OcaMediaTransportSessionConnectionState: Codable, Sendable {
 
 public typealias OcaMediaTransportSessionID = OcaUint32
 
-public enum OcaMediaTransportSessionState: OcaUint8, Codable, Sendable {
+public enum OcaMediaTransportSessionState: OcaUint8, Codable, Sendable, CaseIterable {
     case unconfigured = 1
     case configured = 2
     case connectedNotStreaming = 3

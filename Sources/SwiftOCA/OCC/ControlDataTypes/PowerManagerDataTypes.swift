@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaPowerState: OcaUint8, Codable, Sendable {
+public enum OcaPowerState: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case working = 1
     case standby = 2

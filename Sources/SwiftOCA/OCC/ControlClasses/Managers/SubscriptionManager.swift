@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaSubscriptionManagerState: OcaUint8, Codable, Sendable {
+public enum OcaSubscriptionManagerState: OcaUint8, Codable, Sendable, CaseIterable {
     case normal = 1
     case eventsDisabled = 2
 }

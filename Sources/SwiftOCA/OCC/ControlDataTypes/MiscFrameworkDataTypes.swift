@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaUnitOfMeasure: OcaUint8, Codable, Sendable {
+public enum OcaUnitOfMeasure: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case hertz = 1
     case degreeCelsius = 2

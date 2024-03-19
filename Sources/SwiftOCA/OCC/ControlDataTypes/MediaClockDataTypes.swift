@@ -33,12 +33,12 @@ public struct OcaMediaClockRate: Codable, Sendable, Equatable {
     }
 }
 
-public enum OcaMediaClockAvailability: OcaUint8, Codable, Sendable {
+public enum OcaMediaClockAvailability: OcaUint8, Codable, Sendable, CaseIterable {
     case unavailable = 0
     case available = 1
 }
 
-public enum OcaMediaClockType: OcaUint8, Codable, Sendable {
+public enum OcaMediaClockType: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case `internal` = 1
     case network = 2

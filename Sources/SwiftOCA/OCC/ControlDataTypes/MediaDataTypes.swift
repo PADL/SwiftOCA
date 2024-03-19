@@ -16,7 +16,7 @@
 
 public typealias OcaMediaConnectorID = OcaUint16
 
-public enum OcaMediaConnectorState: OcaUint8, Codable, Sendable {
+public enum OcaMediaConnectorState: OcaUint8, Codable, Sendable, CaseIterable {
     case stopped = 0
     case settingUp = 1
     case running = 2
@@ -24,13 +24,13 @@ public enum OcaMediaConnectorState: OcaUint8, Codable, Sendable {
     case fault = 4
 }
 
-public enum OcaMediaConnectorCommand: OcaUint8, Codable, Sendable {
+public enum OcaMediaConnectorCommand: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case start = 1
     case pause = 2
 }
 
-public enum OcaMediaStreamCastMode: OcaUint8, Codable, Sendable {
+public enum OcaMediaStreamCastMode: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case unicast = 1
     case multicast = 2
@@ -41,7 +41,7 @@ public typealias OcaMediaStreamParameters = OcaBlob
 public typealias OcaMediaCodingSchemeID = OcaUint16
 
 // FIXME: this appears to be from CM1
-public enum OcaEncoding: OcaUint8, Codable, Sendable {
+public enum OcaEncoding: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case pcm16 = 1
     case pcm24 = 2

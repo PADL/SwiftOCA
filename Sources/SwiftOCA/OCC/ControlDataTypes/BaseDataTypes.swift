@@ -51,7 +51,7 @@ public typealias OcaONoPath = OcaList<OcaONo>
 
 public typealias OcaBitSet16 = OcaUint16
 
-public enum OcaBaseDataType: OcaUint8, Codable, Sendable {
+public enum OcaBaseDataType: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case ocaBoolean = 1
     case ocaInt8 = 2
@@ -70,7 +70,7 @@ public enum OcaBaseDataType: OcaUint8, Codable, Sendable {
     case ocaBit = 16
 }
 
-public enum OcaStatus: OcaUint8, Codable, Sendable {
+public enum OcaStatus: OcaUint8, Codable, Sendable, CaseIterable {
     case ok = 0
     case protocolVersionError = 1
     case deviceError = 2
@@ -113,7 +113,7 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
     }
 }
 
-public enum OcaIODirection: OcaUint8, Codable, Sendable {
+public enum OcaIODirection: OcaUint8, Codable, Sendable, CaseIterable {
     case input = 1
     case output = 2
 }
@@ -411,7 +411,7 @@ public struct OcaOrganizationID: Codable, Sendable, CustomStringConvertible {
     }
 }
 
-public enum OcaLockState: OcaUint8, Codable, Sendable {
+public enum OcaLockState: OcaUint8, Codable, Sendable, CaseIterable {
     case noLock = 0
     case lockNoWrite = 1
     case lockNoReadWrite = 2
@@ -427,7 +427,7 @@ public typealias OcaParameterRecord = OcaJsonValue
 
 public typealias OcaMimeType = OcaString
 
-public enum OcaSecurityType: OcaUint8, Codable, Sendable {
+public enum OcaSecurityType: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case `default` = 1
 }

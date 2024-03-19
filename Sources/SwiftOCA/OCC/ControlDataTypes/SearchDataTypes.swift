@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaStringComparisonType: OcaUint8, Codable, Sendable {
+public enum OcaStringComparisonType: OcaUint8, Codable, Sendable, CaseIterable {
     case exact = 0
     case substring = 1
     case contains = 2

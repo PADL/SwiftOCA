@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaTaskManagerState: OcaUint8, Codable, Sendable {
+public enum OcaTaskManagerState: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case enabled = 1
     case disabled = 2
@@ -24,7 +24,7 @@ public typealias OcaTaskID = OcaUint32
 
 public typealias OcaTaskGroupID = OcaUint16
 
-public enum OcaTaskState: OcaUint8, Codable, Sendable {
+public enum OcaTaskState: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case notPrepared = 1
     case disabled = 2

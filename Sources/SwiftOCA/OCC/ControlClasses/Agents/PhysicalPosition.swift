@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaPositionCoordinateSystem: OcaUint8, Codable, Sendable {
+public enum OcaPositionCoordinateSystem: OcaUint8, Codable, Sendable, CaseIterable {
     case robotic = 1
     case ituAudioObjectBasedPolar = 2
     case ituAudioObjectBasedCartesian = 3

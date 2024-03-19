@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaNotificationDeliveryMode: OcaUint8, Codable, Sendable {
+public enum OcaNotificationDeliveryMode: OcaUint8, Codable, Sendable, CaseIterable {
     case normal = 1
     case lightweight = 2
 }

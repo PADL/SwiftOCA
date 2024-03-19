@@ -22,7 +22,7 @@ import Darwin
 
 // CM3
 
-public enum OcaNetworkLinkType: OcaUint8, Codable, Sendable {
+public enum OcaNetworkLinkType: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case ethernetWired = 1
     case ethernetWireless = 2
@@ -30,7 +30,7 @@ public enum OcaNetworkLinkType: OcaUint8, Codable, Sendable {
     case serialP2P = 4
 }
 
-public enum OcaNetworkMediaProtocol: OcaUint8, Codable, Sendable {
+public enum OcaNetworkMediaProtocol: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case av3 = 1
     case avbtp = 2
@@ -42,14 +42,14 @@ public enum OcaNetworkMediaProtocol: OcaUint8, Codable, Sendable {
     case extensionPoint = 65
 }
 
-public enum OcaNetworkControlProtocol: OcaUint8, Codable, Sendable {
+public enum OcaNetworkControlProtocol: OcaUint8, Codable, Sendable, CaseIterable {
     case none = 0
     case ocp01 = 1 // TCP/IP
     case ocp02 = 2 // USB
     case ocp03 = 3 // JSON
 }
 
-public enum Ocp1IPParametersType: OcaUint8, Codable, Sendable {
+public enum Ocp1IPParametersType: OcaUint8, Codable, Sendable, CaseIterable {
     case unknown = 0
     case linkLocal = 1
     case dhcp = 2
