@@ -193,17 +193,12 @@ public struct OcaBoundedProperty<
     }
 
     @_spi(SwiftOCAPrivate)
-    public func getJsonValue() throws -> Any? {
+    public func getJsonValue() throws -> [String: Any]? {
         guard case let .success(value) = subject.value else {
             return nil
         }
 
-        let valueDict: [String: Value] =
-            ["v": value.value,
-             "l": value.range.lowerBound,
-             "u": value.range.upperBound]
-
-        return valueDict
+        return [_storage.propertyID.description: value.value]
     }
 }
 

@@ -169,14 +169,14 @@ public struct OcaVectorProperty<
     }
 
     @_spi(SwiftOCAPrivate)
-    public func getJsonValue() throws -> Any? {
+    public func getJsonValue() throws -> [String: Any]? {
         guard case let .success(value) = subject.value else {
             return nil
         }
 
         let valueDict: [String: Value] =
-            ["x": value.x,
-             "y": value.y]
+            [xPropertyID.description: value.x,
+             yPropertyID.description: value.y]
 
         return valueDict
     }

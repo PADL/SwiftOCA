@@ -80,7 +80,7 @@ public
 protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
     var subject: AsyncCurrentValueSubject<PropertyValue> { get }
 
-    func getJsonValue() throws -> Any?
+    func getJsonValue() throws -> [String: Any]?
 }
 
 public extension OcaPropertySubjectRepresentable {
@@ -461,7 +461,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
 
     @_spi(SwiftOCAPrivate)
-    public func getJsonValue() throws -> Any? {
+    public func getJsonValue() throws -> [String: Any]? {
         guard case let .success(value) = subject.value else {
             return nil
         }
@@ -476,7 +476,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
             jsonValue = try JSONEncoder().reencodeAsValidJSONObject(value)
         }
 
-        return jsonValue
+        return [propertyID.description: jsonValue]
     }
 }
 
