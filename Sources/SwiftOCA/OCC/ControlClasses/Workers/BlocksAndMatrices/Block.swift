@@ -247,12 +247,14 @@ open class OcaBlock: OcaWorker {
         true
     }
 
-    override public var jsonObject: [String: Any] {
-        get async {
-            var jsonObject = await super.jsonObject
-            jsonObject["3.2"] = try? await resolveActionObjects().asyncMap { await $0.jsonObject }
-            return jsonObject
-        }
+    @_spi(SwiftOCAPrivate)
+    override public func _getJsonValue(
+        flags: _OcaPropertyResolutionFlags
+    ) async -> [String: Any] {
+        var jsonObject = await super.jsonObject
+        jsonObject["3.2"] = try? await resolveActionObjects()
+            .asyncMap { await $0._getJsonValue(flags: flags) }
+        return jsonObject
     }
 }
 

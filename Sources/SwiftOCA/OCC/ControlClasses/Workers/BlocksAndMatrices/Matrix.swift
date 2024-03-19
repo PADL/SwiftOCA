@@ -99,13 +99,14 @@ open class OcaMatrix: OcaWorker {
         true
     }
 
-    override public var jsonObject: [String: Any] {
-        get async {
-            var jsonObject = await super.jsonObject
-            let membersJson = try? await resolveMembers().map(defaultValue: nil, \.?.objectNumber)
-            jsonObject["3.5"] = try? JSONEncoder().reencodeAsValidJSONObject(membersJson)
-            return jsonObject
-        }
+    @_spi(SwiftOCAPrivate)
+    override public func _getJsonValue(
+        flags: _OcaPropertyResolutionFlags
+    ) async -> [String: Any] {
+        var jsonObject = await super._getJsonValue(flags: flags)
+        let membersJson = try? await resolveMembers().map(defaultValue: nil, \.?.objectNumber)
+        jsonObject["3.5"] = try? JSONEncoder().reencodeAsValidJSONObject(membersJson)
+        return jsonObject
     }
 }
 

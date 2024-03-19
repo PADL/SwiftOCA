@@ -127,7 +127,7 @@ Sendable, OcaKeyPathMarkerProtocol {
 
     @_spi(SwiftOCAPrivate)
     public func _getJsonValue(
-        flags: _OcaPropertyResolutionFlags = .defaultFlags
+        flags: _OcaPropertyResolutionFlags
     ) async -> [String: Any] {
         var dict = [String: Any]()
 
@@ -148,9 +148,9 @@ Sendable, OcaKeyPathMarkerProtocol {
         return dict
     }
 
-    open var jsonObject: [String: Any] {
+    public var jsonObject: [String: Any] {
         get async {
-            await _getJsonValue()
+            await _getJsonValue(flags: .defaultFlags)
         }
     }
 }
