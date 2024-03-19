@@ -293,15 +293,7 @@ public extension OcaRoot {
             _ object: OcaRoot,
             flags: _OcaPropertyResolutionFlags = .defaultFlags
         ) async throws -> [String: Any] {
-            let value = try await _getValue(object, flags: flags)
-            let jsonValue: Any
-
-            if JSONSerialization.isValidJSONObject(value) {
-                jsonValue = value
-            } else {
-                jsonValue = try JSONEncoder().reencodeAsValidJSONObject(value)
-            }
-            return [propertyIDs[0].description: jsonValue]
+            [propertyIDs[0].description: String(describing: value)]
         }
     }
 }
