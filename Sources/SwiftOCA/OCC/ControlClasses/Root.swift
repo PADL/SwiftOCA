@@ -281,7 +281,7 @@ public extension OcaRoot {
 
         @_spi(SwiftOCAPrivate)
         public func getJsonValue() throws -> Any? {
-            currentValue
+            value
         }
     }
 }
