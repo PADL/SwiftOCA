@@ -193,7 +193,7 @@ public struct OcaBoundedProperty<
     }
 
     @_spi(SwiftOCAPrivate)
-    public func getJsonValue(
+    public func _getJsonValue(
         _ object: OcaRoot,
         flags: _OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> [String: Any] {

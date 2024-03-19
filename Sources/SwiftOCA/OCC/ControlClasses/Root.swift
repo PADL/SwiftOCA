@@ -141,7 +141,7 @@ Sendable, OcaKeyPathMarkerProtocol {
             for (_, propertyKeyPath) in allPropertyKeyPaths {
                 let property =
                     self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
-                if let jsonValue = try? await property.getJsonValue(self, flags: .defaultFlags) {
+                if let jsonValue = try? await property._getJsonValue(self, flags: .defaultFlags) {
                     dict.merge(jsonValue) { current, _ in current }
                 }
             }
@@ -282,7 +282,7 @@ public extension OcaRoot {
         }
 
         @_spi(SwiftOCAPrivate)
-        public func getJsonValue(
+        public func _getJsonValue(
             _ object: OcaRoot,
             flags: _OcaPropertyResolutionFlags = .defaultFlags
         ) async throws -> [String: Any] {

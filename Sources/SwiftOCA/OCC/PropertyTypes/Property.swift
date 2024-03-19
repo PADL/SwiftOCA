@@ -80,7 +80,7 @@ public
 protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
     var subject: AsyncCurrentValueSubject<PropertyValue> { get }
 
-    func getJsonValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws
+    func _getJsonValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws
         -> [String: Any]
 }
 
@@ -462,7 +462,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
 
     @_spi(SwiftOCAPrivate)
-    public func getJsonValue(
+    public func _getJsonValue(
         _ object: OcaRoot,
         flags: _OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> [String: Any] {
