@@ -300,7 +300,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         return returnValue
     }
 
-    private func setValueIfMutable(
+    func setValueIfMutable(
         _ object: OcaRoot,
         _ value: Value
     ) async throws {
@@ -486,26 +486,10 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     public func _setJsonValue(_ object: OcaRoot, _ jsonValue: Any) async throws {
         if jsonValue is NSNull {
             throw Ocp1Error.nilNotEncodable
-        } else if let jsonValue = jsonValue as? OcaString,
-                  let caseIterableValueType = Value.self as? any CaseIterable.Type
+        } else if let jsonValue = jsonValue as? String,
+                  let jsonValue: Value = parseStringValue(jsonValue)
         {
-            let caseIterableValue: Value? = caseIterableValueType.value(for: jsonValue) as! Value?
-            guard let caseIterableValue else { throw Ocp1Error.status(.badFormat) }
-            try await setValueIfMutable(object, caseIterableValue)
-        } else if let jsonValue = jsonValue as? OcaString, Value.self is OcaBoolean.Type {
-            let booleanValue = NSString(string: jsonValue).boolValue
-            try await setValueIfMutable(object, booleanValue as! Value)
-        } else if let jsonValue = jsonValue as? OcaString,
-                  let fixedIntegerType = Value.self as? any FixedWidthInteger.Type
-        {
-            guard let fixedIntegerValue = Int(jsonValue),
-                  let fixedIntegerValue = fixedIntegerType.init(exactly: fixedIntegerValue)
-            else { throw Ocp1Error.status(.badFormat) }
-            try await setValueIfMutable(object, fixedIntegerValue as! Value)
-        } else if let jsonValue = jsonValue as? OcaString, Value.self is OcaFloat32.Type {
-            guard let floatingPointValue = OcaFloat32(jsonValue)
-            else { throw Ocp1Error.status(.badFormat) }
-            try await setValueIfMutable(object, floatingPointValue as! Value)
+            try await setValueIfMutable(object, jsonValue)
         } else if !JSONSerialization.isValidJSONObject(subject.value),
                   let jsonValue = jsonValue as? Codable
         {
@@ -513,22 +497,11 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
             let decodedValue = try JSONDecoder().decode(Value.self, from: data)
             try await setValueIfMutable(object, decodedValue)
         } else {
-            guard let newValue = jsonValue as? Value else {
+            guard let jsonValue = jsonValue as? Value else {
                 throw Ocp1Error.status(.badFormat)
             }
-            try await setValueIfMutable(object, newValue)
+            try await setValueIfMutable(object, jsonValue)
         }
-    }
-}
-
-private extension CaseIterable {
-    static func value(for string: String) -> Self? {
-        for aCase in allCases {
-            if String(describing: aCase) == string {
-                return aCase
-            }
-        }
-        return nil
     }
 }
 
@@ -579,3 +552,38 @@ public extension OcaProperty {
     }
 }
 #endif
+
+func parseStringValue<T: Decodable>(_ stringValue: String) -> T? {
+    if let caseIterableValueType = T.self as? any CaseIterable.Type,
+       let caseIterableValue = (caseIterableValueType.value(for: stringValue) as! T?)
+    {
+        return caseIterableValue
+    } else if T.self is Bool.Type {
+        let booleanValue = NSString(string: stringValue).boolValue
+        return booleanValue as! T?
+    } else if let fixedIntegerType = T.self as? any FixedWidthInteger.Type,
+              let fixedIntegerValue = Int(stringValue),
+              let fixedIntegerValue = fixedIntegerType.init(exactly: fixedIntegerValue)
+    {
+        return fixedIntegerValue as! T?
+    } else if T.self is Float.Type, let floatingPointValue = Float(stringValue) {
+        return floatingPointValue as! T?
+    } else if T.self is Double.Type, let floatingPointValue = Double(stringValue) {
+        return floatingPointValue as! T?
+    } else if let stringValue = stringValue as? T {
+        return stringValue
+    } else {
+        return nil
+    }
+}
+
+private extension CaseIterable {
+    static func value(for string: String) -> Self? {
+        for aCase in allCases {
+            if String(describing: aCase) == string {
+                return aCase
+            }
+        }
+        return nil
+    }
+}

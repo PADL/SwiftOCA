@@ -203,11 +203,29 @@ public struct OcaBoundedProperty<
 
     @_spi(SwiftOCAPrivate)
     public func _setJsonValue(_ object: OcaRoot, _ jsonValue: Any) async throws {
-        if let jsonValue = jsonValue as? OcaBoundedPropertyValue<Value> {
-            try await _storage._setJsonValue(object, jsonValue.value)
+        // use flags to avoid subscribing
+        var value = try await _getValue(object, flags: [.cacheValue, .returnCachedValue])
+
+        if jsonValue is NSNull {
+            throw Ocp1Error.nilNotEncodable
+        } else if let jsonValue = jsonValue as? String,
+                  let jsonValue: Value = parseStringValue(jsonValue)
+        {
+            value.value = jsonValue
+        } else if !JSONSerialization.isValidJSONObject(subject.value),
+                  let jsonValue = jsonValue as? Codable
+        {
+            let data = try JSONEncoder().encode(jsonValue)
+            let decodedValue = try JSONDecoder().decode(Value.self, from: data)
+            value.value = decodedValue
         } else {
-            try await _storage._setJsonValue(object, jsonValue)
+            guard let jsonValue = jsonValue as? Value else {
+                throw Ocp1Error.status(.badFormat)
+            }
+            value.value = jsonValue
         }
+
+        try await _storage._setJsonValue(object, value)
     }
 }
 
