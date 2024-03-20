@@ -78,7 +78,7 @@ public struct Ocp1ConnectionOptions: Sendable {
 open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     public nonisolated static let MinimumPduSize = 7
 
-    let options: Ocp1ConnectionOptions
+    var options: Ocp1ConnectionOptions
 
     /// Keepalive/ping interval (only necessary for UDP, but useful for other transports)
     open var heartbeatTime: Duration {
@@ -131,7 +131,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
             do {
                 try await receiveMessages(connection)
             } catch Ocp1Error.notConnected {
-                if connection.options.automaticReconnect {
+                if await connection.options.automaticReconnect {
                     try await connection.reconnectDevice()
                 } else {
                     resumeAllNotConnected()
