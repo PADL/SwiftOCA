@@ -83,7 +83,10 @@ protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
     func _getJsonValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws
         -> [String: Any]
 
-    func _setJsonValue(_ object: OcaRoot, _ jsonValue: Any) async throws
+    func _getPresentationValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws
+        -> String
+
+    func _setPresentationValue(_ object: OcaRoot, _ stringValue: String) async throws
 }
 
 public extension OcaPropertySubjectRepresentable {
@@ -483,25 +486,20 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
 
     @_spi(SwiftOCAPrivate)
-    public func _setJsonValue(_ object: OcaRoot, _ jsonValue: Any) async throws {
-        if jsonValue is NSNull {
-            throw Ocp1Error.nilNotEncodable
-        } else if let jsonValue = jsonValue as? String,
-                  let jsonValue: Value = parseStringValue(jsonValue)
-        {
-            try await setValueIfMutable(object, jsonValue)
-        } else if !JSONSerialization.isValidJSONObject(subject.value),
-                  let jsonValue = jsonValue as? Codable
-        {
-            let data = try JSONEncoder().encode(jsonValue)
-            let decodedValue = try JSONDecoder().decode(Value.self, from: data)
-            try await setValueIfMutable(object, decodedValue)
-        } else {
-            guard let jsonValue = jsonValue as? Value else {
-                throw Ocp1Error.status(.badFormat)
-            }
-            try await setValueIfMutable(object, jsonValue)
+    public func _getPresentationValue(
+        _ object: OcaRoot,
+        flags: _OcaPropertyResolutionFlags = .defaultFlags
+    ) async throws -> String {
+        let value = try await _getValue(object, flags: flags)
+        return String(describing: value)
+    }
+
+    @_spi(SwiftOCAPrivate)
+    public func _setPresentationValue(_ object: OcaRoot, _ stringValue: String) async throws {
+        guard let value: Value = parseStringValue(stringValue) else {
+            throw Ocp1Error.status(.badFormat)
         }
+        try await setValueIfMutable(object, value)
     }
 }
 
