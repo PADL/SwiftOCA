@@ -78,7 +78,11 @@ public struct Ocp1ConnectionOptions: Sendable {
 open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     public nonisolated static let MinimumPduSize = 7
 
-    public var options: Ocp1ConnectionOptions
+    public internal(set) var options: Ocp1ConnectionOptions
+
+    public func set(options: Ocp1ConnectionOptions) {
+        self.options = options
+    }
 
     /// Keepalive/ping interval (only necessary for UDP, but useful for other transports)
     open var heartbeatTime: Duration {
