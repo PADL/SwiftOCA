@@ -294,15 +294,7 @@ public extension OcaRoot {
         }
 
         @_spi(SwiftOCAPrivate)
-        public func _getPresentationValue(
-            _ object: OcaRoot,
-            flags: _OcaPropertyResolutionFlags = .defaultFlags
-        ) async throws -> String {
-            String(describing: value)
-        }
-
-        @_spi(SwiftOCAPrivate)
-        public func _setPresentationValue(_ object: OcaRoot, _ stringValue: String) async throws {
+        public func _set(_ object: OcaRoot, description stringValue: String) async throws {
             throw Ocp1Error.propertyIsImmutable
         }
     }

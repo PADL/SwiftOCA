@@ -23,7 +23,7 @@ import SwiftUI
 public struct OcaBoundedPropertyValue<
     Value: Codable & Comparable &
         Sendable
->: Ocp1ParametersReflectable, Codable, Equatable, Sendable {
+>: Ocp1ParametersReflectable, Codable, Equatable, Sendable, CustomStringConvertible {
     public var value: Value
     public var minValue: Value
     public var maxValue: Value
@@ -48,6 +48,10 @@ public struct OcaBoundedPropertyValue<
         self.value = value
         self.minValue = minValue
         self.maxValue = maxValue
+    }
+
+    public var description: String {
+        String(describing: value)
     }
 }
 
@@ -202,16 +206,7 @@ public struct OcaBoundedProperty<
     }
 
     @_spi(SwiftOCAPrivate)
-    public func _getPresentationValue(
-        _ object: OcaRoot,
-        flags: _OcaPropertyResolutionFlags = .defaultFlags
-    ) async throws -> String {
-        let value = try await _getValue(object, flags: flags)
-        return String(describing: value.value)
-    }
-
-    @_spi(SwiftOCAPrivate)
-    public func _setPresentationValue(_ object: OcaRoot, _ stringValue: String) async throws {
+    public func _set(_ object: OcaRoot, description stringValue: String) async throws {
         // use flags to avoid subscribing
         var value = try await _getValue(object, flags: [.cacheValue, .returnCachedValue])
         guard let innerValue: Value = parseStringValue(stringValue) else {

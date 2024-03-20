@@ -183,16 +183,7 @@ public struct OcaVectorProperty<
     }
 
     @_spi(SwiftOCAPrivate)
-    public func _getPresentationValue(
-        _ object: OcaRoot,
-        flags: _OcaPropertyResolutionFlags = .defaultFlags
-    ) async throws -> String {
-        let value = try await _getValue(object, flags: flags)
-        return String(describing: value)
-    }
-
-    @_spi(SwiftOCAPrivate)
-    public func _setPresentationValue(_ object: OcaRoot, _ stringValue: String) async throws {
+    public func _set(_ object: OcaRoot, description stringValue: String) async throws {
         throw Ocp1Error.notImplemented
     }
 }
