@@ -80,8 +80,15 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 
     public internal(set) var options: Ocp1ConnectionOptions
 
-    public func set(options: Ocp1ConnectionOptions) {
+    public func set(options: Ocp1ConnectionOptions) async throws {
+        let oldAutomaticReconnect = self.options.automaticReconnect
+        let oldRefreshDeviceTreeOnConnection = self.options.refreshDeviceTreeOnConnection
         self.options = options
+        if !oldAutomaticReconnect && options.automaticReconnect {
+            try await connect()
+        } else if !oldRefreshDeviceTreeOnConnection && options.refreshDeviceTreeOnConnection {
+            try await refreshDeviceTree()
+        }
     }
 
     /// Keepalive/ping interval (only necessary for UDP, but useful for other transports)
