@@ -52,8 +52,12 @@ public extension Ocp1Connection {
 
     internal func refreshDeviceTree() async throws {
         let members = try await rootBlock.resolveActionObjectsRecursive()
-        for member in members {
-            await member.memberObject.$role.subscribe(member.memberObject)
+        await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
+            for member in members {
+                taskGroup.addTask {
+                    await member.memberObject.$role.subscribe(member.memberObject)
+                }
+            }
         }
     }
 
