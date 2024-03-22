@@ -55,7 +55,12 @@ public extension Ocp1Connection {
         await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
             for member in members {
                 taskGroup.addTask {
-                    await member.memberObject.$role.subscribe(member.memberObject)
+                    // don't subscribe to role events because they are immutable, however do
+                    // retrieve the initial value
+                    _ = try? await member.memberObject.$role._getValue(
+                        member.memberObject,
+                        flags: [.returnCachedValue, .cacheValue]
+                    )
                 }
             }
         }
