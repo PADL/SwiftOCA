@@ -24,7 +24,7 @@ import SwiftUI
 /// these private flags are for use by `ocacli` which doesn't cache or subscribe to events
 /// by default; other API consumers should use the default behaviour
 @_spi(SwiftOCAPrivate)
-public struct _OcaPropertyResolutionFlags: OptionSet {
+public struct _OcaPropertyResolutionFlags: OptionSet, Sendable {
     public typealias RawValue = UInt32
 
     public let rawValue: RawValue
