@@ -312,7 +312,12 @@ public extension OcaBlock {
         -> [OcaContainerObjectMember]
     {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
-        let recursiveMembers: OcaList<OcaBlockMember> = try await getRecursive()
+        let recursiveMembers: [OcaBlockMember]
+        do {
+            recursiveMembers = try await getRecursive()
+        } catch Ocp1Error.status(.notImplemented) {
+            recursiveMembers = try await getRecursiveFallback()
+        }
         var containerMembers: [OcaContainerObjectMember]
 
         containerMembers = recursiveMembers.compactMap { member in
