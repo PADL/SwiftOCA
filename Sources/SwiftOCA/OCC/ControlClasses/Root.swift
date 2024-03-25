@@ -134,20 +134,29 @@ Sendable, OcaKeyPathMarkerProtocol {
     public func _getJsonValue(
         flags: _OcaPropertyResolutionFlags
     ) async -> [String: Any] {
-        var dict = [String: Any]()
-
         precondition(objectNumber != OcaInvalidONo)
 
         guard self is OcaWorker else {
             return [:]
         }
 
-        for (_, propertyKeyPath) in allPropertyKeyPaths {
-            let property =
-                self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
-            if let jsonValue = try? await property._getJsonValue(self, flags: flags) {
-                dict.merge(jsonValue) { current, _ in current }
+        let dict = await withTaskGroup(
+            of: [String: Any].self,
+            returning: [String: Any].self
+        ) { taskGroup in
+            for (_, propertyKeyPath) in allPropertyKeyPaths {
+                taskGroup.addTask {
+                    let property =
+                        self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
+                    var dict = [String: Any]()
+
+                    if let jsonValue = try? await property._getJsonValue(self, flags: flags) {
+                        dict.merge(jsonValue) { current, _ in current }
+                    }
+                    return dict
+                }
             }
+            return await taskGroup.collect().reduce(into: [String: Any]()) { $0.merge($1) { $1 } }
         }
 
         return dict
