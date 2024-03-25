@@ -367,3 +367,62 @@ public protocol OcaOwnable: OcaRoot {
 protocol OcaOwnablePrivate: OcaOwnable {
     func _set(owner: OcaONo)
 }
+
+@_spi(SwiftOCAPrivate)
+public extension OcaRoot {
+    func _getRole() async throws -> String {
+        try await $role._getValue(self, flags: [.cacheValue, .returnCachedValue])
+    }
+
+    private func getRolePathFallback(flags: _OcaPropertyResolutionFlags) async throws
+        -> OcaNamePath?
+    {
+        if objectNumber == OcaRootBlockONo {
+            return []
+        }
+
+        var path = [String]()
+        var currentObject = self
+
+        repeat {
+            guard let role = try? await currentObject._getRole() else {
+                return nil
+            }
+
+            guard let ownableObject = currentObject as? OcaOwnable else {
+                return nil
+            }
+
+            if ownableObject.objectNumber == OcaRootBlockONo {
+                break
+            }
+
+            let ownerONo = (try? await ownableObject._getOwner(flags: flags)) ?? OcaInvalidONo
+            guard ownerONo != OcaInvalidONo else {
+                break // we are at the root
+            }
+
+            path.insert(role, at: 0)
+
+            guard let cachedObject = await connectionDelegate?.resolve(cachedObject: ownerONo)
+            else {
+                return nil
+            }
+            currentObject = cachedObject
+        } while true
+
+        return path
+    }
+
+    func _getRolePath(flags: _OcaPropertyResolutionFlags) async throws -> OcaNamePath {
+        if objectNumber == OcaRootBlockONo {
+            return []
+        } else if let localRolePath = try await getRolePathFallback(flags: flags) {
+            return localRolePath
+        } else if let self = self as? OcaOwnable {
+            return try await self.path.0
+        } else {
+            throw Ocp1Error.objectClassMismatch
+        }
+    }
+}
