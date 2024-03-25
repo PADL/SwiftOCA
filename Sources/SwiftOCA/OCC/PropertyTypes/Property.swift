@@ -41,6 +41,8 @@ public struct _OcaPropertyResolutionFlags: OptionSet, Sendable {
     public static let cacheValue = _OcaPropertyResolutionFlags(rawValue: 1 << 2)
     /// subscribe to property events
     public static let subscribeEvents = _OcaPropertyResolutionFlags(rawValue: 1 << 3)
+    /// cache errors directly
+    public static let cacheErrors = _OcaPropertyResolutionFlags(rawValue: 1 << 4)
 
     public static let defaultFlags =
         _OcaPropertyResolutionFlags([.returnCachedValue, .throwCachedError, .cacheValue,
@@ -273,31 +275,44 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         _ object: OcaRoot,
         flags: _OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> Value {
-        guard let getMethodID else {
-            throw Ocp1Error.propertyIsSettableOnly
-        }
-
-        if flags.contains(.subscribeEvents) {
-            let isSubscribed = (try? await object.isSubscribed) ?? false
-            if !isSubscribed {
-                Task.detached { try await object.subscribe() }
+        do {
+            guard let getMethodID else {
+                throw Ocp1Error.propertyIsSettableOnly
             }
-        }
 
-        if flags.contains(.returnCachedValue), hasValueOrError {
-            if case let .success(value) = currentValue {
-                return value
-            } else if flags.contains(.throwCachedError), case let .failure(error) = currentValue {
-                throw error
+            if flags.contains(.subscribeEvents) {
+                let isSubscribed = (try? await object.isSubscribed) ?? false
+                if !isSubscribed {
+                    Task.detached { try await object.subscribe() }
+                }
             }
-        }
 
-        let returnValue: Value = try await object.sendCommandRrq(methodID: getMethodID)
-        if flags.contains(.cacheValue) {
-            _send(_enclosingInstance: object, .success(returnValue))
-        }
+            if flags.contains(.returnCachedValue), hasValueOrError {
+                if case let .success(value) = currentValue {
+                    return value
+                } else if case let .failure(error) = currentValue,
+                          flags
+                          .contains(.throwCachedError) || (error as? Ocp1Error) ==
+                          .status(.notImplemented)
+                {
+                    // we always throw notImplemented errors as we presume the device isn't going to
+                    // change its implementation status
+                    throw error
+                }
+            }
 
-        return returnValue
+            let returnValue: Value = try await object.sendCommandRrq(methodID: getMethodID)
+            if flags.contains(.cacheValue) {
+                _send(_enclosingInstance: object, .success(returnValue))
+            }
+
+            return returnValue
+        } catch {
+            if flags.contains(.cacheErrors) {
+                _send(_enclosingInstance: object, .failure(error))
+            }
+            throw error
+        }
     }
 
     func setValueIfMutable(
