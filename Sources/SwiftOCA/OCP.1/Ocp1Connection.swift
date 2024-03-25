@@ -96,7 +96,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
         .seconds(1)
     }
 
-    /// Object interning, main thread only
+    /// Object interning
     var objects = [OcaONo: OcaRoot]()
 
     /// Root block, immutable
@@ -237,6 +237,11 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
         logger.info("Connected to \(self)")
     }
 
+    open func clearObjectCache() async {
+        objects = [:]
+        await rootBlock.refreshAll()
+    }
+
     open func disconnectDevice(clearObjectCache: Bool) async throws {
         if let monitor {
             await monitor.stop()
@@ -247,7 +252,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
             self.monitorTask = nil
         }
         if clearObjectCache {
-            objects = [:]
+            await self.clearObjectCache()
         }
 
         #if canImport(Combine) || canImport(OpenCombine)
