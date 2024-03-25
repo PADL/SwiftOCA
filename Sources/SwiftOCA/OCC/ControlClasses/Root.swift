@@ -369,6 +369,26 @@ protocol OcaOwnablePrivate: OcaOwnable {
 }
 
 @_spi(SwiftOCAPrivate)
+public extension OcaOwnable {
+    func _getOwnerObject(flags: _OcaPropertyResolutionFlags) async throws -> OcaBlock {
+        let owner = try await _getOwner(flags: flags)
+        if owner == OcaInvalidONo {
+            throw Ocp1Error.status(.parameterOutOfRange)
+        }
+
+        guard let ownerObject = await connectionDelegate?
+            .resolve(object: OcaObjectIdentification(
+                oNo: owner,
+                classIdentification: OcaBlock.classIdentification
+            )) as? OcaBlock
+        else {
+            throw Ocp1Error.status(.badONo)
+        }
+        return ownerObject
+    }
+}
+
+@_spi(SwiftOCAPrivate)
 public extension OcaRoot {
     func _getRole() async throws -> String {
         try await $role._getValue(self, flags: [.cacheValue, .returnCachedValue])
