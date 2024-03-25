@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct OcaBlockMember: Codable, Sendable {
+public struct OcaBlockMember: Codable, Sendable, Hashable {
     public let memberObjectIdentification: OcaObjectIdentification
     public let containerObjectNumber: OcaONo
 
@@ -100,6 +100,45 @@ open class OcaBlock: OcaWorker {
 
     public func getRecursive() async throws -> OcaList<OcaBlockMember> {
         try await sendCommandRrq(methodID: OcaMethodID("3.6"))
+    }
+
+    private func _getRecursiveFallback(_ blockMembers: inout Set<OcaBlockMember>) async throws {
+        let actionObjects = try await $actionObjects._getValue(
+            self,
+            flags: [.returnCachedValue, .cacheValue]
+        )
+
+        for actionObject in actionObjects {
+            blockMembers
+                .insert(OcaBlockMember(
+                    memberObjectIdentification: actionObject,
+                    containerObjectNumber: objectNumber
+                ))
+            if actionObject.classIdentification.isSubclass(of: OcaBlock.classIdentification),
+               !blockMembers.contains(where: { $0.memberObjectIdentification == actionObject }),
+               // avoid cyclic references
+               let actionObject: OcaBlock = await connectionDelegate?
+               .resolve(object: actionObject)
+            {
+                try await actionObject._getRecursiveFallback(&blockMembers)
+            }
+        }
+    }
+
+    /// this is a controller-side implementation of `getRecursive()` for devices that do not
+    /// implement  `GetActionObjectsRecursive()`
+    /// note that whilst we cache values here, we don't return cached values nor do we add any event
+    /// subscriptions
+    public func getRecursiveFallback() async throws -> OcaList<OcaBlockMember> {
+        var blockMembers = Set<OcaBlockMember>()
+        try await _getRecursiveFallback(&blockMembers)
+        return Array(blockMembers).sorted(by: {
+            if $1.containerObjectNumber == $0.containerObjectNumber {
+                return $1.memberObjectIdentification.oNo > $0.memberObjectIdentification.oNo
+            } else {
+                return $1.containerObjectNumber > $0.containerObjectNumber
+            }
+        })
     }
 
     public func add(signalPath path: OcaSignalPath) async throws -> OcaUint16 {

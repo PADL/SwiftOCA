@@ -41,7 +41,8 @@ public struct _OcaPropertyResolutionFlags: OptionSet, Sendable {
     public static let cacheValue = _OcaPropertyResolutionFlags(rawValue: 1 << 2)
     /// subscribe to property events
     public static let subscribeEvents = _OcaPropertyResolutionFlags(rawValue: 1 << 3)
-    /// cache errors directly
+    /// cache errors directly, note this is done implicitly by `perform()` when using the wrapper
+    /// accessors, so is absent from `defaultFlags`
     public static let cacheErrors = _OcaPropertyResolutionFlags(rawValue: 1 << 4)
 
     public static let defaultFlags =

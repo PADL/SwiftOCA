@@ -359,7 +359,7 @@ public struct OcaClassIdentification: Codable, Sendable, Hashable {
     }
 }
 
-public struct OcaObjectIdentification: Codable, Sendable {
+public struct OcaObjectIdentification: Codable, Sendable, Hashable {
     public let oNo: OcaONo
     public let classIdentification: OcaClassIdentification
 
