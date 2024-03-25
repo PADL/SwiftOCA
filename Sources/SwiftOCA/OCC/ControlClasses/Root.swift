@@ -78,6 +78,11 @@ Sendable, OcaKeyPathMarkerProtocol {
     )
     public var role: OcaProperty<OcaString>.PropertyValue
 
+    @_spi(SwiftOCAPrivate)
+    public func _set(role: OcaString) {
+        $role.subject.send(.success(role))
+    }
+
     @OcaProperty(
         propertyID: OcaPropertyID("1.6"),
         getMethodID: OcaMethodID("1.7")
