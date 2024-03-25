@@ -17,7 +17,8 @@
 public extension Ocp1Connection {
     private func resolve<T: OcaRoot>(
         classIdentification: OcaClassIdentification,
-        objectNumber: OcaONo
+        objectNumber: OcaONo,
+        owner: OcaONo
     ) -> T? {
         if let object = objects[objectNumber] as? T {
             return object
@@ -30,14 +31,18 @@ public extension Ocp1Connection {
             return nil
         }
 
+        if owner != OcaInvalidONo, let object = object as? OcaOwnablePrivate {
+            object._set(owner: owner)
+        }
         add(object: object)
         return object
     }
 
-    func resolve<T: OcaRoot>(object: OcaObjectIdentification) -> T? {
+    func resolve<T: OcaRoot>(object: OcaObjectIdentification, owner: OcaONo = OcaInvalidONo) -> T? {
         resolve(
             classIdentification: object.classIdentification,
-            objectNumber: object.oNo
+            objectNumber: object.oNo,
+            owner: owner
         )
     }
 

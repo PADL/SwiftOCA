@@ -354,4 +354,11 @@ public protocol OcaOwnable: OcaRoot {
     var owner: OcaProperty<OcaONo>.PropertyValue { get set }
 
     var path: (OcaNamePath, OcaONoPath) { get async throws }
+
+    @_spi(SwiftOCAPrivate)
+    func _getOwner(flags: _OcaPropertyResolutionFlags) async throws -> OcaONo
+}
+
+protocol OcaOwnablePrivate: OcaOwnable {
+    func _set(owner: OcaONo)
 }

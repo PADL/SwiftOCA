@@ -303,7 +303,9 @@ public extension OcaBlock {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
         return try await _actionObjects.onCompletion(self) { actionObjects in
-            await actionObjects.asyncCompactMap { await connectionDelegate.resolve(object: $0) }
+            await actionObjects.asyncCompactMap {
+                await connectionDelegate.resolve(object: $0, owner: self.objectNumber)
+            }
         }
     }
 
@@ -321,7 +323,10 @@ public extension OcaBlock {
         var containerMembers: [OcaContainerObjectMember]
 
         containerMembers = recursiveMembers.compactMap { member in
-            let memberObject = connectionDelegate.resolve(object: member.memberObjectIdentification)
+            let memberObject = connectionDelegate.resolve(
+                object: member.memberObjectIdentification,
+                owner: member.containerObjectNumber
+            )
             guard let memberObject else { return nil }
             return OcaContainerObjectMember(
                 memberObject: memberObject,

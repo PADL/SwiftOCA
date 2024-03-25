@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaAgent: OcaRoot, OcaOwnable {
+open class OcaAgent: OcaRoot, OcaOwnablePrivate {
     override public class var classID: OcaClassID { OcaClassID("1.2") }
 
     @OcaProperty(
@@ -34,5 +34,17 @@ open class OcaAgent: OcaRoot, OcaOwnable {
         get async throws {
             try await getPath(methodID: OcaMethodID("2.4"))
         }
+    }
+}
+
+extension OcaAgent {
+    @_spi(SwiftOCAPrivate)
+    public func _getOwner(flags: _OcaPropertyResolutionFlags) async throws -> OcaONo {
+        guard objectNumber != OcaRootBlockONo else { throw Ocp1Error.status(.invalidRequest) }
+        return try await $owner._getValue(self, flags: flags)
+    }
+
+    func _set(owner: OcaONo) {
+        self.$owner.subject.send(.success(owner))
     }
 }

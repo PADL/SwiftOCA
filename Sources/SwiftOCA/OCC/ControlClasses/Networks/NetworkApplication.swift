@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaNetworkApplication: OcaRoot, OcaOwnable {
+open class OcaNetworkApplication: OcaRoot, OcaOwnablePrivate {
     override public class var classID: OcaClassID { OcaClassID("1.7") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
 
@@ -70,4 +70,16 @@ open class OcaNetworkApplication: OcaRoot, OcaOwnable {
     // 2.12 attachCounterNotifier
     // 2.13 detachCounterNotifier
     // 2.14 resetCounters
+}
+
+extension OcaNetworkApplication {
+    @_spi(SwiftOCAPrivate)
+    public func _getOwner(flags: _OcaPropertyResolutionFlags) async throws -> OcaONo {
+        guard objectNumber != OcaRootBlockONo else { throw Ocp1Error.status(.invalidRequest) }
+        return try await $owner._getValue(self, flags: flags)
+    }
+
+    func _set(owner: OcaONo) {
+        self.$owner.subject.send(.success(owner))
+    }
 }

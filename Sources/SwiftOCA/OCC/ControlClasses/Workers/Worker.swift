@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaWorker: OcaRoot, OcaOwnable {
+open class OcaWorker: OcaRoot, OcaOwnablePrivate {
     override public class var classID: OcaClassID { OcaClassID("1.1.1") }
     override public class var classVersion: OcaClassVersionNumber { 3 }
 
@@ -132,5 +132,17 @@ open class OcaWorker: OcaRoot, OcaOwnable {
             methodID: OcaMethodID("2.16"),
             parameters: portID
         )
+    }
+}
+
+extension OcaWorker {
+    @_spi(SwiftOCAPrivate)
+    public func _getOwner(flags: _OcaPropertyResolutionFlags) async throws -> OcaONo {
+        guard objectNumber != OcaRootBlockONo else { throw Ocp1Error.status(.invalidRequest) }
+        return try await $owner._getValue(self, flags: flags)
+    }
+
+    func _set(owner: OcaONo) {
+        self.$owner.subject.send(.success(owner))
     }
 }
