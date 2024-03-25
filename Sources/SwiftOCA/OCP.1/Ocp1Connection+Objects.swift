@@ -50,6 +50,19 @@ public extension Ocp1Connection {
         objects[cachedObject] as? T
     }
 
+    func resolve<T: OcaRoot>(objectOfUnknownClass: OcaONo) async throws -> T? {
+        if let object: T = resolve(cachedObject: objectOfUnknownClass) {
+            return object
+        }
+
+        let classIdentification =
+            try await getClassIdentification(objectNumber: objectOfUnknownClass)
+        return resolve(object: OcaObjectIdentification(
+            oNo: objectOfUnknownClass,
+            classIdentification: classIdentification
+        ))
+    }
+
     internal func add<T: OcaRoot>(object: T) {
         objects[object.objectNumber] = object
         object.connectionDelegate = self
