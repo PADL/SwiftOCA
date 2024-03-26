@@ -104,12 +104,22 @@ Sendable, OcaKeyPathMarkerProtocol {
         try await sendCommandRrq(methodID: OcaMethodID("1.1"))
     }
 
+    @available(*, deprecated, renamed: "setLockNoReadWrite")
     public func lockTotal() async throws {
+        try await setLockNoReadWrite()
+    }
+
+    public func setLockNoReadWrite() async throws {
         try await sendCommandRrq(methodID: OcaMethodID("1.3"))
     }
 
     public func unlock() async throws {
         try await sendCommandRrq(methodID: OcaMethodID("1.4"))
+    }
+
+    @available(*, deprecated, renamed: "setLockNoWrite")
+    public func lockReadOnly() async throws {
+        try await setLockNoWrite()
     }
 
     public func setLockNoWrite() async throws {
