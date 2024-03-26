@@ -133,8 +133,6 @@ open class OcaBlock: OcaWorker {
                     containerObjectNumber: objectNumber
                 ))
             if actionObject.classIdentification.isSubclass(of: OcaBlock.classIdentification),
-               !blockMembers.contains(where: { $0.memberObjectIdentification == actionObject }),
-               // avoid cyclic references
                let actionObject: OcaBlock = await connectionDelegate?
                .resolve(object: actionObject)
             {
