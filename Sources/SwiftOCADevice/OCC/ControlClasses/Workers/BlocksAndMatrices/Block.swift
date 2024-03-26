@@ -145,6 +145,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     )
     public var oNoMap = OcaMap<OcaProtoONo, OcaONo>()
 
+    @OcaDeviceProperty(
+        propertyID: OcaPropertyID("3.8"),
+        getMethodID: OcaMethodID("3.21")
+    )
+    public var configurability = OcaBlockConfigurability()
+
     private typealias BlockApplyFunction<U> = (
         _ member: OcaRoot,
         _ container: OcaBlockContainer
@@ -383,7 +389,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
                 resultFlags: params.resultFlags
             )
             return try encodeResponse(searchResult)
-        // 3.21 GetConfigurability
+
         // 3.22 GetMostRecentParamDatasetONo
         // 3.23 ApplyParamDataset
         // 3.24 StoreCurrentParameterData

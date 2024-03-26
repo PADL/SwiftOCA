@@ -37,6 +37,18 @@ public struct OcaContainerObjectMember: Sendable {
     }
 }
 
+public struct OcaBlockConfigurability: OptionSet, Codable, Sendable {
+    public static let actionObjects = OcaDeviceState(rawValue: 1 << 0)
+    public static let signalPaths = OcaDeviceState(rawValue: 1 << 1)
+    public static let datasetObjects = OcaDeviceState(rawValue: 1 << 2)
+
+    public let rawValue: OcaBitSet16
+
+    public init(rawValue: OcaBitSet16) {
+        self.rawValue = rawValue
+    }
+}
+
 open class OcaBlock: OcaWorker {
     override open class var classID: OcaClassID { OcaClassID("1.1.3") }
 
@@ -75,6 +87,12 @@ open class OcaBlock: OcaWorker {
         getMethodID: OcaMethodID("3.16")
     )
     public var oNoMap: OcaMapProperty<OcaProtoONo, OcaONo>.PropertyValue
+
+    @OcaProperty(
+        propertyID: OcaPropertyID("3.8"),
+        getMethodID: OcaMethodID("3.21")
+    )
+    public var configurability: OcaProperty<OcaBlockConfigurability>.PropertyValue
 
     // 3.2
     func constructActionObject(
@@ -334,7 +352,19 @@ public extension OcaBlock {
             )
         }
 
+        for container in connectionDelegate.objects.compactMap({ $0.value as? OcaBlock }) {
+            container._set(actionObjects: containerMembers.filter {
+                $0.containerObjectNumber == container.objectNumber
+            }.map(\.memberObject.objectIdentification))
+        }
+
         return containerMembers
+    }
+}
+
+extension OcaBlock {
+    func _set(actionObjects: [OcaObjectIdentification]) {
+        self.$actionObjects.subject.send(.success(actionObjects))
     }
 }
 
