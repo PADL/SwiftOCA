@@ -225,7 +225,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
                     _send(_enclosingInstance: object, .initial)
                 } catch {
                     _send(_enclosingInstance: object, .failure(error))
-                    await object.connectionDelegate?.logger.warning(
+                    await object.connectionDelegate?.logger.trace(
                         "set property handler for \(object) property \(propertyID) received error from device: \(error)"
                     )
                 }
@@ -320,7 +320,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
                 _send(_enclosingInstance: object, .failure(error))
             }
             await object.connectionDelegate?.logger
-                .warning(
+                .trace(
                     "get property handler for \(object) property \(propertyID) received error from device: \(error)"
                 )
             throw error
