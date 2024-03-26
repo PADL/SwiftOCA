@@ -354,7 +354,7 @@ public struct OcaClassIdentification: Codable, Sendable, Hashable {
     }
 
     public func isSubclass(of classIdentification: OcaClassIdentification) -> Bool {
-        classID.isSubclass(of: classIdentification.classID) && classVersion >= classIdentification
+        classID.isSubclass(of: classIdentification.classID) && classVersion <= classIdentification
             .classVersion
     }
 }
