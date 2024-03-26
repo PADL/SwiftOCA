@@ -41,13 +41,11 @@ public struct _OcaPropertyResolutionFlags: OptionSet, Sendable {
     public static let cacheValue = _OcaPropertyResolutionFlags(rawValue: 1 << 2)
     /// subscribe to property events
     public static let subscribeEvents = _OcaPropertyResolutionFlags(rawValue: 1 << 3)
-    /// cache errors directly, note this is done implicitly by `perform()` when using the wrapper
-    /// accessors, so is absent from `defaultFlags`
     public static let cacheErrors = _OcaPropertyResolutionFlags(rawValue: 1 << 4)
 
     public static let defaultFlags =
         _OcaPropertyResolutionFlags([.returnCachedValue, .throwCachedError, .cacheValue,
-                                     .subscribeEvents])
+                                     .subscribeEvents, .cacheErrors])
 }
 
 public protocol OcaPropertyRepresentable: CustomStringConvertible {
@@ -205,9 +203,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         switch subject.value {
         case .initial:
             Task {
-                await perform(object) {
-                    try await $0._getValue(object)
-                }
+                try await _getValue(object)
             }
         default:
             break
@@ -222,8 +218,16 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         Task {
             switch newValue {
             case let .success(value):
-                await perform(object) {
-                    try await $0.setValueIfMutable(object, value)
+                do {
+                    try await setValueIfMutable(object, value)
+                } catch is CancellationError {
+                    // if task cancelled due to a view being dismissed, reset state to initial
+                    _send(_enclosingInstance: object, .initial)
+                } catch {
+                    _send(_enclosingInstance: object, .failure(error))
+                    await object.connectionDelegate?.logger.warning(
+                        "set property handler for \(object) property \(propertyID) received error from device: \(error)"
+                    )
                 }
             case .initial:
                 await refresh(object)
@@ -308,10 +312,17 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
             }
 
             return returnValue
+        } catch is CancellationError {
+            _send(_enclosingInstance: object, .initial)
+            throw CancellationError()
         } catch {
             if flags.contains(.cacheErrors) {
                 _send(_enclosingInstance: object, .failure(error))
             }
+            await object.connectionDelegate?.logger
+                .warning(
+                    "get property handler for \(object) property \(propertyID) received error from device: \(error)"
+                )
             throw error
         }
     }
@@ -350,42 +361,8 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         }
     }
 
-    private func perform(
-        _ object: OcaRoot,
-        _ block: @escaping (_ storage: Self) async throws -> ()
-    ) async {
-        guard let connectionDelegate = object.connectionDelegate else {
-            subject.send(.failure(Ocp1Error.noConnectionDelegate))
-            return
-        }
-
-        guard await connectionDelegate.isConnected else {
-            await connectionDelegate.logger
-                .warning("property handler called before connection established")
-            return
-        }
-
-        do {
-            try await block(self)
-        } catch is CancellationError {
-            // if task cancelled due to a view being dismissed, reset state to initial
-            _send(_enclosingInstance: object, .initial)
-        } catch {
-            _send(_enclosingInstance: object, .failure(error))
-            await connectionDelegate.logger.warning(
-                "property handler for \(object) property \(propertyID) received error from device: \(error)"
-            )
-        }
-    }
-
     public func subscribe(_ object: OcaRoot) async {
-        guard case .initial = subject.value else {
-            return
-        }
-
-        await perform(object) {
-            try await $0._getValue(object)
-        }
+        _ = try? await _getValue(object)
     }
 
     public func refresh(_ object: OcaRoot) async {
@@ -426,42 +403,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         _ object: OcaRoot,
         _ block: @Sendable @escaping (_ value: Value) async throws -> T
     ) async throws -> T {
-        guard let connectionDelegate = object.connectionDelegate else {
-            throw Ocp1Error.noConnectionDelegate
-        }
-
-        guard await connectionDelegate.isConnected else {
-            throw Ocp1Error.notConnected
-        }
-
-        let result = try await withThrowingTimeout(
-            of: connectionDelegate.options
-                .responseTimeout
-        ) {
-            await Task {
-                repeat {
-                    await subscribe(object)
-
-                    if case let .success(value) = self.subject.value {
-                        return try await block(value)
-                    } else if case let .failure(error) = self.subject.value {
-                        throw error
-                    } else {
-                        await Task.yield()
-                    }
-                } while !Task.isCancelled
-                await connectionDelegate.logger.info("property completion handler was cancelled")
-                throw Ocp1Error.responseTimeout
-            }.result
-        }
-
-        switch result {
-        case let .success(value):
-            return value
-        case let .failure(error):
-            await connectionDelegate.logger.warning("property completion handler failed \(error)")
-            throw error
-        }
+        try await block(_getValue(object))
     }
 
     public var projectedValue: Self {
