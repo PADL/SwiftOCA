@@ -38,9 +38,9 @@ public struct OcaContainerObjectMember: Sendable {
 }
 
 public struct OcaBlockConfigurability: OptionSet, Codable, Sendable {
-    public static let actionObjects = OcaDeviceState(rawValue: 1 << 0)
-    public static let signalPaths = OcaDeviceState(rawValue: 1 << 1)
-    public static let datasetObjects = OcaDeviceState(rawValue: 1 << 2)
+    public static let actionObjects = OcaBlockConfigurability(rawValue: 1 << 0)
+    public static let signalPaths = OcaBlockConfigurability(rawValue: 1 << 1)
+    public static let datasetObjects = OcaBlockConfigurability(rawValue: 1 << 2)
 
     public let rawValue: OcaBitSet16
 
@@ -325,6 +325,24 @@ public extension OcaBlock {
         }
     }
 
+    private func addConfigurableBlockSubscriptions() async throws {
+        do {
+            let configurability = try await $configurability._getValue(
+                self,
+                flags: [.returnCachedValue, .cacheValue]
+            )
+            if configurability.contains(.actionObjects) {
+                await $actionObjects.subscribe(self)
+            }
+            if configurability.contains(.datasetObjects) {
+                // FIXME: implement
+            }
+            if configurability.contains(.signalPaths) {
+                await $signalPaths.subscribe(self)
+            }
+        } catch Ocp1Error.status(.notImplemented) {}
+    }
+
     @OcaConnection
     func resolveActionObjectsRecursive() async throws
         -> [OcaContainerObjectMember]
@@ -355,6 +373,8 @@ public extension OcaBlock {
                 $0.containerObjectNumber == container.objectNumber
             }.map(\.memberObject.objectIdentification))
         }
+
+        try? await addConfigurableBlockSubscriptions()
 
         return containerMembers
     }
