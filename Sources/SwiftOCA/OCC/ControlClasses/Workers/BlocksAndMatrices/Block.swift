@@ -372,9 +372,8 @@ public extension OcaBlock {
             container._set(actionObjects: containerMembers.filter {
                 $0.containerObjectNumber == container.objectNumber
             }.map(\.memberObject.objectIdentification))
+            try? await container.addConfigurableBlockSubscriptions()
         }
-
-        try? await addConfigurableBlockSubscriptions()
 
         return containerMembers
     }
