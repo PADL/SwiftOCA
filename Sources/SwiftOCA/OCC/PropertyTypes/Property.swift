@@ -313,7 +313,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
             return returnValue
         } catch is CancellationError {
-            _send(_enclosingInstance: object, .initial)
+            if flags.contains(.cacheErrors) {
+                _send(_enclosingInstance: object, .initial)
+            }
             throw CancellationError()
         } catch {
             if flags.contains(.cacheErrors) {
