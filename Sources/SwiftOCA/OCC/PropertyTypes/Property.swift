@@ -403,7 +403,12 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         _ object: OcaRoot,
         _ block: @Sendable @escaping (_ value: Value) async throws -> T
     ) async throws -> T {
-        try await block(_getValue(object))
+        guard let connectionDelegate = object.connectionDelegate else {
+            throw Ocp1Error.noConnectionDelegate
+        }
+        return try await withThrowingTimeout(of: connectionDelegate.options.responseTimeout) {
+            try await block(_getValue(object))
+        }
     }
 
     public var projectedValue: Self {
