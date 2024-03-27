@@ -62,9 +62,6 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
     #if canImport(SwiftUI)
     var binding: Binding<PropertyValue> { get }
     #endif
-
-    @_spi(SwiftOCAPrivate) @discardableResult
-    func _getValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws -> Value
 }
 
 public extension OcaPropertyRepresentable {
@@ -85,6 +82,8 @@ protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
         -> [String: Any]
 
     func _set(_ object: OcaRoot, description stringValue: String) async throws
+
+    func _getValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws -> Value
 }
 
 public extension OcaPropertySubjectRepresentable {
