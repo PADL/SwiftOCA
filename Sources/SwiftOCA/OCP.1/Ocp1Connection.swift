@@ -75,11 +75,11 @@ public struct Ocp1ConnectionOptions: Sendable {
 }
 
 public struct Ocp1ConnectionStatistics: Sendable {
-    let requestCount: Int
-    let cachedObjectCount: Int
-    let subscribedEvents: [OcaEvent]
-    let lastMessageSentTime: ContinuousClock.Instant
-    let isConnected: Bool
+    public let requestCount: Int
+    public let cachedObjectCount: Int
+    public let subscribedEvents: [OcaEvent]
+    public let lastMessageSentTime: ContinuousClock.Instant
+    public let isConnected: Bool
 }
 
 private let CommandHandleBase = OcaUint32(100)
