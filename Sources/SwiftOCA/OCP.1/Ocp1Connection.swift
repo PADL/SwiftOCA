@@ -74,6 +74,16 @@ public struct Ocp1ConnectionOptions: Sendable {
     }
 }
 
+public struct Ocp1ConnectionStatistics: Sendable {
+    let requestCount: Int
+    let cachedObjectCount: Int
+    let subscribedEvents: [OcaEvent]
+    let lastMessageSentTime: ContinuousClock.Instant
+    let isConnected: Bool
+}
+
+private let CommandHandleBase = OcaUint32(100)
+
 @OcaConnection
 open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     public nonisolated static let MinimumPduSize = 7
@@ -115,13 +125,23 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     var subscriptions = [OcaEvent: EventSubscriptions]()
     var logger = Logger(label: "com.padl.SwiftOCA")
 
-    private var nextCommandHandle = OcaUint32(100)
+    private var nextCommandHandle = CommandHandleBase
 
     var lastMessageSentTime = ContinuousClock.now
 
     open nonisolated var connectionPrefix: String {
         fatalError(
             "connectionPrefix must be implemented by a concrete subclass of Ocp1Connection"
+        )
+    }
+
+    public var statistics: Ocp1ConnectionStatistics {
+        Ocp1ConnectionStatistics(
+            requestCount: Int(nextCommandHandle - CommandHandleBase),
+            cachedObjectCount: objects.count,
+            subscribedEvents: Array(subscriptions.keys),
+            lastMessageSentTime: lastMessageSentTime,
+            isConnected: isConnected
         )
     }
 
@@ -263,9 +283,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     }
 
     public var isConnected: Bool {
-        get async {
-            !(monitorTask?.isCancelled ?? true)
-        }
+        !(monitorTask?.isCancelled ?? true)
     }
 
     public nonisolated var description: String {
