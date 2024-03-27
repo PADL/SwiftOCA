@@ -52,9 +52,10 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
     associatedtype Value: Codable & Sendable
     typealias PropertyValue = OcaProperty<Value>.PropertyValue
 
+    var async: AnyAsyncSequence<Result<Any, Error>> { get }
+
     var propertyIDs: [OcaPropertyID] { get }
     var currentValue: PropertyValue { get }
-    var async: AnyAsyncSequence<PropertyValue> { get }
 
     func refresh(_ object: OcaRoot) async
     func subscribe(_ object: OcaRoot) async
@@ -86,12 +87,21 @@ protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
     func _getValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws -> Value
 }
 
-public extension OcaPropertySubjectRepresentable {
-    var async: AnyAsyncSequence<PropertyValue> {
-        subject.eraseToAnyAsyncSequence()
+extension OcaPropertySubjectRepresentable {
+    public var async: AnyAsyncSequence<Result<Any, Error>> {
+        subject.compactMap { value in
+            switch value {
+            case .initial:
+                return nil
+            case let .success(value):
+                return .success(value)
+            case let .failure(error):
+                return .failure(error)
+            }
+        }.eraseToAnyAsyncSequence()
     }
 
-    internal func finish() {
+    func finish() {
         subject.send(.finished)
     }
 }
