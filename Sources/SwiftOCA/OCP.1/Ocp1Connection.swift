@@ -75,11 +75,13 @@ public struct Ocp1ConnectionOptions: Sendable {
 }
 
 public struct Ocp1ConnectionStatistics: Sendable {
+    public let isConnected: Bool
     public let requestCount: Int
+    public let outstandingRequests: [OcaUint32]
     public let cachedObjectCount: Int
     public let subscribedEvents: [OcaEvent]
     public let lastMessageSentTime: ContinuousClock.Instant
-    public let isConnected: Bool
+    public let lastMessageReceivedTime: ContinuousClock.Instant?
 }
 
 private let CommandHandleBase = OcaUint32(100)
@@ -136,13 +138,17 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     }
 
     public var statistics: Ocp1ConnectionStatistics {
-        Ocp1ConnectionStatistics(
-            requestCount: Int(nextCommandHandle - CommandHandleBase),
-            cachedObjectCount: objects.count,
-            subscribedEvents: Array(subscriptions.keys),
-            lastMessageSentTime: lastMessageSentTime,
-            isConnected: isConnected
-        )
+        get async {
+            Ocp1ConnectionStatistics(
+                isConnected: isConnected,
+                requestCount: Int(nextCommandHandle - CommandHandleBase),
+                outstandingRequests: monitor != nil ? Array(await monitor!.continuations.keys) : [],
+                cachedObjectCount: objects.count,
+                subscribedEvents: Array(subscriptions.keys),
+                lastMessageSentTime: lastMessageSentTime,
+                lastMessageReceivedTime: await monitor?.lastMessageReceivedTime
+            )
+        }
     }
 
     /// Monitor structure for matching requests and responses
@@ -150,7 +156,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
         typealias Continuation = CheckedContinuation<Ocp1Response, Error>
 
         private weak var connection: Ocp1Connection?
-        private var continuations = [OcaUint32: Continuation]()
+        fileprivate private(set) var continuations = [OcaUint32: Continuation]()
         private(set) var lastMessageReceivedTime = ContinuousClock.now
 
         init(_ connection: Ocp1Connection) {
