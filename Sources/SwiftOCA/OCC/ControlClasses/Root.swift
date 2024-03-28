@@ -320,7 +320,7 @@ public extension OcaRoot {
         }
 
         @_spi(SwiftOCAPrivate)
-        public func _set(_ object: OcaRoot, _ anyValue: Any) async throws {
+        public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
             throw Ocp1Error.propertyIsImmutable
         }
     }

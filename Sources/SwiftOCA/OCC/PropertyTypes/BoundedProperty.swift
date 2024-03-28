@@ -204,7 +204,7 @@ public struct OcaBoundedProperty<
     }
 
     @_spi(SwiftOCAPrivate)
-    public func _set(_ object: OcaRoot, _ anyValue: Any) async throws {
+    public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
         // use flags to avoid subscribing
         var value = try await _getValue(object, flags: [.cacheValue, .returnCachedValue])
         guard let innerValue = anyValue as? Value else {

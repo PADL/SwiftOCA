@@ -84,7 +84,7 @@ protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
     func _getJsonValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws
         -> [String: Any]
 
-    func _set(_ object: OcaRoot, _ anyValue: Any) async throws
+    func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws
 
     func _getValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws -> Value
 }
@@ -461,7 +461,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
 
     @_spi(SwiftOCAPrivate)
-    public func _set(_ object: OcaRoot, _ anyValue: Any) async throws {
+    public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
         guard let value = anyValue as? Value else {
             throw Ocp1Error.status(.badFormat)
         }
