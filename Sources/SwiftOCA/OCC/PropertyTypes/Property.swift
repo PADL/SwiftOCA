@@ -52,7 +52,7 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
     associatedtype Value: Codable & Sendable
     typealias PropertyValue = OcaProperty<Value>.PropertyValue
 
-    static var valueType: Any.Type { get }
+    var valueType: Any.Type { get }
 
     var async: AnyAsyncSequence<Result<Any, Error>> { get }
 
@@ -112,7 +112,7 @@ extension OcaPropertySubjectRepresentable {
 public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     OcaPropertyChangeEventNotifiable
 {
-    public static var valueType: Any.Type { Value.self }
+    public var valueType: Any.Type { Value.self }
 
     /// All property IDs supported by this property
     public var propertyIDs: [OcaPropertyID] {

@@ -36,7 +36,7 @@ public struct OcaVectorProperty<
     Value: Codable & Sendable &
         FixedWidthInteger
 >: OcaPropertyChangeEventNotifiable, Codable, Sendable {
-    public static var valueType: Any.Type { Property.PropertyValue.self }
+    public var valueType: Any.Type { Property.PropertyValue.self }
 
     @_spi(SwiftOCAPrivate)
     public var subject: AsyncCurrentValueSubject<PropertyValue> { _storage.subject }
