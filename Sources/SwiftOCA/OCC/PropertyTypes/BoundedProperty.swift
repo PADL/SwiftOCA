@@ -23,7 +23,7 @@ import SwiftUI
 public struct OcaBoundedPropertyValue<
     Value: Codable & Comparable &
         Sendable
->: Ocp1ParametersReflectable, Codable, Equatable, Sendable, CustomStringConvertible {
+>: Ocp1ParametersReflectable, Codable, Equatable, Sendable {
     public var value: Value
     public var minValue: Value
     public var maxValue: Value
@@ -48,10 +48,6 @@ public struct OcaBoundedPropertyValue<
         self.value = value
         self.minValue = minValue
         self.maxValue = maxValue
-    }
-
-    public var description: String {
-        String(describing: value)
     }
 }
 
