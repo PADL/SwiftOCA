@@ -122,7 +122,7 @@ open class OcaNetworkInterface: OcaRoot, OcaOwnablePrivate {
 
 extension OcaNetworkInterface {
     @_spi(SwiftOCAPrivate)
-    public func _getOwner(flags: _OcaPropertyResolutionFlags) async throws -> OcaONo {
+    public func _getOwner(flags: OcaPropertyResolutionFlags) async throws -> OcaONo {
         guard objectNumber != OcaRootBlockONo else { throw Ocp1Error.status(.invalidRequest) }
         return try await $owner._getValue(self, flags: flags)
     }

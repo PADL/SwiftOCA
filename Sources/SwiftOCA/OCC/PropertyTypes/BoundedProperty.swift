@@ -189,15 +189,14 @@ public struct OcaBoundedProperty<
     @_spi(SwiftOCAPrivate) @discardableResult
     public func _getValue(
         _ object: OcaRoot,
-        flags: _OcaPropertyResolutionFlags = .defaultFlags
+        flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> OcaBoundedPropertyValue<Value> {
         try await _storage._getValue(object, flags: flags)
     }
 
-    @_spi(SwiftOCAPrivate)
-    public func _getJsonValue(
+    public func getJsonValue(
         _ object: OcaRoot,
-        flags: _OcaPropertyResolutionFlags = .defaultFlags
+        flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> [String: Any] {
         let value = try await _getValue(object, flags: flags)
         return [_storage.propertyID.description: value.value]

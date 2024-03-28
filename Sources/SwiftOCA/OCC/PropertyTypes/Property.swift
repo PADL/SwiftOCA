@@ -21,10 +21,7 @@ import Foundation
 import SwiftUI
 #endif
 
-/// these private flags are for use by `ocacli` which doesn't cache or subscribe to events
-/// by default; other API consumers should use the default behaviour
-@_spi(SwiftOCAPrivate)
-public struct _OcaPropertyResolutionFlags: OptionSet, Sendable {
+public struct OcaPropertyResolutionFlags: OptionSet, Sendable {
     public typealias RawValue = UInt32
 
     public let rawValue: RawValue
@@ -34,18 +31,18 @@ public struct _OcaPropertyResolutionFlags: OptionSet, Sendable {
     }
 
     /// return a cached value, if one is preent
-    public static let returnCachedValue = _OcaPropertyResolutionFlags(rawValue: 1 << 0)
+    public static let returnCachedValue = OcaPropertyResolutionFlags(rawValue: 1 << 0)
     /// if previous error was cached, return that
-    public static let throwCachedError = _OcaPropertyResolutionFlags(rawValue: 1 << 1)
+    public static let throwCachedError = OcaPropertyResolutionFlags(rawValue: 1 << 1)
     /// cache new values
-    public static let cacheValue = _OcaPropertyResolutionFlags(rawValue: 1 << 2)
+    public static let cacheValue = OcaPropertyResolutionFlags(rawValue: 1 << 2)
     /// subscribe to property events
-    public static let subscribeEvents = _OcaPropertyResolutionFlags(rawValue: 1 << 3)
-    public static let cacheErrors = _OcaPropertyResolutionFlags(rawValue: 1 << 4)
+    public static let subscribeEvents = OcaPropertyResolutionFlags(rawValue: 1 << 3)
+    public static let cacheErrors = OcaPropertyResolutionFlags(rawValue: 1 << 4)
 
     public static let defaultFlags =
-        _OcaPropertyResolutionFlags([.returnCachedValue, .throwCachedError, .cacheValue,
-                                     .subscribeEvents, .cacheErrors])
+        OcaPropertyResolutionFlags([.returnCachedValue, .throwCachedError, .cacheValue,
+                                    .subscribeEvents, .cacheErrors])
 }
 
 public protocol OcaPropertyRepresentable: CustomStringConvertible {
@@ -61,6 +58,9 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
 
     func refresh(_ object: OcaRoot) async
     func subscribe(_ object: OcaRoot) async
+
+    func getJsonValue(_ object: OcaRoot, flags: OcaPropertyResolutionFlags) async throws
+        -> [String: Any]
 
     #if canImport(SwiftUI)
     var binding: Binding<PropertyValue> { get }
@@ -81,12 +81,9 @@ public
 protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
     var subject: AsyncCurrentValueSubject<PropertyValue> { get }
 
-    func _getJsonValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws
-        -> [String: Any]
-
     func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws
 
-    func _getValue(_ object: OcaRoot, flags: _OcaPropertyResolutionFlags) async throws -> Value
+    func _getValue(_ object: OcaRoot, flags: OcaPropertyResolutionFlags) async throws -> Value
 }
 
 extension OcaPropertySubjectRepresentable {
@@ -291,7 +288,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     @_spi(SwiftOCAPrivate) @discardableResult
     public func _getValue(
         _ object: OcaRoot,
-        flags: _OcaPropertyResolutionFlags = .defaultFlags
+        flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> Value {
         do {
             guard let getMethodID else {
@@ -441,10 +438,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         }
     }
 
-    @_spi(SwiftOCAPrivate)
-    public func _getJsonValue(
+    public func getJsonValue(
         _ object: OcaRoot,
-        flags: _OcaPropertyResolutionFlags = .defaultFlags
+        flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> [String: Any] {
         let value = try await _getValue(object, flags: flags)
         let jsonValue: Any

@@ -140,9 +140,8 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
     }
 
-    @_spi(SwiftOCAPrivate)
-    public func _getJsonValue(
-        flags: _OcaPropertyResolutionFlags
+    open func getJsonValue(
+        flags: OcaPropertyResolutionFlags
     ) async -> [String: Any] {
         precondition(objectNumber != OcaInvalidONo)
 
@@ -160,7 +159,7 @@ Sendable, OcaKeyPathMarkerProtocol {
                         self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
                     var dict = [String: Any]()
 
-                    if let jsonValue = try? await property._getJsonValue(self, flags: flags) {
+                    if let jsonValue = try? await property.getJsonValue(self, flags: flags) {
                         dict.merge(jsonValue) { current, _ in current }
                     }
                     return dict
@@ -174,7 +173,7 @@ Sendable, OcaKeyPathMarkerProtocol {
 
     public var jsonObject: [String: Any] {
         get async {
-            await _getJsonValue(flags: .defaultFlags)
+            await getJsonValue(flags: .defaultFlags)
         }
     }
 }
@@ -306,15 +305,14 @@ public extension OcaRoot {
         @_spi(SwiftOCAPrivate) @discardableResult
         public func _getValue(
             _ object: OcaRoot,
-            flags: _OcaPropertyResolutionFlags
+            flags: OcaPropertyResolutionFlags
         ) async throws -> Value {
             value
         }
 
-        @_spi(SwiftOCAPrivate)
-        public func _getJsonValue(
+        public func getJsonValue(
             _ object: OcaRoot,
-            flags: _OcaPropertyResolutionFlags = .defaultFlags
+            flags: OcaPropertyResolutionFlags = .defaultFlags
         ) async throws -> [String: Any] {
             [propertyIDs[0].description: String(describing: value)]
         }
@@ -382,7 +380,7 @@ public protocol OcaOwnable: OcaRoot {
     var path: (OcaNamePath, OcaONoPath) { get async throws }
 
     @_spi(SwiftOCAPrivate)
-    func _getOwner(flags: _OcaPropertyResolutionFlags) async throws -> OcaONo
+    func _getOwner(flags: OcaPropertyResolutionFlags) async throws -> OcaONo
 }
 
 protocol OcaOwnablePrivate: OcaOwnable {
@@ -391,7 +389,7 @@ protocol OcaOwnablePrivate: OcaOwnable {
 
 @_spi(SwiftOCAPrivate)
 public extension OcaOwnable {
-    func _getOwnerObject(flags: _OcaPropertyResolutionFlags) async throws -> OcaBlock {
+    func _getOwnerObject(flags: OcaPropertyResolutionFlags) async throws -> OcaBlock {
         let owner = try await _getOwner(flags: flags)
         if owner == OcaInvalidONo {
             throw Ocp1Error.status(.parameterOutOfRange)
@@ -415,7 +413,7 @@ public extension OcaRoot {
         try await $role._getValue(self, flags: [.cacheValue, .returnCachedValue])
     }
 
-    private func getRolePathFallback(flags: _OcaPropertyResolutionFlags) async throws
+    private func getRolePathFallback(flags: OcaPropertyResolutionFlags) async throws
         -> OcaNamePath?
     {
         if objectNumber == OcaRootBlockONo {
@@ -455,7 +453,7 @@ public extension OcaRoot {
         return path
     }
 
-    func _getRolePath(flags: _OcaPropertyResolutionFlags) async throws -> OcaNamePath {
+    func _getRolePath(flags: OcaPropertyResolutionFlags) async throws -> OcaNamePath {
         if objectNumber == OcaRootBlockONo {
             return []
         } else if let localRolePath = try await getRolePathFallback(flags: flags) {

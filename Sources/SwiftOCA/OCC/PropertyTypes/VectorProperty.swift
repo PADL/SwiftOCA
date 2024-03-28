@@ -165,15 +165,14 @@ public struct OcaVectorProperty<
     @_spi(SwiftOCAPrivate) @discardableResult
     public func _getValue(
         _ object: OcaRoot,
-        flags: _OcaPropertyResolutionFlags = .defaultFlags
+        flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> OcaVector2D<Value> {
         try await _storage._getValue(object, flags: flags)
     }
 
-    @_spi(SwiftOCAPrivate)
-    public func _getJsonValue(
+    public func getJsonValue(
         _ object: OcaRoot,
-        flags: _OcaPropertyResolutionFlags = .defaultFlags
+        flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> [String: Any] {
         let value = try await _getValue(object, flags: flags)
 
