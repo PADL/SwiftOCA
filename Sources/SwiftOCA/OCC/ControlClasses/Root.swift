@@ -269,6 +269,8 @@ public extension OcaRoot {
     }
 
     internal struct StaticProperty<T: Codable & Sendable>: OcaPropertySubjectRepresentable {
+        public static var valueType: Any.Type { T.self }
+
         typealias Value = T
 
         var propertyIDs: [OcaPropertyID]
