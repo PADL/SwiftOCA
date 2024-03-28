@@ -185,7 +185,7 @@ public struct OcaVectorProperty<
     }
 
     @_spi(SwiftOCAPrivate)
-    public func _set(_ object: OcaRoot, description stringValue: String) async throws {
+    public func _set(_ object: OcaRoot, _ anyValue: Any) async throws {
         throw Ocp1Error.notImplemented
     }
 }

@@ -208,13 +208,12 @@ public struct OcaBoundedProperty<
     }
 
     @_spi(SwiftOCAPrivate)
-    public func _set(_ object: OcaRoot, description stringValue: String) async throws {
+    public func _set(_ object: OcaRoot, _ anyValue: Any) async throws {
         // use flags to avoid subscribing
         var value = try await _getValue(object, flags: [.cacheValue, .returnCachedValue])
-        guard let innerValue: Value = parseStringValue(stringValue) else {
+        guard let innerValue = anyValue as? Value else {
             throw Ocp1Error.status(.badFormat)
         }
-
         value.value = innerValue
         try await _storage.setValueIfMutable(object, value)
     }
