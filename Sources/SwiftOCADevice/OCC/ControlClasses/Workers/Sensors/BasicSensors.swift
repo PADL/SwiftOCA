@@ -23,7 +23,7 @@ open class OcaGenericBasicSensor<T: Codable & Comparable & Sendable>: OcaSensor 
     public init(
         _ initialReading: OcaBoundedPropertyValue<T>,
         objectNumber: OcaONo? = nil,
-        lockable: OcaBoolean = false,
+        lockable: OcaBoolean = true,
         role: OcaString = "Sensor",
         deviceDelegate: OcaDevice? = nil,
         addToRootBlock: Bool = true
@@ -63,7 +63,7 @@ open class OcaBooleanSensor: OcaSensor {
     public init(
         _ initialReading: Bool,
         objectNumber: OcaONo? = nil,
-        lockable: OcaBoolean = false,
+        lockable: OcaBoolean = true,
         role: OcaString = "Root",
         deviceDelegate: OcaDevice? = nil,
         addToRootBlock: Bool = true

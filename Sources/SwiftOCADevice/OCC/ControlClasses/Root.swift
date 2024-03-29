@@ -88,7 +88,7 @@ Sendable, OcaKeyPathMarkerProtocol {
 
     public init(
         objectNumber: OcaONo? = nil,
-        lockable: OcaBoolean = false,
+        lockable: OcaBoolean = true,
         role: OcaString? = nil,
         deviceDelegate: OcaDevice? = nil,
         addToRootBlock: Bool = true
