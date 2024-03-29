@@ -100,7 +100,7 @@ open class OcaMatrix: OcaWorker {
     }
 
     override open func getJsonValue(
-        flags: OcaPropertyResolutionFlags
+        flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async -> [String: Any] {
         var jsonObject = await super.getJsonValue(flags: flags)
         let membersJson = try? await resolveMembers().map(defaultValue: nil, \.?.objectNumber)

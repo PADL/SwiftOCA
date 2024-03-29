@@ -303,7 +303,7 @@ open class OcaBlock: OcaWorker {
     }
 
     override open func getJsonValue(
-        flags: OcaPropertyResolutionFlags
+        flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async -> [String: Any] {
         var jsonObject = await super.getJsonValue(flags: flags)
         jsonObject["3.2"] = try? await resolveActionObjects()
