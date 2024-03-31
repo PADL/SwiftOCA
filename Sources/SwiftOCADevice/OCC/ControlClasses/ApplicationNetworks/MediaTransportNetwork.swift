@@ -192,84 +192,57 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
             let connectorStatus = try await getConnectorStatus(id)
             return try encodeResponse(connectorStatus)
         case OcaMethodID("3.15"):
-            struct AddSourceConnectorParameters: Ocp1ParametersReflectable {
-                var connector: OcaMediaSourceConnector
-                let initialStatus: OcaMediaConnectorState
-            }
-            var params: AddSourceConnectorParameters = try decodeCommand(command)
+            var params: SwiftOCA.OcaMediaTransportNetwork
+                .AddSourceConnectorParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await addSource(connector: &params.connector, initialStatus: params.initialStatus)
             return try encodeResponse(params.connector)
         case OcaMethodID("3.16"):
-            struct AddSinkConnectorParameters: Ocp1ParametersReflectable {
-                let initialStatus: OcaMediaConnectorState
-                var connector: OcaMediaSinkConnector
-            }
-            var params: AddSinkConnectorParameters = try decodeCommand(command)
+            var params: SwiftOCA.OcaMediaTransportNetwork
+                .AddSinkConnectorParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await addSink(initialStatus: params.initialStatus, connector: &params.connector)
             return try encodeResponse(params.connector)
         case OcaMethodID("3.17"):
-            struct ControlConnectorParameters: Ocp1ParametersReflectable {
-                let id: OcaMediaConnectorID
-                let command: OcaMediaConnectorCommand
-            }
-            let params: ControlConnectorParameters = try decodeCommand(command)
+            let params: SwiftOCA.OcaMediaTransportNetwork
+                .ControlConnectorParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await controlConnector(params.id, command: params.command)
             return Ocp1Response()
         case OcaMethodID("3.18"):
-            struct SetSourceConnectorPinMapParameters: Ocp1ParametersReflectable {
-                let id: OcaMediaConnectorID
-                let pinMap: [OcaUint16: OcaPortID]
-            }
-            let params: SetSourceConnectorPinMapParameters = try decodeCommand(command)
+            let params: SwiftOCA.OcaMediaTransportNetwork
+                .SetSourceConnectorPinMapParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await setSourceConnector(params.id, pinMap: params.pinMap)
             return Ocp1Response()
         case OcaMethodID("3.19"):
-            struct SetSinkConnectorPinMapParameters: Ocp1ParametersReflectable {
-                let id: OcaMediaConnectorID
-                let pinMap: [OcaUint16: [OcaPortID]]
-            }
-            let params: SetSinkConnectorPinMapParameters = try decodeCommand(command)
+            let params: SwiftOCA.OcaMediaTransportNetwork
+                .SetSinkConnectorPinMapParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await setSinkConnector(params.id, pinMap: params.pinMap)
             return Ocp1Response()
         case OcaMethodID("3.20"):
-            struct SetConnectorConnectionParameters: Ocp1ParametersReflectable {
-                let id: OcaMediaConnectorID
-                let connection: OcaMediaConnection
-            }
-            let params: SetConnectorConnectionParameters = try decodeCommand(command)
+            let params: SwiftOCA.OcaMediaTransportNetwork
+                .SetConnectorConnectionParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await setConnector(params.id, connection: params.connection)
             return Ocp1Response()
 
         case OcaMethodID("3.21"):
-            struct SetConnectorCodingParameters: Ocp1ParametersReflectable {
-                let id: OcaMediaConnectorID
-                let coding: OcaMediaCoding
-            }
-            let params: SetConnectorCodingParameters = try decodeCommand(command)
+            let params: SwiftOCA.OcaMediaTransportNetwork
+                .SetConnectorCodingParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await setConnector(params.id, coding: params.coding)
             return Ocp1Response()
         case OcaMethodID("3.22"):
-            struct SetConnectorAlignmentLevelParameters: Ocp1ParametersReflectable {
-                let id: OcaMediaConnectorID
-                let alignmentLevel: OcaDBFS
-            }
-            let params: SetConnectorAlignmentLevelParameters = try decodeCommand(command)
+            let params: SwiftOCA.OcaMediaTransportNetwork
+                .SetConnectorAlignmentLevelParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await setConnector(params.id, alignmentLevel: params.alignmentLevel)
             return Ocp1Response()
         case OcaMethodID("3.23"):
-            struct SetConnectorAlignmentGainParameters: Ocp1ParametersReflectable {
-                let id: OcaMediaConnectorID
-                let alignmentGain: OcaDB
-            }
-            let params: SetConnectorAlignmentGainParameters = try decodeCommand(command)
+            let params: SwiftOCA.OcaMediaTransportNetwork
+                .SetConnectorAlignmentGainParameters = try decodeCommand(command)
             try await ensureWritable(by: controller, command: command)
             try await setConnector(params.id, alignmentGain: params.alignmentGain)
             return Ocp1Response()
