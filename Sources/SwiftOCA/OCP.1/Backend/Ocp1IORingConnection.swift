@@ -23,6 +23,7 @@ import IORing
 import IORingFoundation
 @_implementationOnly
 import IORingUtils
+import SystemPackage
 
 fileprivate extension Errno {
     var connectionFailed: Bool {

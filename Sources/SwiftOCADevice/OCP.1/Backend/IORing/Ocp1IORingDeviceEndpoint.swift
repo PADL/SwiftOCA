@@ -26,6 +26,7 @@ import IORing
 import IORingUtils
 import Logging
 import SwiftOCA
+import SystemPackage
 
 @OcaDevice
 public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
