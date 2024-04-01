@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */; };
+		D30349D62BBB65E90080FF09 /* Frequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349D52BBB65E90080FF09 /* Frequency.swift */; };
+		D30349D82BBB66460080FF09 /* Frequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349D72BBB66460080FF09 /* Frequency.swift */; };
 		D30644012A76CDDE0063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */; };
 		D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644022A76CE310063DA65 /* IdentificationSensor.swift */; };
 		D30644062A770B640063DA65 /* Notification2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644052A770B640063DA65 /* Notification2.swift */; };
@@ -304,6 +306,8 @@
 
 /* Begin PBXFileReference section */
 		D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDeviceView.swift; sourceTree = "<group>"; };
+		D30349D52BBB65E90080FF09 /* Frequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Frequency.swift; sourceTree = "<group>"; };
+		D30349D72BBB66460080FF09 /* Frequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Frequency.swift; sourceTree = "<group>"; };
 		D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644022A76CE310063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644052A770B640063DA65 /* Notification2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification2.swift; sourceTree = "<group>"; };
@@ -823,6 +827,7 @@
 				D3AFD38D2B4150F300A72E9A /* SignalInput.swift */,
 				D3AFD38F2B41510E00A72E9A /* SignalOutput.swift */,
 				D3AFD38B2B4150C800A72E9A /* SummingPoint.swift */,
+				D30349D72BBB66460080FF09 /* Frequency.swift */,
 			);
 			path = Actuators;
 			sourceTree = "<group>";
@@ -1194,6 +1199,7 @@
 				D3E6E1992A3ACA6C00BF7095 /* Switch.swift */,
 				D3E6E19A2A3ACA6C00BF7095 /* BasicActuators.swift */,
 				D3E6E19B2A3ACA6C00BF7095 /* Polarity.swift */,
+				D30349D52BBB65E90080FF09 /* Frequency.swift */,
 				D3E6E19C2A3ACA6C00BF7095 /* Gain.swift */,
 				D3E6E19D2A3ACA6C00BF7095 /* Actuator.swift */,
 				D3AFD3932B41514400A72E9A /* SignalInput.swift */,
@@ -1660,6 +1666,7 @@
 				D33B52A32A702CED001A1BA7 /* Block.swift in Sources */,
 				D33B52B62A7060E0001A1BA7 /* BasicActuators.swift in Sources */,
 				D3C11DB92A789C0400452B2A /* DeviceEndpoint.swift in Sources */,
+				D30349D82BBB66460080FF09 /* Frequency.swift in Sources */,
 				D33A35A92B2FB7BE00FEDC43 /* MediaClockManager.swift in Sources */,
 				D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */,
 				D351F21A2A729F48008C5513 /* VectorDeviceProperty.swift in Sources */,
@@ -1788,6 +1795,7 @@
 				D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */,
 				D3A0BE7E2B71921900A5AA05 /* Group.swift in Sources */,
 				D34B5FA82B6884DA000C8DD1 /* ListProperty.swift in Sources */,
+				D30349D62BBB65E90080FF09 /* Frequency.swift in Sources */,
 				D3E6E1E22A3ACAA900BF7095 /* SearchDataTypes.swift in Sources */,
 				D3AFD3502B2CF84E00A72E9A /* MediaClock3.swift in Sources */,
 				D3AFD3802B32A06700A72E9A /* Ocp1DecodingState.swift in Sources */,
