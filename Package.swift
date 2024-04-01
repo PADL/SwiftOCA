@@ -173,6 +173,16 @@ let CommonTargets: [Target] = [
 
     ),
     .testTarget(
+        name: "SwiftOCATests",
+        dependencies: [
+            .target(name: "SwiftOCADevice"),
+        ],
+        swiftSettings: [
+            .unsafeFlags(ASANSwiftFlags),
+        ],
+        linkerSettings: [] + ASANLinkerSettings
+    ),
+    .testTarget(
         name: "SwiftOCADeviceTests",
         dependencies: [
             .target(name: "SwiftOCADevice"),
