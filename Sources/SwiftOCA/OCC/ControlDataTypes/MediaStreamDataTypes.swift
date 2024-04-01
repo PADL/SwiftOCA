@@ -102,7 +102,7 @@ public enum OcaMediaFrameFormat: OcaUint8, Codable, Sendable, CaseIterable {
     case extensionPoint = 65
 }
 
-// MIME type example: audio/pcm;rate=48000;encoding=float;bits=32
+// MIME type example: audio/pcm;rate=48000;encoding=float;bits=32 or audio/L32
 
 public struct OcaMediaStreamMode: Codable, Sendable {
     public let frameFormat: OcaMediaFrameFormat
