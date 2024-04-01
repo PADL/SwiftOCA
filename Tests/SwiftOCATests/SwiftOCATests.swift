@@ -45,6 +45,23 @@ extension Character {
     }
 }
 
+extension OcaMediaSinkConnector: Equatable {
+    public static func == (
+        lhs: SwiftOCA.OcaMediaSinkConnector,
+        rhs: SwiftOCA.OcaMediaSinkConnector
+    ) -> Bool {
+        lhs.idInternal == rhs.idInternal &&
+            lhs.idExternal == rhs.idExternal &&
+            lhs.connection == rhs.connection &&
+            lhs.availableCodings == rhs.availableCodings &&
+            lhs.pinCount == rhs.pinCount &&
+            lhs.channelPinMap == rhs.channelPinMap &&
+            lhs.alignmentLevel == rhs.alignmentLevel &&
+            lhs.alignmentGain == rhs.alignmentGain &&
+            lhs.currentCoding == rhs.currentCoding
+    }
+}
+
 final class SwiftOCADeviceTests: XCTestCase {
     func testSingleFieldOcp1Encoding() async throws {
         let parameters = OcaGetPortNameParameters(portID: OcaPortID(mode: .input, index: 2))
@@ -76,12 +93,40 @@ final class SwiftOCADeviceTests: XCTestCase {
     }
 
     func testMultipleFieldOcp1Encoding() async throws {
-        let parameters = OcaBoundedPropertyValue<OcaInt64>(value: -100, minValue: -200, maxValue: 0)
+        let parameters = OcaBoundedPropertyValue<OcaInt64>(
+            value: -100,
+            minValue: -200,
+            maxValue: 0
+        )
         let encodedParameters: [UInt8] = try Ocp1Encoder().encode(parameters)
         XCTAssertEqual(
             encodedParameters,
-            [255, 255, 255, 255, 255, 255, 255, 156, 255, 255, 255, 255, 255, 255, 255, 56, 0, 0, 0,
-             0, 0, 0, 0, 0]
+            [
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                156,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                56,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ]
         )
 
         let command = Ocp1Command(
@@ -245,6 +290,122 @@ final class SwiftOCADeviceTests: XCTestCase {
 
         let ocp1Decoder = Ocp1Decoder()
         XCTAssertEqual(try ocp1Decoder.decode(String.self, from: encodedString), string)
+    }
+
+    func testMapEncoding() async throws {
+        let map = ["A": UInt16(1), "B": UInt16(2)]
+
+        // dictionary keys are unordered so test both permutations
+        let encodedMap_1 =
+            Data([0x00, 0x02, 0x00, 0x01, 0x41, 0x00, 0x01, 0x00, 0x01, 0x42, 0x00, 0x02])
+        let encodedMap_2 =
+            Data([0x00, 0x02, 0x00, 0x01, 0x42, 0x00, 0x02, 0x00, 0x01, 0x41, 0x00, 0x01])
+
+        let ocp1Encoder = Ocp1Encoder()
+        let encodedMap: Data = try ocp1Encoder.encode(map)
+        XCTAssertTrue(encodedMap == encodedMap_1 || encodedMap == encodedMap_2)
+
+        let ocp1Decoder = Ocp1Decoder()
+        XCTAssertEqual(try ocp1Decoder.decode([String: UInt16].self, from: encodedMap), map)
+    }
+
+    func testMultiMapEncoding() async throws {
+        let multiMap: OcaMultiMap<String, OcaUint16> = ["A": [1, 2, 3]]
+        let encodedMultiMap =
+            Data([0x00, 0x01, 0x00, 0x01, 0x41, 0x00, 0x03, 0x00, 0x01, 0x00, 0x02, 0x00, 0x03])
+
+        let ocp1Encoder = Ocp1Encoder()
+        XCTAssertEqual(try ocp1Encoder.encode(multiMap), encodedMultiMap)
+
+        let ocp1Decoder = Ocp1Decoder()
+        XCTAssertEqual(
+            try ocp1Decoder.decode(OcaMultiMap<String, OcaUint16>.self, from: encodedMultiMap),
+            multiMap
+        )
+    }
+
+    func testMediaSinkConnectorEncoding() async throws {
+        let mediaCoding = OcaMediaCoding(
+            codingSchemeID: 1,
+            codecParameters: "1234",
+            clockONo: 4096
+        )
+        let sink = OcaMediaSinkConnector(
+            idInternal: 0,
+            idExternal: "0000",
+            connection: OcaMediaConnection(
+                secure: false,
+                streamParameters: LengthTaggedData(),
+                streamCastMode: .multicast,
+                streamChannelCount: 0xA
+            ),
+            availableCodings: [mediaCoding],
+            pinCount: 8,
+            channelPinMap: [:],
+            alignmentLevel: 0.0,
+            alignmentGain: 0.0,
+            currentCoding: mediaCoding
+        )
+        let encodedSink = Data([
+            0x00,
+            0x00,
+            0x00,
+            0x04,
+            0x30,
+            0x30,
+            0x30,
+            0x30,
+            0x00,
+            0x00,
+            0x00,
+            0x02,
+            0x00,
+            0x0A,
+            0x00,
+            0x01,
+            0x00,
+            0x01,
+            0x00,
+            0x04,
+            0x31,
+            0x32,
+            0x33,
+            0x34,
+            0x00,
+            0x00,
+            0x10,
+            0x00,
+            0x00,
+            0x08,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x01,
+            0x00,
+            0x04,
+            0x31,
+            0x32,
+            0x33,
+            0x34,
+            0x00,
+            0x00,
+            0x10,
+            0x00,
+        ])
+
+        let ocp1Encoder = Ocp1Encoder()
+        XCTAssertEqual(try ocp1Encoder.encode(sink), encodedSink)
+
+        let ocp1Decoder = Ocp1Decoder()
+        XCTAssertEqual(try ocp1Decoder.decode(OcaMediaSinkConnector.self, from: encodedSink), sink)
     }
 }
 

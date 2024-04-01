@@ -44,7 +44,11 @@ struct Ocp1DecoderImpl: Decoder {
     func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key>
         where Key: CodingKey
     {
-        .init(KeyedOcp1DecodingContainer(state: state, codingPath: codingPath, userInfo: userInfo))
+        .init(KeyedOcp1DecodingContainer(
+            state: state,
+            codingPath: codingPath,
+            userInfo: userInfo
+        ))
     }
 
     func unkeyedContainer() throws -> any UnkeyedDecodingContainer {

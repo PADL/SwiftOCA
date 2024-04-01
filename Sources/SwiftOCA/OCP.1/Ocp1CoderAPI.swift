@@ -14,25 +14,57 @@
 // limitations under the License.
 //
 
-protocol Ocp1ListRepresentable {
-    associatedtype Element: Codable
-}
+protocol Ocp1ListRepresentable: Collection, Codable where Element: Codable {}
 
 extension Array: Ocp1ListRepresentable where Element: Codable {
     typealias Element = Element
 }
 
-protocol Ocp1MapRepresentable {
+struct Ocp1MapItem<Key: Hashable & Codable, Value: Codable>: Codable, Hashable {
+    static func == (lhs: Ocp1MapItem<Key, Value>, rhs: Ocp1MapItem<Key, Value>) -> Bool {
+        guard lhs.key == rhs.key else {
+            return false
+        }
+
+        return true
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(key)
+    }
+
+    var key: Key
+    var value: Value
+}
+
+protocol Ocp1MapRepresentable<Key, Value>: Collection, Codable {
     associatedtype Key: Codable & Hashable
     associatedtype Value: Codable
+
+    init(from: Ocp1DecoderImpl) throws
+    func withMapItems(_ block: (Key, Value) throws -> ()) rethrows
 }
 
 extension Dictionary: Ocp1MapRepresentable where Key: Codable & Hashable, Value: Codable {
-    typealias Key = Key
-    typealias Value = Value
+    private init(mapItemSet: Set<Ocp1MapItem<Key, Value>>) {
+        self = Dictionary(uniqueKeysWithValues: mapItemSet.map {
+            ($0.key, $0.value)
+        })
+    }
+
+    init(from ocp1Decoder: Ocp1DecoderImpl) throws {
+        let mapItemSet = try Set<Ocp1MapItem<Key, Value>>(from: ocp1Decoder)
+        self.init(mapItemSet: mapItemSet)
+    }
+
+    func withMapItems(_ block: (Key, Value) throws -> ()) rethrows {
+        for (key, value) in self {
+            try block(key, value)
+        }
+    }
 }
 
-protocol Ocp1Array2DRepresentable {
+protocol Ocp1Array2DRepresentable<Element> {
     associatedtype Element: Codable
 }
 

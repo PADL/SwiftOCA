@@ -40,22 +40,8 @@ public struct Ocp1Decoder {
     public func decode<Value>(_ type: Value.Type, from data: Data) throws -> Value
         where Value: Decodable
     {
-        let state = Ocp1DecodingState(data: Data(data), userInfo: userInfo)
-        var count: Int? = nil
-        if type is any Ocp1ListRepresentable.Type {
-            // propagate array count to unkeyed container count
-            count =
-                try Int(UInt16(from: Ocp1DecoderImpl(
-                    state: state,
-                    codingPath: [],
-                    userInfo: userInfo
-                )))
-        }
-        return try Value(from: Ocp1DecoderImpl(
-            state: state,
-            codingPath: [],
-            userInfo: userInfo,
-            count: count
-        ))
+        let state: Ocp1DecodingState
+        state = Ocp1DecodingState(data: Data(data), userInfo: userInfo)
+        return try ocp1Decode(type, state: state, codingPath: [], userInfo: userInfo)
     }
 }

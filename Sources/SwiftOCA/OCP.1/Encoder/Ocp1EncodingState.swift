@@ -113,23 +113,33 @@ class Ocp1EncodingState {
         try encodeInteger(value)
     }
 
+    private func encodeCount<T: Collection>(_ value: T) throws where T: Encodable {
+        if value is Ocp1LongList {
+            // FIXME: can't support 2^32 length because on 32-bit platforms count is Int32
+            if value.count > Int(Int32.max) {
+                throw Ocp1Error.arrayOrDataTooBig
+            }
+            try encodeInteger(Int32(value.count))
+        } else {
+            if value.count > Int(UInt16.max) {
+                throw Ocp1Error.arrayOrDataTooBig
+            }
+            try encodeInteger(UInt16(value.count))
+        }
+    }
+
     func encode<T>(_ value: T, codingPath: [any CodingKey]) throws where T: Encodable {
         switch value {
         case let data as Data:
             self.data += data
-        case let array as [Encodable]:
-            if value is Ocp1LongList {
-                // FIXME: can't support 2^32 length because on 32-bit platforms count is Int32
-                if array.count > Int(Int32.max) {
-                    throw Ocp1Error.arrayOrDataTooBig
-                }
-                try encodeInteger(Int32(array.count))
-            } else {
-                if array.count > Int(UInt16.max) {
-                    throw Ocp1Error.arrayOrDataTooBig
-                }
-                try encodeInteger(UInt16(array.count))
+        case let map as any Ocp1MapRepresentable:
+            try encodeCount(map)
+            try map.withMapItems {
+                try encode($0, codingPath: codingPath)
+                try encode($1, codingPath: codingPath)
             }
+        case let array as any Ocp1ListRepresentable:
+            try encodeCount(array)
             fallthrough
         default:
             try withCodingTypePath(appending: [String(describing: type(of: value))]) {

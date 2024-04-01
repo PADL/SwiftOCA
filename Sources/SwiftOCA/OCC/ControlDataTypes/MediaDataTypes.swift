@@ -49,7 +49,7 @@ public enum OcaEncoding: OcaUint8, Codable, Sendable, CaseIterable {
     case extensionPoint = 65
 }
 
-public struct OcaMediaCoding: Codable, Sendable {
+public struct OcaMediaCoding: Codable, Sendable, Equatable {
     public let codingSchemeID: OcaMediaCodingSchemeID
     public let codecParameters: OcaString
     public let clockONo: OcaONo
@@ -71,7 +71,7 @@ public struct OcaMediaCoding: Codable, Sendable {
     }
 }
 
-public struct OcaMediaConnection: Codable, Sendable {
+public struct OcaMediaConnection: Codable, Sendable, Equatable {
     public let secure: OcaBoolean
     public let streamParameters: OcaMediaStreamParameters
     public let streamCastMode: OcaMediaStreamCastMode

@@ -27,7 +27,6 @@ import Foundation
 class Ocp1DecodingState {
     private var data: Data
     let userInfo: [CodingUserInfoKey: Any]
-
     var isAtEnd: Bool { data.isEmpty }
 
     init(data: Data, userInfo: [CodingUserInfoKey: Any]) {
@@ -141,29 +140,59 @@ class Ocp1DecodingState {
         try decodeInteger(type)
     }
 
+    func decodeCount<T: Collection & Decodable>(_ type: T.Type) throws -> Int {
+        let count: Int
+
+        if type is any Ocp1LongList.Type {
+            // FIXME: can't support 2^32 length because on 32-bit platforms count is Int32
+            count =
+                try Int(Int32(from: Ocp1DecoderImpl(
+                    state: self,
+                    codingPath: [],
+                    userInfo: userInfo
+                )))
+        } else {
+            count =
+                try Int(UInt16(from: Ocp1DecoderImpl(
+                    state: self,
+                    codingPath: [],
+                    userInfo: userInfo
+                )))
+        }
+
+        return count
+    }
+
     func decode<T>(_ type: T.Type, codingPath: [any CodingKey]) throws -> T where T: Decodable {
-        var count: Int? = nil
-        if type is any Ocp1ListRepresentable.Type {
-            if type is any Ocp1LongList.Type {
-                // FIXME: can't support 2^32 length because on 32-bit platforms count is Int32
-                count =
-                    try Int(Int32(from: Ocp1DecoderImpl(
-                        state: self,
-                        codingPath: [],
-                        userInfo: userInfo
-                    )))
-            } else {
-                count =
-                    try Int(UInt16(from: Ocp1DecoderImpl(
-                        state: self,
-                        codingPath: [],
-                        userInfo: userInfo
-                    )))
-            }
+        try ocp1Decode(type, state: self, codingPath: [], userInfo: userInfo)
+    }
+}
+
+func ocp1Decode<T>(
+    _ type: T.Type,
+    state: Ocp1DecodingState,
+    codingPath: [any CodingKey],
+    userInfo: [CodingUserInfoKey: Any]
+) throws -> T where T: Decodable {
+    let count: Int?
+    if let type = type as? any Ocp1MapRepresentable.Type {
+        count = try state.decodeCount(type)
+        let decoder = Ocp1DecoderImpl(
+            state: state,
+            codingPath: [],
+            userInfo: userInfo,
+            count: count
+        )
+        return try type.init(from: decoder) as! T
+    } else {
+        if let type = type as? any Ocp1ListRepresentable.Type {
+            count = try state.decodeCount(type)
+        } else {
+            count = nil
         }
         return try T(from: Ocp1DecoderImpl(
-            state: self,
-            codingPath: codingPath,
+            state: state,
+            codingPath: [],
             userInfo: userInfo,
             count: count
         ))
