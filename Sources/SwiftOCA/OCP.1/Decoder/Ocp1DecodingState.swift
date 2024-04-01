@@ -164,37 +164,37 @@ class Ocp1DecodingState {
     }
 
     func decode<T>(_ type: T.Type, codingPath: [any CodingKey]) throws -> T where T: Decodable {
-        try ocp1Decode(type, state: self, codingPath: [], userInfo: userInfo)
+        try Ocp1DecodingState.decode(type, state: self, codingPath: [], userInfo: userInfo)
     }
-}
 
-func ocp1Decode<T>(
-    _ type: T.Type,
-    state: Ocp1DecodingState,
-    codingPath: [any CodingKey],
-    userInfo: [CodingUserInfoKey: Any]
-) throws -> T where T: Decodable {
-    let count: Int?
-    if let type = type as? any Ocp1MapRepresentable.Type {
-        count = try state.decodeCount(type)
-        let decoder = Ocp1DecoderImpl(
-            state: state,
-            codingPath: [],
-            userInfo: userInfo,
-            count: count
-        )
-        return try type.init(from: decoder) as! T
-    } else {
-        if let type = type as? any Ocp1ListRepresentable.Type {
+    static func decode<T>(
+        _ type: T.Type,
+        state: Ocp1DecodingState,
+        codingPath: [any CodingKey],
+        userInfo: [CodingUserInfoKey: Any]
+    ) throws -> T where T: Decodable {
+        let count: Int?
+        if let type = type as? any Ocp1MapRepresentable.Type {
             count = try state.decodeCount(type)
+            let decoder = Ocp1DecoderImpl(
+                state: state,
+                codingPath: [],
+                userInfo: userInfo,
+                count: count
+            )
+            return try type.init(from: decoder) as! T
         } else {
-            count = nil
+            if let type = type as? any Ocp1ListRepresentable.Type {
+                count = try state.decodeCount(type)
+            } else {
+                count = nil
+            }
+            return try T(from: Ocp1DecoderImpl(
+                state: state,
+                codingPath: [],
+                userInfo: userInfo,
+                count: count
+            ))
         }
-        return try T(from: Ocp1DecoderImpl(
-            state: state,
-            codingPath: [],
-            userInfo: userInfo,
-            count: count
-        ))
     }
 }

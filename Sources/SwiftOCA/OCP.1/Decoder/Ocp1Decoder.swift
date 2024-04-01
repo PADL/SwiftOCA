@@ -42,6 +42,6 @@ public struct Ocp1Decoder {
     {
         let state: Ocp1DecodingState
         state = Ocp1DecodingState(data: Data(data), userInfo: userInfo)
-        return try ocp1Decode(type, state: state, codingPath: [], userInfo: userInfo)
+        return try Ocp1DecodingState.decode(type, state: state, codingPath: [], userInfo: userInfo)
     }
 }
