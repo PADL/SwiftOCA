@@ -88,7 +88,7 @@ open class OcaWorker: OcaRoot, OcaOwnablePrivate {
     public func get(portID: OcaPortID) async throws -> OcaString {
         let params = OcaGetPortNameParameters(portID: portID)
         return try await sendCommandRrq(
-            methodID: OcaMethodID("2.7"),
+            methodID: OcaMethodID("2.6"),
             parameters: params
         )
     }
@@ -115,12 +115,10 @@ open class OcaWorker: OcaRoot, OcaOwnablePrivate {
         )
     }
 
-    public typealias SetPortClockMapEntryParameters = OcaSetPortClockMapEntryParameters
-
     public func set(portID: OcaPortID, portClockMapEntry: OcaPortClockMapEntry) async throws {
         try await sendCommandRrq(
-            methodID: OcaMethodID("2.16"),
-            parameters: SetPortClockMapEntryParameters(
+            methodID: OcaMethodID("2.17"),
+            parameters: OcaSetPortClockMapEntryParameters(
                 portID: portID,
                 portClockMapEntry: portClockMapEntry
             )
@@ -129,7 +127,7 @@ open class OcaWorker: OcaRoot, OcaOwnablePrivate {
 
     public func deletePortClockMapEntry(portID: OcaPortID) async throws {
         try await sendCommandRrq(
-            methodID: OcaMethodID("2.16"),
+            methodID: OcaMethodID("2.18"),
             parameters: portID
         )
     }
