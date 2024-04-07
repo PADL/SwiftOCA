@@ -17,6 +17,11 @@
 public struct OcaPortClockMapEntry: Codable, Sendable {
     public let clockONo: OcaONo
     public let srcType: OcaSamplingRateConverterType
+
+    public init(clockONo: OcaONo, srcType: OcaSamplingRateConverterType) {
+        self.clockONo = clockONo
+        self.srcType = srcType
+    }
 }
 
 public struct OcaSetPortClockMapEntryParameters: Ocp1ParametersReflectable {
