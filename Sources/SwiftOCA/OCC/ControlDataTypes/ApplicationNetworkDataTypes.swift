@@ -38,7 +38,10 @@ public enum OcaApplicationNetworkState: OcaUint8, Codable, Sendable, CaseIterabl
 public typealias OcaApplicationNetworkServiceID = OcaBlob
 
 public enum OcaProtocolVersion: OcaUint16, Codable, Sendable {
-    case aes70_2015 = 2015
-    case aes70_2018 = 2018
-    case aes70_2023 = 2023
+    // Original standard (AES70-2015)
+    case aes70_2015 = 1
+    // 2018 revision
+    case aes70_2018 = 2
+    // 2023 revision
+    case aes70_2023 = 3
 }
