@@ -77,7 +77,7 @@ open class OcaWorker: OcaRoot, OcaOwnablePrivate {
     }
 
     // 2.4
-    public func delete(port id: OcaPortID) async throws {
+    public func delete(portID id: OcaPortID) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("2.4"),
             parameters: id
