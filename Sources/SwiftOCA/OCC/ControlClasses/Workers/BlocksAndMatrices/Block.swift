@@ -202,12 +202,12 @@ open class OcaBlock: OcaWorker {
         public init(
             searchName: OcaString,
             nameComparisonType: OcaStringComparisonType,
-            searchClassID: OcaClassID,
+            searchClassID: OcaClassID?,
             resultFlags: OcaObjectSearchResultFlags
         ) {
             self.searchName = searchName
             self.nameComparisonType = nameComparisonType
-            self.searchClassID = searchClassID
+            self.searchClassID = searchClassID ?? OcaClassID()
             self.resultFlags = resultFlags
         }
     }
@@ -215,7 +215,7 @@ open class OcaBlock: OcaWorker {
     public func find(
         actionObjectsByRole searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
-        searchClassID: OcaClassID,
+        searchClassID: OcaClassID? = nil,
         resultFlags: OcaObjectSearchResultFlags
     ) async throws -> OcaList<OcaObjectSearchResult> {
         let params = FindActionObjectsByRoleParameters(
@@ -235,7 +235,7 @@ open class OcaBlock: OcaWorker {
     public func findRecursive(
         actionObjectsByRole searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
-        searchClassID: OcaClassID,
+        searchClassID: OcaClassID? = nil,
         resultFlags: OcaObjectSearchResultFlags
     ) async throws -> OcaList<OcaObjectSearchResult> {
         let params = FindActionObjectsByRoleParameters(
@@ -265,7 +265,7 @@ open class OcaBlock: OcaWorker {
     public func findRecursive(
         actionObjectsByLabel searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
-        searchClassID: OcaClassID,
+        searchClassID: OcaClassID? = nil,
         resultFlags: OcaObjectSearchResultFlags
     ) async throws -> OcaList<OcaObjectSearchResult> {
         let params = FindActionObjectsByRoleParameters(
