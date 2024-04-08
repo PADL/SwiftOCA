@@ -236,7 +236,7 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible {
     }
 
     public func isSubclass(of classID: OcaClassID) -> Bool {
-        if self == classID {
+        if self == classID || classID.fields.count == 0 {
             return true
         }
 

@@ -474,7 +474,7 @@ private extension OcaRoot {
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID
     ) -> Bool {
-        guard objectIdentification.classIdentification.classID == searchClassID else {
+        guard objectIdentification.classIdentification.classID.isSubclass(of: searchClassID) else {
             return false
         }
 
