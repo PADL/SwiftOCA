@@ -196,12 +196,16 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible {
         self.fields = parent.fields + fields
     }
 
+    public init() {
+        self.init([])
+    }
+
     public init(parent: OcaClassID, _ string: String) {
-        fields = parent.fields + OcaClassID(string).fields
+        self.init(parent.fields, parent: OcaClassID(string))
     }
 
     public init(parent: OcaClassID, _ integer: OcaUint16) {
-        fields = parent.fields + [integer]
+        self.init(parent.fields + [integer])
     }
 
     private init(parent: OcaClassID, authority: OcaOrganizationID, _ extraFields: [OcaUint16]) {
