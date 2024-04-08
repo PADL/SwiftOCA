@@ -22,9 +22,15 @@ public protocol OcaPortsRepresentable: OcaRoot {
 }
 
 extension OcaPortsRepresentable {
+    /// Unique identifier of input or output Port within a given Worker or Block class.
+    /// Port numbers are ordinals starting at 1, and there are separate numbering spaces
+    /// for input and output Ports.
     @OcaDevice
-    var firstAvailablePortIndex: OcaUint16 {
-        1 + (ports.map(\.id.index).max() ?? 0)
+    func firstAvailablePortID(mode: OcaPortMode) -> OcaPortID {
+        OcaPortID(
+            mode: mode,
+            index: 1 + (ports.filter { $0.id.mode == mode }.map(\.id.index).max() ?? 0)
+        )
     }
 
     @OcaDevice
@@ -70,18 +76,16 @@ public extension SwiftOCADevice.OcaBlock where ActionObject: OcaPortsRepresentab
         for i in 0..<outputs.count {
             let name = name ?? "\(outputs[i].role) -> \(inputs[i].role)"
 
-            let outputPortID = OcaPortID(mode: .output, index: outputs[i].firstAvailablePortIndex)
             let outputPort = OcaPort(
                 owner: objectNumber,
-                id: outputPortID,
+                id: outputs[i].firstAvailablePortID(mode: .output),
                 name: "\(name) [Output Port \(i + 1)]"
             )
             outputs[i].ports.append(outputPort)
 
-            let inputPortID = OcaPortID(mode: .input, index: inputs[i].firstAvailablePortIndex)
             let inputPort = OcaPort(
                 owner: objectNumber,
-                id: inputPortID,
+                id: inputs[i].firstAvailablePortID(mode: .input),
                 name: "\(name) [Input Port \(i + 1)]"
             )
             inputs[i].ports.append(inputPort)
