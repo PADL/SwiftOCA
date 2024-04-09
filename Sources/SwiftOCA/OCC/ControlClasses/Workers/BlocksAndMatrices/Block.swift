@@ -193,6 +193,30 @@ open class OcaBlock: OcaWorker {
         )
     }
 
+    private func validate(
+        _ searchResults: [OcaObjectSearchResult],
+        against flags: OcaObjectSearchResultFlags
+    ) throws {
+        var valid = true
+
+        if valid, flags.contains(.oNo) {
+            valid = searchResults.allSatisfy { $0.oNo != nil }
+        }
+        if valid, flags.contains(.classIdentification) {
+            valid = searchResults.allSatisfy { $0.classIdentification != nil }
+        }
+        if valid, flags.contains(.containerPath) {
+            valid = searchResults.allSatisfy { $0.containerPath != nil }
+        }
+        if valid, flags.contains(.role) {
+            valid = searchResults.allSatisfy { $0.role != nil }
+        }
+        // note label is optional
+        guard valid else {
+            throw Ocp1Error.responseParameterOutOfRange
+        }
+    }
+
     public struct FindActionObjectsByRoleParameters: Ocp1ParametersReflectable {
         public let searchName: OcaString
         public let nameComparisonType: OcaStringComparisonType
@@ -225,11 +249,13 @@ open class OcaBlock: OcaWorker {
             resultFlags: resultFlags
         )
         let userInfo = [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
-        return try await sendCommandRrq(
+        let searchResults: [OcaObjectSearchResult] = try await sendCommandRrq(
             methodID: OcaMethodID("3.17"),
             parameters: params,
             userInfo: userInfo
         )
+        try validate(searchResults, against: resultFlags)
+        return searchResults
     }
 
     public func findRecursive(
@@ -245,11 +271,13 @@ open class OcaBlock: OcaWorker {
             resultFlags: resultFlags
         )
         let userInfo = [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
-        return try await sendCommandRrq(
+        let searchResults: [OcaObjectSearchResult] = try await sendCommandRrq(
             methodID: OcaMethodID("3.18"),
             parameters: params,
             userInfo: userInfo
         )
+        try validate(searchResults, against: resultFlags)
+        return searchResults
     }
 
     public struct FindActionObjectsByPathParameters: Ocp1ParametersReflectable {
@@ -275,11 +303,13 @@ open class OcaBlock: OcaWorker {
             resultFlags: resultFlags
         )
         let userInfo = [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
-        return try await sendCommandRrq(
+        let searchResults: [OcaObjectSearchResult] = try await sendCommandRrq(
             methodID: OcaMethodID("3.19"),
             parameters: params,
             userInfo: userInfo
         )
+        try validate(searchResults, against: resultFlags)
+        return searchResults
     }
 
     public func find(
@@ -291,11 +321,13 @@ open class OcaBlock: OcaWorker {
             resultFlags: resultFlags
         )
         let userInfo = [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
-        return try await sendCommandRrq(
+        let searchResults: [OcaObjectSearchResult] = try await sendCommandRrq(
             methodID: OcaMethodID("3.20"),
             parameters: params,
             userInfo: userInfo
         )
+        try validate(searchResults, against: resultFlags)
+        return searchResults
     }
 
     override public var isContainer: Bool {
