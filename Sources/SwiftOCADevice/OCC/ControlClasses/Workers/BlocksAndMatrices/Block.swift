@@ -474,11 +474,13 @@ private extension OcaRoot {
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID
     ) -> Bool {
-        guard objectIdentification.classIdentification.classID.isSubclass(of: searchClassID) else {
+        guard objectIdentification.classIdentification.classID.isSubclass(of: searchClassID),
+              let object = self as? T
+        else {
             return false
         }
 
-        let value = (self as! T)[keyPath: keyPath]
+        let value = object[keyPath: keyPath]
 
         switch nameComparisonType {
         case .exact:
