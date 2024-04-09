@@ -512,7 +512,7 @@ private extension OcaRoot {
             classIdentification = objectIdentification.classIdentification
         }
         if resultFlags.contains(.containerPath) {
-            containerPath = await objectNumberPath
+            containerPath = await objectNumberPath.dropLast()
         }
         if resultFlags.contains(.role) {
             role = self.role
