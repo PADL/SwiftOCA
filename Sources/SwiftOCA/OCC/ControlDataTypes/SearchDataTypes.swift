@@ -15,11 +15,17 @@
 //
 
 public enum OcaStringComparisonType: OcaUint8, Codable, Sendable, CaseIterable {
+    /// Exact comparison. Case-sensitive
     case exact = 0
+    /// Match all strings whose initial substrings equal the given key. Case-sensitive
     case substring = 1
+    /// Match all strings that contain the given key. Case-sensitive
     case contains = 2
+    /// Exact comparison. Case-insensitive
     case exactCaseInsensitive = 3
+    /// Match all strings whose initial substrings equal the given key. Case-insensitive
     case substringCaseInsensitive = 4
+    /// Match all strings that contain the given key. Case-insensitive
     case containsCaseInsensitive = 5
 }
 
