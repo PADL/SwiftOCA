@@ -297,7 +297,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
             } else if let worker = member as? OcaWorker {
                 return worker.compare(
                     searchName: searchName,
-                    keyPath: \OcaAgent.label,
+                    keyPath: \OcaWorker.label,
                     nameComparisonType: nameComparisonType,
                     searchClassID: searchClassID
                 )
