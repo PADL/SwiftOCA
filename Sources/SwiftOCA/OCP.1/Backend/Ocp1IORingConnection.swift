@@ -108,9 +108,13 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
         SOCK_DGRAM
     }
 
+    @_spi(SwiftOCAPrivate)
+    public static let MaximumPduSize = 1500
+
     override public func read(_ length: Int) async throws -> Data {
+        // read maximum PDU size
         try await withMappedError { socket in
-            Data(try await socket.receive(count: length))
+            Data(try await socket.receive(count: Self.MaximumPduSize))
         }
     }
 

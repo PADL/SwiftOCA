@@ -25,6 +25,7 @@ import IORing
 @_implementationOnly
 import IORingUtils
 import Logging
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 import SystemPackage
 
@@ -229,8 +230,6 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
         return controller
     }
 
-    static let MaximumPduSize = 1500
-
     override public func run() async throws {
         logger.info("starting \(type(of: self)) on \(try! address.presentationAddress)")
         try await super.run()
@@ -238,7 +237,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
         self.socket = socket
         repeat {
             do {
-                let messagePdus = try await socket.receiveMessages(count: Self.MaximumPduSize)
+                let messagePdus = try await socket.receiveMessages(count: Ocp1IORingDatagramConnection.MaximumPduSize)
 
                 for try await messagePdu in messagePdus {
                     let controller =
