@@ -304,6 +304,12 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     open func write(_ data: Data) async throws -> Int {
         fatalError("write must be implemented by a concrete subclass of Ocp1Connection")
     }
+
+    /// by default, connection implementations that require heartbeats are assumed to use datagrams.
+    /// A concrete implementation is free to override this however.
+    open var isDatagram: Bool {
+        heartbeatTime > .seconds(0)
+    }
 }
 
 /// Public API

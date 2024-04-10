@@ -77,7 +77,9 @@ public extension Ocp1Connection {
         }
 
         header.pduSize = data.decodeInteger(index: 3)
-        precondition(header.pduSize <= data.count - 1)
+        guard header.pduSize <= data.count - 1 else {
+            throw Ocp1Error.pduTooShort
+        }
 
         /// MinimumPduSize +3 == 10
         /// 7 `messageType: OcaUint8`

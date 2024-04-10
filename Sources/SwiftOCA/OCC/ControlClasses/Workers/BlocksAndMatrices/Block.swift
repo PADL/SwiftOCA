@@ -384,6 +384,10 @@ public extension OcaBlock {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let recursiveMembers: [OcaBlockMember]
         do {
+            /// don't use recursive methods with UDP because they can exceed the minimum PDU size
+            guard !connectionDelegate.isDatagram else {
+                throw Ocp1Error.status(.notImplemented)
+            }
             recursiveMembers = try await getActionObjectsRecursive()
         } catch Ocp1Error.status(.notImplemented) {
             recursiveMembers = try await getActionObjectsRecursiveFallback()
