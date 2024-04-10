@@ -79,14 +79,14 @@ public extension SwiftOCADevice.OcaBlock where ActionObject: OcaPortsRepresentab
             let outputPort = OcaPort(
                 owner: objectNumber,
                 id: outputs[i].firstAvailablePortID(mode: .output),
-                name: "\(name) [Output Port \(i)]"
+                name: "\(name) [Output Port \(i + 1)]"
             )
             outputs[i].ports.append(outputPort)
 
             let inputPort = OcaPort(
                 owner: objectNumber,
                 id: inputs[i].firstAvailablePortID(mode: .input),
-                name: "\(name) [Input Port \(i)]"
+                name: "\(name) [Input Port \(i + 1)]"
             )
             inputs[i].ports.append(inputPort)
 
