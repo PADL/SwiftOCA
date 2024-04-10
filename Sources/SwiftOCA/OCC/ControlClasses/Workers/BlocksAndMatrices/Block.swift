@@ -116,11 +116,13 @@ open class OcaBlock: OcaWorker {
         )
     }
 
-    public func getRecursive() async throws -> OcaList<OcaBlockMember> {
+    public func getActionObjectsRecursive() async throws -> OcaList<OcaBlockMember> {
         try await sendCommandRrq(methodID: OcaMethodID("3.6"))
     }
 
-    private func _getRecursiveFallback(_ blockMembers: inout Set<OcaBlockMember>) async throws {
+    private func _getActionObjectsRecursiveFallback(
+        _ blockMembers: inout Set<OcaBlockMember>
+    ) async throws {
         let actionObjects = try await $actionObjects._getValue(
             self,
             flags: [.returnCachedValue, .cacheValue]
@@ -136,18 +138,19 @@ open class OcaBlock: OcaWorker {
                let actionObject: OcaBlock = await connectionDelegate?
                .resolve(object: actionObject)
             {
-                try await actionObject._getRecursiveFallback(&blockMembers)
+                try await actionObject._getActionObjectsRecursiveFallback(&blockMembers)
             }
         }
     }
 
-    /// this is a controller-side implementation of `getRecursive()` for devices that do not
+    /// this is a controller-side implementation of `getActionObjectsRecursive()` for devices that
+    /// do not
     /// implement  `GetActionObjectsRecursive()`
     /// note that whilst we cache values here, we don't return cached values nor do we add any event
     /// subscriptions
-    public func getRecursiveFallback() async throws -> OcaList<OcaBlockMember> {
+    public func getActionObjectsRecursiveFallback() async throws -> OcaList<OcaBlockMember> {
         var blockMembers = Set<OcaBlockMember>()
-        try await _getRecursiveFallback(&blockMembers)
+        try await _getActionObjectsRecursiveFallback(&blockMembers)
         return Array(blockMembers).sorted(by: {
             if $1.containerObjectNumber == $0.containerObjectNumber {
                 return $1.memberObjectIdentification.oNo > $0.memberObjectIdentification.oNo
@@ -171,7 +174,7 @@ open class OcaBlock: OcaWorker {
         )
     }
 
-    public func getRecursive() async throws -> OcaMap<OcaUint16, OcaSignalPath> {
+    public func getActionObjectsRecursive() async throws -> OcaMap<OcaUint16, OcaSignalPath> {
         try await sendCommandRrq(methodID: OcaMethodID("3.10"))
     }
 
@@ -381,9 +384,9 @@ public extension OcaBlock {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let recursiveMembers: [OcaBlockMember]
         do {
-            recursiveMembers = try await getRecursive()
+            recursiveMembers = try await getActionObjectsRecursive()
         } catch Ocp1Error.status(.notImplemented) {
-            recursiveMembers = try await getRecursiveFallback()
+            recursiveMembers = try await getActionObjectsRecursiveFallback()
         }
         var containerMembers: [OcaContainerObjectMember]
 
