@@ -447,7 +447,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
                             )
                             try await connection.disconnectDevice(clearObjectCache: false)
                             Task { @OcaConnection in
-                                if await !connection.isConnected {
+                                if !connection.isConnected {
                                     // check connected in case we are racing
                                     try await connection.connect()
                                     try? await proxy.grouper?.notifySubscribers(
