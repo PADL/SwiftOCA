@@ -13,6 +13,7 @@
 		D30349DA2BC679460080FF09 /* CounterSetAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349D92BC679460080FF09 /* CounterSetAgent.swift */; };
 		D30349DC2BC67AD20080FF09 /* CounterSetAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349DB2BC67AD20080FF09 /* CounterSetAgent.swift */; };
 		D30349DE2BC67D420080FF09 /* ProgrammingDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349DD2BC67D420080FF09 /* ProgrammingDataTypes.swift */; };
+		D30349E02BC67E530080FF09 /* OcaCounterNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349DF2BC67E530080FF09 /* OcaCounterNotifier.swift */; };
 		D30644012A76CDDE0063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */; };
 		D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644022A76CE310063DA65 /* IdentificationSensor.swift */; };
 		D30644062A770B640063DA65 /* Notification2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644052A770B640063DA65 /* Notification2.swift */; };
@@ -314,6 +315,7 @@
 		D30349D92BC679460080FF09 /* CounterSetAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterSetAgent.swift; sourceTree = "<group>"; };
 		D30349DB2BC67AD20080FF09 /* CounterSetAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterSetAgent.swift; sourceTree = "<group>"; };
 		D30349DD2BC67D420080FF09 /* ProgrammingDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgrammingDataTypes.swift; sourceTree = "<group>"; };
+		D30349DF2BC67E530080FF09 /* OcaCounterNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaCounterNotifier.swift; sourceTree = "<group>"; };
 		D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644022A76CE310063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644052A770B640063DA65 /* Notification2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification2.swift; sourceTree = "<group>"; };
@@ -1157,13 +1159,14 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E18B2A3ACA6C00BF7095 /* Agent.swift */,
-				D30349D92BC679460080FF09 /* CounterSetAgent.swift */,
 				D3A0BE7D2B71921900A5AA05 /* Group.swift */,
 				D34B5F9D2B65FD0D000C8DD1 /* Grouper.swift */,
 				D3E6E18C2A3ACA6C00BF7095 /* EventHandler.swift */,
 				D306556C2A524D720083F093 /* PhysicalPosition.swift */,
 				D306556E2A5254D70083F093 /* TimeSource.swift */,
 				D3AFD34F2B2CF84E00A72E9A /* MediaClock3.swift */,
+				D30349DF2BC67E530080FF09 /* OcaCounterNotifier.swift */,
+				D30349D92BC679460080FF09 /* CounterSetAgent.swift */,
 			);
 			path = Agents;
 			sourceTree = "<group>";
@@ -1830,6 +1833,7 @@
 				D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */,
 				D33BE9A22B5A3F43000CA189 /* NetworkApplicationDataTypes.swift in Sources */,
 				D3AFD37C2B32A06700A72E9A /* UnkeyedOcp1EncodingContainer.swift in Sources */,
+				D30349E02BC67E530080FF09 /* OcaCounterNotifier.swift in Sources */,
 				D3E6E1DD2A3ACAA900BF7095 /* Array2D.swift in Sources */,
 				D36ECA212A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift in Sources */,
 				D3AFD3422B2CE91B00A72E9A /* MediaClockManager.swift in Sources */,
