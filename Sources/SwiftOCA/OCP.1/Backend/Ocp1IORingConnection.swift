@@ -141,6 +141,8 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
     override public var connectionPrefix: String {
         "\(OcaUdpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
     }
+
+    override public var isDatagram: Bool { true }
 }
 
 public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
@@ -163,6 +165,8 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
     override public var connectionPrefix: String {
         "\(OcaTcpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
     }
+
+    override public var isDatagram: Bool { false }
 }
 
 private func deviceAddressToString(_ deviceAddress: any SocketAddress) -> String {

@@ -191,6 +191,8 @@ public final class Ocp1CFSocketUDPConnection: Ocp1CFSocketConnection {
     override public var connectionPrefix: String {
         "\(OcaUdpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
     }
+
+    override public var isDatagram: Bool { true }
 }
 
 public final class Ocp1CFSocketTCPConnection: Ocp1CFSocketConnection {
@@ -201,6 +203,8 @@ public final class Ocp1CFSocketTCPConnection: Ocp1CFSocketConnection {
     override public var connectionPrefix: String {
         "\(OcaTcpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
     }
+
+    override public var isDatagram: Bool { false }
 }
 
 fileprivate func isStreamType(_ type: Int32) -> Bool {
