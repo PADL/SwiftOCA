@@ -173,10 +173,17 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
             protocol: 0
         )
 
-        try socket.setReuseAddr()
-        try socket.setTcpNoDelay()
-        try socket.bind(to: address)
-        try socket.listen()
+        do {
+            try socket.setReuseAddr()
+            if address.family == AF_INET {
+                try socket.setTcpNoDelay()
+            }
+            try socket.bind(to: address)
+            try socket.listen()
+        } catch {
+            logger.warning("error \(error), when setting up socket for listening")
+            throw error
+        }
 
         return socket
     }
