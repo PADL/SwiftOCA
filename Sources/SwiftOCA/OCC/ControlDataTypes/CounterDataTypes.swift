@@ -59,3 +59,22 @@ public struct OcaCounterUpdate: Codable, Sendable {
         self.value = value
     }
 }
+
+public struct OcaCounterNotifierFilterParameters: Codable, Sendable {
+    public let threshold: OcaUint64
+    public let `operator`: OcaRelationalOperator
+    public let period: OcaTimeInterval
+    public let countDelta: OcaUint64
+
+    public init(
+        threshold: OcaUint64,
+        operator: OcaRelationalOperator,
+        period: OcaTimeInterval,
+        countDelta: OcaUint64
+    ) {
+        self.threshold = threshold
+        self.operator = `operator`
+        self.period = period
+        self.countDelta = countDelta
+    }
+}
