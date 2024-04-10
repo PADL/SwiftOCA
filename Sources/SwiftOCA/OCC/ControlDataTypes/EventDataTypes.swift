@@ -282,3 +282,5 @@ public struct OcaGroupException: Codable, Sendable {
         self.status = status
     }
 }
+
+public typealias OcaCounterUpdateEventData = OcaList<OcaCounterUpdate>
