@@ -10,6 +10,7 @@
 		D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */; };
 		D30349D62BBB65E90080FF09 /* Frequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349D52BBB65E90080FF09 /* Frequency.swift */; };
 		D30349D82BBB66460080FF09 /* Frequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349D72BBB66460080FF09 /* Frequency.swift */; };
+		D30349DA2BC679460080FF09 /* CounterSetAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349D92BC679460080FF09 /* CounterSetAgent.swift */; };
 		D30644012A76CDDE0063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */; };
 		D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644022A76CE310063DA65 /* IdentificationSensor.swift */; };
 		D30644062A770B640063DA65 /* Notification2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644052A770B640063DA65 /* Notification2.swift */; };
@@ -308,6 +309,7 @@
 		D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDeviceView.swift; sourceTree = "<group>"; };
 		D30349D52BBB65E90080FF09 /* Frequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Frequency.swift; sourceTree = "<group>"; };
 		D30349D72BBB66460080FF09 /* Frequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Frequency.swift; sourceTree = "<group>"; };
+		D30349D92BC679460080FF09 /* CounterSetAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterSetAgent.swift; sourceTree = "<group>"; };
 		D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644022A76CE310063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644052A770B640063DA65 /* Notification2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification2.swift; sourceTree = "<group>"; };
@@ -1149,6 +1151,7 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E18B2A3ACA6C00BF7095 /* Agent.swift */,
+				D30349D92BC679460080FF09 /* CounterSetAgent.swift */,
 				D3A0BE7D2B71921900A5AA05 /* Group.swift */,
 				D34B5F9D2B65FD0D000C8DD1 /* Grouper.swift */,
 				D3E6E18C2A3ACA6C00BF7095 /* EventHandler.swift */,
@@ -1843,6 +1846,7 @@
 				D3E6E1DC2A3ACAA900BF7095 /* BoundedProperty.swift in Sources */,
 				D3AFD33C2B2A566600A72E9A /* MediaStreamDataTypes.swift in Sources */,
 				D306556D2A524D720083F093 /* PhysicalPosition.swift in Sources */,
+				D30349DA2BC679460080FF09 /* CounterSetAgent.swift in Sources */,
 				D3E6E1C92A3ACA9000BF7095 /* Polarity.swift in Sources */,
 				D3D8FA492B61D6A50054FD3C /* ReflectionMirror.swift in Sources */,
 				D3E6E1D32A3ACA9E00BF7095 /* DeviceManager.swift in Sources */,
