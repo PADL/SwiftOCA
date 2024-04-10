@@ -57,13 +57,13 @@ open class OcaCounterSetAgent: OcaAgent {
         )
     }
 
-    public func reset() async throws -> OcaCounter {
+    public func reset() async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.6")
         )
     }
 
-    public func reset(counter id: OcaID16) async throws -> OcaCounter {
+    public func reset(counter id: OcaID16) async throws {
         try await sendCommandRrq(
             methodID: OcaMethodID("3.7"),
             parameters: id
