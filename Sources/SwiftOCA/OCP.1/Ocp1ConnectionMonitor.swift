@@ -25,6 +25,10 @@ extension Ocp1Connection.Monitor {
     ) async throws -> OcaMessageType {
         var messagePduData = try await connection.read(Ocp1Connection.MinimumPduSize)
 
+        guard messagePduData.count > 0 else {
+            throw Ocp1Error.notConnected
+        }
+
         /// just parse enough of the protocol in order to read rest of message
         /// `syncVal: OcaUint8` || `protocolVersion: OcaUint16` || `pduSize: OcaUint32`
         guard messagePduData.count >= Ocp1Connection.MinimumPduSize else {
