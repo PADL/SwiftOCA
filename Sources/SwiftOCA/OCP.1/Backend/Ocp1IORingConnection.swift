@@ -62,6 +62,19 @@ public class Ocp1IORingConnection: Ocp1Connection {
         super.init(options: options)
     }
 
+    public convenience init(
+        path: String,
+        options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    ) throws {
+        try self.init(
+            socketAddress: sockaddr_un(
+                family: sa_family_t(AF_LOCAL),
+                presentationAddress: path
+            ),
+            options: options
+        )
+    }
+
     override func connectDevice() async throws {
         socket = try Socket(
             ring: IORing.shared,
@@ -133,19 +146,6 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
 public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
     override fileprivate var type: Int32 {
         SOCK_STREAM
-    }
-
-    public convenience init(
-        path: String,
-        options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
-    ) throws {
-        try self.init(
-            socketAddress: sockaddr_un(
-                family: sa_family_t(AF_LOCAL),
-                presentationAddress: path
-            ),
-            options: options
-        )
     }
 
     override public func read(_ length: Int) async throws -> Data {
