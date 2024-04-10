@@ -60,17 +60,26 @@ public struct Ocp1ConnectionOptions: Sendable {
     let connectionTimeout: Duration
     let responseTimeout: Duration
     let refreshDeviceTreeOnConnection: Bool
+    let reconnectMaxTries: Int
+    let reconnectPauseInterval: Duration
+    let reconnectExponentialBackoffThreshold: Int
 
     public init(
         automaticReconnect: Bool = false,
         connectionTimeout: Duration = .seconds(2),
         responseTimeout: Duration = .seconds(2),
-        refreshDeviceTreeOnConnection: Bool = true
+        refreshDeviceTreeOnConnection: Bool = true,
+        reconnectMaxTries: Int = 10,
+        reconnectPauseInterval: Duration = .milliseconds(250),
+        reconnectExponentialBackoffThreshold: Int = 3
     ) {
         self.automaticReconnect = automaticReconnect
         self.connectionTimeout = connectionTimeout
         self.responseTimeout = responseTimeout
         self.refreshDeviceTreeOnConnection = refreshDeviceTreeOnConnection
+        self.reconnectMaxTries = reconnectMaxTries
+        self.reconnectPauseInterval = reconnectPauseInterval
+        self.reconnectExponentialBackoffThreshold = reconnectExponentialBackoffThreshold
     }
 }
 
@@ -225,7 +234,28 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 
     func reconnectDevice() async throws {
         try await disconnectDevice(clearObjectCache: false)
-        try await connectDeviceWithTimeout()
+
+        var lastError: Error?
+        var backoff: Duration = options.reconnectPauseInterval
+
+        for i in 0..<options.reconnectMaxTries {
+            do {
+                try await connectDeviceWithTimeout()
+                if isConnected { break }
+            } catch {
+                lastError = error
+                if i >= options.reconnectExponentialBackoffThreshold {
+                    backoff *= 2
+                }
+                try await Task.sleep(for: backoff)
+            }
+        }
+
+        if let lastError {
+            throw lastError
+        } else if !isConnected {
+            throw Ocp1Error.notConnected
+        }
     }
 
     private func connectDeviceWithTimeout() async throws {
@@ -273,10 +303,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
             await monitor.stop()
             self.monitor = nil
         }
-        if let monitorTask {
-            monitorTask.cancel()
-            self.monitorTask = nil
-        }
+        monitorTask = nil
         if clearObjectCache {
             await self.clearObjectCache()
         }
