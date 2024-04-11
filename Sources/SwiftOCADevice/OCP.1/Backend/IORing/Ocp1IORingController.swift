@@ -55,7 +55,7 @@ extension Ocp1IORingControllerPrivate {
 }
 
 actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConvertible {
-    nonisolated var connectionPrefix: String { OcaTcpConnectionPrefix }
+    nonisolated let connectionPrefix: String
 
     var subscriptions = [OcaONo: NSMutableSet]()
     let peerAddress: AnySocketAddress
@@ -87,6 +87,11 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
         self.endpoint = endpoint
 
         peerAddress = try AnySocketAddress(self.socket.peerAddress)
+        if peerAddress.family == AF_LOCAL {
+            connectionPrefix = OcaLocalConnectionPrefix
+        } else {
+            connectionPrefix = OcaTcpConnectionPrefix
+        }
 
         receiveMessageTask = Task { [self] in
             do {
