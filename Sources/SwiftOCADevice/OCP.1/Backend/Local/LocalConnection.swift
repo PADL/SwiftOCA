@@ -20,8 +20,6 @@ import Foundation
 import SwiftOCA
 
 public final class OcaLocalConnection: Ocp1Connection {
-    nonisolated static var connectionPrefix: String { OcaLocalConnectionPrefix }
-
     let endpoint: OcaLocalDeviceEndpoint
 
     public init(

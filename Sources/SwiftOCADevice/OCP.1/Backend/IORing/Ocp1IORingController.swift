@@ -55,7 +55,7 @@ extension Ocp1IORingControllerPrivate {
 }
 
 actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConvertible {
-    nonisolated static var connectionPrefix: String { OcaTcpConnectionPrefix }
+    nonisolated var connectionPrefix: String { OcaTcpConnectionPrefix }
 
     var subscriptions = [OcaONo: NSMutableSet]()
     let peerAddress: AnySocketAddress
@@ -185,7 +185,7 @@ extension Ocp1IORingStreamController: Hashable {
 }
 
 actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerDatagramSemantics {
-    nonisolated static var connectionPrefix: String { OcaUdpConnectionPrefix }
+    nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
 
     var subscriptions = [OcaONo: NSMutableSet]()
     let peerAddress: AnySocketAddress

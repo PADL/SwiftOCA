@@ -25,7 +25,7 @@ import SwiftOCA
 protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, AnyActor {
     associatedtype Endpoint: OcaDeviceEndpointPrivate
 
-    nonisolated static var connectionPrefix: String { get }
+    nonisolated var connectionPrefix: String { get }
 
     typealias ControllerMessage = (Ocp1Message, Bool)
 

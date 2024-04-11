@@ -25,7 +25,7 @@ import SwiftOCA
 
 /// A remote controller
 actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible {
-    nonisolated static var connectionPrefix: String { OcaTcpConnectionPrefix }
+    nonisolated var connectionPrefix: String { OcaTcpConnectionPrefix }
 
     var subscriptions = [OcaONo: NSMutableSet]()
     var keepAliveTask: Task<(), Error>?
