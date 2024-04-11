@@ -14,6 +14,7 @@
 		D30349DC2BC67AD20080FF09 /* CounterSetAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349DB2BC67AD20080FF09 /* CounterSetAgent.swift */; };
 		D30349DE2BC67D420080FF09 /* ProgrammingDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349DD2BC67D420080FF09 /* ProgrammingDataTypes.swift */; };
 		D30349E02BC67E530080FF09 /* CounterNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349DF2BC67E530080FF09 /* CounterNotifier.swift */; };
+		D30349E22BC803280080FF09 /* CounterNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349E12BC803280080FF09 /* CounterNotifier.swift */; };
 		D30644012A76CDDE0063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */; };
 		D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644022A76CE310063DA65 /* IdentificationSensor.swift */; };
 		D30644062A770B640063DA65 /* Notification2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30644052A770B640063DA65 /* Notification2.swift */; };
@@ -316,6 +317,7 @@
 		D30349DB2BC67AD20080FF09 /* CounterSetAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterSetAgent.swift; sourceTree = "<group>"; };
 		D30349DD2BC67D420080FF09 /* ProgrammingDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgrammingDataTypes.swift; sourceTree = "<group>"; };
 		D30349DF2BC67E530080FF09 /* CounterNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterNotifier.swift; sourceTree = "<group>"; };
+		D30349E12BC803280080FF09 /* CounterNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterNotifier.swift; sourceTree = "<group>"; };
 		D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644022A76CE310063DA65 /* IdentificationSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationSensor.swift; sourceTree = "<group>"; };
 		D30644052A770B640063DA65 /* Notification2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification2.swift; sourceTree = "<group>"; };
@@ -853,6 +855,7 @@
 			isa = PBXGroup;
 			children = (
 				D351F2072A7299B0008C5513 /* Agent.swift */,
+				D30349E12BC803280080FF09 /* CounterNotifier.swift */,
 				D30349DB2BC67AD20080FF09 /* CounterSetAgent.swift */,
 				D3A0BE7B2B717BEC00A5AA05 /* Group.swift */,
 				D34B5F9F2B65FD1D000C8DD1 /* Grouper.swift */,
@@ -1662,6 +1665,7 @@
 				D32229D32ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift in Sources */,
 				D351F2082A7299B0008C5513 /* Agent.swift in Sources */,
 				D35592602B520DFC000F633B /* ControllerDefaultSubscribing.swift in Sources */,
+				D30349E22BC803280080FF09 /* CounterNotifier.swift in Sources */,
 				D34B5FA42B670576000C8DD1 /* Root+JSON.swift in Sources */,
 				D33B52A52A702D04001A1BA7 /* Worker.swift in Sources */,
 				D3FAC8EE2B5CFE3A009E2775 /* FirmwareManager.swift in Sources */,
