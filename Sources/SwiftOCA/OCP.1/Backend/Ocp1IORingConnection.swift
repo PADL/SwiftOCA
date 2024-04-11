@@ -76,13 +76,22 @@ public class Ocp1IORingConnection: Ocp1Connection {
     }
 
     override func connectDevice() async throws {
+        let domain = Swift.type(of: deviceAddress).family
+        // TODO: test if it is actually a socket, requires C helper function
+        if domain == AF_LOCAL,
+            let presentationAddress = try? deviceAddress.presentationAddress,
+            !FileManager.default.fileExists(atPath: presentationAddress) {
+            throw Errno.noSuchFileOrDirectory
+        }
         socket = try Socket(
             ring: IORing.shared,
-            domain: Swift.type(of: deviceAddress).family,
+            domain: domain,
             type: __socket_type(UInt32(type)),
             protocol: 0
         )
-        try socket!.setReuseAddr()
+        if domain == AF_INET {
+            try socket!.setReuseAddr()
+        }
         try await socket!.connect(to: deviceAddress)
         try await super.connectDevice()
     }
