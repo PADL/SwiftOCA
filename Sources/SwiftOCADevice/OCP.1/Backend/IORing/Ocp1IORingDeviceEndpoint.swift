@@ -184,8 +184,8 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
         )
 
         do {
-            try socket.setReuseAddr()
-            if address.family == AF_INET {
+            if address.family == AF_INET || address.family == AF_INET6 {
+                try socket.setReuseAddr()
                 try socket.setTcpNoDelay()
             }
             try socket.bind(to: address)
