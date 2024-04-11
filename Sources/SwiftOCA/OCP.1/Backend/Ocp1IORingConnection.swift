@@ -141,7 +141,8 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
     }
 
     override public var connectionPrefix: String {
-        "\(OcaUdpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
+        let prefix = deviceAddress.family == AF_LOCAL ? OcaLocalConnectionPrefix : OcaUdpConnectionPrefix
+        return "\(prefix)/\(deviceAddressToString(deviceAddress))"
     }
 
     override public var isDatagram: Bool { true }
@@ -165,7 +166,8 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
     }
 
     override public var connectionPrefix: String {
-        "\(OcaTcpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
+        let prefix = deviceAddress.family == AF_LOCAL ? OcaLocalConnectionPrefix : OcaTcpConnectionPrefix
+        return "\(prefix)/\(deviceAddressToString(deviceAddress))"
     }
 
     override public var isDatagram: Bool { false }
