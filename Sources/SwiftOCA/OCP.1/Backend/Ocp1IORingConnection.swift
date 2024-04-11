@@ -41,20 +41,10 @@ fileprivate extension Errno {
 }
 
 public class Ocp1IORingConnection: Ocp1Connection {
-    fileprivate class var type: Int32 {
-        fatalError("must be implemented by subclass")
-    }
-
-    @_spi(SwiftOCAPrivate)
-    public class var MaximumPduSize: Int {
-        fatalError("must be implemented by subclass")
-    }
-
     fileprivate let deviceAddress: any SocketAddress
     fileprivate var socket: Socket?
-
-    fileprivate var ring: IORing {
-        IORing.shared
+    fileprivate var type: Int32 {
+        fatalError("must be implemented by subclass")
     }
 
     public convenience init(
@@ -67,7 +57,7 @@ public class Ocp1IORingConnection: Ocp1Connection {
     fileprivate init(
         socketAddress: any SocketAddress,
         options: Ocp1ConnectionOptions
-    ) throws {
+    ) {
         deviceAddress = socketAddress
         super.init(options: options)
     }
@@ -87,9 +77,9 @@ public class Ocp1IORingConnection: Ocp1Connection {
 
     override func connectDevice() async throws {
         socket = try Socket(
-            ring: ring,
+            ring: IORing.shared,
             domain: Swift.type(of: deviceAddress).family,
-            type: __socket_type(UInt32(Self.type)),
+            type: __socket_type(UInt32(type)),
             protocol: 0
         )
         try socket!.setReuseAddr()
@@ -127,12 +117,12 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
         .seconds(1)
     }
 
-    override fileprivate class var type: Int32 {
+    override fileprivate var type: Int32 {
         SOCK_DGRAM
     }
 
     @_spi(SwiftOCAPrivate)
-    override public class var MaximumPduSize: Int { 1500 }
+    public static let MaximumPduSize = 1500
 
     override public func read(_ length: Int) async throws -> Data {
         // read maximum PDU size
@@ -156,46 +146,19 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
 }
 
 public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
-    override fileprivate class var type: Int32 {
+    override fileprivate var type: Int32 {
         SOCK_STREAM
-    }
-
-    @_spi(SwiftOCAPrivate)
-    override public class var MaximumPduSize: Int { 1<<16 }
-
-    private let _ring: IORing
-    private var registeredFixedBuffers = false
-
-    override fileprivate var ring: IORing {
-        _ring
-    }
-
-    override fileprivate init(
-        socketAddress: any SocketAddress,
-        options: Ocp1ConnectionOptions
-    ) throws {
-        _ring = try IORing()
-        try super.init(socketAddress: socketAddress, options: options)
-    }
-
-    override func connectDevice() async throws {
-        if !registeredFixedBuffers {
-            try await ring.registerFixedBuffers(count: 2, size: Self.MaximumPduSize)
-            registeredFixedBuffers = true
-        }
-        try await super.connectDevice()
     }
 
     override public func read(_ length: Int) async throws -> Data {
         try await withMappedError { socket in
-            Data(try await socket.readFixed(count: length, bufferIndex: 0, awaitingAllRead: true))
+            Data(try await socket.read(count: length, awaitingAllRead: true))
         }
     }
 
     override public func write(_ data: Data) async throws -> Int {
-        // FIXME: this still involves a copy, arguably there is no point doing so
         try await withMappedError { socket in
-            try await socket.writeFixed(Array(data), bufferIndex: 1, awaitingAllWritten: true)
+            try await socket.write(Array(data), count: data.count, awaitingAllWritten: true)
         }
     }
 
