@@ -47,6 +47,8 @@ public enum DeviceApp {
             try await Ocp1IORingStreamDeviceEndpoint(address: listenAddressData)
         let datagramEndpoint =
             try await Ocp1IORingDatagramDeviceEndpoint(address: listenAddressData)
+        let domainSocketEndpoint =
+            try? await Ocp1IORingStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
         #else
         let streamEndpoint = try await Ocp1DeviceEndpoint(address: listenAddressData)
         #endif
@@ -121,6 +123,12 @@ public enum DeviceApp {
             taskGroup.addTask {
                 print("Starting OCP.1 datagram endpoint \(datagramEndpoint)...")
                 try await datagramEndpoint.run()
+            }
+            if let domainSocketEndpoint {
+                taskGroup.addTask {
+                    print("Starting OCP.1 domain socket endpoint \(domainSocketEndpoint)...")
+                    try await domainSocketEndpoint.run()
+                }
             }
             #endif
             try await taskGroup.next()
