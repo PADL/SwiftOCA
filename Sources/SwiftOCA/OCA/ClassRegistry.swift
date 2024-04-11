@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaConnection
 public class OcaClassRegistry {
     public static let shared = OcaClassRegistry()
 
