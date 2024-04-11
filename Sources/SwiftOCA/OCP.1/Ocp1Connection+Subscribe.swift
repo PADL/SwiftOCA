@@ -114,7 +114,8 @@ public extension Ocp1Connection {
 
     internal func notifySubscribers(of event: OcaEvent, with parameters: Data) {
         guard let eventSubscriptions = subscriptions[event],
-            !eventSubscriptions.subscriptions.isEmpty else {
+              !eventSubscriptions.subscriptions.isEmpty
+        else {
             return
         }
 

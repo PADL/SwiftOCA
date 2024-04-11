@@ -160,13 +160,15 @@ Sendable, OcaKeyPathMarkerProtocol {
                     var dict = [String: Sendable]()
 
                     if let jsonValue = try? await property.getJsonValue(self, flags: flags),
-                        let jsonValue = jsonValue as? [String: Sendable] {
+                       let jsonValue = jsonValue as? [String: Sendable]
+                    {
                         dict.merge(jsonValue) { current, _ in current }
                     }
                     return dict
                 }
             }
-            return await taskGroup.collect().reduce(into: [String: Sendable]()) { $0.merge($1) { $1 } }
+            return await taskGroup.collect()
+                .reduce(into: [String: Sendable]()) { $0.merge($1) { $1 } }
         }
 
         return dict
@@ -181,7 +183,8 @@ Sendable, OcaKeyPathMarkerProtocol {
 
 protocol OcaKeyPathMarkerProtocol: AnyObject {}
 
-extension PartialKeyPath: @unchecked Sendable {} // fix warning
+extension PartialKeyPath: @unchecked
+Sendable {} // fix warning
 
 private extension OcaKeyPathMarkerProtocol where Self: OcaRoot {
     var allKeyPaths: [String: PartialKeyPath<Self>] {
