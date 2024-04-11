@@ -229,7 +229,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     func getSignalPathsRecursive(from controller: any OcaController) async throws
         -> OcaMap<OcaUint16, OcaSignalPath>
     {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     func find(

@@ -29,23 +29,23 @@ open class OcaCounterSetAgent: OcaAgent {
     public var counterSet: OcaCounterSet?
 
     open func get(counter id: OcaID16) async throws -> OcaCounter {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func attach(counter id: OcaID16, to oNo: OcaONo) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func detach(counter id: OcaID16, from oNo: OcaONo) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func reset() async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func reset(counter id: OcaID16) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     override open func handleCommand(

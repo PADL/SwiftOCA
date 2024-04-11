@@ -75,7 +75,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     open func getSourceConnector(_ id: OcaMediaConnectorID) async throws
         -> OcaMediaSourceConnector
     {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func getSinkConnectors() async throws -> [OcaMediaSinkConnector] {
@@ -83,7 +83,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     }
 
     open func getSinkConnector(_ id: OcaMediaConnectorID) async throws -> OcaMediaSinkConnector {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func getConnectorsStatuses() async throws -> [OcaMediaConnectorStatus] {
@@ -93,62 +93,62 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     open func getConnectorStatus(_ id: OcaMediaConnectorID) async throws
         -> OcaMediaConnectorStatus
     {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func addSource(
         connector: inout OcaMediaSourceConnector,
         initialStatus: OcaMediaConnectorState
     ) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func addSink(
         initialStatus: OcaMediaConnectorState,
         connector: inout OcaMediaSinkConnector
     ) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func controlConnector(
         _ id: OcaMediaConnectorID,
         command: OcaMediaConnectorCommand
     ) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func setSourceConnector(
         _ id: OcaMediaConnectorID,
         pinMap: [OcaUint16: OcaPortID]
     ) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func setSinkConnector(
         _ id: OcaMediaConnectorID,
         pinMap: [OcaUint16: [OcaPortID]]
     ) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func setConnector(_ id: OcaMediaConnectorID, connection: OcaMediaConnection) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func setConnector(_ id: OcaMediaConnectorID, coding: OcaMediaCoding) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func setConnector(_ id: OcaMediaConnectorID, alignmentLevel: OcaDBFS) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func setConnector(_ id: OcaMediaConnectorID, alignmentGain: OcaDB) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     open func deleteConnector(_ id: OcaMediaConnectorID) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     override open func handleCommand(

@@ -22,12 +22,12 @@ open class OcaDeviceTimeManager: OcaManager {
 
     open var deviceTimeNTP: OcaTimeNTP {
         get async throws {
-            throw Ocp1Error.notImplemented
+            throw Ocp1Error.status(.notImplemented)
         }
     }
 
     open func set(deviceTimeNTP time: OcaTimeNTP) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     @OcaDeviceProperty(
@@ -41,12 +41,12 @@ open class OcaDeviceTimeManager: OcaManager {
 
     open var deviceTimePTP: OcaTime {
         get async throws {
-            throw Ocp1Error.notImplemented
+            throw Ocp1Error.status(.notImplemented)
         }
     }
 
     open func set(deviceTimePTP time: OcaTime) async throws {
-        throw Ocp1Error.notImplemented
+        throw Ocp1Error.status(.notImplemented)
     }
 
     override public func handleCommand(
