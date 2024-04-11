@@ -20,7 +20,7 @@ import Foundation
 import SwiftOCA
 
 public final class OcaLocalConnection: Ocp1Connection {
-    nonisolated static var connectionPrefix: String { "oca/local" }
+    nonisolated static var connectionPrefix: String { OcaLocalConnectionPrefix }
 
     let endpoint: OcaLocalDeviceEndpoint
 
@@ -32,7 +32,7 @@ public final class OcaLocalConnection: Ocp1Connection {
     }
 
     override public var connectionPrefix: String {
-        "oca/local"
+        OcaLocalConnectionPrefix
     }
 
     override public var heartbeatTime: Duration {

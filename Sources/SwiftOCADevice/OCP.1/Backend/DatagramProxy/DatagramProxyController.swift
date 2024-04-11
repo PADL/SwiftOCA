@@ -22,7 +22,7 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
     Ocp1ControllerDatagramSemantics,
     CustomStringConvertible
 {
-    nonisolated static var connectionPrefix: String { "oca/dg-proxy" }
+    nonisolated static var connectionPrefix: String { OcaDatagramProxyConnectionPrefix }
 
     let peerID: T
     var subscriptions = [OcaONo: NSMutableSet]()

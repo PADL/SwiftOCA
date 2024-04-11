@@ -49,11 +49,12 @@ public let SOCK_STREAM = Int32(CoreFoundation.SOCK_STREAM.rawValue)
 public let SOCK_DGRAM = Int32(CoreFoundation.SOCK_DGRAM.rawValue)
 #endif
 
-let OcaTcpConnectionPrefix = "oca/tcp"
-let OcaUdpConnectionPrefix = "oca/udp"
-let OcaSecureTcpConnectionPrefix = "ocasec/tcp"
-let OcaWebSocketTcpConnectionPrefix = "ocaws/tcp"
-let OcaSpiConnectionPrefix = "oca/spi"
+public let OcaTcpConnectionPrefix = "oca/tcp"
+public let OcaUdpConnectionPrefix = "oca/udp"
+public let OcaSecureTcpConnectionPrefix = "ocasec/tcp"
+public let OcaWebSocketTcpConnectionPrefix = "ocaws/tcp"
+public let OcaLocalConnectionPrefix = "oca/local"
+public let OcaDatagramProxyConnectionPrefix = "oca/dg-proxy"
 
 public struct Ocp1ConnectionOptions: Sendable {
     let automaticReconnect: Bool

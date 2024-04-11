@@ -19,7 +19,7 @@ import Foundation
 import SwiftOCA
 
 actor OcaLocalController: Ocp1ControllerInternal {
-    nonisolated static var connectionPrefix: String { "oca/local" }
+    nonisolated static var connectionPrefix: String { OcaLocalConnectionPrefix }
 
     var lastMessageReceivedTime = ContinuousClock.now
     var lastMessageSentTime = ContinuousClock.now
