@@ -150,7 +150,7 @@ Sendable, OcaKeyPathMarkerProtocol {
             objectNumber = try container.decode(OcaONo.self, forKey: .objectNumber)
             lockable = try container.decode(OcaBoolean.self, forKey: .lockable)
             role = try container.decode(OcaString.self, forKey: .role)
-            deviceDelegate = OcaDevice.shared
+            Task { @OcaDevice in deviceDelegate = OcaDevice.shared }
         }
     }
 
