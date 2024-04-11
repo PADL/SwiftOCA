@@ -62,16 +62,16 @@ public struct Ocp1ConnectionOptions: Sendable {
     let refreshDeviceTreeOnConnection: Bool
     let reconnectMaxTries: Int
     let reconnectPauseInterval: Duration
-    let reconnectExponentialBackoffThreshold: Int
+    let reconnectExponentialBackoffThreshold: Range<Int>
 
     public init(
         automaticReconnect: Bool = false,
         connectionTimeout: Duration = .seconds(2),
         responseTimeout: Duration = .seconds(2),
         refreshDeviceTreeOnConnection: Bool = true,
-        reconnectMaxTries: Int = 10,
+        reconnectMaxTries: Int = 15,
         reconnectPauseInterval: Duration = .milliseconds(250),
-        reconnectExponentialBackoffThreshold: Int = 3
+        reconnectExponentialBackoffThreshold: Range<Int> = 3..<8
     ) {
         self.automaticReconnect = automaticReconnect
         self.connectionTimeout = connectionTimeout
@@ -244,7 +244,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
                 if isConnected { break }
             } catch {
                 lastError = error
-                if i >= options.reconnectExponentialBackoffThreshold {
+                if options.reconnectExponentialBackoffThreshold.contains(i) {
                     backoff *= 2
                 }
                 try await Task.sleep(for: backoff)
