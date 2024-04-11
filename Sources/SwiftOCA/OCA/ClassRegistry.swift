@@ -91,6 +91,7 @@ public class OcaClassRegistry {
         register(OcaMediaClock3.self)
         register(OcaGrouper.self)
         register(OcaGroup.self)
+        register(OcaCounterNotifier.self)
         register(OcaCounterSetAgent.self)
 
         // managers
