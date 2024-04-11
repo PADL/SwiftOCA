@@ -30,7 +30,8 @@ public protocol OcaBonjourRegistrableDeviceEndpoint: OcaDeviceEndpoint {
     var port: UInt16 { get }
 }
 
-public final class OcaDeviceEndpointRegistrar {
+@OcaDevice
+public final class OcaDeviceEndpointRegistrar: @unchecked Sendable {
     public typealias Handle = ObjectIdentifier
 
     public static let shared = OcaDeviceEndpointRegistrar()
@@ -61,8 +62,8 @@ public final class OcaDeviceEndpointRegistrar {
         if let deviceManager = await device.deviceManager {
             txtRecords = [
                 "txtvers": "1",
-                "protovers": "\(await deviceManager.version)",
-                "modelGUID": "\(await deviceManager.modelGUID)",
+                "protovers": "\(deviceManager.version)",
+                "modelGUID": "\(deviceManager.modelGUID)",
             ]
         } else {
             txtRecords = [:]
@@ -81,7 +82,7 @@ public final class OcaDeviceEndpointRegistrar {
         services.removeAll(where: { ObjectIdentifier($0.service) == handle })
     }
 
-    fileprivate final class Service {
+    fileprivate final class Service: @unchecked Sendable {
         var sdRef: DNSServiceRef!
         var flags: DNSServiceFlags = 0
         var name: String!
