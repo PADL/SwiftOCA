@@ -96,14 +96,24 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
                 endpointRegistrationHandle = try await OcaDeviceEndpointRegistrar.shared
                     .register(endpoint: self, device: device)
             }
+        } else if address.family == AF_LOCAL {
+            try? unlinkDomainSocket()
         }
     }
 
-    fileprivate func shutdown(timeout: Duration = .seconds(0)) async {
-        if let endpointRegistrationHandle {
-            try? await OcaDeviceEndpointRegistrar.shared
-                .deregister(handle: endpointRegistrationHandle)
+    private nonisolated func unlinkDomainSocket() throws {
+        if let presentationAddress = try? address.presentationAddress {
+            if unlink(presentationAddress) < 0 {
+                throw Errno(rawValue: errno)
+            }
         }
+    }
+
+    // FIXME: should we have a shutdown method? we can't deregister in deinit as it
+    // will create a strong ref to endpointRegistrationHandle
+
+    deinit {
+        if address.family == AF_LOCAL { try? unlinkDomainSocket() }
     }
 }
 
