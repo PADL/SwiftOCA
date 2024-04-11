@@ -68,19 +68,11 @@ extension Ocp1Connection.Monitor {
         case is Ocp1Command:
             await connection.logger.warning("device sent unexpected command \(message); ignoring")
         case let notification as Ocp1Notification1:
-            let event = notification.parameters.eventData.event
-            if let eventSubscriptions = await connection.subscriptions[event],
-               !eventSubscriptions.subscriptions.isEmpty,
-               notification.parameters.parameterCount == 2
-            {
-                Task {
-                    for eventSubscription in eventSubscriptions.subscriptions {
-                        try await eventSubscription.callback(
-                            notification.parameters.eventData.event,
-                            notification.parameters.eventData.eventParameters
-                        )
-                    }
-                }
+            if notification.parameters.parameterCount == 2 {
+                await connection.notifySubscribers(
+                    of: notification.parameters.eventData.event,
+                    with: notification.parameters.eventData.eventParameters
+                )
             }
         case let response as Ocp1Response:
             try resume(with: response)
@@ -90,19 +82,7 @@ extension Ocp1Connection.Monitor {
             break
         case let notification as Ocp1Notification2:
             try notification.throwIfException()
-            if let eventSubscriptions = await connection.subscriptions[notification.event],
-               !eventSubscriptions.subscriptions.isEmpty
-            {
-                Task {
-                    for eventSubscription in eventSubscriptions.subscriptions {
-                        try await eventSubscription.callback(
-                            notification.event,
-                            notification.data
-                        )
-                    }
-                }
-            }
-
+            await connection.notifySubscribers(of: notification.event, with: notification.data)
         default:
             throw Ocp1Error.unknownPduType
         }

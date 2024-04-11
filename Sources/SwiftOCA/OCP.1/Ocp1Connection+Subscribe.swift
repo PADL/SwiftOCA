@@ -14,11 +14,13 @@
 // limitations under the License.
 //
 
+import Foundation
+
 private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 
 public extension Ocp1Connection {
     /// a token that can be used by the client to unsubscribe
-    final class SubscriptionCancellable: Hashable {
+    final class SubscriptionCancellable: Hashable, Sendable {
         public static func == (
             lhs: Ocp1Connection.SubscriptionCancellable,
             rhs: Ocp1Connection.SubscriptionCancellable
@@ -107,6 +109,21 @@ public extension Ocp1Connection {
                 notificationDeliveryMode: .normal,
                 destinationInformation: OcaNetworkAddress()
             )
+        }
+    }
+
+    internal func notifySubscribers(of event: OcaEvent, with parameters: Data) {
+        guard let eventSubscriptions = subscriptions[event],
+            !eventSubscriptions.subscriptions.isEmpty else {
+            return
+        }
+
+        let subscriptions = eventSubscriptions.subscriptions
+
+        Task {
+            for subscription in subscriptions {
+                try await subscription.callback(event, parameters)
+            }
         }
     }
 }
