@@ -128,16 +128,14 @@ extension Ocp1Connection.Monitor {
     }
 
     func receiveMessages(_ connection: Ocp1Connection) async throws {
-        try await withThrowingTaskGroup(of: Void.self) { group in
-            let heartbeatTime = await connection.heartbeatTime
-
+        try await withThrowingTaskGroup(of: Void.self) { @OcaConnection group in
             group.addTask { [self] in
                 repeat {
                     try Task.checkCancellation()
                     try await receiveMessage(connection)
                 } while true
             }
-            if heartbeatTime > .zero {
+            if connection.heartbeatTime > .zero {
                 group.addTask(priority: .background) {
                     try await self.keepAlive(connection)
                 }

@@ -21,6 +21,7 @@ open class OcaIdentificationSensor: OcaSensor {
 
     private var cancellable: Ocp1Connection.SubscriptionCancellable?
 
+    @OcaConnection
     public func onIdentify(_ callback: @escaping OcaSubscriptionCallback) async throws {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
         let event = OcaEvent(emitterONo: objectNumber, eventID: Self.identifyEventID)

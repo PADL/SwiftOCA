@@ -150,22 +150,23 @@ Sendable, OcaKeyPathMarkerProtocol {
         }
 
         let dict = await withTaskGroup(
-            of: [String: Any].self,
-            returning: [String: Any].self
+            of: [String: Sendable].self,
+            returning: [String: Sendable].self
         ) { taskGroup in
-            for (_, propertyKeyPath) in allPropertyKeyPaths {
+            for (_, propertyKeyPath) in self.allPropertyKeyPaths {
                 taskGroup.addTask {
                     let property =
                         self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
-                    var dict = [String: Any]()
+                    var dict = [String: Sendable]()
 
-                    if let jsonValue = try? await property.getJsonValue(self, flags: flags) {
+                    if let jsonValue = try? await property.getJsonValue(self, flags: flags),
+                        let jsonValue = jsonValue as? [String: Sendable] {
                         dict.merge(jsonValue) { current, _ in current }
                     }
                     return dict
                 }
             }
-            return await taskGroup.collect().reduce(into: [String: Any]()) { $0.merge($1) { $1 } }
+            return await taskGroup.collect().reduce(into: [String: Sendable]()) { $0.merge($1) { $1 } }
         }
 
         return dict
@@ -179,6 +180,8 @@ Sendable, OcaKeyPathMarkerProtocol {
 }
 
 protocol OcaKeyPathMarkerProtocol: AnyObject {}
+
+extension PartialKeyPath: @unchecked Sendable {} // fix warning
 
 private extension OcaKeyPathMarkerProtocol where Self: OcaRoot {
     var allKeyPaths: [String: PartialKeyPath<Self>] {
@@ -222,6 +225,7 @@ public extension OcaRoot {
         }
     }
 
+    @OcaConnection
     func subscribe() async throws {
         guard subscriptionCancellable == nil else { return } // already subscribed
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
@@ -237,6 +241,7 @@ public extension OcaRoot {
         }
     }
 
+    @OcaConnection
     func unsubscribe() async throws {
         guard let subscriptionCancellable else { throw Ocp1Error.notSubscribedToEvent }
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
