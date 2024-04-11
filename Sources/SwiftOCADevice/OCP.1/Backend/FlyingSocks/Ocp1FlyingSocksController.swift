@@ -25,7 +25,7 @@ import SwiftOCA
 
 /// A remote controller
 actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible {
-    nonisolated var connectionPrefix: String { OcaTcpConnectionPrefix }
+    nonisolated let connectionPrefix: String
 
     var subscriptions = [OcaONo: NSMutableSet]()
     var keepAliveTask: Task<(), Error>?
@@ -43,6 +43,11 @@ actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible
     }
 
     init(endpoint: Ocp1FlyingSocksDeviceEndpoint, socket: AsyncSocket) async throws {
+        if case .unix = try? socket.socket.sockname() {
+            connectionPrefix = OcaLocalConnectionPrefix
+        } else {
+            connectionPrefix = OcaTcpConnectionPrefix
+        }
         address = Self.makeIdentifier(from: socket.socket)
         self.endpoint = endpoint
         self.socket = socket
