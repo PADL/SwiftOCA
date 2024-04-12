@@ -178,6 +178,8 @@ public actor OcaDevice {
             return .init(responseSize: 0, handle: command.handle, statusCode: status)
         } catch Ocp1Error.invalidProxyMethodResponse {
             return .init(responseSize: 0, handle: command.handle, statusCode: .invalidRequest)
+        } catch Ocp1Error.nilNotEncodable {
+            return .init(responseSize: 0, handle: command.handle, statusCode: .processingFailed)
         } catch {
             logger
                 .warning(
