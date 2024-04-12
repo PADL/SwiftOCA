@@ -156,8 +156,9 @@ public actor OcaDevice {
         timeout: Duration = .zero,
         from controller: any OcaController
     ) async -> Ocp1Response {
+        let object = objects[command.targetONo]
+
         do {
-            let object = objects[command.targetONo]
             guard let object else {
                 throw Ocp1Error.status(.badONo)
             }
@@ -181,10 +182,17 @@ public actor OcaDevice {
         } catch Ocp1Error.nilNotEncodable {
             return .init(responseSize: 0, handle: command.handle, statusCode: .processingFailed)
         } catch {
-            logger
-                .warning(
-                    "failed to handle command \(command) from controller \(controller): \(error)"
-                )
+            if let object {
+                logger
+                    .warning(
+                        "failed to handle command \(command) on \(object) from controller \(controller): \(error)"
+                    )
+            } else {
+                logger
+                    .warning(
+                        "failed to handle command \(command) from controller \(controller): \(error)"
+                    )
+            }
             return .init(responseSize: 0, handle: command.handle, statusCode: .deviceError)
         }
     }
