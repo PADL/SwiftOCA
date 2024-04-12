@@ -236,7 +236,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         actionObjectsByRole searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID,
-        resultFlags: OcaObjectSearchResultFlags
+        resultFlags: OcaActionObjectSearchResultFlags
     ) async throws -> [OcaObjectSearchResult] {
         await actionObjects.filter { member in
             member.compare(
@@ -254,7 +254,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         actionObjectsByRole searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID,
-        resultFlags: OcaObjectSearchResultFlags
+        resultFlags: OcaActionObjectSearchResultFlags
     ) async throws -> [OcaObjectSearchResult] {
         await filterRecursive { member, _ in
             member.compare(
@@ -270,7 +270,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
     func find(
         actionObjectsByRolePath searchPath: OcaNamePath,
-        resultFlags: OcaObjectSearchResultFlags
+        resultFlags: OcaActionObjectSearchResultFlags
     ) async throws -> [OcaObjectSearchResult] {
         let selfRolePath = await rolePath
         return await filterRecursive(maxDepth: searchPath.count) { member, _ in
@@ -284,7 +284,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         actionObjectsByLabel searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID,
-        resultFlags: OcaObjectSearchResultFlags
+        resultFlags: OcaActionObjectSearchResultFlags
     ) async throws -> [OcaObjectSearchResult] {
         await filterRecursive { member, _ in
             if let agent = member as? OcaAgent {
@@ -498,7 +498,7 @@ private extension OcaRoot {
         }
     }
 
-    func makeSearchResult(with resultFlags: OcaObjectSearchResultFlags) async
+    func makeSearchResult(with resultFlags: OcaActionObjectSearchResultFlags) async
         -> OcaObjectSearchResult
     {
         var oNo: OcaONo?

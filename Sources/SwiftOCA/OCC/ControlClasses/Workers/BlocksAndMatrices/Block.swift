@@ -198,7 +198,7 @@ open class OcaBlock: OcaWorker {
 
     private func validate(
         _ searchResults: [OcaObjectSearchResult],
-        against flags: OcaObjectSearchResultFlags
+        against flags: OcaActionObjectSearchResultFlags
     ) throws {
         var valid = true
 
@@ -224,13 +224,13 @@ open class OcaBlock: OcaWorker {
         public let searchName: OcaString
         public let nameComparisonType: OcaStringComparisonType
         public let searchClassID: OcaClassID
-        public let resultFlags: OcaObjectSearchResultFlags
+        public let resultFlags: OcaActionObjectSearchResultFlags
 
         public init(
             searchName: OcaString,
             nameComparisonType: OcaStringComparisonType,
             searchClassID: OcaClassID?,
-            resultFlags: OcaObjectSearchResultFlags
+            resultFlags: OcaActionObjectSearchResultFlags
         ) {
             self.searchName = searchName
             self.nameComparisonType = nameComparisonType
@@ -243,7 +243,7 @@ open class OcaBlock: OcaWorker {
         actionObjectsByRole searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID? = nil,
-        resultFlags: OcaObjectSearchResultFlags
+        resultFlags: OcaActionObjectSearchResultFlags
     ) async throws -> OcaList<OcaObjectSearchResult> {
         let params = FindActionObjectsByRoleParameters(
             searchName: searchName,
@@ -265,7 +265,7 @@ open class OcaBlock: OcaWorker {
         actionObjectsByRole searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID? = nil,
-        resultFlags: OcaObjectSearchResultFlags
+        resultFlags: OcaActionObjectSearchResultFlags
     ) async throws -> OcaList<OcaObjectSearchResult> {
         let params = FindActionObjectsByRoleParameters(
             searchName: searchName,
@@ -285,9 +285,9 @@ open class OcaBlock: OcaWorker {
 
     public struct FindActionObjectsByPathParameters: Ocp1ParametersReflectable {
         public let searchPath: OcaNamePath
-        public let resultFlags: OcaObjectSearchResultFlags
+        public let resultFlags: OcaActionObjectSearchResultFlags
 
-        public init(searchPath: OcaNamePath, resultFlags: OcaObjectSearchResultFlags) {
+        public init(searchPath: OcaNamePath, resultFlags: OcaActionObjectSearchResultFlags) {
             self.searchPath = searchPath
             self.resultFlags = resultFlags
         }
@@ -297,7 +297,7 @@ open class OcaBlock: OcaWorker {
         actionObjectsByLabel searchName: OcaString,
         nameComparisonType: OcaStringComparisonType,
         searchClassID: OcaClassID? = nil,
-        resultFlags: OcaObjectSearchResultFlags
+        resultFlags: OcaActionObjectSearchResultFlags
     ) async throws -> OcaList<OcaObjectSearchResult> {
         let params = FindActionObjectsByRoleParameters(
             searchName: searchName,
@@ -317,7 +317,7 @@ open class OcaBlock: OcaWorker {
 
     public func find(
         actionObjectsByPath searchPath: OcaNamePath,
-        resultFlags: OcaObjectSearchResultFlags
+        resultFlags: OcaActionObjectSearchResultFlags
     ) async throws -> OcaList<OcaObjectSearchResult> {
         let params = FindActionObjectsByPathParameters(
             searchPath: searchPath,

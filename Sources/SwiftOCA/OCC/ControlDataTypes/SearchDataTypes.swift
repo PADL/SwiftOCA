@@ -29,12 +29,12 @@ public enum OcaStringComparisonType: OcaUint8, Codable, Sendable, CaseIterable {
     case containsCaseInsensitive = 5
 }
 
-public struct OcaObjectSearchResultFlags: OptionSet, Codable, Sendable {
-    public static let oNo = OcaObjectSearchResultFlags(rawValue: 1 << 0)
-    public static let classIdentification = OcaObjectSearchResultFlags(rawValue: 1 << 1)
-    public static let containerPath = OcaObjectSearchResultFlags(rawValue: 1 << 2)
-    public static let role = OcaObjectSearchResultFlags(rawValue: 1 << 3)
-    public static let label = OcaObjectSearchResultFlags(rawValue: 1 << 4)
+public struct OcaActionObjectSearchResultFlags: OptionSet, Codable, Sendable {
+    public static let oNo = OcaActionObjectSearchResultFlags(rawValue: 1 << 0)
+    public static let classIdentification = OcaActionObjectSearchResultFlags(rawValue: 1 << 1)
+    public static let containerPath = OcaActionObjectSearchResultFlags(rawValue: 1 << 2)
+    public static let role = OcaActionObjectSearchResultFlags(rawValue: 1 << 3)
+    public static let label = OcaActionObjectSearchResultFlags(rawValue: 1 << 4)
 
     public let rawValue: OcaBitSet16
 
@@ -79,8 +79,9 @@ public struct OcaObjectSearchResult: Codable, Sendable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let searchResultFlags = decoder
-            .userInfo[Self.FlagsUserInfoKey] as? OcaObjectSearchResultFlags ??
-            OcaObjectSearchResultFlags([.oNo, .classIdentification, .containerPath, .role, .label])
+            .userInfo[Self.FlagsUserInfoKey] as? OcaActionObjectSearchResultFlags ??
+            OcaActionObjectSearchResultFlags([.oNo, .classIdentification, .containerPath, .role,
+                                              .label])
 
         if searchResultFlags.contains(.oNo) {
             oNo = try container.decodeIfPresent(OcaONo.self, forKey: .oNo)
