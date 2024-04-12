@@ -59,8 +59,7 @@ extension OcaPortsRepresentable {
         }
         let port = ports[index]
         let newPort = OcaPort(owner: port.owner, id: port.id, name: params.name)
-        ports.remove(at: index)
-        ports.insert(newPort, at: index)
+        ports.replaceSubrange(index...index, with: [newPort])
     }
 }
 
