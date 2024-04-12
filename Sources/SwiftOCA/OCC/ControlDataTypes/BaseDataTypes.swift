@@ -71,21 +71,45 @@ public enum OcaBaseDataType: OcaUint8, Codable, Sendable, CaseIterable {
 }
 
 public enum OcaStatus: OcaUint8, Codable, Sendable, CaseIterable {
+    /// Method call was successful
     case ok = 0
+    /// Controller sent a Control Protocol PDU whose protocol version the Device cannot handle
     case protocolVersionError = 1
+    /// Command execution failed due to an internal Device error
     case deviceError = 2
+    /// Command attempted to access an object with a lock status too restrictive for the requested
+    /// operation
     case locked = 3
+    /// One or more method parameters in a Command was in an invalid format
     case badFormat = 4
+    /// Object number in a Command referenced a nonexistent object
     case badONo = 5
+    /// One or more method parameters given in a Command was unacceptable in the current context, or
+    /// a required parameter was missing
     case parameterError = 6
+    /// One or more parameter values given in a Command was too large or too small for the current
+    /// context
     case parameterOutOfRange = 7
+    /// Method ID in Command referenced a method the Device does not implement
     case notImplemented = 8
+    /// Command requested an action that is invalid in the current context
     case invalidRequest = 9
+    /// Command execution failed, but not due to an internal Device error
     case processingFailed = 10
+    /// Method ID in a Command referenced a nonexistent method
     case badMethod = 11
+    /// Command execution partly succeeded.  Example:  in a method that operates on a specified list
+    /// of items, some items were processed successfully, some not
     case partiallySucceeded = 12
+    /// Device failed to process a Command within the given timeout time.  Valid only for methods
+    /// with timeout parameters
     case timeout = 13
+    /// Device did not have enough available memory to store an incoming PDU
     case bufferOverflow = 14
+    /// Command requested an action for which the Controller had insufficient permission
+    case permissionDenied = 15
+    /// Device did not have enough available memory to process the Command
+    case outOfMemory = 16
 }
 
 public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
