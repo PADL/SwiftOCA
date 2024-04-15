@@ -85,7 +85,7 @@ public struct Ocp1ConnectionOptions: Sendable {
     }
 }
 
-public enum Ocp1ConnectionState: Sendable {
+public enum Ocp1ConnectionState: Codable, Sendable {
     case notConnected
     case connecting
     case connected
