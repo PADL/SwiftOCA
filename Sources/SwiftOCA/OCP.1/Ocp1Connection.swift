@@ -15,6 +15,7 @@
 //
 
 import AsyncAlgorithms
+import AsyncExtensions
 @preconcurrency
 import Foundation
 import Logging
@@ -84,8 +85,17 @@ public struct Ocp1ConnectionOptions: Sendable {
     }
 }
 
+public enum Ocp1ConnectionState: Sendable {
+    case notConnected
+    case connecting
+    case connected
+    case reconnecting
+    case timedOut
+}
+
 public struct Ocp1ConnectionStatistics: Sendable {
-    public let isConnected: Bool
+    public let connectionState: Ocp1ConnectionState
+    public var isConnected: Bool { connectionState == .connected }
     public let requestCount: Int
     public let outstandingRequests: [OcaUint32]
     public let cachedObjectCount: Int
@@ -117,6 +127,9 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     open var heartbeatTime: Duration {
         .seconds(1)
     }
+
+    private let _connectionState = AsyncCurrentValueSubject<Ocp1ConnectionState>(.notConnected)
+    public let connectionState: AnyAsyncSequence<Ocp1ConnectionState>
 
     /// Object interning
     var objects = [OcaONo: OcaRoot]()
@@ -150,7 +163,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     public var statistics: Ocp1ConnectionStatistics {
         get async {
             Ocp1ConnectionStatistics(
-                isConnected: isConnected,
+                connectionState: _connectionState.value,
                 requestCount: Int(nextCommandHandle - CommandHandleBase),
                 outstandingRequests: monitor != nil ? Array(await monitor!.continuations.keys) : [],
                 cachedObjectCount: objects.count,
@@ -221,6 +234,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     private var monitorTask: Task<(), Error>?
 
     public init(options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()) {
+        connectionState = _connectionState.eraseToAnyAsyncSequence()
         self.options = options
         add(object: rootBlock)
         add(object: subscriptionManager)
@@ -239,11 +253,15 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
         var lastError: Error?
         var backoff: Duration = options.reconnectPauseInterval
 
+        _connectionState.send(.reconnecting) // so UI can update before sleeping
+
         for i in 0..<options.reconnectMaxTries {
             do {
                 try await connectDeviceWithTimeout()
-                if isConnected { break }
+                _connectionState.send(.connected)
+                break
             } catch {
+                precondition(_connectionState.value == .reconnecting)
                 lastError = error
                 if options.reconnectExponentialBackoffThreshold.contains(i) {
                     backoff *= 2
@@ -266,6 +284,8 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
             }
         } catch Ocp1Error.responseTimeout {
             throw Ocp1Error.connectionTimeout
+        } catch {
+            throw error
         }
     }
 
@@ -305,6 +325,8 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
             self.monitor = nil
         }
         monitorTask = nil
+        _connectionState.send(.notConnected)
+
         if clearObjectCache {
             await self.clearObjectCache()
         }
@@ -317,7 +339,8 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     }
 
     public var isConnected: Bool {
-        !(monitorTask?.isCancelled ?? true)
+        precondition(!(monitorTask?.isCancelled ?? true) == (_connectionState.value == .connected))
+        return _connectionState.value == .connected
     }
 
     public nonisolated var description: String {
@@ -343,7 +366,17 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 /// Public API
 public extension Ocp1Connection {
     func connect() async throws {
-        try await connectDeviceWithTimeout()
+        _connectionState.send(.connecting)
+        do {
+            try await connectDeviceWithTimeout()
+        } catch Ocp1Error.connectionTimeout {
+            _connectionState.send(.timedOut)
+            throw Ocp1Error.connectionTimeout
+        } catch {
+            _connectionState.send(.notConnected)
+            throw error
+        }
+        _connectionState.send(.connected)
         if options.refreshDeviceTreeOnConnection {
             try? await refreshDeviceTree()
         }
