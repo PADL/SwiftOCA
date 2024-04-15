@@ -160,7 +160,7 @@ extension Ocp1Connection: Ocp1ConnectionFactory {
                 case .tcp:
                     await self
                         .init(
-                            reassigningSelfTo: Ocp1TCPConnection(
+                            reassigningSelfTo: try Ocp1TCPConnection(
                                 deviceAddress: address
                             ) as! Self
                         )
@@ -168,7 +168,7 @@ extension Ocp1Connection: Ocp1ConnectionFactory {
                 case .udp:
                     await self
                         .init(
-                            reassigningSelfTo: Ocp1UDPConnection(
+                            reassigningSelfTo: try Ocp1UDPConnection(
                                 deviceAddress: address
                             ) as! Self
                         )

@@ -101,14 +101,14 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     public convenience init(
         deviceAddress: Data,
         options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
-    ) {
-        self.init(socketAddress: deviceAddress.socketAddress, options: options)
+    ) throws {
+        try self.init(socketAddress: deviceAddress.socketAddress, options: options)
     }
 
     fileprivate init(
         socketAddress: any SocketAddress,
         options: Ocp1ConnectionOptions
-    ) {
+    ) throws {
         deviceAddress = socketAddress
         super.init(options: options)
     }
@@ -200,8 +200,8 @@ public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
     public convenience init(
         path: String,
         options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
-    ) {
-        self.init(socketAddress: sockaddr_un.unix(path: path), options: options)
+    ) throws {
+        try self.init(socketAddress: sockaddr_un.unix(path: path), options: options)
     }
 
     override public var connectionPrefix: String {

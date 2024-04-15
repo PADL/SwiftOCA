@@ -50,7 +50,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
     public init(
         deviceAddress: Data,
         options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
-    ) {
+    ) throws {
         self.deviceAddress = deviceAddress
         super.init(options: options)
     }
