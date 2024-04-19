@@ -86,11 +86,11 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         }
 
         guard let index = actionObjects.firstIndex(of: object) else {
-            throw Ocp1Error.objectNotPresent
+            throw Ocp1Error.objectNotPresent(object.objectNumber)
         }
         if let object = object as? OcaOwnable {
             if object.owner != objectNumber {
-                throw Ocp1Error.objectNotPresent
+                throw Ocp1Error.objectNotPresent(object.objectNumber)
             }
             object.owner = OcaInvalidONo
         }
@@ -102,7 +102,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     open func resolve(_ objectNumbers: OcaList<OcaONo>) throws -> [ActionObject] {
         try objectNumbers.map { oNo in
             guard let actionObject = actionObjects.first(where: { $0.objectNumber == oNo }) else {
-                throw Ocp1Error.objectNotPresent
+                throw Ocp1Error.objectNotPresent(oNo)
             }
             return actionObject
         }

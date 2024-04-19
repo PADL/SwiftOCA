@@ -151,7 +151,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
             init(_ objectPath: OcaOPath, device: OcaDevice) async throws {
                 if objectPath.hostID.isEmpty {
                     guard let object = await device.resolve(objectNumber: objectPath.oNo) else {
-                        throw Ocp1Error.status(.badONo)
+                        throw Ocp1Error.invalidObject(objectPath.oNo)
                     }
                     guard await object.objectIdentification.classIdentification
                         .isSubclass(of: CitizenType.classIdentification)
@@ -406,7 +406,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
         }
 
         public required init(from decoder: Decoder) throws {
-            throw Ocp1Error.objectNotPresent
+            throw Ocp1Error.notImplemented
         }
 
         @OcaDevice

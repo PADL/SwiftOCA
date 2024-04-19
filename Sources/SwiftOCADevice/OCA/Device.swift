@@ -101,7 +101,7 @@ public actor OcaDevice {
                 .warning(
                     "attempted to register duplicate object \(object), existing object \(objects[object.objectNumber]!)"
                 )
-            throw Ocp1Error.status(.badONo)
+            throw Ocp1Error.duplicateObject(object.objectNumber)
         }
         objects[object.objectNumber] = object
         if addToRootBlock {
@@ -122,7 +122,7 @@ public actor OcaDevice {
 
     public func deregister(objectNumber: OcaONo) async throws {
         guard let object = objects[objectNumber] else {
-            throw Ocp1Error.status(.badONo)
+            throw Ocp1Error.invalidObject(objectNumber)
         }
         try await deregister(object: object)
     }
@@ -181,6 +181,8 @@ public actor OcaDevice {
             return .init(responseSize: 0, handle: command.handle, statusCode: .invalidRequest)
         } catch Ocp1Error.nilNotEncodable {
             return .init(responseSize: 0, handle: command.handle, statusCode: .processingFailed)
+        } catch Ocp1Error.invalidObject {
+            return .init(responseSize: 0, handle: command.handle, statusCode: .badONo)
         } catch {
             if let object {
                 logger

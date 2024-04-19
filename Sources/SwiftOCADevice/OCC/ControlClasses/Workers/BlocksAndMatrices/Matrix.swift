@@ -55,7 +55,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     }
 
     public required init(from decoder: Decoder) throws {
-        throw Ocp1Error.objectNotPresent
+        throw Ocp1Error.notImplemented
     }
 
     public class Proxy<ProxyMember: OcaRoot>: OcaRoot {
@@ -78,7 +78,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         }
 
         public required init(from decoder: Decoder) throws {
-            throw Ocp1Error.objectNotPresent
+            throw Ocp1Error.notImplemented
         }
 
         @OcaDevice

@@ -38,7 +38,7 @@ public extension OcaDevice {
         }
 
         guard let object = objects[objectNumber] else {
-            throw Ocp1Error.objectNotPresent
+            throw Ocp1Error.objectNotPresent(objectNumber)
         }
 
         guard try await object.objectIdentification.classIdentification

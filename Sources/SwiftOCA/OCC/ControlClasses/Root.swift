@@ -411,7 +411,7 @@ public extension OcaOwnable {
                 classIdentification: OcaBlock.classIdentification
             )) as? OcaBlock
         else {
-            throw Ocp1Error.status(.badONo)
+            throw Ocp1Error.invalidObject(owner)
         }
         return ownerObject
     }

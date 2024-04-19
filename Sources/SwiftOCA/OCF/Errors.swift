@@ -22,12 +22,14 @@ public enum Ocp1Error: Error, Equatable {
     case arrayOrDataTooBig
     case bonjourRegistrationFailed
     case connectionTimeout
+    case duplicateObject(OcaONo)
     case endpointAlreadyRegistered
     case endpointNotRegistered
     case invalidHandle
     case invalidKeepAlivePdu
     case invalidMessageSize
     case invalidMessageType
+    case invalidObject(OcaONo)
     case invalidPduSize
     case invalidProtocolVersion
     case invalidProxyMethodResponse
@@ -39,7 +41,7 @@ public enum Ocp1Error: Error, Equatable {
     case notSubscribedToEvent
     case objectAlreadyContainedByBlock
     case objectClassMismatch
-    case objectNotPresent
+    case objectNotPresent(OcaONo)
     case pduSendingFailed
     case pduTooShort
     case propertyIsImmutable

@@ -83,7 +83,7 @@ public extension OcaGroup {
                 )
                 guard let member = await connectionDelegate.resolve(object: objectID) as? T
                 else {
-                    throw Ocp1Error.status(.badONo)
+                    throw Ocp1Error.invalidObject(member)
                 }
                 resolved.append(member)
             }

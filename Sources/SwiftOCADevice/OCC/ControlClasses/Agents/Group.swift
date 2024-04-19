@@ -89,7 +89,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
                 guard let member = await deviceDelegate?
                     .resolve(objectNumber: memberONo) as? Member
                 else {
-                    throw Ocp1Error.status(.badONo)
+                    throw Ocp1Error.invalidObject(memberONo)
                 }
                 return member
             }
@@ -100,7 +100,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
             let memberONo: OcaONo = try decodeCommand(command)
             guard let member = await deviceDelegate?.resolve(objectNumber: memberONo) as? Member
             else {
-                throw Ocp1Error.status(.badONo)
+                throw Ocp1Error.invalidObject(memberONo)
             }
             try await ensureWritable(by: controller, command: command)
             try await add(member: member)
@@ -109,7 +109,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
             let memberONo: OcaONo = try decodeCommand(command)
             guard let member = await deviceDelegate?.resolve(objectNumber: memberONo) as? Member
             else {
-                throw Ocp1Error.status(.badONo)
+                throw Ocp1Error.invalidObject(memberONo)
             }
             try await ensureWritable(by: controller, command: command)
             try await delete(member: member)
@@ -273,7 +273,7 @@ open class _OcaGroupControllerGroup<Member: OcaRoot>: OcaGroup<Member> {
         }
 
         public required init(from decoder: Decoder) throws {
-            throw Ocp1Error.objectNotPresent
+            throw Ocp1Error.notImplemented
         }
 
         override open func handleCommand(
