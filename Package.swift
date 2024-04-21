@@ -198,7 +198,7 @@ let package = Package(
     name: "SwiftOCA",
     platforms: [
         .macOS(.v13),
-        .iOS(.v17),
+        .iOS(.v13),
     ],
     products: CommonProducts + PlatformProducts,
     dependencies: CommonPackageDependencies + PlatformPackageDependencies,
