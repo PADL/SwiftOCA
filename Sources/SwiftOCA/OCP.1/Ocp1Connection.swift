@@ -339,7 +339,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     }
 
     public var isConnected: Bool {
-        return _connectionState.value == .connected
+        _connectionState.value == .connected
     }
 
     public nonisolated var description: String {
