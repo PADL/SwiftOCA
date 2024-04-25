@@ -20,8 +20,8 @@ open class OcaSensor: OcaWorker {
     override open class var classID: OcaClassID { OcaClassID("1.1.2") }
 
     @OcaDeviceProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1")
+        propertyID: OcaPropertyID("3.1"),
+        getMethodID: OcaMethodID("3.1")
     )
     public var state: OcaSensorReadingState = .unknown
 }
