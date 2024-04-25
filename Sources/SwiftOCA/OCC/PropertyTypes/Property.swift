@@ -117,13 +117,13 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
 
     /// The OCA property ID
-    let propertyID: OcaPropertyID
+    public let propertyID: OcaPropertyID
 
     /// The OCA get method ID
-    let getMethodID: OcaMethodID?
+    public let getMethodID: OcaMethodID?
 
     /// The OCA set method ID, if present
-    let setMethodID: OcaMethodID?
+    public let setMethodID: OcaMethodID?
 
     public enum PropertyValue: Sendable {
         /// no value retrieved from device yet
@@ -274,15 +274,28 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
     init(
         propertyID: OcaPropertyID,
-        getMethodID: OcaMethodID? = nil,
-        setMethodID: OcaMethodID? = nil,
-        setValueTransformer: SetValueTransformer? = nil
+        getMethodID: OcaMethodID?,
+        setMethodID: OcaMethodID?,
+        setValueTransformer: SetValueTransformer?
     ) {
         self.propertyID = propertyID
         self.getMethodID = getMethodID
         self.setMethodID = setMethodID
         subject = AsyncCurrentValueSubject(PropertyValue.initial)
         self.setValueTransformer = setValueTransformer
+    }
+
+    public init(
+        propertyID: OcaPropertyID,
+        getMethodID: OcaMethodID? = nil,
+        setMethodID: OcaMethodID? = nil
+    ) {
+        self.init(
+            propertyID: propertyID,
+            getMethodID: getMethodID,
+            setMethodID: setMethodID,
+            setValueTransformer: nil
+        )
     }
 
     @_spi(SwiftOCAPrivate) @discardableResult

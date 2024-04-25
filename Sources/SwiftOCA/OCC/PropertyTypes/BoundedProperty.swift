@@ -116,7 +116,7 @@ public struct OcaBoundedProperty<
         _storage.description
     }
 
-    init(
+    public init(
         propertyID: OcaPropertyID,
         getMethodID: OcaMethodID,
         setMethodID: OcaMethodID? = nil

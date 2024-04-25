@@ -88,7 +88,7 @@ public struct OcaVectorProperty<
         _storage.description
     }
 
-    init(
+    public init(
         xPropertyID: OcaPropertyID,
         yPropertyID: OcaPropertyID,
         getMethodID: OcaMethodID,
