@@ -15,8 +15,8 @@
 //
 
 open class OcaGroup: OcaAgent {
-    override public class var classID: OcaClassID { OcaClassID("1.2.22") }
-    override public class var classVersion: OcaClassVersionNumber { 3 }
+    override open class var classID: OcaClassID { OcaClassID("1.2.22") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.1"),

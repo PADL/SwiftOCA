@@ -17,7 +17,7 @@
 import SwiftOCA
 
 open class OcaNetworkManager: OcaManager {
-    override public class var classID: OcaClassID { OcaClassID("1.3.6") }
+    override open class var classID: OcaClassID { OcaClassID("1.3.6") }
 
     // networks and streamNetworks are deprecated
 

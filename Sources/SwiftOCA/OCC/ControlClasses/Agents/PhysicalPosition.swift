@@ -93,9 +93,9 @@ public struct OcaPositionDescriptor: Codable, Sendable, Comparable {
 }
 
 open class OcaPhysicalPosition: OcaAgent {
-    override public class var classID: OcaClassID { OcaClassID("1.2.17") }
+    override open class var classID: OcaClassID { OcaClassID("1.2.17") }
 
-    override public class var classVersion: OcaClassVersionNumber { 1 }
+    override open class var classVersion: OcaClassVersionNumber { 1 }
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.1"),

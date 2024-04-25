@@ -17,8 +17,8 @@
 import SwiftOCA
 
 open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentable {
-    override public class var classID: OcaClassID { OcaClassID("1.4.2") }
-    override public class var classVersion: OcaClassVersionNumber { 1 }
+    override open class var classID: OcaClassID { OcaClassID("1.4.2") }
+    override open class var classVersion: OcaClassVersionNumber { 1 }
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.1"),

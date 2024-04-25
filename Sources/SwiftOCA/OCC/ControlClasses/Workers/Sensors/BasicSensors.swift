@@ -27,7 +27,7 @@ open class OcaGenericBasicSensor<T: Codable & Comparable & Sendable>: OcaBasicSe
 }
 
 open class OcaBooleanSensor: OcaBasicSensor {
-    override public class var classID: OcaClassID { OcaClassID("1.1.2.1.1") }
+    override open class var classID: OcaClassID { OcaClassID("1.1.2.1.1") }
 
     @OcaProperty(
         propertyID: OcaPropertyID("5.1"),

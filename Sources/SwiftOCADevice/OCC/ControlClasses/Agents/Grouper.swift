@@ -92,8 +92,8 @@ private actor OcaConnectionBroker {
 }
 
 open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
-    override public class var classID: OcaClassID { OcaClassID("1.2.2") }
-    override public class var classVersion: OcaClassVersionNumber { 3 }
+    override open class var classID: OcaClassID { OcaClassID("1.2.2") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     // AES70-2023 only allows actuator groupers so we don't expose the property setter
     @OcaDeviceProperty(

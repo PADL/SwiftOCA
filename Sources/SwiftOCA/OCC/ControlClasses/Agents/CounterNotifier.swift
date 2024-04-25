@@ -17,7 +17,7 @@
 import Foundation
 
 open class OcaCounterNotifier: OcaAgent {
-    override public class var classID: OcaClassID { OcaClassID("1.2.18") }
+    override open class var classID: OcaClassID { OcaClassID("1.2.18") }
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.1"),

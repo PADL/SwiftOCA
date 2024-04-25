@@ -15,8 +15,8 @@
 //
 
 open class OcaMediaTransportApplication: OcaNetworkApplication {
-    override public class var classID: OcaClassID { OcaClassID("1.7.1") }
-    override public class var classVersion: OcaClassVersionNumber { 3 }
+    override open class var classID: OcaClassID { OcaClassID("1.7.1") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     func add(port label: OcaString, mode: OcaIODirection) async throws -> OcaPortID {
         struct AddPortParameters: Ocp1ParametersReflectable {

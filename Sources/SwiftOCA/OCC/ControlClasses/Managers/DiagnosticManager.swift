@@ -15,8 +15,8 @@
 //
 
 open class OcaDiagnosticManager: OcaManager {
-    override public class var classID: OcaClassID { OcaClassID("1.3.13") }
-    override public class var classVersion: OcaClassVersionNumber { 3 }
+    override open class var classID: OcaClassID { OcaClassID("1.3.13") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     public convenience init() {
         self.init(objectNumber: OcaDiagnosticManagerONo)

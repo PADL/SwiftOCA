@@ -15,7 +15,7 @@
 //
 
 open class OcaAgent: OcaRoot, OcaOwnablePrivate {
-    override public class var classID: OcaClassID { OcaClassID("1.2") }
+    override open class var classID: OcaClassID { OcaClassID("1.2") }
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.1"),

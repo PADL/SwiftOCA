@@ -19,7 +19,7 @@ import Foundation
 import SwiftOCA
 
 open class OcaCounterSetAgent: OcaAgent {
-    override public class var classID: OcaClassID { OcaClassID("1.2.19") }
+    override open class var classID: OcaClassID { OcaClassID("1.2.19") }
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.1"),

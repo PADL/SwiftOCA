@@ -15,8 +15,8 @@
 //
 
 open class OcaWorker: OcaRoot, OcaOwnablePrivate {
-    override public class var classID: OcaClassID { OcaClassID("1.1") }
-    override public class var classVersion: OcaClassVersionNumber { 3 }
+    override open class var classID: OcaClassID { OcaClassID("1.1") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     @OcaProperty(
         propertyID: OcaPropertyID("2.1"),

@@ -15,8 +15,8 @@
 //
 
 open class OcaMediaClock3: OcaAgent {
-    override public class var classID: OcaClassID { OcaClassID("1.2.15") }
-    override public class var classVersion: OcaClassVersionNumber { 3 }
+    override open class var classID: OcaClassID { OcaClassID("1.2.15") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     @OcaProperty(
         propertyID: OcaPropertyID("3.1"),

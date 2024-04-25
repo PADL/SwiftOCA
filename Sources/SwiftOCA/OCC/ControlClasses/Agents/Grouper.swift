@@ -15,8 +15,8 @@
 //
 
 open class OcaGrouper: OcaAgent {
-    override public class var classID: OcaClassID { OcaClassID("1.2.2") }
-    override public class var classVersion: OcaClassVersionNumber { 3 }
+    override open class var classID: OcaClassID { OcaClassID("1.2.2") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     public struct AddGroupParameters: Ocp1ParametersReflectable {
         public let index: OcaUint16

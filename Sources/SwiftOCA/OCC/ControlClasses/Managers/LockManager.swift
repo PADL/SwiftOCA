@@ -15,8 +15,8 @@
 //
 
 open class OcaLockManager: OcaManager {
-    override public class var classID: OcaClassID { OcaClassID("1.3.14") }
-    override public class var classVersion: OcaClassVersionNumber { 3 }
+    override open class var classID: OcaClassID { OcaClassID("1.3.14") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     public struct LockWaitParameters: Ocp1ParametersReflectable {
         public let target: OcaONo

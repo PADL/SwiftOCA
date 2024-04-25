@@ -17,8 +17,8 @@
 import SwiftOCA
 
 open class OcaMediaClockManager: OcaManager {
-    override public class var classID: OcaClassID { OcaClassID("1.3.7") }
-    override public class var classVersion: OcaClassVersionNumber { 3 }
+    override open class var classID: OcaClassID { OcaClassID("1.3.7") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     @OcaDeviceProperty(
         propertyID: OcaPropertyID("3.1"),

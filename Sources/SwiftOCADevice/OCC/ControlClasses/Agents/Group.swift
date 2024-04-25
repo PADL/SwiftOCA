@@ -21,8 +21,8 @@ import SwiftOCA
 public let OcaGroupExceptionEventID = OcaEventID(defLevel: 3, eventIndex: 1)
 
 open class OcaGroup<Member: OcaRoot>: OcaAgent {
-    override public class var classID: OcaClassID { OcaClassID("1.2.22") }
-    override public class var classVersion: OcaClassVersionNumber { 3 }
+    override open class var classID: OcaClassID { OcaClassID("1.2.22") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     public private(set) var members = [Member]()
 

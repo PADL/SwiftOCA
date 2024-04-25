@@ -20,8 +20,8 @@ public enum OcaSubscriptionManagerState: OcaUint8, Codable, Sendable, CaseIterab
 }
 
 open class OcaSubscriptionManager: OcaManager {
-    override public class var classID: OcaClassID { OcaClassID("1.3.4") }
-    override public class var classVersion: OcaClassVersionNumber { 3 }
+    override open class var classID: OcaClassID { OcaClassID("1.3.4") }
+    override open class var classVersion: OcaClassVersionNumber { 3 }
 
     public static let NotificationsDisabledEventID = OcaEventID(defLevel: 3, eventIndex: 1)
     public static let SynchronizeStateEventID = OcaEventID(defLevel: 3, eventIndex: 2)

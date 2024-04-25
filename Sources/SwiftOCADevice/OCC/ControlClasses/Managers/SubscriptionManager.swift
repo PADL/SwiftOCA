@@ -18,8 +18,8 @@ import Foundation
 import SwiftOCA
 
 public class OcaSubscriptionManager: OcaManager {
-    override public class var classID: OcaClassID { OcaClassID("1.3.4") }
-    override public class var classVersion: OcaClassVersionNumber { 2 }
+    override open class var classID: OcaClassID { OcaClassID("1.3.4") }
+    override open class var classVersion: OcaClassVersionNumber { 2 }
 
     @OcaDeviceProperty(propertyID: OcaPropertyID("3.1"))
     public var state: OcaSubscriptionManagerState = .normal
