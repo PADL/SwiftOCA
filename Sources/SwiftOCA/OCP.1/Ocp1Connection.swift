@@ -339,7 +339,6 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     }
 
     public var isConnected: Bool {
-        precondition(!(monitorTask?.isCancelled ?? true) == (_connectionState.value == .connected))
         return _connectionState.value == .connected
     }
 
