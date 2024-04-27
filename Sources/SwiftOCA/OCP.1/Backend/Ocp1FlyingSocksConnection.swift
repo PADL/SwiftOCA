@@ -25,7 +25,7 @@ private extension SocketError {
     var connectionFailed: Bool {
         switch self {
         case let .failed(_, errno, _):
-            return errno == EBADF || errno == ESHUTDOWN
+            return errno == EBADF || errno == ESHUTDOWN || errno == EPIPE
         case .blocked:
             return false
         case .disconnected:
