@@ -27,7 +27,7 @@ actor OcaLocalController: Ocp1ControllerInternal {
     var keepAliveTask: Task<(), Error>?
 
     weak var endpoint: OcaLocalDeviceEndpoint?
-    var subscriptions = [OcaONo: NSMutableSet]()
+    var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
     init(endpoint: OcaLocalDeviceEndpoint) async {
         self.endpoint = endpoint

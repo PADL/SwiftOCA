@@ -57,7 +57,7 @@ extension Ocp1IORingControllerPrivate {
 actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConvertible {
     nonisolated let connectionPrefix: String
 
-    var subscriptions = [OcaONo: NSMutableSet]()
+    var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
     let peerAddress: AnySocketAddress
     var receiveMessageTask: Task<(), Never>?
     var keepAliveTask: Task<(), Error>?
@@ -192,7 +192,7 @@ extension Ocp1IORingStreamController: Hashable {
 actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerDatagramSemantics {
     nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
 
-    var subscriptions = [OcaONo: NSMutableSet]()
+    var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
     let peerAddress: AnySocketAddress
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = ContinuousClock.now

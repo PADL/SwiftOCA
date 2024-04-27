@@ -50,7 +50,7 @@ fileprivate extension AsyncStream where Element == WSMessage {
 actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
     nonisolated var connectionPrefix: String { OcaWebSocketTcpConnectionPrefix }
 
-    var subscriptions = [OcaONo: NSMutableSet]()
+    var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
     private let inputStream: AsyncStream<WSMessage>
     private let outputStream: AsyncStream<WSMessage>.Continuation

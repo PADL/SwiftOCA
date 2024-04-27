@@ -27,7 +27,7 @@ import SwiftOCA
 actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible {
     nonisolated let connectionPrefix: String
 
-    var subscriptions = [OcaONo: NSMutableSet]()
+    var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
     var keepAliveTask: Task<(), Error>?
     var lastMessageReceivedTime = ContinuousClock.now
     var lastMessageSentTime = ContinuousClock.now

@@ -21,7 +21,7 @@ import Logging
 import SwiftOCA
 
 public protocol OcaControllerDefaultSubscribing: OcaController {
-    var subscriptions: [OcaONo: NSMutableSet] { get set }
+    var subscriptions: [OcaONo: Set<OcaSubscriptionManagerSubscription>] { get set }
 }
 
 public protocol OcaControllerLightweightNotifying: OcaControllerDefaultSubscribing {
@@ -50,13 +50,12 @@ public extension OcaControllerDefaultSubscribing {
         guard let subscriptions = subscriptions[event.emitterONo] else {
             return []
         }
-        return subscriptions.filter {
-            let subscription = $0 as! OcaSubscriptionManagerSubscription
-            return subscription.event == event &&
+        return subscriptions.filter { subscription in
+            subscription.event == event &&
                 (subscriber == nil ? true : subscription.subscriber == subscriber) &&
                 subscription.property == property &&
                 subscription.version == version
-        } as! [OcaSubscriptionManagerSubscription]
+        }
     }
 
     private func hasSubscription(
@@ -96,12 +95,10 @@ public extension OcaControllerDefaultSubscribing {
             // lightweight/fast notifications
             throw Ocp1Error.status(.parameterError)
         }
-        var subscriptions = subscriptions[subscription.event.emitterONo]
-        if subscriptions == nil {
-            subscriptions = NSMutableSet(object: subscription)
-            self.subscriptions[subscription.event.emitterONo] = subscriptions
+        if let index = subscriptions.index(forKey: subscription.event.emitterONo) {
+            subscriptions.values[index].insert(subscription)
         } else {
-            subscriptions?.add(subscription)
+            subscriptions[subscription.event.emitterONo] = [subscription]
         }
     }
 
