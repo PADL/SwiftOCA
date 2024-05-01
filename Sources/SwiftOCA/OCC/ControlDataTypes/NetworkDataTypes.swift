@@ -170,7 +170,9 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
 
 public typealias OcaNetworkAddress = OcaBlob
 
-public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable, CustomStringConvertible {
+public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable, Equatable,
+    CustomStringConvertible
+{
     public let systemInterfaceParameters: OcaBlob
     public let myNetworkAddress: OcaNetworkAddress
 
@@ -205,7 +207,7 @@ public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable, CustomStri
     }
 }
 
-public struct Ocp1NetworkAddress: Codable, Sendable {
+public struct Ocp1NetworkAddress: Codable, Sendable, Equatable {
     public let address: OcaString
     public let port: OcaUint16
 
