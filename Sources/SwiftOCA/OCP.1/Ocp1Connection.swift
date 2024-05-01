@@ -253,16 +253,14 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
         var lastError: Error?
         var backoff: Duration = options.reconnectPauseInterval
 
-        _connectionState.send(.reconnecting) // so UI can update before sleeping
-
         for i in 0..<options.reconnectMaxTries {
             do {
                 try await connectDeviceWithTimeout()
                 _connectionState.send(.connected)
                 break
             } catch {
-                precondition(_connectionState.value == .reconnecting)
                 lastError = error
+                _connectionState.send(.reconnecting)
                 if options.reconnectExponentialBackoffThreshold.contains(i) {
                     backoff *= 2
                 }
