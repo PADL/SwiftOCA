@@ -21,7 +21,15 @@ public extension Ocp1Connection {
         owner: OcaONo
     ) -> T? {
         if let object = objects[objectNumber] as? T {
-            return object
+            if object.objectIdentification.classIdentification == classIdentification {
+                return object
+            }
+            // allow reserved objects to be overriden by more specific subclasses
+            precondition(objectNumber <= OcaMaximumReservedONo)
+            precondition(
+                classIdentification
+                    .isSubclass(of: object.objectIdentification.classIdentification)
+            )
         }
 
         guard let object: T = OcaClassRegistry.shared.assign(
