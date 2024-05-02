@@ -98,7 +98,11 @@ public extension Ocp1Connection {
                 .subdata(in: cursor..<Int(header.pduSize) + 1) // because this includes sync byte
 
             if messageType != .ocaKeepAlive {
-                let messageSize: OcaUint32 = messageData.decodeInteger(index: 0)
+                if messageData.count < 4 {
+                    throw Ocp1Error.pduTooShort
+                }
+                let messageSize: OcaUint32 = messageData
+                    .decodeInteger(index: 0) /// _expects_ length >= 4
 
                 guard messageSize <= messageData.count else {
                     throw Ocp1Error.invalidMessageSize
