@@ -70,7 +70,7 @@ public struct OcaDetailView: OcaView {
             }
         }
         .task {
-            object = await connection.resolve(object: objectIdentification)
+            object = try? await connection.resolve(object: objectIdentification)
         }
     }
 }

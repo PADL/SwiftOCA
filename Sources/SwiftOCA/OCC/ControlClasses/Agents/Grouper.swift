@@ -100,7 +100,7 @@ extension OcaGrouper {
             oNo: group.proxyONo,
             classIdentification: classIdentification
         )
-        let resolvedProxy = connectionDelegate.resolve(object: objectID) as? T
+        let resolvedProxy = try connectionDelegate.resolve(object: objectID) as? T
         guard let resolvedProxy else {
             throw Ocp1Error.proxyResolutionFailed
         }

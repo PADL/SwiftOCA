@@ -36,10 +36,12 @@ public enum Ocp1Error: Error, Equatable {
     case invalidSyncValue
     case noConnectionDelegate
     case noInitialValue
+    case noMatchingTypeForClass
     case notConnected
     case notImplemented
     case notSubscribedToEvent
     case objectAlreadyContainedByBlock
+    case objectClassIsNotSubclass
     case objectClassMismatch
     case objectNotPresent(OcaONo)
     case pduSendingFailed

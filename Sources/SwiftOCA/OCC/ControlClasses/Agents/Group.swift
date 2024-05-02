@@ -81,7 +81,7 @@ public extension OcaGroup {
                     oNo: member,
                     classIdentification: groupControllerClassID
                 )
-                guard let member = await connectionDelegate.resolve(object: objectID) as? T
+                guard let member = try await connectionDelegate.resolve(object: objectID) as? T
                 else {
                     throw Ocp1Error.invalidObject(member)
                 }
@@ -103,7 +103,7 @@ public extension OcaGroup {
                 oNo: groupControllerObjectNumber,
                 classIdentification: classIdentification
             )
-            let resolvedProxy = await connectionDelegate.resolve(object: objectID) as? T
+            let resolvedProxy = try await connectionDelegate.resolve(object: objectID) as? T
             guard let resolvedProxy else {
                 throw Ocp1Error.proxyResolutionFailed
             }

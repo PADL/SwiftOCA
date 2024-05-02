@@ -135,7 +135,7 @@ open class OcaBlock: OcaWorker {
                     containerObjectNumber: objectNumber
                 ))
             if actionObject.classIdentification.isSubclass(of: OcaBlock.classIdentification),
-               let actionObject: OcaBlock = await connectionDelegate?
+               let actionObject: OcaBlock = try await connectionDelegate?
                .resolve(object: actionObject)
             {
                 try await actionObject._getActionObjectsRecursiveFallback(&blockMembers)
@@ -353,8 +353,8 @@ public extension OcaBlock {
         guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
         return try await _actionObjects.onCompletion(self) { actionObjects in
-            await actionObjects.asyncCompactMap {
-                await connectionDelegate.resolve(object: $0, owner: self.objectNumber)
+            try await actionObjects.asyncCompactMap {
+                try await connectionDelegate.resolve(object: $0, owner: self.objectNumber)
             }
         }
     }
@@ -394,12 +394,11 @@ public extension OcaBlock {
         }
         var containerMembers: [OcaContainerObjectMember]
 
-        containerMembers = recursiveMembers.compactMap { member in
-            let memberObject = connectionDelegate.resolve(
+        containerMembers = try recursiveMembers.compactMap { member in
+            let memberObject = try connectionDelegate.resolve(
                 object: member.memberObjectIdentification,
                 owner: member.containerObjectNumber
             )
-            guard let memberObject else { return nil }
             return OcaContainerObjectMember(
                 memberObject: memberObject,
                 containerObjectNumber: member.containerObjectNumber

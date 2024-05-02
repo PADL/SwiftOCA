@@ -19,24 +19,22 @@ public extension Ocp1Connection {
         classIdentification: OcaClassIdentification,
         objectNumber: OcaONo,
         owner: OcaONo
-    ) -> T? {
+    ) throws -> T {
         if let object = objects[objectNumber] as? T {
             if object.objectIdentification.classIdentification == classIdentification {
                 return object
             }
-            // allow objects that were already resolved to be further specialized
-            precondition(
-                classIdentification
-                    .isSubclass(of: object.objectIdentification.classIdentification)
-            )
+            guard classIdentification
+                .isSubclass(of: object.objectIdentification.classIdentification)
+            else {
+                throw Ocp1Error.objectClassIsNotSubclass
+            }
         }
 
-        guard let object: T = OcaClassRegistry.shared.assign(
+        let object: T = try OcaClassRegistry.shared.assign(
             classIdentification: classIdentification,
             objectNumber: objectNumber
-        ) else {
-            return nil
-        }
+        )
 
         if owner != OcaInvalidONo, let object = object as? OcaOwnablePrivate {
             object._set(owner: owner)
@@ -45,8 +43,11 @@ public extension Ocp1Connection {
         return object
     }
 
-    func resolve<T: OcaRoot>(object: OcaObjectIdentification, owner: OcaONo = OcaInvalidONo) -> T? {
-        resolve(
+    func resolve<T: OcaRoot>(
+        object: OcaObjectIdentification,
+        owner: OcaONo = OcaInvalidONo
+    ) throws -> T {
+        try resolve(
             classIdentification: object.classIdentification,
             objectNumber: object.oNo,
             owner: owner
@@ -57,14 +58,14 @@ public extension Ocp1Connection {
         objects[cachedObject] as? T
     }
 
-    func resolve<T: OcaRoot>(objectOfUnknownClass: OcaONo) async throws -> T? {
+    func resolve<T: OcaRoot>(objectOfUnknownClass: OcaONo) async throws -> T {
         if let object: T = resolve(cachedObject: objectOfUnknownClass) {
             return object
         }
 
         let classIdentification =
             try await getClassIdentification(objectNumber: objectOfUnknownClass)
-        return resolve(object: OcaObjectIdentification(
+        return try resolve(object: OcaObjectIdentification(
             oNo: objectOfUnknownClass,
             classIdentification: classIdentification
         ))

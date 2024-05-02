@@ -131,13 +131,13 @@ final class SwiftOCADeviceTests: XCTestCase {
 
         let controllerExpectation2 =
             XCTestExpectation(description: "Check test block controller properties")
-        let clientTestBlock: SwiftOCA.OcaBlock? = await connection
+        let clientTestBlock: SwiftOCA.OcaBlock = try await connection
             .resolve(object: OcaObjectIdentification(
                 oNo: testBlockONo,
                 classIdentification: SwiftOCA.OcaBlock.classIdentification
             ))
         XCTAssertNotNil(clientTestBlock)
-        let resolvedClientTestBlockActionObjects = try await clientTestBlock!.resolveActionObjects()
+        let resolvedClientTestBlockActionObjects = try await clientTestBlock.resolveActionObjects()
         let testBlockMembers = await testBlock.actionObjects
         XCTAssertEqual(
             resolvedClientTestBlockActionObjects.map(\.objectNumber),
@@ -185,13 +185,13 @@ final class SwiftOCADeviceTests: XCTestCase {
 
         let controllerExpectation =
             XCTestExpectation(description: "Check test block controller properties")
-        let clientTestBlock: SwiftOCA.OcaBlock? = await connection
+        let clientTestBlock: SwiftOCA.OcaBlock = try await connection
             .resolve(object: OcaObjectIdentification(
                 oNo: testBlockONo,
                 classIdentification: SwiftOCA.OcaBlock.classIdentification
             ))
         XCTAssertNotNil(clientTestBlock)
-        let resolvedClientTestBlockActionObjects = try await clientTestBlock!.resolveActionObjects()
+        let resolvedClientTestBlockActionObjects = try await clientTestBlock.resolveActionObjects()
         let testBlockMembers = await testBlock.actionObjects
         XCTAssertEqual(
             resolvedClientTestBlockActionObjects.map(\.objectNumber),
@@ -260,14 +260,14 @@ final class SwiftOCADeviceTests: XCTestCase {
 
         let controllerExpectation =
             XCTestExpectation(description: "Check test block controller properties")
-        let clientTestBlock: SwiftOCA.OcaBlock? = await connection
+        let clientTestBlock: SwiftOCA.OcaBlock = try await connection
             .resolve(object: OcaObjectIdentification(
                 oNo: testBlockONo,
                 classIdentification: SwiftOCA.OcaBlock.classIdentification
             ))
         XCTAssertNotNil(clientTestBlock)
 
-        let resolvedClientTestBlockActionObjects = try await clientTestBlock!.resolveActionObjects()
+        let resolvedClientTestBlockActionObjects = try await clientTestBlock.resolveActionObjects()
         let testBlockMembers = await testBlock.actionObjects
         XCTAssertEqual(
             resolvedClientTestBlockActionObjects.map(\.objectNumber),
@@ -288,20 +288,18 @@ final class SwiftOCADeviceTests: XCTestCase {
         let clientGroupExpectation =
             XCTestExpectation(description: "Resolved actuator group proxy and set setting to true")
 
-        let clientGroupObject: SwiftOCA.OcaGroup? = await connection
+        let clientGroupObject: SwiftOCA.OcaGroup = try await connection
             .resolve(object: OcaObjectIdentification(
                 oNo: testGroupONo,
                 classIdentification: SwiftOCA.OcaGroup.classIdentification
             ))
         XCTAssertNotNil(clientGroupObject)
 
-        if let clientGroupObject {
-            let clientGroupProxy: SwiftOCA.OcaBooleanActuator = try await clientGroupObject
-                .resolveGroupController()
-            XCTAssertNotNil(clientGroupProxy)
-            clientGroupProxy.setting = .success(true)
-            clientGroupExpectation.fulfill()
-        }
+        let clientGroupProxy: SwiftOCA.OcaBooleanActuator = try await clientGroupObject
+            .resolveGroupController()
+        XCTAssertNotNil(clientGroupProxy)
+        clientGroupProxy.setting = .success(true)
+        clientGroupExpectation.fulfill()
 
         await fulfillment(of: [clientGroupExpectation], timeout: 1)
 

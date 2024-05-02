@@ -405,7 +405,7 @@ public extension OcaOwnable {
             throw Ocp1Error.status(.parameterOutOfRange)
         }
 
-        guard let ownerObject = await connectionDelegate?
+        guard let ownerObject = try await connectionDelegate?
             .resolve(object: OcaObjectIdentification(
                 oNo: owner,
                 classIdentification: OcaBlock.classIdentification

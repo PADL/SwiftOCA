@@ -63,20 +63,20 @@ public class OcaClassRegistry {
         return nil
     }
 
-    private func match<T: OcaRoot>(classIdentification: OcaClassIdentification) -> T.Type? {
+    private func match<T: OcaRoot>(classIdentification: OcaClassIdentification) throws -> T.Type {
         guard let classIdentification = match(classIdentification: classIdentification)
-        else { return nil }
-        guard let type = classIDMap[classIdentification] else { return nil }
+        else { throw Ocp1Error.objectClassMismatch }
+        guard let type = classIDMap[classIdentification] as? T.Type
+        else { throw Ocp1Error.noMatchingTypeForClass }
 
-        return type as? T.Type
+        return type
     }
 
     func assign<T: OcaRoot>(
         classIdentification: OcaClassIdentification,
         objectNumber: OcaONo
-    ) -> T? {
-        guard let type: T.Type = match(classIdentification: classIdentification) else { return nil }
-
+    ) throws -> T {
+        let type: T.Type = try match(classIdentification: classIdentification)
         return type.init(objectNumber: objectNumber)
     }
 
