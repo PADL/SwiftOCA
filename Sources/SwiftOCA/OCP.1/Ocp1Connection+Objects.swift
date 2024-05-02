@@ -24,8 +24,7 @@ public extension Ocp1Connection {
             if object.objectIdentification.classIdentification == classIdentification {
                 return object
             }
-            // allow reserved objects to be overriden by more specific subclasses
-            precondition(objectNumber <= OcaMaximumReservedONo)
+            // allow objects that were already resolved to be further specialized
             precondition(
                 classIdentification
                     .isSubclass(of: object.objectIdentification.classIdentification)
