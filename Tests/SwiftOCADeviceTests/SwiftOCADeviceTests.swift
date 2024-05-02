@@ -26,6 +26,10 @@ final class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator, OcaGroupPeerTo
     func set(to value: Bool) async { setting = value }
 }
 
+final class _MyBooleanActuator: SwiftOCA.OcaBooleanActuator {
+    override class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
+}
+
 extension OcaGetPortNameParameters: Equatable {
     public static func == (lhs: OcaGetPortNameParameters, rhs: OcaGetPortNameParameters) -> Bool {
         lhs.portID == rhs.portID
@@ -59,6 +63,8 @@ final class SwiftOCADeviceTests: XCTestCase {
     let testGroupONo: OcaONo = 5001
 
     func testLoopbackDevice() async throws {
+        await OcaClassRegistry.shared.register(_MyBooleanActuator.self)
+
         let device = OcaDevice()
         try await device.initializeDefaultObjects()
         let endpoint = try await OcaLocalDeviceEndpoint(device: device)
