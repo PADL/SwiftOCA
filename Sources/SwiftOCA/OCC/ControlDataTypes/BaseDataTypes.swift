@@ -113,7 +113,7 @@ public enum OcaStatus: OcaUint8, Codable, Sendable, CaseIterable {
 }
 
 public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
-    CustomStringConvertible
+    CustomStringConvertible, ExpressibleByStringLiteral
 {
     let defLevel: OcaUint16
     let propertyIndex: OcaUint16
@@ -122,6 +122,10 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
         let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
         defLevel = s[0]
         propertyIndex = s[1]
+    }
+
+    public init(stringLiteral value: String) {
+        self.init(value)
     }
 
     public var description: String {
@@ -186,7 +190,9 @@ public struct OcaLibVolIdentifier: Codable, Sendable {
     }
 }
 
-public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible {
+public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible,
+    ExpressibleByStringLiteral
+{
     let fields: [OcaUint16]
 
     static let ProprietaryClassFieldMask = OcaUint16(0x8000)
@@ -196,6 +202,10 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible {
 
     public init(_ string: OcaString) {
         fields = string.split(separator: ".").map { OcaUint16($0)! }
+    }
+
+    public init(stringLiteral value: String) {
+        self.init(value)
     }
 
     public init(unsafeString string: OcaString) throws {
@@ -347,7 +357,9 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible {
     }
 }
 
-public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible {
+public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
+    ExpressibleByStringLiteral
+{
     public let defLevel: OcaUint16
     public let methodIndex: OcaUint16
 
@@ -355,6 +367,10 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible 
         let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
         defLevel = s[0]
         methodIndex = s[1]
+    }
+
+    public init(stringLiteral value: String) {
+        self.init(value)
     }
 
     public var description: String {
