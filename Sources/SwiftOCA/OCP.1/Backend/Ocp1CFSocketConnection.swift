@@ -55,6 +55,15 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
         super.init(options: options)
     }
 
+    public convenience init(
+        path: String,
+        options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    ) throws {
+        var sun = sockaddr_un.unix(path: path)
+        let deviceAddress = Data(bytes: &sun, count: MemoryLayout<sockaddr_un>.stride)
+        try self.init(deviceAddress: deviceAddress, options: options)
+    }
+
     deinit {
         if let cfSocket {
             CFSocketInvalidate(cfSocket)
