@@ -121,6 +121,9 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
             Ocp1CFSocketConnection_DataCallBack,
             &context
         )
+        guard cfSocket != nil else {
+            throw Ocp1Error.notConnected
+        }
 
         var options = CFSocketGetSocketFlags(cfSocket)
         options |= kCFSocketCloseOnInvalidate
