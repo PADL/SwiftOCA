@@ -248,11 +248,12 @@ private extension sockaddr_un {
     init(path pathString: String) throws {
         self = Self()
         var sun = self
+        var capacity = 0
         sun.sun_family = sa_family_t(AF_LOCAL)
 
         try withUnsafeMutablePointer(to: &sun.sun_path) { path in
             let start = path.propertyBasePointer(to: \.0)!
-            let capacity = MemoryLayout.size(ofValue: path.pointee)
+            capacity = MemoryLayout.size(ofValue: path.pointee)
             if capacity <= pathString.utf8.count {
                 throw Ocp1Error.arrayOrDataTooBig
             }
@@ -266,7 +267,7 @@ private extension sockaddr_un {
         }
 
         #if canImport(Darwin)
-        sun.sun_len = UInt8(MemoryLayout<sockaddr_un>.size - 104 + pathString.utf8.count)
+        sun.sun_len = UInt8(MemoryLayout<sockaddr_un>.size - capacity + pathString.utf8.count)
         #endif
         self = sun
     }
