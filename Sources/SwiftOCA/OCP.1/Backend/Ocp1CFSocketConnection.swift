@@ -80,6 +80,17 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
         }
     }
 
+    private var proto: Int32 {
+        switch Int32(family) {
+        case AF_INET:
+            fallthrough
+        case AF_INET6:
+            return isStreamType(type) ? Int32(IPPROTO_TCP) : Int32(IPPROTO_UDP)
+        default:
+            return 0
+        }
+    }
+
     fileprivate nonisolated func dataCallBack(
         _ socket: CFSocket?,
         _ type: CFSocketCallBackType,
@@ -105,7 +116,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
             kCFAllocatorDefault,
             Int32(family),
             type,
-            isStreamType(type) ? Int32(IPPROTO_TCP) : Int32(IPPROTO_UDP),
+            proto,
             CFSocketCallBackType.dataCallBack.rawValue,
             Ocp1CFSocketConnection_DataCallBack,
             &context
