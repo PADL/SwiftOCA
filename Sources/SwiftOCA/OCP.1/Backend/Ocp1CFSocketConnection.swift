@@ -188,11 +188,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
         case .error:
             fallthrough
         default:
-            if errno != 0 {
-                throw Errno(rawValue: errno)
-            } else {
-                throw Ocp1Error.pduSendingFailed
-            }
+            throw Ocp1Error.pduSendingFailed
         }
     }
 }
