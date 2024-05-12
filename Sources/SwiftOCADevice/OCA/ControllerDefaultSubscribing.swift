@@ -135,8 +135,6 @@ public extension OcaControllerDefaultSubscribing {
         }
 
         for subscription in subscriptions {
-            let subscription = subscription as! OcaSubscriptionManagerSubscription
-
             guard subscription.property == nil || property == subscription.property else {
                 continue
             }
