@@ -267,6 +267,9 @@ private extension sockaddr_un {
             }
         }
 
+        #if canImport(Darwin)
+        sun.sun_len = UInt8(MemoryLayout<sockaddr_un>.size - 104 + pathString.utf8.count)
+        #endif
         self = sun
     }
 }
