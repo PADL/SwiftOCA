@@ -59,7 +59,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
         path: String,
         options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
     ) throws {
-        var sun = sockaddr_un.unix(path: path)
+        var sun = try sockaddr_un(path: path)
         let deviceAddress = Data(bytes: &sun, count: MemoryLayout<sockaddr_un>.stride)
         try self.init(deviceAddress: deviceAddress, options: options)
     }
@@ -245,3 +245,28 @@ fileprivate extension CFRunLoopMode {
 #endif
 
 #endif
+
+private extension sockaddr_un {
+    init(path pathString: String) throws {
+        self = Self()
+        var sun = self
+        sun.sun_family = sa_family_t(AF_LOCAL)
+
+        try withUnsafeMutablePointer(to: &sun.sun_path) { path in
+            let start = path.propertyBasePointer(to: \.0)!
+            let capacity = MemoryLayout.size(ofValue: path.pointee)
+            if capacity <= pathString.utf8.count {
+                throw Ocp1Error.arrayOrDataTooBig
+            }
+            start.withMemoryRebound(to: CChar.self, capacity: capacity) { dst in
+                _ = memcpy(
+                    UnsafeMutableRawPointer(mutating: dst),
+                    pathString,
+                    pathString.utf8.count + 1
+                )
+            }
+        }
+
+        self = sun
+    }
+}

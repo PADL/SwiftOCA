@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D301C6772BF0576200488B99 /* UnsafeMutablePointer+PropertyBasePointer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D301C6762BF0576200488B99 /* UnsafeMutablePointer+PropertyBasePointer.swift */; };
 		D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */; };
 		D30349D62BBB65E90080FF09 /* Frequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349D52BBB65E90080FF09 /* Frequency.swift */; };
 		D30349D82BBB66460080FF09 /* Frequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349D72BBB66460080FF09 /* Frequency.swift */; };
@@ -310,6 +311,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D301C6762BF0576200488B99 /* UnsafeMutablePointer+PropertyBasePointer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnsafeMutablePointer+PropertyBasePointer.swift"; sourceTree = "<group>"; };
 		D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDeviceView.swift; sourceTree = "<group>"; };
 		D30349D52BBB65E90080FF09 /* Frequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Frequency.swift; sourceTree = "<group>"; };
 		D30349D72BBB66460080FF09 /* Frequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Frequency.swift; sourceTree = "<group>"; };
@@ -1294,6 +1296,7 @@
 				D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */,
 				D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */,
 				D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */,
+				D301C6762BF0576200488B99 /* UnsafeMutablePointer+PropertyBasePointer.swift */,
 			);
 			path = OCF;
 			sourceTree = "<group>";
@@ -1772,6 +1775,7 @@
 				D3E6E1E82A3ACAAD00BF7095 /* Data+Hex.swift in Sources */,
 				D3AFD3362B2A516C00A72E9A /* DeviceTimeManager.swift in Sources */,
 				D306556F2A5254D70083F093 /* TimeSource.swift in Sources */,
+				D301C6772BF0576200488B99 /* UnsafeMutablePointer+PropertyBasePointer.swift in Sources */,
 				D3AFD3442B2CEA3800A72E9A /* LockManager.swift in Sources */,
 				D3AFD3922B41513300A72E9A /* SummingPoint.swift in Sources */,
 				D3E6E1BF2A3ACA8200BF7095 /* Header.swift in Sources */,
