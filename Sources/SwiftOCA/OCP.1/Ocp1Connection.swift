@@ -30,7 +30,7 @@ public typealias Ocp1UDPConnection = Ocp1IORingDatagramConnection
 public typealias Ocp1TCPConnection = Ocp1IORingStreamConnection
 #else
 public typealias Ocp1UDPConnection = Ocp1CFSocketUDPConnection
-public typealias Ocp1TCPConnection = Ocp1CFSocketTCPConnection
+public typealias Ocp1TCPConnection = Ocp1FlyingSocksStreamConnection
 #endif
 
 public typealias OcaSubscriptionCallback = @Sendable (OcaEvent, Data) async throws
