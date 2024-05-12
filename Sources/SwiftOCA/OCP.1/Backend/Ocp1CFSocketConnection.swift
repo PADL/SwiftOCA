@@ -125,25 +125,27 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
             throw Ocp1Error.notConnected
         }
 
-        var options = CFSocketGetSocketFlags(cfSocket)
-        options |= kCFSocketCloseOnInvalidate
-        CFSocketSetSocketFlags(cfSocket, options)
+        if family != AF_LOCAL {
+            var options = CFSocketGetSocketFlags(cfSocket)
+            options |= kCFSocketCloseOnInvalidate
+            CFSocketSetSocketFlags(cfSocket, options)
 
-        var yes: CInt = 1
-        setsockopt(
-            CFSocketGetNative(cfSocket),
-            SOL_SOCKET,
-            SO_REUSEADDR,
-            &yes,
-            socklen_t(CInt.Stride())
-        )
-        setsockopt(
-            CFSocketGetNative(cfSocket),
-            SOL_SOCKET,
-            SO_REUSEPORT,
-            &yes,
-            socklen_t(CInt.Stride())
-        )
+            var yes: CInt = 1
+            setsockopt(
+                CFSocketGetNative(cfSocket),
+                SOL_SOCKET,
+                SO_REUSEADDR,
+                &yes,
+                socklen_t(CInt.Stride())
+            )
+            setsockopt(
+                CFSocketGetNative(cfSocket),
+                SOL_SOCKET,
+                SO_REUSEPORT,
+                &yes,
+                socklen_t(CInt.Stride())
+            )
+        }
 
         self.cfSocket = cfSocket
 
