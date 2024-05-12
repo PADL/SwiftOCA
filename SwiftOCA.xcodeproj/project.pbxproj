@@ -95,6 +95,7 @@
 		D39542302BA8FFC0003A025C /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D395422F2BA8FFC0003A025C /* Root+JSON.swift */; };
 		D3A0BE7C2B717BEC00A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7B2B717BEC00A5AA05 /* Group.swift */; };
 		D3A0BE7E2B71921900A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7D2B71921900A5AA05 /* Group.swift */; };
+		D3AD37792BF089CA00F3F713 /* SystemPackage in Frameworks */ = {isa = PBXBuildFile; productRef = D3AD37782BF089CA00F3F713 /* SystemPackage */; };
 		D3AFD3342B2A505D00A72E9A /* AudioProcessingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3332B2A505D00A72E9A /* AudioProcessingManager.swift */; };
 		D3AFD3362B2A516C00A72E9A /* DeviceTimeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3352B2A516C00A72E9A /* DeviceTimeManager.swift */; };
 		D3AFD3382B2A52D500A72E9A /* TimeDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AFD3372B2A52D500A72E9A /* TimeDataTypes.swift */; };
@@ -601,6 +602,7 @@
 				D33B52D42A706FD7001A1BA7 /* FlyingSocks in Frameworks */,
 				D3B325052B4F677700C8335F /* FlyingFox in Frameworks */,
 				D32C49DD2B5102A300D73201 /* Logging in Frameworks */,
+				D3AD37792BF089CA00F3F713 /* SystemPackage in Frameworks */,
 				D32437CF2BA9276700C89102 /* AnyCodable in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1516,6 +1518,7 @@
 				D3B325042B4F677700C8335F /* FlyingFox */,
 				D32C49DC2B5102A300D73201 /* Logging */,
 				D32437CE2BA9276700C89102 /* AnyCodable */,
+				D3AD37782BF089CA00F3F713 /* SystemPackage */,
 			);
 			productName = SwiftOCA;
 			productReference = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */;
@@ -1608,6 +1611,7 @@
 				D36ECA282A5B20480015174A /* XCRemoteSwiftPackageReference "FlyingFox" */,
 				D33771402B48D9E9003BD47B /* XCRemoteSwiftPackageReference "AnyCodable" */,
 				D36ECA282A5B20480015174C /* XCRemoteSwiftPackageReference "swift-log" */,
+				D3AD37772BF089CA00F3F713 /* XCRemoteSwiftPackageReference "swift-system" */,
 			);
 			productRefGroup = D3E6E1652A3ACA0B00BF7095 /* Products */;
 			projectDirPath = "";
@@ -2527,6 +2531,14 @@
 				minimumVersion = 1.5.4;
 			};
 		};
+		D3AD37772BF089CA00F3F713 /* XCRemoteSwiftPackageReference "swift-system" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-system.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.1;
+			};
+		};
 		D3E6E1EC2A3ACB0700BF7095 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-async-algorithms.git";
@@ -2568,6 +2580,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D36ECA282A5B20480015174A /* XCRemoteSwiftPackageReference "FlyingFox" */;
 			productName = FlyingSocks;
+		};
+		D3AD37782BF089CA00F3F713 /* SystemPackage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3AD37772BF089CA00F3F713 /* XCRemoteSwiftPackageReference "swift-system" */;
+			productName = SystemPackage;
 		};
 		D3B325042B4F677700C8335F /* FlyingFox */ = {
 			isa = XCSwiftPackageProductDependency;

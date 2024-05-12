@@ -21,6 +21,7 @@ import AsyncAlgorithms
 @preconcurrency
 import CoreFoundation
 import Foundation
+import SystemPackage
 
 private func Ocp1CFSocketConnection_DataCallBack(
     _ socket: CFSocket?,
@@ -131,7 +132,11 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
             guard CFSocketIsValid(cfSocket),
                   CFSocketConnectToAddress(cfSocket, deviceAddress.cfData, 0) == .success
             else {
-                throw Ocp1Error.notConnected
+                if errno != 0 {
+                    throw Errno(rawValue: errno)
+                } else {
+                    throw Ocp1Error.notConnected
+                }
             }
         }, onCancel: {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
@@ -183,7 +188,11 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
         case .error:
             fallthrough
         default:
-            throw Ocp1Error.pduSendingFailed
+            if errno != 0 {
+                throw Errno(rawValue: errno)
+            } else {
+                throw Ocp1Error.pduSendingFailed
+            }
         }
     }
 }
