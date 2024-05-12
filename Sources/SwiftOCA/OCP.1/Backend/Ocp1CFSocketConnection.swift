@@ -72,6 +72,14 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
         receivedDataChannel.finish()
     }
 
+    private var family: sa_family_t {
+        deviceAddress.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) -> sa_family_t in
+            bytes.withMemoryRebound(to: sockaddr.self) {
+                $0.baseAddress?.pointee.sa_family ?? sa_family_t(AF_UNSPEC)
+            }
+        }
+    }
+
     fileprivate nonisolated func dataCallBack(
         _ socket: CFSocket?,
         _ type: CFSocketCallBackType,
@@ -95,7 +103,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
 
         let cfSocket = CFSocketCreate(
             kCFAllocatorDefault,
-            AF_INET,
+            Int32(family),
             type,
             isStreamType(type) ? Int32(IPPROTO_TCP) : Int32(IPPROTO_UDP),
             CFSocketCallBackType.dataCallBack.rawValue,
