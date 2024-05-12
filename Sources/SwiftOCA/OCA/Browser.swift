@@ -19,8 +19,7 @@
 import AsyncAlgorithms
 import Foundation
 
-extension NetService: @unchecked
-Sendable {}
+extension NetService: @unchecked Sendable {}
 
 public class OcaBrowser: NSObject, NetServiceBrowserDelegate, @unchecked
 Sendable {
@@ -31,7 +30,7 @@ Sendable {
         case tcpWebSocket = "_ocaws._tcp."
     }
 
-    public enum Result {
+    public enum Result: Sendable {
         case didNotSearch(Error)
         case didFind(NetService)
         case didRemove(NetService)
