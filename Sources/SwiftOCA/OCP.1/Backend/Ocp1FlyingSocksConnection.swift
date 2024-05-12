@@ -20,18 +20,23 @@
 @_implementationOnly
 import FlyingSocks
 import Foundation
+import SystemPackage
 
-private extension SocketError {
-    var connectionFailed: Bool {
+fileprivate extension SocketError {
+    var mappedError: Error {
         switch self {
         case let .failed(_, errno, _):
-            return errno == EBADF || errno == ESHUTDOWN || errno == EPIPE
+            if errno == EBADF || errno == ESHUTDOWN || errno == EPIPE {
+                return Ocp1Error.notConnected
+            } else {
+                return Errno(rawValue: errno)
+            }
         case .blocked:
-            return false
+            return self
         case .disconnected:
-            return true
+            return Ocp1Error.notConnected
         case .unsupportedAddress:
-            return false
+            return self
         }
     }
 }
@@ -146,11 +151,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
         do {
             return try await block(asyncSocket)
         } catch let error as SocketError {
-            if error.connectionFailed {
-                throw Ocp1Error.notConnected
-            } else {
-                throw error
-            }
+            throw error.mappedError
         }
     }
 

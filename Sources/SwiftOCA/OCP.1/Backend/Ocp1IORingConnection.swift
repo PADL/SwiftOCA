@@ -26,16 +26,16 @@ import IORingUtils
 import SystemPackage
 
 fileprivate extension Errno {
-    var connectionFailed: Bool {
+    var mappedError: Error {
         switch self {
         case .connectionRefused:
             fallthrough
         case .connectionReset:
             fallthrough
         case .brokenPipe:
-            return true
+            return Ocp1Error.notConnected
         default:
-            return false
+            return self
         }
     }
 }
@@ -105,11 +105,7 @@ public class Ocp1IORingConnection: Ocp1Connection {
         do {
             return try await block(socket)
         } catch let error as Errno {
-            if error.connectionFailed {
-                throw Ocp1Error.notConnected
-            } else {
-                throw error
-            }
+            throw error.mappedError
         }
     }
 }

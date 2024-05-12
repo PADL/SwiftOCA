@@ -35,6 +35,14 @@ private func Ocp1CFSocketConnection_DataCallBack(
     connection.dataCallBack(socket, type, address, data)
 }
 
+fileprivate func mappedLastErrno() -> Error {
+    if errno == EBADF || errno == ESHUTDOWN || errno == EPIPE || errno == 0 {
+        return Ocp1Error.notConnected
+    } else {
+        return Errno(rawValue: errno)
+    }
+}
+
 extension CFSocket: @unchecked
 Sendable {}
 
@@ -156,11 +164,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
             guard CFSocketIsValid(cfSocket),
                   CFSocketConnectToAddress(cfSocket, deviceAddress.cfData, 0) == .success
             else {
-                if errno != 0 {
-                    throw Errno(rawValue: errno)
-                } else {
-                    throw Ocp1Error.notConnected
-                }
+                throw mappedLastErrno()
             }
         }, onCancel: {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
