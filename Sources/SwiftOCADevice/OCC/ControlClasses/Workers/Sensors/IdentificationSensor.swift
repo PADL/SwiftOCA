@@ -17,13 +17,13 @@
 import SwiftOCA
 
 open class OcaIdentificationSensor: OcaSensor {
-    override open class var classID: OcaClassID { OcaClassID("1.1.2.6") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.2.6") }
 
-    public func identify() async throws {
-        let event = OcaEvent(
-            emitterONo: objectNumber,
-            eventID: SwiftOCA.OcaIdentificationSensor.identifyEventID
-        )
-        try await deviceDelegate?.notifySubscribers(event)
-    }
+  public func identify() async throws {
+    let event = OcaEvent(
+      emitterONo: objectNumber,
+      eventID: SwiftOCA.OcaIdentificationSensor.identifyEventID
+    )
+    try await deviceDelegate?.notifySubscribers(event)
+  }
 }

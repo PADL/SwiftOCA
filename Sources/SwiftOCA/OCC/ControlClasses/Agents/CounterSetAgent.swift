@@ -17,56 +17,56 @@
 import Foundation
 
 open class OcaCounterSetAgent: OcaAgent {
-    override open class var classID: OcaClassID { OcaClassID("1.2.19") }
+  override open class var classID: OcaClassID { OcaClassID("1.2.19") }
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("3.1"),
-        getMethodID: OcaMethodID("3.1"),
-        setMethodID: OcaMethodID("3.2")
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.1"),
+    setMethodID: OcaMethodID("3.2")
+  )
+  public var counterSet: OcaProperty<OcaCounterSet>.PropertyValue
+
+  public func get(counter id: OcaID16) async throws -> OcaCounter {
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.3"),
+      parameters: id
     )
-    public var counterSet: OcaProperty<OcaCounterSet>.PropertyValue
+  }
 
-    public func get(counter id: OcaID16) async throws -> OcaCounter {
-        try await sendCommandRrq(
-            methodID: OcaMethodID("3.3"),
-            parameters: id
-        )
+  public struct CounterNotifierParameters: Ocp1ParametersReflectable {
+    public let id: OcaID16
+    public let oNo: OcaONo
+
+    public init(id: OcaID16, oNo: OcaONo) {
+      self.id = id
+      self.oNo = oNo
     }
+  }
 
-    public struct CounterNotifierParameters: Ocp1ParametersReflectable {
-        public let id: OcaID16
-        public let oNo: OcaONo
+  public func attach(counter id: OcaID16, to oNo: OcaONo) async throws {
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.4"),
+      parameters: CounterNotifierParameters(id: id, oNo: oNo)
+    )
+  }
 
-        public init(id: OcaID16, oNo: OcaONo) {
-            self.id = id
-            self.oNo = oNo
-        }
-    }
+  public func detach(counter id: OcaID16, from oNo: OcaONo) async throws {
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.5"),
+      parameters: CounterNotifierParameters(id: id, oNo: oNo)
+    )
+  }
 
-    public func attach(counter id: OcaID16, to oNo: OcaONo) async throws {
-        try await sendCommandRrq(
-            methodID: OcaMethodID("3.4"),
-            parameters: CounterNotifierParameters(id: id, oNo: oNo)
-        )
-    }
+  public func reset() async throws {
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.6")
+    )
+  }
 
-    public func detach(counter id: OcaID16, from oNo: OcaONo) async throws {
-        try await sendCommandRrq(
-            methodID: OcaMethodID("3.5"),
-            parameters: CounterNotifierParameters(id: id, oNo: oNo)
-        )
-    }
-
-    public func reset() async throws {
-        try await sendCommandRrq(
-            methodID: OcaMethodID("3.6")
-        )
-    }
-
-    public func reset(counter id: OcaID16) async throws {
-        try await sendCommandRrq(
-            methodID: OcaMethodID("3.7"),
-            parameters: id
-        )
-    }
+  public func reset(counter id: OcaID16) async throws {
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.7"),
+      parameters: id
+    )
+  }
 }

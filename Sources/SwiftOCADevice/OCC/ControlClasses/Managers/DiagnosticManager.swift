@@ -17,32 +17,32 @@
 import SwiftOCA
 
 open class OcaDiagnosticManager: OcaManager {
-    override open class var classID: OcaClassID { OcaClassID("1.3.13") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.3.13") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
-        try await self.init(
-            objectNumber: OcaDiagnosticManagerONo,
-            role: "Diagnostic Manager",
-            deviceDelegate: deviceDelegate,
-            addToRootBlock: true
-        )
-    }
+  public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
+    try await self.init(
+      objectNumber: OcaDiagnosticManagerONo,
+      role: "Diagnostic Manager",
+      deviceDelegate: deviceDelegate,
+      addToRootBlock: true
+    )
+  }
 
-    override public func handleCommand(
-        _ command: Ocp1Command,
-        from controller: OcaController
-    ) async throws -> Ocp1Response {
-        switch command.methodID {
-        case OcaMethodID("3.1"):
-            let oNo: OcaONo = try decodeCommand(command)
-            try await ensureReadable(by: controller, command: command)
-            guard let object = await deviceDelegate?.resolve(objectNumber: oNo) else {
-                throw Ocp1Error.status(.badONo)
-            }
-            return try encodeResponse(String(describing: object.lockState))
-        default:
-            return try await super.handleCommand(command, from: controller)
-        }
+  override public func handleCommand(
+    _ command: Ocp1Command,
+    from controller: OcaController
+  ) async throws -> Ocp1Response {
+    switch command.methodID {
+    case OcaMethodID("3.1"):
+      let oNo: OcaONo = try decodeCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      guard let object = await deviceDelegate?.resolve(objectNumber: oNo) else {
+        throw Ocp1Error.status(.badONo)
+      }
+      return try encodeResponse(String(describing: object.lockState))
+    default:
+      return try await super.handleCommand(command, from: controller)
     }
+  }
 }

@@ -15,26 +15,26 @@
 //
 
 open class OcaSwitch: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.4") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.4") }
 
-    @OcaBoundedProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1"),
-        setMethodID: OcaMethodID("4.2")
-    )
-    public var position: OcaBoundedProperty<OcaUint16>.PropertyValue
+  @OcaBoundedProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  public var position: OcaBoundedProperty<OcaUint16>.PropertyValue
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("4.2"),
-        getMethodID: OcaMethodID("4.5"),
-        setMethodID: OcaMethodID("4.6")
-    )
-    public var positionNames: OcaListProperty<OcaString>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("4.2"),
+    getMethodID: OcaMethodID("4.5"),
+    setMethodID: OcaMethodID("4.6")
+  )
+  public var positionNames: OcaListProperty<OcaString>.PropertyValue
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("4.3"),
-        getMethodID: OcaMethodID("4.9"),
-        setMethodID: OcaMethodID("4.10")
-    )
-    public var positionEnableds: OcaListProperty<OcaBoolean>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("4.3"),
+    getMethodID: OcaMethodID("4.9"),
+    setMethodID: OcaMethodID("4.10")
+  )
+  public var positionEnableds: OcaListProperty<OcaBoolean>.PropertyValue
 }

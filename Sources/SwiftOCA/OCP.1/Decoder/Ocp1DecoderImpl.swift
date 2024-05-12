@@ -23,44 +23,44 @@
 
 /// A (stateful) binary decoder.
 struct Ocp1DecoderImpl: Decoder {
-    private let state: Ocp1DecodingState
+  private let state: Ocp1DecodingState
 
-    let codingPath: [any CodingKey]
-    let userInfo: [CodingUserInfoKey: Any]
-    let count: Int?
+  let codingPath: [any CodingKey]
+  let userInfo: [CodingUserInfoKey: Any]
+  let count: Int?
 
-    init(
-        state: Ocp1DecodingState,
-        codingPath: [any CodingKey],
-        userInfo: [CodingUserInfoKey: Any],
-        count: Int? = nil
-    ) {
-        self.state = state
-        self.codingPath = codingPath
-        self.userInfo = userInfo
-        self.count = count
-    }
+  init(
+    state: Ocp1DecodingState,
+    codingPath: [any CodingKey],
+    userInfo: [CodingUserInfoKey: Any],
+    count: Int? = nil
+  ) {
+    self.state = state
+    self.codingPath = codingPath
+    self.userInfo = userInfo
+    self.count = count
+  }
 
-    func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key>
-        where Key: CodingKey
-    {
-        .init(KeyedOcp1DecodingContainer(
-            state: state,
-            codingPath: codingPath,
-            userInfo: userInfo
-        ))
-    }
+  func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key>
+    where Key: CodingKey
+  {
+    .init(KeyedOcp1DecodingContainer(
+      state: state,
+      codingPath: codingPath,
+      userInfo: userInfo
+    ))
+  }
 
-    func unkeyedContainer() throws -> any UnkeyedDecodingContainer {
-        UnkeyedOcp1DecodingContainer(
-            state: state,
-            codingPath: codingPath,
-            userInfo: userInfo,
-            count: count
-        )
-    }
+  func unkeyedContainer() throws -> any UnkeyedDecodingContainer {
+    UnkeyedOcp1DecodingContainer(
+      state: state,
+      codingPath: codingPath,
+      userInfo: userInfo,
+      count: count
+    )
+  }
 
-    func singleValueContainer() throws -> any SingleValueDecodingContainer {
-        SingleValueOcp1DecodingContainer(state: state, codingPath: codingPath)
-    }
+  func singleValueContainer() throws -> any SingleValueDecodingContainer {
+    SingleValueOcp1DecodingContainer(state: state, codingPath: codingPath)
+  }
 }

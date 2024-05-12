@@ -25,19 +25,19 @@ import Foundation
 
 /// An encoder that encodes Swift structures to a flat Ocp1 representation.
 public struct Ocp1Encoder {
-    public var userInfo: [CodingUserInfoKey: Any] = [:]
+  public var userInfo: [CodingUserInfoKey: Any] = [:]
 
-    public init() {}
+  public init() {}
 
-    /// Encodes a value to a flat Ocp1 representation.
-    public func encode(_ value: some Encodable) throws -> Data {
-        let state = Ocp1EncodingState(userInfo: userInfo)
-        try state.encode(value, codingPath: [])
-        return state.data
-    }
+  /// Encodes a value to a flat Ocp1 representation.
+  public func encode(_ value: some Encodable) throws -> Data {
+    let state = Ocp1EncodingState(userInfo: userInfo)
+    try state.encode(value, codingPath: [])
+    return state.data
+  }
 
-    /// Encodes a value to a flat Ocp1 representation.
-    public func encode(_ value: some Encodable) throws -> [UInt8] {
-        try [UInt8](encode(value) as Data)
-    }
+  /// Encodes a value to a flat Ocp1 representation.
+  public func encode(_ value: some Encodable) throws -> [UInt8] {
+    try [UInt8](encode(value) as Data)
+  }
 }

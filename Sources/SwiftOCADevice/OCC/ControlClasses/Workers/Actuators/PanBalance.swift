@@ -17,19 +17,19 @@
 import SwiftOCA
 
 open class OcaPanBalance: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.6") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.6") }
 
-    @OcaBoundedDeviceProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1"),
-        setMethodID: OcaMethodID("4.2")
-    )
-    public var position = OcaBoundedPropertyValue<OcaFloat32>(value: 0, in: -1.0...1.0)
+  @OcaBoundedDeviceProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  public var position = OcaBoundedPropertyValue<OcaFloat32>(value: 0, in: -1.0...1.0)
 
-    @OcaBoundedDeviceProperty(
-        propertyID: OcaPropertyID("4.2"),
-        getMethodID: OcaMethodID("4.3"),
-        setMethodID: OcaMethodID("4.4")
-    )
-    public var midpointGain = OcaBoundedPropertyValue<OcaFloat32>(value: 0.0, in: 0.0...0.0)
+  @OcaBoundedDeviceProperty(
+    propertyID: OcaPropertyID("4.2"),
+    getMethodID: OcaMethodID("4.3"),
+    setMethodID: OcaMethodID("4.4")
+  )
+  public var midpointGain = OcaBoundedPropertyValue<OcaFloat32>(value: 0.0, in: 0.0...0.0)
 }

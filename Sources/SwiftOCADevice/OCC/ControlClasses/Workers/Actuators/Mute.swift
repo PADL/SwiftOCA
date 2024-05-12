@@ -17,12 +17,12 @@
 import SwiftOCA
 
 open class OcaMute: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.2") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.2") }
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1"),
-        setMethodID: OcaMethodID("4.2")
-    )
-    public var state: OcaMuteState = .muted
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  public var state: OcaMuteState = .muted
 }

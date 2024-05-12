@@ -18,53 +18,53 @@ import SwiftOCA
 import SwiftUI
 
 public struct OcaBonjourDeviceView: View {
-    @State
-    var connection: Ocp1Connection? = nil
-    @State
-    var isConnected = false
-    @State
-    var lastError: Error? = nil
-    var service: NetService
+  @State
+  var connection: Ocp1Connection? = nil
+  @State
+  var isConnected = false
+  @State
+  var lastError: Error? = nil
+  var service: NetService
 
-    public init(_ service: NetService) {
-        self.service = service
-    }
+  public init(_ service: NetService) {
+    self.service = service
+  }
 
-    public var body: some View {
-        Group {
-            if let connection, isConnected {
-                OcaRootBlockView(connection)
-                    .environment(\.lastError, $lastError)
-            } else {
-                ProgressView()
-            }
-        }.task {
-            do {
-                connection = try await Ocp1Connection(service)
-                if let connection {
-                    try await connection.connect()
-                    self.isConnected = true
-                }
-            } catch is CancellationError {
-            } catch {
-                debugPrint("OcaBonjourDeviceView: error \(error)")
-                lastError = error
-            }
-        }.onDisappear {
-            Task { @OcaConnection in
-                if let connection {
-                    self.isConnected = false
-                    try await connection.disconnect()
-                    self.connection = nil
-                }
-            }
+  public var body: some View {
+    Group {
+      if let connection, isConnected {
+        OcaRootBlockView(connection)
+          .environment(\.lastError, $lastError)
+      } else {
+        ProgressView()
+      }
+    }.task {
+      do {
+        connection = try await Ocp1Connection(service)
+        if let connection {
+          try await connection.connect()
+          self.isConnected = true
         }
-        .alert(isPresented: Binding.constant(lastError != nil)) {
-            Alert(
-                title: Text("Error"),
-                message: Text("\(lastError!.localizedDescription)"),
-                dismissButton: .default(Text("OK")) { lastError = nil }
-            )
+      } catch is CancellationError {
+      } catch {
+        debugPrint("OcaBonjourDeviceView: error \(error)")
+        lastError = error
+      }
+    }.onDisappear {
+      Task { @OcaConnection in
+        if let connection {
+          self.isConnected = false
+          try await connection.disconnect()
+          self.connection = nil
         }
+      }
     }
+    .alert(isPresented: Binding.constant(lastError != nil)) {
+      Alert(
+        title: Text("Error"),
+        message: Text("\(lastError!.localizedDescription)"),
+        dismissButton: .default(Text("OK")) { lastError = nil }
+      )
+    }
+  }
 }

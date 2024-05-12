@@ -17,13 +17,13 @@
 import Foundation
 
 open class OcaEventHandler: OcaAgent {
-    override open class var classID: OcaClassID { OcaClassID("1.2.5") }
+  override open class var classID: OcaClassID { OcaClassID("1.2.5") }
 
-    func onEvent(context: OcaBlob, eventData: Ocp1EventData) async throws -> OcaStatus {
-        .notImplemented
-    }
+  func onEvent(context: OcaBlob, eventData: Ocp1EventData) async throws -> OcaStatus {
+    .notImplemented
+  }
 }
 
 protocol OcaPropertyChangeEventNotifiable: OcaPropertySubjectRepresentable {
-    func onEvent(_ object: OcaRoot, event: OcaEvent, eventData: Data) throws
+  func onEvent(_ object: OcaRoot, event: OcaEvent, eventData: Data) throws
 }

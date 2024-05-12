@@ -29,156 +29,156 @@ import SwiftUI
 
 open class OcaRoot: CustomStringConvertible, ObservableObject, @unchecked
 Sendable, OcaKeyPathMarkerProtocol {
-    typealias Root = OcaRoot
+  typealias Root = OcaRoot
 
-    public internal(set) weak var connectionDelegate: Ocp1Connection?
-    fileprivate var subscriptionCancellable: Ocp1Connection.SubscriptionCancellable?
+  public internal(set) weak var connectionDelegate: Ocp1Connection?
+  fileprivate var subscriptionCancellable: Ocp1Connection.SubscriptionCancellable?
 
-    // 1.1
-    open class var classID: OcaClassID { OcaClassID("1") }
-    private var _classID: StaticProperty<OcaClassID> {
-        StaticProperty<OcaClassID>(propertyIDs: [OcaPropertyID("1.1")], value: Self.classID)
-    }
+  // 1.1
+  open class var classID: OcaClassID { OcaClassID("1") }
+  private var _classID: StaticProperty<OcaClassID> {
+    StaticProperty<OcaClassID>(propertyIDs: [OcaPropertyID("1.1")], value: Self.classID)
+  }
 
-    // 1.2
-    open class var classVersion: OcaClassVersionNumber { 3 }
-    private var _classVersion: StaticProperty<OcaClassVersionNumber> {
-        StaticProperty<OcaClassVersionNumber>(
-            propertyIDs: [OcaPropertyID("1.2")],
-            value: Self.classVersion
-        )
-    }
-
-    public class var classIdentification: OcaClassIdentification {
-        OcaClassIdentification(classID: classID, classVersion: classVersion)
-    }
-
-    public var objectIdentification: OcaObjectIdentification {
-        OcaObjectIdentification(
-            oNo: objectNumber,
-            classIdentification: Self.classIdentification
-        )
-    }
-
-    // 1.3
-    public let objectNumber: OcaONo
-    private var _objectNumber: StaticProperty<OcaONo> {
-        StaticProperty<OcaONo>(propertyIDs: [OcaPropertyID("1.3")], value: objectNumber)
-    }
-
-    @OcaProperty(
-        propertyID: OcaPropertyID("1.4"),
-        getMethodID: OcaMethodID("1.2")
+  // 1.2
+  open class var classVersion: OcaClassVersionNumber { 3 }
+  private var _classVersion: StaticProperty<OcaClassVersionNumber> {
+    StaticProperty<OcaClassVersionNumber>(
+      propertyIDs: [OcaPropertyID("1.2")],
+      value: Self.classVersion
     )
-    public var lockable: OcaProperty<OcaBoolean>.PropertyValue
+  }
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("1.5"),
-        getMethodID: OcaMethodID("1.5")
+  public class var classIdentification: OcaClassIdentification {
+    OcaClassIdentification(classID: classID, classVersion: classVersion)
+  }
+
+  public var objectIdentification: OcaObjectIdentification {
+    OcaObjectIdentification(
+      oNo: objectNumber,
+      classIdentification: Self.classIdentification
     )
-    public var role: OcaProperty<OcaString>.PropertyValue
+  }
 
-    @_spi(SwiftOCAPrivate)
-    public func _set(role: OcaString) {
-        $role.subject.send(.success(role))
+  // 1.3
+  public let objectNumber: OcaONo
+  private var _objectNumber: StaticProperty<OcaONo> {
+    StaticProperty<OcaONo>(propertyIDs: [OcaPropertyID("1.3")], value: objectNumber)
+  }
+
+  @OcaProperty(
+    propertyID: OcaPropertyID("1.4"),
+    getMethodID: OcaMethodID("1.2")
+  )
+  public var lockable: OcaProperty<OcaBoolean>.PropertyValue
+
+  @OcaProperty(
+    propertyID: OcaPropertyID("1.5"),
+    getMethodID: OcaMethodID("1.5")
+  )
+  public var role: OcaProperty<OcaString>.PropertyValue
+
+  @_spi(SwiftOCAPrivate)
+  public func _set(role: OcaString) {
+    $role.subject.send(.success(role))
+  }
+
+  @OcaProperty(
+    propertyID: OcaPropertyID("1.6"),
+    getMethodID: OcaMethodID("1.7")
+  )
+  public var lockState: OcaProperty<OcaLockState>.PropertyValue
+
+  public required init(objectNumber: OcaONo) {
+    self.objectNumber = objectNumber
+  }
+
+  deinit {
+    for (_, keyPath) in allPropertyKeyPaths {
+      let value = self[keyPath: keyPath] as! (any OcaPropertySubjectRepresentable)
+      value.finish()
+    }
+  }
+
+  public func getClassIdentification() async throws -> OcaClassIdentification {
+    try await sendCommandRrq(methodID: OcaMethodID("1.1"))
+  }
+
+  @available(*, deprecated, renamed: "setLockNoReadWrite")
+  public func lockTotal() async throws {
+    try await setLockNoReadWrite()
+  }
+
+  public func setLockNoReadWrite() async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("1.3"))
+  }
+
+  public func unlock() async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("1.4"))
+  }
+
+  @available(*, deprecated, renamed: "setLockNoWrite")
+  public func lockReadOnly() async throws {
+    try await setLockNoWrite()
+  }
+
+  public func setLockNoWrite() async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("1.6"))
+  }
+
+  public var isContainer: Bool {
+    false
+  }
+
+  public var description: String {
+    let objectNumberString = String(format: "0x%08x", objectNumber)
+
+    if case let .success(value) = role {
+      return "\(type(of: self))(objectNumber: \(objectNumberString), role: \(value))"
+    } else {
+      return "\(type(of: self))(objectNumber: \(objectNumberString))"
+    }
+  }
+
+  open func getJsonValue(
+    flags: OcaPropertyResolutionFlags = .defaultFlags
+  ) async -> [String: Any] {
+    precondition(objectNumber != OcaInvalidONo)
+
+    guard self is OcaWorker else {
+      return [:]
     }
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("1.6"),
-        getMethodID: OcaMethodID("1.7")
-    )
-    public var lockState: OcaProperty<OcaLockState>.PropertyValue
+    let dict = await withTaskGroup(
+      of: [String: Sendable].self,
+      returning: [String: Sendable].self
+    ) { taskGroup in
+      for (_, propertyKeyPath) in self.allPropertyKeyPaths {
+        taskGroup.addTask {
+          let property =
+            self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
+          var dict = [String: Sendable]()
 
-    public required init(objectNumber: OcaONo) {
-        self.objectNumber = objectNumber
-    }
-
-    deinit {
-        for (_, keyPath) in allPropertyKeyPaths {
-            let value = self[keyPath: keyPath] as! (any OcaPropertySubjectRepresentable)
-            value.finish()
+          if let jsonValue = try? await property.getJsonValue(self, flags: flags),
+             let jsonValue = jsonValue as? [String: Sendable]
+          {
+            dict.merge(jsonValue) { current, _ in current }
+          }
+          return dict
         }
+      }
+      return await taskGroup.collect()
+        .reduce(into: [String: Sendable]()) { $0.merge($1) { $1 } }
     }
 
-    public func getClassIdentification() async throws -> OcaClassIdentification {
-        try await sendCommandRrq(methodID: OcaMethodID("1.1"))
+    return dict
+  }
+
+  public var jsonObject: [String: Any] {
+    get async {
+      await getJsonValue(flags: .defaultFlags)
     }
-
-    @available(*, deprecated, renamed: "setLockNoReadWrite")
-    public func lockTotal() async throws {
-        try await setLockNoReadWrite()
-    }
-
-    public func setLockNoReadWrite() async throws {
-        try await sendCommandRrq(methodID: OcaMethodID("1.3"))
-    }
-
-    public func unlock() async throws {
-        try await sendCommandRrq(methodID: OcaMethodID("1.4"))
-    }
-
-    @available(*, deprecated, renamed: "setLockNoWrite")
-    public func lockReadOnly() async throws {
-        try await setLockNoWrite()
-    }
-
-    public func setLockNoWrite() async throws {
-        try await sendCommandRrq(methodID: OcaMethodID("1.6"))
-    }
-
-    public var isContainer: Bool {
-        false
-    }
-
-    public var description: String {
-        let objectNumberString = String(format: "0x%08x", objectNumber)
-
-        if case let .success(value) = role {
-            return "\(type(of: self))(objectNumber: \(objectNumberString), role: \(value))"
-        } else {
-            return "\(type(of: self))(objectNumber: \(objectNumberString))"
-        }
-    }
-
-    open func getJsonValue(
-        flags: OcaPropertyResolutionFlags = .defaultFlags
-    ) async -> [String: Any] {
-        precondition(objectNumber != OcaInvalidONo)
-
-        guard self is OcaWorker else {
-            return [:]
-        }
-
-        let dict = await withTaskGroup(
-            of: [String: Sendable].self,
-            returning: [String: Sendable].self
-        ) { taskGroup in
-            for (_, propertyKeyPath) in self.allPropertyKeyPaths {
-                taskGroup.addTask {
-                    let property =
-                        self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
-                    var dict = [String: Sendable]()
-
-                    if let jsonValue = try? await property.getJsonValue(self, flags: flags),
-                       let jsonValue = jsonValue as? [String: Sendable]
-                    {
-                        dict.merge(jsonValue) { current, _ in current }
-                    }
-                    return dict
-                }
-            }
-            return await taskGroup.collect()
-                .reduce(into: [String: Sendable]()) { $0.merge($1) { $1 } }
-        }
-
-        return dict
-    }
-
-    public var jsonObject: [String: Any] {
-        get async {
-            await getJsonValue(flags: .defaultFlags)
-        }
-    }
+  }
 }
 
 protocol OcaKeyPathMarkerProtocol: AnyObject {}
@@ -187,293 +187,293 @@ extension PartialKeyPath: @unchecked
 Sendable {} // fix warning
 
 private extension OcaKeyPathMarkerProtocol where Self: OcaRoot {
-    var allKeyPaths: [String: PartialKeyPath<Self>] {
-        _allKeyPaths(value: self).reduce(into: [:]) {
-            if $1.key.hasPrefix("_") {
-                $0[String($1.key.dropFirst())] = $1.value
-            }
-        }
+  var allKeyPaths: [String: PartialKeyPath<Self>] {
+    _allKeyPaths(value: self).reduce(into: [:]) {
+      if $1.key.hasPrefix("_") {
+        $0[String($1.key.dropFirst())] = $1.value
+      }
     }
+  }
 }
 
 public extension OcaRoot {
-    private var staticPropertyKeyPaths: [String: PartialKeyPath<OcaRoot>] {
-        ["classID": \._classID,
-         "classVersion": \._classVersion,
-         "objectNumber": \._objectNumber]
+  private var staticPropertyKeyPaths: [String: PartialKeyPath<OcaRoot>] {
+    ["classID": \._classID,
+     "classVersion": \._classVersion,
+     "objectNumber": \._objectNumber]
+  }
+
+  var allPropertyKeyPaths: [String: PartialKeyPath<OcaRoot>] {
+    staticPropertyKeyPaths.merging(
+      allKeyPaths.filter { self[keyPath: $0.value] is any OcaPropertySubjectRepresentable },
+      uniquingKeysWith: { old, _ in old }
+    )
+  }
+
+  @Sendable
+  private func onPropertyEvent(event: OcaEvent, eventData data: Data) {
+    let decoder = Ocp1Decoder()
+    guard let propertyID = try? decoder.decode(
+      OcaPropertyID.self,
+      from: data
+    ) else { return }
+
+    allKeyPaths.forEach { _, keyPath in
+      if let value = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable),
+         value.propertyIDs.contains(propertyID)
+      {
+        try? value.onEvent(self, event: event, eventData: data)
+        return
+      }
+    }
+  }
+
+  @OcaConnection
+  func subscribe() async throws {
+    guard subscriptionCancellable == nil else { return } // already subscribed
+    guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
+    let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
+    do {
+      subscriptionCancellable = try await connectionDelegate.addSubscription(
+        event: event,
+        callback: onPropertyEvent
+      )
+    } catch Ocp1Error.alreadySubscribedToEvent {
+    } catch Ocp1Error.status(.invalidRequest) {
+      // FIXME: in our device implementation not all properties can be subcribed to
+    }
+  }
+
+  @OcaConnection
+  func unsubscribe() async throws {
+    guard let subscriptionCancellable else { throw Ocp1Error.notSubscribedToEvent }
+    guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
+    try await connectionDelegate.removeSubscription(subscriptionCancellable)
+  }
+
+  func refreshAll() async {
+    for (_, keyPath) in allPropertyKeyPaths {
+      let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
+      await property.refresh(self)
+    }
+  }
+
+  func refresh() async {
+    for (_, keyPath) in allPropertyKeyPaths {
+      let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
+      if property.hasValueOrError {
+        await property.refresh(self)
+      }
+    }
+  }
+
+  internal var isSubscribed: Bool {
+    get async throws {
+      guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
+      let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
+      return await connectionDelegate.isSubscribed(event: event)
+    }
+  }
+
+  internal struct StaticProperty<T: Codable & Sendable>: OcaPropertySubjectRepresentable {
+    public var valueType: Any.Type { T.self }
+
+    typealias Value = T
+
+    var propertyIDs: [OcaPropertyID]
+    var value: T
+
+    func refresh(_ object: SwiftOCA.OcaRoot) async {}
+    func subscribe(_ object: OcaRoot) async {}
+
+    var description: String {
+      String(describing: value)
     }
 
-    var allPropertyKeyPaths: [String: PartialKeyPath<OcaRoot>] {
-        staticPropertyKeyPaths.merging(
-            allKeyPaths.filter { self[keyPath: $0.value] is any OcaPropertySubjectRepresentable },
-            uniquingKeysWith: { old, _ in old }
-        )
+    var currentValue: OcaProperty<Value>.PropertyValue {
+      OcaProperty<Value>.PropertyValue.success(value)
     }
 
-    @Sendable
-    private func onPropertyEvent(event: OcaEvent, eventData data: Data) {
-        let decoder = Ocp1Decoder()
-        guard let propertyID = try? decoder.decode(
-            OcaPropertyID.self,
-            from: data
-        ) else { return }
-
-        allKeyPaths.forEach { _, keyPath in
-            if let value = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable),
-               value.propertyIDs.contains(propertyID)
-            {
-                try? value.onEvent(self, event: event, eventData: data)
-                return
-            }
-        }
+    var subject: AsyncCurrentValueSubject<PropertyValue> {
+      AsyncCurrentValueSubject(currentValue)
     }
 
-    @OcaConnection
-    func subscribe() async throws {
-        guard subscriptionCancellable == nil else { return } // already subscribed
-        guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
-        let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-        do {
-            subscriptionCancellable = try await connectionDelegate.addSubscription(
-                event: event,
-                callback: onPropertyEvent
-            )
-        } catch Ocp1Error.alreadySubscribedToEvent {
-        } catch Ocp1Error.status(.invalidRequest) {
-            // FIXME: in our device implementation not all properties can be subcribed to
+    #if canImport(SwiftUI)
+    var binding: Binding<PropertyValue> {
+      Binding(
+        get: {
+          currentValue
+        },
+        set: { _ in
         }
+      )
+    }
+    #endif
+
+    @_spi(SwiftOCAPrivate) @discardableResult
+    public func _getValue(
+      _ object: OcaRoot,
+      flags: OcaPropertyResolutionFlags = .defaultFlags
+    ) async throws -> Value {
+      value
     }
 
-    @OcaConnection
-    func unsubscribe() async throws {
-        guard let subscriptionCancellable else { throw Ocp1Error.notSubscribedToEvent }
-        guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
-        try await connectionDelegate.removeSubscription(subscriptionCancellable)
+    public func getJsonValue(
+      _ object: OcaRoot,
+      flags: OcaPropertyResolutionFlags = .defaultFlags
+    ) async throws -> [String: Any] {
+      [propertyIDs[0].description: String(describing: value)]
     }
 
-    func refreshAll() async {
-        for (_, keyPath) in allPropertyKeyPaths {
-            let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
-            await property.refresh(self)
-        }
+    @_spi(SwiftOCAPrivate)
+    public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
+      throw Ocp1Error.propertyIsImmutable
     }
-
-    func refresh() async {
-        for (_, keyPath) in allPropertyKeyPaths {
-            let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
-            if property.hasValueOrError {
-                await property.refresh(self)
-            }
-        }
-    }
-
-    internal var isSubscribed: Bool {
-        get async throws {
-            guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
-            let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-            return await connectionDelegate.isSubscribed(event: event)
-        }
-    }
-
-    internal struct StaticProperty<T: Codable & Sendable>: OcaPropertySubjectRepresentable {
-        public var valueType: Any.Type { T.self }
-
-        typealias Value = T
-
-        var propertyIDs: [OcaPropertyID]
-        var value: T
-
-        func refresh(_ object: SwiftOCA.OcaRoot) async {}
-        func subscribe(_ object: OcaRoot) async {}
-
-        var description: String {
-            String(describing: value)
-        }
-
-        var currentValue: OcaProperty<Value>.PropertyValue {
-            OcaProperty<Value>.PropertyValue.success(value)
-        }
-
-        var subject: AsyncCurrentValueSubject<PropertyValue> {
-            AsyncCurrentValueSubject(currentValue)
-        }
-
-        #if canImport(SwiftUI)
-        var binding: Binding<PropertyValue> {
-            Binding(
-                get: {
-                    currentValue
-                },
-                set: { _ in
-                }
-            )
-        }
-        #endif
-
-        @_spi(SwiftOCAPrivate) @discardableResult
-        public func _getValue(
-            _ object: OcaRoot,
-            flags: OcaPropertyResolutionFlags = .defaultFlags
-        ) async throws -> Value {
-            value
-        }
-
-        public func getJsonValue(
-            _ object: OcaRoot,
-            flags: OcaPropertyResolutionFlags = .defaultFlags
-        ) async throws -> [String: Any] {
-            [propertyIDs[0].description: String(describing: value)]
-        }
-
-        @_spi(SwiftOCAPrivate)
-        public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
-            throw Ocp1Error.propertyIsImmutable
-        }
-    }
+  }
 }
 
 extension OcaRoot: Equatable {
-    public static func == (lhs: OcaRoot, rhs: OcaRoot) -> Bool {
-        lhs.connectionDelegate == rhs.connectionDelegate &&
-            lhs.objectNumber == rhs.objectNumber
-    }
+  public static func == (lhs: OcaRoot, rhs: OcaRoot) -> Bool {
+    lhs.connectionDelegate == rhs.connectionDelegate &&
+      lhs.objectNumber == rhs.objectNumber
+  }
 }
 
 extension OcaRoot: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        connectionDelegate?.hash(into: &hasher)
-        hasher.combine(objectNumber)
-    }
+  public func hash(into hasher: inout Hasher) {
+    connectionDelegate?.hash(into: &hasher)
+    hasher.combine(objectNumber)
+  }
 }
 
 public struct OcaGetPathParameters: Ocp1ParametersReflectable {
-    public var namePath: OcaNamePath
-    public var oNoPath: OcaONoPath
+  public var namePath: OcaNamePath
+  public var oNoPath: OcaONoPath
 
-    public init(namePath: OcaNamePath, oNoPath: OcaONoPath) {
-        self.namePath = namePath
-        self.oNoPath = oNoPath
-    }
+  public init(namePath: OcaNamePath, oNoPath: OcaONoPath) {
+    self.namePath = namePath
+    self.oNoPath = oNoPath
+  }
 }
 
 extension OcaRoot {
-    func getPath(methodID: OcaMethodID) async throws -> (OcaNamePath, OcaONoPath) {
-        let responseParams: OcaGetPathParameters
-        responseParams = try await sendCommandRrq(methodID: methodID)
-        return (responseParams.namePath, responseParams.oNoPath)
-    }
+  func getPath(methodID: OcaMethodID) async throws -> (OcaNamePath, OcaONoPath) {
+    let responseParams: OcaGetPathParameters
+    responseParams = try await sendCommandRrq(methodID: methodID)
+    return (responseParams.namePath, responseParams.oNoPath)
+  }
 }
 
 public struct OcaGetPortNameParameters: Ocp1ParametersReflectable {
-    public let portID: OcaPortID
+  public let portID: OcaPortID
 
-    public init(portID: OcaPortID) {
-        self.portID = portID
-    }
+  public init(portID: OcaPortID) {
+    self.portID = portID
+  }
 }
 
 public struct OcaSetPortNameParameters: Ocp1ParametersReflectable {
-    public let portID: OcaPortID
-    public let name: OcaString
+  public let portID: OcaPortID
+  public let name: OcaString
 
-    public init(portID: OcaPortID, name: OcaString) {
-        self.portID = portID
-        self.name = name
-    }
+  public init(portID: OcaPortID, name: OcaString) {
+    self.portID = portID
+    self.name = name
+  }
 }
 
 public protocol OcaOwnable: OcaRoot {
-    var owner: OcaProperty<OcaONo>.PropertyValue { get set }
+  var owner: OcaProperty<OcaONo>.PropertyValue { get set }
 
-    var path: (OcaNamePath, OcaONoPath) { get async throws }
+  var path: (OcaNamePath, OcaONoPath) { get async throws }
 
-    @_spi(SwiftOCAPrivate)
-    func _getOwner(flags: OcaPropertyResolutionFlags) async throws -> OcaONo
+  @_spi(SwiftOCAPrivate)
+  func _getOwner(flags: OcaPropertyResolutionFlags) async throws -> OcaONo
 }
 
 protocol OcaOwnablePrivate: OcaOwnable {
-    func _set(owner: OcaONo)
+  func _set(owner: OcaONo)
 }
 
 @_spi(SwiftOCAPrivate)
 public extension OcaOwnable {
-    func _getOwnerObject(flags: OcaPropertyResolutionFlags = .defaultFlags) async throws
-        -> OcaBlock
-    {
-        let owner = try await _getOwner(flags: flags)
-        if owner == OcaInvalidONo {
-            throw Ocp1Error.status(.parameterOutOfRange)
-        }
-
-        guard let ownerObject = try await connectionDelegate?
-            .resolve(object: OcaObjectIdentification(
-                oNo: owner,
-                classIdentification: OcaBlock.classIdentification
-            )) as? OcaBlock
-        else {
-            throw Ocp1Error.invalidObject(owner)
-        }
-        return ownerObject
+  func _getOwnerObject(flags: OcaPropertyResolutionFlags = .defaultFlags) async throws
+    -> OcaBlock
+  {
+    let owner = try await _getOwner(flags: flags)
+    if owner == OcaInvalidONo {
+      throw Ocp1Error.status(.parameterOutOfRange)
     }
+
+    guard let ownerObject = try await connectionDelegate?
+      .resolve(object: OcaObjectIdentification(
+        oNo: owner,
+        classIdentification: OcaBlock.classIdentification
+      )) as? OcaBlock
+    else {
+      throw Ocp1Error.invalidObject(owner)
+    }
+    return ownerObject
+  }
 }
 
 @_spi(SwiftOCAPrivate)
 public extension OcaRoot {
-    func _getRole() async throws -> String {
-        try await $role._getValue(self, flags: [.cacheValue, .returnCachedValue])
+  func _getRole() async throws -> String {
+    try await $role._getValue(self, flags: [.cacheValue, .returnCachedValue])
+  }
+
+  private func getRolePathFallback(flags: OcaPropertyResolutionFlags = .defaultFlags) async throws
+    -> OcaNamePath?
+  {
+    if objectNumber == OcaRootBlockONo {
+      return []
     }
 
-    private func getRolePathFallback(flags: OcaPropertyResolutionFlags = .defaultFlags) async throws
-        -> OcaNamePath?
-    {
-        if objectNumber == OcaRootBlockONo {
-            return []
-        }
+    var path = [String]()
+    var currentObject = self
 
-        var path = [String]()
-        var currentObject = self
+    repeat {
+      guard let role = try? await currentObject._getRole() else {
+        return nil
+      }
 
-        repeat {
-            guard let role = try? await currentObject._getRole() else {
-                return nil
-            }
+      guard let ownableObject = currentObject as? OcaOwnable else {
+        return nil
+      }
 
-            guard let ownableObject = currentObject as? OcaOwnable else {
-                return nil
-            }
+      if ownableObject.objectNumber == OcaRootBlockONo {
+        break
+      }
 
-            if ownableObject.objectNumber == OcaRootBlockONo {
-                break
-            }
+      let ownerONo = (try? await ownableObject._getOwner(flags: flags)) ?? OcaInvalidONo
+      guard ownerONo != OcaInvalidONo else {
+        break // we are at the root
+      }
 
-            let ownerONo = (try? await ownableObject._getOwner(flags: flags)) ?? OcaInvalidONo
-            guard ownerONo != OcaInvalidONo else {
-                break // we are at the root
-            }
+      path.insert(role, at: 0)
 
-            path.insert(role, at: 0)
+      guard let cachedObject = await connectionDelegate?.resolve(cachedObject: ownerONo)
+      else {
+        return nil
+      }
+      currentObject = cachedObject
+    } while true
 
-            guard let cachedObject = await connectionDelegate?.resolve(cachedObject: ownerONo)
-            else {
-                return nil
-            }
-            currentObject = cachedObject
-        } while true
+    return path
+  }
 
-        return path
+  func _getRolePath(flags: OcaPropertyResolutionFlags = .defaultFlags) async throws
+    -> OcaNamePath
+  {
+    if objectNumber == OcaRootBlockONo {
+      return []
+    } else if let localRolePath = try await getRolePathFallback(flags: flags) {
+      return localRolePath
+    } else if let self = self as? OcaOwnable {
+      return try await self.path.0
+    } else {
+      throw Ocp1Error.objectClassMismatch
     }
-
-    func _getRolePath(flags: OcaPropertyResolutionFlags = .defaultFlags) async throws
-        -> OcaNamePath
-    {
-        if objectNumber == OcaRootBlockONo {
-            return []
-        } else if let localRolePath = try await getRolePathFallback(flags: flags) {
-            return localRolePath
-        } else if let self = self as? OcaOwnable {
-            return try await self.path.0
-        } else {
-            throw Ocp1Error.objectClassMismatch
-        }
-    }
+  }
 }

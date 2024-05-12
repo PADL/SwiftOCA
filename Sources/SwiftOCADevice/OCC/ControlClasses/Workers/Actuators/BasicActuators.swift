@@ -17,77 +17,77 @@
 import SwiftOCA
 
 open class OcaGenericBasicActuator<T: Codable & Comparable & Numeric & Sendable>: OcaActuator {
-    @OcaBoundedDeviceProperty(
-        wrappedValue: OcaBoundedPropertyValue<T>(value: 0, in: 0...1),
-        propertyID: OcaPropertyID("5.1"),
-        getMethodID: OcaMethodID("5.1"),
-        setMethodID: OcaMethodID("5.2")
-    )
-    public var setting: OcaBoundedPropertyValue<T>
+  @OcaBoundedDeviceProperty(
+    wrappedValue: OcaBoundedPropertyValue<T>(value: 0, in: 0...1),
+    propertyID: OcaPropertyID("5.1"),
+    getMethodID: OcaMethodID("5.1"),
+    setMethodID: OcaMethodID("5.2")
+  )
+  public var setting: OcaBoundedPropertyValue<T>
 }
 
 open class OcaBasicActuator: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1") }
 }
 
 open class OcaBooleanActuator: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1.1") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1.1") }
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("5.1"),
-        getMethodID: OcaMethodID("5.1"),
-        setMethodID: OcaMethodID("5.2")
-    )
-    public var setting = false
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("5.1"),
+    getMethodID: OcaMethodID("5.1"),
+    setMethodID: OcaMethodID("5.2")
+  )
+  public var setting = false
 }
 
 open class OcaInt8Actuator: OcaGenericBasicActuator<OcaInt8> {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1.2") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1.2") }
 }
 
 open class OcaInt16Actuator: OcaGenericBasicActuator<OcaInt16> {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1.3") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1.3") }
 }
 
 open class OcaInt32Actuator: OcaGenericBasicActuator<OcaInt32> {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1.4") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1.4") }
 }
 
 open class OcaInt64Actuator: OcaGenericBasicActuator<OcaInt64> {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1.5") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1.5") }
 }
 
 open class OcaUint8Actuator: OcaGenericBasicActuator<OcaUint8> {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1.6") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1.6") }
 }
 
 open class OcaUint16Actuator: OcaGenericBasicActuator<OcaUint16> {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1.7") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1.7") }
 }
 
 open class OcaUint32Actuator: OcaGenericBasicActuator<OcaUint32> {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1.8") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1.8") }
 }
 
 open class OcaUint64Actuator: OcaGenericBasicActuator<OcaUint64> {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1.9") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1.9") }
 }
 
 open class OcaFloat32Actuator: OcaGenericBasicActuator<OcaFloat32> {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1.10") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1.10") }
 }
 
 open class OcaFloat64Actuator: OcaGenericBasicActuator<OcaFloat64> {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1.11") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1.11") }
 }
 
 open class OcaStringActuator: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.1.12") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.1.12") }
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("5.1"),
-        getMethodID: OcaMethodID("5.1"),
-        setMethodID: OcaMethodID("5.2")
-    )
-    public var setting = ""
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("5.1"),
+    getMethodID: OcaMethodID("5.1"),
+    setMethodID: OcaMethodID("5.2")
+  )
+  public var setting = ""
 }

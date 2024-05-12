@@ -15,34 +15,34 @@
 //
 
 open class OcaNetworkManager: OcaManager {
-    override open class var classID: OcaClassID { OcaClassID("1.3.6") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.3.6") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("3.1"),
-        getMethodID: OcaMethodID("3.1")
-    )
-    public var networks: OcaListProperty<OcaONo>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.1")
+  )
+  public var networks: OcaListProperty<OcaONo>.PropertyValue
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("3.2"),
-        getMethodID: OcaMethodID("3.2")
-    )
-    public var streamNetworks: OcaListProperty<OcaONo>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.2"),
+    getMethodID: OcaMethodID("3.2")
+  )
+  public var streamNetworks: OcaListProperty<OcaONo>.PropertyValue
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("3.3"),
-        getMethodID: OcaMethodID("3.3")
-    )
-    public var controlNetworks: OcaListProperty<OcaONo>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.3"),
+    getMethodID: OcaMethodID("3.3")
+  )
+  public var controlNetworks: OcaListProperty<OcaONo>.PropertyValue
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("3.4"),
-        getMethodID: OcaMethodID("3.4")
-    )
-    public var mediaTransportNetworks: OcaListProperty<OcaONo>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.4"),
+    getMethodID: OcaMethodID("3.4")
+  )
+  public var mediaTransportNetworks: OcaListProperty<OcaONo>.PropertyValue
 
-    convenience init() {
-        self.init(objectNumber: OcaNetworkManagerONo)
-    }
+  convenience init() {
+    self.init(objectNumber: OcaNetworkManagerONo)
+  }
 }

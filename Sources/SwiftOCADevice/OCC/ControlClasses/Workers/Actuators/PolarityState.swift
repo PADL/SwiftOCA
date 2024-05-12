@@ -17,12 +17,12 @@
 import SwiftOCA
 
 open class OcaPolarity: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.3") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.3") }
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1"),
-        setMethodID: OcaMethodID("4.2")
-    )
-    public var state: OcaPolarityState = .nonInverted
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  public var state: OcaPolarityState = .nonInverted
 }

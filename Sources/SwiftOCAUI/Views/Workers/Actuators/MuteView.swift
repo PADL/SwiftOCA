@@ -18,40 +18,40 @@ import SwiftOCA
 import SwiftUI
 
 extension OcaMute: OcaViewRepresentable {
-    public var viewType: any OcaView.Type {
-        OcaMuteView.self
-    }
+  public var viewType: any OcaView.Type {
+    OcaMuteView.self
+  }
 }
 
 private extension Binding where Value == OcaProperty<OcaMuteState>.PropertyValue {
-    var value: Binding<Bool> {
-        Binding<Bool>(get: {
-            if case let .success(muteState) = self.wrappedValue {
-                return muteState == .muted
-            } else {
-                return false
-            }
-        }, set: { isOn in
-            self.wrappedValue = .success(isOn ? .muted : .unmuted)
-        })
-    }
+  var value: Binding<Bool> {
+    Binding<Bool>(get: {
+      if case let .success(muteState) = self.wrappedValue {
+        return muteState == .muted
+      } else {
+        return false
+      }
+    }, set: { isOn in
+      self.wrappedValue = .success(isOn ? .muted : .unmuted)
+    })
+  }
 }
 
 public struct OcaMuteView: OcaView {
-    @StateObject
-    var object: OcaMute
+  @StateObject
+  var object: OcaMute
 
-    public init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object as! OcaMute)
-    }
+  public init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object as! OcaMute)
+  }
 
-    public var body: some View {
-        Toggle(isOn: object.$state.binding.value) {}
-            .toggleStyle(SymbolToggleStyle(
-                systemImage: "speaker.slash.circle.fill",
-                activeColor: .red
-            ))
-            .padding()
-            .showProgressIfWaiting(object.state)
-    }
+  public var body: some View {
+    Toggle(isOn: object.$state.binding.value) {}
+      .toggleStyle(SymbolToggleStyle(
+        systemImage: "speaker.slash.circle.fill",
+        activeColor: .red
+      ))
+      .padding()
+      .showProgressIfWaiting(object.state)
+  }
 }

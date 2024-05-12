@@ -15,5 +15,5 @@
 //
 
 open class OcaSignalInput: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.18") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.18") }
 }

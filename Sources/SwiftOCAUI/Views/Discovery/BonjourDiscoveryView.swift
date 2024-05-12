@@ -20,42 +20,42 @@ import SwiftOCA
 import SwiftUI
 
 extension NetService: Identifiable {
-    public typealias ID = String
+  public typealias ID = String
 
-    public var id: ID {
-        "\(domain)$\(type)$\(name)$\(String(port))"
-    }
+  public var id: ID {
+    "\(domain)$\(type)$\(name)$\(String(port))"
+  }
 }
 
 public struct OcaBonjourDiscoveryView: View {
-    let udpBrowser = OcaBrowser(serviceType: .udp)
-    let tcpBrowser = OcaBrowser(serviceType: .tcp)
-    @State
-    var services = [NetService]()
-    @State
-    var serviceSelection: NetService? = nil
+  let udpBrowser = OcaBrowser(serviceType: .udp)
+  let tcpBrowser = OcaBrowser(serviceType: .tcp)
+  @State
+  var services = [NetService]()
+  @State
+  var serviceSelection: NetService? = nil
 
-    public init() {}
+  public init() {}
 
-    public var body: some View {
-        NavigationStack {
-            List(services, selection: $serviceSelection) { service in
-                NavigationLink(destination: OcaBonjourDeviceView(service)) {
-                    Text(service.name)
-                }
-            }
+  public var body: some View {
+    NavigationStack {
+      List(services, selection: $serviceSelection) { service in
+        NavigationLink(destination: OcaBonjourDeviceView(service)) {
+          Text(service.name)
         }
-        .task {
-            for await result in merge(udpBrowser.channel, tcpBrowser.channel) {
-                switch result {
-                case let .didFind(netService):
-                    services.append(netService)
-                case let .didRemove(netService):
-                    services.removeAll(where: { $0 == netService })
-                case let .didNotSearch(error):
-                    debugPrint("OcaBonjourDiscoveryView: \(error)")
-                }
-            }
-        }
+      }
     }
+    .task {
+      for await result in merge(udpBrowser.channel, tcpBrowser.channel) {
+        switch result {
+        case let .didFind(netService):
+          services.append(netService)
+        case let .didRemove(netService):
+          services.removeAll(where: { $0 == netService })
+        case let .didNotSearch(error):
+          debugPrint("OcaBonjourDiscoveryView: \(error)")
+        }
+      }
+    }
+  }
 }

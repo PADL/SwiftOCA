@@ -19,13 +19,13 @@ import SwiftUI
 
 // TODO: cache array values in a dictionary
 extension Array where Element: OcaRoot {
-    func object(identifiedBy oNo: OcaONo) -> OcaRoot? {
-        first(where: {
-            $0.objectNumber == oNo
-        })
-    }
+  func object(identifiedBy oNo: OcaONo) -> OcaRoot? {
+    first(where: {
+      $0.objectNumber == oNo
+    })
+  }
 
-    var map: [OcaONo: OcaRoot] {
-        Dictionary(uniqueKeysWithValues: self.map { ($0.objectNumber, $0) })
-    }
+  var map: [OcaONo: OcaRoot] {
+    Dictionary(uniqueKeysWithValues: self.map { ($0.objectNumber, $0) })
+  }
 }

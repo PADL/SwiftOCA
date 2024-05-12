@@ -19,55 +19,55 @@ import SwiftOCA
 import SwiftUI
 
 private struct OcaScaledGaugeView: View {
-    private let scale: Float = 10.0
-    private let gradient = Gradient(colors: [.green, .yellow, .orange, .red])
+  private let scale: Float = 10.0
+  private let gradient = Gradient(colors: [.green, .yellow, .orange, .red])
 
-    var value: OcaBoundedPropertyValue<OcaDB>
+  var value: OcaBoundedPropertyValue<OcaDB>
 
-    private var scaled: OcaFloat32 {
-        OcaDBToFaderGain(dB: value.value, in: value.range)
-    }
+  private var scaled: OcaFloat32 {
+    OcaDBToFaderGain(dB: value.value, in: value.range)
+  }
 
-    private var boundedScaled: OcaBoundedPropertyValue<OcaFloat32> {
-        OcaBoundedPropertyValue<OcaFloat32>(value: scaled / scale, in: 0.0...1.0)
-    }
+  private var boundedScaled: OcaBoundedPropertyValue<OcaFloat32> {
+    OcaBoundedPropertyValue<OcaFloat32>(value: scaled / scale, in: 0.0...1.0)
+  }
 
-    var body: some View {
-        Gauge(value: boundedScaled.value, in: boundedScaled.range) {
-            EmptyView()
-        }.tint(gradient)
-            .labelStyle(.iconOnly)
-            .rotationEffect(.degrees(-90))
-            .scaleEffect(6)
-            .scaledToFit()
-    }
+  var body: some View {
+    Gauge(value: boundedScaled.value, in: boundedScaled.range) {
+      EmptyView()
+    }.tint(gradient)
+      .labelStyle(.iconOnly)
+      .rotationEffect(.degrees(-90))
+      .scaleEffect(6)
+      .scaledToFit()
+  }
 }
 
 extension OcaLevelSensor: OcaViewRepresentable {
-    public var viewType: any OcaView.Type {
-        OcaLevelSensorView.self
-    }
+  public var viewType: any OcaView.Type {
+    OcaLevelSensorView.self
+  }
 
-    var value: OcaBoundedPropertyValue<OcaDB> {
-        if case let .success(readingValue) = reading {
-            return readingValue
-        } else {
-            // FIXME: constants
-            return OcaBoundedPropertyValue(value: 0.0, in: -144.0...0.0)
-        }
+  var value: OcaBoundedPropertyValue<OcaDB> {
+    if case let .success(readingValue) = reading {
+      return readingValue
+    } else {
+      // FIXME: constants
+      return OcaBoundedPropertyValue(value: 0.0, in: -144.0...0.0)
     }
+  }
 }
 
 public struct OcaLevelSensorView: OcaView {
-    @StateObject
-    var object: OcaLevelSensor
+  @StateObject
+  var object: OcaLevelSensor
 
-    public init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object as! OcaLevelSensor)
-    }
+  public init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object as! OcaLevelSensor)
+  }
 
-    public var body: some View {
-        OcaScaledGaugeView(value: object.value)
-            .showProgressIfWaiting(object.reading)
-    }
+  public var body: some View {
+    OcaScaledGaugeView(value: object.value)
+      .showProgressIfWaiting(object.reading)
+  }
 }

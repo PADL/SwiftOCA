@@ -18,24 +18,24 @@ import SwiftOCA
 import SwiftUI
 
 extension OcaRoot {
-    var navigationLabel: String {
-        if case let .success(role) = role {
-            return role
-        } else {
-            return String(format: "%02X", objectNumber)
-        }
+  var navigationLabel: String {
+    if case let .success(role) = role {
+      return role
+    } else {
+      return String(format: "%02X", objectNumber)
     }
+  }
 }
 
 struct OcaNavigationLabel: View, OcaView {
-    @StateObject
-    var object: OcaRoot
+  @StateObject
+  var object: OcaRoot
 
-    init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object)
-    }
+  init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object)
+  }
 
-    public var body: some View {
-        Text(object.navigationLabel)
-    }
+  public var body: some View {
+    Text(object.navigationLabel)
+  }
 }

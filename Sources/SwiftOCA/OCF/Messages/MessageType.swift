@@ -15,10 +15,10 @@
 //
 
 public enum OcaMessageType: OcaUint8, Codable, Sendable {
-    case ocaCmd = 0
-    case ocaCmdRrq = 1
-    case ocaNtf1 = 2
-    case ocaRsp = 3
-    case ocaKeepAlive = 4
-    case ocaNtf2 = 5
+  case ocaCmd = 0
+  case ocaCmdRrq = 1
+  case ocaNtf1 = 2
+  case ocaRsp = 3
+  case ocaKeepAlive = 4
+  case ocaNtf2 = 5
 }

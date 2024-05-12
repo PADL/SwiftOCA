@@ -15,14 +15,14 @@
 //
 
 open class OcaDiagnosticManager: OcaManager {
-    override open class var classID: OcaClassID { OcaClassID("1.3.13") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.3.13") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    public convenience init() {
-        self.init(objectNumber: OcaDiagnosticManagerONo)
-    }
+  public convenience init() {
+    self.init(objectNumber: OcaDiagnosticManagerONo)
+  }
 
-    public func getLockStatus(_ oNo: OcaONo) async throws -> OcaString {
-        try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameters: oNo)
-    }
+  public func getLockStatus(_ oNo: OcaONo) async throws -> OcaString {
+    try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameters: oNo)
+  }
 }

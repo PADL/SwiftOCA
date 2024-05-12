@@ -15,19 +15,19 @@
 //
 
 public enum OcaSensorReadingState: OcaUint8, Codable, Sendable, CaseIterable {
-    case unknown = 0
-    case valid = 1
-    case underrange = 2
-    case overrange = 3
-    case error = 4
+  case unknown = 0
+  case valid = 1
+  case underrange = 2
+  case overrange = 3
+  case error = 4
 }
 
 open class OcaSensor: OcaWorker {
-    override open class var classID: OcaClassID { OcaClassID("1.1.2") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.2") }
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("3.1"),
-        getMethodID: OcaMethodID("3.1")
-    )
-    public var state: OcaProperty<OcaSensorReadingState>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.1")
+  )
+  public var state: OcaProperty<OcaSensorReadingState>.PropertyValue
 }

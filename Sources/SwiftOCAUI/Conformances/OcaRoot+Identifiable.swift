@@ -18,9 +18,9 @@ import SwiftOCA
 import SwiftUI
 
 extension OcaRoot: Identifiable {
-    public typealias ID = OcaONo
+  public typealias ID = OcaONo
 
-    public var id: ID {
-        objectNumber
-    }
+  public var id: ID {
+    objectNumber
+  }
 }

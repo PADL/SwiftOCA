@@ -15,48 +15,48 @@
 //
 
 open class OcaSecurityManager: OcaManager {
-    override open class var classID: OcaClassID { OcaClassID("1.3.2") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.3.2") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("3.1"),
-        getMethodID: OcaMethodID("3.1")
-    )
-    public var secureControlData: OcaProperty<OcaBoolean>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.1")
+  )
+  public var secureControlData: OcaProperty<OcaBoolean>.PropertyValue
 
-    public convenience init() {
-        self.init(objectNumber: OcaSecurityManagerONo)
+  public convenience init() {
+    self.init(objectNumber: OcaSecurityManagerONo)
+  }
+
+  public func enableControlSecurity() async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("3.1"))
+  }
+
+  public func disableControlSecurity() async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("3.2"))
+  }
+
+  public struct AddPreSharedKeyParameters: Ocp1ParametersReflectable {
+    public let identity: OcaString
+    public let key: OcaBlob
+
+    public init(identity: OcaString, key: OcaBlob) {
+      self.identity = identity
+      self.key = key
     }
+  }
 
-    public func enableControlSecurity() async throws {
-        try await sendCommandRrq(methodID: OcaMethodID("3.1"))
-    }
+  public func changePreSharedKey(identity: OcaString, key: OcaBlob) async throws {
+    let parameters = AddPreSharedKeyParameters(identity: identity, key: key)
+    try await sendCommandRrq(methodID: OcaMethodID("3.3"), parameters: parameters)
+  }
 
-    public func disableControlSecurity() async throws {
-        try await sendCommandRrq(methodID: OcaMethodID("3.2"))
-    }
+  public func addPreSharedKey(identity: OcaString, key: OcaBlob) async throws {
+    let parameters = AddPreSharedKeyParameters(identity: identity, key: key)
+    try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: parameters)
+  }
 
-    public struct AddPreSharedKeyParameters: Ocp1ParametersReflectable {
-        public let identity: OcaString
-        public let key: OcaBlob
-
-        public init(identity: OcaString, key: OcaBlob) {
-            self.identity = identity
-            self.key = key
-        }
-    }
-
-    public func changePreSharedKey(identity: OcaString, key: OcaBlob) async throws {
-        let parameters = AddPreSharedKeyParameters(identity: identity, key: key)
-        try await sendCommandRrq(methodID: OcaMethodID("3.3"), parameters: parameters)
-    }
-
-    public func addPreSharedKey(identity: OcaString, key: OcaBlob) async throws {
-        let parameters = AddPreSharedKeyParameters(identity: identity, key: key)
-        try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: parameters)
-    }
-
-    public func deletePreSharedKey(identity: OcaString) async throws {
-        try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: identity)
-    }
+  public func deletePreSharedKey(identity: OcaString) async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: identity)
+  }
 }

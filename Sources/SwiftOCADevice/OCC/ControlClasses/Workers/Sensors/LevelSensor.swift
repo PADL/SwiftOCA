@@ -17,11 +17,11 @@
 import SwiftOCA
 
 open class OcaLevelSensor: OcaSensor {
-    override open class var classID: OcaClassID { OcaClassID("1.1.2.2") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.2.2") }
 
-    @OcaBoundedDeviceProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1")
-    )
-    public var reading = OcaBoundedPropertyValue<OcaDB>(value: 0.0, in: -144.0...0.0)
+  @OcaBoundedDeviceProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1")
+  )
+  public var reading = OcaBoundedPropertyValue<OcaDB>(value: 0.0, in: -144.0...0.0)
 }

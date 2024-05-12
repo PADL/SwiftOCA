@@ -19,23 +19,23 @@ import Logging
 import SwiftOCA
 
 public protocol OcaDeviceEndpoint: AnyObject, Sendable {
-    var controllers: [OcaController] { get async }
+  var controllers: [OcaController] { get async }
 }
 
 protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
-    associatedtype ControllerType: Ocp1ControllerInternal
+  associatedtype ControllerType: Ocp1ControllerInternal
 
-    var device: OcaDevice { get }
-    var logger: Logger { get }
-    var timeout: Duration { get }
+  var device: OcaDevice { get }
+  var logger: Logger { get }
+  var timeout: Duration { get }
 
-    func add(controller: ControllerType) async
-    func remove(controller: ControllerType) async
+  func add(controller: ControllerType) async
+  func remove(controller: ControllerType) async
 }
 
 extension OcaDeviceEndpointPrivate {
-    func unlockAndRemove(controller: ControllerType) async {
-        await device.unlockAll(controller: controller)
-        await remove(controller: controller)
-    }
+  func unlockAndRemove(controller: ControllerType) async {
+    await device.unlockAll(controller: controller)
+    await remove(controller: controller)
+  }
 }

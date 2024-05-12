@@ -15,17 +15,17 @@
 //
 
 public enum OcaMuteState: OcaUint8, Codable, Sendable, CaseIterable {
-    case muted = 1
-    case unmuted = 2
+  case muted = 1
+  case unmuted = 2
 }
 
 open class OcaMute: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.2") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.2") }
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1"),
-        setMethodID: OcaMethodID("4.2")
-    )
-    public var state: OcaProperty<OcaMuteState>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  public var state: OcaProperty<OcaMuteState>.PropertyValue
 }

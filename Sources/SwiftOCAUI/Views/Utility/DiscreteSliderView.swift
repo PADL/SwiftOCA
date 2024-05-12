@@ -20,30 +20,30 @@ import SwiftOCA
 import SwiftUI
 
 struct OcaDiscreteSliderView<Value: FixedWidthInteger & Codable>: View
-    where Value.Stride: FixedWidthInteger
+  where Value.Stride: FixedWidthInteger
 {
-    @Binding
-    var value: OcaBoundedPropertyValue<Value>
-    @State
-    var valuePublisher: CurrentValueSubject<Value, Never>
-    var delay = 0.1
+  @Binding
+  var value: OcaBoundedPropertyValue<Value>
+  @State
+  var valuePublisher: CurrentValueSubject<Value, Never>
+  var delay = 0.1
 
-    init(value: Binding<OcaBoundedPropertyValue<Value>>) {
-        _value = value
-        _valuePublisher =
-            State(initialValue: CurrentValueSubject<Value, Never>(value.wrappedValue.value))
-    }
+  init(value: Binding<OcaBoundedPropertyValue<Value>>) {
+    _value = value
+    _valuePublisher =
+      State(initialValue: CurrentValueSubject<Value, Never>(value.wrappedValue.value))
+  }
 
-    var body: some View {
-        ValueSlider(
-            value: Binding<Value>(get: { valuePublisher.value }, set: { valuePublisher.send($0) }),
-            in: value.range
-        )
-        .onReceive(
-            valuePublisher
-                .debounce(for: .seconds(delay), scheduler: RunLoop.main)
-        ) { newValue in
-            value.value = newValue
-        }
+  var body: some View {
+    ValueSlider(
+      value: Binding<Value>(get: { valuePublisher.value }, set: { valuePublisher.send($0) }),
+      in: value.range
+    )
+    .onReceive(
+      valuePublisher
+        .debounce(for: .seconds(delay), scheduler: RunLoop.main)
+    ) { newValue in
+      value.value = newValue
     }
+  }
 }

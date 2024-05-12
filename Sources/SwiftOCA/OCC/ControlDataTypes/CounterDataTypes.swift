@@ -15,66 +15,66 @@
 //
 
 public struct OcaCounter: Codable, Sendable {
-    public let id: OcaID16
-    public let value: OcaUint64
-    public let innitialValue: OcaUint64
-    public let role: OcaString
-    public let notifiers: OcaList<OcaONo>
+  public let id: OcaID16
+  public let value: OcaUint64
+  public let innitialValue: OcaUint64
+  public let role: OcaString
+  public let notifiers: OcaList<OcaONo>
 
-    public init(
-        id: OcaID16,
-        value: OcaUint64,
-        innitialValue: OcaUint64,
-        role: OcaString,
-        notifiers: OcaList<OcaONo>
-    ) {
-        self.id = id
-        self.value = value
-        self.innitialValue = innitialValue
-        self.role = role
-        self.notifiers = notifiers
-    }
+  public init(
+    id: OcaID16,
+    value: OcaUint64,
+    innitialValue: OcaUint64,
+    role: OcaString,
+    notifiers: OcaList<OcaONo>
+  ) {
+    self.id = id
+    self.value = value
+    self.innitialValue = innitialValue
+    self.role = role
+    self.notifiers = notifiers
+  }
 }
 
 public typealias OcaCounterSetID = OcaBlob
 
 public struct OcaCounterSet: Codable, Sendable {
-    public let id: OcaCounterSetID
-    public let counter: OcaList<OcaCounter>
+  public let id: OcaCounterSetID
+  public let counter: OcaList<OcaCounter>
 
-    public init(id: OcaCounterSetID, counter: OcaList<OcaCounter>) {
-        self.id = id
-        self.counter = counter
-    }
+  public init(id: OcaCounterSetID, counter: OcaList<OcaCounter>) {
+    self.id = id
+    self.counter = counter
+  }
 }
 
 public struct OcaCounterUpdate: Codable, Sendable {
-    public let counterSetID: OcaCounterSetID
-    public let counterID: OcaID16
-    public let value: OcaUint64
+  public let counterSetID: OcaCounterSetID
+  public let counterID: OcaID16
+  public let value: OcaUint64
 
-    public init(counterSetID: OcaCounterSetID, counterID: OcaID16, value: OcaUint64) {
-        self.counterSetID = counterSetID
-        self.counterID = counterID
-        self.value = value
-    }
+  public init(counterSetID: OcaCounterSetID, counterID: OcaID16, value: OcaUint64) {
+    self.counterSetID = counterSetID
+    self.counterID = counterID
+    self.value = value
+  }
 }
 
 public struct OcaCounterNotifierFilterParameters: Codable, Sendable {
-    public let threshold: OcaUint64
-    public let `operator`: OcaRelationalOperator
-    public let period: OcaTimeInterval
-    public let countDelta: OcaUint64
+  public let threshold: OcaUint64
+  public let `operator`: OcaRelationalOperator
+  public let period: OcaTimeInterval
+  public let countDelta: OcaUint64
 
-    public init(
-        threshold: OcaUint64,
-        operator: OcaRelationalOperator,
-        period: OcaTimeInterval,
-        countDelta: OcaUint64
-    ) {
-        self.threshold = threshold
-        self.operator = `operator`
-        self.period = period
-        self.countDelta = countDelta
-    }
+  public init(
+    threshold: OcaUint64,
+    operator: OcaRelationalOperator,
+    period: OcaTimeInterval,
+    countDelta: OcaUint64
+  ) {
+    self.threshold = threshold
+    self.operator = `operator`
+    self.period = period
+    self.countDelta = countDelta
+  }
 }

@@ -15,29 +15,29 @@
 //
 
 open class OcaLockManager: OcaManager {
-    override open class var classID: OcaClassID { OcaClassID("1.3.14") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.3.14") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    public struct LockWaitParameters: Ocp1ParametersReflectable {
-        public let target: OcaONo
-        public let type: OcaLockState
-        public let timeout: OcaTimeInterval
-    }
+  public struct LockWaitParameters: Ocp1ParametersReflectable {
+    public let target: OcaONo
+    public let type: OcaLockState
+    public let timeout: OcaTimeInterval
+  }
 
-    public func lockWait(
-        target: OcaONo,
-        type: OcaLockState,
-        timeout: OcaTimeInterval
-    ) async throws {
-        let params = LockWaitParameters(target: target, type: type, timeout: timeout)
-        try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameters: params)
-    }
+  public func lockWait(
+    target: OcaONo,
+    type: OcaLockState,
+    timeout: OcaTimeInterval
+  ) async throws {
+    let params = LockWaitParameters(target: target, type: type, timeout: timeout)
+    try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameters: params)
+  }
 
-    public func abortWaits(oNo: OcaONo) async throws {
-        try await sendCommandRrq(methodID: OcaMethodID("3.2"), parameters: oNo)
-    }
+  public func abortWaits(oNo: OcaONo) async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("3.2"), parameters: oNo)
+  }
 
-    public convenience init() {
-        self.init(objectNumber: OcaLockManagerONo)
-    }
+  public convenience init() {
+    self.init(objectNumber: OcaLockManagerONo)
+  }
 }

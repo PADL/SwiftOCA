@@ -15,32 +15,32 @@
 //
 
 public struct OcaMediaClockRate: Codable, Sendable, Equatable {
-    public let nominalRate: OcaFrequency
-    public let pullRange: OcaFrequency
-    public let accuracy: OcaFloat32
-    public let jitterMax: OcaFloat32
+  public let nominalRate: OcaFrequency
+  public let pullRange: OcaFrequency
+  public let accuracy: OcaFloat32
+  public let jitterMax: OcaFloat32
 
-    public init(
-        nominalRate: OcaFrequency = 48000.0,
-        pullRange: OcaFrequency = 0.0,
-        accuracy: OcaFloat32 = 0.0,
-        jitterMax: OcaFloat32 = 0.0
-    ) {
-        self.nominalRate = nominalRate
-        self.pullRange = pullRange
-        self.accuracy = accuracy
-        self.jitterMax = jitterMax
-    }
+  public init(
+    nominalRate: OcaFrequency = 48000.0,
+    pullRange: OcaFrequency = 0.0,
+    accuracy: OcaFloat32 = 0.0,
+    jitterMax: OcaFloat32 = 0.0
+  ) {
+    self.nominalRate = nominalRate
+    self.pullRange = pullRange
+    self.accuracy = accuracy
+    self.jitterMax = jitterMax
+  }
 }
 
 public enum OcaMediaClockAvailability: OcaUint8, Codable, Sendable, CaseIterable {
-    case unavailable = 0
-    case available = 1
+  case unavailable = 0
+  case available = 1
 }
 
 public enum OcaMediaClockType: OcaUint8, Codable, Sendable, CaseIterable {
-    case none = 0
-    case `internal` = 1
-    case network = 2
-    case external = 3
+  case none = 0
+  case `internal` = 1
+  case network = 2
+  case external = 3
 }

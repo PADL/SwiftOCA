@@ -16,5 +16,5 @@
 
 @globalActor
 public actor OcaConnection {
-    public static let shared = OcaConnection()
+  public static let shared = OcaConnection()
 }

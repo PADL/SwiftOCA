@@ -17,62 +17,62 @@
 import Foundation
 
 extension Ocp1Connection {
-    func updateLastMessageSentTime() async {
-        lastMessageSentTime = ContinuousClock.now
+  func updateLastMessageSentTime() async {
+    lastMessageSentTime = ContinuousClock.now
+  }
+
+  private func sendMessages(
+    _ messages: [Ocp1Message],
+    type messageType: OcaMessageType
+  ) async throws {
+    let messagePduData = try Self.encodeOcp1MessagePdu(messages, type: messageType)
+
+    do {
+      guard try await write(messagePduData) == messagePduData.count else {
+        throw Ocp1Error.pduSendingFailed
+      }
+      await updateLastMessageSentTime()
+    } catch Ocp1Error.notConnected {
+      if options.automaticReconnect {
+        try await reconnectDevice()
+      } else {
+        throw Ocp1Error.notConnected
+      }
+    }
+  }
+
+  private func sendMessage(
+    _ message: Ocp1Message,
+    type messageType: OcaMessageType
+  ) async throws {
+    try await sendMessages([message], type: messageType)
+  }
+
+  public func sendCommand(_ command: Ocp1Command) async throws {
+    try await sendMessage(command, type: .ocaCmd)
+  }
+
+  private func response(for handle: OcaUint32) async throws -> Ocp1Response {
+    guard let monitor else {
+      throw Ocp1Error.notConnected
     }
 
-    private func sendMessages(
-        _ messages: [Ocp1Message],
-        type messageType: OcaMessageType
-    ) async throws {
-        let messagePduData = try Self.encodeOcp1MessagePdu(messages, type: messageType)
-
-        do {
-            guard try await write(messagePduData) == messagePduData.count else {
-                throw Ocp1Error.pduSendingFailed
-            }
-            await updateLastMessageSentTime()
-        } catch Ocp1Error.notConnected {
-            if options.automaticReconnect {
-                try await reconnectDevice()
-            } else {
-                throw Ocp1Error.notConnected
-            }
-        }
+    return try await withCheckedThrowingContinuation { continuation in
+      Task {
+        await monitor.register(handle: handle, continuation: continuation)
+      }
     }
+  }
 
-    private func sendMessage(
-        _ message: Ocp1Message,
-        type messageType: OcaMessageType
-    ) async throws {
-        try await sendMessages([message], type: messageType)
-    }
+  public func sendCommandRrq(_ command: Ocp1Command) async throws -> Ocp1Response {
+    try await sendMessage(command, type: .ocaCmdRrq)
+    return try await response(for: command.handle)
+  }
 
-    public func sendCommand(_ command: Ocp1Command) async throws {
-        try await sendMessage(command, type: .ocaCmd)
-    }
-
-    private func response(for handle: OcaUint32) async throws -> Ocp1Response {
-        guard let monitor else {
-            throw Ocp1Error.notConnected
-        }
-
-        return try await withCheckedThrowingContinuation { continuation in
-            Task {
-                await monitor.register(handle: handle, continuation: continuation)
-            }
-        }
-    }
-
-    public func sendCommandRrq(_ command: Ocp1Command) async throws -> Ocp1Response {
-        try await sendMessage(command, type: .ocaCmdRrq)
-        return try await response(for: command.handle)
-    }
-
-    func sendKeepAlive() async throws {
-        try await sendMessage(
-            Ocp1KeepAlive.keepAlive(interval: heartbeatTime),
-            type: .ocaKeepAlive
-        )
-    }
+  func sendKeepAlive() async throws {
+    try await sendMessage(
+      Ocp1KeepAlive.keepAlive(interval: heartbeatTime),
+      type: .ocaKeepAlive
+    )
+  }
 }

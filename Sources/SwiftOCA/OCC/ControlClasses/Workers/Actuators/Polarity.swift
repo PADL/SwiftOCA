@@ -15,17 +15,17 @@
 //
 
 public enum OcaPolarityState: OcaUint8, Codable, Sendable, CaseIterable {
-    case nonInverted = 1
-    case inverted = 2
+  case nonInverted = 1
+  case inverted = 2
 }
 
 open class OcaPolarity: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.3") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.3") }
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1"),
-        setMethodID: OcaMethodID("4.2")
-    )
-    public var state: OcaProperty<OcaPolarityState>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  public var state: OcaProperty<OcaPolarityState>.PropertyValue
 }

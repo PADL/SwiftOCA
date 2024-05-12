@@ -15,33 +15,33 @@
 //
 
 public enum OcaApplicationNetworkCommand: OcaUint8, Codable, Sendable, CaseIterable {
-    case none = 0
-    case prepare = 1
-    case start = 2
-    case pause = 3
-    case stop = 4
-    case reset = 5
+  case none = 0
+  case prepare = 1
+  case start = 2
+  case pause = 3
+  case stop = 4
+  case reset = 5
 }
 
 public enum OcaApplicationNetworkState: OcaUint8, Codable, Sendable, CaseIterable {
-    case unknown = 0
-    case notReady = 1
-    case readying = 2
-    case ready = 3
-    case running = 4
-    case paused = 5
-    case stopping = 6
-    case stopped = 7
-    case fault = 8
+  case unknown = 0
+  case notReady = 1
+  case readying = 2
+  case ready = 3
+  case running = 4
+  case paused = 5
+  case stopping = 6
+  case stopped = 7
+  case fault = 8
 }
 
 public typealias OcaApplicationNetworkServiceID = OcaBlob
 
 public enum OcaProtocolVersion: OcaUint16, Codable, Sendable {
-    // Original standard (AES70-2015)
-    case aes70_2015 = 1
-    // 2018 revision
-    case aes70_2018 = 2
-    // 2023 revision
-    case aes70_2023 = 3
+  // Original standard (AES70-2015)
+  case aes70_2015 = 1
+  // 2018 revision
+  case aes70_2018 = 2
+  // 2023 revision
+  case aes70_2023 = 3
 }

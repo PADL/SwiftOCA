@@ -15,8 +15,8 @@
 //
 
 public enum OcaPowerState: OcaUint8, Codable, Sendable, CaseIterable {
-    case none = 0
-    case working = 1
-    case standby = 2
-    case off = 3
+  case none = 0
+  case working = 1
+  case standby = 2
+  case off = 3
 }

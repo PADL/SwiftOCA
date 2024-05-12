@@ -15,27 +15,27 @@
 //
 
 open class OcaLibraryManager: OcaManager {
-    override open class var classID: OcaClassID { OcaClassID("1.3.8") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.3.8") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("3.1")
-    )
-    public var libraries: OcaProperty<OcaLibraryIdentifier>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.1")
+  )
+  public var libraries: OcaProperty<OcaLibraryIdentifier>.PropertyValue
 
-    // 3.1 AddLibrary
-    // 3.2 DeleteLibrary
-    // 3.3 GetLibraryCount
-    // 3.4 GetLibraryList
+  // 3.1 AddLibrary
+  // 3.2 DeleteLibrary
+  // 3.3 GetLibraryCount
+  // 3.4 GetLibraryList
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("3.2"),
-        getMethodID: OcaMethodID("3.5"),
-        setMethodID: OcaMethodID("3.6")
-    )
-    public var currentPatch: OcaProperty<OcaLibVolIdentifier>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.2"),
+    getMethodID: OcaMethodID("3.5"),
+    setMethodID: OcaMethodID("3.6")
+  )
+  public var currentPatch: OcaProperty<OcaLibVolIdentifier>.PropertyValue
 
-    public convenience init() {
-        self.init(objectNumber: OcaLibraryManagerONo)
-    }
+  public convenience init() {
+    self.init(objectNumber: OcaLibraryManagerONo)
+  }
 }

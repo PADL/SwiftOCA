@@ -15,12 +15,12 @@
 //
 
 public enum OcaUnitOfMeasure: OcaUint8, Codable, Sendable, CaseIterable {
-    case none = 0
-    case hertz = 1
-    case degreeCelsius = 2
-    case volt = 3
-    case ampere = 4
-    case ohm = 5
+  case none = 0
+  case hertz = 1
+  case degreeCelsius = 2
+  case volt = 3
+  case ampere = 4
+  case ohm = 5
 }
 
 public typealias OcaAdaptationData = OcaBlob

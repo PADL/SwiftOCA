@@ -19,25 +19,25 @@ import Logging
 import SwiftOCA
 
 extension Logger {
-    func info(_ message: String, controller: any Ocp1ControllerInternal) {
-        info("<\(controller.connectionPrefix)/\(controller.identifier)> \(message)")
-    }
+  func info(_ message: String, controller: any Ocp1ControllerInternal) {
+    info("<\(controller.connectionPrefix)/\(controller.identifier)> \(message)")
+  }
 
-    func command(_ command: Ocp1Command, on controller: any Ocp1ControllerInternal) {
-        trace(
-            "<\(controller.connectionPrefix)/\(controller.identifier)> command \(command)"
-        )
-    }
+  func command(_ command: Ocp1Command, on controller: any Ocp1ControllerInternal) {
+    trace(
+      "<\(controller.connectionPrefix)/\(controller.identifier)> command \(command)"
+    )
+  }
 
-    func response(_ response: Ocp1Response, on controller: any Ocp1ControllerInternal) {
-        trace(
-            "<\(controller.connectionPrefix)/\(controller.identifier)> response \(response)"
-        )
-    }
+  func response(_ response: Ocp1Response, on controller: any Ocp1ControllerInternal) {
+    trace(
+      "<\(controller.connectionPrefix)/\(controller.identifier)> response \(response)"
+    )
+  }
 
-    func error(_ error: Error, controller: any Ocp1ControllerInternal) {
-        warning(
-            "<\(controller.connectionPrefix)/\(controller.identifier)> error \(error)"
-        )
-    }
+  func error(_ error: Error, controller: any Ocp1ControllerInternal) {
+    warning(
+      "<\(controller.connectionPrefix)/\(controller.identifier)> error \(error)"
+    )
+  }
 }

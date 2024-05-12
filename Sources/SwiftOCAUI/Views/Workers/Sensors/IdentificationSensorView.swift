@@ -18,41 +18,41 @@ import SwiftOCA
 import SwiftUI
 
 extension OcaIdentificationSensor: OcaViewRepresentable {
-    public var viewType: any OcaView.Type {
-        OcaIdentificationSensorView.self
-    }
+  public var viewType: any OcaView.Type {
+    OcaIdentificationSensorView.self
+  }
 }
 
 private final class OcaIdentificationState: ObservableObject {
-    var state: Bool = false
+  var state: Bool = false
 
-    func beginIdentifying() async {
-        state = true
-        try? await Task.sleep(for: .seconds(10))
-        state = false
-    }
+  func beginIdentifying() async {
+    state = true
+    try? await Task.sleep(for: .seconds(10))
+    state = false
+  }
 }
 
 public struct OcaIdentificationSensorView: OcaView {
-    @StateObject
-    var object: OcaIdentificationSensor
+  @StateObject
+  var object: OcaIdentificationSensor
 
-    @StateObject
-    fileprivate var isIdentifying = OcaIdentificationState()
+  @StateObject
+  fileprivate var isIdentifying = OcaIdentificationState()
 
-    public init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object as! OcaIdentificationSensor)
-    }
+  public init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object as! OcaIdentificationSensor)
+  }
 
-    public var body: some View {
-        Rectangle()
-            .foregroundColor(isIdentifying.state ? Color.red : Color.black)
-            .task {
-                try? await self.object.onIdentify { _, _ in
-                    Task {
-                        await isIdentifying.beginIdentifying()
-                    }
-                }
-            }
-    }
+  public var body: some View {
+    Rectangle()
+      .foregroundColor(isIdentifying.state ? Color.red : Color.black)
+      .task {
+        try? await self.object.onIdentify { _, _ in
+          Task {
+            await isIdentifying.beginIdentifying()
+          }
+        }
+      }
+  }
 }

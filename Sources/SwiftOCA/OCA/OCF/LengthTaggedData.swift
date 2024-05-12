@@ -17,68 +17,68 @@
 import Foundation
 
 public struct LengthTaggedData: MutableDataProtocol, ContiguousBytes, Equatable, Hashable,
-    Sendable
+  Sendable
 {
-    public var startIndex: Data.Index { wrappedValue.startIndex }
-    public var endIndex: Data.Index { wrappedValue.endIndex }
-    public var regions: CollectionOfOne<LengthTaggedData> { CollectionOfOne(self) }
+  public var startIndex: Data.Index { wrappedValue.startIndex }
+  public var endIndex: Data.Index { wrappedValue.endIndex }
+  public var regions: CollectionOfOne<LengthTaggedData> { CollectionOfOne(self) }
 
-    public var wrappedValue: Data
+  public var wrappedValue: Data
 
-    public init() {
-        wrappedValue = Data()
+  public init() {
+    wrappedValue = Data()
+  }
+
+  public subscript(position: Data.Index) -> UInt8 {
+    get {
+      wrappedValue[position]
     }
-
-    public subscript(position: Data.Index) -> UInt8 {
-        get {
-            wrappedValue[position]
-        }
-        set(newValue) {
-            wrappedValue[position] = newValue
-        }
+    set(newValue) {
+      wrappedValue[position] = newValue
     }
+  }
 
-    public func withUnsafeBytes<R>(_ body: (UnsafeRawBufferPointer) throws -> R) rethrows -> R {
-        try wrappedValue.withUnsafeBytes(body)
-    }
+  public func withUnsafeBytes<R>(_ body: (UnsafeRawBufferPointer) throws -> R) rethrows -> R {
+    try wrappedValue.withUnsafeBytes(body)
+  }
 
-    public mutating func withUnsafeMutableBytes<R>(
-        _ body: (UnsafeMutableRawBufferPointer) throws
-            -> R
-    ) rethrows -> R {
-        try wrappedValue.withUnsafeMutableBytes(body)
-    }
+  public mutating func withUnsafeMutableBytes<R>(
+    _ body: (UnsafeMutableRawBufferPointer) throws
+      -> R
+  ) rethrows -> R {
+    try wrappedValue.withUnsafeMutableBytes(body)
+  }
 
-    public mutating func replaceSubrange(
-        _ subrange: Range<Data.Index>,
-        with newElements: __owned some Collection<Element>
-    ) {
-        wrappedValue.replaceSubrange(subrange, with: newElements)
-    }
+  public mutating func replaceSubrange(
+    _ subrange: Range<Data.Index>,
+    with newElements: __owned some Collection<Element>
+  ) {
+    wrappedValue.replaceSubrange(subrange, with: newElements)
+  }
 }
 
 extension LengthTaggedData: Encodable {
-    public func encode(to encoder: Encoder) throws {
-        if wrappedValue.count > UInt16.max {
-            throw Ocp1Error.invalidMessageSize
-        }
-        var container = encoder.unkeyedContainer()
-        try container.encode(UInt16(wrappedValue.count))
-        try withUnsafeBytes { (buffer: UnsafeRawBufferPointer) in
-            try container.encode(contentsOf: buffer)
-        }
+  public func encode(to encoder: Encoder) throws {
+    if wrappedValue.count > UInt16.max {
+      throw Ocp1Error.invalidMessageSize
     }
+    var container = encoder.unkeyedContainer()
+    try container.encode(UInt16(wrappedValue.count))
+    try withUnsafeBytes { (buffer: UnsafeRawBufferPointer) in
+      try container.encode(contentsOf: buffer)
+    }
+  }
 }
 
 extension LengthTaggedData: Decodable {
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
+  public init(from decoder: Decoder) throws {
+    var container = try decoder.unkeyedContainer()
 
-        let count = Int(try container.decode(UInt16.self))
-        wrappedValue = Data(count: count)
-        for i in 0..<count {
-            let byte = try container.decode(UInt8.self)
-            wrappedValue[i] = byte
-        }
+    let count = Int(try container.decode(UInt16.self))
+    wrappedValue = Data(count: count)
+    for i in 0..<count {
+      let byte = try container.decode(UInt8.self)
+      wrappedValue[i] = byte
     }
+  }
 }

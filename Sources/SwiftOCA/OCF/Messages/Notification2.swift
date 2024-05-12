@@ -17,60 +17,60 @@
 import Foundation
 
 public enum Ocp1Notification2Type: OcaUint8, Codable, Sendable {
-    case event = 0
-    case exception = 1
+  case event = 0
+  case exception = 1
 }
 
 public enum Ocp1Notification2ExceptionType: OcaUint8, Equatable, Codable, Sendable {
-    case unspecified = 0
-    case cancelledByDevice = 1
-    case objectDeleted = 2
-    case deviceError = 3
+  case unspecified = 0
+  case cancelledByDevice = 1
+  case objectDeleted = 2
+  case deviceError = 3
 }
 
 public struct Ocp1Notification2ExceptionData: Equatable, Codable, Sendable, Error {
-    let exceptionType: Ocp1Notification2ExceptionType
-    let tryAgain: OcaBoolean
-    let exceptionData: OcaBlob
+  let exceptionType: Ocp1Notification2ExceptionType
+  let tryAgain: OcaBoolean
+  let exceptionData: OcaBlob
 
-    public init(
-        exceptionType: Ocp1Notification2ExceptionType,
-        tryAgain: OcaBoolean,
-        exceptionData: OcaBlob
-    ) {
-        self.exceptionType = exceptionType
-        self.tryAgain = tryAgain
-        self.exceptionData = exceptionData
-    }
+  public init(
+    exceptionType: Ocp1Notification2ExceptionType,
+    tryAgain: OcaBoolean,
+    exceptionData: OcaBlob
+  ) {
+    self.exceptionType = exceptionType
+    self.tryAgain = tryAgain
+    self.exceptionData = exceptionData
+  }
 }
 
 public struct Ocp1Notification2: Ocp1Message, Codable, Sendable {
-    let notificationSize: OcaUint32
-    let event: OcaEvent
-    let notificationType: Ocp1Notification2Type
-    let data: Data
+  let notificationSize: OcaUint32
+  let event: OcaEvent
+  let notificationType: Ocp1Notification2Type
+  let data: Data
 
-    public var messageSize: OcaUint32 { notificationSize }
+  public var messageSize: OcaUint32 { notificationSize }
 
-    public init(
-        notificationSize: OcaUint32 = 0,
-        event: OcaEvent,
-        notificationType: Ocp1Notification2Type,
-        data: Data
-    ) {
-        self.notificationSize = notificationSize
-        self.event = event
-        self.notificationType = notificationType
-        self.data = data
-    }
+  public init(
+    notificationSize: OcaUint32 = 0,
+    event: OcaEvent,
+    notificationType: Ocp1Notification2Type,
+    data: Data
+  ) {
+    self.notificationSize = notificationSize
+    self.event = event
+    self.notificationType = notificationType
+    self.data = data
+  }
 
-    func throwIfException() throws {
-        guard notificationType == .exception else { return }
-        let decoder = Ocp1Decoder()
-        let exception = try decoder.decode(
-            Ocp1Notification2ExceptionData.self,
-            from: data
-        )
-        throw Ocp1Error.exception(exception)
-    }
+  func throwIfException() throws {
+    guard notificationType == .exception else { return }
+    let decoder = Ocp1Decoder()
+    let exception = try decoder.decode(
+      Ocp1Notification2ExceptionData.self,
+      from: data
+    )
+    throw Ocp1Error.exception(exception)
+  }
 }

@@ -18,71 +18,71 @@ import SwiftOCA
 import SwiftUI
 
 struct OcaBlockNavigationSplitView: OcaView {
-    @EnvironmentObject
-    var connection: Ocp1Connection
-    @Environment(\.navigationPath)
-    var oNoPath
-    @Environment(\.lastError)
-    var lastError
-    @StateObject
-    var object: OcaBlock
-    @State
-    var members: [OcaRoot]?
-    @State
-    var membersMap: [OcaONo: OcaRoot]?
-    @State
-    var selectedONo: OcaONo? = nil
+  @EnvironmentObject
+  var connection: Ocp1Connection
+  @Environment(\.navigationPath)
+  var oNoPath
+  @Environment(\.lastError)
+  var lastError
+  @StateObject
+  var object: OcaBlock
+  @State
+  var members: [OcaRoot]?
+  @State
+  var membersMap: [OcaONo: OcaRoot]?
+  @State
+  var selectedONo: OcaONo? = nil
 
-    init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object as! OcaBlock)
+  init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object as! OcaBlock)
+  }
+
+  var selectedObject: OcaRoot? {
+    guard let selectedONo,
+          let membersMap,
+          let object = membersMap[selectedONo]
+    else {
+      return nil
     }
 
-    var selectedObject: OcaRoot? {
-        guard let selectedONo,
-              let membersMap,
-              let object = membersMap[selectedONo]
-        else {
-            return nil
-        }
+    return object
+  }
 
-        return object
-    }
-
-    public var body: some View {
-        Group {
-            if let members {
-                NavigationSplitView {
-                    List(members, selection: $selectedONo) { member in
-                        Group {
-                            OcaNavigationLabel(member)
-                        }
-                    }
-                } detail: {
-                    Group {
-                        if let selectedObject {
-                            OcaDetailView(selectedObject)
-                        }
-                    }
-                    .id(selectedONo)
-                }
-            } else {
-                ProgressView()
+  public var body: some View {
+    Group {
+      if let members {
+        NavigationSplitView {
+          List(members, selection: $selectedONo) { member in
+            Group {
+              OcaNavigationLabel(member)
             }
-        }
-        .task {
-            do {
-                members = try await object.resolveActionObjects()
-
-                if object.objectNumber == OcaRootBlockONo,
-                   await !(members?.contains(connection.deviceManager) ?? false)
-                {
-                    await members?.append(connection.deviceManager)
-                }
-                membersMap = members?.map
-            } catch {
-                debugPrint("OcaNavigationSplitView: error \(error) when resolving members")
-                lastError.wrappedValue = error
+          }
+        } detail: {
+          Group {
+            if let selectedObject {
+              OcaDetailView(selectedObject)
             }
+          }
+          .id(selectedONo)
         }
+      } else {
+        ProgressView()
+      }
     }
+    .task {
+      do {
+        members = try await object.resolveActionObjects()
+
+        if object.objectNumber == OcaRootBlockONo,
+           await !(members?.contains(connection.deviceManager) ?? false)
+        {
+          await members?.append(connection.deviceManager)
+        }
+        membersMap = members?.map
+      } catch {
+        debugPrint("OcaNavigationSplitView: error \(error) when resolving members")
+        lastError.wrappedValue = error
+      }
+    }
+  }
 }

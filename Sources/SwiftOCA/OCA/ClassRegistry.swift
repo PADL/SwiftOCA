@@ -16,151 +16,151 @@
 
 @OcaConnection
 public class OcaClassRegistry {
-    public static let shared = OcaClassRegistry()
+  public static let shared = OcaClassRegistry()
 
-    /// Mapping of classID to class name
-    private var classIDMap = [OcaClassIdentification: OcaRoot.Type]()
+  /// Mapping of classID to class name
+  private var classIDMap = [OcaClassIdentification: OcaRoot.Type]()
 
-    @discardableResult
-    public func register<T: OcaRoot>(
-        classID: OcaClassID = T.classID,
-        classVersion: OcaClassVersionNumber = T.classVersion,
-        _ type: T.Type
-    ) -> OcaStatus {
-        let classIdentification = OcaClassIdentification(
-            classID: classID,
-            classVersion: classVersion
-        )
+  @discardableResult
+  public func register<T: OcaRoot>(
+    classID: OcaClassID = T.classID,
+    classVersion: OcaClassVersionNumber = T.classVersion,
+    _ type: T.Type
+  ) -> OcaStatus {
+    let classIdentification = OcaClassIdentification(
+      classID: classID,
+      classVersion: classVersion
+    )
 
-        if classIDMap.keys.contains(classIdentification) {
-            return .parameterError
+    if classIDMap.keys.contains(classIdentification) {
+      return .parameterError
+    }
+
+    classIDMap[classIdentification] = type.self
+    return .ok
+  }
+
+  private func match(classIdentification: OcaClassIdentification) -> OcaClassIdentification? {
+    var classID: OcaClassID? = classIdentification.classID
+
+    repeat {
+      var classVersion = OcaRoot.classVersion
+
+      repeat {
+        // FIXME: why are we even looking up by class version?
+        let id = OcaClassIdentification(classID: classID!, classVersion: classVersion)
+
+        if classIDMap.keys.contains(id) {
+          return id
         }
 
-        classIDMap[classIdentification] = type.self
-        return .ok
-    }
+        classVersion = classVersion - 1
+      } while classVersion != 0
 
-    private func match(classIdentification: OcaClassIdentification) -> OcaClassIdentification? {
-        var classID: OcaClassID? = classIdentification.classID
+      classID = classID?.parent
+    } while classID != nil
 
-        repeat {
-            var classVersion = OcaRoot.classVersion
+    return nil
+  }
 
-            repeat {
-                // FIXME: why are we even looking up by class version?
-                let id = OcaClassIdentification(classID: classID!, classVersion: classVersion)
+  private func match<T: OcaRoot>(classIdentification: OcaClassIdentification) throws -> T.Type {
+    guard let classIdentification = match(classIdentification: classIdentification)
+    else { throw Ocp1Error.objectClassMismatch }
+    guard let type = classIDMap[classIdentification] as? T.Type
+    else { throw Ocp1Error.noMatchingTypeForClass }
 
-                if classIDMap.keys.contains(id) {
-                    return id
-                }
+    return type
+  }
 
-                classVersion = classVersion - 1
-            } while classVersion != 0
+  func assign<T: OcaRoot>(
+    classIdentification: OcaClassIdentification,
+    objectNumber: OcaONo
+  ) throws -> T {
+    let type: T.Type = try match(classIdentification: classIdentification)
+    return type.init(objectNumber: objectNumber)
+  }
 
-            classID = classID?.parent
-        } while classID != nil
+  init() {
+    // register built-in classes
+    register(OcaRoot.self)
 
-        return nil
-    }
+    // agents
+    register(OcaAgent.self)
+    register(OcaEventHandler.self)
+    register(OcaPhysicalPosition.self)
+    register(OcaTimeSource.self)
+    register(OcaMediaClock3.self)
+    register(OcaGrouper.self)
+    register(OcaGroup.self)
+    register(OcaCounterNotifier.self)
+    register(OcaCounterSetAgent.self)
 
-    private func match<T: OcaRoot>(classIdentification: OcaClassIdentification) throws -> T.Type {
-        guard let classIdentification = match(classIdentification: classIdentification)
-        else { throw Ocp1Error.objectClassMismatch }
-        guard let type = classIDMap[classIdentification] as? T.Type
-        else { throw Ocp1Error.noMatchingTypeForClass }
+    // managers
+    register(OcaManager.self)
+    register(OcaDeviceManager.self)
+    // register(OcaLibraryManager.self)
+    register(OcaNetworkManager.self)
+    register(OcaSubscriptionManager.self)
+    register(OcaLockManager.self)
+    register(OcaDiagnosticManager.self)
+    register(OcaNetworkManager.self)
+    register(OcaAudioProcessingManager.self)
+    register(OcaDeviceTimeManager.self)
+    register(OcaMediaClockManager.self)
 
-        return type
-    }
+    // workers
+    register(OcaWorker.self)
+    register(OcaBlock.self)
+    register(OcaMatrix.self)
 
-    func assign<T: OcaRoot>(
-        classIdentification: OcaClassIdentification,
-        objectNumber: OcaONo
-    ) throws -> T {
-        let type: T.Type = try match(classIdentification: classIdentification)
-        return type.init(objectNumber: objectNumber)
-    }
+    // actuators
+    register(OcaActuator.self)
+    register(OcaBasicActuator.self)
+    register(OcaBooleanActuator.self)
+    register(OcaUint8Actuator.self)
+    register(OcaUint16Actuator.self)
+    register(OcaUint32Actuator.self)
+    register(OcaInt8Actuator.self)
+    register(OcaInt16Actuator.self)
+    register(OcaInt32Actuator.self)
+    register(OcaFloat32Actuator.self)
+    register(OcaFloat64Actuator.self)
+    register(OcaStringActuator.self)
+    // TODO: Bitstring support
+    // register(OcaBitstringActuator.self)
 
-    init() {
-        // register built-in classes
-        register(OcaRoot.self)
+    register(OcaGain.self)
+    register(OcaMute.self)
+    register(OcaPanBalance.self)
+    register(OcaPolarity.self)
+    register(OcaSwitch.self)
 
-        // agents
-        register(OcaAgent.self)
-        register(OcaEventHandler.self)
-        register(OcaPhysicalPosition.self)
-        register(OcaTimeSource.self)
-        register(OcaMediaClock3.self)
-        register(OcaGrouper.self)
-        register(OcaGroup.self)
-        register(OcaCounterNotifier.self)
-        register(OcaCounterSetAgent.self)
+    // sensors
+    register(OcaSensor.self)
+    register(OcaBasicSensor.self)
+    register(OcaBooleanSensor.self)
+    register(OcaInt8Sensor.self)
+    register(OcaInt16Sensor.self)
+    register(OcaInt32Sensor.self)
+    register(OcaInt64Sensor.self)
+    register(OcaUint8Sensor.self)
+    register(OcaUint16Sensor.self)
+    register(OcaUint32Sensor.self)
+    register(OcaUint64Sensor.self)
+    register(OcaFloat32Sensor.self)
+    register(OcaFloat64Sensor.self)
+    register(OcaStringSensor.self)
+    register(OcaLevelSensor.self)
+    register(OcaIdentificationSensor.self)
 
-        // managers
-        register(OcaManager.self)
-        register(OcaDeviceManager.self)
-        // register(OcaLibraryManager.self)
-        register(OcaNetworkManager.self)
-        register(OcaSubscriptionManager.self)
-        register(OcaLockManager.self)
-        register(OcaDiagnosticManager.self)
-        register(OcaNetworkManager.self)
-        register(OcaAudioProcessingManager.self)
-        register(OcaDeviceTimeManager.self)
-        register(OcaMediaClockManager.self)
+    // application networks
+    register(OcaControlNetwork.self)
+    register(OcaApplicationNetwork.self)
+    register(OcaMediaTransportNetwork.self)
 
-        // workers
-        register(OcaWorker.self)
-        register(OcaBlock.self)
-        register(OcaMatrix.self)
-
-        // actuators
-        register(OcaActuator.self)
-        register(OcaBasicActuator.self)
-        register(OcaBooleanActuator.self)
-        register(OcaUint8Actuator.self)
-        register(OcaUint16Actuator.self)
-        register(OcaUint32Actuator.self)
-        register(OcaInt8Actuator.self)
-        register(OcaInt16Actuator.self)
-        register(OcaInt32Actuator.self)
-        register(OcaFloat32Actuator.self)
-        register(OcaFloat64Actuator.self)
-        register(OcaStringActuator.self)
-        // TODO: Bitstring support
-        // register(OcaBitstringActuator.self)
-
-        register(OcaGain.self)
-        register(OcaMute.self)
-        register(OcaPanBalance.self)
-        register(OcaPolarity.self)
-        register(OcaSwitch.self)
-
-        // sensors
-        register(OcaSensor.self)
-        register(OcaBasicSensor.self)
-        register(OcaBooleanSensor.self)
-        register(OcaInt8Sensor.self)
-        register(OcaInt16Sensor.self)
-        register(OcaInt32Sensor.self)
-        register(OcaInt64Sensor.self)
-        register(OcaUint8Sensor.self)
-        register(OcaUint16Sensor.self)
-        register(OcaUint32Sensor.self)
-        register(OcaUint64Sensor.self)
-        register(OcaFloat32Sensor.self)
-        register(OcaFloat64Sensor.self)
-        register(OcaStringSensor.self)
-        register(OcaLevelSensor.self)
-        register(OcaIdentificationSensor.self)
-
-        // application networks
-        register(OcaControlNetwork.self)
-        register(OcaApplicationNetwork.self)
-        register(OcaMediaTransportNetwork.self)
-
-        // networks
-        register(OcaNetworkApplication.self)
-        register(OcaMediaTransportApplication.self)
-        register(OcaNetworkInterface.self)
-    }
+    // networks
+    register(OcaNetworkApplication.self)
+    register(OcaMediaTransportApplication.self)
+    register(OcaNetworkInterface.self)
+  }
 }

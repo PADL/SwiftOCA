@@ -15,18 +15,18 @@
 //
 
 open class OcaIdentificationSensor: OcaSensor {
-    override open class var classID: OcaClassID { OcaClassID("1.1.2.6") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.2.6") }
 
-    public static let identifyEventID = OcaEventID(defLevel: 4, eventIndex: 1)
+  public static let identifyEventID = OcaEventID(defLevel: 4, eventIndex: 1)
 
-    private var cancellable: Ocp1Connection.SubscriptionCancellable?
+  private var cancellable: Ocp1Connection.SubscriptionCancellable?
 
-    @OcaConnection
-    public func onIdentify(_ callback: @escaping OcaSubscriptionCallback) async throws {
-        guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
-        let event = OcaEvent(emitterONo: objectNumber, eventID: Self.identifyEventID)
+  @OcaConnection
+  public func onIdentify(_ callback: @escaping OcaSubscriptionCallback) async throws {
+    guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
+    let event = OcaEvent(emitterONo: objectNumber, eventID: Self.identifyEventID)
 
-        // TODO: remove on deinit
-        cancellable = try await connectionDelegate.addSubscription(event: event, callback: callback)
-    }
+    // TODO: remove on deinit
+    cancellable = try await connectionDelegate.addSubscription(event: event, callback: callback)
+  }
 }

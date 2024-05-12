@@ -15,38 +15,38 @@
 //
 
 open class OcaAgent: OcaRoot, OcaOwnablePrivate {
-    override open class var classID: OcaClassID { OcaClassID("1.2") }
+  override open class var classID: OcaClassID { OcaClassID("1.2") }
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("2.1"),
-        getMethodID: OcaMethodID("2.1"),
-        setMethodID: OcaMethodID("2.2")
-    )
-    public var label: OcaProperty<OcaString>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("2.1"),
+    getMethodID: OcaMethodID("2.1"),
+    setMethodID: OcaMethodID("2.2")
+  )
+  public var label: OcaProperty<OcaString>.PropertyValue
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("2.2"),
-        getMethodID: OcaMethodID("2.3")
-    )
-    public var owner: OcaProperty<OcaONo>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("2.2"),
+    getMethodID: OcaMethodID("2.3")
+  )
+  public var owner: OcaProperty<OcaONo>.PropertyValue
 
-    public var path: (OcaNamePath, OcaONoPath) {
-        get async throws {
-            try await getPath(methodID: OcaMethodID("2.4"))
-        }
+  public var path: (OcaNamePath, OcaONoPath) {
+    get async throws {
+      try await getPath(methodID: OcaMethodID("2.4"))
     }
+  }
 }
 
 extension OcaAgent {
-    @_spi(SwiftOCAPrivate)
-    public func _getOwner(flags: OcaPropertyResolutionFlags = .defaultFlags) async throws
-        -> OcaONo
-    {
-        guard objectNumber != OcaRootBlockONo else { throw Ocp1Error.status(.invalidRequest) }
-        return try await $owner._getValue(self, flags: flags)
-    }
+  @_spi(SwiftOCAPrivate)
+  public func _getOwner(flags: OcaPropertyResolutionFlags = .defaultFlags) async throws
+    -> OcaONo
+  {
+    guard objectNumber != OcaRootBlockONo else { throw Ocp1Error.status(.invalidRequest) }
+    return try await $owner._getValue(self, flags: flags)
+  }
 
-    func _set(owner: OcaONo) {
-        self.$owner.subject.send(.success(owner))
-    }
+  func _set(owner: OcaONo) {
+    self.$owner.subject.send(.success(owner))
+  }
 }

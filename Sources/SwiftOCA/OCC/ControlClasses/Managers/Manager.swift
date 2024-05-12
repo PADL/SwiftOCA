@@ -15,5 +15,5 @@
 //
 
 open class OcaManager: OcaRoot {
-    override open class var classID: OcaClassID { OcaClassID("1.3") }
+  override open class var classID: OcaClassID { OcaClassID("1.3") }
 }

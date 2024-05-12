@@ -18,15 +18,15 @@ import SwiftOCA
 import SwiftUI
 
 extension OcaArray2D where Element == OcaRoot? {
-    var map: [OcaONo: OcaRoot] {
-        var map = [OcaONo: OcaRoot]()
+  var map: [OcaONo: OcaRoot] {
+    var map = [OcaONo: OcaRoot]()
 
-        for item in items {
-            if let item {
-                map[item.objectNumber] = item
-            }
-        }
-
-        return map
+    for item in items {
+      if let item {
+        map[item.objectNumber] = item
+      }
     }
+
+    return map
+  }
 }

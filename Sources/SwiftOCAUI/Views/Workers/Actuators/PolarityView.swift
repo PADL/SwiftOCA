@@ -18,37 +18,37 @@ import SwiftOCA
 import SwiftUI
 
 extension OcaPolarity: OcaViewRepresentable {
-    public var viewType: any OcaView.Type {
-        OcaPolarityView.self
-    }
+  public var viewType: any OcaView.Type {
+    OcaPolarityView.self
+  }
 }
 
 private extension Binding where Value == OcaProperty<OcaPolarityState>.PropertyValue {
-    var value: Binding<Bool> {
-        Binding<Bool>(get: {
-            if case let .success(isInverted) = self.wrappedValue {
-                return isInverted == .inverted
-            } else {
-                return false
-            }
-        }, set: { isInverted in
-            self.wrappedValue = .success(isInverted ? .inverted : .nonInverted)
-        })
-    }
+  var value: Binding<Bool> {
+    Binding<Bool>(get: {
+      if case let .success(isInverted) = self.wrappedValue {
+        return isInverted == .inverted
+      } else {
+        return false
+      }
+    }, set: { isInverted in
+      self.wrappedValue = .success(isInverted ? .inverted : .nonInverted)
+    })
+  }
 }
 
 public struct OcaPolarityView: OcaView {
-    @StateObject
-    var object: OcaPolarity
+  @StateObject
+  var object: OcaPolarity
 
-    public init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object as! OcaPolarity)
-    }
+  public init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object as! OcaPolarity)
+  }
 
-    public var body: some View {
-        Toggle(isOn: object.$state.binding.value) {}
-            .toggleStyle(SymbolToggleStyle(systemImage: "circle.slash", activeColor: .accentColor))
-            .padding()
-            .showProgressIfWaiting(object.state)
-    }
+  public var body: some View {
+    Toggle(isOn: object.$state.binding.value) {}
+      .toggleStyle(SymbolToggleStyle(systemImage: "circle.slash", activeColor: .accentColor))
+      .padding()
+      .showProgressIfWaiting(object.state)
+  }
 }

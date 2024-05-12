@@ -17,15 +17,15 @@
 import SwiftOCA
 
 open class OcaAudioProcessingManager: OcaManager {
-    override open class var classID: OcaClassID { OcaClassID("1.3.9") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.3.9") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
-        try await self.init(
-            objectNumber: OcaAudioProcessingManagerONo,
-            role: "Audio Processing Manager",
-            deviceDelegate: deviceDelegate,
-            addToRootBlock: true
-        )
-    }
+  public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
+    try await self.init(
+      objectNumber: OcaAudioProcessingManagerONo,
+      role: "Audio Processing Manager",
+      deviceDelegate: deviceDelegate,
+      addToRootBlock: true
+    )
+  }
 }

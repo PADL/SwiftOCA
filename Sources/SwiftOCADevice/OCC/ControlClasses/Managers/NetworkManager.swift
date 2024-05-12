@@ -17,28 +17,28 @@
 import SwiftOCA
 
 open class OcaNetworkManager: OcaManager {
-    override open class var classID: OcaClassID { OcaClassID("1.3.6") }
+  override open class var classID: OcaClassID { OcaClassID("1.3.6") }
 
-    // networks and streamNetworks are deprecated
+  // networks and streamNetworks are deprecated
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("3.3"),
-        getMethodID: OcaMethodID("3.3")
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.3"),
+    getMethodID: OcaMethodID("3.3")
+  )
+  public var controlNetworks = [OcaControlNetwork]()
+
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.4"),
+    getMethodID: OcaMethodID("3.4")
+  )
+  public var mediaTransportNetworks = [OcaMediaTransportNetwork]()
+
+  public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
+    try await self.init(
+      objectNumber: OcaNetworkManagerONo,
+      role: "Network Manager",
+      deviceDelegate: deviceDelegate,
+      addToRootBlock: true
     )
-    public var controlNetworks = [OcaControlNetwork]()
-
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("3.4"),
-        getMethodID: OcaMethodID("3.4")
-    )
-    public var mediaTransportNetworks = [OcaMediaTransportNetwork]()
-
-    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
-        try await self.init(
-            objectNumber: OcaNetworkManagerONo,
-            role: "Network Manager",
-            deviceDelegate: deviceDelegate,
-            addToRootBlock: true
-        )
-    }
+  }
 }

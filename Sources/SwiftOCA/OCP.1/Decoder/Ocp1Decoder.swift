@@ -25,23 +25,23 @@ import Foundation
 
 /// A decoder that decodes Swift structures from a flat Ocp1 representation.
 public struct Ocp1Decoder {
-    public var userInfo: [CodingUserInfoKey: Any] = [:]
+  public var userInfo: [CodingUserInfoKey: Any] = [:]
 
-    public init() {}
+  public init() {}
 
-    /// Decodes a value from a flat Ocp1 representation.
-    public func decode<Value>(_ type: Value.Type, from data: [UInt8]) throws -> Value
-        where Value: Decodable
-    {
-        try decode(type, from: Data(data))
-    }
+  /// Decodes a value from a flat Ocp1 representation.
+  public func decode<Value>(_ type: Value.Type, from data: [UInt8]) throws -> Value
+    where Value: Decodable
+  {
+    try decode(type, from: Data(data))
+  }
 
-    /// Decodes a value from a flat Ocp1 representation.
-    public func decode<Value>(_ type: Value.Type, from data: Data) throws -> Value
-        where Value: Decodable
-    {
-        let state: Ocp1DecodingState
-        state = Ocp1DecodingState(data: Data(data), userInfo: userInfo)
-        return try Ocp1DecodingState.decode(type, state: state, codingPath: [], userInfo: userInfo)
-    }
+  /// Decodes a value from a flat Ocp1 representation.
+  public func decode<Value>(_ type: Value.Type, from data: Data) throws -> Value
+    where Value: Decodable
+  {
+    let state: Ocp1DecodingState
+    state = Ocp1DecodingState(data: Data(data), userInfo: userInfo)
+    return try Ocp1DecodingState.decode(type, state: state, codingPath: [], userInfo: userInfo)
+  }
 }

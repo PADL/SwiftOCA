@@ -24,80 +24,80 @@ public typealias DatagramProxyPeerIdentifier = Sendable & Equatable & Hashable
 
 @OcaDevice
 public class DatagramProxyDeviceEndpoint<
-    T: DatagramProxyPeerIdentifier
+  T: DatagramProxyPeerIdentifier
 >: OcaDeviceEndpointPrivate {
-    public typealias PeerMessagePDU = (T, [UInt8])
+  public typealias PeerMessagePDU = (T, [UInt8])
 
-    public var controllers: [OcaController] {
-        _controllers.map(\.1)
-    }
+  public var controllers: [OcaController] {
+    _controllers.map(\.1)
+  }
 
-    typealias ControllerType = DatagramProxyController<T>
+  typealias ControllerType = DatagramProxyController<T>
 
-    let timeout: Duration
-    let device: OcaDevice
-    let logger = Logger(label: "com.padl.SwiftOCADevice.DatagramProxyDeviceEndpoint")
-    let outputStream: AsyncStream<PeerMessagePDU>.Continuation
+  let timeout: Duration
+  let device: OcaDevice
+  let logger = Logger(label: "com.padl.SwiftOCADevice.DatagramProxyDeviceEndpoint")
+  let outputStream: AsyncStream<PeerMessagePDU>.Continuation
 
-    private var _controllers = [T: ControllerType]()
-    private let inputStream: AsyncStream<PeerMessagePDU>
+  private var _controllers = [T: ControllerType]()
+  private let inputStream: AsyncStream<PeerMessagePDU>
 
-    public init(
-        timeout: Duration = .seconds(15),
-        inputStream: AsyncStream<PeerMessagePDU>,
-        outputStream: AsyncStream<PeerMessagePDU>.Continuation,
-        device: OcaDevice = OcaDevice.shared
-    ) async throws {
-        self.timeout = timeout
-        self.device = device
-        self.inputStream = inputStream
-        self.outputStream = outputStream
+  public init(
+    timeout: Duration = .seconds(15),
+    inputStream: AsyncStream<PeerMessagePDU>,
+    outputStream: AsyncStream<PeerMessagePDU>.Continuation,
+    device: OcaDevice = OcaDevice.shared
+  ) async throws {
+    self.timeout = timeout
+    self.device = device
+    self.inputStream = inputStream
+    self.outputStream = outputStream
 
-        try await device.add(endpoint: self)
-    }
+    try await device.add(endpoint: self)
+  }
 
-    public func run() async throws {
-        repeat {
-            for await messagePdu in inputStream {
-                let controller = controller(for: messagePdu.0)
-                do {
-                    let messages = try await controller.decodeMessages(from: messagePdu.1)
-                    for (message, rrq) in messages {
-                        try await controller.handle(
-                            for: self,
-                            message: message,
-                            rrq: rrq
-                        )
-                    }
-                } catch {
-                    await unlockAndRemove(controller: controller)
-                }
-            }
-            if Task.isCancelled {
-                logger.info("\(type(of: self)) cancelled, stopping")
-                break
-            }
-        } while true
-        try await device.remove(endpoint: self)
-    }
-
-    private func controller(for peerID: T) -> ControllerType {
-        var controller: ControllerType!
-
-        controller = _controllers[peerID]
-        if controller == nil {
-            controller = DatagramProxyController(with: peerID, endpoint: self)
-            logger.info("datagram proxy controller added", controller: controller)
-            _controllers[peerID] = controller
+  public func run() async throws {
+    repeat {
+      for await messagePdu in inputStream {
+        let controller = controller(for: messagePdu.0)
+        do {
+          let messages = try await controller.decodeMessages(from: messagePdu.1)
+          for (message, rrq) in messages {
+            try await controller.handle(
+              for: self,
+              message: message,
+              rrq: rrq
+            )
+          }
+        } catch {
+          await unlockAndRemove(controller: controller)
         }
+      }
+      if Task.isCancelled {
+        logger.info("\(type(of: self)) cancelled, stopping")
+        break
+      }
+    } while true
+    try await device.remove(endpoint: self)
+  }
 
-        return controller
+  private func controller(for peerID: T) -> ControllerType {
+    var controller: ControllerType!
+
+    controller = _controllers[peerID]
+    if controller == nil {
+      controller = DatagramProxyController(with: peerID, endpoint: self)
+      logger.info("datagram proxy controller added", controller: controller)
+      _controllers[peerID] = controller
     }
 
-    // only needed for stream-oriented controllers
-    func add(controller: ControllerType) async {}
+    return controller
+  }
 
-    func remove(controller: ControllerType) async {
-        _controllers[controller.peerID] = nil
-    }
+  // only needed for stream-oriented controllers
+  func add(controller: ControllerType) async {}
+
+  func remove(controller: ControllerType) async {
+    _controllers[controller.peerID] = nil
+  }
 }

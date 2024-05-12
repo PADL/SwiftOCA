@@ -15,54 +15,54 @@
 //
 
 public enum Ocp1Error: Error, Equatable {
-    /// An OCA status received from a device; should not be used for local errors
-    case status(OcaStatus)
-    case exception(Ocp1Notification2ExceptionData)
-    case alreadySubscribedToEvent
-    case arrayOrDataTooBig
-    case bonjourRegistrationFailed
-    case connectionTimeout
-    case duplicateObject(OcaONo)
-    case endpointAlreadyRegistered
-    case endpointNotRegistered
-    case invalidHandle
-    case invalidKeepAlivePdu
-    case invalidMessageSize
-    case invalidMessageType
-    case invalidObject(OcaONo)
-    case invalidPduSize
-    case invalidProtocolVersion
-    case invalidProxyMethodResponse
-    case invalidSyncValue
-    case noConnectionDelegate
-    case noInitialValue
-    case noMatchingTypeForClass
-    case notConnected
-    case notImplemented
-    case notSubscribedToEvent
-    case objectAlreadyContainedByBlock
-    case objectClassIsNotSubclass
-    case objectClassMismatch
-    case objectNotPresent(OcaONo)
-    case pduSendingFailed
-    case pduTooShort
-    case propertyIsImmutable
-    case propertyIsSettableOnly
-    case proxyResolutionFailed
-    case requestParameterOutOfRange
-    case remoteDeviceResolutionFailed
-    case responseParameterOutOfRange
-    case responseTimeout
-    case serviceResolutionFailed
-    case unhandledEvent
-    case unknownPduType
-    case unknownServiceType
+  /// An OCA status received from a device; should not be used for local errors
+  case status(OcaStatus)
+  case exception(Ocp1Notification2ExceptionData)
+  case alreadySubscribedToEvent
+  case arrayOrDataTooBig
+  case bonjourRegistrationFailed
+  case connectionTimeout
+  case duplicateObject(OcaONo)
+  case endpointAlreadyRegistered
+  case endpointNotRegistered
+  case invalidHandle
+  case invalidKeepAlivePdu
+  case invalidMessageSize
+  case invalidMessageType
+  case invalidObject(OcaONo)
+  case invalidPduSize
+  case invalidProtocolVersion
+  case invalidProxyMethodResponse
+  case invalidSyncValue
+  case noConnectionDelegate
+  case noInitialValue
+  case noMatchingTypeForClass
+  case notConnected
+  case notImplemented
+  case notSubscribedToEvent
+  case objectAlreadyContainedByBlock
+  case objectClassIsNotSubclass
+  case objectClassMismatch
+  case objectNotPresent(OcaONo)
+  case pduSendingFailed
+  case pduTooShort
+  case propertyIsImmutable
+  case propertyIsSettableOnly
+  case proxyResolutionFailed
+  case requestParameterOutOfRange
+  case remoteDeviceResolutionFailed
+  case responseParameterOutOfRange
+  case responseTimeout
+  case serviceResolutionFailed
+  case unhandledEvent
+  case unknownPduType
+  case unknownServiceType
 
-    // encoding errors
-    case nilNotEncodable
-    case stringNotEncodable(String)
-    case recursiveTypeDisallowed
+  // encoding errors
+  case nilNotEncodable
+  case stringNotEncodable(String)
+  case recursiveTypeDisallowed
 
-    // decoding errors
-    case stringNotDecodable([UInt8])
+  // decoding errors
+  case stringNotDecodable([UInt8])
 }

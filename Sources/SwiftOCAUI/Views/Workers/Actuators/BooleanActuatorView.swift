@@ -18,37 +18,37 @@ import SwiftOCA
 import SwiftUI
 
 extension OcaBooleanActuator: OcaViewRepresentable {
-    public var viewType: any OcaView.Type {
-        OcaBooleanView.self
-    }
+  public var viewType: any OcaView.Type {
+    OcaBooleanView.self
+  }
 }
 
 private extension Binding where Value == OcaProperty<OcaBoolean>.PropertyValue {
-    var value: Binding<Bool> {
-        Binding<Bool>(get: {
-            if case let .success(isOn) = self.wrappedValue {
-                return isOn
-            } else {
-                return false
-            }
-        }, set: { isOn in
-            self.wrappedValue = .success(isOn)
-        })
-    }
+  var value: Binding<Bool> {
+    Binding<Bool>(get: {
+      if case let .success(isOn) = self.wrappedValue {
+        return isOn
+      } else {
+        return false
+      }
+    }, set: { isOn in
+      self.wrappedValue = .success(isOn)
+    })
+  }
 }
 
 public struct OcaBooleanView: OcaView {
-    @StateObject
-    var object: OcaBooleanActuator
+  @StateObject
+  var object: OcaBooleanActuator
 
-    public init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object as! OcaBooleanActuator)
-    }
+  public init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object as! OcaBooleanActuator)
+  }
 
-    public var body: some View {
-        Toggle(isOn: object.$setting.binding.value) {}
-            .toggleStyle(SymbolToggleStyle(systemImage: "circle.fill", activeColor: .accentColor))
-            .padding()
-            .showProgressIfWaiting(object.setting)
-    }
+  public var body: some View {
+    Toggle(isOn: object.$setting.binding.value) {}
+      .toggleStyle(SymbolToggleStyle(systemImage: "circle.fill", activeColor: .accentColor))
+      .padding()
+      .showProgressIfWaiting(object.setting)
+  }
 }

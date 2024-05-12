@@ -17,44 +17,44 @@
 import Foundation
 
 public struct Ocp1EventData: Codable, Sendable {
-    let event: OcaEvent
-    let eventParameters: Data
+  let event: OcaEvent
+  let eventParameters: Data
 
-    public init(event: OcaEvent, eventParameters: Data) {
-        self.event = event
-        self.eventParameters = eventParameters
-    }
+  public init(event: OcaEvent, eventParameters: Data) {
+    self.event = event
+    self.eventParameters = eventParameters
+  }
 }
 
 public struct Ocp1NtfParams: Codable, Sendable {
-    let parameterCount: OcaUint8
-    let context: OcaBlob
-    let eventData: Ocp1EventData
+  let parameterCount: OcaUint8
+  let context: OcaBlob
+  let eventData: Ocp1EventData
 
-    public init(parameterCount: OcaUint8, context: OcaBlob, eventData: Ocp1EventData) {
-        self.parameterCount = parameterCount
-        self.context = context
-        self.eventData = eventData
-    }
+  public init(parameterCount: OcaUint8, context: OcaBlob, eventData: Ocp1EventData) {
+    self.parameterCount = parameterCount
+    self.context = context
+    self.eventData = eventData
+  }
 }
 
 public struct Ocp1Notification1: Ocp1Message, Codable, Sendable {
-    let notificationSize: OcaUint32
-    let targetONo: OcaONo
-    let methodID: OcaMethodID
-    let parameters: Ocp1NtfParams
+  let notificationSize: OcaUint32
+  let targetONo: OcaONo
+  let methodID: OcaMethodID
+  let parameters: Ocp1NtfParams
 
-    public var messageSize: OcaUint32 { notificationSize }
+  public var messageSize: OcaUint32 { notificationSize }
 
-    public init(
-        notificationSize: OcaUint32 = 0,
-        targetONo: OcaONo,
-        methodID: OcaMethodID,
-        parameters: Ocp1NtfParams
-    ) {
-        self.notificationSize = notificationSize
-        self.targetONo = targetONo
-        self.methodID = methodID
-        self.parameters = parameters
-    }
+  public init(
+    notificationSize: OcaUint32 = 0,
+    targetONo: OcaONo,
+    methodID: OcaMethodID,
+    parameters: Ocp1NtfParams
+  ) {
+    self.notificationSize = notificationSize
+    self.targetONo = targetONo
+    self.methodID = methodID
+    self.parameters = parameters
+  }
 }

@@ -18,14 +18,14 @@ import SwiftOCA
 import SwiftUI
 
 struct OcaDeviceManagerView: View, OcaView {
-    @StateObject
-    var object: OcaDeviceManager
+  @StateObject
+  var object: OcaDeviceManager
 
-    init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object as! OcaDeviceManager)
-    }
+  init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object as! OcaDeviceManager)
+  }
 
-    public var body: some View {
-        OcaPropertyTableView(object)
-    }
+  public var body: some View {
+    OcaPropertyTableView(object)
+  }
 }

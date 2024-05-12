@@ -25,37 +25,37 @@ let classIDJSONKey = "_classID"
 let actionObjectsJSONKey = "_members"
 
 public extension OcaDevice {
-    @discardableResult
-    func deserialize(jsonObject: [String: Sendable]) async throws -> OcaRoot {
-        guard let classID = jsonObject[classIDJSONKey] as? String else {
-            throw Ocp1Error.objectClassMismatch
-        }
-
-        guard let objectNumber = jsonObject[objectNumberJSONKey] as? OcaONo,
-              objectNumber != OcaInvalidONo
-        else {
-            throw Ocp1Error.status(.badONo)
-        }
-
-        guard let object = objects[objectNumber] else {
-            throw Ocp1Error.objectNotPresent(objectNumber)
-        }
-
-        guard try await object.objectIdentification.classIdentification
-            .classID == OcaClassID(unsafeString: classID)
-        else {
-            throw Ocp1Error.objectClassMismatch
-        }
-
-        for (_, propertyKeyPath) in object.allDevicePropertyKeyPaths {
-            let property = object[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
-            guard let value = jsonObject[property.propertyID.description] else {
-                throw Ocp1Error.status(.badFormat)
-            }
-
-            try await property.set(object: object, jsonValue: value, device: self)
-        }
-
-        return object
+  @discardableResult
+  func deserialize(jsonObject: [String: Sendable]) async throws -> OcaRoot {
+    guard let classID = jsonObject[classIDJSONKey] as? String else {
+      throw Ocp1Error.objectClassMismatch
     }
+
+    guard let objectNumber = jsonObject[objectNumberJSONKey] as? OcaONo,
+          objectNumber != OcaInvalidONo
+    else {
+      throw Ocp1Error.status(.badONo)
+    }
+
+    guard let object = objects[objectNumber] else {
+      throw Ocp1Error.objectNotPresent(objectNumber)
+    }
+
+    guard try await object.objectIdentification.classIdentification
+      .classID == OcaClassID(unsafeString: classID)
+    else {
+      throw Ocp1Error.objectClassMismatch
+    }
+
+    for (_, propertyKeyPath) in object.allDevicePropertyKeyPaths {
+      let property = object[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
+      guard let value = jsonObject[property.propertyID.description] else {
+        throw Ocp1Error.status(.badFormat)
+      }
+
+      try await property.set(object: object, jsonValue: value, device: self)
+    }
+
+    return object
+  }
 }

@@ -26,157 +26,157 @@ import IORingUtils
 import SystemPackage
 
 fileprivate extension Errno {
-    var mappedError: Error {
-        switch self {
-        case .connectionRefused:
-            fallthrough
-        case .connectionReset:
-            fallthrough
-        case .brokenPipe:
-            return Ocp1Error.notConnected
-        default:
-            return self
-        }
+  var mappedError: Error {
+    switch self {
+    case .connectionRefused:
+      fallthrough
+    case .connectionReset:
+      fallthrough
+    case .brokenPipe:
+      return Ocp1Error.notConnected
+    default:
+      return self
     }
+  }
 }
 
 public class Ocp1IORingConnection: Ocp1Connection {
-    fileprivate let deviceAddress: any SocketAddress
-    fileprivate var socket: Socket?
-    fileprivate var type: Int32 {
-        fatalError("must be implemented by subclass")
+  fileprivate let deviceAddress: any SocketAddress
+  fileprivate var socket: Socket?
+  fileprivate var type: Int32 {
+    fatalError("must be implemented by subclass")
+  }
+
+  public convenience init(
+    deviceAddress: Data,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    try self.init(socketAddress: deviceAddress.socketAddress, options: options)
+  }
+
+  fileprivate init(
+    socketAddress: any SocketAddress,
+    options: Ocp1ConnectionOptions
+  ) {
+    deviceAddress = socketAddress
+    super.init(options: options)
+  }
+
+  public convenience init(
+    path: String,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    try self.init(
+      socketAddress: sockaddr_un(
+        family: sa_family_t(AF_LOCAL),
+        presentationAddress: path
+      ),
+      options: options
+    )
+  }
+
+  override func connectDevice() async throws {
+    socket = try Socket(
+      ring: IORing.shared,
+      domain: deviceAddress.family,
+      type: __socket_type(UInt32(type)),
+      protocol: 0
+    )
+    if deviceAddress.family == AF_INET || deviceAddress.family == AF_INET6 {
+      try socket!.setReuseAddr()
+    }
+    try await socket!.connect(to: deviceAddress)
+    try await super.connectDevice()
+  }
+
+  override public func disconnectDevice(clearObjectCache: Bool) async throws {
+    socket = nil
+    try await super.disconnectDevice(clearObjectCache: clearObjectCache)
+  }
+
+  fileprivate func withMappedError<T: Sendable>(
+    _ block: (_ socket: Socket) async throws
+      -> T
+  ) async throws -> T {
+    guard let socket else {
+      throw Ocp1Error.notConnected
     }
 
-    public convenience init(
-        deviceAddress: Data,
-        options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
-    ) throws {
-        try self.init(socketAddress: deviceAddress.socketAddress, options: options)
+    do {
+      return try await block(socket)
+    } catch let error as Errno {
+      throw error.mappedError
     }
-
-    fileprivate init(
-        socketAddress: any SocketAddress,
-        options: Ocp1ConnectionOptions
-    ) {
-        deviceAddress = socketAddress
-        super.init(options: options)
-    }
-
-    public convenience init(
-        path: String,
-        options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
-    ) throws {
-        try self.init(
-            socketAddress: sockaddr_un(
-                family: sa_family_t(AF_LOCAL),
-                presentationAddress: path
-            ),
-            options: options
-        )
-    }
-
-    override func connectDevice() async throws {
-        socket = try Socket(
-            ring: IORing.shared,
-            domain: deviceAddress.family,
-            type: __socket_type(UInt32(type)),
-            protocol: 0
-        )
-        if deviceAddress.family == AF_INET || deviceAddress.family == AF_INET6 {
-            try socket!.setReuseAddr()
-        }
-        try await socket!.connect(to: deviceAddress)
-        try await super.connectDevice()
-    }
-
-    override public func disconnectDevice(clearObjectCache: Bool) async throws {
-        socket = nil
-        try await super.disconnectDevice(clearObjectCache: clearObjectCache)
-    }
-
-    fileprivate func withMappedError<T: Sendable>(
-        _ block: (_ socket: Socket) async throws
-            -> T
-    ) async throws -> T {
-        guard let socket else {
-            throw Ocp1Error.notConnected
-        }
-
-        do {
-            return try await block(socket)
-        } catch let error as Errno {
-            throw error.mappedError
-        }
-    }
+  }
 }
 
 public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
-    override public var heartbeatTime: Duration {
-        .seconds(1)
+  override public var heartbeatTime: Duration {
+    .seconds(1)
+  }
+
+  override fileprivate var type: Int32 {
+    SOCK_DGRAM
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public static let MaximumPduSize = 1500
+
+  override public func read(_ length: Int) async throws -> Data {
+    // read maximum PDU size
+    try await withMappedError { socket in
+      Data(try await socket.receive(count: Self.MaximumPduSize))
     }
+  }
 
-    override fileprivate var type: Int32 {
-        SOCK_DGRAM
+  override public func write(_ data: Data) async throws -> Int {
+    try await withMappedError { socket in
+      try await socket.send(Array(data))
+      return data.count
     }
+  }
 
-    @_spi(SwiftOCAPrivate)
-    public static let MaximumPduSize = 1500
+  override public var connectionPrefix: String {
+    let prefix = deviceAddress
+      .family == AF_LOCAL ? OcaLocalConnectionPrefix : OcaUdpConnectionPrefix
+    return "\(prefix)/\(deviceAddressToString(deviceAddress))"
+  }
 
-    override public func read(_ length: Int) async throws -> Data {
-        // read maximum PDU size
-        try await withMappedError { socket in
-            Data(try await socket.receive(count: Self.MaximumPduSize))
-        }
-    }
-
-    override public func write(_ data: Data) async throws -> Int {
-        try await withMappedError { socket in
-            try await socket.send(Array(data))
-            return data.count
-        }
-    }
-
-    override public var connectionPrefix: String {
-        let prefix = deviceAddress
-            .family == AF_LOCAL ? OcaLocalConnectionPrefix : OcaUdpConnectionPrefix
-        return "\(prefix)/\(deviceAddressToString(deviceAddress))"
-    }
-
-    override public var isDatagram: Bool { true }
+  override public var isDatagram: Bool { true }
 }
 
 public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
-    override fileprivate var type: Int32 {
-        SOCK_STREAM
-    }
+  override fileprivate var type: Int32 {
+    SOCK_STREAM
+  }
 
-    override public func read(_ length: Int) async throws -> Data {
-        try await withMappedError { socket in
-            Data(try await socket.read(count: length, awaitingAllRead: true))
-        }
+  override public func read(_ length: Int) async throws -> Data {
+    try await withMappedError { socket in
+      Data(try await socket.read(count: length, awaitingAllRead: true))
     }
+  }
 
-    override public func write(_ data: Data) async throws -> Int {
-        try await withMappedError { socket in
-            try await socket.write(Array(data), count: data.count, awaitingAllWritten: true)
-        }
+  override public func write(_ data: Data) async throws -> Int {
+    try await withMappedError { socket in
+      try await socket.write(Array(data), count: data.count, awaitingAllWritten: true)
     }
+  }
 
-    override public var connectionPrefix: String {
-        let prefix = deviceAddress
-            .family == AF_LOCAL ? OcaLocalConnectionPrefix : OcaTcpConnectionPrefix
-        return "\(prefix)/\(deviceAddressToString(deviceAddress))"
-    }
+  override public var connectionPrefix: String {
+    let prefix = deviceAddress
+      .family == AF_LOCAL ? OcaLocalConnectionPrefix : OcaTcpConnectionPrefix
+    return "\(prefix)/\(deviceAddressToString(deviceAddress))"
+  }
 
-    override public var isDatagram: Bool { false }
+  override public var isDatagram: Bool { false }
 }
 
 private func deviceAddressToString(_ deviceAddress: any SocketAddress) -> String {
-    do {
-        return try deviceAddress.presentationAddress
-    } catch {
-        return "<unknown>"
-    }
+  do {
+    return try deviceAddress.presentationAddress
+  } catch {
+    return "<unknown>"
+  }
 }
 
 #endif

@@ -19,112 +19,112 @@ import Foundation
 private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 
 public extension Ocp1Connection {
-    /// a token that can be used by the client to unsubscribe
-    final class SubscriptionCancellable: Hashable, Sendable {
-        public static func == (
-            lhs: Ocp1Connection.SubscriptionCancellable,
-            rhs: Ocp1Connection.SubscriptionCancellable
-        ) -> Bool {
-            ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
-        }
-
-        public func hash(into hasher: inout Hasher) {
-            ObjectIdentifier(self).hash(into: &hasher)
-        }
-
-        let event: OcaEvent
-        let callback: OcaSubscriptionCallback
-
-        init(event: OcaEvent, callback: @escaping OcaSubscriptionCallback) {
-            self.event = event
-            self.callback = callback
-        }
+  /// a token that can be used by the client to unsubscribe
+  final class SubscriptionCancellable: Hashable, Sendable {
+    public static func == (
+      lhs: Ocp1Connection.SubscriptionCancellable,
+      rhs: Ocp1Connection.SubscriptionCancellable
+    ) -> Bool {
+      ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
     }
 
-    func isSubscribed(event: OcaEvent) -> Bool {
-        subscriptions[event] != nil
+    public func hash(into hasher: inout Hasher) {
+      ObjectIdentifier(self).hash(into: &hasher)
     }
 
-    func isSubscribed(_ cancellable: SubscriptionCancellable) -> Bool {
-        guard let eventSubscriptions = subscriptions[cancellable.event] else { return false }
-        return eventSubscriptions.subscriptions.contains(cancellable)
+    let event: OcaEvent
+    let callback: OcaSubscriptionCallback
+
+    init(event: OcaEvent, callback: @escaping OcaSubscriptionCallback) {
+      self.event = event
+      self.callback = callback
+    }
+  }
+
+  func isSubscribed(event: OcaEvent) -> Bool {
+    subscriptions[event] != nil
+  }
+
+  func isSubscribed(_ cancellable: SubscriptionCancellable) -> Bool {
+    guard let eventSubscriptions = subscriptions[cancellable.event] else { return false }
+    return eventSubscriptions.subscriptions.contains(cancellable)
+  }
+
+  func addSubscription(
+    event: OcaEvent,
+    callback: @escaping OcaSubscriptionCallback
+  ) async throws -> SubscriptionCancellable {
+    let cancellable = SubscriptionCancellable(event: event, callback: callback)
+    if let eventSubscriptions = subscriptions[event] {
+      if eventSubscriptions.subscriptions.contains(cancellable) {
+        throw Ocp1Error.alreadySubscribedToEvent
+      }
+      eventSubscriptions.subscriptions.insert(cancellable)
+    } else {
+      let eventSubscriptions = EventSubscriptions()
+      eventSubscriptions.subscriptions.insert(cancellable)
+      subscriptions[event] = eventSubscriptions
+
+      try await subscriptionManager.addSubscription(
+        event: event,
+        subscriber: subscriber,
+        subscriberContext: OcaBlob(),
+        notificationDeliveryMode: .normal,
+        destinationInformation: OcaNetworkAddress()
+      )
     }
 
-    func addSubscription(
-        event: OcaEvent,
-        callback: @escaping OcaSubscriptionCallback
-    ) async throws -> SubscriptionCancellable {
-        let cancellable = SubscriptionCancellable(event: event, callback: callback)
-        if let eventSubscriptions = subscriptions[event] {
-            if eventSubscriptions.subscriptions.contains(cancellable) {
-                throw Ocp1Error.alreadySubscribedToEvent
-            }
-            eventSubscriptions.subscriptions.insert(cancellable)
-        } else {
-            let eventSubscriptions = EventSubscriptions()
-            eventSubscriptions.subscriptions.insert(cancellable)
-            subscriptions[event] = eventSubscriptions
+    return cancellable
+  }
 
-            try await subscriptionManager.addSubscription(
-                event: event,
-                subscriber: subscriber,
-                subscriberContext: OcaBlob(),
-                notificationDeliveryMode: .normal,
-                destinationInformation: OcaNetworkAddress()
-            )
-        }
-
-        return cancellable
+  func removeSubscription(_ cancellable: SubscriptionCancellable) async throws {
+    guard let eventSubscriptions = subscriptions[cancellable.event],
+          eventSubscriptions.subscriptions.contains(cancellable)
+    else {
+      throw Ocp1Error.notSubscribedToEvent
     }
 
-    func removeSubscription(_ cancellable: SubscriptionCancellable) async throws {
-        guard let eventSubscriptions = subscriptions[cancellable.event],
-              eventSubscriptions.subscriptions.contains(cancellable)
-        else {
-            throw Ocp1Error.notSubscribedToEvent
-        }
+    eventSubscriptions.subscriptions.remove(cancellable)
+    if eventSubscriptions.subscriptions.isEmpty {
+      try await subscriptionManager.removeSubscription(
+        event: cancellable.event,
+        subscriber: subscriber
+      )
+    }
+  }
 
-        eventSubscriptions.subscriptions.remove(cancellable)
-        if eventSubscriptions.subscriptions.isEmpty {
-            try await subscriptionManager.removeSubscription(
-                event: cancellable.event,
-                subscriber: subscriber
-            )
-        }
+  internal func removeSubscriptions() async throws {
+    for event in subscriptions.keys {
+      try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
+    }
+    subscriptions.removeAll()
+  }
+
+  internal func refreshSubscriptions() async throws {
+    for event in subscriptions.keys {
+      try await subscriptionManager.addSubscription(
+        event: event,
+        subscriber: subscriber,
+        subscriberContext: OcaBlob(),
+        notificationDeliveryMode: .normal,
+        destinationInformation: OcaNetworkAddress()
+      )
+    }
+  }
+
+  internal func notifySubscribers(of event: OcaEvent, with parameters: Data) {
+    guard let eventSubscriptions = subscriptions[event],
+          !eventSubscriptions.subscriptions.isEmpty
+    else {
+      return
     }
 
-    internal func removeSubscriptions() async throws {
-        for event in subscriptions.keys {
-            try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
-        }
-        subscriptions.removeAll()
+    let subscriptions = eventSubscriptions.subscriptions
+
+    Task {
+      for subscription in subscriptions {
+        try await subscription.callback(event, parameters)
+      }
     }
-
-    internal func refreshSubscriptions() async throws {
-        for event in subscriptions.keys {
-            try await subscriptionManager.addSubscription(
-                event: event,
-                subscriber: subscriber,
-                subscriberContext: OcaBlob(),
-                notificationDeliveryMode: .normal,
-                destinationInformation: OcaNetworkAddress()
-            )
-        }
-    }
-
-    internal func notifySubscribers(of event: OcaEvent, with parameters: Data) {
-        guard let eventSubscriptions = subscriptions[event],
-              !eventSubscriptions.subscriptions.isEmpty
-        else {
-            return
-        }
-
-        let subscriptions = eventSubscriptions.subscriptions
-
-        Task {
-            for subscription in subscriptions {
-                try await subscription.callback(event, parameters)
-            }
-        }
-    }
+  }
 }

@@ -17,5 +17,5 @@
 import SwiftOCA
 
 open class OcaSummingPoint: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.22") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.22") }
 }

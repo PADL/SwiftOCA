@@ -17,13 +17,13 @@
 import SwiftUI
 
 struct DynamicStack<Content: View>: View {
-    @ViewBuilder
-    var content: () -> Content
+  @ViewBuilder
+  var content: () -> Content
 
-    var body: some View {
-        ViewThatFits {
-            HStack(content: content)
-            VStack(content: content)
-        }
+  var body: some View {
+    ViewThatFits {
+      HStack(content: content)
+      VStack(content: content)
     }
+  }
 }

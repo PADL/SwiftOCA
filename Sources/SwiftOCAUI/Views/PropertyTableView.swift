@@ -18,69 +18,69 @@ import SwiftOCA
 import SwiftUI
 
 struct Property: Identifiable {
-    typealias ID = Int
+  typealias ID = Int
 
-    var name: String
-    var keyPath: PartialKeyPath<OcaRoot>
-    var value: any OcaPropertyRepresentable
+  var name: String
+  var keyPath: PartialKeyPath<OcaRoot>
+  var value: any OcaPropertyRepresentable
 
-    var id: ID {
-        value.propertyIDs.hashValue
-    }
+  var id: ID {
+    value.propertyIDs.hashValue
+  }
 
-    var idString: String {
-        // FIXME: breakout vector properties
-        value.propertyIDs.map { String(describing: $0) }.joined(separator: ", ")
-    }
+  var idString: String {
+    // FIXME: breakout vector properties
+    value.propertyIDs.map { String(describing: $0) }.joined(separator: ", ")
+  }
 }
 
 extension OcaPropertyRepresentable {
-    var headingText: Text {
-        Text(description)
-    }
+  var headingText: Text {
+    Text(description)
+  }
 }
 
 struct OcaPropertyTableView: OcaView {
-    @StateObject
-    var object: OcaRoot
+  @StateObject
+  var object: OcaRoot
 
-    init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object)
-    }
+  init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object)
+  }
 
-    public var body: some View {
-        VStack {
-            Text(object.navigationLabel).font(.title).padding()
-            Table(of: Property.self) {
-                TableColumn("Name", value: \.name)
-                TableColumn("ID", value: \.idString)
-                TableColumn("Value") {
-                    if $0.value.hasValueOrError {
-                        Text($0.value.description).help($0.value.description)
-                    } else {
-                        ProgressView()
-                    }
-                }
-            } rows: {
-                let allPropertyKeyPaths: [Property] = object.allPropertyKeyPaths.map {
-                    propertyName, propertyKeyPath in
-                    Property(
-                        name: propertyName,
-                        keyPath: propertyKeyPath,
-                        value: object[keyPath: propertyKeyPath] as! any OcaPropertyRepresentable
-                    )
-                }.sorted {
-                    $0.value.propertyIDs[0] < $1.value.propertyIDs[0]
-                }
-                ForEach(allPropertyKeyPaths) { property in
-                    TableRow(property)
-                }
-            }.task {
-                for property in object.allPropertyKeyPaths {
-                    await (object[keyPath: property.value] as! any OcaPropertyRepresentable)
-                        .subscribe(object)
-                }
-            }
+  public var body: some View {
+    VStack {
+      Text(object.navigationLabel).font(.title).padding()
+      Table(of: Property.self) {
+        TableColumn("Name", value: \.name)
+        TableColumn("ID", value: \.idString)
+        TableColumn("Value") {
+          if $0.value.hasValueOrError {
+            Text($0.value.description).help($0.value.description)
+          } else {
+            ProgressView()
+          }
         }
+      } rows: {
+        let allPropertyKeyPaths: [Property] = object.allPropertyKeyPaths.map {
+          propertyName, propertyKeyPath in
+          Property(
+            name: propertyName,
+            keyPath: propertyKeyPath,
+            value: object[keyPath: propertyKeyPath] as! any OcaPropertyRepresentable
+          )
+        }.sorted {
+          $0.value.propertyIDs[0] < $1.value.propertyIDs[0]
+        }
+        ForEach(allPropertyKeyPaths) { property in
+          TableRow(property)
+        }
+      }.task {
+        for property in object.allPropertyKeyPaths {
+          await (object[keyPath: property.value] as! any OcaPropertyRepresentable)
+            .subscribe(object)
+        }
+      }
     }
+  }
 }

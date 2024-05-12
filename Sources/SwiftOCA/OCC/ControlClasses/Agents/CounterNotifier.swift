@@ -17,16 +17,16 @@
 import Foundation
 
 open class OcaCounterNotifier: OcaAgent {
-    override open class var classID: OcaClassID { OcaClassID("1.2.18") }
+  override open class var classID: OcaClassID { OcaClassID("1.2.18") }
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("3.1"),
-        getMethodID: OcaMethodID("3.2"),
-        setMethodID: OcaMethodID("3.3")
-    )
-    public var filterParameters: OcaProperty<OcaCounterNotifierFilterParameters>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.2"),
+    setMethodID: OcaMethodID("3.3")
+  )
+  public var filterParameters: OcaProperty<OcaCounterNotifierFilterParameters>.PropertyValue
 
-    public func getLastUpdate() async throws -> OcaList<OcaCounterUpdate> {
-        try await sendCommandRrq(methodID: OcaMethodID("3.1"))
-    }
+  public func getLastUpdate() async throws -> OcaList<OcaCounterUpdate> {
+    try await sendCommandRrq(methodID: OcaMethodID("3.1"))
+  }
 }

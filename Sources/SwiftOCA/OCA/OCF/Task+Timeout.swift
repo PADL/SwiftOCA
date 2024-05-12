@@ -11,32 +11,32 @@
 ///   If `operation` throws an error before the timeout expires, that error is propagated to the
 /// caller.
 public func withThrowingTimeout<R: Sendable>(
-    of duration: Duration,
-    operation: @escaping @Sendable () async throws -> R
+  of duration: Duration,
+  operation: @escaping @Sendable () async throws -> R
 ) async throws -> R {
-    guard duration != .zero else {
-        return try await operation()
-    }
+  guard duration != .zero else {
+    return try await operation()
+  }
 
-    return try await withThrowingTaskGroup(of: R.self) { group in
-        let deadline = ContinuousClock.now + duration
+  return try await withThrowingTaskGroup(of: R.self) { group in
+    let deadline = ContinuousClock.now + duration
 
-        // Start actual work.
-        group.addTask {
-            try await operation()
-        }
-        // Start timeout child task.
-        group.addTask {
-            let interval = deadline - .now
-            if interval > .zero {
-                try await Task.sleep(for: duration)
-            }
-            try Task.checkCancellation()
-            throw Ocp1Error.responseTimeout
-        }
-        // First finished child task wins, cancel the other task.
-        let result = try await group.next()!
-        group.cancelAll()
-        return result
+    // Start actual work.
+    group.addTask {
+      try await operation()
     }
+    // Start timeout child task.
+    group.addTask {
+      let interval = deadline - .now
+      if interval > .zero {
+        try await Task.sleep(for: duration)
+      }
+      try Task.checkCancellation()
+      throw Ocp1Error.responseTimeout
+    }
+    // First finished child task wins, cancel the other task.
+    let result = try await group.next()!
+    group.cancelAll()
+    return result
+  }
 }

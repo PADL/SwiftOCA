@@ -17,15 +17,15 @@
 public typealias OcaComponent = OcaUint16
 
 public struct OcaVersion: Equatable, Codable, Sendable {
-    public let major: OcaUint32
-    public let minor: OcaUint32
-    public let build: OcaUint32
-    public let component: OcaComponent
+  public let major: OcaUint32
+  public let minor: OcaUint32
+  public let build: OcaUint32
+  public let component: OcaComponent
 
-    public init(major: OcaUint32, minor: OcaUint32, build: OcaUint32, component: OcaComponent) {
-        self.major = major
-        self.minor = minor
-        self.build = build
-        self.component = component
-    }
+  public init(major: OcaUint32, minor: OcaUint32, build: OcaUint32, component: OcaComponent) {
+    self.major = major
+    self.minor = minor
+    self.build = build
+    self.component = component
+  }
 }

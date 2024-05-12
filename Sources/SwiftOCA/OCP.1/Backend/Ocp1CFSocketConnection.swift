@@ -24,286 +24,286 @@ import Foundation
 import SystemPackage
 
 private func Ocp1CFSocketConnection_DataCallBack(
-    _ socket: CFSocket?,
-    _ type: CFSocketCallBackType,
-    _ address: CFData?,
-    _ data: UnsafeRawPointer?,
-    _ info: UnsafeMutableRawPointer?
+  _ socket: CFSocket?,
+  _ type: CFSocketCallBackType,
+  _ address: CFData?,
+  _ data: UnsafeRawPointer?,
+  _ info: UnsafeMutableRawPointer?
 ) {
-    guard let info else { return }
-    let connection = Unmanaged<Ocp1CFSocketConnection>.fromOpaque(info).takeUnretainedValue()
-    connection.dataCallBack(socket, type, address, data)
+  guard let info else { return }
+  let connection = Unmanaged<Ocp1CFSocketConnection>.fromOpaque(info).takeUnretainedValue()
+  connection.dataCallBack(socket, type, address, data)
 }
 
 fileprivate func mappedLastErrno() -> Error {
-    if errno == EBADF || errno == ESHUTDOWN || errno == EPIPE || errno == 0 {
-        return Ocp1Error.notConnected
-    } else {
-        return Errno(rawValue: errno)
-    }
+  if errno == EBADF || errno == ESHUTDOWN || errno == EPIPE || errno == 0 {
+    return Ocp1Error.notConnected
+  } else {
+    return Errno(rawValue: errno)
+  }
 }
 
 extension CFSocket: @unchecked
 Sendable {}
 
 public class Ocp1CFSocketConnection: Ocp1Connection {
-    fileprivate let deviceAddress: Data
-    fileprivate var cfSocket: CFSocket?
-    fileprivate var type: Int32 {
-        fatalError("must be implemented by subclass")
+  fileprivate let deviceAddress: Data
+  fileprivate var cfSocket: CFSocket?
+  fileprivate var type: Int32 {
+    fatalError("must be implemented by subclass")
+  }
+
+  private var receivedDataChannel = AsyncChannel<Data>()
+  private var receivedData = Data()
+
+  public init(
+    deviceAddress: Data,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    self.deviceAddress = deviceAddress
+    super.init(options: options)
+  }
+
+  public convenience init(
+    path: String,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    var sun = try sockaddr_un(path: path)
+    let deviceAddress = Data(bytes: &sun, count: MemoryLayout<sockaddr_un>.stride)
+    try self.init(deviceAddress: deviceAddress, options: options)
+  }
+
+  deinit {
+    if let cfSocket {
+      CFSocketInvalidate(cfSocket)
+    }
+    receivedDataChannel.finish()
+  }
+
+  private var family: sa_family_t {
+    deviceAddress.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) -> sa_family_t in
+      bytes.withMemoryRebound(to: sockaddr.self) {
+        $0.baseAddress?.pointee.sa_family ?? sa_family_t(AF_UNSPEC)
+      }
+    }
+  }
+
+  private var proto: Int32 {
+    switch Int32(family) {
+    case AF_INET:
+      fallthrough
+    case AF_INET6:
+      return isStreamType(type) ? Int32(IPPROTO_TCP) : Int32(IPPROTO_UDP)
+    default:
+      return 0
+    }
+  }
+
+  fileprivate nonisolated func dataCallBack(
+    _ socket: CFSocket?,
+    _ type: CFSocketCallBackType,
+    _ address: CFData?,
+    _ cfData: UnsafeRawPointer?
+  ) {
+    precondition(Thread.isMainThread)
+
+    guard let cfData else { return }
+    let data = Unmanaged<CFData>.fromOpaque(cfData).takeUnretainedValue().data
+    guard data.count > 0 else { return }
+
+    Task {
+      await receivedDataChannel.send(data)
+    }
+  }
+
+  override func connectDevice() async throws {
+    var context = CFSocketContext()
+    context.info = Unmanaged.passUnretained(self).toOpaque()
+
+    let cfSocket = CFSocketCreate(
+      kCFAllocatorDefault,
+      Int32(family),
+      type,
+      proto,
+      CFSocketCallBackType.dataCallBack.rawValue,
+      Ocp1CFSocketConnection_DataCallBack,
+      &context
+    )
+    guard cfSocket != nil else {
+      throw Ocp1Error.notConnected
     }
 
-    private var receivedDataChannel = AsyncChannel<Data>()
-    private var receivedData = Data()
+    if family != AF_LOCAL {
+      var options = CFSocketGetSocketFlags(cfSocket)
+      options |= kCFSocketCloseOnInvalidate
+      CFSocketSetSocketFlags(cfSocket, options)
 
-    public init(
-        deviceAddress: Data,
-        options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
-    ) throws {
-        self.deviceAddress = deviceAddress
-        super.init(options: options)
+      var yes: CInt = 1
+      setsockopt(
+        CFSocketGetNative(cfSocket),
+        SOL_SOCKET,
+        SO_REUSEADDR,
+        &yes,
+        socklen_t(CInt.Stride())
+      )
+      setsockopt(
+        CFSocketGetNative(cfSocket),
+        SOL_SOCKET,
+        SO_REUSEPORT,
+        &yes,
+        socklen_t(CInt.Stride())
+      )
     }
 
-    public convenience init(
-        path: String,
-        options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
-    ) throws {
-        var sun = try sockaddr_un(path: path)
-        let deviceAddress = Data(bytes: &sun, count: MemoryLayout<sockaddr_un>.stride)
-        try self.init(deviceAddress: deviceAddress, options: options)
+    self.cfSocket = cfSocket
+
+    let runLoopSource = CFSocketCreateRunLoopSource(kCFAllocatorDefault, cfSocket, 0)
+
+    try await withTaskCancellationHandler(operation: {
+      CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
+      guard CFSocketIsValid(cfSocket),
+            CFSocketConnectToAddress(cfSocket, deviceAddress.cfData, 0) == .success
+      else {
+        throw mappedLastErrno()
+      }
+    }, onCancel: {
+      CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
+    })
+
+    try await super.connectDevice()
+  }
+
+  override public func disconnectDevice(clearObjectCache: Bool) async throws {
+    if let cfSocket {
+      CFSocketInvalidate(cfSocket)
+      self.cfSocket = nil
     }
 
-    deinit {
-        if let cfSocket {
-            CFSocketInvalidate(cfSocket)
-        }
-        receivedDataChannel.finish()
+    try await super.disconnectDevice(clearObjectCache: clearObjectCache)
+  }
+
+  private func drainChannel(atLeast length: Int) async {
+    guard receivedData.count < length else { return }
+
+    for await data in receivedDataChannel {
+      receivedData += data
+      guard receivedData.count < length else { return }
+    }
+  }
+
+  override public func read(_ length: Int) async throws -> Data {
+    while receivedData.count < length {
+      await drainChannel(atLeast: length)
     }
 
-    private var family: sa_family_t {
-        deviceAddress.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) -> sa_family_t in
-            bytes.withMemoryRebound(to: sockaddr.self) {
-                $0.baseAddress?.pointee.sa_family ?? sa_family_t(AF_UNSPEC)
-            }
-        }
+    // NOTE: make a copy here, otherwise we will have concurrent access
+    let data = Data(receivedData.prefix(length))
+    receivedData = receivedData.dropFirst(length)
+
+    return data
+  }
+
+  override public func write(_ data: Data) async throws -> Int {
+    guard let cfSocket else {
+      throw Ocp1Error.notConnected
     }
-
-    private var proto: Int32 {
-        switch Int32(family) {
-        case AF_INET:
-            fallthrough
-        case AF_INET6:
-            return isStreamType(type) ? Int32(IPPROTO_TCP) : Int32(IPPROTO_UDP)
-        default:
-            return 0
-        }
+    let result = CFSocketSendData(cfSocket, nil, data.cfData, 0)
+    switch result {
+    case .success:
+      return data.count
+    case .timeout:
+      throw Ocp1Error.responseTimeout
+    case .error:
+      fallthrough
+    default:
+      throw Ocp1Error.pduSendingFailed
     }
-
-    fileprivate nonisolated func dataCallBack(
-        _ socket: CFSocket?,
-        _ type: CFSocketCallBackType,
-        _ address: CFData?,
-        _ cfData: UnsafeRawPointer?
-    ) {
-        precondition(Thread.isMainThread)
-
-        guard let cfData else { return }
-        let data = Unmanaged<CFData>.fromOpaque(cfData).takeUnretainedValue().data
-        guard data.count > 0 else { return }
-
-        Task {
-            await receivedDataChannel.send(data)
-        }
-    }
-
-    override func connectDevice() async throws {
-        var context = CFSocketContext()
-        context.info = Unmanaged.passUnretained(self).toOpaque()
-
-        let cfSocket = CFSocketCreate(
-            kCFAllocatorDefault,
-            Int32(family),
-            type,
-            proto,
-            CFSocketCallBackType.dataCallBack.rawValue,
-            Ocp1CFSocketConnection_DataCallBack,
-            &context
-        )
-        guard cfSocket != nil else {
-            throw Ocp1Error.notConnected
-        }
-
-        if family != AF_LOCAL {
-            var options = CFSocketGetSocketFlags(cfSocket)
-            options |= kCFSocketCloseOnInvalidate
-            CFSocketSetSocketFlags(cfSocket, options)
-
-            var yes: CInt = 1
-            setsockopt(
-                CFSocketGetNative(cfSocket),
-                SOL_SOCKET,
-                SO_REUSEADDR,
-                &yes,
-                socklen_t(CInt.Stride())
-            )
-            setsockopt(
-                CFSocketGetNative(cfSocket),
-                SOL_SOCKET,
-                SO_REUSEPORT,
-                &yes,
-                socklen_t(CInt.Stride())
-            )
-        }
-
-        self.cfSocket = cfSocket
-
-        let runLoopSource = CFSocketCreateRunLoopSource(kCFAllocatorDefault, cfSocket, 0)
-
-        try await withTaskCancellationHandler(operation: {
-            CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
-            guard CFSocketIsValid(cfSocket),
-                  CFSocketConnectToAddress(cfSocket, deviceAddress.cfData, 0) == .success
-            else {
-                throw mappedLastErrno()
-            }
-        }, onCancel: {
-            CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
-        })
-
-        try await super.connectDevice()
-    }
-
-    override public func disconnectDevice(clearObjectCache: Bool) async throws {
-        if let cfSocket {
-            CFSocketInvalidate(cfSocket)
-            self.cfSocket = nil
-        }
-
-        try await super.disconnectDevice(clearObjectCache: clearObjectCache)
-    }
-
-    private func drainChannel(atLeast length: Int) async {
-        guard receivedData.count < length else { return }
-
-        for await data in receivedDataChannel {
-            receivedData += data
-            guard receivedData.count < length else { return }
-        }
-    }
-
-    override public func read(_ length: Int) async throws -> Data {
-        while receivedData.count < length {
-            await drainChannel(atLeast: length)
-        }
-
-        // NOTE: make a copy here, otherwise we will have concurrent access
-        let data = Data(receivedData.prefix(length))
-        receivedData = receivedData.dropFirst(length)
-
-        return data
-    }
-
-    override public func write(_ data: Data) async throws -> Int {
-        guard let cfSocket else {
-            throw Ocp1Error.notConnected
-        }
-        let result = CFSocketSendData(cfSocket, nil, data.cfData, 0)
-        switch result {
-        case .success:
-            return data.count
-        case .timeout:
-            throw Ocp1Error.responseTimeout
-        case .error:
-            fallthrough
-        default:
-            throw Ocp1Error.pduSendingFailed
-        }
-    }
+  }
 }
 
 public final class Ocp1CFSocketUDPConnection: Ocp1CFSocketConnection {
-    override public var heartbeatTime: Duration {
-        .seconds(1)
-    }
+  override public var heartbeatTime: Duration {
+    .seconds(1)
+  }
 
-    override fileprivate var type: Int32 {
-        SOCK_DGRAM
-    }
+  override fileprivate var type: Int32 {
+    SOCK_DGRAM
+  }
 
-    override public var connectionPrefix: String {
-        "\(OcaUdpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
-    }
+  override public var connectionPrefix: String {
+    "\(OcaUdpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
+  }
 
-    override public var isDatagram: Bool { true }
+  override public var isDatagram: Bool { true }
 }
 
 public final class Ocp1CFSocketTCPConnection: Ocp1CFSocketConnection {
-    override fileprivate var type: Int32 {
-        SOCK_STREAM
-    }
+  override fileprivate var type: Int32 {
+    SOCK_STREAM
+  }
 
-    override public var connectionPrefix: String {
-        "\(OcaTcpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
-    }
+  override public var connectionPrefix: String {
+    "\(OcaTcpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
+  }
 
-    override public var isDatagram: Bool { false }
+  override public var isDatagram: Bool { false }
 }
 
 fileprivate func isStreamType(_ type: Int32) -> Bool {
-    type == SOCK_STREAM
+  type == SOCK_STREAM
 }
 
 fileprivate extension Data {
-    var cfData: CFData {
-        #if canImport(Darwin)
-        return self as NSData
-        #else
-        return unsafeBitCast(self as NSData, to: CFData.self)
-        #endif
-    }
+  var cfData: CFData {
+    #if canImport(Darwin)
+    return self as NSData
+    #else
+    return unsafeBitCast(self as NSData, to: CFData.self)
+    #endif
+  }
 }
 
 fileprivate extension CFData {
-    var data: Data {
-        Data(referencing: unsafeBitCast(self, to: NSData.self))
-    }
+  var data: Data {
+    Data(referencing: unsafeBitCast(self, to: NSData.self))
+  }
 }
 
 #if !canImport(Darwin)
 fileprivate extension CFRunLoopMode {
-    static var defaultMode: CFRunLoopMode {
-        kCFRunLoopDefaultMode
-    }
+  static var defaultMode: CFRunLoopMode {
+    kCFRunLoopDefaultMode
+  }
 }
 #endif
 
 private extension sockaddr_un {
-    init(path pathString: String) throws {
-        self = Self()
-        var sun = self
-        var capacity = 0
-        sun.sun_family = sa_family_t(AF_LOCAL)
+  init(path pathString: String) throws {
+    self = Self()
+    var sun = self
+    var capacity = 0
+    sun.sun_family = sa_family_t(AF_LOCAL)
 
-        try withUnsafeMutablePointer(to: &sun.sun_path) { path in
-            let start = path.propertyBasePointer(to: \.0)!
-            capacity = MemoryLayout.size(ofValue: path.pointee)
-            if capacity <= pathString.utf8.count {
-                throw Ocp1Error.arrayOrDataTooBig
-            }
-            start.withMemoryRebound(to: CChar.self, capacity: capacity) { dst in
-                _ = memcpy(
-                    UnsafeMutableRawPointer(mutating: dst),
-                    pathString,
-                    pathString.utf8.count + 1
-                )
-            }
-        }
-
-        #if canImport(Darwin)
-        sun.sun_len = UInt8(MemoryLayout<sockaddr_un>.size - capacity + pathString.utf8.count)
-        #endif
-        self = sun
+    try withUnsafeMutablePointer(to: &sun.sun_path) { path in
+      let start = path.propertyBasePointer(to: \.0)!
+      capacity = MemoryLayout.size(ofValue: path.pointee)
+      if capacity <= pathString.utf8.count {
+        throw Ocp1Error.arrayOrDataTooBig
+      }
+      start.withMemoryRebound(to: CChar.self, capacity: capacity) { dst in
+        _ = memcpy(
+          UnsafeMutableRawPointer(mutating: dst),
+          pathString,
+          pathString.utf8.count + 1
+        )
+      }
     }
+
+    #if canImport(Darwin)
+    sun.sun_len = UInt8(MemoryLayout<sockaddr_un>.size - capacity + pathString.utf8.count)
+    #endif
+    self = sun
+  }
 }
 
 #endif

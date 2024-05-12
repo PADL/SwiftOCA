@@ -17,29 +17,29 @@
 import Foundation
 
 public struct OcaTime: Codable, Sendable {
-    public let negative: OcaBoolean
-    public let seconds: OcaUint64
-    public let nanoseconds: OcaUint32
+  public let negative: OcaBoolean
+  public let seconds: OcaUint64
+  public let nanoseconds: OcaUint32
 
-    public init() {
-        negative = false
-        seconds = 0
-        nanoseconds = 0
-    }
+  public init() {
+    negative = false
+    seconds = 0
+    nanoseconds = 0
+  }
 
-    public init(negative: OcaBoolean, seconds: OcaUint64, nanoseconds: OcaUint32) {
-        self.negative = negative
-        self.seconds = seconds
-        self.nanoseconds = nanoseconds
-    }
+  public init(negative: OcaBoolean, seconds: OcaUint64, nanoseconds: OcaUint32) {
+    self.negative = negative
+    self.seconds = seconds
+    self.nanoseconds = nanoseconds
+  }
 }
 
 public typealias OcaTimeInterval = TimeInterval
 
 // TODO: check OcaTimeMode encoding
 public enum OcaTimeMode: OcaUint8, Codable, Sendable, CaseIterable {
-    case absolute = 1
-    case relative = 2
+  case absolute = 1
+  case relative = 2
 }
 
 public typealias OcaTimeNTP = OcaUint64
@@ -47,21 +47,21 @@ public typealias OcaTimeNTP = OcaUint64
 public typealias OcaTimePTP = OcaTime
 
 public struct OcaWhenPhysicalRelative: Codable, Sendable {
-    public let timeRefONo: OcaONo
-    public let value: OcaTime
+  public let timeRefONo: OcaONo
+  public let value: OcaTime
 
-    public init(timeRefONo: OcaONo, value: OcaTime) {
-        self.timeRefONo = timeRefONo
-        self.value = value
-    }
+  public init(timeRefONo: OcaONo, value: OcaTime) {
+    self.timeRefONo = timeRefONo
+    self.value = value
+  }
 }
 
 public struct OcaWhenPhysicalAbsolute: Codable, Sendable {
-    public let timeRefONo: OcaONo
-    public let value: OcaTime
+  public let timeRefONo: OcaONo
+  public let value: OcaTime
 
-    public init(timeRefONo: OcaONo, value: OcaTime) {
-        self.timeRefONo = timeRefONo
-        self.value = value
-    }
+  public init(timeRefONo: OcaONo, value: OcaTime) {
+    self.timeRefONo = timeRefONo
+    self.value = value
+  }
 }

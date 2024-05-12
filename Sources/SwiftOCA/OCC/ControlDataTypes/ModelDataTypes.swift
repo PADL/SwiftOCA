@@ -15,33 +15,33 @@
 //
 
 public struct OcaModelDescription: Codable, Sendable, CustomStringConvertible {
-    public let manufacturer: OcaString
-    public let name: OcaString
-    public let version: OcaString
+  public let manufacturer: OcaString
+  public let name: OcaString
+  public let version: OcaString
 
-    public var description: String {
-        "\(manufacturer) \(name) \(version)"
-    }
+  public var description: String {
+    "\(manufacturer) \(name) \(version)"
+  }
 
-    public init(manufacturer: OcaString, name: OcaString, version: OcaString) {
-        self.manufacturer = manufacturer
-        self.name = name
-        self.version = version
-    }
+  public init(manufacturer: OcaString, name: OcaString, version: OcaString) {
+    self.manufacturer = manufacturer
+    self.name = name
+    self.version = version
+  }
 }
 
 public struct OcaModelGUID: Codable, Sendable, CustomStringConvertible {
-    public let reserved: OcaUint8
-    public let mfrCode: OcaOrganizationID
-    public let modelCode: OcaUint32 // TODO: should be tuple of OcaUint8
+  public let reserved: OcaUint8
+  public let mfrCode: OcaOrganizationID
+  public let modelCode: OcaUint32 // TODO: should be tuple of OcaUint8
 
-    public var description: String {
-        mfrCode.description + String(format: "%08X", modelCode)
-    }
+  public var description: String {
+    mfrCode.description + String(format: "%08X", modelCode)
+  }
 
-    public init(reserved: OcaUint8, mfrCode: OcaOrganizationID, modelCode: OcaUint32) {
-        self.reserved = reserved
-        self.mfrCode = mfrCode
-        self.modelCode = modelCode
-    }
+  public init(reserved: OcaUint8, mfrCode: OcaOrganizationID, modelCode: OcaUint32) {
+    self.reserved = reserved
+    self.mfrCode = mfrCode
+    self.modelCode = modelCode
+  }
 }

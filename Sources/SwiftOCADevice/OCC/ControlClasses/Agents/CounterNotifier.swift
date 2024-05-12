@@ -17,30 +17,30 @@
 import SwiftOCA
 
 open class OcaCounterNotifier: OcaAgent {
-    override open class var classID: OcaClassID { OcaClassID("1.2.18") }
+  override open class var classID: OcaClassID { OcaClassID("1.2.18") }
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("3.1"),
-        getMethodID: OcaMethodID("3.2"),
-        setMethodID: OcaMethodID("3.3")
-    )
-    public var filterParameters: OcaCounterNotifierFilterParameters?
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.2"),
+    setMethodID: OcaMethodID("3.3")
+  )
+  public var filterParameters: OcaCounterNotifierFilterParameters?
 
-    open func getLastUpdate() async throws -> OcaList<OcaCounterUpdate> {
-        throw Ocp1Error.status(.notImplemented)
+  open func getLastUpdate() async throws -> OcaList<OcaCounterUpdate> {
+    throw Ocp1Error.status(.notImplemented)
+  }
+
+  override open func handleCommand(
+    _ command: Ocp1Command,
+    from controller: any OcaController
+  ) async throws -> Ocp1Response {
+    switch command.methodID {
+    case OcaMethodID("3.1"):
+      try decodeNullCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      return try encodeResponse(try await getLastUpdate())
+    default:
+      return try await super.handleCommand(command, from: controller)
     }
-
-    override open func handleCommand(
-        _ command: Ocp1Command,
-        from controller: any OcaController
-    ) async throws -> Ocp1Response {
-        switch command.methodID {
-        case OcaMethodID("3.1"):
-            try decodeNullCommand(command)
-            try await ensureWritable(by: controller, command: command)
-            return try encodeResponse(try await getLastUpdate())
-        default:
-            return try await super.handleCommand(command, from: controller)
-        }
-    }
+  }
 }

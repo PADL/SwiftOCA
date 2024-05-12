@@ -15,12 +15,12 @@
 //
 
 open class OcaGain: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.5") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.5") }
 
-    @OcaBoundedProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1"),
-        setMethodID: OcaMethodID("4.2")
-    )
-    public var gain: OcaBoundedProperty<OcaDB>.PropertyValue
+  @OcaBoundedProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  public var gain: OcaBoundedProperty<OcaDB>.PropertyValue
 }

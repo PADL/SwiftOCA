@@ -18,23 +18,23 @@ import SwiftOCA
 import SwiftUI
 
 private struct NavigationPathKey: EnvironmentKey {
-    static let defaultValue = Binding<NavigationPath>(get: { NavigationPath() }, set: { _ in })
+  static let defaultValue = Binding<NavigationPath>(get: { NavigationPath() }, set: { _ in })
 }
 
 extension EnvironmentValues {
-    var navigationPath: Binding<NavigationPath> {
-        get { self[NavigationPathKey.self] }
-        set { self[NavigationPathKey.self] = newValue }
-    }
+  var navigationPath: Binding<NavigationPath> {
+    get { self[NavigationPathKey.self] }
+    set { self[NavigationPathKey.self] = newValue }
+  }
 }
 
 private struct LastErrorKey: EnvironmentKey {
-    static let defaultValue = Binding<Error?>(get: { nil }, set: { _ in })
+  static let defaultValue = Binding<Error?>(get: { nil }, set: { _ in })
 }
 
 extension EnvironmentValues {
-    var lastError: Binding<Error?> {
-        get { self[LastErrorKey.self] }
-        set { self[LastErrorKey.self] = newValue }
-    }
+  var lastError: Binding<Error?> {
+    get { self[LastErrorKey.self] }
+    set { self[LastErrorKey.self] = newValue }
+  }
 }

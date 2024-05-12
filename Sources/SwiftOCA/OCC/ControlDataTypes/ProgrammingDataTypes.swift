@@ -15,11 +15,11 @@
 //
 
 public enum OcaRelationalOperator: OcaUint8, Codable, Sendable {
-    case none = 0
-    case equality = 1
-    case inequality = 2
-    case greaterThan = 3
-    case greaterThanOrEqual = 4
-    case lessThan = 5
-    case lessThanOrEqual = 6
+  case none = 0
+  case equality = 1
+  case inequality = 2
+  case greaterThan = 3
+  case greaterThanOrEqual = 4
+  case lessThan = 5
+  case lessThanOrEqual = 6
 }

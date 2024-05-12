@@ -18,77 +18,77 @@ import SwiftOCA
 import SwiftUI
 
 struct OcaMatrixNavigationSplitView: OcaView {
-    @StateObject
-    var object: OcaMatrix
-    @Environment(\.navigationPath)
-    var oNoPath
-    @Environment(\.lastError)
-    var lastError
-    @State
-    var members: OcaMatrix.SparseMembers?
-    @State
-    var membersMap: [OcaONo: OcaRoot]?
-    @State
-    var hasContainerMembers = false
+  @StateObject
+  var object: OcaMatrix
+  @Environment(\.navigationPath)
+  var oNoPath
+  @Environment(\.lastError)
+  var lastError
+  @State
+  var members: OcaMatrix.SparseMembers?
+  @State
+  var membersMap: [OcaONo: OcaRoot]?
+  @State
+  var hasContainerMembers = false
 
-    init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object as! OcaMatrix)
-    }
+  init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object as! OcaMatrix)
+  }
 
-    public var body: some View {
-        NavigationStack(path: oNoPath) {
-            Group {
-                if let members {
-                    Grid {
-                        GridRow {
-                            ForEach(0..<members.nX, id: \.self) { x in
-                                Text("\(x + 1)").font(.title)
-                            }
+  public var body: some View {
+    NavigationStack(path: oNoPath) {
+      Group {
+        if let members {
+          Grid {
+            GridRow {
+              ForEach(0..<members.nX, id: \.self) { x in
+                Text("\(x + 1)").font(.title)
+              }
+            }
+            ForEach(0..<members.nY, id: \.self) { y in
+              GridRow {
+                ForEach(0..<members.nX, id: \.self) { x in
+                  Group {
+                    if let member = members[x, y] {
+                      if hasContainerMembers {
+                        NavigationLink(value: member.objectNumber) {
+                          OcaNavigationLabel(member)
                         }
-                        ForEach(0..<members.nY, id: \.self) { y in
-                            GridRow {
-                                ForEach(0..<members.nX, id: \.self) { x in
-                                    Group {
-                                        if let member = members[x, y] {
-                                            if hasContainerMembers {
-                                                NavigationLink(value: member.objectNumber) {
-                                                    OcaNavigationLabel(member)
-                                                }
-                                            } else {
-                                                OcaDetailView(member)
-                                            }
-                                        } else {
-                                            ProgressView()
-                                        }
-                                    }.padding(5)
-                                }
-                            }
-                        }
+                      } else {
+                        OcaDetailView(member)
+                      }
+                    } else {
+                      ProgressView()
                     }
-                } else {
-                    ProgressView()
+                  }.padding(5)
                 }
+              }
             }
-            .navigationDestination(for: OcaONo.self) { oNo in
-                if let member = self.membersMap![oNo] {
-                    OcaDetailView(member)
-                }
-            }
+          }
+        } else {
+          ProgressView()
         }
-        .task {
-            do {
-                members = try await object.resolveMembers()
-                if let members {
-                    membersMap = members.map
-                    hasContainerMembers = members.hasContainerMembers
-                } else {
-                    membersMap = nil
-                    hasContainerMembers = false
-                }
-            } catch {
-                debugPrint("OcaMatrixNavigationSplitView: error \(error)")
-                lastError.wrappedValue = error
-            }
+      }
+      .navigationDestination(for: OcaONo.self) { oNo in
+        if let member = self.membersMap![oNo] {
+          OcaDetailView(member)
         }
+      }
     }
+    .task {
+      do {
+        members = try await object.resolveMembers()
+        if let members {
+          membersMap = members.map
+          hasContainerMembers = members.hasContainerMembers
+        } else {
+          membersMap = nil
+          hasContainerMembers = false
+        }
+      } catch {
+        debugPrint("OcaMatrixNavigationSplitView: error \(error)")
+        lastError.wrappedValue = error
+      }
+    }
+  }
 }

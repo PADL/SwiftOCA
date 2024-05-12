@@ -19,49 +19,49 @@ import Foundation
 import SwiftOCA
 
 actor OcaLocalController: Ocp1ControllerInternal {
-    nonisolated var connectionPrefix: String { OcaLocalConnectionPrefix }
+  nonisolated var connectionPrefix: String { OcaLocalConnectionPrefix }
 
-    var lastMessageReceivedTime = ContinuousClock.now
-    var lastMessageSentTime = ContinuousClock.now
-    var heartbeatTime = Duration.seconds(0)
-    var keepAliveTask: Task<(), Error>?
+  var lastMessageReceivedTime = ContinuousClock.now
+  var lastMessageSentTime = ContinuousClock.now
+  var heartbeatTime = Duration.seconds(0)
+  var keepAliveTask: Task<(), Error>?
 
-    weak var endpoint: OcaLocalDeviceEndpoint?
-    var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
+  weak var endpoint: OcaLocalDeviceEndpoint?
+  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
-    init(endpoint: OcaLocalDeviceEndpoint) async {
-        self.endpoint = endpoint
-    }
+  init(endpoint: OcaLocalDeviceEndpoint) async {
+    self.endpoint = endpoint
+  }
 
-    var messages: AnyAsyncSequence<ControllerMessage> {
-        endpoint!.requestChannel.flatMap { data in
-            var messagePdus = [Data]()
+  var messages: AnyAsyncSequence<ControllerMessage> {
+    endpoint!.requestChannel.flatMap { data in
+      var messagePdus = [Data]()
 
-            let messageType = try Ocp1Connection.decodeOcp1MessagePdu(
-                from: data,
-                messages: &messagePdus
-            )
+      let messageType = try Ocp1Connection.decodeOcp1MessagePdu(
+        from: data,
+        messages: &messagePdus
+      )
 
-            return try messagePdus.map { messagePdu in
-                let message = try Ocp1Connection.decodeOcp1Message(
-                    from: messagePdu,
-                    type: messageType
-                )
+      return try messagePdus.map { messagePdu in
+        let message = try Ocp1Connection.decodeOcp1Message(
+          from: messagePdu,
+          type: messageType
+        )
 
-                return (message, messageType == .ocaCmdRrq)
-            }.async
-        }.eraseToAnyAsyncSequence()
-    }
+        return (message, messageType == .ocaCmdRrq)
+      }.async
+    }.eraseToAnyAsyncSequence()
+  }
 
-    func sendOcp1EncodedData(_ data: Data) async throws {
-        await endpoint?.responseChannel.send(data)
-    }
+  func sendOcp1EncodedData(_ data: Data) async throws {
+    await endpoint?.responseChannel.send(data)
+  }
 
-    nonisolated var identifier: String {
-        "local"
-    }
+  nonisolated var identifier: String {
+    "local"
+  }
 
-    func close() throws {}
+  func close() throws {}
 
-    func onConnectionBecomingStale() async throws {}
+  func onConnectionBecomingStale() async throws {}
 }

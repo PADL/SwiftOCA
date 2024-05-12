@@ -15,32 +15,32 @@
 //
 
 open class OcaTaskManager: OcaManager {
-    override open class var classID: OcaClassID { OcaClassID("1.3.11") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.3.11") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("3.1"),
-        getMethodID: OcaMethodID("3.5")
-    )
-    public var state: OcaProperty<OcaTaskManagerState>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.5")
+  )
+  public var state: OcaProperty<OcaTaskManagerState>.PropertyValue
 
-    @OcaProperty(
-        propertyID: OcaPropertyID("3.2"),
-        getMethodID: OcaMethodID("3.9")
-    )
-    public var tasks: OcaMapProperty<OcaTaskID, OcaTask>.PropertyValue
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.2"),
+    getMethodID: OcaMethodID("3.9")
+  )
+  public var tasks: OcaMapProperty<OcaTaskID, OcaTask>.PropertyValue
 
-    // 3.1 Enable
-    // 3.2 ControlAllTasks
-    // 3.3 ControlTaskGroup
-    // 3.4 ControlTask
-    // 3.7 GetTaskStatus
-    // 3.8 AddTask
-    // 3.10 GetTask
-    // 3.11 SetTask
-    // 3.12 DeleteTask
+  // 3.1 Enable
+  // 3.2 ControlAllTasks
+  // 3.3 ControlTaskGroup
+  // 3.4 ControlTask
+  // 3.7 GetTaskStatus
+  // 3.8 AddTask
+  // 3.10 GetTask
+  // 3.11 SetTask
+  // 3.12 DeleteTask
 
-    public convenience init() {
-        self.init(objectNumber: OcaTaskManagerONo)
-    }
+  public convenience init() {
+    self.init(objectNumber: OcaTaskManagerONo)
+  }
 }

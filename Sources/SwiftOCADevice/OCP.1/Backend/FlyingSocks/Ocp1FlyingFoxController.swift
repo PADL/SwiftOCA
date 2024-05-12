@@ -25,83 +25,83 @@ import Foundation
 import SwiftOCA
 
 fileprivate extension AsyncStream where Element == WSMessage {
-    var ocp1DecodedMessages: AnyAsyncSequence<Ocp1ControllerInternal.ControllerMessage> {
-        flatMap {
-            // TODO: handle OCP.1 PDUs split over multiple frames
-            guard case let .data(data) = $0 else {
-                throw Ocp1Error.invalidMessageType
-            }
+  var ocp1DecodedMessages: AnyAsyncSequence<Ocp1ControllerInternal.ControllerMessage> {
+    flatMap {
+      // TODO: handle OCP.1 PDUs split over multiple frames
+      guard case let .data(data) = $0 else {
+        throw Ocp1Error.invalidMessageType
+      }
 
-            var messagePdus = [Data]()
-            let messageType = try Ocp1Connection.decodeOcp1MessagePdu(
-                from: data,
-                messages: &messagePdus
-            )
-            let messages = try messagePdus.map {
-                try Ocp1Connection.decodeOcp1Message(from: $0, type: messageType)
-            }
+      var messagePdus = [Data]()
+      let messageType = try Ocp1Connection.decodeOcp1MessagePdu(
+        from: data,
+        messages: &messagePdus
+      )
+      let messages = try messagePdus.map {
+        try Ocp1Connection.decodeOcp1Message(from: $0, type: messageType)
+      }
 
-            return messages.map { ($0, messageType == .ocaCmdRrq) }.async
-        }.eraseToAnyAsyncSequence()
-    }
+      return messages.map { ($0, messageType == .ocaCmdRrq) }.async
+    }.eraseToAnyAsyncSequence()
+  }
 }
 
 /// A remote WebSocket endpoint
 actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
-    nonisolated var connectionPrefix: String { OcaWebSocketTcpConnectionPrefix }
+  nonisolated var connectionPrefix: String { OcaWebSocketTcpConnectionPrefix }
 
-    var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
+  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
-    private let inputStream: AsyncStream<WSMessage>
-    private let outputStream: AsyncStream<WSMessage>.Continuation
-    var endpoint: Ocp1FlyingFoxDeviceEndpoint?
+  private let inputStream: AsyncStream<WSMessage>
+  private let outputStream: AsyncStream<WSMessage>.Continuation
+  var endpoint: Ocp1FlyingFoxDeviceEndpoint?
 
-    var keepAliveTask: Task<(), Error>?
-    var lastMessageReceivedTime = ContinuousClock.now
-    var lastMessageSentTime = ContinuousClock.now
+  var keepAliveTask: Task<(), Error>?
+  var lastMessageReceivedTime = ContinuousClock.now
+  var lastMessageSentTime = ContinuousClock.now
 
-    var messages: AsyncExtensions.AnyAsyncSequence<ControllerMessage> {
-        inputStream.ocp1DecodedMessages.eraseToAnyAsyncSequence()
+  var messages: AsyncExtensions.AnyAsyncSequence<ControllerMessage> {
+    inputStream.ocp1DecodedMessages.eraseToAnyAsyncSequence()
+  }
+
+  init(
+    endpoint: Ocp1FlyingFoxDeviceEndpoint?,
+    inputStream: AsyncStream<WSMessage>,
+    outputStream: AsyncStream<WSMessage>.Continuation
+  ) {
+    self.inputStream = inputStream
+    self.outputStream = outputStream
+    self.endpoint = endpoint
+  }
+
+  var heartbeatTime = Duration.seconds(0) {
+    didSet {
+      heartbeatTimeDidChange(from: oldValue)
     }
+  }
 
-    init(
-        endpoint: Ocp1FlyingFoxDeviceEndpoint?,
-        inputStream: AsyncStream<WSMessage>,
-        outputStream: AsyncStream<WSMessage>.Continuation
-    ) {
-        self.inputStream = inputStream
-        self.outputStream = outputStream
-        self.endpoint = endpoint
-    }
+  func onConnectionBecomingStale() async {
+    await close()
+  }
 
-    var heartbeatTime = Duration.seconds(0) {
-        didSet {
-            heartbeatTimeDidChange(from: oldValue)
-        }
-    }
+  func sendOcp1EncodedData(_ data: Data) async throws {
+    outputStream.yield(.data(data))
+  }
 
-    func onConnectionBecomingStale() async {
-        await close()
-    }
+  func close() async {
+    outputStream.finish()
 
-    func sendOcp1EncodedData(_ data: Data) async throws {
-        outputStream.yield(.data(data))
-    }
+    keepAliveTask?.cancel()
+    keepAliveTask = nil
+  }
 
-    func close() async {
-        outputStream.finish()
+  nonisolated var identifier: String {
+    String(describing: id)
+  }
 
-        keepAliveTask?.cancel()
-        keepAliveTask = nil
-    }
-
-    nonisolated var identifier: String {
-        String(describing: id)
-    }
-
-    public nonisolated var description: String {
-        "\(type(of: self))(id: \(id))"
-    }
+  public nonisolated var description: String {
+    "\(type(of: self))(id: \(id))"
+  }
 }
 
 #endif

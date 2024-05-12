@@ -17,53 +17,53 @@
 import Foundation
 
 public func deviceAddressToString(_ deviceAddress: Data) -> String {
-    deviceAddress.withUnsafeBytes {
-        $0.withMemoryRebound(to: sockaddr.self) {
-            deviceAddressToString($0.baseAddress!)
-        }
+  deviceAddress.withUnsafeBytes {
+    $0.withMemoryRebound(to: sockaddr.self) {
+      deviceAddressToString($0.baseAddress!)
     }
+  }
 }
 
 public func deviceAddressToString(
-    _ deviceAddress: UnsafePointer<sockaddr>,
-    includePort: Bool = true
+  _ deviceAddress: UnsafePointer<sockaddr>,
+  includePort: Bool = true
 ) -> String {
-    switch deviceAddress.pointee.sa_family {
-    case sa_family_t(AF_INET):
-        return deviceAddress
-            .withMemoryRebound(to: sockaddr_in.self, capacity: 1) { cSockAddrIn4 -> String in
-                var buffer = [CChar](repeating: 0, count: Int(INET_ADDRSTRLEN))
-                var addr = cSockAddrIn4.pointee.sin_addr
-                inet_ntop(AF_INET, &addr, &buffer, socklen_t(buffer.count))
-                var string = String(cString: buffer)
-                if includePort {
-                    string += ":\(UInt16(bigEndian: cSockAddrIn4.pointee.sin_port))"
-                }
-                return string
-            }
-    case sa_family_t(AF_INET6):
-        return deviceAddress
-            .withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { cSockAddrIn6 -> String in
-                var buffer = [CChar](repeating: 0, count: Int(INET6_ADDRSTRLEN))
-                var addr = cSockAddrIn6.pointee.sin6_addr
-                inet_ntop(AF_INET6, &addr, &buffer, socklen_t(buffer.count))
-                var string = String(cString: buffer)
-                if includePort {
-                    string += ":\(UInt16(bigEndian: cSockAddrIn6.pointee.sin6_port.bigEndian))"
-                }
-                return string
-            }
-    case sa_family_t(AF_LOCAL):
-        return deviceAddress
-            .withMemoryRebound(to: sockaddr_un.self, capacity: 1) { cSockAddrUn -> String in
-                cSockAddrUn.withMemoryRebound(
-                    to: UInt8.self,
-                    capacity: MemoryLayout.size(ofValue: cSockAddrUn)
-                ) { cPath in
-                    String(cString: cPath)
-                }
-            }
-    default:
-        return "<\(deviceAddress.pointee.sa_family)>"
-    }
+  switch deviceAddress.pointee.sa_family {
+  case sa_family_t(AF_INET):
+    return deviceAddress
+      .withMemoryRebound(to: sockaddr_in.self, capacity: 1) { cSockAddrIn4 -> String in
+        var buffer = [CChar](repeating: 0, count: Int(INET_ADDRSTRLEN))
+        var addr = cSockAddrIn4.pointee.sin_addr
+        inet_ntop(AF_INET, &addr, &buffer, socklen_t(buffer.count))
+        var string = String(cString: buffer)
+        if includePort {
+          string += ":\(UInt16(bigEndian: cSockAddrIn4.pointee.sin_port))"
+        }
+        return string
+      }
+  case sa_family_t(AF_INET6):
+    return deviceAddress
+      .withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { cSockAddrIn6 -> String in
+        var buffer = [CChar](repeating: 0, count: Int(INET6_ADDRSTRLEN))
+        var addr = cSockAddrIn6.pointee.sin6_addr
+        inet_ntop(AF_INET6, &addr, &buffer, socklen_t(buffer.count))
+        var string = String(cString: buffer)
+        if includePort {
+          string += ":\(UInt16(bigEndian: cSockAddrIn6.pointee.sin6_port.bigEndian))"
+        }
+        return string
+      }
+  case sa_family_t(AF_LOCAL):
+    return deviceAddress
+      .withMemoryRebound(to: sockaddr_un.self, capacity: 1) { cSockAddrUn -> String in
+        cSockAddrUn.withMemoryRebound(
+          to: UInt8.self,
+          capacity: MemoryLayout.size(ofValue: cSockAddrUn)
+        ) { cPath in
+          String(cString: cPath)
+        }
+      }
+  default:
+    return "<\(deviceAddress.pointee.sa_family)>"
+  }
 }

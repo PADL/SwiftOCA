@@ -19,52 +19,52 @@ import Foundation
 import SwiftOCA
 
 actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInternal,
-    Ocp1ControllerDatagramSemantics,
-    CustomStringConvertible
+  Ocp1ControllerDatagramSemantics,
+  CustomStringConvertible
 {
-    nonisolated var connectionPrefix: String { OcaDatagramProxyConnectionPrefix }
+  nonisolated var connectionPrefix: String { OcaDatagramProxyConnectionPrefix }
 
-    let peerID: T
-    var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
-    var keepAliveTask: Task<(), Error>?
-    var lastMessageReceivedTime = ContinuousClock.now
-    var lastMessageSentTime = ContinuousClock.now
+  let peerID: T
+  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
+  var keepAliveTask: Task<(), Error>?
+  var lastMessageReceivedTime = ContinuousClock.now
+  var lastMessageSentTime = ContinuousClock.now
 
-    private(set) var isOpen: Bool = false
-    weak var endpoint: DatagramProxyDeviceEndpoint<T>?
+  private(set) var isOpen: Bool = false
+  weak var endpoint: DatagramProxyDeviceEndpoint<T>?
 
-    var messages: AnyAsyncSequence<ControllerMessage> {
-        AsyncEmptySequence<ControllerMessage>().eraseToAnyAsyncSequence()
+  var messages: AnyAsyncSequence<ControllerMessage> {
+    AsyncEmptySequence<ControllerMessage>().eraseToAnyAsyncSequence()
+  }
+
+  init(with peerID: T, endpoint: DatagramProxyDeviceEndpoint<T>) {
+    self.peerID = peerID
+    self.endpoint = endpoint
+  }
+
+  var heartbeatTime = Duration.seconds(1) {
+    didSet {
+      heartbeatTimeDidChange(from: oldValue)
     }
+  }
 
-    init(with peerID: T, endpoint: DatagramProxyDeviceEndpoint<T>) {
-        self.peerID = peerID
-        self.endpoint = endpoint
-    }
+  func sendOcp1EncodedData(_ data: Data) async throws {
+    endpoint?.outputStream.yield((peerID, [UInt8](data)))
+  }
 
-    var heartbeatTime = Duration.seconds(1) {
-        didSet {
-            heartbeatTimeDidChange(from: oldValue)
-        }
-    }
+  nonisolated var identifier: String {
+    String(describing: peerID)
+  }
 
-    func sendOcp1EncodedData(_ data: Data) async throws {
-        endpoint?.outputStream.yield((peerID, [UInt8](data)))
-    }
+  public nonisolated var description: String {
+    "\(type(of: self))(peerID: \(String(describing: peerID))"
+  }
 
-    nonisolated var identifier: String {
-        String(describing: peerID)
-    }
+  func onConnectionBecomingStale() async throws {}
 
-    public nonisolated var description: String {
-        "\(type(of: self))(peerID: \(String(describing: peerID))"
-    }
+  func close() async throws {}
 
-    func onConnectionBecomingStale() async throws {}
-
-    func close() async throws {}
-
-    func didOpen() {
-        isOpen = true
-    }
+  func didOpen() {
+    isOpen = true
+  }
 }

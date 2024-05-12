@@ -18,41 +18,41 @@ import SwiftOCA
 import SwiftUI
 
 extension OcaGenericBasicSensor: OcaViewRepresentable {
-    public var viewType: any OcaView.Type {
-        OcaGenericBasicSensorView<T>.self
-    }
+  public var viewType: any OcaView.Type {
+    OcaGenericBasicSensorView<T>.self
+  }
 }
 
 public struct OcaGenericBasicSensorView<T: Codable & Comparable>: OcaView {
-    @StateObject
-    var object: OcaGenericBasicSensor<T>
+  @StateObject
+  var object: OcaGenericBasicSensor<T>
 
-    public init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object as! OcaGenericBasicSensor<T>)
-    }
+  public init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object as! OcaGenericBasicSensor<T>)
+  }
 
-    public var body: some View {
-        Text(String(describing: object.reading))
-            .showProgressIfWaiting(object.reading)
-    }
+  public var body: some View {
+    Text(String(describing: object.reading))
+      .showProgressIfWaiting(object.reading)
+  }
 }
 
 extension OcaBooleanSensor: OcaViewRepresentable {
-    public var viewType: any OcaView.Type {
-        OcaBooleanSensorView.self
-    }
+  public var viewType: any OcaView.Type {
+    OcaBooleanSensorView.self
+  }
 }
 
 public struct OcaBooleanSensorView: OcaView {
-    @StateObject
-    var object: OcaBooleanSensor
+  @StateObject
+  var object: OcaBooleanSensor
 
-    public init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object as! OcaBooleanSensor)
-    }
+  public init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object as! OcaBooleanSensor)
+  }
 
-    public var body: some View {
-        Text(String(describing: object.reading))
-            .showProgressIfWaiting(object.reading)
-    }
+  public var body: some View {
+    Text(String(describing: object.reading))
+      .showProgressIfWaiting(object.reading)
+  }
 }

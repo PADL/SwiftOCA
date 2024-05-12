@@ -17,31 +17,31 @@
 import SwiftOCA
 
 open class OcaAgent: OcaRoot, OcaOwnable, OcaLabelRepresentable {
-    override open class var classID: OcaClassID { OcaClassID("1.2") }
+  override open class var classID: OcaClassID { OcaClassID("1.2") }
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("2.1"),
-        getMethodID: OcaMethodID("2.1"),
-        setMethodID: OcaMethodID("2.2")
-    )
-    public var label = ""
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("2.1"),
+    getMethodID: OcaMethodID("2.1"),
+    setMethodID: OcaMethodID("2.2")
+  )
+  public var label = ""
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("2.2"),
-        getMethodID: OcaMethodID("2.3")
-    )
-    public var owner = OcaInvalidONo
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("2.2"),
+    getMethodID: OcaMethodID("2.3")
+  )
+  public var owner = OcaInvalidONo
 
-    override public func handleCommand(
-        _ command: Ocp1Command,
-        from controller: any OcaController
-    ) async throws -> Ocp1Response {
-        switch command.methodID {
-        case OcaMethodID("2.4"):
-            try decodeNullCommand(command)
-            return try await encodeResponse(path)
-        default:
-            return try await super.handleCommand(command, from: controller)
-        }
+  override public func handleCommand(
+    _ command: Ocp1Command,
+    from controller: any OcaController
+  ) async throws -> Ocp1Response {
+    switch command.methodID {
+    case OcaMethodID("2.4"):
+      try decodeNullCommand(command)
+      return try await encodeResponse(path)
+    default:
+      return try await super.handleCommand(command, from: controller)
     }
+  }
 }

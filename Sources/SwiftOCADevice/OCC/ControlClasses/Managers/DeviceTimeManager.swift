@@ -17,89 +17,89 @@
 import SwiftOCA
 
 open class OcaDeviceTimeManager: OcaManager {
-    override open class var classID: OcaClassID { OcaClassID("1.3.10") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.3.10") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    open var deviceTimeNTP: OcaTimeNTP {
-        get async throws {
-            throw Ocp1Error.status(.notImplemented)
-        }
+  open var deviceTimeNTP: OcaTimeNTP {
+    get async throws {
+      throw Ocp1Error.status(.notImplemented)
     }
+  }
 
-    open func set(deviceTimeNTP time: OcaTimeNTP) async throws {
-        throw Ocp1Error.status(.notImplemented)
+  open func set(deviceTimeNTP time: OcaTimeNTP) async throws {
+    throw Ocp1Error.status(.notImplemented)
+  }
+
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.3")
+  )
+  public var timeSources = [OcaTimeSource]()
+
+  // property handled explicitly in handleCommand()
+  public var currentDeviceTimeSource: OcaTimeSource?
+
+  open var deviceTimePTP: OcaTime {
+    get async throws {
+      throw Ocp1Error.status(.notImplemented)
     }
+  }
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("3.1"),
-        getMethodID: OcaMethodID("3.3")
+  open func set(deviceTimePTP time: OcaTime) async throws {
+    throw Ocp1Error.status(.notImplemented)
+  }
+
+  override public func handleCommand(
+    _ command: Ocp1Command,
+    from controller: OcaController
+  ) async throws -> Ocp1Response {
+    switch command.methodID {
+    case OcaMethodID("3.1"):
+      try decodeNullCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      return try await encodeResponse(deviceTimeNTP)
+    case OcaMethodID("3.2"):
+      let deviceTimeNTP: OcaTimeNTP = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      try await set(deviceTimeNTP: deviceTimeNTP)
+      return Ocp1Response()
+    case OcaMethodID("3.4"):
+      try decodeNullCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      guard let currentDeviceTimeSource else {
+        throw Ocp1Error.status(.invalidRequest)
+      }
+      return try encodeResponse(currentDeviceTimeSource)
+    case OcaMethodID("3.5"):
+      let newDeviceTimeSourceONo: OcaONo = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      guard let newDeviceTimeSource = timeSources
+        .first(where: { $0.objectNumber == newDeviceTimeSourceONo })
+      else {
+        throw Ocp1Error.status(.badONo)
+      }
+      currentDeviceTimeSource = newDeviceTimeSource
+      return Ocp1Response()
+    case OcaMethodID("3.6"):
+      try decodeNullCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      return try await encodeResponse(deviceTimePTP)
+    case OcaMethodID("3.7"):
+      let deviceTimePTP: OcaTime = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      try await set(deviceTimePTP: deviceTimePTP)
+      return Ocp1Response()
+    default:
+      return try await super.handleCommand(command, from: controller)
+    }
+  }
+
+  public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
+    try await self.init(
+      objectNumber: OcaDeviceTimeManagerONo,
+      role: "Device Time Manager",
+      deviceDelegate: deviceDelegate,
+      addToRootBlock: true
     )
-    public var timeSources = [OcaTimeSource]()
-
-    // property handled explicitly in handleCommand()
-    public var currentDeviceTimeSource: OcaTimeSource?
-
-    open var deviceTimePTP: OcaTime {
-        get async throws {
-            throw Ocp1Error.status(.notImplemented)
-        }
-    }
-
-    open func set(deviceTimePTP time: OcaTime) async throws {
-        throw Ocp1Error.status(.notImplemented)
-    }
-
-    override public func handleCommand(
-        _ command: Ocp1Command,
-        from controller: OcaController
-    ) async throws -> Ocp1Response {
-        switch command.methodID {
-        case OcaMethodID("3.1"):
-            try decodeNullCommand(command)
-            try await ensureReadable(by: controller, command: command)
-            return try await encodeResponse(deviceTimeNTP)
-        case OcaMethodID("3.2"):
-            let deviceTimeNTP: OcaTimeNTP = try decodeCommand(command)
-            try await ensureWritable(by: controller, command: command)
-            try await set(deviceTimeNTP: deviceTimeNTP)
-            return Ocp1Response()
-        case OcaMethodID("3.4"):
-            try decodeNullCommand(command)
-            try await ensureReadable(by: controller, command: command)
-            guard let currentDeviceTimeSource else {
-                throw Ocp1Error.status(.invalidRequest)
-            }
-            return try encodeResponse(currentDeviceTimeSource)
-        case OcaMethodID("3.5"):
-            let newDeviceTimeSourceONo: OcaONo = try decodeCommand(command)
-            try await ensureWritable(by: controller, command: command)
-            guard let newDeviceTimeSource = timeSources
-                .first(where: { $0.objectNumber == newDeviceTimeSourceONo })
-            else {
-                throw Ocp1Error.status(.badONo)
-            }
-            currentDeviceTimeSource = newDeviceTimeSource
-            return Ocp1Response()
-        case OcaMethodID("3.6"):
-            try decodeNullCommand(command)
-            try await ensureReadable(by: controller, command: command)
-            return try await encodeResponse(deviceTimePTP)
-        case OcaMethodID("3.7"):
-            let deviceTimePTP: OcaTime = try decodeCommand(command)
-            try await ensureWritable(by: controller, command: command)
-            try await set(deviceTimePTP: deviceTimePTP)
-            return Ocp1Response()
-        default:
-            return try await super.handleCommand(command, from: controller)
-        }
-    }
-
-    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
-        try await self.init(
-            objectNumber: OcaDeviceTimeManagerONo,
-            role: "Device Time Manager",
-            deviceDelegate: deviceDelegate,
-            addToRootBlock: true
-        )
-    }
+  }
 }

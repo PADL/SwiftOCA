@@ -17,12 +17,12 @@
 import SwiftOCA
 
 open class OcaGain: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.5") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.5") }
 
-    @OcaBoundedDeviceProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1"),
-        setMethodID: OcaMethodID("4.2")
-    )
-    public var gain = OcaBoundedPropertyValue<OcaDB>(value: -144.0, in: -144.0...20.0)
+  @OcaBoundedDeviceProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  public var gain = OcaBoundedPropertyValue<OcaDB>(value: -144.0, in: -144.0...20.0)
 }

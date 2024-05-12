@@ -17,128 +17,128 @@
 import SwiftOCA
 
 public class OcaLockManager: OcaManager {
-    override open class var classID: OcaClassID { OcaClassID("1.3.14") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.3.14") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    private struct LockWaiterID: Hashable {
-        let controller: OcaController.ID
-        let target: OcaONo
+  private struct LockWaiterID: Hashable {
+    let controller: OcaController.ID
+    let target: OcaONo
+  }
+
+  private final class LockWaiter: @unchecked
+  Sendable {
+    private let continuation: CheckedContinuation<(), Error>
+    var task: Task<(), Never>?
+
+    init(continuation: CheckedContinuation<(), Error>) {
+      self.continuation = continuation
     }
 
-    private final class LockWaiter: @unchecked
-    Sendable {
-        private let continuation: CheckedContinuation<(), Error>
-        var task: Task<(), Never>?
-
-        init(continuation: CheckedContinuation<(), Error>) {
-            self.continuation = continuation
-        }
-
-        func didLock() {
-            continuation.resume(returning: ())
-        }
-
-        func didAbort() {
-            continuation.resume(throwing: CancellationError())
-        }
-
-        deinit {
-            task?.cancel()
-        }
+    func didLock() {
+      continuation.resume(returning: ())
     }
 
-    private var lockWaiters = [LockWaiterID: LockWaiter]()
-
-    func remove(controller: OcaController) {
-        for kv in lockWaiters.filter({ kv in
-            kv.key.controller == controller.id
-        }) {
-            lockWaiters.removeValue(forKey: kv.key)
-        }
+    func didAbort() {
+      continuation.resume(throwing: CancellationError())
     }
 
-    private func lockWait(
-        controller: OcaController,
-        target: OcaONo,
-        type: OcaLockState,
-        timeout: OcaTimeInterval
-    ) async throws {
-        guard type != .noLock else {
-            throw Ocp1Error.status(.parameterError)
-        }
+    deinit {
+      task?.cancel()
+    }
+  }
 
-        guard let target = await deviceDelegate?.resolve(objectNumber: target) else {
-            throw Ocp1Error.status(.badONo)
-        }
+  private var lockWaiters = [LockWaiterID: LockWaiter]()
 
-        let lockWaiterID = LockWaiterID(controller: controller.id, target: target.objectNumber)
+  func remove(controller: OcaController) {
+    for kv in lockWaiters.filter({ kv in
+      kv.key.controller == controller.id
+    }) {
+      lockWaiters.removeValue(forKey: kv.key)
+    }
+  }
 
-        do {
-            try await withThrowingTimeout(of: .seconds(timeout)) { @OcaDevice in
-                try await withCheckedThrowingContinuation { continuation in
-                    let lockWaiter = LockWaiter(continuation: continuation)
-                    Task { @OcaDevice in self.lockWaiters[lockWaiterID] = lockWaiter }
+  private func lockWait(
+    controller: OcaController,
+    target: OcaONo,
+    type: OcaLockState,
+    timeout: OcaTimeInterval
+  ) async throws {
+    guard type != .noLock else {
+      throw Ocp1Error.status(.parameterError)
+    }
 
-                    lockWaiter.task = Task {
-                        for await _ in target.lockStateSubject
-                            .filter({ $0.lockState == .noLock })
-                        {
-                            if target.setLockState(to: type, controller: controller) {
-                                lockWaiter.didLock()
-                                break
-                            }
-                        }
-                    }
-                }
+    guard let target = await deviceDelegate?.resolve(objectNumber: target) else {
+      throw Ocp1Error.status(.badONo)
+    }
+
+    let lockWaiterID = LockWaiterID(controller: controller.id, target: target.objectNumber)
+
+    do {
+      try await withThrowingTimeout(of: .seconds(timeout)) { @OcaDevice in
+        try await withCheckedThrowingContinuation { continuation in
+          let lockWaiter = LockWaiter(continuation: continuation)
+          Task { @OcaDevice in self.lockWaiters[lockWaiterID] = lockWaiter }
+
+          lockWaiter.task = Task {
+            for await _ in target.lockStateSubject
+              .filter({ $0.lockState == .noLock })
+            {
+              if target.setLockState(to: type, controller: controller) {
+                lockWaiter.didLock()
+                break
+              }
             }
-        } catch Ocp1Error.responseTimeout {
-            lockWaiters[lockWaiterID]?.didAbort()
-            throw Ocp1Error.status(.timeout)
+          }
         }
-
-        lockWaiters.removeValue(forKey: lockWaiterID)
+      }
+    } catch Ocp1Error.responseTimeout {
+      lockWaiters[lockWaiterID]?.didAbort()
+      throw Ocp1Error.status(.timeout)
     }
 
-    private func abortWaits(controller: OcaController, oNo target: OcaONo) async throws {
-        let lockWaiterID = LockWaiterID(controller: controller.id, target: target)
+    lockWaiters.removeValue(forKey: lockWaiterID)
+  }
 
-        guard let lockWaiter = lockWaiters[lockWaiterID] else {
-            throw Ocp1Error.status(.invalidRequest)
-        }
+  private func abortWaits(controller: OcaController, oNo target: OcaONo) async throws {
+    let lockWaiterID = LockWaiterID(controller: controller.id, target: target)
 
-        lockWaiter.didAbort()
-        lockWaiters.removeValue(forKey: lockWaiterID)
+    guard let lockWaiter = lockWaiters[lockWaiterID] else {
+      throw Ocp1Error.status(.invalidRequest)
     }
 
-    override public func handleCommand(
-        _ command: Ocp1Command,
-        from controller: OcaController
-    ) async throws -> Ocp1Response {
-        switch command.methodID {
-        case OcaMethodID("3.1"):
-            let params: SwiftOCA.OcaLockManager.LockWaitParameters = try decodeCommand(command)
-            try await lockWait(
-                controller: controller,
-                target: params.target,
-                type: params.type,
-                timeout: params.timeout
-            )
-            return Ocp1Response()
-        case OcaMethodID("3.2"):
-            let oNo: OcaONo = try decodeCommand(command)
-            try await abortWaits(controller: controller, oNo: oNo)
-            return Ocp1Response()
-        default:
-            return try await super.handleCommand(command, from: controller)
-        }
-    }
+    lockWaiter.didAbort()
+    lockWaiters.removeValue(forKey: lockWaiterID)
+  }
 
-    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
-        try await self.init(
-            objectNumber: OcaLockManagerONo,
-            role: "Lock Manager",
-            deviceDelegate: deviceDelegate,
-            addToRootBlock: true
-        )
+  override public func handleCommand(
+    _ command: Ocp1Command,
+    from controller: OcaController
+  ) async throws -> Ocp1Response {
+    switch command.methodID {
+    case OcaMethodID("3.1"):
+      let params: SwiftOCA.OcaLockManager.LockWaitParameters = try decodeCommand(command)
+      try await lockWait(
+        controller: controller,
+        target: params.target,
+        type: params.type,
+        timeout: params.timeout
+      )
+      return Ocp1Response()
+    case OcaMethodID("3.2"):
+      let oNo: OcaONo = try decodeCommand(command)
+      try await abortWaits(controller: controller, oNo: oNo)
+      return Ocp1Response()
+    default:
+      return try await super.handleCommand(command, from: controller)
     }
+  }
+
+  public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
+    try await self.init(
+      objectNumber: OcaLockManagerONo,
+      role: "Lock Manager",
+      deviceDelegate: deviceDelegate,
+      addToRootBlock: true
+    )
+  }
 }

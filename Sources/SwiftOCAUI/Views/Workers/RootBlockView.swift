@@ -20,30 +20,30 @@ import SwiftOCA
 import SwiftUI
 
 public struct OcaRootBlockView: View {
-    @Environment(\.lastError)
-    var lastError
-    @StateObject
-    var connection: Ocp1Connection
-    @State
-    var oNoPath = NavigationPath()
-    @State
-    var object: OcaRoot? = nil
+  @Environment(\.lastError)
+  var lastError
+  @StateObject
+  var connection: Ocp1Connection
+  @State
+  var oNoPath = NavigationPath()
+  @State
+  var object: OcaRoot? = nil
 
-    public init(_ connection: Ocp1Connection) {
-        _connection = StateObject(wrappedValue: connection)
-    }
+  public init(_ connection: Ocp1Connection) {
+    _connection = StateObject(wrappedValue: connection)
+  }
 
-    public var body: some View {
-        VStack {
-            if let object {
-                OcaBlockNavigationSplitView(object)
-                    .environment(\.navigationPath, $oNoPath)
-                    .environmentObject(connection)
-            } else {
-                ProgressView()
-            }
-        }.task {
-            object = await connection.rootBlock
-        }
+  public var body: some View {
+    VStack {
+      if let object {
+        OcaBlockNavigationSplitView(object)
+          .environment(\.navigationPath, $oNoPath)
+          .environmentObject(connection)
+      } else {
+        ProgressView()
+      }
+    }.task {
+      object = await connection.rootBlock
     }
+  }
 }

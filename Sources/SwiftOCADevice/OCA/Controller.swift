@@ -17,22 +17,22 @@
 import SwiftOCA
 
 public protocol OcaController: Actor {
-    func addSubscription(
-        _ subscription: OcaSubscriptionManagerSubscription
-    ) async throws
+  func addSubscription(
+    _ subscription: OcaSubscriptionManagerSubscription
+  ) async throws
 
-    func removeSubscription(
-        _ subscription: OcaSubscriptionManagerSubscription
-    ) async throws
+  func removeSubscription(
+    _ subscription: OcaSubscriptionManagerSubscription
+  ) async throws
 
-    func removeSubscription(
-        _ event: OcaEvent,
-        property: OcaPropertyID?,
-        subscriber: OcaMethod
-    ) async throws
+  func removeSubscription(
+    _ event: OcaEvent,
+    property: OcaPropertyID?,
+    subscriber: OcaMethod
+  ) async throws
 
-    func sendMessage(
-        _ message: Ocp1Message,
-        type messageType: OcaMessageType
-    ) async throws
+  func sendMessage(
+    _ message: Ocp1Message,
+    type messageType: OcaMessageType
+  ) async throws
 }

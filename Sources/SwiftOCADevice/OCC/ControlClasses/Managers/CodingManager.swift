@@ -17,27 +17,27 @@
 import SwiftOCA
 
 open class OcaCodingManager: OcaManager {
-    override open class var classID: OcaClassID { OcaClassID("1.3.12") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.3.12") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("3.1"),
-        getMethodID: OcaMethodID("3.1")
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.1")
+  )
+  public var availableEncodingSchemes: [OcaMediaCodingSchemeID: OcaString] = [:]
+
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.2"),
+    getMethodID: OcaMethodID("3.2")
+  )
+  public var availableDecodingSchemes: [OcaMediaCodingSchemeID: OcaString] = [:]
+
+  public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
+    try await self.init(
+      objectNumber: OcaCodingManagerONo,
+      role: "Coding Manager",
+      deviceDelegate: deviceDelegate,
+      addToRootBlock: true
     )
-    public var availableEncodingSchemes: [OcaMediaCodingSchemeID: OcaString] = [:]
-
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("3.2"),
-        getMethodID: OcaMethodID("3.2")
-    )
-    public var availableDecodingSchemes: [OcaMediaCodingSchemeID: OcaString] = [:]
-
-    public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
-        try await self.init(
-            objectNumber: OcaCodingManagerONo,
-            role: "Coding Manager",
-            deviceDelegate: deviceDelegate,
-            addToRootBlock: true
-        )
-    }
+  }
 }

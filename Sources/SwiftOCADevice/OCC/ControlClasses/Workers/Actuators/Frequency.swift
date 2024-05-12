@@ -17,13 +17,13 @@
 import SwiftOCA
 
 open class OcaFrequencyActuator: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.8") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.8") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    @OcaBoundedDeviceProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1"),
-        setMethodID: OcaMethodID("4.2")
-    )
-    public var frequency = OcaBoundedPropertyValue<OcaFrequency>(value: 10, in: 10...20000)
+  @OcaBoundedDeviceProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  public var frequency = OcaBoundedPropertyValue<OcaFrequency>(value: 10, in: 10...20000)
 }

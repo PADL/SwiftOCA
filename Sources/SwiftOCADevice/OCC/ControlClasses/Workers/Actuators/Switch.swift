@@ -17,26 +17,26 @@
 import SwiftOCA
 
 open class OcaSwitch: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.4") }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.4") }
 
-    @OcaBoundedDeviceProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1"),
-        setMethodID: OcaMethodID("4.2")
-    )
-    public var position = OcaBoundedPropertyValue<OcaUint16>(value: 0, in: 0...1)
+  @OcaBoundedDeviceProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  public var position = OcaBoundedPropertyValue<OcaUint16>(value: 0, in: 0...1)
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("4.2"),
-        getMethodID: OcaMethodID("4.5"),
-        setMethodID: OcaMethodID("4.6")
-    )
-    public var positionNames = [OcaString]()
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("4.2"),
+    getMethodID: OcaMethodID("4.5"),
+    setMethodID: OcaMethodID("4.6")
+  )
+  public var positionNames = [OcaString]()
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("4.3"),
-        getMethodID: OcaMethodID("4.9"),
-        setMethodID: OcaMethodID("4.10")
-    )
-    public var positionEnableds = [OcaBoolean]()
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("4.3"),
+    getMethodID: OcaMethodID("4.9"),
+    setMethodID: OcaMethodID("4.10")
+  )
+  public var positionEnableds = [OcaBoolean]()
 }

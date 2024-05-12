@@ -22,198 +22,198 @@ import Foundation
 import SwiftOCA
 
 protocol OcaDevicePropertyRepresentable: Sendable {
-    associatedtype Value: Codable & Sendable
+  associatedtype Value: Codable & Sendable
 
-    var propertyID: OcaPropertyID { get }
-    var getMethodID: OcaMethodID? { get }
-    var setMethodID: OcaMethodID? { get }
-    var wrappedValue: Value { get }
+  var propertyID: OcaPropertyID { get }
+  var getMethodID: OcaMethodID? { get }
+  var setMethodID: OcaMethodID? { get }
+  var wrappedValue: Value { get }
 
-    var subject: AsyncCurrentValueSubject<Value> { get }
+  var subject: AsyncCurrentValueSubject<Value> { get }
 
-    func getOcp1Response() async throws -> Ocp1Response
-    func getJsonValue() throws -> Any
+  func getOcp1Response() async throws -> Ocp1Response
+  func getJsonValue() throws -> Any
 
-    /// setters take an object so that subscribers can be notified
+  /// setters take an object so that subscribers can be notified
 
-    func set(object: OcaRoot, command: Ocp1Command) async throws
-    func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws
+  func set(object: OcaRoot, command: Ocp1Command) async throws
+  func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws
 }
 
 extension OcaDevicePropertyRepresentable {
-    func finish() {
-        subject.send(.finished)
-    }
+  func finish() {
+    subject.send(.finished)
+  }
 
-    var async: AnyAsyncSequence<Value> {
-        subject.eraseToAnyAsyncSequence()
-    }
+  var async: AnyAsyncSequence<Value> {
+    subject.eraseToAnyAsyncSequence()
+  }
 }
 
 extension AsyncCurrentValueSubject: AsyncCurrentValueSubjectNilRepresentable
-    where Element: ExpressibleByNilLiteral
+  where Element: ExpressibleByNilLiteral
 {
-    func sendNil() {
-        send(nil)
-    }
+  func sendNil() {
+    send(nil)
+  }
 }
 
 private protocol AsyncCurrentValueSubjectNilRepresentable {
-    func sendNil()
+  func sendNil()
 }
 
 @propertyWrapper
 public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRepresentable,
-    Sendable
+  Sendable
 {
-    let subject: AsyncCurrentValueSubject<Value>
+  let subject: AsyncCurrentValueSubject<Value>
 
-    /// The OCA property ID
-    public let propertyID: OcaPropertyID
+  /// The OCA property ID
+  public let propertyID: OcaPropertyID
 
-    /// The OCA get method ID
-    public let getMethodID: OcaMethodID?
+  /// The OCA get method ID
+  public let getMethodID: OcaMethodID?
 
-    /// The OCA set method ID, if present
-    public let setMethodID: OcaMethodID?
+  /// The OCA set method ID, if present
+  public let setMethodID: OcaMethodID?
 
-    /// Placeholder only
-    public var wrappedValue: Value {
-        get { subject.value }
-        nonmutating set { fatalError() }
+  /// Placeholder only
+  public var wrappedValue: Value {
+    get { subject.value }
+    nonmutating set { fatalError() }
+  }
+
+  public var projectedValue: AnyAsyncSequence<Value> {
+    async
+  }
+
+  public init(
+    wrappedValue: Value,
+    propertyID: OcaPropertyID,
+    getMethodID: OcaMethodID? = nil,
+    setMethodID: OcaMethodID? = nil
+  ) {
+    subject = AsyncCurrentValueSubject(wrappedValue)
+    self.propertyID = propertyID
+    self.getMethodID = getMethodID
+    self.setMethodID = setMethodID
+  }
+
+  public init(
+    propertyID: OcaPropertyID,
+    getMethodID: OcaMethodID? = nil,
+    setMethodID: OcaMethodID? = nil
+  ) where Value: ExpressibleByNilLiteral {
+    subject = AsyncCurrentValueSubject(nil)
+    self.propertyID = propertyID
+    self.getMethodID = getMethodID
+    self.setMethodID = setMethodID
+  }
+
+  func get() -> Value {
+    subject.value
+  }
+
+  private func setAndNotifySubscribers(object: OcaRoot, _ newValue: Value) async {
+    subject.send(newValue)
+    try? await notifySubscribers(object: object, newValue)
+  }
+
+  private func isNil(_ value: Value) -> Bool {
+    if let value = value as? ExpressibleByNilLiteral,
+       let value = value as? Value?,
+       case .none = value
+    {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  func getOcp1Response() async throws -> Ocp1Response {
+    let value: Value = get()
+    if isNil(value) {
+      throw Ocp1Error.status(.parameterOutOfRange)
+    }
+    return try OcaRoot.encodeResponse(value)
+  }
+
+  func getJsonValue() throws -> Any {
+    let jsonValue: Any
+
+    if isNil(subject.value) {
+      jsonValue = NSNull()
+    } else if JSONSerialization.isValidJSONObject(subject.value) {
+      jsonValue = subject.value
+    } else {
+      jsonValue = try JSONEncoder().reencodeAsValidJSONObject(subject.value)
     }
 
-    public var projectedValue: AnyAsyncSequence<Value> {
-        async
-    }
+    return jsonValue
+  }
 
-    public init(
-        wrappedValue: Value,
-        propertyID: OcaPropertyID,
-        getMethodID: OcaMethodID? = nil,
-        setMethodID: OcaMethodID? = nil
-    ) {
-        subject = AsyncCurrentValueSubject(wrappedValue)
-        self.propertyID = propertyID
-        self.getMethodID = getMethodID
-        self.setMethodID = setMethodID
-    }
+  func set(object: OcaRoot, command: Ocp1Command) async throws {
+    let newValue: Value = try OcaRoot.decodeCommand(command)
+    await setAndNotifySubscribers(object: object, newValue)
+  }
 
-    public init(
-        propertyID: OcaPropertyID,
-        getMethodID: OcaMethodID? = nil,
-        setMethodID: OcaMethodID? = nil
-    ) where Value: ExpressibleByNilLiteral {
-        subject = AsyncCurrentValueSubject(nil)
-        self.propertyID = propertyID
-        self.getMethodID = getMethodID
-        self.setMethodID = setMethodID
-    }
-
-    func get() -> Value {
-        subject.value
-    }
-
-    private func setAndNotifySubscribers(object: OcaRoot, _ newValue: Value) async {
-        subject.send(newValue)
-        try? await notifySubscribers(object: object, newValue)
-    }
-
-    private func isNil(_ value: Value) -> Bool {
-        if let value = value as? ExpressibleByNilLiteral,
-           let value = value as? Value?,
-           case .none = value
-        {
-            return true
-        } else {
-            return false
+  func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
+    if jsonValue is NSNull {
+      if let subject = subject as? AsyncCurrentValueSubjectNilRepresentable {
+        subject.sendNil()
+      } else {
+        throw Ocp1Error.status(.badFormat)
+      }
+    } else if let values = jsonValue as? [[String: Sendable]] {
+      var objects = [OcaRoot]()
+      for value in values {
+        if let object = try? await device.deserialize(jsonObject: value) {
+          objects.append(object)
         }
+      }
+      await setAndNotifySubscribers(object: object, objects as! Value)
+    } else if !JSONSerialization.isValidJSONObject(subject.value),
+              let jsonValue = jsonValue as? Codable
+    {
+      let data = try JSONEncoder().encode(jsonValue)
+      let decodedValue = try JSONDecoder().decode(Value.self, from: data)
+      await setAndNotifySubscribers(object: object, decodedValue)
+    } else {
+      guard let newValue = jsonValue as? Value else {
+        throw Ocp1Error.status(.badFormat)
+      }
+      await setAndNotifySubscribers(object: object, newValue)
     }
+  }
 
-    func getOcp1Response() async throws -> Ocp1Response {
-        let value: Value = get()
-        if isNil(value) {
-            throw Ocp1Error.status(.parameterOutOfRange)
-        }
-        return try OcaRoot.encodeResponse(value)
+  private func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {
+    let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
+    let parameters = OcaPropertyChangedEventData<Value>(
+      propertyID: propertyID,
+      propertyValue: newValue,
+      changeType: .currentChanged
+    )
+
+    try await object.deviceDelegate?.notifySubscribers(
+      event,
+      parameters: parameters
+    )
+  }
+
+  public static subscript<T: OcaRoot>(
+    _enclosingInstance object: T,
+    wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, Value>,
+    storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
+  ) -> Value {
+    get {
+      object[keyPath: storageKeyPath].get()
     }
+    set {
+      let property = object[keyPath: storageKeyPath]
 
-    func getJsonValue() throws -> Any {
-        let jsonValue: Any
-
-        if isNil(subject.value) {
-            jsonValue = NSNull()
-        } else if JSONSerialization.isValidJSONObject(subject.value) {
-            jsonValue = subject.value
-        } else {
-            jsonValue = try JSONEncoder().reencodeAsValidJSONObject(subject.value)
-        }
-
-        return jsonValue
+      Task {
+        await property.setAndNotifySubscribers(object: object, newValue)
+      }
     }
-
-    func set(object: OcaRoot, command: Ocp1Command) async throws {
-        let newValue: Value = try OcaRoot.decodeCommand(command)
-        await setAndNotifySubscribers(object: object, newValue)
-    }
-
-    func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
-        if jsonValue is NSNull {
-            if let subject = subject as? AsyncCurrentValueSubjectNilRepresentable {
-                subject.sendNil()
-            } else {
-                throw Ocp1Error.status(.badFormat)
-            }
-        } else if let values = jsonValue as? [[String: Sendable]] {
-            var objects = [OcaRoot]()
-            for value in values {
-                if let object = try? await device.deserialize(jsonObject: value) {
-                    objects.append(object)
-                }
-            }
-            await setAndNotifySubscribers(object: object, objects as! Value)
-        } else if !JSONSerialization.isValidJSONObject(subject.value),
-                  let jsonValue = jsonValue as? Codable
-        {
-            let data = try JSONEncoder().encode(jsonValue)
-            let decodedValue = try JSONDecoder().decode(Value.self, from: data)
-            await setAndNotifySubscribers(object: object, decodedValue)
-        } else {
-            guard let newValue = jsonValue as? Value else {
-                throw Ocp1Error.status(.badFormat)
-            }
-            await setAndNotifySubscribers(object: object, newValue)
-        }
-    }
-
-    private func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {
-        let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
-        let parameters = OcaPropertyChangedEventData<Value>(
-            propertyID: propertyID,
-            propertyValue: newValue,
-            changeType: .currentChanged
-        )
-
-        try await object.deviceDelegate?.notifySubscribers(
-            event,
-            parameters: parameters
-        )
-    }
-
-    public static subscript<T: OcaRoot>(
-        _enclosingInstance object: T,
-        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, Value>,
-        storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
-    ) -> Value {
-        get {
-            object[keyPath: storageKeyPath].get()
-        }
-        set {
-            let property = object[keyPath: storageKeyPath]
-
-            Task {
-                await property.setAndNotifySubscribers(object: object, newValue)
-            }
-        }
-    }
+  }
 }

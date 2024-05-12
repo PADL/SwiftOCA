@@ -17,22 +17,22 @@
 import SwiftOCA
 
 open class OcaControlNetwork: OcaApplicationNetwork {
-    override open class var classID: OcaClassID { OcaClassID("1.4.1") }
-    override open class var classVersion: OcaClassVersionNumber { 1 }
+  override open class var classID: OcaClassID { OcaClassID("1.4.1") }
+  override open class var classVersion: OcaClassVersionNumber { 1 }
 
-    @OcaDeviceProperty(
-        propertyID: OcaPropertyID("3.1"),
-        getMethodID: OcaMethodID("3.1")
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.1")
+  )
+  public var `protocol`: OcaNetworkControlProtocol = .ocp01
+
+  public convenience init(
+    deviceDelegate: OcaDevice? = nil
+  ) async throws {
+    try await self.init(
+      role: "Control Network",
+      deviceDelegate: deviceDelegate,
+      addToRootBlock: true
     )
-    public var `protocol`: OcaNetworkControlProtocol = .ocp01
-
-    public convenience init(
-        deviceDelegate: OcaDevice? = nil
-    ) async throws {
-        try await self.init(
-            role: "Control Network",
-            deviceDelegate: deviceDelegate,
-            addToRootBlock: true
-        )
-    }
+  }
 }

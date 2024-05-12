@@ -19,28 +19,28 @@ public let Ocp1ProtocolVersion1: OcaUint16 = 1
 public let Ocp1ProtocolVersion: OcaUint16 = Ocp1ProtocolVersion1
 
 public struct Ocp1Header: Codable, Sendable {
-    public var protocolVersion: OcaUint16
-    public var pduSize: OcaUint32
-    public var pduType: OcaMessageType
-    public var messageCount: OcaUint16
+  public var protocolVersion: OcaUint16
+  public var pduSize: OcaUint32
+  public var pduType: OcaMessageType
+  public var messageCount: OcaUint16
 
-    init(pduType: OcaMessageType, messageCount: OcaUint16) {
-        protocolVersion = Ocp1ProtocolVersion
-        pduSize = 0
-        self.pduType = pduType
-        self.messageCount = messageCount
-    }
+  init(pduType: OcaMessageType, messageCount: OcaUint16) {
+    protocolVersion = Ocp1ProtocolVersion
+    pduSize = 0
+    self.pduType = pduType
+    self.messageCount = messageCount
+  }
 
-    init() {
-        self.init(pduType: .ocaKeepAlive, messageCount: 0)
-    }
+  init() {
+    self.init(pduType: .ocaKeepAlive, messageCount: 0)
+  }
 }
 
 public protocol Ocp1MessagePdu: Codable, Sendable {
-    var syncVal: OcaUint8 { get }
-    var header: Ocp1Header { get }
+  var syncVal: OcaUint8 { get }
+  var header: Ocp1Header { get }
 }
 
 public protocol Ocp1Message: Codable, Sendable {
-    var messageSize: OcaUint32 { get }
+  var messageSize: OcaUint32 { get }
 }

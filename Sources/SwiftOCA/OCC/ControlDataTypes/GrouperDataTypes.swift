@@ -15,40 +15,40 @@
 //
 
 public struct OcaGrouperGroup: Codable, Sendable {
-    public let index: OcaUint16
-    public let name: OcaString
-    public let proxyONo: OcaONo
+  public let index: OcaUint16
+  public let name: OcaString
+  public let proxyONo: OcaONo
 
-    public init(index: OcaUint16, name: OcaString, proxyONo: OcaONo) {
-        self.index = index
-        self.name = name
-        self.proxyONo = proxyONo
-    }
+  public init(index: OcaUint16, name: OcaString, proxyONo: OcaONo) {
+    self.index = index
+    self.name = name
+    self.proxyONo = proxyONo
+  }
 }
 
 public struct OcaGrouperCitizen: Codable, Sendable {
-    public let index: OcaUint16
-    public let objectPath: OcaOPath
-    public let online: OcaBoolean
+  public let index: OcaUint16
+  public let objectPath: OcaOPath
+  public let online: OcaBoolean
 
-    public init(index: OcaUint16, objectPath: OcaOPath, online: OcaBoolean) {
-        self.index = index
-        self.objectPath = objectPath
-        self.online = online
-    }
+  public init(index: OcaUint16, objectPath: OcaOPath, online: OcaBoolean) {
+    self.index = index
+    self.objectPath = objectPath
+    self.online = online
+  }
 }
 
 public enum OcaGrouperMode: OcaUint8, Codable, Sendable, CaseIterable {
-    case masterSlave = 1
-    case peerToPeer = 2
+  case masterSlave = 1
+  case peerToPeer = 2
 }
 
 public struct OcaGrouperEnrollment: Codable, Sendable {
-    public let groupIndex: OcaUint16
-    public let citizenIndex: OcaUint16
+  public let groupIndex: OcaUint16
+  public let citizenIndex: OcaUint16
 
-    public init(groupIndex: OcaUint16, citizenIndex: OcaUint16) {
-        self.groupIndex = groupIndex
-        self.citizenIndex = citizenIndex
-    }
+  public init(groupIndex: OcaUint16, citizenIndex: OcaUint16) {
+    self.groupIndex = groupIndex
+    self.citizenIndex = citizenIndex
+  }
 }

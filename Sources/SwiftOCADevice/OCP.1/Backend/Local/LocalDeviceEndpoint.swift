@@ -22,37 +22,37 @@ import SwiftOCA
 
 @OcaDevice
 public final class OcaLocalDeviceEndpoint: OcaDeviceEndpointPrivate {
-    typealias ControllerType = OcaLocalController
+  typealias ControllerType = OcaLocalController
 
-    let logger = Logger(label: "com.padl.SwiftOCADevice.OcaLocalDeviceEndpoint")
-    let timeout: Duration = .zero
-    let device: OcaDevice
+  let logger = Logger(label: "com.padl.SwiftOCADevice.OcaLocalDeviceEndpoint")
+  let timeout: Duration = .zero
+  let device: OcaDevice
 
-    public var controllers: [OcaController] {
-        [controller]
-    }
+  public var controllers: [OcaController] {
+    [controller]
+  }
 
-    /// channel for receiving requests from the in-process controller
-    let requestChannel = AsyncChannel<Data>()
-    /// channel for sending responses to the in-process controller
-    let responseChannel = AsyncChannel<Data>()
+  /// channel for receiving requests from the in-process controller
+  let requestChannel = AsyncChannel<Data>()
+  /// channel for sending responses to the in-process controller
+  let responseChannel = AsyncChannel<Data>()
 
-    private var controller: OcaLocalController!
+  private var controller: OcaLocalController!
 
-    func add(controller: ControllerType) async {}
+  func add(controller: ControllerType) async {}
 
-    func remove(controller: ControllerType) async {}
+  func remove(controller: ControllerType) async {}
 
-    public init(
-        device: OcaDevice = OcaDevice.shared
-    ) async throws {
-        self.device = device
-        controller = await OcaLocalController(endpoint: self)
-        try await device.add(endpoint: self)
-    }
+  public init(
+    device: OcaDevice = OcaDevice.shared
+  ) async throws {
+    self.device = device
+    controller = await OcaLocalController(endpoint: self)
+    try await device.add(endpoint: self)
+  }
 
-    public func run() async throws {
-        await controller.handle(for: self)
-        try await device.remove(endpoint: self)
-    }
+  public func run() async throws {
+    await controller.handle(for: self)
+    try await device.remove(endpoint: self)
+  }
 }

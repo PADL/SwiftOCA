@@ -20,131 +20,131 @@ import SwiftOCA
 
 @propertyWrapper
 public struct OcaBoundedDeviceProperty<
-    Value: Codable &
-        Comparable & Sendable
+  Value: Codable &
+    Comparable & Sendable
 >: OcaDevicePropertyRepresentable, Sendable {
-    fileprivate var storage: Property
+  fileprivate var storage: Property
 
-    public var propertyID: OcaPropertyID { storage.propertyID }
-    public var getMethodID: OcaMethodID? { storage.getMethodID }
-    public var setMethodID: OcaMethodID? { storage.setMethodID }
+  public var propertyID: OcaPropertyID { storage.propertyID }
+  public var getMethodID: OcaMethodID? { storage.getMethodID }
+  public var setMethodID: OcaMethodID? { storage.setMethodID }
 
-    public typealias Property = OcaDeviceProperty<OcaBoundedPropertyValue<Value>>
+  public typealias Property = OcaDeviceProperty<OcaBoundedPropertyValue<Value>>
 
-    public var wrappedValue: OcaBoundedPropertyValue<Value> {
-        get { storage.subject.value }
-        nonmutating set { fatalError() }
+  public var wrappedValue: OcaBoundedPropertyValue<Value> {
+    get { storage.subject.value }
+    nonmutating set { fatalError() }
+  }
+
+  public var projectedValue: AnyAsyncSequence<Value> {
+    async.map(\.value).eraseToAnyAsyncSequence()
+  }
+
+  var subject: AsyncCurrentValueSubject<OcaBoundedPropertyValue<Value>> {
+    storage.subject
+  }
+
+  public init(
+    wrappedValue: OcaBoundedPropertyValue<Value>,
+    propertyID: OcaPropertyID,
+    getMethodID: OcaMethodID? = nil,
+    setMethodID: OcaMethodID? = nil
+  ) {
+    storage = OcaDeviceProperty(
+      wrappedValue: wrappedValue,
+      propertyID: propertyID,
+      getMethodID: getMethodID,
+      setMethodID: setMethodID
+    )
+  }
+
+  func getOcp1Response() async throws -> Ocp1Response {
+    try await storage.getOcp1Response()
+  }
+
+  func getJsonValue() throws -> Any {
+    let valueDict: [String: Value] =
+      ["v": storage.subject.value.value,
+       "l": storage.subject.value.range.lowerBound,
+       "u": storage.subject.value.range.upperBound]
+
+    return valueDict
+  }
+
+  private func setAndNotifySubscribers(
+    object: OcaRoot,
+    _ newValue: OcaBoundedPropertyValue<Value>
+  ) async {
+    storage.subject.send(newValue)
+    try? await notifySubscribers(object: object, newValue.value)
+  }
+
+  func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
+    guard let valueDict = jsonValue as? [String: Value] else {
+      throw Ocp1Error.status(.badFormat)
     }
 
-    public var projectedValue: AnyAsyncSequence<Value> {
-        async.map(\.value).eraseToAnyAsyncSequence()
+    let value = valueDict["v"]
+    let lowerBound = valueDict["l"]
+    let upperBound = valueDict["u"]
+    guard let value,
+          let lowerBound,
+          let upperBound,
+          lowerBound <= upperBound,
+          value >= lowerBound,
+          value <= upperBound
+    else {
+      throw Ocp1Error.status(.badFormat)
     }
 
-    var subject: AsyncCurrentValueSubject<OcaBoundedPropertyValue<Value>> {
-        storage.subject
+    await setAndNotifySubscribers(
+      object: object,
+      OcaBoundedPropertyValue<Value>(value: value, in: lowerBound...upperBound)
+    )
+  }
+
+  func set(object: OcaRoot, command: Ocp1Command) async throws {
+    let value: Value = try object.decodeCommand(command)
+    // check it is in range
+    if value < storage.wrappedValue.minValue ||
+      value > storage.wrappedValue.maxValue
+    {
+      throw Ocp1Error.status(.parameterOutOfRange)
     }
+    await setAndNotifySubscribers(
+      object: object,
+      OcaBoundedPropertyValue<Value>(value: value, in: storage.wrappedValue.range)
+    )
+  }
 
-    public init(
-        wrappedValue: OcaBoundedPropertyValue<Value>,
-        propertyID: OcaPropertyID,
-        getMethodID: OcaMethodID? = nil,
-        setMethodID: OcaMethodID? = nil
-    ) {
-        storage = OcaDeviceProperty(
-            wrappedValue: wrappedValue,
-            propertyID: propertyID,
-            getMethodID: getMethodID,
-            setMethodID: setMethodID
-        )
+  private func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {
+    let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
+    let parameters = OcaPropertyChangedEventData<Value>(
+      propertyID: propertyID,
+      propertyValue: newValue,
+      changeType: .currentChanged
+    )
+
+    try await object.deviceDelegate?.notifySubscribers(
+      event,
+      parameters: parameters
+    )
+  }
+
+  public static subscript<T: OcaRoot>(
+    _enclosingInstance object: T,
+    wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, OcaBoundedPropertyValue<Value>>,
+    storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
+  ) -> OcaBoundedPropertyValue<Value> {
+    get {
+      object[keyPath: storageKeyPath].storage.get()
     }
+    set {
+      let property = object[keyPath: storageKeyPath]
 
-    func getOcp1Response() async throws -> Ocp1Response {
-        try await storage.getOcp1Response()
+      Task {
+        await property.setAndNotifySubscribers(object: object, newValue)
+      }
     }
-
-    func getJsonValue() throws -> Any {
-        let valueDict: [String: Value] =
-            ["v": storage.subject.value.value,
-             "l": storage.subject.value.range.lowerBound,
-             "u": storage.subject.value.range.upperBound]
-
-        return valueDict
-    }
-
-    private func setAndNotifySubscribers(
-        object: OcaRoot,
-        _ newValue: OcaBoundedPropertyValue<Value>
-    ) async {
-        storage.subject.send(newValue)
-        try? await notifySubscribers(object: object, newValue.value)
-    }
-
-    func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
-        guard let valueDict = jsonValue as? [String: Value] else {
-            throw Ocp1Error.status(.badFormat)
-        }
-
-        let value = valueDict["v"]
-        let lowerBound = valueDict["l"]
-        let upperBound = valueDict["u"]
-        guard let value,
-              let lowerBound,
-              let upperBound,
-              lowerBound <= upperBound,
-              value >= lowerBound,
-              value <= upperBound
-        else {
-            throw Ocp1Error.status(.badFormat)
-        }
-
-        await setAndNotifySubscribers(
-            object: object,
-            OcaBoundedPropertyValue<Value>(value: value, in: lowerBound...upperBound)
-        )
-    }
-
-    func set(object: OcaRoot, command: Ocp1Command) async throws {
-        let value: Value = try object.decodeCommand(command)
-        // check it is in range
-        if value < storage.wrappedValue.minValue ||
-            value > storage.wrappedValue.maxValue
-        {
-            throw Ocp1Error.status(.parameterOutOfRange)
-        }
-        await setAndNotifySubscribers(
-            object: object,
-            OcaBoundedPropertyValue<Value>(value: value, in: storage.wrappedValue.range)
-        )
-    }
-
-    private func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {
-        let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
-        let parameters = OcaPropertyChangedEventData<Value>(
-            propertyID: propertyID,
-            propertyValue: newValue,
-            changeType: .currentChanged
-        )
-
-        try await object.deviceDelegate?.notifySubscribers(
-            event,
-            parameters: parameters
-        )
-    }
-
-    public static subscript<T: OcaRoot>(
-        _enclosingInstance object: T,
-        wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, OcaBoundedPropertyValue<Value>>,
-        storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
-    ) -> OcaBoundedPropertyValue<Value> {
-        get {
-            object[keyPath: storageKeyPath].storage.get()
-        }
-        set {
-            let property = object[keyPath: storageKeyPath]
-
-            Task {
-                await property.setAndNotifySubscribers(object: object, newValue)
-            }
-        }
-    }
+  }
 }

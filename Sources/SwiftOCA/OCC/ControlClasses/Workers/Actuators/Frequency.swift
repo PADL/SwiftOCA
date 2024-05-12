@@ -15,13 +15,13 @@
 //
 
 open class OcaFrequencyActuator: OcaActuator {
-    override open class var classID: OcaClassID { OcaClassID("1.1.1.8") }
-    override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID { OcaClassID("1.1.1.8") }
+  override open class var classVersion: OcaClassVersionNumber { 3 }
 
-    @OcaBoundedProperty(
-        propertyID: OcaPropertyID("4.1"),
-        getMethodID: OcaMethodID("4.1"),
-        setMethodID: OcaMethodID("4.2")
-    )
-    public var frequency: OcaBoundedProperty<OcaFrequency>.PropertyValue
+  @OcaBoundedProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  public var frequency: OcaBoundedProperty<OcaFrequency>.PropertyValue
 }

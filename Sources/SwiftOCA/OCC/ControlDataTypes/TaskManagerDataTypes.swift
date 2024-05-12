@@ -15,9 +15,9 @@
 //
 
 public enum OcaTaskManagerState: OcaUint8, Codable, Sendable, CaseIterable {
-    case none = 0
-    case enabled = 1
-    case disabled = 2
+  case none = 0
+  case enabled = 1
+  case disabled = 2
 }
 
 public typealias OcaTaskID = OcaUint32
@@ -25,37 +25,37 @@ public typealias OcaTaskID = OcaUint32
 public typealias OcaTaskGroupID = OcaUint16
 
 public enum OcaTaskState: OcaUint8, Codable, Sendable, CaseIterable {
-    case none = 0
-    case notPrepared = 1
-    case disabled = 2
-    case enabled = 3
-    case running = 4
-    case completed = 5
-    case failed = 6
-    case stopped = 7
-    case aborted = 8
+  case none = 0
+  case notPrepared = 1
+  case disabled = 2
+  case enabled = 3
+  case running = 4
+  case completed = 5
+  case failed = 6
+  case stopped = 7
+  case aborted = 8
 }
 
 public struct OcaTaskStatus: Codable, Sendable {
-    public let id: OcaTaskID
-    public let state: OcaTaskState
-    public let errorCode: OcaUint16
+  public let id: OcaTaskID
+  public let state: OcaTaskState
+  public let errorCode: OcaUint16
 
-    public init(id: OcaTaskID, state: OcaTaskState, errorCode: OcaUint16) {
-        self.id = id
-        self.state = state
-        self.errorCode = errorCode
-    }
+  public init(id: OcaTaskID, state: OcaTaskState, errorCode: OcaUint16) {
+    self.id = id
+    self.state = state
+    self.errorCode = errorCode
+  }
 }
 
 public struct OcaTask: Codable, Sendable {
-    public let id: OcaTaskID
-    public let label: OcaString
-    public let programID: OcaLibVolIdentifier
-    public let groupID: OcaTaskGroupID
-    public let timeMode: OcaTimeMode
-    public let timeSourceONo: OcaONo
-    public let startTime: OcaTimePTP
-    public let duration: OcaTimePTP
-    public let applicationSpecificParameters: OcaBlob
+  public let id: OcaTaskID
+  public let label: OcaString
+  public let programID: OcaLibVolIdentifier
+  public let groupID: OcaTaskGroupID
+  public let timeMode: OcaTimeMode
+  public let timeSourceONo: OcaONo
+  public let startTime: OcaTimePTP
+  public let duration: OcaTimePTP
+  public let applicationSpecificParameters: OcaBlob
 }

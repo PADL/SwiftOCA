@@ -23,22 +23,22 @@ import Foundation
 import SystemPackage
 
 fileprivate extension SocketError {
-    var mappedError: Error {
-        switch self {
-        case let .failed(_, errno, _):
-            if errno == EBADF || errno == ESHUTDOWN || errno == EPIPE {
-                return Ocp1Error.notConnected
-            } else {
-                return Errno(rawValue: errno)
-            }
-        case .blocked:
-            return self
-        case .disconnected:
-            return Ocp1Error.notConnected
-        case .unsupportedAddress:
-            return self
-        }
+  var mappedError: Error {
+    switch self {
+    case let .failed(_, errno, _):
+      if errno == EBADF || errno == ESHUTDOWN || errno == EPIPE {
+        return Ocp1Error.notConnected
+      } else {
+        return Errno(rawValue: errno)
+      }
+    case .blocked:
+      return self
+    case .disconnected:
+      return Ocp1Error.notConnected
+    case .unsupportedAddress:
+      return self
     }
+  }
 }
 
 #if os(Linux)
@@ -49,176 +49,176 @@ extension sockaddr_un: SocketAddress {}
 #endif
 
 private extension Data {
-    var socketAddress: any SocketAddress {
-        try! withUnsafeBytes { unbound -> (any SocketAddress) in
-            try unbound
-                .withMemoryRebound(
-                    to: sockaddr_storage
-                        .self
-                ) { storage -> (any SocketAddress) in
-                    let ss = storage.baseAddress!.pointee
-                    switch ss.ss_family {
-                    case sa_family_t(AF_INET):
-                        return try sockaddr_in.make(from: ss)
-                    case sa_family_t(AF_INET6):
-                        return try sockaddr_in6.make(from: ss)
-                    case sa_family_t(AF_LOCAL):
-                        return try sockaddr_un.make(from: ss)
-                    default:
-                        fatalError("unsupported address family")
-                    }
-                }
+  var socketAddress: any SocketAddress {
+    try! withUnsafeBytes { unbound -> (any SocketAddress) in
+      try unbound
+        .withMemoryRebound(
+          to: sockaddr_storage
+            .self
+        ) { storage -> (any SocketAddress) in
+          let ss = storage.baseAddress!.pointee
+          switch ss.ss_family {
+          case sa_family_t(AF_INET):
+            return try sockaddr_in.make(from: ss)
+          case sa_family_t(AF_INET6):
+            return try sockaddr_in6.make(from: ss)
+          case sa_family_t(AF_LOCAL):
+            return try sockaddr_un.make(from: ss)
+          default:
+            fatalError("unsupported address family")
+          }
         }
     }
+  }
 }
 
 private actor AsyncSocketPoolMonitor {
-    static let shared = AsyncSocketPoolMonitor()
+  static let shared = AsyncSocketPoolMonitor()
 
-    private let pool: some AsyncSocketPool = SocketPool.make()
-    private var isRunning = false
-    private var task: Task<(), Error>?
+  private let pool: some AsyncSocketPool = SocketPool.make()
+  private var isRunning = false
+  private var task: Task<(), Error>?
 
-    func get() async throws -> some AsyncSocketPool {
-        guard !isRunning else { return pool }
-        defer { isRunning = true }
-        try await pool.prepare()
-        task = Task {
-            try await pool.run()
-        }
-        return pool
+  func get() async throws -> some AsyncSocketPool {
+    guard !isRunning else { return pool }
+    defer { isRunning = true }
+    try await pool.prepare()
+    task = Task {
+      try await pool.run()
     }
+    return pool
+  }
 
-    deinit {
-        if let task {
-            task.cancel()
-        }
+  deinit {
+    if let task {
+      task.cancel()
     }
+  }
 }
 
 public class Ocp1FlyingSocksConnection: Ocp1Connection {
-    fileprivate let deviceAddress: any SocketAddress
-    fileprivate var asyncSocket: AsyncSocket?
-    fileprivate var type: Int32 {
-        fatalError("must be implemented by subclass")
+  fileprivate let deviceAddress: any SocketAddress
+  fileprivate var asyncSocket: AsyncSocket?
+  fileprivate var type: Int32 {
+    fatalError("must be implemented by subclass")
+  }
+
+  public convenience init(
+    deviceAddress: Data,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    try self.init(socketAddress: deviceAddress.socketAddress, options: options)
+  }
+
+  fileprivate init(
+    socketAddress: any SocketAddress,
+    options: Ocp1ConnectionOptions
+  ) throws {
+    deviceAddress = socketAddress
+    super.init(options: options)
+  }
+
+  deinit {
+    try? asyncSocket?.close()
+  }
+
+  override func connectDevice() async throws {
+    let socket = try Socket(domain: Int32(Swift.type(of: deviceAddress).family), type: type)
+    try socket.setValue(true, for: BoolSocketOption.localAddressReuse)
+    try socket.connect(to: deviceAddress)
+    asyncSocket = try await AsyncSocket(
+      socket: socket,
+      pool: AsyncSocketPoolMonitor.shared.get()
+    )
+    try await super.connectDevice()
+  }
+
+  override public func disconnectDevice(clearObjectCache: Bool) async throws {
+    if let asyncSocket {
+      try asyncSocket.close()
+    }
+    try await super.disconnectDevice(clearObjectCache: clearObjectCache)
+  }
+
+  private func withMappedError<T: Sendable>(
+    _ block: (_ asyncSocket: AsyncSocket) async throws
+      -> T
+  ) async throws -> T {
+    guard let asyncSocket else {
+      throw Ocp1Error.notConnected
     }
 
-    public convenience init(
-        deviceAddress: Data,
-        options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
-    ) throws {
-        try self.init(socketAddress: deviceAddress.socketAddress, options: options)
+    do {
+      return try await block(asyncSocket)
+    } catch let error as SocketError {
+      throw error.mappedError
     }
+  }
 
-    fileprivate init(
-        socketAddress: any SocketAddress,
-        options: Ocp1ConnectionOptions
-    ) throws {
-        deviceAddress = socketAddress
-        super.init(options: options)
+  override public func read(_ length: Int) async throws -> Data {
+    try await withMappedError { socket in
+      try await Data(socket.read(bytes: length))
     }
+  }
 
-    deinit {
-        try? asyncSocket?.close()
+  override public func write(_ data: Data) async throws -> Int {
+    try await withMappedError { socket in
+      try await socket.write(data)
+      return data.count
     }
-
-    override func connectDevice() async throws {
-        let socket = try Socket(domain: Int32(Swift.type(of: deviceAddress).family), type: type)
-        try socket.setValue(true, for: BoolSocketOption.localAddressReuse)
-        try socket.connect(to: deviceAddress)
-        asyncSocket = try await AsyncSocket(
-            socket: socket,
-            pool: AsyncSocketPoolMonitor.shared.get()
-        )
-        try await super.connectDevice()
-    }
-
-    override public func disconnectDevice(clearObjectCache: Bool) async throws {
-        if let asyncSocket {
-            try asyncSocket.close()
-        }
-        try await super.disconnectDevice(clearObjectCache: clearObjectCache)
-    }
-
-    private func withMappedError<T: Sendable>(
-        _ block: (_ asyncSocket: AsyncSocket) async throws
-            -> T
-    ) async throws -> T {
-        guard let asyncSocket else {
-            throw Ocp1Error.notConnected
-        }
-
-        do {
-            return try await block(asyncSocket)
-        } catch let error as SocketError {
-            throw error.mappedError
-        }
-    }
-
-    override public func read(_ length: Int) async throws -> Data {
-        try await withMappedError { socket in
-            try await Data(socket.read(bytes: length))
-        }
-    }
-
-    override public func write(_ data: Data) async throws -> Int {
-        try await withMappedError { socket in
-            try await socket.write(data)
-            return data.count
-        }
-    }
+  }
 }
 
 public final class Ocp1FlyingSocksDatagramConnection: Ocp1FlyingSocksConnection {
-    override public var heartbeatTime: Duration {
-        .seconds(1)
-    }
+  override public var heartbeatTime: Duration {
+    .seconds(1)
+  }
 
-    override fileprivate var type: Int32 {
-        #if canImport(Glibc)
-        Int32(2) // FIXME: why can't we find the symbol for this?
-        #else
-        SOCK_DGRAM
-        #endif
-    }
+  override fileprivate var type: Int32 {
+    #if canImport(Glibc)
+    Int32(2) // FIXME: why can't we find the symbol for this?
+    #else
+    SOCK_DGRAM
+    #endif
+  }
 
-    override public var connectionPrefix: String {
-        "\(OcaUdpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
-    }
+  override public var connectionPrefix: String {
+    "\(OcaUdpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
+  }
 
-    override public var isDatagram: Bool { true }
+  override public var isDatagram: Bool { true }
 }
 
 public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
-    override fileprivate var type: Int32 {
-        #if canImport(Glibc)
-        Int32(1) // FIXME: why can't we find the symbol for this?
-        #else
-        SOCK_STREAM
-        #endif
-    }
+  override fileprivate var type: Int32 {
+    #if canImport(Glibc)
+    Int32(1) // FIXME: why can't we find the symbol for this?
+    #else
+    SOCK_STREAM
+    #endif
+  }
 
-    public convenience init(
-        path: String,
-        options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
-    ) throws {
-        try self.init(socketAddress: sockaddr_un.unix(path: path), options: options)
-    }
+  public convenience init(
+    path: String,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    try self.init(socketAddress: sockaddr_un.unix(path: path), options: options)
+  }
 
-    override public var connectionPrefix: String {
-        "\(OcaTcpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
-    }
+  override public var connectionPrefix: String {
+    "\(OcaTcpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
+  }
 
-    override public var isDatagram: Bool { false }
+  override public var isDatagram: Bool { false }
 }
 
 func deviceAddressToString(_ deviceAddress: any SocketAddress) -> String {
-    var addr = deviceAddress.makeStorage()
-    return withUnsafePointer(to: &addr) {
-        $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-            deviceAddressToString($0)
-        }
+  var addr = deviceAddress.makeStorage()
+  return withUnsafePointer(to: &addr) {
+    $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+      deviceAddressToString($0)
     }
+  }
 }
 
 #endif

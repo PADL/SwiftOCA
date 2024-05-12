@@ -19,38 +19,38 @@ import SwiftOCA
 import SwiftUI
 
 extension OcaPanBalance: OcaViewRepresentable {
-    public var viewType: any OcaView.Type {
-        OcaPanBalanceView.self
-    }
+  public var viewType: any OcaView.Type {
+    OcaPanBalanceView.self
+  }
 }
 
 private extension Binding
-    where Value == OcaProperty<OcaBoundedPropertyValue<OcaFloat32>>.PropertyValue
+  where Value == OcaProperty<OcaBoundedPropertyValue<OcaFloat32>>.PropertyValue
 {
-    var value: Binding<OcaBoundedPropertyValue<OcaFloat32>> {
-        Binding<OcaBoundedPropertyValue<OcaFloat32>>(get: {
-            if case let .success(positionValue) = self.wrappedValue {
-                return positionValue
-            } else {
-                return OcaBoundedPropertyValue(value: 0.0, in: -1.0...1.0)
-            }
-        }, set: { newValue in
-            self.wrappedValue = .success(newValue)
-        })
-    }
+  var value: Binding<OcaBoundedPropertyValue<OcaFloat32>> {
+    Binding<OcaBoundedPropertyValue<OcaFloat32>>(get: {
+      if case let .success(positionValue) = self.wrappedValue {
+        return positionValue
+      } else {
+        return OcaBoundedPropertyValue(value: 0.0, in: -1.0...1.0)
+      }
+    }, set: { newValue in
+      self.wrappedValue = .success(newValue)
+    })
+  }
 }
 
 public struct OcaPanBalanceView: OcaView {
-    @StateObject
-    var object: OcaPanBalance
+  @StateObject
+  var object: OcaPanBalance
 
-    public init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object as! OcaPanBalance)
-    }
+  public init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object as! OcaPanBalance)
+  }
 
-    public var body: some View {
-        OcaVariableSliderView(value: object.$position.binding.value)
-            .valueSliderStyle(HorizontalValueSliderStyle())
-            .showProgressIfWaiting(object.position)
-    }
+  public var body: some View {
+    OcaVariableSliderView(value: object.$position.binding.value)
+      .valueSliderStyle(HorizontalValueSliderStyle())
+      .showProgressIfWaiting(object.position)
+  }
 }

@@ -18,75 +18,75 @@ import SwiftOCA
 import SwiftUI
 
 struct OcaBlockNavigationStackView: OcaView {
-    @StateObject
-    var object: OcaBlock
-    @Environment(\.navigationPath)
-    var oNoPath
-    @Environment(\.lastError)
-    var lastError
-    @State
-    var members: [OcaRoot]?
-    @State
-    var membersMap: [OcaONo: OcaRoot]?
-    @State
-    var selectedONo: OcaONo? = nil
+  @StateObject
+  var object: OcaBlock
+  @Environment(\.navigationPath)
+  var oNoPath
+  @Environment(\.lastError)
+  var lastError
+  @State
+  var members: [OcaRoot]?
+  @State
+  var membersMap: [OcaONo: OcaRoot]?
+  @State
+  var selectedONo: OcaONo? = nil
 
-    init(_ object: OcaRoot) {
-        _object = StateObject(wrappedValue: object as! OcaBlock)
-    }
+  init(_ object: OcaRoot) {
+    _object = StateObject(wrappedValue: object as! OcaBlock)
+  }
 
-    public var body: some View {
-        Group {
-            if let members {
-                if members.hasContainerMembers {
-                    NavigationStack(path: oNoPath) {
-                        List(members, selection: $selectedONo) { member in
-                            NavigationLink(value: member.objectNumber) {
-                                OcaNavigationLabel(member)
-                            }
-                        }
-                        .navigationDestination(for: OcaONo.self) { oNo in
-                            if let member = self.membersMap![oNo] {
-                                OcaDetailView(member)
-                            }
-                        }
-                    }
-                } else if members.allMembersAreViewRepresentable {
-                    Grid {
-                        Group {
-                            GridRow {
-                                ForEach(members, id: \.self.id) { member in
-                                    OcaNavigationLabel(member)
-                                }
-                            }
-                            GridRow {
-                                ForEach(members, id: \.self.id) { member in
-                                    OcaDetailView(member)
-                                }
-                            }
-                        }.frame(width: 100)
-                    }
-                } else {
-                    VStack {
-                        ForEach(members, id: \.self.id) { member in
-                            OcaPropertyTableView(member)
-                                .frame(maxHeight: .infinity)
-                                .scrollDisabled(true)
-                        }
-                    }
+  public var body: some View {
+    Group {
+      if let members {
+        if members.hasContainerMembers {
+          NavigationStack(path: oNoPath) {
+            List(members, selection: $selectedONo) { member in
+              NavigationLink(value: member.objectNumber) {
+                OcaNavigationLabel(member)
+              }
+            }
+            .navigationDestination(for: OcaONo.self) { oNo in
+              if let member = self.membersMap![oNo] {
+                OcaDetailView(member)
+              }
+            }
+          }
+        } else if members.allMembersAreViewRepresentable {
+          Grid {
+            Group {
+              GridRow {
+                ForEach(members, id: \.self.id) { member in
+                  OcaNavigationLabel(member)
                 }
-            } else {
-                ProgressView()
+              }
+              GridRow {
+                ForEach(members, id: \.self.id) { member in
+                  OcaDetailView(member)
+                }
+              }
+            }.frame(width: 100)
+          }
+        } else {
+          VStack {
+            ForEach(members, id: \.self.id) { member in
+              OcaPropertyTableView(member)
+                .frame(maxHeight: .infinity)
+                .scrollDisabled(true)
             }
+          }
         }
-        .task {
-            do {
-                members = try await object.resolveActionObjects()
-                membersMap = members?.map
-            } catch {
-                debugPrint("OcaNavigationStackView: error \(error)")
-                lastError.wrappedValue = error
-            }
-        }
+      } else {
+        ProgressView()
+      }
     }
+    .task {
+      do {
+        members = try await object.resolveActionObjects()
+        membersMap = members?.map
+      } catch {
+        debugPrint("OcaNavigationStackView: error \(error)")
+        lastError.wrappedValue = error
+      }
+    }
+  }
 }
