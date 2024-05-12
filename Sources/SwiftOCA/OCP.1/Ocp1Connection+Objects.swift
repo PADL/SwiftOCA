@@ -71,7 +71,7 @@ public extension Ocp1Connection {
         ))
     }
 
-    internal func add<T: OcaRoot>(object: T) {
+    internal func add(object: some OcaRoot) {
         objects[object.objectNumber] = object
         object.connectionDelegate = self
     }

@@ -38,7 +38,7 @@ struct OcaBlockNavigationSplitView: OcaView {
     }
 
     var selectedObject: OcaRoot? {
-        guard let selectedONo = selectedONo,
+        guard let selectedONo,
               let membersMap,
               let object = membersMap[selectedONo]
         else {
@@ -59,7 +59,7 @@ struct OcaBlockNavigationSplitView: OcaView {
                     }
                 } detail: {
                     Group {
-                        if let selectedObject = selectedObject {
+                        if let selectedObject {
                             OcaDetailView(selectedObject)
                         }
                     }

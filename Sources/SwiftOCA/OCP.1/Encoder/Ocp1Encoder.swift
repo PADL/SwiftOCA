@@ -30,14 +30,14 @@ public struct Ocp1Encoder {
     public init() {}
 
     /// Encodes a value to a flat Ocp1 representation.
-    public func encode<Value>(_ value: Value) throws -> Data where Value: Encodable {
+    public func encode(_ value: some Encodable) throws -> Data {
         let state = Ocp1EncodingState(userInfo: userInfo)
         try state.encode(value, codingPath: [])
         return state.data
     }
 
     /// Encodes a value to a flat Ocp1 representation.
-    public func encode<Value>(_ value: Value) throws -> [UInt8] where Value: Encodable {
+    public func encode(_ value: some Encodable) throws -> [UInt8] {
         try [UInt8](encode(value) as Data)
     }
 }

@@ -80,6 +80,6 @@ struct KeyedOcp1EncodingContainer<Key>: KeyedEncodingContainerProtocol where Key
 
     mutating func encode(_ value: UInt64, forKey key: Key) throws { try state.encode(value) }
 
-    mutating func encode<T>(_ value: T, forKey key: Key) throws
-        where T: Encodable { try state.encode(value, codingPath: codingPath + [key]) }
+    mutating func encode(_ value: some Encodable, forKey key: Key) throws
+    { try state.encode(value, codingPath: codingPath + [key]) }
 }

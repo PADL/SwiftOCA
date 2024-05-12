@@ -43,7 +43,7 @@ class Ocp1EncodingState {
         throw Ocp1Error.nilNotEncodable
     }
 
-    func encodeInteger<Integer>(_ value: Integer) throws where Integer: FixedWidthInteger {
+    func encodeInteger(_ value: some FixedWidthInteger) throws {
         withUnsafeBytes(of: value.bigEndian) {
             data += $0
         }
@@ -113,7 +113,7 @@ class Ocp1EncodingState {
         try encodeInteger(value)
     }
 
-    private func encodeCount<T: Collection>(_ value: T) throws where T: Encodable {
+    private func encodeCount(_ value: some Collection & Encodable) throws {
         if value is Ocp1LongList {
             // FIXME: can't support 2^32 length because on 32-bit platforms count is Int32
             if value.count > Int(Int32.max) {
@@ -128,7 +128,7 @@ class Ocp1EncodingState {
         }
     }
 
-    func encode<T>(_ value: T, codingPath: [any CodingKey]) throws where T: Encodable {
+    func encode(_ value: some Encodable, codingPath: [any CodingKey]) throws {
         switch value {
         case let data as Data:
             self.data += data

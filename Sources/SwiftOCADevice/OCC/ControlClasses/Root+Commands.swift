@@ -69,8 +69,8 @@ public extension OcaRoot {
         return Ocp1Response(statusCode: statusCode, parameters: parameters)
     }
 
-    final nonisolated func encodeResponse<T: Encodable>(
-        _ parameters: T,
+    final nonisolated func encodeResponse(
+        _ parameters: some Encodable,
         statusCode: OcaStatus = .ok
     ) throws -> Ocp1Response {
         try Self.encodeResponse(parameters, statusCode: statusCode)

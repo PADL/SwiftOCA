@@ -20,7 +20,7 @@ import Foundation
 
 @_spi(SwiftOCAPrivate)
 public extension JSONEncoder {
-    func reencodeAsValidJSONObject<T: Codable>(_ value: T) throws -> Any {
+    func reencodeAsValidJSONObject(_ value: some Codable) throws -> Any {
         let data = try encode(value)
         return try JSONDecoder().decode(AnyDecodable.self, from: data).value
     }

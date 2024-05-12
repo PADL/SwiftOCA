@@ -91,7 +91,7 @@ public actor OcaDevice {
         }
     }
 
-    public func register<T: OcaRoot>(object: T, addToRootBlock: Bool = true) async throws {
+    public func register(object: some OcaRoot, addToRootBlock: Bool = true) async throws {
         precondition(
             object.objectNumber != OcaInvalidONo,
             "cannot register object with invalid ONo"
@@ -127,7 +127,7 @@ public actor OcaDevice {
         try await deregister(object: object)
     }
 
-    public func deregister<T: OcaRoot>(object: T) async throws {
+    public func deregister(object: some OcaRoot) async throws {
         precondition(object != deviceManager)
         precondition(object != subscriptionManager)
         precondition(
@@ -199,9 +199,9 @@ public actor OcaDevice {
         }
     }
 
-    public func notifySubscribers<T: Codable & Sendable>(
+    public func notifySubscribers(
         _ event: OcaEvent,
-        parameters: OcaPropertyChangedEventData<T>
+        parameters: OcaPropertyChangedEventData<some Codable & Sendable>
     ) async throws {
         try await notifySubscribers(
             event,

@@ -65,8 +65,8 @@ private extension OcaRoot {
         responseParameterData = response.parameters.parameterData
     }
 
-    func encodeParameters<T: Encodable>(
-        _ parameters: T,
+    func encodeParameters(
+        _ parameters: some Encodable,
         userInfo: [CodingUserInfoKey: Any]? = nil
     ) throws -> Data {
         var encoder = Ocp1Encoder()

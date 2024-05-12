@@ -49,10 +49,10 @@ public struct LengthTaggedData: MutableDataProtocol, ContiguousBytes, Equatable,
         try wrappedValue.withUnsafeMutableBytes(body)
     }
 
-    public mutating func replaceSubrange<C>(
+    public mutating func replaceSubrange(
         _ subrange: Range<Data.Index>,
-        with newElements: __owned C
-    ) where C: Collection, C.Element == Element {
+        with newElements: __owned some Collection<Element>
+    ) {
         wrappedValue.replaceSubrange(subrange, with: newElements)
     }
 }

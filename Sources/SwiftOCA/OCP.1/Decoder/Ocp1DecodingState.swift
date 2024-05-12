@@ -140,7 +140,7 @@ class Ocp1DecodingState {
         try decodeInteger(type)
     }
 
-    func decodeCount<T: Collection & Decodable>(_ type: T.Type) throws -> Int {
+    func decodeCount(_ type: (some Collection & Decodable).Type) throws -> Int {
         let count: Int
 
         if type is any Ocp1LongList.Type {

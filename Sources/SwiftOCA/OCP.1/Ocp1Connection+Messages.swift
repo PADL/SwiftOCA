@@ -53,7 +53,7 @@ extension Ocp1Connection {
     }
 
     private func response(for handle: OcaUint32) async throws -> Ocp1Response {
-        guard let monitor = monitor else {
+        guard let monitor else {
             throw Ocp1Error.notConnected
         }
 

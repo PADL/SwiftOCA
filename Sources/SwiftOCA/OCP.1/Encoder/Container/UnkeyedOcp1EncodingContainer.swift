@@ -122,7 +122,7 @@ struct UnkeyedOcp1EncodingContainer: UnkeyedEncodingContainer {
         count += 1
     }
 
-    mutating func encode<T>(_ value: T) throws where T: Encodable {
+    mutating func encode(_ value: some Encodable) throws {
         try state.encode(value, codingPath: codingPath)
         count += 1
     }
