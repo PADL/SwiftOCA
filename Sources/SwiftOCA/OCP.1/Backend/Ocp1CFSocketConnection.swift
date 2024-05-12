@@ -244,8 +244,6 @@ fileprivate extension CFRunLoopMode {
 }
 #endif
 
-#endif
-
 private extension sockaddr_un {
     init(path pathString: String) throws {
         self = Self()
@@ -273,3 +271,5 @@ private extension sockaddr_un {
         self = sun
     }
 }
+
+#endif
