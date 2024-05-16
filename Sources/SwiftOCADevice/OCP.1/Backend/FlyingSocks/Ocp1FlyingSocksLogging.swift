@@ -25,7 +25,6 @@
 
 #if os(macOS) || os(iOS)
 
-@_implementationOnly
 import FlyingSocks
 
 extension Logging where Self == PrintLogger {

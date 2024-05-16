@@ -17,7 +17,6 @@
 #if os(macOS) || os(iOS)
 
 @preconcurrency
-@_implementationOnly
 import FlyingSocks
 import Foundation
 import SystemPackage
@@ -123,8 +122,12 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
   }
 
   override func connectDevice() async throws {
-    let socket = try Socket(domain: Int32(Swift.type(of: deviceAddress).family), type: type)
+    let family = Swift.type(of: deviceAddress).family
+    let socket = try Socket(domain: Int32(family), type: type)
     try socket.setValue(true, for: BoolSocketOption.localAddressReuse)
+    if type == SOCK_STREAM, family == AF_INET {
+      try socket.setValue(true, for: BoolSocketOption(name: TCP_NODELAY), level: IPPROTO_TCP)
+    }
     try socket.connect(to: deviceAddress)
     asyncSocket = try await AsyncSocket(
       socket: socket,
@@ -221,4 +224,16 @@ func deviceAddressToString(_ deviceAddress: any SocketAddress) -> String {
   }
 }
 
+@_spi(SwiftOCAPrivate)
+public extension Socket {
+  func setValue<O: SocketOption>(_ value: O.Value, for option: O, level: CInt) throws {
+    var value = option.makeSocketValue(from: value)
+    let result = withUnsafeBytes(of: &value) {
+      setsockopt(file.rawValue, SOL_SOCKET, option.name, $0.baseAddress!, socklen_t($0.count))
+    }
+    guard result >= 0 else {
+      throw Errno(rawValue: errno)
+    }
+  }
+}
 #endif

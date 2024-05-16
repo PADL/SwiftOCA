@@ -18,9 +18,9 @@
 
 import AsyncAlgorithms
 import AsyncExtensions
-@_implementationOnly
 import FlyingSocks
 import Foundation
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 /// A remote controller
@@ -47,6 +47,7 @@ actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible
       connectionPrefix = OcaLocalConnectionPrefix
     } else {
       connectionPrefix = OcaTcpConnectionPrefix
+      try socket.socket.setValue(true, for: BoolSocketOption(name: TCP_NODELAY), level: IPPROTO_TCP)
     }
     address = Self.makeIdentifier(from: socket.socket)
     self.endpoint = endpoint

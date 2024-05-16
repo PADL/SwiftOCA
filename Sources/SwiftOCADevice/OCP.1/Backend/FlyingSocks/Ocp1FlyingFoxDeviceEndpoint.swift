@@ -17,9 +17,7 @@
 #if os(macOS) || os(iOS)
 
 import AsyncExtensions
-@_implementationOnly
 import FlyingFox
-@_implementationOnly
 import FlyingSocks
 import Foundation
 import Logging

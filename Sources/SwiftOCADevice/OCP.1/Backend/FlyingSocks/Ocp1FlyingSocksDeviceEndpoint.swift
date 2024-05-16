@@ -26,9 +26,8 @@
 #if os(macOS) || os(iOS)
 
 import AsyncExtensions
-@_implementationOnly
 import FlyingSocks
-@_spi(Private) @_implementationOnly
+@_spi(Private)
 import func FlyingSocks.withThrowingTimeout
 import Foundation
 import Logging
