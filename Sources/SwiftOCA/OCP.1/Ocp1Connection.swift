@@ -42,7 +42,7 @@ public let SOCK_STREAM = Darwin.SOCK_STREAM
 @_spi(SwiftOCAPrivate)
 public let SOCK_DGRAM = Darwin.SOCK_DGRAM
 #elseif canImport(Glibc)
-@_implementationOnly
+// @_implementationOnly
 import CoreFoundation
 @_spi(SwiftOCAPrivate)
 public let SOCK_STREAM = Int32(CoreFoundation.SOCK_STREAM.rawValue)

@@ -17,7 +17,7 @@
 #if canImport(CoreFoundation)
 
 import AsyncAlgorithms
-@_implementationOnly
+// @_implementationOnly
 @preconcurrency
 import CoreFoundation
 import Foundation

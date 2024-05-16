@@ -17,11 +17,11 @@
 #if canImport(IORing)
 
 import Foundation
-@_implementationOnly
+// @_implementationOnly
 import IORing
-@_implementationOnly
+// @_implementationOnly
 import IORingFoundation
-@_implementationOnly
+// @_implementationOnly
 import IORingUtils
 import SystemPackage
 

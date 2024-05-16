@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-@_implementationOnly
+// @_implementationOnly
 import AnyCodable
 import Foundation
 @_spi(SwiftOCAPrivate)
