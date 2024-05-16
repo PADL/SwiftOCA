@@ -139,13 +139,13 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
 
     var option = CInt(1)
     if family != AF_LOCAL, proto == IPPROTO_TCP {
-      guard setsockopt(
+      setsockopt(
         CFSocketGetNative(cfSocket),
         proto,
         TCP_NODELAY,
         &option,
         socklen_t(CInt.Stride())
-      ) == 0 else { throw mappedLastErrno() }
+      )
     }
 
     self.cfSocket = cfSocket
