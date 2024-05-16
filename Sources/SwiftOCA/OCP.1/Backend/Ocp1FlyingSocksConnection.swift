@@ -124,7 +124,6 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
   override func connectDevice() async throws {
     let family = Swift.type(of: deviceAddress).family
     let socket = try Socket(domain: Int32(family), type: type)
-    try socket.setValue(true, for: BoolSocketOption.localAddressReuse)
     if type == SOCK_STREAM, family == AF_INET {
       try socket.setValue(true, for: BoolSocketOption(name: TCP_NODELAY), level: IPPROTO_TCP)
     }

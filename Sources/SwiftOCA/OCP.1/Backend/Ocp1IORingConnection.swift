@@ -82,8 +82,7 @@ public class Ocp1IORingConnection: Ocp1Connection {
       type: __socket_type(UInt32(type)),
       protocol: 0
     )
-    if deviceAddress.family == AF_INET || deviceAddress.family == AF_INET6 {
-      try socket.setReuseAddr()
+    if type == SOCK_STREAM, deviceAddress.family == AF_INET || deviceAddress.family == AF_INET6 {
       try socket.setTcpNoDelay()
     }
     try await socket.connect(to: deviceAddress)
