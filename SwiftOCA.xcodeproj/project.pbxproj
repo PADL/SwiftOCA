@@ -91,6 +91,8 @@
 		D35592642B520E48000F633B /* Ocp1ControllerInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592632B520E48000F633B /* Ocp1ControllerInternal.swift */; };
 		D36ECA212A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA202A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift */; };
 		D36ECA2C2A5B24B30015174A /* Ocp1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */; };
+		D370B1482BF6002300BF88BB /* AudioLevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */; };
+		D370B14A2BF600A900BF88BB /* AudioLevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D370B1492BF600A900BF88BB /* AudioLevelSensor.swift */; };
 		D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */; };
 		D39542302BA8FFC0003A025C /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D395422F2BA8FFC0003A025C /* Root+JSON.swift */; };
 		D3A0BE7C2B717BEC00A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7B2B717BEC00A5AA05 /* Group.swift */; };
@@ -391,6 +393,8 @@
 		D35592632B520E48000F633B /* Ocp1ControllerInternal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1ControllerInternal.swift; sourceTree = "<group>"; };
 		D36ECA202A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksConnection.swift; sourceTree = "<group>"; };
 		D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFSocketConnection.swift; sourceTree = "<group>"; };
+		D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLevelSensor.swift; sourceTree = "<group>"; };
+		D370B1492BF600A900BF88BB /* AudioLevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLevelSensor.swift; sourceTree = "<group>"; };
 		D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAddressToString.swift; sourceTree = "<group>"; };
 		D395422F2BA8FFC0003A025C /* Root+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+JSON.swift"; sourceTree = "<group>"; };
 		D3A0BE7B2B717BEC00A5AA05 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
@@ -824,6 +828,7 @@
 				D351F20D2A729AF2008C5513 /* BasicSensors.swift */,
 				D351F20F2A729C36008C5513 /* LevelSensor.swift */,
 				D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */,
+				D370B1492BF600A900BF88BB /* AudioLevelSensor.swift */,
 			);
 			path = Sensors;
 			sourceTree = "<group>";
@@ -1205,6 +1210,7 @@
 				D3E6E1902A3ACA6C00BF7095 /* Sensor.swift */,
 				D3E6E1912A3ACA6C00BF7095 /* BasicSensors.swift */,
 				D3E6E1922A3ACA6C00BF7095 /* LevelSensor.swift */,
+				D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */,
 				D30644022A76CE310063DA65 /* IdentificationSensor.swift */,
 			);
 			path = Sensors;
@@ -1667,6 +1673,7 @@
 				D351F20C2A729AB3008C5513 /* Sensor.swift in Sources */,
 				D33B52B42A7060BC001A1BA7 /* Actuator.swift in Sources */,
 				D3C0831A2A7B0D9B0020AD57 /* Device.swift in Sources */,
+				D370B14A2BF600A900BF88BB /* AudioLevelSensor.swift in Sources */,
 				D3AFD38E2B4150F300A72E9A /* SignalInput.swift in Sources */,
 				D3C11DBD2A78A3DC00452B2A /* Ocp1Controller.swift in Sources */,
 				D32229D32ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift in Sources */,
@@ -1842,6 +1849,7 @@
 				D3E6E1C62A3ACA9000BF7095 /* BasicActuators.swift in Sources */,
 				D3D8FA462B61D6A50054FD3C /* KeyPath.swift in Sources */,
 				D3AFD3522B2D005E00A72E9A /* MediaTransportNetwork.swift in Sources */,
+				D370B1482BF6002300BF88BB /* AudioLevelSensor.swift in Sources */,
 				D3E6E1D92A3ACAA900BF7095 /* VectorProperty.swift in Sources */,
 				D33BE9A22B5A3F43000CA189 /* NetworkApplicationDataTypes.swift in Sources */,
 				D3AFD37C2B32A06700A72E9A /* UnkeyedOcp1EncodingContainer.swift in Sources */,
