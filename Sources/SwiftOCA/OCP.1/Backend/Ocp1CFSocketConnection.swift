@@ -133,35 +133,19 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
       throw Ocp1Error.notConnected
     }
 
-    if family != AF_LOCAL {
-      var options = CFSocketGetSocketFlags(cfSocket)
-      options |= kCFSocketCloseOnInvalidate
-      CFSocketSetSocketFlags(cfSocket, options)
+    var options = CFSocketGetSocketFlags(cfSocket)
+    options |= kCFSocketCloseOnInvalidate
+    CFSocketSetSocketFlags(cfSocket, options)
 
-      if proto == IPPROTO_TCP {
-        var option: CInt = 1
-        guard setsockopt(
-          CFSocketGetNative(cfSocket),
-          SOL_SOCKET,
-          SO_REUSEADDR,
-          &option,
-          socklen_t(CInt.Stride())
-        ) == 0 else { throw mappedLastErrno() }
-        guard setsockopt(
-          CFSocketGetNative(cfSocket),
-          SOL_SOCKET,
-          SO_REUSEPORT,
-          &option,
-          socklen_t(CInt.Stride())
-        ) == 0 else { throw mappedLastErrno() }
-        guard setsockopt(
-          CFSocketGetNative(cfSocket),
-          proto,
-          TCP_NODELAY,
-          &option,
-          socklen_t(CInt.Stride())
-        ) == 0 else { throw mappedLastErrno() }
-      }
+    var option = CInt(1)
+    if family != AF_LOCAL, proto == IPPROTO_TCP {
+      guard setsockopt(
+        CFSocketGetNative(cfSocket),
+        proto,
+        TCP_NODELAY,
+        &option,
+        socklen_t(CInt.Stride())
+      ) == 0 else { throw mappedLastErrno() }
     }
 
     self.cfSocket = cfSocket
