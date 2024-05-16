@@ -138,22 +138,22 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
       options |= kCFSocketCloseOnInvalidate
       CFSocketSetSocketFlags(cfSocket, options)
 
-      var option: CInt = 1
-      guard setsockopt(
-        CFSocketGetNative(cfSocket),
-        SOL_SOCKET,
-        SO_REUSEADDR,
-        &option,
-        socklen_t(CInt.Stride())
-      ) == 0 else { throw mappedLastErrno() }
-      guard setsockopt(
-        CFSocketGetNative(cfSocket),
-        SOL_SOCKET,
-        SO_REUSEPORT,
-        &option,
-        socklen_t(CInt.Stride())
-      ) == 0 else { throw mappedLastErrno() }
       if proto == IPPROTO_TCP {
+        var option: CInt = 1
+        guard setsockopt(
+          CFSocketGetNative(cfSocket),
+          SOL_SOCKET,
+          SO_REUSEADDR,
+          &option,
+          socklen_t(CInt.Stride())
+        ) == 0 else { throw mappedLastErrno() }
+        guard setsockopt(
+          CFSocketGetNative(cfSocket),
+          SOL_SOCKET,
+          SO_REUSEPORT,
+          &option,
+          socklen_t(CInt.Stride())
+        ) == 0 else { throw mappedLastErrno() }
         guard setsockopt(
           CFSocketGetNative(cfSocket),
           proto,
