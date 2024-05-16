@@ -76,16 +76,18 @@ public class Ocp1IORingConnection: Ocp1Connection {
   }
 
   override func connectDevice() async throws {
-    socket = try Socket(
+    let socket = try Socket(
       ring: IORing.shared,
       domain: deviceAddress.family,
       type: __socket_type(UInt32(type)),
       protocol: 0
     )
     if deviceAddress.family == AF_INET || deviceAddress.family == AF_INET6 {
-      try socket!.setReuseAddr()
+      try socket.setReuseAddr()
+      try socket.setTcpNoDelay()
     }
-    try await socket!.connect(to: deviceAddress)
+    try await socket.connect(to: deviceAddress)
+    self.socket = socket
     try await super.connectDevice()
   }
 
