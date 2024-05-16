@@ -141,7 +141,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
     if family != AF_LOCAL, proto == IPPROTO_TCP {
       setsockopt(
         CFSocketGetNative(cfSocket),
-        IPPROTO_TCP,
+        CInt(IPPROTO_TCP),
         TCP_NODELAY,
         &option,
         socklen_t(CInt.Stride())
