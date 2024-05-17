@@ -1,4 +1,5 @@
-extension UnsafeMutablePointer {
+@_spi(SwiftOCAPrivate)
+public extension UnsafeMutablePointer {
   func propertyBasePointer<Property>(to property: KeyPath<Pointee, Property>)
     -> UnsafePointer<Property>?
   {
