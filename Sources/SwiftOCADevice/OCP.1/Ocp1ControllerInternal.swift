@@ -228,11 +228,13 @@ extension Ocp1ControllerInternal {
 }
 
 extension OcaDevice {
-  #if canImport(IORing)
   typealias GetChunk = @Sendable (Int) async throws -> [UInt8]
-  #else
-  typealias GetChunk = (Int) async throws -> [UInt8]
-  #endif
+
+  static func unsafeReceiveMessages(_ getChunk: (Int) async throws -> [UInt8]) async throws
+    -> [Ocp1ControllerInternal.ControllerMessage]
+  {
+    try await receiveMessages(getChunk)
+  }
 
   static func receiveMessages(_ getChunk: GetChunk) async throws
     -> [Ocp1ControllerInternal.ControllerMessage]

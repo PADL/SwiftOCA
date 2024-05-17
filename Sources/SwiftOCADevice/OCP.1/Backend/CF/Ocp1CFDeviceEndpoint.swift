@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2024 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@
 // limitations under the License.
 //
 
-#if canImport(IORing)
+#if canImport(CoreFoundation)
 
 import AsyncAlgorithms
-@preconcurrency
 import AsyncExtensions
+import CoreFoundation
 import Foundation
-// @_implementationOnly
-import IORing
-// @_implementationOnly
-import IORingUtils
 import Logging
 import SocketAddress
 @_spi(SwiftOCAPrivate)
@@ -31,15 +27,14 @@ import SwiftOCA
 import SystemPackage
 
 @OcaDevice
-public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
+public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
   let address: any SocketAddress
   let timeout: Duration
   let device: OcaDevice
-  let ring: IORing
 
-  var socket: Socket?
+  var socket: _CFSocketWrapper?
   var endpointRegistrationHandle: OcaDeviceEndpointRegistrar.Handle?
 
   public var controllers: [OcaController] {
@@ -54,7 +49,6 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     self.address = address
     self.timeout = timeout
     self.device = device
-    ring = IORing.shared
     try await device.add(endpoint: self)
   }
 
@@ -119,13 +113,13 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 }
 
 @OcaDevice
-public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
+public final class Ocp1CFStreamDeviceEndpoint: Ocp1CFDeviceEndpoint,
   OcaDeviceEndpointPrivate
 {
-  typealias ControllerType = Ocp1IORingStreamController
+  typealias ControllerType = Ocp1CFStreamController
 
-  let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingStreamDeviceEndpoint")
-  var notificationSocket: Socket?
+  let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1CFStreamDeviceEndpoint")
+  var notificationSocket: _CFSocketWrapper?
 
   var _controllers = [ControllerType]()
 
@@ -136,33 +130,21 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   override public func run() async throws {
     logger.info("starting \(type(of: self)) on \(try! address.presentationAddress)")
     try await super.run()
-    let socket = try makeSocketAndListen()
-    self.socket = socket
-    let notificationSocket = try makeNotificationSocket()
-    self.notificationSocket = notificationSocket
+    socket = try await makeSocketAndListen()
+    notificationSocket = try await makeNotificationSocket()
     repeat {
       do {
-        let clients: AnyAsyncSequence<Socket> = try await socket.accept()
-        do {
-          for try await client in clients {
-            Task {
-              let controller =
-                try await Ocp1IORingStreamController(
-                  endpoint: self,
-                  socket: client,
-                  notificationSocket: notificationSocket
-                )
-              await controller.handle(for: self)
-            }
+        for try await client in socket!.acceptedSockets {
+          Task {
+            let controller =
+              try await Ocp1CFStreamController(
+                endpoint: self,
+                socket: client,
+                notificationSocket: notificationSocket!
+              )
+            await controller.handle(for: self)
           }
-        } catch Errno.invalidArgument {
-          logger.warning(
-            "invalid argument when accepting connections, check kernel version supports multishot accept with io_uring"
-          )
-          break
         }
-      } catch Errno.canceled {
-        logger.debug("received cancelation, trying to accept() again")
       } catch {
         logger.info("received error \(error), bailing")
         break
@@ -172,35 +154,16 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
         break
       }
     } while true
-    self.socket = nil
+    socket = nil
     try await device.remove(endpoint: self)
   }
 
-  private func makeSocketAndListen() throws -> Socket {
-    let socket = try Socket(
-      ring: ring,
-      domain: address.family,
-      type: Glibc.SOCK_STREAM,
-      protocol: 0
-    )
-
-    do {
-      if address.family == AF_INET || address.family == AF_INET6 {
-        try socket.setReuseAddr()
-        try socket.setTcpNoDelay()
-      }
-      try socket.bind(to: address)
-      try socket.listen()
-    } catch {
-      logger.warning("error \(error), when setting up socket for listening")
-      throw error
-    }
-
-    return socket
+  private func makeSocketAndListen() async throws -> _CFSocketWrapper {
+    try await _CFSocketWrapper(address: address, protocol: IPPROTO_TCP, options: .server)
   }
 
-  private func makeNotificationSocket() throws -> Socket {
-    try Socket(ring: ring, domain: address.family, type: Glibc.SOCK_DGRAM, protocol: 0)
+  private func makeNotificationSocket() async throws -> _CFSocketWrapper {
+    try await _CFSocketWrapper(address: address, protocol: IPPROTO_UDP, options: .server)
   }
 
   override public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
@@ -217,12 +180,12 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 }
 
 @OcaDevice
-public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
+public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
   OcaDeviceEndpointPrivate
 {
-  typealias ControllerType = Ocp1IORingDatagramController
+  typealias ControllerType = Ocp1CFDatagramController
 
-  let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDatagramDeviceEndpoint")
+  let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1CFDatagramDeviceEndpoint")
 
   var _controllers = [AnySocketAddress: ControllerType]()
 
@@ -237,7 +200,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 
     controller = _controllers[controllerAddress]
     if controller == nil {
-      controller = try await Ocp1IORingDatagramController(
+      controller = try await Ocp1CFDatagramController(
         endpoint: self,
         peerAddress: controllerAddress
       )
@@ -251,19 +214,14 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   override public func run() async throws {
     logger.info("starting \(type(of: self)) on \(try! address.presentationAddress)")
     try await super.run()
-    let socket = try makeSocket()
-    self.socket = socket
+    socket = try await makeSocket()
     repeat {
       do {
-        let messagePdus = try await socket
-          .receiveMessages(count: Ocp1IORingDatagramConnection.MaximumPduSize)
-
-        for try await messagePdu in messagePdus {
+        for try await messagePdu in socket!.receivedMessages {
           let controller =
-            try await controller(for: AnySocketAddress(bytes: messagePdu.name))
+            try await controller(for: AnySocketAddress(messagePdu.0))
           do {
-            let messages = try await controller
-              .decodeMessages(from: messagePdu.buffer)
+            let messages = try await controller.decodeMessages(from: Array(messagePdu.1))
             for (message, rrq) in messages {
               try await controller.handle(for: self, message: message, rrq: rrq)
             }
@@ -271,26 +229,22 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
             await unlockAndRemove(controller: controller)
           }
         }
-      } catch Errno.canceled {}
+      }
       if Task.isCancelled {
         logger.info("\(type(of: self)) cancelled, stopping")
         break
       }
     } while true
-    self.socket = nil
+    socket = nil
     try await device.remove(endpoint: self)
   }
 
-  private func makeSocket() throws -> Socket {
-    let socket = try Socket(
-      ring: ring,
-      domain: address.family,
-      type: Glibc.SOCK_DGRAM,
-      protocol: 0
+  private func makeSocket() async throws -> _CFSocketWrapper {
+    let socket = try await _CFSocketWrapper(
+      address: address,
+      protocol: IPPROTO_UDP,
+      options: .server
     )
-
-    try socket.bind(to: address)
-
     return socket
   }
 
@@ -298,7 +252,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     guard let socket else {
       throw Ocp1Error.notConnected
     }
-    try await socket.sendMessage(message)
+    try socket.send(data: message.1, to: message.0)
   }
 
   override public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {

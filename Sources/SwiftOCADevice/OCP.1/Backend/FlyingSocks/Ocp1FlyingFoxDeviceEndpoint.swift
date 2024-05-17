@@ -104,7 +104,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     self.timeout = timeout
 
     // FIXME: API impedance mismatch
-    let address: SocketAddress
+    let address: FlyingSocks.SocketAddress
 
     switch self.address.ss_family {
     case sa_family_t(AF_INET):

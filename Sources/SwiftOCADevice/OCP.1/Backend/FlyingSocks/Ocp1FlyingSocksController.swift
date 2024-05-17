@@ -47,7 +47,11 @@ actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible
       connectionPrefix = OcaLocalConnectionPrefix
     } else {
       connectionPrefix = OcaTcpConnectionPrefix
-      try socket.socket.setValue(true, for: BoolSocketOption(name: TCP_NODELAY), level: IPPROTO_TCP)
+      try socket.socket.setValue(
+        true,
+        for: BoolSocketOption(name: TCP_NODELAY),
+        level: IPPROTO_TCP
+      )
     }
     address = Self.makeIdentifier(from: socket.socket)
     self.endpoint = endpoint
@@ -148,7 +152,7 @@ private extension AsyncThrowingStream
     > {
       do {
         var iterator = bytes.makeAsyncIterator()
-        return try await OcaDevice.receiveMessages { count in
+        return try await OcaDevice.unsafeReceiveMessages { count in
           try await iterator.nextChunk(count: count) ?? []
         }.async
       } catch Ocp1Error.pduTooShort {
