@@ -258,15 +258,4 @@ extension Ocp1IORingDatagramController: Hashable {
   }
 }
 
-// https://www.swiftbysundell.com/articles/async-and-concurrent-forEach-and-map/
-extension Sequence {
-  func asyncForEach(
-    _ operation: @Sendable (Element) async throws -> ()
-  ) async rethrows {
-    for element in self {
-      try await operation(element)
-    }
-  }
-}
-
 #endif

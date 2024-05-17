@@ -25,15 +25,13 @@ import SocketAddress
 import SwiftOCA
 import SystemPackage
 
-typealias Message = CFSocket.Message
-
 protocol Ocp1CFControllerPrivate: Ocp1ControllerInternal,
   Ocp1ControllerInternalLightweightNotifyingInternal, Actor,
   Equatable, Hashable
 {
   nonisolated var peerAddress: AnySocketAddress { get }
 
-  func sendOcp1EncodedMessage(_ message: Message) async throws
+  func sendOcp1EncodedMessage(_ message: CFSocket.Message) async throws
 }
 
 extension Ocp1CFControllerPrivate {
@@ -47,12 +45,12 @@ extension Ocp1CFControllerPrivate {
       // empty string means send to controller address but via UDP
       peerAddress = self.peerAddress
     } else {
-      peerAddress = try sockaddr_storage(
+      peerAddress = try AnySocketAddress(
         family: networkAddress.family,
         presentationAddress: networkAddress.presentationAddress
       )
     }
-    try await sendOcp1EncodedMessage(Message(address: peerAddress, buffer: data))
+    try await sendOcp1EncodedMessage(CFSocket.Message(address: peerAddress, buffer: data))
   }
 
   nonisolated var identifier: String {
@@ -138,7 +136,7 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
     _ = try await socket.write(data: data)
   }
 
-  func sendOcp1EncodedMessage(_ messagePdu: Message) async throws {
+  func sendOcp1EncodedMessage(_ messagePdu: CFSocket.Message) async throws {
     try notificationSocket.send(data: messagePdu.1, to: messagePdu.0)
   }
 }
@@ -221,10 +219,10 @@ actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramS
   }
 
   func sendOcp1EncodedData(_ data: Data) async throws {
-    try await sendOcp1EncodedMessage(Message(address: peerAddress, buffer: data))
+    try await sendOcp1EncodedMessage(CFSocket.Message(address: peerAddress, buffer: data))
   }
 
-  func sendOcp1EncodedMessage(_ messagePdu: Message) async throws {
+  func sendOcp1EncodedMessage(_ messagePdu: CFSocket.Message) async throws {
     try await endpoint?.sendOcp1EncodedMessage(messagePdu)
   }
 
@@ -247,17 +245,6 @@ extension Ocp1CFDatagramController: Equatable {
 extension Ocp1CFDatagramController: Hashable {
   public nonisolated func hash(into hasher: inout Hasher) {
     peerAddress.hash(into: &hasher)
-  }
-}
-
-// https://www.swiftbysundell.com/articles/async-and-concurrent-forEach-and-map/
-extension Sequence {
-  func asyncForEach(
-    _ operation: @Sendable (Element) async throws -> ()
-  ) async rethrows {
-    for element in self {
-      try await operation(element)
-    }
   }
 }
 

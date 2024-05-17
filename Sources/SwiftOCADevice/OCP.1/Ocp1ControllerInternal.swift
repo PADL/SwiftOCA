@@ -230,11 +230,13 @@ extension Ocp1ControllerInternal {
 extension OcaDevice {
   typealias GetChunk = @Sendable (Int) async throws -> [UInt8]
 
+  #if canImport(FlyingSocks)
   static func unsafeReceiveMessages(_ getChunk: (Int) async throws -> [UInt8]) async throws
     -> [Ocp1ControllerInternal.ControllerMessage]
   {
     try await receiveMessages(getChunk)
   }
+  #endif
 
   static func receiveMessages(_ getChunk: GetChunk) async throws
     -> [Ocp1ControllerInternal.ControllerMessage]
@@ -296,5 +298,16 @@ extension Ocp1ControllerInternalLightweightNotifyingInternal {
       [message],
       type: messageType
     ), to: destinationAddress)
+  }
+}
+
+// https://www.swiftbysundell.com/articles/async-and-concurrent-forEach-and-map/
+extension Sequence {
+  func asyncForEach(
+    _ operation: @Sendable (Element) async throws -> ()
+  ) async rethrows {
+    for element in self {
+      try await operation(element)
+    }
   }
 }

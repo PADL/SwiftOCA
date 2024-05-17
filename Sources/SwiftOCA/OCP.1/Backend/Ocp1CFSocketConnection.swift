@@ -550,7 +550,7 @@ public extension CFSocket {
     var option = CInt(1)
     if setsockopt(
       nativeHandle,
-      IPPROTO_TCP,
+      CInt(IPPROTO_TCP),
       TCP_NODELAY,
       &option,
       socklen_t(MemoryLayout<CInt>.size)

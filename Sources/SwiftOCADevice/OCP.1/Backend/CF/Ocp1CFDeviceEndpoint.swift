@@ -61,7 +61,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     timeout: Duration = .seconds(15),
     device: OcaDevice = OcaDevice.shared
   ) async throws {
-    let storage = try sockaddr_storage(bytes: Array(address))
+    let storage = try AnySocketAddress(bytes: Array(address))
     try await self.init(address: storage, timeout: timeout, device: device)
   }
 
@@ -159,11 +159,11 @@ public final class Ocp1CFStreamDeviceEndpoint: Ocp1CFDeviceEndpoint,
   }
 
   private func makeSocketAndListen() async throws -> _CFSocketWrapper {
-    try await _CFSocketWrapper(address: address, protocol: IPPROTO_TCP, options: .server)
+    try await _CFSocketWrapper(address: address, protocol: CInt(IPPROTO_TCP), options: .server)
   }
 
   private func makeNotificationSocket() async throws -> _CFSocketWrapper {
-    try await _CFSocketWrapper(address: address, protocol: IPPROTO_UDP, options: .server)
+    try await _CFSocketWrapper(address: address, protocol: CInt(IPPROTO_UDP), options: .server)
   }
 
   override public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
@@ -242,13 +242,13 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
   private func makeSocket() async throws -> _CFSocketWrapper {
     let socket = try await _CFSocketWrapper(
       address: address,
-      protocol: IPPROTO_UDP,
+      protocol: CInt(IPPROTO_UDP),
       options: .server
     )
     return socket
   }
 
-  func sendOcp1EncodedMessage(_ message: Message) async throws {
+  func sendOcp1EncodedMessage(_ message: CFSocket.Message) async throws {
     guard let socket else {
       throw Ocp1Error.notConnected
     }
