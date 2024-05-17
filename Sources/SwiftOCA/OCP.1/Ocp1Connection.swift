@@ -28,9 +28,12 @@ import OpenCombine
 #if canImport(IORing)
 public typealias Ocp1UDPConnection = Ocp1IORingDatagramConnection
 public typealias Ocp1TCPConnection = Ocp1IORingStreamConnection
-#else
+#elseif canImport(FlyingSocks)
 public typealias Ocp1UDPConnection = Ocp1CFSocketUDPConnection
 public typealias Ocp1TCPConnection = Ocp1FlyingSocksStreamConnection
+#else
+public typealias Ocp1UDPConnection = Ocp1CFSocketUDPConnection
+public typealias Ocp1TCPConnection = Ocp1CFSocketTCPConnection
 #endif
 
 public typealias OcaSubscriptionCallback = @Sendable (OcaEvent, Data) async throws
