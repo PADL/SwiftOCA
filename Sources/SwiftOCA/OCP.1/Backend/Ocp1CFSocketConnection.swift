@@ -221,6 +221,9 @@ Sendable, CustomStringConvertible, Hashable {
       }
       try cfSocket.set(address: address)
     } else {
+      if proto == IPPROTO_TCP {
+        receivedData = Data()
+      }
       try cfSocket.connect(to: address)
     }
     try await _addSocketToRunLoop()
@@ -409,6 +412,15 @@ public final class Ocp1CFSocketUDPConnection: Ocp1CFSocketConnection {
   }
 
   override public var isDatagram: Bool { true }
+
+  override public func read(_ length: Int) async throws -> Data {
+    guard let socket else { throw Ocp1Error.notConnected }
+    var iterator = socket.receivedMessages.makeAsyncIterator()
+    guard let data = try await iterator.next()?.1 else {
+      throw Ocp1Error.notConnected
+    }
+    return data
+  }
 
   override public func write(_ data: Data) async throws -> Int {
     guard let socket else { throw Ocp1Error.notConnected }
