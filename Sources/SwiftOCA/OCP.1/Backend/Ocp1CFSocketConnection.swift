@@ -182,7 +182,7 @@ Sendable, CustomStringConvertible, Hashable {
   ) async throws {
     let proto: CInt
     if address.family == AF_INET || address.family == AF_INET6 {
-      proto = type == SOCK_STREAM ? IPPROTO_TCP : IPPROTO_UDP
+      proto = CInt(type == SOCK_STREAM ? IPPROTO_TCP : IPPROTO_UDP)
     } else {
       proto = 0
     }
