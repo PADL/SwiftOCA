@@ -23,6 +23,7 @@ import Foundation
 import IORing
 // @_implementationOnly
 import IORingUtils
+import SocketAddress
 import SwiftOCA
 
 protocol Ocp1IORingControllerPrivate: Ocp1ControllerInternal,

@@ -28,6 +28,7 @@ import Logging
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 import SystemPackage
+import SocketAddress
 
 @OcaDevice
 public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
