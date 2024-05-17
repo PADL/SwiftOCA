@@ -177,15 +177,22 @@ Sendable, CustomStringConvertible, Hashable {
 
   public init(
     address: any SocketAddress,
-    protocol proto: CInt,
+    type: Int32,
     options: Options = []
   ) async throws {
+    let proto: CInt
+    if address.family == AF_INET || address.family == AF_INET6 {
+      proto = type == SOCK_STREAM ? IPPROTO_TCP : IPPROTO_UDP
+    } else {
+      proto = 0
+    }
+    isDatagram = type == SOCK_DGRAM
+
     var context = CFSocketContext()
-    isDatagram = proto == IPPROTO_UDP
     context.info = Unmanaged.passUnretained(self).toOpaque()
     let cfSocket: CFSocket?
 
-    if options.contains(.server), address.family == AF_LOCAL || proto == IPPROTO_TCP {
+    if options.contains(.server), type == SOCK_STREAM {
       cfSocket = CFSocketCreate(
         kCFAllocatorDefault,
         Int32(address.family),
@@ -199,7 +206,7 @@ Sendable, CustomStringConvertible, Hashable {
       cfSocket = CFSocketCreate(
         kCFAllocatorDefault,
         Int32(address.family),
-        proto == IPPROTO_UDP ? SOCK_DGRAM : SOCK_STREAM,
+        type,
         proto,
         CFSocketCallBackType.dataCallBack.rawValue,
         cfSocketWrapperDataCallback,
@@ -211,17 +218,22 @@ Sendable, CustomStringConvertible, Hashable {
       throw Errno.socketNotConnected
     }
     self.cfSocket = cfSocket
-    if address.family != AF_LOCAL, proto == IPPROTO_TCP {
+    if proto == IPPROTO_TCP {
       try? cfSocket.setTcpNoDelay()
     }
 
     if options.contains(.server) {
-      if proto == IPPROTO_TCP {
+      switch type {
+      case SOCK_STREAM:
         try cfSocket.setReuseAddr()
+        fallthrough
+      case SOCK_DGRAM:
+        try cfSocket.set(address: address)
+      default:
+        break
       }
-      try cfSocket.set(address: address)
     } else {
-      if proto == IPPROTO_TCP {
+      if type == SOCK_STREAM {
         receivedData = Data()
       }
       try cfSocket.connect(to: address)
@@ -355,20 +367,30 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
     fatalError("must be implemented by subclass")
   }
 
-  public init(
+  private init(
+    deviceAddress: AnySocketAddress,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    self.deviceAddress = deviceAddress
+    super.init(options: options)
+  }
+
+  public convenience init(
     deviceAddress: Data,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    self.deviceAddress = try AnySocketAddress(bytes: Array(deviceAddress))
-    super.init(options: options)
+    let deviceAddress = try AnySocketAddress(bytes: Array(deviceAddress))
+    try self.init(deviceAddress: deviceAddress, options: options)
   }
 
   public convenience init(
     path: String,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    var sun = try sockaddr_un(family: sa_family_t(AF_UNIX), presentationAddress: path)
-    let deviceAddress = Data(bytes: &sun, count: MemoryLayout<sockaddr_un>.stride)
+    let deviceAddress = try AnySocketAddress(
+      family: sa_family_t(AF_LOCAL),
+      presentationAddress: path
+    )
     try self.init(deviceAddress: deviceAddress, options: options)
   }
 
@@ -376,19 +398,8 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
     deviceAddress.family
   }
 
-  private var proto: Int32 {
-    switch Int32(family) {
-    case AF_INET:
-      fallthrough
-    case AF_INET6:
-      return isStreamType(type) ? Int32(IPPROTO_TCP) : Int32(IPPROTO_UDP)
-    default:
-      return 0
-    }
-  }
-
   override func connectDevice() async throws {
-    socket = try await _CFSocketWrapper(address: deviceAddress, protocol: proto)
+    socket = try await _CFSocketWrapper(address: deviceAddress, type: type)
     try await super.connectDevice()
   }
 
@@ -558,29 +569,43 @@ public extension CFSocket {
     }
   }
 
+  #if false
+  func bind(to address: any SocketAddress) throws {
+    _ = try address.withSockAddr { sockaddr in
+      try Errno.throwingGlobalErrno {
+        #if canImport(Darwin)
+        Darwin.bind(self.nativeHandle, sockaddr, sockaddr.pointee.size)
+        #elseif canImport(Glibc)
+        Glibc.bind(self.nativeHandle, sockaddr, sockaddr.pointee.size)
+        #endif
+      }
+    }
+  }
+  #endif
+
   func setTcpNoDelay() throws {
     var option = CInt(1)
-    if setsockopt(
-      nativeHandle,
-      CInt(IPPROTO_TCP),
-      TCP_NODELAY,
-      &option,
-      socklen_t(MemoryLayout<CInt>.size)
-    ) < 0 {
-      throw mappedLastErrno()
+    try Errno.throwingGlobalErrno {
+      setsockopt(
+        self.nativeHandle,
+        CInt(IPPROTO_TCP),
+        TCP_NODELAY,
+        &option,
+        socklen_t(MemoryLayout<CInt>.size)
+      )
     }
   }
 
   func setReuseAddr() throws {
     var option = CInt(1)
-    if setsockopt(
-      nativeHandle,
-      SOL_SOCKET,
-      SO_REUSEADDR,
-      &option,
-      socklen_t(MemoryLayout<CInt>.size)
-    ) < 0 {
-      throw mappedLastErrno()
+    try Errno.throwingGlobalErrno {
+      setsockopt(
+        self.nativeHandle,
+        SOL_SOCKET,
+        SO_REUSEADDR,
+        &option,
+        socklen_t(MemoryLayout<CInt>.size)
+      )
     }
   }
 

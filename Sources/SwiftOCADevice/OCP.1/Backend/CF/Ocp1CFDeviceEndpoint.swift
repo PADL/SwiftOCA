@@ -41,7 +41,11 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     []
   }
 
-  init(
+  public nonisolated var description: String {
+    "\(type(of: self))(address: \((try? address.presentationAddress) ?? "<unknown>"), timeout: \(timeout))"
+  }
+
+  public init(
     address: any SocketAddress,
     timeout: Duration = .seconds(15),
     device: OcaDevice = OcaDevice.shared
@@ -52,17 +56,13 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     try await device.add(endpoint: self)
   }
 
-  public nonisolated var description: String {
-    "\(type(of: self))(address: \((try? address.presentationAddress) ?? "<unknown>"), timeout: \(timeout))"
-  }
-
   public convenience init(
     address: Data,
     timeout: Duration = .seconds(15),
     device: OcaDevice = OcaDevice.shared
   ) async throws {
-    let storage = try AnySocketAddress(bytes: Array(address))
-    try await self.init(address: storage, timeout: timeout, device: device)
+    let address = try AnySocketAddress(bytes: Array(address))
+    try await self.init(address: address, timeout: timeout, device: device)
   }
 
   public convenience init(
@@ -70,11 +70,8 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     timeout: Duration = .seconds(15),
     device: OcaDevice = OcaDevice.shared
   ) async throws {
-    let storage = try sockaddr_un(
-      family: sa_family_t(AF_LOCAL),
-      presentationAddress: path
-    )
-    try await self.init(address: storage, timeout: timeout, device: device)
+    let address = try AnySocketAddress(family: sa_family_t(AF_LOCAL), presentationAddress: path)
+    try await self.init(address: address, timeout: timeout, device: device)
   }
 
   public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
@@ -159,11 +156,11 @@ public final class Ocp1CFStreamDeviceEndpoint: Ocp1CFDeviceEndpoint,
   }
 
   private func makeSocketAndListen() async throws -> _CFSocketWrapper {
-    try await _CFSocketWrapper(address: address, protocol: CInt(IPPROTO_TCP), options: .server)
+    try await _CFSocketWrapper(address: address, type: SwiftOCA.SOCK_STREAM, options: .server)
   }
 
   private func makeNotificationSocket() async throws -> _CFSocketWrapper {
-    try await _CFSocketWrapper(address: address, protocol: CInt(IPPROTO_UDP), options: .server)
+    try await _CFSocketWrapper(address: address, type: SwiftOCA.SOCK_DGRAM, options: .server)
   }
 
   override public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
@@ -242,7 +239,7 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
   private func makeSocket() async throws -> _CFSocketWrapper {
     let socket = try await _CFSocketWrapper(
       address: address,
-      protocol: CInt(IPPROTO_UDP),
+      type: SwiftOCA.SOCK_DGRAM,
       options: .server
     )
     return socket

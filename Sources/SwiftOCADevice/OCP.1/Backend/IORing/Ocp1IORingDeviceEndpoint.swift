@@ -46,7 +46,7 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     []
   }
 
-  init(
+  public init(
     address: any SocketAddress,
     timeout: Duration = .seconds(15),
     device: OcaDevice = OcaDevice.shared
