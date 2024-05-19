@@ -99,9 +99,8 @@ public extension Ocp1Connection {
     }
   }
 
-  internal func getClassIdentification(objectNumber: OcaONo) async throws
-    -> OcaClassIdentification
-  {
+  @_spi(SwiftOCAPrivate)
+  func getClassIdentification(objectNumber: OcaONo) async throws -> OcaClassIdentification {
     guard objectNumber != OcaInvalidONo else { throw Ocp1Error.status(.badONo) }
     let proxy = OcaRoot(objectNumber: objectNumber)
     proxy.connectionDelegate = self
