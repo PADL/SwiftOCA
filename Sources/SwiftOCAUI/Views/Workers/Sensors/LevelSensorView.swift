@@ -53,7 +53,7 @@ extension OcaLevelSensor: OcaViewRepresentable {
       return readingValue
     } else {
       // FIXME: constants
-      return OcaBoundedPropertyValue(value: 0.0, in: -144.0...0.0)
+      return OcaBoundedPropertyValue(value: -144.0, in: -144.0...0.0)
     }
   }
 }
