@@ -65,6 +65,13 @@ public extension Ocp1Connection {
 
     let classIdentification =
       try await getClassIdentification(objectNumber: objectOfUnknownClass)
+
+    // check if cache has possibly been updated since we suspended; if so, return cached value
+    // instead
+    if let object: T = resolve(cachedObject: objectOfUnknownClass) {
+      return object
+    }
+
     return try resolve(object: OcaObjectIdentification(
       oNo: objectOfUnknownClass,
       classIdentification: classIdentification
