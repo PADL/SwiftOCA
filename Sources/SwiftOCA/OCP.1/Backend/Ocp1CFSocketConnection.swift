@@ -462,10 +462,6 @@ public final class Ocp1CFSocketTCPConnection: Ocp1CFSocketConnection {
   }
 }
 
-fileprivate func isStreamType(_ type: Int32) -> Bool {
-  type == SOCK_STREAM
-}
-
 @_spi(SwiftOCAPrivate)
 public extension Data {
   var cfData: CFData {
