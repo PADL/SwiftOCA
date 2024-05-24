@@ -172,17 +172,29 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         }
       }
       await setAndNotifySubscribers(object: object, objects as! Value)
-    } else if !JSONSerialization.isValidJSONObject(subject.value),
-              let jsonValue = jsonValue as? Codable
-    {
-      let data = try JSONEncoder().encode(jsonValue)
-      let decodedValue = try JSONDecoder().decode(Value.self, from: data)
-      await setAndNotifySubscribers(object: object, decodedValue)
     } else {
-      guard let newValue = jsonValue as? Value else {
-        throw Ocp1Error.status(.badFormat)
+      let isValidJSONObject = JSONSerialization.isValidJSONObject(subject.value)
+      if !isValidJSONObject,
+         let jsonValue = jsonValue as? Codable
+      {
+        try await setAndNotifySubscribers(
+          object: object,
+          JSONEncoder().reencodeAsValidJSONObject(jsonValue)
+        )
+      } else if !isValidJSONObject,
+                Value.self is any RawRepresentable.Type,
+                let jsonValue = jsonValue as? Int
+      {
+        try await setAndNotifySubscribers(
+          object: object,
+          JSONEncoder().reencodeAsValidJSONObject(jsonValue)
+        )
+      } else {
+        guard let newValue = jsonValue as? Value else {
+          throw Ocp1Error.status(.badFormat)
+        }
+        await setAndNotifySubscribers(object: object, newValue)
       }
-      await setAndNotifySubscribers(object: object, newValue)
     }
   }
 
