@@ -16,28 +16,26 @@
 
 @OcaConnection
 public class OcaClassRegistry {
-  public static let shared = OcaClassRegistry()
+  public static let shared = try! OcaClassRegistry()
 
   /// Mapping of classID to class name
   private var classIDMap = [OcaClassIdentification: OcaRoot.Type]()
 
-  @discardableResult
   public func register<T: OcaRoot>(
     classID: OcaClassID = T.classID,
     classVersion: OcaClassVersionNumber = T.classVersion,
     _ type: T.Type
-  ) -> OcaStatus {
+  ) throws {
     let classIdentification = OcaClassIdentification(
       classID: classID,
       classVersion: classVersion
     )
 
     if classIDMap.keys.contains(classIdentification) {
-      return .parameterError
+      throw Ocp1Error.status(.parameterError)
     }
 
     classIDMap[classIdentification] = type.self
-    return .ok
   }
 
   private func match(classIdentification: OcaClassIdentification) -> OcaClassIdentification? {
@@ -80,87 +78,86 @@ public class OcaClassRegistry {
     return type.init(objectNumber: objectNumber)
   }
 
-  init() {
-    // register built-in classes
-    register(OcaRoot.self)
+  init() throws {
+    // try register built-in classes
+    try register(OcaRoot.self)
 
     // agents
-    register(OcaAgent.self)
-    register(OcaEventHandler.self)
-    register(OcaPhysicalPosition.self)
-    register(OcaTimeSource.self)
-    register(OcaMediaClock3.self)
-    register(OcaGrouper.self)
-    register(OcaGroup.self)
-    register(OcaCounterNotifier.self)
-    register(OcaCounterSetAgent.self)
+    try register(OcaAgent.self)
+    try register(OcaEventHandler.self)
+    try register(OcaPhysicalPosition.self)
+    try register(OcaTimeSource.self)
+    try register(OcaMediaClock3.self)
+    try register(OcaGrouper.self)
+    try register(OcaGroup.self)
+    try register(OcaCounterNotifier.self)
+    try register(OcaCounterSetAgent.self)
 
     // managers
-    register(OcaManager.self)
-    register(OcaDeviceManager.self)
-    // register(OcaLibraryManager.self)
-    register(OcaNetworkManager.self)
-    register(OcaSubscriptionManager.self)
-    register(OcaLockManager.self)
-    register(OcaDiagnosticManager.self)
-    register(OcaNetworkManager.self)
-    register(OcaAudioProcessingManager.self)
-    register(OcaDeviceTimeManager.self)
-    register(OcaMediaClockManager.self)
+    try register(OcaManager.self)
+    try register(OcaDeviceManager.self)
+    // try register(OcaLibraryManager.self)
+    try register(OcaNetworkManager.self)
+    try register(OcaSubscriptionManager.self)
+    try register(OcaLockManager.self)
+    try register(OcaDiagnosticManager.self)
+    try register(OcaAudioProcessingManager.self)
+    try register(OcaDeviceTimeManager.self)
+    try register(OcaMediaClockManager.self)
 
     // workers
-    register(OcaWorker.self)
-    register(OcaBlock.self)
-    register(OcaMatrix.self)
+    try register(OcaWorker.self)
+    try register(OcaBlock.self)
+    try register(OcaMatrix.self)
 
     // actuators
-    register(OcaActuator.self)
-    register(OcaBasicActuator.self)
-    register(OcaBooleanActuator.self)
-    register(OcaUint8Actuator.self)
-    register(OcaUint16Actuator.self)
-    register(OcaUint32Actuator.self)
-    register(OcaInt8Actuator.self)
-    register(OcaInt16Actuator.self)
-    register(OcaInt32Actuator.self)
-    register(OcaFloat32Actuator.self)
-    register(OcaFloat64Actuator.self)
-    register(OcaStringActuator.self)
+    try register(OcaActuator.self)
+    try register(OcaBasicActuator.self)
+    try register(OcaBooleanActuator.self)
+    try register(OcaUint8Actuator.self)
+    try register(OcaUint16Actuator.self)
+    try register(OcaUint32Actuator.self)
+    try register(OcaInt8Actuator.self)
+    try register(OcaInt16Actuator.self)
+    try register(OcaInt32Actuator.self)
+    try register(OcaFloat32Actuator.self)
+    try register(OcaFloat64Actuator.self)
+    try register(OcaStringActuator.self)
     // TODO: Bitstring support
-    // register(OcaBitstringActuator.self)
+    // try register(OcaBitstringActuator.self)
 
-    register(OcaGain.self)
-    register(OcaMute.self)
-    register(OcaPanBalance.self)
-    register(OcaPolarity.self)
-    register(OcaSwitch.self)
+    try register(OcaGain.self)
+    try register(OcaMute.self)
+    try register(OcaPanBalance.self)
+    try register(OcaPolarity.self)
+    try register(OcaSwitch.self)
 
     // sensors
-    register(OcaSensor.self)
-    register(OcaBasicSensor.self)
-    register(OcaBooleanSensor.self)
-    register(OcaInt8Sensor.self)
-    register(OcaInt16Sensor.self)
-    register(OcaInt32Sensor.self)
-    register(OcaInt64Sensor.self)
-    register(OcaUint8Sensor.self)
-    register(OcaUint16Sensor.self)
-    register(OcaUint32Sensor.self)
-    register(OcaUint64Sensor.self)
-    register(OcaFloat32Sensor.self)
-    register(OcaFloat64Sensor.self)
-    register(OcaStringSensor.self)
-    register(OcaLevelSensor.self)
-    register(OcaIdentificationSensor.self)
+    try register(OcaSensor.self)
+    try register(OcaBasicSensor.self)
+    try register(OcaBooleanSensor.self)
+    try register(OcaInt8Sensor.self)
+    try register(OcaInt16Sensor.self)
+    try register(OcaInt32Sensor.self)
+    try register(OcaInt64Sensor.self)
+    try register(OcaUint8Sensor.self)
+    try register(OcaUint16Sensor.self)
+    try register(OcaUint32Sensor.self)
+    try register(OcaUint64Sensor.self)
+    try register(OcaFloat32Sensor.self)
+    try register(OcaFloat64Sensor.self)
+    try register(OcaStringSensor.self)
+    try register(OcaLevelSensor.self)
+    try register(OcaIdentificationSensor.self)
 
     // application networks
-    register(OcaControlNetwork.self)
-    register(OcaApplicationNetwork.self)
-    register(OcaMediaTransportNetwork.self)
+    try register(OcaControlNetwork.self)
+    try register(OcaApplicationNetwork.self)
+    try register(OcaMediaTransportNetwork.self)
 
     // networks
-    register(OcaNetworkApplication.self)
-    register(OcaMediaTransportApplication.self)
-    register(OcaNetworkInterface.self)
+    try register(OcaNetworkApplication.self)
+    try register(OcaMediaTransportApplication.self)
+    try register(OcaNetworkInterface.self)
   }
 }

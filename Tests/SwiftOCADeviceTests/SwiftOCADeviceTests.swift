@@ -63,7 +63,7 @@ final class SwiftOCADeviceTests: XCTestCase {
   let testGroupONo: OcaONo = 5001
 
   func testLoopbackDevice() async throws {
-    await OcaClassRegistry.shared.register(_MyBooleanActuator.self)
+    try await OcaClassRegistry.shared.register(_MyBooleanActuator.self)
 
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
