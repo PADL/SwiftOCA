@@ -131,7 +131,10 @@ extension Ocp1ConnectionFactory {
 }
 
 extension Ocp1Connection: Ocp1ConnectionFactory {
-  public convenience init(_ netService: NetService) async throws {
+  public convenience init(
+    _ netService: NetService,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) async throws {
     guard let serviceType = OcaBrowser.ServiceType(rawValue: netService.type) else {
       throw Ocp1Error.unknownServiceType
     }
@@ -160,7 +163,8 @@ extension Ocp1Connection: Ocp1ConnectionFactory {
           await self
             .init(
               reassigningSelfTo: try Ocp1TCPConnection(
-                deviceAddress: address
+                deviceAddress: address,
+                options: options
               ) as! Self
             )
           return
@@ -168,7 +172,8 @@ extension Ocp1Connection: Ocp1ConnectionFactory {
           await self
             .init(
               reassigningSelfTo: try Ocp1UDPConnection(
-                deviceAddress: address
+                deviceAddress: address,
+                options: options
               ) as! Self
             )
           return
