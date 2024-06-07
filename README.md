@@ -13,7 +13,7 @@ All APIs are async-safe and support both macOS and Linux: on macOS, [FlyingFox](
 
 | Platform | TCP | UDP client | UDP server | WS client | WS server | Local |
 | -:       | :-  | :-         | :-         | :-        | :-        | :-    |
-| macOS    | ✅  | ✅         | ❌         | ❌        | ✅        | ✅    |
+| macOS    | ✅  | ✅         | ✅         | ❌        | ✅        | ✅    |
 | Linux    | ✅  | ✅         | ✅         | ❌        | ❌        | ✅    |
 
 Example code can be found in [Examples](Examples).
