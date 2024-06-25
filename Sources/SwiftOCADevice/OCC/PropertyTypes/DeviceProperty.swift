@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-// @_implementationOnly
-import AnyCodable
 import AsyncExtensions
 import Foundation
 @_spi(SwiftOCAPrivate)
