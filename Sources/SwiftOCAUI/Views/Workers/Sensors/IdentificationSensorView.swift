@@ -48,7 +48,7 @@ public struct OcaIdentificationSensorView: OcaView {
     Rectangle()
       .foregroundColor(isIdentifying.state ? Color.red : Color.black)
       .task {
-        try? await self.object.onIdentify { _, _ in
+        try? await object.onIdentify { _, _ in
           Task {
             await isIdentifying.beginIdentifying()
           }

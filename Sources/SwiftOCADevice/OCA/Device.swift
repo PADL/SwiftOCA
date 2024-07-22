@@ -167,12 +167,12 @@ public actor OcaDevice {
         if command.methodID.defLevel > 1,
            let peerToPeerObject = object as? any OcaGroupPeerToPeerMember
         {
-          return try await peerToPeerObject.handleCommandForEachPeerToPeerMember(
+          try await peerToPeerObject.handleCommandForEachPeerToPeerMember(
             command,
             from: controller
           )
         } else {
-          return try await object.handleCommand(command, from: controller)
+          try await object.handleCommand(command, from: controller)
         }
       }
     } catch let Ocp1Error.status(status) {
@@ -205,7 +205,7 @@ public actor OcaDevice {
   ) async throws {
     try await notifySubscribers(
       event,
-      parameters: try Ocp1Encoder().encode(parameters)
+      parameters: Ocp1Encoder().encode(parameters)
     )
   }
 

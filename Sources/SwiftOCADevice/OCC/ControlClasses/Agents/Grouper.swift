@@ -167,9 +167,9 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
       var oNo: OcaONo {
         switch self {
         case let .local(object):
-          return object.objectNumber
+          object.objectNumber
         case let .remote(path):
-          return path.oNo
+          path.oNo
         }
       }
     }
@@ -185,9 +185,9 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
     var objectPath: OcaOPath {
       switch target {
       case let .local(object):
-        return OcaOPath(hostID: OcaBlob(), oNo: object.objectNumber)
+        OcaOPath(hostID: OcaBlob(), oNo: object.objectNumber)
       case let .remote(path):
-        return path
+        path
       }
     }
 
@@ -195,19 +195,19 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
       get async {
         switch target {
         case .local:
-          return true
+          true
         case let .remote(path):
-          return await OcaConnectionBroker.shared.isOnline(path)
+          await OcaConnectionBroker.shared.isOnline(path)
         }
       }
     }
 
     var ocaGrouperCitizen: OcaGrouperCitizen {
       get async {
-        OcaGrouperCitizen(
+        await OcaGrouperCitizen(
           index: index,
           objectPath: objectPath,
-          online: await online
+          online: online
         )
       }
     }
@@ -562,9 +562,9 @@ private extension OcaGrouper {
     changeType: OcaPropertyChangeType
   ) async throws {
     let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-    let parameters = OcaPropertyChangedEventData<[OcaGrouperCitizen]>(
+    let parameters = await OcaPropertyChangedEventData<[OcaGrouperCitizen]>(
       propertyID: OcaPropertyID("3.3"),
-      propertyValue: await citizens.asyncMap { @Sendable in await $0.ocaGrouperCitizen },
+      propertyValue: citizens.asyncMap { @Sendable in await $0.ocaGrouperCitizen },
       changeType: changeType
     )
     try await deviceDelegate?.notifySubscribers(

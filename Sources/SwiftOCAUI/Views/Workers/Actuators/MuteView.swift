@@ -27,9 +27,9 @@ private extension Binding where Value == OcaProperty<OcaMuteState>.PropertyValue
   var value: Binding<Bool> {
     Binding<Bool>(get: {
       if case let .success(muteState) = self.wrappedValue {
-        return muteState == .muted
+        muteState == .muted
       } else {
-        return false
+        false
       }
     }, set: { isOn in
       self.wrappedValue = .success(isOn ? .muted : .unmuted)

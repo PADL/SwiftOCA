@@ -227,7 +227,6 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
       try await ensureWritable(by: controller, command: command)
       try await setConnector(params.id, connection: params.connection)
       return Ocp1Response()
-
     case OcaMethodID("3.21"):
       let params: SwiftOCA.OcaMediaTransportNetwork
         .SetConnectorCodingParameters = try decodeCommand(command)

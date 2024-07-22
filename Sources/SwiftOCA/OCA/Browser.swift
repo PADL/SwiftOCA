@@ -160,18 +160,18 @@ extension Ocp1Connection: Ocp1ConnectionFactory {
 
         switch serviceType {
         case .tcp:
-          await self
+          try await self
             .init(
-              reassigningSelfTo: try Ocp1TCPConnection(
+              reassigningSelfTo: Ocp1TCPConnection(
                 deviceAddress: address,
                 options: options
               ) as! Self
             )
           return
         case .udp:
-          await self
+          try await self
             .init(
-              reassigningSelfTo: try Ocp1UDPConnection(
+              reassigningSelfTo: Ocp1UDPConnection(
                 deviceAddress: address,
                 options: options
               ) as! Self

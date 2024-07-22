@@ -101,7 +101,7 @@ public enum DeviceApp {
     )
     try await block.add(actionObject: gain)
 
-    try await serializeDeserialize(await device.rootBlock)
+    try await serializeDeserialize(device.rootBlock)
 
     let controlNetwork = try await SwiftOCADevice.OcaControlNetwork(deviceDelegate: device)
     Task { @OcaDevice in controlNetwork.state = .running }

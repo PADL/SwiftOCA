@@ -30,9 +30,9 @@ struct UnkeyedOcp1DecodingContainer: UnkeyedDecodingContainer {
 
   var isAtEnd: Bool {
     if let count {
-      return currentIndex == count
+      currentIndex == count
     } else {
-      return state.isAtEnd
+      state.isAtEnd
     }
   }
 

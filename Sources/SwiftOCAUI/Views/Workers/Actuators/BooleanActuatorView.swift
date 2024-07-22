@@ -27,9 +27,9 @@ private extension Binding where Value == OcaProperty<OcaBoolean>.PropertyValue {
   var value: Binding<Bool> {
     Binding<Bool>(get: {
       if case let .success(isOn) = self.wrappedValue {
-        return isOn
+        isOn
       } else {
-        return false
+        false
       }
     }, set: { isOn in
       self.wrappedValue = .success(isOn)

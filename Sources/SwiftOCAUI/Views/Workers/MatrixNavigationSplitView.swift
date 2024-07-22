@@ -70,7 +70,7 @@ struct OcaMatrixNavigationSplitView: OcaView {
         }
       }
       .navigationDestination(for: OcaONo.self) { oNo in
-        if let member = self.membersMap![oNo] {
+        if let member = membersMap![oNo] {
           OcaDetailView(member)
         }
       }

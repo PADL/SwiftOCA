@@ -50,10 +50,10 @@ extension OcaLevelSensor: OcaViewRepresentable {
 
   var value: OcaBoundedPropertyValue<OcaDB> {
     if case let .success(readingValue) = reading {
-      return readingValue
+      readingValue
     } else {
       // FIXME: constants
-      return OcaBoundedPropertyValue(value: -144.0, in: -144.0...0.0)
+      OcaBoundedPropertyValue(value: -144.0, in: -144.0...0.0)
     }
   }
 }

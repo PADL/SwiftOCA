@@ -18,6 +18,7 @@
 
 import AsyncAlgorithms
 import AsyncExtensions
+
 // @_implementationOnly
 @preconcurrency
 import CoreFoundation
@@ -56,9 +57,9 @@ private func cfSocketWrapperAcceptCallback(
 
 private func mappedLastErrno() -> Error {
   if errno == EBADF || errno == ESHUTDOWN || errno == EPIPE || errno == 0 {
-    return Ocp1Error.notConnected
+    Ocp1Error.notConnected
   } else {
-    return Errno(rawValue: errno)
+    Errno(rawValue: errno)
   }
 }
 
@@ -77,18 +78,18 @@ Sendable, CustomStringConvertible, Hashable {
     var data: Data {
       switch self {
       case let .data(data):
-        return data
+        data
       case let .message(message):
-        return message.1
+        message.1
       case .nativeHandle:
-        return Data()
+        Data()
       }
     }
 
     var message: CFSocket.Message {
       switch self {
       case let .message(message):
-        return message
+        message
       default:
         fatalError("attempted to read message from datagram socket")
       }
@@ -97,7 +98,7 @@ Sendable, CustomStringConvertible, Hashable {
     var nativeHandle: _CFSocketWrapper {
       switch self {
       case let .nativeHandle(socket):
-        return socket
+        socket
       default:
         fatalError("attemped to drain TCP accept socket")
       }
@@ -180,20 +181,17 @@ Sendable, CustomStringConvertible, Hashable {
     type: Int32,
     options: Options = []
   ) async throws {
-    let proto: CInt
-    if address.family == AF_INET || address.family == AF_INET6 {
-      proto = CInt(type == SOCK_STREAM ? IPPROTO_TCP : IPPROTO_UDP)
+    let proto: CInt = if address.family == AF_INET || address.family == AF_INET6 {
+      CInt(type == SOCK_STREAM ? IPPROTO_TCP : IPPROTO_UDP)
     } else {
-      proto = 0
+      0
     }
     isDatagram = type == SOCK_DGRAM
 
     var context = CFSocketContext()
     context.info = Unmanaged.passUnretained(self).toOpaque()
-    let cfSocket: CFSocket?
-
-    if options.contains(.server), type == SOCK_STREAM {
-      cfSocket = CFSocketCreate(
+    let cfSocket: CFSocket? = if options.contains(.server), type == SOCK_STREAM {
+      CFSocketCreate(
         kCFAllocatorDefault,
         Int32(address.family),
         SOCK_STREAM,
@@ -203,7 +201,7 @@ Sendable, CustomStringConvertible, Hashable {
         &context
       )
     } else {
-      cfSocket = CFSocketCreate(
+      CFSocketCreate(
         kCFAllocatorDefault,
         Int32(address.family),
         type,

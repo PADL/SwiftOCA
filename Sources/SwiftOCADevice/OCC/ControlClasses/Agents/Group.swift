@@ -316,12 +316,12 @@ extension OcaGroup {
       do {
         response = try await member.handleCommand(command, from: controller)
       } catch {
-        let exceptionStatus: OcaStatus
-
-        if let error = error as? Ocp1Error, case let .status(status) = error {
-          exceptionStatus = status
+        let exceptionStatus: OcaStatus = if let error = error as? Ocp1Error,
+                                            case let .status(status) = error
+        {
+          status
         } else {
-          exceptionStatus = .processingFailed
+          .processingFailed
         }
         let exception = OcaGroupException(
           oNo: member.objectNumber,

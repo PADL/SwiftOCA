@@ -20,9 +20,9 @@ import SwiftUI
 extension OcaRoot {
   var navigationLabel: String {
     if case let .success(role) = role {
-      return role
+      role
     } else {
-      return String(format: "%02X", objectNumber)
+      String(format: "%02X", objectNumber)
     }
   }
 }

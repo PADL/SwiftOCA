@@ -17,10 +17,13 @@
 #if canImport(IORing)
 
 import Foundation
+
 // @_implementationOnly
 import IORing
+
 // @_implementationOnly
 import IORingFoundation
+
 // @_implementationOnly
 import IORingUtils
 import SocketAddress
@@ -127,7 +130,7 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   override public func read(_ length: Int) async throws -> Data {
     // read maximum PDU size
     try await withMappedError { socket in
-      Data(try await socket.receive(count: Self.MaximumPduSize))
+      try await Data(socket.receive(count: Self.MaximumPduSize))
     }
   }
 
@@ -154,7 +157,7 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
 
   override public func read(_ length: Int) async throws -> Data {
     try await withMappedError { socket in
-      Data(try await socket.read(count: length, awaitingAllRead: true))
+      try await Data(socket.read(count: length, awaitingAllRead: true))
     }
   }
 

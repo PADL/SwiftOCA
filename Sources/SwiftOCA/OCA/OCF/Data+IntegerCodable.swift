@@ -39,13 +39,11 @@ public extension Data {
     precondition(index <= count - MemoryLayout<T>.size)
 
     let lastIndex = index + MemoryLayout<T>.size
-    let byteSwappedValue: T
-
-    switch endianness {
+    let byteSwappedValue: T = switch endianness {
     case .little:
-      byteSwappedValue = value.littleEndian /* does nothing on little endian, swaps on big */
+      value.littleEndian /* does nothing on little endian, swaps on big */
     case .big:
-      byteSwappedValue = value.bigEndian /* does nothing on big endian, swaps on little */
+      value.bigEndian /* does nothing on big endian, swaps on little */
     }
 
     replaceSubrange(

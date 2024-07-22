@@ -220,9 +220,9 @@ public extension OcaBoundedProperty {
     Binding(
       get: {
         if let object = _storage.object {
-          return _storage._get(_enclosingInstance: object)
+          _storage._get(_enclosingInstance: object)
         } else {
-          return .initial
+          .initial
         }
       },
       set: {

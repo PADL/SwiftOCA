@@ -134,9 +134,9 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
 
   public static func < (lhs: OcaPropertyID, rhs: OcaPropertyID) -> Bool {
     if lhs.defLevel == rhs.defLevel {
-      return lhs.propertyIndex < rhs.propertyIndex
+      lhs.propertyIndex < rhs.propertyIndex
     } else {
-      return lhs.defLevel < rhs.defLevel
+      lhs.defLevel < rhs.defLevel
     }
   }
 }

@@ -40,12 +40,11 @@ extension Ocp1CFControllerPrivate {
     to destinationAddress: OcaNetworkAddress
   ) async throws {
     let networkAddress = try Ocp1NetworkAddress(networkAddress: destinationAddress)
-    let peerAddress: SocketAddress
-    if networkAddress.address.isEmpty {
+    let peerAddress: SocketAddress = if networkAddress.address.isEmpty {
       // empty string means send to controller address but via UDP
-      peerAddress = self.peerAddress
+      self.peerAddress
     } else {
-      peerAddress = try AnySocketAddress(
+      try AnySocketAddress(
         family: networkAddress.family,
         presentationAddress: networkAddress.presentationAddress
       )
@@ -159,12 +158,12 @@ private extension Ocp1NetworkAddress {
 
   var family: sa_family_t {
     if address.hasPrefix("[") && address.contains("]") {
-      return sa_family_t(AF_INET6)
+      sa_family_t(AF_INET6)
     } else if address.contains("/") {
       // presuming we have an absolute path to distinguish from IPv4 address
-      return sa_family_t(AF_LOCAL)
+      sa_family_t(AF_LOCAL)
     } else {
-      return sa_family_t(AF_INET)
+      sa_family_t(AF_INET)
     }
   }
 }

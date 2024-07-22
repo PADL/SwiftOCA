@@ -58,15 +58,14 @@ public final class OcaDeviceEndpointRegistrar: @unchecked Sendable {
   ) async throws
     -> Handle
   {
-    let txtRecords: [String: String]
-    if let deviceManager = await device.deviceManager {
-      txtRecords = [
+    let txtRecords: [String: String] = if let deviceManager = await device.deviceManager {
+      [
         "txtvers": "1",
         "protovers": "\(deviceManager.version)",
         "modelGUID": "\(deviceManager.modelGUID)",
       ]
     } else {
-      txtRecords = [:]
+      [:]
     }
     let service = try await Service(
       regType: endpoint.serviceType.rawValue,

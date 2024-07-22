@@ -93,11 +93,11 @@ class Ocp1DecodingState {
   }
 
   func decode(_ type: Double.Type) throws -> Double {
-    Double(bitPattern: try decodeInteger(UInt64.self))
+    try Double(bitPattern: decodeInteger(UInt64.self))
   }
 
   func decode(_ type: Float.Type) throws -> Float {
-    Float(bitPattern: try decodeInteger(UInt32.self))
+    try Float(bitPattern: decodeInteger(UInt32.self))
   }
 
   func decode(_ type: Int.Type) throws -> Int {
@@ -141,23 +141,19 @@ class Ocp1DecodingState {
   }
 
   func decodeCount(_ type: (some Collection & Decodable).Type) throws -> Int {
-    let count: Int
-
-    if type is any Ocp1LongList.Type {
+    let count: Int = if type is any Ocp1LongList.Type {
       // FIXME: can't support 2^32 length because on 32-bit platforms count is Int32
-      count =
-        try Int(Int32(from: Ocp1DecoderImpl(
-          state: self,
-          codingPath: [],
-          userInfo: userInfo
-        )))
+      try Int(Int32(from: Ocp1DecoderImpl(
+        state: self,
+        codingPath: [],
+        userInfo: userInfo
+      )))
     } else {
-      count =
-        try Int(UInt16(from: Ocp1DecoderImpl(
-          state: self,
-          codingPath: [],
-          userInfo: userInfo
-        )))
+      try Int(UInt16(from: Ocp1DecoderImpl(
+        state: self,
+        codingPath: [],
+        userInfo: userInfo
+      )))
     }
 
     return count

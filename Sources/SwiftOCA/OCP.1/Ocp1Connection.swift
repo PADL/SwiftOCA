@@ -47,6 +47,7 @@ public let SOCK_DGRAM: Int32 = Darwin.SOCK_DGRAM
 #elseif canImport(Glibc)
 // @_implementationOnly
 import CoreFoundation
+
 @_spi(SwiftOCAPrivate)
 public let SOCK_STREAM = Int32(CoreFoundation.SOCK_STREAM.rawValue)
 @_spi(SwiftOCAPrivate)
@@ -165,14 +166,14 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 
   public var statistics: Ocp1ConnectionStatistics {
     get async {
-      Ocp1ConnectionStatistics(
+      await Ocp1ConnectionStatistics(
         connectionState: _connectionState.value,
         requestCount: Int(nextCommandHandle - CommandHandleBase),
-        outstandingRequests: monitor != nil ? Array(await monitor!.continuations.keys) : [],
+        outstandingRequests: monitor != nil ? Array(monitor!.continuations.keys) : [],
         cachedObjectCount: objects.count,
         subscribedEvents: Array(subscriptions.keys),
         lastMessageSentTime: lastMessageSentTime,
-        lastMessageReceivedTime: await monitor?.lastMessageReceivedTime
+        lastMessageReceivedTime: monitor?.lastMessageReceivedTime
       )
     }
   }
@@ -212,8 +213,8 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     }
 
     func resumeAllNotConnected() {
-      continuations.forEach {
-        $0.1.resume(throwing: Ocp1Error.notConnected)
+      for continuation in continuations {
+        continuation.1.resume(throwing: Ocp1Error.notConnected)
       }
       continuations.removeAll()
     }

@@ -153,9 +153,9 @@ open class OcaBlock: OcaWorker {
     try await _getActionObjectsRecursiveFallback(&blockMembers)
     return Array(blockMembers).sorted(by: {
       if $1.containerObjectNumber == $0.containerObjectNumber {
-        return $1.memberObjectIdentification.oNo > $0.memberObjectIdentification.oNo
+        $1.memberObjectIdentification.oNo > $0.memberObjectIdentification.oNo
       } else {
-        return $1.containerObjectNumber > $0.containerObjectNumber
+        $1.containerObjectNumber > $0.containerObjectNumber
       }
     })
   }

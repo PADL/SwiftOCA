@@ -163,7 +163,7 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
 
   public var systemInterfaceParameters: OcaBlob {
     get throws {
-      OcaBlob(try Ocp1Encoder().encode(self) as [UInt8])
+      try OcaBlob(Ocp1Encoder().encode(self) as [UInt8])
     }
   }
 }

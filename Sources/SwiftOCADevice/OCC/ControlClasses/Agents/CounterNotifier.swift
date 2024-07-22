@@ -38,7 +38,7 @@ open class OcaCounterNotifier: OcaAgent {
     case OcaMethodID("3.1"):
       try decodeNullCommand(command)
       try await ensureWritable(by: controller, command: command)
-      return try encodeResponse(try await getLastUpdate())
+      return try await encodeResponse(getLastUpdate())
     default:
       return try await super.handleCommand(command, from: controller)
     }

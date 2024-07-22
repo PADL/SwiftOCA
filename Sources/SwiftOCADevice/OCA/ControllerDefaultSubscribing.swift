@@ -126,12 +126,10 @@ public extension OcaControllerDefaultSubscribing {
       return
     }
 
-    let property: OcaPropertyID?
-
-    if event.eventID == OcaPropertyChangedEventID {
-      property = try Ocp1Decoder().decode(OcaPropertyID.self, from: parameters)
+    let property: OcaPropertyID? = if event.eventID == OcaPropertyChangedEventID {
+      try Ocp1Decoder().decode(OcaPropertyID.self, from: parameters)
     } else {
-      property = nil
+      nil
     }
 
     for subscription in subscriptions {

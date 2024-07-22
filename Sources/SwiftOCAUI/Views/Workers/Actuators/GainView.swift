@@ -67,9 +67,9 @@ private extension Binding where Value == OcaProperty<OcaBoundedPropertyValue<Oca
   var value: Binding<OcaBoundedPropertyValue<OcaDB>> {
     Binding<OcaBoundedPropertyValue<OcaDB>>(get: {
       if case let .success(gainValue) = self.wrappedValue {
-        return gainValue
+        gainValue
       } else {
-        return OcaBoundedPropertyValue(value: 0.0, in: -144.0...20.0)
+        OcaBoundedPropertyValue(value: 0.0, in: -144.0...20.0)
       }
     }, set: { newValue in
       self.wrappedValue = .success(newValue)

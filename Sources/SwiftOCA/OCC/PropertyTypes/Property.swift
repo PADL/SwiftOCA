@@ -91,11 +91,11 @@ extension OcaPropertySubjectRepresentable {
     subject.compactMap { value in
       switch value {
       case .initial:
-        return nil
+        nil
       case let .success(value):
-        return .success(value)
+        .success(value)
       case let .failure(error):
-        return .failure(error)
+        .failure(error)
       }
     }.eraseToAnyAsyncSequence()
   }
@@ -135,20 +135,20 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
     public var hasValueOrError: Bool {
       if case .initial = self {
-        return false
+        false
       } else {
-        return true
+        true
       }
     }
 
     public func asOptionalResult() -> Result<Value?, Error> {
       switch self {
       case .initial:
-        return .success(nil)
+        .success(nil)
       case let .success(value):
-        return .success(value)
+        .success(value)
       case let .failure(error):
-        return .failure(error)
+        .failure(error)
       }
     }
   }
@@ -158,9 +158,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
   public var description: String {
     if case let .success(value) = subject.value {
-      return String(describing: value)
+      String(describing: value)
     } else {
-      return ""
+      ""
     }
   }
 
@@ -309,7 +309,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
       }
 
       if flags.contains(.subscribeEvents) {
-        let isSubscribed = (try? await object.isSubscribed) ?? false
+        let isSubscribed = await (try? object.isSubscribed) ?? false
         if !isSubscribed {
           Task.detached { try await object.subscribe() }
         }
@@ -360,12 +360,10 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
       throw Ocp1Error.propertyIsImmutable
     }
 
-    let newValue: Encodable
-
-    if let setValueTransformer {
-      newValue = try await setValueTransformer(object, value)
+    let newValue: Encodable = if let setValueTransformer {
+      try await setValueTransformer(object, value)
     } else {
-      newValue = value
+      value
     }
 
     // setters need to support variable parameter counts
@@ -440,9 +438,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
        let value = value as? Value?,
        case .none = value
     {
-      return true
+      true
     } else {
-      return false
+      false
     }
   }
 
@@ -451,14 +449,12 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async throws -> [String: Any] {
     let value = try await _getValue(object, flags: flags)
-    let jsonValue: Any
-
-    if isNil(value) {
-      jsonValue = NSNull()
+    let jsonValue: Any = if isNil(value) {
+      NSNull()
     } else if JSONSerialization.isValidJSONObject(value) {
-      jsonValue = value
+      value
     } else {
-      jsonValue = try JSONEncoder().reencodeAsValidJSONObject(value)
+      try JSONEncoder().reencodeAsValidJSONObject(value)
     }
 
     return [propertyID.description: jsonValue]
@@ -478,14 +474,14 @@ extension OcaProperty.PropertyValue: Equatable where Value: Equatable & Codable 
     if case .initial = lhs,
        case .initial = rhs
     {
-      return true
+      true
     } else if case let .success(lhsValue) = lhs,
               case let .success(rhsValue) = rhs,
               lhsValue == rhsValue
     {
-      return true
+      true
     } else {
-      return false
+      false
     }
   }
 }
@@ -507,9 +503,9 @@ public extension OcaProperty {
     Binding(
       get: {
         if let object {
-          return _get(_enclosingInstance: object)
+          _get(_enclosingInstance: object)
         } else {
-          return .initial
+          .initial
         }
       },
       set: {

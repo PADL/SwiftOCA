@@ -56,7 +56,7 @@ open class OcaCounterSetAgent: OcaAgent {
     case OcaMethodID("3.3"):
       let id: OcaID16 = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      return try encodeResponse(try await get(counter: id))
+      return try await encodeResponse(get(counter: id))
     case OcaMethodID("3.4"):
       let parameters: SwiftOCA.OcaCounterSetAgent
         .CounterNotifierParameters = try decodeCommand(command)

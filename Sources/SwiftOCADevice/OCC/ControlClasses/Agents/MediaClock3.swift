@@ -58,7 +58,7 @@ open class OcaMediaClock3: OcaAgent {
   ) async throws -> Ocp1Response {
     switch command.methodID {
     default:
-      return try await super.handleCommand(command, from: controller)
+      try await super.handleCommand(command, from: controller)
     }
   }
 }

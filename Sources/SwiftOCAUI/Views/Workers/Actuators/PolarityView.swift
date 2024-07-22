@@ -27,9 +27,9 @@ private extension Binding where Value == OcaProperty<OcaPolarityState>.PropertyV
   var value: Binding<Bool> {
     Binding<Bool>(get: {
       if case let .success(isInverted) = self.wrappedValue {
-        return isInverted == .inverted
+        isInverted == .inverted
       } else {
-        return false
+        false
       }
     }, set: { isInverted in
       self.wrappedValue = .success(isInverted ? .inverted : .nonInverted)

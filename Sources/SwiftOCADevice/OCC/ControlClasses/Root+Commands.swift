@@ -61,9 +61,9 @@ public extension OcaRoot {
   ) throws -> Ocp1Response {
     let parameterCount = _ocp1ParameterCount(type: T.self)
     let encoder = Ocp1Encoder()
-    let parameters = Ocp1Parameters(
+    let parameters = try Ocp1Parameters(
       parameterCount: parameterCount,
-      parameterData: try encoder.encode(parameters)
+      parameterData: encoder.encode(parameters)
     )
 
     return Ocp1Response(statusCode: statusCode, parameters: parameters)

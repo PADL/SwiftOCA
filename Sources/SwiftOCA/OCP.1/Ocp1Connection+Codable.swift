@@ -58,7 +58,7 @@ public extension Ocp1Connection {
     from data: Data,
     messages: inout [Data]
   ) throws -> OcaMessageType {
-    precondition(data.count >= Self.MinimumPduSize)
+    precondition(data.count >= MinimumPduSize)
     precondition(data[0] == Ocp1SyncValue)
 
     /// MinimumPduSize == 7
@@ -66,7 +66,7 @@ public extension Ocp1Connection {
     /// 1 `protocolVersion: OcaUint16`
     /// 3 `pduSize: OcaUint32` (size of PDU not including syncVal)
 
-    guard data.count >= Self.MinimumPduSize + 3 else {
+    guard data.count >= MinimumPduSize + 3 else {
       throw Ocp1Error.invalidPduSize
     }
 

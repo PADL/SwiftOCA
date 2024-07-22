@@ -74,7 +74,7 @@ extension LengthTaggedData: Decodable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
 
-    let count = Int(try container.decode(UInt16.self))
+    let count = try Int(container.decode(UInt16.self))
     wrappedValue = Data(count: count)
     for i in 0..<count {
       let byte = try container.decode(UInt8.self)

@@ -47,22 +47,22 @@ Sendable, OcaKeyPathMarkerProtocol {
     var lockState: OcaLockState {
       switch self {
       case .unlocked:
-        return .noLock
+        .noLock
       case .lockedNoWrite:
-        return .lockNoWrite
+        .lockNoWrite
       case .lockedNoReadWrite:
-        return .lockNoReadWrite
+        .lockNoReadWrite
       }
     }
 
     var description: String {
       switch self {
       case .unlocked:
-        return "Unlocked"
+        "Unlocked"
       case .lockedNoWrite:
-        return "Read locked"
+        "Read locked"
       case .lockedNoReadWrite:
-        return "Read/write locked"
+        "Read/write locked"
       }
     }
   }

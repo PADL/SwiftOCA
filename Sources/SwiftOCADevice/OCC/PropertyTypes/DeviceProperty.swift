@@ -122,9 +122,9 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
        let value = value as? Value?,
        case .none = value
     {
-      return true
+      true
     } else {
-      return false
+      false
     }
   }
 
@@ -137,14 +137,12 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
   }
 
   func getJsonValue() throws -> Any {
-    let jsonValue: Any
-
-    if isNil(subject.value) {
-      jsonValue = NSNull()
+    let jsonValue: Any = if isNil(subject.value) {
+      NSNull()
     } else if JSONSerialization.isValidJSONObject(subject.value) {
-      jsonValue = subject.value
+      subject.value
     } else {
-      jsonValue = try JSONEncoder().reencodeAsValidJSONObject(subject.value)
+      try JSONEncoder().reencodeAsValidJSONObject(subject.value)
     }
 
     return jsonValue

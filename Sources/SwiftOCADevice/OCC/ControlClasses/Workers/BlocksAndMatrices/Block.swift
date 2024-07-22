@@ -288,21 +288,21 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   ) async throws -> [OcaObjectSearchResult] {
     await filterRecursive { member, _ in
       if let agent = member as? OcaAgent {
-        return agent.compare(
+        agent.compare(
           searchName: searchName,
           keyPath: \OcaAgent.label,
           nameComparisonType: nameComparisonType,
           searchClassID: searchClassID
         )
       } else if let worker = member as? OcaWorker {
-        return worker.compare(
+        worker.compare(
           searchName: searchName,
           keyPath: \OcaWorker.label,
           nameComparisonType: nameComparisonType,
           searchClassID: searchClassID
         )
       } else {
-        return false
+        false
       }
     }.async.map { member in
       await member.makeSearchResult(with: resultFlags)
@@ -389,7 +389,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         resultFlags: params.resultFlags
       )
       return try encodeResponse(searchResult)
-
     // 3.22 GetMostRecentParamDatasetONo
     // 3.23 ApplyParamDataset
     // 3.24 StoreCurrentParameterData
@@ -430,7 +429,7 @@ public extension OcaRoot {
        object.owner != OcaInvalidONo,
        let container = await deviceDelegate?.objects[object.owner] as? T
     {
-      path.insert(contentsOf: await makePath(rootObject: container, keyPath: keyPath), at: 0)
+      await path.insert(contentsOf: makePath(rootObject: container, keyPath: keyPath), at: 0)
     }
 
     return path
@@ -462,7 +461,7 @@ public extension OcaRoot {
 
   var path: OcaGetPathParameters {
     get async {
-      OcaGetPathParameters(namePath: await rolePath, oNoPath: await objectNumberPath)
+      await OcaGetPathParameters(namePath: rolePath, oNoPath: objectNumberPath)
     }
   }
 }

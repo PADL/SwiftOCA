@@ -18,29 +18,29 @@ import KeyPathShims
 import SwiftShims
 
 @_silgen_name("swift_isClassType")
-internal func _isClassType(_: Any.Type) -> Bool
+func _isClassType(_: Any.Type) -> Bool
 
 @_silgen_name("swift_getMetadataKind")
-internal func _metadataKind(_: Any.Type) -> UInt
+func _metadataKind(_: Any.Type) -> UInt
 
 @_silgen_name("swift_reflectionMirror_recursiveCount")
-internal func _getRecursiveChildCount(_: Any.Type) -> Int
+func _getRecursiveChildCount(_: Any.Type) -> Int
 
 @_silgen_name("swift_reflectionMirror_recursiveChildMetadata")
-internal func _getChildMetadata(
+func _getChildMetadata(
   _: Any.Type,
   index: Int,
   fieldMetadata: UnsafeMutablePointer<_FieldReflectionMetadata>
 ) -> Any.Type
 
 @_silgen_name("swift_reflectionMirror_recursiveChildOffset")
-internal func _getChildOffset(
+func _getChildOffset(
   _: Any.Type,
   index: Int
 ) -> Int
 
 @_silgen_name("swift_getDynamicType")
-internal func _getDynamicType(
+func _getDynamicType(
   _: Any,
   self: Any.Type,
   existentialMetatype: Bool
@@ -175,13 +175,12 @@ func _forEachFieldWithKeyPath<Root>(
     let childType = _getChildMetadata(type, index: i, fieldMetadata: &field)
     defer { field.freeFunc?(field.name) }
     let kind = _MetadataKind(childType)
-    let supportedType: Bool
-    switch kind {
+    let supportedType = switch kind {
     case .struct, .class, .optional, .existential,
          .existentialMetatype, .tuple, .enum:
-      supportedType = true
+      true
     default:
-      supportedType = false
+      false
     }
     if !supportedType || !field.isStrong {
       if !ignoreUnknown { return false }

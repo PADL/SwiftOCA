@@ -74,13 +74,13 @@ extension OcaArray2D: Codable where Element: Codable {
   public init(from decoder: Decoder) throws {
     if decoder._isOcp1Decoder {
       var container = try decoder.unkeyedContainer()
-      nX = Int(try container.decode(OcaUint16.self))
-      nY = Int(try container.decode(OcaUint16.self))
+      nX = try Int(container.decode(OcaUint16.self))
+      nY = try Int(container.decode(OcaUint16.self))
 
       items = [Element]()
       items.reserveCapacity(Int(nX * nY))
       for index in 0..<count {
-        items.insert(try container.decode(Element.self), at: index)
+        try items.insert(container.decode(Element.self), at: index)
       }
     } else {
       var container = try decoder.unkeyedContainer()

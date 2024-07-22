@@ -26,16 +26,16 @@ fileprivate extension SocketError {
     switch self {
     case let .failed(_, errno, _):
       if errno == EBADF || errno == ESHUTDOWN || errno == EPIPE {
-        return Ocp1Error.notConnected
+        Ocp1Error.notConnected
       } else {
-        return Errno(rawValue: errno)
+        Errno(rawValue: errno)
       }
     case .blocked:
-      return self
+      self
     case .disconnected:
-      return Ocp1Error.notConnected
+      Ocp1Error.notConnected
     case .unsupportedAddress:
-      return self
+      self
     }
   }
 }

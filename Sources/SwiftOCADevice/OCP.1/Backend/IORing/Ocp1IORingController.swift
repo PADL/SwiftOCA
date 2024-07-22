@@ -19,8 +19,10 @@
 import AsyncAlgorithms
 import AsyncExtensions
 import Foundation
+
 // @_implementationOnly
 import IORing
+
 // @_implementationOnly
 import IORingUtils
 import SocketAddress
@@ -41,12 +43,11 @@ extension Ocp1IORingControllerPrivate {
     to destinationAddress: OcaNetworkAddress
   ) async throws {
     let networkAddress = try Ocp1NetworkAddress(networkAddress: destinationAddress)
-    let peerAddress: SocketAddress
-    if networkAddress.address.isEmpty {
+    let peerAddress: SocketAddress = if networkAddress.address.isEmpty {
       // empty string means send to controller address but via UDP
-      peerAddress = self.peerAddress
+      self.peerAddress
     } else {
-      peerAddress = try sockaddr_storage(
+      try sockaddr_storage(
         family: networkAddress.family,
         presentationAddress: networkAddress.presentationAddress
       )
@@ -165,12 +166,12 @@ private extension Ocp1NetworkAddress {
 
   var family: sa_family_t {
     if address.hasPrefix("[") && address.contains("]") {
-      return sa_family_t(AF_INET6)
+      sa_family_t(AF_INET6)
     } else if address.contains("/") {
       // presuming we have an absolute path to distinguish from IPv4 address
-      return sa_family_t(AF_LOCAL)
+      sa_family_t(AF_LOCAL)
     } else {
-      return sa_family_t(AF_INET)
+      sa_family_t(AF_INET)
     }
   }
 }

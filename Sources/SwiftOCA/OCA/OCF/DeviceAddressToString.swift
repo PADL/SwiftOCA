@@ -30,7 +30,7 @@ public func deviceAddressToString(
 ) -> String {
   switch deviceAddress.pointee.sa_family {
   case sa_family_t(AF_INET):
-    return deviceAddress
+    deviceAddress
       .withMemoryRebound(to: sockaddr_in.self, capacity: 1) { cSockAddrIn4 -> String in
         var buffer = [CChar](repeating: 0, count: Int(INET_ADDRSTRLEN))
         var addr = cSockAddrIn4.pointee.sin_addr
@@ -42,7 +42,7 @@ public func deviceAddressToString(
         return string
       }
   case sa_family_t(AF_INET6):
-    return deviceAddress
+    deviceAddress
       .withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { cSockAddrIn6 -> String in
         var buffer = [CChar](repeating: 0, count: Int(INET6_ADDRSTRLEN))
         var addr = cSockAddrIn6.pointee.sin6_addr
@@ -54,7 +54,7 @@ public func deviceAddressToString(
         return string
       }
   case sa_family_t(AF_LOCAL):
-    return deviceAddress
+    deviceAddress
       .withMemoryRebound(to: sockaddr_un.self, capacity: 1) { cSockAddrUn -> String in
         cSockAddrUn.withMemoryRebound(
           to: UInt8.self,
@@ -64,6 +64,6 @@ public func deviceAddressToString(
         }
       }
   default:
-    return "<\(deviceAddress.pointee.sa_family)>"
+    "<\(deviceAddress.pointee.sa_family)>"
   }
 }

@@ -20,7 +20,7 @@ import Foundation
 import Logging
 import SwiftOCA
 
-public typealias DatagramProxyPeerIdentifier = Sendable & Equatable & Hashable
+public typealias DatagramProxyPeerIdentifier = Equatable & Hashable & Sendable
 
 @OcaDevice
 public class DatagramProxyDeviceEndpoint<

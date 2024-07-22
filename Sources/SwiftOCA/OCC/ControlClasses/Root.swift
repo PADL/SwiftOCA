@@ -218,12 +218,12 @@ public extension OcaRoot {
       from: data
     ) else { return }
 
-    allKeyPaths.forEach { _, keyPath in
+    for (_, keyPath) in allKeyPaths {
       if let value = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable),
          value.propertyIDs.contains(propertyID)
       {
         try? value.onEvent(self, event: event, eventData: data)
-        return
+        continue
       }
     }
   }
@@ -446,7 +446,7 @@ public extension OcaRoot {
         break
       }
 
-      let ownerONo = (try? await ownableObject._getOwner(flags: flags)) ?? OcaInvalidONo
+      let ownerONo = await (try? ownableObject._getOwner(flags: flags)) ?? OcaInvalidONo
       guard ownerONo != OcaInvalidONo else {
         break // we are at the root
       }

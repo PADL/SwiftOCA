@@ -30,9 +30,9 @@ private extension Binding
   var value: Binding<OcaBoundedPropertyValue<OcaFloat32>> {
     Binding<OcaBoundedPropertyValue<OcaFloat32>>(get: {
       if case let .success(positionValue) = self.wrappedValue {
-        return positionValue
+        positionValue
       } else {
-        return OcaBoundedPropertyValue(value: 0.0, in: -1.0...1.0)
+        OcaBoundedPropertyValue(value: 0.0, in: -1.0...1.0)
       }
     }, set: { newValue in
       self.wrappedValue = .success(newValue)

@@ -158,15 +158,15 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     return UInt16(bigEndian: withUnsafePointer(to: &address) { address in
       switch Int32(address.pointee.ss_family) {
       case AF_INET:
-        return address.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
+        address.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
           sin.pointee.sin_port
         }
       case AF_INET6:
-        return address.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { sin6 in
+        address.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { sin6 in
           sin6.pointee.sin6_port
         }
       default:
-        return 0
+        0
       }
     })
   }

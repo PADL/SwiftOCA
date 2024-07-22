@@ -38,7 +38,7 @@ import SwiftShims
 
 // MARK: Implementation details
 
-internal enum KeyPathComponentKind {
+enum KeyPathComponentKind {
   /// The keypath references an externally-defined property or subscript whose
   /// component describes how to interact with the key path.
   case external
@@ -60,17 +60,17 @@ internal enum KeyPathComponentKind {
   case optionalWrap
 }
 
-internal struct RawKeyPathComponent {
-  internal var header: Header
-  internal var body: UnsafeRawBufferPointer
+struct RawKeyPathComponent {
+  var header: Header
+  var body: UnsafeRawBufferPointer
 
-  internal init(header: Header, body: UnsafeRawBufferPointer) {
+  init(header: Header, body: UnsafeRawBufferPointer) {
     self.header = header
     self.body = body
   }
 
-  internal struct Header {
-    internal var _value: UInt32
+  struct Header {
+    var _value: UInt32
 
     init(discriminator: UInt32, payload: UInt32) {
       _value = 0
@@ -78,7 +78,7 @@ internal struct RawKeyPathComponent {
       self.payload = payload
     }
 
-    internal var discriminator: UInt32 {
+    var discriminator: UInt32 {
       get {
         (_value & Header.discriminatorMask) >> Header.discriminatorShift
       }
@@ -92,7 +92,7 @@ internal struct RawKeyPathComponent {
       }
     }
 
-    internal var storedOffsetPayload: UInt32 {
+    var storedOffsetPayload: UInt32 {
       get {
         precondition(
           kind == .struct || kind == .class,
@@ -113,7 +113,7 @@ internal struct RawKeyPathComponent {
       }
     }
 
-    internal var payload: UInt32 {
+    var payload: UInt32 {
       get {
         _value & Header.payloadMask
       }
@@ -126,7 +126,7 @@ internal struct RawKeyPathComponent {
       }
     }
 
-    internal var endOfReferencePrefix: Bool {
+    var endOfReferencePrefix: Bool {
       get {
         _value & Header.endOfReferencePrefixFlag != 0
       }
@@ -139,102 +139,102 @@ internal struct RawKeyPathComponent {
       }
     }
 
-    internal var kind: KeyPathComponentKind {
+    var kind: KeyPathComponentKind {
       switch (discriminator, payload) {
       case (Header.externalTag, _):
-        return .external
+        .external
       case (Header.structTag, _):
-        return .struct
+        .struct
       case (Header.classTag, _):
-        return .class
+        .class
       case (Header.computedTag, _):
-        return .computed
+        .computed
       case (Header.optionalTag, Header.optionalChainPayload):
-        return .optionalChain
+        .optionalChain
       case (Header.optionalTag, Header.optionalWrapPayload):
-        return .optionalWrap
+        .optionalWrap
       case (Header.optionalTag, Header.optionalForcePayload):
-        return .optionalForce
+        .optionalForce
       default:
         fatalError("invalid header")
       }
     }
 
-    internal static var payloadMask: UInt32 {
+    static var payloadMask: UInt32 {
       _SwiftKeyPathComponentHeader_PayloadMask
     }
 
-    internal static var discriminatorMask: UInt32 {
+    static var discriminatorMask: UInt32 {
       _SwiftKeyPathComponentHeader_DiscriminatorMask
     }
 
-    internal static var discriminatorShift: UInt32 {
+    static var discriminatorShift: UInt32 {
       _SwiftKeyPathComponentHeader_DiscriminatorShift
     }
 
-    internal static var externalTag: UInt32 {
+    static var externalTag: UInt32 {
       _SwiftKeyPathComponentHeader_ExternalTag
     }
 
-    internal static var structTag: UInt32 {
+    static var structTag: UInt32 {
       _SwiftKeyPathComponentHeader_StructTag
     }
 
-    internal static var computedTag: UInt32 {
+    static var computedTag: UInt32 {
       _SwiftKeyPathComponentHeader_ComputedTag
     }
 
-    internal static var classTag: UInt32 {
+    static var classTag: UInt32 {
       _SwiftKeyPathComponentHeader_ClassTag
     }
 
-    internal static var optionalTag: UInt32 {
+    static var optionalTag: UInt32 {
       _SwiftKeyPathComponentHeader_OptionalTag
     }
 
-    internal static var optionalChainPayload: UInt32 {
+    static var optionalChainPayload: UInt32 {
       _SwiftKeyPathComponentHeader_OptionalChainPayload
     }
 
-    internal static var optionalWrapPayload: UInt32 {
+    static var optionalWrapPayload: UInt32 {
       _SwiftKeyPathComponentHeader_OptionalWrapPayload
     }
 
-    internal static var optionalForcePayload: UInt32 {
+    static var optionalForcePayload: UInt32 {
       _SwiftKeyPathComponentHeader_OptionalForcePayload
     }
 
-    internal static var endOfReferencePrefixFlag: UInt32 {
+    static var endOfReferencePrefixFlag: UInt32 {
       _SwiftKeyPathComponentHeader_EndOfReferencePrefixFlag
     }
 
-    internal static var storedMutableFlag: UInt32 {
+    static var storedMutableFlag: UInt32 {
       _SwiftKeyPathComponentHeader_StoredMutableFlag
     }
 
-    internal static var storedOffsetPayloadMask: UInt32 {
+    static var storedOffsetPayloadMask: UInt32 {
       _SwiftKeyPathComponentHeader_StoredOffsetPayloadMask
     }
 
-    internal static var outOfLineOffsetPayload: UInt32 {
+    static var outOfLineOffsetPayload: UInt32 {
       _SwiftKeyPathComponentHeader_OutOfLineOffsetPayload
     }
 
-    internal static var unresolvedFieldOffsetPayload: UInt32 {
+    static var unresolvedFieldOffsetPayload: UInt32 {
       _SwiftKeyPathComponentHeader_UnresolvedFieldOffsetPayload
     }
 
-    internal static var unresolvedIndirectOffsetPayload: UInt32 {
+    static var unresolvedIndirectOffsetPayload: UInt32 {
       _SwiftKeyPathComponentHeader_UnresolvedIndirectOffsetPayload
     }
 
-    internal static var maximumOffsetPayload: UInt32 {
+    static var maximumOffsetPayload: UInt32 {
       _SwiftKeyPathComponentHeader_MaximumOffsetPayload
     }
 
     // The component header is 4 bytes, but may be followed by an aligned
     // pointer field for some kinds of component, forcing padding.
-    internal static var pointerAlignmentSkew: Int {
+    static var pointerAlignmentSkew: Int {
       MemoryLayout<Int>.size - MemoryLayout<Int32>.size
     }
 
@@ -243,10 +243,9 @@ internal struct RawKeyPathComponent {
       mutable: Bool,
       inlineOffset: UInt32
     ) {
-      let discriminator: UInt32
-      switch kind {
-      case .struct: discriminator = Header.structTag
-      case .class: discriminator = Header.classTag
+      let discriminator: UInt32 = switch kind {
+      case .struct: Header.structTag
+      case .class: Header.classTag
       }
 
       precondition(inlineOffset <= Header.maximumOffsetPayload)
@@ -259,7 +258,7 @@ internal struct RawKeyPathComponent {
     }
   }
 
-  internal func clone(
+  func clone(
     into buffer: inout UnsafeMutableRawBufferPointer,
     endOfReferencePrefix: Bool
   ) {
@@ -299,14 +298,14 @@ internal struct RawKeyPathComponent {
   }
 }
 
-internal enum KeyPathBuffer {
-  internal struct Builder {
-    internal var buffer: UnsafeMutableRawBufferPointer
-    internal init(_ buffer: UnsafeMutableRawBufferPointer) {
+enum KeyPathBuffer {
+  struct Builder {
+    var buffer: UnsafeMutableRawBufferPointer
+    init(_ buffer: UnsafeMutableRawBufferPointer) {
       self.buffer = buffer
     }
 
-    internal mutating func pushRaw(
+    mutating func pushRaw(
       size: Int, alignment: Int
     ) -> UnsafeMutableRawBufferPointer {
       var baseAddress = buffer.baseAddress.unsafelyUnwrapped
@@ -326,7 +325,7 @@ internal enum KeyPathBuffer {
       return result
     }
 
-    internal mutating func push<T>(_ value: T) {
+    mutating func push<T>(_ value: T) {
       let buf = pushRaw(
         size: MemoryLayout<T>.size,
         alignment: MemoryLayout<T>.alignment
@@ -334,7 +333,7 @@ internal enum KeyPathBuffer {
       buf.storeBytes(of: value, as: T.self)
     }
 
-    internal mutating func pushHeader(_ header: Header) {
+    mutating func pushHeader(_ header: Header) {
       push(header)
       // Start the components at pointer alignment
       _ = pushRaw(
@@ -344,9 +343,9 @@ internal enum KeyPathBuffer {
     }
   }
 
-  internal struct Header {
-    internal var _value: UInt32
-    internal init(size: Int, trivial: Bool, hasReferencePrefix: Bool) {
+  struct Header {
+    var _value: UInt32
+    init(size: Int, trivial: Bool, hasReferencePrefix: Bool) {
       precondition(
         size <= Int(Header.sizeMask),
         "key path too big"
@@ -356,24 +355,24 @@ internal enum KeyPathBuffer {
         | (hasReferencePrefix ? Header.hasReferencePrefixFlag : 0)
     }
 
-    internal static var sizeMask: UInt32 {
+    static var sizeMask: UInt32 {
       _SwiftKeyPathBufferHeader_SizeMask
     }
 
-    internal static var reservedMask: UInt32 {
+    static var reservedMask: UInt32 {
       _SwiftKeyPathBufferHeader_ReservedMask
     }
 
-    internal static var trivialFlag: UInt32 {
+    static var trivialFlag: UInt32 {
       _SwiftKeyPathBufferHeader_TrivialFlag
     }
 
-    internal static var hasReferencePrefixFlag: UInt32 {
+    static var hasReferencePrefixFlag: UInt32 {
       _SwiftKeyPathBufferHeader_HasReferencePrefixFlag
     }
   }
 }
 
-internal enum KeyPathStructOrClass {
+enum KeyPathStructOrClass {
   case `struct`, `class`
 }

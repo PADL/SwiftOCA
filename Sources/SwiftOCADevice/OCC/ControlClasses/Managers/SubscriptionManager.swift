@@ -265,16 +265,16 @@ public enum OcaSubscriptionManagerSubscription: Codable, Equatable, Hashable, Se
   var event: OcaEvent {
     switch self {
     case let .subscription(subscription):
-      return subscription.event
+      subscription.event
     case let .subscription2(subscription):
-      return subscription.event
+      subscription.event
     case let .propertyChangeSubscription(propertyChangeSubscription):
-      return OcaEvent(
+      OcaEvent(
         emitterONo: propertyChangeSubscription.emitter,
         eventID: OcaPropertyChangedEventID
       )
     case let .propertyChangeSubscription2(propertyChangeSubscription):
-      return OcaEvent(
+      OcaEvent(
         emitterONo: propertyChangeSubscription.emitter,
         eventID: OcaPropertyChangedEventID
       )
@@ -297,52 +297,52 @@ public enum OcaSubscriptionManagerSubscription: Codable, Equatable, Hashable, Se
   var subscriber: OcaMethod? {
     switch self {
     case let .subscription(subscription):
-      return subscription.subscriber
+      subscription.subscriber
     case .subscription2:
-      return nil
+      nil
     case let .propertyChangeSubscription(propertyChangeSubscription):
-      return propertyChangeSubscription.subscriber
+      propertyChangeSubscription.subscriber
     case .propertyChangeSubscription2:
-      return nil
+      nil
     }
   }
 
   var subscriberContext: OcaBlob {
     switch self {
     case let .subscription(subscription):
-      return subscription.subscriberContext
+      subscription.subscriberContext
     case .subscription2:
-      return LengthTaggedData()
+      LengthTaggedData()
     case let .propertyChangeSubscription(propertyChangeSubscription):
-      return propertyChangeSubscription.subscriberContext
+      propertyChangeSubscription.subscriberContext
     case .propertyChangeSubscription2:
-      return LengthTaggedData()
+      LengthTaggedData()
     }
   }
 
   var notificationDeliveryMode: OcaNotificationDeliveryMode {
     switch self {
     case let .subscription(subscription):
-      return subscription.notificationDeliveryMode
+      subscription.notificationDeliveryMode
     case let .subscription2(subscription):
-      return subscription.notificationDeliveryMode
+      subscription.notificationDeliveryMode
     case let .propertyChangeSubscription(propertyChangeSubscription):
-      return propertyChangeSubscription.notificationDeliveryMode
+      propertyChangeSubscription.notificationDeliveryMode
     case let .propertyChangeSubscription2(propertyChangeSubscription):
-      return propertyChangeSubscription.notificationDeliveryMode
+      propertyChangeSubscription.notificationDeliveryMode
     }
   }
 
   var destinationInformation: OcaNetworkAddress {
     switch self {
     case let .subscription(subscription):
-      return subscription.destinationInformation
+      subscription.destinationInformation
     case let .subscription2(subscription):
-      return subscription.destinationInformation
+      subscription.destinationInformation
     case let .propertyChangeSubscription(propertyChangeSubscription):
-      return propertyChangeSubscription.destinationInformation
+      propertyChangeSubscription.destinationInformation
     case let .propertyChangeSubscription2(propertyChangeSubscription):
-      return propertyChangeSubscription.destinationInformation
+      propertyChangeSubscription.destinationInformation
     }
   }
 }

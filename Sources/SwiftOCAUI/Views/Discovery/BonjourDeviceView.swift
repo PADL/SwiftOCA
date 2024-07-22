@@ -43,7 +43,7 @@ public struct OcaBonjourDeviceView: View {
         connection = try await Ocp1Connection(service)
         if let connection {
           try await connection.connect()
-          self.isConnected = true
+          isConnected = true
         }
       } catch is CancellationError {
       } catch {
@@ -53,7 +53,7 @@ public struct OcaBonjourDeviceView: View {
     }.onDisappear {
       Task { @OcaConnection in
         if let connection {
-          self.isConnected = false
+          isConnected = false
           try await connection.disconnect()
           self.connection = nil
         }

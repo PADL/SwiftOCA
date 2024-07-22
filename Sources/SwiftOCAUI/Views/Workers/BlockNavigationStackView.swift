@@ -46,7 +46,7 @@ struct OcaBlockNavigationStackView: OcaView {
               }
             }
             .navigationDestination(for: OcaONo.self) { oNo in
-              if let member = self.membersMap![oNo] {
+              if let member = membersMap![oNo] {
                 OcaDetailView(member)
               }
             }
@@ -55,12 +55,12 @@ struct OcaBlockNavigationStackView: OcaView {
           Grid {
             Group {
               GridRow {
-                ForEach(members, id: \.self.id) { member in
+                ForEach(members, id: \.id) { member in
                   OcaNavigationLabel(member)
                 }
               }
               GridRow {
-                ForEach(members, id: \.self.id) { member in
+                ForEach(members, id: \.id) { member in
                   OcaDetailView(member)
                 }
               }
@@ -68,7 +68,7 @@ struct OcaBlockNavigationStackView: OcaView {
           }
         } else {
           VStack {
-            ForEach(members, id: \.self.id) { member in
+            ForEach(members, id: \.id) { member in
               OcaPropertyTableView(member)
                 .frame(maxHeight: .infinity)
                 .scrollDisabled(true)
