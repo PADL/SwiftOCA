@@ -29,6 +29,8 @@ import AsyncExtensions
 import FlyingSocks
 @_spi(Private)
 import func FlyingSocks.withThrowingTimeout
+@_spi(Private)
+import func FlyingSocks.withIdentifiableThrowingContinuation
 import Foundation
 import Logging
 import SwiftOCA
@@ -134,7 +136,7 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
     }
   }
 
-  var waiting: Set<Continuation> = []
+  var waiting = [Continuation.ID: Continuation]()
   private(set) var socket: Socket? {
     didSet { isListeningDidUpdate(from: oldValue != nil) }
   }
@@ -259,31 +261,42 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
 extension Ocp1FlyingSocksDeviceEndpoint {
   public var isListening: Bool { socket != nil }
 
-  func waitUntilListening(timeout: Duration = .seconds(5)) async throws {
-    try await SwiftOCA.withThrowingTimeout(of: timeout) {
+  func waitUntilListening(timeout: TimeInterval = 5) async throws {
+    try await withThrowingTimeout(seconds: timeout) {
       try await self.doWaitUntilListening()
     }
   }
 
   private func doWaitUntilListening() async throws {
     guard !isListening else { return }
-    let continuation = Continuation()
-    waiting.insert(continuation)
-    defer { waiting.remove(continuation) }
-    return try await continuation.value
+    try await withIdentifiableThrowingContinuation(isolation: OcaDevice.shared) {
+      appendContinuation($0)
+    } onCancel: { id in
+      Task { await self.cancelContinuation(with: id) }
+    }
+  }
+
+  private func appendContinuation(_ continuation: Continuation) {
+    waiting[continuation.id] = continuation
+  }
+
+  private func cancelContinuation(with id: Continuation.ID) {
+    if let continuation = waiting.removeValue(forKey: id) {
+      continuation.resume(throwing: CancellationError())
+    }
   }
 
   func isListeningDidUpdate(from previous: Bool) {
     guard isListening else { return }
     let waiting = waiting
-    self.waiting = []
+    self.waiting = [:]
 
-    for continuation in waiting {
+    for continuation in waiting.values {
       continuation.resume()
     }
   }
 
-  typealias Continuation = CancellingContinuation<(), Never>
+  typealias Continuation = IdentifiableContinuation<(), any Error>
 }
 
 #endif
