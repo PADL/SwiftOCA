@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import AsyncAlgorithms
 import AsyncExtensions
 import Foundation
 import Logging
@@ -228,20 +229,18 @@ extension Ocp1ControllerInternal {
 }
 
 extension OcaDevice {
-  typealias GetChunk = @Sendable (Int) async throws -> [UInt8]
+  typealias ReadCallback = @Sendable (Int) async throws -> [UInt8]
 
-  #if canImport(FlyingSocks)
-  static func unsafeReceiveMessages(_ getChunk: (Int) async throws -> [UInt8]) async throws
-    -> [Ocp1ControllerInternal.ControllerMessage]
+  static func asyncReceiveMessages(_ read: (Int) async throws -> [UInt8]) async throws
+    -> AsyncSyncSequence<[Ocp1ControllerInternal.ControllerMessage]>
   {
-    try await receiveMessages(getChunk)
+    try await receiveMessages(read).async
   }
-  #endif
 
-  static func receiveMessages(_ getChunk: GetChunk) async throws
+  static func receiveMessages(_ read: ReadCallback) async throws
     -> [Ocp1ControllerInternal.ControllerMessage]
   {
-    var messagePduData = try await getChunk(Ocp1Connection.MinimumPduSize)
+    var messagePduData = try await read(Ocp1Connection.MinimumPduSize)
 
     guard messagePduData.count != 0 else {
       // 0 length on EOF
@@ -260,7 +259,7 @@ extension OcaDevice {
     }
 
     let bytesLeft = Int(pduSize) - (Ocp1Connection.MinimumPduSize - 1)
-    messagePduData += try await getChunk(bytesLeft)
+    messagePduData += try await read(bytesLeft)
 
     var messagePdus = [Data]()
     let messageType = try Ocp1Connection.decodeOcp1MessagePdu(

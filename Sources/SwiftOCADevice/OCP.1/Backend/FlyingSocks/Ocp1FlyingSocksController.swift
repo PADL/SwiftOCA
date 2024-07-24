@@ -143,18 +143,19 @@ private extension AsyncThrowingStream
   where Element == AsyncSyncSequence<[Ocp1ControllerInternal.ControllerMessage]>,
   Failure == Error
 {
-  static func decodingMessages<S: AsyncChunkedSequence>(from bytes: S) -> Self
-    where S.Element == UInt8
-  {
+  static func decodingMessages(from bytes: some AsyncBufferedSequence<UInt8>) -> Self {
     AsyncThrowingStream<
       AsyncSyncSequence<[Ocp1ControllerInternal.ControllerMessage]>,
       Error
     > {
       do {
         var iterator = bytes.makeAsyncIterator()
-        return try await OcaDevice.unsafeReceiveMessages { count in
-          try await iterator.nextChunk(count: count) ?? []
-        }.async
+        return try await OcaDevice.asyncReceiveMessages { count in
+          guard let buffer = try await iterator.nextBuffer(suggested: count) else {
+            throw Ocp1Error.notConnected // EOF on zero bytes
+          }
+          return Array(buffer)
+        }
       } catch Ocp1Error.pduTooShort {
         return nil
       } catch SocketError.disconnected {
