@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		D301C6772BF0576200488B99 /* UnsafeMutablePointer+PropertyBasePointer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D301C6762BF0576200488B99 /* UnsafeMutablePointer+PropertyBasePointer.swift */; };
+		D30233292C5092EB001CD254 /* LogSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30233282C5092EB001CD254 /* LogSliderView.swift */; };
+		D302332B2C5093B9001CD254 /* Float32ActuatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D302332A2C5093B9001CD254 /* Float32ActuatorView.swift */; };
 		D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */; };
 		D30349D62BBB65E90080FF09 /* Frequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349D52BBB65E90080FF09 /* Frequency.swift */; };
 		D30349D82BBB66460080FF09 /* Frequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30349D72BBB66460080FF09 /* Frequency.swift */; };
@@ -318,6 +320,8 @@
 
 /* Begin PBXFileReference section */
 		D301C6762BF0576200488B99 /* UnsafeMutablePointer+PropertyBasePointer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnsafeMutablePointer+PropertyBasePointer.swift"; sourceTree = "<group>"; };
+		D30233282C5092EB001CD254 /* LogSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSliderView.swift; sourceTree = "<group>"; };
+		D302332A2C5093B9001CD254 /* Float32ActuatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Float32ActuatorView.swift; sourceTree = "<group>"; };
 		D3028C1D2A418BAE00B8DB42 /* BonjourDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDeviceView.swift; sourceTree = "<group>"; };
 		D30349D52BBB65E90080FF09 /* Frequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Frequency.swift; sourceTree = "<group>"; };
 		D30349D72BBB66460080FF09 /* Frequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Frequency.swift; sourceTree = "<group>"; };
@@ -1044,6 +1048,7 @@
 				D3DA69FD2A427C2F001250A1 /* BooleanActuatorView.swift */,
 				D3E6E2802A43B33D00BF7095 /* PolarityView.swift */,
 				D3E6E2922A441D8000BF7095 /* PanBalanceView.swift */,
+				D302332A2C5093B9001CD254 /* Float32ActuatorView.swift */,
 				D3E6E2892A43DB4200BF7095 /* GainView.swift */,
 			);
 			path = Actuators;
@@ -1378,6 +1383,7 @@
 				D3E6E2822A43B66D00BF7095 /* VariableSliderView.swift */,
 				D3E6E2902A441C4A00BF7095 /* DiscreteSliderView.swift */,
 				D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */,
+				D30233282C5092EB001CD254 /* LogSliderView.swift */,
 			);
 			path = Utility;
 			sourceTree = "<group>";
@@ -1944,6 +1950,7 @@
 				D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */,
 				D3E6E2832A43B66D00BF7095 /* VariableSliderView.swift in Sources */,
 				D3E6E29E2A443CF100BF7095 /* SystemToggleStyle.swift in Sources */,
+				D30233292C5092EB001CD254 /* LogSliderView.swift in Sources */,
 				D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */,
 				D3DA69E42A3DCA75001250A1 /* NavigationLabel.swift in Sources */,
 				D3DA69EB2A3DCD60001250A1 /* BlockNavigationStackView.swift in Sources */,
@@ -1958,6 +1965,7 @@
 				D3DA69E62A3DCAA5001250A1 /* Array+Extras.swift in Sources */,
 				D3E6E2882A43BD1900BF7095 /* OcaDB+Linear.swift in Sources */,
 				D3E6E2572A3C550800BF7095 /* RefreshableToInitialState.swift in Sources */,
+				D302332B2C5093B9001CD254 /* Float32ActuatorView.swift in Sources */,
 				D3DA69F42A3DF988001250A1 /* EnvironmentValues.swift in Sources */,
 				D3DA69F02A3DEE4E001250A1 /* PropertyTableView.swift in Sources */,
 				D3E6E2932A441D8000BF7095 /* PanBalanceView.swift in Sources */,

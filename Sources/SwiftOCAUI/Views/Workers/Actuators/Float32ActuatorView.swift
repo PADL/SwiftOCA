@@ -17,22 +17,22 @@
 import SwiftOCA
 import SwiftUI
 
-extension OcaGain: OcaViewRepresentable {
+extension OcaFloat32Actuator: OcaViewRepresentable {
   public var viewType: any OcaView.Type {
-    OcaGainView.self
+    OcaFloat32ActuatorView.self
   }
 }
 
-public struct OcaGainView: OcaView {
+public struct OcaFloat32ActuatorView: OcaView {
   @StateObject
-  var object: OcaGain
+  var object: OcaFloat32Actuator
 
   public init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaGain)
+    _object = StateObject(wrappedValue: object as! OcaFloat32Actuator)
   }
 
   public var body: some View {
-    OcaLogSliderView(value: object.$gain.binding.value)
-      .showProgressIfWaiting(object.gain)
+    OcaLogSliderView(value: object.$setting.binding.value)
+      .showProgressIfWaiting(object.setting)
   }
 }
