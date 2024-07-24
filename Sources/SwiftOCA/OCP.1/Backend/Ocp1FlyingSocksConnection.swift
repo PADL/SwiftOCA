@@ -158,7 +158,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
 
   override public func read(_ length: Int) async throws -> Data {
     try await withMappedError { socket in
-      try await Data(socket.read(atMost: length))
+      try await Data(socket.read(bytes: length))
     }
   }
 
