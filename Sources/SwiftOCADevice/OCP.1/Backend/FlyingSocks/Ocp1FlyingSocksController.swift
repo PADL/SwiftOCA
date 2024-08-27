@@ -167,4 +167,12 @@ private extension AsyncThrowingStream
   }
 }
 
+extension OcaDevice {
+  static func asyncReceiveMessages(_ read: (Int) async throws -> [UInt8]) async throws
+    -> AsyncSyncSequence<[Ocp1ControllerInternal.ControllerMessage]>
+  {
+    try await receiveMessages(read).async
+  }
+}
+
 #endif

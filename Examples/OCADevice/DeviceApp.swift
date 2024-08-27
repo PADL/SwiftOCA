@@ -32,6 +32,9 @@ public enum DeviceApp {
     listenAddress.sin_family = sa_family_t(AF_INET)
     listenAddress.sin_addr.s_addr = INADDR_ANY
     listenAddress.sin_port = port.bigEndian
+    #if os(macOS) || os(iOS)
+    listenAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+    #endif
 
     var listenAddressData = Data()
     withUnsafeBytes(of: &listenAddress) { bytes in
@@ -56,6 +59,7 @@ public enum DeviceApp {
     listenAddress.sin_family = sa_family_t(AF_INET)
     listenAddress.sin_addr.s_addr = INADDR_ANY
     listenAddress.sin_port = (port + 1).bigEndian
+    listenAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
 
     listenAddressData = Data()
     withUnsafeBytes(of: &listenAddress) { bytes in

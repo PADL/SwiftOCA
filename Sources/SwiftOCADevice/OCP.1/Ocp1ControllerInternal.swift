@@ -231,12 +231,6 @@ extension Ocp1ControllerInternal {
 extension OcaDevice {
   typealias ReadCallback = @Sendable (Int) async throws -> [UInt8]
 
-  static func asyncReceiveMessages(_ read: (Int) async throws -> [UInt8]) async throws
-    -> AsyncSyncSequence<[Ocp1ControllerInternal.ControllerMessage]>
-  {
-    try await receiveMessages(read).async
-  }
-
   static func receiveMessages(_ read: ReadCallback) async throws
     -> [Ocp1ControllerInternal.ControllerMessage]
   {

@@ -27,10 +27,6 @@
 
 import AsyncExtensions
 import FlyingSocks
-@_spi(Private)
-import func FlyingSocks.withThrowingTimeout
-@_spi(Private)
-import func FlyingSocks.withIdentifiableThrowingContinuation
 import Foundation
 import Logging
 import SwiftOCA
@@ -48,26 +44,44 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   let pool: AsyncSocketPool
 
-  private let address: sockaddr_storage
+  private let address: any SocketAddress
   let timeout: Duration
   let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksDeviceEndpoint")
   let device: OcaDevice
 
   private var _controllers = [Ocp1FlyingSocksController]()
   private var endpointRegistrationHandle: OcaDeviceEndpointRegistrar.Handle?
+  private(set) var socket: Socket?
+
+  private nonisolated var family: Int32 {
+    switch address {
+    case is sockaddr_in: return AF_INET
+    case is sockaddr_in6: return AF_INET6
+    case is sockaddr_un: return AF_UNIX
+    default: return AF_UNSPEC
+    }
+  }
 
   public convenience init(
-    address: Data,
+    address addressData: Data,
     timeout: Duration = .seconds(15),
     device: OcaDevice = OcaDevice.shared
   ) async throws {
-    var storage = sockaddr_storage()
-    _ = withUnsafeMutableBytes(of: &storage) { dst in
-      address.withUnsafeBytes { src in
-        memcpy(dst.baseAddress!, src.baseAddress!, src.count)
+    let address: any SocketAddress = try addressData.withUnsafeBytes { addressBytes in
+      try addressBytes.withMemoryRebound(to: sockaddr.self) { address in
+        switch address.baseAddress?.pointee.sa_family {
+        case sa_family_t(AF_INET): return address.baseAddress!
+          .withMemoryRebound(to: sockaddr_in.self, capacity: 1) { $0.pointee }
+        case sa_family_t(AF_INET6): return address.baseAddress!
+          .withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { $0.pointee }
+        case sa_family_t(AF_UNIX): return address.baseAddress!
+          .withMemoryRebound(to: sockaddr_un.self, capacity: 1) { $0.pointee }
+        default: throw SocketError.unsupportedAddress
+        }
       }
     }
-    try await self.init(address: storage, timeout: timeout, device: device)
+
+    try await self.init(address: address, timeout: timeout, device: device)
   }
 
   public convenience init(
@@ -80,7 +94,7 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   private init(
-    address: sockaddr_storage,
+    address: some SocketAddress,
     timeout: Duration = .seconds(15),
     device: OcaDevice = OcaDevice.shared
   ) async throws {
@@ -136,11 +150,6 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
     }
   }
 
-  var waiting = [Continuation.ID: Continuation]()
-  private(set) var socket: Socket? {
-    didSet { isListeningDidUpdate(from: oldValue != nil) }
-  }
-
   private func shutdown(timeout: Duration = .seconds(0)) async {
     if let endpointRegistrationHandle {
       try? await OcaDeviceEndpointRegistrar.shared
@@ -151,7 +160,7 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   func makeSocketAndListen() throws -> Socket {
-    let socket = try Socket(domain: Int32(address.ss_family))
+    let socket = try Socket(domain: family)
     try socket.setValue(true, for: .localAddressReuse)
     #if canImport(Darwin)
     try socket.setValue(true, for: .noSIGPIPE)
@@ -234,7 +243,7 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
   public nonisolated var port: UInt16 {
     var address = address
     return UInt16(bigEndian: withUnsafePointer(to: &address) { address in
-      switch Int32(address.pointee.ss_family) {
+      switch family {
       case AF_INET:
         address.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
           sin.pointee.sin_port
@@ -256,47 +265,6 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
   func remove(controller: ControllerType) async {
     _controllers.removeAll(where: { $0 == controller })
   }
-}
-
-extension Ocp1FlyingSocksDeviceEndpoint {
-  public var isListening: Bool { socket != nil }
-
-  func waitUntilListening(timeout: TimeInterval = 5) async throws {
-    try await withThrowingTimeout(seconds: timeout) {
-      try await self.doWaitUntilListening()
-    }
-  }
-
-  private func doWaitUntilListening() async throws {
-    guard !isListening else { return }
-    try await withIdentifiableThrowingContinuation(isolation: OcaDevice.shared) {
-      appendContinuation($0)
-    } onCancel: { id in
-      Task { await self.cancelContinuation(with: id) }
-    }
-  }
-
-  private func appendContinuation(_ continuation: Continuation) {
-    waiting[continuation.id] = continuation
-  }
-
-  private func cancelContinuation(with id: Continuation.ID) {
-    if let continuation = waiting.removeValue(forKey: id) {
-      continuation.resume(throwing: CancellationError())
-    }
-  }
-
-  func isListeningDidUpdate(from previous: Bool) {
-    guard isListening else { return }
-    let waiting = waiting
-    self.waiting = [:]
-
-    for continuation in waiting.values {
-      continuation.resume()
-    }
-  }
-
-  typealias Continuation = IdentifiableContinuation<(), any Error>
 }
 
 #endif
