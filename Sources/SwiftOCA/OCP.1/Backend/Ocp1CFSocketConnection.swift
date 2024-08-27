@@ -63,8 +63,7 @@ private func mappedLastErrno() -> Error {
   }
 }
 
-@_spi(SwiftOCAPrivate)
-public final class _CFSocketWrapper: @unchecked
+package final class _CFSocketWrapper: @unchecked
 Sendable, CustomStringConvertible, Hashable {
   public static func == (lhs: _CFSocketWrapper, rhs: _CFSocketWrapper) -> Bool {
     lhs.cfSocket.nativeHandle == rhs.cfSocket.nativeHandle
@@ -460,8 +459,7 @@ public final class Ocp1CFSocketTCPConnection: Ocp1CFSocketConnection {
   }
 }
 
-@_spi(SwiftOCAPrivate)
-public extension Data {
+package extension Data {
   var cfData: CFData {
     #if canImport(Darwin)
     return self as NSData
@@ -485,8 +483,7 @@ fileprivate extension CFRunLoopMode {
 }
 #endif
 
-@_spi(SwiftOCAPrivate)
-public extension SocketAddress {
+package extension SocketAddress {
   func asData() -> Data {
     withSockAddr { sa in
       withUnsafeBytes(of: sa.pointee) {
@@ -499,8 +496,7 @@ public extension SocketAddress {
 extension CFSocket: @unchecked
 Sendable {}
 
-@_spi(SwiftOCAPrivate)
-public extension CFSocket {
+package extension CFSocket {
   var address: AnySocketAddress {
     get throws {
       guard let address = CFSocketCopyAddress(self) as? Data else {

@@ -18,8 +18,7 @@ import AnyCodable
 import AsyncExtensions
 import Foundation
 
-@_spi(SwiftOCAPrivate)
-public extension JSONEncoder {
+package extension JSONEncoder {
   func reencodeAsValidJSONObject<Value: Codable>(_ value: some Codable) throws -> Value {
     let data = try encode(value)
     return try JSONDecoder().decode(Value.self, from: data)

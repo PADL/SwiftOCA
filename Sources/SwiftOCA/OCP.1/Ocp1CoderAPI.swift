@@ -74,15 +74,13 @@ extension OcaArray2D: Ocp1Array2DRepresentable where Element: Codable {
 
 // private API for SwiftOCADevice
 
-@_spi(SwiftOCAPrivate)
-public extension Encoder {
+package extension Encoder {
   var _isOcp1Encoder: Bool {
     self is Ocp1EncoderImpl
   }
 }
 
-@_spi(SwiftOCAPrivate)
-public extension Decoder {
+package extension Decoder {
   var _isOcp1Decoder: Bool {
     self is Ocp1DecoderImpl
   }
@@ -91,8 +89,7 @@ public extension Decoder {
 public protocol Ocp1LongList {}
 public protocol Ocp1ParametersReflectable: Codable {}
 
-@_spi(SwiftOCAPrivate)
-public func _ocp1ParameterCount(type: (some Any).Type) -> OcaUint8 {
+package func _ocp1ParameterCount(type: (some Any).Type) -> OcaUint8 {
   if type is Ocp1ParametersReflectable.Type {
     var count: OcaUint8 = 0
     _forEachField(of: type) { _, _, _, _ in
@@ -107,7 +104,6 @@ public func _ocp1ParameterCount(type: (some Any).Type) -> OcaUint8 {
   }
 }
 
-@_spi(SwiftOCAPrivate)
-public func _ocp1ParameterCount(value: some Any) -> OcaUint8 {
+package func _ocp1ParameterCount(value: some Any) -> OcaUint8 {
   _ocp1ParameterCount(type: type(of: value))
 }

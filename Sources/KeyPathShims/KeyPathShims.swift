@@ -21,8 +21,7 @@ class AnyKeyPath {
   final var _kvcKeyPathStringPtr: UnsafePointer<CChar>?
 }
 
-public extension Swift.AnyKeyPath {
-  @_spi(SwiftOCAPrivate)
+package extension Swift.AnyKeyPath {
   static func _create(
     capacityInBytes bytes: Int,
     initializedBy body: (UnsafeMutableRawBufferPointer) -> ()

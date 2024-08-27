@@ -11,7 +11,6 @@
 //===----------------------------------------------------------------------===//
 
 @_implementationOnly
-@_spi(SwiftOCAPrivate)
 import KeyPathShims
 
 @_implementationOnly

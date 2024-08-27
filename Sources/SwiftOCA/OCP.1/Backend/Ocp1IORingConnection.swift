@@ -124,8 +124,7 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
     SOCK_DGRAM
   }
 
-  @_spi(SwiftOCAPrivate)
-  public static let MaximumPduSize = 1500
+  package static let MaximumPduSize = 1500
 
   override public func read(_ length: Int) async throws -> Data {
     // read maximum PDU size
