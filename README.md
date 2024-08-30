@@ -18,6 +18,8 @@ All APIs are async-safe and support both macOS and Linux: on macOS, [FlyingFox](
 
 Example code can be found in [Examples](Examples).
 
+[ocacli](https://github.com/PADL/ocacli) is a command-line utility for managing OCA devices that is implemented using SwiftOCA.
+
 Support for AES70-2023 is in progress: adding new classes is straightforward, using the `@OcaProperty` and `@OcaDeviceProperty` wrappers. For a class with only properties, it is only necessary to declare the property and accessor IDs, and all logic including event notification will be handled at runtime. For custom logic, override the `handleCommand(from:)` method. Custom access control can be implemented at the object or device level by overriding `ensureReadable(by:command)` and `ensureWritable(by:command)`.
 
 Serialization to JSON types is provided using the `jsonObject` and `deserialize(jsonObject:)` methods, which walk the list of declared properties, encoding non-JSON types using Codable. 
