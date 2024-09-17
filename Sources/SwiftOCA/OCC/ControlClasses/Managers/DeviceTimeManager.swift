@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaDeviceTimeManager: OcaManager {
+open class OcaDeviceTimeManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.10") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 

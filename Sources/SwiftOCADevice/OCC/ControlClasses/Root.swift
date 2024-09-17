@@ -27,8 +27,7 @@ extension OcaController {
 }
 
 @OcaDevice
-open class OcaRoot: CustomStringConvertible, Codable, @unchecked
-Sendable, OcaKeyPathMarkerProtocol {
+open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarkerProtocol {
   open nonisolated class var classID: OcaClassID { OcaClassID("1") }
   open nonisolated class var classVersion: OcaClassVersionNumber { 2 }
 

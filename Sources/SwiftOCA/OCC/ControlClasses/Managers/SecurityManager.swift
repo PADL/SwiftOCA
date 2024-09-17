@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaSecurityManager: OcaManager {
+open class OcaSecurityManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.2") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 

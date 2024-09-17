@@ -21,7 +21,7 @@ public enum OcaResetCause: OcaUint8, Sendable, Codable, CaseIterable {
   case externalRequest = 3
 }
 
-open class OcaDeviceManager: OcaManager {
+open class OcaDeviceManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.1") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 

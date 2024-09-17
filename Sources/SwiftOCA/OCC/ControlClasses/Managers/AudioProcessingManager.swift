@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaAudioProcessingManager: OcaManager {
+open class OcaAudioProcessingManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.9") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 

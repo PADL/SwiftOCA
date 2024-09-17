@@ -14,6 +14,6 @@
 // limitations under the License.
 //
 
-open class OcaSignalOutput: OcaActuator {
+open class OcaSignalOutput: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.19") }
 }

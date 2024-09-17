@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaIdentificationSensor: OcaSensor {
+open class OcaIdentificationSensor: OcaSensor, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.6") }
 
   public static let identifyEventID = OcaEventID(defLevel: 4, eventIndex: 1)

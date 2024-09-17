@@ -55,10 +55,10 @@ public final class Ocp1FlyingSocksDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   private nonisolated var family: Int32 {
     switch address {
-    case is sockaddr_in: return AF_INET
-    case is sockaddr_in6: return AF_INET6
-    case is sockaddr_un: return AF_UNIX
-    default: return AF_UNSPEC
+    case is sockaddr_in: AF_INET
+    case is sockaddr_in6: AF_INET6
+    case is sockaddr_un: AF_UNIX
+    default: AF_UNSPEC
     }
   }
 

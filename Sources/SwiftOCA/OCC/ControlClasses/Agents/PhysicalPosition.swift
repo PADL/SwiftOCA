@@ -92,7 +92,7 @@ public struct OcaPositionDescriptor: Codable, Sendable, Comparable {
   }
 }
 
-open class OcaPhysicalPosition: OcaAgent {
+open class OcaPhysicalPosition: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.17") }
 
   override open class var classVersion: OcaClassVersionNumber { 1 }

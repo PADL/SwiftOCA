@@ -16,7 +16,7 @@
 
 import Foundation
 
-open class OcaCounterSetAgent: OcaAgent {
+open class OcaCounterSetAgent: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.19") }
 
   @OcaProperty(

@@ -14,6 +14,6 @@
 // limitations under the License.
 //
 
-open class OcaManager: OcaRoot {
+open class OcaManager: OcaRoot, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3") }
 }

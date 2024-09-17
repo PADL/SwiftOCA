@@ -10,11 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-@_implementationOnly
-import KeyPathShims
-
-@_implementationOnly
-import SwiftShims
+internal import KeyPathShims
+internal import SwiftShims
 
 @_silgen_name("swift_isClassType")
 func _isClassType(_: Any.Type) -> Bool

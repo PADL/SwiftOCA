@@ -46,8 +46,8 @@ package let SOCK_DGRAM: Int32 = Darwin.SOCK_DGRAM
 // @_implementationOnly
 import CoreFoundation
 
-package let SOCK_STREAM = Int32(CoreFoundation.SOCK_STREAM.rawValue)
-package let SOCK_DGRAM = Int32(CoreFoundation.SOCK_DGRAM.rawValue)
+package let SOCK_STREAM = Int32(Glibc.SOCK_STREAM.rawValue)
+package let SOCK_DGRAM = Int32(Glibc.SOCK_DGRAM.rawValue)
 #endif
 
 public let OcaTcpConnectionPrefix = "oca/tcp"

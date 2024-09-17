@@ -136,7 +136,7 @@ Sendable, CustomStringConvertible, Hashable {
       return
     }
 
-    Task {
+    Task { @Sendable in
       if isDatagram {
         let address = try! AnySocketAddress(bytes: Array(address!.data))
         await channel.send(.message((address, data)))

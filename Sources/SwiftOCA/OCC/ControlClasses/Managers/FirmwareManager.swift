@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaFirmwareManager: OcaManager {
+open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.3") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 

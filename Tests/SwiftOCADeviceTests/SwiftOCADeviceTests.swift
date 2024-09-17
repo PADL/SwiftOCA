@@ -18,7 +18,9 @@
 @testable import SwiftOCADevice
 import XCTest
 
-final class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator, OcaGroupPeerToPeerMember {
+final class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator, OcaGroupPeerToPeerMember,
+  @unchecked Sendable
+{
   weak var group: SwiftOCADevice.OcaGroup<MyBooleanActuator>?
 
   override class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
@@ -26,7 +28,7 @@ final class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator, OcaGroupPeerTo
   func set(to value: Bool) async { setting = value }
 }
 
-final class _MyBooleanActuator: SwiftOCA.OcaBooleanActuator {
+final class _MyBooleanActuator: SwiftOCA.OcaBooleanActuator, @unchecked Sendable {
   override class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
 }
 

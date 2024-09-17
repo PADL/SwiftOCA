@@ -27,8 +27,9 @@ protocol ObservableObject {} // placeholder
 import SwiftUI
 #endif
 
-open class OcaRoot: CustomStringConvertible, ObservableObject, @unchecked
-Sendable, OcaKeyPathMarkerProtocol {
+open class OcaRoot: CustomStringConvertible, ObservableObject, @unchecked Sendable,
+  OcaKeyPathMarkerProtocol
+{
   typealias Root = OcaRoot
 
   public internal(set) weak var connectionDelegate: Ocp1Connection?

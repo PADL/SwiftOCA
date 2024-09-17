@@ -19,7 +19,7 @@ public enum OcaSubscriptionManagerState: OcaUint8, Codable, Sendable, CaseIterab
   case eventsDisabled = 2
 }
 
-open class OcaSubscriptionManager: OcaManager {
+open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.4") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 

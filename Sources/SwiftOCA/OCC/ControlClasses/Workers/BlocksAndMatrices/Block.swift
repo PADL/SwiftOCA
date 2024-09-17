@@ -49,7 +49,7 @@ public struct OcaBlockConfigurability: OptionSet, Codable, Sendable {
   }
 }
 
-open class OcaBlock: OcaWorker {
+open class OcaBlock: OcaWorker, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.3") }
 
   @OcaProperty(

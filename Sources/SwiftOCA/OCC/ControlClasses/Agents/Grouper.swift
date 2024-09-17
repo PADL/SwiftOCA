@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaGrouper: OcaAgent {
+open class OcaGrouper: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.2") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 

@@ -23,7 +23,7 @@ import SwiftOCA
 /// OcaControllerPrivate should eventually be merged into OcaController once we are ready to
 /// support out-of-tree endpoints
 
-protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, AnyActor {
+protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, Actor {
   associatedtype Endpoint: OcaDeviceEndpointPrivate
 
   nonisolated var connectionPrefix: String { get }

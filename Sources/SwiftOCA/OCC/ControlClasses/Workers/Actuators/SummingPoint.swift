@@ -14,6 +14,6 @@
 // limitations under the License.
 //
 
-open class OcaSummingPoint: OcaActuator {
+open class OcaSummingPoint: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.22") }
 }

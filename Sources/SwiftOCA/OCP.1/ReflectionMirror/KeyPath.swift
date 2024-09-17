@@ -33,8 +33,7 @@
 // SOFTWARE.
 //
 
-@_implementationOnly
-import SwiftShims
+internal import SwiftShims
 
 // MARK: Implementation details
 

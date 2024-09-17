@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-open class OcaGain: OcaActuator {
+open class OcaGain: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.5") }
 
   @OcaBoundedProperty(
