@@ -33,7 +33,11 @@
 // SOFTWARE.
 //
 
+#if swift(>=6.0)
 internal import SwiftShims
+#else
+@_implementationOnly import SwiftShims
+#endif
 
 // MARK: Implementation details
 

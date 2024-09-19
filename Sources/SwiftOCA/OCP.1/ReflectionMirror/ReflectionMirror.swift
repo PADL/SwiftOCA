@@ -10,8 +10,13 @@
 //
 //===----------------------------------------------------------------------===//
 
+#if swift(>=6.0)
 internal import KeyPathShims
 internal import SwiftShims
+#else
+@_implementationOnly import SwiftShims
+@_implementationOnly import KeyPathShims
+#endif
 
 @_silgen_name("swift_isClassType")
 func _isClassType(_: Any.Type) -> Bool
