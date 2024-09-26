@@ -35,7 +35,9 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   let device: OcaDevice
 
   var socket: _CFSocketWrapper?
+  #if canImport(dnssd)
   var endpointRegistrationHandle: OcaDeviceEndpointRegistrar.Handle?
+  #endif
 
   public var controllers: [OcaController] {
     []
@@ -74,9 +76,11 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     try await self.init(address: address, timeout: timeout, device: device)
   }
 
+  #if canImport(dnssd)
   public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
     .none
   }
+  #endif
 
   public nonisolated var port: UInt16 {
     (try? address.port) ?? 0
@@ -84,10 +88,12 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 
   public func run() async throws {
     if port != 0 {
+      #if canImport(dnssd)
       Task {
         endpointRegistrationHandle = try await OcaDeviceEndpointRegistrar.shared
           .register(endpoint: self, device: device)
       }
+      #endif
     } else if address.family == AF_LOCAL {
       try? unlinkDomainSocket()
     }
@@ -163,9 +169,11 @@ public final class Ocp1CFStreamDeviceEndpoint: Ocp1CFDeviceEndpoint,
     try await _CFSocketWrapper(address: address, type: SwiftOCA.SOCK_DGRAM, options: .server)
   }
 
+  #if canImport(dnssd)
   override public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
     .tcp
   }
+  #endif
 
   func add(controller: ControllerType) async {
     _controllers.append(controller)
@@ -252,9 +260,11 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
     try socket.send(data: message.1, to: message.0)
   }
 
+  #if canImport(dnssd)
   override public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
     .udp
   }
+  #endif
 
   func add(controller: ControllerType) async {}
 

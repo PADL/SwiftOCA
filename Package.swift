@@ -24,7 +24,10 @@ let PlatformTargets: [Target]
 PlatformPackageDependencies = [.package(url: "https://github.com/PADL/IORingSwift", branch: "main")]
 
 PlatformTargetDependencies = [
-  "dnssd",
+  .target(
+    name: "dnssd",
+    condition: .when(platforms: [.linux])
+  ),
   .product(
     name: "IORing",
     package: "IORingSwift",

@@ -25,7 +25,7 @@ import CoreFoundation
 import Foundation
 import SocketAddress
 import SystemPackage
-#if os(Linux)
+#if canImport(Glibc)
 import Glibc
 #elseif canImport(Darwin)
 import Darwin
@@ -305,7 +305,7 @@ Sendable, CustomStringConvertible, Hashable {
   private func _write(_ bytes: [UInt8]) throws -> Int {
     let n: Int
 
-    #if os(Linux)
+    #if canImport(Glibc)
     n = Glibc.write(cfSocket.nativeHandle, bytes, bytes.count)
     #else
     n = Darwin.write(cfSocket.nativeHandle, bytes, bytes.count)
@@ -563,10 +563,10 @@ package extension CFSocket {
   func bind(to address: any SocketAddress) throws {
     _ = try address.withSockAddr { sockaddr in
       try Errno.throwingGlobalErrno {
-        #if canImport(Darwin)
-        Darwin.bind(self.nativeHandle, sockaddr, sockaddr.pointee.size)
-        #elseif canImport(Glibc)
+        #if canImport(Glibc)
         Glibc.bind(self.nativeHandle, sockaddr, sockaddr.pointee.size)
+        #elseif canImport(Darwin)
+        Darwin.bind(self.nativeHandle, sockaddr, sockaddr.pointee.size)
         #endif
       }
     }

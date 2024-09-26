@@ -30,7 +30,6 @@ public enum DeviceApp {
   public static func main() async throws {
     var listenAddress = sockaddr_in()
     listenAddress.sin_family = sa_family_t(AF_INET)
-    listenAddress.sin_addr.s_addr = INADDR_ANY
     listenAddress.sin_port = port.bigEndian
     #if os(macOS) || os(iOS)
     listenAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)

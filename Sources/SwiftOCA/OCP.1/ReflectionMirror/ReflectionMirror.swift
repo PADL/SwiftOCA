@@ -14,8 +14,8 @@
 internal import KeyPathShims
 internal import SwiftShims
 #else
-@_implementationOnly import SwiftShims
 @_implementationOnly import KeyPathShims
+@_implementationOnly import SwiftShims
 #endif
 
 @_silgen_name("swift_isClassType")

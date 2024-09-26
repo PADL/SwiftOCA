@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if canImport(dnssd)
+
 import SwiftOCA
 #if canImport(Darwin)
 import Darwin
@@ -214,3 +216,9 @@ public enum DNSServiceError: Int32, Error {
   case policyDenied = -65570
   case notPermitted = -65571
 }
+
+#else
+
+public protocol OcaBonjourRegistrableDeviceEndpoint: OcaDeviceEndpoint {}
+
+#endif
