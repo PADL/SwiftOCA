@@ -43,10 +43,10 @@ public typealias OcaSubscriptionCallback = @Sendable (OcaEvent, Data) async thro
 package let SOCK_STREAM: Int32 = Darwin.SOCK_STREAM
 package let SOCK_DGRAM: Int32 = Darwin.SOCK_DGRAM
 #elseif os(Android)
-import CoreFoundation
+import Android
 
-package let SOCK_STREAM = Int32(Glibc.SOCK_STREAM)
-package let SOCK_DGRAM = Int32(Glibc.SOCK_DGRAM)
+package let SOCK_STREAM = Int32(Android.SOCK_STREAM)
+package let SOCK_DGRAM = Int32(Android.SOCK_DGRAM)
 #elseif canImport(Glibc)
 import CoreFoundation
 

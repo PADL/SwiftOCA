@@ -24,6 +24,13 @@ import SocketAddress
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 import SystemPackage
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#elseif canImport(Android)
+import Android
+#endif
 
 protocol Ocp1CFControllerPrivate: Ocp1ControllerInternal,
   Ocp1ControllerInternalLightweightNotifyingInternal, Actor,

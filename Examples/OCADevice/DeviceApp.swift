@@ -17,6 +17,13 @@
 import Foundation
 import SwiftOCA
 import SwiftOCADevice
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#elseif canImport(Android)
+import Android
+#endif
 
 final class DeviceEventDelegate: OcaDeviceEventDelegate {
   public func onEvent(_ event: SwiftOCA.OcaEvent, parameters: Data) async {}

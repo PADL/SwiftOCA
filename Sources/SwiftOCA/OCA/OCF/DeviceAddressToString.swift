@@ -15,6 +15,13 @@
 //
 
 import Foundation
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#elseif canImport(Android)
+import Android
+#endif
 
 public func deviceAddressToString(_ deviceAddress: Data) -> String {
   deviceAddress.withUnsafeBytes {
