@@ -21,6 +21,8 @@ import SwiftOCA
 import Darwin
 #elseif canImport(Glibc)
 import Glibc
+#elseif canImport(Android)
+import Android
 #endif
 import Dispatch
 import dnssd

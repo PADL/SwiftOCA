@@ -29,6 +29,8 @@ import SystemPackage
 import Glibc
 #elseif canImport(Darwin)
 import Darwin
+#elseif canImport(Android)
+import Android
 #endif
 
 private func cfSocketWrapperDataCallback(
@@ -307,8 +309,12 @@ Sendable, CustomStringConvertible, Hashable {
 
     #if canImport(Glibc)
     n = Glibc.write(cfSocket.nativeHandle, bytes, bytes.count)
-    #else
+    #elseif canImport(Darwin)
     n = Darwin.write(cfSocket.nativeHandle, bytes, bytes.count)
+    #elseif canImport(Android)
+    n = Android.write(cfSocket.nativeHandle, bytes, bytes.count)
+    #else
+    throw Errno.noFunction
     #endif
     if n < 0 { throw Errno(rawValue: errno) }
     return n
@@ -558,20 +564,6 @@ package extension CFSocket {
       CFSocketSendData(self, message.0.asData().cfData, message.1.cfData, 0)
     }
   }
-
-  #if false
-  func bind(to address: any SocketAddress) throws {
-    _ = try address.withSockAddr { sockaddr in
-      try Errno.throwingGlobalErrno {
-        #if canImport(Glibc)
-        Glibc.bind(self.nativeHandle, sockaddr, sockaddr.pointee.size)
-        #elseif canImport(Darwin)
-        Darwin.bind(self.nativeHandle, sockaddr, sockaddr.pointee.size)
-        #endif
-      }
-    }
-  }
-  #endif
 
   func setTcpNoDelay() throws {
     var option = CInt(1)
