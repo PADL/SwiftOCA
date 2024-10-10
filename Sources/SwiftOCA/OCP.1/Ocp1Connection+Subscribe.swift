@@ -25,7 +25,7 @@ public extension Ocp1Connection {
       lhs: Ocp1Connection.SubscriptionCancellable,
       rhs: Ocp1Connection.SubscriptionCancellable
     ) -> Bool {
-      ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+      lhs === rhs
     }
 
     public func hash(into hasher: inout Hasher) {

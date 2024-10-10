@@ -67,7 +67,7 @@ public actor OcaDevice {
   }
 
   public func add(endpoint: OcaDeviceEndpoint) async throws {
-    guard !endpoints.contains(where: { ObjectIdentifier($0) == ObjectIdentifier(endpoint) })
+    guard !endpoints.contains(where: { $0 === endpoint })
     else {
       throw Ocp1Error.endpointAlreadyRegistered
     }
@@ -75,11 +75,11 @@ public actor OcaDevice {
   }
 
   public func remove(endpoint: OcaDeviceEndpoint) async throws {
-    guard endpoints.contains(where: { ObjectIdentifier($0) == ObjectIdentifier(endpoint) })
+    guard endpoints.contains(where: { $0 === endpoint })
     else {
       throw Ocp1Error.endpointNotRegistered
     }
-    endpoints.removeAll { ObjectIdentifier($0) == ObjectIdentifier(endpoint) }
+    endpoints.removeAll { $0 === endpoint }
   }
 
   public func unlockAll(controller: OcaController) async {
