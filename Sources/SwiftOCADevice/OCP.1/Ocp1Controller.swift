@@ -23,7 +23,7 @@ public typealias Ocp1WSDeviceEndpoint = Ocp1FlyingFoxDeviceEndpoint
 #elseif os(Linux)
 typealias Ocp1Controller = Ocp1IORingStreamController
 public typealias Ocp1DeviceEndpoint = Ocp1IORingStreamDeviceEndpoint
-#elseif os(Android)
+#elseif canImport(Android)
 typealias Ocp1Controller = Ocp1CFStreamController
 public typealias Ocp1DeviceEndpoint = Ocp1CFStreamDeviceEndpoint
 #endif

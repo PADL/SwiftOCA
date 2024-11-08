@@ -42,7 +42,7 @@ public typealias OcaSubscriptionCallback = @Sendable (OcaEvent, Data) async thro
 #if canImport(Darwin)
 package let SOCK_STREAM: Int32 = Darwin.SOCK_STREAM
 package let SOCK_DGRAM: Int32 = Darwin.SOCK_DGRAM
-#elseif os(Android)
+#elseif canImport(Android)
 import Android
 
 package let SOCK_STREAM = Int32(Android.SOCK_STREAM)

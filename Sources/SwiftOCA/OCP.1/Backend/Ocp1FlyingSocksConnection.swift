@@ -23,7 +23,7 @@
 //  SOFTWARE.
 //
 
-#if os(macOS) || os(iOS)
+#if os(macOS) || os(iOS) || canImport(Android)
 
 import FlyingSocks
 import Foundation
@@ -152,7 +152,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     let family = Swift.type(of: deviceAddress).family
     let socket = try Socket(domain: Int32(family), type: type)
     if type == SOCK_STREAM, family == AF_INET {
-      try? socket.setValue(true, for: BoolSocketOption(name: TCP_NODELAY), level: IPPROTO_TCP)
+      try? socket.setValue(true, for: BoolSocketOption(name: TCP_NODELAY), level: CInt(IPPROTO_TCP))
     }
     try socket.connect(to: deviceAddress)
     asyncSocket = try await AsyncSocket(
