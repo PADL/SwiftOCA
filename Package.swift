@@ -49,7 +49,7 @@ PlatformProducts = []
 PlatformTargets = []
 #elseif os(macOS) || os(iOS)
 PlatformPackageDependencies = [
-  .package(url: "https://github.com/swhitty/FlyingFox", from: "0.13.0"),
+  .package(url: "https://github.com/swhitty/FlyingFox", branch: "main"),
   .package(
     url: "https://github.com/spacenation/swiftui-sliders.git",
     from: "2.1.0"
@@ -60,12 +60,12 @@ PlatformTargetDependencies = [
   .product(
     name: "FlyingFox",
     package: "FlyingFox",
-    condition: .when(platforms: [.macOS, .iOS])
+    condition: .when(platforms: [.macOS, .iOS, .android])
   ),
   .product(
     name: "FlyingSocks",
     package: "FlyingFox",
-    condition: .when(platforms: [.macOS, .iOS])
+    condition: .when(platforms: [.macOS, .iOS, .android])
   ),
 ]
 
@@ -73,7 +73,7 @@ PlatformProducts = [
   .library(
     name: "SwiftOCAUI",
     targets: ["SwiftOCAUI"]
-  ),
+  )
 ]
 
 PlatformTargets = [
@@ -114,7 +114,7 @@ PlatformTargets = []
 
 let CommonPackageDependencies: [Package.Dependency] = [
   .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.0.0"),
-  .package(url: "https://github.com/apple/swift-log", from: "1.5.4"),
+  .package(url: "https://github.com/apple/swift-log", branch: "main"),
   .package(url: "https://github.com/apple/swift-system", from: "1.2.1"),
   .package(url: "https://github.com/PADL/SocketAddress", from: "0.0.1"),
   .package(url: "https://github.com/lhoward/AsyncExtensions", branch: "linux"),
