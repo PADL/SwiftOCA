@@ -25,11 +25,13 @@ import Combine
 import OpenCombine
 #endif
 
+package let Ocp1MaximumDatagramPduSize = 1500
+
 #if canImport(IORing)
 public typealias Ocp1UDPConnection = Ocp1IORingDatagramConnection
 public typealias Ocp1TCPConnection = Ocp1IORingStreamConnection
 #elseif canImport(FlyingSocks)
-public typealias Ocp1UDPConnection = Ocp1CFSocketUDPConnection
+public typealias Ocp1UDPConnection = Ocp1FlyingSocksDatagramConnection<sockaddr_in>
 public typealias Ocp1TCPConnection = Ocp1FlyingSocksStreamConnection
 #else
 public typealias Ocp1UDPConnection = Ocp1CFSocketUDPConnection

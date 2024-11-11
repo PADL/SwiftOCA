@@ -147,7 +147,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
         }
         #endif
       }
-      try await httpServer.start()
+      try await httpServer.run()
     } catch {
       throw error
     }
