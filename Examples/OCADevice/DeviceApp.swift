@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2024 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public enum DeviceApp {
     var listenAddress = sockaddr_in()
     listenAddress.sin_family = sa_family_t(AF_INET)
     listenAddress.sin_port = port.bigEndian
-    #if os(macOS) || os(iOS)
+    #if canImport(Darwin)
     listenAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
     #endif
 
@@ -52,16 +52,16 @@ public enum DeviceApp {
     let delegate = DeviceEventDelegate()
     await device.setEventDelegate(delegate)
     #if os(Linux)
-    let streamEndpoint =
-      try await Ocp1IORingStreamDeviceEndpoint(address: listenAddressData)
-    let datagramEndpoint =
-      try await Ocp1IORingDatagramDeviceEndpoint(address: listenAddressData)
-    let domainSocketEndpoint =
-      try? await Ocp1IORingStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
+    let streamEndpoint = try await Ocp1IORingStreamDeviceEndpoint(address: listenAddressData)
+    let datagramEndpoint = try await Ocp1IORingDatagramDeviceEndpoint(address: listenAddressData)
+    let domainSocketEndpoint = try? await Ocp1IORingStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
+    #elseif canImport(FlyingSocks)
+    let streamEndpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(address: listenAddressData)
+    let datagramEndpoint = try await Ocp1FlyingSocksDatagramDeviceEndpoint<sockaddr_in>(address: listenAddressData)
     #else
-    let streamEndpoint = try await Ocp1DeviceEndpoint(address: listenAddressData)
+    let streamEndpoint = try await Ocp1StreamDeviceEndpoint(address: listenAddressData)
     #endif
-    #if os(macOS) || os(iOS)
+    #if canImport(FlyingSocks)
     listenAddress.sin_family = sa_family_t(AF_INET)
     listenAddress.sin_addr.s_addr = INADDR_ANY
     listenAddress.sin_port = (port + 1).bigEndian
@@ -123,17 +123,19 @@ public enum DeviceApp {
         print("Starting OCP.1 stream endpoint \(streamEndpoint)...")
         try await streamEndpoint.run()
       }
-      #if os(macOS) || os(iOS)
+      #if os(Linux) || canImport(FlyingSocks)
+      taskGroup.addTask {
+        print("Starting OCP.1 datagram endpoint \(datagramEndpoint)...")
+        try await datagramEndpoint.run()
+      }
+      #endif
+      #if canImport(FlyingSocks)
       taskGroup.addTask {
         print("Starting OCP.1 WebSocket endpoint \(webSocketEndpoint)...")
         try await webSocketEndpoint.run()
       }
       #endif
       #if os(Linux)
-      taskGroup.addTask {
-        print("Starting OCP.1 datagram endpoint \(datagramEndpoint)...")
-        try await datagramEndpoint.run()
-      }
       if let domainSocketEndpoint {
         taskGroup.addTask {
           print("Starting OCP.1 domain socket endpoint \(domainSocketEndpoint)...")

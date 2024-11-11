@@ -33,21 +33,4 @@ extension Logging where Self == PrintLogger {
   }
 }
 
-extension Ocp1FlyingSocksDeviceEndpoint {
-  static func defaultLogger(category: String = "Oca") -> Logging {
-    defaultLogger(category: category, forceFallback: false)
-  }
-
-  static func defaultLogger(category: String = "Oca", forceFallback: Bool) -> Logging {
-    guard !forceFallback, #available(macOS 11.0, iOS 14.0, tvOS 14.0, *) else {
-      return .print(category: category)
-    }
-    #if canImport(OSLog)
-    return .oslog(category: category)
-    #else
-    return .print(category: category)
-    #endif
-  }
-}
-
 #endif

@@ -124,12 +124,10 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
     SOCK_DGRAM
   }
 
-  package static let MaximumPduSize = 1500
-
   override public func read(_ length: Int) async throws -> Data {
     // read maximum PDU size
     try await withMappedError { socket in
-      try await Data(socket.receive(count: Self.MaximumPduSize))
+      try await Data(socket.receive(count: Ocp1MaximumDatagramPduSize))
     }
   }
 

@@ -17,8 +17,8 @@
 import SwiftOCA
 
 #if os(macOS) || os(iOS)
-typealias Ocp1Controller = Ocp1FlyingSocksController
-public typealias Ocp1DeviceEndpoint = Ocp1FlyingSocksDeviceEndpoint
+typealias Ocp1Controller = Ocp1FlyingSocksStreamController
+public typealias Ocp1DeviceEndpoint = Ocp1FlyingSocksStreamDeviceEndpoint
 public typealias Ocp1WSDeviceEndpoint = Ocp1FlyingFoxDeviceEndpoint
 #elseif os(Linux)
 typealias Ocp1Controller = Ocp1IORingStreamController

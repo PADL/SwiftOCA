@@ -266,7 +266,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     repeat {
       do {
         let messagePdus = try await socket
-          .receiveMessages(count: Ocp1IORingDatagramConnection.MaximumPduSize)
+          .receiveMessages(count: Ocp1MaximumDatagramPduSize)
 
         for try await messagePdu in messagePdus {
           let controller =

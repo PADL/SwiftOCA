@@ -49,7 +49,7 @@ PlatformProducts = []
 PlatformTargets = []
 #elseif os(macOS) || os(iOS)
 PlatformPackageDependencies = [
-  .package(url: "https://github.com/swhitty/FlyingFox", branch: "main"),
+  .package(url: "https://github.com/PADL/FlyingFox", branch: "udp"),
   .package(
     url: "https://github.com/spacenation/swiftui-sliders.git",
     from: "2.1.0"
@@ -73,7 +73,7 @@ PlatformProducts = [
   .library(
     name: "SwiftOCAUI",
     targets: ["SwiftOCAUI"]
-  )
+  ),
 ]
 
 PlatformTargets = [

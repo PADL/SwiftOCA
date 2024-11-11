@@ -122,12 +122,9 @@ private actor AsyncSocketPoolMonitor {
   }
 }
 
-public class Ocp1FlyingSocksConnection: Ocp1Connection {
+public class Ocp1FlyingSocksStreamConnection: Ocp1Connection {
   fileprivate let deviceAddress: any SocketAddress
   fileprivate var asyncSocket: AsyncSocket?
-  fileprivate var type: Int32 {
-    fatalError("must be implemented by subclass")
-  }
 
   public convenience init(
     deviceAddress: Data,
@@ -150,8 +147,8 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
 
   override func connectDevice() async throws {
     let family = Swift.type(of: deviceAddress).family
-    let socket = try Socket(domain: Int32(family), type: type)
-    if type == SOCK_STREAM, family == AF_INET {
+    let socket = try Socket(domain: Int32(family), type: SOCK_STREAM)
+    if family == AF_INET {
       try? socket.setValue(true, for: BoolSocketOption(name: TCP_NODELAY), level: CInt(IPPROTO_TCP))
     }
     try socket.connect(to: deviceAddress)
@@ -168,6 +165,19 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     }
     try await super.disconnectDevice(clearObjectCache: clearObjectCache)
   }
+
+  public convenience init(
+    path: String,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    try self.init(socketAddress: sockaddr_un.unix(path: path), options: options)
+  }
+
+  override public var connectionPrefix: String {
+    "\(OcaTcpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
+  }
+
+  override public var isDatagram: Bool { false }
 
   private func withMappedError<T: Sendable>(
     _ block: (_ asyncSocket: AsyncSocket) async throws
@@ -186,7 +196,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
 
   override public func read(_ length: Int) async throws -> Data {
     try await withMappedError { socket in
-      try await Data(socket.read(bytes: length))
+      try await Data(socket.read(atMost: length))
     }
   }
 
@@ -198,47 +208,89 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
   }
 }
 
-public final class Ocp1FlyingSocksDatagramConnection: Ocp1FlyingSocksConnection {
-  override public var heartbeatTime: Duration {
-    .seconds(1)
+public final class Ocp1FlyingSocksDatagramConnection<A: SocketAddress>: Ocp1Connection {
+  fileprivate let deviceAddress: A
+  fileprivate var asyncMessageSocket: AsyncMessageSocket<A>?
+
+  public convenience init(
+    deviceAddress: Data,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    guard let socketAddress = deviceAddress.socketAddress as? A else {
+      throw Ocp1Error.unknownServiceType
+    }
+    try self.init(socketAddress: socketAddress, options: options)
   }
 
-  override fileprivate var type: Int32 {
-    #if canImport(Glibc)
-    Int32(2) // FIXME: why can't we find the symbol for this?
-    #else
-    SOCK_DGRAM
-    #endif
+  fileprivate init(
+    socketAddress: A,
+    options: Ocp1ConnectionOptions
+  ) throws {
+    deviceAddress = socketAddress
+    super.init(options: options)
+  }
+
+  deinit {
+    try? asyncMessageSocket?.close()
+  }
+
+  override func connectDevice() async throws {
+    let family = Swift.type(of: deviceAddress).family
+    let socket = try Socket(domain: Int32(family), type: SOCK_DGRAM)
+    asyncMessageSocket = try await AsyncMessageSocket(
+      socket: socket,
+      pool: AsyncSocketPoolMonitor.shared.get()
+    )
+    try await super.connectDevice()
+  }
+
+  override public func disconnectDevice(clearObjectCache: Bool) async throws {
+    if let asyncMessageSocket {
+      try asyncMessageSocket.close()
+    }
+    try await super.disconnectDevice(clearObjectCache: clearObjectCache)
   }
 
   override public var connectionPrefix: String {
     "\(OcaUdpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
   }
 
+  override public var heartbeatTime: Duration {
+    .seconds(1)
+  }
+
   override public var isDatagram: Bool { true }
-}
 
-public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
-  override fileprivate var type: Int32 {
-    #if canImport(Glibc)
-    Int32(1) // FIXME: why can't we find the symbol for this?
-    #else
-    SOCK_STREAM
-    #endif
+  private func withMappedError<T: Sendable>(
+    _ block: (_ asyncMessageSocket: AsyncMessageSocket<A>) async throws
+      -> T
+  ) async throws -> T {
+    guard let asyncMessageSocket else {
+      throw Ocp1Error.notConnected
+    }
+
+    do {
+      return try await block(asyncMessageSocket)
+    } catch let error as SocketError {
+      throw error.mappedError
+    }
   }
 
-  public convenience init(
-    path: String,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
-  ) throws {
-    try self.init(socketAddress: sockaddr_un.unix(path: path), options: options)
+  override public func read(_ length: Int) async throws -> Data {
+    try await withMappedError { socket in
+      try await socket.receive(atMost: Ocp1MaximumDatagramPduSize).data
+    }
   }
 
-  override public var connectionPrefix: String {
-    "\(OcaTcpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
+  override public func write(_ data: Data) async throws -> Int {
+    try await withMappedError { socket in
+      try await socket.send(message: AsyncMessageSocket<A>.Message(
+        address: deviceAddress,
+        data: data
+      ))
+      return data.count
+    }
   }
-
-  override public var isDatagram: Bool { false }
 }
 
 func deviceAddressToString(_ deviceAddress: any SocketAddress) -> String {

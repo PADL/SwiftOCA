@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2024 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -24,14 +24,14 @@ import Foundation
 import SwiftOCA
 
 /// A remote controller
-actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible {
+actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConvertible {
   nonisolated let connectionPrefix: String
 
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   var keepAliveTask: Task<(), Error>?
   var lastMessageReceivedTime = ContinuousClock.now
   var lastMessageSentTime = ContinuousClock.now
-  weak var endpoint: Ocp1FlyingSocksDeviceEndpoint?
+  weak var endpoint: Ocp1FlyingSocksStreamDeviceEndpoint?
 
   private let address: String
   private let socket: AsyncSocket
@@ -42,7 +42,7 @@ actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible
     _messages.joined().eraseToAnyAsyncSequence()
   }
 
-  init(endpoint: Ocp1FlyingSocksDeviceEndpoint, socket: AsyncSocket) async throws {
+  init(endpoint: Ocp1FlyingSocksStreamDeviceEndpoint, socket: AsyncSocket) async throws {
     if case .unix = try? socket.socket.sockname() {
       connectionPrefix = OcaLocalConnectionPrefix
     } else {
@@ -99,22 +99,22 @@ actor Ocp1FlyingSocksController: Ocp1ControllerInternal, CustomStringConvertible
   }
 }
 
-extension Ocp1FlyingSocksController: Equatable {
+extension Ocp1FlyingSocksStreamController: Equatable {
   public nonisolated static func == (
-    lhs: Ocp1FlyingSocksController,
-    rhs: Ocp1FlyingSocksController
+    lhs: Ocp1FlyingSocksStreamController,
+    rhs: Ocp1FlyingSocksStreamController
   ) -> Bool {
     lhs.fileDescriptor == rhs.fileDescriptor
   }
 }
 
-extension Ocp1FlyingSocksController: Hashable {
+extension Ocp1FlyingSocksStreamController: Hashable {
   public nonisolated func hash(into hasher: inout Hasher) {
     fileDescriptor.hash(into: &hasher)
   }
 }
 
-private extension Ocp1FlyingSocksController {
+private extension Ocp1FlyingSocksStreamController {
   static func makeIdentifier(from socket: Socket) -> String {
     guard let peer = try? socket.remotePeer() else {
       return "unknown"
