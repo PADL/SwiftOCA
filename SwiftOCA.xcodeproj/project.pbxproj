@@ -2563,8 +2563,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/swhitty/FlyingFox.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.13.0;
+				branch = udp;
+				kind = branch;
 			};
 		};
 		D36ECA282A5B20480015174C /* XCRemoteSwiftPackageReference "swift-log" */ = {
