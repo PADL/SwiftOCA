@@ -14,6 +14,12 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
 public struct Ocp1KeepAlive1: Ocp1Message, Codable, Sendable {
   public let heartBeatTime: OcaUint16 // sec
 
@@ -43,12 +49,16 @@ public extension Ocp1KeepAlive {
   }
 }
 
-private extension Duration {
+package extension Duration {
   var seconds: Int64 {
     components.seconds
   }
 
   var milliseconds: Int64 {
     components.seconds * 1000 + Int64(Double(components.attoseconds) * 1e-15)
+  }
+
+  var timeInterval: TimeInterval {
+    TimeInterval(components.seconds) + TimeInterval(components.attoseconds) * 1e-18
   }
 }

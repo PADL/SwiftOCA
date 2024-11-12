@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2024 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 import AsyncAlgorithms
 import AsyncExtensions
+import Atomics
 @preconcurrency
 import Foundation
 import Logging
@@ -106,8 +107,8 @@ public struct Ocp1ConnectionStatistics: Sendable {
   public let outstandingRequests: [OcaUint32]
   public let cachedObjectCount: Int
   public let subscribedEvents: [OcaEvent]
-  public let lastMessageSentTime: ContinuousClock.Instant
-  public let lastMessageReceivedTime: ContinuousClock.Instant?
+  public let lastMessageSentTime: Date
+  public let lastMessageReceivedTime: Date?
 }
 
 private let CommandHandleBase = OcaUint32(100)
@@ -158,7 +159,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 
   private var nextCommandHandle = CommandHandleBase
 
-  var lastMessageSentTime = ContinuousClock.now
+  var lastMessageSentTime = Monitor.now
 
   open nonisolated var connectionPrefix: String {
     fatalError(
@@ -167,29 +168,37 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
   }
 
   public var statistics: Ocp1ConnectionStatistics {
-    get async {
-      await Ocp1ConnectionStatistics(
-        connectionState: _connectionState.value,
-        requestCount: Int(nextCommandHandle - CommandHandleBase),
-        outstandingRequests: monitor != nil ? Array(monitor!.continuations.keys) : [],
-        cachedObjectCount: objects.count,
-        subscribedEvents: Array(subscriptions.keys),
-        lastMessageSentTime: lastMessageSentTime,
-        lastMessageReceivedTime: monitor?.lastMessageReceivedTime
-      )
-    }
+    Ocp1ConnectionStatistics(
+      connectionState: _connectionState.value,
+      requestCount: Int(nextCommandHandle - CommandHandleBase),
+      outstandingRequests: monitor?.outstandingRequests ?? [],
+      cachedObjectCount: objects.count,
+      subscribedEvents: Array(subscriptions.keys),
+      lastMessageSentTime: Date(timeIntervalSince1970: TimeInterval(lastMessageSentTime)),
+      lastMessageReceivedTime: monitor != nil ?
+        Date(timeIntervalSince1970: TimeInterval(monitor!.lastMessageReceivedTime)) : nil
+    )
   }
 
   /// Monitor structure for matching requests and responses
-  actor Monitor {
+  final class Monitor: @unchecked Sendable {
     typealias Continuation = CheckedContinuation<Ocp1Response, Error>
 
-    private weak var connection: Ocp1Connection?
-    fileprivate private(set) var continuations = [OcaUint32: Continuation]()
-    private(set) var lastMessageReceivedTime = ContinuousClock.now
+    private let _connection: Weak<Ocp1Connection>
+    fileprivate let continuations = ManagedCriticalState<[OcaUint32: Continuation]>([:])
+    private(set) var _lastMessageReceivedTime = ManagedAtomic<UInt64>(0)
+
+    static var now: UInt64 {
+      UInt64(time(nil))
+    }
 
     init(_ connection: Ocp1Connection) {
-      self.connection = connection
+      _connection = Weak(connection)
+      updateLastMessageReceivedTime()
+    }
+
+    var connection: Ocp1Connection? {
+      _connection.object
     }
 
     func run() async throws {
@@ -211,26 +220,48 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     }
 
     func register(handle: OcaUint32, continuation: Continuation) {
-      continuations[handle] = continuation
+      continuations.withCriticalRegion { continuations in
+        continuations[handle] = continuation
+      }
     }
 
     func resumeAllNotConnected() {
-      for continuation in continuations {
-        continuation.1.resume(throwing: Ocp1Error.notConnected)
+      continuations.withCriticalRegion { continuations in
+        for continuation in continuations.values {
+          continuation.resume(throwing: Ocp1Error.notConnected)
+        }
+        continuations.removeAll()
       }
-      continuations.removeAll()
     }
 
     func resume(with response: Ocp1Response) throws {
+      try continuations.withCriticalRegion { continuations in
+        let continuation = try popContinuation(for: response, in: &continuations)
+        continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
+      }
+    }
+
+    private func popContinuation(
+      for response: Ocp1Response,
+      in continuations: inout [OcaUint32: Continuation]
+    ) throws -> Continuation {
       guard let continuation = continuations[response.handle] else {
         throw Ocp1Error.invalidHandle
       }
       continuations.removeValue(forKey: response.handle)
-      continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
+      return continuation
     }
 
     func updateLastMessageReceivedTime() {
-      lastMessageReceivedTime = ContinuousClock.now
+      _lastMessageReceivedTime.store(Monitor.now, ordering: .releasing)
+    }
+
+    fileprivate var outstandingRequests: [OcaUint32] {
+      continuations.withCriticalRegion { Array($0.keys) }
+    }
+
+    var lastMessageReceivedTime: UInt64 {
+      _lastMessageReceivedTime.load(ordering: .relaxed)
     }
   }
 
@@ -325,7 +356,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 
   open func disconnectDevice(clearObjectCache: Bool) async throws {
     if let monitor {
-      await monitor.stop()
+      monitor.stop()
       self.monitor = nil
     }
     monitorTask = nil

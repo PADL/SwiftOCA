@@ -17,8 +17,8 @@
 import Foundation
 
 extension Ocp1Connection {
-  func updateLastMessageSentTime() async {
-    lastMessageSentTime = ContinuousClock.now
+  func updateLastMessageSentTime() {
+    lastMessageSentTime = Monitor.now
   }
 
   private func sendMessages(
@@ -31,7 +31,7 @@ extension Ocp1Connection {
       guard try await write(messagePduData) == messagePduData.count else {
         throw Ocp1Error.pduSendingFailed
       }
-      await updateLastMessageSentTime()
+      updateLastMessageSentTime()
     } catch Ocp1Error.notConnected {
       if options.automaticReconnect {
         try await reconnectDevice()
@@ -58,9 +58,7 @@ extension Ocp1Connection {
     }
 
     return try await withCheckedThrowingContinuation { continuation in
-      Task {
-        await monitor.register(handle: handle, continuation: continuation)
-      }
+      monitor.register(handle: handle, continuation: continuation)
     }
   }
 

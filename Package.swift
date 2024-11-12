@@ -116,6 +116,7 @@ let CommonPackageDependencies: [Package.Dependency] = [
   .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.0.0"),
   .package(url: "https://github.com/apple/swift-log", branch: "main"),
   .package(url: "https://github.com/apple/swift-system", from: "1.2.1"),
+  .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
   .package(url: "https://github.com/PADL/SocketAddress", from: "0.0.1"),
   .package(url: "https://github.com/lhoward/AsyncExtensions", branch: "linux"),
   .package(url: "https://github.com/Flight-School/AnyCodable", from: "0.6.7"),
@@ -152,6 +153,7 @@ let CommonTargets: [Target] = [
       .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
       .product(name: "SystemPackage", package: "swift-system"),
       .product(name: "Logging", package: "swift-log"),
+      .product(name: "Atomics", package: "swift-atomics"),
     ] + PlatformTargetDependencies,
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),

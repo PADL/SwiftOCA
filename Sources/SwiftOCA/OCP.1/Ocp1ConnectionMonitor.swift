@@ -107,8 +107,8 @@ extension Ocp1Connection.Monitor {
     let keepAliveThreshold = heartbeatTime * 3
 
     repeat {
-      let now = ContinuousClock.now
-      if now - lastMessageReceivedTime >= keepAliveThreshold {
+      let now = Self.now
+      if now - lastMessageReceivedTime >= keepAliveThreshold.seconds {
         await connection.logger
           .info(
             "\(connection): no heartbeat packet received in past \(keepAliveThreshold)"
@@ -118,10 +118,10 @@ extension Ocp1Connection.Monitor {
 
       let timeSinceLastMessageSent = await now - connection.lastMessageSentTime
       var sleepTime = heartbeatTime
-      if timeSinceLastMessageSent >= heartbeatTime {
+      if timeSinceLastMessageSent >= heartbeatTime.seconds {
         try await connection.sendKeepAlive()
       } else {
-        sleepTime -= timeSinceLastMessageSent
+        sleepTime -= .seconds(timeSinceLastMessageSent)
       }
       try await Task.sleep(for: sleepTime)
     } while true

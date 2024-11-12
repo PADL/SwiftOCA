@@ -268,12 +268,6 @@ extension OcaDevice {
   }
 }
 
-extension Duration {
-  var timeInterval: TimeInterval {
-    TimeInterval(components.seconds) + TimeInterval(components.attoseconds) * 1e-18
-  }
-}
-
 protocol Ocp1ControllerInternalLightweightNotifyingInternal: OcaControllerLightweightNotifying {
   func sendOcp1EncodedData(
     _ data: Data,
