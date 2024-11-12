@@ -24,28 +24,28 @@ import Foundation
 import SwiftOCA
 
 /// A remote controller
-actor Ocp1FlyingSocksDatagramController<A: SocketAddress>: Ocp1ControllerInternal {
+actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
 
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
-  let peerAddress: A
+  let peerAddress: sockaddr_storage
   var keepAliveTask: Task<(), Error>?
   var lastMessageReceivedTime = ContinuousClock.now
   var lastMessageSentTime = ContinuousClock.now
 
   private(set) var isOpen: Bool = false
-  weak var endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint<A>?
+  weak var endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint?
 
   var messages: AnyAsyncSequence<ControllerMessage> {
     AsyncEmptySequence<ControllerMessage>().eraseToAnyAsyncSequence()
   }
 
   init(
-    endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint<A>,
-    peerAddress: A
+    endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint,
+    peerAddress: SocketAddress
   ) async throws {
     self.endpoint = endpoint
-    self.peerAddress = peerAddress
+    self.peerAddress = peerAddress.makeStorage()
   }
 
   func onConnectionBecomingStale() async throws {
@@ -59,10 +59,10 @@ actor Ocp1FlyingSocksDatagramController<A: SocketAddress>: Ocp1ControllerInterna
   }
 
   func sendOcp1EncodedData(_ data: Data) async throws {
-    try await sendOcp1EncodedMessage(AsyncMessageSocket.Message(address: peerAddress, data: data))
+    try await sendOcp1EncodedMessage((peerAddress, data))
   }
 
-  func sendOcp1EncodedMessage(_ messagePdu: AsyncMessageSocket<A>.Message) async throws {
+  func sendOcp1EncodedMessage(_ messagePdu: (some SocketAddress, Data)) async throws {
     try await endpoint?.sendOcp1EncodedMessage(messagePdu)
   }
 
@@ -78,17 +78,18 @@ actor Ocp1FlyingSocksDatagramController<A: SocketAddress>: Ocp1ControllerInterna
     }
   }
 
-  nonisolated func matchesPeer(address: A) -> Bool {
-    var lhs = peerAddress.makeStorage()
+  nonisolated func matchesPeer(address: SocketAddress) -> Bool {
+    var lhs = peerAddress
     var rhs = address.makeStorage()
+
     return memcmp(&lhs, &rhs, MemoryLayout<sockaddr_storage>.size) == 0
   }
 }
 
 extension Ocp1FlyingSocksDatagramController: Equatable {
   public nonisolated static func == (
-    lhs: Ocp1FlyingSocksDatagramController<A>,
-    rhs: Ocp1FlyingSocksDatagramController<A>
+    lhs: Ocp1FlyingSocksDatagramController,
+    rhs: Ocp1FlyingSocksDatagramController
   ) -> Bool {
     lhs.matchesPeer(address: rhs.peerAddress)
   }

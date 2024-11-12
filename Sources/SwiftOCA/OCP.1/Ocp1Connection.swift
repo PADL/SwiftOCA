@@ -31,7 +31,7 @@ package let Ocp1MaximumDatagramPduSize = 1500
 public typealias Ocp1UDPConnection = Ocp1IORingDatagramConnection
 public typealias Ocp1TCPConnection = Ocp1IORingStreamConnection
 #elseif canImport(FlyingSocks)
-public typealias Ocp1UDPConnection = Ocp1FlyingSocksDatagramConnection<sockaddr_in>
+public typealias Ocp1UDPConnection = Ocp1FlyingSocksDatagramConnection
 public typealias Ocp1TCPConnection = Ocp1FlyingSocksStreamConnection
 #else
 public typealias Ocp1UDPConnection = Ocp1CFSocketUDPConnection

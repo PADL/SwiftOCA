@@ -208,22 +208,19 @@ public class Ocp1FlyingSocksStreamConnection: Ocp1Connection {
   }
 }
 
-public final class Ocp1FlyingSocksDatagramConnection<A: SocketAddress>: Ocp1Connection {
-  fileprivate let deviceAddress: A
-  fileprivate var asyncMessageSocket: AsyncMessageSocket<A>?
+public final class Ocp1FlyingSocksDatagramConnection: Ocp1Connection {
+  fileprivate let deviceAddress: any SocketAddress
+  fileprivate var asyncSocket: AsyncSocket?
 
   public convenience init(
     deviceAddress: Data,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    guard let socketAddress = deviceAddress.socketAddress as? A else {
-      throw Ocp1Error.unknownServiceType
-    }
-    try self.init(socketAddress: socketAddress, options: options)
+    try self.init(socketAddress: deviceAddress.socketAddress, options: options)
   }
 
   fileprivate init(
-    socketAddress: A,
+    socketAddress: any SocketAddress,
     options: Ocp1ConnectionOptions
   ) throws {
     deviceAddress = socketAddress
@@ -231,13 +228,13 @@ public final class Ocp1FlyingSocksDatagramConnection<A: SocketAddress>: Ocp1Conn
   }
 
   deinit {
-    try? asyncMessageSocket?.close()
+    try? asyncSocket?.close()
   }
 
   override func connectDevice() async throws {
     let family = Swift.type(of: deviceAddress).family
     let socket = try Socket(domain: Int32(family), type: SOCK_DGRAM)
-    asyncMessageSocket = try await AsyncMessageSocket(
+    asyncSocket = try await AsyncSocket(
       socket: socket,
       pool: AsyncSocketPoolMonitor.shared.get()
     )
@@ -245,8 +242,8 @@ public final class Ocp1FlyingSocksDatagramConnection<A: SocketAddress>: Ocp1Conn
   }
 
   override public func disconnectDevice(clearObjectCache: Bool) async throws {
-    if let asyncMessageSocket {
-      try asyncMessageSocket.close()
+    if let asyncSocket {
+      try asyncSocket.close()
     }
     try await super.disconnectDevice(clearObjectCache: clearObjectCache)
   }
@@ -262,15 +259,15 @@ public final class Ocp1FlyingSocksDatagramConnection<A: SocketAddress>: Ocp1Conn
   override public var isDatagram: Bool { true }
 
   private func withMappedError<T: Sendable>(
-    _ block: (_ asyncMessageSocket: AsyncMessageSocket<A>) async throws
+    _ block: (_ asyncSocket: AsyncSocket) async throws
       -> T
   ) async throws -> T {
-    guard let asyncMessageSocket else {
+    guard let asyncSocket else {
       throw Ocp1Error.notConnected
     }
 
     do {
-      return try await block(asyncMessageSocket)
+      return try await block(asyncSocket)
     } catch let error as SocketError {
       throw error.mappedError
     }
@@ -278,16 +275,13 @@ public final class Ocp1FlyingSocksDatagramConnection<A: SocketAddress>: Ocp1Conn
 
   override public func read(_ length: Int) async throws -> Data {
     try await withMappedError { socket in
-      try await socket.receive(atMost: Ocp1MaximumDatagramPduSize).data
+      try await Data(socket.receive(atMost: Ocp1MaximumDatagramPduSize).1)
     }
   }
 
   override public func write(_ data: Data) async throws -> Int {
     try await withMappedError { socket in
-      try await socket.send(message: AsyncMessageSocket<A>.Message(
-        address: deviceAddress,
-        data: data
-      ))
+      try await socket.send(data, to: deviceAddress)
       return data.count
     }
   }

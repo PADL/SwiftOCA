@@ -32,13 +32,11 @@ import Logging
 import SwiftOCA
 
 @OcaDevice
-public final class Ocp1FlyingSocksDatagramDeviceEndpoint<
-  A: SocketAddress
->: OcaDeviceEndpointPrivate,
+public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
   OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
-  typealias ControllerType = Ocp1FlyingSocksDatagramController<A>
+  typealias ControllerType = Ocp1FlyingSocksDatagramController
 
   var _controllers = Set<ControllerType>()
 
@@ -48,7 +46,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint<
 
   let pool: AsyncSocketPool
 
-  private let address: A
+  private let address: SocketAddress
   let timeout: Duration
   let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksDatagramDeviceEndpoint")
   let device: OcaDevice
@@ -57,7 +55,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint<
   private var endpointRegistrationHandle: OcaDeviceEndpointRegistrar.Handle?
   #endif
   private(set) var socket: Socket?
-  private var asyncMessageSocket: AsyncMessageSocket<A>?
+  private var asyncSocket: AsyncSocket?
 
   private nonisolated var family: Int32 {
     switch address {
@@ -87,14 +85,11 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint<
       }
     }
 
-    guard let _address = address as? A else {
-      throw SocketError.unsupportedAddress
-    }
-    try await self.init(address: _address, timeout: timeout, device: device)
+    try await self.init(address: address, timeout: timeout, device: device)
   }
 
   private init(
-    address: A,
+    address: SocketAddress,
     timeout: Duration = .seconds(15),
     device: OcaDevice = OcaDevice.shared
   ) async throws {
@@ -122,7 +117,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint<
     }
   }
 
-  func controller(for controllerAddress: A) async throws -> ControllerType {
+  func controller(for controllerAddress: SocketAddress) async throws -> ControllerType {
     var controller: ControllerType!
 
     controller = _controllers.first(where: { $0.matchesPeer(address: controllerAddress) })
@@ -186,14 +181,14 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint<
   }
 
   private func _receiveMessages() async throws {
-    precondition(asyncMessageSocket != nil)
+    precondition(asyncSocket != nil)
 
     repeat {
       do {
-        for try await messagePdu in asyncMessageSocket!.messages {
-          let controller = try await controller(for: messagePdu.address)
+        for try await messagePdu in asyncSocket!.messages {
+          let controller = try await controller(for: messagePdu.0)
           do {
-            let messages = try await controller.decodeMessages(from: Array(messagePdu.data))
+            let messages = try await controller.decodeMessages(from: messagePdu.1)
             for (message, rrq) in messages {
               try await controller.handle(for: self, message: message, rrq: rrq)
             }
@@ -206,7 +201,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint<
   }
 
   func _run(on socket: Socket, pool: AsyncSocketPool) async throws {
-    asyncMessageSocket = try AsyncMessageSocket(socket: socket, pool: pool)
+    asyncSocket = try AsyncSocket(socket: socket, pool: pool)
 
     return try await withThrowingTaskGroup(of: Void.self) { group in
       group.addTask {
@@ -229,11 +224,11 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint<
     #endif
   }
 
-  func sendOcp1EncodedMessage(_ message: AsyncMessageSocket<A>.Message) async throws {
-    guard let asyncMessageSocket else {
+  func sendOcp1EncodedMessage(_ message: (some SocketAddress, Data)) async throws {
+    guard let asyncSocket else {
       throw Ocp1Error.notConnected
     }
-    try await asyncMessageSocket.send(message: message)
+    try await asyncSocket.send(message.1, to: message.0)
   }
 
   public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
