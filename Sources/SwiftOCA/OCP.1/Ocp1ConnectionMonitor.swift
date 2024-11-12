@@ -132,7 +132,10 @@ extension Ocp1Connection.Monitor {
       group.addTask { [self] in
         repeat {
           try Task.checkCancellation()
-          try await receiveMessage(connection)
+          do {
+            try await receiveMessage(connection)
+          } catch Ocp1Error.unknownPduType {
+          } catch Ocp1Error.invalidHandle {}
         } while true
       }
       if connection.heartbeatTime > .zero {
