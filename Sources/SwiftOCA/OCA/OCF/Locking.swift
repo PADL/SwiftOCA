@@ -10,17 +10,19 @@
 //===----------------------------------------------------------------------===//
 
 #if canImport(Darwin)
-import Darwin
+@_implementationOnly import Darwin
 #elseif canImport(Glibc)
-import Glibc
+@_implementationOnly import Glibc
 #elseif canImport(WinSDK)
-import WinSDK
+@_implementationOnly import WinSDK
+#elseif canImport(Android)
+@_implementationOnly import Android
 #endif
 
-private struct Lock {
+struct Lock {
   #if canImport(Darwin)
   typealias Primitive = os_unfair_lock
-  #elseif canImport(Glibc)
+  #elseif canImport(Glibc) || canImport(Android)
   typealias Primitive = pthread_mutex_t
   #elseif canImport(WinSDK)
   typealias Primitive = SRWLOCK
@@ -36,7 +38,7 @@ private struct Lock {
   fileprivate static func initialize(_ platformLock: PlatformLock) {
     #if canImport(Darwin)
     platformLock.initialize(to: os_unfair_lock())
-    #elseif canImport(Glibc)
+    #elseif canImport(Glibc) || canImport(Android)
     let result = pthread_mutex_init(platformLock, nil)
     precondition(result == 0, "pthread_mutex_init failed")
     #elseif canImport(WinSDK)
@@ -45,7 +47,7 @@ private struct Lock {
   }
 
   fileprivate static func deinitialize(_ platformLock: PlatformLock) {
-    #if canImport(Glibc)
+    #if canImport(Glibc) || canImport(Android)
     let result = pthread_mutex_destroy(platformLock)
     precondition(result == 0, "pthread_mutex_destroy failed")
     #endif
@@ -55,7 +57,7 @@ private struct Lock {
   fileprivate static func lock(_ platformLock: PlatformLock) {
     #if canImport(Darwin)
     os_unfair_lock_lock(platformLock)
-    #elseif canImport(Glibc)
+    #elseif canImport(Glibc) || canImport(Android)
     pthread_mutex_lock(platformLock)
     #elseif canImport(WinSDK)
     AcquireSRWLockExclusive(platformLock)
@@ -65,7 +67,7 @@ private struct Lock {
   fileprivate static func unlock(_ platformLock: PlatformLock) {
     #if canImport(Darwin)
     os_unfair_lock_unlock(platformLock)
-    #elseif canImport(Glibc)
+    #elseif canImport(Glibc) || canImport(Android)
     let result = pthread_mutex_unlock(platformLock)
     precondition(result == 0, "pthread_mutex_unlock failed")
     #elseif canImport(WinSDK)
@@ -113,7 +115,7 @@ private struct Lock {
   }
 }
 
-package struct ManagedCriticalState<State> {
+struct ManagedCriticalState<State> {
   private final class LockedBuffer: ManagedBuffer<State, Lock.Primitive> {
     deinit {
       withUnsafeMutablePointerToElements { Lock.deinitialize($0) }
@@ -122,7 +124,7 @@ package struct ManagedCriticalState<State> {
 
   private let buffer: ManagedBuffer<State, Lock.Primitive>
 
-  public init(_ initial: State) {
+  init(_ initial: State) {
     buffer = LockedBuffer.create(minimumCapacity: 1) { buffer in
       buffer.withUnsafeMutablePointerToElements { Lock.initialize($0) }
       return initial
@@ -130,7 +132,7 @@ package struct ManagedCriticalState<State> {
   }
 
   @discardableResult
-  public func withCriticalRegion<R>(_ critical: (inout State) throws -> R) rethrows -> R {
+  func withCriticalRegion<R>(_ critical: (inout State) throws -> R) rethrows -> R {
     try buffer.withUnsafeMutablePointers { header, lock in
       Lock.lock(lock)
       defer { Lock.unlock(lock) }
@@ -138,13 +140,13 @@ package struct ManagedCriticalState<State> {
     }
   }
 
-  public func apply(criticalState newState: State) {
+  func apply(criticalState newState: State) {
     withCriticalRegion { actual in
       actual = newState
     }
   }
 
-  public var criticalState: State {
+  var criticalState: State {
     withCriticalRegion { $0 }
   }
 }
