@@ -234,6 +234,7 @@ public final class Ocp1FlyingSocksDatagramConnection: Ocp1Connection {
   override func connectDevice() async throws {
     let family = Swift.type(of: deviceAddress).family
     let socket = try Socket(domain: Int32(family), type: .datagram)
+    try socket.connect(to: deviceAddress)
     asyncSocket = try await AsyncSocket(
       socket: socket,
       pool: AsyncSocketPoolMonitor.shared.get()
@@ -275,13 +276,13 @@ public final class Ocp1FlyingSocksDatagramConnection: Ocp1Connection {
 
   override public func read(_ length: Int) async throws -> Data {
     try await withMappedError { socket in
-      try await Data(socket.receive(atMost: Ocp1MaximumDatagramPduSize).1)
+      try await Data(socket.read(atMost: Ocp1MaximumDatagramPduSize))
     }
   }
 
   override public func write(_ data: Data) async throws -> Int {
     try await withMappedError { socket in
-      try await socket.send(data, to: deviceAddress)
+      try await socket.write(data)
       return data.count
     }
   }
