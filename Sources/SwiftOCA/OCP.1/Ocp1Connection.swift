@@ -185,8 +185,8 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     typealias Continuation = CheckedContinuation<Ocp1Response, Error>
 
     private let _connection: Weak<Ocp1Connection>
-    fileprivate let continuations = ManagedCriticalState<[OcaUint32: Continuation]>([:])
-    private(set) var _lastMessageReceivedTime = ManagedAtomic<UInt64>(0)
+    private let _continuations = ManagedCriticalState<[OcaUint32: Continuation]>([:])
+    private var _lastMessageReceivedTime = ManagedAtomic<UInt64>(0)
 
     static var now: UInt64 {
       UInt64(time(nil))
@@ -220,13 +220,13 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     }
 
     func register(handle: OcaUint32, continuation: Continuation) {
-      continuations.withCriticalRegion { continuations in
+      _continuations.withCriticalRegion { continuations in
         continuations[handle] = continuation
       }
     }
 
     func resumeAllNotConnected() {
-      continuations.withCriticalRegion { continuations in
+      _continuations.withCriticalRegion { continuations in
         for continuation in continuations.values {
           continuation.resume(throwing: Ocp1Error.notConnected)
         }
@@ -235,7 +235,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     }
 
     func resume(with response: Ocp1Response) throws {
-      try continuations.withCriticalRegion { continuations in
+      try _continuations.withCriticalRegion { continuations in
         let continuation = try popContinuation(for: response, in: &continuations)
         continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
       }
@@ -257,7 +257,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     }
 
     fileprivate var outstandingRequests: [OcaUint32] {
-      continuations.withCriticalRegion { Array($0.keys) }
+      _continuations.withCriticalRegion { Array($0.keys) }
     }
 
     var lastMessageReceivedTime: UInt64 {
