@@ -147,7 +147,7 @@ public class Ocp1FlyingSocksStreamConnection: Ocp1Connection {
 
   override func connectDevice() async throws {
     let family = Swift.type(of: deviceAddress).family
-    let socket = try Socket(domain: Int32(family), type: SOCK_STREAM)
+    let socket = try Socket(domain: Int32(family), type: .stream)
     if family == AF_INET {
       try? socket.setValue(true, for: BoolSocketOption(name: TCP_NODELAY), level: CInt(IPPROTO_TCP))
     }
@@ -233,7 +233,7 @@ public final class Ocp1FlyingSocksDatagramConnection: Ocp1Connection {
 
   override func connectDevice() async throws {
     let family = Swift.type(of: deviceAddress).family
-    let socket = try Socket(domain: Int32(family), type: SOCK_DGRAM)
+    let socket = try Socket(domain: Int32(family), type: .datagram)
     asyncSocket = try await AsyncSocket(
       socket: socket,
       pool: AsyncSocketPoolMonitor.shared.get()

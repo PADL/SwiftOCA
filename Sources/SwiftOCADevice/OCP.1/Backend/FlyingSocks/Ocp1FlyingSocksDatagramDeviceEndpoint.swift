@@ -174,7 +174,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   }
 
   func makeSocketAndListen() throws -> Socket {
-    let socket = try Socket(domain: family, type: SwiftOCA.SOCK_DGRAM)
+    let socket = try Socket(domain: family, type: .datagram)
     try socket.setValue(true, for: .localAddressReuse)
     try socket.bind(to: address)
     return socket
