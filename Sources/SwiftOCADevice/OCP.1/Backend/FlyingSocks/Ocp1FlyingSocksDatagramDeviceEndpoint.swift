@@ -185,7 +185,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
 
     repeat {
       do {
-        for try await messagePdu in asyncSocket!.messages {
+        for try await messagePdu in asyncSocket!.messages(maxMessageLength: Ocp1MaximumDatagramPduSize) {
           let controller = try await controller(for: messagePdu.0)
           do {
             let messages = try await controller.decodeMessages(from: messagePdu.1)
