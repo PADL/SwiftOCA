@@ -54,10 +54,12 @@ public enum DeviceApp {
     #if os(Linux)
     let streamEndpoint = try await Ocp1IORingStreamDeviceEndpoint(address: listenAddressData)
     let datagramEndpoint = try await Ocp1IORingDatagramDeviceEndpoint(address: listenAddressData)
-    let domainSocketEndpoint = try? await Ocp1IORingStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
+    let domainSocketEndpoint =
+      try? await Ocp1IORingStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
     #elseif canImport(FlyingSocks)
     let streamEndpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(address: listenAddressData)
-    let datagramEndpoint = try await Ocp1FlyingSocksDatagramDeviceEndpoint(address: listenAddressData)
+    let datagramEndpoint =
+      try await Ocp1FlyingSocksDatagramDeviceEndpoint(address: listenAddressData)
     #else
     let streamEndpoint = try await Ocp1StreamDeviceEndpoint(address: listenAddressData)
     #endif
