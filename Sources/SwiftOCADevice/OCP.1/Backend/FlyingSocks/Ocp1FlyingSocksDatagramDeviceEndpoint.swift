@@ -117,14 +117,20 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
     }
   }
 
-  func controller(for controllerAddress: SocketAddress) async throws -> ControllerType {
+  func controller(
+    for controllerAddress: sockaddr_storage,
+    interfaceIndex: UInt32?,
+    localAddress: sockaddr_storage?
+  ) async throws -> ControllerType {
     var controller: ControllerType!
 
     controller = _controllers.first(where: { $0.matchesPeer(address: controllerAddress) })
     if controller == nil {
       controller = try await Ocp1FlyingSocksDatagramController(
         endpoint: self,
-        peerAddress: controllerAddress
+        peerAddress: controllerAddress,
+        interfaceIndex: interfaceIndex,
+        localAddress: localAddress
       )
       logger.info("datagram controller added", controller: controller)
       _controllers.insert(controller)
@@ -185,10 +191,16 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
 
     repeat {
       do {
-        for try await messagePdu in asyncSocket!.messages(maxMessageLength: Ocp1MaximumDatagramPduSize) {
-          let controller = try await controller(for: messagePdu.0)
+        for try await messagePdu in asyncSocket!
+          .messages(maxMessageLength: Ocp1MaximumDatagramPduSize)
+        {
+          let controller = try await controller(
+            for: messagePdu.peerAddress,
+            interfaceIndex: messagePdu.interfaceIndex,
+            localAddress: messagePdu.localAddress
+          )
           do {
-            let messages = try await controller.decodeMessages(from: messagePdu.1)
+            let messages = try await controller.decodeMessages(from: messagePdu.bytes)
             for (message, rrq) in messages {
               try await controller.handle(for: self, message: message, rrq: rrq)
             }
@@ -224,11 +236,21 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
     #endif
   }
 
-  func sendOcp1EncodedMessage(_ message: (some SocketAddress, Data)) async throws {
+  func sendOcp1EncodedMessage(_ message: (
+    some SocketAddress,
+    Data,
+    UInt32?,
+    (some SocketAddress)?
+  )) async throws {
     guard let asyncSocket else {
       throw Ocp1Error.notConnected
     }
-    try await asyncSocket.send(message.1, to: message.0)
+    try await asyncSocket.send(
+      message: message.1,
+      to: message.0,
+      interfaceIndex: message.2,
+      from: message.3
+    )
   }
 
   public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {

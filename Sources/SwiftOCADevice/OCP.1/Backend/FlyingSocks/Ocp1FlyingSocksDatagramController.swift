@@ -29,6 +29,8 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
 
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: sockaddr_storage
+  let interfaceIndex: UInt32?
+  let localAddress: sockaddr_storage?
   var keepAliveTask: Task<(), Error>?
   var lastMessageReceivedTime = ContinuousClock.now
   var lastMessageSentTime = ContinuousClock.now
@@ -42,10 +44,14 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
 
   init(
     endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint,
-    peerAddress: SocketAddress
+    peerAddress: sockaddr_storage,
+    interfaceIndex: UInt32?,
+    localAddress: sockaddr_storage?
   ) async throws {
     self.endpoint = endpoint
-    self.peerAddress = peerAddress.makeStorage()
+    self.peerAddress = peerAddress
+    self.interfaceIndex = interfaceIndex
+    self.localAddress = localAddress
   }
 
   func onConnectionBecomingStale() async throws {
@@ -59,10 +65,15 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   }
 
   func sendOcp1EncodedData(_ data: Data) async throws {
-    try await sendOcp1EncodedMessage((peerAddress, data))
+    try await sendOcp1EncodedMessage((peerAddress, data, interfaceIndex, localAddress))
   }
 
-  func sendOcp1EncodedMessage(_ messagePdu: (some SocketAddress, Data)) async throws {
+  func sendOcp1EncodedMessage(_ messagePdu: (
+    some SocketAddress,
+    Data,
+    UInt32?,
+    (some SocketAddress)?
+  )) async throws {
     try await endpoint?.sendOcp1EncodedMessage(messagePdu)
   }
 

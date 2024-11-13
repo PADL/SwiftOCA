@@ -48,25 +48,6 @@ fileprivate extension SocketError {
   }
 }
 
-package extension SocketAddress {
-  func makeStorage() -> sockaddr_storage {
-    var storage = sockaddr_storage()
-    var addr = self
-    let addrSize = MemoryLayout<Self>.size
-    let storageSize = MemoryLayout<sockaddr_storage>.size
-
-    withUnsafePointer(to: &addr) { addrPtr in
-      let addrRawPtr = UnsafeRawPointer(addrPtr)
-      withUnsafeMutablePointer(to: &storage) { storagePtr in
-        let storageRawPtr = UnsafeMutableRawPointer(storagePtr)
-        let copySize = min(addrSize, storageSize)
-        storageRawPtr.copyMemory(from: addrRawPtr, byteCount: copySize)
-      }
-    }
-    return storage
-  }
-}
-
 #if os(Linux)
 extension sockaddr_in: SocketAddress {}
 extension sockaddr_in6: SocketAddress {}
