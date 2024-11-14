@@ -310,6 +310,8 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     } else if !isConnected {
       throw Ocp1Error.notConnected
     }
+
+    try? await refreshSubscriptions()
   }
 
   private func connectDeviceWithTimeout() async throws {
