@@ -236,21 +236,11 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
     #endif
   }
 
-  func sendOcp1EncodedMessage(_ message: (
-    some SocketAddress,
-    Data,
-    UInt32?,
-    (some SocketAddress)?
-  )) async throws {
+  func sendOcp1EncodedMessage(_ messagePdu: AsyncSocket.Message) async throws {
     guard let asyncSocket else {
       throw Ocp1Error.notConnected
     }
-    try await asyncSocket.send(
-      message: message.1,
-      to: message.0,
-      interfaceIndex: message.2,
-      from: message.3
-    )
+    try await asyncSocket.send(message: messagePdu)
   }
 
   public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
