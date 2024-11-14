@@ -53,7 +53,6 @@ extension sockaddr_in: SocketAddress {}
 extension sockaddr_in6: SocketAddress {}
 extension sockaddr_un: SocketAddress {}
 #endif
-extension sockaddr_storage: SocketAddress {}
 
 private extension Data {
   var socketAddress: any SocketAddress {

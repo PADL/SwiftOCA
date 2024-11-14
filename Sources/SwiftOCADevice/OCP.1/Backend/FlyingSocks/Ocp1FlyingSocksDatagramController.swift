@@ -28,9 +28,9 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
 
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
-  let peerAddress: sockaddr_storage
+  let peerAddress: any SocketAddress
   let interfaceIndex: UInt32?
-  let localAddress: sockaddr_storage?
+  let localAddress: (any SocketAddress)?
   var keepAliveTask: Task<(), Error>?
   var lastMessageReceivedTime = ContinuousClock.now
   var lastMessageSentTime = ContinuousClock.now
@@ -44,9 +44,9 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
 
   init(
     endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint,
-    peerAddress: sockaddr_storage,
+    peerAddress: any SocketAddress,
     interfaceIndex: UInt32?,
-    localAddress: sockaddr_storage?
+    localAddress: (any SocketAddress)?
   ) async throws {
     self.endpoint = endpoint
     self.peerAddress = peerAddress
@@ -65,6 +65,9 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   }
 
   func sendOcp1EncodedData(_ data: Data) async throws {
+    let peerAddress = AnySocketAddress(peerAddress)
+    let localAddress = localAddress != nil ? AnySocketAddress(localAddress!) : nil
+
     try await sendOcp1EncodedMessage((peerAddress, data, interfaceIndex, localAddress))
   }
 
@@ -90,7 +93,7 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   }
 
   nonisolated func matchesPeer(address: SocketAddress) -> Bool {
-    var lhs = peerAddress
+    var lhs = peerAddress.makeStorage()
     var rhs = address.makeStorage()
 
     return memcmp(&lhs, &rhs, MemoryLayout<sockaddr_storage>.size) == 0

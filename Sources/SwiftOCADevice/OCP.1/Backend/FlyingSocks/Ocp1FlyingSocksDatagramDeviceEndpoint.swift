@@ -118,9 +118,9 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   }
 
   func controller(
-    for controllerAddress: sockaddr_storage,
+    for controllerAddress: any SocketAddress,
     interfaceIndex: UInt32?,
-    localAddress: sockaddr_storage?
+    localAddress: (any SocketAddress)?
   ) async throws -> ControllerType {
     var controller: ControllerType!
 
