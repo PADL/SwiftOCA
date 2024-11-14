@@ -95,7 +95,7 @@ public extension Ocp1Connection {
 
   internal func removeSubscriptions() async throws {
     for event in subscriptions.keys {
-      try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
+      try? await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
     }
     subscriptions.removeAll()
   }
