@@ -311,7 +311,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
       throw Ocp1Error.notConnected
     }
 
-    try? await refreshSubscriptions()
+    await refreshSubscriptions()
   }
 
   private func connectDeviceWithTimeout() async throws {
@@ -419,7 +419,7 @@ public extension Ocp1Connection {
   }
 
   func disconnect() async throws {
-    try await removeSubscriptions()
+    await removeSubscriptions()
     try await disconnectDevice(clearObjectCache: true)
   }
 }

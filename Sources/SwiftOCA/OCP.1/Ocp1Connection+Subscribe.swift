@@ -93,22 +93,30 @@ public extension Ocp1Connection {
     }
   }
 
-  internal func removeSubscriptions() async throws {
-    for event in subscriptions.keys {
-      try? await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
+  internal func removeSubscriptions() async {
+    await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
+      for event in subscriptions.keys {
+        taskGroup.addTask { [self] in
+          try? await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
+        }
+      }
     }
     subscriptions.removeAll()
   }
 
-  internal func refreshSubscriptions() async throws {
-    for event in subscriptions.keys {
-      try await subscriptionManager.addSubscription(
-        event: event,
-        subscriber: subscriber,
-        subscriberContext: OcaBlob(),
-        notificationDeliveryMode: .normal,
-        destinationInformation: OcaNetworkAddress()
-      )
+  internal func refreshSubscriptions() async {
+    await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
+      for event in subscriptions.keys {
+        taskGroup.addTask { [self] in
+          try? await subscriptionManager.addSubscription(
+            event: event,
+            subscriber: subscriber,
+            subscriberContext: OcaBlob(),
+            notificationDeliveryMode: .normal,
+            destinationInformation: OcaNetworkAddress()
+          )
+        }
+      }
     }
   }
 
