@@ -95,6 +95,11 @@ private actor AsyncSocketPoolMonitor {
     return pool
   }
 
+  func stop() {
+    task?.cancel()
+    task = nil
+  }
+
   deinit {
     if let task {
       task.cancel()
@@ -138,6 +143,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
   }
 
   override public func disconnectDevice(clearObjectCache: Bool) async throws {
+    await AsyncSocketPoolMonitor.shared.stop()
     if let asyncSocket {
       try asyncSocket.close()
       self.asyncSocket = nil
