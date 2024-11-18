@@ -30,9 +30,7 @@
 		D32229CD2ABC270900B56B6B /* LocalConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C32ABC270900B56B6B /* LocalConnection.swift */; };
 		D32229CE2ABC270900B56B6B /* LocalDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C42ABC270900B56B6B /* LocalDeviceEndpoint.swift */; };
 		D32229CF2ABC270900B56B6B /* LocalController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C52ABC270900B56B6B /* LocalController.swift */; };
-		D32229D02ABC270900B56B6B /* Ocp1FlyingSocksDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C72ABC270900B56B6B /* Ocp1FlyingSocksDeviceEndpoint.swift */; };
 		D32229D12ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C82ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift */; };
-		D32229D22ABC270900B56B6B /* Ocp1FlyingSocksController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229C92ABC270900B56B6B /* Ocp1FlyingSocksController.swift */; };
 		D32229D32ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CB2ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift */; };
 		D32229D42ABC270900B56B6B /* Ocp1IORingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CC2ABC270900B56B6B /* Ocp1IORingController.swift */; };
 		D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */; };
@@ -92,6 +90,10 @@
 		D35592622B520E21000F633B /* Logger+Ocp1ControllerInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592612B520E21000F633B /* Logger+Ocp1ControllerInternal.swift */; };
 		D35592642B520E48000F633B /* Ocp1ControllerInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592632B520E48000F633B /* Ocp1ControllerInternal.swift */; };
 		D35C9DA02BF76E5100D680F2 /* SocketAddress in Frameworks */ = {isa = PBXBuildFile; productRef = D35C9D9F2BF76E5100D680F2 /* SocketAddress */; };
+		D3660FE92CEBE478005FCBEB /* Ocp1FlyingSocksStreamController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3660FE72CEBE478005FCBEB /* Ocp1FlyingSocksStreamController.swift */; };
+		D3660FEA2CEBE478005FCBEB /* Ocp1FlyingSocksStreamDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3660FE82CEBE478005FCBEB /* Ocp1FlyingSocksStreamDeviceEndpoint.swift */; };
+		D3660FEB2CEBE478005FCBEB /* Ocp1FlyingSocksDatagramDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3660FE62CEBE478005FCBEB /* Ocp1FlyingSocksDatagramDeviceEndpoint.swift */; };
+		D3660FEC2CEBE478005FCBEB /* Ocp1FlyingSocksDatagramController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3660FE52CEBE478005FCBEB /* Ocp1FlyingSocksDatagramController.swift */; };
 		D36ECA212A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA202A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift */; };
 		D36ECA2C2A5B24B30015174A /* Ocp1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */; };
 		D370B1482BF6002300BF88BB /* AudioLevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */; };
@@ -342,9 +344,7 @@
 		D32229C32ABC270900B56B6B /* LocalConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalConnection.swift; sourceTree = "<group>"; };
 		D32229C42ABC270900B56B6B /* LocalDeviceEndpoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D32229C52ABC270900B56B6B /* LocalController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalController.swift; sourceTree = "<group>"; };
-		D32229C72ABC270900B56B6B /* Ocp1FlyingSocksDeviceEndpoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D32229C82ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksLogging.swift; sourceTree = "<group>"; };
-		D32229C92ABC270900B56B6B /* Ocp1FlyingSocksController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksController.swift; sourceTree = "<group>"; };
 		D32229CB2ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1IORingDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D32229CC2ABC270900B56B6B /* Ocp1IORingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1IORingController.swift; sourceTree = "<group>"; };
 		D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEndpointRegistrar.swift; sourceTree = "<group>"; };
@@ -398,6 +398,10 @@
 		D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerDefaultSubscribing.swift; sourceTree = "<group>"; };
 		D35592612B520E21000F633B /* Logger+Ocp1ControllerInternal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logger+Ocp1ControllerInternal.swift"; sourceTree = "<group>"; };
 		D35592632B520E48000F633B /* Ocp1ControllerInternal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1ControllerInternal.swift; sourceTree = "<group>"; };
+		D3660FE52CEBE478005FCBEB /* Ocp1FlyingSocksDatagramController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksDatagramController.swift; sourceTree = "<group>"; };
+		D3660FE62CEBE478005FCBEB /* Ocp1FlyingSocksDatagramDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksDatagramDeviceEndpoint.swift; sourceTree = "<group>"; };
+		D3660FE72CEBE478005FCBEB /* Ocp1FlyingSocksStreamController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksStreamController.swift; sourceTree = "<group>"; };
+		D3660FE82CEBE478005FCBEB /* Ocp1FlyingSocksStreamDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksStreamDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D36ECA202A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksConnection.swift; sourceTree = "<group>"; };
 		D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLevelSensor.swift; sourceTree = "<group>"; };
@@ -699,9 +703,11 @@
 		D32229C62ABC270900B56B6B /* FlyingSocks */ = {
 			isa = PBXGroup;
 			children = (
-				D32229C72ABC270900B56B6B /* Ocp1FlyingSocksDeviceEndpoint.swift */,
+				D3660FE52CEBE478005FCBEB /* Ocp1FlyingSocksDatagramController.swift */,
+				D3660FE62CEBE478005FCBEB /* Ocp1FlyingSocksDatagramDeviceEndpoint.swift */,
+				D3660FE72CEBE478005FCBEB /* Ocp1FlyingSocksStreamController.swift */,
+				D3660FE82CEBE478005FCBEB /* Ocp1FlyingSocksStreamDeviceEndpoint.swift */,
 				D32229C82ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift */,
-				D32229C92ABC270900B56B6B /* Ocp1FlyingSocksController.swift */,
 				D3B325082B4F6B4900C8335F /* Ocp1FlyingFoxDeviceEndpoint.swift */,
 				D3B325062B4F679B00C8335F /* Ocp1FlyingFoxController.swift */,
 			);
@@ -1698,6 +1704,10 @@
 				D33B52B42A7060BC001A1BA7 /* Actuator.swift in Sources */,
 				D3C0831A2A7B0D9B0020AD57 /* Device.swift in Sources */,
 				D370B14A2BF600A900BF88BB /* AudioLevelSensor.swift in Sources */,
+				D3660FE92CEBE478005FCBEB /* Ocp1FlyingSocksStreamController.swift in Sources */,
+				D3660FEA2CEBE478005FCBEB /* Ocp1FlyingSocksStreamDeviceEndpoint.swift in Sources */,
+				D3660FEB2CEBE478005FCBEB /* Ocp1FlyingSocksDatagramDeviceEndpoint.swift in Sources */,
+				D3660FEC2CEBE478005FCBEB /* Ocp1FlyingSocksDatagramController.swift in Sources */,
 				D3AFD38E2B4150F300A72E9A /* SignalInput.swift in Sources */,
 				D3C11DBD2A78A3DC00452B2A /* Ocp1Controller.swift in Sources */,
 				D3B727E52BF759A800D6932F /* Ocp1CFDeviceEndpoint.swift in Sources */,
@@ -1710,7 +1720,6 @@
 				D3FAC8EE2B5CFE3A009E2775 /* FirmwareManager.swift in Sources */,
 				D32229D12ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift in Sources */,
 				D33B52AA2A702D3F001A1BA7 /* NetworkManager.swift in Sources */,
-				D32229D02ABC270900B56B6B /* Ocp1FlyingSocksDeviceEndpoint.swift in Sources */,
 				D35592622B520E21000F633B /* Logger+Ocp1ControllerInternal.swift in Sources */,
 				D3AFD35C2B30EC0600A72E9A /* CodingManager.swift in Sources */,
 				D351F2122A729CB0008C5513 /* TimeSource.swift in Sources */,
@@ -1735,7 +1744,6 @@
 				D351F2182A729E29008C5513 /* Gain.swift in Sources */,
 				D3AFD38C2B4150C800A72E9A /* SummingPoint.swift in Sources */,
 				D351F2012A7132F8008C5513 /* BoundedDeviceProperty.swift in Sources */,
-				D32229D22ABC270900B56B6B /* Ocp1FlyingSocksController.swift in Sources */,
 				D33B52AE2A702D92001A1BA7 /* SubscriptionManager.swift in Sources */,
 				D351F21C2A72A26E008C5513 /* Matrix.swift in Sources */,
 				D351F2162A729DFC008C5513 /* PolarityState.swift in Sources */,
