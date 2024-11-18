@@ -15,7 +15,6 @@
 //
 
 import AsyncExtensions
-@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 @propertyWrapper
@@ -36,8 +35,16 @@ public struct OcaVectorDeviceProperty<
   public typealias Property = OcaDeviceProperty<OcaVector2D<Value>>
 
   public var wrappedValue: OcaVector2D<Value> {
-    get { storage.wrappedValue }
+    get { storage.subject.value }
     nonmutating set { fatalError() }
+  }
+
+  public var projectedValue: AnyAsyncSequence<OcaVector2D<Value>> {
+    async
+  }
+
+  var subject: AsyncCurrentValueSubject<OcaVector2D<Value>> {
+    storage.subject
   }
 
   public init(
@@ -62,14 +69,15 @@ public struct OcaVectorDeviceProperty<
   }
 
   func getJsonValue() throws -> Any {
-    let value = storage.wrappedValue
-    let valueDict: [String: Value] = ["x": value.x, "y": value.y]
+    let valueDict: [String: Value] =
+      ["x": storage.subject.value.x,
+       "y": storage.subject.value.y]
 
     return valueDict
   }
 
   private func setAndNotifySubscribers(object: OcaRoot, _ newValue: OcaVector2D<Value>) async {
-    storage.setWithoutNotifyingSubscribers(newValue)
+    storage.subject.send(newValue)
     try? await notifySubscribers(object: object, newValue)
   }
 

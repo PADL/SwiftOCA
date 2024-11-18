@@ -27,6 +27,8 @@ protocol OcaDevicePropertyRepresentable: Sendable {
   var setMethodID: OcaMethodID? { get }
   var wrappedValue: Value { get }
 
+  var subject: AsyncCurrentValueSubject<Value> { get }
+
   func getOcp1Response() async throws -> Ocp1Response
   func getJsonValue() throws -> Any
 
@@ -36,23 +38,33 @@ protocol OcaDevicePropertyRepresentable: Sendable {
   func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws
 }
 
-fileprivate protocol ManagedCriticalStateNilRepresentable {
-  func _setNil()
+extension OcaDevicePropertyRepresentable {
+  func finish() {
+    subject.send(.finished)
+  }
+
+  var async: AnyAsyncSequence<Value> {
+    subject.eraseToAnyAsyncSequence()
+  }
 }
 
-extension ManagedCriticalState: ManagedCriticalStateNilRepresentable
-  where State: ExpressibleByNilLiteral
+extension AsyncCurrentValueSubject: AsyncCurrentValueSubjectNilRepresentable
+  where Element: ExpressibleByNilLiteral
 {
-  func _setNil() {
-    withCriticalRegion { $0 = nil }
+  func sendNil() {
+    send(nil)
   }
+}
+
+private protocol AsyncCurrentValueSubjectNilRepresentable {
+  func sendNil()
 }
 
 @propertyWrapper
 public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRepresentable,
   Sendable
 {
-  private var _value: ManagedCriticalState<Value>
+  let subject: AsyncCurrentValueSubject<Value>
 
   /// The OCA property ID
   public let propertyID: OcaPropertyID
@@ -65,8 +77,12 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
 
   /// Placeholder only
   public var wrappedValue: Value {
-    get { _value.withCriticalRegion { $0 } }
+    get { subject.value }
     nonmutating set { fatalError() }
+  }
+
+  public var projectedValue: AnyAsyncSequence<Value> {
+    async
   }
 
   public init(
@@ -75,7 +91,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     getMethodID: OcaMethodID? = nil,
     setMethodID: OcaMethodID? = nil
   ) {
-    _value = ManagedCriticalState(wrappedValue)
+    subject = AsyncCurrentValueSubject(wrappedValue)
     self.propertyID = propertyID
     self.getMethodID = getMethodID
     self.setMethodID = setMethodID
@@ -86,22 +102,18 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     getMethodID: OcaMethodID? = nil,
     setMethodID: OcaMethodID? = nil
   ) where Value: ExpressibleByNilLiteral {
-    _value = ManagedCriticalState(nil)
+    subject = AsyncCurrentValueSubject(nil)
     self.propertyID = propertyID
     self.getMethodID = getMethodID
     self.setMethodID = setMethodID
   }
 
   func get() -> Value {
-    wrappedValue
-  }
-  
-  func setWithoutNotifyingSubscribers(_ value: Value) {
-    _value.withCriticalRegion { $0 = value }
+    subject.value
   }
 
   private func setAndNotifySubscribers(object: OcaRoot, _ newValue: Value) async {
-    _value.withCriticalRegion { $0 = newValue }
+    subject.send(newValue)
     try? await notifySubscribers(object: object, newValue)
   }
 
@@ -125,14 +137,12 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
   }
 
   func getJsonValue() throws -> Any {
-    let value = wrappedValue
-
-    let jsonValue: Any = if isNil(value) {
+    let jsonValue: Any = if isNil(subject.value) {
       NSNull()
-    } else if JSONSerialization.isValidJSONObject(value) {
-      value
+    } else if JSONSerialization.isValidJSONObject(subject.value) {
+      subject.value
     } else {
-      try JSONEncoder().reencodeAsValidJSONObject(value)
+      try JSONEncoder().reencodeAsValidJSONObject(subject.value)
     }
 
     return jsonValue
@@ -145,8 +155,8 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
 
   func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
     if jsonValue is NSNull {
-      if let value = _value as? any ManagedCriticalStateNilRepresentable {
-        value._setNil()
+      if let subject = subject as? AsyncCurrentValueSubjectNilRepresentable {
+        subject.sendNil()
       } else {
         throw Ocp1Error.status(.badFormat)
       }
@@ -159,7 +169,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
       }
       await setAndNotifySubscribers(object: object, objects as! Value)
     } else {
-      let isValidJSONObject = JSONSerialization.isValidJSONObject(_value)
+      let isValidJSONObject = JSONSerialization.isValidJSONObject(subject.value)
       if !isValidJSONObject,
          let jsonValue = jsonValue as? Codable
       {

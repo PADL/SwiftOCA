@@ -16,7 +16,6 @@
 
 @preconcurrency
 import AsyncExtensions
-@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 @propertyWrapper
@@ -33,8 +32,16 @@ public struct OcaBoundedDeviceProperty<
   public typealias Property = OcaDeviceProperty<OcaBoundedPropertyValue<Value>>
 
   public var wrappedValue: OcaBoundedPropertyValue<Value> {
-    get { storage.wrappedValue }
+    get { storage.subject.value }
     nonmutating set { fatalError() }
+  }
+
+  public var projectedValue: AnyAsyncSequence<Value> {
+    async.map(\.value).eraseToAnyAsyncSequence()
+  }
+
+  var subject: AsyncCurrentValueSubject<OcaBoundedPropertyValue<Value>> {
+    storage.subject
   }
 
   public init(
@@ -56,11 +63,10 @@ public struct OcaBoundedDeviceProperty<
   }
 
   func getJsonValue() throws -> Any {
-    let value = storage.wrappedValue
     let valueDict: [String: Value] =
-      ["v": value.value,
-       "l": value.range.lowerBound,
-       "u": value.range.upperBound]
+      ["v": storage.subject.value.value,
+       "l": storage.subject.value.range.lowerBound,
+       "u": storage.subject.value.range.upperBound]
 
     return valueDict
   }
@@ -69,7 +75,7 @@ public struct OcaBoundedDeviceProperty<
     object: OcaRoot,
     _ newValue: OcaBoundedPropertyValue<Value>
   ) async {
-    storage.setWithoutNotifyingSubscribers(newValue)
+    storage.subject.send(newValue)
     try? await notifySubscribers(object: object, newValue.value)
   }
 

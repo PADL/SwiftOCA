@@ -106,6 +106,13 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
     }
   }
 
+  deinit {
+    for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
+      let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
+      property.finish()
+    }
+  }
+
   enum CodingKeys: String, CodingKey {
     case objectNumber = "oNo"
     case classIdentification = "1.1"
