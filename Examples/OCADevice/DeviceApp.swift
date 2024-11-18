@@ -145,6 +145,11 @@ public enum DeviceApp {
         }
       }
       #endif
+      taskGroup.addTask {
+        for try await value in await gain.$gain {
+          print("gain set to \(value)!")
+        }
+      }
       try await taskGroup.next()
     }
   }
