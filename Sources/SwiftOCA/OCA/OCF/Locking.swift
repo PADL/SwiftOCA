@@ -115,7 +115,8 @@ struct Lock {
   }
 }
 
-struct ManagedCriticalState<State> {
+@_spi(SwiftOCAPrivate)
+public struct ManagedCriticalState<State> {
   private final class LockedBuffer: ManagedBuffer<State, Lock.Primitive> {
     deinit {
       withUnsafeMutablePointerToElements { Lock.deinitialize($0) }
@@ -124,15 +125,16 @@ struct ManagedCriticalState<State> {
 
   private let buffer: ManagedBuffer<State, Lock.Primitive>
 
-  init(_ initial: State) {
+  @_spi(SwiftOCAPrivate)
+  public init(_ initial: State) {
     buffer = LockedBuffer.create(minimumCapacity: 1) { buffer in
       buffer.withUnsafeMutablePointerToElements { Lock.initialize($0) }
       return initial
     }
   }
 
-  @discardableResult
-  func withCriticalRegion<R>(_ critical: (inout State) throws -> R) rethrows -> R {
+  @discardableResult @_spi(SwiftOCAPrivate)
+  public func withCriticalRegion<R>(_ critical: (inout State) throws -> R) rethrows -> R {
     try buffer.withUnsafeMutablePointers { header, lock in
       Lock.lock(lock)
       defer { Lock.unlock(lock) }
@@ -151,4 +153,5 @@ struct ManagedCriticalState<State> {
   }
 }
 
+@_spi(SwiftOCAPrivate)
 extension ManagedCriticalState: @unchecked Sendable where State: Sendable {}
