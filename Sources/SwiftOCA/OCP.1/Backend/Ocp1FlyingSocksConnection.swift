@@ -48,12 +48,6 @@ fileprivate extension SocketError {
   }
 }
 
-#if os(Linux)
-extension sockaddr_in: SocketAddress {}
-extension sockaddr_in6: SocketAddress {}
-extension sockaddr_un: SocketAddress {}
-#endif
-
 private extension Data {
   var socketAddress: any SocketAddress {
     try! withUnsafeBytes { unbound -> (any SocketAddress) in
