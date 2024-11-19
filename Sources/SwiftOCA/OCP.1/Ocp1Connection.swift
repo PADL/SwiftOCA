@@ -64,15 +64,44 @@ public let OcaWebSocketTcpConnectionPrefix = "ocaws/tcp"
 public let OcaLocalConnectionPrefix = "oca/local"
 public let OcaDatagramProxyConnectionPrefix = "oca/dg-proxy"
 
+public struct Ocp1ConnectionFlags: OptionSet, Sendable {
+  public static let automaticReconnect = Ocp1ConnectionFlags(rawValue: 1 << 0)
+  public static let refreshDeviceTreeOnConnection = Ocp1ConnectionFlags(rawValue: 1 << 1)
+
+  public typealias RawValue = UInt
+
+  public let rawValue: RawValue
+
+  public init(rawValue: RawValue) {
+    self.rawValue = rawValue
+  }
+}
+
 public struct Ocp1ConnectionOptions: Sendable {
-  let automaticReconnect: Bool
+  let flags: Ocp1ConnectionFlags
   let connectionTimeout: Duration
   let responseTimeout: Duration
-  let refreshDeviceTreeOnConnection: Bool
   let reconnectMaxTries: Int
   let reconnectPauseInterval: Duration
   let reconnectExponentialBackoffThreshold: Range<Int>
 
+  public init(
+    flags: Ocp1ConnectionFlags = .refreshDeviceTreeOnConnection,
+    connectionTimeout: Duration = .seconds(2),
+    responseTimeout: Duration = .seconds(2),
+    reconnectMaxTries: Int = 15,
+    reconnectPauseInterval: Duration = .milliseconds(250),
+    reconnectExponentialBackoffThreshold: Range<Int> = 3..<8
+  ) {
+    self.flags = flags
+    self.connectionTimeout = connectionTimeout
+    self.responseTimeout = responseTimeout
+    self.reconnectMaxTries = reconnectMaxTries
+    self.reconnectPauseInterval = reconnectPauseInterval
+    self.reconnectExponentialBackoffThreshold = reconnectExponentialBackoffThreshold
+  }
+
+  @available(*, deprecated, message: "use Ocp1ConnectionFlags initializer")
   public init(
     automaticReconnect: Bool = false,
     connectionTimeout: Duration = .seconds(2),
@@ -82,13 +111,18 @@ public struct Ocp1ConnectionOptions: Sendable {
     reconnectPauseInterval: Duration = .milliseconds(250),
     reconnectExponentialBackoffThreshold: Range<Int> = 3..<8
   ) {
-    self.automaticReconnect = automaticReconnect
-    self.connectionTimeout = connectionTimeout
-    self.responseTimeout = responseTimeout
-    self.refreshDeviceTreeOnConnection = refreshDeviceTreeOnConnection
-    self.reconnectMaxTries = reconnectMaxTries
-    self.reconnectPauseInterval = reconnectPauseInterval
-    self.reconnectExponentialBackoffThreshold = reconnectExponentialBackoffThreshold
+    var flags = Ocp1ConnectionFlags()
+    if automaticReconnect { flags.insert(.automaticReconnect) }
+    if refreshDeviceTreeOnConnection { flags.insert(.refreshDeviceTreeOnConnection) }
+
+    self.init(
+      flags: flags,
+      connectionTimeout: connectionTimeout,
+      responseTimeout: responseTimeout,
+      reconnectMaxTries: reconnectMaxTries,
+      reconnectPauseInterval: reconnectPauseInterval,
+      reconnectExponentialBackoffThreshold: reconnectExponentialBackoffThreshold
+    )
   }
 }
 
@@ -120,12 +154,13 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
   public internal(set) var options: Ocp1ConnectionOptions
 
   public func set(options: Ocp1ConnectionOptions) async throws {
-    let oldAutomaticReconnect = self.options.automaticReconnect
-    let oldRefreshDeviceTreeOnConnection = self.options.refreshDeviceTreeOnConnection
+    let oldFlags = self.options.flags
     self.options = options
-    if !oldAutomaticReconnect && options.automaticReconnect {
+    if !oldFlags.contains(.automaticReconnect) && options.flags.contains(.automaticReconnect) {
       try await connect()
-    } else if !oldRefreshDeviceTreeOnConnection && options.refreshDeviceTreeOnConnection {
+    } else if !oldFlags.contains(.refreshDeviceTreeOnConnection) && options.flags
+      .contains(.refreshDeviceTreeOnConnection)
+    {
       try await refreshDeviceTree()
     }
   }
@@ -206,7 +241,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
       do {
         try await receiveMessages(connection)
       } catch Ocp1Error.notConnected {
-        if await connection.options.automaticReconnect {
+        if await connection.options.flags.contains(.automaticReconnect) {
           try await connection.reconnectDevice()
         } else {
           resumeAllNotConnected()
@@ -413,7 +448,7 @@ public extension Ocp1Connection {
       throw error
     }
     _connectionState.send(.connected)
-    if options.refreshDeviceTreeOnConnection {
+    if options.flags.contains(.refreshDeviceTreeOnConnection) {
       try? await refreshDeviceTree()
     }
   }

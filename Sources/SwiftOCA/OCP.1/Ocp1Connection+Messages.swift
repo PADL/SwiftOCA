@@ -33,7 +33,7 @@ extension Ocp1Connection {
       }
       updateLastMessageSentTime()
     } catch Ocp1Error.notConnected {
-      if options.automaticReconnect {
+      if options.flags.contains(.automaticReconnect) {
         try await reconnectDevice()
       } else {
         throw Ocp1Error.notConnected
