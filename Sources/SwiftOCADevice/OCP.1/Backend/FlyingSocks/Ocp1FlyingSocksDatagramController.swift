@@ -87,8 +87,8 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   }
 
   nonisolated var identifier: String {
-    withUnsafeBytes(of: peerAddress) {
-      deviceAddressToString(Data($0))
+    peerAddress.withSockAddr { sa in
+      deviceAddressToString(sa)
     }
   }
 
