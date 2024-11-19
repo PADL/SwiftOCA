@@ -154,6 +154,9 @@
 		D3C0832C2A7C73960020AD57 /* ApplicationNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C0832B2A7C73960020AD57 /* ApplicationNetwork.swift */; };
 		D3C11DB92A789C0400452B2A /* DeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DB82A789C0400452B2A /* DeviceEndpoint.swift */; };
 		D3C11DBD2A78A3DC00452B2A /* Ocp1Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DBC2A78A3DC00452B2A /* Ocp1Controller.swift */; };
+		D3CFA35D2CED4D7500CAE537 /* Atomics in Frameworks */ = {isa = PBXBuildFile; productRef = D3CFA35C2CED4D7500CAE537 /* Atomics */; };
+		D3CFA3602CED4D9F00CAE537 /* Weak.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CFA35F2CED4D9F00CAE537 /* Weak.swift */; };
+		D3CFA3612CED4D9F00CAE537 /* Locking.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CFA35E2CED4D9F00CAE537 /* Locking.swift */; };
 		D3D8FA382B60546E0054FD3C /* DeviceManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA372B60546E0054FD3C /* DeviceManagerDataTypes.swift */; };
 		D3D8FA3A2B608FD60054FD3C /* List2D.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA392B608FD60054FD3C /* List2D.swift */; };
 		D3D8FA462B61D6A50054FD3C /* KeyPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA422B61D6A50054FD3C /* KeyPath.swift */; };
@@ -460,6 +463,8 @@
 		D3C0832B2A7C73960020AD57 /* ApplicationNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationNetwork.swift; sourceTree = "<group>"; };
 		D3C11DB82A789C0400452B2A /* DeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEndpoint.swift; sourceTree = "<group>"; };
 		D3C11DBC2A78A3DC00452B2A /* Ocp1Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1Controller.swift; sourceTree = "<group>"; };
+		D3CFA35E2CED4D9F00CAE537 /* Locking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Locking.swift; sourceTree = "<group>"; };
+		D3CFA35F2CED4D9F00CAE537 /* Weak.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Weak.swift; sourceTree = "<group>"; };
 		D3D8FA372B60546E0054FD3C /* DeviceManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManagerDataTypes.swift; sourceTree = "<group>"; };
 		D3D8FA392B608FD60054FD3C /* List2D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = List2D.swift; sourceTree = "<group>"; };
 		D3D8FA422B61D6A50054FD3C /* KeyPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyPath.swift; sourceTree = "<group>"; };
@@ -620,6 +625,7 @@
 				D3B325052B4F677700C8335F /* FlyingFox in Frameworks */,
 				D35C9DA02BF76E5100D680F2 /* SocketAddress in Frameworks */,
 				D32C49DD2B5102A300D73201 /* Logging in Frameworks */,
+				D3CFA35D2CED4D7500CAE537 /* Atomics in Frameworks */,
 				D3AD37792BF089CA00F3F713 /* SystemPackage in Frameworks */,
 				D32437CF2BA9276700C89102 /* AnyCodable in Frameworks */,
 			);
@@ -1325,6 +1331,8 @@
 		D3E6E23E2A3C0B2E00BF7095 /* OCF */ = {
 			isa = PBXGroup;
 			children = (
+				D3CFA35E2CED4D9F00CAE537 /* Locking.swift */,
+				D3CFA35F2CED4D9F00CAE537 /* Weak.swift */,
 				D3DA69EC2A3DD329001250A1 /* Task+Timeout.swift */,
 				D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */,
 				D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */,
@@ -1554,6 +1562,7 @@
 				D32437CE2BA9276700C89102 /* AnyCodable */,
 				D3AD37782BF089CA00F3F713 /* SystemPackage */,
 				D35C9D9F2BF76E5100D680F2 /* SocketAddress */,
+				D3CFA35C2CED4D7500CAE537 /* Atomics */,
 			);
 			productName = SwiftOCA;
 			productReference = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */;
@@ -1648,6 +1657,7 @@
 				D36ECA282A5B20480015174C /* XCRemoteSwiftPackageReference "swift-log" */,
 				D3AD37772BF089CA00F3F713 /* XCRemoteSwiftPackageReference "swift-system" */,
 				D35C9D9E2BF76E5100D680F2 /* XCRemoteSwiftPackageReference "SocketAddress" */,
+				D3CFA35B2CED4D7500CAE537 /* XCRemoteSwiftPackageReference "swift-atomics" */,
 			);
 			productRefGroup = D3E6E1652A3ACA0B00BF7095 /* Products */;
 			projectDirPath = "";
@@ -1926,6 +1936,8 @@
 				D3E6E2392A3BD52E00BF7095 /* Browser.swift in Sources */,
 				D3E6E1DE2A3ACAA900BF7095 /* WellKnownObjectNumbers.swift in Sources */,
 				D3FAC8EC2B5CFC11009E2775 /* TaskManagerDataTypes.swift in Sources */,
+				D3CFA3602CED4D9F00CAE537 /* Weak.swift in Sources */,
+				D3CFA3612CED4D9F00CAE537 /* Locking.swift in Sources */,
 				D3E6E1B32A3ACA7B00BF7095 /* Ocp1Connection+Codable.swift in Sources */,
 				D3E6E1BE2A3ACA8200BF7095 /* Command.swift in Sources */,
 				D3AFD37B2B32A06700A72E9A /* Ocp1EncoderImpl.swift in Sources */,
@@ -2574,7 +2586,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/swhitty/FlyingFox.git";
 			requirement = {
-				branch = udp;
+				branch = main;
 				kind = branch;
 			};
 		};
@@ -2582,8 +2594,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-log.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.5.4;
+				branch = main;
+				kind = branch;
 			};
 		};
 		D3AD37772BF089CA00F3F713 /* XCRemoteSwiftPackageReference "swift-system" */ = {
@@ -2592,6 +2604,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.2.1;
+			};
+		};
+		D3CFA35B2CED4D7500CAE537 /* XCRemoteSwiftPackageReference "swift-atomics" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-atomics.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.0;
 			};
 		};
 		D3E6E1EC2A3ACB0700BF7095 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */ = {
@@ -2650,6 +2670,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D36ECA282A5B20480015174A /* XCRemoteSwiftPackageReference "FlyingFox" */;
 			productName = FlyingFox;
+		};
+		D3CFA35C2CED4D7500CAE537 /* Atomics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3CFA35B2CED4D7500CAE537 /* XCRemoteSwiftPackageReference "swift-atomics" */;
+			productName = Atomics;
 		};
 		D3E6E1ED2A3ACB0700BF7095 /* AsyncAlgorithms */ = {
 			isa = XCSwiftPackageProductDependency;
