@@ -67,6 +67,7 @@ public let OcaDatagramProxyConnectionPrefix = "oca/dg-proxy"
 public struct Ocp1ConnectionFlags: OptionSet, Sendable {
   public static let automaticReconnect = Ocp1ConnectionFlags(rawValue: 1 << 0)
   public static let refreshDeviceTreeOnConnection = Ocp1ConnectionFlags(rawValue: 1 << 1)
+  public static let retainObjectCacheAfterDisconnect = Ocp1ConnectionFlags(rawValue: 1 << 2)
 
   public typealias RawValue = UInt
 
@@ -455,7 +456,10 @@ public extension Ocp1Connection {
 
   func disconnect() async throws {
     await removeSubscriptions()
-    try await disconnectDevice(clearObjectCache: true)
+    try await disconnectDevice(
+      clearObjectCache: !options.flags
+        .contains(.retainObjectCacheAfterDisconnect)
+    )
   }
 }
 
