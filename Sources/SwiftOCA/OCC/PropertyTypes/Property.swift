@@ -196,8 +196,8 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
   func _send(_enclosingInstance object: OcaRoot, _ state: PropertyValue) {
     #if canImport(Combine) || canImport(OpenCombine)
-    DispatchQueue.main.async {
-      object.objectWillChange.send()
+    Task { @MainActor [weak object] in
+      object?.objectWillChange.send()
     }
     #endif
     subject.send(state)
@@ -311,7 +311,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
       if flags.contains(.subscribeEvents) {
         let isSubscribed = await (try? object.isSubscribed) ?? false
         if !isSubscribed {
-          Task.detached { try await object.subscribe() }
+          Task.detached { [weak object] in try await object?.subscribe() }
         }
       }
 
