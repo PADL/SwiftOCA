@@ -25,17 +25,32 @@ public extension Ocp1Connection {
       lhs: Ocp1Connection.SubscriptionCancellable,
       rhs: Ocp1Connection.SubscriptionCancellable
     ) -> Bool {
-      lhs === rhs
+      if let lhsLabel = lhs.label, let rhsLabel = rhs.label {
+        lhsLabel == rhsLabel && lhs.event == rhs.event
+      } else {
+        lhs === rhs
+      }
     }
 
     public func hash(into hasher: inout Hasher) {
-      ObjectIdentifier(self).hash(into: &hasher)
+      if let label {
+        label.hash(into: &hasher)
+        event.hash(into: &hasher)
+      } else {
+        ObjectIdentifier(self).hash(into: &hasher)
+      }
     }
 
+    // an optional label (reverse-DNS naming style recommended). Non-anonymous cancellables
+    // are equal if their addresses equal; named cancellables are equal if their label and
+    // events are equal.
+
+    let label: String?
     let event: OcaEvent
     let callback: OcaSubscriptionCallback
 
-    init(event: OcaEvent, callback: @escaping OcaSubscriptionCallback) {
+    init(label: String?, event: OcaEvent, callback: @escaping OcaSubscriptionCallback) {
+      self.label = label
       self.event = event
       self.callback = callback
     }
@@ -51,10 +66,11 @@ public extension Ocp1Connection {
   }
 
   func addSubscription(
+    label: String? = nil,
     event: OcaEvent,
     callback: @escaping OcaSubscriptionCallback
   ) async throws -> SubscriptionCancellable {
-    let cancellable = SubscriptionCancellable(event: event, callback: callback)
+    let cancellable = SubscriptionCancellable(label: label, event: event, callback: callback)
     if let eventSubscriptions = subscriptions[event] {
       if eventSubscriptions.subscriptions.contains(cancellable) {
         throw Ocp1Error.alreadySubscribedToEvent

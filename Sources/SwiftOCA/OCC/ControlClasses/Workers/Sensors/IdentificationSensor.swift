@@ -27,6 +27,10 @@ open class OcaIdentificationSensor: OcaSensor, @unchecked Sendable {
     let event = OcaEvent(emitterONo: objectNumber, eventID: Self.identifyEventID)
 
     // TODO: remove on deinit
-    cancellable = try await connectionDelegate.addSubscription(event: event, callback: callback)
+    cancellable = try await connectionDelegate.addSubscription(
+      label: "com.padl.SwiftOCA.OcaIdentificationSensor",
+      event: event,
+      callback: callback
+    )
   }
 }

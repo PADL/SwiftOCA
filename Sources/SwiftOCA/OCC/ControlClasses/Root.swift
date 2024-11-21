@@ -236,6 +236,7 @@ public extension OcaRoot {
     let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
     do {
       subscriptionCancellable = try await connectionDelegate.addSubscription(
+        label: "com.padl.SwiftOCA.OcaRoot",
         event: event,
         callback: onPropertyEvent
       )
