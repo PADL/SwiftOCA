@@ -45,9 +45,9 @@ public extension Ocp1Connection {
     // are equal if their addresses equal; named cancellables are equal if their label and
     // events are equal.
 
-    let label: String?
-    let event: OcaEvent
-    let callback: OcaSubscriptionCallback
+    public let label: String?
+    public let event: OcaEvent
+    public let callback: OcaSubscriptionCallback
 
     init(label: String?, event: OcaEvent, callback: @escaping OcaSubscriptionCallback) {
       self.label = label
