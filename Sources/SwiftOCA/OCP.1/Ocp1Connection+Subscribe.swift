@@ -130,8 +130,12 @@ public extension Ocp1Connection {
     let subscriptions = eventSubscriptions.subscriptions
 
     Task {
-      for subscription in subscriptions {
-        try await subscription.callback(event, parameters)
+      await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
+        for subscription in subscriptions {
+          taskGroup.addTask {
+            try? await subscription.callback(event, parameters)
+          }
+        }
       }
     }
   }
