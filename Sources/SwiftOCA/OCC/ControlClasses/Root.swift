@@ -224,7 +224,7 @@ public extension OcaRoot {
          value.propertyIDs.contains(propertyID)
       {
         try? value.onEvent(self, event: event, eventData: data)
-        continue
+        break
       }
     }
   }
