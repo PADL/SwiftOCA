@@ -72,6 +72,7 @@ public extension Ocp1Connection {
   ) async throws -> SubscriptionCancellable {
     let cancellable = SubscriptionCancellable(label: label, event: event, callback: callback)
     if let eventSubscriptions = subscriptions[event] {
+      precondition(!eventSubscriptions.subscriptions.isEmpty)
       if eventSubscriptions.subscriptions.contains(cancellable) {
         throw Ocp1Error.alreadySubscribedToEvent
       }
@@ -102,6 +103,7 @@ public extension Ocp1Connection {
 
     eventSubscriptions.subscriptions.remove(cancellable)
     if eventSubscriptions.subscriptions.isEmpty {
+      subscriptions[cancellable.event] = nil
       try await subscriptionManager.removeSubscription(
         event: cancellable.event,
         subscriber: subscriber
