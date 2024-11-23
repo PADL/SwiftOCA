@@ -27,12 +27,12 @@ jobs:
     runs-on: ubuntu-24.04
     container: swift:6.0
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Packages
         run: |
           apt-get update
           apt-get install -y liburing-dev libavahi-compat-libdnssd-dev libavahi-client-dev
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Version
         run: swift --version
       - name: Build
