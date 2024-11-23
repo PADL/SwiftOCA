@@ -118,7 +118,7 @@ let CommonPackageDependencies: [Package.Dependency] = [
   .package(url: "https://github.com/apple/swift-system", from: "1.2.1"),
   .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
   .package(url: "https://github.com/PADL/SocketAddress", from: "0.0.1"),
-  .package(url: "https://github.com/lhoward/AsyncExtensions", branch: "linux"),
+  .package(url: "https://github.com/lhoward/AsyncExtensions", from: "0.9.0"),
   .package(url: "https://github.com/Flight-School/AnyCodable", from: "0.6.7"),
 ]
 
