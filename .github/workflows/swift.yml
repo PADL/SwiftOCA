@@ -30,7 +30,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Packages
-        run: apt-get install liburing-dev libavahi-compat-libdnssd-dev libavahi-client-dev
+        run: |
+          apt-get update
+          apt-get install -y liburing-dev libavahi-compat-libdnssd-dev libavahi-client-dev
       - name: Version
         run: swift --version
       - name: Build
