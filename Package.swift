@@ -114,7 +114,7 @@ PlatformTargets = []
 
 let CommonPackageDependencies: [Package.Dependency] = [
   .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.0.0"),
-  .package(url: "https://github.com/apple/swift-log", branch: "main"),
+  .package(url: "https://github.com/apple/swift-log", from: "1.6.2"),
   .package(url: "https://github.com/apple/swift-system", from: "1.2.1"),
   .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
   .package(url: "https://github.com/PADL/SocketAddress", from: "0.0.1"),
