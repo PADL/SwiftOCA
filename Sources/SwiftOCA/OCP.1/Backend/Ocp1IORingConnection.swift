@@ -79,7 +79,7 @@ public class Ocp1IORingConnection: Ocp1Connection {
     )
   }
 
-  override func connectDevice() async throws {
+  override public func connectDevice() async throws {
     let socket = try Socket(
       ring: IORing.shared,
       domain: deviceAddress.family,
@@ -94,9 +94,9 @@ public class Ocp1IORingConnection: Ocp1Connection {
     try await super.connectDevice()
   }
 
-  override public func disconnectDevice(clearObjectCache: Bool) async throws {
+  override public func disconnectDevice() async throws {
     socket = nil
-    try await super.disconnectDevice(clearObjectCache: clearObjectCache)
+    try await super.disconnectDevice()
   }
 
   fileprivate func withMappedError<T: Sendable>(

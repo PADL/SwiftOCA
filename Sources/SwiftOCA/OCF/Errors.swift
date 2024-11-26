@@ -34,6 +34,7 @@ public enum Ocp1Error: Error, Equatable {
   case invalidProtocolVersion
   case invalidProxyMethodResponse
   case invalidSyncValue
+  case missingKeepalive
   case noConnectionDelegate
   case noInitialValue
   case noMatchingTypeForClass

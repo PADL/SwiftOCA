@@ -37,8 +37,8 @@ public final class OcaLocalConnection: Ocp1Connection {
     .zero
   }
 
-  override public func disconnectDevice(clearObjectCache: Bool) async throws {
-    try await super.disconnectDevice(clearObjectCache: clearObjectCache)
+  override public func disconnectDevice() async throws {
+    try await super.disconnectDevice()
     endpoint.responseChannel.finish()
     endpoint.requestChannel.finish()
   }

@@ -99,6 +99,17 @@ public extension Ocp1Connection {
     }
   }
 
+  internal func refreshCachedObjectProperties() async {
+    await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
+      for object in objects {
+        taskGroup.addTask {
+          await object.value.refresh()
+          try? await object.value.subscribe()
+        }
+      }
+    }
+  }
+
   @_spi(SwiftOCAPrivate)
   func getClassIdentification(objectNumber: OcaONo) async throws -> OcaClassIdentification {
     guard objectNumber != OcaInvalidONo else { throw Ocp1Error.status(.badONo) }

@@ -113,7 +113,7 @@ extension Ocp1Connection.Monitor {
           .info(
             "\(connection): no heartbeat packet received in past \(keepAliveThreshold)"
           )
-        throw Ocp1Error.responseTimeout
+        throw Ocp1Error.missingKeepalive
       }
 
       let timeSinceLastMessageSent = await now - connection.lastMessageSentTime
@@ -135,12 +135,21 @@ extension Ocp1Connection.Monitor {
           do {
             try await receiveMessage(connection)
           } catch Ocp1Error.unknownPduType {
-          } catch Ocp1Error.invalidHandle {}
+          } catch Ocp1Error.invalidHandle {
+          } catch {
+            try await connection.onMonitorError(error)
+            throw error
+          }
         } while true
       }
       if connection.heartbeatTime > .zero {
-        group.addTask(priority: .background) {
-          try await self.keepAlive(connection)
+        group.addTask(priority: .background) { [self] in
+          do {
+            try await keepAlive(connection)
+          } catch {
+            try await connection.onMonitorError(error)
+            throw error
+          }
         }
       }
       try await group.next()

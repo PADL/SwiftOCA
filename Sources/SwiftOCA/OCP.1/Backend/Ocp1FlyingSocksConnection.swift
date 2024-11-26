@@ -123,7 +123,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     try? asyncSocket?.close()
   }
 
-  override func connectDevice() async throws {
+  override public func connectDevice() async throws {
     let socket = try Socket(domain: Int32(deviceAddress.family), type: socketType)
     try? setSocketOptions(socket)
     // also connect UDP sockets to ensure we do not receive unsolicited replies
@@ -135,13 +135,13 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     try await super.connectDevice()
   }
 
-  override public func disconnectDevice(clearObjectCache: Bool) async throws {
+  override public func disconnectDevice() async throws {
     await AsyncSocketPoolMonitor.shared.stop()
     if let asyncSocket {
       try asyncSocket.close()
       self.asyncSocket = nil
     }
-    try await super.disconnectDevice(clearObjectCache: clearObjectCache)
+    try await super.disconnectDevice()
   }
 
   public convenience init(

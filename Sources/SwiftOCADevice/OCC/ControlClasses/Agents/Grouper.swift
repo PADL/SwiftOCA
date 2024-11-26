@@ -62,7 +62,7 @@ private actor OcaConnectionBroker {
     for addr in sequence(first: firstAddr, next: { $0.pointee.ai_next }) {
       let connection: Ocp1Connection
       let data = Data(bytes: addr.pointee.ai_addr, count: Int(addr.pointee.ai_addrlen))
-      let options = Ocp1ConnectionOptions()
+      let options = Ocp1ConnectionOptions(flags: [.retainObjectCacheAfterDisconnect])
 
       switch addr.pointee.ai_socktype {
       case SwiftOCA.SOCK_STREAM:
@@ -452,7 +452,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
                 citizen: citizen,
                 changeType: .citizenConnectionLost
               )
-              try await connection.disconnectDevice(clearObjectCache: false)
+              try await connection.disconnect()
               Task { @OcaConnection in
                 if !connection.isConnected {
                   // check connected in case we are racing

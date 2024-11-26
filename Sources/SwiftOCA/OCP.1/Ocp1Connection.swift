@@ -20,11 +20,6 @@ import Atomics
 @preconcurrency
 import Foundation
 import Logging
-#if canImport(Combine)
-import Combine
-#elseif canImport(OpenCombine)
-import OpenCombine
-#endif
 
 package let Ocp1MaximumDatagramPduSize = 1500
 
@@ -129,11 +124,18 @@ public struct Ocp1ConnectionOptions: Sendable {
 }
 
 public enum Ocp1ConnectionState: OcaUint8, Codable, Sendable {
+  /// controller has not been connected, or was explicitly disconnected
   case notConnected
+  /// controller is connecting
   case connecting
+  /// controller is connected
   case connected
+  /// controller is reconnecting (only if `automaticReconnect` flag is set)
   case reconnecting
-  case timedOut
+  /// missed heartbeat and `automaticReconnect` flag unset
+  case connectionTimedOut
+  /// connection failed
+  case connectionFailed
 }
 
 public struct Ocp1ConnectionStatistics: Sendable {
@@ -176,7 +178,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     .seconds(1)
   }
 
-  private let _connectionState = AsyncCurrentValueSubject<Ocp1ConnectionState>(.notConnected)
+  let _connectionState = AsyncCurrentValueSubject<Ocp1ConnectionState>(.notConnected)
   public let connectionState: AnyAsyncSequence<Ocp1ConnectionState>
 
   /// Object interning
@@ -248,11 +250,6 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
         try await receiveMessages(connection)
       } catch Ocp1Error.notConnected {
         resumeAllNotConnected()
-        if await connection.options.flags.contains(.automaticReconnect) {
-          try await connection.reconnectDevice()
-        } else {
-          throw Ocp1Error.notConnected
-        }
       }
     }
 
@@ -308,8 +305,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 
   /// actor for monitoring response and matching them with requests
   var monitor: Monitor?
-
-  private var monitorTask: Task<(), Error>?
+  var monitorTask: Task<(), Error>?
 
   private func _configureTracing() {
     if options.flags.contains(.enableTracing) {
@@ -334,100 +330,14 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
     return handle
   }
 
-  func reconnectDevice() async throws {
-    try await disconnectDevice(clearObjectCache: false)
+  open func connectDevice() async throws {}
 
-    var lastError: Error?
-    var backoff: Duration = options.reconnectPauseInterval
-
-    for i in 0..<options.reconnectMaxTries {
-      do {
-        try await connectDeviceWithTimeout()
-        _connectionState.send(.connected)
-        break
-      } catch {
-        lastError = error
-        _connectionState.send(.reconnecting)
-        if options.reconnectExponentialBackoffThreshold.contains(i) {
-          backoff *= 2
-        }
-        try await Task.sleep(for: backoff)
-      }
-    }
-
-    if let lastError {
-      throw lastError
-    } else if !isConnected {
-      throw Ocp1Error.notConnected
-    }
-
-    await refreshSubscriptions()
-  }
-
-  private func connectDeviceWithTimeout() async throws {
-    do {
-      try await withThrowingTimeout(of: options.connectionTimeout) {
-        try await self.connectDevice()
-      }
-    } catch Ocp1Error.responseTimeout {
-      throw Ocp1Error.connectionTimeout
-    } catch {
-      throw error
-    }
-  }
-
-  func connectDevice() async throws {
-    monitor = Monitor(self)
-    monitorTask = Task {
-      try await monitor!.run()
-    }
-
-    subscriptions = [:]
-
-    if heartbeatTime > .zero {
-      // send keepalive to open UDP connection
-      try await sendKeepAlive()
-    }
-
-    // refresh all objects
-    for (_, object) in objects {
-      await object.refresh()
-    }
-
-    #if canImport(Combine) || canImport(OpenCombine)
-    objectWillChange.send()
-    #endif
-
-    logger.info("Connected to \(self)")
-  }
-
-  open func clearObjectCache() async {
+  public func clearObjectCache() async {
     objects = [:]
     await rootBlock.refreshAll()
   }
 
-  open func disconnectDevice(clearObjectCache: Bool) async throws {
-    if let monitor {
-      monitor.stop()
-      self.monitor = nil
-    }
-    monitorTask = nil
-    _connectionState.send(.notConnected)
-
-    if clearObjectCache {
-      await self.clearObjectCache()
-    }
-
-    #if canImport(Combine) || canImport(OpenCombine)
-    objectWillChange.send()
-    #endif
-
-    logger.info("Disconnected from \(self)")
-  }
-
-  public var isConnected: Bool {
-    _connectionState.value == .connected
-  }
+  open func disconnectDevice() async throws {}
 
   public nonisolated var description: String {
     connectionPrefix
@@ -446,34 +356,6 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
   /// A concrete implementation is free to override this however.
   open var isDatagram: Bool {
     heartbeatTime > .seconds(0)
-  }
-}
-
-/// Public API
-public extension Ocp1Connection {
-  func connect() async throws {
-    _connectionState.send(.connecting)
-    do {
-      try await connectDeviceWithTimeout()
-    } catch Ocp1Error.connectionTimeout {
-      _connectionState.send(.timedOut)
-      throw Ocp1Error.connectionTimeout
-    } catch {
-      _connectionState.send(.notConnected)
-      throw error
-    }
-    _connectionState.send(.connected)
-    if options.flags.contains(.refreshDeviceTreeOnConnection) {
-      try? await refreshDeviceTree()
-    }
-  }
-
-  func disconnect() async throws {
-    await removeSubscriptions()
-    try await disconnectDevice(
-      clearObjectCache: !options.flags
-        .contains(.retainObjectCacheAfterDisconnect)
-    )
   }
 }
 

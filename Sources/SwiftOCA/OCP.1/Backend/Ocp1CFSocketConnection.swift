@@ -401,14 +401,14 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
     deviceAddress.family
   }
 
-  override func connectDevice() async throws {
+  override public func connectDevice() async throws {
     socket = try await _CFSocketWrapper(address: deviceAddress, type: type)
     try await super.connectDevice()
   }
 
-  override public func disconnectDevice(clearObjectCache: Bool) async throws {
+  override public func disconnectDevice() async throws {
     socket = nil
-    try await super.disconnectDevice(clearObjectCache: clearObjectCache)
+    try await super.disconnectDevice()
   }
 }
 

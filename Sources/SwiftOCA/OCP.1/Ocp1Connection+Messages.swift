@@ -17,28 +17,24 @@
 import Foundation
 
 extension Ocp1Connection {
-  func updateLastMessageSentTime() {
-    lastMessageSentTime = Monitor.now
-  }
-
   private func sendMessages(
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType
   ) async throws {
     let messagePduData = try Self.encodeOcp1MessagePdu(messages, type: messageType)
 
+    try await willSendMessage()
+
     do {
       guard try await write(messagePduData) == messagePduData.count else {
         throw Ocp1Error.pduSendingFailed
       }
-      updateLastMessageSentTime()
-    } catch Ocp1Error.notConnected {
-      if options.flags.contains(.automaticReconnect) {
-        try await reconnectDevice()
-      } else {
-        throw Ocp1Error.notConnected
-      }
+    } catch let error as Ocp1Error {
+      try await didSendMessage(error: error)
+      throw error
     }
+
+    try await didSendMessage()
   }
 
   private func sendMessage(
