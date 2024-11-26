@@ -242,10 +242,10 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
       do {
         try await receiveMessages(connection)
       } catch Ocp1Error.notConnected {
+        resumeAllNotConnected()
         if await connection.options.flags.contains(.automaticReconnect) {
           try await connection.reconnectDevice()
         } else {
-          resumeAllNotConnected()
           throw Ocp1Error.notConnected
         }
       }
@@ -261,7 +261,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
       }
     }
 
-    func resumeAllNotConnected() {
+    private func resumeAllNotConnected() {
       _continuations.withCriticalRegion { continuations in
         for continuation in continuations.values {
           continuation.resume(throwing: Ocp1Error.notConnected)
