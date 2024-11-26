@@ -68,6 +68,7 @@ public struct Ocp1ConnectionFlags: OptionSet, Sendable {
   public static let automaticReconnect = Ocp1ConnectionFlags(rawValue: 1 << 0)
   public static let refreshDeviceTreeOnConnection = Ocp1ConnectionFlags(rawValue: 1 << 1)
   public static let retainObjectCacheAfterDisconnect = Ocp1ConnectionFlags(rawValue: 1 << 2)
+  public static let enableTracing = Ocp1ConnectionFlags(rawValue: 1 << 3)
 
   public typealias RawValue = UInt
 
@@ -163,6 +164,10 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
       .contains(.refreshDeviceTreeOnConnection)
     {
       try await refreshDeviceTree()
+    }
+
+    if oldFlags.symmetricDifference(options.flags).contains(.enableTracing) {
+      _configureTracing()
     }
   }
 
@@ -306,12 +311,21 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 
   private var monitorTask: Task<(), Error>?
 
+  private func _configureTracing() {
+    if options.flags.contains(.enableTracing) {
+      logger.logLevel = .trace
+    } else {
+      logger.logLevel = .info
+    }
+  }
+
   public init(options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()) {
     connectionState = _connectionState.eraseToAnyAsyncSequence()
     self.options = options
     add(object: rootBlock)
     add(object: subscriptionManager)
     add(object: deviceManager)
+    _configureTracing()
   }
 
   func getNextCommandHandle() async -> OcaUint32 {
