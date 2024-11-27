@@ -135,7 +135,7 @@ extension Ocp1Connection.Monitor {
 
   func receiveMessages(_ connection: Ocp1Connection) async throws {
     do {
-      try await withThrowingTaskGroup(of: Void.self) { @OcaConnection group in
+      try await withThrowingTaskGroup(of: Void.self) { group in
         group.addTask { [self] in
           repeat {
             try Task.checkCancellation()
