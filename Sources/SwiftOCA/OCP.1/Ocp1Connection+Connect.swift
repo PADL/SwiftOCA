@@ -147,14 +147,14 @@ extension Ocp1Connection {
 
   private func _refreshDeviceTreeWithPolicy() async {
     if options.flags.contains(.refreshDeviceTreeOnConnection) {
-      logger.trace("refreshing device tree")
+      logger.debug("refreshing device tree")
       try? await refreshDeviceTree()
     }
   }
 
   private func _refreshSubscriptionsWithPolicy() async {
     if options.flags.contains(.refreshSubscriptionsOnReconnection) {
-      logger.trace("refreshing subscriptions")
+      logger.debug("refreshing subscriptions")
       await refreshSubscriptions()
       await refreshCachedObjectProperties()
     }
@@ -190,14 +190,12 @@ extension Ocp1Connection {
   }
 
   public func connect() async throws {
-    logger.trace("connecting...")
-
     updateConnectionState(.connecting)
 
     do {
       try await _connectDeviceWithTimeout()
     } catch {
-      logger.trace("connection failed: \(error)")
+      logger.debug("connection failed: \(error)")
       updateConnectionState(error.ocp1ConnectionState)
       throw error
     }
@@ -298,7 +296,7 @@ extension Ocp1Connection {
 
     for i in 0..<options.reconnectMaxTries {
       do {
-        logger.trace("reconnection attempt \(i + 1)")
+        logger.trace("reconnecting: attempt \(i + 1)")
         try await _connectDeviceWithTimeout()
         try await _didConnectDevice()
         lastError = nil
@@ -314,7 +312,7 @@ extension Ocp1Connection {
     }
 
     if let lastError {
-      logger.trace("reconnection abandoned: \(lastError)")
+      logger.debug("reconnection abandoned: \(lastError)")
       updateConnectionState(lastError.ocp1ConnectionState)
       throw lastError
     } else if !isDatagram && !isConnected {
@@ -353,7 +351,7 @@ extension Ocp1Connection {
        let connectionState = error.connectionState
     {
       logger
-        .trace(
+        .debug(
           "failed to send message: error \(error), new connection state \(connectionState); disconnecting"
         )
       if isConnected {
@@ -363,24 +361,21 @@ extension Ocp1Connection {
     }
   }
 
-  func _onMonitorError(_ error: Error) async throws {
-    logger.trace("expiring connection with policy \(_reconnectionPolicy)")
-
+  private func _onMonitorError(_ error: Error) async throws {
     updateConnectionState(error.ocp1ConnectionState)
 
     if error._isRecoverableConnectionError, _reconnectionPolicy == .reconnectInMonitor {
+      logger.trace("expiring connection after receiving error \(error)")
       try await _disconnectDeviceAfterConnectionFailure()
       Task.detached { try await self.reconnectDeviceWithBackoff() }
     }
   }
 
   func onKeepAliveMonitorError(_ error: Error) async throws {
-    logger.trace("keepAlive monitor raised error: \(error)")
     try await _onMonitorError(error)
   }
 
   func onReceiveMessageMonitorError(_ error: Error) async throws {
-    logger.trace("receiveMessages monitor raised error: \(error)")
     try await _onMonitorError(error)
   }
 }
