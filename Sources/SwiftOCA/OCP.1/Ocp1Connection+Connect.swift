@@ -27,7 +27,7 @@ import OpenCombine
 import SystemPackage
 
 private extension Ocp1Error {
-  var connectionState: Ocp1ConnectionState? {
+  var ocp1ConnectionState: Ocp1ConnectionState? {
     switch self {
     case .notConnected:
       .notConnected
@@ -75,7 +75,7 @@ private extension Errno {
 
 private extension Error {
   var ocp1ConnectionState: Ocp1ConnectionState {
-    (self as? Ocp1Error)?.connectionState ?? .connectionFailed
+    (self as? Ocp1Error)?.ocp1ConnectionState ?? .connectionFailed
   }
 
   var _isRecoverableConnectionError: Bool {
@@ -109,7 +109,8 @@ private extension Ocp1ConnectionState {
 extension Ocp1Connection {
   /// start receiveMessages/keepAlive monitor task
   private func _startMonitor() {
-    let monitor = Monitor(self)
+    connectionID &+= 1
+    let monitor = Monitor(self, id: connectionID)
     monitorTask = Task {
       try await monitor.run()
     }
@@ -160,18 +161,20 @@ extension Ocp1Connection {
     }
   }
 
-  func updateConnectionState(_ connectionState: Ocp1ConnectionState) {
+  private func _updateConnectionState(_ connectionState: Ocp1ConnectionState) {
     logger.trace("_updateConnectionState: \(_connectionState.value) => \(connectionState)")
-    if connectionState == .connected {
-      logger.info("connected to \(self)")
-    }
     _connectionState.send(connectionState)
+  }
+
+  func markConnectionConnected() {
+    logger.info("connected to \(self)")
+    _updateConnectionState(.connected)
   }
 
   private func _didConnectDevice() async throws {
     if !isDatagram {
       // otherwise, set connected state when we receive first keepAlive PDU
-      updateConnectionState(.connected)
+      markConnectionConnected()
     }
 
     _startMonitor()
@@ -190,13 +193,13 @@ extension Ocp1Connection {
   }
 
   public func connect() async throws {
-    updateConnectionState(.connecting)
+    _updateConnectionState(.connecting)
 
     do {
       try await _connectDeviceWithTimeout()
     } catch {
       logger.debug("connection failed: \(error)")
-      updateConnectionState(error.ocp1ConnectionState)
+      _updateConnectionState(error.ocp1ConnectionState)
       throw error
     }
 
@@ -243,7 +246,7 @@ extension Ocp1Connection {
   public func disconnect() async throws {
     await removeSubscriptions()
 
-    updateConnectionState(.notConnected)
+    _updateConnectionState(.notConnected)
 
     let clearObjectCache = !options.flags.contains(.retainObjectCacheAfterDisconnect)
     try await _disconnectDevice(clearObjectCache: clearObjectCache)
@@ -253,32 +256,8 @@ extension Ocp1Connection {
 // MARK: - reconnection handling
 
 extension Ocp1Connection {
-  enum ReconnectionPolicy {
-    /// do not try to automatically reconnect on connection failure
-    case noReconnect
-    /// try to reconnect in the keepAlive monitor task
-    case reconnectInMonitor
-    /// try to reconnect before sending the next message
-    case reconnectOnSend
-  }
-
-  ///
-  /// Re-connection logic is as follows:
-  ///
-  /// * If the connection has a heartbeat, then automatic reconnection is only
-  ///   managed in the / heartbeat task
-  ///
-  /// * If the connection does not have a heartbeat, than automatic
-  ///   reconnection is managed when / sending a PDU
-  ///
-  private var _reconnectionPolicy: ReconnectionPolicy {
-    if !options.flags.contains(.automaticReconnect) {
-      .noReconnect
-    } else if heartbeatTime == .zero {
-      .reconnectOnSend
-    } else {
-      .reconnectInMonitor
-    }
+  private var _automaticReconnect: Bool {
+    options.flags.contains(.automaticReconnect)
   }
 
   /// reconnect to the OCA device with exponential backoff, updating
@@ -287,7 +266,7 @@ extension Ocp1Connection {
     var lastError: Error?
     var backoff: Duration = options.reconnectPauseInterval
 
-    updateConnectionState(.reconnecting)
+    _updateConnectionState(.reconnecting)
 
     logger
       .trace(
@@ -313,69 +292,22 @@ extension Ocp1Connection {
 
     if let lastError {
       logger.debug("reconnection abandoned: \(lastError)")
-      updateConnectionState(lastError.ocp1ConnectionState)
+      _updateConnectionState(lastError.ocp1ConnectionState)
       throw lastError
     } else if !isDatagram && !isConnected {
       logger.trace("reconnection abandoned after too many tries")
-      updateConnectionState(.notConnected)
+      _updateConnectionState(.notConnected)
       throw Ocp1Error.notConnected
     }
   }
 
-  private var _needsReconnectOnSend: Bool {
-    guard _reconnectionPolicy == .reconnectOnSend else { return false }
+  func onMonitorError(id: Int, _ error: Error) async throws {
+    _updateConnectionState(error.ocp1ConnectionState)
 
-    switch _connectionState.value {
-    case .notConnected:
-      fallthrough
-    case .connectionTimedOut:
-      fallthrough
-    case .connectionFailed:
-      return true
-    default:
-      return false
-    }
-  }
-
-  func willSendMessage() async throws {
-    guard _needsReconnectOnSend else { return }
-    try await reconnectDeviceWithBackoff()
-  }
-
-  func didSendMessage(error: Ocp1Error? = nil) async throws {
-    if error == nil {
-      lastMessageSentTime = Monitor.now
-    }
-
-    if _reconnectionPolicy != .reconnectInMonitor, let error,
-       let connectionState = error.connectionState
-    {
-      logger
-        .debug(
-          "failed to send message: error \(error), new connection state \(connectionState); disconnecting"
-        )
-      if isConnected {
-        updateConnectionState(connectionState)
-        try await _disconnectDeviceAfterConnectionFailure()
-      }
-    }
-  }
-
-  private func _onMonitorError(_ error: Error) async throws {
-    updateConnectionState(error.ocp1ConnectionState)
-
-    if error._isRecoverableConnectionError, _reconnectionPolicy == .reconnectInMonitor {
-      logger.trace("expiring connection after receiving error \(error)")
+    if _automaticReconnect, error._isRecoverableConnectionError {
+      logger.trace("monitor task \(id) disconnecting: \(error)")
       try await _disconnectDeviceAfterConnectionFailure()
       Task.detached { try await self.reconnectDeviceWithBackoff() }
     }
-  }
-
-  func onKeepAliveMonitorError(_ error: Error) async throws {
-    try await _onMonitorError(error)
-  }
-
-  func onReceiveMessageMonitorError(_ error: Error) async throws {
-    try await _onMonitorError(error)
   }
 }

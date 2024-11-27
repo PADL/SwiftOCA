@@ -91,7 +91,7 @@ extension Ocp1Connection.Monitor {
   @OcaConnection
   private func _markDatagramConnectionConnected(_ connection: Ocp1Connection) async {
     if connection.isDatagram, connection.isConnecting {
-      connection.updateConnectionState(.connected)
+      connection.markConnectionConnected()
     }
   }
 
@@ -136,33 +136,33 @@ extension Ocp1Connection.Monitor {
   }
 
   func receiveMessages(_ connection: Ocp1Connection) async throws {
-    try await withThrowingTaskGroup(of: Void.self) { @OcaConnection group in
-      group.addTask { [self] in
-        repeat {
-          try Task.checkCancellation()
-          do {
-            try await receiveMessage(connection)
-          } catch Ocp1Error.unknownPduType {
-          } catch Ocp1Error.invalidHandle {
-          } catch {
-            guard await !connection.isConnecting else { continue }
-            try await connection.onReceiveMessageMonitorError(error)
-            throw error
-          }
-        } while true
-      }
-      if connection.heartbeatTime > .zero {
-        group.addTask(priority: .background) { [self] in
-          do {
+    do {
+      try await withThrowingTaskGroup(of: Void.self) { @OcaConnection group in
+        group.addTask { [self] in
+          repeat {
+            try Task.checkCancellation()
+            do {
+              try await receiveMessage(connection)
+            } catch Ocp1Error.unknownPduType {
+            } catch Ocp1Error.invalidHandle {}
+          } while true
+        }
+        if connection.heartbeatTime > .zero {
+          group.addTask(priority: .background) { [self] in
             try await keepAlive(connection)
-          } catch {
-            try await connection.onKeepAliveMonitorError(error)
-            throw error
           }
         }
+        try await group.next()
+        group.cancelAll()
       }
-      try await group.next()
-      group.cancelAll()
+    } catch {
+      // if we're not already in the middle of connecting or re-connecting,
+      // possibly trigger a reconnect depending on the autoReconnect policy
+      // and the nature of the error
+      if await !connection.isConnecting {
+        try? await connection.onMonitorError(id: _connectionID, error)
+      }
+      throw error
     }
   }
 }

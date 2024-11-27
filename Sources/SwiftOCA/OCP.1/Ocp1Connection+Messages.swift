@@ -23,18 +23,9 @@ extension Ocp1Connection {
   ) async throws {
     let messagePduData = try Self.encodeOcp1MessagePdu(messages, type: messageType)
 
-    try await willSendMessage()
-
-    do {
-      guard try await write(messagePduData) == messagePduData.count else {
-        throw Ocp1Error.pduSendingFailed
-      }
-    } catch let error as Ocp1Error {
-      try await didSendMessage(error: error)
-      throw error
+    guard try await write(messagePduData) == messagePduData.count else {
+      throw Ocp1Error.pduSendingFailed
     }
-
-    try await didSendMessage()
   }
 
   private func sendMessage(

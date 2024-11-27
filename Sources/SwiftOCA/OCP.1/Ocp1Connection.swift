@@ -141,6 +141,7 @@ public enum Ocp1ConnectionState: OcaUint8, Codable, Sendable {
 
 public struct Ocp1ConnectionStatistics: Sendable {
   public let connectionState: Ocp1ConnectionState
+  public let connectionID: Int
   public var isConnected: Bool { connectionState == .connected }
   public let requestCount: Int
   public let outstandingRequests: [OcaUint32]
@@ -200,6 +201,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 
   var subscriptions = [OcaEvent: EventSubscriptions]()
   var logger = Logger(label: "com.padl.SwiftOCA")
+  var connectionID = 0
 
   private var nextCommandHandle = CommandHandleBase
 
@@ -214,6 +216,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
   public var statistics: Ocp1ConnectionStatistics {
     Ocp1ConnectionStatistics(
       connectionState: _connectionState.value,
+      connectionID: connectionID,
       requestCount: Int(nextCommandHandle - CommandHandleBase),
       outstandingRequests: monitor?.outstandingRequests ?? [],
       cachedObjectCount: objects.count,
@@ -225,10 +228,11 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
   }
 
   /// Monitor structure for matching requests and responses
-  final class Monitor: @unchecked Sendable {
+  final class Monitor: @unchecked Sendable, CustomStringConvertible {
     typealias Continuation = CheckedContinuation<Ocp1Response, Error>
 
     private let _connection: Weak<Ocp1Connection>
+    let _connectionID: Int
     private let _continuations = ManagedCriticalState<[OcaUint32: Continuation]>([:])
     private var _lastMessageReceivedTime = ManagedAtomic<UInt64>(0)
 
@@ -236,8 +240,9 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
       UInt64(time(nil))
     }
 
-    init(_ connection: Ocp1Connection) {
+    init(_ connection: Ocp1Connection, id: Int) {
       _connection = Weak(connection)
+      _connectionID = id
       updateLastMessageReceivedTime()
     }
 
@@ -301,6 +306,13 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
 
     var lastMessageReceivedTime: UInt64 {
       _lastMessageReceivedTime.load(ordering: .relaxed)
+    }
+
+    var description: String {
+      let connectionString: String = if let connection { connection.description }
+      else { "<null>" }
+
+      return "\(connectionString)[\(_connectionID)]"
     }
   }
 
