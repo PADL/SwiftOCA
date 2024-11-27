@@ -363,16 +363,24 @@ extension Ocp1Connection {
     }
   }
 
-  func onMonitorError(_ error: Error) async throws {
-    guard error._isRecoverableConnectionError else { return }
-
-    logger.trace("expiring connection with policy \(_reconnectionPolicy), error \(error)")
+  func _onMonitorError(_ error: Error) async throws {
+    logger.trace("expiring connection with policy \(_reconnectionPolicy)")
 
     updateConnectionState(error.ocp1ConnectionState)
 
-    if _reconnectionPolicy == .reconnectInMonitor {
+    if error._isRecoverableConnectionError, _reconnectionPolicy == .reconnectInMonitor {
       try await _disconnectDeviceAfterConnectionFailure()
-      Task { try await reconnectDeviceWithBackoff() }
+      Task.detached { try await self.reconnectDeviceWithBackoff() }
     }
+  }
+
+  func onKeepAliveMonitorError(_ error: Error) async throws {
+    logger.trace("keepAlive monitor raised error: \(error)")
+    try await _onMonitorError(error)
+  }
+
+  func onReceiveMessageMonitorError(_ error: Error) async throws {
+    logger.trace("receiveMessages monitor raised error: \(error)")
+    try await _onMonitorError(error)
   }
 }

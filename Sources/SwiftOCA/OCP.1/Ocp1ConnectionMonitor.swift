@@ -145,7 +145,8 @@ extension Ocp1Connection.Monitor {
           } catch Ocp1Error.unknownPduType {
           } catch Ocp1Error.invalidHandle {
           } catch {
-            try await connection.onMonitorError(error)
+            guard await !connection.isConnecting else { continue }
+            try await connection.onReceiveMessageMonitorError(error)
             throw error
           }
         } while true
@@ -155,7 +156,7 @@ extension Ocp1Connection.Monitor {
           do {
             try await keepAlive(connection)
           } catch {
-            try await connection.onMonitorError(error)
+            try await connection.onKeepAliveMonitorError(error)
             throw error
           }
         }
