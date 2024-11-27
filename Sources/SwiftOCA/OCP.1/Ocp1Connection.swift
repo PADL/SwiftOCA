@@ -64,6 +64,7 @@ public struct Ocp1ConnectionFlags: OptionSet, Sendable {
   public static let refreshDeviceTreeOnConnection = Ocp1ConnectionFlags(rawValue: 1 << 1)
   public static let retainObjectCacheAfterDisconnect = Ocp1ConnectionFlags(rawValue: 1 << 2)
   public static let enableTracing = Ocp1ConnectionFlags(rawValue: 1 << 3)
+  public static let refreshSubscriptionsOnReconnection = Ocp1ConnectionFlags(rawValue: 1 << 4)
 
   public typealias RawValue = UInt
 

@@ -136,6 +136,14 @@ extension Ocp1Connection {
     }
   }
 
+  private func _refreshSubscriptionsWithPolicy() async {
+    if options.flags.contains(.refreshSubscriptionsOnReconnection) {
+      logger.trace("refreshing subscriptions")
+      await refreshSubscriptions()
+      await refreshCachedObjectProperties()
+    }
+  }
+
   func updateConnectionState(_ connectionState: Ocp1ConnectionState) {
     logger.trace("_updateConnectionState: \(_connectionState.value) => \(connectionState)")
     _connectionState.send(connectionState)
@@ -158,8 +166,7 @@ extension Ocp1Connection {
     objectWillChange.send()
     #endif
 
-    await refreshSubscriptions()
-    await refreshCachedObjectProperties()
+    await _refreshSubscriptionsWithPolicy()
     await _refreshDeviceTreeWithPolicy()
 
     logger.info("connected to \(self)")
