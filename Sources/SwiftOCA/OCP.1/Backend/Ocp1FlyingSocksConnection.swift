@@ -75,12 +75,10 @@ private actor AsyncSocketPoolMonitor {
   static let shared = AsyncSocketPoolMonitor()
 
   private let pool: some AsyncSocketPool = SocketPool.make()
-  private var isRunning = false
   private var task: Task<(), Error>?
 
   func get() async throws -> some AsyncSocketPool {
-    guard !isRunning else { return pool }
-    defer { isRunning = true }
+    guard task == nil else { return pool }
     try await pool.prepare()
     task = Task {
       try await pool.run()
@@ -89,8 +87,10 @@ private actor AsyncSocketPoolMonitor {
   }
 
   func stop() {
-    task?.cancel()
-    task = nil
+    if let task {
+      task.cancel()
+      self.task = nil
+    }
   }
 
   deinit {
