@@ -175,13 +175,6 @@ extension Ocp1Connection {
   }
 
   private func _didConnectDevice() async throws {
-    if !isDatagram {
-      // otherwise, set connected state when we receive first keepAlive PDU
-      markConnectionConnected()
-    }
-
-    _startMonitor()
-
     if heartbeatTime > .zero {
       // send keepalive to open UDP connection
       try await sendKeepAlive()
@@ -204,6 +197,8 @@ extension Ocp1Connection {
 
     let connectionState = _connectionState.value
     if connectionState == .connecting {
+      _startMonitor()
+      if !isDatagram { markConnectionConnected() }
       try await _didConnectDevice()
     } else if connectionState != .connected {
       logger.trace("connection failed whilst attempting to connect: \(connectionState)")
@@ -300,7 +295,11 @@ extension Ocp1Connection {
     do {
       try await _withExponentialBackoffPolicy {
         try await _connectDeviceWithTimeout()
-        try await _didConnectDevice()
+        _startMonitor()
+        if !isDatagram {
+          markConnectionConnected()
+          try await _didConnectDevice()
+        }
       }
 
       // for datagram connections, the connection isn't truly open until we have sent a keepAlive
@@ -311,7 +310,7 @@ extension Ocp1Connection {
           case .connected:
             return
           case .reconnecting:
-            try await sendKeepAlive()
+            try await _didConnectDevice()
             throw Ocp1Error.missingKeepalive
           default:
             throw Ocp1Error.connectionTimeout
