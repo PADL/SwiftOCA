@@ -88,6 +88,13 @@ extension Ocp1Connection.Monitor {
     }
   }
 
+  @OcaConnection
+  private func _markDatagramConnectionConnected(_ connection: Ocp1Connection) async {
+    if connection.isDatagram, connection.isConnecting {
+      connection.updateConnectionState(.connected)
+    }
+  }
+
   private func receiveMessage(_ connection: Ocp1Connection) async throws {
     var messagePdus = [Data]()
     let messageType = try await receiveMessagePdu(connection, messages: &messagePdus)
@@ -96,6 +103,7 @@ extension Ocp1Connection.Monitor {
     }
 
     updateLastMessageReceivedTime()
+    await _markDatagramConnectionConnected(connection)
 
     for message in messages {
       try await processMessage(connection, message)

@@ -136,16 +136,16 @@ extension Ocp1Connection {
     }
   }
 
-  /// functions with `_` prefix (with the exception of `_updateConnectionState()`) expect the
-  /// caller to update the connection state
-
-  private func _updateConnectionState(_ connectionState: Ocp1ConnectionState) {
+  func updateConnectionState(_ connectionState: Ocp1ConnectionState) {
     logger.trace("_updateConnectionState: \(_connectionState.value) => \(connectionState)")
     _connectionState.send(connectionState)
   }
 
   private func _didConnectDevice() async throws {
-    _updateConnectionState(.connected)
+    if !isDatagram {
+      // otherwise, set connected state when we receive first keepAlive PDU
+      updateConnectionState(.connected)
+    }
 
     _startMonitor()
 
@@ -168,13 +168,13 @@ extension Ocp1Connection {
   public func connect() async throws {
     logger.trace("connecting...")
 
-    _updateConnectionState(.connecting)
+    updateConnectionState(.connecting)
 
     do {
       try await _connectDeviceWithTimeout()
     } catch {
       logger.trace("connection failed: \(error)")
-      _updateConnectionState(error.ocp1ConnectionState)
+      updateConnectionState(error.ocp1ConnectionState)
       throw error
     }
 
@@ -185,6 +185,14 @@ extension Ocp1Connection {
       logger.trace("connection failed whilst attempting to connect: \(connectionState)")
       throw connectionState.error ?? .notConnected
     }
+  }
+
+  var isConnecting: Bool {
+    _connectionState.value == .connecting || _connectionState.value == .reconnecting
+  }
+
+  public var isConnected: Bool {
+    _connectionState.value == .connected
   }
 }
 
@@ -213,7 +221,7 @@ extension Ocp1Connection {
   public func disconnect() async throws {
     await removeSubscriptions()
 
-    _updateConnectionState(.notConnected)
+    updateConnectionState(.notConnected)
 
     let clearObjectCache = !options.flags.contains(.retainObjectCacheAfterDisconnect)
     try await _disconnectDevice(clearObjectCache: clearObjectCache)
@@ -257,7 +265,7 @@ extension Ocp1Connection {
     var lastError: Error?
     var backoff: Duration = options.reconnectPauseInterval
 
-    _updateConnectionState(.reconnecting)
+    updateConnectionState(.reconnecting)
 
     logger
       .trace(
@@ -283,11 +291,11 @@ extension Ocp1Connection {
 
     if let lastError {
       logger.trace("reconnection abandoned: \(lastError)")
-      _updateConnectionState(lastError.ocp1ConnectionState)
+      updateConnectionState(lastError.ocp1ConnectionState)
       throw lastError
-    } else if !isConnected {
+    } else if !isDatagram && !isConnected {
       logger.trace("reconnection abandoned after too many tries")
-      _updateConnectionState(.notConnected)
+      updateConnectionState(.notConnected)
       throw Ocp1Error.notConnected
     }
   }
@@ -325,7 +333,7 @@ extension Ocp1Connection {
           "failed to send message: error \(error), new connection state \(connectionState); disconnecting"
         )
       if isConnected {
-        _updateConnectionState(connectionState)
+        updateConnectionState(connectionState)
         try await _disconnectDeviceAfterConnectionFailure()
       }
     }
@@ -336,15 +344,11 @@ extension Ocp1Connection {
 
     logger.trace("expiring connection with policy \(_reconnectionPolicy), error \(error)")
 
-    _updateConnectionState(error.ocp1ConnectionState)
+    updateConnectionState(error.ocp1ConnectionState)
 
     if _reconnectionPolicy == .reconnectInMonitor {
       try await _disconnectDeviceAfterConnectionFailure()
       Task { try await reconnectDeviceWithBackoff() }
     }
-  }
-
-  public var isConnected: Bool {
-    _connectionState.value == .connected
   }
 }
