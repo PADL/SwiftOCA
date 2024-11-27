@@ -37,6 +37,40 @@ private extension Ocp1Error {
       nil
     }
   }
+
+  var _isRecoverableConnectionError: Bool {
+    switch self {
+    case .missingKeepalive:
+      fallthrough
+    case .connectionTimeout:
+      fallthrough
+    case .notConnected:
+      return true
+    default:
+      return false
+    }
+  }
+}
+
+private extension Errno {
+  var _isRecoverableConnectionError: Bool {
+    switch self {
+    case .badFileDescriptor:
+      fallthrough
+    case .brokenPipe:
+      fallthrough
+    case .socketShutdown:
+      fallthrough
+    case .connectionAbort:
+      fallthrough
+    case .connectionReset:
+      fallthrough
+    case .connectionRefused:
+      return true
+    default:
+      return false
+    }
+  }
 }
 
 private extension Error {
@@ -44,31 +78,13 @@ private extension Error {
     (self as? Ocp1Error)?.connectionState ?? .connectionFailed
   }
 
-  var isRecoverableConnectionError: Bool {
+  var _isRecoverableConnectionError: Bool {
     if let error = self as? Ocp1Error {
-      switch error {
-      case .missingKeepalive:
-        fallthrough
-      case .connectionTimeout:
-        fallthrough
-      case .notConnected:
-        return true
-      default:
-        return false
-      }
+      error._isRecoverableConnectionError
     } else if let error = self as? Errno {
-      switch error {
-      case .connectionAbort:
-        fallthrough
-      case .connectionReset:
-        fallthrough
-      case .connectionRefused:
-        return true
-      default:
-        return false
-      }
+      error._isRecoverableConnectionError
     } else {
-      return false
+      false
     }
   }
 }
@@ -348,7 +364,7 @@ extension Ocp1Connection {
   }
 
   func onMonitorError(_ error: Error) async throws {
-    guard error.isRecoverableConnectionError else { return }
+    guard error._isRecoverableConnectionError else { return }
 
     logger.trace("expiring connection with policy \(_reconnectionPolicy), error \(error)")
 
