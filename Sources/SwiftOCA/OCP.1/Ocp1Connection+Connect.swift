@@ -260,24 +260,16 @@ extension Ocp1Connection {
     options.flags.contains(.automaticReconnect)
   }
 
-  /// reconnect to the OCA device with exponential backoff, updating
-  /// connectionState
-  func reconnectDeviceWithBackoff() async throws {
+  private func _withExponentialBackoffPolicy(
+    _ body: () async throws -> ()
+  ) async throws {
     var lastError: Error?
     var backoff: Duration = options.reconnectPauseInterval
-
-    _updateConnectionState(.reconnecting)
-
-    logger
-      .trace(
-        "reconnecting: pauseInterval \(options.reconnectPauseInterval) maxTries \(options.reconnectMaxTries) exponentialBackoffThreshold \(options.reconnectExponentialBackoffThreshold)"
-      )
 
     for i in 0..<options.reconnectMaxTries {
       do {
         logger.trace("reconnecting: attempt \(i + 1)")
-        try await _connectDeviceWithTimeout()
-        try await _didConnectDevice()
+        try await body()
         lastError = nil
         break
       } catch {
@@ -292,12 +284,50 @@ extension Ocp1Connection {
 
     if let lastError {
       logger.debug("reconnection abandoned: \(lastError)")
-      _updateConnectionState(lastError.ocp1ConnectionState)
       throw lastError
-    } else if !isDatagram && !isConnected {
+    }
+  }
+
+  /// reconnect to the OCA device with exponential backoff, updating
+  /// connectionState
+  func reconnectDeviceWithBackoff() async throws {
+    _updateConnectionState(.reconnecting)
+
+    logger
+      .trace(
+        "reconnecting: pauseInterval \(options.reconnectPauseInterval) maxTries \(options.reconnectMaxTries) exponentialBackoffThreshold \(options.reconnectExponentialBackoffThreshold)"
+      )
+
+    do {
+      try await _withExponentialBackoffPolicy {
+        try await _connectDeviceWithTimeout()
+        try await _didConnectDevice()
+      }
+
+      // for datagram connections, the connection isn't truly open until we have sent a keepAlive
+      // packet and received a response. restart the exponential backoff policy awaiting a PDU.
+      if isDatagram {
+        try await _withExponentialBackoffPolicy {
+          switch _connectionState.value {
+          case .connected:
+            return
+          case .reconnecting:
+            try await sendKeepAlive()
+            throw Ocp1Error.missingKeepalive
+          default:
+            throw Ocp1Error.connectionTimeout
+          }
+        }
+      }
+    } catch {
+      _updateConnectionState(error.ocp1ConnectionState)
+      throw error
+    }
+
+    if !isConnected {
       logger.trace("reconnection abandoned after too many tries")
-      _updateConnectionState(.notConnected)
-      throw Ocp1Error.notConnected
+      _updateConnectionState(.connectionTimedOut)
+      throw Ocp1Error.connectionTimeout
     }
   }
 
