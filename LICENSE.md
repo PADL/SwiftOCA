@@ -88,6 +88,7 @@ SOFTWARE.
 
 ## AsyncAlgorithms
 
+```
 //===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift Async Algorithms open source project
@@ -98,3 +99,4 @@ SOFTWARE.
 // See https://swift.org/LICENSE.txt for license information
 //
 //===----------------------------------------------------------------------===//
+```
