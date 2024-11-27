@@ -169,6 +169,9 @@ extension Ocp1Connection {
   func markConnectionConnected() {
     logger.info("connected to \(self)")
     _updateConnectionState(.connected)
+    #if canImport(Combine) || canImport(OpenCombine)
+    objectWillChange.send()
+    #endif
   }
 
   private func _didConnectDevice() async throws {
@@ -183,10 +186,6 @@ extension Ocp1Connection {
       // send keepalive to open UDP connection
       try await sendKeepAlive()
     }
-
-    #if canImport(Combine) || canImport(OpenCombine)
-    objectWillChange.send()
-    #endif
 
     await _refreshSubscriptionsWithPolicy()
     await _refreshDeviceTreeWithPolicy()
