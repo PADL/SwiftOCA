@@ -146,6 +146,9 @@ extension Ocp1Connection {
 
   func updateConnectionState(_ connectionState: Ocp1ConnectionState) {
     logger.trace("_updateConnectionState: \(_connectionState.value) => \(connectionState)")
+    if connectionState == .connected {
+      logger.info("connected to \(self)")
+    }
     _connectionState.send(connectionState)
   }
 
@@ -168,8 +171,6 @@ extension Ocp1Connection {
 
     await _refreshSubscriptionsWithPolicy()
     await _refreshDeviceTreeWithPolicy()
-
-    logger.info("connected to \(self)")
   }
 
   public func connect() async throws {
