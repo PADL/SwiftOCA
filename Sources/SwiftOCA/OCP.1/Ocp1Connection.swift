@@ -228,6 +228,7 @@ open class Ocp1Connection: CustomStringConvertible, ObservableObject {
   }
 
   /// Monitor structure for matching requests and responses
+  @OcaConnection
   final class Monitor: @unchecked Sendable, CustomStringConvertible {
     typealias Continuation = CheckedContinuation<Ocp1Response, Error>
 
