@@ -166,6 +166,13 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     }
   }
 
+  override public func write(_ data: Data) async throws -> Int {
+    try await withMappedError { socket in
+      try await socket.write(data)
+      return data.count
+    }
+  }
+
   var socketType: SocketType {
     fatalError("socketType must be implemented by a concrete subclass of Ocp1FlyingSocksConnection")
   }
@@ -185,13 +192,6 @@ public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
   override public func read(_ length: Int) async throws -> Data {
     try await withMappedError { socket in
       try await Data(socket.read(bytes: length))
-    }
-  }
-
-  override public func write(_ data: Data) async throws -> Int {
-    try await withMappedError { socket in
-      try await socket.write(data)
-      return data.count
     }
   }
 
@@ -218,13 +218,6 @@ public final class Ocp1FlyingSocksDatagramConnection: Ocp1FlyingSocksConnection 
   override public func read(_ length: Int) async throws -> Data {
     try await withMappedError { socket in
       try await Data(socket.read(atMost: Ocp1MaximumDatagramPduSize))
-    }
-  }
-
-  override public func write(_ data: Data) async throws -> Int {
-    try await withMappedError { socket in
-      try await socket.send(data, to: deviceAddress)
-      return data.count
     }
   }
 }
