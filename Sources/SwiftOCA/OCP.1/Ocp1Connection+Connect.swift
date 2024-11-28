@@ -185,7 +185,11 @@ extension Ocp1Connection {
   }
 
   public func connect() async throws {
-    guard !isConnecting else { throw Ocp1Error.connectionAlreadyInProgress }
+    if isConnected {
+      throw Ocp1Error.alreadyConnected
+    } else if isConnecting {
+      throw Ocp1Error.connectionAlreadyInProgress
+    }
 
     _updateConnectionState(.connecting)
 
