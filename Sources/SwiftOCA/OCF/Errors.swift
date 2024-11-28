@@ -21,6 +21,7 @@ public enum Ocp1Error: Error, Equatable {
   case alreadySubscribedToEvent
   case arrayOrDataTooBig
   case bonjourRegistrationFailed
+  case connectionAlreadyInProgress
   case connectionTimeout
   case duplicateObject(OcaONo)
   case endpointAlreadyRegistered

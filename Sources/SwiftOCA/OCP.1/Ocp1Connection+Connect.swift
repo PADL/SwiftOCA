@@ -185,6 +185,8 @@ extension Ocp1Connection {
   }
 
   public func connect() async throws {
+    guard !isConnecting else { throw Ocp1Error.connectionAlreadyInProgress }
+
     _updateConnectionState(.connecting)
 
     do {
