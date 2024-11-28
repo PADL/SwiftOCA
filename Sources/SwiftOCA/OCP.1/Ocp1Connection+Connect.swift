@@ -238,7 +238,11 @@ extension Ocp1Connection {
   }
 
   public func disconnect() async throws {
-    await removeSubscriptions()
+    // explicitly checking for isConnected allows disconnect() to also
+    // asynchronously cancel a reconnection
+    if isConnected {
+      await removeSubscriptions()
+    }
 
     _updateConnectionState(.notConnected)
 
@@ -273,6 +277,11 @@ extension Ocp1Connection {
         }
         logger.trace("reconnection failed with \(error), sleeping for \(backoff)")
         try await Task.sleep(for: backoff)
+        // check for asynchronous explicit disconnection and break
+        if _connectionState.value == .notConnected {
+          logger.debug("reconnection cancelled")
+          throw CancellationError()
+        }
       }
     }
 
