@@ -300,8 +300,6 @@ extension Ocp1Connection {
   /// reconnect to the OCA device with exponential backoff, updating
   /// connectionState
   func reconnectDeviceWithBackoff() async throws {
-    _updateConnectionState(.reconnecting)
-
     logger
       .trace(
         "reconnecting: pauseInterval \(options.reconnectPauseInterval) maxTries \(options.reconnectMaxTries) exponentialBackoffThreshold \(options.reconnectExponentialBackoffThreshold)"
@@ -352,7 +350,9 @@ extension Ocp1Connection {
     if _connectionState.value != .notConnected {
       // don't update connection state if we were explicitly disconnected
       reconnectDevice = _automaticReconnect && error._isRecoverableConnectionError
-      if !reconnectDevice {
+      if reconnectDevice {
+        _updateConnectionState(.reconnecting)
+      } else {
         _updateConnectionState(error.ocp1ConnectionState)
       }
       try await _disconnectDeviceAfterConnectionFailure()
