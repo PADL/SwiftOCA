@@ -347,13 +347,20 @@ extension Ocp1Connection {
   func onMonitorError(id: Int, _ error: Error) async throws {
     logger.trace("monitor task \(id) error: \(error)")
 
+    let reconnectDevice: Bool
+
     if _connectionState.value != .notConnected {
       // don't update connection state if we were explicitly disconnected
-      _updateConnectionState(error.ocp1ConnectionState)
+      reconnectDevice = _automaticReconnect && error._isRecoverableConnectionError
+      if !reconnectDevice {
+        _updateConnectionState(error.ocp1ConnectionState)
+      }
       try await _disconnectDeviceAfterConnectionFailure()
+    } else {
+      reconnectDevice = false
     }
 
-    if _automaticReconnect, error._isRecoverableConnectionError {
+    if reconnectDevice {
       Task.detached { try await self.reconnectDeviceWithBackoff() }
     }
   }
