@@ -330,7 +330,10 @@ extension Ocp1Connection {
   }
 
   func onMonitorError(id: Int, _ error: Error) async throws {
-    _updateConnectionState(error.ocp1ConnectionState)
+    if _connectionState.value != .notConnected {
+      // don't update connection state if we were explicitly disconnected
+      _updateConnectionState(error.ocp1ConnectionState)
+    }
 
     if _automaticReconnect, error._isRecoverableConnectionError {
       logger.trace("monitor task \(id) disconnecting: \(error)")
