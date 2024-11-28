@@ -151,7 +151,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     try self.init(socketAddress: sockaddr_un.unix(path: path), options: options)
   }
 
-  private func withMappedError<T: Sendable>(
+  fileprivate func withMappedError<T: Sendable>(
     _ block: (_ asyncSocket: AsyncSocket) async throws
       -> T
   ) async throws -> T {
@@ -163,12 +163,6 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
       return try await block(asyncSocket)
     } catch let error as SocketError {
       throw error.mappedError
-    }
-  }
-
-  override public func read(_ length: Int) async throws -> Data {
-    try await withMappedError { socket in
-      try await Data(socket.read(atMost: length))
     }
   }
 
@@ -195,6 +189,19 @@ public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
 
   override var socketType: SocketType { .stream }
 
+  override public func read(_ length: Int) async throws -> Data {
+    var data = Data()
+
+    try await withMappedError { socket in
+      while data.count < length {
+        let receivedData = try await Data(socket.read(atMost: length - data.count))
+        data += receivedData
+      }
+    }
+
+    return data
+  }
+
   override func setSocketOptions(_ socket: Socket) throws {
     if deviceAddress.family == AF_INET {
       try socket.setValue(true, for: BoolSocketOption(name: TCP_NODELAY), level: CInt(IPPROTO_TCP))
@@ -213,11 +220,13 @@ public final class Ocp1FlyingSocksDatagramConnection: Ocp1FlyingSocksConnection 
 
   override public var isDatagram: Bool { true }
 
-  override public func read(_ length: Int) async throws -> Data {
-    try await super.read(Ocp1MaximumDatagramPduSize)
-  }
-
   override var socketType: SocketType { .datagram }
+
+  override public func read(_ length: Int) async throws -> Data {
+    try await withMappedError { socket in
+      try await Data(socket.read(atMost: Ocp1MaximumDatagramPduSize))
+    }
+  }
 }
 
 func deviceAddressToString(_ deviceAddress: any SocketAddress) -> String {
