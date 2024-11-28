@@ -190,16 +190,9 @@ public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
   override var socketType: SocketType { .stream }
 
   override public func read(_ length: Int) async throws -> Data {
-    var data = Data()
-
     try await withMappedError { socket in
-      while data.count < length {
-        let receivedData = try await Data(socket.read(atMost: length - data.count))
-        data += receivedData
-      }
+      try await Data(socket.read(bytes: length))
     }
-
-    return data
   }
 
   override func setSocketOptions(_ socket: Socket) throws {
