@@ -225,6 +225,8 @@ extension Ocp1Connection {
 
 extension Ocp1Connection {
   private func _disconnectDevice(clearObjectCache: Bool) async throws {
+    _stopMonitor()
+
     try await disconnectDevice()
 
     if clearObjectCache {
