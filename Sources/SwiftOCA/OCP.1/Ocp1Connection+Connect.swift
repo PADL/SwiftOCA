@@ -350,10 +350,10 @@ extension Ocp1Connection {
     if _connectionState.value != .notConnected {
       // don't update connection state if we were explicitly disconnected
       _updateConnectionState(error.ocp1ConnectionState)
+      try await _disconnectDeviceAfterConnectionFailure()
     }
 
     if _automaticReconnect, error._isRecoverableConnectionError {
-      try await _disconnectDeviceAfterConnectionFailure()
       Task.detached { try await self.reconnectDeviceWithBackoff() }
     }
   }
