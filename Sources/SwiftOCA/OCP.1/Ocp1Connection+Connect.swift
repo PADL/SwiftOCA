@@ -174,14 +174,24 @@ extension Ocp1Connection {
     #endif
   }
 
-  private func _didConnectDevice() async throws {
+  private func _sendKeepAliveAndRefresh(isReconnecting: Bool) async throws {
     if heartbeatTime > .zero {
       // send keepalive to open UDP connection
       try await sendKeepAlive()
     }
 
-    await _refreshSubscriptionsWithPolicy()
+    if isReconnecting {
+      await _refreshSubscriptionsWithPolicy()
+    }
     await _refreshDeviceTreeWithPolicy()
+  }
+
+  private func _didConnectDevice() async throws {
+    try await _sendKeepAliveAndRefresh(isReconnecting: false)
+  }
+
+  private func _didReconnectDevice() async throws {
+    try await _sendKeepAliveAndRefresh(isReconnecting: true)
   }
 
   public func connect() async throws {
@@ -313,7 +323,7 @@ extension Ocp1Connection {
         _startMonitor()
         if !isDatagram {
           markConnectionConnected()
-          try await _didConnectDevice()
+          try await _didReconnectDevice()
         }
       }
 
@@ -325,7 +335,7 @@ extension Ocp1Connection {
           case .connected:
             return
           case .reconnecting:
-            try await _didConnectDevice()
+            try await _didReconnectDevice()
             throw Ocp1Error.missingKeepalive
           default:
             throw Ocp1Error.connectionTimeout
