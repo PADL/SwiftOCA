@@ -79,6 +79,8 @@ public extension OcaPropertyRepresentable {
 @_spi(SwiftOCAPrivate)
 public
 protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
+  var setMethodID: OcaMethodID? { get }
+
   var subject: AsyncCurrentValueSubject<PropertyValue> { get }
 
   func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws
@@ -98,6 +100,10 @@ extension OcaPropertySubjectRepresentable {
         .failure(error)
       }
     }.eraseToAnyAsyncSequence()
+  }
+
+  var isImmutable: Bool {
+    setMethodID == nil
   }
 
   func finish() {
@@ -361,7 +367,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     _ object: OcaRoot,
     _ value: Value
   ) async throws {
-    guard let setMethodID else {
+    guard !isImmutable else {
       throw Ocp1Error.propertyIsImmutable
     }
 
@@ -375,12 +381,12 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     if try await object.isSubscribed {
       // we'll get a notification (hoepfully) so, don't require a reply
       try await object.sendCommand(
-        methodID: setMethodID,
+        methodID: setMethodID!,
         parameters: newValue
       )
     } else {
       try await object.sendCommandRrq(
-        methodID: setMethodID,
+        methodID: setMethodID!,
         parameters: newValue
       )
 

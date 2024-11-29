@@ -81,6 +81,8 @@ public struct OcaBoundedProperty<
     [_storage.propertyID]
   }
 
+  public var setMethodID: OcaMethodID? { _storage.setMethodID }
+
   fileprivate var _storage: Property
 
   public init(from decoder: Decoder) throws {

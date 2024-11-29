@@ -261,7 +261,10 @@ public extension OcaRoot {
   package func refreshAllSubscribed() async {
     for (_, keyPath) in allPropertyKeyPaths {
       let property = (self[keyPath: keyPath] as! any OcaPropertySubjectRepresentable)
-      guard property.hasValueOrError else { continue }
+      // make an exception for role because it is immutable, otherwise refreshing device
+      // tree at initial connection time will then force many needless subscriptions at
+      // reconnection time
+      guard property.hasValueOrError, !property.isImmutable else { continue }
       await property.refreshAndSubscribe(self)
     }
   }
@@ -279,6 +282,7 @@ public extension OcaRoot {
 
     typealias Value = T
 
+    var setMethodID: OcaMethodID? { nil }
     var propertyIDs: [OcaPropertyID]
     var value: T
 
