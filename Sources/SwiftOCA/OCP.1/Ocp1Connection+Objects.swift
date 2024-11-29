@@ -103,8 +103,7 @@ public extension Ocp1Connection {
     await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
       for object in objects {
         taskGroup.addTask {
-          await object.value.refresh()
-          try? await object.value.subscribe()
+          await object.value.refreshAllSubscribed()
         }
       }
     }

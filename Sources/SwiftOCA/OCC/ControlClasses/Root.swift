@@ -260,12 +260,11 @@ public extension OcaRoot {
     }
   }
 
-  func refresh() async {
+  package func refreshAllSubscribed() async {
     for (_, keyPath) in allPropertyKeyPaths {
-      let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
-      if property.hasValueOrError {
-        await property.refresh(self)
-      }
+      let property = (self[keyPath: keyPath] as! any OcaPropertySubjectRepresentable)
+      guard property.hasValueOrError else { continue }
+      await property.refreshAndSubscribe(self)
     }
   }
 

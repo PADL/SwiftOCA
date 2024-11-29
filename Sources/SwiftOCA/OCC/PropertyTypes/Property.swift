@@ -103,6 +103,11 @@ extension OcaPropertySubjectRepresentable {
   func finish() {
     subject.send(.finished)
   }
+
+  func refreshAndSubscribe(_ object: OcaRoot) async {
+    await refresh(object)
+    _ = try? await _getValue(object, flags: .defaultFlags)
+  }
 }
 
 @propertyWrapper
