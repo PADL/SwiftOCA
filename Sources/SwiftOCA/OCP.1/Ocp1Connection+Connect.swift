@@ -163,18 +163,16 @@ extension Ocp1Connection {
   private func _updateConnectionState(_ connectionState: Ocp1ConnectionState) {
     logger.trace("_updateConnectionState: \(_connectionState.value) => \(connectionState)")
     _connectionState.send(connectionState)
+    #if canImport(Combine) || canImport(OpenCombine)
+    objectWillChange.send()
+    #endif
   }
 
   /// update the device connection state, called from the connection (for
   /// stream connections) or the monitor task (for datagram connections)
   func onConnectionOpen() {
     logger.info("connected to \(self)")
-
     _updateConnectionState(.connected)
-
-    #if canImport(Combine) || canImport(OpenCombine)
-    objectWillChange.send()
-    #endif
   }
 
   /// for datagram connections, ensure the timeout is at least twice the heartbeat time
