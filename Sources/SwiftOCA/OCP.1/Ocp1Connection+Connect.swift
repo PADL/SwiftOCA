@@ -220,8 +220,10 @@ extension Ocp1Connection {
     }
 
     if isDatagram {
-      // wait for monitor task to receive a packet from the device
-      try await _suspendUntilConnected(isReconnecting: isReconnecting)
+      if isReconnecting {
+        // wait for monitor task to receive a packet from the device
+        try await _suspendUntilConnected(isReconnecting: isReconnecting)
+      }
     } else {
       // for stream connections, mark the connection as open immediately
       onConnectionOpen()
