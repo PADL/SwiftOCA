@@ -177,21 +177,20 @@ extension Ocp1Connection {
     #endif
   }
 
-  private func _suspendUntilConnected() async throws {
+  private func _suspendUntilConnected(isReconnecting: Bool) async throws {
+    let waitingState: Ocp1ConnectionState = isReconnecting ? .reconnecting : .connecting
+
     precondition(isDatagram)
 
     do {
       try await withThrowingTimeout(of: options.connectionTimeout) { [self] in
         for await connectionState in _connectionState {
-          switch connectionState {
-          case .connected:
+          if connectionState == .connected {
             return
-          case .connecting:
-            fallthrough
-          case .reconnecting:
+          } else if connectionState == waitingState {
             continue
-          default:
-            throw connectionState.error!
+          } else {
+            throw connectionState.error ?? .notConnected
           }
         }
       }
@@ -211,7 +210,7 @@ extension Ocp1Connection {
 
     if isDatagram {
       // wait for monitor task to receive a packet from the device
-      try await _suspendUntilConnected()
+      try await _suspendUntilConnected(isReconnecting: isReconnecting)
     } else {
       // for stream connections, mark the connection as open immediately
       onConnectionOpen()
