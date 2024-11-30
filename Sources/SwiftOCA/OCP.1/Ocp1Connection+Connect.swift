@@ -215,8 +215,6 @@ extension Ocp1Connection {
       try await sendKeepAlive()
     }
 
-    try await _refreshWithPolicy(isReconnecting: isReconnecting)
-
     if isDatagram {
       if isReconnecting {
         // wait for monitor task to receive a packet from the device
@@ -226,6 +224,8 @@ extension Ocp1Connection {
       // for stream connections, mark the connection as open immediately
       onConnectionOpen()
     }
+
+    try await _refreshWithPolicy(isReconnecting: isReconnecting)
   }
 
   /// connect to the OCA device, throwing `Ocp1Error.connectionTimeout` if it times out
