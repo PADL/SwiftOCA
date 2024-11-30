@@ -133,19 +133,7 @@ extension Ocp1Connection {
 // MARK: - connection handling
 
 extension Ocp1Connection {
-  /// connect to the OCA device, throwing `Ocp1Error.connectionTimeout` if it times out
-  private func _connectDeviceWithTimeout() async throws {
-    do {
-      try await withThrowingTimeout(of: options.connectionTimeout) {
-        try await self.connectDevice()
-      }
-    } catch Ocp1Error.responseTimeout {
-      throw Ocp1Error.connectionTimeout
-    } catch {
-      throw error
-    }
-  }
-
+  /// refresh the device tree if the .refreshDeviceTreeOnConnection flag is set
   private func _refreshDeviceTreeWithPolicy() async {
     if options.flags.contains(.refreshDeviceTreeOnConnection) {
       logger.debug("refreshing device tree")
@@ -153,6 +141,7 @@ extension Ocp1Connection {
     }
   }
 
+  /// refresh any existing subscriptions if the .refreshSubscriptionsOnReconnection flag is set
   private func _refreshSubscriptionsWithPolicy() async {
     if options.flags.contains(.refreshSubscriptionsOnReconnection) {
       logger.debug("refreshing subscriptions")
@@ -161,37 +150,99 @@ extension Ocp1Connection {
     }
   }
 
+  /// refresh per policy in connection option flags
+  private func _refreshWithPolicy(isReconnecting: Bool) async throws {
+    if isReconnecting {
+      await _refreshSubscriptionsWithPolicy()
+    }
+
+    await _refreshDeviceTreeWithPolicy()
+  }
+
+  /// wrapper to update the connection state, logging the old and new connection states
   private func _updateConnectionState(_ connectionState: Ocp1ConnectionState) {
     logger.trace("_updateConnectionState: \(_connectionState.value) => \(connectionState)")
     _connectionState.send(connectionState)
   }
 
-  func markConnectionConnected() {
+  /// update the device connection state, called from the connection (for
+  /// stream connections) or the monitor task (for datagram connections)
+  func onConnectionOpen() {
     logger.info("connected to \(self)")
+
     _updateConnectionState(.connected)
+
     #if canImport(Combine) || canImport(OpenCombine)
     objectWillChange.send()
     #endif
   }
 
-  private func _sendKeepAliveAndRefresh(isReconnecting: Bool) async throws {
+  private func _suspendUntilConnected() async throws {
+    precondition(isDatagram)
+
+    do {
+      try await withThrowingTimeout(of: options.connectionTimeout) { [self] in
+        for await connectionState in _connectionState {
+          switch connectionState {
+          case .connected:
+            return
+          case .connecting:
+            fallthrough
+          case .reconnecting:
+            continue
+          default:
+            throw connectionState.error!
+          }
+        }
+      }
+    } catch Ocp1Error.responseTimeout {
+      throw Ocp1Error.connectionTimeout
+    }
+  }
+
+  /// `_didConnectDevice()` is to be called subsequent to `_connectDeviceWithTimeout()`
+  private func _didConnectDevice(isReconnecting: Bool) async throws {
+    _startMonitor()
+
     if heartbeatTime > .zero {
-      // send keepalive to open UDP connection
+      // send keepalive, necessary to open UDP connection
       try await sendKeepAlive()
     }
 
-    if isReconnecting {
-      await _refreshSubscriptionsWithPolicy()
+    if isDatagram {
+      // wait for monitor task to receive a packet from the device
+      try await _suspendUntilConnected()
+    } else {
+      // for stream connections, mark the connection as open immediately
+      onConnectionOpen()
     }
-    await _refreshDeviceTreeWithPolicy()
+
+    try await _refreshWithPolicy(isReconnecting: isReconnecting)
   }
 
-  private func _didConnectDevice() async throws {
-    try await _sendKeepAliveAndRefresh(isReconnecting: false)
-  }
+  /// connect to the OCA device, throwing `Ocp1Error.connectionTimeout` if it times out
+  private func _connectDeviceWithTimeout() async throws {
+    do {
+      try await withThrowingTimeout(of: isDatagram ? .zero : options.connectionTimeout) {
+        try await self.connectDevice()
+      }
+    } catch Ocp1Error.responseTimeout {
+      throw Ocp1Error.connectionTimeout
+    }
 
-  private func _didReconnectDevice() async throws {
-    try await _sendKeepAliveAndRefresh(isReconnecting: true)
+    let connectionState = _connectionState.value
+
+    switch connectionState {
+    case .connecting:
+      fallthrough
+    case .reconnecting:
+      try await _didConnectDevice(isReconnecting: connectionState == .reconnecting)
+    case .connected:
+      break
+    default:
+      logger.trace("connection failed whilst attempting to connect: \(connectionState)")
+      throw connectionState.error!
+    }
   }
 
   public func connect() async throws {
@@ -200,25 +251,13 @@ extension Ocp1Connection {
     } else if isConnecting {
       throw Ocp1Error.connectionAlreadyInProgress
     }
-
     _updateConnectionState(.connecting)
-
     do {
       try await _connectDeviceWithTimeout()
     } catch {
       logger.debug("connection failed: \(error)")
       _updateConnectionState(error.ocp1ConnectionState)
       throw error
-    }
-
-    let connectionState = _connectionState.value
-    if connectionState == .connecting {
-      _startMonitor()
-      if !isDatagram { markConnectionConnected() }
-      try await _didConnectDevice()
-    } else if connectionState != .connected {
-      logger.trace("connection failed whilst attempting to connect: \(connectionState)")
-      throw connectionState.error ?? .notConnected
     }
   }
 
@@ -312,39 +351,23 @@ extension Ocp1Connection {
   /// reconnect to the OCA device with exponential backoff, updating
   /// connectionState
   func reconnectDeviceWithBackoff() async throws {
+    logger.info("started reconnection task")
+
+    if isConnected {
+      throw Ocp1Error.alreadyConnected
+    } else if _connectionState.value == .connecting {
+      throw Ocp1Error.connectionAlreadyInProgress
+    } else if _connectionState.value != .reconnecting {
+      throw _connectionState.value.error!
+    }
+
     logger
       .trace(
         "reconnecting: pauseInterval \(options.reconnectPauseInterval) maxTries \(options.reconnectMaxTries) exponentialBackoffThreshold \(options.reconnectExponentialBackoffThreshold)"
       )
 
-    do {
-      try await _withExponentialBackoffPolicy {
-        try await _connectDeviceWithTimeout()
-        _startMonitor()
-        if !isDatagram {
-          markConnectionConnected()
-          try await _didReconnectDevice()
-        }
-      }
-
-      // for datagram connections, the connection isn't truly open until we have sent a keepAlive
-      // packet and received a response. restart the exponential backoff policy awaiting a PDU.
-      if isDatagram {
-        try await _withExponentialBackoffPolicy {
-          switch _connectionState.value {
-          case .connected:
-            return
-          case .reconnecting:
-            try await _didReconnectDevice()
-            throw Ocp1Error.missingKeepalive
-          default:
-            throw Ocp1Error.connectionTimeout
-          }
-        }
-      }
-    } catch {
-      _updateConnectionState(error.ocp1ConnectionState)
-      throw error
+    try await _withExponentialBackoffPolicy {
+      try await _connectDeviceWithTimeout()
     }
 
     if !isConnected {
@@ -373,6 +396,7 @@ extension Ocp1Connection {
     }
 
     if reconnectDevice {
+      precondition(_connectionState.value == .reconnecting)
       Task.detached { try await self.reconnectDeviceWithBackoff() }
     }
   }

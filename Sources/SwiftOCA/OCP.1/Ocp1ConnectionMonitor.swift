@@ -88,9 +88,9 @@ extension Ocp1Connection.Monitor {
     }
   }
 
-  private func _markDatagramConnectionConnected(_ connection: Ocp1Connection) async {
+  private func onDatagramConnectionOpen(_ connection: Ocp1Connection) async {
     if connection.isDatagram, connection.isConnecting {
-      connection.markConnectionConnected()
+      connection.onConnectionOpen()
     }
   }
 
@@ -102,7 +102,7 @@ extension Ocp1Connection.Monitor {
     }
 
     updateLastMessageReceivedTime()
-    await _markDatagramConnectionConnected(connection)
+    await onDatagramConnectionOpen(connection)
 
     for message in messages {
       try await processMessage(connection, message)
