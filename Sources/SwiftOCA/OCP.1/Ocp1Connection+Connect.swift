@@ -177,13 +177,24 @@ extension Ocp1Connection {
     #endif
   }
 
+  /// for datagram connections, ensure the timeout is at least twice the heartbeat time
+  private var _connectionTimeout: Duration {
+    let timeout = options.connectionTimeout
+
+    if isDatagram, timeout < heartbeatTime * 2 {
+      return heartbeatTime * 2
+    } else {
+      return timeout
+    }
+  }
+
   private func _suspendUntilConnected(isReconnecting: Bool) async throws {
     let waitingState: Ocp1ConnectionState = isReconnecting ? .reconnecting : .connecting
 
     precondition(isDatagram)
 
     do {
-      try await withThrowingTimeout(of: options.connectionTimeout) { [self] in
+      try await withThrowingTimeout(of: _connectionTimeout) { [self] in
         for await connectionState in _connectionState {
           if connectionState == .connected {
             return
@@ -222,7 +233,7 @@ extension Ocp1Connection {
   /// connect to the OCA device, throwing `Ocp1Error.connectionTimeout` if it times out
   private func _connectDeviceWithTimeout() async throws {
     do {
-      try await withThrowingTimeout(of: isDatagram ? .zero : options.connectionTimeout) {
+      try await withThrowingTimeout(of: isDatagram ? .zero : _connectionTimeout) {
         try await self.connectDevice()
       }
     } catch Ocp1Error.responseTimeout {
