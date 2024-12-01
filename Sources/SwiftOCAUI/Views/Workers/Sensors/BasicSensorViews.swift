@@ -24,11 +24,11 @@ extension OcaGenericBasicSensor: OcaViewRepresentable {
 }
 
 public struct OcaGenericBasicSensorView<T: Codable & Comparable>: OcaView {
-  @StateObject
+  @State
   var object: OcaGenericBasicSensor<T>
 
   public init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaGenericBasicSensor<T>)
+    _object = State(wrappedValue: object as! OcaGenericBasicSensor<T>)
   }
 
   public var body: some View {
@@ -44,11 +44,11 @@ extension OcaBooleanSensor: OcaViewRepresentable {
 }
 
 public struct OcaBooleanSensorView: OcaView {
-  @StateObject
+  @State
   var object: OcaBooleanSensor
 
   public init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaBooleanSensor)
+    _object = State(wrappedValue: object as! OcaBooleanSensor)
   }
 
   public var body: some View {

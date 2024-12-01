@@ -18,13 +18,13 @@ import SwiftOCA
 import SwiftUI
 
 struct OcaBlockNavigationSplitView: OcaView {
-  @EnvironmentObject
-  var connection: Ocp1Connection
+  @Environment(\.connection)
+  var connection: Ocp1Connection!
   @Environment(\.navigationPath)
   var oNoPath
   @Environment(\.lastError)
   var lastError
-  @StateObject
+  @State
   var object: OcaBlock
   @State
   var members: [OcaRoot]?
@@ -34,7 +34,7 @@ struct OcaBlockNavigationSplitView: OcaView {
   var selectedONo: OcaONo? = nil
 
   init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaBlock)
+    _object = State(wrappedValue: object as! OcaBlock)
   }
 
   var selectedObject: OcaRoot? {

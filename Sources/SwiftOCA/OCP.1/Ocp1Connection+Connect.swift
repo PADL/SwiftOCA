@@ -19,11 +19,6 @@ import AsyncExtensions
 @preconcurrency
 import Foundation
 import Logging
-#if canImport(Combine)
-import Combine
-#elseif canImport(OpenCombine)
-import OpenCombine
-#endif
 import SystemPackage
 
 private extension Ocp1Error {
@@ -104,6 +99,23 @@ private extension Ocp1ConnectionState {
   }
 }
 
+// MARK: - connection state observation
+
+extension Ocp1Connection {
+  nonisolated func access(
+    keyPath: KeyPath<Ocp1Connection, some Any>
+  ) {
+    _$observationRegistrar.access(self, keyPath: keyPath)
+  }
+
+  nonisolated func withMutation<T>(
+    keyPath: KeyPath<Ocp1Connection, some Any>,
+    _ mutation: () throws -> T
+  ) rethrows -> T {
+    try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
+  }
+}
+
 // MARK: - monitor task management
 
 extension Ocp1Connection {
@@ -161,11 +173,10 @@ extension Ocp1Connection {
 
   /// wrapper to update the connection state, logging the old and new connection states
   private func _updateConnectionState(_ connectionState: Ocp1ConnectionState) {
-    logger.trace("_updateConnectionState: \(_connectionState.value) => \(connectionState)")
-    _connectionState.send(connectionState)
-    #if canImport(Combine) || canImport(OpenCombine)
-    objectWillChange.send()
-    #endif
+    withMutation(keyPath: \.currentConnectionState) {
+      logger.trace("_updateConnectionState: \(currentConnectionState) => \(connectionState)")
+      _connectionState.send(connectionState)
+    }
   }
 
   /// update the device connection state, called from the connection (for
@@ -236,7 +247,7 @@ extension Ocp1Connection {
       throw Ocp1Error.connectionTimeout
     }
 
-    let connectionState = _connectionState.value
+    let connectionState = currentConnectionState
 
     switch connectionState {
     case .connecting:
@@ -267,12 +278,17 @@ extension Ocp1Connection {
     }
   }
 
-  var isConnecting: Bool {
-    _connectionState.value == .connecting || _connectionState.value == .reconnecting
+  public var currentConnectionState: Ocp1ConnectionState {
+    access(keyPath: \.currentConnectionState)
+    return _connectionState.value
   }
 
   public var isConnected: Bool {
-    _connectionState.value == .connected
+    currentConnectionState == .connected
+  }
+
+  var isConnecting: Bool {
+    currentConnectionState == .connecting || currentConnectionState == .reconnecting
   }
 }
 
@@ -287,10 +303,6 @@ extension Ocp1Connection {
     if clearObjectCache {
       await self.clearObjectCache()
     }
-
-    #if canImport(Combine) || canImport(OpenCombine)
-    objectWillChange.send()
-    #endif
 
     logger.info("disconnected from \(self)")
   }
@@ -341,7 +353,7 @@ extension Ocp1Connection {
         logger.trace("reconnection failed with \(error), sleeping for \(backoff)")
         try await Task.sleep(for: backoff)
         // check for asynchronous explicit disconnection and break
-        if _connectionState.value == .notConnected {
+        if currentConnectionState == .notConnected {
           logger.debug("reconnection cancelled")
           throw CancellationError()
         }
@@ -361,10 +373,10 @@ extension Ocp1Connection {
 
     if isConnected {
       throw Ocp1Error.alreadyConnected
-    } else if _connectionState.value == .connecting {
+    } else if currentConnectionState == .connecting {
       throw Ocp1Error.connectionAlreadyInProgress
-    } else if _connectionState.value != .reconnecting {
-      throw _connectionState.value.error!
+    } else if currentConnectionState != .reconnecting {
+      throw currentConnectionState.error!
     }
 
     logger
@@ -388,7 +400,7 @@ extension Ocp1Connection {
 
     let reconnectDevice: Bool
 
-    if _connectionState.value != .notConnected {
+    if currentConnectionState != .notConnected {
       // don't update connection state if we were explicitly disconnected
       reconnectDevice = _automaticReconnect && error._isRecoverableConnectionError
       if reconnectDevice {
@@ -402,7 +414,7 @@ extension Ocp1Connection {
     }
 
     if reconnectDevice {
-      precondition(_connectionState.value == .reconnecting)
+      precondition(currentConnectionState == .reconnecting)
       Task.detached { try await self.reconnectDeviceWithBackoff() }
     }
   }

@@ -16,9 +16,6 @@
 
 import AsyncExtensions
 import Foundation
-#if canImport(SwiftUI)
-import SwiftUI
-#endif
 
 public struct OcaVector2D<T: Codable & Sendable & FixedWidthInteger>: Ocp1ParametersReflectable,
   Codable, Sendable
@@ -111,16 +108,14 @@ public struct OcaVectorProperty<
     storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
   ) -> PropertyValue {
     get {
-      #if canImport(SwiftUI)
-      object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
-      #endif
+      object[keyPath: storageKeyPath]._storage._registerObservable(
+        _enclosingInstance: object,
+        wrapped: wrappedKeyPath
+      )
       return object[keyPath: storageKeyPath]._storage
         ._get(_enclosingInstance: object)
     }
     set {
-      #if canImport(SwiftUI)
-      object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
-      #endif
       object[keyPath: storageKeyPath]._storage._set(_enclosingInstance: object, newValue)
     }
   }
@@ -152,7 +147,7 @@ public struct OcaVectorProperty<
         xy.x = subjectValue.x
         xy.y = eventData.propertyValue
       }
-      _storage._send(_enclosingInstance: object, .success(xy))
+      _storage._send(object, .success(xy))
     default:
       throw Ocp1Error.unhandledEvent
     }
@@ -188,23 +183,3 @@ public struct OcaVectorProperty<
     throw Ocp1Error.notImplemented
   }
 }
-
-#if canImport(SwiftUI)
-public extension OcaVectorProperty {
-  var binding: Binding<PropertyValue> {
-    Binding(
-      get: {
-        if let object = _storage.object {
-          _storage._get(_enclosingInstance: object)
-        } else {
-          .initial
-        }
-      },
-      set: {
-        guard let object = _storage.object else { return }
-        _storage._set(_enclosingInstance: object, $0)
-      }
-    )
-  }
-}
-#endif

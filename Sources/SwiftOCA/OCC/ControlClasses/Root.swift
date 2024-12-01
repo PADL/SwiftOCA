@@ -16,33 +16,28 @@
 
 import AsyncExtensions
 import Foundation
-#if canImport(Combine)
-import Combine
-#elseif canImport(OpenCombine)
-import OpenCombine
-#else
-protocol ObservableObject {} // placeholder
-#endif
-#if canImport(SwiftUI)
-import SwiftUI
-#endif
+import Observation
 
-open class OcaRoot: CustomStringConvertible, ObservableObject, @unchecked Sendable,
-  OcaKeyPathMarkerProtocol
+open class OcaRoot: CustomStringConvertible, @unchecked Sendable,
+  _OcaObjectKeyPathRepresentable, Observable
 {
   typealias Root = OcaRoot
 
   public internal(set) weak var connectionDelegate: Ocp1Connection?
+
   fileprivate var subscriptionCancellable: Ocp1Connection.SubscriptionCancellable?
+  fileprivate let _$observationRegistrar = Observation.ObservationRegistrar()
 
   // 1.1
   open class var classID: OcaClassID { OcaClassID("1") }
+
   private var _classID: StaticProperty<OcaClassID> {
     StaticProperty<OcaClassID>(propertyIDs: [OcaPropertyID("1.1")], value: Self.classID)
   }
 
   // 1.2
   open class var classVersion: OcaClassVersionNumber { 3 }
+
   private var _classVersion: StaticProperty<OcaClassVersionNumber> {
     StaticProperty<OcaClassVersionNumber>(
       propertyIDs: [OcaPropertyID("1.2")],
@@ -180,18 +175,31 @@ open class OcaRoot: CustomStringConvertible, ObservableObject, @unchecked Sendab
   }
 }
 
-protocol OcaKeyPathMarkerProtocol: AnyObject {}
+protocol _OcaObjectKeyPathRepresentable: AnyObject {}
 
 extension PartialKeyPath: @unchecked
 Sendable {} // fix warning
 
-private extension OcaKeyPathMarkerProtocol where Self: OcaRoot {
+extension _OcaObjectKeyPathRepresentable where Self: OcaRoot {
   var allKeyPaths: [String: PartialKeyPath<Self>] {
     _allKeyPaths(value: self).reduce(into: [:]) {
       if $1.key.hasPrefix("_") {
         $0[String($1.key.dropFirst())] = $1.value
       }
     }
+  }
+
+  nonisolated func access(
+    keyPath: KeyPath<Self, some Any>
+  ) {
+    _$observationRegistrar.access(self, keyPath: keyPath)
+  }
+
+  nonisolated func withMutation<T>(
+    keyPath: KeyPath<Self, some Any>,
+    _ mutation: () throws -> T
+  ) rethrows -> T {
+    try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
   }
 }
 
@@ -300,18 +308,6 @@ public extension OcaRoot {
     var subject: AsyncCurrentValueSubject<PropertyValue> {
       AsyncCurrentValueSubject(currentValue)
     }
-
-    #if canImport(SwiftUI)
-    var binding: Binding<PropertyValue> {
-      Binding(
-        get: {
-          currentValue
-        },
-        set: { _ in
-        }
-      )
-    }
-    #endif
 
     @_spi(SwiftOCAPrivate) @discardableResult
     public func _getValue(

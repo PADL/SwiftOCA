@@ -38,3 +38,14 @@ extension EnvironmentValues {
     set { self[LastErrorKey.self] = newValue }
   }
 }
+
+private struct ConnectionKey: EnvironmentKey {
+  static let defaultValue: Ocp1Connection? = nil
+}
+
+extension EnvironmentValues {
+  var connection: Ocp1Connection? {
+    get { self[ConnectionKey.self] }
+    set { self[ConnectionKey.self] = newValue }
+  }
+}

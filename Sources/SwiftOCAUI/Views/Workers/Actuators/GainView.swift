@@ -24,15 +24,15 @@ extension OcaGain: OcaViewRepresentable {
 }
 
 public struct OcaGainView: OcaView {
-  @StateObject
+  @State
   var object: OcaGain
 
   public init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaGain)
+    _object = State(wrappedValue: object as! OcaGain)
   }
 
   public var body: some View {
-    OcaLogSliderView(value: object.$gain.binding.value)
+    OcaLogSliderView(value: object.binding(for: object.$gain).value)
       .showProgressIfWaiting(object.gain)
   }
 }

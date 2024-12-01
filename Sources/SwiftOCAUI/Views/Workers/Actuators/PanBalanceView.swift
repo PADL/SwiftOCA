@@ -25,15 +25,15 @@ extension OcaPanBalance: OcaViewRepresentable {
 }
 
 public struct OcaPanBalanceView: OcaView {
-  @StateObject
+  @State
   var object: OcaPanBalance
 
   public init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaPanBalance)
+    _object = State(wrappedValue: object as! OcaPanBalance)
   }
 
   public var body: some View {
-    OcaVariableSliderView(value: object.$position.binding.value)
+    OcaVariableSliderView(value: object.binding(for: object.$position).value)
       .valueSliderStyle(HorizontalValueSliderStyle())
       .showProgressIfWaiting(object.position)
   }

@@ -17,9 +17,7 @@
 import AsyncAlgorithms
 import AsyncExtensions
 import Foundation
-#if canImport(SwiftUI)
-import SwiftUI
-#endif
+import Observation
 
 public struct OcaPropertyResolutionFlags: OptionSet, Sendable {
   public typealias RawValue = UInt32
@@ -61,10 +59,6 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
 
   func getJsonValue(_ object: OcaRoot, flags: OcaPropertyResolutionFlags) async throws
     -> [String: Any]
-
-  #if canImport(SwiftUI)
-  var binding: Binding<PropertyValue> { get }
-  #endif
 }
 
 public extension OcaPropertyRepresentable {
@@ -164,6 +158,8 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
   }
 
+  var _send: (@Sendable (_: OcaRoot?, _: PropertyValue) -> ())!
+
   @_spi(SwiftOCAPrivate)
   public let subject: AsyncCurrentValueSubject<PropertyValue>
 
@@ -193,25 +189,8 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     nonmutating set { fatalError() }
   }
 
-  #if canImport(SwiftUI)
-  private(set) weak var object: OcaRoot?
-
-  mutating func _referenceObject(_enclosingInstance object: OcaRoot) {
-    self.object = object
-  }
-  #endif
-
   public var currentValue: PropertyValue {
     subject.value
-  }
-
-  func _send(_enclosingInstance object: OcaRoot, _ state: PropertyValue) {
-    #if canImport(Combine) || canImport(OpenCombine)
-    DispatchQueue.main.async {
-      object.objectWillChange.send()
-    }
-    #endif
-    subject.send(state)
   }
 
   /// It's not possible to wrap `subscript(_enclosingInstance:wrapped:storage:)` because we can't
@@ -243,9 +222,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
           try await setValueIfMutable(object, value)
         } catch is CancellationError {
           // if task cancelled due to a view being dismissed, reset state to initial
-          _send(_enclosingInstance: object, .initial)
+          _send(object, .initial)
         } catch {
-          _send(_enclosingInstance: object, .failure(error))
+          _send(object, .failure(error))
           await object.connectionDelegate?.logger.trace(
             "set property handler for \(object) property \(propertyID) received error from device: \(error)"
           )
@@ -258,22 +237,34 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
   }
 
+  mutating func _registerObservable<T: OcaRoot>(
+    _enclosingInstance object: T,
+    wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>
+  ) {
+    object.access(keyPath: wrappedKeyPath)
+
+    _send = { @Sendable [subject] object, newValue in
+      guard let object else { return }
+      (object as! T).withMutation(keyPath: wrappedKeyPath) {
+        subject.send(newValue)
+      }
+    }
+  }
+
   public static subscript<T: OcaRoot>(
     _enclosingInstance object: T,
     wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>,
     storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
   ) -> PropertyValue {
     get {
-      #if canImport(SwiftUI)
-      object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
-      #endif
+      object[keyPath: storageKeyPath]._registerObservable(
+        _enclosingInstance: object,
+        wrapped: wrappedKeyPath
+      )
       return object[keyPath: storageKeyPath]
         ._get(_enclosingInstance: object)
     }
     set {
-      #if canImport(SwiftUI)
-      object[keyPath: storageKeyPath]._referenceObject(_enclosingInstance: object)
-      #endif
       object[keyPath: storageKeyPath]
         ._set(_enclosingInstance: object, newValue)
     }
@@ -294,6 +285,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     self.setMethodID = setMethodID
     subject = AsyncCurrentValueSubject(PropertyValue.initial)
     self.setValueTransformer = setValueTransformer
+    _send = { @Sendable [subject] in subject.send($1) }
   }
 
   public init(
@@ -342,18 +334,18 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
       let returnValue: Value = try await object.sendCommandRrq(methodID: getMethodID)
       if flags.contains(.cacheValue) {
-        _send(_enclosingInstance: object, .success(returnValue))
+        _send(object, .success(returnValue))
       }
 
       return returnValue
     } catch is CancellationError {
       if flags.contains(.cacheErrors) {
-        _send(_enclosingInstance: object, .initial)
+        _send(object, .initial)
       }
       throw CancellationError()
     } catch {
       if flags.contains(.cacheErrors) {
-        _send(_enclosingInstance: object, .failure(error))
+        _send(object, .failure(error))
       }
       await object.connectionDelegate?.logger
         .trace(
@@ -391,7 +383,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
       )
 
       // if we're not expecting an event, then be sure to update it here
-      _send(_enclosingInstance: object, .success(value))
+      _send(object, .success(value))
     }
   }
 
@@ -400,7 +392,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
   }
 
   public func refresh(_ object: OcaRoot) async {
-    _send(_enclosingInstance: object, .initial)
+    _send(object, .initial)
   }
 
   func onEvent(_ object: OcaRoot, event: OcaEvent, eventData data: Data) throws {
@@ -427,7 +419,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
       }
       fallthrough
     case .currentChanged:
-      _send(_enclosingInstance: object, .success(eventData.propertyValue))
+      _send(object, .success(eventData.propertyValue))
     default:
       throw Ocp1Error.unhandledEvent
     }
@@ -507,23 +499,3 @@ extension OcaProperty.PropertyValue: Hashable where Value: Hashable & Codable {
     }
   }
 }
-
-#if canImport(SwiftUI)
-public extension OcaProperty {
-  var binding: Binding<PropertyValue> {
-    Binding(
-      get: {
-        if let object {
-          _get(_enclosingInstance: object)
-        } else {
-          .initial
-        }
-      },
-      set: {
-        guard let object else { return }
-        _set(_enclosingInstance: object, $0)
-      }
-    )
-  }
-}
-#endif

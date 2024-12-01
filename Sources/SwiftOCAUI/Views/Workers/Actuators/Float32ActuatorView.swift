@@ -24,15 +24,15 @@ extension OcaFloat32Actuator: OcaViewRepresentable {
 }
 
 public struct OcaFloat32ActuatorView: OcaView {
-  @StateObject
+  @State
   var object: OcaFloat32Actuator
 
   public init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaFloat32Actuator)
+    _object = State(wrappedValue: object as! OcaFloat32Actuator)
   }
 
   public var body: some View {
-    OcaLogSliderView(value: object.$setting.binding.value)
+    OcaLogSliderView(value: object.binding(for: object.$setting).value)
       .showProgressIfWaiting(object.setting)
   }
 }

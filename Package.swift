@@ -206,7 +206,7 @@ let CommonTargets: [Target] = [
 let package = Package(
   name: "SwiftOCA",
   platforms: [
-    .macOS(.v13),
+    .macOS(.v14),
     .iOS(.v16),
   ],
   products: CommonProducts + PlatformProducts,
