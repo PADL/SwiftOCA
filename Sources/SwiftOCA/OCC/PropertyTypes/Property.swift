@@ -160,7 +160,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
   }
 
-  var _send: (@Sendable (_: OcaRoot?, _: PropertyValue) -> ())!
+  private(set) var _send: (@Sendable (_: OcaRoot?, _: PropertyValue) -> ())!
 
   @_spi(SwiftOCAPrivate)
   public let subject: AsyncCurrentValueSubject<PropertyValue>
