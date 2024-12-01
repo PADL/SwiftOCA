@@ -23,6 +23,7 @@ extension OcaIdentificationSensor: OcaViewRepresentable {
   }
 }
 
+@Observable
 private final class OcaIdentificationState: ObservableObject {
   var state: Bool = false
 
@@ -34,14 +35,14 @@ private final class OcaIdentificationState: ObservableObject {
 }
 
 public struct OcaIdentificationSensorView: OcaView {
-  @StateObject
+  @State
   var object: OcaIdentificationSensor
 
-  @StateObject
+  @State
   fileprivate var isIdentifying = OcaIdentificationState()
 
   public init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaIdentificationSensor)
+    _object = State(wrappedValue: object as! OcaIdentificationSensor)
   }
 
   public var body: some View {

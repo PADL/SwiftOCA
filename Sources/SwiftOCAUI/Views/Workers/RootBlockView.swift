@@ -22,7 +22,7 @@ import SwiftUI
 public struct OcaRootBlockView: View {
   @Environment(\.lastError)
   var lastError
-  @StateObject
+  @State
   var connection: Ocp1Connection
   @State
   var oNoPath = NavigationPath()
@@ -30,7 +30,7 @@ public struct OcaRootBlockView: View {
   var object: OcaRoot? = nil
 
   public init(_ connection: Ocp1Connection) {
-    _connection = StateObject(wrappedValue: connection)
+    _connection = State(wrappedValue: connection)
   }
 
   public var body: some View {
@@ -38,7 +38,7 @@ public struct OcaRootBlockView: View {
       if let object {
         OcaBlockNavigationSplitView(object)
           .environment(\.navigationPath, $oNoPath)
-          .environmentObject(connection)
+          .environment(\.connection, connection)
       } else {
         ProgressView()
       }

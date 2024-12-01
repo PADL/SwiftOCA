@@ -16,9 +16,6 @@
 
 import AsyncExtensions
 import Foundation
-#if canImport(SwiftUI)
-import SwiftUI
-#endif
 
 public struct OcaBoundedPropertyValue<
   Value: Codable & Comparable &
@@ -137,18 +134,16 @@ public struct OcaBoundedProperty<
     storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
   ) -> PropertyValue {
     get {
-      #if canImport(SwiftUI)
-      object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
-      #endif
+      object[keyPath: storageKeyPath]._storage._registerObservable(
+        _enclosingInstance: object,
+        wrapped: wrappedKeyPath
+      )
       return object[keyPath: storageKeyPath]._storage
         ._get(
           _enclosingInstance: object
         )
     }
     set {
-      #if canImport(SwiftUI)
-      object[keyPath: storageKeyPath]._storage._referenceObject(_enclosingInstance: object)
-      #endif
       object[keyPath: storageKeyPath]._storage._set(
         _enclosingInstance: object,
         newValue
@@ -181,7 +176,7 @@ public struct OcaBoundedProperty<
       throw Ocp1Error.unhandledEvent
     }
 
-    _storage._send(_enclosingInstance: object, .success(value))
+    _storage._send(object, .success(value))
   }
 
   public var projectedValue: Self {
@@ -215,23 +210,3 @@ public struct OcaBoundedProperty<
     try await _storage.setValueIfMutable(object, value)
   }
 }
-
-#if canImport(SwiftUI)
-public extension OcaBoundedProperty {
-  var binding: Binding<PropertyValue> {
-    Binding(
-      get: {
-        if let object = _storage.object {
-          _storage._get(_enclosingInstance: object)
-        } else {
-          .initial
-        }
-      },
-      set: {
-        guard let object = _storage.object else { return }
-        _storage._set(_enclosingInstance: object, $0)
-      }
-    )
-  }
-}
-#endif

@@ -19,7 +19,7 @@ import Sliders
 import SwiftOCA
 import SwiftUI
 
-struct OcaVariableSliderView<Value: BinaryFloatingPoint & Codable>: View
+struct OcaVariableSliderView<Value: BinaryFloatingPoint & Codable & Sendable>: View
   where Value.Stride: BinaryFloatingPoint
 {
   @Binding

@@ -41,11 +41,11 @@ extension OcaPropertyRepresentable {
 }
 
 struct OcaPropertyTableView: OcaView {
-  @StateObject
+  @State
   var object: OcaRoot
 
   init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object)
+    _object = State(wrappedValue: object)
   }
 
   public var body: some View {

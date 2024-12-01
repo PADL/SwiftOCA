@@ -18,7 +18,7 @@ import SwiftOCA
 import SwiftUI
 
 struct OcaMatrixNavigationSplitView: OcaView {
-  @StateObject
+  @State
   var object: OcaMatrix
   @Environment(\.navigationPath)
   var oNoPath
@@ -32,7 +32,7 @@ struct OcaMatrixNavigationSplitView: OcaView {
   var hasContainerMembers = false
 
   init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaMatrix)
+    _object = State(wrappedValue: object as! OcaMatrix)
   }
 
   public var body: some View {

@@ -18,7 +18,7 @@ import SwiftOCA
 import SwiftUI
 
 struct OcaBlockNavigationStackView: OcaView {
-  @StateObject
+  @State
   var object: OcaBlock
   @Environment(\.navigationPath)
   var oNoPath
@@ -32,7 +32,7 @@ struct OcaBlockNavigationStackView: OcaView {
   var selectedONo: OcaONo? = nil
 
   init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaBlock)
+    _object = State(wrappedValue: object as! OcaBlock)
   }
 
   public var body: some View {

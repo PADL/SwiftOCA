@@ -35,6 +35,7 @@
 		D32229D42ABC270900B56B6B /* Ocp1IORingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CC2ABC270900B56B6B /* Ocp1IORingController.swift */; };
 		D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */; };
 		D32437CF2BA9276700C89102 /* AnyCodable in Frameworks */ = {isa = PBXBuildFile; productRef = D32437CE2BA9276700C89102 /* AnyCodable */; };
+		D324D9B52CFC5A3800232790 /* OcaRoot+Binding.swift in Sources */ = {isa = PBXBuildFile; fileRef = D324D9B42CFC5A3800232790 /* OcaRoot+Binding.swift */; };
 		D32C49DD2B5102A300D73201 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = D32C49DC2B5102A300D73201 /* Logging */; };
 		D33A35A72B2FB1D600FEDC43 /* MediaClock3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */; };
 		D33A35A92B2FB7BE00FEDC43 /* MediaClockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */; };
@@ -353,6 +354,7 @@
 		D32229CB2ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1IORingDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D32229CC2ABC270900B56B6B /* Ocp1IORingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1IORingController.swift; sourceTree = "<group>"; };
 		D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEndpointRegistrar.swift; sourceTree = "<group>"; };
+		D324D9B42CFC5A3800232790 /* OcaRoot+Binding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaRoot+Binding.swift"; sourceTree = "<group>"; };
 		D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClock3.swift; sourceTree = "<group>"; };
 		D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClockManager.swift; sourceTree = "<group>"; };
 		D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTimeManager.swift; sourceTree = "<group>"; };
@@ -1037,11 +1039,12 @@
 		D3DA69D72A3DA7CD001250A1 /* Conformances */ = {
 			isa = PBXGroup;
 			children = (
-				D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */,
 				D3DA69E52A3DCAA5001250A1 /* Array+Extras.swift */,
 				D3DA69F32A3DF988001250A1 /* EnvironmentValues.swift */,
 				D3E6E2792A417FAE00BF7095 /* OcaArray2D+Extras.swift */,
 				D3E6E2872A43BD1900BF7095 /* OcaDB+Linear.swift */,
+				D324D9B42CFC5A3800232790 /* OcaRoot+Binding.swift */,
+				D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */,
 			);
 			path = Conformances;
 			sourceTree = "<group>";
@@ -1982,6 +1985,7 @@
 				D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */,
 				D3DA69E42A3DCA75001250A1 /* NavigationLabel.swift in Sources */,
 				D3DA69EB2A3DCD60001250A1 /* BlockNavigationStackView.swift in Sources */,
+				D324D9B52CFC5A3800232790 /* OcaRoot+Binding.swift in Sources */,
 				D3E6E2812A43B33D00BF7095 /* PolarityView.swift in Sources */,
 				D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */,
 				D30644092A77EB160063DA65 /* BasicSensorViews.swift in Sources */,
@@ -2029,7 +2033,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -2045,7 +2049,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -2058,7 +2062,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = T53Q9CN4T9;
 				ENABLE_HARDENED_RUNTIME = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -2072,7 +2076,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = T53Q9CN4T9;
 				ENABLE_HARDENED_RUNTIME = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -2092,7 +2096,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.padl.SwiftOCATests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2116,7 +2120,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.padl.SwiftOCATests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2139,7 +2143,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.padl.SwiftOCADeviceTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2163,7 +2167,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.padl.SwiftOCADeviceTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2183,7 +2187,7 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				OTHER_SWIFT_FLAGS = "-package-name swiftoca -parse-stdlib";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -2203,7 +2207,7 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				OTHER_SWIFT_FLAGS = "-package-name swiftoca -parse-stdlib";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -2341,7 +2345,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				OTHER_SWIFT_FLAGS = "-package-name swiftoca";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -2362,7 +2366,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				OTHER_SWIFT_FLAGS = "-package-name swiftoca";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -2395,7 +2399,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.padl.OCABrowser;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2433,7 +2437,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.padl.OCABrowser;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2458,7 +2462,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
@@ -2478,7 +2482,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";

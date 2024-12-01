@@ -59,11 +59,11 @@ extension OcaLevelSensor: OcaViewRepresentable {
 }
 
 public struct OcaLevelSensorView: OcaView {
-  @StateObject
+  @State
   var object: OcaLevelSensor
 
   public init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaLevelSensor)
+    _object = State(wrappedValue: object as! OcaLevelSensor)
   }
 
   public var body: some View {

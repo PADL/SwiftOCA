@@ -38,15 +38,15 @@ private extension Binding where Value == OcaProperty<OcaMuteState>.PropertyValue
 }
 
 public struct OcaMuteView: OcaView {
-  @StateObject
+  @State
   var object: OcaMute
 
   public init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaMute)
+    _object = State(wrappedValue: object as! OcaMute)
   }
 
   public var body: some View {
-    Toggle(isOn: object.$state.binding.value) {}
+    Toggle(isOn: object.binding(for: object.$state).value) {}
       .toggleStyle(SymbolToggleStyle(
         systemImage: "speaker.slash.circle.fill",
         activeColor: .red

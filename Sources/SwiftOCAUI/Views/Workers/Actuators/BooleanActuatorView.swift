@@ -38,15 +38,15 @@ private extension Binding where Value == OcaProperty<OcaBoolean>.PropertyValue {
 }
 
 public struct OcaBooleanView: OcaView {
-  @StateObject
+  @State
   var object: OcaBooleanActuator
 
   public init(_ object: OcaRoot) {
-    _object = StateObject(wrappedValue: object as! OcaBooleanActuator)
+    _object = State(wrappedValue: object as! OcaBooleanActuator)
   }
 
   public var body: some View {
-    Toggle(isOn: object.$setting.binding.value) {}
+    Toggle(isOn: object.binding(for: object.$setting).value) {}
       .toggleStyle(SymbolToggleStyle(systemImage: "circle.fill", activeColor: .accentColor))
       .padding()
       .showProgressIfWaiting(object.setting)
