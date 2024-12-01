@@ -17,7 +17,9 @@
 import AsyncAlgorithms
 import AsyncExtensions
 import Foundation
+#if canImport(Darwin)
 import Observation
+#endif
 
 public struct OcaPropertyResolutionFlags: OptionSet, Sendable {
   public typealias RawValue = UInt32
@@ -241,14 +243,15 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     _enclosingInstance object: T,
     wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>
   ) {
+    #if canImport(Darwin)
     object.access(keyPath: wrappedKeyPath)
-
     _send = { @Sendable [subject] object, newValue in
       guard let object else { return }
       (object as! T).withMutation(keyPath: wrappedKeyPath) {
         subject.send(newValue)
       }
     }
+    #endif
   }
 
   public static subscript<T: OcaRoot>(

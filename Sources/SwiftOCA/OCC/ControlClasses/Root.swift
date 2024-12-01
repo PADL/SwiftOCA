@@ -16,7 +16,9 @@
 
 import AsyncExtensions
 import Foundation
+#if canImport(Darwin)
 import Observation
+#endif
 
 open class OcaRoot: CustomStringConvertible, @unchecked Sendable,
   _OcaObjectKeyPathRepresentable, Observable
@@ -26,7 +28,9 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable,
   public internal(set) weak var connectionDelegate: Ocp1Connection?
 
   fileprivate var subscriptionCancellable: Ocp1Connection.SubscriptionCancellable?
+  #if canImport(Darwin)
   fileprivate let _$observationRegistrar = Observation.ObservationRegistrar()
+  #endif
 
   // 1.1
   open class var classID: OcaClassID { OcaClassID("1") }
@@ -189,6 +193,7 @@ extension _OcaObjectKeyPathRepresentable where Self: OcaRoot {
     }
   }
 
+  #if canImport(Darwin)
   nonisolated func access(
     keyPath: KeyPath<Self, some Any>
   ) {
@@ -201,6 +206,7 @@ extension _OcaObjectKeyPathRepresentable where Self: OcaRoot {
   ) rethrows -> T {
     try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
   }
+  #endif
 }
 
 public extension OcaRoot {

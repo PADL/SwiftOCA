@@ -20,6 +20,9 @@ import AsyncExtensions
 import Foundation
 import Logging
 import SystemPackage
+#if canImport(Darwin)
+import Observation
+#endif
 
 private extension Ocp1Error {
   var ocp1ConnectionState: Ocp1ConnectionState? {
@@ -101,6 +104,7 @@ private extension Ocp1ConnectionState {
 
 // MARK: - connection state observation
 
+#if canImport(Darwin)
 extension Ocp1Connection {
   nonisolated func access(
     keyPath: KeyPath<Ocp1Connection, some Any>
@@ -115,6 +119,7 @@ extension Ocp1Connection {
     try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
   }
 }
+#endif
 
 // MARK: - monitor task management
 
@@ -173,10 +178,14 @@ extension Ocp1Connection {
 
   /// wrapper to update the connection state, logging the old and new connection states
   private func _updateConnectionState(_ connectionState: Ocp1ConnectionState) {
+    logger.trace("_updateConnectionState: \(currentConnectionState) => \(connectionState)")
+    #if canImport(Darwin)
     withMutation(keyPath: \.currentConnectionState) {
-      logger.trace("_updateConnectionState: \(currentConnectionState) => \(connectionState)")
       _connectionState.send(connectionState)
     }
+    #else
+    _connectionState.send(connectionState)
+    #endif
   }
 
   /// update the device connection state, called from the connection (for
@@ -279,7 +288,9 @@ extension Ocp1Connection {
   }
 
   public var currentConnectionState: Ocp1ConnectionState {
+#if canImport(Darwin)
     access(keyPath: \.currentConnectionState)
+#endif
     return _connectionState.value
   }
 

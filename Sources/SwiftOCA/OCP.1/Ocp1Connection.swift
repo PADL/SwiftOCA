@@ -20,7 +20,9 @@ import Atomics
 @preconcurrency
 import Foundation
 import Logging
+#if canImport(Darwin)
 import Observation
+#endif
 
 package let Ocp1MaximumDatagramPduSize = 1500
 
@@ -154,6 +156,10 @@ public struct Ocp1ConnectionStatistics: Sendable {
 
 private let CommandHandleBase = OcaUint32(100)
 
+#if !canImport(Darwin)
+protocol Observable {}
+#endif
+
 @OcaConnection
 open class Ocp1Connection: Observable, CustomStringConvertible {
   public nonisolated static let MinimumPduSize = 7
@@ -203,7 +209,9 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
   var subscriptions = [OcaEvent: EventSubscriptions]()
   var logger = Logger(label: "com.padl.SwiftOCA")
   var connectionID = 0
+  #if canImport(Darwin)
   let _$observationRegistrar = Observation.ObservationRegistrar()
+  #endif
 
   private var nextCommandHandle = CommandHandleBase
 
