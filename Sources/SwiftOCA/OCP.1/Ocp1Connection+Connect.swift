@@ -288,9 +288,9 @@ extension Ocp1Connection {
   }
 
   public var currentConnectionState: Ocp1ConnectionState {
-#if canImport(Darwin)
+    #if canImport(Darwin)
     access(keyPath: \.currentConnectionState)
-#endif
+    #endif
     return _connectionState.value
   }
 
