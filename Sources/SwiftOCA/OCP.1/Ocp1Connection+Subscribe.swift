@@ -20,7 +20,7 @@ private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 
 public extension Ocp1Connection {
   /// a token that can be used by the client to unsubscribe
-  final class SubscriptionCancellable: Hashable, Sendable {
+  final class SubscriptionCancellable: Hashable, Sendable, CustomStringConvertible {
     public static func == (
       lhs: Ocp1Connection.SubscriptionCancellable,
       rhs: Ocp1Connection.SubscriptionCancellable
@@ -53,6 +53,14 @@ public extension Ocp1Connection {
       self.label = label
       self.event = event
       self.callback = callback
+    }
+
+    public var description: String {
+      if let label {
+        "event: \(event), label: \(label)"
+      } else {
+        "event: \(event)"
+      }
     }
   }
 
@@ -89,7 +97,9 @@ public extension Ocp1Connection {
         notificationDeliveryMode: .normal,
         destinationInformation: OcaNetworkAddress()
       )
+      logger.trace("addSubscription: added new OCA subscription for \(event)")
     }
+    logger.trace("addSubscription: added \(cancellable) to subscription set")
 
     return cancellable
   }
@@ -102,12 +112,14 @@ public extension Ocp1Connection {
     }
 
     eventSubscriptions.subscriptions.remove(cancellable)
+    logger.trace("removeSubscription: removed \(cancellable) from subscription set")
     if eventSubscriptions.subscriptions.isEmpty {
       subscriptions[cancellable.event] = nil
       try await subscriptionManager.removeSubscription(
         event: cancellable.event,
         subscriber: subscriber
       )
+      logger.trace("removeSubscription: removed OCA subscription for \(cancellable.event)")
     }
   }
 
