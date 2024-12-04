@@ -55,13 +55,13 @@ public extension OcaRoot {
     }
 
     public static let ignoreDecodingErrors = DeserializationFlags(rawValue: 1 << 0)
-    public static let ignoreUnknownProperties = DeserializationFlags(rawValue: 1 << 1)
+    public static let ignoreMissingProperties = DeserializationFlags(rawValue: 1 << 1)
     public static let ignoreUnknownObjectNumbers = DeserializationFlags(rawValue: 1 << 2)
     public static let ignoreObjectClassMismatches = DeserializationFlags(rawValue: 1 << 3)
 
     public static let ignoreAllErrors: DeserializationFlags = [
       .ignoreDecodingErrors,
-      .ignoreUnknownProperties,
+      .ignoreMissingProperties,
       .ignoreUnknownObjectNumbers,
       .ignoreObjectClassMismatches,
     ]

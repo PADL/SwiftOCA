@@ -391,8 +391,12 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
       let propertyName = property.propertyID.description
 
       guard let value = jsonObject[propertyName] else {
-        if flags.contains(.ignoreUnknownProperties) { continue }
-        else { throw Ocp1Error.status(.parameterOutOfRange) }
+        if flags.contains(.ignoreMissingProperties) {
+          continue
+        } else {
+          logger.warning("JSON object \(jsonObject) is missing \(propertyName)")
+          throw Ocp1Error.status(.parameterOutOfRange)
+        }
       }
 
       do {
