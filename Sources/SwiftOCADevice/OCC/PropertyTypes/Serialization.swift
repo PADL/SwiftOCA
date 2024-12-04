@@ -77,16 +77,17 @@ public extension OcaRoot {
 public extension OcaDevice {
   @discardableResult
   func deserialize(
-    jsonObject: [String: Sendable]
+    jsonObject: [String: Sendable],
+    flags: OcaRoot.DeserializationFlags = []
   ) async throws -> OcaRoot {
     let objectNumber = try _getObjectNumberFromJsonObject(jsonObject: jsonObject)
 
     guard let object = objects[objectNumber] else {
-      logger.warning("object \(objectNumber.oNoString) not present, cannot deserialize")
+      logger.warning("root object \(objectNumber.oNoString) not present, cannot deserialize")
       throw Ocp1Error.objectNotPresent(objectNumber)
     }
 
-    try await object.deserialize(jsonObject: jsonObject)
+    try await object.deserialize(jsonObject: jsonObject, flags: flags)
 
     return object
   }
