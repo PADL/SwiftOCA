@@ -24,34 +24,50 @@ let actionObjectsJSONKey = "_members"
 
 public extension OcaDevice {
   @discardableResult
-  func deserialize(jsonObject: [String: Sendable]) async throws -> OcaRoot {
+  func deserialize(
+    jsonObject: [String: Sendable]
+  ) async throws -> OcaRoot {
     guard let classID = jsonObject[classIDJSONKey] as? String else {
+      logger.warning("bad or missing object class when deserializing")
       throw Ocp1Error.objectClassMismatch
     }
 
     guard let objectNumber = jsonObject[objectNumberJSONKey] as? OcaONo,
           objectNumber != OcaInvalidONo
     else {
+      logger.warning("bad or missing object number when deserializing")
       throw Ocp1Error.status(.badONo)
     }
 
     guard let object = objects[objectNumber] else {
+      logger.warning("object \(objectNumber.oNoString) not present, cannot deserialize")
       throw Ocp1Error.objectNotPresent(objectNumber)
     }
 
     guard try await object.objectIdentification.classIdentification
       .classID == OcaClassID(unsafeString: classID)
     else {
+      logger.warning("object class mismatch between \(object) and \(classID)")
       throw Ocp1Error.objectClassMismatch
     }
 
     for (_, propertyKeyPath) in object.allDevicePropertyKeyPaths {
       let property = object[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
-      guard let value = jsonObject[property.propertyID.description] else {
-        throw Ocp1Error.status(.badFormat)
+      let propertyName = property.propertyID.description
+
+      guard let value = jsonObject[propertyName] else {
+        continue
       }
 
-      try await property.set(object: object, jsonValue: value, device: self)
+      do {
+        try await property.set(object: object, jsonValue: value, device: self)
+      } catch {
+        logger
+          .warning(
+            "failed to set value \(value) on property \(propertyName) of \(object): \(error)"
+          )
+        throw error
+      }
     }
 
     return object

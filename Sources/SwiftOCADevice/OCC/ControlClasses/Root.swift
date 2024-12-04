@@ -351,7 +351,8 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
     OcaRoot,
     OcaPropertyID,
     Codable & Sendable
-  ) -> Bool
+  )
+    -> Bool
 
   public func serialize(
     flags: SerializationFlags = [],
