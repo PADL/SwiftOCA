@@ -386,10 +386,20 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     true
   }
 
-  override public var jsonObject: [String: Any] {
-    var jsonObject = super.jsonObject
+  override public func serialize(
+    flags: OcaRoot.SerializationFlags = [],
+    isIncluded: OcaRoot.SerializationFilterFunction? = nil
+  ) throws -> [String: Any] {
+    var jsonObject = try super.serialize(flags: flags, isIncluded: isIncluded)
+
     let membersJson = members.map(defaultValue: nil, \.?.objectNumber)
-    jsonObject["3.5"] = try? JSONEncoder().reencodeAsValidJSONObject(membersJson)
+    do {
+      jsonObject["3.5"] = try JSONEncoder().reencodeAsValidJSONObject(membersJson)
+    } catch {
+      guard flags.contains(.ignoreErrors) else {
+        throw error
+      }
+    }
     return jsonObject
   }
 }

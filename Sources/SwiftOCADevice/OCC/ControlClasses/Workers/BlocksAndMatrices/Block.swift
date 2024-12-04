@@ -410,9 +410,21 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     true
   }
 
-  override public var jsonObject: [String: Any] {
-    var jsonObject = super.jsonObject
-    jsonObject["3.2"] = actionObjects.map(\.jsonObject)
+  override public func serialize(
+    flags: OcaRoot.SerializationFlags = [],
+    isIncluded: OcaRoot.SerializationFilterFunction? = nil
+  ) throws -> [String: Any] {
+    var jsonObject = try super.serialize(flags: flags, isIncluded: isIncluded)
+
+    jsonObject["3.2"] = try actionObjects.compactMap { actionObject in
+      do {
+        return try actionObject.serialize(flags: flags, isIncluded: isIncluded)
+      } catch {
+        if flags.contains(.ignoreErrors) { return nil }
+        throw error
+      }
+    }
+
     return jsonObject
   }
 }

@@ -57,3 +57,9 @@ public extension OcaDevice {
     return object
   }
 }
+
+public extension OcaRoot {
+  var jsonObject: [String: Any] {
+    try! serialize(flags: .ignoreErrors)
+  }
+}

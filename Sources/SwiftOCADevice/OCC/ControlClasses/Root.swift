@@ -335,7 +335,28 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
     }
   }
 
-  public var jsonObject: [String: Any] {
+  public struct SerializationFlags: OptionSet, Sendable {
+    public typealias RawValue = UInt
+
+    public let rawValue: RawValue
+
+    public init(rawValue: RawValue) {
+      self.rawValue = rawValue
+    }
+
+    public static let ignoreErrors = SerializationFlags(rawValue: 1 << 0)
+  }
+
+  public typealias SerializationFilterFunction = @Sendable (
+    OcaRoot,
+    OcaPropertyID,
+    Codable & Sendable
+  ) -> Bool
+
+  public func serialize(
+    flags: SerializationFlags = [],
+    isIncluded: SerializationFilterFunction? = nil
+  ) throws -> [String: Any] {
     var dict = [String: Any]()
 
     precondition(objectNumber != OcaInvalidONo)
@@ -349,7 +370,16 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
 
     for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
       let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
-      dict[property.propertyID.description] = try? property.getJsonValue()
+      if let isIncluded, !isIncluded(self, property.propertyID, property.wrappedValue) {
+        continue
+      }
+      do {
+        dict[property.propertyID.description] = try property.getJsonValue()
+      } catch {
+        guard flags.contains(.ignoreErrors) else {
+          throw error
+        }
+      }
     }
 
     return dict

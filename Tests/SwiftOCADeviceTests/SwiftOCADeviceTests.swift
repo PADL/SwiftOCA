@@ -101,7 +101,7 @@ final class SwiftOCADeviceTests: XCTestCase {
 
     let jsonSerializationExpectation =
       XCTestExpectation(description: "Ensure JSON serialization round-trips")
-    let jsonObject = await device.rootBlock.jsonObject
+    let jsonObject = try await device.rootBlock.serialize()
     let jsonResultData = try JSONSerialization.data(withJSONObject: jsonObject)
     let decoded = try JSONSerialization.jsonObject(with: jsonResultData) as! [String: Any]
     XCTAssertEqual(decoded as NSDictionary, jsonObject as NSDictionary)
