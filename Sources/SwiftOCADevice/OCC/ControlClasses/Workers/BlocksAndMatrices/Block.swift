@@ -417,15 +417,43 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     var jsonObject = try super.serialize(flags: flags, isIncluded: isIncluded)
 
     jsonObject["3.2"] = try actionObjects.compactMap { actionObject in
-      do {
-        return try actionObject.serialize(flags: flags, isIncluded: isIncluded)
-      } catch {
-        if flags.contains(.ignoreErrors) { return nil }
-        throw error
-      }
+      try actionObject.serialize(flags: flags, isIncluded: isIncluded)
     }
 
     return jsonObject
+  }
+
+  override public func deserialize(
+    jsonObject: [String: Sendable],
+    flags: DeserializationFlags = []
+  ) async throws {
+    try await super.deserialize(jsonObject: jsonObject, flags: flags)
+
+    guard let actionJsonObjects = jsonObject["3.2"] as? [[String: Sendable]] else {
+      return
+    }
+
+    for actionJsonObject in actionJsonObjects {
+      guard !actionJsonObject.isEmpty else {
+        continue
+      }
+
+      let objectNumber: OcaONo
+
+      do {
+        objectNumber = try _getObjectNumberFromJsonObject(jsonObject: actionJsonObject)
+      } catch {
+        if flags.contains(.ignoreDecodingErrors) { continue }
+        else { throw Ocp1Error.status(.badFormat) }
+      }
+
+      guard let actionObject = members.first(where: { $0.objectNumber == objectNumber }) else {
+        if flags.contains(.ignoreUnknownObjectNumbers) { continue }
+        else { throw Ocp1Error.objectNotPresent(objectNumber) }
+      }
+
+      try await actionObject.deserialize(jsonObject: actionJsonObject, flags: flags)
+    }
   }
 }
 

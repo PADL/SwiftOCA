@@ -167,7 +167,10 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
           objects.append(object)
         }
       }
-      await setAndNotifySubscribers(object: object, objects as! Value)
+      guard let objects = objects as? Value else {
+        throw Ocp1Error.status(.badFormat)
+      }
+      await setAndNotifySubscribers(object: object, objects)
     } else {
       let isValidJSONObject = JSONSerialization.isValidJSONObject(subject.value)
       if !isValidJSONObject,

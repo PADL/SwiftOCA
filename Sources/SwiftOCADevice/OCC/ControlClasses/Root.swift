@@ -335,26 +335,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
     }
   }
 
-  public struct SerializationFlags: OptionSet, Sendable {
-    public typealias RawValue = UInt
-
-    public let rawValue: RawValue
-
-    public init(rawValue: RawValue) {
-      self.rawValue = rawValue
-    }
-
-    public static let ignoreErrors = SerializationFlags(rawValue: 1 << 0)
-  }
-
-  public typealias SerializationFilterFunction = @Sendable (
-    OcaRoot,
-    OcaPropertyID,
-    Codable & Sendable
-  )
-    -> Bool
-
-  public func serialize(
+  open func serialize(
     flags: SerializationFlags = [],
     isIncluded: SerializationFilterFunction? = nil
   ) throws -> [String: Any] {
@@ -377,13 +358,57 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
       do {
         dict[property.propertyID.description] = try property.getJsonValue()
       } catch {
-        guard flags.contains(.ignoreErrors) else {
+        guard flags.contains(.ignoreEncodingErrors) else {
           throw error
         }
       }
     }
 
     return dict
+  }
+
+  open func deserialize(
+    jsonObject: [String: Sendable],
+    flags: DeserializationFlags = []
+  ) async throws {
+    guard let deviceDelegate else { throw Ocp1Error.notConnected }
+    let logger = await deviceDelegate.logger
+
+    guard let classID = jsonObject[classIDJSONKey] as? String else {
+      logger.warning("bad or missing object class when deserializing")
+      throw Ocp1Error.objectClassMismatch
+    }
+
+    guard try objectIdentification.classIdentification
+      .classID == OcaClassID(unsafeString: classID)
+    else {
+      logger.warning("object class mismatch between \(self) and \(classID)")
+      throw Ocp1Error.objectClassMismatch
+    }
+
+    for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
+      let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
+      let propertyName = property.propertyID.description
+
+      guard let value = jsonObject[propertyName] else {
+        if flags.contains(.ignoreUnknownProperties) { continue }
+        else { throw Ocp1Error.status(.parameterOutOfRange) }
+      }
+
+      do {
+        try await property.set(object: self, jsonValue: value, device: deviceDelegate)
+      } catch {
+        logger
+          .warning(
+            "failed to set value \(value) on property \(propertyName) of \(self): \(error)"
+          )
+        if !flags.contains(.ignoreDecodingErrors) { throw error }
+      }
+    }
+  }
+
+  public var jsonObject: [String: Any] {
+    try! serialize(flags: .ignoreEncodingErrors)
   }
 }
 

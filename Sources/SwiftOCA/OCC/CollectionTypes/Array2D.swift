@@ -28,6 +28,25 @@ public struct OcaArray2D<Element: Sendable>: Sendable {
     self.init(nX: Int(nX), nY: Int(nY), defaultValue: defaultValue)
   }
 
+  public init?(arrayOfArrays items: [[Element]]) {
+    var columnCount: Int?
+
+    guard items.allSatisfy({ row in
+      if let columnCount {
+        return row.count == columnCount
+      } else {
+        columnCount = row.count
+        return true
+      }
+    }) else {
+      return nil
+    }
+
+    nX = columnCount ?? 0
+    nY = items.count
+    self.items = items.reduce([], +)
+  }
+
   private func indexIsValid(x: Int, y: Int) -> Bool {
     x >= 0 && x < nX && y >= 0 && y < nY
   }
@@ -65,6 +84,15 @@ public struct OcaArray2D<Element: Sendable>: Sendable {
     return mapped
   }
 
+  public func asyncMap<T>(
+    defaultValue: T,
+    _ transform: (Element) async throws -> T
+  ) async rethrows -> OcaArray2D<T> {
+    var mapped = OcaArray2D<T>(nX: nX, nY: nY, defaultValue: defaultValue)
+    mapped.items = try await items.asyncMap(transform)
+    return mapped
+  }
+
   public func forEach(_ body: (Element) throws -> ()) rethrows {
     try items.forEach(body)
   }
@@ -85,16 +113,8 @@ extension OcaArray2D: Codable where Element: Codable {
     } else {
       var container = try decoder.unkeyedContainer()
       let items = try container.decode([[Element]].self)
-      var columnCount: Int?
 
-      guard items.allSatisfy({ row in
-        if let columnCount {
-          return row.count == columnCount
-        } else {
-          columnCount = row.count
-          return true
-        }
-      }) else {
+      guard let array2D = Self(arrayOfArrays: items) else {
         throw DecodingError
           .dataCorrupted(DecodingError.Context(
             codingPath: decoder.codingPath,
@@ -102,9 +122,7 @@ extension OcaArray2D: Codable where Element: Codable {
           ))
       }
 
-      nX = columnCount ?? 0
-      nY = items.count
-      self.items = items.reduce([], +)
+      self = array2D
     }
   }
 

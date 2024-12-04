@@ -166,6 +166,6 @@ func serializeDeserialize(
     let decoded = try JSONSerialization.jsonObject(with: jsonResultData) as! [String: Any]
     try await OcaDevice.shared.deserialize(jsonObject: decoded)
   } catch {
-    debugPrint("coding error: \(error)")
+    debugPrint("serialization error: \(error)")
   }
 }

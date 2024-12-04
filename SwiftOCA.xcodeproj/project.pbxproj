@@ -68,7 +68,7 @@
 		D34B5F9E2B65FD0D000C8DD1 /* Grouper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5F9D2B65FD0D000C8DD1 /* Grouper.swift */; };
 		D34B5FA02B65FD1D000C8DD1 /* Grouper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5F9F2B65FD1D000C8DD1 /* Grouper.swift */; };
 		D34B5FA22B65FD74000C8DD1 /* GrouperDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA12B65FD74000C8DD1 /* GrouperDataTypes.swift */; };
-		D34B5FA42B670576000C8DD1 /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA32B670576000C8DD1 /* Root+JSON.swift */; };
+		D34B5FA42B670576000C8DD1 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA32B670576000C8DD1 /* Serialization.swift */; };
 		D34B5FA62B67204D000C8DD1 /* Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA52B67204D000C8DD1 /* Connection.swift */; };
 		D34B5FA82B6884DA000C8DD1 /* ListProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA72B6884DA000C8DD1 /* ListProperty.swift */; };
 		D34B5FAA2B688A9A000C8DD1 /* MapProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA92B688A9A000C8DD1 /* MapProperty.swift */; };
@@ -383,7 +383,7 @@
 		D34B5F9D2B65FD0D000C8DD1 /* Grouper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grouper.swift; sourceTree = "<group>"; };
 		D34B5F9F2B65FD1D000C8DD1 /* Grouper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grouper.swift; sourceTree = "<group>"; };
 		D34B5FA12B65FD74000C8DD1 /* GrouperDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrouperDataTypes.swift; sourceTree = "<group>"; };
-		D34B5FA32B670576000C8DD1 /* Root+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+JSON.swift"; sourceTree = "<group>"; };
+		D34B5FA32B670576000C8DD1 /* Serialization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Serialization.swift; sourceTree = "<group>"; };
 		D34B5FA52B67204D000C8DD1 /* Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connection.swift; sourceTree = "<group>"; };
 		D34B5FA72B6884DA000C8DD1 /* ListProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListProperty.swift; sourceTree = "<group>"; };
 		D34B5FA92B688A9A000C8DD1 /* MapProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapProperty.swift; sourceTree = "<group>"; };
@@ -781,7 +781,6 @@
 				D33A35B22B2FC4DC00FEDC43 /* ApplicationNetworks */,
 				D351F2062A72999D008C5513 /* Agents */,
 				D33B528F2A6FD332001A1BA7 /* Root.swift */,
-				D34B5FA32B670576000C8DD1 /* Root+JSON.swift */,
 				D33B52AF2A703AEA001A1BA7 /* Root+Commands.swift */,
 				D33D595C2B2FD04900963157 /* PortsRepresentable.swift */,
 				D33B52A62A702D1C001A1BA7 /* Managers */,
@@ -796,6 +795,7 @@
 				D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */,
 				D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */,
 				D351F2192A729F48008C5513 /* VectorDeviceProperty.swift */,
+				D34B5FA32B670576000C8DD1 /* Serialization.swift */,
 			);
 			path = PropertyTypes;
 			sourceTree = "<group>";
@@ -1734,7 +1734,7 @@
 				D351F2082A7299B0008C5513 /* Agent.swift in Sources */,
 				D35592602B520DFC000F633B /* ControllerDefaultSubscribing.swift in Sources */,
 				D30349E22BC803280080FF09 /* CounterNotifier.swift in Sources */,
-				D34B5FA42B670576000C8DD1 /* Root+JSON.swift in Sources */,
+				D34B5FA42B670576000C8DD1 /* Serialization.swift in Sources */,
 				D33B52A52A702D04001A1BA7 /* Worker.swift in Sources */,
 				D3FAC8EE2B5CFE3A009E2775 /* FirmwareManager.swift in Sources */,
 				D32229D12ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift in Sources */,

@@ -396,10 +396,42 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     do {
       jsonObject["3.5"] = try JSONEncoder().reencodeAsValidJSONObject(membersJson)
     } catch {
-      guard flags.contains(.ignoreErrors) else {
+      guard flags.contains(.ignoreEncodingErrors) else {
         throw error
       }
     }
     return jsonObject
+  }
+
+  override public func deserialize(
+    jsonObject: [String: Sendable],
+    flags: DeserializationFlags = []
+  ) async throws {
+    guard let deviceDelegate else { throw Ocp1Error.notConnected }
+
+    try await super.deserialize(jsonObject: jsonObject, flags: flags)
+
+    guard let membersJson = jsonObject["3.5"] as? [[OcaONo]],
+          let membersJson = OcaArray2D<OcaONo>(arrayOfArrays: membersJson)
+    else {
+      if flags.contains(.ignoreDecodingErrors) { return }
+      else { throw Ocp1Error.status(.badFormat) }
+    }
+
+    members = try await membersJson.asyncMap(defaultValue: nil) { objectNumber in
+      guard let member = await deviceDelegate.objects[objectNumber] else {
+        if flags.contains(.ignoreUnknownObjectNumbers) { return nil }
+        else { throw Ocp1Error.objectNotPresent(objectNumber) }
+      }
+
+      guard let member = member as? Member else {
+        if flags.contains(.ignoreObjectClassMismatches) { return nil }
+        else { throw Ocp1Error.objectClassMismatch }
+      }
+
+      return member
+    }
+
+    try? await notifySubscribers(members: members, changeType: .itemChanged)
   }
 }
