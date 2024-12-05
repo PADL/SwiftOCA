@@ -5,7 +5,6 @@ SwiftOCA
 - WebSocket client-side support
 - fix class version logic
 - tests
-- check bugs in FlyingSocks client
 
 SwiftOCADevice
 --------------
