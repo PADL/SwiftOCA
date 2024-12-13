@@ -2580,7 +2580,7 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		D33771402B48D9E9003BD47B /* XCRemoteSwiftPackageReference "AnyCodable" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Flight-School/AnyCodable.git";
+			repositoryURL = "https://github.com/Flight-School/AnyCodable";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.6.7;
@@ -2596,7 +2596,7 @@
 		};
 		D36ECA282A5B20480015174A /* XCRemoteSwiftPackageReference "FlyingFox" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/swhitty/FlyingFox.git";
+			repositoryURL = "https://github.com/swhitty/FlyingFox";
 			requirement = {
 				branch = main;
 				kind = branch;
@@ -2604,7 +2604,7 @@
 		};
 		D36ECA282A5B20480015174C /* XCRemoteSwiftPackageReference "swift-log" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-log.git";
+			repositoryURL = "https://github.com/apple/swift-log";
 			requirement = {
 				branch = main;
 				kind = branch;
@@ -2612,7 +2612,7 @@
 		};
 		D3AD37772BF089CA00F3F713 /* XCRemoteSwiftPackageReference "swift-system" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-system.git";
+			repositoryURL = "https://github.com/apple/swift-system";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.2.1;
@@ -2620,7 +2620,7 @@
 		};
 		D3CFA35B2CED4D7500CAE537 /* XCRemoteSwiftPackageReference "swift-atomics" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-atomics.git";
+			repositoryURL = "https://github.com/apple/swift-atomics";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.2.0;
@@ -2628,7 +2628,7 @@
 		};
 		D3E6E1EC2A3ACB0700BF7095 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-async-algorithms.git";
+			repositoryURL = "https://github.com/apple/swift-async-algorithms";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.1.0;
@@ -2636,7 +2636,7 @@
 		};
 		D3E6E2592A3D28DD00BF7095 /* XCRemoteSwiftPackageReference "AsyncExtensions" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sideeffect-io/AsyncExtensions.git";
+			repositoryURL = "https://github.com/sideeffect-io/AsyncExtensions";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.5.2;
@@ -2644,7 +2644,7 @@
 		};
 		D3E6E2842A43B8D000BF7095 /* XCRemoteSwiftPackageReference "swiftui-sliders" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/spacenation/swiftui-sliders.git";
+			repositoryURL = "https://github.com/spacenation/swiftui-sliders";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.0.0;
