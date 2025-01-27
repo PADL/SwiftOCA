@@ -96,14 +96,19 @@ public class OcaClassRegistry {
     // managers
     try register(OcaManager.self)
     try register(OcaDeviceManager.self)
-    // try register(OcaLibraryManager.self)
-    try register(OcaNetworkManager.self)
+    try register(OcaSecurityManager.self)
+    try register(OcaFirmwareManager.self)
     try register(OcaSubscriptionManager.self)
-    try register(OcaLockManager.self)
-    try register(OcaDiagnosticManager.self)
+    try register(OcaPowerManager.self)
+    try register(OcaNetworkManager.self) // 1.3.6
+    try register(OcaMediaClockManager.self)
+    try register(OcaLibraryManager.self)
     try register(OcaAudioProcessingManager.self)
     try register(OcaDeviceTimeManager.self)
-    try register(OcaMediaClockManager.self)
+    try register(OcaTaskManager.self)
+    try register(OcaCodingManager.self)
+    try register(OcaDiagnosticManager.self)
+    try register(OcaLockManager.self)
 
     // workers
     try register(OcaWorker.self)
