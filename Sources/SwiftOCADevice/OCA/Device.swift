@@ -26,7 +26,7 @@ public protocol OcaDeviceEventDelegate: AnyObject, Sendable {
     parameters: Data
   ) async
 
-  func onControllerExpiry(_ controller: OcaController)
+  func onControllerExpiry(_ controller: OcaController) async
 }
 
 @globalActor

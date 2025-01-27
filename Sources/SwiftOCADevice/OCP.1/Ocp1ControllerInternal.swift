@@ -164,7 +164,7 @@ extension Ocp1ControllerInternal {
           let now = ContinuousClock.now
           if connectionIsStale(now) {
             try? await onConnectionBecomingStale()
-            await endpoint?.device.eventDelegate?.onControllerExpiry(self)
+            Task { await endpoint?.device.eventDelegate?.onControllerExpiry(self) }
             await endpoint?.remove(controller: self as! Endpoint.ControllerType)
             endpoint?.logger.info("expired controller", controller: self)
             break
