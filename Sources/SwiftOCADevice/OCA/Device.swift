@@ -25,6 +25,8 @@ public protocol OcaDeviceEventDelegate: AnyObject, Sendable {
     _ event: OcaEvent,
     parameters: Data
   ) async
+
+  func onControllerExpiry(_ controller: OcaController)
 }
 
 @globalActor
@@ -40,7 +42,7 @@ public actor OcaDevice {
   var endpoints = [OcaDeviceEndpoint]()
   var logger = Logger(label: "com.padl.SwiftOCADevice")
 
-  private weak var eventDelegate: OcaDeviceEventDelegate?
+  weak var eventDelegate: OcaDeviceEventDelegate?
 
   public func allocateObjectNumber() -> OcaONo {
     repeat {
