@@ -35,6 +35,7 @@ protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
 
 extension OcaDeviceEndpointPrivate {
   func unlockAndRemove(controller: ControllerType) async {
+    Task { await device.eventDelegate?.onControllerExpiry(controller) }
     await device.unlockAll(controller: controller)
     await remove(controller: controller)
   }

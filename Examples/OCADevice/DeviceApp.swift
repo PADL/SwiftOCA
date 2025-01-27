@@ -27,7 +27,7 @@ import Android
 
 final class DeviceEventDelegate: OcaDeviceEventDelegate {
   public func onEvent(_ event: SwiftOCA.OcaEvent, parameters: Data) async {}
-  public func onControllerExpiry(_ controller: OcaController) {}
+  public func onControllerExpiry(_ controller: OcaController) async {}
 }
 
 @main
