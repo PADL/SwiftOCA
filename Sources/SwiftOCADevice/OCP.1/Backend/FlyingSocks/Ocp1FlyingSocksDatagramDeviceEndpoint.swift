@@ -68,7 +68,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
 
   public convenience init(
     address addressData: Data,
-    timeout: Duration = .seconds(15),
+    timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared
   ) async throws {
     let address: any SocketAddress = try addressData.withUnsafeBytes { addressBytes in
@@ -90,7 +90,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
 
   private init(
     address: SocketAddress,
-    timeout: Duration = .seconds(15),
+    timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared
   ) async throws {
     self.address = address

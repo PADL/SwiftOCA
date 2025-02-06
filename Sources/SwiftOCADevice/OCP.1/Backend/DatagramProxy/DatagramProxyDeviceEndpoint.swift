@@ -43,7 +43,7 @@ public class DatagramProxyDeviceEndpoint<
   private let inputStream: AsyncStream<PeerMessagePDU>
 
   public init(
-    timeout: Duration = .seconds(15),
+    timeout: Duration = OcaDevice.DefaultTimeout,
     inputStream: AsyncStream<PeerMessagePDU>,
     outputStream: AsyncStream<PeerMessagePDU>.Continuation,
     device: OcaDevice = OcaDevice.shared

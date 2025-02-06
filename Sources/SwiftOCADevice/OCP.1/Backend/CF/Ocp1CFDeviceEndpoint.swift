@@ -56,7 +56,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 
   public init(
     address: any SocketAddress,
-    timeout: Duration = .seconds(15),
+    timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared
   ) async throws {
     self.address = address
@@ -67,7 +67,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 
   public convenience init(
     address: Data,
-    timeout: Duration = .seconds(15),
+    timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared
   ) async throws {
     let address = try AnySocketAddress(bytes: Array(address))
@@ -76,7 +76,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 
   public convenience init(
     path: String,
-    timeout: Duration = .seconds(15),
+    timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared
   ) async throws {
     let address = try AnySocketAddress(family: sa_family_t(AF_LOCAL), presentationAddress: path)

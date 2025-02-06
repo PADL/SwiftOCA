@@ -31,6 +31,7 @@ public protocol OcaDeviceEventDelegate: AnyObject, Sendable {
 
 @globalActor
 public actor OcaDevice {
+  public nonisolated static let DefaultTimeout = Duration.seconds(5)
   public static let shared = OcaDevice()
 
   public private(set) var rootBlock: OcaBlock<OcaRoot>!

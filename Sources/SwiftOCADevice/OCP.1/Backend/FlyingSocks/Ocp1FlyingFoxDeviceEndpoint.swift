@@ -75,7 +75,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   public convenience init(
     address: Data,
-    timeout: Duration = .seconds(15),
+    timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared
   ) async throws {
     var storage = sockaddr_storage()
@@ -89,7 +89,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   public convenience init(
     path: String,
-    timeout: Duration = .seconds(15),
+    timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared
   ) async throws {
     let address = sockaddr_un.unix(path: path).makeStorage()
@@ -98,7 +98,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   private init(
     address: sockaddr_storage,
-    timeout: Duration = .seconds(15),
+    timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared
   ) async throws {
     self.device = device

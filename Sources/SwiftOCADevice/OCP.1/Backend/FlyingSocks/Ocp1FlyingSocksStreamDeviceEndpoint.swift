@@ -66,7 +66,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
 
   public convenience init(
     address addressData: Data,
-    timeout: Duration = .seconds(15),
+    timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared
   ) async throws {
     let address: any SocketAddress = try addressData.withUnsafeBytes { addressBytes in
@@ -88,7 +88,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
 
   public convenience init(
     path: String,
-    timeout: Duration = .seconds(15),
+    timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared
   ) async throws {
     let address = sockaddr_un.unix(path: path).makeStorage()
@@ -97,7 +97,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
 
   private init(
     address: some SocketAddress,
-    timeout: Duration = .seconds(15),
+    timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared
   ) async throws {
     self.address = address
