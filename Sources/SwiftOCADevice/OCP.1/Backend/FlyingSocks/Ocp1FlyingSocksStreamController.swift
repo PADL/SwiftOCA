@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023-2024 PADL Software Pty Ltd
+// Copyright (c) 2023-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
     address = Self.makeIdentifier(from: socket.socket)
     self.endpoint = endpoint
     self.socket = socket
-    _messages = AsyncThrowingStream.decodingMessages(from: socket.bytes)
+    _messages = AsyncThrowingStream.decodingMessages(from: socket.bytes, timeout: endpoint.timeout)
   }
 
   var heartbeatTime = Duration.seconds(0) {
@@ -143,18 +143,23 @@ private extension AsyncThrowingStream
   where Element == AsyncSyncSequence<[Ocp1ControllerInternal.ControllerMessage]>,
   Failure == Error
 {
-  static func decodingMessages(from bytes: some AsyncBufferedSequence<UInt8>) -> Self {
+  static func decodingMessages(
+    from bytes: some AsyncBufferedSequence<UInt8>,
+    timeout: Duration
+  ) -> Self {
     AsyncThrowingStream<
       AsyncSyncSequence<[Ocp1ControllerInternal.ControllerMessage]>,
       Error
     > {
       do {
-        var iterator = bytes.makeAsyncIterator()
-        return try await OcaDevice.asyncReceiveMessages { count in
-          guard let buffer = try await iterator.nextBuffer(suggested: count) else {
-            throw Ocp1Error.notConnected // EOF on zero bytes
+        return try await withThrowingTimeout(of: timeout) {
+          var iterator = bytes.makeAsyncIterator()
+          return try await OcaDevice.asyncReceiveMessages { count in
+            guard let buffer = try await iterator.nextBuffer(suggested: count) else {
+              throw Ocp1Error.notConnected // EOF on zero bytes
+            }
+            return Array(buffer)
           }
-          return Array(buffer)
         }
       } catch Ocp1Error.pduTooShort {
         return nil
