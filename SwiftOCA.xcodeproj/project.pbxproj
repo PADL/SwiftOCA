@@ -257,6 +257,8 @@
 		D3E6E29B2A44270300BF7095 /* LevelSensorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29A2A44270300BF7095 /* LevelSensorView.swift */; };
 		D3E6E29E2A443CF100BF7095 /* SystemToggleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29D2A443CF100BF7095 /* SystemToggleStyle.swift */; };
 		D3E6E2A02A452D0A00BF7095 /* ScaledLegendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */; };
+		D3E741482D56331F0044CCBB /* TemperatureSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E741472D56331F0044CCBB /* TemperatureSensor.swift */; };
+		D3E7414A2D5633740044CCBB /* TemperatureSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E741492D5633740044CCBB /* TemperatureSensor.swift */; };
 		D3F2942C2A95D55F00D7F0CD /* Sequence+AsyncMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */; };
 		D3FAC8DE2B5CF25D009E2775 /* FirmwareManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8DD2B5CF25D009E2775 /* FirmwareManager.swift */; };
 		D3FAC8E02B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8DF2B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift */; };
@@ -566,6 +568,8 @@
 		D3E6E29A2A44270300BF7095 /* LevelSensorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LevelSensorView.swift; path = Sources/SwiftOCAUI/Views/Workers/Sensors/LevelSensorView.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E29D2A443CF100BF7095 /* SystemToggleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemToggleStyle.swift; sourceTree = "<group>"; };
 		D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledLegendView.swift; sourceTree = "<group>"; };
+		D3E741472D56331F0044CCBB /* TemperatureSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureSensor.swift; sourceTree = "<group>"; };
+		D3E741492D5633740044CCBB /* TemperatureSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureSensor.swift; sourceTree = "<group>"; };
 		D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sequence+AsyncMap.swift"; sourceTree = "<group>"; };
 		D3FAC8DD2B5CF25D009E2775 /* FirmwareManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareManager.swift; sourceTree = "<group>"; };
 		D3FAC8DF2B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareManagerDataTypes.swift; sourceTree = "<group>"; };
@@ -858,6 +862,7 @@
 				D351F20F2A729C36008C5513 /* LevelSensor.swift */,
 				D30644002A76CDDE0063DA65 /* IdentificationSensor.swift */,
 				D370B1492BF600A900BF88BB /* AudioLevelSensor.swift */,
+				D3E741492D5633740044CCBB /* TemperatureSensor.swift */,
 			);
 			path = Sensors;
 			sourceTree = "<group>";
@@ -1254,6 +1259,7 @@
 				D3E6E1922A3ACA6C00BF7095 /* LevelSensor.swift */,
 				D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */,
 				D30644022A76CE310063DA65 /* IdentificationSensor.swift */,
+				D3E741472D56331F0044CCBB /* TemperatureSensor.swift */,
 			);
 			path = Sensors;
 			sourceTree = "<group>";
@@ -1741,6 +1747,7 @@
 				D33B52AA2A702D3F001A1BA7 /* NetworkManager.swift in Sources */,
 				D35592622B520E21000F633B /* Logger+Ocp1ControllerInternal.swift in Sources */,
 				D3AFD35C2B30EC0600A72E9A /* CodingManager.swift in Sources */,
+				D3E7414A2D5633740044CCBB /* TemperatureSensor.swift in Sources */,
 				D351F2122A729CB0008C5513 /* TimeSource.swift in Sources */,
 				D33B52AC2A702D4D001A1BA7 /* DeviceManager.swift in Sources */,
 				D355925D2B51E5FF000F633B /* DatagramProxyDeviceEndpoint.swift in Sources */,
@@ -1947,6 +1954,7 @@
 				D3E6E2392A3BD52E00BF7095 /* Browser.swift in Sources */,
 				D3E6E1DE2A3ACAA900BF7095 /* WellKnownObjectNumbers.swift in Sources */,
 				D3FAC8EC2B5CFC11009E2775 /* TaskManagerDataTypes.swift in Sources */,
+				D3E741482D56331F0044CCBB /* TemperatureSensor.swift in Sources */,
 				D3CFA3602CED4D9F00CAE537 /* Weak.swift in Sources */,
 				D3CFA3612CED4D9F00CAE537 /* Locking.swift in Sources */,
 				D3E6E1B32A3ACA7B00BF7095 /* Ocp1Connection+Codable.swift in Sources */,
