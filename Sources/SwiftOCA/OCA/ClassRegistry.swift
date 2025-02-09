@@ -154,6 +154,7 @@ public class OcaClassRegistry {
     try register(OcaStringSensor.self)
     try register(OcaLevelSensor.self)
     try register(OcaIdentificationSensor.self)
+    try register(OcaTemperatureSensor.self)
 
     // application networks
     try register(OcaControlNetwork.self)
