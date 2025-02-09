@@ -40,11 +40,11 @@ public struct Ocp1Command: Ocp1Message, Codable, Sendable {
   public var messageSize: OcaUint32 { commandSize }
 
   public init(
-    commandSize: OcaUint32,
+    commandSize: OcaUint32 = 0,
     handle: OcaUint32,
     targetONo: OcaONo,
     methodID: OcaMethodID,
-    parameters: Ocp1Parameters
+    parameters: Ocp1Parameters = .init()
   ) {
     self.commandSize = commandSize
     self.handle = handle
