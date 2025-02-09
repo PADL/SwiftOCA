@@ -369,6 +369,21 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
     methodIndex = s[1]
   }
 
+  public init(unsafeString string: OcaString) throws {
+    let s = try string.split(separator: ".", maxSplits: 1).map {
+      let value = OcaUint16($0)
+      guard let value else {
+        throw Ocp1Error.status(.badFormat)
+      }
+      return value
+    }
+    guard s.count == 2 else {
+      throw Ocp1Error.status(.badFormat)
+    }
+    defLevel = s[0]
+    methodIndex = s[1]
+  }
+
   public init(stringLiteral value: String) {
     self.init(value)
   }
