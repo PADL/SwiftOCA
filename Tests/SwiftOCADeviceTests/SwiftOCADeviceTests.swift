@@ -28,7 +28,8 @@ final class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator, OcaGroupPeerTo
   func set(to value: Bool) async { setting = value }
 }
 
-final class _MyBooleanActuator: SwiftOCA.OcaBooleanActuator, @unchecked Sendable {
+final class _MyBooleanActuator: SwiftOCA.OcaBooleanActuator, @unchecked
+Sendable {
   override class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
 }
 
