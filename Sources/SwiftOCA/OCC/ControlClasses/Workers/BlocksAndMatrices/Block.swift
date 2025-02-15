@@ -414,6 +414,15 @@ public extension OcaBlock {
 
     return containerMembers
   }
+
+  @OcaConnection
+  func getRoleMap(separator: String = "/") async throws -> [String: OcaRoot] {
+    let members = try await resolveActionObjectsRecursive()
+
+    return try await [String: OcaRoot](uniqueKeysWithValues: members.asyncMap {
+      try await ($0.memberObject._getRolePath().joined(separator: separator), $0.memberObject)
+    })
+  }
 }
 
 extension OcaBlock {
