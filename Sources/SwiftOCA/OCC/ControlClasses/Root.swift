@@ -20,8 +20,7 @@ import Foundation
 import Observation
 #endif
 
-open class OcaRoot: CustomStringConvertible, @unchecked
-Sendable,
+open class OcaRoot: CustomStringConvertible, @unchecked Sendable,
   _OcaObjectKeyPathRepresentable, Observable
 {
   typealias Root = OcaRoot
@@ -293,7 +292,7 @@ public extension OcaRoot {
   }
 
   internal struct StaticProperty<T: Codable & Sendable>: OcaPropertySubjectRepresentable {
-    var valueType: Any.Type { T.self }
+    public var valueType: Any.Type { T.self }
 
     typealias Value = T
 
@@ -317,14 +316,14 @@ public extension OcaRoot {
     }
 
     @_spi(SwiftOCAPrivate) @discardableResult
-    func _getValue(
+    public func _getValue(
       _ object: OcaRoot,
       flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> Value {
       value
     }
 
-    func getJsonValue(
+    public func getJsonValue(
       _ object: OcaRoot,
       flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> [String: Any] {
@@ -332,7 +331,7 @@ public extension OcaRoot {
     }
 
     @_spi(SwiftOCAPrivate)
-    func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
+    public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
       throw Ocp1Error.propertyIsImmutable
     }
   }

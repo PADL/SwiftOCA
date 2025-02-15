@@ -16,8 +16,7 @@
 
 import Foundation
 
-open class OcaEventHandler: OcaAgent, @unchecked
-Sendable {
+open class OcaEventHandler: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.5") }
 
   func onEvent(context: OcaBlob, eventData: Ocp1EventData) async throws -> OcaStatus {
