@@ -75,7 +75,8 @@ class Ocp1DecodingState {
     }
   }
 
-  func decodeInteger<Integer>(_ type: Integer.Type) throws -> Integer
+  @_alwaysEmitIntoClient
+  private func decodeInteger<Integer>(_ type: Integer.Type) throws -> Integer
     where Integer: FixedWidthInteger
   {
     let byteWidth = Integer.bitWidth / 8

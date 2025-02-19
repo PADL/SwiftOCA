@@ -43,7 +43,8 @@ class Ocp1EncodingState {
     throw Ocp1Error.nilNotEncodable
   }
 
-  func encodeInteger(_ value: some FixedWidthInteger) throws {
+  @_alwaysEmitIntoClient
+  private func encodeInteger(_ value: some FixedWidthInteger) throws {
     withUnsafeBytes(of: value.bigEndian) {
       data += $0
     }
