@@ -18,6 +18,7 @@ import AsyncAlgorithms
 import AsyncExtensions
 import Foundation
 import Logging
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 public protocol OcaControllerDefaultSubscribing: OcaController {
@@ -127,7 +128,7 @@ public extension OcaControllerDefaultSubscribing {
     }
 
     let property: OcaPropertyID? = if event.eventID == OcaPropertyChangedEventID {
-      try Ocp1Decoder().decode(OcaPropertyID.self, from: parameters)
+      OcaPropertyID(data: parameters)
     } else {
       nil
     }

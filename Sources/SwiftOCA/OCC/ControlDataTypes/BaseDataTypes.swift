@@ -118,6 +118,11 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
   let defLevel: OcaUint16
   let propertyIndex: OcaUint16
 
+  public init(defLevel: OcaUint16, propertyIndex: OcaUint16) {
+    self.defLevel = defLevel
+    self.propertyIndex = propertyIndex
+  }
+
   public init(_ string: OcaString) {
     let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
     defLevel = s[0]
@@ -137,6 +142,33 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
       lhs.propertyIndex < rhs.propertyIndex
     } else {
       lhs.defLevel < rhs.defLevel
+    }
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public init?(data: Data) {
+    precondition(MemoryLayout<Self>.size == 4)
+    guard data.count >= 4 else { return nil }
+
+    let encodedSelf = data.withUnsafeBytes {
+      $0.withMemoryRebound(to: Self.self) {
+        $0.baseAddress!.pointee
+      }
+    }
+
+    self.init(
+      defLevel: UInt16(bigEndian: encodedSelf.defLevel),
+      propertyIndex: UInt16(bigEndian: encodedSelf.propertyIndex)
+    )
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public var data: Data {
+    withUnsafeBytes(of: Self(
+      defLevel: defLevel.bigEndian,
+      propertyIndex: propertyIndex.bigEndian
+    )) {
+      Data($0)
     }
   }
 }
@@ -363,6 +395,11 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
   public let defLevel: OcaUint16
   public let methodIndex: OcaUint16
 
+  public init(defLevel: OcaUint16, methodIndex: OcaUint16) {
+    self.defLevel = defLevel
+    self.methodIndex = methodIndex
+  }
+
   public init(_ string: OcaString) {
     let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
     defLevel = s[0]
@@ -386,6 +423,33 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
 
   public init(stringLiteral value: String) {
     self.init(value)
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public init?(data: Data) {
+    precondition(MemoryLayout<Self>.size == 4)
+    guard data.count >= 4 else { return nil }
+
+    let encodedSelf = data.withUnsafeBytes {
+      $0.withMemoryRebound(to: Self.self) {
+        $0.baseAddress!.pointee
+      }
+    }
+
+    self.init(
+      defLevel: UInt16(bigEndian: encodedSelf.defLevel),
+      methodIndex: UInt16(bigEndian: encodedSelf.methodIndex)
+    )
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public var data: Data {
+    withUnsafeBytes(of: Self(
+      defLevel: defLevel.bigEndian,
+      methodIndex: methodIndex.bigEndian
+    )) {
+      Data($0)
+    }
   }
 
   public var description: String {
