@@ -27,11 +27,6 @@ import Foundation
 class Ocp1EncodingState {
   private(set) var data: Data = .init()
 
-  /// The current coding path on the type level. Used to detect cycles
-  /// (i.e. recursive or mutually recursive types), which are essentially
-  /// recursive types.
-  private var codingTypePath: [String] = []
-
   let userInfo: [CodingUserInfoKey: Any]
 
   init(data: Data = .init(), userInfo: [CodingUserInfoKey: Any]) {
@@ -143,18 +138,7 @@ class Ocp1EncodingState {
       try encodeCount(array)
       fallthrough
     default:
-      try withCodingTypePath(appending: [String(describing: type(of: value))]) {
-        try value.encode(to: Ocp1EncoderImpl(state: self, codingPath: codingPath))
-      }
+      try value.encode(to: Ocp1EncoderImpl(state: self, codingPath: codingPath))
     }
-  }
-
-  private func withCodingTypePath(appending delta: [String], action: () throws -> ()) throws {
-    codingTypePath += delta
-    guard Set(codingTypePath).count == codingTypePath.count else {
-      throw Ocp1Error.recursiveTypeDisallowed
-    }
-    try action()
-    codingTypePath.removeLast(delta.count)
   }
 }
