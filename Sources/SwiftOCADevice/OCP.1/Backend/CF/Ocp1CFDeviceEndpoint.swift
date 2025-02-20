@@ -19,7 +19,11 @@
 import AsyncAlgorithms
 import AsyncExtensions
 import CoreFoundation
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 import Logging
 import SocketAddress
 @_spi(SwiftOCAPrivate)

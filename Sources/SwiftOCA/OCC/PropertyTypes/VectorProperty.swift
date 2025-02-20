@@ -15,7 +15,11 @@
 //
 
 import AsyncExtensions
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 public struct OcaVector2D<T: Codable & Sendable & FixedWidthInteger>: Ocp1ParametersReflectable,
   Codable, Sendable

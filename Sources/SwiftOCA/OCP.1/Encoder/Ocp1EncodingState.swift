@@ -21,7 +21,11 @@
 // SOFTWARE.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 /// The internal state used by the encoders.
 class Ocp1EncodingState {

@@ -14,7 +14,11 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 public enum Ocp1Notification2Type: OcaUint8, Codable, Sendable {
   case event = 0

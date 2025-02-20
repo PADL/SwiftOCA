@@ -16,8 +16,12 @@
 
 import AsyncAlgorithms
 import AsyncExtensions
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 @preconcurrency
 import Foundation
+#endif
 import Logging
 import SystemPackage
 #if canImport(Darwin)

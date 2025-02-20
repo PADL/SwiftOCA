@@ -26,7 +26,11 @@
 #if os(macOS) || os(iOS) || canImport(Android)
 
 import FlyingSocks
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 import SystemPackage
 
 fileprivate extension SocketError {

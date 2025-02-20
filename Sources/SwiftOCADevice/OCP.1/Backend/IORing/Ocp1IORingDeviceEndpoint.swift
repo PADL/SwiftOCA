@@ -19,7 +19,12 @@
 import AsyncAlgorithms
 @preconcurrency
 import AsyncExtensions
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
+import Glibc
 
 // @_implementationOnly
 import IORing

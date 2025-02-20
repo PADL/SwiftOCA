@@ -14,7 +14,11 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 open class OcaCounterNotifier: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.18") }

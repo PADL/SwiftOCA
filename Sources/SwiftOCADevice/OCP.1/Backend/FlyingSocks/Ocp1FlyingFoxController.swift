@@ -19,7 +19,11 @@
 import AsyncExtensions
 import FlyingFox
 import FlyingSocks
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 import SwiftOCA
 
 fileprivate extension AsyncStream where Element == WSMessage {

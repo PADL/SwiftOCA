@@ -21,7 +21,11 @@
 // SOFTWARE.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 /// A decoder that decodes Swift structures from a flat Ocp1 representation.
 public struct Ocp1Decoder {

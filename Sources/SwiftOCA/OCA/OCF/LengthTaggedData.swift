@@ -14,7 +14,11 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 public struct LengthTaggedData: MutableDataProtocol, ContiguousBytes, Equatable, Hashable,
   Sendable

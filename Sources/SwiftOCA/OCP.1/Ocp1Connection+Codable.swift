@@ -14,7 +14,11 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 private extension Ocp1Message {
   func encode(type messageType: OcaMessageType) throws -> Data {

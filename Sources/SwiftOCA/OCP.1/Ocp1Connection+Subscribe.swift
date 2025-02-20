@@ -14,7 +14,11 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 

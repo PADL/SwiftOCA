@@ -16,7 +16,11 @@
 
 import AnyCodable
 import AsyncExtensions
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 package extension JSONEncoder {
   func reencodeAsValidJSONObject<Value: Codable>(_ value: some Codable) throws -> Value {

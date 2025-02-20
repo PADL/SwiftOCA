@@ -15,7 +15,11 @@
 //
 
 import AsyncExtensions
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 import SwiftOCA
 
 actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInternal,

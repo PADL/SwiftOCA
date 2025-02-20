@@ -17,8 +17,17 @@
 import AsyncAlgorithms
 import AsyncExtensions
 import Atomics
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 @preconcurrency
 import Foundation
+#endif
+#if canImport(Glibc)
+import Glibc
+#elseif canImport(Darwin)
+import Darwin
+#endif
 import Logging
 #if canImport(Darwin)
 import Observation

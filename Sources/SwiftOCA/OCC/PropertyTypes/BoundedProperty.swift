@@ -15,7 +15,11 @@
 //
 
 import AsyncExtensions
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 public struct OcaBoundedPropertyValue<
   Value: Codable & Comparable &

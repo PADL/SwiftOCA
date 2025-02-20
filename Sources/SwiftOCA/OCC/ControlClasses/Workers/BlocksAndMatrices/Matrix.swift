@@ -14,7 +14,11 @@
 // limitations under the License.
 //
 
-import Foundation // for JSONEncoder
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
 
 public typealias OcaMatrixCoordinate = OcaUint16
 
