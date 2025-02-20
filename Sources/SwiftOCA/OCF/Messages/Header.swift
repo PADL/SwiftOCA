@@ -14,12 +14,6 @@
 // limitations under the License.
 //
 
-#if canImport(FoundationEssentials)
-import FoundationEssentials
-#else
-import Foundation
-#endif
-
 public let Ocp1SyncValue: OcaUint8 = 0x3B
 public let Ocp1ProtocolVersion1: OcaUint16 = 1
 public let Ocp1ProtocolVersion: OcaUint16 = Ocp1ProtocolVersion1
@@ -39,16 +33,6 @@ public struct Ocp1Header: Codable, Sendable {
 
   init() {
     self.init(pduType: .ocaKeepAlive, messageCount: 0)
-  }
-
-  var _data: Data {
-    var data = Data(count: 9)
-
-    data.encodeInteger(protocolVersion, index: 0)
-    data[6] = pduType.rawValue
-    data.encodeInteger(messageCount, index: 7)
-
-    return data
   }
 }
 

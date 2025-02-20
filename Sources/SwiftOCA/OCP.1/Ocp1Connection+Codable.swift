@@ -31,15 +31,28 @@ private extension Ocp1Message {
   }
 }
 
+private extension Ocp1Header {
+  var _dataWithSyncByte: Data {
+    var data = Data(count: 10)
+
+    data[0] = Ocp1SyncValue
+    data.encodeInteger(protocolVersion, index: 1)
+    data[7] = pduType.rawValue
+    data.encodeInteger(messageCount, index: 8)
+
+    return data
+  }
+}
+
 public extension Ocp1Connection {
   nonisolated static func encodeOcp1MessagePdu(
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType
   ) throws -> Data {
-    var messagePduData = Data([Ocp1SyncValue]) + Ocp1Header(
+    var messagePduData = Ocp1Header(
       pduType: messageType,
       messageCount: OcaUint16(messages.count)
-    )._data
+    )._dataWithSyncByte
 
     try messages.forEach {
       messagePduData += try $0.encode(type: messageType)
