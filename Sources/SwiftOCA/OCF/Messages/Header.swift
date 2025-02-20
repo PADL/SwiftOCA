@@ -34,6 +34,21 @@ public struct Ocp1Header: Codable, Sendable {
   init() {
     self.init(pduType: .ocaKeepAlive, messageCount: 0)
   }
+
+  private var _encodedProtocolVersion: [UInt8] {
+    var protocolVersion = protocolVersion.bigEndian
+    return withUnsafeBytes(of: &protocolVersion) { Array($0) }
+  }
+
+  private var _encodedMessageCount: [UInt8] {
+    var messageCount = protocolVersion.bigEndian
+    return withUnsafeBytes(of: &messageCount) { Array($0) }
+  }
+
+  var _bytes: [UInt8] {
+    _encodedProtocolVersion + Array(repeating: 0, count: 4) + [pduType.rawValue] +
+      _encodedMessageCount
+  }
 }
 
 public protocol Ocp1MessagePdu: Codable, Sendable {

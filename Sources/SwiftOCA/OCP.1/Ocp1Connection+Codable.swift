@@ -36,11 +36,10 @@ public extension Ocp1Connection {
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType
   ) throws -> Data {
-    var messagePduData = Data([Ocp1SyncValue])
-
-    let header = Ocp1Header(pduType: messageType, messageCount: OcaUint16(messages.count))
-    let encoder = Ocp1Encoder()
-    messagePduData += try encoder.encode(header) as Data
+    var messagePduData = Data([Ocp1SyncValue] + Ocp1Header(
+      pduType: messageType,
+      messageCount: OcaUint16(messages.count)
+    )._bytes)
 
     try messages.forEach {
       messagePduData += try $0.encode(type: messageType)
