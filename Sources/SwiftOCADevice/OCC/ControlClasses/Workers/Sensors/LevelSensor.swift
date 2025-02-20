@@ -23,5 +23,5 @@ open class OcaLevelSensor: OcaSensor {
     propertyID: OcaPropertyID("4.1"),
     getMethodID: OcaMethodID("4.1")
   )
-  public var reading = OcaBoundedPropertyValue<OcaDB>(value: 0.0, in: -144.0...0.0)
+  public var reading = OcaBoundedPropertyValue<OcaDB>(value: -144.0, in: -144.0...0.0)
 }
