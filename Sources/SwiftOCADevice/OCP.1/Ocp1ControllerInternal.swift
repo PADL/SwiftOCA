@@ -18,6 +18,7 @@ import AsyncAlgorithms
 import AsyncExtensions
 import Foundation
 import Logging
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 /// OcaControllerPrivate should eventually be merged into OcaController once we are ready to

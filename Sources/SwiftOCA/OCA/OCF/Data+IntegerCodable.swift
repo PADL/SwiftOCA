@@ -1,5 +1,10 @@
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
+@_spi(SwiftOCAPrivate)
 public extension Data {
   enum Endianness {
     case little
@@ -7,6 +12,7 @@ public extension Data {
   }
 
   // https://forums.swift.org/t/raw-buffer-pointer-load-alignment/7005/7
+  @inlinable
   func decodeInteger<T: FixedWidthInteger>(index: Int, endianness: Endianness = .big) -> T {
     withUnsafeBytes { pointer in
       precondition(index >= 0)
@@ -30,6 +36,7 @@ public extension Data {
     }
   }
 
+  @inlinable
   mutating func encodeInteger<T: FixedWidthInteger>(
     _ value: T,
     index: Int,
