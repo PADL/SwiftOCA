@@ -145,7 +145,7 @@ class Ocp1DecodingState {
     try decodeInteger(type)
   }
 
-  func decodeCount(_ type: (some Collection & Decodable).Type) throws -> Int {
+  private func decodeCount(_ type: (some Collection & Decodable).Type) throws -> Int {
     let count: Int = if type is any Ocp1LongList.Type {
       // FIXME: can't support 2^32 length because on 32-bit platforms count is Int32
       try Int(Int32(from: Ocp1DecoderImpl(
