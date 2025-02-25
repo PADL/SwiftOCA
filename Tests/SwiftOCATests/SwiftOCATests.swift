@@ -511,6 +511,36 @@ final class SwiftOCADeviceTests: XCTestCase {
     let decodedKeepAlive2 = try Ocp1KeepAlive2(bytes: encodedKeepAlive2)
     XCTAssertEqual(decodedKeepAlive2.heartBeatTime, 200)
   }
+
+  func testEmptyLengthTaggedData() throws {
+    let encoded = LengthTaggedData().bytes
+    XCTAssertEqual(encoded, [0, 0])
+    XCTAssertEqual(try LengthTaggedData(bytes: encoded), LengthTaggedData())
+  }
+
+  func testEmptyCommand() throws {
+    let encoded: [UInt8] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0]
+    let command = try Ocp1Command(bytes: encoded)
+    XCTAssertEqual(command, Ocp1Command(handle: 0, targetONo: 0, methodID: "1.1"))
+  }
+
+  func testEmptyResponse() throws {
+    let encoded: [UInt8] = [0, 0, 0, 0, 0, 0, 2, 0, 1, 0]
+    let response = try Ocp1Response(bytes: encoded)
+    XCTAssertEqual(response.statusCode, .protocolVersionError)
+    XCTAssertEqual(response.handle, 512)
+    XCTAssertEqual(response.parameters.parameterCount, 0)
+    XCTAssertEqual(response.parameters.parameterData, Data())
+  }
+
+  func testNonEmptyResponse() throws {
+    let encoded: [UInt8] = [0, 0, 0, 0, 0, 0, 2, 0, 1, 1, 1]
+    let response = try Ocp1Response(bytes: encoded)
+    XCTAssertEqual(response.statusCode, .protocolVersionError)
+    XCTAssertEqual(response.handle, 512)
+    XCTAssertEqual(response.parameters.parameterCount, 1)
+    XCTAssertEqual(response.parameters.parameterData, Data([1]))
+  }
 }
 
 extension Ocp1EventData: Equatable {
