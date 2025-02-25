@@ -151,19 +151,19 @@ public extension Ocp1Connection {
     case .ocaCmdRrq:
       message = try decoder.decode(Ocp1Command.self, from: messageData)
     case .ocaNtf1:
-      message = try decoder.decode(Ocp1Notification1.self, from: messageData)
+      message = try Ocp1Notification1(bytes: Array(messageData))
     case .ocaRsp:
       message = try decoder.decode(Ocp1Response.self, from: messageData)
     case .ocaKeepAlive:
       if messageData.count == 2 {
-        message = try decoder.decode(Ocp1KeepAlive1.self, from: messageData)
+        message = try Ocp1KeepAlive1(bytes: Array(messageData))
       } else if messageData.count == 4 {
-        message = try decoder.decode(Ocp1KeepAlive2.self, from: messageData)
+        message = try Ocp1KeepAlive2(bytes: Array(messageData))
       } else {
         throw Ocp1Error.invalidKeepAlivePdu
       }
     case .ocaNtf2:
-      message = try decoder.decode(Ocp1Notification2.self, from: messageData)
+      message = try Ocp1Notification2(bytes: Array(messageData))
     }
 
     return message
