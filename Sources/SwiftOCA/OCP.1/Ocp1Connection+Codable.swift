@@ -20,53 +20,56 @@ import FoundationEssentials
 import Foundation
 #endif
 
-private extension Ocp1Message {
-  func encode(type messageType: OcaMessageType) throws -> Data {
-    var messageData = Data((self as! _Ocp1MessageCodable).bytes)
-
-    if messageType != .ocaKeepAlive {
-      /// replace `commandSize: OcaUint32` with actual command size
-      precondition(messageData.count < OcaUint32.max)
-      messageData.encodeInteger(OcaUint32(messageData.count), index: 0)
-    }
-
-    return messageData
+private func _writeMessageSize(_ size: Int, to bytes: inout [UInt8], at index: Int) {
+  precondition(size <= OcaUint32.max)
+  precondition(bytes.count >= index + 4)
+  withUnsafeBytes(of: OcaUint32(size).bigEndian) {
+    bytes[index..<(index + 4)] = Array($0)[0..<4]
   }
 }
 
-private extension Ocp1Header {
-  var _dataWithSyncByte: Data {
-    var data = Data(count: 10)
+private extension Ocp1Message {
+  func encode(type messageType: OcaMessageType, into messageData: inout [UInt8]) throws {
+    let offset = messageData.count
 
-    data[0] = Ocp1SyncValue
-    data.encodeInteger(protocolVersion, index: 1)
-    data[7] = pduType.rawValue
-    data.encodeInteger(messageCount, index: 8)
+    (self as! _Ocp1MessageCodable).encode(into: &messageData)
 
-    return data
+    if messageType != .ocaKeepAlive {
+      /// replace `commandSize: OcaUint32` with actual command size
+      _writeMessageSize(messageData.count - offset, to: &messageData, at: offset)
+    }
   }
 }
 
 package extension Ocp1Connection {
-  nonisolated static func encodeOcp1MessagePdu(
+  private nonisolated static func encodeOcp1MessagePdu(
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType
-  ) throws -> Data {
-    var messagePduData = Ocp1Header(
-      pduType: messageType,
-      messageCount: OcaUint16(messages.count)
-    )._dataWithSyncByte
+  ) throws -> [UInt8] {
+    var messagePduData = [UInt8]()
+    messagePduData.reserveCapacity(48) // enough for a metering PDU
+    messagePduData += [Ocp1SyncValue]
+    Ocp1Header(pduType: messageType, messageCount: OcaUint16(messages.count))
+      .encode(into: &messagePduData)
 
     try messages.forEach {
-      messagePduData += try ($0 as! _Ocp1MessageCodable).encode(type: messageType)
+      try ($0 as! _Ocp1MessageCodable).encode(type: messageType, into: &messagePduData)
     }
     /// MinimumPduSize == 7
     /// 0 `syncVal: OcaUint8`
     /// 1 `protocolVersion: OcaUint16`
     /// 3 `pduSize: OcaUint32` (size of PDU not including syncVal)
-    precondition(messagePduData.count < OcaUint32.max)
-    messagePduData.encodeInteger(OcaUint32(messagePduData.count - 1), index: 3)
+    _writeMessageSize(messagePduData.count - 1, to: &messagePduData, at: 3)
+
     return messagePduData
+  }
+
+  nonisolated static func encodeOcp1MessagePdu(
+    _ messages: [Ocp1Message],
+    type messageType: OcaMessageType
+  ) throws -> Data {
+    let bytes: [UInt8] = try encodeOcp1MessagePdu(messages, type: messageType)
+    return Data(bytes)
   }
 
   nonisolated static func decodeOcp1MessagePdu(

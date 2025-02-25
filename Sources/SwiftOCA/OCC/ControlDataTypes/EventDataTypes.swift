@@ -19,7 +19,7 @@ public enum OcaNotificationDeliveryMode: OcaUint8, Codable, Sendable, CaseIterab
   case lightweight = 2
 }
 
-public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible {
+public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible, _Ocp1Codable {
   public let defLevel: OcaUint16
   public let eventIndex: OcaUint16
 
@@ -49,16 +49,13 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible {
     }
   }
 
-  var bytes: [UInt8] {
-    var bytes = [UInt8]()
-    bytes.reserveCapacity(4)
+  func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
     withUnsafeBytes(of: eventIndex.bigEndian) { bytes += $0 }
-    return bytes
   }
 }
 
-public struct OcaEvent: Codable, Hashable, Equatable, Sendable {
+public struct OcaEvent: Codable, Hashable, Equatable, Sendable, _Ocp1Codable {
   public let emitterONo: OcaONo
   public let eventID: OcaEventID
 
@@ -74,12 +71,9 @@ public struct OcaEvent: Codable, Hashable, Equatable, Sendable {
     self.init(emitterONo: emitterONo, eventID: eventID)
   }
 
-  var bytes: [UInt8] {
-    var bytes = [UInt8]()
-    bytes.reserveCapacity(8)
+  func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: emitterONo.bigEndian) { bytes += $0 }
-    bytes += eventID.bytes
-    return bytes
+    eventID.encode(into: &bytes)
   }
 }
 

@@ -93,13 +93,10 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
     data = Data(bytes[13...])
   }
 
-  var bytes: [UInt8] {
-    var bytes = [UInt8]()
-    bytes.reserveCapacity(32)
+  func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: notificationSize.bigEndian) { bytes += $0 }
-    bytes += event.bytes
+    event.encode(into: &bytes)
     bytes += [notificationType.rawValue]
     bytes += data
-    return bytes
   }
 }

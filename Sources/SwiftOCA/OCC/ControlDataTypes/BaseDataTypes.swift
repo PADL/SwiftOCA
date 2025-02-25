@@ -111,7 +111,7 @@ public enum OcaStatus: OcaUint8, Codable, Sendable, CaseIterable {
 }
 
 public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
-  CustomStringConvertible, ExpressibleByStringLiteral
+  CustomStringConvertible, ExpressibleByStringLiteral, _Ocp1Codable
 {
   let defLevel: OcaUint16
   let propertyIndex: OcaUint16
@@ -143,6 +143,7 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
     }
   }
 
+  // package visibility for SwiftOCADevice
   package init(bytes: borrowing[UInt8]) throws {
     guard bytes.count >= 4 else { throw Ocp1Error.pduTooShort }
 
@@ -154,12 +155,10 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
     }
   }
 
-  package var bytes: [UInt8] {
-    var bytes = [UInt8]()
-    bytes.reserveCapacity(4)
+  // package visibility for SwiftOCADevice
+  package func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
     withUnsafeBytes(of: propertyIndex.bigEndian) { bytes += $0 }
-    return bytes
   }
 }
 
@@ -380,7 +379,7 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible,
 }
 
 public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
-  ExpressibleByStringLiteral
+  ExpressibleByStringLiteral, _Ocp1Codable
 {
   public let defLevel: OcaUint16
   public let methodIndex: OcaUint16
@@ -426,12 +425,9 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
     }
   }
 
-  var bytes: [UInt8] {
-    var bytes = [UInt8]()
-    bytes.reserveCapacity(4)
+  func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
     withUnsafeBytes(of: methodIndex.bigEndian) { bytes += $0 }
-    return bytes
   }
 
   public var description: String {

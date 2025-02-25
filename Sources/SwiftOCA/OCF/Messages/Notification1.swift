@@ -20,7 +20,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-public struct Ocp1EventData: Codable, Sendable {
+public struct Ocp1EventData: Codable, Sendable, _Ocp1Codable {
   public let event: OcaEvent
   public let eventParameters: Data
 
@@ -34,17 +34,13 @@ public struct Ocp1EventData: Codable, Sendable {
     eventParameters = Data(bytes[8...])
   }
 
-  var bytes: [UInt8] {
-    var bytes = [UInt8]()
-    let eventBytes = event.bytes
-    bytes.reserveCapacity(eventBytes.count + eventParameters.count)
-    bytes += eventBytes
+  func encode(into bytes: inout [UInt8]) {
+    event.encode(into: &bytes)
     bytes += eventParameters
-    return bytes
   }
 }
 
-public struct Ocp1NtfParams: Codable, Sendable {
+public struct Ocp1NtfParams: Codable, Sendable, _Ocp1Codable {
   public let parameterCount: OcaUint8
   public let context: OcaBlob
   public let eventData: Ocp1EventData
@@ -65,14 +61,10 @@ public struct Ocp1NtfParams: Codable, Sendable {
     eventData = try Ocp1EventData(bytes: Array(bytes[eventDataOffset...]))
   }
 
-  var bytes: [UInt8] {
-    var bytes = [UInt8]()
-    let eventDataBytes = eventData.bytes
-    bytes.reserveCapacity(1 + 2 + context.count + eventDataBytes.count)
+  func encode(into bytes: inout [UInt8]) {
     bytes += [parameterCount]
-    bytes += context.bytes
-    bytes += eventDataBytes
-    return bytes
+    context.encode(into: &bytes)
+    eventData.encode(into: &bytes)
   }
 }
 
@@ -110,12 +102,10 @@ public struct Ocp1Notification1: _Ocp1MessageCodable, Sendable {
     parameters = try Ocp1NtfParams(bytes: Array(bytes[12...]))
   }
 
-  package var bytes: [UInt8] {
-    var bytes = [UInt8]()
-    bytes.reserveCapacity(32)
+  package func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: notificationSize.bigEndian) { bytes += $0 }
     withUnsafeBytes(of: targetONo.bigEndian) { bytes += $0 }
-    bytes += methodID.bytes + parameters.bytes
-    return bytes
+    methodID.encode(into: &bytes)
+    parameters.encode(into: &bytes)
   }
 }

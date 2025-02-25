@@ -51,13 +51,10 @@ public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
     parameters = Ocp1Parameters(parameterCount: bytes[9], parameterData: .init(bytes[10...]))
   }
 
-  var bytes: [UInt8] {
-    var bytes = [UInt8]()
-    bytes.reserveCapacity(32)
+  func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: responseSize.bigEndian) { bytes += $0 }
     withUnsafeBytes(of: handle.bigEndian) { bytes += $0 }
     bytes += [statusCode.rawValue]
     bytes += [parameters.parameterCount] + parameters.parameterData
-    return bytes
   }
 }

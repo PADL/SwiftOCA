@@ -87,7 +87,7 @@ extension LengthTaggedData: Decodable {
   }
 }
 
-public extension LengthTaggedData {
+extension LengthTaggedData: _Ocp1Codable {
   init(bytes: borrowing[UInt8]) throws {
     guard bytes.count >= 2 else {
       throw Ocp1Error.pduTooShort
@@ -103,8 +103,8 @@ public extension LengthTaggedData {
     wrappedValue = Data(bytes[2..<(2 + count)])
   }
 
-  var bytes: [UInt8] {
-    Swift
-      .withUnsafeBytes(of: UInt16(wrappedValue.count).bigEndian) { Array($0) } + Array(wrappedValue)
+  func encode(into bytes: inout [UInt8]) {
+    bytes += Swift.withUnsafeBytes(of: UInt16(wrappedValue.count).bigEndian) { Array($0) }
+    bytes += Array(wrappedValue)
   }
 }

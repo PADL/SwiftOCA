@@ -36,8 +36,8 @@ public struct Ocp1KeepAlive1: _Ocp1MessageCodable, Sendable {
     self.init(heartBeatTime: heartBeatTime)
   }
 
-  var bytes: [UInt8] {
-    withUnsafeBytes(of: heartBeatTime.bigEndian) { Array($0) }
+  func encode(into bytes: inout [UInt8]) {
+    bytes += withUnsafeBytes(of: heartBeatTime.bigEndian) { Array($0) }
   }
 }
 
@@ -57,8 +57,8 @@ public struct Ocp1KeepAlive2: _Ocp1MessageCodable, Sendable {
     self.init(heartBeatTime: heartBeatTime)
   }
 
-  var bytes: [UInt8] {
-    withUnsafeBytes(of: heartBeatTime.bigEndian) { Array($0) }
+  func encode(into bytes: inout [UInt8]) {
+    bytes += withUnsafeBytes(of: heartBeatTime.bigEndian) { Array($0) }
   }
 }
 

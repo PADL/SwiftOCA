@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+// MARK: - Codable coder
+
 protocol Ocp1ListRepresentable: Collection, Codable where Element: Codable {}
 
 extension Array: Ocp1ListRepresentable where Element: Codable {
@@ -107,3 +109,15 @@ package func _ocp1ParameterCount(type: (some Any).Type) -> OcaUint8 {
 package func _ocp1ParameterCount(value: some Any) -> OcaUint8 {
   _ocp1ParameterCount(type: type(of: value))
 }
+
+// MARK: - builtin encoder
+
+protocol _Ocp1Decodable {
+  init(bytes: borrowing[UInt8]) throws
+}
+
+protocol _Ocp1Encodable {
+  func encode(into bytes: inout [UInt8])
+}
+
+protocol _Ocp1Codable: _Ocp1Decodable & _Ocp1Encodable {}

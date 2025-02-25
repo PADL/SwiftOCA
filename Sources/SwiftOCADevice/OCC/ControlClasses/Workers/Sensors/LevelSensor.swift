@@ -22,6 +22,15 @@ import FoundationEssentials
 import Foundation
 #endif
 
+private extension OcaPropertyID {
+  var bytes: [UInt8] {
+    var bytes = [UInt8]()
+    bytes.reserveCapacity(4)
+    encode(into: &bytes)
+    return bytes
+  }
+}
+
 open class OcaLevelSensor: OcaSensor {
   private static let _encodedPropertyID = OcaPropertyID("4.1").bytes
 

@@ -55,7 +55,10 @@ func decodeNotificationWithCodable(_ data: Data) throws -> Ocp1Notification1 {
 }
 
 func encodeNotificationWithBuiltin(_ notification: Ocp1Notification1) throws -> Data {
-  Data(notification.bytes)
+  var bytes = [UInt8]()
+  bytes.reserveCapacity(32)
+  notification.encode(into: &bytes)
+  return Data(bytes)
 }
 
 func decodeNotificationWithBuiltin(_ data: Data) throws -> Ocp1Notification1 {

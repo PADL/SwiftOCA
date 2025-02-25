@@ -74,14 +74,11 @@ public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
     parameters = Ocp1Parameters(parameterCount: bytes[16], parameterData: Data(bytes[17...]))
   }
 
-  var bytes: [UInt8] {
-    var bytes = [UInt8]()
-    bytes.reserveCapacity(32)
+  func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: commandSize.bigEndian) { bytes += $0 }
     withUnsafeBytes(of: handle.bigEndian) { bytes += $0 }
     withUnsafeBytes(of: targetONo.bigEndian) { bytes += $0 }
-    bytes += methodID.bytes
+    methodID.encode(into: &bytes)
     bytes += [parameters.parameterCount] + parameters.parameterData
-    return bytes
   }
 }
