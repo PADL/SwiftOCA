@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ open class OcaLevelSensor: OcaSensor {
   // for API compatibility, but prefer to use update(reading:) to set value
   public var reading: OcaBoundedPropertyValue<OcaDB> {
     get {
-      .init(value: _value, in: _range)
+      OcaBoundedPropertyValue(value: _value, in: _range)
     }
     set {
       let valueDidChange = newValue.value != _value
@@ -78,8 +78,11 @@ open class OcaLevelSensor: OcaSensor {
     }
   }
 
-  public func update(reading newValue: OcaDB) async throws {
+  public func update(reading newValue: OcaDB, alwaysNotifySubscribers: Bool = false) async throws {
+    let valueDidChange = newValue != _value
     _value = newValue
-    try await _valueDidChange(newValue)
+    if valueDidChange || alwaysNotifySubscribers {
+      try await _valueDidChange(newValue)
+    }
   }
 }
