@@ -144,7 +144,7 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
   }
 
   package init(bytes: borrowing[UInt8]) throws {
-    guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
+    guard bytes.count >= 4 else { throw Ocp1Error.pduTooShort }
 
     defLevel = bytes.withUnsafeBytes {
       OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint16.self))
@@ -416,7 +416,7 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
   }
 
   init(bytes: borrowing[UInt8]) throws {
-    guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
+    guard bytes.count >= 4 else { throw Ocp1Error.pduTooShort }
 
     defLevel = bytes.withUnsafeBytes {
       OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint16.self))

@@ -90,7 +90,7 @@ extension LengthTaggedData: Decodable {
 public extension LengthTaggedData {
   @_spi(SwiftOCAPrivate)
   init(bytes: borrowing[UInt8]) throws {
-    guard bytes.count >= MemoryLayout<UInt16>.size else {
+    guard bytes.count >= 2 else {
       throw Ocp1Error.pduTooShort
     }
 
@@ -98,7 +98,7 @@ public extension LengthTaggedData {
       UInt16(bigEndian: $0.loadUnaligned(as: UInt16.self))
     })
 
-    guard bytes.count >= MemoryLayout<UInt16>.size + count else {
+    guard bytes.count >= 2 + count else {
       throw Ocp1Error.pduTooShort
     }
     wrappedValue = Data(bytes[2..<(2 + count)])

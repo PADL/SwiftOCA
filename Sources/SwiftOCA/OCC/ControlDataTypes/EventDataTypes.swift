@@ -39,7 +39,7 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible {
   }
 
   init(bytes: borrowing[UInt8]) throws {
-    guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
+    guard bytes.count >= 4 else { throw Ocp1Error.pduTooShort }
 
     defLevel = bytes.withUnsafeBytes {
       OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint16.self))
@@ -68,8 +68,7 @@ public struct OcaEvent: Codable, Hashable, Equatable, Sendable {
   }
 
   init(bytes: borrowing[UInt8]) throws {
-    precondition(MemoryLayout<Self>.size == 8)
-    guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
+    guard bytes.count >= 8 else { throw Ocp1Error.pduTooShort }
     let emitterONo = bytes.withUnsafeBytes { OcaONo(bigEndian: $0.loadUnaligned(as: OcaONo.self)) }
     let eventID = try OcaEventID(bytes: Array(bytes[4...]))
     self.init(emitterONo: emitterONo, eventID: eventID)
