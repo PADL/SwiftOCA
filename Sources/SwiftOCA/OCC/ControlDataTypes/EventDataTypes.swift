@@ -52,12 +52,8 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible {
 
   @_spi(SwiftOCAPrivate)
   public var bytes: [UInt8] {
-    withUnsafeBytes(of: Self(
-      defLevel: defLevel.bigEndian,
-      eventIndex: eventIndex.bigEndian
-    )) {
-      Array($0)
-    }
+    withUnsafeBytes(of: defLevel.bigEndian) { Array($0) } +
+      withUnsafeBytes(of: eventIndex.bigEndian) { Array($0) }
   }
 }
 
