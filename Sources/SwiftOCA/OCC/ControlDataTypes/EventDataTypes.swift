@@ -37,6 +37,28 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible {
   public var description: String {
     "\(defLevel).\(eventIndex)"
   }
+
+  @_spi(SwiftOCAPrivate)
+  public init(bytes: borrowing[UInt8]) throws {
+    guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
+
+    defLevel = bytes.withUnsafeBytes {
+      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint16.self))
+    }
+    eventIndex = bytes.withUnsafeBytes {
+      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 2, as: OcaUint16.self))
+    }
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public var bytes: [UInt8] {
+    withUnsafeBytes(of: Self(
+      defLevel: defLevel.bigEndian,
+      eventIndex: eventIndex.bigEndian
+    )) {
+      Array($0)
+    }
+  }
 }
 
 public struct OcaEvent: Codable, Hashable, Equatable, Sendable {
@@ -46,6 +68,20 @@ public struct OcaEvent: Codable, Hashable, Equatable, Sendable {
   public init(emitterONo: OcaONo, eventID: OcaEventID) {
     self.emitterONo = emitterONo
     self.eventID = eventID
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public init(bytes: borrowing[UInt8]) throws {
+    precondition(MemoryLayout<Self>.size == 8)
+    guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
+    let emitterONo = bytes.withUnsafeBytes { OcaONo(bigEndian: $0.loadUnaligned(as: OcaONo.self)) }
+    let eventID = try OcaEventID(bytes: Array(bytes[4...]))
+    self.init(emitterONo: emitterONo, eventID: eventID)
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public var bytes: [UInt8] {
+    withUnsafeBytes(of: emitterONo.bigEndian) { Array($0) } + eventID.bytes
   }
 }
 

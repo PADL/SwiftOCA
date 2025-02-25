@@ -86,3 +86,27 @@ extension LengthTaggedData: Decodable {
     }
   }
 }
+
+public extension LengthTaggedData {
+  @_spi(SwiftOCAPrivate)
+  init(bytes: borrowing[UInt8]) throws {
+    guard bytes.count >= MemoryLayout<UInt16>.size else {
+      throw Ocp1Error.pduTooShort
+    }
+
+    let count = Int(bytes.withUnsafeBytes {
+      UInt16(bigEndian: $0.loadUnaligned(as: UInt16.self))
+    })
+
+    guard bytes.count >= MemoryLayout<UInt16>.size + count else {
+      throw Ocp1Error.pduTooShort
+    }
+    wrappedValue = Data(bytes[2..<(2 + count)])
+  }
+
+  @_spi(SwiftOCAPrivate)
+  var bytes: [UInt8] {
+    Swift
+      .withUnsafeBytes(of: UInt16(wrappedValue.count).bigEndian) { Array($0) } + Array(wrappedValue)
+  }
+}

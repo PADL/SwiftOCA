@@ -132,7 +132,7 @@ public extension OcaControllerDefaultSubscribing {
     }
 
     let property: OcaPropertyID? = if event.eventID == OcaPropertyChangedEventID {
-      OcaPropertyID(data: parameters)
+      try OcaPropertyID(bytes: Array(parameters))
     } else {
       nil
     }

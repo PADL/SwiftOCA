@@ -181,6 +181,19 @@ let CommonTargets: [Target] = [
     linkerSettings: [] + ASANLinkerSettings
 
   ),
+  .executableTarget(
+    name: "OCAEventBenchmark",
+    dependencies: [
+      "SwiftOCA",
+    ],
+    path: "Examples/OCAEventBenchmark",
+    swiftSettings: [
+      .unsafeFlags(ASANSwiftFlags),
+    ],
+    linkerSettings: [] + ASANLinkerSettings
+
+  ),
+
   .testTarget(
     name: "SwiftOCATests",
     dependencies: [

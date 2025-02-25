@@ -20,7 +20,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-public enum Ocp1Notification2Type: OcaUint8, Codable, Sendable {
+public enum Ocp1Notification2Type: OcaUint8, Equatable, Codable, Sendable {
   case event = 0
   case exception = 1
 }
@@ -76,5 +76,32 @@ public struct Ocp1Notification2: Ocp1Message, Codable, Sendable {
       from: data
     )
     throw Ocp1Error.exception(exception)
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public init(bytes: borrowing[UInt8]) throws {
+    guard bytes.count >= 14 else {
+      throw Ocp1Error.pduTooShort
+    }
+    notificationSize = bytes.withUnsafeBytes {
+      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint32.self))
+    }
+    event = try OcaEvent(bytes: Array(bytes[4..<12]))
+    guard let notificationType = Ocp1Notification2Type(rawValue: bytes[12]) else {
+      throw Ocp1Error.status(.badFormat)
+    }
+    self.notificationType = notificationType
+    data = Data(bytes[13...])
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public var bytes: [UInt8] {
+    var bytes = [UInt8]()
+    bytes.reserveCapacity(32)
+    withUnsafeBytes(of: notificationSize.bigEndian) { bytes += $0 }
+    bytes += event.bytes
+    bytes += [notificationType.rawValue]
+    bytes += data
+    return bytes
   }
 }

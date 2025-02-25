@@ -194,7 +194,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(encodedValue, referenceValue)
   }
 
-  func testVector_AES70_3_2023_9_4_8() async throws {
+  func testVector_AES70_3_2023_9_4_8() throws {
     let propertyChangedEventData = OcaPropertyChangedEventData(
       propertyID: OcaPropertyID("4.1"),
       propertyValue: OcaDB(-22.0),
@@ -247,7 +247,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(encodedValue, referenceValue)
   }
 
-  func testUnicodeStringEncoding() async throws {
+  func testUnicodeStringEncoding() throws {
     let string = "✨Unicode✨"
     let encodedString =
       Data([0, 9, 226, 156, 168, 85, 110, 105, 99, 111, 100, 101, 226, 156, 168])
@@ -259,7 +259,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(try ocp1Decoder.decode(String.self, from: encodedString), string)
   }
 
-  func testUnicodeScalarEncoding() async throws {
+  func testUnicodeScalarEncoding() throws {
     let string = "🍎"
     let encodedString = Data([0, 1, 0xF0, 0x9F, 0x8D, 0x8E])
 
@@ -270,7 +270,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(try ocp1Decoder.decode(String.self, from: encodedString), string)
   }
 
-  func testAsciiStringEncoding() async throws {
+  func testAsciiStringEncoding() throws {
     let string = "ASCII"
     let encodedString = Data([0, 5, 0x41, 0x53, 0x43, 0x49, 0x49])
 
@@ -281,7 +281,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(try ocp1Decoder.decode(String.self, from: encodedString), string)
   }
 
-  func testEmptyStringEncoding() async throws {
+  func testEmptyStringEncoding() throws {
     let string = ""
     let encodedString = Data([0, 0])
 
@@ -292,7 +292,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(try ocp1Decoder.decode(String.self, from: encodedString), string)
   }
 
-  func testMapEncoding() async throws {
+  func testMapEncoding() throws {
     let map = ["A": UInt16(1), "B": UInt16(2)]
 
     // dictionary keys are unordered so test both permutations
@@ -309,7 +309,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(try ocp1Decoder.decode([String: UInt16].self, from: encodedMap), map)
   }
 
-  func testMultiMapEncoding() async throws {
+  func testMultiMapEncoding() throws {
     let multiMap: OcaMultiMap<String, OcaUint16> = ["A": [1, 2, 3]]
     let encodedMultiMap =
       Data([0x00, 0x01, 0x00, 0x01, 0x41, 0x00, 0x03, 0x00, 0x01, 0x00, 0x02, 0x00, 0x03])
@@ -324,7 +324,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     )
   }
 
-  func testMediaSinkConnectorEncoding() async throws {
+  func testMediaSinkConnectorEncoding() throws {
     let mediaCoding = OcaMediaCoding(
       codingSchemeID: 1,
       codecParameters: "1234",
@@ -407,44 +407,109 @@ final class SwiftOCADeviceTests: XCTestCase {
     let ocp1Decoder = Ocp1Decoder()
     XCTAssertEqual(try ocp1Decoder.decode(OcaMediaSinkConnector.self, from: encodedSink), sink)
   }
+
+  func testBuiltinEncoderDecoderNtf1() throws {
+    let eventParameters = Data([0x00, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01])
+    let eventData = Ocp1EventData(
+      event: OcaEvent(emitterONo: 0x1234, eventID: OcaEventID(defLevel: 1, eventIndex: 1)),
+      eventParameters: eventParameters
+    )
+    let params = Ocp1NtfParams(parameterCount: 1, context: OcaBlob(), eventData: eventData)
+    let aNotification = Ocp1Notification1(
+      notificationSize: 0,
+      targetONo: 0x5678,
+      methodID: "1.1",
+      parameters: params
+    )
+
+    let encodedNotification = aNotification.bytes
+    XCTAssertEqual(
+      encodedNotification,
+      [
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x56,
+        0x78,
+        0x00,
+        0x01,
+        0x00,
+        0x01,
+        0x01,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x12,
+        0x34,
+        0x00,
+        0x01,
+        0x00,
+        0x01,
+        0x00,
+        0x04,
+        0x00,
+        0x01,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x01,
+      ]
+    )
+
+    let decodedNotification = try Ocp1Notification1(bytes: aNotification.bytes)
+    XCTAssertEqual(decodedNotification, aNotification)
+  }
+
+  func testBuiltinEncoderDecoderNtf2() throws {
+    let eventParameters = Data([0x00, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01])
+    let aNotification = Ocp1Notification2(
+      notificationSize: 0,
+      event: OcaEvent(emitterONo: 0x1234, eventID: OcaEventID(defLevel: 1, eventIndex: 1)),
+      notificationType: .event,
+      data: eventParameters
+    )
+
+    let encodedNotification = aNotification.bytes
+    XCTAssertEqual(
+      encodedNotification,
+      [0, 0, 0, 0, 0, 0, 18, 52, 0, 1, 0, 1, 0, 0, 4, 0, 1, 0, 0, 0, 0, 1]
+    )
+
+    let decodedNotification = try Ocp1Notification2(bytes: aNotification.bytes)
+    XCTAssertEqual(decodedNotification, aNotification)
+  }
 }
 
-/// https://github.com/apple/swift-corelibs-xctest/issues/436
-extension XCTestCase {
-  /// Wait on an array of expectations for up to the specified timeout, and optionally specify
-  /// whether they
-  /// must be fulfilled in the given order. May return early based on fulfillment of the waited on
-  /// expectations.
-  ///
-  /// - Parameter expectations: The expectations to wait on.
-  /// - Parameter timeout: The maximum total time duration to wait on all expectations.
-  /// - Parameter enforceOrder: Specifies whether the expectations must be fulfilled in the order
-  ///   they are specified in the `expectations` Array. Default is false.
-  /// - Parameter file: The file name to use in the error message if
-  ///   expectations are not fulfilled before the given timeout. Default is the file
-  ///   containing the call to this method. It is rare to provide this
-  ///   parameter when calling this method.
-  /// - Parameter line: The line number to use in the error message if the
-  ///   expectations are not fulfilled before the given timeout. Default is the line
-  ///   number of the call to this method in the calling file. It is rare to
-  ///   provide this parameter when calling this method.
-  ///
-  /// - SeeAlso: XCTWaiter
-  func fulfillment(
-    of expectations: [XCTestExpectation],
-    timeout: TimeInterval,
-    enforceOrder: Bool = false
-  ) async {
-    await withCheckedContinuation { continuation in
-      // This function operates by blocking a background thread instead of one owned by
-      // libdispatch or by the
-      // Swift runtime (as used by Swift concurrency.) To ensure we use a thread owned by
-      // neither subsystem, use
-      // Foundation's Thread.detachNewThread(_:).
-      Thread.detachNewThread { [self] in
-        wait(for: expectations, timeout: timeout, enforceOrder: enforceOrder)
-        continuation.resume()
-      }
-    }
+extension Ocp1EventData: Equatable {
+  public static func == (_ lhs: Ocp1EventData, _ rhs: Ocp1EventData) -> Bool {
+    lhs.event == rhs.event && lhs.eventParameters == rhs.eventParameters
+  }
+}
+
+extension Ocp1NtfParams: Equatable {
+  public static func == (_ lhs: Ocp1NtfParams, _ rhs: Ocp1NtfParams) -> Bool {
+    lhs.parameterCount == rhs.parameterCount && lhs.context == rhs.context && lhs.eventData == rhs
+      .eventData
+  }
+}
+
+extension Ocp1Notification1: Equatable {
+  public static func == (_ lhs: Ocp1Notification1, _ rhs: Ocp1Notification1) -> Bool {
+    lhs.notificationSize == rhs.notificationSize && lhs.targetONo == rhs.targetONo && lhs
+      .methodID == rhs.methodID && lhs.parameters == rhs.parameters
+  }
+}
+
+extension Ocp1Notification2: Equatable {
+  public static func == (_ lhs: Ocp1Notification2, _ rhs: Ocp1Notification2) -> Bool {
+    lhs.notificationSize == rhs.notificationSize &&
+      lhs.event == rhs.event &&
+      lhs.notificationType == rhs.notificationType &&
+      lhs.data == rhs.data
   }
 }

@@ -14,12 +14,6 @@
 // limitations under the License.
 //
 
-#if canImport(FoundationEssentials)
-import FoundationEssentials
-#else
-import Foundation
-#endif
-
 public typealias OcaBoolean = Bool
 public typealias OcaBlob = LengthTaggedData
 
@@ -150,29 +144,24 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
   }
 
   @_spi(SwiftOCAPrivate)
-  public init?(data: Data) {
-    precondition(MemoryLayout<Self>.size == 4)
-    guard data.count >= 4 else { return nil }
+  public init(bytes: borrowing[UInt8]) throws {
+    guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
 
-    let encodedSelf = data.withUnsafeBytes {
-      $0.withMemoryRebound(to: Self.self) {
-        $0.baseAddress!.pointee
-      }
+    defLevel = bytes.withUnsafeBytes {
+      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint16.self))
     }
-
-    self.init(
-      defLevel: UInt16(bigEndian: encodedSelf.defLevel),
-      propertyIndex: UInt16(bigEndian: encodedSelf.propertyIndex)
-    )
+    propertyIndex = bytes.withUnsafeBytes {
+      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 2, as: OcaUint16.self))
+    }
   }
 
   @_spi(SwiftOCAPrivate)
-  public var data: Data {
+  public var bytes: [UInt8] {
     withUnsafeBytes(of: Self(
       defLevel: defLevel.bigEndian,
       propertyIndex: propertyIndex.bigEndian
     )) {
-      Data($0)
+      Array($0)
     }
   }
 }
@@ -430,29 +419,24 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
   }
 
   @_spi(SwiftOCAPrivate)
-  public init?(data: Data) {
-    precondition(MemoryLayout<Self>.size == 4)
-    guard data.count >= 4 else { return nil }
+  public init(bytes: borrowing[UInt8]) throws {
+    guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
 
-    let encodedSelf = data.withUnsafeBytes {
-      $0.withMemoryRebound(to: Self.self) {
-        $0.baseAddress!.pointee
-      }
+    defLevel = bytes.withUnsafeBytes {
+      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint16.self))
     }
-
-    self.init(
-      defLevel: UInt16(bigEndian: encodedSelf.defLevel),
-      methodIndex: UInt16(bigEndian: encodedSelf.methodIndex)
-    )
+    methodIndex = bytes.withUnsafeBytes {
+      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 2, as: OcaUint16.self))
+    }
   }
 
   @_spi(SwiftOCAPrivate)
-  public var data: Data {
+  public var bytes: [UInt8] {
     withUnsafeBytes(of: Self(
       defLevel: defLevel.bigEndian,
       methodIndex: methodIndex.bigEndian
     )) {
-      Data($0)
+      Array($0)
     }
   }
 

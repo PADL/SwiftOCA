@@ -37,6 +37,8 @@
 		D32437CF2BA9276700C89102 /* AnyCodable in Frameworks */ = {isa = PBXBuildFile; productRef = D32437CE2BA9276700C89102 /* AnyCodable */; };
 		D324D9B52CFC5A3800232790 /* OcaRoot+Binding.swift in Sources */ = {isa = PBXBuildFile; fileRef = D324D9B42CFC5A3800232790 /* OcaRoot+Binding.swift */; };
 		D32C49DD2B5102A300D73201 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = D32C49DC2B5102A300D73201 /* Logging */; };
+		D32EDEED2D6D7279009673D6 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
+		D32EDEF12D6D7385009673D6 /* EventBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32EDEEF2D6D7385009673D6 /* EventBenchmark.swift */; };
 		D33A35A72B2FB1D600FEDC43 /* MediaClock3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */; };
 		D33A35A92B2FB7BE00FEDC43 /* MediaClockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */; };
 		D33A35AB2B2FBD0700FEDC43 /* DeviceTimeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */; };
@@ -306,6 +308,15 @@
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D32EDEE02D6D7241009673D6 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		D33B52BA2A706201001A1BA7 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -357,6 +368,8 @@
 		D32229CC2ABC270900B56B6B /* Ocp1IORingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1IORingController.swift; sourceTree = "<group>"; };
 		D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEndpointRegistrar.swift; sourceTree = "<group>"; };
 		D324D9B42CFC5A3800232790 /* OcaRoot+Binding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaRoot+Binding.swift"; sourceTree = "<group>"; };
+		D32EDEE22D6D7241009673D6 /* OCAEventBenchmark */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCAEventBenchmark; sourceTree = BUILT_PRODUCTS_DIR; };
+		D32EDEEF2D6D7385009673D6 /* EventBenchmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventBenchmark.swift; sourceTree = "<group>"; };
 		D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClock3.swift; sourceTree = "<group>"; };
 		D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClockManager.swift; sourceTree = "<group>"; };
 		D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTimeManager.swift; sourceTree = "<group>"; };
@@ -583,6 +596,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		D32EDEDF2D6D7241009673D6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D32EDEED2D6D7279009673D6 /* libSwiftOCA.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D33B527F2A6FD171001A1BA7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -737,6 +758,15 @@
 				D32229CC2ABC270900B56B6B /* Ocp1IORingController.swift */,
 			);
 			path = IORing;
+			sourceTree = "<group>";
+		};
+		D32EDEF02D6D7385009673D6 /* OCAEventBenchmark */ = {
+			isa = PBXGroup;
+			children = (
+				D32EDEEF2D6D7385009673D6 /* EventBenchmark.swift */,
+			);
+			name = OCAEventBenchmark;
+			path = Examples/OCAEventBenchmark;
 			sourceTree = "<group>";
 		};
 		D33A35B22B2FC4DC00FEDC43 /* ApplicationNetworks */ = {
@@ -1108,6 +1138,7 @@
 			isa = PBXGroup;
 			children = (
 				D3B396E02BBA4CD00001B512 /* SwiftOCA.xctestplan */,
+				D32EDEF02D6D7385009673D6 /* OCAEventBenchmark */,
 				D3D8FA532B61EF550054FD3C /* KeyPathShims */,
 				D33B52C32A706235001A1BA7 /* OCADevice */,
 				D33B52852A6FD190001A1BA7 /* Sources/SwiftOCADevice */,
@@ -1132,6 +1163,7 @@
 				D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */,
 				D3D8FA4F2B61EF2C0054FD3C /* libKeyPathShims.a */,
 				D3B396DC2BBA4AB50001B512 /* SwiftOCATests.xctest */,
+				D32EDEE22D6D7241009673D6 /* OCAEventBenchmark */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1461,6 +1493,25 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		D32EDEE12D6D7241009673D6 /* OCAEventBenchmark */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D32EDEE82D6D7241009673D6 /* Build configuration list for PBXNativeTarget "OCAEventBenchmark" */;
+			buildPhases = (
+				D32EDEDE2D6D7241009673D6 /* Sources */,
+				D32EDEDF2D6D7241009673D6 /* Frameworks */,
+				D32EDEE02D6D7241009673D6 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OCAEventBenchmark;
+			packageProductDependencies = (
+			);
+			productName = OCAEventBenchmark;
+			productReference = D32EDEE22D6D7241009673D6 /* OCAEventBenchmark */;
+			productType = "com.apple.product-type.tool";
+		};
 		D33B52802A6FD171001A1BA7 /* SwiftOCADevice */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D33B52842A6FD171001A1BA7 /* Build configuration list for PBXNativeTarget "SwiftOCADevice" */;
@@ -1627,9 +1678,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1420;
+				LastSwiftUpdateCheck = 1610;
 				LastUpgradeCheck = 1520;
 				TargetAttributes = {
+					D32EDEE12D6D7241009673D6 = {
+						CreatedOnToolsVersion = 16.1;
+					};
 					D33B52802A6FD171001A1BA7 = {
 						CreatedOnToolsVersion = 14.2;
 					};
@@ -1686,6 +1740,7 @@
 				D33B52BB2A706201001A1BA7 /* OCADevice */,
 				D3C0830A2A7B01AB0020AD57 /* SwiftOCADeviceTests */,
 				D3D8FA4E2B61EF2C0054FD3C /* KeyPathShims */,
+				D32EDEE12D6D7241009673D6 /* OCAEventBenchmark */,
 			);
 		};
 /* End PBXProject section */
@@ -1717,6 +1772,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		D32EDEDE2D6D7241009673D6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D32EDEF12D6D7385009673D6 /* EventBenchmark.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D33B527E2A6FD171001A1BA7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2033,6 +2096,38 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		D32EDEE62D6D7241009673D6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.5;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D32EDEE72D6D7241009673D6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.5;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		D33B52822A6FD171001A1BA7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2502,6 +2597,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		D32EDEE82D6D7241009673D6 /* Build configuration list for PBXNativeTarget "OCAEventBenchmark" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D32EDEE62D6D7241009673D6 /* Debug */,
+				D32EDEE72D6D7241009673D6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D33B52842A6FD171001A1BA7 /* Build configuration list for PBXNativeTarget "SwiftOCADevice" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
