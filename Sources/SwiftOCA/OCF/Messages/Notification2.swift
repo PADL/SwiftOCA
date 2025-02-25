@@ -78,8 +78,7 @@ public struct Ocp1Notification2: Ocp1Message, Codable, Sendable {
     throw Ocp1Error.exception(exception)
   }
 
-  @_spi(SwiftOCAPrivate)
-  public init(bytes: borrowing[UInt8]) throws {
+  package init(bytes: borrowing[UInt8]) throws {
     guard bytes.count >= 14 else {
       throw Ocp1Error.pduTooShort
     }
@@ -94,8 +93,7 @@ public struct Ocp1Notification2: Ocp1Message, Codable, Sendable {
     data = Data(bytes[13...])
   }
 
-  @_spi(SwiftOCAPrivate)
-  public var bytes: [UInt8] {
+  package var bytes: [UInt8] {
     var bytes = [UInt8]()
     bytes.reserveCapacity(32)
     withUnsafeBytes(of: notificationSize.bigEndian) { bytes += $0 }

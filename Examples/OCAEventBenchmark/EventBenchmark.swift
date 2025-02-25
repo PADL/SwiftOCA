@@ -15,7 +15,6 @@
 //
 
 import Foundation
-@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 let Rounds = 1_000_000

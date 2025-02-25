@@ -29,14 +29,12 @@ public struct Ocp1EventData: Codable, Sendable {
     self.eventParameters = eventParameters
   }
 
-  @_spi(SwiftOCAPrivate)
-  public init(bytes: borrowing[UInt8]) throws {
+  package init(bytes: borrowing[UInt8]) throws {
     event = try OcaEvent(bytes: bytes)
     eventParameters = Data(bytes[8...])
   }
 
-  @_spi(SwiftOCAPrivate)
-  public var bytes: [UInt8] {
+  package var bytes: [UInt8] {
     var bytes = [UInt8]()
     let eventBytes = event.bytes
     bytes.reserveCapacity(eventBytes.count + eventParameters.count)
@@ -57,8 +55,7 @@ public struct Ocp1NtfParams: Codable, Sendable {
     self.eventData = eventData
   }
 
-  @_spi(SwiftOCAPrivate)
-  public init(bytes: borrowing[UInt8]) throws {
+  package init(bytes: borrowing[UInt8]) throws {
     guard bytes.count > 1 else { throw Ocp1Error.pduTooShort }
     parameterCount = bytes[0]
     context = try LengthTaggedData(bytes: Array(bytes[1...]))
@@ -68,8 +65,7 @@ public struct Ocp1NtfParams: Codable, Sendable {
     eventData = try Ocp1EventData(bytes: Array(bytes[eventDataOffset...]))
   }
 
-  @_spi(SwiftOCAPrivate)
-  public var bytes: [UInt8] {
+  package var bytes: [UInt8] {
     var bytes = [UInt8]()
     let eventDataBytes = eventData.bytes
     bytes.reserveCapacity(1 + MemoryLayout<UInt16>.size + context.count + eventDataBytes.count)
@@ -100,8 +96,7 @@ public struct Ocp1Notification1: Ocp1Message, Codable, Sendable {
     self.parameters = parameters
   }
 
-  @_spi(SwiftOCAPrivate)
-  public init(bytes: borrowing[UInt8]) throws {
+  package init(bytes: borrowing[UInt8]) throws {
     guard bytes.count > 12 else { throw Ocp1Error.pduTooShort }
     notificationSize = bytes.withUnsafeBytes {
       OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint32.self))
@@ -113,8 +108,7 @@ public struct Ocp1Notification1: Ocp1Message, Codable, Sendable {
     parameters = try Ocp1NtfParams(bytes: Array(bytes[12...]))
   }
 
-  @_spi(SwiftOCAPrivate)
-  public var bytes: [UInt8] {
+  package var bytes: [UInt8] {
     var bytes = [UInt8]()
     bytes.reserveCapacity(32)
     withUnsafeBytes(of: notificationSize.bigEndian) { bytes += $0 }

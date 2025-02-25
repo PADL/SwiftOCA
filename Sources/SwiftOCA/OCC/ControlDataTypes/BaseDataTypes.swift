@@ -143,8 +143,7 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
     }
   }
 
-  @_spi(SwiftOCAPrivate)
-  public init(bytes: borrowing[UInt8]) throws {
+  package init(bytes: borrowing[UInt8]) throws {
     guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
 
     defLevel = bytes.withUnsafeBytes {
@@ -155,8 +154,7 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
     }
   }
 
-  @_spi(SwiftOCAPrivate)
-  public var bytes: [UInt8] {
+  package var bytes: [UInt8] {
     var bytes = [UInt8]()
     bytes.reserveCapacity(4)
     withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
@@ -417,8 +415,7 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
     self.init(value)
   }
 
-  @_spi(SwiftOCAPrivate)
-  public init(bytes: borrowing[UInt8]) throws {
+  package init(bytes: borrowing[UInt8]) throws {
     guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
 
     defLevel = bytes.withUnsafeBytes {
@@ -429,8 +426,7 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
     }
   }
 
-  @_spi(SwiftOCAPrivate)
-  public var bytes: [UInt8] {
+  package var bytes: [UInt8] {
     var bytes = [UInt8]()
     bytes.reserveCapacity(4)
     withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
