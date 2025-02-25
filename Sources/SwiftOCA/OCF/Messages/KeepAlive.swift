@@ -28,6 +28,19 @@ public struct Ocp1KeepAlive1: Ocp1Message, Codable, Sendable {
   public init(heartBeatTime: OcaUint16) {
     self.heartBeatTime = heartBeatTime
   }
+
+  @_spi(SwiftOCAPrivate)
+  public init(bytes: borrowing[UInt8]) throws {
+    guard bytes.count >= 2 /* messageSize */ else { throw Ocp1Error.pduTooShort }
+    let heartBeatTime = bytes
+      .withUnsafeBytes { OcaUint16(bigEndian: $0.loadUnaligned(as: OcaUint16.self)) }
+    self.init(heartBeatTime: heartBeatTime)
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public var bytes: [UInt8] {
+    withUnsafeBytes(of: heartBeatTime.bigEndian) { Array($0) }
+  }
 }
 
 public struct Ocp1KeepAlive2: Ocp1Message, Codable, Sendable {
@@ -37,6 +50,19 @@ public struct Ocp1KeepAlive2: Ocp1Message, Codable, Sendable {
 
   public init(heartBeatTime: OcaUint32) {
     self.heartBeatTime = heartBeatTime
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public init(bytes: borrowing[UInt8]) throws {
+    guard bytes.count >= 4 /* messageSize */ else { throw Ocp1Error.pduTooShort }
+    let heartBeatTime = bytes
+      .withUnsafeBytes { OcaUint32(bigEndian: $0.loadUnaligned(as: OcaUint32.self)) }
+    self.init(heartBeatTime: heartBeatTime)
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public var bytes: [UInt8] {
+    withUnsafeBytes(of: heartBeatTime.bigEndian) { Array($0) }
   }
 }
 

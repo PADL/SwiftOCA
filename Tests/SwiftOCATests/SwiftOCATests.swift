@@ -480,8 +480,30 @@ final class SwiftOCADeviceTests: XCTestCase {
       [0, 0, 0, 0, 0, 0, 18, 52, 0, 1, 0, 1, 0, 0, 4, 0, 1, 0, 0, 0, 0, 1]
     )
 
-    let decodedNotification = try Ocp1Notification2(bytes: aNotification.bytes)
+    let decodedNotification = try Ocp1Notification2(bytes: encodedNotification)
     XCTAssertEqual(decodedNotification, aNotification)
+  }
+
+  func testBuiltinEncoderDecoderKeepAlive1() throws {
+    let encodedKeepAlive1 = Ocp1KeepAlive1(heartBeatTime: 100).bytes
+    XCTAssertEqual(
+      encodedKeepAlive1,
+      [0, 100]
+    )
+
+    let decodedKeepAlive1 = try Ocp1KeepAlive1(bytes: encodedKeepAlive1)
+    XCTAssertEqual(decodedKeepAlive1.heartBeatTime, 100)
+  }
+
+  func testBuiltinEncoderDecoderKeepAlive2() throws {
+    let encodedKeepAlive2 = Ocp1KeepAlive2(heartBeatTime: 200).bytes
+    XCTAssertEqual(
+      encodedKeepAlive2,
+      [0, 0, 0, 200]
+    )
+
+    let decodedKeepAlive2 = try Ocp1KeepAlive2(bytes: encodedKeepAlive2)
+    XCTAssertEqual(decodedKeepAlive2.heartBeatTime, 200)
   }
 }
 
