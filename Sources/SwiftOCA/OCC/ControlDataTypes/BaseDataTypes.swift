@@ -415,7 +415,7 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
     self.init(value)
   }
 
-  package init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing[UInt8]) throws {
     guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
 
     defLevel = bytes.withUnsafeBytes {
@@ -426,7 +426,7 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
     }
   }
 
-  package var bytes: [UInt8] {
+  var bytes: [UInt8] {
     var bytes = [UInt8]()
     bytes.reserveCapacity(4)
     withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }

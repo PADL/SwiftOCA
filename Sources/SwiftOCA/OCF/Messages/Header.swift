@@ -41,6 +41,13 @@ public protocol Ocp1MessagePdu: Codable, Sendable {
   var header: Ocp1Header { get }
 }
 
+// TODO: currently tests depend on Codable, but this should be removed eventually
+
 public protocol Ocp1Message: Codable, Sendable {
   var messageSize: OcaUint32 { get }
+}
+
+package protocol _Ocp1MessageCodable: Ocp1Message {
+  init(bytes: borrowing[UInt8]) throws
+  var bytes: [UInt8] { get }
 }

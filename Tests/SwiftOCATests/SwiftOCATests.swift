@@ -63,7 +63,7 @@ extension OcaMediaSinkConnector: Equatable {
 }
 
 final class SwiftOCADeviceTests: XCTestCase {
-  func testSingleFieldOcp1Encoding() async throws {
+  func testSingleFieldOcp1Encoding() throws {
     let parameters = OcaGetPortNameParameters(portID: OcaPortID(mode: .input, index: 2))
     let encodedParameters: [UInt8] = try Ocp1Encoder().encode(parameters)
     XCTAssertEqual(encodedParameters, [0x01, 0x00, 0x02])
@@ -90,9 +90,15 @@ final class SwiftOCADeviceTests: XCTestCase {
     let decodedParameters = try Ocp1Decoder()
       .decode(OcaGetPortNameParameters.self, from: decodedCommand.parameters.parameterData)
     XCTAssertEqual(parameters, decodedParameters)
+
+    let decodedCommandBuiltin = try Ocp1Command(bytes: encodedCommand)
+    XCTAssertEqual(command, decodedCommandBuiltin)
+
+    let encodedCommandBuiltin = command.bytes
+    XCTAssertEqual(encodedCommand, encodedCommandBuiltin)
   }
 
-  func testMultipleFieldOcp1Encoding() async throws {
+  func testMultipleFieldOcp1Encoding() throws {
     let parameters = OcaBoundedPropertyValue<OcaInt64>(
       value: -100,
       minValue: -200,
@@ -157,7 +163,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(parameters, decodedParameters)
   }
 
-  func testVector_AES70_3_2023_8_2_4() async throws {
+  func testVector_AES70_3_2023_8_2_4() throws {
     let value = OcaCounter(id: 3, value: 100, innitialValue: 0, role: "Errors", notifiers: [])
     let referenceValue = [
       0,

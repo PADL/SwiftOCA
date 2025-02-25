@@ -34,7 +34,7 @@ public struct Ocp1Parameters: Codable, Sendable {
   }
 }
 
-public struct Ocp1Command: Ocp1Message, Codable, Sendable {
+public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
   public let commandSize: OcaUint32
   public let handle: OcaUint32
   public let targetONo: OcaONo
@@ -55,5 +55,33 @@ public struct Ocp1Command: Ocp1Message, Codable, Sendable {
     self.targetONo = targetONo
     self.methodID = methodID
     self.parameters = parameters
+  }
+
+  package init(bytes: borrowing[UInt8]) throws {
+    guard bytes.count >= 17 else {
+      throw Ocp1Error.pduTooShort
+    }
+    commandSize = bytes.withUnsafeBytes {
+      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint32.self))
+    }
+    handle = bytes.withUnsafeBytes {
+      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 4, as: OcaUint32.self))
+    }
+    targetONo = bytes.withUnsafeBytes {
+      OcaONo(bigEndian: $0.loadUnaligned(fromByteOffset: 8, as: OcaONo.self))
+    }
+    methodID = try OcaMethodID(bytes: Array(bytes[12..<16]))
+    parameters = Ocp1Parameters(parameterCount: bytes[16], parameterData: Data(bytes[17...]))
+  }
+
+  package var bytes: [UInt8] {
+    var bytes = [UInt8]()
+    bytes.reserveCapacity(32)
+    withUnsafeBytes(of: commandSize.bigEndian) { bytes += $0 }
+    withUnsafeBytes(of: handle.bigEndian) { bytes += $0 }
+    withUnsafeBytes(of: targetONo.bigEndian) { bytes += $0 }
+    bytes += methodID.bytes
+    bytes += [parameters.parameterCount] + parameters.parameterData
+    return bytes
   }
 }

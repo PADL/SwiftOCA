@@ -38,7 +38,7 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible {
     "\(defLevel).\(eventIndex)"
   }
 
-  package init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing[UInt8]) throws {
     guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
 
     defLevel = bytes.withUnsafeBytes {
@@ -49,7 +49,7 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible {
     }
   }
 
-  package var bytes: [UInt8] {
+  var bytes: [UInt8] {
     var bytes = [UInt8]()
     bytes.reserveCapacity(4)
     withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
@@ -67,7 +67,7 @@ public struct OcaEvent: Codable, Hashable, Equatable, Sendable {
     self.eventID = eventID
   }
 
-  package init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing[UInt8]) throws {
     precondition(MemoryLayout<Self>.size == 8)
     guard bytes.count >= MemoryLayout<Self>.size else { throw Ocp1Error.pduTooShort }
     let emitterONo = bytes.withUnsafeBytes { OcaONo(bigEndian: $0.loadUnaligned(as: OcaONo.self)) }
@@ -75,7 +75,7 @@ public struct OcaEvent: Codable, Hashable, Equatable, Sendable {
     self.init(emitterONo: emitterONo, eventID: eventID)
   }
 
-  package var bytes: [UInt8] {
+  var bytes: [UInt8] {
     var bytes = [UInt8]()
     bytes.reserveCapacity(8)
     withUnsafeBytes(of: emitterONo.bigEndian) { bytes += $0 }

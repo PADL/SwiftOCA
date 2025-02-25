@@ -48,7 +48,7 @@ public struct Ocp1Notification2ExceptionData: Equatable, Codable, Sendable, Erro
   }
 }
 
-public struct Ocp1Notification2: Ocp1Message, Codable, Sendable {
+public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
   let notificationSize: OcaUint32
   let event: OcaEvent
   let notificationType: Ocp1Notification2Type

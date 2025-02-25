@@ -20,28 +20,9 @@ import FoundationEssentials
 import Foundation
 #endif
 
-private extension Ocp1Message {
+private extension _Ocp1MessageCodable {
   func encode(type messageType: OcaMessageType) throws -> Data {
-    var messageData: Data
-
-    switch messageType {
-    case .ocaKeepAlive:
-      if let message = self as? Ocp1KeepAlive2 {
-        messageData = Data(message.bytes)
-      } else {
-        messageData = Data((self as! Ocp1KeepAlive).bytes)
-      }
-    case .ocaNtf1:
-      messageData = Data((self as! Ocp1Notification1).bytes)
-    case .ocaNtf2:
-      messageData = Data((self as! Ocp1Notification2).bytes)
-    case .ocaCmd:
-      fallthrough
-    case .ocaCmdRrq:
-      fallthrough
-    case .ocaRsp:
-      messageData = try Ocp1Encoder().encode(self)
-    }
+    var messageData = Data(bytes)
 
     if messageType != .ocaKeepAlive {
       /// replace `commandSize: OcaUint32` with actual command size
@@ -66,9 +47,9 @@ private extension Ocp1Header {
   }
 }
 
-public extension Ocp1Connection {
+package extension Ocp1Connection {
   nonisolated static func encodeOcp1MessagePdu(
-    _ messages: [Ocp1Message],
+    _ messages: [_Ocp1MessageCodable],
     type messageType: OcaMessageType
   ) throws -> Data {
     var messagePduData = Ocp1Header(
@@ -160,18 +141,17 @@ public extension Ocp1Connection {
     from messageData: Data,
     type messageType: OcaMessageType
   ) throws -> Ocp1Message {
-    let decoder = Ocp1Decoder()
     let message: Ocp1Message
 
     switch messageType {
     case .ocaCmd:
-      message = try decoder.decode(Ocp1Command.self, from: messageData)
+      message = try Ocp1Command(bytes: Array(messageData))
     case .ocaCmdRrq:
-      message = try decoder.decode(Ocp1Command.self, from: messageData)
+      message = try Ocp1Command(bytes: Array(messageData))
     case .ocaNtf1:
       message = try Ocp1Notification1(bytes: Array(messageData))
     case .ocaRsp:
-      message = try decoder.decode(Ocp1Response.self, from: messageData)
+      message = try Ocp1Response(bytes: Array(messageData))
     case .ocaKeepAlive:
       if messageData.count == 2 {
         message = try Ocp1KeepAlive1(bytes: Array(messageData))

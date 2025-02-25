@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct Ocp1Response: Ocp1Message, Codable, Sendable {
+public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
   public let responseSize: OcaUint32
   public let handle: OcaUint32
   public let statusCode: OcaStatus
@@ -32,5 +32,32 @@ public struct Ocp1Response: Ocp1Message, Codable, Sendable {
     self.handle = handle
     self.statusCode = statusCode
     self.parameters = parameters
+  }
+
+  package init(bytes: borrowing[UInt8]) throws {
+    guard bytes.count >= 10 else {
+      throw Ocp1Error.pduTooShort
+    }
+    responseSize = bytes.withUnsafeBytes {
+      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint32.self))
+    }
+    handle = bytes.withUnsafeBytes {
+      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 4, as: OcaUint32.self))
+    }
+    guard let statusCode = OcaStatus(rawValue: bytes[8]) else {
+      throw Ocp1Error.status(.badFormat)
+    }
+    self.statusCode = statusCode
+    parameters = Ocp1Parameters(parameterCount: bytes[9], parameterData: .init(bytes[10...]))
+  }
+
+  package var bytes: [UInt8] {
+    var bytes = [UInt8]()
+    bytes.reserveCapacity(32)
+    withUnsafeBytes(of: responseSize.bigEndian) { bytes += $0 }
+    withUnsafeBytes(of: handle.bigEndian) { bytes += $0 }
+    bytes += [statusCode.rawValue]
+    bytes += [parameters.parameterCount] + parameters.parameterData
+    return bytes
   }
 }

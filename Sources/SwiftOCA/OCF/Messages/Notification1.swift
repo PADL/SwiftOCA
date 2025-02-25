@@ -29,12 +29,12 @@ public struct Ocp1EventData: Codable, Sendable {
     self.eventParameters = eventParameters
   }
 
-  package init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing[UInt8]) throws {
     event = try OcaEvent(bytes: bytes)
     eventParameters = Data(bytes[8...])
   }
 
-  package var bytes: [UInt8] {
+  var bytes: [UInt8] {
     var bytes = [UInt8]()
     let eventBytes = event.bytes
     bytes.reserveCapacity(eventBytes.count + eventParameters.count)
@@ -55,7 +55,7 @@ public struct Ocp1NtfParams: Codable, Sendable {
     self.eventData = eventData
   }
 
-  package init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing[UInt8]) throws {
     guard bytes.count > 1 else { throw Ocp1Error.pduTooShort }
     parameterCount = bytes[0]
     context = try LengthTaggedData(bytes: Array(bytes[1...]))
@@ -65,7 +65,7 @@ public struct Ocp1NtfParams: Codable, Sendable {
     eventData = try Ocp1EventData(bytes: Array(bytes[eventDataOffset...]))
   }
 
-  package var bytes: [UInt8] {
+  var bytes: [UInt8] {
     var bytes = [UInt8]()
     let eventDataBytes = eventData.bytes
     bytes.reserveCapacity(1 + MemoryLayout<UInt16>.size + context.count + eventDataBytes.count)
@@ -76,7 +76,7 @@ public struct Ocp1NtfParams: Codable, Sendable {
   }
 }
 
-public struct Ocp1Notification1: Ocp1Message, Codable, Sendable {
+public struct Ocp1Notification1: _Ocp1MessageCodable, Sendable {
   public let notificationSize: OcaUint32
   public let targetONo: OcaONo
   public let methodID: OcaMethodID
