@@ -20,9 +20,9 @@ import FoundationEssentials
 import Foundation
 #endif
 
-private extension _Ocp1MessageCodable {
+private extension Ocp1Message {
   func encode(type messageType: OcaMessageType) throws -> Data {
-    var messageData = Data(bytes)
+    var messageData = Data((self as! _Ocp1MessageCodable).bytes)
 
     if messageType != .ocaKeepAlive {
       /// replace `commandSize: OcaUint32` with actual command size
@@ -49,7 +49,7 @@ private extension Ocp1Header {
 
 package extension Ocp1Connection {
   nonisolated static func encodeOcp1MessagePdu(
-    _ messages: [_Ocp1MessageCodable],
+    _ messages: [Ocp1Message],
     type messageType: OcaMessageType
   ) throws -> Data {
     var messagePduData = Ocp1Header(
@@ -58,7 +58,7 @@ package extension Ocp1Connection {
     )._dataWithSyncByte
 
     try messages.forEach {
-      messagePduData += try $0.encode(type: messageType)
+      messagePduData += try ($0 as! _Ocp1MessageCodable).encode(type: messageType)
     }
     /// MinimumPduSize == 7
     /// 0 `syncVal: OcaUint8`

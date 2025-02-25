@@ -22,7 +22,7 @@ import Foundation
 
 extension Ocp1Connection {
   private func sendMessages(
-    _ messages: [_Ocp1MessageCodable],
+    _ messages: [Ocp1Message],
     type messageType: OcaMessageType
   ) async throws {
     let messagePduData = try Self.encodeOcp1MessagePdu(messages, type: messageType)
@@ -33,7 +33,7 @@ extension Ocp1Connection {
   }
 
   private func sendMessage(
-    _ message: _Ocp1MessageCodable,
+    _ message: Ocp1Message,
     type messageType: OcaMessageType
   ) async throws {
     try await sendMessages([message], type: messageType)

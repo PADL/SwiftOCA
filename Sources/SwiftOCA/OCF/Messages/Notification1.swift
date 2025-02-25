@@ -96,6 +96,8 @@ public struct Ocp1Notification1: _Ocp1MessageCodable, Sendable {
     self.parameters = parameters
   }
 
+  // FIXME: package visibility required for OCAEventBenchmark
+
   package init(bytes: borrowing[UInt8]) throws {
     guard bytes.count > 12 else { throw Ocp1Error.pduTooShort }
     notificationSize = bytes.withUnsafeBytes {

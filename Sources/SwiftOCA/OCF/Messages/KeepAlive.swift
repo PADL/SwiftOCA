@@ -29,14 +29,14 @@ public struct Ocp1KeepAlive1: _Ocp1MessageCodable, Sendable {
     self.heartBeatTime = heartBeatTime
   }
 
-  package init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing[UInt8]) throws {
     guard bytes.count >= 2 /* messageSize */ else { throw Ocp1Error.pduTooShort }
     let heartBeatTime = bytes
       .withUnsafeBytes { OcaUint16(bigEndian: $0.loadUnaligned(as: OcaUint16.self)) }
     self.init(heartBeatTime: heartBeatTime)
   }
 
-  package var bytes: [UInt8] {
+  var bytes: [UInt8] {
     withUnsafeBytes(of: heartBeatTime.bigEndian) { Array($0) }
   }
 }
@@ -50,14 +50,14 @@ public struct Ocp1KeepAlive2: _Ocp1MessageCodable, Sendable {
     self.heartBeatTime = heartBeatTime
   }
 
-  package init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing[UInt8]) throws {
     guard bytes.count >= 4 /* messageSize */ else { throw Ocp1Error.pduTooShort }
     let heartBeatTime = bytes
       .withUnsafeBytes { OcaUint32(bigEndian: $0.loadUnaligned(as: OcaUint32.self)) }
     self.init(heartBeatTime: heartBeatTime)
   }
 
-  package var bytes: [UInt8] {
+  var bytes: [UInt8] {
     withUnsafeBytes(of: heartBeatTime.bigEndian) { Array($0) }
   }
 }
@@ -65,7 +65,7 @@ public struct Ocp1KeepAlive2: _Ocp1MessageCodable, Sendable {
 public typealias Ocp1KeepAlive = Ocp1KeepAlive1
 
 package extension Ocp1KeepAlive {
-  static func keepAlive(interval heartbeatTime: Duration) -> _Ocp1MessageCodable {
+  static func keepAlive(interval heartbeatTime: Duration) -> Ocp1Message {
     let seconds = heartbeatTime.seconds
     return Ocp1KeepAlive1(heartBeatTime: OcaUint16(seconds == 0 ? 1 : seconds))
   }

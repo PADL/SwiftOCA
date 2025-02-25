@@ -78,7 +78,7 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
     throw Ocp1Error.exception(exception)
   }
 
-  package init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing[UInt8]) throws {
     guard bytes.count >= 14 else {
       throw Ocp1Error.pduTooShort
     }
@@ -93,7 +93,7 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
     data = Data(bytes[13...])
   }
 
-  package var bytes: [UInt8] {
+  var bytes: [UInt8] {
     var bytes = [UInt8]()
     bytes.reserveCapacity(32)
     withUnsafeBytes(of: notificationSize.bigEndian) { bytes += $0 }

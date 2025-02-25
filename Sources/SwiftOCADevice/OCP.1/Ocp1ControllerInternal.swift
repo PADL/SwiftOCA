@@ -227,7 +227,7 @@ extension Ocp1ControllerInternal {
     lastMessageSentTime = .now
 
     try await sendOcp1EncodedData(Ocp1Connection.encodeOcp1MessagePdu(
-      messages as! [_Ocp1MessageCodable],
+      messages,
       type: messageType
     ))
   }
@@ -287,7 +287,7 @@ extension Ocp1ControllerInternalLightweightNotifyingInternal {
     to destinationAddress: OcaNetworkAddress
   ) async throws {
     try await sendOcp1EncodedData(Ocp1Connection.encodeOcp1MessagePdu(
-      [message as! _Ocp1MessageCodable],
+      [message],
       type: messageType
     ), to: destinationAddress)
   }

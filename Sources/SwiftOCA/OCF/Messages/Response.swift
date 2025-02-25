@@ -34,7 +34,7 @@ public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
     self.parameters = parameters
   }
 
-  package init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing[UInt8]) throws {
     guard bytes.count >= 10 else {
       throw Ocp1Error.pduTooShort
     }
@@ -51,7 +51,7 @@ public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
     parameters = Ocp1Parameters(parameterCount: bytes[9], parameterData: .init(bytes[10...]))
   }
 
-  package var bytes: [UInt8] {
+  var bytes: [UInt8] {
     var bytes = [UInt8]()
     bytes.reserveCapacity(32)
     withUnsafeBytes(of: responseSize.bigEndian) { bytes += $0 }

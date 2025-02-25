@@ -47,7 +47,7 @@ public protocol Ocp1Message: Codable, Sendable {
   var messageSize: OcaUint32 { get }
 }
 
-package protocol _Ocp1MessageCodable: Ocp1Message {
+protocol _Ocp1MessageCodable: Ocp1Message {
   init(bytes: borrowing[UInt8]) throws
   var bytes: [UInt8] { get }
 }
