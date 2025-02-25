@@ -157,8 +157,11 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
 
   @_spi(SwiftOCAPrivate)
   public var bytes: [UInt8] {
-    withUnsafeBytes(of: defLevel.bigEndian) { Array($0) } +
-      withUnsafeBytes(of: propertyIndex.bigEndian) { Array($0) }
+    var bytes = [UInt8]()
+    bytes.reserveCapacity(4)
+    withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
+    withUnsafeBytes(of: propertyIndex.bigEndian) { bytes += $0 }
+    return bytes
   }
 }
 
@@ -428,8 +431,11 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
 
   @_spi(SwiftOCAPrivate)
   public var bytes: [UInt8] {
-    withUnsafeBytes(of: defLevel.bigEndian) { Array($0) } +
-      withUnsafeBytes(of: methodIndex.bigEndian) { Array($0) }
+    var bytes = [UInt8]()
+    bytes.reserveCapacity(4)
+    withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
+    withUnsafeBytes(of: methodIndex.bigEndian) { bytes += $0 }
+    return bytes
   }
 
   public var description: String {

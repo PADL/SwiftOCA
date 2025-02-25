@@ -37,7 +37,12 @@ public struct Ocp1EventData: Codable, Sendable {
 
   @_spi(SwiftOCAPrivate)
   public var bytes: [UInt8] {
-    event.bytes + Array(eventParameters)
+    var bytes = [UInt8]()
+    let eventBytes = event.bytes
+    bytes.reserveCapacity(eventBytes.count + eventParameters.count)
+    bytes += eventBytes
+    bytes += eventParameters
+    return bytes
   }
 }
 
@@ -65,7 +70,13 @@ public struct Ocp1NtfParams: Codable, Sendable {
 
   @_spi(SwiftOCAPrivate)
   public var bytes: [UInt8] {
-    [parameterCount] + context.bytes + eventData.bytes
+    var bytes = [UInt8]()
+    let eventDataBytes = eventData.bytes
+    bytes.reserveCapacity(1 + MemoryLayout<UInt16>.size + context.count + eventDataBytes.count)
+    bytes += [parameterCount]
+    bytes += context.bytes
+    bytes += eventDataBytes
+    return bytes
   }
 }
 
