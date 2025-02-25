@@ -22,8 +22,26 @@ import Foundation
 
 private extension Ocp1Message {
   func encode(type messageType: OcaMessageType) throws -> Data {
-    let encoder = Ocp1Encoder()
-    var messageData: Data = try encoder.encode(self)
+    var messageData: Data
+
+    switch messageType {
+    case .ocaKeepAlive:
+      if let message = self as? Ocp1KeepAlive2 {
+        messageData = Data(message.bytes)
+      } else {
+        messageData = Data((self as! Ocp1KeepAlive).bytes)
+      }
+    case .ocaNtf1:
+      messageData = Data((self as! Ocp1Notification1).bytes)
+    case .ocaNtf2:
+      messageData = Data((self as! Ocp1Notification2).bytes)
+    case .ocaCmd:
+      fallthrough
+    case .ocaCmdRrq:
+      fallthrough
+    case .ocaRsp:
+      messageData = try Ocp1Encoder().encode(self)
+    }
 
     if messageType != .ocaKeepAlive {
       /// replace `commandSize: OcaUint32` with actual command size
