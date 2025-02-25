@@ -69,9 +69,12 @@ open class OcaLevelSensor: OcaSensor {
       .init(value: _value, in: _range)
     }
     set {
+      let valueDidChange = newValue.value != _value
       _value = newValue.value
       _range = newValue.range
-      Task { try await _valueDidChange(newValue.value) }
+      if valueDidChange {
+        Task { try await _valueDidChange(newValue.value) }
+      }
     }
   }
 
