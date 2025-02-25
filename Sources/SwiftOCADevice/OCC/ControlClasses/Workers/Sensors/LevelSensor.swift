@@ -16,12 +16,67 @@
 
 import SwiftOCA
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
 open class OcaLevelSensor: OcaSensor {
+  private static let _encodedPropertyID = OcaPropertyID("4.1").bytes
+
   override open class var classID: OcaClassID { OcaClassID("1.1.2.2") }
 
-  @OcaBoundedDeviceProperty(
-    propertyID: OcaPropertyID("4.1"),
-    getMethodID: OcaMethodID("4.1")
-  )
-  public var reading = OcaBoundedPropertyValue<OcaDB>(value: -144.0, in: -144.0...0.0)
+  // because Codable is so inefficient, open code this
+  private var _value: OcaDB = -144.0
+  private var _range: ClosedRange<OcaDB> = -144.0...0.0
+
+  override public func handleCommand(
+    _ command: Ocp1Command,
+    from controller: OcaController
+  ) async throws -> Ocp1Response {
+    switch command.methodID {
+    case OcaMethodID("4.1"):
+      try decodeNullCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      let value = OcaBoundedPropertyValue<OcaDB>(value: _value, in: _range)
+      return try encodeResponse(value)
+    default:
+      return try await super.handleCommand(command, from: controller)
+    }
+  }
+
+  private func _valueDidChange(_ newValue: OcaDB) async throws {
+    guard let deviceDelegate else {
+      throw Ocp1Error.notConnected
+    }
+
+    let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
+    var parameters = [UInt8]()
+    parameters.reserveCapacity(9)
+    parameters += Self._encodedPropertyID
+    var packedValue: UInt32 = newValue.bitPattern.bigEndian
+    withUnsafeBytes(of: &packedValue) {
+      parameters += $0
+    }
+    parameters += [OcaPropertyChangeType.currentChanged.rawValue]
+    try await deviceDelegate.notifySubscribers(event, parameters: Data(parameters))
+  }
+
+  // for API compatibility, but prefer to use update(reading:) to set value
+  public var reading: OcaBoundedPropertyValue<OcaDB> {
+    get {
+      .init(value: _value, in: _range)
+    }
+    set {
+      _value = newValue.value
+      _range = newValue.range
+      Task { try await _valueDidChange(newValue.value) }
+    }
+  }
+
+  public func update(reading newValue: OcaDB) async throws {
+    _value = newValue
+    try await _valueDidChange(newValue)
+  }
 }
