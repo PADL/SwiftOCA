@@ -143,8 +143,9 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
     }
   }
 
-  // package visibility for SwiftOCADevice
-  package init(bytes: borrowing[UInt8]) throws {
+  // SPI visibility for SwiftOCADevice and FlutterSwiftOCA
+  @_spi(SwiftOCAPrivate)
+  public init(bytes: borrowing[UInt8]) throws {
     guard bytes.count >= 4 else { throw Ocp1Error.pduTooShort }
 
     defLevel = bytes.withUnsafeBytes {
@@ -155,8 +156,9 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
     }
   }
 
-  // package visibility for SwiftOCADevice
-  package func encode(into bytes: inout [UInt8]) {
+  // SPI visibility for SwiftOCADevice and FlutterSwiftOCA
+  @_spi(SwiftOCAPrivate)
+  public func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
     withUnsafeBytes(of: propertyIndex.bigEndian) { bytes += $0 }
   }
