@@ -17,6 +17,14 @@
 @testable @_spi(SwiftOCAPrivate) import SwiftOCA
 import XCTest
 
+private extension _Ocp1Codable {
+  var bytes: [UInt8] {
+    var bytes = [UInt8]()
+    encode(into: &bytes)
+    return bytes
+  }
+}
+
 extension OcaGetPortNameParameters: Equatable {
   public static func == (lhs: OcaGetPortNameParameters, rhs: OcaGetPortNameParameters) -> Bool {
     lhs.portID == rhs.portID
