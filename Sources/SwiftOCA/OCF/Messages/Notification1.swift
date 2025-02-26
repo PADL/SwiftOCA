@@ -56,8 +56,8 @@ public struct Ocp1NtfParams: Codable, Sendable, _Ocp1Codable {
     parameterCount = bytes[0]
     context = try LengthTaggedData(bytes: Array(bytes[1...]))
     // FIXME: abstraction violation
-    precondition(bytes.count >= 1 + 2 + context.count)
     let eventDataOffset = 1 + 2 + context.count
+    precondition(bytes.count >= eventDataOffset)
     eventData = try Ocp1EventData(bytes: Array(bytes[eventDataOffset...]))
   }
 
