@@ -19,9 +19,13 @@ public let Ocp1ProtocolVersion1: OcaUint16 = 1
 public let Ocp1ProtocolVersion: OcaUint16 = Ocp1ProtocolVersion1
 
 public struct Ocp1Header: Codable, Sendable, _Ocp1Codable {
+  /// offset 0 (1 relative to start of PDU)
   public var protocolVersion: OcaUint16
+  /// offset 2 (3 relative to start of PDU); size of PDU not including `syncVal`
   public var pduSize: OcaUint32
+  /// offset 6 (7 relative to start of PDU)
   public var pduType: OcaMessageType
+  /// offset 7 (8 relative to start of PDU), absent for `ocaKeepAlive` messages
   public var messageCount: OcaUint16
 
   init(pduType: OcaMessageType, messageCount: OcaUint16) {
@@ -35,20 +39,35 @@ public struct Ocp1Header: Codable, Sendable, _Ocp1Codable {
     self.init(pduType: .ocaKeepAlive, messageCount: 0)
   }
 
+  package static let HeaderSize = 9
+
   init(bytes: borrowing[UInt8]) throws {
-    guard bytes.count >= 9 else {
+    guard bytes.count >= Self.HeaderSize else {
       throw Ocp1Error.pduTooShort
     }
+
     protocolVersion = bytes.withUnsafeBytes {
       OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint16.self))
     }
+
+    guard protocolVersion == Ocp1ProtocolVersion else {
+      throw Ocp1Error.invalidProtocolVersion
+    }
+
     pduSize = bytes.withUnsafeBytes {
       OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 2, as: OcaUint32.self))
     }
-    guard let pduType = OcaMessageType(rawValue: bytes[6]) else {
-      throw Ocp1Error.status(.badFormat)
+
+    guard pduSize >= Self.HeaderSize else {
+      throw Ocp1Error.invalidPduSize
     }
+
+    guard let pduType = OcaMessageType(rawValue: bytes[6]) else {
+      throw Ocp1Error.invalidMessageType
+    }
+
     self.pduType = pduType
+
     messageCount = bytes.withUnsafeBytes {
       OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 7, as: OcaUint16.self))
     }

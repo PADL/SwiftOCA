@@ -171,7 +171,7 @@ protocol Observable {}
 
 @OcaConnection
 open class Ocp1Connection: Observable, CustomStringConvertible {
-  public nonisolated static let MinimumPduSize = 7
+  package nonisolated static let MinimumPduSize = 1 /* SyncVal */ + Ocp1Header.HeaderSize
 
   public internal(set) var options: Ocp1ConnectionOptions
 

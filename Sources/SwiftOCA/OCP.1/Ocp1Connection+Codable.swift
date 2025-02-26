@@ -76,46 +76,25 @@ package extension Ocp1Connection {
     from data: Data,
     messages: inout [Data]
   ) throws -> OcaMessageType {
-    precondition(data.count >= MinimumPduSize)
-    precondition(data[0] == Ocp1SyncValue)
-
-    /// MinimumPduSize == 7
-    /// 0 `syncVal: OcaUint8`
-    /// 1 `protocolVersion: OcaUint16`
-    /// 3 `pduSize: OcaUint32` (size of PDU not including syncVal)
-
-    guard data.count >= MinimumPduSize + 3 else {
+    guard data.count >= 1 + Ocp1Header.HeaderSize else {
       throw Ocp1Error.invalidPduSize
     }
 
-    var header = Ocp1Header()
-    header.protocolVersion = data.decodeInteger(index: 1)
-    guard header.protocolVersion == Ocp1ProtocolVersion else {
-      throw Ocp1Error.invalidProtocolVersion
+    guard data[0] == Ocp1SyncValue else {
+      throw Ocp1Error.invalidSyncValue
     }
 
-    header.pduSize = data.decodeInteger(index: 3)
-    guard header.pduSize <= data.count - 1 else {
-      throw Ocp1Error.pduTooShort
-    }
-
-    /// MinimumPduSize +3 == 10
-    /// 7 `messageType: OcaUint8`
-    /// 8 `messageCount: OcaUint16`
-    guard let messageType = OcaMessageType(rawValue: data[7]) else {
-      throw Ocp1Error.invalidMessageType
-    }
-
+    let header = try Ocp1Header(bytes: Array(data[1...]))
     let messageCount: OcaUint16 = data.decodeInteger(index: 8)
 
-    var cursor = Self.MinimumPduSize + 3 // start of first message
+    var cursor = 1 + Ocp1Header.HeaderSize // start of first message
 
     for _ in 0..<messageCount {
       precondition(cursor < data.count)
       var messageData = data
         .subdata(in: cursor..<Int(header.pduSize) + 1) // because this includes sync byte
 
-      if messageType != .ocaKeepAlive {
+      if header.pduType != .ocaKeepAlive {
         if messageData.count < 4 {
           throw Ocp1Error.pduTooShort
         }
@@ -132,12 +111,12 @@ package extension Ocp1Connection {
 
       messages.append(messageData)
 
-      if messageType == .ocaKeepAlive {
+      if header.pduType == .ocaKeepAlive {
         break
       }
     }
 
-    return messageType
+    return header.pduType
   }
 
   nonisolated static func decodeOcp1Message(
