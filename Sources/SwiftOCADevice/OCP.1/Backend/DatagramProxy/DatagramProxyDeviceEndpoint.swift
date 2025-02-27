@@ -33,7 +33,7 @@ public class DatagramProxyDeviceEndpoint<
   public typealias PeerMessagePDU = (T, [UInt8])
 
   public var controllers: [OcaController] {
-    _controllers.map(\.1)
+    _controllers.values.map { $0 }
   }
 
   typealias ControllerType = DatagramProxyController<T>
