@@ -23,3 +23,39 @@ open class OcaLevelSensor: OcaSensor, @unchecked Sendable {
   )
   public var reading: OcaBoundedProperty<OcaDB>.PropertyValue
 }
+
+extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Encodable {
+  @_spi(SwiftOCAPrivate) @inlinable
+  public func encode(into bytes: inout [UInt8]) {
+    propertyID.encode(into: &bytes)
+    var packedValue: UInt32 = propertyValue.bitPattern.bigEndian
+    withUnsafeBytes(of: &packedValue) {
+      bytes += $0
+    }
+    bytes += [changeType.rawValue]
+  }
+}
+
+extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Decodable {
+  @_spi(SwiftOCAPrivate) @inlinable
+  public init(bytes: borrowing[UInt8]) throws {
+    guard bytes.count >= 9 else {
+      throw Ocp1Error.pduTooShort
+    }
+
+    let propertyID = try OcaPropertyID(bytes: bytes)
+    let propertyValue = bytes.withUnsafeBytes {
+      let value = OcaUint32(bigEndian: $0.load(fromByteOffset: 4, as: OcaUint32.self))
+      return OcaDB(bitPattern: value)
+    }
+    guard let changeType = OcaPropertyChangeType(rawValue: bytes[8]) else {
+      throw Ocp1Error.status(.badFormat)
+    }
+
+    self.init(
+      propertyID: propertyID,
+      propertyValue: propertyValue,
+      changeType: changeType
+    )
+  }
+}

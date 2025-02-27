@@ -23,18 +23,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-private extension OcaPropertyID {
-  var bytes: [UInt8] {
-    var bytes = [UInt8]()
-    bytes.reserveCapacity(4)
-    encode(into: &bytes)
-    return bytes
-  }
-}
-
 open class OcaLevelSensor: OcaSensor {
-  private static let _encodedPropertyID = OcaPropertyID("4.1").bytes
-
   override open class var classID: OcaClassID { OcaClassID("1.1.2.2") }
 
   // because Codable is so inefficient, open code this
@@ -62,15 +51,17 @@ open class OcaLevelSensor: OcaSensor {
     }
 
     let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-    var parameters = [UInt8]()
-    parameters.reserveCapacity(9)
-    parameters += Self._encodedPropertyID
-    var packedValue: UInt32 = newValue.bitPattern.bigEndian
-    withUnsafeBytes(of: &packedValue) {
-      parameters += $0
-    }
-    parameters += [OcaPropertyChangeType.currentChanged.rawValue]
-    try await deviceDelegate.notifySubscribers(event, parameters: Data(parameters))
+    let parameters = OcaPropertyChangedEventData<OcaDB>(
+      propertyID: OcaPropertyID(defLevel: 4, propertyIndex: 1),
+      propertyValue: newValue,
+      changeType: .currentChanged
+    )
+
+    var bytes = [UInt8]()
+    bytes.reserveCapacity(9)
+    parameters.encode(into: &bytes)
+
+    try await deviceDelegate.notifySubscribers(event, parameters: Data(bytes))
   }
 
   // for API compatibility, but prefer to use update(reading:) to set value
