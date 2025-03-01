@@ -42,9 +42,6 @@ class Ocp1EncodingState {
     throw Ocp1Error.nilNotEncodable
   }
 
-  #if !canImport(Android)
-  @_alwaysEmitIntoClient
-  #endif
   private func encodeInteger(_ value: some FixedWidthInteger) throws {
     withUnsafeBytes(of: value.bigEndian) {
       data += $0

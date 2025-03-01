@@ -79,9 +79,6 @@ class Ocp1DecodingState {
     }
   }
 
-  #if !canImport(Android)
-  @_alwaysEmitIntoClient
-  #endif
   private func decodeInteger<Integer>(_ type: Integer.Type) throws -> Integer
     where Integer: FixedWidthInteger
   {
