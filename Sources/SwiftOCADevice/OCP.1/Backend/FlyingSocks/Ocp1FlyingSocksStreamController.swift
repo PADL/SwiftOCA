@@ -159,10 +159,20 @@ private extension AsyncThrowingStream
         return try await withThrowingTimeout(of: timeout) {
           var iterator = bytes.makeAsyncIterator()
           return try await OcaDevice.asyncReceiveMessages { count in
-            guard let buffer = try await iterator.nextBuffer(suggested: count) else {
-              throw Ocp1Error.notConnected // EOF on zero bytes
-            }
-            return Array(buffer)
+            var nremain = count
+            var buffer = [UInt8]()
+            buffer.reserveCapacity(count)
+
+            repeat {
+              let read = try await iterator.nextBuffer(suggested: nremain)
+              guard let read, !read.isEmpty else {
+                throw Ocp1Error.notConnected // EOF on zero bytes
+              }
+              buffer += read
+              nremain -= read.count
+            } while nremain > 0
+
+            return buffer
           }
         }
       } catch Ocp1Error.pduTooShort {
