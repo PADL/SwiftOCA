@@ -85,8 +85,12 @@ package extension Ocp1Connection {
     }
 
     let header = try Ocp1Header(bytes: Array(data[1...]))
-    let messageCount: OcaUint16 = data.decodeInteger(index: 8)
 
+    guard header.pduSize <= 1 /* sync byte */ + data.count else {
+      throw Ocp1Error.pduTooShort
+    }
+
+    let messageCount: OcaUint16 = data.decodeInteger(index: 8)
     var cursor = 1 + Ocp1Header.HeaderSize // start of first message
 
     for _ in 0..<messageCount {
