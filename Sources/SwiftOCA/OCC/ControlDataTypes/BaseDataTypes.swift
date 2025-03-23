@@ -484,7 +484,7 @@ public struct OcaGlobalTypeIdentifier: Codable, Sendable {
   }
 }
 
-public struct OcaOrganizationID: Codable, Sendable, CustomStringConvertible {
+public struct OcaOrganizationID: Equatable, Hashable, Codable, Sendable, CustomStringConvertible {
   public let id: (OcaUint8, OcaUint8, OcaUint8)
 
   public init() {
@@ -511,6 +511,18 @@ public struct OcaOrganizationID: Codable, Sendable, CustomStringConvertible {
 
   public var description: String {
     String(format: "%02X%02X%02X", id.0, id.1, id.2)
+  }
+
+  public static func == (_ lhs: Self, _ rhs: Self) -> Bool {
+    lhs.id.0 == rhs.id.0 &&
+      lhs.id.1 == rhs.id.1 &&
+      lhs.id.2 == rhs.id.2
+  }
+
+  public func hash(into hasher: inout Hasher) {
+    id.0.hash(into: &hasher)
+    id.1.hash(into: &hasher)
+    id.2.hash(into: &hasher)
   }
 }
 
