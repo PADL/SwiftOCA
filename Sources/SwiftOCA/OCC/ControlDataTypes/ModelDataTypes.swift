@@ -30,7 +30,7 @@ public struct OcaModelDescription: Codable, Sendable, CustomStringConvertible {
   }
 }
 
-public struct OcaModelGUID: Codable, Sendable, CustomStringConvertible {
+public struct OcaModelGUID: Equatable, Codable, Sendable, CustomStringConvertible {
   public let reserved: OcaUint8
   public let mfrCode: OcaOrganizationID
   public let modelCode: OcaUint32 // TODO: should be tuple of OcaUint8
