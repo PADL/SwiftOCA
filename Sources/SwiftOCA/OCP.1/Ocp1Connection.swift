@@ -77,6 +77,7 @@ public struct Ocp1ConnectionFlags: OptionSet, Sendable {
   public static let retainObjectCacheAfterDisconnect = Ocp1ConnectionFlags(rawValue: 1 << 2)
   public static let enableTracing = Ocp1ConnectionFlags(rawValue: 1 << 3)
   public static let refreshSubscriptionsOnReconnection = Ocp1ConnectionFlags(rawValue: 1 << 4)
+  public static let extendedStatuses = Ocp1ConnectionFlags(rawValue: 1 << 5)
 
   public typealias RawValue = UInt
 
@@ -251,9 +252,14 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
   final class Monitor: @unchecked Sendable, CustomStringConvertible {
     typealias Continuation = CheckedContinuation<Ocp1Response, Error>
 
+    struct RequestContext {
+      let continuation: Continuation
+      var extendedStatus: OcaExtendedStatusEventData?
+    }
+
     private let _connection: Weak<Ocp1Connection>
     let _connectionID: Int
-    private let _continuations = ManagedCriticalState<[OcaUint32: Continuation]>([:])
+    private let _requestContexts = ManagedCriticalState<[OcaUint32: RequestContext]>([:])
     private var _lastMessageReceivedTime = ManagedAtomic<UInt64>(0)
 
     static var now: UInt64 {
@@ -284,36 +290,51 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
     }
 
     func register(handle: OcaUint32, continuation: Continuation) {
-      _continuations.withCriticalRegion { continuations in
-        continuations[handle] = continuation
+      _requestContexts.withCriticalRegion { continuations in
+        continuations[handle] = RequestContext(continuation: continuation)
       }
     }
 
     private func resumeAllNotConnected() {
-      _continuations.withCriticalRegion { continuations in
-        for continuation in continuations.values {
-          continuation.resume(throwing: Ocp1Error.notConnected)
+      _requestContexts.withCriticalRegion { contexts in
+        for context in contexts.values {
+          context.continuation.resume(throwing: Ocp1Error.notConnected)
         }
-        continuations.removeAll()
+        contexts.removeAll()
       }
     }
 
     func resume(with response: Ocp1Response) throws {
-      try _continuations.withCriticalRegion { continuations in
-        let continuation = try popContinuation(for: response, in: &continuations)
-        continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
+      try _requestContexts.withCriticalRegion { continuations in
+        let context = try popContext(for: response, in: &continuations)
+
+        guard response.statusCode == .ok else {
+          let error = if let extendedStatus = context.extendedStatus {
+            Ocp1Error.status(.init(
+              statusCode: response.statusCode,
+              statusDescription: extendedStatus.statusDescription,
+              statusInfo: extendedStatus.statusInfo
+            ))
+          } else {
+            Ocp1Error.status(.init(statusCode: response.statusCode))
+          }
+          context.continuation.resume(with: .failure(error))
+          return
+        }
+
+        context.continuation.resume(with: .success(response))
       }
     }
 
-    private func popContinuation(
+    private func popContext(
       for response: Ocp1Response,
-      in continuations: inout [OcaUint32: Continuation]
-    ) throws -> Continuation {
-      guard let continuation = continuations[response.handle] else {
+      in contexts: inout [OcaUint32: RequestContext]
+    ) throws -> RequestContext {
+      guard let context = contexts[response.handle] else {
         throw Ocp1Error.invalidHandle
       }
-      continuations.removeValue(forKey: response.handle)
-      return continuation
+      contexts.removeValue(forKey: response.handle)
+      return context
     }
 
     func updateLastMessageReceivedTime() {
@@ -321,7 +342,7 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
     }
 
     fileprivate var outstandingRequests: [OcaUint32] {
-      _continuations.withCriticalRegion { Array($0.keys) }
+      _requestContexts.withCriticalRegion { Array($0.keys) }
     }
 
     var lastMessageReceivedTime: UInt64 {
@@ -333,6 +354,33 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
       else { "<null>" }
 
       return "\(connectionString)[\(_connectionID)]"
+    }
+
+    func saveExtendedStatus(_ extendedStatusDataBlob: Data) throws {
+      let extendedStatusData = try Ocp1Decoder().decode(
+        OcaExtendedStatusEventData.self,
+        from: extendedStatusDataBlob
+      )
+      try _saveExtendedStatus(extendedStatusData)
+    }
+
+    private func _saveExtendedStatus(
+      _ extendedStatusData: OcaExtendedStatusEventData
+    ) throws {
+      try _requestContexts.withCriticalRegion { contexts in
+        guard let index = contexts.index(forKey: extendedStatusData.handle) else {
+          throw Ocp1Error.invalidHandle
+        }
+
+        let context = contexts[index]
+        contexts.updateValue(
+          RequestContext(
+            continuation: context.value.continuation,
+            extendedStatus: extendedStatusData
+          ),
+          forKey: extendedStatusData.handle
+        )
+      }
     }
   }
 

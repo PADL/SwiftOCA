@@ -60,9 +60,6 @@ private extension OcaRoot {
       )
     }
 
-    guard response.statusCode == .ok else {
-      throw Ocp1Error.status(response.statusCode)
-    }
     guard response.parameters.parameterCount == responseParameterCount else {
       throw Ocp1Error.responseParameterOutOfRange
     }

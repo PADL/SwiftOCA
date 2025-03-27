@@ -68,6 +68,51 @@ public enum OcaBaseDataType: OcaUint8, Codable, Sendable, CaseIterable {
   case ocaBit = 16
 }
 
+public struct Ocp1Status: Codable, Sendable, Equatable {
+  public let statusCode: OcaStatus
+  public let statusDescription: OcaString?
+  public let statusInfo: OcaMap<OcaClassID, OcaBlob>?
+
+  public init(
+    statusCode: OcaStatus,
+    statusDescription: OcaString? = nil,
+    statusInfo: OcaMap<OcaClassID, OcaBlob>? = nil
+  ) {
+    self.statusCode = statusCode
+    self.statusDescription = statusDescription
+    self.statusInfo = statusInfo
+  }
+
+  public init?(rawValue: OcaUint8) {
+    guard let statusCode = OcaStatus(rawValue: rawValue) else {
+      return nil
+    }
+    self.init(statusCode: statusCode)
+  }
+
+  public static func == (_ lhs: Self, _ rhs: Self) -> Bool {
+    lhs.statusCode == rhs.statusCode
+  }
+
+  public static let ok: Self = .init(statusCode: .ok)
+  public static let protocolVersionError: Self = .init(statusCode: .protocolVersionError)
+  public static let deviceError: Self = .init(statusCode: .deviceError)
+  public static let locked: Self = .init(statusCode: .locked)
+  public static let badFormat: Self = .init(statusCode: .badFormat)
+  public static let badONo: Self = .init(statusCode: .badONo)
+  public static let parameterError: Self = .init(statusCode: .parameterError)
+  public static let parameterOutOfRange: Self = .init(statusCode: .parameterOutOfRange)
+  public static let notImplemented: Self = .init(statusCode: .notImplemented)
+  public static let invalidRequest: Self = .init(statusCode: .invalidRequest)
+  public static let processingFailed: Self = .init(statusCode: .processingFailed)
+  public static let badMethod: Self = .init(statusCode: .badMethod)
+  public static let partiallySucceeded: Self = .init(statusCode: .partiallySucceeded)
+  public static let timeout: Self = .init(statusCode: .timeout)
+  public static let bufferOverflow: Self = .init(statusCode: .bufferOverflow)
+  public static let permissionDenied: Self = .init(statusCode: .permissionDenied)
+  public static let outOfMemory: Self = .init(statusCode: .outOfMemory)
+}
+
 public enum OcaStatus: OcaUint8, Codable, Sendable, CaseIterable {
   /// Method call was successful
   case ok = 0

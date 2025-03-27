@@ -81,6 +81,8 @@ extension Ocp1ControllerInternal {
   ) async throws {
     let controller = self as! Endpoint.ControllerType
     var response: Ocp1Response?
+    var extendedStatusEventData: OcaExtendedStatusEventData?
+    var targetONo: OcaONo?
 
     lastMessageReceivedTime = .now
 
@@ -101,10 +103,18 @@ extension Ocp1ControllerInternal {
         timeout: endpoint.timeout,
         from: controller
       )
+      if let statusDescription = commandResponse.statusDescription {
+        extendedStatusEventData = .init(
+          handle: command.handle,
+          statusDescription: statusDescription,
+          statusInfo: commandResponse.statusInfo ?? [:]
+        )
+        targetONo = command.targetONo
+      }
       response = Ocp1Response(
         handle: command.handle,
-        statusCode: commandResponse.statusCode,
-        parameters: commandResponse.parameters
+        statusCode: commandResponse.response.statusCode,
+        parameters: commandResponse.response.parameters
       )
     case let keepAlive as Ocp1KeepAlive1:
       heartbeatTime = .seconds(keepAlive.heartBeatTime)
@@ -116,6 +126,19 @@ extension Ocp1ControllerInternal {
     }
 
     if rrq, let response {
+      if let extendedStatusEventData,
+         let extendedStatusEventData: Data = try? Ocp1Encoder().encode(extendedStatusEventData)
+      {
+        // extended error can be subscribed to globally on the device manager, or per object
+        try? await notifySubscribers(
+          .init(emitterONo: OcaDeviceManagerONo, eventID: OcaExtendedStatusEventID),
+          parameters: extendedStatusEventData
+        )
+        try? await notifySubscribers(
+          .init(emitterONo: targetONo!, eventID: OcaExtendedStatusEventID),
+          parameters: extendedStatusEventData
+        )
+      }
       try await sendMessage(response, type: .ocaRsp)
     }
     if let response {

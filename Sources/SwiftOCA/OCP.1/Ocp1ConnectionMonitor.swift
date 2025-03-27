@@ -85,8 +85,19 @@ extension Ocp1Connection.Monitor {
     case is Ocp1KeepAlive2:
       break
     case let notification as Ocp1Notification2:
-      try notification.throwIfException()
-      connection.notifySubscribers(of: notification.event, with: notification.data)
+      switch notification.notificationType {
+      case .event:
+        // because subscription notifications are dispatched asynchronously,
+        // catch extended error notifications here
+        switch notification.event.eventID {
+        case OcaExtendedStatusEventID:
+          try saveExtendedStatus(notification.data)
+        default:
+          connection.notifySubscribers(of: notification.event, with: notification.data)
+        }
+      case .exception:
+        try notification.throwIfException()
+      }
     default:
       throw Ocp1Error.unknownPduType
     }

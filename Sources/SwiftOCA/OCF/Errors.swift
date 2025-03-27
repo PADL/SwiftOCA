@@ -16,7 +16,7 @@
 
 public enum Ocp1Error: Error, Equatable {
   /// An OCA status received from a device; should not be used for local errors
-  case status(OcaStatus)
+  case status(Ocp1Status)
   case exception(Ocp1Notification2ExceptionData)
   case alreadyConnected
   case alreadySubscribedToEvent
