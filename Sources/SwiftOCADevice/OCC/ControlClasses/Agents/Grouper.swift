@@ -422,7 +422,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
 
     @OcaDevice
     fileprivate final class Box {
-      var lastStatus: OcaStatus?
+      var lastStatus: Ocp1Status?
 
       func handleCommand(
         _ command: Ocp1Command,

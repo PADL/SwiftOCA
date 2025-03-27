@@ -312,3 +312,21 @@ public struct OcaGroupException: Codable, Sendable {
 }
 
 public typealias OcaCounterUpdateEventData = OcaList<OcaCounterUpdate>
+
+package let OcaExtendedStatusEventID = OcaEventID(defLevel: 1, eventIndex: 99)
+
+package struct OcaExtendedStatusEventData: Codable, Sendable {
+  public let handle: OcaUint32
+  public let statusDescription: OcaString
+  public let statusInfo: OcaMap<OcaClassID, OcaBlob>
+
+  public init(
+    handle: OcaUint32,
+    statusDescription: OcaString,
+    statusInfo: OcaMap<OcaClassID, OcaBlob>
+  ) {
+    self.handle = handle
+    self.statusDescription = statusDescription
+    self.statusInfo = statusInfo
+  }
+}

@@ -27,10 +27,11 @@ public final class OcaLocalConnection: Ocp1Connection {
   let endpoint: OcaLocalDeviceEndpoint
 
   public init(
-    _ endpoint: OcaLocalDeviceEndpoint
+    _ endpoint: OcaLocalDeviceEndpoint,
+    options: Ocp1ConnectionOptions = .init()
   ) {
     self.endpoint = endpoint
-    super.init(options: Ocp1ConnectionOptions())
+    super.init(options: options)
   }
 
   override public var connectionPrefix: String {

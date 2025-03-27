@@ -18,6 +18,12 @@
 @testable import SwiftOCADevice
 import XCTest
 
+let extendedStatusDescriptionTest = "An extended error occurred, and this is the description of it."
+let connectionOptions: Ocp1ConnectionOptions = .init(flags: [
+  .refreshDeviceTreeOnConnection,
+  .extendedStatuses,
+])
+
 final class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator, OcaGroupPeerToPeerMember,
   @unchecked Sendable
 {
@@ -26,10 +32,29 @@ final class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator, OcaGroupPeerTo
   override class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
 
   func set(to value: Bool) async { setting = value }
+
+  override func handleCommand(
+    _ command: Ocp1Command,
+    from controller: any OcaController
+  ) async throws -> Ocp1Response {
+    switch command.methodID {
+    case "6.1":
+      throw Ocp1Error.status(.init(
+        statusCode: .deviceError,
+        statusDescription: extendedStatusDescriptionTest
+      ))
+    default:
+      try await super.handleCommand(command, from: controller)
+    }
+  }
 }
 
 final class _MyBooleanActuator: SwiftOCA.OcaBooleanActuator, @unchecked Sendable {
   override class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
+
+  func testExtendedStatusMethod() async throws {
+    try await sendCommandRrq(methodID: "6.1")
+  }
 }
 
 extension OcaGetPortNameParameters: Equatable {
@@ -108,7 +133,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     jsonSerializationExpectation.fulfill()
     await fulfillment(of: [jsonSerializationExpectation], timeout: 1)
 
-    let connection = await OcaLocalConnection(endpoint)
+    let connection = await OcaLocalConnection(endpoint, options: connectionOptions)
     let endpointTask = Task { try? await endpoint.run() }
     try await connection.connect()
 
@@ -149,6 +174,22 @@ final class SwiftOCADeviceTests: XCTestCase {
 
     await fulfillment(of: [controllerExpectation2], timeout: 1)
 
+    let controllerExpectation3 = XCTestExpectation(description: "Check extended error status")
+    let aBooleanActuator = resolvedClientTestBlockActionObjects.first as? _MyBooleanActuator
+    XCTAssertNotNil(aBooleanActuator)
+
+    if let aBooleanActuator {
+      do {
+        try await aBooleanActuator.testExtendedStatusMethod()
+        XCTFail("testExtendedStatusMethod should not have succeeded")
+      } catch let Ocp1Error.status(status) {
+        XCTAssertEqual(status, .init(statusCode: .deviceError))
+        XCTAssertEqual(status.statusDescription, extendedStatusDescriptionTest)
+      }
+    }
+    controllerExpectation3.fulfill()
+    await fulfillment(of: [controllerExpectation3], timeout: 1)
+
     try await connection.disconnect()
     endpointTask.cancel()
   }
@@ -181,7 +222,7 @@ final class SwiftOCADeviceTests: XCTestCase {
       try await group.add(member: actuator)
     }
 
-    let connection = await OcaLocalConnection(endpoint)
+    let connection = await OcaLocalConnection(endpoint, options: connectionOptions)
     let endpointTask = Task { try? await endpoint.run() }
     try await connection.connect()
 
@@ -256,7 +297,7 @@ final class SwiftOCADeviceTests: XCTestCase {
       try await group.add(member: actuator)
     }
 
-    let connection = await OcaLocalConnection(endpoint)
+    let connection = await OcaLocalConnection(endpoint, options: connectionOptions)
     let endpointTask = Task { try? await endpoint.run() }
     try await connection.connect()
 

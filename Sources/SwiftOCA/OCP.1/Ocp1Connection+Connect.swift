@@ -176,6 +176,16 @@ extension Ocp1Connection {
     if isReconnecting {
       await _refreshSubscriptionsWithPolicy()
     }
+    if options.flags.contains(.extendedStatuses) {
+      try await subscriptionManager.addSubscription2(
+        event: OcaEvent(
+          emitterONo: OcaDeviceManagerONo,
+          eventID: OcaExtendedStatusEventID
+        ),
+        notificationDeliveryMode: .normal,
+        destinationInformation: .init()
+      )
+    }
 
     await _refreshDeviceTreeWithPolicy()
   }

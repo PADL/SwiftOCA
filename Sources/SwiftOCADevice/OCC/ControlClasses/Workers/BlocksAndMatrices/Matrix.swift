@@ -88,7 +88,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     @OcaDevice
     fileprivate final class Box {
       var response: Ocp1Response?
-      var lastStatus: OcaStatus?
+      var lastStatus: Ocp1Status?
 
       func handleCommand(
         _ command: Ocp1Command,

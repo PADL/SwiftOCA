@@ -158,11 +158,27 @@ public actor OcaDevice {
     objects[object.objectNumber] = nil
   }
 
+  public struct Response: Sendable {
+    public let response: Ocp1Response
+    public let statusDescription: OcaString?
+    public let statusInfo: OcaMap<OcaClassID, OcaBlob>?
+
+    public init(
+      _ response: Ocp1Response,
+      statusDescription: OcaString? = nil,
+      statusInfo: OcaMap<OcaClassID, OcaBlob>? = nil
+    ) {
+      self.response = response
+      self.statusDescription = statusDescription
+      self.statusInfo = statusInfo
+    }
+  }
+
   public func handleCommand(
     _ command: Ocp1Command,
     timeout: Duration = .zero,
     from controller: any OcaController
-  ) async -> Ocp1Response {
+  ) async -> Response {
     let object = objects[command.targetONo]
 
     do {
@@ -170,7 +186,7 @@ public actor OcaDevice {
         throw Ocp1Error.status(.badONo)
       }
 
-      return try await withThrowingTimeout(of: timeout) {
+      return try await Response(withThrowingTimeout(of: timeout) {
         if command.methodID.defLevel > 1,
            let peerToPeerObject = object as? any OcaGroupPeerToPeerMember
         {
@@ -181,15 +197,19 @@ public actor OcaDevice {
         } else {
           try await object.handleCommand(command, from: controller)
         }
-      }
+      })
     } catch let Ocp1Error.status(status) {
-      return .init(responseSize: 0, handle: command.handle, statusCode: status)
+      return Response(
+        .init(responseSize: 0, handle: command.handle, statusCode: status.statusCode),
+        statusDescription: status.statusDescription,
+        statusInfo: status.statusInfo
+      )
     } catch Ocp1Error.invalidProxyMethodResponse {
-      return .init(responseSize: 0, handle: command.handle, statusCode: .invalidRequest)
+      return Response(.init(responseSize: 0, handle: command.handle, statusCode: .invalidRequest))
     } catch Ocp1Error.nilNotEncodable {
-      return .init(responseSize: 0, handle: command.handle, statusCode: .processingFailed)
+      return Response(.init(responseSize: 0, handle: command.handle, statusCode: .processingFailed))
     } catch Ocp1Error.invalidObject {
-      return .init(responseSize: 0, handle: command.handle, statusCode: .badONo)
+      return Response(.init(responseSize: 0, handle: command.handle, statusCode: .badONo))
     } catch {
       if let object {
         logger
@@ -202,7 +222,7 @@ public actor OcaDevice {
             "failed to handle command \(command) from controller \(controller): \(error)"
           )
       }
-      return .init(responseSize: 0, handle: command.handle, statusCode: .deviceError)
+      return Response(.init(responseSize: 0, handle: command.handle, statusCode: .deviceError))
     }
   }
 

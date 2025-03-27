@@ -323,7 +323,7 @@ extension OcaGroup {
         let exceptionStatus: OcaStatus = if let error = error as? Ocp1Error,
                                             case let .status(status) = error
         {
-          status
+          status.statusCode
         } else {
           .processingFailed
         }
