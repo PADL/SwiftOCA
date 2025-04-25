@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024 PADL Software Pty Ltd
+// Copyright (c) 2024-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -22,26 +22,26 @@ import Foundation
 import Logging
 import SwiftOCA
 
+private extension Ocp1ControllerInternal {
+  nonisolated var loggerMetadata: Logger.Metadata {
+    ["controller": "\(connectionPrefix)/\(identifier)"]
+  }
+}
+
 extension Logger {
   func info(_ message: String, controller: any Ocp1ControllerInternal) {
-    info("<\(controller.connectionPrefix)/\(controller.identifier)> \(message)")
+    info("\(message)", metadata: controller.loggerMetadata)
   }
 
   func command(_ command: Ocp1Command, on controller: any Ocp1ControllerInternal) {
-    trace(
-      "<\(controller.connectionPrefix)/\(controller.identifier)> command \(command)"
-    )
+    trace("command \(command)", metadata: controller.loggerMetadata)
   }
 
   func response(_ response: Ocp1Response, on controller: any Ocp1ControllerInternal) {
-    trace(
-      "<\(controller.connectionPrefix)/\(controller.identifier)> response \(response)"
-    )
+    trace("response \(response)", metadata: controller.loggerMetadata)
   }
 
   func error(_ error: Error, controller: any Ocp1ControllerInternal) {
-    warning(
-      "<\(controller.connectionPrefix)/\(controller.identifier)> error \(error)"
-    )
+    warning("error \(error)", metadata: controller.loggerMetadata)
   }
 }
