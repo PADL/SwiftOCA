@@ -264,7 +264,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
     }
   }
 
-  public func lockNoWrite(controller: any OcaController) throws {
+  func lockNoWrite(controller: any OcaController) throws {
     if !lockable {
       throw Ocp1Error.status(.notImplemented)
     }
@@ -283,7 +283,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
     }
   }
 
-  public func lockNoReadWrite(controller: any OcaController) throws {
+  func lockNoReadWrite(controller: any OcaController) throws {
     if !lockable {
       throw Ocp1Error.status(.notImplemented)
     }
@@ -301,7 +301,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
     }
   }
 
-  public func unlock(controller: any OcaController) throws {
+  func unlock(controller: any OcaController) throws {
     if !lockable {
       throw Ocp1Error.status(.notImplemented)
     }
