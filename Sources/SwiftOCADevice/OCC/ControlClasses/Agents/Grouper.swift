@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024 PADL Software Pty Ltd
+// Copyright (c) 2024-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -33,6 +33,15 @@ private actor OcaConnectionBroker {
   static let shared = OcaConnectionBroker()
 
   private var connections = [OcaNetworkHostID: Ocp1Connection]()
+  private var connectionStateMonitors = [Ocp1Connection: Task<(), Never>]()
+
+  private func _add(connection: Ocp1Connection, for hostID: OcaNetworkHostID) {
+    connections[hostID] = connection
+  }
+
+  private func _remove(hostID: OcaNetworkHostID) async {
+    connections[hostID] = nil
+  }
 
   func connection<T: OcaRoot>(
     for objectPath: OcaOPath,
@@ -79,7 +88,7 @@ private actor OcaConnectionBroker {
 
       try await connection.connect()
 
-      connections[objectPath.hostID] = connection
+      _add(connection: connection, for: objectPath.hostID)
 
       let classIdentification = try await connection
         .getClassIdentification(objectNumber: objectPath.oNo)
@@ -231,6 +240,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
   private var enrollments = [Enrollment]()
   private var nextGroupIndex: OcaUint16 = 0
   private var nextCitizenIndex: OcaUint16 = 0
+  private var connectionStateMonitors = [Ocp1Connection: Task<(), Error>]()
 
   func allocateGroupIndex() -> OcaUint16 {
     defer { nextGroupIndex += 1 }
@@ -428,7 +438,8 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
         _ command: Ocp1Command,
         from controller: any OcaController,
         proxy: Proxy,
-        citizen: Citizen
+        citizen: Citizen,
+        grouper: OcaGrouper<CitizenType>?
       ) async {
         do {
           let command = Ocp1Command(
@@ -448,28 +459,8 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
               for: path,
               type: CitizenType.self
             )
-            do {
-              response = try await connection.sendCommandRrq(command)
-            } catch Ocp1Error.notConnected {
-              try? await proxy.grouper?.notifySubscribers(
-                group: proxy.group,
-                citizen: citizen,
-                changeType: .citizenConnectionLost
-              )
-              try await connection.disconnect()
-              Task { @OcaConnection in
-                if !connection.isConnected {
-                  // check connected in case we are racing
-                  try await connection.connect()
-                  try? await proxy.grouper?.notifySubscribers(
-                    group: proxy.group,
-                    citizen: citizen,
-                    changeType: .citizenConnectionReEstablished
-                  )
-                }
-              }
-              throw Ocp1Error.status(.deviceError)
-            }
+            grouper?._addConnectionStateMonitor(connection)
+            response = try await connection.sendCommandRrq(command)
           }
 
           if response.parameters.parameterCount > 0 {
@@ -520,7 +511,13 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
       let box = Box()
 
       for citizen in try grouper?.getGroupMemberList(group: group) ?? [] {
-        await box.handleCommand(command, from: controller, proxy: self, citizen: citizen)
+        await box.handleCommand(
+          command,
+          from: controller,
+          proxy: self,
+          citizen: citizen,
+          grouper: grouper
+        )
         if let lastStatus = box.lastStatus, lastStatus != .ok {
           await deviceDelegate?.logger
             .info(
@@ -530,6 +527,53 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
       }
 
       return try box.getResponse()
+    }
+  }
+}
+
+private extension OcaGrouper {
+  func _addConnectionStateMonitor(
+    _ connection: Ocp1Connection
+  ) {
+    guard connectionStateMonitors[connection] == nil else {
+      return
+    }
+    connectionStateMonitors[connection] = Task {
+      var hasReconnectedAtLeastOnce = false
+
+      for try await connectionState in await connection.connectionState {
+        var changeType: OcaGrouperStatusChangeType?
+
+        switch connectionState {
+        case .notConnected:
+          fallthrough
+        case .connectionFailed:
+          changeType = .citizenConnectionLost
+        case .connected:
+          if hasReconnectedAtLeastOnce { changeType = .citizenConnectionReEstablished }
+        case .reconnecting:
+          hasReconnectedAtLeastOnce = true
+        default:
+          break
+        }
+
+        if let changeType {
+          try? await notifySubscribers(group: nil, changeType: changeType)
+        }
+      }
+    }
+  }
+
+  func _removeConnectionStateMonitor(_ connection: Ocp1Connection) {
+    if let monitor = connectionStateMonitors[connection] {
+      monitor.cancel()
+      connectionStateMonitors[connection] = nil
+    }
+  }
+
+  func _removeConnectionStateMonitors() {
+    for connection in connectionStateMonitors.keys {
+      _removeConnectionStateMonitor(connection)
     }
   }
 }
