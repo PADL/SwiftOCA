@@ -49,6 +49,16 @@ public struct OcaBlockConfigurability: OptionSet, Codable, Sendable {
   }
 }
 
+public struct OcaConstructionParameter: Codable, Sendable {
+  public let id: OcaPropertyID
+  public let value: OcaBlob
+
+  public init(id: OcaPropertyID, value: OcaBlob) {
+    self.id = id
+    self.value = value
+  }
+}
+
 open class OcaBlock: OcaWorker, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.3") }
 
@@ -95,11 +105,14 @@ open class OcaBlock: OcaWorker, @unchecked Sendable {
   public var configurability: OcaProperty<OcaBlockConfigurability>.PropertyValue
 
   // 3.2
-  func constructActionObject(
+  public func constructActionObject(
     classID: OcaClassID,
-    constructionParameters: [any Codable]
+    constructionParameters: [OcaConstructionParameter]
   ) async throws -> OcaONo {
-    throw Ocp1Error.notImplemented
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.2"),
+      parameters: constructionParameters
+    )
   }
 
   public func constructActionObject(factory factoryONo: OcaONo) async throws -> OcaONo {
