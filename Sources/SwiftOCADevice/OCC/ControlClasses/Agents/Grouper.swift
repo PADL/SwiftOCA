@@ -29,21 +29,14 @@ import Glibc
 import Android
 #endif
 
-private actor OcaConnectionBroker {
+@_spi(SwiftOCAPrivate)
+public actor OcaConnectionBroker {
   static let shared = OcaConnectionBroker()
 
   private var connections = [OcaNetworkHostID: Ocp1Connection]()
-  private var connectionStateMonitors = [Ocp1Connection: Task<(), Never>]()
 
-  private func _add(connection: Ocp1Connection, for hostID: OcaNetworkHostID) {
-    connections[hostID] = connection
-  }
-
-  private func _remove(hostID: OcaNetworkHostID) async {
-    connections[hostID] = nil
-  }
-
-  func connection<T: OcaRoot>(
+  @_spi(SwiftOCAPrivate)
+  public func connection<T: OcaRoot>(
     for objectPath: OcaOPath,
     type: T.Type
   ) async throws -> Ocp1Connection {
@@ -88,7 +81,7 @@ private actor OcaConnectionBroker {
 
       try await connection.connect()
 
-      _add(connection: connection, for: objectPath.hostID)
+      connections[objectPath.hostID] = connection
 
       let classIdentification = try await connection
         .getClassIdentification(objectNumber: objectPath.oNo)
@@ -108,6 +101,15 @@ private actor OcaConnectionBroker {
     }
 
     return false
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public func remove(connection aConnection: Ocp1Connection) async throws {
+    for (hostID, connection) in connections {
+      guard connection == aConnection else { continue }
+      try await connection.disconnect()
+      connections[hostID] = nil
+    }
   }
 }
 
