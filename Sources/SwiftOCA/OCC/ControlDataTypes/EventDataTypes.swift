@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -13,6 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
 
 public enum OcaNotificationDeliveryMode: OcaUint8, Codable, Sendable, CaseIterable {
   case normal = 1
@@ -312,3 +318,25 @@ public struct OcaGroupException: Codable, Sendable {
 }
 
 public typealias OcaCounterUpdateEventData = OcaList<OcaCounterUpdate>
+
+@_spi(SwiftOCAPrivate)
+public typealias OcaAnyPropertyChangedEventData = OcaPropertyChangedEventData<Data>
+
+@_spi(SwiftOCAPrivate)
+public extension OcaAnyPropertyChangedEventData {
+  init(data: Data) throws {
+    guard data.count > 5 else {
+      throw Ocp1Error.pduTooShort
+    }
+    let propertyID = try OcaPropertyID(bytes: Array(data[0..<4]))
+    guard let changeType = OcaPropertyChangeType(rawValue: data.last!) else {
+      throw Ocp1Error.status(.badFormat)
+    }
+
+    self.init(
+      propertyID: propertyID,
+      propertyValue: data[4..<(data.count - 1)],
+      changeType: changeType
+    )
+  }
+}

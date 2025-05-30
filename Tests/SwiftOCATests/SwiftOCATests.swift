@@ -549,6 +549,23 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(response.parameters.parameterCount, 1)
     XCTAssertEqual(response.parameters.parameterData, Data([1]))
   }
+
+  func testTypeErasedPropertyChangedEvent() throws {
+    let propertyChangedEventData = OcaPropertyChangedEventData(
+      propertyID: OcaPropertyID("4.1"),
+      propertyValue: OcaDB(-22.0),
+      changeType: .currentChanged
+    )
+    let encodedPropertyChangedEvent: Data = try Ocp1Encoder().encode(propertyChangedEventData)
+    let typeErasedPropertyChangedEvent =
+      try OcaAnyPropertyChangedEventData(data: encodedPropertyChangedEvent)
+    XCTAssertEqual(typeErasedPropertyChangedEvent.propertyID, propertyChangedEventData.propertyID)
+    XCTAssertEqual(
+      typeErasedPropertyChangedEvent.propertyValue,
+      try Ocp1Encoder().encode(OcaDB(-22.0))
+    )
+    XCTAssertEqual(typeErasedPropertyChangedEvent.changeType, propertyChangedEventData.changeType)
+  }
 }
 
 extension Ocp1EventData: Equatable {
