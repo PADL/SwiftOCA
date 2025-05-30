@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -604,6 +604,10 @@
 		D3FAC8EB2B5CFC11009E2775 /* TaskManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskManagerDataTypes.swift; sourceTree = "<group>"; };
 		D3FAC8ED2B5CFE3A009E2775 /* FirmwareManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		D3BA711C2DE994BB00A35C50 /* DataSets */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DataSets; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		D32EDEDF2D6D7241009673D6 /* Frameworks */ = {
@@ -1289,6 +1293,7 @@
 		D3E6E18E2A3ACA6C00BF7095 /* Workers */ = {
 			isa = PBXGroup;
 			children = (
+				D3BA711C2DE994BB00A35C50 /* DataSets */,
 				D3DA69FC2A4021FF001250A1 /* BlocksAndMatrices */,
 				D3E6E18F2A3ACA6C00BF7095 /* Sensors */,
 				D3E6E1952A3ACA6C00BF7095 /* Worker.swift */,
@@ -1632,6 +1637,9 @@
 			);
 			dependencies = (
 				D3D8FA592B61EF690054FD3C /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D3BA711C2DE994BB00A35C50 /* DataSets */,
 			);
 			name = SwiftOCA;
 			packageProductDependencies = (
