@@ -21,101 +21,6 @@ import Foundation
 #endif
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
-#if canImport(Darwin)
-import Darwin
-#elseif canImport(Glibc)
-import Glibc
-#elseif canImport(Android)
-import Android
-#endif
-
-@_spi(SwiftOCAPrivate)
-public actor OcaConnectionBroker {
-  static let shared = OcaConnectionBroker()
-
-  private var connections = [OcaNetworkHostID: Ocp1Connection]()
-
-  @_spi(SwiftOCAPrivate)
-  public func connection<T: OcaRoot>(
-    for objectPath: OcaOPath,
-    type: T.Type
-  ) async throws -> Ocp1Connection {
-    if let connection = connections[objectPath.hostID] {
-      return connection
-    }
-
-    let serviceNameOrID = try Ocp1Decoder()
-      .decode(OcaString.self, from: Data(objectPath.hostID))
-
-    // CM2: OcaNetworkHostID (deprecated)
-    // CM3: ServiceID from OcaControlNetwork (let's asssume this is a hostname)
-    // CM4: OcaControlNetwork ServiceName
-
-    var addrInfo: UnsafeMutablePointer<addrinfo>?
-
-    if getaddrinfo(serviceNameOrID, nil, nil, &addrInfo) < 0 {
-      throw Ocp1Error.remoteDeviceResolutionFailed
-    }
-
-    defer {
-      freeaddrinfo(addrInfo)
-    }
-
-    guard let firstAddr = addrInfo else {
-      throw Ocp1Error.remoteDeviceResolutionFailed
-    }
-
-    for addr in sequence(first: firstAddr, next: { $0.pointee.ai_next }) {
-      let connection: Ocp1Connection
-      let data = Data(bytes: addr.pointee.ai_addr, count: Int(addr.pointee.ai_addrlen))
-      let options = Ocp1ConnectionOptions(flags: [
-        .retainObjectCacheAfterDisconnect,
-        .automaticReconnect,
-        .refreshSubscriptionsOnReconnection,
-      ])
-
-      switch addr.pointee.ai_socktype {
-      case SwiftOCA.SOCK_STREAM:
-        connection = try await Ocp1TCPConnection(deviceAddress: data, options: options)
-      case SwiftOCA.SOCK_DGRAM:
-        connection = try await Ocp1UDPConnection(deviceAddress: data, options: options)
-      default:
-        continue
-      }
-
-      try await connection.connect()
-
-      connections[objectPath.hostID] = connection
-
-      let classIdentification = try await connection
-        .getClassIdentification(objectNumber: objectPath.oNo)
-      guard classIdentification.isSubclass(of: T.classIdentification) else {
-        throw Ocp1Error.status(.invalidRequest)
-      }
-
-      return connection
-    }
-
-    throw Ocp1Error.remoteDeviceResolutionFailed
-  }
-
-  func isOnline(_ objectPath: OcaOPath) async -> Bool {
-    if let connection = connections[objectPath.hostID] {
-      return await connection.isConnected
-    }
-
-    return false
-  }
-
-  @_spi(SwiftOCAPrivate)
-  public func remove(connection aConnection: Ocp1Connection) async throws {
-    for (hostID, connection) in connections {
-      guard connection == aConnection else { continue }
-      try await connection.disconnect()
-      connections[hostID] = nil
-    }
-  }
-}
 
 open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
   override open class var classID: OcaClassID { OcaClassID("1.2.2") }
@@ -227,10 +132,12 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
 
     let index: OcaUint16
     let target: Target
+    weak var connectionBroker: OcaConnectionBroker?
 
-    init(index: OcaUint16, target: Target) {
+    init(index: OcaUint16, target: Target, connectionBroker: OcaConnectionBroker) {
       self.index = index
       self.target = target
+      self.connectionBroker = connectionBroker
     }
 
     var objectPath: OcaOPath {
@@ -246,9 +153,12 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
       get async {
         switch target {
         case .local:
-          true
+          return true
         case let .remote(path):
-          await OcaConnectionBroker.shared.isOnline(path)
+          guard let isOnline = await connectionBroker?.isOnline(path) else {
+            return false
+          }
+          return isOnline
         }
       }
     }
@@ -269,10 +179,13 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
         case .local:
           throw Ocp1Error.invalidHandle
         case let .remote(path):
-          try await OcaConnectionBroker.shared.connection(
+          guard let connection = try await connectionBroker?.connection(
             for: path,
             type: CitizenType.self
-          )
+          ) else {
+            throw Ocp1Error.noConnectionDelegate
+          }
+          return connection
         }
       }
     }
@@ -360,7 +273,8 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
     guard let deviceDelegate else { throw Ocp1Error.notConnected }
     let citizen = try await Citizen(
       index: allocateCitizenIndex(),
-      target: Citizen.Target(citizen.objectPath, device: deviceDelegate)
+      target: Citizen.Target(citizen.objectPath, device: deviceDelegate),
+      connectionBroker: deviceDelegate.connectionBroker
     )
     try await notifySubscribers(citizen: citizen, changeType: .citizenAdded)
     try await notifySubscribers(citizens: Array(citizens.values), changeType: .itemAdded)

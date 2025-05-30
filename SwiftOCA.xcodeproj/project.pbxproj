@@ -151,6 +151,7 @@
 		D3B396DF2BBA4AEE0001B512 /* SwiftOCATests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B396DD2BBA4AEE0001B512 /* SwiftOCATests.swift */; };
 		D3B727E52BF759A800D6932F /* Ocp1CFDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B727E42BF759A800D6932F /* Ocp1CFDeviceEndpoint.swift */; };
 		D3B727E72BF759B100D6932F /* Ocp1CFController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B727E62BF759B100D6932F /* Ocp1CFController.swift */; };
+		D3BA71132DE9633500A35C50 /* ConnectionBroker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BA71122DE9633500A35C50 /* ConnectionBroker.swift */; };
 		D3C0830F2A7B01AB0020AD57 /* libSwiftOCADevice.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */; };
 		D3C083162A7B021B0020AD57 /* SwiftOCADeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */; };
 		D3C083172A7B02360020AD57 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
@@ -477,6 +478,7 @@
 		D3B396E02BBA4CD00001B512 /* SwiftOCA.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = SwiftOCA.xctestplan; path = ../SwiftOCA.xctestplan; sourceTree = "<group>"; };
 		D3B727E42BF759A800D6932F /* Ocp1CFDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D3B727E62BF759B100D6932F /* Ocp1CFController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFController.swift; sourceTree = "<group>"; };
+		D3BA71122DE9633500A35C50 /* ConnectionBroker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionBroker.swift; sourceTree = "<group>"; };
 		D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftOCADeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftOCADeviceTests.swift; sourceTree = "<group>"; };
 		D3C083182A7B0D2C0020AD57 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
@@ -837,6 +839,7 @@
 		D33B529C2A7018CE001A1BA7 /* OCA */ = {
 			isa = PBXGroup;
 			children = (
+				D3BA71122DE9633500A35C50 /* ConnectionBroker.swift */,
 				D3D8FA5A2B639D4C0054FD3C /* Controller.swift */,
 				D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */,
 				D3C083182A7B0D2C0020AD57 /* Device.swift */,
@@ -1842,6 +1845,7 @@
 				D3B325072B4F679B00C8335F /* Ocp1FlyingFoxController.swift in Sources */,
 				D33B52B02A703AEA001A1BA7 /* Root+Commands.swift in Sources */,
 				D3B727E72BF759B100D6932F /* Ocp1CFController.swift in Sources */,
+				D3BA71132DE9633500A35C50 /* ConnectionBroker.swift in Sources */,
 				D30349DC2BC67AD20080FF09 /* CounterSetAgent.swift in Sources */,
 				D3AFD3902B41510E00A72E9A /* SignalOutput.swift in Sources */,
 				D33A35B42B2FC4E500FEDC43 /* ControlNetwork.swift in Sources */,
