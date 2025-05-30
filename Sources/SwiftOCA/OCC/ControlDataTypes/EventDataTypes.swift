@@ -340,3 +340,27 @@ public extension OcaAnyPropertyChangedEventData {
     )
   }
 }
+
+@_spi(SwiftOCAPrivate)
+public extension OcaPropertyChangedEventData {
+  init(eventData typeErasedEventData: OcaAnyPropertyChangedEventData) throws {
+    let propertyValue = try Ocp1Decoder().decode(
+      T.self,
+      from: typeErasedEventData.propertyValue
+    )
+    self.init(
+      propertyID: typeErasedEventData.propertyID,
+      propertyValue: propertyValue,
+      changeType: typeErasedEventData.changeType
+    )
+  }
+
+  func toAny() throws -> OcaAnyPropertyChangedEventData {
+    let encodedPropertyValue: Data = try Ocp1Encoder().encode(propertyValue)
+    return OcaAnyPropertyChangedEventData(
+      propertyID: propertyID,
+      propertyValue: encodedPropertyValue,
+      changeType: changeType
+    )
+  }
+}
