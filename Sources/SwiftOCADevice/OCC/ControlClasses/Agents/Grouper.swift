@@ -68,7 +68,11 @@ public actor OcaConnectionBroker {
     for addr in sequence(first: firstAddr, next: { $0.pointee.ai_next }) {
       let connection: Ocp1Connection
       let data = Data(bytes: addr.pointee.ai_addr, count: Int(addr.pointee.ai_addrlen))
-      let options = Ocp1ConnectionOptions(flags: [.retainObjectCacheAfterDisconnect])
+      let options = Ocp1ConnectionOptions(flags: [
+        .retainObjectCacheAfterDisconnect,
+        .automaticReconnect,
+        .refreshSubscriptionsOnReconnection,
+      ])
 
       switch addr.pointee.ai_socktype {
       case SwiftOCA.SOCK_STREAM:
