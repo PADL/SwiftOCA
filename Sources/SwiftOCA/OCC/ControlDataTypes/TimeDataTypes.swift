@@ -20,7 +20,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-public struct OcaTime: Codable, Sendable {
+public struct OcaTime: Codable, Sendable, Comparable {
   public let negative: OcaBoolean
   public let seconds: OcaUint64
   public let nanoseconds: OcaUint32
@@ -35,6 +35,24 @@ public struct OcaTime: Codable, Sendable {
     self.negative = negative
     self.seconds = seconds
     self.nanoseconds = nanoseconds
+  }
+
+  public static func < (lhs: OcaTime, rhs: OcaTime) -> Bool {
+    if lhs.negative, !rhs.negative {
+      // LHS is less than RHS
+      return true
+    } else if !lhs.negative, rhs.negative {
+      // LHS is greater than RHS
+      return false
+    } else {
+      let lt: Bool = if lhs.seconds != rhs.seconds {
+        lhs.seconds < rhs.seconds
+      } else {
+        lhs.nanoseconds < rhs.nanoseconds
+      }
+
+      return lt != lhs.negative // XOR
+    }
   }
 }
 

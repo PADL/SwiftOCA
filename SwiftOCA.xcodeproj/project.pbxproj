@@ -152,6 +152,9 @@
 		D3B727E52BF759A800D6932F /* Ocp1CFDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B727E42BF759A800D6932F /* Ocp1CFDeviceEndpoint.swift */; };
 		D3B727E72BF759B100D6932F /* Ocp1CFController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B727E62BF759B100D6932F /* Ocp1CFController.swift */; };
 		D3BA71132DE9633500A35C50 /* ConnectionBroker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BA71122DE9633500A35C50 /* ConnectionBroker.swift */; };
+		D3BA71152DE98B1B00A35C50 /* DataSetDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BA71142DE98B1B00A35C50 /* DataSetDataTypes.swift */; };
+		D3BA71172DE98B5B00A35C50 /* LoggingDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BA71162DE98B5B00A35C50 /* LoggingDataTypes.swift */; };
+		D3BA71192DE990DB00A35C50 /* CommandSetDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BA71182DE990DB00A35C50 /* CommandSetDataTypes.swift */; };
 		D3BA711B2DE991B700A35C50 /* LengthTaggedData32.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BA711A2DE991B700A35C50 /* LengthTaggedData32.swift */; };
 		D3C0830F2A7B01AB0020AD57 /* libSwiftOCADevice.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */; };
 		D3C083162A7B021B0020AD57 /* SwiftOCADeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */; };
@@ -480,6 +483,9 @@
 		D3B727E42BF759A800D6932F /* Ocp1CFDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D3B727E62BF759B100D6932F /* Ocp1CFController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFController.swift; sourceTree = "<group>"; };
 		D3BA71122DE9633500A35C50 /* ConnectionBroker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionBroker.swift; sourceTree = "<group>"; };
+		D3BA71142DE98B1B00A35C50 /* DataSetDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSetDataTypes.swift; sourceTree = "<group>"; };
+		D3BA71162DE98B5B00A35C50 /* LoggingDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingDataTypes.swift; sourceTree = "<group>"; };
+		D3BA71182DE990DB00A35C50 /* CommandSetDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandSetDataTypes.swift; sourceTree = "<group>"; };
 		D3BA711A2DE991B700A35C50 /* LengthTaggedData32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LengthTaggedData32.swift; sourceTree = "<group>"; };
 		D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftOCADeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftOCADeviceTests.swift; sourceTree = "<group>"; };
@@ -1188,6 +1194,9 @@
 			isa = PBXGroup;
 			children = (
 				D3E6E1762A3ACA6C00BF7095 /* ApplicationNetworkDataTypes.swift */,
+				D3BA71142DE98B1B00A35C50 /* DataSetDataTypes.swift */,
+				D3BA71182DE990DB00A35C50 /* CommandSetDataTypes.swift */,
+				D3BA71162DE98B5B00A35C50 /* LoggingDataTypes.swift */,
 				D3E6E1812A3ACA6C00BF7095 /* BaseDataTypes.swift */,
 				D3AFD34B2B2CEF2B00A72E9A /* CounterDataTypes.swift */,
 				D30349DD2BC67D420080FF09 /* ProgrammingDataTypes.swift */,
@@ -1934,6 +1943,7 @@
 				D36ECA2C2A5B24B30015174A /* Ocp1CFSocketConnection.swift in Sources */,
 				D3E6E1D62A3ACA9E00BF7095 /* Manager.swift in Sources */,
 				D3E6E1B42A3ACA7B00BF7095 /* Ocp1Connection+Objects.swift in Sources */,
+				D3BA71172DE98B5B00A35C50 /* LoggingDataTypes.swift in Sources */,
 				D3E6E1CC2A3ACA9000BF7095 /* PanBalance.swift in Sources */,
 				D3E6E1D52A3ACA9E00BF7095 /* Root.swift in Sources */,
 				D3AFD3832B32A06700A72E9A /* SingleValueBinaryDecodingContainer.swift in Sources */,
@@ -1999,6 +2009,7 @@
 				D30644062A770B640063DA65 /* Notification2.swift in Sources */,
 				D34B5FA22B65FD74000C8DD1 /* GrouperDataTypes.swift in Sources */,
 				D3E6E1C72A3ACA9000BF7095 /* Actuator.swift in Sources */,
+				D3BA71192DE990DB00A35C50 /* CommandSetDataTypes.swift in Sources */,
 				D3E6E1DF2A3ACAA900BF7095 /* ModelDataTypes.swift in Sources */,
 				D34B5FA62B67204D000C8DD1 /* Connection.swift in Sources */,
 				D3AFD37D2B32A06700A72E9A /* KeyedOcp1EncodingContainer.swift in Sources */,
@@ -2014,6 +2025,7 @@
 				D30349DE2BC67D420080FF09 /* ProgrammingDataTypes.swift in Sources */,
 				D3E6E1C92A3ACA9000BF7095 /* Polarity.swift in Sources */,
 				D3D8FA492B61D6A50054FD3C /* ReflectionMirror.swift in Sources */,
+				D3BA71152DE98B1B00A35C50 /* DataSetDataTypes.swift in Sources */,
 				D3E6E1D32A3ACA9E00BF7095 /* DeviceManager.swift in Sources */,
 				D31528802A526E24004B9BAD /* WorkerDataTypes.swift in Sources */,
 				D3E6E1BD2A3ACA8200BF7095 /* Response.swift in Sources */,

@@ -316,11 +316,11 @@ public enum OcaSubscriptionManagerSubscription: Codable, Equatable, Hashable, Se
     case let .subscription(subscription):
       subscription.subscriberContext
     case .subscription2:
-      LengthTaggedData()
+      LengthTaggedData16()
     case let .propertyChangeSubscription(propertyChangeSubscription):
       propertyChangeSubscription.subscriberContext
     case .propertyChangeSubscription2:
-      LengthTaggedData()
+      LengthTaggedData16()
     }
   }
 
