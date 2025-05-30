@@ -36,6 +36,7 @@ protocol OcaDevicePropertyRepresentable: Sendable {
 
   func set(object: OcaRoot, command: Ocp1Command) async throws
   func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws
+  func set(object: OcaRoot, eventData: OcaPropertyChangedEventData<Value>) async throws
 }
 
 extension OcaDevicePropertyRepresentable {
@@ -45,6 +46,16 @@ extension OcaDevicePropertyRepresentable {
 
   var async: AnyAsyncSequence<Value> {
     subject.eraseToAnyAsyncSequence()
+  }
+
+  func set(
+    object: OcaRoot,
+    eventData typeErasedEventData: OcaAnyPropertyChangedEventData
+  ) async throws {
+    try await set(
+      object: object,
+      eventData: OcaPropertyChangedEventData<Value>(eventData: typeErasedEventData)
+    )
   }
 }
 
@@ -151,6 +162,15 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
   func set(object: OcaRoot, command: Ocp1Command) async throws {
     let newValue: Value = try OcaRoot.decodeCommand(command)
     await setAndNotifySubscribers(object: object, newValue)
+  }
+
+  func set(object: OcaRoot, eventData: OcaPropertyChangedEventData<Value>) async throws {
+    switch eventData.changeType {
+    case .currentChanged:
+      await setAndNotifySubscribers(object: object, eventData.propertyValue)
+    default:
+      throw Ocp1Error.unhandledEvent
+    }
   }
 
   func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {

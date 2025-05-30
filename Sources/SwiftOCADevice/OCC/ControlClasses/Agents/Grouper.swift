@@ -147,10 +147,23 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
       self.name = name
       switch grouper.mode {
       case .masterSlave:
+        // In master-slave mode, each time a caller adds a group to a Grouper
+        // instance, the Grouper instance creates an object known as a group
+        // proxy. Thus, there is one group proxy instance per group. The class
+        // of the group proxy is the same as the Grouper's citizen class. For
+        // example, for a group of OcaGain actuators, the group proxy is an
+        // OcaGain object. The purpose of the group proxy is to allow
+        // controllers to access the group's setpoint (for actuator groups) or
+        // reading (for sensor groups) in the same way as they would access
+        // individual workers of the citizen class.
         let proxy = try await Proxy(grouper)
         self.proxy = proxy
         proxy.group = self
       case .peerToPeer:
+        // In peer-to-peer mode, no group proxy is created. Instead, the group
+        // setpoint is changed whenever any member's setpoint is changed. In
+        // effect, all the group's members behave as though they were group
+        // proxies
         proxy = nil
       }
     }
@@ -171,12 +184,13 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
   @OcaDevice
   final class Citizen: Sendable {
     enum Target {
-      case local(OcaRoot)
+      case local(CitizenType)
       case remote(OcaOPath)
 
       init(_ objectPath: OcaOPath, device: OcaDevice) async throws {
         if objectPath.hostID.isEmpty {
-          guard let object = await device.resolve(objectNumber: objectPath.oNo) else {
+          guard let object = await device.resolve(objectNumber: objectPath.oNo) as? CitizenType
+          else {
             throw Ocp1Error.invalidObject(objectPath.oNo)
           }
           guard await object.objectIdentification.classIdentification
@@ -237,9 +251,33 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
         )
       }
     }
+
+    var connection: Ocp1Connection {
+      get async throws {
+        switch target {
+        case .local:
+          throw Ocp1Error.invalidHandle
+        case let .remote(path):
+          try await OcaConnectionBroker.shared.connection(
+            for: path,
+            type: CitizenType.self
+          )
+        }
+      }
+    }
   }
 
-  typealias Enrollment = (Group, Citizen)
+  @OcaDevice
+  fileprivate struct Enrollment: Sendable {
+    let group: Group
+    let citizen: Citizen
+    weak var subscriptionCancellable: Ocp1Connection.SubscriptionCancellable?
+
+    init(group: Group, citizen: Citizen) {
+      self.group = group
+      self.citizen = citizen
+    }
+  }
 
   private var groups = [OcaUint16: Group]()
   private var citizens = [OcaUint16: Citizen]()
@@ -316,7 +354,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
 
   func getEnrollment(_ enrollment: OcaGrouperEnrollment) -> OcaBoolean {
     enrollments.contains(where: {
-      $0.0.index == enrollment.groupIndex && $0.1.index == enrollment.citizenIndex
+      $0.group.index == enrollment.groupIndex && $0.citizen.index == enrollment.citizenIndex
     })
   }
 
@@ -328,12 +366,12 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
     }
 
     if isMember {
-      enrollments.append((group, citizen))
+      enrollments.append(Enrollment(group: group, citizen: citizen))
     } else {
       guard getEnrollment(enrollment) else { throw Ocp1Error.status(.invalidRequest) }
       enrollments
         .removeAll(where: {
-          $0.0.index == enrollment.groupIndex && $0.1.index == enrollment.citizenIndex
+          $0.group.index == enrollment.groupIndex && $0.citizen.index == enrollment.citizenIndex
         })
     }
     try await notifySubscribers(
@@ -348,7 +386,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
   }
 
   func getGroupMemberList(group: Group) throws -> [Citizen] {
-    enrollments.filter { $0.0.index == group.index }.map(\.1)
+    enrollments.filter { $0.group.index == group.index }.map(\.citizen)
   }
 
   func getGroupMemberList(index: OcaUint16) async throws -> [OcaGrouperCitizen] {
@@ -460,13 +498,9 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
           switch citizen.target {
           case let .local(object):
             response = try await object.handleCommand(command, from: controller)
-          case let .remote(path):
-            let connection = try await OcaConnectionBroker.shared.connection(
-              for: path,
-              type: CitizenType.self
-            )
-            grouper?._addConnectionStateMonitor(connection)
-            response = try await connection.sendCommandRrq(command)
+          case .remote:
+            try await grouper?._addConnectionStateMonitor(citizen.connection)
+            response = try await citizen.connection.sendCommandRrq(command)
           }
 
           if response.parameters.parameterCount > 0 {
@@ -642,8 +676,8 @@ private extension OcaGrouper {
     let parameters = OcaPropertyChangedEventData<[OcaGrouperEnrollment]>(
       propertyID: OcaPropertyID("3.4"),
       propertyValue: enrollments.map { OcaGrouperEnrollment(
-        groupIndex: $0.0.index,
-        citizenIndex: $0.1.index
+        groupIndex: $0.group.index,
+        citizenIndex: $0.citizen.index
       ) },
       changeType: changeType
     )
@@ -651,5 +685,152 @@ private extension OcaGrouper {
       event,
       parameters: parameters
     )
+  }
+}
+
+/// protocol for forwarding an event
+private protocol _OcaEventForwarding {
+  func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws
+}
+
+/// forward an event to a local object
+extension OcaRoot: _OcaEventForwarding {
+  func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws {
+    guard event.emitterONo == objectNumber, event.eventID == OcaPropertyChangedEventID else {
+      throw Ocp1Error.unhandledEvent
+    }
+
+    for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
+      let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
+      guard property.propertyID == eventData.propertyID else { continue }
+      try await property.set(object: self, eventData: eventData)
+    }
+  }
+}
+
+/// forward an event to a remote  object (impementation is in SwiftOCA as it uses private API)
+extension SwiftOCA.OcaRoot: _OcaEventForwarding {}
+
+/// forward event to a specific local or remote citizen
+extension OcaGrouper.Citizen: _OcaEventForwarding {
+  func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws {
+    let forwardingTarget: _OcaEventForwarding? = switch target {
+    case let .local(object):
+      object
+    case let .remote(objectPath):
+      try? await connection.resolve(cachedObject: objectPath.oNo)
+    }
+
+    try await forwardingTarget?.forward(
+      event: OcaEvent(emitterONo: target.oNo, eventID: event.eventID),
+      eventData: eventData
+    )
+  }
+}
+
+private protocol _OcaGrouperCitizen: _OcaEventForwarding {}
+
+extension OcaGrouper.Citizen: _OcaGrouperCitizen {}
+
+/// forward event to all citizens in array
+extension Array where Element: _OcaGrouperCitizen {
+  func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async {
+    await withTaskGroup(of: Void.self) { taskGroup in
+      for element in self {
+        taskGroup.addTask {
+          try? await element.forward(event: event, eventData: eventData)
+        }
+      }
+    }
+  }
+}
+
+private protocol _OcaPeerToPeerGrouperNotifiable: OcaRoot {
+  var mode: OcaGrouperMode { get }
+
+  func _onLocalEvent(_ event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws
+}
+
+/// forward local property events to local and remote objects in group
+extension OcaGrouper: _OcaPeerToPeerGrouperNotifiable {
+  func _onLocalEvent(_ event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws {
+    func isLocalEvent(target: OcaGrouper.Citizen.Target, event: OcaEvent) -> Bool {
+      if case let .local(object) = target, object.objectNumber == event.emitterONo {
+        true
+      } else {
+        false
+      }
+    }
+
+    await enrollments.map(\.citizen).filter { !isLocalEvent(target: $0.target, event: event) }
+      .forward(
+        event: event,
+        eventData: eventData
+      )
+  }
+}
+
+/// forward remote property events to local and remote objects in group
+private extension OcaGrouper.Enrollment {
+  @Sendable
+  private func _forward(
+    event: OcaEvent,
+    eventData: Data,
+    grouper: OcaGrouper
+  ) async throws {
+    guard let peers = (try? grouper.getGroupMemberList(group: group).filter {
+      $0.index != self.citizen.index
+    }) else {
+      return
+    }
+
+    let anyEventData = try OcaAnyPropertyChangedEventData(data: eventData)
+    await peers.forward(event: event, eventData: anyEventData)
+  }
+
+  mutating func subscribe(grouper: OcaGrouper) async throws {
+    guard subscriptionCancellable == nil else { return } // already subscribed
+
+    let event = OcaEvent(emitterONo: citizen.objectPath.oNo, eventID: OcaPropertyChangedEventID)
+    do {
+      subscriptionCancellable = try await citizen.connection.addSubscription(
+        label: "com.padl.SwiftOCADevice.OcaGrouper.\(group.index).\(citizen.index)",
+        event: event,
+        callback: { @Sendable [weak grouper, self] event, eventData in
+          guard let grouper else { return }
+          try await _forward(event: event, eventData: eventData, grouper: grouper)
+        }
+      )
+    } catch Ocp1Error.alreadySubscribedToEvent {
+    } catch Ocp1Error.status(.invalidRequest) {}
+  }
+
+  mutating func unsubscribe() async throws {
+    guard let subscriptionCancellable else { throw Ocp1Error.notSubscribedToEvent }
+    try await citizen.connection.removeSubscription(subscriptionCancellable)
+    self.subscriptionCancellable = nil
+  }
+}
+
+extension OcaDevice {
+  private var _allPeerToPeerGroupers: [_OcaPeerToPeerGrouperNotifiable] {
+    func isPeerToPeerGrouper(_ object: OcaRoot) -> Bool {
+      guard let grouper = object as? _OcaPeerToPeerGrouperNotifiable else {
+        return false
+      }
+      return grouper.mode == .peerToPeer
+    }
+
+    return objects.values
+      .filter { isPeerToPeerGrouper($0) } as! [_OcaPeerToPeerGrouperNotifiable]
+  }
+
+  func _notifyPeerToPeerGroupers(
+    _ event: OcaEvent,
+    parameters: OcaPropertyChangedEventData<some Codable & Sendable>
+  ) async throws {
+    for grouper in _allPeerToPeerGroupers {
+      try? await grouper._onLocalEvent(event, eventData: parameters.toAny())
+    }
   }
 }

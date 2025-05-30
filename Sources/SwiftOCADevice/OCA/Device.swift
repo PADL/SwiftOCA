@@ -214,22 +214,24 @@ public actor OcaDevice {
       event,
       parameters: Ocp1Encoder().encode(parameters)
     )
+    try await _notifyPeerToPeerGroupers(event, parameters: parameters)
   }
 
-  public func notifySubscribers(
+  private func _notifyEventDelegate(
+    _ event: OcaEvent,
+    parameters: Data
+  ) throws {
+    guard let eventDelegate else { return }
+    Task {
+      await eventDelegate.onEvent(event, parameters: parameters)
+    }
+  }
+
+  private func _notifySubscriptionManager(
     _ event: OcaEvent,
     parameters: Data
   ) async throws {
-    // if we are using a custom device manager, it may set properties prior to the subscription
-    // manager being initialized
-    assert(deviceManager == nil || subscriptionManager != nil)
     guard let subscriptionManager else { return }
-
-    if let eventDelegate {
-      Task {
-        await eventDelegate.onEvent(event, parameters: parameters)
-      }
-    }
 
     switch await subscriptionManager.state {
     case .eventsDisabled:
@@ -251,6 +253,18 @@ public actor OcaDevice {
         }
       }
     }
+  }
+
+  public func notifySubscribers(
+    _ event: OcaEvent,
+    parameters: Data
+  ) async throws {
+    // if we are using a custom device manager, it may set properties prior to the subscription
+    // manager being initialized
+    assert(deviceManager == nil || subscriptionManager != nil)
+
+    try _notifyEventDelegate(event, parameters: parameters)
+    try await _notifySubscriptionManager(event, parameters: parameters)
   }
 
   func notifySubscribers(_ event: OcaEvent) async throws {

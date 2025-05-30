@@ -103,18 +103,39 @@ public struct OcaBoundedDeviceProperty<
     )
   }
 
-  func set(object: OcaRoot, command: Ocp1Command) async throws {
-    let value: Value = try object.decodeCommand(command)
+  private func _validate(value: Value) throws {
     // check it is in range
     if value < storage.wrappedValue.minValue ||
       value > storage.wrappedValue.maxValue
     {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
+  }
+
+  func set(object: OcaRoot, command: Ocp1Command) async throws {
+    let value: Value = try object.decodeCommand(command)
+    try _validate(value: value)
     await setAndNotifySubscribers(
       object: object,
       OcaBoundedPropertyValue<Value>(value: value, in: storage.wrappedValue.range)
     )
+  }
+
+  func set(
+    object: OcaRoot,
+    eventData: OcaPropertyChangedEventData<OcaBoundedPropertyValue<Value>>
+  ) async throws {
+    switch eventData.changeType {
+    case .currentChanged:
+      try _validate(value: eventData.propertyValue.value)
+      await setAndNotifySubscribers(object: object, eventData.propertyValue)
+    case .minChanged:
+      fallthrough // TODO: implement
+    case .maxChanged:
+      fallthrough // TODO: implement
+    default:
+      throw Ocp1Error.unhandledEvent
+    }
   }
 
   private func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {

@@ -506,3 +506,20 @@ package extension OcaONo {
     self = oNo
   }
 }
+
+public extension OcaRoot {
+  @_spi(SwiftOCAPrivate)
+  func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws {
+    for (_, keyPath) in allKeyPaths {
+      if let property = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable),
+         property.propertyIDs.contains(eventData.propertyID)
+      {
+        try await sendCommand(
+          methodID: property.setMethodID!,
+          parameters: eventData.propertyValue
+        )
+        break
+      }
+    }
+  }
+}

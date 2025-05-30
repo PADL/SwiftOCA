@@ -100,6 +100,22 @@ public struct OcaVectorDeviceProperty<
     await setAndNotifySubscribers(object: object, newValue)
   }
 
+  func set(
+    object: OcaRoot,
+    eventData: OcaPropertyChangedEventData<OcaVector2D<Value>>
+  ) async throws {
+    switch eventData.changeType {
+    case .currentChanged:
+      await setAndNotifySubscribers(object: object, eventData.propertyValue)
+    case .minChanged:
+      fallthrough // TODO: implement
+    case .maxChanged:
+      fallthrough // TODO: implement
+    default:
+      throw Ocp1Error.unhandledEvent
+    }
+  }
+
   private func notifySubscribers(object: OcaRoot, _ newValue: OcaVector2D<Value>) async throws {
     let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
     let xParameters = OcaPropertyChangedEventData<Value>(
