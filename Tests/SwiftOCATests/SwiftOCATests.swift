@@ -520,10 +520,44 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(decodedKeepAlive2.heartBeatTime, 200)
   }
 
-  func testEmptyLengthTaggedData() throws {
-    let encoded = LengthTaggedData().bytes
+  func testEmptyOcaBlob() throws {
+    let encoded = OcaBlob().bytes
     XCTAssertEqual(encoded, [0, 0])
-    XCTAssertEqual(try LengthTaggedData(bytes: encoded), LengthTaggedData())
+    XCTAssertEqual(try OcaBlob(bytes: encoded), OcaBlob())
+  }
+
+  func testEmptyOcaLongBlob() throws {
+    let encoded = OcaLongBlob().bytes
+    XCTAssertEqual(encoded, [0, 0, 0, 0])
+    XCTAssertEqual(try OcaLongBlob(bytes: encoded), OcaLongBlob())
+  }
+
+  func testOcaBlobRoundTrip() throws {
+    let blob = OcaBlob([0xDE, 0xAD, 0xBE, 0xEF])
+    let ocp1EncodedBlob: [UInt8] = try Ocp1Encoder().encode(blob)
+    var rawEncodedBlob = [UInt8]()
+    blob.encode(into: &rawEncodedBlob)
+
+    XCTAssertEqual(ocp1EncodedBlob, rawEncodedBlob)
+
+    let ocp1DecodedBlob = try Ocp1Decoder().decode(OcaBlob.self, from: rawEncodedBlob)
+    let rawDecodedBlob = try OcaBlob(bytes: ocp1EncodedBlob)
+
+    XCTAssertEqual(ocp1DecodedBlob, rawDecodedBlob)
+  }
+
+  func testOcaLongBlobRoundTrip() throws {
+    let blob = OcaLongBlob([0xDE, 0xAD, 0xBE, 0xEF])
+    let ocp1EncodedBlob: [UInt8] = try Ocp1Encoder().encode(blob)
+    var rawEncodedBlob = [UInt8]()
+    blob.encode(into: &rawEncodedBlob)
+
+    XCTAssertEqual(ocp1EncodedBlob, rawEncodedBlob)
+
+    let ocp1DecodedBlob = try Ocp1Decoder().decode(OcaLongBlob.self, from: rawEncodedBlob)
+    let rawDecodedBlob = try OcaLongBlob(bytes: ocp1EncodedBlob)
+
+    XCTAssertEqual(ocp1DecodedBlob, rawDecodedBlob)
   }
 
   func testEmptyCommand() throws {

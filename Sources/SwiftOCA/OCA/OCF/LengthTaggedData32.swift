@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@ import FoundationEssentials
 import Foundation
 #endif
 
-public struct LengthTaggedData: MutableDataProtocol, ContiguousBytes, Equatable, Hashable,
-  Sendable
+public struct LengthTaggedData32: MutableDataProtocol, ContiguousBytes, Equatable, Hashable,
+  Sendable, Ocp1LongList
 {
   public var startIndex: Data.Index { wrappedValue.startIndex }
   public var endIndex: Data.Index { wrappedValue.endIndex }
-  public var regions: CollectionOfOne<LengthTaggedData> { CollectionOfOne(self) }
+  public var regions: CollectionOfOne<LengthTaggedData32> { CollectionOfOne(self) }
 
   public var wrappedValue: Data
 
@@ -61,24 +61,24 @@ public struct LengthTaggedData: MutableDataProtocol, ContiguousBytes, Equatable,
   }
 }
 
-extension LengthTaggedData: Encodable {
+extension LengthTaggedData32: Encodable {
   public func encode(to encoder: Encoder) throws {
-    if wrappedValue.count > UInt16.max {
+    if wrappedValue.count > UInt32.max {
       throw Ocp1Error.invalidMessageSize
     }
     var container = encoder.unkeyedContainer()
-    try container.encode(UInt16(wrappedValue.count))
+    try container.encode(UInt32(wrappedValue.count))
     try withUnsafeBytes { (buffer: UnsafeRawBufferPointer) in
       try container.encode(contentsOf: buffer)
     }
   }
 }
 
-extension LengthTaggedData: Decodable {
+extension LengthTaggedData32: Decodable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
 
-    let count = try Int(container.decode(UInt16.self))
+    let count = try Int(container.decode(UInt32.self))
     wrappedValue = Data(count: count)
     for i in 0..<count {
       let byte = try container.decode(UInt8.self)
@@ -87,24 +87,24 @@ extension LengthTaggedData: Decodable {
   }
 }
 
-extension LengthTaggedData: _Ocp1Codable {
+extension LengthTaggedData32: _Ocp1Codable {
   init(bytes: borrowing[UInt8]) throws {
-    guard bytes.count >= 2 else {
+    guard bytes.count >= 4 else {
       throw Ocp1Error.pduTooShort
     }
 
     let count = Int(bytes.withUnsafeBytes {
-      UInt16(bigEndian: $0.loadUnaligned(as: UInt16.self))
+      UInt32(bigEndian: $0.loadUnaligned(as: UInt32.self))
     })
 
-    guard bytes.count >= 2 + count else {
+    guard bytes.count >= 4 + count else {
       throw Ocp1Error.pduTooShort
     }
-    wrappedValue = Data(bytes[2..<(2 + count)])
+    wrappedValue = Data(bytes[4..<(4 + count)])
   }
 
   func encode(into bytes: inout [UInt8]) {
-    bytes += Swift.withUnsafeBytes(of: UInt16(wrappedValue.count).bigEndian) { Array($0) }
+    bytes += Swift.withUnsafeBytes(of: UInt32(wrappedValue.count).bigEndian) { Array($0) }
     bytes += Array(wrappedValue)
   }
 }

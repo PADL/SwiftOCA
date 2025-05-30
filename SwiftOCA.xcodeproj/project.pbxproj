@@ -152,6 +152,7 @@
 		D3B727E52BF759A800D6932F /* Ocp1CFDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B727E42BF759A800D6932F /* Ocp1CFDeviceEndpoint.swift */; };
 		D3B727E72BF759B100D6932F /* Ocp1CFController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B727E62BF759B100D6932F /* Ocp1CFController.swift */; };
 		D3BA71132DE9633500A35C50 /* ConnectionBroker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BA71122DE9633500A35C50 /* ConnectionBroker.swift */; };
+		D3BA711B2DE991B700A35C50 /* LengthTaggedData32.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BA711A2DE991B700A35C50 /* LengthTaggedData32.swift */; };
 		D3C0830F2A7B01AB0020AD57 /* libSwiftOCADevice.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */; };
 		D3C083162A7B021B0020AD57 /* SwiftOCADeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */; };
 		D3C083172A7B02360020AD57 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
@@ -229,7 +230,7 @@
 		D3E6E1E22A3ACAA900BF7095 /* SearchDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E17D2A3ACA6C00BF7095 /* SearchDataTypes.swift */; };
 		D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1812A3ACA6C00BF7095 /* BaseDataTypes.swift */; };
 		D3E6E1E42A3ACAA900BF7095 /* NetworkDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1732A3ACA6C00BF7095 /* NetworkDataTypes.swift */; };
-		D3E6E1E52A3ACAA900BF7095 /* LengthTaggedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */; };
+		D3E6E1E52A3ACAA900BF7095 /* LengthTaggedData16.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData16.swift */; };
 		D3E6E1E72A3ACAAD00BF7095 /* Data+IntegerCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */; };
 		D3E6E1E82A3ACAAD00BF7095 /* Data+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */; };
 		D3E6E1EE2A3ACB0700BF7095 /* AsyncAlgorithms in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E1ED2A3ACB0700BF7095 /* AsyncAlgorithms */; };
@@ -479,6 +480,7 @@
 		D3B727E42BF759A800D6932F /* Ocp1CFDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D3B727E62BF759B100D6932F /* Ocp1CFController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFController.swift; sourceTree = "<group>"; };
 		D3BA71122DE9633500A35C50 /* ConnectionBroker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionBroker.swift; sourceTree = "<group>"; };
+		D3BA711A2DE991B700A35C50 /* LengthTaggedData32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LengthTaggedData32.swift; sourceTree = "<group>"; };
 		D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftOCADeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3C083152A7B021B0020AD57 /* SwiftOCADeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftOCADeviceTests.swift; sourceTree = "<group>"; };
 		D3C083182A7B0D2C0020AD57 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
@@ -510,7 +512,7 @@
 		D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCA.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hex.swift"; sourceTree = "<group>"; };
 		D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+IntegerCodable.swift"; sourceTree = "<group>"; };
-		D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LengthTaggedData.swift; sourceTree = "<group>"; };
+		D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData16.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LengthTaggedData16.swift; sourceTree = "<group>"; };
 		D3E6E1722A3ACA6C00BF7095 /* Property.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Property.swift; sourceTree = "<group>"; };
 		D3E6E1732A3ACA6C00BF7095 /* NetworkDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkDataTypes.swift; sourceTree = "<group>"; };
 		D3E6E1742A3ACA6C00BF7095 /* EventDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDataTypes.swift; sourceTree = "<group>"; };
@@ -1386,7 +1388,8 @@
 				D3DA69EC2A3DD329001250A1 /* Task+Timeout.swift */,
 				D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */,
 				D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */,
-				D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData.swift */,
+				D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData16.swift */,
+				D3BA711A2DE991B700A35C50 /* LengthTaggedData32.swift */,
 				D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */,
 				D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */,
 				D301C6762BF0576200488B99 /* UnsafeMutablePointer+PropertyBasePointer.swift */,
@@ -1907,6 +1910,7 @@
 				D3E6E2782A417AF000BF7095 /* NetworkManager.swift in Sources */,
 				D3E6E1B52A3ACA7B00BF7095 /* Ocp1Connection+Subscribe.swift in Sources */,
 				D3E6E1C42A3ACA8C00BF7095 /* Worker.swift in Sources */,
+				D3BA711B2DE991B700A35C50 /* LengthTaggedData32.swift in Sources */,
 				D3AFD3342B2A505D00A72E9A /* AudioProcessingManager.swift in Sources */,
 				D34B5FAA2B688A9A000C8DD1 /* MapProperty.swift in Sources */,
 				D3E6E1C52A3ACA8C00BF7095 /* Block.swift in Sources */,
@@ -2013,7 +2017,7 @@
 				D3E6E1D32A3ACA9E00BF7095 /* DeviceManager.swift in Sources */,
 				D31528802A526E24004B9BAD /* WorkerDataTypes.swift in Sources */,
 				D3E6E1BD2A3ACA8200BF7095 /* Response.swift in Sources */,
-				D3E6E1E52A3ACAA900BF7095 /* LengthTaggedData.swift in Sources */,
+				D3E6E1E52A3ACAA900BF7095 /* LengthTaggedData16.swift in Sources */,
 				D3E6E1CD2A3ACA9600BF7095 /* LevelSensor.swift in Sources */,
 				D3AFD3402B2A8CC000A72E9A /* MiscFrameworkDataTypes.swift in Sources */,
 				D3E6E1C12A3ACA8200BF7095 /* Notification1.swift in Sources */,

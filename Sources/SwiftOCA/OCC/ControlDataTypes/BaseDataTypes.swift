@@ -15,7 +15,8 @@
 //
 
 public typealias OcaBoolean = Bool
-public typealias OcaBlob = LengthTaggedData
+public typealias OcaBlob = LengthTaggedData16
+public typealias OcaLongBlob = LengthTaggedData32
 
 public typealias OcaInt8 = Int8
 public typealias OcaInt16 = Int16
