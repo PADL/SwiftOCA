@@ -137,7 +137,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
   public var mode: OcaGrouperMode = .masterSlave
 
   @OcaDevice
-  final class Group: Sendable {
+  final class Group: Sendable, Hashable {
     let index: OcaUint16
     let name: OcaString
     let proxy: Proxy?
@@ -179,10 +179,21 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
         proxyONo: proxyONo
       )
     }
+
+    nonisolated static func == (
+      lhs: OcaGrouper<CitizenType>.Group,
+      rhs: OcaGrouper<CitizenType>.Group
+    ) -> Bool {
+      lhs.index == rhs.index
+    }
+
+    nonisolated func hash(into hasher: inout Hasher) {
+      hasher.combine(index)
+    }
   }
 
   @OcaDevice
-  final class Citizen: Sendable {
+  final class Citizen: Sendable, Hashable {
     enum Target {
       case local(CitizenType)
       case remote(OcaOPath)
@@ -265,10 +276,21 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
         }
       }
     }
+
+    nonisolated static func == (
+      lhs: OcaGrouper<CitizenType>.Citizen,
+      rhs: OcaGrouper<CitizenType>.Citizen
+    ) -> Bool {
+      lhs.index == rhs.index
+    }
+
+    nonisolated func hash(into hasher: inout Hasher) {
+      hasher.combine(index)
+    }
   }
 
   @OcaDevice
-  fileprivate struct Enrollment: Sendable {
+  fileprivate struct Enrollment: Sendable, Hashable {
     let group: Group
     let citizen: Citizen
     weak var subscriptionCancellable: Ocp1Connection.SubscriptionCancellable?
@@ -277,11 +299,23 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
       self.group = group
       self.citizen = citizen
     }
+
+    nonisolated static func == (
+      lhs: OcaGrouper<CitizenType>.Enrollment,
+      rhs: OcaGrouper<CitizenType>.Enrollment
+    ) -> Bool {
+      lhs.group == rhs.group && lhs.citizen == rhs.citizen
+    }
+
+    nonisolated func hash(into hasher: inout Hasher) {
+      hasher.combine(group)
+      hasher.combine(citizen)
+    }
   }
 
   private var groups = [OcaUint16: Group]()
   private var citizens = [OcaUint16: Citizen]()
-  private var enrollments = [Enrollment]()
+  private var enrollments = Set<Enrollment>()
   private var nextGroupIndex: OcaUint16 = 0
   private var nextCitizenIndex: OcaUint16 = 0
   private var connectionStateMonitors = [Ocp1Connection: Task<(), Error>]()
@@ -366,13 +400,15 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
     }
 
     if isMember {
-      enrollments.append(Enrollment(group: group, citizen: citizen))
+      enrollments.insert(Enrollment(group: group, citizen: citizen))
     } else {
       guard getEnrollment(enrollment) else { throw Ocp1Error.status(.invalidRequest) }
-      enrollments
-        .removeAll(where: {
-          $0.group.index == enrollment.groupIndex && $0.citizen.index == enrollment.citizenIndex
-        })
+      guard let index = enrollments.firstIndex(where: {
+        $0 == Enrollment(group: group, citizen: citizen)
+      }) else {
+        throw Ocp1Error.status(.invalidRequest)
+      }
+      enrollments.remove(at: index)
     }
     try await notifySubscribers(
       group: group,
@@ -380,7 +416,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
       changeType: isMember ? .enrollment : .unEnrollment
     )
     try await notifySubscribers(
-      enrollments: enrollments,
+      enrollments: Array(enrollments),
       changeType: isMember ? .itemAdded : .itemDeleted
     )
   }
