@@ -170,3 +170,40 @@ public struct OcaMediaSourceConnector: Codable, Sendable {
     self.currentCoding = currentCoding
   }
 }
+
+public enum OcaMediaPlayOption: OcaUint8, Codable, Sendable {
+  case normal = 0
+  case autoclose = 1
+  case repeatInterval = 2
+}
+
+public enum OcaMediaRecorderPlayerState: OcaUint8, Codable, Sendable {
+  case idle = 0
+  case stopped = 1
+  case seeking = 2
+  case recording = 3
+  case playing = 4
+}
+
+public enum OcaMediaAccessMode: OcaUint8, Codable, Sendable {
+  case none = 0
+  case play = 1
+  case record = 2
+}
+
+public typealias OcaMediaTrackFunction = OcaBitSet16
+
+public enum OcaMediaVolumePositionType: OcaUint16, Codable, Sendable {
+  case samples = 0
+  case seconds = 1
+}
+
+public struct OcaMediaVolumePosition: Codable, Sendable {
+  public let positionType: OcaMediaVolumePositionType
+  public let position: OcaUint64
+
+  public init(positionType: OcaMediaVolumePositionType, position: OcaUint64) {
+    self.positionType = positionType
+    self.position = position
+  }
+}
