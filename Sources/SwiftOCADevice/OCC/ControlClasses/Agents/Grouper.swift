@@ -270,11 +270,15 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
   }
 
   func addCitizen(_ citizen: OcaGrouperCitizen) async throws -> OcaUint16 {
-    guard let deviceDelegate else { throw Ocp1Error.notConnected }
+    guard let deviceDelegate,
+          let connectionBroker = await deviceDelegate.connectionBroker
+    else {
+      throw Ocp1Error.notConnected
+    }
     let citizen = try await Citizen(
       index: allocateCitizenIndex(),
       target: Citizen.Target(citizen.objectPath, device: deviceDelegate),
-      connectionBroker: deviceDelegate.connectionBroker
+      connectionBroker: connectionBroker
     )
     try await notifySubscribers(citizen: citizen, changeType: .citizenAdded)
     try await notifySubscribers(citizens: Array(citizens.values), changeType: .itemAdded)

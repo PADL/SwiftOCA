@@ -48,7 +48,7 @@ public actor OcaDevice {
   var logger = Logger(label: "com.padl.SwiftOCADevice")
 
   weak var eventDelegate: OcaDeviceEventDelegate?
-  var connectionBroker: OcaConnectionBroker = _OcaDefaultConnectionBroker.shared
+  weak var connectionBroker: OcaConnectionBroker? = _OcaDefaultConnectionBroker.shared
 
   public func allocateObjectNumber() -> OcaONo {
     repeat {
