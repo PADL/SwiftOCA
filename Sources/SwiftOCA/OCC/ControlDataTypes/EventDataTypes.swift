@@ -61,7 +61,7 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible, 
   }
 }
 
-public struct OcaEvent: Codable, Hashable, Equatable, Sendable, _Ocp1Codable {
+public struct OcaEvent: Codable, Hashable, Equatable, Sendable, CustomStringConvertible, _Ocp1Codable {
   public let emitterONo: OcaONo
   public let eventID: OcaEventID
 
@@ -80,6 +80,10 @@ public struct OcaEvent: Codable, Hashable, Equatable, Sendable, _Ocp1Codable {
   func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: emitterONo.bigEndian) { bytes += $0 }
     eventID.encode(into: &bytes)
+  }
+
+  public var description: String {
+    "\(eventID)@\(emitterONo.oNoString)"
   }
 }
 
