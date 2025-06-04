@@ -37,7 +37,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
 
   public internal(set) weak var deviceDelegate: OcaDevice?
 
-  enum LockState: Sendable, CustomStringConvertible {
+  enum LockState: Equatable, Sendable, CustomStringConvertible {
     /// Oca-1-2023 uses this confusing `NoReadWrite` and `NoWrite` nomenclature
     case unlocked
     case lockedNoWrite(OcaController.ID)
@@ -68,11 +68,32 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
 
   var lockStateSubject = AsyncCurrentValueSubject<LockState>(.unlocked)
 
+  private func notifySubscribers(
+    lockState: LockState
+  ) async throws {
+    let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
+    let parameters = OcaPropertyChangedEventData<OcaLockState>(
+      propertyID: OcaPropertyID("1.6"),
+      propertyValue: lockState.lockState,
+      changeType: .currentChanged
+    )
+
+    try await deviceDelegate?.notifySubscribers(
+      event,
+      parameters: parameters
+    )
+  }
+
   var lockState: LockState {
     get {
       lockStateSubject.value
     }
     set {
+      if newValue != lockStateSubject.value {
+        Task {
+          try await notifySubscribers(lockState: newValue)
+        }
+      }
       lockStateSubject.value = newValue
     }
   }
