@@ -151,7 +151,7 @@ public enum Ocp1ConnectionState: OcaUint8, Codable, Sendable {
   case connectionFailed
 }
 
-public struct Ocp1ConnectionStatistics: Sendable {
+public struct Ocp1ConnectionStatistics: Sendable, CustomStringConvertible {
   public let connectionState: Ocp1ConnectionState
   public let connectionID: Int
   public var isConnected: Bool { connectionState == .connected }
@@ -161,6 +161,22 @@ public struct Ocp1ConnectionStatistics: Sendable {
   public let subscribedEvents: [OcaEvent]
   public let lastMessageSentTime: Date
   public let lastMessageReceivedTime: Date?
+
+  public var description: String {"""
+    \(type(of: self))(
+      connectionState: \(connectionState),
+      connectionID: \(connectionID),
+      isConnected: \(isConnected),
+      lastMessageSentTime: \(lastMessageSentTime),
+      lastMessageReceivedTime: \(lastMessageReceivedTime.map(String.init(describing:)) ?? "nil"),
+      requestCount: \(requestCount),
+      outstandingRequests: \(outstandingRequests),
+      cachedObjectCount: \(cachedObjectCount),
+      subscribedEventCount: \(subscribedEvents.count),
+      subscribedEvents: \(subscribedEvents)
+    )
+    """
+  }
 }
 
 private let CommandHandleBase = OcaUint32(100)
