@@ -162,20 +162,20 @@ public struct Ocp1ConnectionStatistics: Sendable, CustomStringConvertible {
   public let lastMessageSentTime: Date
   public let lastMessageReceivedTime: Date?
 
-  public var description: String {"""
-    \(type(of: self))(
-      connectionState: \(connectionState),
-      connectionID: \(connectionID),
-      isConnected: \(isConnected),
-      lastMessageSentTime: \(lastMessageSentTime),
-      lastMessageReceivedTime: \(lastMessageReceivedTime.map(String.init(describing:)) ?? "nil"),
-      requestCount: \(requestCount),
-      outstandingRequests: \(outstandingRequests),
-      cachedObjectCount: \(cachedObjectCount),
-      subscribedEventCount: \(subscribedEvents.count),
-      subscribedEvents: \(subscribedEvents)
-    )
-    """
+  public var description: String { """
+  \(type(of: self))(
+    connectionState: \(connectionState),
+    connectionID: \(connectionID),
+    isConnected: \(isConnected),
+    lastMessageSentTime: \(lastMessageSentTime),
+    lastMessageReceivedTime: \(lastMessageReceivedTime.map(String.init(describing:)) ?? "nil"),
+    requestCount: \(requestCount),
+    outstandingRequests: \(outstandingRequests),
+    cachedObjectCount: \(cachedObjectCount),
+    subscribedEventCount: \(subscribedEvents.count),
+    subscribedEvents: \(subscribedEvents)
+  )
+  """
   }
 }
 

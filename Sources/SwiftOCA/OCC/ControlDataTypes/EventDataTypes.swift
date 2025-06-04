@@ -61,7 +61,9 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible, 
   }
 }
 
-public struct OcaEvent: Codable, Hashable, Equatable, Sendable, CustomStringConvertible, _Ocp1Codable {
+public struct OcaEvent: Codable, Hashable, Equatable, Sendable, CustomStringConvertible,
+  _Ocp1Codable
+{
   public let emitterONo: OcaONo
   public let eventID: OcaEventID
 
