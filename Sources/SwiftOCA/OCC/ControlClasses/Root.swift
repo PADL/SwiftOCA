@@ -489,7 +489,7 @@ public extension OcaRoot {
 
 package extension OcaONo {
   var oNoString: String {
-    "<\(String(format: "0x%x", self))>"
+    "<\(String(format: "0x%08x", self))>"
   }
 
   init?(oNoString: String) {
