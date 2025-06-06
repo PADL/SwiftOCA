@@ -1,7 +1,10 @@
-
 \.DS_Store
+SwiftOCA.xcodeproj/xcshareddata/
 SwiftOCA.xcodeproj/project.xcworkspace
 SwiftOCA.xcodeproj/xcuserdata/
 Package.resolved
 .build/
+.swiftpm/
+.clang-format
+.swiftformat
 *.sw?
