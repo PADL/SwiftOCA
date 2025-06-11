@@ -24,7 +24,7 @@ import SwiftOCA
 
 private extension Ocp1ControllerInternal {
   nonisolated var loggerMetadata: Logger.Metadata {
-    ["controller": "\(connectionPrefix)/\(identifier)"]
+    ["CONTROLLER": "\(connectionPrefix)/\(identifier)"]
   }
 }
 
