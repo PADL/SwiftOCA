@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 open class OcaMediaClock3: OcaAgent {
@@ -30,7 +31,7 @@ open class OcaMediaClock3: OcaAgent {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.2")
   )
-  public var timeSourceONo: OcaONo = OcaInvalidONo
+  public var timeSource: OcaTimeSource? = nil
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.3"),
@@ -40,9 +41,7 @@ open class OcaMediaClock3: OcaAgent {
   public var offset: OcaTime = .init()
 
   @OcaDeviceProperty(
-    propertyID: OcaPropertyID("3.4"),
-    getMethodID: OcaMethodID("3.3"),
-    setMethodID: OcaMethodID("3.4")
+    propertyID: OcaPropertyID("3.4")
   )
   public var currentRate: OcaMediaClockRate = .init()
 
@@ -52,13 +51,37 @@ open class OcaMediaClock3: OcaAgent {
   )
   public var supportedRates: OcaMultiMap<OcaONo, OcaMediaClockRate> = [:]
 
+  open func set(currentRate: OcaMediaClockRate, timeSource: OcaTimeSource) async throws {
+    self.currentRate = currentRate
+    self.timeSource = timeSource
+  }
+
   override open func handleCommand(
     _ command: Ocp1Command,
     from controller: any OcaController
   ) async throws -> Ocp1Response {
     switch command.methodID {
+    case OcaMethodID("3.3"):
+      try decodeNullCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      let params = SwiftOCA.OcaMediaClock3.GetCurrentRateParameters(
+        rate: currentRate,
+        timeSourceONo: timeSource?.objectNumber ?? OcaInvalidONo
+      )
+      return try encodeResponse(params)
+    case OcaMethodID("3.4"):
+      let params: SwiftOCA.OcaMediaClock3.SetCurrentRateParameters = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      guard let deviceDelegate,
+            let timeSource: OcaTimeSource = await deviceDelegate
+            .resolve(objectNumber: params.timeSourceONo) as? OcaTimeSource
+      else {
+        throw Ocp1Error.status(.badONo)
+      }
+      try await set(currentRate: params.rate, timeSource: timeSource)
+      return Ocp1Response()
     default:
-      try await super.handleCommand(command, from: controller)
+      return try await super.handleCommand(command, from: controller)
     }
   }
 }

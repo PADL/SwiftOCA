@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -38,9 +38,7 @@ open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
   public var offset: OcaProperty<OcaTime>.PropertyValue
 
   @OcaProperty(
-    propertyID: OcaPropertyID("3.4"),
-    getMethodID: OcaMethodID("3.3"),
-    setMethodID: OcaMethodID("3.4")
+    propertyID: OcaPropertyID("3.4")
   )
   public var currentRate: OcaProperty<OcaMediaClockRate>.PropertyValue
 
@@ -49,4 +47,28 @@ open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
     getMethodID: OcaMethodID("3.7")
   )
   public var supportedRates: OcaMultiMapProperty<OcaONo, OcaMediaClockRate>.PropertyValue
+
+  @_spi(SwiftOCAPrivate)
+  public struct GetCurrentRateParameters: Ocp1ParametersReflectable {
+    public let rate: OcaMediaClockRate
+    public let timeSourceONo: OcaONo
+
+    public init(rate: OcaMediaClockRate, timeSourceONo: OcaONo) {
+      self.rate = rate
+      self.timeSourceONo = timeSourceONo
+    }
+  }
+
+  @_spi(SwiftOCAPrivate) public typealias SetCurrentRateParameters = GetCurrentRateParameters
+
+  public func getCurrentRate() async throws -> (OcaMediaClockRate, OcaONo) {
+    let parameters: GetCurrentRateParameters =
+      try await sendCommandRrq(methodID: OcaMethodID("3.3"))
+    return (parameters.rate, parameters.timeSourceONo)
+  }
+
+  public func set(currentRate: OcaMediaClockRate, timeSourceONo: OcaONo) async throws {
+    let parameters = SetCurrentRateParameters(rate: currentRate, timeSourceONo: timeSourceONo)
+    try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: parameters)
+  }
 }
