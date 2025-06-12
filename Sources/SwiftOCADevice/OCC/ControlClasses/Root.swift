@@ -364,7 +364,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
 
     precondition(objectNumber != OcaInvalidONo)
 
-    guard self is OcaWorker else {
+    guard self is OcaWorker || self is OcaManager else {
       return [:]
     }
 
