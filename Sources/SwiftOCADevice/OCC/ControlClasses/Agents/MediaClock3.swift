@@ -31,7 +31,7 @@ open class OcaMediaClock3: OcaAgent {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.2")
   )
-  public var timeSource: OcaTimeSource? = nil
+  public var timeSourceONo: OcaONo = OcaInvalidONo
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.3"),
@@ -53,7 +53,7 @@ open class OcaMediaClock3: OcaAgent {
 
   open func set(currentRate: OcaMediaClockRate, timeSource: OcaTimeSource) async throws {
     self.currentRate = currentRate
-    self.timeSource = timeSource
+    timeSourceONo = timeSource.objectNumber
   }
 
   override open func handleCommand(
@@ -66,7 +66,7 @@ open class OcaMediaClock3: OcaAgent {
       try await ensureReadable(by: controller, command: command)
       let params = SwiftOCA.OcaMediaClock3.GetCurrentRateParameters(
         rate: currentRate,
-        timeSourceONo: timeSource?.objectNumber ?? OcaInvalidONo
+        timeSourceONo: timeSourceONo
       )
       return try encodeResponse(params)
     case OcaMethodID("3.4"):
