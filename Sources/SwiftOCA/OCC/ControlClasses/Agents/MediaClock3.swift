@@ -67,8 +67,14 @@ open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
     return (parameters.rate, parameters.timeSourceONo)
   }
 
-  public func set(currentRate: OcaMediaClockRate, timeSourceONo: OcaONo) async throws {
-    let parameters = SetCurrentRateParameters(rate: currentRate, timeSourceONo: timeSourceONo)
+  public func set(currentRate: OcaMediaClockRate, timeSourceONo: OcaONo? = nil) async throws {
+    let _timeSourceONo: OcaONo
+    if let timeSourceONo {
+      _timeSourceONo = timeSourceONo
+    } else {
+      (_, _timeSourceONo) = try await getCurrentRate()
+    }
+    let parameters = SetCurrentRateParameters(rate: currentRate, timeSourceONo: _timeSourceONo)
     try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: parameters)
   }
 }
