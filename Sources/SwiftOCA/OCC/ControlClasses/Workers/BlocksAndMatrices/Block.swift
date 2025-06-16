@@ -59,7 +59,8 @@ public struct OcaConstructionParameter: Codable, Sendable {
   }
 }
 
-open class OcaBlock: OcaWorker, @unchecked Sendable {
+open class OcaBlock: OcaWorker, @unchecked
+Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.3") }
 
   @OcaProperty(
@@ -99,10 +100,22 @@ open class OcaBlock: OcaWorker, @unchecked Sendable {
   public var oNoMap: OcaMapProperty<OcaProtoONo, OcaONo>.PropertyValue
 
   @OcaProperty(
+    propertyID: OcaPropertyID("3.7"),
+    getMethodID: OcaMethodID("3.29")
+  )
+  public var datasetObjects: OcaProperty<OcaObjectIdentification>.PropertyValue
+
+  @OcaProperty(
     propertyID: OcaPropertyID("3.8"),
     getMethodID: OcaMethodID("3.21")
   )
   public var configurability: OcaProperty<OcaBlockConfigurability>.PropertyValue
+
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.9"),
+    getMethodID: OcaMethodID("3.22")
+  )
+  public var mostRecentParamDatasetONo: OcaProperty<OcaLibVolID>.PropertyValue
 
   // 3.2
   public func constructActionObject(
@@ -344,6 +357,96 @@ open class OcaBlock: OcaWorker, @unchecked Sendable {
     )
     try validate(searchResults, against: resultFlags)
     return searchResults
+  }
+
+  public func apply(paramDataset: OcaONo) async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("3.23"), parameters: paramDataset)
+  }
+
+  public func store(currentParameterData: OcaONo) async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("3.24"), parameters: currentParameterData)
+  }
+
+  public func fetchCurrentParameterData() async throws -> OcaLongBlob {
+    try await sendCommandRrq(methodID: OcaMethodID("3.25"))
+  }
+
+  public func apply(parameterData: OcaLongBlob) async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("3.26"), parameters: parameterData)
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public struct ConstructDataSetParameters: Ocp1ParametersReflectable {
+    public let classID: OcaClassID
+    public let name: OcaString
+    public let type: OcaMimeType
+    public let maxSize: OcaUint64
+    public let initialContents: OcaLongBlob
+
+    public init(
+      classID: OcaClassID,
+      name: OcaString,
+      type: OcaMimeType,
+      maxSize: OcaUint64,
+      initialContents: OcaLongBlob
+    ) {
+      self.classID = classID
+      self.name = name
+      self.type = type
+      self.maxSize = maxSize
+      self.initialContents = initialContents
+    }
+  }
+
+  public func constructDataset(
+    classID: OcaClassID,
+    name: OcaString,
+    type: OcaMimeType,
+    maxSize: OcaUint64,
+    initialContents: OcaLongBlob
+  ) async throws -> OcaONo {
+    let params = ConstructDataSetParameters(
+      classID: classID,
+      name: name,
+      type: type,
+      maxSize: maxSize,
+      initialContents: initialContents
+    )
+    return try await sendCommandRrq(methodID: OcaMethodID("3.27"), parameters: params)
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public struct DuplicateDataSetParameters: Ocp1ParametersReflectable {
+    public let oldONo: OcaONo
+    public let targetBlockONo: OcaONo
+    public let newName: OcaString
+    public let newMaxSize: OcaUint64
+
+    public init(oldONo: OcaONo, targetBlockONo: OcaONo, newName: OcaString, newMaxSize: OcaUint64) {
+      self.oldONo = oldONo
+      self.targetBlockONo = targetBlockONo
+      self.newName = newName
+      self.newMaxSize = newMaxSize
+    }
+  }
+
+  public func duplicateDataset(
+    oldONo: OcaONo,
+    targetBlocKOno: OcaONo,
+    newName: OcaString,
+    newMaxSize: OcaUint64
+  ) async throws -> OcaONo {
+    let params = DuplicateDataSetParameters(
+      oldONo: oldONo,
+      targetBlockONo: targetBlocKOno,
+      newName: newName,
+      newMaxSize: newMaxSize
+    )
+    return try await sendCommandRrq(methodID: OcaMethodID("3.28"), parameters: params)
+  }
+
+  public func getDatasetObjectsRecursive() async throws -> OcaList<OcaBlockMember> {
+    try await sendCommandRrq(methodID: OcaMethodID("3.6"))
   }
 
   override public var isContainer: Bool {
