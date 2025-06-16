@@ -115,7 +115,7 @@ public class Ocp1NWConnection: Ocp1Connection {
   }
 
   override public func read(_ length: Int) async throws -> Data {
-    try await withCheckedThrowingContinuation { continuation in
+    try await withUnsafeThrowingContinuation { continuation in
       nwConnection.receive(
         minimumIncompleteLength: length,
         maximumLength: Ocp1MaximumDatagramPduSize
@@ -131,7 +131,7 @@ public class Ocp1NWConnection: Ocp1Connection {
 
   override public func write(_ data: Data) async throws -> Int {
     let isDatagram = isDatagram
-    return try await withCheckedThrowingContinuation { continuation in
+    return try await withUnsafeThrowingContinuation { continuation in
       nwConnection.send(
         content: data,
         isComplete: isDatagram,

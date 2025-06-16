@@ -48,7 +48,7 @@ extension Ocp1Connection {
       throw Ocp1Error.notConnected
     }
 
-    return try await withCheckedThrowingContinuation { continuation in
+    return try await withUnsafeThrowingContinuation { continuation in
       monitor.register(handle: handle, continuation: continuation)
     }
   }
