@@ -67,6 +67,7 @@ public final class OcaDeviceEndpointRegistrar: @unchecked Sendable {
         "txtvers": "1",
         "protovers": "\(deviceManager.version)",
         "modelGUID": "\(deviceManager.modelGUID)",
+        "serialNumber": "\(deviceManager.serialNumber)",
       ]
     } else {
       [:]
