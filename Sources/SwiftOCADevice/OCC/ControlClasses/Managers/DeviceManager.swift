@@ -56,7 +56,7 @@ open class OcaDeviceManager: OcaManager {
     getMethodID: OcaMethodID("3.4"),
     setMethodID: OcaMethodID("3.5")
   )
-  public var deviceName = "SwiftOCA"
+  public var deviceName = ""
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.5"),
