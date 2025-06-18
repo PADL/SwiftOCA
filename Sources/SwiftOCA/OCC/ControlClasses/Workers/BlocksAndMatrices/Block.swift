@@ -103,7 +103,7 @@ Sendable {
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.29")
   )
-  public var datasetObjects: OcaProperty<OcaObjectIdentification>.PropertyValue
+  public var datasetObjects: OcaProperty<[OcaObjectIdentification]>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.8"),
