@@ -29,6 +29,25 @@ public enum OcaStringComparisonType: OcaUint8, Codable, Sendable, CaseIterable {
   case containsCaseInsensitive = 5
 }
 
+package extension OcaStringComparisonType {
+  func compare(_ lhs: String, _ rhs: String) -> Bool {
+    switch self {
+    case .exact:
+      lhs == rhs
+    case .substring:
+      lhs.hasPrefix(rhs)
+    case .contains:
+      lhs.contains(rhs)
+    case .exactCaseInsensitive:
+      lhs.lowercased() == rhs.lowercased()
+    case .substringCaseInsensitive:
+      lhs.lowercased().hasPrefix(rhs.lowercased())
+    case .containsCaseInsensitive:
+      lhs.lowercased().contains(rhs.lowercased())
+    }
+  }
+}
+
 public struct OcaActionObjectSearchResultFlags: OptionSet, Codable, Sendable {
   public static let oNo = OcaActionObjectSearchResultFlags(rawValue: 1 << 0)
   public static let classIdentification = OcaActionObjectSearchResultFlags(rawValue: 1 << 1)

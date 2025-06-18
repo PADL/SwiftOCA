@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024 PADL Software Pty Ltd
+// Copyright (c) 2024-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -24,7 +24,13 @@ import SwiftOCA
 
 let objectNumberJSONKey = "_oNo"
 let classIDJSONKey = "_classID"
-let actionObjectsJSONKey = "_members"
+
+// for datasets, these keys are merged with the top-level JSON object for validation
+let datasetVersionJSONKey = "_version"
+let datasetDeviceModelJSONKey = "_deviceModel"
+let datasetMimeTypeJSONKey = "_mimeType"
+
+let OcaJsonDatasetVersion: OcaUint32 = 1
 
 func _getObjectNumberFromJsonObject(jsonObject: [String: Sendable]) throws -> OcaONo {
   guard let objectNumber = jsonObject[objectNumberJSONKey] as? OcaONo,
@@ -94,5 +100,63 @@ public extension OcaDevice {
     try await object.deserialize(jsonObject: jsonObject, flags: flags)
 
     return object
+  }
+}
+
+extension OcaBlock {
+  func serializeDatasetParameters() async throws -> [String: any Sendable] {
+    var root = try serialize(flags: [], isIncluded: datasetFilter)
+
+    root[datasetVersionJSONKey] = OcaJsonDatasetVersion
+    root[datasetDeviceModelJSONKey] = await deviceDelegate?.deviceManager?.modelGUID
+    root[datasetMimeTypeJSONKey] = OcaParamDatasetMimeType
+
+    return root
+  }
+
+  func deserializeDataset(parameters: [String: any Sendable]) async throws {
+    guard let version = parameters[datasetVersionJSONKey] as? OcaUint32,
+          version == OcaJsonDatasetVersion
+    else {
+      throw Ocp1Error.unknownDatasetVersion
+    }
+    guard let deviceModel = parameters[datasetDeviceModelJSONKey] as? OcaModelGUID,
+          await deviceModel == deviceDelegate?.deviceManager?.modelGUID
+    else {
+      throw Ocp1Error.datasetDeviceMismatch
+    }
+    guard let mimeType = parameters[datasetMimeTypeJSONKey] as? String,
+          mimeType == OcaParamDatasetMimeType
+    else {
+      throw Ocp1Error.datasetMimeTypeMismatch
+    }
+    do {
+      try await deserialize(jsonObject: parameters)
+    } catch is DecodingError {
+      throw Ocp1Error.invalidDatasetFormat
+    }
+  }
+
+  func serializeDatasetParameters() async throws -> OcaLongBlob {
+    let datasetParameters: [String: any Sendable] = try await serializeDatasetParameters()
+    do {
+      return try OcaLongBlob(JSONSerialization.data(withJSONObject: datasetParameters, options: []))
+    } catch is EncodingError {
+      throw Ocp1Error.invalidDatasetFormat
+    }
+  }
+
+  func deserializeDatasetParameters(from parameterData: OcaLongBlob) async throws {
+    let parameterData = Data(parameterData)
+    do {
+      guard let jsonObject = try JSONSerialization
+        .jsonObject(with: parameterData) as? [String: Any]
+      else {
+        throw Ocp1Error.invalidDatasetFormat
+      }
+      try await deserializeDataset(parameters: jsonObject)
+    } catch is DecodingError {
+      throw Ocp1Error.invalidDatasetFormat
+    }
   }
 }

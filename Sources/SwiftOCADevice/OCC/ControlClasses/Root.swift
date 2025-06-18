@@ -395,6 +395,18 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
     guard let deviceDelegate else { throw Ocp1Error.notConnected }
     let logger = await deviceDelegate.logger
 
+    guard let oNo = jsonObject[objectNumberJSONKey] as? OcaONo else {
+      logger.warning("bad or missing object number when deserializing")
+      throw Ocp1Error.status(.badFormat)
+    }
+
+    // TODO: also check global type ID
+
+    guard objectNumber == oNo else {
+      logger.warning("object number mismatch between \(self) and \(oNo)")
+      throw Ocp1Error.status(.badONo)
+    }
+
     guard let classID = jsonObject[classIDJSONKey] as? String else {
       logger.warning("bad or missing object class when deserializing")
       throw Ocp1Error.objectClassMismatch

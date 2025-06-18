@@ -70,7 +70,6 @@
 		D34B5F9E2B65FD0D000C8DD1 /* Grouper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5F9D2B65FD0D000C8DD1 /* Grouper.swift */; };
 		D34B5FA02B65FD1D000C8DD1 /* Grouper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5F9F2B65FD1D000C8DD1 /* Grouper.swift */; };
 		D34B5FA22B65FD74000C8DD1 /* GrouperDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA12B65FD74000C8DD1 /* GrouperDataTypes.swift */; };
-		D34B5FA42B670576000C8DD1 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA32B670576000C8DD1 /* Serialization.swift */; };
 		D34B5FA62B67204D000C8DD1 /* Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA52B67204D000C8DD1 /* Connection.swift */; };
 		D34B5FA82B6884DA000C8DD1 /* ListProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA72B6884DA000C8DD1 /* ListProperty.swift */; };
 		D34B5FAA2B688A9A000C8DD1 /* MapProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34B5FA92B688A9A000C8DD1 /* MapProperty.swift */; };
@@ -404,7 +403,6 @@
 		D34B5F9D2B65FD0D000C8DD1 /* Grouper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grouper.swift; sourceTree = "<group>"; };
 		D34B5F9F2B65FD1D000C8DD1 /* Grouper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grouper.swift; sourceTree = "<group>"; };
 		D34B5FA12B65FD74000C8DD1 /* GrouperDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrouperDataTypes.swift; sourceTree = "<group>"; };
-		D34B5FA32B670576000C8DD1 /* Serialization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Serialization.swift; sourceTree = "<group>"; };
 		D34B5FA52B67204D000C8DD1 /* Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connection.swift; sourceTree = "<group>"; };
 		D34B5FA72B6884DA000C8DD1 /* ListProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListProperty.swift; sourceTree = "<group>"; };
 		D34B5FA92B688A9A000C8DD1 /* MapProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapProperty.swift; sourceTree = "<group>"; };
@@ -608,8 +606,10 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		D348BEF22E02574900F902EC /* Dataset */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Dataset; sourceTree = "<group>"; };
+		D348BEF52E02584400F902EC /* DatasetStorageProviders */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DatasetStorageProviders; sourceTree = "<group>"; };
 		D3BA711C2DE994BB00A35C50 /* DataSets */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DataSets; sourceTree = "<group>"; };
-		D3BA71212DE99B4A00A35C50 /* DataSet */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DataSet; sourceTree = "<group>"; };
+		D3BA71212DE99B4A00A35C50 /* Dataset */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Dataset; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -829,6 +829,7 @@
 		D33B528E2A6FD327001A1BA7 /* ControlClasses */ = {
 			isa = PBXGroup;
 			children = (
+				D348BEF22E02574900F902EC /* Dataset */,
 				D33A35B22B2FC4DC00FEDC43 /* ApplicationNetworks */,
 				D351F2062A72999D008C5513 /* Agents */,
 				D33B528F2A6FD332001A1BA7 /* Root.swift */,
@@ -846,7 +847,6 @@
 				D33B52922A6FD3A7001A1BA7 /* DeviceProperty.swift */,
 				D351F2002A7132F8008C5513 /* BoundedDeviceProperty.swift */,
 				D351F2192A729F48008C5513 /* VectorDeviceProperty.swift */,
-				D34B5FA32B670576000C8DD1 /* Serialization.swift */,
 			);
 			path = PropertyTypes;
 			sourceTree = "<group>";
@@ -854,6 +854,7 @@
 		D33B529C2A7018CE001A1BA7 /* OCA */ = {
 			isa = PBXGroup;
 			children = (
+				D348BEF52E02584400F902EC /* DatasetStorageProviders */,
 				D3BA71122DE9633500A35C50 /* ConnectionBroker.swift */,
 				D3D8FA5A2B639D4C0054FD3C /* Controller.swift */,
 				D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */,
@@ -1234,7 +1235,7 @@
 		D3E6E1822A3ACA6C00BF7095 /* ControlClasses */ = {
 			isa = PBXGroup;
 			children = (
-				D3BA71212DE99B4A00A35C50 /* DataSet */,
+				D3BA71212DE99B4A00A35C50 /* Dataset */,
 				D3E6E1892A3ACA6C00BF7095 /* Root.swift */,
 				D395422F2BA8FFC0003A025C /* Root+JSON.swift */,
 				D3E6E1832A3ACA6C00BF7095 /* Root+Commands.swift */,
@@ -1550,6 +1551,10 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				D348BEF22E02574900F902EC /* Dataset */,
+				D348BEF52E02584400F902EC /* DatasetStorageProviders */,
+			);
 			name = SwiftOCADevice;
 			packageProductDependencies = (
 			);
@@ -1645,7 +1650,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				D3BA711C2DE994BB00A35C50 /* DataSets */,
-				D3BA71212DE99B4A00A35C50 /* DataSet */,
+				D3BA71212DE99B4A00A35C50 /* Dataset */,
 			);
 			name = SwiftOCA;
 			packageProductDependencies = (
@@ -1832,7 +1837,6 @@
 				D351F2082A7299B0008C5513 /* Agent.swift in Sources */,
 				D35592602B520DFC000F633B /* ControllerDefaultSubscribing.swift in Sources */,
 				D30349E22BC803280080FF09 /* CounterNotifier.swift in Sources */,
-				D34B5FA42B670576000C8DD1 /* Serialization.swift in Sources */,
 				D33B52A52A702D04001A1BA7 /* Worker.swift in Sources */,
 				D3FAC8EE2B5CFE3A009E2775 /* FirmwareManager.swift in Sources */,
 				D32229D12ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift in Sources */,

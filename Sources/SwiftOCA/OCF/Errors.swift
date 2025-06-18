@@ -24,9 +24,18 @@ public enum Ocp1Error: Error, Equatable {
   case bonjourRegistrationFailed
   case connectionAlreadyInProgress
   case connectionTimeout
+  case datasetAlreadyExists
+  case datasetDeviceMismatch
+  case datasetMimeTypeMismatch
+  case datasetReadFailed
+  case datasetWriteFailed
+  case datasetTargetMismatch
   case duplicateObject(OcaONo)
   case endpointAlreadyRegistered
   case endpointNotRegistered
+  case invalidDatasetFormat
+  case invalidDatasetName
+  case invalidDatasetONo
   case invalidHandle
   case invalidKeepAlivePdu
   case invalidMessageSize
@@ -38,6 +47,7 @@ public enum Ocp1Error: Error, Equatable {
   case invalidSyncValue
   case missingKeepalive
   case noConnectionDelegate
+  case noDatasetStorageProvider
   case noInitialValue
   case noMatchingTypeForClass
   case notConnected
@@ -57,6 +67,9 @@ public enum Ocp1Error: Error, Equatable {
   case responseParameterOutOfRange
   case responseTimeout
   case serviceResolutionFailed
+  case unknownDataset
+  case unknownDatasetMimeType
+  case unknownDatasetVersion
   case unhandledEvent
   case unknownPduType
   case unknownServiceType

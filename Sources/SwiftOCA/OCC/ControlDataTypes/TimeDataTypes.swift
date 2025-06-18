@@ -20,18 +20,18 @@ import FoundationEssentials
 import Foundation
 #endif
 
+package extension Date {
+  var ocaTime: OcaTime {
+    OcaTime(seconds: OcaUint64(timeIntervalSince1970))
+  }
+}
+
 public struct OcaTime: Codable, Sendable, Comparable {
   public let negative: OcaBoolean
   public let seconds: OcaUint64
   public let nanoseconds: OcaUint32
 
-  public init() {
-    negative = false
-    seconds = 0
-    nanoseconds = 0
-  }
-
-  public init(negative: OcaBoolean, seconds: OcaUint64, nanoseconds: OcaUint32) {
+  public init(negative: OcaBoolean = false, seconds: OcaUint64 = 0, nanoseconds: OcaUint32 = 0) {
     self.negative = negative
     self.seconds = seconds
     self.nanoseconds = nanoseconds
@@ -53,6 +53,10 @@ public struct OcaTime: Codable, Sendable, Comparable {
 
       return lt != lhs.negative // XOR
     }
+  }
+
+  public static var now: Self {
+    Date().ocaTime
   }
 }
 

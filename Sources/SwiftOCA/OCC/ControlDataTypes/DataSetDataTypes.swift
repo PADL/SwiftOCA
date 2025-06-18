@@ -15,3 +15,21 @@
 //
 
 public typealias OcaIOSessionHandle = OcaUint32
+
+package let OcaIONullSessionHandle: OcaIOSessionHandle = 0
+package let OcaIOSingletonSessionHandle: OcaIOSessionHandle = 1
+
+public struct OcaDatasetSearchResult: Codable, Sendable {
+  public let object: OcaBlockMember
+  public let name: OcaString
+  public let type: OcaMimeType
+
+  public init(object: OcaBlockMember, name: OcaString, type: OcaMimeType) {
+    self.object = object
+    self.name = name
+    self.type = type
+  }
+}
+
+public let OcaParamDatasetMimeType = "application/x-oca-param"
+public let OcaPatchDatasetMimeType = "application/x-oca-patch"

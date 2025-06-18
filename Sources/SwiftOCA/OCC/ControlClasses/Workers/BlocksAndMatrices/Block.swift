@@ -115,7 +115,7 @@ Sendable {
     propertyID: OcaPropertyID("3.9"),
     getMethodID: OcaMethodID("3.22")
   )
-  public var mostRecentParamDatasetONo: OcaProperty<OcaLibVolID>.PropertyValue
+  public var mostRecentParamDatasetONo: OcaProperty<OcaONo>.PropertyValue
 
   // 3.2
   public func constructActionObject(
@@ -432,13 +432,13 @@ Sendable {
 
   public func duplicateDataset(
     oldONo: OcaONo,
-    targetBlockOno: OcaONo,
+    targetBlockONo: OcaONo,
     newName: OcaString,
     newMaxSize: OcaUint64
   ) async throws -> OcaONo {
     let params = DuplicateDataSetParameters(
       oldONo: oldONo,
-      targetBlockONo: targetBlockOno,
+      targetBlockONo: targetBlockONo,
       newName: newName,
       newMaxSize: newMaxSize
     )
@@ -446,7 +446,61 @@ Sendable {
   }
 
   public func getDatasetObjectsRecursive() async throws -> OcaList<OcaBlockMember> {
-    try await sendCommandRrq(methodID: OcaMethodID("3.6"))
+    try await sendCommandRrq(methodID: OcaMethodID("3.30"))
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public struct FindDatasetsParameters: Ocp1ParametersReflectable {
+    public let name: OcaString
+    public let nameComparisonType: OcaStringComparisonType
+    public let type: OcaMimeType
+    public let typeComparisonType: OcaStringComparisonType
+
+    public init(
+      name: OcaString,
+      nameComparisonType: OcaStringComparisonType,
+      type: OcaMimeType,
+      typeComparisonType: OcaStringComparisonType
+    ) {
+      self.name = name
+      self.nameComparisonType = nameComparisonType
+      self.type = type
+      self.typeComparisonType = typeComparisonType
+    }
+  }
+
+  public func findDatasets(
+    name: OcaString,
+    nameComparisonType: OcaStringComparisonType,
+    type: OcaMimeType,
+    typeComparisonType: OcaStringComparisonType
+  ) async throws
+    -> [OcaDatasetSearchResult]
+  {
+    let params = FindDatasetsParameters(
+      name: name,
+      nameComparisonType: nameComparisonType,
+      type: type,
+      typeComparisonType: typeComparisonType
+    )
+    return try await sendCommandRrq(methodID: OcaMethodID("3.31"), parameters: params)
+  }
+
+  public func findDatasetsRecursive(
+    name: OcaString,
+    nameComparisonType: OcaStringComparisonType,
+    type: OcaMimeType,
+    typeComparisonType: OcaStringComparisonType
+  ) async throws
+    -> [OcaDatasetSearchResult]
+  {
+    let params = FindDatasetsParameters(
+      name: name,
+      nameComparisonType: nameComparisonType,
+      type: type,
+      typeComparisonType: typeComparisonType
+    )
+    return try await sendCommandRrq(methodID: OcaMethodID("3.32"), parameters: params)
   }
 
   override public var isContainer: Bool {

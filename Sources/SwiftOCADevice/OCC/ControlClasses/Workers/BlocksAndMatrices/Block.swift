@@ -15,11 +15,13 @@
 //
 
 import AsyncExtensions
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 @OcaDevice
 private protocol OcaBlockContainer: OcaRoot {
   var members: [OcaRoot] { get }
+  var datasetObjects: [OcaDataset] { get async throws }
 }
 
 open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
@@ -32,6 +34,16 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   public var type: OcaONo = OcaInvalidONo
 
   public private(set) var actionObjects = [ActionObject]()
+  public var datasetObjects: [OcaDataset] {
+    get async throws {
+      guard let provider = await deviceDelegate?.datasetStorageProvider else {
+        throw Ocp1Error.noDatasetStorageProvider
+      }
+      return try await provider.getDatasetObjects(for: self)
+    }
+  }
+
+  public var datasetFilter: OcaRoot.SerializationFilterFunction?
 
   fileprivate var members: [OcaRoot] { actionObjects }
 
@@ -128,10 +140,10 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   }
 
   @OcaDeviceProperty(
-    propertyID: OcaPropertyID("3.4"),
-    getMethodID: OcaMethodID("3.11")
+    propertyID: OcaPropertyID("3.9"),
+    getMethodID: OcaMethodID("3.22")
   )
-  public var mostRecentParamSetIdentifier: OcaLibVolIdentifier?
+  public var mostRecentParamDatasetONo: OcaONo = OcaInvalidONo
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.5"),
@@ -309,6 +321,225 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }.collect()
   }
 
+  private typealias DatasetApplyFunction<U> = (
+    _ member: OcaDataset,
+    _ container: OcaBlockContainer
+  ) async throws -> U
+
+  private func applyRecursive(
+    rootObject: OcaBlockContainer,
+    maxDepth: Int,
+    depth: Int,
+    _ block: DatasetApplyFunction<()>
+  ) async throws {
+    for member in try await rootObject.datasetObjects {
+      try await block(member, rootObject)
+      if let member = member as? OcaBlockContainer, maxDepth == -1 || depth < maxDepth {
+        try await applyRecursive(
+          rootObject: member,
+          maxDepth: maxDepth,
+          depth: depth + 1,
+          block
+        )
+      }
+    }
+  }
+
+  private func applyRecursive(
+    maxDepth: Int = -1,
+    _ block: DatasetApplyFunction<()>
+  ) async throws {
+    try await applyRecursive(
+      rootObject: self,
+      maxDepth: maxDepth,
+      depth: 1,
+      block
+    )
+  }
+
+  private func filterRecursive(
+    maxDepth: Int = -1,
+    _ isIncluded: @escaping (OcaDataset, OcaBlockContainer) async throws -> Bool
+  ) async throws -> [OcaRoot] {
+    var members = [OcaRoot]()
+
+    try await applyRecursive(maxDepth: maxDepth) { member, container in
+      if try await isIncluded(member, container) {
+        members.append(member)
+      }
+    }
+
+    return members
+  }
+
+  private func mapRecursive<U: Sendable>(
+    maxDepth: Int = -1,
+    _ transform: DatasetApplyFunction<U>
+  ) async throws -> [U] {
+    var members = [U]()
+
+    try await applyRecursive(maxDepth: maxDepth) { member, container in
+      try await members.append(transform(member, container))
+    }
+
+    return members
+  }
+
+  private func notifySubscribers(
+    datasetObjects: [OcaDataset],
+    changeType: OcaPropertyChangeType
+  ) async throws {
+    let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
+    let parameters = OcaPropertyChangedEventData<[OcaDataset]>(
+      propertyID: OcaPropertyID("3.7"),
+      propertyValue: datasetObjects,
+      changeType: changeType
+    )
+
+    try await deviceDelegate?.notifySubscribers(
+      event,
+      parameters: parameters
+    )
+  }
+
+  open func delete(datasetObject object: OcaDataset) async throws {
+    if object.objectNumber == OcaInvalidONo {
+      throw Ocp1Error.status(.badONo)
+    }
+
+    guard let provider = await deviceDelegate?.datasetStorageProvider else {
+      throw Ocp1Error.noDatasetStorageProvider
+    }
+
+    try await provider.delete(dataset: object.objectNumber, from: self)
+    try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemDeleted)
+  }
+
+  open func resolve(paramDataset oNo: OcaONo) async throws -> OcaDataset {
+    guard let datasetObject = try await datasetObjects.first(where: { $0.objectNumber == oNo })
+    else {
+      throw Ocp1Error.objectNotPresent(oNo)
+    }
+    return datasetObject
+  }
+
+  open func apply(paramDataset: OcaONo, controller: OcaController) async throws {
+    guard let provider = await deviceDelegate?.datasetStorageProvider else {
+      throw Ocp1Error.noDatasetStorageProvider
+    }
+
+    let dataset = try await provider.resolve(dataset: paramDataset, for: self)
+    try await dataset.applyParameters(to: self, controller: controller)
+    mostRecentParamDatasetONo = dataset.objectNumber
+  }
+
+  open func store(
+    currentParameterData paramDataset: OcaONo,
+    controller: OcaController
+  ) async throws {
+    guard let provider = await deviceDelegate?.datasetStorageProvider else {
+      throw Ocp1Error.noDatasetStorageProvider
+    }
+
+    let dataset = try await provider.resolve(dataset: paramDataset, for: self)
+    try await dataset.storeParameters(object: self, controller: controller)
+    try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemChanged)
+  }
+
+  open func fetchCurrentParameterData() async throws -> OcaLongBlob {
+    try await serializeDatasetParameters()
+  }
+
+  open func apply(parameterData: OcaLongBlob) async throws {
+    try await deserializeDatasetParameters(from: parameterData)
+  }
+
+  open func constructDataset(
+    classID: OcaClassID,
+    name: OcaString,
+    type: OcaMimeType,
+    maxSize: OcaUint64,
+    initialContents: OcaLongBlob,
+    controller: OcaController
+  ) async throws -> OcaONo {
+    let oNo: OcaONo
+    guard let provider = await deviceDelegate?.datasetStorageProvider else {
+      throw Ocp1Error.noDatasetStorageProvider
+    }
+    oNo = try await provider.construct(
+      name: name,
+      type: type,
+      maxSize: maxSize,
+      initialContents: initialContents,
+      for: self,
+      controller: controller
+    )
+    try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemAdded)
+    return oNo
+  }
+
+  open func duplicateDataset(
+    oldONo: OcaONo,
+    targetBlockONo: OcaONo,
+    newName: OcaString,
+    newMaxSize: OcaUint64,
+    controller: OcaController
+  ) async throws -> OcaONo {
+    guard let provider = await deviceDelegate?.datasetStorageProvider else {
+      throw Ocp1Error.noDatasetStorageProvider
+    }
+    let oNo = try await provider.duplicate(
+      oldONo: oldONo,
+      targetBlockONo: targetBlockONo,
+      newName: newName,
+      newMaxSize: newMaxSize,
+      for: self,
+      controller: controller
+    )
+
+    try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemAdded)
+
+    return oNo
+  }
+
+  open func getDatasetObjectsRecursive(from controller: OcaController) async throws
+    -> [OcaDataset]
+  {
+    try await mapRecursive(maxDepth: -1) { member, _ in
+      member
+    }
+  }
+
+  open func findDatasets(
+    name: OcaString,
+    nameComparisonType: OcaStringComparisonType,
+    type: OcaMimeType,
+    typeComparisonType: OcaStringComparisonType
+  ) async throws -> [OcaDataset] {
+    guard typeComparisonType == .exact else {
+      throw Ocp1Error.status(.parameterError)
+    }
+
+    switch type {
+    case OcaParamDatasetMimeType:
+      guard let provider = await deviceDelegate?.datasetStorageProvider else {
+        throw Ocp1Error.noDatasetStorageProvider
+      }
+      return try await provider.find(name: name, nameComparisonType: nameComparisonType, for: self)
+    default:
+      throw Ocp1Error.unknownDatasetMimeType
+    }
+  }
+
+  open func findDatasetsRecursive(
+    name: OcaString,
+    nameComparisonType: OcaStringComparisonType,
+    type: OcaMimeType,
+    typeComparisonType: OcaStringComparisonType
+  ) async throws -> [OcaDataset] {
+    throw Ocp1Error.notImplemented
+  }
+
   override open func handleCommand(
     _ command: Ocp1Command,
     from controller: any OcaController
@@ -345,8 +576,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       let signalPaths: [OcaUint16: OcaSignalPath] =
         try await getSignalPathsRecursive(from: controller)
       return try encodeResponse(signalPaths)
-    // 3.15 GetGlobalType
-    // 3.16 GetONoMap
     case OcaMethodID("3.17"):
       let params: SwiftOCA.OcaBlock
         .FindActionObjectsByRoleParameters = try decodeCommand(command)
@@ -389,16 +618,88 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         resultFlags: params.resultFlags
       )
       return try encodeResponse(searchResult)
-    // 3.22 GetMostRecentParamDatasetONo
-    // 3.23 ApplyParamDataset
-    // 3.24 StoreCurrentParameterData
-    // 3.25 FetchCurrentParameterData
-    // 3.26 ApplyParameterData
-    // 3.27 ConstructDataset
-    // 3.28 DuplicateDataset
-    // 3.29 GetDatasetObjects
-    // 3.30 GetDatasetObjectsRecursive
-    // 3.31 FindDatasets
+    case OcaMethodID("3.23"):
+      let params: OcaONo = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      try await apply(paramDataset: params, controller: controller)
+    case OcaMethodID("3.24"):
+      let params: OcaONo = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      try await store(currentParameterData: params, controller: controller)
+    case OcaMethodID("3.25"):
+      try decodeNullCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      let paramData = try await fetchCurrentParameterData()
+      return try encodeResponse(paramData)
+    case OcaMethodID("3.26"):
+      let paramData: OcaLongBlob = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      try await apply(parameterData: paramData)
+    case OcaMethodID("3.27"):
+      let params: SwiftOCA.OcaBlock.ConstructDataSetParameters = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      let oNo = try await constructDataset(
+        classID: params.classID,
+        name: params.name,
+        type: params.type,
+        maxSize: params.maxSize,
+        initialContents: params.initialContents,
+        controller: controller
+      )
+      return try encodeResponse(oNo)
+    case OcaMethodID("3.28"):
+      let params: SwiftOCA.OcaBlock.DuplicateDataSetParameters = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      let oNo = try await duplicateDataset(
+        oldONo: params.oldONo,
+        targetBlockONo: params.targetBlockONo,
+        newName: params.newName,
+        newMaxSize: params.newMaxSize,
+        controller: controller
+      )
+      return try encodeResponse(oNo)
+    case OcaMethodID("3.29"):
+      try decodeNullCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      let datasetObjecst = try await datasetObjects.map(\.objectIdentification)
+      return try encodeResponse(datasetObjecst)
+    case OcaMethodID("3.30"):
+      try decodeNullCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      let datasetObjects: [OcaBlockMember] =
+        try await getDatasetObjectsRecursive(from: controller).map { dataset in
+          OcaBlockMember(
+            memberObjectIdentification: dataset.objectIdentification,
+            containerObjectNumber: dataset.owner
+          )
+        }
+      return try encodeResponse(datasetObjects)
+    case OcaMethodID("3.31"):
+      let params: SwiftOCA.OcaBlock.FindDatasetsParameters = try decodeCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      let datasets: [OcaDataset] = if command.methodID == "3.31" {
+        try await findDatasets(
+          name: params.name,
+          nameComparisonType: params.nameComparisonType,
+          type: params.type,
+          typeComparisonType: params.typeComparisonType
+        )
+      } else {
+        try await findDatasetsRecursive(
+          name: params.name,
+          nameComparisonType: params.nameComparisonType,
+          type: params.type,
+          typeComparisonType: params.typeComparisonType
+        )
+      }
+      let searchResults = datasets.map { dataset in
+        let blockMember = OcaBlockMember(
+          memberObjectIdentification: dataset.objectIdentification,
+          containerObjectNumber: self.objectNumber
+        )
+        return OcaDatasetSearchResult(object: blockMember, name: dataset.name, type: dataset.type)
+      }
+      return try encodeResponse(searchResults)
     // 3.32 FindDatasetsRecursive
     default:
       return try await super.handleCommand(command, from: controller)
@@ -521,20 +822,7 @@ private extension OcaRoot {
 
     let value = object[keyPath: keyPath]
 
-    switch nameComparisonType {
-    case .exact:
-      return value == searchName
-    case .substring:
-      return value.hasPrefix(searchName)
-    case .contains:
-      return value.contains(searchName)
-    case .exactCaseInsensitive:
-      return value.lowercased() == searchName.lowercased()
-    case .substringCaseInsensitive:
-      return value.lowercased().hasPrefix(searchName.lowercased())
-    case .containsCaseInsensitive:
-      return value.lowercased().contains(searchName.lowercased())
-    }
+    return nameComparisonType.compare(value, searchName)
   }
 
   func makeSearchResult(with resultFlags: OcaActionObjectSearchResultFlags) async

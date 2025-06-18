@@ -60,6 +60,11 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
   public struct OpenReadParameters: Ocp1ParametersReflectable {
     public let datasetSize: OcaUint64
     public let handle: OcaIOSessionHandle
+
+    public init(datasetSize: OcaUint64, handle: OcaIOSessionHandle) {
+      self.datasetSize = datasetSize
+      self.handle = handle
+    }
   }
 
   public func openRead(lockState: OcaLockState) async throws -> (OcaUint64, OcaIOSessionHandle) {
@@ -74,6 +79,11 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
   public struct OpenWriteParameters: Ocp1ParametersReflectable {
     public let maxPartSize: OcaUint64
     public let handle: OcaIOSessionHandle
+
+    public init(maxPartSize: OcaUint64, handle: OcaIOSessionHandle) {
+      self.maxPartSize = maxPartSize
+      self.handle = handle
+    }
   }
 
   public func openWrite(lockState: OcaLockState) async throws -> (OcaUint64, OcaIOSessionHandle) {
@@ -96,12 +106,23 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
     public let handle: OcaIOSessionHandle
     public let position: OcaUint64
     public let partSize: OcaUint64
+
+    public init(handle: OcaIOSessionHandle, position: OcaUint64, partSize: OcaUint64) {
+      self.handle = handle
+      self.position = position
+      self.partSize = partSize
+    }
   }
 
   @_spi(SwiftOCAPrivate)
   public struct ReadResultParameters: Ocp1ParametersReflectable {
     public let endOfData: OcaBoolean
     public let part: OcaLongBlob
+
+    public init(endOfData: OcaBoolean, part: OcaLongBlob) {
+      self.endOfData = endOfData
+      self.part = part
+    }
   }
 
   public func read(

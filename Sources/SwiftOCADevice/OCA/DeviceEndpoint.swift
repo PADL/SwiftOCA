@@ -40,6 +40,13 @@ protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
 extension OcaDeviceEndpointPrivate {
   func unlockAndRemove(controller: ControllerType) async {
     Task { await device.eventDelegate?.onControllerExpiry(controller) }
+    Task {
+      for dataset in await device.objects.values.compactMap({
+        $0 as? OcaDataset
+      }) {
+        await dataset.expireIOSessionHandles(controller: controller)
+      }
+    }
     await device.unlockAll(controller: controller)
     await remove(controller: controller)
   }
