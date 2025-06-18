@@ -432,13 +432,13 @@ Sendable {
 
   public func duplicateDataset(
     oldONo: OcaONo,
-    targetBlocKOno: OcaONo,
+    targetBlockOno: OcaONo,
     newName: OcaString,
     newMaxSize: OcaUint64
   ) async throws -> OcaONo {
     let params = DuplicateDataSetParameters(
       oldONo: oldONo,
-      targetBlockONo: targetBlocKOno,
+      targetBlockONo: targetBlockOno,
       newName: newName,
       newMaxSize: newMaxSize
     )
