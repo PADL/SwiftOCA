@@ -481,7 +481,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     type: OcaMimeType,
     maxSize: OcaUint64,
     initialContents: OcaLongBlob,
-    controller: OcaController
+    controller: OcaController?
   ) async throws -> OcaONo {
     guard let provider = await deviceDelegate?.datasetStorageProvider else {
       throw Ocp1Error.noDatasetStorageProvider
@@ -511,7 +511,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     targetBlockONo: OcaONo,
     newName: OcaString,
     newMaxSize: OcaUint64,
-    controller: OcaController
+    controller: OcaController?
   ) async throws -> OcaONo {
     guard let provider = await deviceDelegate?.datasetStorageProvider else {
       throw Ocp1Error.noDatasetStorageProvider
