@@ -55,11 +55,11 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksDatagramDeviceEndpoint")
   let device: OcaDevice
 
-  #if canImport(dnssd)
-  private var endpointRegistrationHandle: OcaDeviceEndpointRegistrar.Handle?
-  #endif
   private(set) var socket: Socket?
   private var asyncSocket: AsyncSocket?
+  #if canImport(dnssd)
+  private var _endpointRegistrationTask: Task<(), Error>?
+  #endif
 
   private nonisolated var family: Int32 {
     switch address {
@@ -149,9 +149,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
     do {
       if port != 0 {
         #if canImport(dnssd)
-        Task { endpointRegistrationHandle = try await OcaDeviceEndpointRegistrar.shared
-          .register(endpoint: self, device: device)
-        }
+        _endpointRegistrationTask = Task { try await runBonjourEndpointRegistration(for: device) }
         #endif
       }
       try await _run(on: socket, pool: pool)
@@ -175,10 +173,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
 
   private func shutdown(timeout: Duration = .seconds(0)) async {
     #if canImport(dnssd)
-    if let endpointRegistrationHandle {
-      try? await OcaDeviceEndpointRegistrar.shared
-        .deregister(handle: endpointRegistrationHandle)
-    }
+    _endpointRegistrationTask?.cancel()
     #endif
     try? socket?.close()
   }

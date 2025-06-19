@@ -46,7 +46,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   private let address: sockaddr_storage
   private var _controllers = [Ocp1FlyingFoxController]()
   #if canImport(dnssd)
-  private var endpointRegistrationHandle: OcaDeviceEndpointRegistrar.Handle?
+  private var _endpointRegistrationTask: Task<(), Error>?
   #endif
 
   final class Handler: WSMessageHandler, @unchecked
@@ -146,9 +146,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     do {
       if port != 0 {
         #if canImport(dnssd)
-        Task { endpointRegistrationHandle = try await OcaDeviceEndpointRegistrar.shared
-          .register(endpoint: self, device: device)
-        }
+        _endpointRegistrationTask = Task { try await runBonjourEndpointRegistration(for: device) }
         #endif
       }
       try await httpServer.run()

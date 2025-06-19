@@ -55,8 +55,9 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
 
   private var _controllers = [Ocp1FlyingSocksStreamController]()
   #if canImport(dnssd)
-  private var endpointRegistrationHandle: OcaDeviceEndpointRegistrar.Handle?
+  private var _endpointRegistrationTask: Task<(), Error>?
   #endif
+
   private(set) var socket: Socket?
 
   private nonisolated var family: Int32 {
@@ -134,9 +135,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
     do {
       if port != 0 {
         #if canImport(dnssd)
-        Task { endpointRegistrationHandle = try await OcaDeviceEndpointRegistrar.shared
-          .register(endpoint: self, device: device)
-        }
+        Task { try await runBonjourEndpointRegistration(for: device) }
         #endif
       }
       try await _run(on: socket, pool: pool)
@@ -160,10 +159,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
 
   private func shutdown(timeout: Duration = .seconds(0)) async {
     #if canImport(dnssd)
-    if let endpointRegistrationHandle {
-      try? await OcaDeviceEndpointRegistrar.shared
-        .deregister(handle: endpointRegistrationHandle)
-    }
+    _endpointRegistrationTask?.cancel()
     #endif
     try? socket?.close()
   }

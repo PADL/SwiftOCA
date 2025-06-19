@@ -35,6 +35,45 @@ public protocol OcaBonjourRegistrableDeviceEndpoint: OcaDeviceEndpoint {
   var port: UInt16 { get }
 }
 
+extension OcaBonjourRegistrableDeviceEndpoint {
+  // this will run a registration loop until cancelled
+  func runBonjourEndpointRegistration(for device: OcaDevice) async throws {
+    let logger = await device.logger
+    let deviceManager = await device.deviceManager!
+    var lastDeviceName: OcaString?
+    var endpointRegistrationHandle: OcaDeviceEndpointRegistrar.Handle?
+
+    logger.trace("starting DNS endpoint registration task")
+
+    for try await deviceName in await deviceManager.$deviceName {
+      guard lastDeviceName != deviceName else { continue }
+
+      try await Task.checkCancellation()
+
+      if let endpointRegistrationHandle {
+        logger
+          .trace(
+            "device name changed from \(lastDeviceName!) to \(deviceName); deregistering DNS service"
+          )
+        try? await OcaDeviceEndpointRegistrar.shared.deregister(handle: endpointRegistrationHandle)
+      }
+
+      endpointRegistrationHandle = try await OcaDeviceEndpointRegistrar.shared.register(
+        endpoint: self,
+        device: device
+      )
+
+      lastDeviceName = deviceName
+    }
+
+    if let endpointRegistrationHandle {
+      try? await OcaDeviceEndpointRegistrar.shared.deregister(handle: endpointRegistrationHandle)
+    }
+
+    logger.trace("ending DNS endpoint registration task")
+  }
+}
+
 @OcaDevice
 public final class OcaDeviceEndpointRegistrar: @unchecked Sendable {
   public typealias Handle = ObjectIdentifier
@@ -75,6 +114,7 @@ public final class OcaDeviceEndpointRegistrar: @unchecked Sendable {
     }
     do {
       let service = try await Service(
+        name: device.deviceManager!.deviceName,
         regType: endpoint.serviceType.rawValue,
         port: endpoint.port,
         txtRecord: txtRecords
@@ -104,7 +144,7 @@ public final class OcaDeviceEndpointRegistrar: @unchecked Sendable {
     var domain: String!
 
     var description: String {
-      "OcaDeviceEndpointRegistrar.Service(name: \(name), domain: \(domain), flags: \(flags))"
+      "OcaDeviceEndpointRegistrar.Service(name: \(name ?? ""), domain: \(domain ?? ""), flags: \(flags))"
     }
 
     deinit {

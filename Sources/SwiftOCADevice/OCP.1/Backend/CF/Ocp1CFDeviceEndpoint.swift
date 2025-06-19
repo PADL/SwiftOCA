@@ -47,7 +47,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 
   var socket: _CFSocketWrapper?
   #if canImport(dnssd)
-  var endpointRegistrationHandle: OcaDeviceEndpointRegistrar.Handle?
+  var _endpointRegistrationTask: Task<(), Error>?
   #endif
 
   public var controllers: [OcaController] {
@@ -100,10 +100,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   public func run() async throws {
     if port != 0 {
       #if canImport(dnssd)
-      Task {
-        endpointRegistrationHandle = try await OcaDeviceEndpointRegistrar.shared
-          .register(endpoint: self, device: device)
-      }
+      _endpointRegistrationTask = Task { try await runBonjourEndpointRegistration(for: device) }
       #endif
     } else if address.family == AF_LOCAL {
       try? unlinkDomainSocket()
@@ -118,10 +115,10 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     }
   }
 
-  // FIXME: should we have a shutdown method? we can't deregister in deinit as it
-  // will create a strong ref to endpointRegistrationHandle
-
   deinit {
+    #if canImport(dnssd)
+    _endpointRegistrationTask?.cancel()
+    #endif
     if address.family == AF_LOCAL { try? unlinkDomainSocket() }
   }
 }
