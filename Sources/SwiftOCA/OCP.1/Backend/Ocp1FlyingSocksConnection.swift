@@ -47,6 +47,8 @@ fileprivate extension SocketError {
     case .disconnected:
       Ocp1Error.notConnected
     case .unsupportedAddress:
+      fallthrough
+    default:
       self
     }
   }
