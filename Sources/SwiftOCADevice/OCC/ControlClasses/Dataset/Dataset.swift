@@ -115,7 +115,7 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
   }
 
   public func allocateIOSessionHandle(
-    with userData: AnyObject,
+    with userData: Any,
     controller: OcaController?
   ) throws -> OcaIOSessionHandle {
     if let controller,

@@ -16,6 +16,11 @@
 
 import Foundation
 import SwiftOCA
+#if canImport(IORing)
+import IORing
+import IORingUtils
+import SystemPackage
+#endif
 
 extension OcaMimeType {
   var fileExtension: String {
@@ -159,6 +164,12 @@ struct OcaFileDatasetDirEntry: Hashable, CustomStringConvertible {
 }
 
 final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Sendable {
+  #if canImport(IORing)
+  typealias IOSessionHandle = FileDescriptor
+  #else
+  typealias IOSessionHandle = FileHandle
+  #endif
+
   let basePath: URL
 
   private init(
@@ -228,7 +239,11 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     controller: OcaController?
   ) async throws -> (OcaUint64, OcaIOSessionHandle) {
     let dirEntry = try dirEntry
+    #if canImport(IORing)
+    let fileHandle = try FileDescriptor.open(FilePath(dirEntry.absolutePath), .readOnly)
+    #else
     let fileHandle = try FileHandle(forReadingFrom: dirEntry.url)
+    #endif
     let handle = try allocateIOSessionHandle(with: fileHandle, controller: controller)
     return (dirEntry.size, handle)
   }
@@ -238,19 +253,27 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     controller: OcaController?
   ) async throws -> (OcaUint64, OcaIOSessionHandle) {
     let dirEntry = try dirEntry
+    #if canImport(IORing)
+    let fileHandle = try FileDescriptor.open(
+      FilePath(dirEntry.absolutePath),
+      .writeOnly,
+      options: [.create, .truncate],
+      permissions: [.ownerReadWrite, .groupRead, .otherRead]
+    )
+    #else
     try FileManager.default.createFile(
       atPath: dirEntry.absolutePath,
       contents: nil,
       attributes: nil
     )
     let fileHandle = try FileHandle(forWritingTo: dirEntry.url)
+    #endif
     let handle = try allocateIOSessionHandle(with: fileHandle, controller: controller)
     return (maxSize, handle)
   }
 
   override func close(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
-    let fileHandle: FileHandle = try resolveIOSessionHandle(handle, controller: controller)
-    try? fileHandle.synchronize()
+    let fileHandle: IOSessionHandle = try resolveIOSessionHandle(handle, controller: controller)
     try fileHandle.close()
     try releaseIOSessionHandle(handle, controller: controller)
   }
@@ -261,13 +284,26 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     partSize: OcaUint64,
     controller: OcaController?
   ) async throws -> (OcaBoolean, OcaLongBlob) {
-    let fileHandle: FileHandle = try resolveIOSessionHandle(handle, controller: controller)
+    let fileHandle: IOSessionHandle = try resolveIOSessionHandle(handle, controller: controller)
     do {
+      #if canImport(IORing)
+      let size = try fileHandle.getSize()
+      var data = [UInt8](repeating: 0, count: Int(partSize))
+
+      try await IORing.shared.read(
+        into: &data,
+        count: Int(partSize),
+        offset: Int(position),
+        from: fileHandle
+      )
+      let complete = position + partSize >= OcaUint64(size)
+      #else
       try fileHandle.seek(toOffset: position)
       guard let data = try fileHandle.read(upToCount: Int(partSize)) else {
         throw Ocp1Error.datasetReadFailed
       }
       let complete = fileHandle.availableData.count == 0
+      #endif
       return (complete, .init(data))
     } catch {
       throw Ocp1Error.datasetReadFailed
@@ -280,21 +316,34 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     part: OcaLongBlob,
     controller: OcaController?
   ) async throws {
-    let fileHandle: FileHandle = try resolveIOSessionHandle(handle, controller: controller)
+    let fileHandle: IOSessionHandle = try resolveIOSessionHandle(handle, controller: controller)
     do {
+      #if canImport(IORing)
+      try await IORing.shared.write(
+        Array(part),
+        count: Int(part.count),
+        offset: Int(position),
+        to: fileHandle
+      )
+      #else
       try fileHandle.seek(toOffset: position)
       try fileHandle.write(contentsOf: part)
       try fileHandle.truncate(atOffset: position + UInt64(part.count))
+      #endif
     } catch {
       throw Ocp1Error.datasetWriteFailed
     }
   }
 
   override func clear(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
-    let fileHandle: FileHandle = try resolveIOSessionHandle(handle, controller: controller)
+    let fileHandle: IOSessionHandle = try resolveIOSessionHandle(handle, controller: controller)
     do {
+      #if canImport(IORing)
+      try fileHandle.resize(to: 0)
+      #else
       try fileHandle.seek(toOffset: 0)
       try fileHandle.truncate(atOffset: 0)
+      #endif
     } catch {
       throw Ocp1Error.datasetWriteFailed
     }
