@@ -139,7 +139,7 @@ extension OcaBlock {
       throw Ocp1Error.datasetMimeTypeMismatch
     }
     do {
-      try await deserialize(jsonObject: parameters)
+      try await deserialize(jsonObject: parameters, flags: .ignoreMissingProperties)
     } catch is DecodingError {
       throw Ocp1Error.invalidDatasetFormat
     }
