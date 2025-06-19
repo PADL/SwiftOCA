@@ -96,11 +96,11 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
 
   private struct IOSession {
     let handle: OcaIOSessionHandle
-    let controllerID: OcaController.ID
+    let controllerID: OcaController.ID?
     let userData: Any
 
-    init(controller: OcaController, handle: OcaIOSessionHandle, userData: Any) {
-      controllerID = controller.id
+    init(controller: OcaController?, handle: OcaIOSessionHandle, userData: Any) {
+      controllerID = controller?.id
       self.handle = handle
       self.userData = userData
     }
@@ -110,7 +110,7 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
 
   public func allocateIOSessionHandle(
     with userData: AnyObject,
-    controller: OcaController
+    controller: OcaController?
   ) -> OcaIOSessionHandle {
     _nextIOSessionHandle += 1
     let session = IOSession(
@@ -124,13 +124,15 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
 
   public func releaseIOSessionHandle(
     _ handle: OcaIOSessionHandle,
-    controller: OcaController
+    controller: OcaController?
   ) throws {
     guard let index = _ioSessions.index(forKey: handle) else {
       throw Ocp1Error.invalidHandle
     }
-    guard _ioSessions[index].value.controllerID == controller.id else {
-      throw Ocp1Error.status(.permissionDenied)
+    if let controller {
+      guard _ioSessions[index].value.controllerID == controller.id else {
+        throw Ocp1Error.status(.permissionDenied)
+      }
     }
     _ioSessions.remove(at: index)
   }
@@ -141,10 +143,16 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
 
   public func resolveIOSessionHandle<T>(
     _ handle: OcaIOSessionHandle,
-    controller: OcaController
+    controller: OcaController?
   ) throws -> T {
     guard let session = _ioSessions[handle] else {
       throw Ocp1Error.invalidHandle
+    }
+
+    if let controller {
+      guard session.controllerID == controller.id else {
+        throw Ocp1Error.status(.permissionDenied)
+      }
     }
 
     guard let userData = session.userData as? T else {
@@ -156,19 +164,19 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
 
   open func openRead(
     lockState: OcaLockState,
-    controller: OcaController
+    controller: OcaController?
   ) async throws -> (OcaUint64, OcaIOSessionHandle) {
     throw Ocp1Error.notImplemented
   }
 
   open func openWrite(
     lockState: OcaLockState,
-    controller: OcaController
+    controller: OcaController?
   ) async throws -> (OcaUint64, OcaIOSessionHandle) {
     throw Ocp1Error.notImplemented
   }
 
-  open func close(handle: OcaIOSessionHandle, controller: OcaController) async throws {
+  open func close(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
     throw Ocp1Error.notImplemented
   }
 
@@ -176,7 +184,7 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
     handle: OcaIOSessionHandle,
     position: OcaUint64,
     partSize: OcaUint64,
-    controller: OcaController
+    controller: OcaController?
   ) async throws -> (OcaBoolean, OcaLongBlob) {
     throw Ocp1Error.notImplemented
   }
@@ -185,12 +193,12 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
     handle: OcaIOSessionHandle,
     position: OcaUint64,
     part: OcaLongBlob,
-    controller: OcaController
+    controller: OcaController?
   ) async throws {
     throw Ocp1Error.notImplemented
   }
 
-  open func clear(handle: OcaIOSessionHandle, controller: OcaController) async throws {
+  open func clear(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
     throw Ocp1Error.notImplemented
   }
 
@@ -264,7 +272,7 @@ extension OcaDataset {
     type == OcaParamDatasetMimeType
   }
 
-  func applyParameters(to object: OcaBlock<some OcaRoot>, controller: OcaController) async throws {
+  func applyParameters(to object: OcaBlock<some OcaRoot>, controller: OcaController?) async throws {
     guard isParamDataset else {
       throw Ocp1Error.datasetMimeTypeMismatch
     }
@@ -287,7 +295,7 @@ extension OcaDataset {
     try await close(handle: handle, controller: controller)
   }
 
-  func storeParameters(object: OcaBlock<some OcaRoot>, controller: OcaController) async throws {
+  func storeParameters(object: OcaBlock<some OcaRoot>, controller: OcaController?) async throws {
     guard isParamDataset else {
       throw Ocp1Error.datasetMimeTypeMismatch
     }
@@ -304,7 +312,7 @@ extension OcaDataset {
     type == OcaPatchDatasetMimeType
   }
 
-  func applyPatch(to deviceManager: OcaDeviceManager, controller: OcaController) async throws {
+  func applyPatch(to deviceManager: OcaDeviceManager, controller: OcaController?) async throws {
     guard isPatchDataset else {
       throw Ocp1Error.datasetMimeTypeMismatch
     }

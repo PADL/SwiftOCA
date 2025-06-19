@@ -42,7 +42,7 @@ public protocol OcaDatasetStorageProvider: Actor {
     type: OcaMimeType,
     maxSize: OcaUint64,
     initialContents: OcaLongBlob,
-    controller: OcaController
+    controller: OcaController?
   ) async throws -> OcaONo
 
   func duplicate(
@@ -51,7 +51,7 @@ public protocol OcaDatasetStorageProvider: Actor {
     newTargetONo: OcaONo,
     newName: OcaString,
     newMaxSize: OcaUint64,
-    controller: OcaController
+    controller: OcaController?
   ) async throws -> OcaONo
 
   func delete(targetONo: OcaONo, datasetONo: OcaONo) async throws

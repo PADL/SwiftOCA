@@ -423,7 +423,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     return datasetObject
   }
 
-  open func apply(paramDataset: OcaONo, controller: OcaController) async throws {
+  open func apply(paramDataset: OcaONo, controller: OcaController?) async throws {
     guard let provider = await deviceDelegate?.datasetStorageProvider else {
       throw Ocp1Error.noDatasetStorageProvider
     }
@@ -441,7 +441,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
   open func store(
     currentParameterData paramDataset: OcaONo,
-    controller: OcaController
+    controller: OcaController?
   ) async throws {
     guard let provider = await deviceDelegate?.datasetStorageProvider else {
       throw Ocp1Error.noDatasetStorageProvider

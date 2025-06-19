@@ -225,7 +225,7 @@ final class OcaFileDataset: OcaDataset, @unchecked Sendable {
 
   override func openRead(
     lockState: OcaLockState,
-    controller: OcaController
+    controller: OcaController?
   ) async throws -> (OcaUint64, OcaIOSessionHandle) {
     let dirEntry = try dirEntry
     let fileHandle = try FileHandle(forReadingFrom: dirEntry.url)
@@ -235,7 +235,7 @@ final class OcaFileDataset: OcaDataset, @unchecked Sendable {
 
   override func openWrite(
     lockState: OcaLockState,
-    controller: OcaController
+    controller: OcaController?
   ) async throws -> (OcaUint64, OcaIOSessionHandle) {
     let dirEntry = try dirEntry
     try FileManager.default.createFile(
@@ -248,7 +248,7 @@ final class OcaFileDataset: OcaDataset, @unchecked Sendable {
     return (maxSize, handle)
   }
 
-  override func close(handle: OcaIOSessionHandle, controller: OcaController) async throws {
+  override func close(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
     let fileHandle: FileHandle = try resolveIOSessionHandle(handle, controller: controller)
     try? fileHandle.synchronize()
     try fileHandle.close()
@@ -259,7 +259,7 @@ final class OcaFileDataset: OcaDataset, @unchecked Sendable {
     handle: OcaIOSessionHandle,
     position: OcaUint64,
     partSize: OcaUint64,
-    controller: OcaController
+    controller: OcaController?
   ) async throws -> (OcaBoolean, OcaLongBlob) {
     let fileHandle: FileHandle = try resolveIOSessionHandle(handle, controller: controller)
     do {
@@ -278,7 +278,7 @@ final class OcaFileDataset: OcaDataset, @unchecked Sendable {
     handle: OcaIOSessionHandle,
     position: OcaUint64,
     part: OcaLongBlob,
-    controller: OcaController
+    controller: OcaController?
   ) async throws {
     let fileHandle: FileHandle = try resolveIOSessionHandle(handle, controller: controller)
     do {
@@ -289,7 +289,7 @@ final class OcaFileDataset: OcaDataset, @unchecked Sendable {
     }
   }
 
-  override func clear(handle: OcaIOSessionHandle, controller: OcaController) async throws {
+  override func clear(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
     let fileHandle: FileHandle = try resolveIOSessionHandle(handle, controller: controller)
     do {
       try fileHandle.seek(toOffset: 0)

@@ -218,28 +218,18 @@ extension OcaDeviceManager {
       self.deviceName = deviceName
     }
 
-    let localEndpoint = try await OcaLocalDeviceEndpoint(device: deviceDelegate)
-    let endpointTask = Task { try await localEndpoint.run() }
-    let localConnection = await OcaLocalConnection(localEndpoint)
-    try await localConnection.connect()
-
     let datasetParams = (patch[datasetParamDatasetsJSONKey] as? [OcaONo]) ?? []
     for datasetParam in datasetParams {
       let dataset = try await storageProvider.resolve(
         targetONo: OcaInvalidONo,
         datasetONo: datasetParam
       )
-      guard let block = try await localConnection.resolve(object: .init(
-        oNo: dataset.owner,
-        classIdentification: OcaBlock.classIdentification
-      )) as? SwiftOCA.OcaBlock else {
+      guard let block = try await deviceDelegate.resolve(objectNumber: dataset.owner) as? OcaBlock
+      else {
         continue
       }
-      try await block.apply(paramDataset: datasetParam)
+      try await block.apply(paramDataset: datasetParam, controller: nil)
     }
-
-    try? await localConnection.disconnect()
-    endpointTask.cancel()
   }
 
   func deserializePatchDataset(
@@ -271,10 +261,18 @@ extension OcaDeviceManager {
       throw Ocp1Error.noDatasetStorageProvider
     }
 
-    let localEndpoint = try await OcaLocalDeviceEndpoint(device: deviceDelegate)
-    let endpointTask = Task { try await localEndpoint.run() }
-    let localConnection = await OcaLocalConnection(localEndpoint)
-    try await localConnection.connect()
+    for datasetONo in paramDatasetONos {
+      // save the datasets first
+      guard let dataset = try? await storageProvider.resolve(
+        targetONo: OcaInvalidONo,
+        datasetONo: datasetONo
+      ),
+        let object = await deviceDelegate.resolve(objectNumber: dataset.owner) as? OcaBlock
+      else {
+        continue
+      }
+      try await dataset.storeParameters(object: object, controller: nil)
+    }
 
     let blob = try await serializePatchDataset(paramDatasetONos: paramDatasetONos)
     let datasetONo = try await storageProvider.construct(
@@ -284,11 +282,8 @@ extension OcaDeviceManager {
       type: OcaPatchDatasetMimeType,
       maxSize: .max,
       initialContents: blob,
-      controller: localEndpoint.controllers.first!
+      controller: nil
     )
-
-    try? await localConnection.disconnect()
-    endpointTask.cancel()
 
     return datasetONo
   }

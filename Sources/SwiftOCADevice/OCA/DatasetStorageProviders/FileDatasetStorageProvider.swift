@@ -144,7 +144,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     type: OcaMimeType,
     maxSize: OcaUint64,
     initialContents: SwiftOCA.OcaLongBlob,
-    controller: OcaController
+    controller: OcaController?
   ) async throws -> OcaONo {
     guard classID.isSubclass(of: OcaDataset.classID) else {
       throw Ocp1Error.unknownDataset
@@ -178,7 +178,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     newTargetONo: OcaONo,
     newName: OcaString,
     newMaxSize: OcaUint64,
-    controller: OcaController
+    controller: OcaController?
   ) async throws -> SwiftOCA.OcaONo {
     let oldDirEntry: OcaFileDatasetDirEntry = try await resolve(
       targetONo: oldTargetONo,
