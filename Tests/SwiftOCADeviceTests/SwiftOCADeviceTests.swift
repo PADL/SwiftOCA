@@ -164,6 +164,8 @@ final class SwiftOCADeviceTests: XCTestCase {
       initialContents: .init()
     )
     try await connection.rootBlock.store(currentParameterData: testDataset)
+    // deregister to make sure we find it again, not the cached copy
+    try await device.deregister(objectNumber: testDataset)
     try await connection.rootBlock.apply(paramDataset: testDataset)
     datasetStorageExpectation.fulfill()
 
