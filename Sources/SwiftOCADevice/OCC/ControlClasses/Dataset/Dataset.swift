@@ -95,6 +95,8 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
   private var _nextIOSessionHandle: OcaIOSessionHandle = 1
 
   private struct IOSession {
+    static let MaxIOSessionHandlesPerController = 10
+
     let handle: OcaIOSessionHandle
     let controllerID: OcaController.ID?
     let userData: Any
@@ -108,10 +110,20 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
 
   private var _ioSessions = [OcaIOSessionHandle: IOSession]()
 
+  private func _ioSessionCount(for controller: OcaController) -> Int {
+    _ioSessions.values.filter { $0.controllerID == controller.id }.count
+  }
+
   public func allocateIOSessionHandle(
     with userData: AnyObject,
     controller: OcaController?
-  ) -> OcaIOSessionHandle {
+  ) throws -> OcaIOSessionHandle {
+    if let controller,
+       _ioSessionCount(for: controller) >= IOSession.MaxIOSessionHandlesPerController
+    {
+      throw Ocp1Error.status(.outOfMemory)
+    }
+
     _nextIOSessionHandle += 1
     let session = IOSession(
       controller: controller,

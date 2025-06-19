@@ -229,7 +229,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
   ) async throws -> (OcaUint64, OcaIOSessionHandle) {
     let dirEntry = try dirEntry
     let fileHandle = try FileHandle(forReadingFrom: dirEntry.url)
-    let handle = allocateIOSessionHandle(with: fileHandle, controller: controller)
+    let handle = try allocateIOSessionHandle(with: fileHandle, controller: controller)
     return (dirEntry.size, handle)
   }
 
@@ -244,7 +244,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
       attributes: nil
     )
     let fileHandle = try FileHandle(forWritingTo: dirEntry.url)
-    let handle = allocateIOSessionHandle(with: fileHandle, controller: controller)
+    let handle = try allocateIOSessionHandle(with: fileHandle, controller: controller)
     return (maxSize, handle)
   }
 
