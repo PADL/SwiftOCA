@@ -169,7 +169,7 @@ extension OcaBlock {
 }
 
 extension OcaDeviceManager {
-  func serializePatchDataset(_ datasetParams: Set<OcaONo>) async throws
+  func serializePatchDataset(paramDatasetONos: Set<OcaONo>) async throws
     -> [String: any Sendable]
   {
     var root = [String: any Sendable]()
@@ -178,13 +178,14 @@ extension OcaDeviceManager {
     root[datasetVersionJSONKey] = OcaJsonDatasetVersion
     root[datasetDeviceModelJSONKey] = modelGUID.scalarValue
     root[datasetMimeTypeJSONKey] = OcaPatchDatasetMimeType
-    root[datasetParamDatasetsJSONKey] = Array(datasetParams)
+    root[datasetParamDatasetsJSONKey] = Array(paramDatasetONos)
 
     return root
   }
 
   func serializePatchDataset(paramDatasetONos: Set<OcaONo>) async throws -> OcaLongBlob {
-    let jsonObject: [String: any Sendable] = try await serializePatchDataset(paramDatasetONos)
+    let jsonObject: [String: any Sendable] =
+      try await serializePatchDataset(paramDatasetONos: paramDatasetONos)
     do {
       return try OcaLongBlob(JSONSerialization.data(withJSONObject: jsonObject, options: []))
     } catch is EncodingError {
@@ -192,39 +193,42 @@ extension OcaDeviceManager {
     }
   }
 
-  func deserializePatchDataset(_ patch: [String: any Sendable], setDeviceName: Bool) async throws {
+  func deserializePatchDataset(
+    _ jsonObject: [String: any Sendable],
+    setDeviceName: Bool
+  ) async throws {
     guard let deviceDelegate,
           let storageProvider = await deviceDelegate.datasetStorageProvider
     else {
       throw Ocp1Error.noDatasetStorageProvider
     }
-    guard let version = patch[datasetVersionJSONKey] as? OcaUint32,
+    guard let version = jsonObject[datasetVersionJSONKey] as? OcaUint32,
           version == OcaJsonDatasetVersion
     else {
       throw Ocp1Error.unknownDatasetVersion
     }
-    guard let deviceModel = patch[datasetDeviceModelJSONKey] as? OcaUint64,
+    guard let deviceModel = jsonObject[datasetDeviceModelJSONKey] as? OcaUint64,
           deviceModel == modelGUID.scalarValue
     else {
       throw Ocp1Error.datasetDeviceMismatch
     }
-    guard let mimeType = patch[datasetMimeTypeJSONKey] as? OcaString,
+    guard let mimeType = jsonObject[datasetMimeTypeJSONKey] as? OcaString,
           mimeType == OcaPatchDatasetMimeType
     else {
       throw Ocp1Error.datasetMimeTypeMismatch
     }
 
-    if setDeviceName, let deviceName = patch[datasetDeviceNameJSONKey] as? OcaString {
+    if setDeviceName, let deviceName = jsonObject[datasetDeviceNameJSONKey] as? OcaString {
       self.deviceName = deviceName
     }
 
-    let datasetParams = (patch[datasetParamDatasetsJSONKey] as? [OcaONo]) ?? []
+    let datasetParams = (jsonObject[datasetParamDatasetsJSONKey] as? [OcaONo]) ?? []
     for datasetParam in datasetParams {
       let dataset = try await storageProvider.resolve(
         targetONo: OcaInvalidONo,
         datasetONo: datasetParam
       )
-      guard let block = try await deviceDelegate.resolve(objectNumber: dataset.owner) as? OcaBlock
+      guard let block = await deviceDelegate.resolve(objectNumber: dataset.owner) as? OcaBlock
       else {
         continue
       }
@@ -252,9 +256,11 @@ extension OcaDeviceManager {
   @_spi(SwiftOCAPrivate)
   @discardableResult
   public func storePatch(
+    patchDatasetONo: OcaONo,
     name: OcaString,
     paramDatasetONos: Set<OcaONo>,
-    controller: OcaController?
+    controller: OcaController?,
+    createIfAbsent: Bool
   ) async throws -> OcaONo {
     guard let deviceDelegate,
           let storageProvider = await deviceDelegate.datasetStorageProvider
@@ -275,17 +281,31 @@ extension OcaDeviceManager {
       try await dataset.storeParameters(object: object, controller: controller)
     }
 
-    let blob = try await serializePatchDataset(paramDatasetONos: paramDatasetONos)
-    let datasetONo = try await storageProvider.construct(
-      classID: OcaDataset.classID,
-      targetONo: OcaDeviceManagerONo,
-      name: name,
-      type: OcaPatchDatasetMimeType,
-      maxSize: .max,
-      initialContents: blob,
-      controller: nil
-    )
+    if patchDatasetONo != OcaInvalidONo {
+      let existingDataset = try await storageProvider.resolve(
+        targetONo: OcaDeviceManagerONo,
+        datasetONo: patchDatasetONo
+      )
+      try await existingDataset.storePatch(
+        paramDatasetONos: paramDatasetONos,
+        deviceManager: self,
+        controller: controller
+      )
+      return existingDataset.objectNumber
+    } else if createIfAbsent {
+      let blob: OcaLongBlob = try await serializePatchDataset(paramDatasetONos: paramDatasetONos)
 
-    return datasetONo
+      return try await storageProvider.construct(
+        classID: OcaDataset.classID,
+        targetONo: OcaDeviceManagerONo,
+        name: name,
+        type: OcaPatchDatasetMimeType,
+        maxSize: .max,
+        initialContents: blob,
+        controller: nil
+      )
+    } else {
+      throw Ocp1Error.unknownDataset
+    }
   }
 }

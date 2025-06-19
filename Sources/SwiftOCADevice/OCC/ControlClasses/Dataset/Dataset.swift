@@ -338,4 +338,20 @@ extension OcaDataset {
     try await deviceManager.deserializePatchDataset(blob, setDeviceName: setDeviceName)
     try await close(handle: handle, controller: controller)
   }
+
+  func storePatch(
+    paramDatasetONos: Set<OcaONo>,
+    deviceManager: OcaDeviceManager,
+    controller: OcaController?
+  ) async throws {
+    guard isPatchDataset else {
+      throw Ocp1Error.datasetMimeTypeMismatch
+    }
+
+    let blob: OcaLongBlob = try await deviceManager
+      .serializePatchDataset(paramDatasetONos: paramDatasetONos)
+    let (_, handle) = try await openWrite(lockState: .noLock, controller: controller)
+    try await write(handle: handle, position: 0, part: blob, controller: controller)
+    try await close(handle: handle, controller: controller)
+  }
 }
