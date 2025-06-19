@@ -42,12 +42,8 @@ fileprivate extension SocketError {
       } else {
         Errno(rawValue: errno)
       }
-    case .blocked:
-      self
     case .disconnected:
       Ocp1Error.notConnected
-    case .unsupportedAddress:
-      fallthrough
     default:
       self
     }
