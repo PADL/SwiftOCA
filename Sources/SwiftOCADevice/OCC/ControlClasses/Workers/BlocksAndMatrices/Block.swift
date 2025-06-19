@@ -43,7 +43,11 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
   }
 
-  public var datasetFilter: OcaRoot.SerializationFilterFunction?
+  var datasetFilter: OcaRoot.SerializationFilterFunction?
+
+  public func set(datasetFilter: OcaRoot.SerializationFilterFunction?) {
+    self.datasetFilter = datasetFilter
+  }
 
   fileprivate var members: [OcaRoot] { actionObjects }
 
