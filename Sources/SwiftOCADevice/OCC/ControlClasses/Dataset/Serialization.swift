@@ -225,7 +225,7 @@ extension OcaDeviceManager {
     let datasetParams = (jsonObject[datasetParamDatasetsJSONKey] as? [OcaONo]) ?? []
     for datasetParam in datasetParams {
       let dataset = try await storageProvider.resolve(
-        targetONo: OcaInvalidONo,
+        targetONo: nil,
         datasetONo: datasetParam
       )
       guard let block = await deviceDelegate.resolve(objectNumber: dataset.owner) as? OcaBlock
@@ -256,7 +256,7 @@ extension OcaDeviceManager {
   @_spi(SwiftOCAPrivate)
   @discardableResult
   public func storePatch(
-    patchDatasetONo: OcaONo,
+    patchDatasetONo: OcaONo?,
     name: OcaString,
     paramDatasetONos: Set<OcaONo>,
     controller: OcaController?,
@@ -271,7 +271,7 @@ extension OcaDeviceManager {
     for datasetONo in paramDatasetONos {
       // save the datasets first
       guard let dataset = try? await storageProvider.resolve(
-        targetONo: OcaInvalidONo,
+        targetONo: nil,
         datasetONo: datasetONo
       ),
         let object = await deviceDelegate.resolve(objectNumber: dataset.owner) as? OcaBlock
@@ -281,31 +281,32 @@ extension OcaDeviceManager {
       try await dataset.storeParameters(object: object, controller: controller)
     }
 
-    if patchDatasetONo != OcaInvalidONo {
-      let existingDataset = try await storageProvider.resolve(
+    if let patchDatasetONo {
+      if let existingDataset = try? await storageProvider.resolve(
         targetONo: OcaDeviceManagerONo,
         datasetONo: patchDatasetONo
-      )
-      try await existingDataset.storePatch(
-        paramDatasetONos: paramDatasetONos,
-        deviceManager: self,
-        controller: controller
-      )
-      return existingDataset.objectNumber
-    } else if createIfAbsent {
-      let blob: OcaLongBlob = try await serializePatchDataset(paramDatasetONos: paramDatasetONos)
-
-      return try await storageProvider.construct(
-        classID: OcaDataset.classID,
-        targetONo: OcaDeviceManagerONo,
-        name: name,
-        type: OcaPatchDatasetMimeType,
-        maxSize: .max,
-        initialContents: blob,
-        controller: nil
-      )
-    } else {
+      ) {
+        try await existingDataset.storePatch(
+          paramDatasetONos: paramDatasetONos,
+          deviceManager: self,
+          controller: controller
+        )
+        return existingDataset.objectNumber
+      }
+    } else if !createIfAbsent {
       throw Ocp1Error.unknownDataset
     }
+    let blob: OcaLongBlob = try await serializePatchDataset(paramDatasetONos: paramDatasetONos)
+
+    return try await storageProvider.construct(
+      classID: OcaDataset.classID,
+      targetONo: OcaDeviceManagerONo,
+      datasetONo: patchDatasetONo,
+      name: name,
+      type: OcaPatchDatasetMimeType,
+      maxSize: .max,
+      initialContents: blob,
+      controller: nil
+    )
   }
 }

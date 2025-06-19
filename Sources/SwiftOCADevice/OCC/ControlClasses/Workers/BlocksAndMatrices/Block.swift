@@ -491,6 +491,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       let oNo = try await provider.construct(
         classID: classID,
         targetONo: objectNumber,
+        datasetONo: nil,
         name: name,
         type: type,
         maxSize: maxSize,
@@ -524,8 +525,9 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
     do {
       let oNo = try await provider.duplicate(
-        oldONo: oldONo,
+        oldDatasetONo: oldONo,
         oldTargetONo: objectNumber,
+        newDatasetONo: nil,
         newTargetONo: targetBlockONo,
         newName: newName,
         newMaxSize: newMaxSize,

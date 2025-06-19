@@ -20,24 +20,26 @@ public protocol OcaDatasetStorageProvider: Actor {
   /// enumerate data objects in a block. This may include dataset objects that are not associated
   /// with the specific block,
   /// but can be applied because they share the same global type identifier
-  func getDatasetObjects(targetONo: OcaONo) async throws -> [OcaDataset]
+  func getDatasetObjects(targetONo: OcaONo?) async throws -> [OcaDataset]
 
   /// lookup a dataset by object number
   func resolve(
-    targetONo: OcaONo,
+    targetONo: OcaONo?,
     datasetONo: OcaONo,
   ) async throws -> OcaDataset
 
   /// lookup a dataset by name
   func find(
-    targetONo: OcaONo,
+    targetONo: OcaONo?,
     name: OcaString,
     nameComparisonType: OcaStringComparisonType,
   ) async throws -> [OcaDataset]
 
+  @discardableResult
   func construct(
     classID: OcaClassID,
     targetONo: OcaONo,
+    datasetONo: OcaONo?,
     name: OcaString,
     type: OcaMimeType,
     maxSize: OcaUint64,
@@ -45,14 +47,16 @@ public protocol OcaDatasetStorageProvider: Actor {
     controller: OcaController?
   ) async throws -> OcaONo
 
+  @discardableResult
   func duplicate(
-    oldONo: OcaONo,
-    oldTargetONo: OcaONo,
+    oldDatasetONo: OcaONo,
+    oldTargetONo: OcaONo?,
+    newDatasetONo: OcaONo?,
     newTargetONo: OcaONo,
     newName: OcaString,
     newMaxSize: OcaUint64,
     controller: OcaController?
   ) async throws -> OcaONo
 
-  func delete(targetONo: OcaONo, datasetONo: OcaONo) async throws
+  func delete(targetONo: OcaONo?, datasetONo: OcaONo) async throws
 }

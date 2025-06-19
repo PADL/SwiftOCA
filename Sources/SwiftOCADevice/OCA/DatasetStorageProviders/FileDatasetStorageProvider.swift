@@ -21,7 +21,6 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
   let basePath: URL
   let validDatasetONos: ClosedRange<OcaONo>
   let validBlockONos: Set<OcaONo>
-  let objectToDatasetONoMap: [OcaONo: OcaONo]
   weak var deviceDelegate: OcaDevice?
 
   private nonisolated var fileManager: FileManager {
@@ -32,10 +31,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     try OcaFileDatasetDirEntry.list(at: basePath)
   }
 
-  private func allocateONo(targetONo: OcaONo) throws -> OcaONo {
-    if targetONo != OcaInvalidONo, let oNo = objectToDatasetONoMap[targetONo] {
-      return oNo
-    }
+  private func allocateONo(targetONo: OcaONo?) throws -> OcaONo {
     let existingONos = (try? list().map(\.oNo)) ?? []
 
     for oNo in validDatasetONos {
@@ -51,13 +47,11 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     basePath: URL,
     validDatasetONos: ClosedRange<OcaONo> = 0x10000...0x1FFFF,
     validBlockONos: Set<OcaONo> = [OcaRootBlockONo],
-    objectToDatasetONoMap: [OcaONo: OcaONo] = .init(),
     deviceDelegate: OcaDevice?
   ) throws {
     self.basePath = basePath
     self.validDatasetONos = validDatasetONos
     self.validBlockONos = validBlockONos
-    self.objectToDatasetONoMap = objectToDatasetONoMap
     self.deviceDelegate = deviceDelegate
 
     if !fileManager.fileExists(atPath: basePath.path()) {
@@ -82,21 +76,26 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
   }
 
   public func getDatasetObjects(
-    targetONo oNo: OcaONo
+    targetONo: OcaONo?
   ) async throws -> [OcaDataset] {
-    let entries = try list().filter { oNo != OcaInvalidONo ? $0.target == oNo : true }
+    let list = try list()
+
+    let entries = if let targetONo {
+      list.filter { $0.target == targetONo }
+    } else {
+      list
+    }
+
     return try await entries.asyncMap { try await dirEntryToDataSet($0) }
   }
 
   private func resolve(
-    targetONo: OcaONo,
+    targetONo: OcaONo?,
     datasetONo: OcaONo
   ) async throws -> OcaFileDatasetDirEntry {
-    if targetONo != OcaInvalidONo, let oNo = objectToDatasetONoMap[targetONo], oNo != datasetONo {
-      throw Ocp1Error.datasetAlreadyExists
-    }
     guard let dirEntry = try list().first(where: {
-      if targetONo != OcaInvalidONo {
+      if let targetONo {
+        precondition(targetONo != OcaInvalidONo)
         guard targetONo == $0.target else {
           return false
         }
@@ -110,7 +109,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
   }
 
   public func resolve(
-    targetONo: OcaONo,
+    targetONo: OcaONo?,
     datasetONo: OcaONo
   ) async throws -> OcaDataset {
     let dirEntry: OcaFileDatasetDirEntry = try await resolve(
@@ -121,13 +120,13 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
   }
 
   public func find(
-    targetONo: OcaONo,
+    targetONo: OcaONo?,
     name: OcaString,
     nameComparisonType: OcaStringComparisonType,
   ) async throws -> [OcaDataset] {
     try await list()
       .filter {
-        if targetONo != OcaInvalidONo {
+        if let targetONo {
           guard targetONo == $0.target else {
             return false
           }
@@ -140,6 +139,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
   public func construct(
     classID: OcaClassID,
     targetONo: OcaONo,
+    datasetONo: OcaONo?,
     name: OcaString,
     type: OcaMimeType,
     maxSize: OcaUint64,
@@ -150,7 +150,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
       throw Ocp1Error.unknownDataset
     }
 
-    let oNo = try allocateONo(targetONo: targetONo)
+    let oNo = try datasetONo ?? allocateONo(targetONo: targetONo)
     let dirEntry = try OcaFileDatasetDirEntry(
       basePath: basePath,
       oNo: oNo,
@@ -173,8 +173,9 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
   }
 
   public func duplicate(
-    oldONo: OcaONo,
-    oldTargetONo: OcaONo,
+    oldDatasetONo: OcaONo,
+    oldTargetONo: OcaONo?,
+    newDatasetONo: OcaONo?,
     newTargetONo: OcaONo,
     newName: OcaString,
     newMaxSize: OcaUint64,
@@ -182,7 +183,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
   ) async throws -> SwiftOCA.OcaONo {
     let oldDirEntry: OcaFileDatasetDirEntry = try await resolve(
       targetONo: oldTargetONo,
-      datasetONo: oldONo
+      datasetONo: oldDatasetONo
     )
     let newONo = try allocateONo(targetONo: newTargetONo)
     let newDirEntry = try OcaFileDatasetDirEntry(
@@ -197,7 +198,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     return newONo
   }
 
-  public func delete(targetONo: OcaONo, datasetONo: OcaONo) async throws {
+  public func delete(targetONo: OcaONo?, datasetONo: OcaONo) async throws {
     let dirEntry: OcaFileDatasetDirEntry = try await resolve(
       targetONo: targetONo,
       datasetONo: datasetONo

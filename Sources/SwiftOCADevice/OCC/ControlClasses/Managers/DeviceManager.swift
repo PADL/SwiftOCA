@@ -159,7 +159,7 @@ open class OcaDeviceManager: OcaManager {
       throw Ocp1Error.noDatasetStorageProvider
     }
     let dataset = try await storageProvider.resolve(
-      targetONo: OcaInvalidONo,
+      targetONo: nil,
       datasetONo: datasetONo
     )
     try await dataset.applyPatch(to: self, controller: controller, setDeviceName: setDeviceName)
