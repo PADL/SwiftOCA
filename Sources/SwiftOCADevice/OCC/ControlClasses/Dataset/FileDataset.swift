@@ -43,6 +43,10 @@ extension OcaMimeType {
 }
 
 struct OcaFileDatasetDirEntry: Hashable, CustomStringConvertible {
+  static func == (lhs: OcaFileDatasetDirEntry, rhs: OcaFileDatasetDirEntry) -> Bool {
+    try! lhs.absolutePath == rhs.absolutePath
+  }
+
   let basePath: URL
   let oNo: OcaONo
   let target: OcaONo
@@ -115,7 +119,11 @@ struct OcaFileDatasetDirEntry: Hashable, CustomStringConvertible {
 
   var absolutePath: String {
     get throws {
-      try url.path()
+      guard let absolutePath = try? url.resourceValues(forKeys: [.canonicalPathKey]).canonicalPath
+      else {
+        return try url.path()
+      }
+      return absolutePath
     }
   }
 
@@ -229,12 +237,19 @@ final class OcaFileDataset: OcaDataset, @unchecked Sendable {
     controller: OcaController
   ) async throws -> (OcaUint64, OcaIOSessionHandle) {
     let dirEntry = try dirEntry
+    try FileManager.default.createFile(
+      atPath: dirEntry.absolutePath,
+      contents: nil,
+      attributes: nil
+    )
     let fileHandle = try FileHandle(forWritingTo: dirEntry.url)
     let handle = allocateIOSessionHandle(with: fileHandle, controller: controller)
     return (maxSize, handle)
   }
 
   override func close(handle: OcaIOSessionHandle, controller: OcaController) async throws {
+    let fileHandle: FileHandle = try resolveIOSessionHandle(handle, controller: controller)
+    try fileHandle.close()
     try releaseIOSessionHandle(handle, controller: controller)
   }
 

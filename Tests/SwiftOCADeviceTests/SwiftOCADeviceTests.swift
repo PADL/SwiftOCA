@@ -149,6 +149,24 @@ final class SwiftOCADeviceTests: XCTestCase {
 
     await fulfillment(of: [controllerExpectation2], timeout: 1)
 
+    let datasetStorageExpectation = XCTestExpectation(description: "Check dataset storage provider")
+    let basePath = URL.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    let storageProvider = try OcaFileDatasetStorageProvider(
+      basePath: basePath,
+      deviceDelegate: device
+    )
+    await device.setDatasetStorageProvider(storageProvider)
+    let testDataset = try await connection.rootBlock.constructDataset(
+      classID: SwiftOCA.OcaDataset.classID,
+      name: "test",
+      type: OcaParamDatasetMimeType,
+      maxSize: 1024,
+      initialContents: .init()
+    )
+    try await connection.rootBlock.store(currentParameterData: testDataset)
+    try await connection.rootBlock.apply(paramDataset: testDataset)
+    datasetStorageExpectation.fulfill()
+
     try await connection.disconnect()
     endpointTask.cancel()
   }
@@ -354,7 +372,7 @@ extension XCTestCase {
       // Swift runtime (as used by Swift concurrency.) To ensure we use a thread owned by
       // neither subsystem, use
       // Foundation's Thread.detachNewThread(_:).
-      Thread.detachNewThread { [self] in
+      Thread.detachNewThread { @Sendable [self] in
         wait(for: expectations, timeout: timeout, enforceOrder: enforceOrder)
         continuation.resume()
       }

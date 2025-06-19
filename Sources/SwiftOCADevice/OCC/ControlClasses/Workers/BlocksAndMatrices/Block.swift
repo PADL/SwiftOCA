@@ -428,9 +428,15 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       throw Ocp1Error.noDatasetStorageProvider
     }
 
-    let dataset = try await provider.resolve(dataset: paramDataset, for: self)
-    try await dataset.applyParameters(to: self, controller: controller)
-    mostRecentParamDatasetONo = dataset.objectNumber
+    do {
+      let dataset = try await provider.resolve(dataset: paramDataset, for: self)
+      try await dataset.applyParameters(to: self, controller: controller)
+      mostRecentParamDatasetONo = dataset.objectNumber
+    } catch {
+      await deviceDelegate?.logger
+        .warning("failed to apply parameter data set \(paramDataset.oNoString): \(error)")
+      throw error
+    }
   }
 
   open func store(
@@ -441,17 +447,32 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       throw Ocp1Error.noDatasetStorageProvider
     }
 
-    let dataset = try await provider.resolve(dataset: paramDataset, for: self)
-    try await dataset.storeParameters(object: self, controller: controller)
-    try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemChanged)
+    do {
+      let dataset = try await provider.resolve(dataset: paramDataset, for: self)
+      try await dataset.storeParameters(object: self, controller: controller)
+      try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemChanged)
+    } catch {
+      await deviceDelegate?.logger
+        .warning("failed to store current parameter data into \(paramDataset.oNoString): \(error)")
+      throw error
+    }
   }
 
   open func fetchCurrentParameterData() async throws -> OcaLongBlob {
-    try await serializeDatasetParameters()
+    do {
+      return try await serializeDatasetParameters()
+    } catch {
+      await deviceDelegate?.logger.warning("failed to fetch current parameter data: \(error)")
+      throw error
+    }
   }
 
   open func apply(parameterData: OcaLongBlob) async throws {
-    try await deserializeDatasetParameters(from: parameterData)
+    do {
+      try await deserializeDatasetParameters(from: parameterData)
+    } catch {
+      throw error
+    }
   }
 
   open func constructDataset(
@@ -466,17 +487,23 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       throw Ocp1Error.noDatasetStorageProvider
     }
 
-    let oNo = try await provider.construct(
-      name: name,
-      type: type,
-      maxSize: maxSize,
-      initialContents: initialContents,
-      for: self,
-      controller: controller
-    )
-
-    try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemAdded)
-    return oNo
+    do {
+      let oNo = try await provider.construct(
+        classID: classID,
+        name: name,
+        type: type,
+        maxSize: maxSize,
+        initialContents: initialContents,
+        for: self,
+        controller: controller
+      )
+      try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemAdded)
+      return oNo
+    } catch {
+      await deviceDelegate?.logger
+        .warning("failed to construct dataset object \(name) type \(type): \(error)")
+      throw error
+    }
   }
 
   open func duplicateDataset(
@@ -495,20 +522,27 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       throw Ocp1Error.status(.badONo)
     }
 
-    let oNo = try await provider.duplicate(
-      oldONo: oldONo,
-      targetBlockONo: targetBlockONo,
-      newName: newName,
-      newMaxSize: newMaxSize,
-      for: self,
-      controller: controller
-    )
-
-    try? await targetBlock.notifySubscribers(
-      datasetObjects: targetBlock.datasetObjects,
-      changeType: .itemAdded
-    )
-    return oNo
+    do {
+      let oNo = try await provider.duplicate(
+        oldONo: oldONo,
+        targetBlockONo: targetBlockONo,
+        newName: newName,
+        newMaxSize: newMaxSize,
+        for: self,
+        controller: controller
+      )
+      try? await targetBlock.notifySubscribers(
+        datasetObjects: targetBlock.datasetObjects,
+        changeType: .itemAdded
+      )
+      return oNo
+    } catch {
+      await deviceDelegate?.logger
+        .warning(
+          "failed to duplicate dataset object \(oldONo.oNoString) to \(targetBlockONo.oNoString): \(error)"
+        )
+      throw error
+    }
   }
 
   open func getDatasetObjectsRecursive(from controller: OcaController) async throws

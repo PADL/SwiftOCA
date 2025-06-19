@@ -99,12 +99,21 @@ public extension OcaDevice {
   }
 }
 
+extension OcaModelGUID {
+  var scalarValue: OcaUint64 {
+    OcaUint64(mfrCode.id.0 << 48) |
+      OcaUint64(mfrCode.id.1 << 40) |
+      OcaUint64(mfrCode.id.2 << 32) |
+      OcaUint64(modelCode)
+  }
+}
+
 extension OcaBlock {
   func serializeDatasetParameters() async throws -> [String: any Sendable] {
     var root = try serialize(flags: [], isIncluded: datasetFilter)
 
     root[datasetVersionJSONKey] = OcaJsonDatasetVersion
-    root[datasetDeviceModelJSONKey] = await deviceDelegate?.deviceManager?.modelGUID
+    root[datasetDeviceModelJSONKey] = await deviceDelegate?.deviceManager?.modelGUID.scalarValue
     root[datasetMimeTypeJSONKey] = OcaParamDatasetMimeType
 
     return root
@@ -116,8 +125,8 @@ extension OcaBlock {
     else {
       throw Ocp1Error.unknownDatasetVersion
     }
-    guard let deviceModel = parameters[datasetDeviceModelJSONKey] as? OcaModelGUID,
-          await deviceModel == deviceDelegate?.deviceManager?.modelGUID
+    guard let deviceModel = parameters[datasetDeviceModelJSONKey] as? OcaUint64,
+          await deviceModel == deviceDelegate?.deviceManager?.modelGUID.scalarValue
     else {
       throw Ocp1Error.datasetDeviceMismatch
     }

@@ -33,6 +33,7 @@ public protocol OcaDatasetStorageProvider: Actor {
   ) async throws -> [OcaDataset]
 
   func construct<T>(
+    classID: OcaClassID,
     name: OcaString,
     type: OcaMimeType,
     maxSize: OcaUint64,
