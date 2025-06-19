@@ -25,14 +25,14 @@ public protocol OcaDatasetStorageProvider: Actor {
   /// lookup a dataset by object number
   func resolve(
     targetONo: OcaONo?,
-    datasetONo: OcaONo,
+    datasetONo: OcaONo
   ) async throws -> OcaDataset
 
   /// lookup a dataset by name
   func find(
     targetONo: OcaONo?,
     name: OcaString,
-    nameComparisonType: OcaStringComparisonType,
+    nameComparisonType: OcaStringComparisonType
   ) async throws -> [OcaDataset]
 
   @discardableResult

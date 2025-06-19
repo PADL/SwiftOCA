@@ -122,7 +122,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
   public func find(
     targetONo: OcaONo?,
     name: OcaString,
-    nameComparisonType: OcaStringComparisonType,
+    nameComparisonType: OcaStringComparisonType
   ) async throws -> [OcaDataset] {
     try await list()
       .filter {
