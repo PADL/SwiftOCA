@@ -253,7 +253,8 @@ extension OcaDeviceManager {
   @discardableResult
   public func storePatch(
     name: OcaString,
-    paramDatasetONos: Set<OcaONo>
+    paramDatasetONos: Set<OcaONo>,
+    controller: OcaController?
   ) async throws -> OcaONo {
     guard let deviceDelegate,
           let storageProvider = await deviceDelegate.datasetStorageProvider
@@ -271,7 +272,7 @@ extension OcaDeviceManager {
       else {
         continue
       }
-      try await dataset.storeParameters(object: object, controller: nil)
+      try await dataset.storeParameters(object: object, controller: controller)
     }
 
     let blob = try await serializePatchDataset(paramDatasetONos: paramDatasetONos)
