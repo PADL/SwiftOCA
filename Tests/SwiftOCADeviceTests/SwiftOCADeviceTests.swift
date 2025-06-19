@@ -173,7 +173,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     let datasetPatchStorageExpectation =
       XCTestExpectation(description: "Check dataset patch storage provider")
     let deviceManager = await device.deviceManager!
-    let patchONo = try await deviceManager.storePatch(name: "global_patch", paramDatasetONos: [testDataset])
+    let patchONo = try await deviceManager.storePatch(name: "global_patch", paramDatasetONos: [testDataset], controller: nil)
     try await deviceManager.applyPatch(datasetONo: patchONo, controller: nil)
     datasetPatchStorageExpectation.fulfill()
 
