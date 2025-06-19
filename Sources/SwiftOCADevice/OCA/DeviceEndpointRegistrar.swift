@@ -26,6 +26,7 @@ import Android
 #endif
 import Dispatch
 import dnssd
+import Logging
 
 /// A helper class for advertising OCP.1 endpoints using Bonjour
 
@@ -72,25 +73,39 @@ public final class OcaDeviceEndpointRegistrar: @unchecked Sendable {
     } else {
       [:]
     }
-    let service = try await Service(
-      regType: endpoint.serviceType.rawValue,
-      port: endpoint.port,
-      txtRecord: txtRecords
-    )
-    let endpointRegistration = EndpointRegistration(endpoint: endpoint, service: service)
-    services.append(endpointRegistration)
-    return ObjectIdentifier(endpointRegistration.service)
+    do {
+      let service = try await Service(
+        regType: endpoint.serviceType.rawValue,
+        port: endpoint.port,
+        txtRecord: txtRecords
+      )
+      await device.logger.info("DNS service \(service) registered")
+
+      let endpointRegistration = EndpointRegistration(endpoint: endpoint, service: service)
+      services.append(endpointRegistration)
+      return ObjectIdentifier(endpointRegistration.service)
+    } catch {
+      await device.logger
+        .error(
+          "DNS service registration of \(endpoint.serviceType.rawValue) on port \(endpoint.port) failed: \(error)"
+        )
+      throw error
+    }
   }
 
   public func deregister(handle: Handle) async throws {
     services.removeAll(where: { ObjectIdentifier($0.service) == handle })
   }
 
-  fileprivate final class Service: @unchecked Sendable {
+  fileprivate final class Service: CustomStringConvertible, @unchecked Sendable {
     var sdRef: DNSServiceRef!
     var flags: DNSServiceFlags = 0
     var name: String!
     var domain: String!
+
+    var description: String {
+      "OcaDeviceEndpointRegistrar.Service(name: \(name), domain: \(domain), flags: \(flags))"
+    }
 
     deinit {
       if let sdRef {
