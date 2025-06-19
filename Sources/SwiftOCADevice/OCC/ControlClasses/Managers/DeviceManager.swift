@@ -150,8 +150,13 @@ open class OcaDeviceManager: OcaManager {
   )
   public var mostRecentPatchDatasetONo: OcaONo = OcaInvalidONo
 
-  open func applyPatch(datasetONo: OcaONo) async throws {
-    throw Ocp1Error.status(.notImplemented)
+  open func applyPatch(datasetONo: OcaONo, controller: OcaController) async throws {
+    guard let storageProvider = await deviceDelegate?.datasetStorageProvider else {
+      throw Ocp1Error.noDatasetStorageProvider
+    }
+    let dataset = try await storageProvider.resolve(dataset: datasetONo, for: nil)
+    try await dataset.applyPatch(to: self, controller: controller)
+    mostRecentPatchDatasetONo = datasetONo
   }
 
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
@@ -171,7 +176,7 @@ open class OcaDeviceManager: OcaManager {
     case OcaMethodID("3.27"):
       let oNo: OcaONo = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await applyPatch(datasetONo: oNo)
+      try await applyPatch(datasetONo: oNo, controller: controller)
       return Ocp1Response()
     default:
       return try await super.handleCommand(command, from: controller)

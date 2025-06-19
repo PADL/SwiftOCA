@@ -82,10 +82,15 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
 
   private func resolve(
     dataset: OcaONo,
-    for object: OcaBlock<some OcaRoot>
+    for object: OcaBlock<some OcaRoot>?
   ) async throws -> OcaFileDatasetDirEntry {
     guard let dirEntry = try list().first(where: {
-      $0.oNo == dataset && $0.target == object.objectNumber
+      if let object {
+        guard object.objectNumber == $0.target else {
+          return false
+        }
+      }
+      return dataset == $0.oNo
     }) else {
       throw Ocp1Error.unknownDataset
     }
@@ -95,7 +100,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
 
   public func resolve(
     dataset: OcaONo,
-    for object: OcaBlock<some OcaRoot>
+    for object: OcaBlock<some OcaRoot>?
   ) async throws -> OcaDataset {
     let dirEntry: OcaFileDatasetDirEntry = try await resolve(dataset: dataset, for: object)
     return try await dirEntryToDataSet(dirEntry)

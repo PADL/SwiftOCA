@@ -23,7 +23,7 @@ public protocol OcaDatasetStorageProvider: Actor {
   func getDatasetObjects<T>(for object: OcaBlock<T>) async throws -> [OcaDataset]
 
   /// lookup a dataset by object number
-  func resolve<T>(dataset: OcaONo, for object: OcaBlock<T>) async throws -> OcaDataset
+  func resolve<T>(dataset: OcaONo, for object: OcaBlock<T>?) async throws -> OcaDataset
 
   /// lookup a dataset by name
   func find<T>(

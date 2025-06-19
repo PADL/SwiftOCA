@@ -460,7 +460,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
   open func fetchCurrentParameterData() async throws -> OcaLongBlob {
     do {
-      return try await serializeDatasetParameters()
+      return try await serializeParameterDataset()
     } catch {
       await deviceDelegate?.logger.warning("failed to fetch current parameter data: \(error)")
       throw error
@@ -469,7 +469,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
   open func apply(parameterData: OcaLongBlob) async throws {
     do {
-      try await deserializeDatasetParameters(from: parameterData)
+      try await deserializeParameterDataset(from: parameterData)
     } catch {
       throw error
     }

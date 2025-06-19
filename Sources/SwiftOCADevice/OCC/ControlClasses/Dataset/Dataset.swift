@@ -292,7 +292,7 @@ extension OcaDataset {
       throw Ocp1Error.datasetMimeTypeMismatch
     }
 
-    let blob: OcaLongBlob = try await object.serializeDatasetParameters()
+    let blob: OcaLongBlob = try await object.serializeParameterDataset()
     let (_, handle) = try await openWrite(lockState: .noLock, controller: controller)
     try await write(handle: handle, position: 0, part: blob, controller: controller)
     try await close(handle: handle, controller: controller)
@@ -302,5 +302,28 @@ extension OcaDataset {
 extension OcaDataset {
   var isPatchDataset: Bool {
     type == OcaPatchDatasetMimeType
+  }
+
+  func applyPatch(to deviceManager: OcaDeviceManager, controller: OcaController) async throws {
+    guard isPatchDataset else {
+      throw Ocp1Error.datasetMimeTypeMismatch
+    }
+
+    let (size, handle) = try await openRead(lockState: .noLock, controller: controller)
+    let (complete, blob) = try await read(
+      handle: handle,
+      position: 0,
+      partSize: size,
+      controller: controller
+    )
+    guard complete else {
+      throw Ocp1Error.arrayOrDataTooBig // we assume we can read it in one call
+    }
+
+    guard owner == deviceManager.objectNumber else {
+      throw Ocp1Error.datasetTargetMismatch
+    }
+    try await deviceManager.deserializePatchDataset(blob)
+    try await close(handle: handle, controller: controller)
   }
 }

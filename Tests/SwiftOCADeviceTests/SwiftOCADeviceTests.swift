@@ -149,7 +149,8 @@ final class SwiftOCADeviceTests: XCTestCase {
 
     await fulfillment(of: [controllerExpectation2], timeout: 1)
 
-    let datasetStorageExpectation = XCTestExpectation(description: "Check dataset storage provider")
+    let datasetParamStorageExpectation =
+      XCTestExpectation(description: "Check dataset parameter storage provider")
     let basePath = URL.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     let storageProvider = try OcaFileDatasetStorageProvider(
       basePath: basePath,
@@ -167,7 +168,14 @@ final class SwiftOCADeviceTests: XCTestCase {
     // deregister to make sure we find it again, not the cached copy
     try await device.deregister(objectNumber: testDataset)
     try await connection.rootBlock.apply(paramDataset: testDataset)
-    datasetStorageExpectation.fulfill()
+    datasetParamStorageExpectation.fulfill()
+
+    let datasetPatchStorageExpectation =
+      XCTestExpectation(description: "Check dataset patch storage provider")
+    let deviceManager = await device.deviceManager!
+    let patchData = try await deviceManager.serializePatchDataset([testDataset])
+    try await deviceManager.deserializePatchDataset(patchData)
+    datasetPatchStorageExpectation.fulfill()
 
     try await connection.disconnect()
     endpointTask.cancel()
