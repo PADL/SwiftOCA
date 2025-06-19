@@ -1761,6 +1761,7 @@
 				D3AD37772BF089CA00F3F713 /* XCRemoteSwiftPackageReference "swift-system" */,
 				D35C9D9E2BF76E5100D680F2 /* XCRemoteSwiftPackageReference "SocketAddress" */,
 				D3CFA35B2CED4D7500CAE537 /* XCRemoteSwiftPackageReference "swift-atomics" */,
+				D37E65FC2E03EA0900D6B4D1 /* XCRemoteSwiftPackageReference "GzipSwift" */,
 			);
 			productRefGroup = D3E6E1652A3ACA0B00BF7095 /* Products */;
 			projectDirPath = "";
@@ -2759,6 +2760,14 @@
 			requirement = {
 				branch = main;
 				kind = branch;
+			};
+		};
+		D37E65FC2E03EA0900D6B4D1 /* XCRemoteSwiftPackageReference "GzipSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:1024jp/GzipSwift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.1.0;
 			};
 		};
 		D3AD37772BF089CA00F3F713 /* XCRemoteSwiftPackageReference "swift-system" */ = {

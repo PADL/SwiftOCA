@@ -15,6 +15,7 @@
 //
 
 import Foundation
+import Gzip
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
@@ -147,7 +148,8 @@ extension OcaBlock {
   func serializeParameterDataset() async throws -> OcaLongBlob {
     let jsonObject: [String: any Sendable] = try await serializeParameterDataset()
     do {
-      return try OcaLongBlob(JSONSerialization.data(withJSONObject: jsonObject, options: []))
+      let blob = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+      return try .init(blob.gzipped())
     } catch is EncodingError {
       throw Ocp1Error.invalidDatasetFormat
     }
@@ -157,7 +159,10 @@ extension OcaBlock {
     let parameterData = Data(parameterData)
     do {
       guard let jsonObject = try JSONSerialization
-        .jsonObject(with: parameterData) as? [String: Any]
+        .jsonObject(
+          with: parameterData.isGzipped ? parameterData
+            .gunzipped() : parameterData
+        ) as? [String: any Sendable]
       else {
         throw Ocp1Error.invalidDatasetFormat
       }
@@ -187,7 +192,8 @@ extension OcaDeviceManager {
     let jsonObject: [String: any Sendable] =
       try await serializePatchDataset(paramDatasetONos: paramDatasetONos)
     do {
-      return try OcaLongBlob(JSONSerialization.data(withJSONObject: jsonObject, options: []))
+      let blob = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+      return try .init(blob.gzipped())
     } catch is EncodingError {
       throw Ocp1Error.invalidDatasetFormat
     }
@@ -243,7 +249,10 @@ extension OcaDeviceManager {
     let patchData = Data(patchData)
     do {
       guard let jsonObject = try JSONSerialization
-        .jsonObject(with: patchData) as? [String: any Sendable]
+        .jsonObject(
+          with: patchData.isGzipped ? patchData
+            .gunzipped() : patchData
+        ) as? [String: any Sendable]
       else {
         throw Ocp1Error.invalidDatasetFormat
       }

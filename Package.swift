@@ -120,6 +120,7 @@ let CommonPackageDependencies: [Package.Dependency] = [
   .package(url: "https://github.com/PADL/SocketAddress", from: "0.0.1"),
   .package(url: "https://github.com/lhoward/AsyncExtensions", from: "0.9.0"),
   .package(url: "https://github.com/Flight-School/AnyCodable", from: "0.6.7"),
+  .package(url: "https://github.com/1024jp/GzipSwift", from: "6.1.0"),
 ]
 
 let CommonProducts: [Product] = [
@@ -164,6 +165,7 @@ let CommonTargets: [Target] = [
     dependencies: [
       "SwiftOCA",
       .product(name: "Logging", package: "swift-log"),
+      .product(name: "Gzip", package: "GzipSwift"),
     ] + PlatformTargetDependencies,
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),

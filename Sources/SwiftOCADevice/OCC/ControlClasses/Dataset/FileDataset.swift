@@ -22,9 +22,9 @@ extension OcaMimeType {
     get throws {
       switch self {
       case OcaParamDatasetMimeType:
-        return ".param.json"
+        return ".param.json.gz"
       case OcaPatchDatasetMimeType:
-        return ".patch.json"
+        return ".patch.json.gz"
       default:
         throw Ocp1Error.unknownDatasetMimeType
       }
@@ -32,9 +32,9 @@ extension OcaMimeType {
   }
 
   init(filePath: String) throws {
-    if filePath.hasSuffix(".param.json") {
+    if filePath.hasSuffix(".param.json.gz") {
       self = OcaParamDatasetMimeType
-    } else if filePath.hasSuffix(".patch.json") {
+    } else if filePath.hasSuffix(".patch.json.gz") {
       self = OcaPatchDatasetMimeType
     } else {
       throw Ocp1Error.unknownDatasetMimeType
