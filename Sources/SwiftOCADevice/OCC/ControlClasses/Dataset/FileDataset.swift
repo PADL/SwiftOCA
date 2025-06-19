@@ -284,7 +284,7 @@ final class OcaFileDataset: OcaDataset, @unchecked Sendable {
     do {
       try fileHandle.seek(toOffset: position)
       try fileHandle.write(contentsOf: part)
-      try fileHandle.truncate(atOffset: position + part.count)
+      try fileHandle.truncate(atOffset: position + UInt64(part.count))
     } catch {
       throw Ocp1Error.datasetWriteFailed
     }
