@@ -468,11 +468,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   }
 
   open func apply(parameterData: OcaLongBlob) async throws {
-    do {
-      try await deserializeParameterDataset(from: parameterData)
-    } catch {
-      throw error
-    }
+    try await deserializeParameterDataset(from: parameterData)
   }
 
   open func constructDataset(
