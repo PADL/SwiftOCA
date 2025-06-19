@@ -300,12 +300,15 @@ extension OcaDataset {
       throw Ocp1Error.datasetMimeTypeMismatch
     }
 
-    let blob: OcaLongBlob = try await object.serializeParameterDataset()
+    let compress = self is OcaCompressibleDataset
+    let blob: OcaLongBlob = try await object.serializeParameterDataset(compress: compress)
     let (_, handle) = try await openWrite(lockState: .noLock, controller: controller)
     try await write(handle: handle, position: 0, part: blob, controller: controller)
     try await close(handle: handle, controller: controller)
   }
 }
+
+protocol OcaCompressibleDataset: OcaDataset {}
 
 extension OcaDataset {
   var isPatchDataset: Bool {

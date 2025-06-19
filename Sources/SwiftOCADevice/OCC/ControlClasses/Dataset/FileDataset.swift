@@ -158,7 +158,7 @@ struct OcaFileDatasetDirEntry: Hashable, CustomStringConvertible {
   }
 }
 
-final class OcaFileDataset: OcaDataset, @unchecked Sendable {
+final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Sendable {
   let basePath: URL
 
   private init(

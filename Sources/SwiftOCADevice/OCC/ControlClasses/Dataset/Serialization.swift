@@ -145,11 +145,11 @@ extension OcaBlock {
     }
   }
 
-  func serializeParameterDataset() async throws -> OcaLongBlob {
+  func serializeParameterDataset(compress: Bool) async throws -> OcaLongBlob {
     let jsonObject: [String: any Sendable] = try await serializeParameterDataset()
     do {
       let blob = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
-      return try .init(blob.gzipped())
+      return try .init(compress ? blob.gzipped() : blob)
     } catch is EncodingError {
       throw Ocp1Error.invalidDatasetFormat
     }
