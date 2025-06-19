@@ -150,7 +150,11 @@ open class OcaDeviceManager: OcaManager {
   )
   public var mostRecentPatchDatasetONo: OcaONo = OcaInvalidONo
 
-  open func applyPatch(datasetONo: OcaONo, controller: OcaController?) async throws {
+  open func applyPatch(
+    datasetONo: OcaONo,
+    controller: OcaController?,
+    setDeviceName: Bool = false
+  ) async throws {
     guard let storageProvider = await deviceDelegate?.datasetStorageProvider else {
       throw Ocp1Error.noDatasetStorageProvider
     }
@@ -158,7 +162,7 @@ open class OcaDeviceManager: OcaManager {
       targetONo: OcaInvalidONo,
       datasetONo: datasetONo
     )
-    try await dataset.applyPatch(to: self, controller: controller)
+    try await dataset.applyPatch(to: self, controller: controller, setDeviceName: setDeviceName)
     mostRecentPatchDatasetONo = datasetONo
   }
 
