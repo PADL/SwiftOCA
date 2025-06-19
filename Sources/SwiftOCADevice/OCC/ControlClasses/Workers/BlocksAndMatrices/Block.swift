@@ -462,11 +462,11 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     initialContents: OcaLongBlob,
     controller: OcaController
   ) async throws -> OcaONo {
-    let oNo: OcaONo
     guard let provider = await deviceDelegate?.datasetStorageProvider else {
       throw Ocp1Error.noDatasetStorageProvider
     }
-    oNo = try await provider.construct(
+
+    let oNo = try await provider.construct(
       name: name,
       type: type,
       maxSize: maxSize,
@@ -474,6 +474,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       for: self,
       controller: controller
     )
+
     try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemAdded)
     return oNo
   }
@@ -488,6 +489,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     guard let provider = await deviceDelegate?.datasetStorageProvider else {
       throw Ocp1Error.noDatasetStorageProvider
     }
+
+    // validate the target block actually exists
+    guard let targetBlock = await deviceDelegate?.objects[targetBlockONo] as? Self else {
+      throw Ocp1Error.status(.badONo)
+    }
+
     let oNo = try await provider.duplicate(
       oldONo: oldONo,
       targetBlockONo: targetBlockONo,
@@ -497,8 +504,10 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       controller: controller
     )
 
-    try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemAdded)
-
+    try? await targetBlock.notifySubscribers(
+      datasetObjects: targetBlock.datasetObjects,
+      changeType: .itemAdded
+    )
     return oNo
   }
 

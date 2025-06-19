@@ -260,8 +260,12 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
 }
 
 extension OcaDataset {
+  var isParamDataset: Bool {
+    type == OcaParamDatasetMimeType
+  }
+
   func applyParameters(to object: OcaBlock<some OcaRoot>, controller: OcaController) async throws {
-    guard type == OcaParamDatasetMimeType else {
+    guard isParamDataset else {
       throw Ocp1Error.datasetMimeTypeMismatch
     }
 
@@ -284,7 +288,7 @@ extension OcaDataset {
   }
 
   func storeParameters(object: OcaBlock<some OcaRoot>, controller: OcaController) async throws {
-    guard type == OcaParamDatasetMimeType else {
+    guard isParamDataset else {
       throw Ocp1Error.datasetMimeTypeMismatch
     }
 
@@ -292,5 +296,11 @@ extension OcaDataset {
     let (_, handle) = try await openWrite(lockState: .noLock, controller: controller)
     try await write(handle: handle, position: 0, part: blob, controller: controller)
     try await close(handle: handle, controller: controller)
+  }
+}
+
+extension OcaDataset {
+  var isPatchDataset: Bool {
+    type == OcaPatchDatasetMimeType
   }
 }
