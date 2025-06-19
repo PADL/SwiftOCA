@@ -63,7 +63,7 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
     owner: OcaONo,
     name: OcaString,
     type: OcaMimeType,
-    readOnly: OcaBoolean = true,
+    readOnly: OcaBoolean = false,
     lastModificationTime: OcaTime = .now,
     maxSize: OcaUint64 = .max,
     objectNumber: OcaONo,
@@ -72,6 +72,13 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
     deviceDelegate: OcaDevice? = nil,
     addToRootBlock: Bool = false
   ) async throws {
+    self.owner = owner
+    self.name = name
+    self.type = type
+    self.readOnly = readOnly
+    self.lastModificationTime = lastModificationTime
+    self.maxSize = maxSize
+
     try await super.init(
       objectNumber: objectNumber,
       lockable: lockable,
@@ -79,13 +86,6 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
       deviceDelegate: deviceDelegate,
       addToRootBlock: addToRootBlock
     )
-
-    self.owner = owner
-    self.name = name
-    self.type = type
-    self.readOnly = readOnly
-    self.lastModificationTime = lastModificationTime
-    self.maxSize = maxSize
   }
 
   public required nonisolated init(from decoder: Decoder) throws {
