@@ -481,7 +481,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     type: OcaMimeType,
     maxSize: OcaUint64,
     initialContents: OcaLongBlob,
-    controller: OcaController?
+    controller: OcaController?,
+    desiredDatasetONo: OcaONo? = nil
   ) async throws -> OcaONo {
     guard let provider = await deviceDelegate?.datasetStorageProvider else {
       throw Ocp1Error.noDatasetStorageProvider
@@ -491,7 +492,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       let oNo = try await provider.construct(
         classID: classID,
         targetONo: objectNumber,
-        datasetONo: nil,
+        datasetONo: desiredDatasetONo,
         name: name,
         type: type,
         maxSize: maxSize,
@@ -512,7 +513,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     targetBlockONo: OcaONo,
     newName: OcaString,
     newMaxSize: OcaUint64,
-    controller: OcaController?
+    controller: OcaController?,
+    desiredDatasetONo: OcaONo? = nil
   ) async throws -> OcaONo {
     guard let provider = await deviceDelegate?.datasetStorageProvider else {
       throw Ocp1Error.noDatasetStorageProvider
@@ -527,7 +529,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       let oNo = try await provider.duplicate(
         oldDatasetONo: oldONo,
         oldTargetONo: objectNumber,
-        newDatasetONo: nil,
+        newDatasetONo: desiredDatasetONo,
         newTargetONo: targetBlockONo,
         newName: newName,
         newMaxSize: newMaxSize,
