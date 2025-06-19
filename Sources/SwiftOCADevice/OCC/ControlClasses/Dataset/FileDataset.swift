@@ -102,6 +102,7 @@ struct OcaFileDatasetDirEntry: Hashable, CustomStringConvertible {
     }
 
     let name = try components[2].dropLast(mimeType.fileExtension.count)
+
     try self.init(
       basePath: basePath,
       oNo: oNo,
@@ -249,6 +250,7 @@ final class OcaFileDataset: OcaDataset, @unchecked Sendable {
 
   override func close(handle: OcaIOSessionHandle, controller: OcaController) async throws {
     let fileHandle: FileHandle = try resolveIOSessionHandle(handle, controller: controller)
+    try? fileHandle.synchronize()
     try fileHandle.close()
     try releaseIOSessionHandle(handle, controller: controller)
   }
