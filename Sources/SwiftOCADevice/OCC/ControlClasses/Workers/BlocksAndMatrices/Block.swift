@@ -39,7 +39,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       guard let provider = await deviceDelegate?.datasetStorageProvider else {
         throw Ocp1Error.noDatasetStorageProvider
       }
-      return try await provider.getDatasetObjects(for: self)
+      return try await provider.getDatasetObjects(targetONo: objectNumber)
     }
   }
 
@@ -411,7 +411,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       throw Ocp1Error.noDatasetStorageProvider
     }
 
-    try await provider.delete(dataset: object.objectNumber, from: self)
+    try await provider.delete(targetONo: objectNumber, datasetONo: object.objectNumber)
     try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemDeleted)
   }
 
@@ -429,7 +429,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
 
     do {
-      let dataset = try await provider.resolve(dataset: paramDataset, for: self)
+      let dataset = try await provider.resolve(targetONo: objectNumber, datasetONo: paramDataset)
       try await dataset.applyParameters(to: self, controller: controller)
       mostRecentParamDatasetONo = dataset.objectNumber
     } catch {
@@ -448,7 +448,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
 
     do {
-      let dataset = try await provider.resolve(dataset: paramDataset, for: self)
+      let dataset = try await provider.resolve(targetONo: objectNumber, datasetONo: paramDataset)
       try await dataset.storeParameters(object: self, controller: controller)
       try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemChanged)
     } catch {
@@ -490,11 +490,11 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     do {
       let oNo = try await provider.construct(
         classID: classID,
+        targetONo: objectNumber,
         name: name,
         type: type,
         maxSize: maxSize,
         initialContents: initialContents,
-        for: self,
         controller: controller
       )
       try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemAdded)
@@ -525,10 +525,10 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     do {
       let oNo = try await provider.duplicate(
         oldONo: oldONo,
-        targetBlockONo: targetBlockONo,
+        oldTargetONo: objectNumber,
+        newTargetONo: targetBlockONo,
         newName: newName,
         newMaxSize: newMaxSize,
-        for: self,
         controller: controller
       )
       try? await targetBlock.notifySubscribers(
@@ -568,7 +568,11 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       guard let provider = await deviceDelegate?.datasetStorageProvider else {
         throw Ocp1Error.noDatasetStorageProvider
       }
-      return try await provider.find(name: name, nameComparisonType: nameComparisonType, for: self)
+      return try await provider.find(
+        targetONo: objectNumber,
+        name: name,
+        nameComparisonType: nameComparisonType
+      )
     default:
       throw Ocp1Error.unknownDatasetMimeType
     }

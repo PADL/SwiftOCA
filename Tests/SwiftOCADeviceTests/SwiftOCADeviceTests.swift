@@ -15,8 +15,8 @@
 //
 
 @testable @_spi(SwiftOCAPrivate) import SwiftOCA
-@testable import SwiftOCADevice
-import XCTest
+@testable @_spi(SwiftOCAPrivate) import SwiftOCADevice
+@preconcurrency import XCTest
 
 final class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator, OcaGroupPeerToPeerMember,
   @unchecked Sendable
@@ -173,8 +173,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     let datasetPatchStorageExpectation =
       XCTestExpectation(description: "Check dataset patch storage provider")
     let deviceManager = await device.deviceManager!
-    let patchData = try await deviceManager.serializePatchDataset([testDataset])
-    try await deviceManager.deserializePatchDataset(patchData)
+    try await deviceManager.storePatch(name: "global_patch", paramDatasetONos: [OcaRootBlockONo])
     datasetPatchStorageExpectation.fulfill()
 
     try await connection.disconnect()

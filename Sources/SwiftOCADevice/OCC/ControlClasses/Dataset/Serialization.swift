@@ -24,6 +24,7 @@ let classIDJSONKey = "_classID"
 // for datasets, these keys are merged with the top-level JSON object for validation
 let datasetVersionJSONKey = "_version"
 let datasetDeviceModelJSONKey = "_deviceModel"
+let datasetDeviceNameJSONKey = "_deviceName"
 let datasetMimeTypeJSONKey = "_mimeType"
 let datasetParamDatasetsJSONKey = "_paramDatasets"
 
@@ -144,9 +145,9 @@ extension OcaBlock {
   }
 
   func serializeParameterDataset() async throws -> OcaLongBlob {
-    let datasetParameters: [String: any Sendable] = try await serializeParameterDataset()
+    let jsonObject: [String: any Sendable] = try await serializeParameterDataset()
     do {
-      return try OcaLongBlob(JSONSerialization.data(withJSONObject: datasetParameters, options: []))
+      return try OcaLongBlob(JSONSerialization.data(withJSONObject: jsonObject, options: []))
     } catch is EncodingError {
       throw Ocp1Error.invalidDatasetFormat
     }
@@ -173,6 +174,7 @@ extension OcaDeviceManager {
   {
     var root = [String: any Sendable]()
 
+    root[datasetDeviceNameJSONKey] = deviceName
     root[datasetVersionJSONKey] = OcaJsonDatasetVersion
     root[datasetDeviceModelJSONKey] = modelGUID.scalarValue
     root[datasetMimeTypeJSONKey] = OcaPatchDatasetMimeType
@@ -181,7 +183,16 @@ extension OcaDeviceManager {
     return root
   }
 
-  func deserializePatchDataset(_ patch: [String: any Sendable]) async throws {
+  func serializePatchDataset(paramDatasetONos: Set<OcaONo>) async throws -> OcaLongBlob {
+    let jsonObject: [String: any Sendable] = try await serializePatchDataset(paramDatasetONos)
+    do {
+      return try OcaLongBlob(JSONSerialization.data(withJSONObject: jsonObject, options: []))
+    } catch is EncodingError {
+      throw Ocp1Error.invalidDatasetFormat
+    }
+  }
+
+  func deserializePatchDataset(_ patch: [String: any Sendable], setDeviceName: Bool) async throws {
     guard let deviceDelegate,
           let storageProvider = await deviceDelegate.datasetStorageProvider
     else {
@@ -197,10 +208,14 @@ extension OcaDeviceManager {
     else {
       throw Ocp1Error.datasetDeviceMismatch
     }
-    guard let mimeType = patch[datasetMimeTypeJSONKey] as? String,
+    guard let mimeType = patch[datasetMimeTypeJSONKey] as? OcaString,
           mimeType == OcaPatchDatasetMimeType
     else {
       throw Ocp1Error.datasetMimeTypeMismatch
+    }
+
+    if setDeviceName, let deviceName = patch[datasetDeviceNameJSONKey] as? OcaString {
+      self.deviceName = deviceName
     }
 
     let localEndpoint = try await OcaLocalDeviceEndpoint(device: deviceDelegate)
@@ -210,7 +225,10 @@ extension OcaDeviceManager {
 
     let datasetParams = (patch[datasetParamDatasetsJSONKey] as? [OcaONo]) ?? []
     for datasetParam in datasetParams {
-      let dataset = try await storageProvider.resolve(dataset: datasetParam, for: nil)
+      let dataset = try await storageProvider.resolve(
+        targetONo: OcaInvalidONo,
+        datasetONo: datasetParam
+      )
       guard let block = try await localConnection.resolve(object: .init(
         oNo: dataset.owner,
         classIdentification: OcaBlock.classIdentification
@@ -224,7 +242,10 @@ extension OcaDeviceManager {
     endpointTask.cancel()
   }
 
-  func deserializePatchDataset(_ patchData: OcaLongBlob) async throws {
+  func deserializePatchDataset(
+    _ patchData: OcaLongBlob,
+    setDeviceName: Bool = false
+  ) async throws {
     let patchData = Data(patchData)
     do {
       guard let jsonObject = try JSONSerialization
@@ -232,9 +253,43 @@ extension OcaDeviceManager {
       else {
         throw Ocp1Error.invalidDatasetFormat
       }
-      try await deserializePatchDataset(jsonObject)
+      try await deserializePatchDataset(jsonObject, setDeviceName: setDeviceName)
     } catch is DecodingError {
       throw Ocp1Error.invalidDatasetFormat
     }
+  }
+
+  @_spi(SwiftOCAPrivate)
+  @discardableResult
+  public func storePatch(
+    name: OcaString,
+    paramDatasetONos: Set<OcaONo>
+  ) async throws -> OcaONo {
+    guard let deviceDelegate,
+          let storageProvider = await deviceDelegate.datasetStorageProvider
+    else {
+      throw Ocp1Error.noDatasetStorageProvider
+    }
+
+    let localEndpoint = try await OcaLocalDeviceEndpoint(device: deviceDelegate)
+    let endpointTask = Task { try await localEndpoint.run() }
+    let localConnection = await OcaLocalConnection(localEndpoint)
+    try await localConnection.connect()
+
+    let blob = try await serializePatchDataset(paramDatasetONos: paramDatasetONos)
+    let datasetONo = try await storageProvider.construct(
+      classID: OcaDataset.classID,
+      targetONo: OcaDeviceManagerONo,
+      name: name,
+      type: OcaPatchDatasetMimeType,
+      maxSize: .max,
+      initialContents: blob,
+      controller: localEndpoint.controllers.first!
+    )
+
+    try? await localConnection.disconnect()
+    endpointTask.cancel()
+
+    return datasetONo
   }
 }
