@@ -2764,7 +2764,7 @@
 		};
 		D37E65FC2E03EA0900D6B4D1 /* XCRemoteSwiftPackageReference "GzipSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:1024jp/GzipSwift";
+			repositoryURL = "https://github.com/1024jp/GzipSwift";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 6.1.0;
