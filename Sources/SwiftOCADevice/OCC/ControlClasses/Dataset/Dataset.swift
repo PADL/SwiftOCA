@@ -149,8 +149,11 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
     _ioSessions.remove(at: index)
   }
 
-  func expireIOSessionHandles(controller: OcaController) {
-    _ioSessions.filter { $1.controllerID == controller.id }.forEach { _ioSessions[$0.key] = nil }
+  func expireIOSessionHandles(controller: OcaController) async {
+    for handle in _ioSessions.filter({ $1.controllerID == controller.id }) {
+      try? await close(handle: handle.key, controller: controller)
+      _ioSessions[handle.key] = nil
+    }
   }
 
   public func resolveIOSessionHandle<T>(
