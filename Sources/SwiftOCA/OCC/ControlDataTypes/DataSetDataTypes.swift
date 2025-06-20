@@ -31,5 +31,9 @@ public struct OcaDatasetSearchResult: Codable, Sendable {
   }
 }
 
+public let OcaLogDatasetMimeType = "application/x-oca-log"
 public let OcaParamDatasetMimeType = "application/x-oca-param"
 public let OcaPatchDatasetMimeType = "application/x-oca-patch"
+public let OcaProgramDatasetMimeType = "application/x-oca-program"
+public let OcaCommandSetDatasetMimeType = "application/x-oca-commandset"
+public let OcaGenericDatasetMimeType = "application/octet-stream"
