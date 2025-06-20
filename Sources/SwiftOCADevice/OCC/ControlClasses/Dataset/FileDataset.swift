@@ -286,6 +286,9 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
   ) async throws -> (OcaBoolean, OcaLongBlob) {
     let fileHandle: IOSessionHandle = try resolveIOSessionHandle(handle, controller: controller)
     do {
+      guard position + partSize <= maxSize else {
+        throw Ocp1Error.arrayOrDataTooBig
+      }
       #if canImport(IORing)
       let size = try fileHandle.getSize()
       var data = [UInt8](repeating: 0, count: Int(partSize))
@@ -317,6 +320,9 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     controller: OcaController?
   ) async throws {
     let fileHandle: IOSessionHandle = try resolveIOSessionHandle(handle, controller: controller)
+    guard position + OcaUint64(part.count) <= maxSize else {
+      throw Ocp1Error.arrayOrDataTooBig
+    }
     do {
       #if canImport(IORing)
       try await IORing.shared.write(
