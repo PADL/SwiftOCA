@@ -23,13 +23,6 @@ extension NetService: @unchecked Sendable {}
 
 public class OcaBrowser: NSObject, NetServiceBrowserDelegate, @unchecked
 Sendable {
-  public enum ServiceType: String, Sendable {
-    case tcp = "_oca._tcp."
-    case tcpSecure = "_ocasec._tcp."
-    case udp = "_oca._udp."
-    case tcpWebSocket = "_ocaws._tcp."
-  }
-
   public enum Result: Sendable {
     case didNotSearch(Error)
     case didFind(NetService)
@@ -39,7 +32,7 @@ Sendable {
   private let browser: NetServiceBrowser
   public let channel: AsyncChannel<Result>
 
-  public init(serviceType: ServiceType) {
+  public init(serviceType: OcaNetworkAdvertisingServiceType) {
     browser = NetServiceBrowser()
     channel = AsyncChannel<Result>()
     super.init()
@@ -135,7 +128,7 @@ extension Ocp1Connection: Ocp1ConnectionFactory {
     _ netService: NetService,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) async throws {
-    guard let serviceType = OcaBrowser.ServiceType(rawValue: netService.type) else {
+    guard let serviceType = OcaNetworkAdvertisingServiceType(rawValue: netService.type) else {
       throw Ocp1Error.unknownServiceType
     }
 

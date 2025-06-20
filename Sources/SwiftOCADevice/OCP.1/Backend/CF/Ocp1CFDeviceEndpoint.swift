@@ -47,7 +47,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 
   var socket: _CFSocketWrapper?
   #if canImport(dnssd)
-  var _endpointRegistrationTask: Task<(), Error>?
+  var _endpointRegistrarTask: Task<(), Error>?
   #endif
 
   public var controllers: [OcaController] {
@@ -88,7 +88,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   }
 
   #if canImport(dnssd)
-  public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
+  public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
     .none
   }
   #endif
@@ -100,7 +100,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   public func run() async throws {
     if port != 0 {
       #if canImport(dnssd)
-      _endpointRegistrationTask = Task { try await runBonjourEndpointRegistration(for: device) }
+      _endpointRegistrarTask = Task { try await runBonjourEndpointRegistrar(for: device) }
       #endif
     } else if address.family == AF_LOCAL {
       try? unlinkDomainSocket()
@@ -117,7 +117,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 
   deinit {
     #if canImport(dnssd)
-    _endpointRegistrationTask?.cancel()
+    _endpointRegistrarTask?.cancel()
     #endif
     if address.family == AF_LOCAL { try? unlinkDomainSocket() }
   }
@@ -178,7 +178,7 @@ public final class Ocp1CFStreamDeviceEndpoint: Ocp1CFDeviceEndpoint,
   }
 
   #if canImport(dnssd)
-  override public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
+  override public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
     .tcp
   }
   #endif
@@ -269,7 +269,7 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
   }
 
   #if canImport(dnssd)
-  override public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
+  override public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
     .udp
   }
   #endif

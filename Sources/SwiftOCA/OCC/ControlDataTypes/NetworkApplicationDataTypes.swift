@@ -41,6 +41,14 @@ public enum OcaNetworkAdvertisingService: OcaUint8, Codable, Sendable, CaseItera
   case expansionBase = 128
 }
 
+public enum OcaNetworkAdvertisingServiceType: String {
+  case none = ""
+  case tcp = "_oca._tcp."
+  case tcpSecure = "_ocasec._tcp."
+  case udp = "_oca._udp."
+  case tcpWebSocket = "_ocaws._tcp."
+}
+
 public struct OcaNetworkAdvertisingMechanism: Codable, Sendable {
   public let service: OcaNetworkAdvertisingService
   /// JSON-encoded parameters, e.g.

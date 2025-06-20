@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -31,181 +31,121 @@ import Logging
 /// A helper class for advertising OCP.1 endpoints using Bonjour
 
 public protocol OcaBonjourRegistrableDeviceEndpoint: OcaDeviceEndpoint {
-  var serviceType: OcaDeviceEndpointRegistrar.ServiceType { get }
+  var serviceType: OcaNetworkAdvertisingServiceType { get }
   var port: UInt16 { get }
+}
+
+extension OcaDeviceManager {
+  var txtRecords: [String: String] {
+    [
+      "txtvers": "1",
+      "protovers": "\(version)",
+      "modelGUID": "\(modelGUID)",
+      "serialNumber": "\(serialNumber)",
+    ]
+  }
 }
 
 extension OcaBonjourRegistrableDeviceEndpoint {
   // this will run a registration loop until cancelled
-  func runBonjourEndpointRegistration(for device: OcaDevice) async throws {
+  @OcaDevice
+  func runBonjourEndpointRegistrar(for device: OcaDevice) async throws {
     let logger = await device.logger
     let deviceManager = await device.deviceManager!
-    var lastDeviceName: OcaString?
-    var endpointRegistrationHandle: OcaDeviceEndpointRegistrar.Handle?
+    var dnsServiceRegistration: DNSServiceRegistration?
 
     logger.trace("starting DNS endpoint registration task")
 
-    for try await deviceName in await deviceManager.$deviceName {
-      guard lastDeviceName != deviceName else { continue }
-
-      try await Task.checkCancellation()
-
-      if let endpointRegistrationHandle {
-        logger
-          .trace(
-            "device name changed from \(lastDeviceName!) to \(deviceName); deregistering DNS service"
-          )
-        try? await OcaDeviceEndpointRegistrar.shared.deregister(handle: endpointRegistrationHandle)
-      }
-
-      endpointRegistrationHandle = try await OcaDeviceEndpointRegistrar.shared.register(
-        endpoint: self,
-        device: device
+    for try await deviceName in deviceManager.$deviceName {
+      await dnsServiceRegistration?.deregister()
+      dnsServiceRegistration = try? DNSServiceRegistration(
+        name: deviceName,
+        regType: serviceType.rawValue,
+        port: port,
+        txtRecord: deviceManager.txtRecords
       )
-
-      lastDeviceName = deviceName
-    }
-
-    if let endpointRegistrationHandle {
-      try? await OcaDeviceEndpointRegistrar.shared.deregister(handle: endpointRegistrationHandle)
     }
 
     logger.trace("ending DNS endpoint registration task")
   }
 }
 
-@OcaDevice
-public final class OcaDeviceEndpointRegistrar: @unchecked Sendable {
-  public typealias Handle = ObjectIdentifier
+fileprivate actor DNSServiceRegistration {
+  private var sdRef: DNSServiceRef!
+  private(set) var flags: DNSServiceFlags = 0
+  private(set) var name: String?
+  private(set) var domain: String?
+  private(set) var lastError = DNSServiceErrorType(kDNSServiceErr_NoError)
 
-  public static let shared = OcaDeviceEndpointRegistrar()
-
-  private struct EndpointRegistration {
-    let endpoint: OcaBonjourRegistrableDeviceEndpoint
-    let service: Service
+  func callBack(
+    flags: DNSServiceFlags,
+    error: DNSServiceErrorType,
+    name: String?,
+    regType: String?,
+    domain: String?
+  ) {
+    self.flags = flags
+    self.name = name
+    self.domain = domain
+    lastError = error
   }
 
-  private var services = [EndpointRegistration]()
+  init(
+    flags: DNSServiceFlags = 0,
+    interfaceIndex: UInt32 = UInt32(kDNSServiceInterfaceIndexAny),
+    name: String? = nil,
+    regType: String,
+    domain: String? = nil,
+    host: String? = nil,
+    port: UInt16, // in host byte order, unlike DNSServiceRegister() API
+    txtRecord: [String: String] = [:]
+  ) throws {
+    self.flags = flags
+    self.name = name
+    self.domain = domain
 
-  // FIXME: copied from OcaBrowser.swift
-  public enum ServiceType: String {
-    case none = ""
-    case tcp = "_oca._tcp."
-    case tcpSecure = "_ocasec._tcp."
-    case udp = "_oca._udp."
-    case tcpWebSocket = "_ocaws._tcp."
-  }
-
-  public func register(
-    endpoint: any OcaBonjourRegistrableDeviceEndpoint,
-    device: OcaDevice
-  ) async throws
-    -> Handle
-  {
-    let txtRecords: [String: String] = if let deviceManager = await device.deviceManager {
-      [
-        "txtvers": "1",
-        "protovers": "\(deviceManager.version)",
-        "modelGUID": "\(deviceManager.modelGUID)",
-        "serialNumber": "\(deviceManager.serialNumber)",
-      ]
-    } else {
-      [:]
+    let txtRecordBuffer: [UInt8] = txtRecord.flatMap { key, value in
+      // FIXME: escape
+      let keyValue = "\(key)=\(value)".utf8
+      return [UInt8(keyValue.count)] + keyValue
     }
-    do {
-      let service = try await Service(
-        name: device.deviceManager!.deviceName,
-        regType: endpoint.serviceType.rawValue,
-        port: endpoint.port,
-        txtRecord: txtRecords
+
+    var sdRef: DNSServiceRef?
+
+    let error = txtRecordBuffer.withUnsafeBufferPointer { txtRecordBufferPointer in
+      DNSServiceRegister(
+        &sdRef,
+        flags,
+        interfaceIndex,
+        name,
+        regType,
+        domain,
+        host,
+        port.bigEndian,
+        UInt16(txtRecordBufferPointer.count),
+        txtRecordBufferPointer.baseAddress,
+        DNSServiceRegisterBlock_Thunk,
+        Unmanaged.passRetained(self).toOpaque()
       )
-      await device.logger.info("DNS service \(service) registered")
+    }
 
-      let endpointRegistration = EndpointRegistration(endpoint: endpoint, service: service)
-      services.append(endpointRegistration)
-      return ObjectIdentifier(endpointRegistration.service)
-    } catch {
-      await device.logger
-        .error(
-          "DNS service registration of \(endpoint.serviceType.rawValue) on port \(endpoint.port) failed: \(error)"
-        )
-      throw error
+    guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else {
+      throw DNSServiceError(rawValue: error) ?? DNSServiceError.unknown
+    }
+
+    self.sdRef = sdRef
+  }
+
+  func deregister() {
+    if let sdRef {
+      DNSServiceRefDeallocate(sdRef)
+      self.sdRef = nil
     }
   }
 
-  public func deregister(handle: Handle) async throws {
-    services.removeAll(where: { ObjectIdentifier($0.service) == handle })
-  }
-
-  fileprivate final class Service: CustomStringConvertible, @unchecked Sendable {
-    var sdRef: DNSServiceRef!
-    var flags: DNSServiceFlags = 0
-    var name: String!
-    var domain: String!
-
-    var description: String {
-      "OcaDeviceEndpointRegistrar.Service(name: \(name ?? ""), domain: \(domain ?? ""), flags: \(flags))"
-    }
-
-    deinit {
-      if let sdRef {
-        DNSServiceRefDeallocate(sdRef)
-      }
-    }
-
-    typealias RegisterReply = (DNSServiceFlags, String, String)
-
-    var registrationContinuation: CheckedContinuation<RegisterReply, Error>?
-
-    init(
-      flags: DNSServiceFlags = 0,
-      interfaceIndex: UInt32 = UInt32(kDNSServiceInterfaceIndexAny),
-      name: String? = nil,
-      regType: String,
-      domain: String? = nil,
-      host: String? = nil,
-      port: UInt16, // in host byte order, unlike DNSServiceRegister() API
-      txtRecord: [String: String] = [:]
-    ) async throws {
-      let txtRecordBuffer: [UInt8] = txtRecord.flatMap { key, value in
-        // FIXME: escape
-        let keyValue = "\(key)=\(value)".utf8
-        return [UInt8(keyValue.count)] + keyValue
-      }
-
-      let reply: RegisterReply = try await withCheckedThrowingContinuation { continuation in
-        self.registrationContinuation = continuation
-
-        let error = txtRecordBuffer.withUnsafeBufferPointer { txtRecordBufferPointer in
-          DNSServiceRegister(
-            &sdRef,
-            flags,
-            interfaceIndex,
-            name,
-            regType,
-            domain,
-            host,
-            port.bigEndian,
-            UInt16(txtRecordBufferPointer.count),
-            txtRecordBufferPointer.baseAddress,
-            DNSServiceRegisterBlock_Thunk,
-            Unmanaged.passRetained(self).toOpaque()
-          )
-        }
-
-        guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else {
-          continuation
-            .resume(
-              throwing: DNSServiceError(rawValue: error) ?? DNSServiceError
-                .unknown
-            )
-          return
-        }
-      }
-
-      self.flags = reply.0
-      self.name = reply.1
-      self.domain = reply.2
+  deinit {
+    if let sdRef {
+      DNSServiceRefDeallocate(sdRef)
     }
   }
 }
@@ -220,21 +160,19 @@ private func DNSServiceRegisterBlock_Thunk(
   _ domain: UnsafePointer<CChar>?,
   _ context: UnsafeMutableRawPointer?
 ) {
-  let service = Unmanaged<OcaDeviceEndpointRegistrar.Service>.fromOpaque(context!)
+  let service = Unmanaged<DNSServiceRegistration>.fromOpaque(context!)
     .takeRetainedValue()
-  let continuation = service.registrationContinuation!
 
-  guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else {
-    continuation.resume(throwing: DNSServiceError(rawValue: error) ?? DNSServiceError.unknown)
-    return
+  let name = name != nil ? String(cString: name!) : nil
+  let regType = regType != nil ? String(cString: regType!) : nil
+  let domain = domain != nil ? String(cString: domain!) : nil
+
+  Task { @Sendable in
+    await service.callBack(
+      flags: flags,
+      error: error, name: name, regType: regType, domain: domain
+    )
   }
-  let reply = (
-    flags,
-    String(cString: name!),
-    String(cString: domain!)
-  )
-  continuation.resume(returning: reply)
-  service.registrationContinuation = nil
 }
 
 public enum DNSServiceError: Int32, Error {

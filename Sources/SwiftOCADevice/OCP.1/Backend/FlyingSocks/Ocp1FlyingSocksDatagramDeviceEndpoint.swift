@@ -58,7 +58,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   private(set) var socket: Socket?
   private var asyncSocket: AsyncSocket?
   #if canImport(dnssd)
-  private var _endpointRegistrationTask: Task<(), Error>?
+  private var _endpointRegistrarTask: Task<(), Error>?
   #endif
 
   private nonisolated var family: Int32 {
@@ -149,7 +149,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
     do {
       if port != 0 {
         #if canImport(dnssd)
-        _endpointRegistrationTask = Task { try await runBonjourEndpointRegistration(for: device) }
+        _endpointRegistrarTask = Task { try await runBonjourEndpointRegistrar(for: device) }
         #endif
       }
       try await _run(on: socket, pool: pool)
@@ -173,7 +173,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
 
   private func shutdown(timeout: Duration = .seconds(0)) async {
     #if canImport(dnssd)
-    _endpointRegistrationTask?.cancel()
+    _endpointRegistrarTask?.cancel()
     #endif
     try? socket?.close()
   }
@@ -242,7 +242,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
     try await asyncSocket.send(message: messagePdu)
   }
 
-  public nonisolated var serviceType: OcaDeviceEndpointRegistrar.ServiceType {
+  public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
     .udp
   }
 
