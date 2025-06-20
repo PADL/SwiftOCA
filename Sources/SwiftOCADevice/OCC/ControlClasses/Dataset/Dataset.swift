@@ -114,8 +114,8 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
     _ioSessions.values.filter { $0.controllerID == controller.id }.count
   }
 
-  public func allocateIOSessionHandle(
-    with userData: Any,
+  public func allocateIOSessionHandle<T>(
+    with userData: T,
     controller: OcaController?
   ) throws -> OcaIOSessionHandle {
     if let controller,
