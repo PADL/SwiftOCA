@@ -321,7 +321,7 @@ public extension OcaRoot {
     }
 
     @_spi(SwiftOCAPrivate) @discardableResult
-    func _getValue(
+    public func _getValue(
       _ object: OcaRoot,
       flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> Value {
@@ -336,7 +336,7 @@ public extension OcaRoot {
     }
 
     @_spi(SwiftOCAPrivate)
-    func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
+    public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
       throw Ocp1Error.propertyIsImmutable
     }
   }
