@@ -14,7 +14,8 @@
 // limitations under the License.
 //
 
-open class OcaDataset: OcaRoot, @unchecked Sendable {
+open class OcaDataset: OcaRoot, @unchecked
+Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.5") }
   override open class var classVersion: OcaClassVersionNumber { 1 }
 

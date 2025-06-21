@@ -264,7 +264,8 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
 
   /// Monitor structure for matching requests and responses
   @OcaConnection
-  final class Monitor: @unchecked Sendable, CustomStringConvertible {
+  final class Monitor: @unchecked
+  Sendable, CustomStringConvertible {
     typealias Continuation = UnsafeContinuation<Ocp1Response, Error>
 
     private let _connection: Weak<Ocp1Connection>

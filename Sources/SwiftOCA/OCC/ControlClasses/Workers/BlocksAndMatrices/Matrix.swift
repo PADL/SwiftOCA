@@ -22,7 +22,8 @@ import Foundation
 
 public typealias OcaMatrixCoordinate = OcaUint16
 
-open class OcaMatrix: OcaWorker, @unchecked Sendable {
+open class OcaMatrix: OcaWorker, @unchecked
+Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.5") }
 
   @OcaVectorProperty(
