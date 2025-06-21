@@ -25,7 +25,6 @@ let classIDJSONKey = "_classID"
 // for datasets, these keys are merged with the top-level JSON object for validation
 let datasetVersionJSONKey = "_version"
 let datasetDeviceModelJSONKey = "_deviceModel"
-let datasetDeviceNameJSONKey = "_deviceName"
 let datasetMimeTypeJSONKey = "_mimeType"
 let datasetParamDatasetsJSONKey = "_paramDatasets"
 
@@ -177,9 +176,8 @@ extension OcaDeviceManager {
   func serializePatchDataset(paramDatasetONos: Set<OcaONo>) async throws
     -> [String: any Sendable]
   {
-    var root = [String: any Sendable]()
+    var root = try serialize(flags: [], isIncluded: datasetFilter)
 
-    root[datasetDeviceNameJSONKey] = deviceName
     root[datasetVersionJSONKey] = OcaJsonDatasetVersion
     root[datasetDeviceModelJSONKey] = modelGUID.scalarValue
     root[datasetMimeTypeJSONKey] = OcaPatchDatasetMimeType
@@ -200,8 +198,7 @@ extension OcaDeviceManager {
   }
 
   func deserializePatchDataset(
-    _ jsonObject: [String: any Sendable],
-    setDeviceName: Bool
+    _ jsonObject: [String: any Sendable]
   ) async throws {
     guard let deviceDelegate,
           let storageProvider = await deviceDelegate.datasetStorageProvider
@@ -224,8 +221,10 @@ extension OcaDeviceManager {
       throw Ocp1Error.datasetMimeTypeMismatch
     }
 
-    if setDeviceName, let deviceName = jsonObject[datasetDeviceNameJSONKey] as? OcaString {
-      self.deviceName = deviceName
+    do {
+      try await deserialize(jsonObject: jsonObject, flags: .ignoreMissingProperties)
+    } catch is DecodingError {
+      throw Ocp1Error.invalidDatasetFormat
     }
 
     let datasetParams = (jsonObject[datasetParamDatasetsJSONKey] as? [OcaONo]) ?? []
@@ -243,8 +242,7 @@ extension OcaDeviceManager {
   }
 
   func deserializePatchDataset(
-    _ patchData: OcaLongBlob,
-    setDeviceName: Bool = false
+    _ patchData: OcaLongBlob
   ) async throws {
     let patchData = Data(patchData)
     do {
@@ -256,7 +254,7 @@ extension OcaDeviceManager {
       else {
         throw Ocp1Error.invalidDatasetFormat
       }
-      try await deserializePatchDataset(jsonObject, setDeviceName: setDeviceName)
+      try await deserializePatchDataset(jsonObject)
     } catch is DecodingError {
       throw Ocp1Error.invalidDatasetFormat
     }

@@ -17,7 +17,8 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
-open class OcaDataset: OcaRoot, @unchecked Sendable {
+open class OcaDataset: OcaRoot, @unchecked
+Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.5") }
   override open class var classVersion: OcaClassVersionNumber { 1 }
 
@@ -114,8 +115,8 @@ open class OcaDataset: OcaRoot, @unchecked Sendable {
     _ioSessions.values.filter { $0.controllerID == controller.id }.count
   }
 
-  public func allocateIOSessionHandle<T>(
-    with userData: T,
+  public func allocateIOSessionHandle(
+    with userData: some Any,
     controller: OcaController?
   ) throws -> OcaIOSessionHandle {
     if let controller,
@@ -332,8 +333,7 @@ extension OcaDataset {
 
   func applyPatch(
     to deviceManager: OcaDeviceManager,
-    controller: OcaController?,
-    setDeviceName: Bool
+    controller: OcaController?
   ) async throws {
     guard isPatchDataset else {
       throw Ocp1Error.datasetMimeTypeMismatch
@@ -353,7 +353,7 @@ extension OcaDataset {
     guard owner == deviceManager.objectNumber else {
       throw Ocp1Error.datasetTargetMismatch
     }
-    try await deviceManager.deserializePatchDataset(blob, setDeviceName: setDeviceName)
+    try await deviceManager.deserializePatchDataset(blob)
     try await close(handle: handle, controller: controller)
   }
 
