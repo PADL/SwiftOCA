@@ -33,6 +33,7 @@ public enum Ocp1Error: Error, Equatable {
   case duplicateObject(OcaONo)
   case endpointAlreadyRegistered
   case endpointNotRegistered
+  case globalTypeMismatch
   case invalidDatasetFormat
   case invalidDatasetName
   case invalidDatasetONo

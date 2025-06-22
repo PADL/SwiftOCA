@@ -370,7 +370,9 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
 
     dict[objectNumberJSONKey] = objectNumber
     dict[classIDJSONKey] = Self.classID.description
-
+    if let self = self as? OcaBlock {
+      dict[globalTypeIdentifierJSONKey] = self.globalType?.scalarValue
+    }
     for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
       let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
       if let isIncluded, !isIncluded(self, property.propertyID, property.wrappedValue) {
@@ -395,21 +397,31 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
     guard let deviceDelegate else { throw Ocp1Error.notConnected }
     let logger = await deviceDelegate.logger
 
-    guard let oNo = jsonObject[objectNumberJSONKey] as? OcaONo else {
-      logger.warning("bad or missing object number when deserializing")
-      throw Ocp1Error.status(.badFormat)
-    }
-
-    // TODO: also check global type ID
-
-    guard objectNumber == oNo else {
-      logger.warning("object number mismatch between \(self) and \(oNo)")
-      throw Ocp1Error.status(.badONo)
-    }
-
     guard let classID = jsonObject[classIDJSONKey] as? String else {
       logger.warning("bad or missing object class when deserializing")
       throw Ocp1Error.objectClassMismatch
+    }
+
+    if let globalType = jsonObject[globalTypeIdentifierJSONKey] as? OcaUint64,
+       let blockGlobalType = (self as? OcaBlock)?.globalType
+    {
+      guard globalType == blockGlobalType.scalarValue else {
+        logger
+          .warning(
+            "global type ID mismatch between \(blockGlobalType.scalarValue) and \(globalType)"
+          )
+        throw Ocp1Error.globalTypeMismatch
+      }
+    } else {
+      guard let oNo = jsonObject[objectNumberJSONKey] as? OcaONo else {
+        logger.warning("bad or missing object number when deserializing")
+        throw Ocp1Error.status(.badFormat)
+      }
+
+      guard objectNumber == oNo else {
+        logger.warning("object number mismatch between \(self) and \(oNo)")
+        throw Ocp1Error.status(.badONo)
+      }
     }
 
     guard try objectIdentification.classIdentification

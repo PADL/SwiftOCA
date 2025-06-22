@@ -23,14 +23,15 @@ import SwiftOCA
 
 let objectNumberJSONKey = "_oNo"
 let classIDJSONKey = "_classID"
+let globalTypeIdentifierJSONKey = "_globalType"
 
 // for datasets, these keys are merged with the top-level JSON object for validation
-let datasetVersionJSONKey = "_version"
-let datasetDeviceModelJSONKey = "_deviceModel"
-let datasetMimeTypeJSONKey = "_mimeType"
-let datasetParamDatasetsJSONKey = "_paramDatasets"
+private let datasetVersionJSONKey = "_version"
+private let datasetDeviceModelJSONKey = "_deviceModel"
+private let datasetMimeTypeJSONKey = "_mimeType"
+private let datasetParamDatasetsJSONKey = "_paramDatasets"
 
-let OcaJsonDatasetVersion: OcaUint32 = 1
+private let OcaJsonDatasetVersion: OcaUint32 = 1
 
 func _getObjectNumberFromJsonObject(jsonObject: [String: Sendable]) throws -> OcaONo {
   guard let objectNumber = jsonObject[objectNumberJSONKey] as? OcaONo,
@@ -103,12 +104,21 @@ public extension OcaDevice {
   }
 }
 
-extension OcaModelGUID {
+private extension OcaModelGUID {
   var scalarValue: OcaUint64 {
     OcaUint64(mfrCode.id.0 << 48) |
       OcaUint64(mfrCode.id.1 << 40) |
       OcaUint64(mfrCode.id.2 << 32) |
       OcaUint64(modelCode)
+  }
+}
+
+extension OcaGlobalTypeIdentifier {
+  var scalarValue: OcaUint64 {
+    OcaUint64(authority.id.0 << 48) |
+      OcaUint64(authority.id.1 << 40) |
+      OcaUint64(authority.id.2 << 32) |
+      OcaUint64(id)
   }
 }
 
