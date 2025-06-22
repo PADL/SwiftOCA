@@ -397,8 +397,15 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
     guard let deviceDelegate else { throw Ocp1Error.notConnected }
     let logger = await deviceDelegate.logger
 
-    guard let classID = jsonObject[classIDJSONKey] as? String else {
+    guard let classIDString = jsonObject[classIDJSONKey] as? String else {
       logger.warning("bad or missing object class when deserializing")
+      throw Ocp1Error.objectClassMismatch
+    }
+
+    let classID = try OcaClassID(unsafeString: classIDString)
+
+    guard objectIdentification.classIdentification.classID.isSubclass(of: classID) else {
+      logger.warning("object class mismatch between \(self) and \(classID)")
       throw Ocp1Error.objectClassMismatch
     }
 
@@ -422,13 +429,6 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
         logger.warning("object number mismatch between \(self) and \(oNo)")
         throw Ocp1Error.status(.badONo)
       }
-    }
-
-    guard try objectIdentification.classIdentification
-      .classID == OcaClassID(unsafeString: classID)
-    else {
-      logger.warning("object class mismatch between \(self) and \(classID)")
-      throw Ocp1Error.objectClassMismatch
     }
 
     for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
