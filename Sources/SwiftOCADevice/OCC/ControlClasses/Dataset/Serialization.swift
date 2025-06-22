@@ -15,7 +15,9 @@
 //
 
 import Foundation
+#if canImport(Gzip)
 import Gzip
+#endif
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
@@ -148,7 +150,12 @@ extension OcaBlock {
     let jsonObject: [String: any Sendable] = try await serializeParameterDataset()
     do {
       let blob = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+      #if canImport(Gzip)
       return try .init(compress ? blob.gzipped() : blob)
+      #else
+      guard !compress else { throw Ocp1Error.notImplemented }
+      return .init(blob)
+      #endif
     } catch is EncodingError {
       throw Ocp1Error.invalidDatasetFormat
     }
@@ -157,11 +164,12 @@ extension OcaBlock {
   func deserializeParameterDataset(from parameterData: OcaLongBlob) async throws {
     let parameterData = Data(parameterData)
     do {
-      guard let jsonObject = try JSONSerialization
-        .jsonObject(
-          with: parameterData.isGzipped ? parameterData
-            .gunzipped() : parameterData
-        ) as? [String: any Sendable]
+      #if canImport(Gzip)
+      let data = try parameterData.isGzipped ? parameterData.gunzipped() : parameterData
+      #else
+      let data = parameterData
+      #endif
+      guard let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: any Sendable]
       else {
         throw Ocp1Error.invalidDatasetFormat
       }
@@ -191,7 +199,11 @@ extension OcaDeviceManager {
       try await serializePatchDataset(paramDatasetONos: paramDatasetONos)
     do {
       let blob = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+      #if canImport(Gzip)
       return try .init(blob.gzipped())
+      #else
+      return .init(blob)
+      #endif
     } catch is EncodingError {
       throw Ocp1Error.invalidDatasetFormat
     }
@@ -246,11 +258,13 @@ extension OcaDeviceManager {
   ) async throws {
     let patchData = Data(patchData)
     do {
+      #if canImport(Gzip)
+      let data = try patchData.isGzipped ? patchData.gunzipped() : patchData
+      #else
+      let data = patchData
+      #endif
       guard let jsonObject = try JSONSerialization
-        .jsonObject(
-          with: patchData.isGzipped ? patchData
-            .gunzipped() : patchData
-        ) as? [String: any Sendable]
+        .jsonObject(with: data) as? [String: any Sendable]
       else {
         throw Ocp1Error.invalidDatasetFormat
       }
