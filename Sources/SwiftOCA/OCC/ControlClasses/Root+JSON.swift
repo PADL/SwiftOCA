@@ -15,7 +15,6 @@
 //
 
 import AnyCodable
-import AsyncExtensions
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
