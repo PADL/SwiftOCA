@@ -475,7 +475,7 @@ public struct OcaObjectIdentification: Codable, Sendable, Hashable {
 
 public typealias OcaProtoONo = OcaUint32
 
-public struct OcaGlobalTypeIdentifier: Codable, Sendable {
+public struct OcaGlobalTypeIdentifier: Codable, Sendable, Equatable {
   public let authority: OcaOrganizationID
   public let id: OcaUint32
 
