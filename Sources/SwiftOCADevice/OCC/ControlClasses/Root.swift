@@ -371,7 +371,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
     dict[objectNumberJSONKey] = objectNumber
     dict[classIDJSONKey] = Self.classID.description
     if let self = self as? OcaBlock {
-      dict[globalTypeIdentifierJSONKey] = self.globalType?.scalarValue
+      dict[globalTypeIdentifierJSONKey] = self.globalType?.jsonObject
     }
     for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
       let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
@@ -412,10 +412,10 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
     if let globalType = jsonObject[globalTypeIdentifierJSONKey] as? OcaUint64,
        let blockGlobalType = (self as? OcaBlock)?.globalType
     {
-      guard globalType == blockGlobalType.scalarValue else {
+      guard globalType == blockGlobalType.jsonObject else {
         logger
           .warning(
-            "global type ID mismatch between \(blockGlobalType.scalarValue) and \(globalType)"
+            "global type ID mismatch between \(blockGlobalType.jsonObject) and \(globalType)"
           )
         throw Ocp1Error.globalTypeMismatch
       }

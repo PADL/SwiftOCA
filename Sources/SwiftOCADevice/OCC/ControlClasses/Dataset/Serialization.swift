@@ -105,7 +105,7 @@ public extension OcaDevice {
 }
 
 private extension OcaModelGUID {
-  var scalarValue: OcaUint64 {
+  var jsonObject: OcaUint64 {
     OcaUint64(mfrCode.id.0) << 48 |
       OcaUint64(mfrCode.id.1) << 40 |
       OcaUint64(mfrCode.id.2) << 32 |
@@ -114,7 +114,7 @@ private extension OcaModelGUID {
 }
 
 extension OcaGlobalTypeIdentifier {
-  var scalarValue: OcaUint64 {
+  var jsonObject: OcaUint64 {
     OcaUint64(authority.id.0) << 48 |
       OcaUint64(authority.id.1) << 40 |
       OcaUint64(authority.id.2) << 32 |
@@ -127,7 +127,7 @@ extension OcaBlock {
     var root = try serialize(flags: [], isIncluded: datasetFilter)
 
     root[datasetVersionJSONKey] = OcaJsonDatasetVersion
-    root[datasetDeviceModelJSONKey] = await deviceDelegate?.deviceManager?.modelGUID.scalarValue
+    root[datasetDeviceModelJSONKey] = await deviceDelegate?.deviceManager?.modelGUID.jsonObject
     root[datasetMimeTypeJSONKey] = OcaParamDatasetMimeType
 
     return root
@@ -140,7 +140,7 @@ extension OcaBlock {
       throw Ocp1Error.unknownDatasetVersion
     }
     guard let deviceModel = parameters[datasetDeviceModelJSONKey] as? OcaUint64,
-          await deviceModel == deviceDelegate?.deviceManager?.modelGUID.scalarValue
+          await deviceModel == deviceDelegate?.deviceManager?.modelGUID.jsonObject
     else {
       throw Ocp1Error.datasetDeviceMismatch
     }
@@ -197,7 +197,7 @@ extension OcaDeviceManager {
     var root = try serialize(flags: [], isIncluded: datasetFilter)
 
     root[datasetVersionJSONKey] = OcaJsonDatasetVersion
-    root[datasetDeviceModelJSONKey] = modelGUID.scalarValue
+    root[datasetDeviceModelJSONKey] = modelGUID.jsonObject
     root[datasetMimeTypeJSONKey] = OcaPatchDatasetMimeType
     root[datasetParamDatasetsJSONKey] = Array(paramDatasetONos)
 
@@ -233,7 +233,7 @@ extension OcaDeviceManager {
       throw Ocp1Error.unknownDatasetVersion
     }
     guard let deviceModel = jsonObject[datasetDeviceModelJSONKey] as? OcaUint64,
-          deviceModel == modelGUID.scalarValue
+          deviceModel == modelGUID.jsonObject
     else {
       throw Ocp1Error.datasetDeviceMismatch
     }
