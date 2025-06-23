@@ -32,7 +32,7 @@ open class OcaDeviceManager: OcaManager {
   public var modelGUID = OcaModelGUID(
     reserved: 0,
     mfrCode: OcaOrganizationID((0, 0, 0)),
-    modelCode: 0
+    modelCode: (0, 0, 0, 0)
   )
 
   @OcaDeviceProperty(

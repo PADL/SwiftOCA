@@ -109,7 +109,10 @@ private extension OcaModelGUID {
     OcaUint64(mfrCode.id.0) << 48 |
       OcaUint64(mfrCode.id.1) << 40 |
       OcaUint64(mfrCode.id.2) << 32 |
-      OcaUint64(modelCode)
+      OcaUint64(modelCode.0) << 24 |
+      OcaUint64(modelCode.1) << 16 |
+      OcaUint64(modelCode.2) << 8 |
+      OcaUint64(modelCode.3) << 0
   }
 }
 

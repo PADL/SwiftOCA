@@ -50,8 +50,11 @@ public enum DeviceApp {
 
     let device = OcaDevice.shared
     try await device.initializeDefaultObjects()
-    let deviceManager = await device.deviceManager
-    Task { @OcaDevice in await deviceManager!.deviceName = "OCA Test" }
+    let deviceManager = await device.deviceManager!
+    Task { @OcaDevice in
+      deviceManager.deviceName = "OCA Test"
+      deviceManager.modelGUID = OcaModelGUID(mfrCode: .init((0, 0, 0)), modelCode: (1, 2, 3, 4))
+    }
     let delegate = DeviceEventDelegate()
     await device.setEventDelegate(delegate)
     #if os(Linux)
