@@ -106,18 +106,18 @@ public extension OcaDevice {
 
 private extension OcaModelGUID {
   var scalarValue: OcaUint64 {
-    OcaUint64(mfrCode.id.0 << 48) |
-      OcaUint64(mfrCode.id.1 << 40) |
-      OcaUint64(mfrCode.id.2 << 32) |
+    OcaUint64(mfrCode.id.0) << 48 |
+      OcaUint64(mfrCode.id.1) << 40 |
+      OcaUint64(mfrCode.id.2) << 32 |
       OcaUint64(modelCode)
   }
 }
 
 extension OcaGlobalTypeIdentifier {
   var scalarValue: OcaUint64 {
-    OcaUint64(authority.id.0 << 48) |
-      OcaUint64(authority.id.1 << 40) |
-      OcaUint64(authority.id.2 << 32) |
+    OcaUint64(authority.id.0) << 48 |
+      OcaUint64(authority.id.1) << 40 |
+      OcaUint64(authority.id.2) << 32 |
       OcaUint64(id)
   }
 }
