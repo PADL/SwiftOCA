@@ -115,6 +115,10 @@ public class OcaClassRegistry {
     try register(OcaBlock.self)
     try register(OcaMatrix.self)
 
+    // datasets
+    try register(OcaDataset.self)
+    try register(OcaMediaRecorderPlayer.self)
+
     // actuators
     try register(OcaActuator.self)
     try register(OcaBasicActuator.self)
