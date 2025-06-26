@@ -422,7 +422,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
       else { throw Ocp1Error.status(.badFormat) }
     }
 
-    members = try await membersJson.asyncMap(defaultValue: nil) { objectNumber in
+    members = try await membersJson.asyncMap(defaultValue: nil) { @Sendable objectNumber in
       guard let member = await deviceDelegate.objects[objectNumber] else {
         if flags.contains(.ignoreUnknownObjectNumbers) { return nil }
         else { throw Ocp1Error.objectNotPresent(objectNumber) }
