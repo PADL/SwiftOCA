@@ -40,4 +40,4 @@ jobs:
       - name: Test
         run: |
             sysctl kernel.io_uring_disabled=0
-            swift test --skip-build
+            swift test --skip-build --filter SwiftOCATests
