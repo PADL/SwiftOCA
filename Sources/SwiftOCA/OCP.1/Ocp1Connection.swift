@@ -58,7 +58,11 @@ import Android
 package let SOCK_STREAM = Int32(Android.SOCK_STREAM)
 package let SOCK_DGRAM = Int32(Android.SOCK_DGRAM)
 #elseif canImport(Glibc)
-import CoreFoundation
+#if swift(>=6.0)
+internal import CoreFoundation
+#else
+@_implementationOnly import CoreFoundation
+#endif
 
 package let SOCK_STREAM = Int32(Glibc.SOCK_STREAM.rawValue)
 package let SOCK_DGRAM = Int32(Glibc.SOCK_DGRAM.rawValue)

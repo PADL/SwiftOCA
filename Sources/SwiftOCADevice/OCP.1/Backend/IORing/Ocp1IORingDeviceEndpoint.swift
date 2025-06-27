@@ -26,11 +26,14 @@ import Foundation
 #endif
 import Glibc
 
-// @_implementationOnly
-import IORing
+#if swift(>=6.0)
+internal import IORing
+internal import IORingUtils
+#else
+@_implementationOnly import IORing
+@_implementationOnly import IORingUtils
+#endif
 
-// @_implementationOnly
-import IORingUtils
 import Logging
 import SocketAddress
 @_spi(SwiftOCAPrivate)

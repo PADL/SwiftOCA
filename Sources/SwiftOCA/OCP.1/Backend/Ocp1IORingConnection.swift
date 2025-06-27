@@ -24,14 +24,16 @@ import Foundation
 
 import Glibc
 
-// @_implementationOnly
-import IORing
+#if swift(>=6.0)
+internal import IORing
+internal import IORingFoundation
+internal import IORingUtils
+#else
+@_implementationOnly import IORing
+@_implementationOnly import IORingFoundation
+@_implementationOnly import IORingUtils
+#endif
 
-// @_implementationOnly
-import IORingFoundation
-
-// @_implementationOnly
-import IORingUtils
 import SocketAddress
 import SystemPackage
 

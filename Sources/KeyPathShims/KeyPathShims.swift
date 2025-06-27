@@ -11,8 +11,12 @@
 //===----------------------------------------------------------------------===//
 
 import Swift
-@_implementationOnly
-import SwiftShims
+
+#if swift(>=6.0)
+internal import SwiftShims
+#else
+@_implementationOnly import SwiftShims
+#endif
 
 class AnyKeyPath {
   /// Used to store the offset from the root to the value

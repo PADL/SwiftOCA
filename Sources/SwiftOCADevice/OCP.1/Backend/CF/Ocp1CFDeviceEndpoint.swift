@@ -18,7 +18,11 @@
 
 import AsyncAlgorithms
 import AsyncExtensions
-import CoreFoundation
+#if swift(>=6.0)
+internal import CoreFoundation
+#else
+@_implementationOnly import CoreFoundation
+#endif
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else

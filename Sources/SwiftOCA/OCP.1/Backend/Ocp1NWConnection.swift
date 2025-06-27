@@ -19,9 +19,12 @@
 import AsyncAlgorithms
 import AsyncExtensions
 
-// @_implementationOnly
+#if swift(>=6.0)
+internal import CoreFoundation
+#else
 @preconcurrency
-import CoreFoundation
+@_implementationOnly import CoreFoundation
+#endif
 import Foundation
 import Network
 import SocketAddress
