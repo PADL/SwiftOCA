@@ -39,5 +39,5 @@ jobs:
         run: swift build --build-tests
       - name: Test
         run: |
-            sudo sysctl kernel.io_uring_disabled=0
+            sysctl kernel.io_uring_disabled=0
             swift test --skip-build
