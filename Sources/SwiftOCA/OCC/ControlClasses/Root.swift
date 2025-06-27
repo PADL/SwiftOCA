@@ -186,7 +186,7 @@ Sendable,
 
 protocol _OcaObjectKeyPathRepresentable: AnyObject {}
 
-extension PartialKeyPath: @unchecked
+extension PartialKeyPath: @retroactive @unchecked
 Sendable {} // fix warning
 
 extension _OcaObjectKeyPathRepresentable where Self: OcaRoot {

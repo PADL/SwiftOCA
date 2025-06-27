@@ -330,7 +330,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     }
     do {
       #if canImport(IORing)
-      try await IORing.shared.write(
+      _ = try await IORing.shared.write(
         Array(part),
         count: Int(part.count),
         offset: Int(position),

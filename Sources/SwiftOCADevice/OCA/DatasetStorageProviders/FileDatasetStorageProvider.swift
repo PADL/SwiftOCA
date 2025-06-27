@@ -86,7 +86,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
       list
     }
 
-    return try await entries.asyncMap { try await dirEntryToDataSet($0) }
+    return try await entries.asyncMap { @Sendable in try await dirEntryToDataSet($0) }
   }
 
   private func resolve(
@@ -133,7 +133,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
         }
         return nameComparisonType.compare($0.name, name)
       }
-      .asyncMap { try await dirEntryToDataSet($0) }
+      .asyncMap { @Sendable in try await dirEntryToDataSet($0) }
   }
 
   public func construct(

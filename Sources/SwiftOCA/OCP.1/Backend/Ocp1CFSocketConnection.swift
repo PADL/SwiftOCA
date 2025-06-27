@@ -502,7 +502,7 @@ package extension SocketAddress {
   }
 }
 
-extension CFSocket: @unchecked
+extension CFSocket: @retroactive @unchecked
 Sendable {}
 
 package extension CFSocket {

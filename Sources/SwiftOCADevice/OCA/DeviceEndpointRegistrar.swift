@@ -57,7 +57,7 @@ extension OcaBonjourRegistrableDeviceEndpoint {
     logger.trace("starting DNS endpoint registration task")
 
     for try await deviceName in deviceManager.$deviceName {
-      try await Task.checkCancellation()
+      try Task.checkCancellation()
       await dnsServiceRegistration?.deregister()
       dnsServiceRegistration = try? DNSServiceRegistration(
         name: deviceName,

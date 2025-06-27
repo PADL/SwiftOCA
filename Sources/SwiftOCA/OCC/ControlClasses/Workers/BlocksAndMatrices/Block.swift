@@ -589,7 +589,7 @@ public extension OcaBlock {
   func getRoleMap(separator: String = "/") async throws -> [String: OcaRoot] {
     let members = try await resolveActionObjectsRecursive()
 
-    return try await [String: OcaRoot](uniqueKeysWithValues: members.asyncMap {
+    return try await [String: OcaRoot](uniqueKeysWithValues: members.asyncMap { @Sendable in
       try await ($0.memberObject._getRolePath().joined(separator: separator), $0.memberObject)
     })
   }
