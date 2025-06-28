@@ -301,7 +301,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
       try await IORing.shared.read(
         into: &data,
         count: Int(partSize),
-        offset: Int(position),
+        offset: IORing.Offset(position),
         from: fileHandle
       )
       let complete = position + partSize >= OcaUint64(size)
@@ -333,7 +333,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
       _ = try await IORing.shared.write(
         Array(part),
         count: Int(part.count),
-        offset: Int(position),
+        offset: IORing.Offset(position),
         to: fileHandle
       )
       #else
