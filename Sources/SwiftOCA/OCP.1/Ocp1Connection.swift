@@ -388,7 +388,6 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
 
   public func clearObjectCache() async {
     objects = [:]
-    await rootBlock.refreshAll()
   }
 
   open func disconnectDevice() async throws {}
