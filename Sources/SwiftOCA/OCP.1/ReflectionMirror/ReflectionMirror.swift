@@ -135,8 +135,14 @@ func _forEachField(
     defer { field.freeFunc?(field.name) }
     let kind = _MetadataKind(childType)
 
-    if !body(field.name!, offset, childType, kind) {
-      return false
+    if let name = field.name {
+      if !body(name, offset, childType, kind) {
+        return false
+      }
+    } else {
+      if !body("", offset, childType, kind) {
+        return false
+      }
     }
   }
 
@@ -165,7 +171,6 @@ func _forEachFieldWithKeyPath<Root>(
   if _isClassType(type) != options.contains(.classType) {
     return false
   }
-
   let ignoreUnknown = options.contains(.ignoreUnknown)
 
   let childCount = _getRecursiveChildCount(type)
@@ -192,8 +197,7 @@ func _forEachFieldWithKeyPath<Root>(
       return KeyPath<Root, Leaf>.self
     }
     let resultSize = MemoryLayout<Int32>.size + MemoryLayout<Int>.size
-    let partialKeyPathExistential = _openExistential(childType, do: keyPathType)
-    let partialKeyPath = partialKeyPathExistential
+    let partialKeyPath = _openExistential(childType, do: keyPathType)
       ._create(capacityInBytes: resultSize) {
         var destBuilder = KeyPathBuffer.Builder($0)
         destBuilder.pushHeader(KeyPathBuffer.Header(
@@ -201,13 +205,12 @@ func _forEachFieldWithKeyPath<Root>(
           trivial: true,
           hasReferencePrefix: false
         ))
-        let componentHeader = RawKeyPathComponent.Header(
-          stored: _MetadataKind(type) == .struct ? .struct : .class,
-          mutable: field.isVar,
-          inlineOffset: UInt32(offset)
-        )
         let component = RawKeyPathComponent(
-          header: componentHeader,
+          header: RawKeyPathComponent.Header(
+            stored: _MetadataKind(type) == .struct ? .struct : .class,
+            mutable: field.isVar,
+            inlineOffset: UInt32(offset)
+          ),
           body: UnsafeRawBufferPointer(start: nil, count: 0)
         )
         component.clone(
@@ -216,8 +219,14 @@ func _forEachFieldWithKeyPath<Root>(
         )
       }
 
-    if !body(field.name!, partialKeyPath) {
-      return false
+    if let name = field.name {
+      if !body(name, partialKeyPath) {
+        return false
+      }
+    } else {
+      if !body("", partialKeyPath) {
+        return false
+      }
     }
   }
   return true
@@ -240,7 +249,7 @@ func _forEachFieldWithKeyPath<T>(
   )
 }
 
-public func _allKeyPaths<T>(value: T) -> [String: PartialKeyPath<T>] {
+package func _allKeyPaths<T: AnyObject>(value: T) -> [String: PartialKeyPath<T>] {
   var keyPaths = [String: PartialKeyPath<T>]()
   _forEachFieldWithKeyPath(value: value, options: [.classType, .ignoreUnknown]) { field, path in
     let fieldName = String(cString: field)
