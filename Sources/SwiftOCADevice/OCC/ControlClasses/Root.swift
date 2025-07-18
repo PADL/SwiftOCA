@@ -473,9 +473,9 @@ extension OcaRoot: Hashable {
   }
 }
 
-protocol OcaKeyPathMarkerProtocol: AnyObject {}
+protocol OcaKeyPathMarkerProtocol: OcaRoot {}
 
-extension OcaKeyPathMarkerProtocol where Self: OcaRoot {
+extension OcaKeyPathMarkerProtocol {
   var allDevicePropertyKeyPaths: [String: AnyKeyPath] {
     _allKeyPaths(value: self).reduce(into: [:]) {
       if $1.key.hasPrefix("_") {
