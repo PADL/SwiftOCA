@@ -184,12 +184,12 @@ Sendable,
   }
 }
 
-protocol _OcaObjectKeyPathRepresentable: AnyObject {}
+protocol _OcaObjectKeyPathRepresentable: OcaRoot {}
 
 extension PartialKeyPath: @retroactive @unchecked
 Sendable {} // fix warning
 
-extension _OcaObjectKeyPathRepresentable where Self: OcaRoot {
+extension _OcaObjectKeyPathRepresentable {
   var allKeyPaths: [String: PartialKeyPath<Self>] {
     _allKeyPaths(value: self).reduce(into: [:]) {
       if $1.key.hasPrefix("_") {
