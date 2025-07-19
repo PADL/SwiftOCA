@@ -62,7 +62,7 @@ struct OcaPropertyTableView: OcaView {
           }
         }
       } rows: {
-        let allPropertyKeyPaths: [Property] = object.allPropertyKeyPaths.map {
+        let allPropertyKeyPaths: [Property] = object.allPropertyKeyPathsUncached.map {
           propertyName, propertyKeyPath in
           Property(
             name: propertyName,

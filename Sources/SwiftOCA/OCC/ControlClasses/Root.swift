@@ -99,7 +99,7 @@ Sendable,
   }
 
   deinit {
-    for (_, keyPath) in allPropertyKeyPaths {
+    for (_, keyPath) in allPropertyKeyPathsUncached {
       let value = self[keyPath: keyPath] as! (any OcaPropertySubjectRepresentable)
       value.finish()
     }
@@ -156,7 +156,7 @@ Sendable,
       of: [String: Sendable].self,
       returning: [String: Sendable].self
     ) { taskGroup in
-      for (_, propertyKeyPath) in self.allPropertyKeyPaths {
+      for (_, propertyKeyPath) in await allPropertyKeyPaths {
         taskGroup.addTask {
           let property =
             self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
@@ -186,11 +186,17 @@ Sendable,
 
 protocol _OcaObjectKeyPathRepresentable: OcaRoot {}
 
-extension PartialKeyPath: @retroactive @unchecked
-Sendable {} // fix warning
-
 extension _OcaObjectKeyPathRepresentable {
+  fileprivate var _metaTypeObjectIdentifier: ObjectIdentifier {
+    ObjectIdentifier(type(of: self))
+  }
+
+  @OcaConnection
   var allKeyPaths: [String: AnyKeyPath] {
+    OcaPropertyKeyPathCache.shared.keyPaths(for: self)
+  }
+
+  var allKeyPathsUncached: [String: AnyKeyPath] {
     _allKeyPaths(value: self).reduce(into: [:]) {
       if $1.key.hasPrefix("_") {
         $0[String($1.key.dropFirst())] = $1.value
@@ -221,14 +227,24 @@ public extension OcaRoot {
      "objectNumber": \OcaRoot._objectNumber]
   }
 
-  var allPropertyKeyPaths: [String: AnyKeyPath] {
+  var allPropertyKeyPathsUncached: [String: AnyKeyPath] {
     staticPropertyKeyPaths.merging(
-      allKeyPaths.filter { self[keyPath: $0.value] is any OcaPropertySubjectRepresentable },
+      allKeyPathsUncached.filter { self[keyPath: $0.value] is any OcaPropertySubjectRepresentable },
       uniquingKeysWith: { old, _ in old }
     )
   }
 
-  @Sendable
+  @OcaConnection
+  var allPropertyKeyPaths: [String: AnyKeyPath] {
+    get async {
+      staticPropertyKeyPaths.merging(
+        allKeyPaths.filter { self[keyPath: $0.value] is any OcaPropertySubjectRepresentable },
+        uniquingKeysWith: { old, _ in old }
+      )
+    }
+  }
+
+  @OcaConnection
   private func onPropertyEvent(event: OcaEvent, eventData data: Data) {
     let decoder = Ocp1Decoder()
     guard let propertyID = try? decoder.decode(
@@ -270,15 +286,17 @@ public extension OcaRoot {
     try await connectionDelegate.removeSubscription(subscriptionCancellable)
   }
 
+  @OcaConnection
   func refreshAll() async {
-    for (_, keyPath) in allPropertyKeyPaths {
+    for (_, keyPath) in await allPropertyKeyPaths {
       let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
       await property.refresh(self)
     }
   }
 
+  @OcaConnection
   package func refreshAllSubscribed() async {
-    for (_, keyPath) in allPropertyKeyPaths {
+    for (_, keyPath) in await allPropertyKeyPaths {
       let property = (self[keyPath: keyPath] as! any OcaPropertySubjectRepresentable)
       // make an exception for role because it is immutable, otherwise refreshing device
       // tree at initial connection time will then force many needless subscriptions at
@@ -339,6 +357,25 @@ public extension OcaRoot {
     public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
       throw Ocp1Error.propertyIsImmutable
     }
+  }
+}
+
+@OcaConnection
+private final class OcaPropertyKeyPathCache {
+  fileprivate static let shared = OcaPropertyKeyPathCache()
+
+  private var _cache = [ObjectIdentifier: [String: AnyKeyPath]]()
+
+  @OcaConnection
+  fileprivate func keyPaths(for object: some OcaRoot) -> [String: AnyKeyPath] {
+    let objectIdentifier = object._metaTypeObjectIdentifier
+    if let keyPaths = _cache[objectIdentifier] {
+      return keyPaths
+    }
+
+    let keyPaths = object.allPropertyKeyPathsUncached
+    _cache[objectIdentifier] = keyPaths
+    return keyPaths
   }
 }
 
@@ -509,7 +546,7 @@ package extension OcaONo {
 }
 
 public extension OcaRoot {
-  @_spi(SwiftOCAPrivate)
+  @_spi(SwiftOCAPrivate) @OcaConnection
   func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws {
     for (_, keyPath) in allKeyPaths {
       if let property = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable),
