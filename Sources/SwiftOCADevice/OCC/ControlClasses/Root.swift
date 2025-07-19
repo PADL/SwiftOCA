@@ -183,21 +183,25 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     _ command: Ocp1Command,
     from controller: any OcaController
   ) async throws -> Ocp1Response {
-    for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
-      let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
-
-      if command.methodID == property.getMethodID {
-        try decodeNullCommand(command)
-        try await ensureReadable(by: controller, command: command)
-        return try await property.getOcp1Response()
-      } else if command.methodID == property.setMethodID {
-        try await ensureWritable(by: controller, command: command)
-        try await property.set(object: self, command: command)
-        return Ocp1Response()
-      }
+    guard let method = OcaDevicePropertyKeyPathCache.shared
+      .lookupMethod(command.methodID, for: self)
+    else {
+      await deviceDelegate?.logger.info("unknown property accessor method \(command)")
+      throw Ocp1Error.status(.notImplemented)
     }
-    await deviceDelegate?.logger.info("unknown property accessor method \(command)")
-    throw Ocp1Error.status(.notImplemented)
+
+    let property = self[keyPath: method.1] as! (any OcaDevicePropertyRepresentable)
+
+    switch method.0 {
+    case .getter:
+      try decodeNullCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      return try await property.getOcp1Response()
+    case .setter:
+      try await ensureWritable(by: controller, command: command)
+      try await property.set(object: self, command: command)
+      return Ocp1Response()
+    }
   }
 
   open func handleCommand(
@@ -482,7 +486,7 @@ extension _OcaObjectKeyPathRepresentable {
 
   @OcaDevice
   var allDevicePropertyKeyPaths: [String: AnyKeyPath] {
-    OcaDeviceProperyKeyPathCache.shared.keyPaths(for: self)
+    OcaDevicePropertyKeyPathCache.shared.keyPaths(for: self)
   }
 
   var allDevicePropertyKeyPathsUncached: [String: AnyKeyPath] {
@@ -497,21 +501,66 @@ extension _OcaObjectKeyPathRepresentable {
 }
 
 @OcaDevice
-private final class OcaDeviceProperyKeyPathCache {
-  fileprivate static let shared = OcaDeviceProperyKeyPathCache()
+private final class OcaDevicePropertyKeyPathCache {
+  fileprivate static let shared = OcaDevicePropertyKeyPathCache()
 
-  private var _cache = [ObjectIdentifier: [String: AnyKeyPath]]()
+  enum AccessorType {
+    case getter
+    case setter
+  }
+
+  private struct CacheEntry {
+    let keyPaths: [String: AnyKeyPath]
+    let methods: [OcaMethodID: (AccessorType, AnyKeyPath)]
+
+    private init(keyPaths: [String: AnyKeyPath], object: some OcaRoot) {
+      self.keyPaths = keyPaths
+      methods = keyPaths.reduce(into: [:]) {
+        guard let value = object[keyPath: $1.value] as? any OcaDevicePropertyRepresentable else {
+          return
+        }
+        if let getMethodID = value.getMethodID {
+          $0[getMethodID] = (.getter, $1.value)
+        }
+        if let setMethodID = value.setMethodID {
+          $0[setMethodID] = (.setter, $1.value)
+        }
+      }
+    }
+
+    fileprivate init(object: some OcaRoot) {
+      let keyPaths = object.allDevicePropertyKeyPathsUncached
+      self.init(keyPaths: keyPaths, object: object)
+    }
+  }
+
+  private var _cache = [ObjectIdentifier: CacheEntry]()
+
+  private func addCacheEntry(for object: some OcaRoot) -> CacheEntry {
+    let cacheEntry = CacheEntry(object: object)
+    _cache[object._metaTypeObjectIdentifier] = cacheEntry
+    return cacheEntry
+  }
 
   @OcaDevice
   fileprivate func keyPaths(for object: some OcaRoot) -> [String: AnyKeyPath] {
-    let objectIdentifier = object._metaTypeObjectIdentifier
-    if let keyPaths = _cache[objectIdentifier] {
-      return keyPaths
+    if let cacheEntry = _cache[object._metaTypeObjectIdentifier] {
+      return cacheEntry.keyPaths
     }
 
-    let keyPaths = object.allDevicePropertyKeyPathsUncached
-    _cache[objectIdentifier] = keyPaths
-    return keyPaths
+    return addCacheEntry(for: object).keyPaths
+  }
+
+  @OcaDevice
+  fileprivate func lookupMethod(
+    _ methodID: OcaMethodID,
+    for object: some OcaRoot
+  ) -> (AccessorType, AnyKeyPath)? {
+    if let cacheEntry = _cache[object._metaTypeObjectIdentifier] {
+      return cacheEntry.methods[methodID]
+    }
+
+    return addCacheEntry(for: object).methods[methodID]
   }
 }
 
