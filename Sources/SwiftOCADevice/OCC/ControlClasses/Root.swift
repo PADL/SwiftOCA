@@ -392,7 +392,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
 
   open func deserialize(
     jsonObject: [String: Sendable],
-    flags: DeserializationFlags = []
+      flags: DeserializationFlags = []
   ) async throws {
     guard let deviceDelegate else { throw Ocp1Error.notConnected }
     let logger = await deviceDelegate.logger
@@ -473,10 +473,10 @@ extension OcaRoot: Hashable {
   }
 }
 
-protocol OcaKeyPathMarkerProtocol: OcaRoot {}
+protocol OcaKeyPathMarkerProtocol: AnyObject {}
 
-extension OcaKeyPathMarkerProtocol {
-  var allDevicePropertyKeyPaths: [String: PartialKeyPath<Self>] {
+extension OcaKeyPathMarkerProtocol where Self: OcaRoot {
+  var allDevicePropertyKeyPaths: [String: AnyKeyPath] {
     _allKeyPaths(value: self).reduce(into: [:]) {
       if $1.key.hasPrefix("_") {
         $0[String($1.key.dropFirst())] = $1.value
