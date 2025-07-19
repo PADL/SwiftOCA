@@ -28,7 +28,8 @@ final class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator, OcaGroupPeerTo
   func set(to value: Bool) async { setting = value }
 }
 
-final class _MyBooleanActuator: SwiftOCA.OcaBooleanActuator, @unchecked Sendable {
+final class _MyBooleanActuator: SwiftOCA.OcaBooleanActuator, @unchecked
+Sendable {
   override class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
 }
 
@@ -353,6 +354,40 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertTrue(allActuators.allSatisfy { $0.setting == .success(true) })
     try await connection.disconnect()
     endpointTask.cancel()
+  }
+
+  func testKeyPathUncached() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let endpoint = try await OcaLocalDeviceEndpoint(device: device)
+
+    let testBlock = try await SwiftOCADevice
+      .OcaBlock<MyBooleanActuator>(
+        objectNumber: testBlockONo,
+        deviceDelegate: device,
+        addToRootBlock: true
+      )
+    for _ in 0..<10000 {
+      let keyPaths = testBlock.allDevicePropertyKeyPathsUncached
+      XCTAssertGreaterThan(keyPaths.count, 10)
+    }
+  }
+
+  func testKeyPathCached() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let endpoint = try await OcaLocalDeviceEndpoint(device: device)
+
+    let testBlock = try await SwiftOCADevice
+      .OcaBlock<MyBooleanActuator>(
+        objectNumber: testBlockONo,
+        deviceDelegate: device,
+        addToRootBlock: true
+      )
+    for _ in 0..<10000 {
+      let keyPaths = await testBlock.allDevicePropertyKeyPaths
+      XCTAssertGreaterThan(keyPaths.count, 10)
+    }
   }
 }
 

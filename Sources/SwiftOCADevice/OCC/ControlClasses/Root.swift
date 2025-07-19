@@ -128,7 +128,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
   }
 
   deinit {
-    for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
+    for (_, propertyKeyPath) in allDevicePropertyKeyPathsUncached {
       let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
       property.finish()
     }
@@ -476,7 +476,16 @@ extension OcaRoot: Hashable {
 protocol OcaKeyPathMarkerProtocol: OcaRoot {}
 
 extension OcaKeyPathMarkerProtocol {
+  fileprivate var _metaTypeObjectIdentifier: ObjectIdentifier {
+    ObjectIdentifier(type(of: self))
+  }
+
+  @OcaDevice
   var allDevicePropertyKeyPaths: [String: AnyKeyPath] {
+    OcaDeviceProperyKeyPathCache.shared.keyPaths(for: self)
+  }
+
+  var allDevicePropertyKeyPathsUncached: [String: AnyKeyPath] {
     _allKeyPaths(value: self).reduce(into: [:]) {
       if $1.key.hasPrefix("_") {
         $0[String($1.key.dropFirst())] = $1.value
@@ -484,6 +493,25 @@ extension OcaKeyPathMarkerProtocol {
     }.filter {
       self[keyPath: $0.value] is any OcaDevicePropertyRepresentable
     }
+  }
+}
+
+@OcaDevice
+private final class OcaDeviceProperyKeyPathCache {
+  fileprivate static let shared = OcaDeviceProperyKeyPathCache()
+
+  private var _cache = [ObjectIdentifier: [String: AnyKeyPath]]()
+
+  @OcaDevice
+  fileprivate func keyPaths(for object: some OcaRoot) -> [String: AnyKeyPath] {
+    let objectIdentifier = object._metaTypeObjectIdentifier
+    if let keyPaths = _cache[objectIdentifier] {
+      return keyPaths
+    }
+
+    let keyPaths = object.allDevicePropertyKeyPathsUncached
+    _cache[objectIdentifier] = keyPaths
+    return keyPaths
   }
 }
 
