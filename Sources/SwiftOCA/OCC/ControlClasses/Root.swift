@@ -182,6 +182,14 @@ Sendable,
       await getJsonValue(flags: .defaultFlags)
     }
   }
+
+  public func propertyKeyPath(for propertyID: OcaPropertyID) async -> AnyKeyPath? {
+    await OcaPropertyKeyPathCache.shared.lookupProperty(byID: propertyID, for: self)
+  }
+
+  public func propertyKeyPath(for name: String) async -> AnyKeyPath? {
+    await OcaPropertyKeyPathCache.shared.lookupProperty(byName: name, for: self)
+  }
 }
 
 protocol _OcaObjectKeyPathRepresentable: OcaRoot {}
@@ -364,18 +372,76 @@ public extension OcaRoot {
 private final class OcaPropertyKeyPathCache {
   fileprivate static let shared = OcaPropertyKeyPathCache()
 
-  private var _cache = [ObjectIdentifier: [String: AnyKeyPath]]()
+  private struct CacheEntry {
+    let keyPaths: [String: AnyKeyPath]
+    let propertiesByID: [OcaPropertyID: AnyKeyPath]
+    let propertiesByName: [String: AnyKeyPath]
+
+    private init(keyPaths: [String: AnyKeyPath], object: some OcaRoot) {
+      self.keyPaths = keyPaths
+      propertiesByID = keyPaths.reduce(into: [:]) {
+        guard let value = object[keyPath: $1.value] as? any OcaPropertySubjectRepresentable else {
+          return
+        }
+
+        for propertyID in value.propertyIDs {
+          $0[propertyID] = $1.value
+        }
+      }
+      propertiesByName = keyPaths.reduce(into: [:]) {
+        guard object[keyPath: $1.value] is any OcaPropertySubjectRepresentable else {
+          return
+        }
+
+        $0[$1.key] = $1.value
+      }
+    }
+
+    fileprivate init(object: some OcaRoot) {
+      let keyPaths = object.allPropertyKeyPathsUncached
+      self.init(keyPaths: keyPaths, object: object)
+    }
+  }
+
+  private var _cache = [ObjectIdentifier: CacheEntry]()
+
+  private func addCacheEntry(for object: some OcaRoot) -> CacheEntry {
+    let cacheEntry = CacheEntry(object: object)
+    _cache[object._metaTypeObjectIdentifier] = cacheEntry
+    return cacheEntry
+  }
 
   @OcaConnection
   fileprivate func keyPaths(for object: some OcaRoot) -> [String: AnyKeyPath] {
-    let objectIdentifier = object._metaTypeObjectIdentifier
-    if let keyPaths = _cache[objectIdentifier] {
-      return keyPaths
+    if let cacheEntry = _cache[object._metaTypeObjectIdentifier] {
+      return cacheEntry.keyPaths
     }
 
-    let keyPaths = object.allPropertyKeyPathsUncached
-    _cache[objectIdentifier] = keyPaths
-    return keyPaths
+    return addCacheEntry(for: object).keyPaths
+  }
+
+  @OcaConnection
+  fileprivate func lookupProperty(
+    byID propertyID: OcaPropertyID,
+    for object: some OcaRoot
+  ) -> AnyKeyPath? {
+    if let cacheEntry = _cache[object._metaTypeObjectIdentifier] {
+      return cacheEntry.propertiesByID[propertyID]
+    }
+
+    return addCacheEntry(for: object).propertiesByID[propertyID]
+  }
+
+  @OcaConnection
+  fileprivate func lookupProperty(
+    byName name: String,
+    for object: some OcaRoot
+  ) -> AnyKeyPath? {
+    if let cacheEntry = _cache[object._metaTypeObjectIdentifier] {
+      return cacheEntry.propertiesByName[name]
+    }
+
+    return addCacheEntry(for: object).propertiesByName[name]
   }
 }
 
