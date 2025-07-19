@@ -27,7 +27,7 @@ extension OcaController {
 }
 
 @OcaDevice
-open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarkerProtocol {
+open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPathRepresentable {
   open nonisolated class var classID: OcaClassID { OcaClassID("1") }
   open nonisolated class var classVersion: OcaClassVersionNumber { 2 }
 
@@ -473,9 +473,9 @@ extension OcaRoot: Hashable {
   }
 }
 
-protocol OcaKeyPathMarkerProtocol: OcaRoot {}
+protocol _OcaObjectKeyPathRepresentable: OcaRoot {}
 
-extension OcaKeyPathMarkerProtocol {
+extension _OcaObjectKeyPathRepresentable {
   fileprivate var _metaTypeObjectIdentifier: ObjectIdentifier {
     ObjectIdentifier(type(of: self))
   }
