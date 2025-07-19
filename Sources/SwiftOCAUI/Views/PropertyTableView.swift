@@ -21,7 +21,7 @@ struct Property: Identifiable {
   typealias ID = Int
 
   var name: String
-  var keyPath: PartialKeyPath<OcaRoot>
+  var keyPath: AnyKeyPath
   var value: any OcaPropertyRepresentable
 
   var id: ID {

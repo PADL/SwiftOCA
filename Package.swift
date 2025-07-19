@@ -140,14 +140,8 @@ let CommonTargets: [Target] = [
     providers: [.apt(["libavahi-compat-libdnssd-dev"])]
   ),
   .target(
-    name: "KeyPathShims",
-    dependencies: [],
-    swiftSettings: [.unsafeFlags(["-parse-stdlib"])]
-  ),
-  .target(
     name: "SwiftOCA",
     dependencies: [
-      "KeyPathShims",
       "AsyncExtensions",
       "AnyCodable",
       "SocketAddress",

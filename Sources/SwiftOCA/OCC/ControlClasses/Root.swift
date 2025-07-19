@@ -184,13 +184,13 @@ Sendable,
   }
 }
 
-protocol _OcaObjectKeyPathRepresentable: OcaRoot {}
+protocol _OcaObjectKeyPathRepresentable: AnyObject {}
 
 extension PartialKeyPath: @retroactive @unchecked
 Sendable {} // fix warning
 
-extension _OcaObjectKeyPathRepresentable {
-  var allKeyPaths: [String: PartialKeyPath<Self>] {
+extension _OcaObjectKeyPathRepresentable where Self: OcaRoot {
+  var allKeyPaths: [String: AnyKeyPath] {
     _allKeyPaths(value: self).reduce(into: [:]) {
       if $1.key.hasPrefix("_") {
         $0[String($1.key.dropFirst())] = $1.value
@@ -215,13 +215,13 @@ extension _OcaObjectKeyPathRepresentable {
 }
 
 public extension OcaRoot {
-  private var staticPropertyKeyPaths: [String: PartialKeyPath<OcaRoot>] {
-    ["classID": \._classID,
-     "classVersion": \._classVersion,
-     "objectNumber": \._objectNumber]
+  private var staticPropertyKeyPaths: [String: AnyKeyPath] {
+    ["classID": \OcaRoot._classID,
+     "classVersion": \OcaRoot._classVersion,
+     "objectNumber": \OcaRoot._objectNumber]
   }
 
-  var allPropertyKeyPaths: [String: PartialKeyPath<OcaRoot>] {
+  var allPropertyKeyPaths: [String: AnyKeyPath] {
     staticPropertyKeyPaths.merging(
       allKeyPaths.filter { self[keyPath: $0.value] is any OcaPropertySubjectRepresentable },
       uniquingKeysWith: { old, _ in old }

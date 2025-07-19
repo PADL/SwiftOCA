@@ -11,10 +11,8 @@
 //===----------------------------------------------------------------------===//
 
 #if swift(>=6.0)
-internal import KeyPathShims
 internal import SwiftShims
 #else
-@_implementationOnly import KeyPathShims
 @_implementationOnly import SwiftShims
 #endif
 
@@ -162,10 +160,10 @@ func _forEachField(
 /// - Returns: `true` if every invocation of `body` returns `true`; otherwise,
 ///   `false`.
 @discardableResult
-func _forEachFieldWithKeyPath<Root>(
-  of type: Root.Type,
+private func _forEachFieldWithKeyPath(
+  of type: (some Any).Type,
   options: _EachFieldOptions = [],
-  body: (UnsafePointer<CChar>, PartialKeyPath<Root>) -> Bool
+  body: (UnsafePointer<CChar>, AnyKeyPath) -> Bool
 ) -> Bool {
   // Require class type iff `.classType` is included as an option
   if _isClassType(type) != options.contains(.classType) {
@@ -192,39 +190,13 @@ func _forEachFieldWithKeyPath<Root>(
       if !ignoreUnknown { return false }
       continue
     }
-    func keyPathType<Leaf>(for: Leaf.Type) -> PartialKeyPath<Root>.Type {
-      if field.isVar { return WritableKeyPath<Root, Leaf>.self }
-      return KeyPath<Root, Leaf>.self
-    }
-    let resultSize = MemoryLayout<Int32>.size + MemoryLayout<Int>.size
-    let partialKeyPath = _openExistential(childType, do: keyPathType)
-      ._create(capacityInBytes: resultSize) {
-        var destBuilder = KeyPathBuffer.Builder($0)
-        destBuilder.pushHeader(KeyPathBuffer.Header(
-          size: resultSize - MemoryLayout<Int>.size,
-          trivial: true,
-          hasReferencePrefix: false
-        ))
-        let component = RawKeyPathComponent(
-          header: RawKeyPathComponent.Header(
-            stored: _MetadataKind(type) == .struct ? .struct : .class,
-            mutable: field.isVar,
-            inlineOffset: UInt32(offset)
-          ),
-          body: UnsafeRawBufferPointer(start: nil, count: 0)
-        )
-        component.clone(
-          into: &destBuilder.buffer,
-          endOfReferencePrefix: false
-        )
-      }
-
+    let anyKeyPath = _createOffsetBasedKeyPath(root: type, value: childType, offset: offset)
     if let name = field.name {
-      if !body(name, partialKeyPath) {
+      if !body(name, anyKeyPath) {
         return false
       }
     } else {
-      if !body("", partialKeyPath) {
+      if !body("", anyKeyPath) {
         return false
       }
     }
@@ -233,10 +205,10 @@ func _forEachFieldWithKeyPath<Root>(
 }
 
 @discardableResult
-func _forEachFieldWithKeyPath<T>(
+private func _forEachFieldWithKeyPath<T>(
   value: T,
   options: _EachFieldOptions = [],
-  body: (UnsafePointer<CChar>, PartialKeyPath<T>) -> Bool
+  body: (UnsafePointer<CChar>, AnyKeyPath) -> Bool
 ) -> Bool {
   _forEachFieldWithKeyPath(
     of: _getDynamicType(
@@ -249,8 +221,8 @@ func _forEachFieldWithKeyPath<T>(
   )
 }
 
-package func _allKeyPaths<T: AnyObject>(value: T) -> [String: PartialKeyPath<T>] {
-  var keyPaths = [String: PartialKeyPath<T>]()
+package func _allKeyPaths(value: some AnyObject) -> [String: AnyKeyPath] {
+  var keyPaths = [String: AnyKeyPath]()
   _forEachFieldWithKeyPath(value: value, options: [.classType, .ignoreUnknown]) { field, path in
     let fieldName = String(cString: field)
     keyPaths[fieldName] = path
