@@ -392,7 +392,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, OcaKeyPathMarker
 
   open func deserialize(
     jsonObject: [String: Sendable],
-      flags: DeserializationFlags = []
+    flags: DeserializationFlags = []
   ) async throws {
     guard let deviceDelegate else { throw Ocp1Error.notConnected }
     let logger = await deviceDelegate.logger
