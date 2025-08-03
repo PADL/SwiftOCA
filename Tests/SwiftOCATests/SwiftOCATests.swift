@@ -600,6 +600,291 @@ final class SwiftOCADeviceTests: XCTestCase {
     )
     XCTAssertEqual(typeErasedPropertyChangedEvent.changeType, propertyChangedEventData.changeType)
   }
+
+  // MARK: - Additional Serialization Tests
+
+  func testOcaPropertyIDEncoding() throws {
+    let propertyID = OcaPropertyID("3.5")
+    let encodedData: [UInt8] = try Ocp1Encoder().encode(propertyID)
+    XCTAssertEqual(encodedData, [0x00, 0x03, 0x00, 0x05])
+
+    let decodedPropertyID = try Ocp1Decoder().decode(OcaPropertyID.self, from: encodedData)
+    XCTAssertEqual(propertyID, decodedPropertyID)
+  }
+
+  func testOcaMethodIDEncoding() throws {
+    let methodID = OcaMethodID("2.10")
+    let encodedData: [UInt8] = try Ocp1Encoder().encode(methodID)
+    XCTAssertEqual(encodedData, [0x00, 0x02, 0x00, 0x0A])
+
+    let decodedMethodID = try Ocp1Decoder().decode(OcaMethodID.self, from: encodedData)
+    XCTAssertEqual(methodID, decodedMethodID)
+  }
+
+  func testOcaClassIDEncoding() throws {
+    let classID = OcaClassID([1, 2, 3, 4])
+    let encodedData: [UInt8] = try Ocp1Encoder().encode(classID)
+    XCTAssertEqual(encodedData, [0x00, 0x04, 0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04])
+
+    let decodedClassID = try Ocp1Decoder().decode(OcaClassID.self, from: encodedData)
+    XCTAssertEqual(classID, decodedClassID)
+  }
+
+  func testOcaPortIDEncoding() throws {
+    let portID = OcaPortID(mode: .output, index: 5)
+    let encodedData: [UInt8] = try Ocp1Encoder().encode(portID)
+    XCTAssertEqual(encodedData, [0x02, 0x00, 0x05])
+
+    let decodedPortID = try Ocp1Decoder().decode(OcaPortID.self, from: encodedData)
+    XCTAssertEqual(portID, decodedPortID)
+  }
+
+  func testOcaEventIDEncoding() throws {
+    let eventID = OcaEventID(defLevel: 2, eventIndex: 7)
+    let encodedData: [UInt8] = try Ocp1Encoder().encode(eventID)
+    XCTAssertEqual(encodedData, [0x00, 0x02, 0x00, 0x07])
+
+    let decodedEventID = try Ocp1Decoder().decode(OcaEventID.self, from: encodedData)
+    XCTAssertEqual(eventID, decodedEventID)
+  }
+
+  func testOcaVector2DEncoding() throws {
+    let vector = OcaVector2D<OcaUint16>(x: 10, y: 20)
+    let encodedData: [UInt8] = try Ocp1Encoder().encode(vector)
+    XCTAssertEqual(encodedData, [0x00, 0x0A, 0x00, 0x14])
+
+    let decodedVector = try Ocp1Decoder().decode(OcaVector2D<OcaUint16>.self, from: encodedData)
+    XCTAssertEqual(vector.x, decodedVector.x)
+    XCTAssertEqual(vector.y, decodedVector.y)
+  }
+
+  func testOcaTimePTPEncoding() throws {
+    let timePTP = OcaTimePTP(seconds: 1000, nanoseconds: 500_000_000)
+    let encodedData: [UInt8] = try Ocp1Encoder().encode(timePTP)
+
+    let decodedTimePTP = try Ocp1Decoder().decode(OcaTimePTP.self, from: encodedData)
+    XCTAssertEqual(timePTP.seconds, decodedTimePTP.seconds)
+    XCTAssertEqual(timePTP.nanoseconds, decodedTimePTP.nanoseconds)
+  }
+
+  func testOcaTimeEncoding() throws {
+    let time = OcaTime(seconds: 1000, nanoseconds: 500_000_000)
+    let encodedData: [UInt8] = try Ocp1Encoder().encode(time)
+
+    let decodedTime = try Ocp1Decoder().decode(OcaTime.self, from: encodedData)
+    XCTAssertEqual(time.seconds, decodedTime.seconds)
+    XCTAssertEqual(time.nanoseconds, decodedTime.nanoseconds)
+  }
+
+  func testOcaLibVolTypeEncoding() throws {
+    let libVolType = OcaLibVolType(authority: OcaOrganizationID((0x01, 0x02, 0x03)), id: 1)
+    let encodedData: [UInt8] = try Ocp1Encoder().encode(libVolType)
+
+    let decodedLibVolType = try Ocp1Decoder().decode(OcaLibVolType.self, from: encodedData)
+    XCTAssertEqual(libVolType.authority, decodedLibVolType.authority)
+    XCTAssertEqual(libVolType.id, decodedLibVolType.id)
+  }
+
+  func testOcaStatusEncoding() throws {
+    let status = OcaStatus.ok
+    let encodedData: [UInt8] = try Ocp1Encoder().encode(status)
+    XCTAssertEqual(encodedData, [0x00])
+
+    let decodedStatus = try Ocp1Decoder().decode(OcaStatus.self, from: encodedData)
+    XCTAssertEqual(status, decodedStatus)
+  }
+
+  func testComplexStructEncoding() throws {
+    let objectIdentification = OcaObjectIdentification(
+      oNo: 1234,
+      classIdentification: OcaClassIdentification(
+        classID: OcaClassID([1, 2, 3]),
+        classVersion: 100
+      )
+    )
+
+    let encodedData: [UInt8] = try Ocp1Encoder().encode(objectIdentification)
+    let decodedObjectIdentification = try Ocp1Decoder().decode(
+      OcaObjectIdentification.self,
+      from: encodedData
+    )
+
+    XCTAssertEqual(objectIdentification.oNo, decodedObjectIdentification.oNo)
+    XCTAssertEqual(
+      objectIdentification.classIdentification.classID,
+      decodedObjectIdentification.classIdentification.classID
+    )
+    XCTAssertEqual(
+      objectIdentification.classIdentification.classVersion,
+      decodedObjectIdentification.classIdentification.classVersion
+    )
+  }
+
+  func testNestedArrayEncoding() throws {
+    let nestedArray: [[OcaUint16]] = [[1, 2, 3], [4, 5], [6, 7, 8, 9]]
+    let encodedData: [UInt8] = try Ocp1Encoder().encode(nestedArray)
+    let decodedArray = try Ocp1Decoder().decode([[OcaUint16]].self, from: encodedData)
+
+    XCTAssertEqual(nestedArray, decodedArray)
+  }
+
+  func testEmptyCollectionsEncoding() throws {
+    let emptyArray: [OcaUint16] = []
+    let emptyMap: [String: OcaUint16] = [:]
+
+    let encodedArray: [UInt8] = try Ocp1Encoder().encode(emptyArray)
+    let encodedMap: [UInt8] = try Ocp1Encoder().encode(emptyMap)
+
+    let decodedArray = try Ocp1Decoder().decode([OcaUint16].self, from: encodedArray)
+    let decodedMap = try Ocp1Decoder().decode([String: OcaUint16].self, from: encodedMap)
+
+    XCTAssertEqual(emptyArray, decodedArray)
+    XCTAssertEqual(emptyMap, decodedMap)
+  }
+
+  func testLargeNumberEncoding() throws {
+    let largeUInt64: OcaUint64 = 18_446_744_073_709_551_615 // Max UInt64
+    let largeInt64: OcaInt64 = -9_223_372_036_854_775_808 // Min Int64
+
+    let encodedUInt64: [UInt8] = try Ocp1Encoder().encode(largeUInt64)
+    let encodedInt64: [UInt8] = try Ocp1Encoder().encode(largeInt64)
+
+    let decodedUInt64 = try Ocp1Decoder().decode(OcaUint64.self, from: encodedUInt64)
+    let decodedInt64 = try Ocp1Decoder().decode(OcaInt64.self, from: encodedInt64)
+
+    XCTAssertEqual(largeUInt64, decodedUInt64)
+    XCTAssertEqual(largeInt64, decodedInt64)
+  }
+
+  func testFloatingPointPrecision() throws {
+    let float32: OcaFloat32 = 3.14159265359
+    let float64: OcaFloat64 = 3.141592653589793238462643383279
+
+    let encodedFloat32: [UInt8] = try Ocp1Encoder().encode(float32)
+    let encodedFloat64: [UInt8] = try Ocp1Encoder().encode(float64)
+
+    let decodedFloat32 = try Ocp1Decoder().decode(OcaFloat32.self, from: encodedFloat32)
+    let decodedFloat64 = try Ocp1Decoder().decode(OcaFloat64.self, from: encodedFloat64)
+
+    XCTAssertEqual(float32, decodedFloat32)
+    XCTAssertEqual(float64, decodedFloat64)
+  }
+
+  func testSpecialFloatingPointValues() throws {
+    let infinityFloat: OcaFloat32 = .infinity
+    let negativeInfinityFloat: OcaFloat32 = -.infinity
+    let nanFloat: OcaFloat32 = .nan
+    let zeroFloat: OcaFloat32 = 0.0
+    let negativeZeroFloat: OcaFloat32 = -0.0
+
+    let encodedInfinity: [UInt8] = try Ocp1Encoder().encode(infinityFloat)
+    let encodedNegativeInfinity: [UInt8] = try Ocp1Encoder().encode(negativeInfinityFloat)
+    let encodedNaN: [UInt8] = try Ocp1Encoder().encode(nanFloat)
+    let encodedZero: [UInt8] = try Ocp1Encoder().encode(zeroFloat)
+    let encodedNegativeZero: [UInt8] = try Ocp1Encoder().encode(negativeZeroFloat)
+
+    let decodedInfinity = try Ocp1Decoder().decode(OcaFloat32.self, from: encodedInfinity)
+    let decodedNegativeInfinity = try Ocp1Decoder().decode(
+      OcaFloat32.self,
+      from: encodedNegativeInfinity
+    )
+    let decodedNaN = try Ocp1Decoder().decode(OcaFloat32.self, from: encodedNaN)
+    let decodedZero = try Ocp1Decoder().decode(OcaFloat32.self, from: encodedZero)
+    let decodedNegativeZero = try Ocp1Decoder().decode(OcaFloat32.self, from: encodedNegativeZero)
+
+    XCTAssertEqual(infinityFloat, decodedInfinity)
+    XCTAssertEqual(negativeInfinityFloat, decodedNegativeInfinity)
+    XCTAssertTrue(decodedNaN.isNaN)
+    XCTAssertEqual(zeroFloat, decodedZero)
+    XCTAssertEqual(negativeZeroFloat, decodedNegativeZero)
+  }
+
+  func testLargeBlobEncoding() throws {
+    let largeData = Data(repeating: 0xAB, count: 65536)
+    let largeBlob = OcaLongBlob(largeData)
+
+    let encodedBlob: Data = try Ocp1Encoder().encode(largeBlob)
+    let decodedBlob = try Ocp1Decoder().decode(OcaLongBlob.self, from: encodedBlob)
+
+    XCTAssertEqual(largeBlob, decodedBlob)
+  }
+
+  func testOptionalEncoding() throws {
+    // Test encoding of optional values that are not nil
+    let someValue: OcaUint16? = 42
+
+    let encodedSomeValue: Data = try Ocp1Encoder().encode(someValue)
+    let decodedSomeValue = try Ocp1Decoder().decode(OcaUint16?.self, from: encodedSomeValue)
+
+    XCTAssertEqual(someValue, decodedSomeValue)
+
+    // Note: OCP.1 encoder appears to not support encoding nil values directly
+    // This is consistent with the protocol specification where nil values
+    // are typically handled at a higher level
+  }
+
+  func testRoundTripConsistency() throws {
+    let testValues: [Any] = [
+      OcaUint8(255),
+      OcaInt8(-128),
+      OcaUint16(65535),
+      OcaInt16(-32768),
+      OcaUint32(4_294_967_295),
+      OcaInt32(-2_147_483_648),
+      OcaFloat32(123.456),
+      OcaFloat64(123.456789012345),
+      "Test String with émojis 🚀",
+      true,
+      false,
+    ]
+
+    for value in testValues {
+      switch value {
+      case let v as OcaUint8:
+        let encoded: Data = try Ocp1Encoder().encode(v)
+        let decoded = try Ocp1Decoder().decode(OcaUint8.self, from: encoded)
+        XCTAssertEqual(v, decoded)
+      case let v as OcaInt8:
+        let encoded: Data = try Ocp1Encoder().encode(v)
+        let decoded = try Ocp1Decoder().decode(OcaInt8.self, from: encoded)
+        XCTAssertEqual(v, decoded)
+      case let v as OcaUint16:
+        let encoded: Data = try Ocp1Encoder().encode(v)
+        let decoded = try Ocp1Decoder().decode(OcaUint16.self, from: encoded)
+        XCTAssertEqual(v, decoded)
+      case let v as OcaInt16:
+        let encoded: Data = try Ocp1Encoder().encode(v)
+        let decoded = try Ocp1Decoder().decode(OcaInt16.self, from: encoded)
+        XCTAssertEqual(v, decoded)
+      case let v as OcaUint32:
+        let encoded: Data = try Ocp1Encoder().encode(v)
+        let decoded = try Ocp1Decoder().decode(OcaUint32.self, from: encoded)
+        XCTAssertEqual(v, decoded)
+      case let v as OcaInt32:
+        let encoded: Data = try Ocp1Encoder().encode(v)
+        let decoded = try Ocp1Decoder().decode(OcaInt32.self, from: encoded)
+        XCTAssertEqual(v, decoded)
+      case let v as OcaFloat32:
+        let encoded: Data = try Ocp1Encoder().encode(v)
+        let decoded = try Ocp1Decoder().decode(OcaFloat32.self, from: encoded)
+        XCTAssertEqual(v, decoded)
+      case let v as OcaFloat64:
+        let encoded: Data = try Ocp1Encoder().encode(v)
+        let decoded = try Ocp1Decoder().decode(OcaFloat64.self, from: encoded)
+        XCTAssertEqual(v, decoded)
+      case let v as String:
+        let encoded: Data = try Ocp1Encoder().encode(v)
+        let decoded = try Ocp1Decoder().decode(String.self, from: encoded)
+        XCTAssertEqual(v, decoded)
+      case let v as Bool:
+        let encoded: Data = try Ocp1Encoder().encode(v)
+        let decoded = try Ocp1Decoder().decode(Bool.self, from: encoded)
+        XCTAssertEqual(v, decoded)
+      default:
+        XCTFail("Unhandled test value type")
+      }
+    }
+  }
 }
 
 extension Ocp1EventData: Equatable {
