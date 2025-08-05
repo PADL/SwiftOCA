@@ -24,7 +24,10 @@ internal import IORingUtils
 @_implementationOnly import IORing
 @_implementationOnly import IORingUtils
 #endif
-import SystemPackage
+import struct SystemPackage.Errno
+import struct SystemPackage.FileDescriptor
+import struct SystemPackage.FilePermissions
+import struct SystemPackage.FilePath
 #endif
 
 extension OcaMimeType {
