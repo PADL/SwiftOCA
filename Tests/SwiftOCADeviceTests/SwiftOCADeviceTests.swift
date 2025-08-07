@@ -367,9 +367,11 @@ final class SwiftOCADeviceTests: XCTestCase {
         deviceDelegate: device,
         addToRootBlock: true
       )
-    for _ in 0..<10000 {
-      let keyPaths = testBlock.allDevicePropertyKeyPathsUncached
-      XCTAssertGreaterThan(keyPaths.count, 10)
+    measure {
+      for _ in 0..<10000 {
+        let keyPaths = testBlock.allDevicePropertyKeyPathsUncached
+        XCTAssertGreaterThan(keyPaths.count, 10)
+      }
     }
   }
 
