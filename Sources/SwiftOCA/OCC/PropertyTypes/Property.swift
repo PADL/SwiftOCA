@@ -16,6 +16,7 @@
 
 import AsyncAlgorithms
 import AsyncExtensions
+import Atomics
 import Foundation
 #if canImport(Darwin)
 import Observation
@@ -247,16 +248,20 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
   }
 
   #if canImport(Darwin)
+  private var _didRegisterObservable = ManagedAtomic<Bool>(false)
+
   mutating func _registerObservable<T: OcaRoot>(
     _enclosingInstance object: T,
     wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>
   ) {
+    guard !_didRegisterObservable.load(ordering: .acquiring) else { return }
     _send = { @Sendable [subject] object, newValue in
       guard let object else { return }
       (object as! T).withMutation(keyPath: wrappedKeyPath) {
         subject.send(newValue)
       }
     }
+    _didRegisterObservable.store(true, ordering: .releasing)
   }
   #endif
 
