@@ -26,8 +26,8 @@ internal import IORingUtils
 #endif
 import struct SystemPackage.Errno
 import struct SystemPackage.FileDescriptor
-import struct SystemPackage.FilePermissions
 import struct SystemPackage.FilePath
+import struct SystemPackage.FilePermissions
 #endif
 
 extension OcaMimeType {
