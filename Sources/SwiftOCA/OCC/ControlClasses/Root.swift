@@ -135,8 +135,8 @@ Sendable,
     false
   }
 
-  public var description: String {
-    if case let .success(value) = role {
+  public nonisolated var description: String {
+    if case let .success(value) = $role.currentValue {
       "\(type(of: self))(objectNumber: \(objectNumber.oNoString), role: \(value))"
     } else {
       "\(type(of: self))(objectNumber: \(objectNumber.oNoString))"
