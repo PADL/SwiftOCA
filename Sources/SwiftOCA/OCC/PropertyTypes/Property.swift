@@ -164,7 +164,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
   private(set) var _send: @Sendable (_: OcaRoot?, _: PropertyValue) -> ()
   #else
   @Sendable
-  func _send(_: OcaRoot?, _ object: PropertyValue) {
+  func _send(_: OcaRoot?, _ value: PropertyValue) {
     subject.send(value)
   }
   #endif
