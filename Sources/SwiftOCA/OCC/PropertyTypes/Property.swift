@@ -162,13 +162,22 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
   }
 
   #if canImport(Darwin)
-  private(set) var _send: @Sendable (_: OcaRoot?, _: PropertyValue) -> ()
-  #else
+  typealias ObservableSendHelper = @Sendable (_: OcaRoot?, _: PropertyValue)
+    -> ()
+
+  private(set) var _observableSendHelper = ManagedCriticalState<ObservableSendHelper?>(nil)
+  #endif
+
   @Sendable
-  func _send(_: OcaRoot?, _ value: PropertyValue) {
+  func _send(_ object: OcaRoot?, _ value: PropertyValue) {
+    #if canImport(Darwin)
+    if let observableSendHelper = _observableSendHelper.criticalState {
+      observableSendHelper(object, value)
+      return
+    }
+    #endif
     subject.send(value)
   }
-  #endif
 
   @_spi(SwiftOCAPrivate)
   public let subject: AsyncCurrentValueSubject<PropertyValue>
@@ -248,20 +257,20 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
   }
 
   #if canImport(Darwin)
-  private var _didRegisterObservable = ManagedAtomic<Bool>(false)
-
   mutating func _registerObservable<T: OcaRoot>(
     _enclosingInstance object: T,
     wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>
   ) {
-    guard !_didRegisterObservable.load(ordering: .acquiring) else { return }
-    _send = { @Sendable [subject] object, newValue in
+    let observableSendHelper: ObservableSendHelper = { @Sendable [subject] object, newValue in
       guard let object else { return }
       (object as! T).withMutation(keyPath: wrappedKeyPath) {
         subject.send(newValue)
       }
     }
-    _didRegisterObservable.store(true, ordering: .releasing)
+    _observableSendHelper.withCriticalRegion {
+      guard $0 == nil else { return }
+      $0 = observableSendHelper
+    }
   }
   #endif
 
@@ -308,9 +317,6 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     self.setMethodID = setMethodID
     subject = AsyncCurrentValueSubject(PropertyValue.initial)
     self.setValueTransformer = setValueTransformer
-    #if canImport(Darwin)
-    _send = { @Sendable [subject] in subject.send($1) }
-    #endif
   }
 
   public init(
