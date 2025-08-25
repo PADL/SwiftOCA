@@ -16,7 +16,6 @@
 
 import AsyncAlgorithms
 import AsyncExtensions
-import Atomics
 import Foundation
 
 public struct OcaPropertyResolutionFlags: OptionSet, Sendable {
