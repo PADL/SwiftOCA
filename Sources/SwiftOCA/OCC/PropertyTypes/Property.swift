@@ -239,20 +239,19 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
   }
 
+  #if canImport(Darwin)
   mutating func _registerObservable<T: OcaRoot>(
     _enclosingInstance object: T,
     wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>
   ) {
-    #if canImport(Darwin)
-    object.access(keyPath: wrappedKeyPath)
     _send = { @Sendable [subject] object, newValue in
       guard let object else { return }
       (object as! T).withMutation(keyPath: wrappedKeyPath) {
         subject.send(newValue)
       }
     }
-    #endif
   }
+  #endif
 
   public static subscript<T: OcaRoot>(
     _enclosingInstance object: T,
@@ -260,14 +259,23 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
   ) -> PropertyValue {
     get {
+      #if canImport(Darwin)
+      object.access(keyPath: wrappedKeyPath)
       object[keyPath: storageKeyPath]._registerObservable(
         _enclosingInstance: object,
         wrapped: wrappedKeyPath
       )
+      #endif
       return object[keyPath: storageKeyPath]
         ._get(_enclosingInstance: object)
     }
     set {
+      #if canImport(Darwin)
+      object[keyPath: storageKeyPath]._registerObservable(
+        _enclosingInstance: object,
+        wrapped: wrappedKeyPath
+      )
+      #endif
       object[keyPath: storageKeyPath]
         ._set(_enclosingInstance: object, newValue)
     }
