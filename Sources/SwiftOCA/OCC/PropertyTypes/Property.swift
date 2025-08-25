@@ -160,7 +160,14 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
   }
 
+  #if canImport(Darwin)
   private(set) var _send: @Sendable (_: OcaRoot?, _: PropertyValue) -> ()
+  #else
+  @Sendable
+  func _send(_: OcaRoot?, _ object: PropertyValue) {
+    subject.send(value)
+  }
+  #endif
 
   @_spi(SwiftOCAPrivate)
   public let subject: AsyncCurrentValueSubject<PropertyValue>
@@ -296,7 +303,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     self.setMethodID = setMethodID
     subject = AsyncCurrentValueSubject(PropertyValue.initial)
     self.setValueTransformer = setValueTransformer
+    #if canImport(Darwin)
     _send = { @Sendable [subject] in subject.send($1) }
+    #endif
   }
 
   public init(
