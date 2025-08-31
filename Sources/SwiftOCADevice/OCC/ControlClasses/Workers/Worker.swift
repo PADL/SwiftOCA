@@ -74,7 +74,7 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
       return Ocp1Response()
     case OcaMethodID("2.13"):
       return try await encodeResponse(path)
-    case OcaMethodID("2.17"):
+    case OcaMethodID("2.16"):
       let portClockMapEntry = try await handleGetPortClockMapEntry(command, from: controller)
       return try encodeResponse(portClockMapEntry)
     case OcaMethodID("2.17"):
