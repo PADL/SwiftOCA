@@ -76,8 +76,7 @@ Sendable {
   // encoded OcaIP4NetworkSettings or OcaIP6NetworkSettings
   @OcaProperty(
     propertyID: OcaPropertyID("2.8"),
-    getMethodID: OcaMethodID("2.14"),
-    setMethodID: OcaMethodID("2.15")
+    getMethodID: OcaMethodID("2.14")
   )
   public var activeNetworkSettings: OcaProperty<OcaBlob>.PropertyValue
 
