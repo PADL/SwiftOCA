@@ -21,7 +21,7 @@ let PlatformProducts: [Product]
 let PlatformTargets: [Target]
 
 #if os(Linux)
-PlatformPackageDependencies = [.package(url: "https://github.com/PADL/IORingSwift", from: "0.1.2")]
+PlatformPackageDependencies = [.package(url: "https://github.com/PADL/IORingSwift", from: "0.1.9")]
 
 PlatformTargetDependencies = [
   .target(
