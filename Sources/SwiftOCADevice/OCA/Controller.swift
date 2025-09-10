@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024 PADL Software Pty Ltd
+// Copyright (c) 2024-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,19 @@
 
 import SwiftOCA
 
+public struct OcaControllerFlags: OptionSet, Sendable {
+  public typealias RawValue = UInt32
+
+  public let rawValue: RawValue
+
+  public init(rawValue: RawValue) { self.rawValue = rawValue }
+
+  public static let supportsLocking = Self(rawValue: 1 << 0)
+}
+
 public protocol OcaController: Actor {
+  nonisolated var flags: OcaControllerFlags { get }
+
   func addSubscription(
     _ subscription: OcaSubscriptionManagerSubscription
   ) async throws

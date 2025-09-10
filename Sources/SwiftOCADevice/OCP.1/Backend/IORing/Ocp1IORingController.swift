@@ -65,6 +65,7 @@ extension Ocp1IORingControllerPrivate {
 }
 
 actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConvertible {
+  nonisolated var flags: OcaControllerFlags { .supportsLocking }
   nonisolated let connectionPrefix: String
 
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
@@ -200,6 +201,7 @@ extension Ocp1IORingStreamController: Hashable {
 }
 
 actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerDatagramSemantics {
+  nonisolated var flags: OcaControllerFlags { .supportsLocking }
   nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
 
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()

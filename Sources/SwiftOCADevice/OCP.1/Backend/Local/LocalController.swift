@@ -23,6 +23,7 @@ import Foundation
 import SwiftOCA
 
 actor OcaLocalController: Ocp1ControllerInternal {
+  nonisolated var flags: OcaControllerFlags { .supportsLocking }
   nonisolated var connectionPrefix: String { OcaLocalConnectionPrefix }
 
   var lastMessageReceivedTime = ContinuousClock.now

@@ -26,6 +26,7 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
   Ocp1ControllerDatagramSemantics,
   CustomStringConvertible
 {
+  nonisolated var flags: OcaControllerFlags { .supportsLocking }
   nonisolated var connectionPrefix: String { OcaDatagramProxyConnectionPrefix }
 
   let peerID: T

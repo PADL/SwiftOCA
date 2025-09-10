@@ -50,6 +50,7 @@ fileprivate extension AsyncStream where Element == WSMessage {
 
 /// A remote WebSocket endpoint
 actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
+  nonisolated var flags: OcaControllerFlags { .supportsLocking }
   nonisolated var connectionPrefix: String { OcaWebSocketTcpConnectionPrefix }
 
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()

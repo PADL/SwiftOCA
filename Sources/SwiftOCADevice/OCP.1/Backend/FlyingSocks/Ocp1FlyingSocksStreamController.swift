@@ -29,6 +29,7 @@ import SwiftOCA
 
 /// A remote controller
 actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConvertible {
+  nonisolated var flags: OcaControllerFlags { .supportsLocking }
   nonisolated let connectionPrefix: String
 
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()

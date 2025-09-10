@@ -290,6 +290,10 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   }
 
   func lockNoWrite(controller: any OcaController) throws {
+    guard controller.flags.contains(.supportsLocking) else {
+      throw Ocp1Error.status(.permissionDenied)
+    }
+
     if !lockable {
       throw Ocp1Error.status(.notImplemented)
     }
@@ -309,6 +313,10 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   }
 
   func lockNoReadWrite(controller: any OcaController) throws {
+    guard controller.flags.contains(.supportsLocking) else {
+      throw Ocp1Error.status(.permissionDenied)
+    }
+
     if !lockable {
       throw Ocp1Error.status(.notImplemented)
     }
@@ -327,6 +335,10 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   }
 
   func unlock(controller: any OcaController) throws {
+    guard controller.flags.contains(.supportsLocking) else {
+      throw Ocp1Error.status(.permissionDenied)
+    }
+
     if !lockable {
       throw Ocp1Error.status(.notImplemented)
     }
