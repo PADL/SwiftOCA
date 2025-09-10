@@ -284,7 +284,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }.collect()
   }
 
-  func find(
+  public func find(
     actionObjectsByRolePath searchPath: OcaNamePath,
     resultFlags: OcaActionObjectSearchResultFlags
   ) async throws -> [OcaObjectSearchResult] {
