@@ -35,7 +35,7 @@ internal import IORingUtils
 #endif
 
 import SocketAddress
-import SystemPackage
+import struct SystemPackage.Errno
 
 fileprivate extension Errno {
   var mappedError: Error {

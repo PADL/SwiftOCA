@@ -38,7 +38,7 @@ import Logging
 import SocketAddress
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
-import SystemPackage
+import struct SystemPackage.Errno
 
 @OcaDevice
 public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
@@ -168,13 +168,13 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
               await controller.handle(for: self)
             }
           }
-        } catch Errno.invalidArgument {
+        } catch let error where error as? Errno == Errno.invalidArgument {
           logger.warning(
             "invalid argument when accepting connections, check kernel version supports multishot accept with io_uring"
           )
           break
         }
-      } catch Errno.canceled {
+      } catch let error where error as? Errno == Errno.canceled {
         logger.debug("received cancelation, trying to accept() again")
       } catch {
         logger.info("received error \(error), bailing")
@@ -268,6 +268,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     try await super.run()
     let socket = try makeSocket()
     self.socket = socket
+
     repeat {
       do {
         let messagePdus = try await socket
@@ -286,7 +287,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
             await unlockAndRemove(controller: controller)
           }
         }
-      } catch Errno.canceled {}
+      } catch let error where error as? Errno == Errno.canceled {}
       if Task.isCancelled {
         logger.info("\(type(of: self)) cancelled, stopping")
         break
