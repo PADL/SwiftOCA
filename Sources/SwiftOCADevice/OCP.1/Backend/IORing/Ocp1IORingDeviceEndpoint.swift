@@ -271,7 +271,6 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     self.socket = socket
 
     var receiveBufferSize: Int!
-    let anonymousPeerAddress = try! AnySocketAddress(sockaddr_un(family: sa_family_t(AF_UNIX), presentationAddress: ""))
 
     if address.family == AF_UNIX {
       receiveBufferSize = try? Int(socket.getIntegerOption(option: SO_RCVBUF))
@@ -288,11 +287,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
           var controller: ControllerType!
 
           do {
-            let peerAddress: AnySocketAddress = if address.family == AF_UNIX {
-              anonymousPeerAddress
-            } else {
-              try AnySocketAddress(bytes: messagePdu.name)
-            }
+            let peerAddress = try AnySocketAddress(bytes: messagePdu.name)
             controller = try await self.controller(for: peerAddress)
             let messages = try await controller.decodeMessages(from: messagePdu.buffer)
             for (message, rrq) in messages {

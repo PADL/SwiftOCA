@@ -219,10 +219,10 @@ actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerD
 
   init(
     endpoint: Ocp1IORingDatagramDeviceEndpoint,
-    peerAddress: any SocketAddress
+    peerAddress: AnySocketAddress
   ) async throws {
     self.endpoint = endpoint
-    self.peerAddress = AnySocketAddress(peerAddress)
+    self.peerAddress = peerAddress
   }
 
   func onConnectionBecomingStale() async throws {
