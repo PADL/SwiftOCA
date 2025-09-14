@@ -266,33 +266,45 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   override public func run() async throws {
     logger.info("starting \(type(of: self)) on \(try! address.presentationAddress)")
     try await super.run()
+
     let socket = try makeSocket()
     self.socket = socket
 
+    var receiveBufferSize: Int!
+    let anonymousPeerAddress = try! AnySocketAddress(sockaddr_un(family: sa_family_t(AF_UNIX), presentationAddress: ""))
+
+    if address.family == AF_UNIX {
+      receiveBufferSize = try? Int(socket.getIntegerOption(option: SO_RCVBUF))
+    }
+    if receiveBufferSize == nil {
+      receiveBufferSize = Ocp1MaximumDatagramPduSize
+    }
+
     repeat {
       do {
-        let messagePdus = try await socket
-          .receiveMessages(count: Ocp1MaximumDatagramPduSize)
+        let messagePdus = try await socket.receiveMessages(count: receiveBufferSize)
 
         for try await messagePdu in messagePdus {
-          let controller =
-            try await controller(for: AnySocketAddress(bytes: messagePdu.name))
+          var controller: ControllerType!
+
           do {
-            let messages = try await controller
-              .decodeMessages(from: messagePdu.buffer)
+            let peerAddress: AnySocketAddress = if address.family == AF_UNIX {
+              anonymousPeerAddress
+            } else {
+              try AnySocketAddress(bytes: messagePdu.name)
+            }
+            controller = try await self.controller(for: peerAddress)
+            let messages = try await controller.decodeMessages(from: messagePdu.buffer)
             for (message, rrq) in messages {
               try await controller.handle(for: self, message: message, rrq: rrq)
             }
           } catch {
-            await unlockAndRemove(controller: controller)
+            if let controller { await unlockAndRemove(controller: controller) }
           }
         }
       } catch let error where error as? Errno == Errno.canceled {}
-      if Task.isCancelled {
-        logger.info("\(type(of: self)) cancelled, stopping")
-        break
-      }
-    } while true
+    } while !Task.isCancelled
+
     self.socket = nil
     try await device.remove(endpoint: self)
   }
