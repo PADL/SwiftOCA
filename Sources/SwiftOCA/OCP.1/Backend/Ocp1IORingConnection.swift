@@ -87,21 +87,6 @@ public class Ocp1IORingConnection: Ocp1Connection {
     )
   }
 
-  override public func connectDevice() async throws {
-    let socket = try Socket(
-      ring: IORing.shared,
-      domain: deviceAddress.family,
-      type: __socket_type(UInt32(type)),
-      protocol: 0
-    )
-    if type == SOCK_STREAM, deviceAddress.family == AF_INET || deviceAddress.family == AF_INET6 {
-      try socket.setTcpNoDelay()
-    }
-    try await socket.connect(to: deviceAddress)
-    self.socket = socket
-    try await super.connectDevice()
-  }
-
   override public func disconnectDevice() async throws {
     socket = nil
     try await super.disconnectDevice()
@@ -123,7 +108,16 @@ public class Ocp1IORingConnection: Ocp1Connection {
   }
 }
 
+private func _makeEphemeralDatagramDomainSocketEndpoint() throws -> any SocketAddress {
+  let temporaryDirectoryURL = FileManager.default.temporaryDirectory
+  let uniqueFilename = UUID().uuidString
+  let temporaryFileURL = temporaryDirectoryURL.appendingPathComponent(uniqueFilename)
+  return try sockaddr_un(family: sa_family_t(AF_UNIX), presentationAddress: temporaryFileURL.path)
+}
+
 public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
+  private var receiveBufferSize: Int!
+
   override public var heartbeatTime: Duration {
     .seconds(1)
   }
@@ -132,10 +126,52 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
     SOCK_DGRAM
   }
 
-  override public func read(_ length: Int) async throws -> Data {
-    // read maximum PDU size
+  override public func connectDevice() async throws {
+    let ring = try IORing()
+    let socket = try Socket(
+      ring: ring,
+      domain: deviceAddress.family,
+      type: __socket_type(UInt32(type)),
+      protocol: 0
+    )
+
+    // for domain sockets where we are not limited by the Ethernet MTU, we can
+    // use a larger receive buffer
+    if deviceAddress.family == AF_UNIX {
+      if let receiveBufferSize = try? Int(socket.getIntegerOption(option: SO_RCVBUF)) {
+        self.receiveBufferSize = receiveBufferSize
+      } else {
+        self.receiveBufferSize = Ocp1MaximumDatagramPduSize
+      }
+      try socket.bind(to: _makeEphemeralDatagramDomainSocketEndpoint())
+      try await ring.registerFixedBuffers(count: 1, size: receiveBufferSize)
+    }
+    try await socket.connect(to: deviceAddress)
+    self.socket = socket
+    try await super.connectDevice()
+  }
+
+  private func _readFixed() async throws -> Data {
+    try await withMappedError { socket in
+      try await Data(socket.readFixed(
+        count: receiveBufferSize,
+        bufferIndex: 0,
+        awaitingAllRead: false
+      ))
+    }
+  }
+
+  private func _receiveMessage() async throws -> Data {
     try await withMappedError { socket in
       try await Data(socket.receive(count: Ocp1MaximumDatagramPduSize))
+    }
+  }
+
+  override public func read(_ length: Int) async throws -> Data {
+    if deviceAddress.family == AF_UNIX {
+      try await _readFixed()
+    } else {
+      try await _receiveMessage()
     }
   }
 
@@ -158,6 +194,21 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
 public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
   override fileprivate var type: Int32 {
     SOCK_STREAM
+  }
+
+  override public func connectDevice() async throws {
+    let socket = try Socket(
+      ring: IORing.shared,
+      domain: deviceAddress.family,
+      type: __socket_type(UInt32(type)),
+      protocol: 0
+    )
+    if deviceAddress.family == AF_INET || deviceAddress.family == AF_INET6 {
+      try socket.setTcpNoDelay()
+    }
+    try await socket.connect(to: deviceAddress)
+    self.socket = socket
+    try await super.connectDevice()
   }
 
   override public func read(_ length: Int) async throws -> Data {
