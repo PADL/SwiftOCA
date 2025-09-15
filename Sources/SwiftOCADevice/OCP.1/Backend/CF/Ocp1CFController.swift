@@ -101,7 +101,7 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
     endpoint: Ocp1CFStreamDeviceEndpoint,
     socket: _CFSocketWrapper,
     notificationSocket: _CFSocketWrapper
-  ) async throws {
+  ) async {
     self.socket = socket
     self.notificationSocket = notificationSocket
     peerAddress = socket.peerAddress!

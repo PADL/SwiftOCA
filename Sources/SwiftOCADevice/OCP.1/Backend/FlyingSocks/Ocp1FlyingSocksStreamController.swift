@@ -47,7 +47,7 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
     _messages.joined().eraseToAnyAsyncSequence()
   }
 
-  init(endpoint: Ocp1FlyingSocksStreamDeviceEndpoint, socket: AsyncSocket) async throws {
+  init(endpoint: Ocp1FlyingSocksStreamDeviceEndpoint, socket: AsyncSocket) throws {
     if case .unix = try? socket.socket.sockname() {
       connectionPrefix = OcaLocalConnectionPrefix
     } else {

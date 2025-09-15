@@ -152,7 +152,7 @@ public final class Ocp1CFStreamDeviceEndpoint: Ocp1CFDeviceEndpoint,
         for try await client in socket!.acceptedSockets {
           Task {
             let controller =
-              try await Ocp1CFStreamController(
+              await Ocp1CFStreamController(
                 endpoint: self,
                 socket: client,
                 notificationSocket: notificationSocket!
