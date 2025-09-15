@@ -161,16 +161,9 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   override public var isDatagram: Bool { true }
 }
 
-private func _makeEphemeralDatagramDomainSocketEndpoint() throws -> any SocketAddress {
-  let temporaryDirectoryURL = FileManager.default.temporaryDirectory
-  let uniqueFilename = UUID().uuidString
-  let temporaryFileURL = temporaryDirectoryURL.appendingPathComponent(uniqueFilename)
-  return try sockaddr_un(family: sa_family_t(AF_UNIX), presentationAddress: temporaryFileURL.path)
-}
-
 public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnection {
   private var receiveBufferSize: Int!
-  private var localAddress: any SocketAddress
+  private let localAddress: any SocketAddress
 
   override public var heartbeatTime: Duration {
     .seconds(1)
@@ -185,7 +178,7 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
     options: Ocp1ConnectionOptions
   ) throws {
     guard socketAddress.family == AF_LOCAL else { throw Errno.addressFamilyNotSupported }
-    localAddress = try _makeEphemeralDatagramDomainSocketEndpoint()
+    localAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
     try super.init(socketAddress: socketAddress, options: options)
   }
 
