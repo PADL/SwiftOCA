@@ -210,9 +210,7 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
     _controllers.map(\.1)
   }
 
-  func controller(for controllerAddress: AnySocketAddress) async throws
-    -> ControllerType
-  {
+  func controller(for controllerAddress: AnySocketAddress) -> ControllerType {
     var controller: ControllerType!
 
     controller = _controllers[controllerAddress]
@@ -236,8 +234,7 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
     repeat {
       do {
         for try await messagePdu in socket!.receivedMessages {
-          let controller =
-            try await controller(for: AnySocketAddress(messagePdu.0))
+          let controller = controller(for: AnySocketAddress(messagePdu.0))
           do {
             let messages = try await controller.decodeMessages(from: Array(messagePdu.1))
             for (message, rrq) in messages {

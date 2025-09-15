@@ -245,9 +245,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     _controllers.map(\.1)
   }
 
-  func controller(for controllerAddress: AnySocketAddress) async throws
-    -> ControllerType
-  {
+  func controller(for controllerAddress: AnySocketAddress) -> ControllerType {
     var controller: ControllerType!
 
     controller = _controllers[controllerAddress]
@@ -289,7 +287,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 
           do {
             let peerAddress = try AnySocketAddress(bytes: messagePdu.name)
-            controller = try await self.controller(for: peerAddress)
+            controller = self.controller(for: peerAddress)
             let messages = try await controller.decodeMessages(from: messagePdu.buffer)
             for (message, rrq) in messages {
               try await controller.handle(for: self, message: message, rrq: rrq)
