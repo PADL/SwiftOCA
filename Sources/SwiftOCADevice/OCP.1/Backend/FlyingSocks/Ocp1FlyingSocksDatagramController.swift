@@ -52,7 +52,7 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
     peerAddress: any SocketAddress,
     interfaceIndex: UInt32?,
     localAddress: (any SocketAddress)?
-  ) async throws {
+  ) {
     self.endpoint = endpoint
     self.peerAddress = peerAddress
     self.interfaceIndex = interfaceIndex

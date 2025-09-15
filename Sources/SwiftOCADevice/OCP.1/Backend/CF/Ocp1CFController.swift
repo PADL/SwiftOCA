@@ -221,7 +221,7 @@ actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramS
   init(
     endpoint: Ocp1CFDatagramDeviceEndpoint,
     peerAddress: any SocketAddress
-  ) async throws {
+  ) {
     self.endpoint = endpoint
     self.peerAddress = AnySocketAddress(peerAddress)
   }

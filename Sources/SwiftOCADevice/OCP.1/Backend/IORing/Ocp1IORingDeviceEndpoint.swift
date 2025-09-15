@@ -252,10 +252,11 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 
     controller = _controllers[controllerAddress]
     if controller == nil {
-      controller = try await Ocp1IORingDatagramController(
+      controller = Ocp1IORingDatagramController(
         endpoint: self,
         peerAddress: controllerAddress
       )
+
       logger.info("datagram controller added", controller: controller)
       _controllers[controllerAddress] = controller
     }

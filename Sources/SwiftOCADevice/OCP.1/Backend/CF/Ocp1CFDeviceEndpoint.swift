@@ -217,10 +217,11 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
 
     controller = _controllers[controllerAddress]
     if controller == nil {
-      controller = try await Ocp1CFDatagramController(
+      controller = Ocp1CFDatagramController(
         endpoint: self,
         peerAddress: controllerAddress
       )
+
       logger.info("datagram controller added", controller: controller)
       _controllers[controllerAddress] = controller
     }

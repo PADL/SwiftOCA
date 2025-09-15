@@ -130,12 +130,13 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
 
     controller = _controllers.first(where: { $0.matchesPeer(address: controllerAddress) })
     if controller == nil {
-      controller = try await Ocp1FlyingSocksDatagramController(
+      controller = Ocp1FlyingSocksDatagramController(
         endpoint: self,
         peerAddress: controllerAddress,
         interfaceIndex: interfaceIndex,
         localAddress: localAddress
       )
+
       logger.info("datagram controller added", controller: controller)
       _controllers.insert(controller)
     }
