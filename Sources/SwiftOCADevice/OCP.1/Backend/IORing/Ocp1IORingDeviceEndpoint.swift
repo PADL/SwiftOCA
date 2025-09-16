@@ -296,7 +296,18 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
             if let controller { await unlockAndRemove(controller: controller) }
           }
         }
-      } catch let error where error as? Errno == Errno.canceled {}
+      } catch let error as Errno {
+        // TODO: why do we occasionally run out of buffers on recvmsg()? looking
+        // at kernel code, it appears io_buffer_select() returns NULL (as there
+        // are no datagram domain socket-specific paths that return ENOBUFS).
+        guard error == Errno.canceled || error == Errno.noBufferSpace else { throw error }
+      } catch {
+        logger
+          .error(
+            "unexpected error \(error) running \(type(of: self)) event loop on \(try! address.presentationAddress); no longer servicing requests"
+          )
+        throw error
+      }
     } while !Task.isCancelled
 
     self.socket = nil
