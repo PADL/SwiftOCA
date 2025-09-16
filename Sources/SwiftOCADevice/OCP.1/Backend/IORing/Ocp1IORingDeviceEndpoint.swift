@@ -47,6 +47,7 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   let address: any SocketAddress
   let timeout: Duration
   let device: OcaDevice
+  let logger: Logger
   let ring: IORing
 
   var socket: Socket?
@@ -61,11 +62,13 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   public init(
     address: any SocketAddress,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint")
   ) async throws {
     self.address = address
     self.timeout = timeout
     self.device = device
+    self.logger = logger
     ring = IORing.shared
     try await device.add(endpoint: self)
   }
@@ -137,7 +140,6 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 {
   typealias ControllerType = Ocp1IORingStreamController
 
-  let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingStreamDeviceEndpoint")
   var notificationSocket: Socket?
 
   var _controllers = [ControllerType]()
@@ -236,8 +238,6 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   OcaDeviceEndpointPrivate
 {
   typealias ControllerType = Ocp1IORingDatagramController
-
-  let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDatagramDeviceEndpoint")
 
   var _controllers = [AnySocketAddress: ControllerType]()
 
