@@ -28,9 +28,9 @@ import SwiftOCA
 public final class OcaLocalDeviceEndpoint: OcaDeviceEndpointPrivate {
   typealias ControllerType = OcaLocalController
 
-  let logger = Logger(label: "com.padl.SwiftOCADevice.OcaLocalDeviceEndpoint")
   let timeout: Duration = .zero
   let device: OcaDevice
+  let logger: Logger
 
   public var controllers: [OcaController] {
     [controller]
@@ -48,9 +48,12 @@ public final class OcaLocalDeviceEndpoint: OcaDeviceEndpointPrivate {
   func remove(controller: ControllerType) async {}
 
   public init(
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaLocalDeviceEndpoint")
   ) async throws {
     self.device = device
+    self.logger = logger
+
     controller = await OcaLocalController(endpoint: self)
     try await device.add(endpoint: self)
   }
