@@ -50,8 +50,8 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
 
   private let address: any SocketAddress
   let timeout: Duration
-  let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksStreamDeviceEndpoint")
   let device: OcaDevice
+  let logger: Logger
 
   private var _controllers = [Ocp1FlyingSocksStreamController]()
   #if canImport(dnssd)
@@ -72,7 +72,8 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
   public convenience init(
     address addressData: Data,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksStreamDeviceEndpoint")
   ) async throws {
     let address: any SocketAddress = try addressData.withUnsafeBytes { addressBytes in
       try addressBytes.withMemoryRebound(to: sockaddr.self) { address in
@@ -88,26 +89,30 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
       }
     }
 
-    try await self.init(address: address, timeout: timeout, device: device)
+    try await self.init(address: address, timeout: timeout, device: device, logger: logger)
   }
 
   public convenience init(
     path: String,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksStreamDeviceEndpoint")
   ) async throws {
     let address = sockaddr_un.unix(path: path).makeStorage()
-    try await self.init(address: address, timeout: timeout, device: device)
+    try await self.init(address: address, timeout: timeout, device: device, logger: logger)
   }
 
   private init(
     address: some SocketAddress,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksStreamDeviceEndpoint")
   ) async throws {
     self.address = address
     self.timeout = timeout
     self.device = device
+    self.logger = logger
+
     pool = Self.defaultPool()
 
     try await device.add(endpoint: self)

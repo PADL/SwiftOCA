@@ -52,8 +52,8 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
 
   private let address: SocketAddress
   let timeout: Duration
-  let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksDatagramDeviceEndpoint")
   let device: OcaDevice
+  let logger: Logger
 
   private(set) var socket: Socket?
   private var asyncSocket: AsyncSocket?
@@ -73,7 +73,8 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   public convenience init(
     address addressData: Data,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksDatagramDeviceEndpoint")
   ) async throws {
     let address: any SocketAddress = try addressData.withUnsafeBytes { addressBytes in
       try addressBytes.withMemoryRebound(to: sockaddr.self) { address in
@@ -89,17 +90,20 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
       }
     }
 
-    try await self.init(address: address, timeout: timeout, device: device)
+    try await self.init(address: address, timeout: timeout, device: device, logger: logger)
   }
 
   private init(
     address: SocketAddress,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksDatagramDeviceEndpoint")
   ) async throws {
     self.address = address
     self.timeout = timeout
     self.device = device
+    self.logger = logger
+
     pool = Self.defaultPool()
 
     try await device.add(endpoint: self)

@@ -48,6 +48,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   let address: any SocketAddress
   let timeout: Duration
   let device: OcaDevice
+  let logger: Logger
 
   var socket: _CFSocketWrapper?
   #if canImport(dnssd)
@@ -65,30 +66,34 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   public init(
     address: any SocketAddress,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1CFDDeviceEndpoint")
   ) async throws {
     self.address = address
     self.timeout = timeout
     self.device = device
+    self.logger = logger
     try await device.add(endpoint: self)
   }
 
   public convenience init(
     address: Data,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1CFDDeviceEndpoint")
   ) async throws {
     let address = try AnySocketAddress(bytes: Array(address))
-    try await self.init(address: address, timeout: timeout, device: device)
+    try await self.init(address: address, timeout: timeout, device: device, logger: logger)
   }
 
   public convenience init(
     path: String,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1CFDDeviceEndpoint")
   ) async throws {
     let address = try AnySocketAddress(family: sa_family_t(AF_LOCAL), presentationAddress: path)
-    try await self.init(address: address, timeout: timeout, device: device)
+    try await self.init(address: address, timeout: timeout, device: device, logger: logger)
   }
 
   #if canImport(dnssd)
@@ -133,7 +138,6 @@ public final class Ocp1CFStreamDeviceEndpoint: Ocp1CFDeviceEndpoint,
 {
   typealias ControllerType = Ocp1CFStreamController
 
-  let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1CFStreamDeviceEndpoint")
   var notificationSocket: _CFSocketWrapper?
 
   var _controllers = [ControllerType]()
@@ -201,8 +205,6 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
   OcaDeviceEndpointPrivate
 {
   typealias ControllerType = Ocp1CFDatagramController
-
-  let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1CFDatagramDeviceEndpoint")
 
   var _controllers = [AnySocketAddress: ControllerType]()
 

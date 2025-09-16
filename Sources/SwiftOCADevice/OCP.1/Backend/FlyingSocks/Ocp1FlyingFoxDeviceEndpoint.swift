@@ -38,9 +38,9 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     _controllers
   }
 
-  let logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingFoxDeviceEndpoint")
   let timeout: Duration
   let device: OcaDevice
+  let logger: Logger
 
   private var httpServer: HTTPServer!
   private let address: sockaddr_storage
@@ -80,7 +80,8 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   public convenience init(
     address: Data,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingFoxDeviceEndpoint")
   ) async throws {
     var storage = sockaddr_storage()
     _ = withUnsafeMutableBytes(of: &storage) { dst in
@@ -88,26 +89,19 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
         memcpy(dst.baseAddress!, src.baseAddress!, src.count)
       }
     }
-    try await self.init(address: storage, timeout: timeout, device: device)
-  }
-
-  public convenience init(
-    path: String,
-    timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
-  ) async throws {
-    let address = sockaddr_un.unix(path: path).makeStorage()
-    try await self.init(address: address, timeout: timeout, device: device)
+    try await self.init(address: storage, timeout: timeout, device: device, logger: logger)
   }
 
   private init(
     address: sockaddr_storage,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingFoxDeviceEndpoint")
   ) async throws {
     self.device = device
     self.address = address
     self.timeout = timeout
+    self.logger = logger
 
     // FIXME: API impedance mismatch
     let address: FlyingSocks.SocketAddress
