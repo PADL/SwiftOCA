@@ -81,7 +81,8 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   public convenience init(
     address: Data,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint")
   ) async throws {
     let storage = try sockaddr_storage(bytes: Array(address))
     try await self.init(address: storage, timeout: timeout, device: device)
@@ -90,7 +91,8 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   public convenience init(
     path: String,
     timeout: Duration = OcaDevice.DefaultTimeout,
-    device: OcaDevice = OcaDevice.shared
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint")
   ) async throws {
     let storage = try sockaddr_un(
       family: sa_family_t(AF_LOCAL),
