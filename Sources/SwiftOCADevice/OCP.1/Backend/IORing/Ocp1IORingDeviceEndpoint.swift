@@ -85,7 +85,7 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint")
   ) async throws {
     let storage = try sockaddr_storage(bytes: Array(address))
-    try await self.init(address: storage, timeout: timeout, device: device)
+    try await self.init(address: storage, timeout: timeout, device: device, logger: logger)
   }
 
   public convenience init(
@@ -98,7 +98,7 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
       family: sa_family_t(AF_LOCAL),
       presentationAddress: path
     )
-    try await self.init(address: storage, timeout: timeout, device: device)
+    try await self.init(address: storage, timeout: timeout, device: device, logger: logger)
   }
 
   #if canImport(dnssd)
