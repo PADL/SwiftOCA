@@ -25,7 +25,7 @@ struct OcaDeviceManagerView: View, OcaView {
     _object = State(wrappedValue: object as! OcaDeviceManager)
   }
 
-  public var body: some View {
+  var body: some View {
     OcaPropertyTableView(object)
   }
 }

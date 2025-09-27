@@ -66,7 +66,7 @@ struct OcaFileDatasetDirEntry: Hashable, CustomStringConvertible {
   let name: String
   let mimeType: OcaMimeType
 
-  public var description: String {
+  var description: String {
     try! String(describing: url)
   }
 
@@ -226,7 +226,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     )
   }
 
-  public required nonisolated init(from decoder: Decoder) throws {
+  required nonisolated init(from decoder: Decoder) throws {
     fatalError("init(from:) has not been implemented")
   }
 

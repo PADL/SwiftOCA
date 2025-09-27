@@ -30,9 +30,9 @@ import Android
 #endif
 
 public protocol OcaConnectionBroker: Actor {
-  func connection<T: OcaRoot>(
+  func connection(
     for objectPath: OcaOPath,
-    type: T.Type
+    type: (some OcaRoot).Type
   ) async throws -> Ocp1Connection
 
   func isOnline(_ objectPath: OcaOPath) async -> Bool

@@ -47,9 +47,9 @@ func _getDynamicType(
 
 /// Options for calling `_forEachField(of:options:body:)`.
 struct _EachFieldOptions: OptionSet {
-  public var rawValue: UInt32
+  var rawValue: UInt32
 
-  public init(rawValue: UInt32) {
+  init(rawValue: UInt32) {
     self.rawValue = rawValue
   }
 
@@ -57,13 +57,13 @@ struct _EachFieldOptions: OptionSet {
   ///
   /// If this is not set, the top-level type is required to be a struct or
   /// tuple.
-  public static let classType = _EachFieldOptions(rawValue: 1 << 0)
+  static let classType = _EachFieldOptions(rawValue: 1 << 0)
 
   /// Ignore fields that can't be introspected.
   ///
   /// If not set, the presence of things that can't be introspected causes
   /// the function to immediately return `false`.
-  public static let ignoreUnknown = _EachFieldOptions(rawValue: 1 << 1)
+  static let ignoreUnknown = _EachFieldOptions(rawValue: 1 << 1)
 }
 
 /// The metadata "kind" for a type.

@@ -35,7 +35,7 @@ struct OcaBlockNavigationStackView: OcaView {
     _object = State(wrappedValue: object as! OcaBlock)
   }
 
-  public var body: some View {
+  var body: some View {
     Group {
       if let members {
         if members.hasContainerMembers {

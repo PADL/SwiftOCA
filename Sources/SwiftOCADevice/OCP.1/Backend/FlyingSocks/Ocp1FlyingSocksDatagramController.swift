@@ -106,7 +106,7 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
 }
 
 extension Ocp1FlyingSocksDatagramController: Equatable {
-  public nonisolated static func == (
+  nonisolated static func == (
     lhs: Ocp1FlyingSocksDatagramController,
     rhs: Ocp1FlyingSocksDatagramController
   ) -> Bool {
@@ -115,7 +115,7 @@ extension Ocp1FlyingSocksDatagramController: Equatable {
 }
 
 extension Ocp1FlyingSocksDatagramController: Hashable {
-  public nonisolated func hash(into hasher: inout Hasher) {
+  nonisolated func hash(into hasher: inout Hasher) {
     var peerAddress = peerAddress.makeStorage()
     Data(bytes: &peerAddress, count: MemoryLayout<sockaddr_storage>.size).hash(into: &hasher)
   }
