@@ -312,6 +312,8 @@ extension OcaGroup {
     var exceptions = [OcaGroupException]()
 
     for member in group.members {
+      try Task.checkCancellation()
+
       if let response, response.parameters.parameterCount > 0 {
         // we have an existing response for a get request, multiple gets are unsupported
         throw Ocp1Error.invalidProxyMethodResponse
