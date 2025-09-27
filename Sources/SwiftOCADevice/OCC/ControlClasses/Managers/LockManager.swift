@@ -74,25 +74,31 @@ public class OcaLockManager: OcaManager {
     let lockWaiterID = LockWaiterID(controller: controller.id, target: target.objectNumber)
 
     do {
-      try await withThrowingTimeout(of: .seconds(timeout), clock: .continuous) { @OcaDevice in
-        try await withCheckedThrowingContinuation { continuation in
-          let lockWaiter = LockWaiter(continuation: continuation)
-          Task { @OcaDevice in self.lockWaiters[lockWaiterID] = lockWaiter }
+      try await withThrowingTimeout(
+        of: .seconds(timeout),
+        clock: .continuous,
+        operation: { @OcaDevice in
+          try await withCheckedThrowingContinuation { continuation in
+            let lockWaiter = LockWaiter(continuation: continuation)
+            Task { @OcaDevice in self.lockWaiters[lockWaiterID] = lockWaiter }
 
-          lockWaiter.task = Task {
-            for await _ in target.lockStateSubject
-              .filter({ $0.lockState == .noLock })
-            {
-              if target.setLockState(to: type, controller: controller) {
-                lockWaiter.didLock()
-                break
+            lockWaiter.task = Task {
+              for await _ in target.lockStateSubject
+                .filter({ $0.lockState == .noLock })
+              {
+                if target.setLockState(to: type, controller: controller) {
+                  lockWaiter.didLock()
+                  break
+                }
               }
             }
           }
+        },
+        onTimeout: { @OcaDevice [self] in
+          lockWaiters[lockWaiterID]?.didAbort()
         }
-      }
+      )
     } catch Ocp1Error.responseTimeout {
-      lockWaiters[lockWaiterID]?.didAbort()
       throw Ocp1Error.status(.timeout)
     }
 
