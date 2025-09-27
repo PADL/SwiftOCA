@@ -61,6 +61,8 @@ private extension Errno {
       fallthrough
     case .brokenPipe:
       fallthrough
+    case .canceled:
+      fallthrough // for IORing
     case .socketShutdown:
       fallthrough
     case .connectionAbort:
