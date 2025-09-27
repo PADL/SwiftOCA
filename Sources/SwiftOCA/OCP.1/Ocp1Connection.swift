@@ -275,6 +275,7 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
     private let _connection: Weak<Ocp1Connection>
     let _connectionID: Int
     private let _continuations = ManagedCriticalState<[OcaUint32: Continuation]>([:])
+    private let _pendingResponses = ManagedCriticalState<[OcaUint32: Ocp1Response]>([:])
     private var _lastMessageReceivedTime = ManagedAtomic<UInt64>(0)
 
     static var now: UInt64 {
@@ -305,8 +306,19 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
     }
 
     func register(handle: OcaUint32, continuation: Continuation) {
-      _continuations.withCriticalRegion { continuations in
-        continuations[handle] = continuation
+      let pendingResponse = _pendingResponses
+        .withCriticalRegion { pendingResponses -> Ocp1Response? in
+          return pendingResponses.removeValue(forKey: handle)
+        }
+
+      if let response = pendingResponse {
+        // Response arrived before continuation was registered, deliver it immediately
+        continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
+      } else {
+        // Register continuation to wait for response
+        _continuations.withCriticalRegion { continuations in
+          continuations[handle] = continuation
+        }
       }
     }
 
@@ -320,21 +332,30 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
     }
 
     func resume(with response: Ocp1Response) throws {
-      try _continuations.withCriticalRegion { continuations in
-        let continuation = try popContinuation(for: response, in: &continuations)
-        continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
+      let continuationFound = _continuations.withCriticalRegion { continuations -> Continuation? in
+        return continuations.removeValue(forKey: response.handle)
       }
-    }
 
-    private func popContinuation(
-      for response: Ocp1Response,
-      in continuations: inout [OcaUint32: Continuation]
-    ) throws -> Continuation {
-      guard let continuation = continuations[response.handle] else {
-        throw Ocp1Error.invalidHandle
+      if let continuation = continuationFound {
+        // Continuation exists, deliver response immediately
+        continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
+      } else {
+        // No continuation yet, store response for later
+        let wasStored = _pendingResponses.withCriticalRegion { pendingResponses -> Bool in
+          if pendingResponses[response.handle] == nil {
+            pendingResponses[response.handle] = response
+            return true
+          }
+          return false
+        }
+
+        if !wasStored {
+          // Duplicate response for same handle - this shouldn't happen but log it
+          _connection.object?.logger
+            .warning("Received duplicate response for handle \(response.handle)")
+          throw Ocp1Error.invalidHandle
+        }
       }
-      continuations.removeValue(forKey: response.handle)
-      return continuation
     }
 
     func updateLastMessageReceivedTime() {
