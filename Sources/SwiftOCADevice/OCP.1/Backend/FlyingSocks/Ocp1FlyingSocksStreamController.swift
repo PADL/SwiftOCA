@@ -157,7 +157,7 @@ private extension AsyncThrowingStream
       Error
     > {
       do {
-        return try await withThrowingTimeout(of: timeout) {
+        return try await withThrowingTimeout(of: timeout, clock: .continuous) {
           var iterator = bytes.makeAsyncIterator()
           return try await OcaDevice.asyncReceiveMessages { count in
             var nremain = count
