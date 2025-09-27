@@ -214,6 +214,8 @@ extension Ocp1Connection {
     do {
       try await withThrowingTimeout(of: _connectionTimeout, clock: .continuous) { [self] in
         for await connectionState in _connectionState {
+          try Task.checkCancellation()
+
           if connectionState == .connected {
             return
           } else if connectionState == .reconnecting {
