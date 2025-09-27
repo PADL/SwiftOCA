@@ -74,7 +74,7 @@ public class OcaLockManager: OcaManager {
     let lockWaiterID = LockWaiterID(controller: controller.id, target: target.objectNumber)
 
     do {
-      try await withThrowingTimeout(of: .seconds(timeout)) { @OcaDevice in
+      try await withThrowingTimeout(of: .seconds(timeout), clock: .continuous) { @OcaDevice in
         try await withCheckedThrowingContinuation { continuation in
           let lockWaiter = LockWaiter(continuation: continuation)
           Task { @OcaDevice in self.lockWaiters[lockWaiterID] = lockWaiter }

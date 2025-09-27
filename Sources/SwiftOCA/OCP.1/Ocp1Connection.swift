@@ -322,18 +322,23 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
       _continuations.removeAll()
     }
 
+    func resumeTimedOut(handle: OcaUint32) throws {
+      let continuation = try _findAndRemoveContinuation(for: handle)
+      continuation.resume(with: Result<Ocp1Response, Ocp1Error>.failure(Ocp1Error.responseTimeout))
+    }
+
     func resume(with response: Ocp1Response) throws {
-      let continuation = try _findAndRemoveContinuation(for: response)
+      let continuation = try _findAndRemoveContinuation(for: response.handle)
       continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
     }
 
     private func _findAndRemoveContinuation(
-      for response: Ocp1Response
+      for handle: OcaUint32
     ) throws -> Continuation {
-      guard let continuation = _continuations[response.handle] else {
+      guard let continuation = _continuations[handle] else {
         throw Ocp1Error.invalidHandle
       }
-      _continuations.removeValue(forKey: response.handle)
+      _continuations.removeValue(forKey: handle)
       return continuation
     }
 

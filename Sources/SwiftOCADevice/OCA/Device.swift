@@ -172,7 +172,7 @@ public actor OcaDevice {
         throw Ocp1Error.status(.badONo)
       }
 
-      return try await withThrowingTimeout(of: timeout) {
+      return try await withThrowingTimeout(of: timeout, clock: .continuous) {
         if command.methodID.defLevel > 1,
            let peerToPeerObject = object as? any OcaGroupPeerToPeerMember
         {

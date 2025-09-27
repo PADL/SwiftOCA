@@ -47,18 +47,11 @@ private extension OcaRoot {
     responseParameterCount: OcaUint8,
     responseParameterData: inout Data
   ) async throws {
-    guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
-
-    let response = try await withThrowingTimeout(
-      of: connectionDelegate.responseTimeout
-    ) {
-      try await self.sendCommandRrq(
-        methodID: methodID,
-        parameterCount: parameterCount,
-        parameterData: parameterData
-      )
-    }
-
+    let response = try await sendCommandRrq(
+      methodID: methodID,
+      parameterCount: parameterCount,
+      parameterData: parameterData
+    )
     guard response.statusCode == .ok else {
       throw Ocp1Error.status(response.statusCode)
     }
@@ -167,18 +160,16 @@ public extension OcaRoot {
   ) async throws -> Ocp1Response {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
-    return try await withThrowingTimeout(of: connectionDelegate.responseTimeout) {
-      let command = await Ocp1Command(
-        commandSize: 0,
-        handle: connectionDelegate.getNextCommandHandle(),
-        targetONo: self.objectNumber,
-        methodID: methodID,
-        parameters: Ocp1Parameters(
-          parameterCount: parameterCount,
-          parameterData: parameterData
-        )
+    let command = await Ocp1Command(
+      commandSize: 0,
+      handle: connectionDelegate.getNextCommandHandle(),
+      targetONo: objectNumber,
+      methodID: methodID,
+      parameters: Ocp1Parameters(
+        parameterCount: parameterCount,
+        parameterData: parameterData
       )
-      return try await connectionDelegate.sendCommandRrq(command)
-    }
+    )
+    return try await connectionDelegate.sendCommandRrq(command)
   }
 }

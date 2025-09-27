@@ -56,8 +56,16 @@ extension Ocp1Connection {
   }
 
   public func sendCommandRrq(_ command: Ocp1Command) async throws -> Ocp1Response {
-    try await sendMessage(command, type: .ocaCmdRrq)
-    return try await response(for: command.handle)
+    try await withThrowingTimeout(
+      of: responseTimeout,
+      clock: .continuous,
+      operation: { [self] in
+        try await sendMessage(command, type: .ocaCmdRrq)
+        return try await response(for: command.handle)
+      }, onTimeout: { [self] in
+        try await monitor?.resumeTimedOut(handle: command.handle)
+      }
+    )
   }
 
   func sendKeepAlive() async throws {
