@@ -101,6 +101,7 @@
 		D370B1482BF6002300BF88BB /* AudioLevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */; };
 		D370B14A2BF600A900BF88BB /* AudioLevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D370B1492BF600A900BF88BB /* AudioLevelSensor.swift */; };
 		D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */; };
+		D38AD8342E8861FA00CE8DA3 /* TimeHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38AD8332E8861FA00CE8DA3 /* TimeHelpers.swift */; };
 		D39542302BA8FFC0003A025C /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D395422F2BA8FFC0003A025C /* Root+JSON.swift */; };
 		D3A0BE7C2B717BEC00A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7B2B717BEC00A5AA05 /* Group.swift */; };
 		D3A0BE7E2B71921900A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7D2B71921900A5AA05 /* Group.swift */; };
@@ -423,6 +424,7 @@
 		D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLevelSensor.swift; sourceTree = "<group>"; };
 		D370B1492BF600A900BF88BB /* AudioLevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLevelSensor.swift; sourceTree = "<group>"; };
 		D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAddressToString.swift; sourceTree = "<group>"; };
+		D38AD8332E8861FA00CE8DA3 /* TimeHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeHelpers.swift; sourceTree = "<group>"; };
 		D395422F2BA8FFC0003A025C /* Root+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+JSON.swift"; sourceTree = "<group>"; };
 		D3A0BE7B2B717BEC00A5AA05 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		D3A0BE7D2B71921900A5AA05 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
@@ -1380,6 +1382,7 @@
 				D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */,
 				D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */,
 				D301C6762BF0576200488B99 /* UnsafeMutablePointer+PropertyBasePointer.swift */,
+				D38AD8332E8861FA00CE8DA3 /* TimeHelpers.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1908,6 +1911,7 @@
 				D3AFD3592B2D226200A72E9A /* NetworkInterface.swift in Sources */,
 				D3AB030C2CF6768D00967322 /* Ocp1Connection+Connect.swift in Sources */,
 				D3DA69EE2A3DD350001250A1 /* Task+Timeout.swift in Sources */,
+				D38AD8342E8861FA00CE8DA3 /* TimeHelpers.swift in Sources */,
 				D3AFD3462B2CED0800A72E9A /* DiagnosticManager.swift in Sources */,
 				D3E6E1BA2A3ACA7B00BF7095 /* Ocp1ConnectionMonitor.swift in Sources */,
 				D3E6E1E42A3ACAA900BF7095 /* NetworkDataTypes.swift in Sources */,
