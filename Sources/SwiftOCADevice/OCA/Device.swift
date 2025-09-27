@@ -43,6 +43,7 @@ public actor OcaDevice {
   public private(set) var deviceManager: OcaDeviceManager!
 
   var objects = [OcaONo: OcaRoot]()
+  var peerToPeerGroupers = [OcaONo: _OcaPeerToPeerGrouperNotifiable]()
   var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
   var endpoints = [OcaDeviceEndpoint]()
   var logger = Logger(label: "com.padl.SwiftOCADevice")
@@ -127,6 +128,9 @@ public actor OcaDevice {
       )
       Task { @OcaDevice in deviceManager.managers.append(managerDescriptor) }
     }
+    if let object = object as? _OcaPeerToPeerGrouperNotifiable {
+      peerToPeerGroupers[object.objectNumber] = object
+    }
   }
 
   public func deregister(objectNumber: OcaONo) async throws {
@@ -158,6 +162,7 @@ public actor OcaDevice {
       try await owner.delete(actionObject: owner)
     }
     objects[object.objectNumber] = nil
+    peerToPeerGroupers[object.objectNumber] = nil
   }
 
   public func handleCommand(
@@ -216,7 +221,9 @@ public actor OcaDevice {
       event,
       parameters: Ocp1Encoder().encode(parameters)
     )
-    try await _notifyPeerToPeerGroupers(event, parameters: parameters)
+    if !peerToPeerGroupers.isEmpty {
+      try await _notifyPeerToPeerGroupers(event, parameters: parameters)
+    }
   }
 
   private func _notifyEventDelegate(

@@ -700,7 +700,7 @@ extension Array where Element: _OcaGrouperCitizen & Sendable {
 }
 
 @OcaDevice
-private protocol _OcaPeerToPeerGrouperNotifiable: OcaRoot {
+protocol _OcaPeerToPeerGrouperNotifiable: OcaRoot {
   var mode: OcaGrouperMode { get }
 
   func _onLocalEvent(_ event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws
@@ -769,25 +769,11 @@ private extension OcaGrouper.Enrollment {
 
 @OcaDevice
 extension OcaDevice {
-  private var _allPeerToPeerGroupers: [_OcaPeerToPeerGrouperNotifiable] {
-    get async {
-      func isPeerToPeerGrouper(_ object: OcaRoot) -> Bool {
-        guard let grouper = object as? _OcaPeerToPeerGrouperNotifiable else {
-          return false
-        }
-        return grouper.mode == .peerToPeer
-      }
-
-      return await objects.values
-        .filter { isPeerToPeerGrouper($0) } as! [_OcaPeerToPeerGrouperNotifiable]
-    }
-  }
-
   func _notifyPeerToPeerGroupers(
     _ event: OcaEvent,
     parameters: OcaPropertyChangedEventData<some Codable & Sendable>
   ) async throws {
-    for grouper in await _allPeerToPeerGroupers {
+    for grouper in await peerToPeerGroupers.values {
       try? await grouper._onLocalEvent(event, eventData: parameters.toAny())
     }
   }
