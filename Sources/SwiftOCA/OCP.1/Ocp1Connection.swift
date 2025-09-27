@@ -238,6 +238,16 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
   var subscriptions = [OcaEvent: EventSubscriptions]()
   var logger = Logger(label: "com.padl.SwiftOCA")
   var connectionID = 0
+
+  // Subscription batching support
+  var pendingSubscriptionChanges = [OcaEvent: SubscriptionChangeType]()
+  var subscriptionBatchTask: Task<(), Never>?
+
+  enum SubscriptionChangeType {
+    case add
+    case remove
+  }
+
   #if canImport(Darwin)
   let _$observationRegistrar = Observation.ObservationRegistrar()
   #endif

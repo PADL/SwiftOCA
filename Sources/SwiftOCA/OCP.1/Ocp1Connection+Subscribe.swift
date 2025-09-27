@@ -94,14 +94,9 @@ public extension Ocp1Connection {
       eventSubscriptions.subscriptions.insert(cancellable)
       subscriptions[event] = eventSubscriptions
 
-      try await subscriptionManager.addSubscription(
-        event: event,
-        subscriber: subscriber,
-        subscriberContext: OcaBlob(),
-        notificationDeliveryMode: .normal,
-        destinationInformation: OcaNetworkAddress()
-      )
-      logger.trace("addSubscription: added new OCA subscription for \(event)")
+      // Use batching for subscription changes to reduce network traffic
+      await batchSubscriptionChange(event: event, changeType: .add)
+      logger.trace("addSubscription: batched new OCA subscription for \(event)")
     }
     logger.trace("addSubscription: added \(cancellable) to subscription set")
 
@@ -119,11 +114,9 @@ public extension Ocp1Connection {
     logger.trace("removeSubscription: removed \(cancellable) from subscription set")
     if eventSubscriptions.subscriptions.isEmpty {
       subscriptions[cancellable.event] = nil
-      try await subscriptionManager.removeSubscription(
-        event: cancellable.event,
-        subscriber: subscriber
-      )
-      logger.trace("removeSubscription: removed OCA subscription for \(cancellable.event)")
+      // Use batching for subscription changes to reduce network traffic
+      await batchSubscriptionChange(event: cancellable.event, changeType: .remove)
+      logger.trace("removeSubscription: batched OCA subscription removal for \(cancellable.event)")
     }
   }
 
@@ -170,6 +163,75 @@ public extension Ocp1Connection {
             try? await subscription.callback(event, parameters)
           }
         }
+      }
+    }
+  }
+
+  // MARK: - Subscription Batching
+
+  private func batchSubscriptionChange(event: OcaEvent, changeType: SubscriptionChangeType) async {
+    pendingSubscriptionChanges[event] = changeType
+
+    // Cancel existing batch task and start a new one with debouncing
+    subscriptionBatchTask?.cancel()
+    subscriptionBatchTask = Task {
+      try? await Task.sleep(for: .milliseconds(50)) // 50ms debounce window
+
+      guard !Task.isCancelled else { return }
+      await processBatchedSubscriptionChanges()
+    }
+  }
+
+  private func processBatchedSubscriptionChanges() async {
+    let changes = pendingSubscriptionChanges
+    pendingSubscriptionChanges.removeAll()
+
+    guard !changes.isEmpty else { return }
+
+    // Processing batched subscription changes
+
+    // Process changes in parallel with controlled concurrency
+    await withTaskGroup(of: Void.self) { taskGroup in
+      var concurrentTasks = 0
+      let maxConcurrentTasks = 5 // Limit concurrent subscription operations
+
+      for (event, changeType) in changes {
+        // Wait if we've reached max concurrent tasks
+        if concurrentTasks >= maxConcurrentTasks {
+          await taskGroup.next()
+          concurrentTasks -= 1
+        }
+
+        taskGroup.addTask { [self] in
+          do {
+            switch changeType {
+            case .add:
+              try await subscriptionManager.addSubscription(
+                event: event,
+                subscriber: subscriber,
+                subscriberContext: OcaBlob(),
+                notificationDeliveryMode: .normal,
+                destinationInformation: OcaNetworkAddress()
+              )
+            // Processed batched add subscription
+            case .remove:
+              try await subscriptionManager.removeSubscription(
+                event: event,
+                subscriber: subscriber
+              )
+              // Processed batched remove subscription
+            }
+          } catch {
+            // Failed to process subscription change - error ignored
+          }
+        }
+        concurrentTasks += 1
+      }
+
+      // Wait for remaining tasks
+      while concurrentTasks > 0 {
+        await taskGroup.next()
+        concurrentTasks -= 1
       }
     }
   }
