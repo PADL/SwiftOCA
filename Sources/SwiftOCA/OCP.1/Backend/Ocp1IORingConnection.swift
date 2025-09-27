@@ -163,7 +163,7 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
 
 public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnection {
   private var receiveBufferSize: Int!
-  private let localAddress: any SocketAddress
+  private var localAddress: (any SocketAddress)?
 
   override public var heartbeatTime: Duration {
     .seconds(1)
@@ -183,6 +183,7 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   }
 
   override public func connectDevice() async throws {
+    let localAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
     let ring = try IORing()
     let socket = try Socket(
       ring: ring,
@@ -197,6 +198,7 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
       receiveBufferSize = Ocp1MaximumDatagramPduSize
     }
     try socket.bind(to: localAddress)
+    self.localAddress = localAddress
     try await ring.registerFixedBuffers(count: 1, size: receiveBufferSize)
     try await socket.connect(to: deviceAddress)
     self.socket = socket
@@ -221,7 +223,9 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   }
 
   override public func disconnectDevice() async throws {
-    _ = try? unlink(localAddress.presentationAddress)
+    if let localAddress {
+      _ = try? unlink(localAddress.presentationAddress)
+    }
     receiveBufferSize = nil
     try await super.disconnectDevice()
   }
