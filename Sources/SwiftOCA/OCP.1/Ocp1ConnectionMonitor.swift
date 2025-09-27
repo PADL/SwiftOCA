@@ -150,7 +150,7 @@ extension Ocp1Connection.Monitor {
           } while true
         }
         if connection.heartbeatTime > .zero {
-          group.addTask(priority: .background) { [self] in
+          group.addTask { [self] in
             try await keepAlive(connection)
           }
         }
