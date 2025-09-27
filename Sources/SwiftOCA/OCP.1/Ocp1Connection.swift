@@ -102,7 +102,7 @@ public struct Ocp1ConnectionOptions: Sendable {
   public init(
     flags: Ocp1ConnectionFlags = .refreshDeviceTreeOnConnection,
     connectionTimeout: Duration = .seconds(2),
-    responseTimeout: Duration = .seconds(10),
+    responseTimeout: Duration = .seconds(5),
     reconnectMaxTries: Int = 15,
     reconnectPauseInterval: Duration = .milliseconds(250),
     reconnectExponentialBackoffThreshold: Range<Int> = 3..<8
