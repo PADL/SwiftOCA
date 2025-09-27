@@ -147,8 +147,9 @@ extension Ocp1ControllerInternal {
   }
 
   /// returns `true` if insufficient keepalives were received to keep connection fresh
+  /// Increased tolerance to match client-side changes
   private func connectionIsStale(_ now: ContinuousClock.Instant) -> Bool {
-    lastMessageReceivedTime + (heartbeatTime * 3) < now
+    lastMessageReceivedTime + (heartbeatTime * 5) < now
   }
 
   private func sendKeepAlive() async throws {
