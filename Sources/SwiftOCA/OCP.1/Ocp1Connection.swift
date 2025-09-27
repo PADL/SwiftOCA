@@ -263,7 +263,7 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
       subscribedEvents: Array(subscriptions.keys),
       lastMessageSentTime: continuousClockReference.date(for: lastMessageSentTime),
       lastMessageReceivedTime: monitor?.lastMessageReceivedTime != nil ? continuousClockReference
-        .date(for: monitor!.lastMessageReceivedTime!) : nil
+        .date(for: monitor!.lastMessageReceivedTime) : nil
     )
   }
 
@@ -280,14 +280,13 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
 
   /// Monitor structure for matching requests and responses
   @OcaConnection
-  final class Monitor: @unchecked
-  Sendable, CustomStringConvertible {
+  final class Monitor: Sendable, CustomStringConvertible {
     typealias Continuation = UnsafeContinuation<Ocp1Response, Error>
 
     private let _connection: Weak<Ocp1Connection>
     let _connectionID: Int
-    private let _continuations = ManagedCriticalState<[OcaUint32: Continuation]>([:])
-    private var _lastMessageReceivedTime: ContinuousClock.Instant?
+    private var _continuations = [OcaUint32: Continuation]()
+    private var _lastMessageReceivedTime: ContinuousClock.Instant = .now
 
     init(_ connection: Ocp1Connection, id: Int) {
       _connection = Weak(connection)
@@ -304,58 +303,49 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
       do {
         try await receiveMessages(connection)
       } catch Ocp1Error.notConnected {
-        resumeAllNotConnected()
+        _resumeAllNotConnected()
       }
     }
 
     func stop() {
-      resumeAllNotConnected()
+      _resumeAllNotConnected()
     }
 
     func register(handle: OcaUint32, continuation: Continuation) {
-      _continuations.withCriticalRegion { continuations in
-        continuations[handle] = continuation
-      }
+      _continuations[handle] = continuation
     }
 
-    private func resumeAllNotConnected() {
-      _continuations.withCriticalRegion { continuations in
-        for continuation in continuations.values {
-          continuation.resume(throwing: Ocp1Error.notConnected)
-        }
-        continuations.removeAll()
+    private func _resumeAllNotConnected() {
+      for continuation in _continuations.values {
+        continuation.resume(throwing: Ocp1Error.notConnected)
       }
+      _continuations.removeAll()
     }
 
     func resume(with response: Ocp1Response) throws {
-      try _continuations.withCriticalRegion { continuations in
-        let continuation = try popContinuation(for: response, in: &continuations)
-        continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
-      }
+      let continuation = try _findAndRemoveContinuation(for: response)
+      continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
     }
 
-    private func popContinuation(
-      for response: Ocp1Response,
-      in continuations: inout [OcaUint32: Continuation]
+    private func _findAndRemoveContinuation(
+      for response: Ocp1Response
     ) throws -> Continuation {
-      guard let continuation = continuations[response.handle] else {
+      guard let continuation = _continuations[response.handle] else {
         throw Ocp1Error.invalidHandle
       }
-      continuations.removeValue(forKey: response.handle)
+      _continuations.removeValue(forKey: response.handle)
       return continuation
     }
 
-    @OcaConnection
     func updateLastMessageReceivedTime() {
       _lastMessageReceivedTime = ContinuousClock.now
     }
 
     fileprivate var outstandingRequests: [OcaUint32] {
-      _continuations.withCriticalRegion { Array($0.keys) }
+      Array(_continuations.keys)
     }
 
-    @OcaConnection
-    var lastMessageReceivedTime: ContinuousClock.Instant? {
+    var lastMessageReceivedTime: ContinuousClock.Instant {
       _lastMessageReceivedTime
     }
 
