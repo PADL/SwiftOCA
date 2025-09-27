@@ -206,10 +206,16 @@ public struct OcaBoundedProperty<
 
   public func getJsonValue(
     _ object: OcaRoot,
+    keyPath: AnyKeyPath,
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async throws -> [String: Any] {
     let value = try await _getValue(object, flags: flags)
-    return [_storage.propertyID.description: value.value]
+    let jsonKey = try keyPath.jsonKey
+    return [
+      "Min\(jsonKey)": value.minValue,
+      "Max\(jsonKey)": value.maxValue,
+      "\(jsonKey)": value.value,
+    ]
   }
 
   @_spi(SwiftOCAPrivate)

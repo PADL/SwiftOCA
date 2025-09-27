@@ -60,7 +60,11 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
   func refresh(_ object: OcaRoot) async
   func subscribe(_ object: OcaRoot) async
 
-  func getJsonValue(_ object: OcaRoot, flags: OcaPropertyResolutionFlags) async throws
+  func getJsonValue(
+    _ object: OcaRoot,
+    keyPath: AnyKeyPath,
+    flags: OcaPropertyResolutionFlags
+  ) async throws
     -> [String: Any]
 }
 
@@ -480,6 +484,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
   public func getJsonValue(
     _ object: OcaRoot,
+    keyPath: AnyKeyPath,
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async throws -> [String: Any] {
     let value = try await _getValue(object, flags: flags)
@@ -491,7 +496,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
       try JSONEncoder().reencodeAsValidJSONObject(value)
     }
 
-    return [propertyID.description: jsonValue]
+    return try [keyPath.jsonKey: jsonValue]
   }
 
   @_spi(SwiftOCAPrivate)
@@ -527,6 +532,31 @@ extension OcaProperty.PropertyValue: Hashable where Value: Hashable & Codable {
       hasher.combine(value)
     default:
       break
+    }
+  }
+}
+
+extension AnyKeyPath {
+  var jsonKey: String {
+    get throws {
+      let fullString = String(describing: self)
+
+      // Find the last dot to separate the type from the property
+      guard let lastDotIndex = fullString.lastIndex(of: ".") else {
+        throw Ocp1Error.status(.badFormat)
+      }
+
+      let propertyPart = String(fullString[fullString.index(after: lastDotIndex)...])
+
+      // Remove leading underscore if present
+      guard propertyPart.hasPrefix("_") else {
+        throw Ocp1Error.status(.badFormat)
+      }
+
+      let withoutUnderscore = String(propertyPart.dropFirst())
+
+      // Capitalize first letter
+      return withoutUnderscore.prefix(1).uppercased() + withoutUnderscore.dropFirst()
     }
   }
 }

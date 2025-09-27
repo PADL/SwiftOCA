@@ -162,16 +162,22 @@ Sendable,
             self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
           var dict = [String: Sendable]()
 
-          if let jsonValue = try? await property.getJsonValue(self, flags: flags),
-             let jsonValue = jsonValue as? [String: Sendable]
+          if let jsonValue = try? await property.getJsonValue(
+            self,
+            keyPath: propertyKeyPath,
+            flags: flags
+          ),
+            let jsonValue = jsonValue as? [String: Sendable]
           {
             dict.merge(jsonValue) { current, _ in current }
           }
           return dict
         }
       }
+      let type = String(describing: type(of: self))
       return await taskGroup.collect()
         .reduce(into: [String: Sendable]()) { $0.merge($1) { $1 } }
+        .merging([OcaJSONPropertyKeys.type.rawValue: type], uniquingKeysWith: { $1 })
     }
 
     return dict
@@ -356,9 +362,10 @@ public extension OcaRoot {
 
     func getJsonValue(
       _ object: OcaRoot,
+      keyPath: AnyKeyPath,
       flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> [String: Any] {
-      [propertyIDs[0].description: String(describing: value)]
+      try [keyPath.jsonKey: String(describing: value)]
     }
 
     @_spi(SwiftOCAPrivate)

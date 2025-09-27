@@ -32,3 +32,8 @@ package extension JSONEncoder {
     return try JSONDecoder().decode(AnyDecodable.self, from: data).value
   }
 }
+
+enum OcaJSONPropertyKeys: String {
+  case type
+  case members
+}

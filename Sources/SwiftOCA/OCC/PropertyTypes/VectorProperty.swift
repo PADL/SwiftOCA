@@ -180,15 +180,11 @@ public struct OcaVectorProperty<
 
   public func getJsonValue(
     _ object: OcaRoot,
+    keyPath: AnyKeyPath,
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async throws -> [String: Any] {
     let value = try await _getValue(object, flags: flags)
-
-    let valueDict: [String: Value] =
-      [xPropertyID.description: value.x,
-       yPropertyID.description: value.y]
-
-    return valueDict
+    return try [keyPath.jsonKey: [value.x, value.y]]
   }
 
   @_spi(SwiftOCAPrivate)
