@@ -172,7 +172,7 @@ public struct Ocp1ConnectionStatistics: Sendable, CustomStringConvertible {
     connectionID: \(connectionID),
     isConnected: \(isConnected),
     lastMessageSentTime: \(lastMessageSentTime),
-    lastMessageReceivedTime: \(lastMessageReceivedTime.map(String.init(describing:)) ?? "nil"),
+    lastMessageReceivedTime: \(lastMessageReceivedTime.map(String.init(describing:)) ?? "<nil>"),
     requestCount: \(requestCount),
     outstandingRequests: \(outstandingRequests),
     cachedObjectCount: \(cachedObjectCount),
@@ -243,8 +243,9 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
   #endif
 
   private var nextCommandHandle = CommandHandleBase
+  private var continuousClockReference = ContinuousClockReference()
 
-  var lastMessageSentTime = Monitor.now
+  var lastMessageSentTime = ContinuousClock.now
 
   open nonisolated var connectionPrefix: String {
     fatalError(
@@ -260,9 +261,9 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
       outstandingRequests: monitor?.outstandingRequests ?? [],
       cachedObjectCount: objects.count,
       subscribedEvents: Array(subscriptions.keys),
-      lastMessageSentTime: Date(timeIntervalSince1970: TimeInterval(lastMessageSentTime)),
-      lastMessageReceivedTime: monitor != nil ?
-        Date(timeIntervalSince1970: TimeInterval(monitor!.lastMessageReceivedTime)) : nil
+      lastMessageSentTime: continuousClockReference.date(for: lastMessageSentTime),
+      lastMessageReceivedTime: monitor?.lastMessageReceivedTime != nil ? continuousClockReference
+        .date(for: monitor!.lastMessageReceivedTime!) : nil
     )
   }
 
@@ -286,11 +287,7 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
     private let _connection: Weak<Ocp1Connection>
     let _connectionID: Int
     private let _continuations = ManagedCriticalState<[OcaUint32: Continuation]>([:])
-    private var _lastMessageReceivedTime = ManagedAtomic<UInt64>(0)
-
-    static var now: UInt64 {
-      UInt64(time(nil))
-    }
+    private var _lastMessageReceivedTime: ContinuousClock.Instant?
 
     init(_ connection: Ocp1Connection, id: Int) {
       _connection = Weak(connection)
@@ -348,16 +345,18 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
       return continuation
     }
 
+    @OcaConnection
     func updateLastMessageReceivedTime() {
-      _lastMessageReceivedTime.store(Monitor.now, ordering: .releasing)
+      _lastMessageReceivedTime = ContinuousClock.now
     }
 
     fileprivate var outstandingRequests: [OcaUint32] {
       _continuations.withCriticalRegion { Array($0.keys) }
     }
 
-    var lastMessageReceivedTime: UInt64 {
-      _lastMessageReceivedTime.load(ordering: .relaxed)
+    @OcaConnection
+    var lastMessageReceivedTime: ContinuousClock.Instant? {
+      _lastMessageReceivedTime
     }
 
     var description: String {

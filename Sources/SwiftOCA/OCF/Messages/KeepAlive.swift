@@ -70,17 +70,3 @@ package extension Ocp1KeepAlive {
     return Ocp1KeepAlive1(heartBeatTime: OcaUint16(seconds == 0 ? 1 : seconds))
   }
 }
-
-package extension Duration {
-  var seconds: Int64 {
-    components.seconds
-  }
-
-  var milliseconds: Int64 {
-    components.seconds * 1000 + Int64(Double(components.attoseconds) * 1e-15)
-  }
-
-  var timeInterval: TimeInterval {
-    TimeInterval(components.seconds) + TimeInterval(components.attoseconds) * 1e-18
-  }
-}

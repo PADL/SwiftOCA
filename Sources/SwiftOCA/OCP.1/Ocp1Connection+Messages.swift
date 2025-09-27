@@ -30,6 +30,8 @@ extension Ocp1Connection {
     guard try await write(messagePduData) == messagePduData.count else {
       throw Ocp1Error.pduSendingFailed
     }
+
+    lastMessageSentTime = .now
   }
 
   private func sendMessage(
