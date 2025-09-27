@@ -114,46 +114,86 @@ extension Ocp1Connection.Monitor {
   }
 
   private func keepAlive(_ connection: Ocp1Connection) async throws {
-    let keepAliveThreshold = connection.heartbeatTime * 3
+    // Increase tolerance from 3x to 5x heartbeat time for more robust keepalive handling
+    let keepAliveThreshold = connection.heartbeatTime * 5
+    var consecutiveMissedKeepalives = 0
 
     repeat {
       let now = Self.now
-      if now - lastMessageReceivedTime >= keepAliveThreshold.seconds {
+      let timeSinceLastReceived = now - lastMessageReceivedTime
+
+      if timeSinceLastReceived >= keepAliveThreshold.seconds {
+        consecutiveMissedKeepalives += 1
         connection.logger
-          .info(
-            "\(connection): no heartbeat packet received in past \(keepAliveThreshold)"
+          .warning(
+            "\(connection): no message received in past \(Duration.seconds(timeSinceLastReceived)) (threshold: \(keepAliveThreshold)), missed count: \(consecutiveMissedKeepalives)"
           )
-        throw Ocp1Error.missingKeepalive
+
+        // Allow up to 3 consecutive missed keepalives before declaring connection dead
+        if consecutiveMissedKeepalives >= 3 {
+          connection.logger
+            .error(
+              "\(connection): connection declared dead after \(consecutiveMissedKeepalives) missed keepalives"
+            )
+          throw Ocp1Error.missingKeepalive
+        }
+      } else {
+        // Reset counter when we receive messages
+        if consecutiveMissedKeepalives > 0 {
+          connection.logger
+            .debug("\(connection): keepalive recovered after \(consecutiveMissedKeepalives) missed")
+          consecutiveMissedKeepalives = 0
+        }
       }
 
       let timeSinceLastMessageSent = now - connection.lastMessageSentTime
       var sleepTime = connection.heartbeatTime
+
       if timeSinceLastMessageSent >= connection.heartbeatTime.seconds {
+        connection.logger
+          .trace(
+            "\(connection): sending keepalive (last sent: \(Duration.seconds(timeSinceLastMessageSent)) ago)"
+          )
         try await connection.sendKeepAlive()
       } else {
         sleepTime -= .seconds(timeSinceLastMessageSent)
       }
-      try await Task.sleep(for: sleepTime)
+
+      try await Task.sleep(for: max(sleepTime, .milliseconds(100))) // Minimum 100ms sleep
     } while true
   }
 
   func receiveMessages(_ connection: Ocp1Connection) async throws {
     do {
       try await withThrowingTaskGroup(of: Void.self) { group in
+        // Message receiving task with yield points to prevent starvation
         group.addTask { [self] in
+          var messageCount = 0
           repeat {
             try Task.checkCancellation()
             do {
               try await receiveMessage(connection)
+              messageCount += 1
+
+              // Yield periodically to prevent keepalive task starvation
+              if messageCount % 10 == 0 {
+                await Task.yield()
+              }
             } catch Ocp1Error.unknownPduType {
-            } catch Ocp1Error.invalidHandle {}
+              // Ignore unknown PDU types
+            } catch Ocp1Error.invalidHandle {
+              // Ignore responses for unknown handles
+            }
           } while true
         }
+
         if connection.heartbeatTime > .zero {
-          group.addTask(priority: .background) { [self] in
+          // Use higher priority for keepalive to ensure it's not starved
+          group.addTask(priority: .high) { [self] in
             try await keepAlive(connection)
           }
         }
+
         try await group.next()
         group.cancelAll()
       }
