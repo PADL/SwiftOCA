@@ -49,10 +49,13 @@ private extension OcaRoot {
   ) async throws {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
-    let response = try await withThrowingTimeout(
-      of: connectionDelegate.options
-        .responseTimeout
-    ) {
+    // Apply timeout with connection-aware logic to prevent premature timeouts
+    let timeoutDuration = connectionDelegate.options.responseTimeout
+    let adjustedTimeout = connectionDelegate.isDatagram ? 
+      max(timeoutDuration, connectionDelegate.heartbeatTime * 2) : 
+      timeoutDuration
+      
+    let response = try await withThrowingTimeout(of: adjustedTimeout) {
       try await self.sendCommandRrq(
         methodID: methodID,
         parameterCount: parameterCount,
