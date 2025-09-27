@@ -120,7 +120,7 @@ extension Ocp1Connection.Monitor {
       let now = ContinuousClock.now
       let lastMessageSentTime = connection.lastMessageSentTime
 
-      if now - (lastMessageReceivedTime ?? lastMessageSentTime) >= keepAliveThreshold {
+      if now - lastMessageReceivedTime >= keepAliveThreshold {
         connection.logger
           .info(
             "\(connection): no heartbeat packet received in past \(keepAliveThreshold)"
