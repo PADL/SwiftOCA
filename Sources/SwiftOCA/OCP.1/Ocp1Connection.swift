@@ -266,6 +266,17 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
     )
   }
 
+  /// for datagram connections, ensure the timeout is at least twice the heartbeat time
+  var responseTimeout: Duration {
+    let timeout = options.responseTimeout
+
+    if isDatagram, timeout < heartbeatTime * 2 {
+      return heartbeatTime * 2
+    } else {
+      return timeout
+    }
+  }
+
   /// Monitor structure for matching requests and responses
   @OcaConnection
   final class Monitor: @unchecked

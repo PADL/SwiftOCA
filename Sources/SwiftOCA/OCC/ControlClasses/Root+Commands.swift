@@ -50,8 +50,7 @@ private extension OcaRoot {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
     let response = try await withThrowingTimeout(
-      of: connectionDelegate.options
-        .responseTimeout
+      of: connectionDelegate.responseTimeout
     ) {
       try await self.sendCommandRrq(
         methodID: methodID,
@@ -168,7 +167,7 @@ public extension OcaRoot {
   ) async throws -> Ocp1Response {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
-    return try await withThrowingTimeout(of: connectionDelegate.options.responseTimeout) {
+    return try await withThrowingTimeout(of: connectionDelegate.responseTimeout) {
       let command = await Ocp1Command(
         commandSize: 0,
         handle: connectionDelegate.getNextCommandHandle(),
