@@ -418,7 +418,10 @@ extension Ocp1Connection {
   }
 
   func onMonitorError(id: Int, _ error: Error) async throws {
-    logger.trace("monitor task \(id) error: \(error) current connection state: \(currentConnectionState)")
+    logger
+      .trace(
+        "monitor task \(id) error: \(error) current connection state: \(currentConnectionState)"
+      )
 
     let reconnectDevice: Bool
 
