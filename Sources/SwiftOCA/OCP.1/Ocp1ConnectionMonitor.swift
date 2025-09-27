@@ -109,6 +109,7 @@ extension Ocp1Connection.Monitor {
     await onDatagramConnectionOpen(connection)
 
     for message in messages {
+      // connection.logger.trace("processing message \(message)")
       try await processMessage(connection, message)
     }
   }
