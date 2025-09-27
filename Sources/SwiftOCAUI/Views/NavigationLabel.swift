@@ -35,7 +35,7 @@ struct OcaNavigationLabel: View, OcaView {
     _object = State(wrappedValue: object)
   }
 
-  public var body: some View {
+  var body: some View {
     Text(object.navigationLabel)
   }
 }

@@ -84,7 +84,7 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
   private let socket: Socket
   let notificationSocket: Socket
 
-  public nonisolated var description: String {
+  nonisolated var description: String {
     "\(type(of: self))(socket: \(socket))"
   }
 
@@ -189,7 +189,7 @@ private extension Ocp1NetworkAddress {
 }
 
 extension Ocp1IORingStreamController: Equatable {
-  public nonisolated static func == (
+  nonisolated static func == (
     lhs: Ocp1IORingStreamController,
     rhs: Ocp1IORingStreamController
   ) -> Bool {
@@ -198,7 +198,7 @@ extension Ocp1IORingStreamController: Equatable {
 }
 
 extension Ocp1IORingStreamController: Hashable {
-  public nonisolated func hash(into hasher: inout Hasher) {
+  nonisolated func hash(into hasher: inout Hasher) {
     socket.hash(into: &hasher)
   }
 }
@@ -258,7 +258,7 @@ actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerD
 }
 
 extension Ocp1IORingDatagramController: Equatable {
-  public nonisolated static func == (
+  nonisolated static func == (
     lhs: Ocp1IORingDatagramController,
     rhs: Ocp1IORingDatagramController
   ) -> Bool {
@@ -267,7 +267,7 @@ extension Ocp1IORingDatagramController: Equatable {
 }
 
 extension Ocp1IORingDatagramController: Hashable {
-  public nonisolated func hash(into hasher: inout Hasher) {
+  nonisolated func hash(into hasher: inout Hasher) {
     peerAddress.hash(into: &hasher)
   }
 }

@@ -48,7 +48,7 @@ struct OcaBlockNavigationSplitView: OcaView {
     return object
   }
 
-  public var body: some View {
+  var body: some View {
     Group {
       if let members {
         NavigationSplitView {

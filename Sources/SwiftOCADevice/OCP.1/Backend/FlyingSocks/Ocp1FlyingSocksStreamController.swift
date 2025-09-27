@@ -95,7 +95,7 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
     address
   }
 
-  public nonisolated var description: String {
+  nonisolated var description: String {
     "\(type(of: self))(address: \(address))"
   }
 
@@ -105,7 +105,7 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
 }
 
 extension Ocp1FlyingSocksStreamController: Equatable {
-  public nonisolated static func == (
+  nonisolated static func == (
     lhs: Ocp1FlyingSocksStreamController,
     rhs: Ocp1FlyingSocksStreamController
   ) -> Bool {
@@ -114,7 +114,7 @@ extension Ocp1FlyingSocksStreamController: Equatable {
 }
 
 extension Ocp1FlyingSocksStreamController: Hashable {
-  public nonisolated func hash(into hasher: inout Hasher) {
+  nonisolated func hash(into hasher: inout Hasher) {
     fileDescriptor.hash(into: &hasher)
   }
 }

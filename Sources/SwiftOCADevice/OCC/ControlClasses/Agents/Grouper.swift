@@ -47,7 +47,7 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
     let name: OcaString
     let proxy: Proxy?
 
-    public init(grouper: OcaGrouper, index: OcaUint16, name: OcaString) async throws {
+    init(grouper: OcaGrouper, index: OcaUint16, name: OcaString) async throws {
       self.index = index
       self.name = name
       switch grouper.mode {

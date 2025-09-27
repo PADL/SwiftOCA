@@ -35,7 +35,7 @@ struct OcaMatrixNavigationSplitView: OcaView {
     _object = State(wrappedValue: object as! OcaMatrix)
   }
 
-  public var body: some View {
+  var body: some View {
     NavigationStack(path: oNoPath) {
       Group {
         if let members {

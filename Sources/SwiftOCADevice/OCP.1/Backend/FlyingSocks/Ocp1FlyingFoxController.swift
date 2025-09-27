@@ -102,7 +102,7 @@ actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
     String(describing: id)
   }
 
-  public nonisolated var description: String {
+  nonisolated var description: String {
     "\(type(of: self))(id: \(id))"
   }
 }

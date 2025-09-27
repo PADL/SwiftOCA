@@ -93,7 +93,7 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
   private let socket: _CFSocketWrapper
   let notificationSocket: _CFSocketWrapper
 
-  public nonisolated var description: String {
+  nonisolated var description: String {
     "\(type(of: self))(socket: \(socket))"
   }
 
@@ -186,7 +186,7 @@ private extension Ocp1NetworkAddress {
 }
 
 extension Ocp1CFStreamController: Equatable {
-  public nonisolated static func == (
+  nonisolated static func == (
     lhs: Ocp1CFStreamController,
     rhs: Ocp1CFStreamController
   ) -> Bool {
@@ -195,7 +195,7 @@ extension Ocp1CFStreamController: Equatable {
 }
 
 extension Ocp1CFStreamController: Hashable {
-  public nonisolated func hash(into hasher: inout Hasher) {
+  nonisolated func hash(into hasher: inout Hasher) {
     socket.hash(into: &hasher)
   }
 }
@@ -252,7 +252,7 @@ actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramS
 }
 
 extension Ocp1CFDatagramController: Equatable {
-  public nonisolated static func == (
+  nonisolated static func == (
     lhs: Ocp1CFDatagramController,
     rhs: Ocp1CFDatagramController
   ) -> Bool {
@@ -261,7 +261,7 @@ extension Ocp1CFDatagramController: Equatable {
 }
 
 extension Ocp1CFDatagramController: Hashable {
-  public nonisolated func hash(into hasher: inout Hasher) {
+  nonisolated func hash(into hasher: inout Hasher) {
     peerAddress.hash(into: &hasher)
   }
 }

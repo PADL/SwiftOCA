@@ -61,7 +61,7 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
     String(describing: peerID)
   }
 
-  public nonisolated var description: String {
+  nonisolated var description: String {
     "\(type(of: self))(peerID: \(String(describing: peerID))"
   }
 

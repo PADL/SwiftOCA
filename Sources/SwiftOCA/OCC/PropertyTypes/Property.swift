@@ -78,8 +78,7 @@ public extension OcaPropertyRepresentable {
 /// updating the value on the controlled device. it's useful for the `ocacli` command
 /// line tool which manages its own cache but shouldn't be used by applications generally
 @_spi(SwiftOCAPrivate)
-public
-protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
+public protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
   var setMethodID: OcaMethodID? { get }
 
   var subject: AsyncCurrentValueSubject<PropertyValue> { get }
