@@ -47,8 +47,9 @@ package extension Ocp1Connection {
     type messageType: OcaMessageType
   ) throws -> [UInt8] {
     var messagePduData = [UInt8]()
-    messagePduData.reserveCapacity(48) // enough for a metering PDU
-    messagePduData += [Ocp1SyncValue]
+    let estimatedSize = 16 + (messages.count * 32) // header + estimated per-message
+    messagePduData.reserveCapacity(estimatedSize)
+    messagePduData.append(Ocp1SyncValue)
     Ocp1Header(pduType: messageType, messageCount: OcaUint16(messages.count))
       .encode(into: &messagePduData)
 
