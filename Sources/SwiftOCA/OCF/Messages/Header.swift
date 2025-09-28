@@ -74,10 +74,27 @@ public struct Ocp1Header: Codable, Sendable, _Ocp1Codable {
   }
 
   func encode(into bytes: inout [UInt8]) {
-    withUnsafeBytes(of: protocolVersion.bigEndian) { bytes += Array($0) }
-    withUnsafeBytes(of: pduSize.bigEndian) { bytes += Array($0) }
-    bytes += [pduType.rawValue]
-    withUnsafeBytes(of: messageCount.bigEndian) { bytes += Array($0) }
+    let startIndex = bytes.count
+    bytes += [0, 0, 0, 0, 0, 0, 0, 0, 0] // reserve 9 bytes for header
+
+    withUnsafeBytes(of: protocolVersion.bigEndian) {
+      bytes[startIndex] = $0[0]
+      bytes[startIndex + 1] = $0[1]
+    }
+
+    withUnsafeBytes(of: pduSize.bigEndian) {
+      bytes[startIndex + 2] = $0[0]
+      bytes[startIndex + 3] = $0[1]
+      bytes[startIndex + 4] = $0[2]
+      bytes[startIndex + 5] = $0[3]
+    }
+
+    bytes[startIndex + 6] = pduType.rawValue
+
+    withUnsafeBytes(of: messageCount.bigEndian) {
+      bytes[startIndex + 7] = $0[0]
+      bytes[startIndex + 8] = $0[1]
+    }
   }
 }
 
