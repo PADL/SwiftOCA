@@ -21,11 +21,12 @@ import Foundation
 #endif
 
 private func _writeMessageSize(_ size: Int, to bytes: inout [UInt8], at index: Int) {
-  precondition(size <= OcaUint32.max)
   precondition(bytes.count >= index + 4)
-  withUnsafeBytes(of: OcaUint32(size).bigEndian) {
-    bytes[index..<(index + 4)] = Array($0)[0..<4]
-  }
+  let size = OcaUint32(size)
+  bytes[index + 0] = UInt8((size >> 24) & 0xFF)
+  bytes[index + 1] = UInt8((size >> 16) & 0xFF)
+  bytes[index + 2] = UInt8((size >> 8) & 0xFF)
+  bytes[index + 3] = UInt8(size & 0xFF)
 }
 
 private extension Ocp1Message {
