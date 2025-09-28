@@ -29,11 +29,11 @@ private func _writeMessageSize(_ size: Int, to bytes: inout [UInt8], at index: I
   bytes[index + 3] = UInt8(size & 0xFF)
 }
 
-private extension Ocp1Message {
+private extension _Ocp1MessageCodable {
   func encode(type messageType: OcaMessageType, into messageData: inout [UInt8]) throws {
     let offset = messageData.count
 
-    (self as! _Ocp1MessageCodable).encode(into: &messageData)
+    encode(into: &messageData)
 
     if messageType != .ocaKeepAlive {
       /// replace `commandSize: OcaUint32` with actual command size
