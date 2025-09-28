@@ -92,12 +92,31 @@ public struct Ocp1ConnectionFlags: OptionSet, Sendable {
 }
 
 public struct Ocp1ConnectionOptions: Sendable {
+  public struct BatchingOptions: Equatable, Sendable {
+    let batchSize: UInt16?
+    let batchThreshold: Duration?
+
+    // if batchSize / batchThrehsold are nil, sensible defaults will be used
+    // based on the connection type
+    public init(batchSize: UInt16? = nil, batchThreshold: Duration? = nil) throws {
+      if let batchSize, batchSize < Ocp1Connection.MinimumPduSize {
+        throw Ocp1Error.status(.parameterError)
+      }
+      if let batchThreshold, batchThreshold == .zero {
+        throw Ocp1Error.status(.parameterError)
+      }
+      self.batchSize = batchSize
+      self.batchThreshold = batchThreshold
+    }
+  }
+
   let flags: Ocp1ConnectionFlags
   let connectionTimeout: Duration
   let responseTimeout: Duration
   let reconnectMaxTries: Int
   let reconnectPauseInterval: Duration
   let reconnectExponentialBackoffThreshold: Range<Int>
+  let batchingOptions: BatchingOptions?
 
   public init(
     flags: Ocp1ConnectionFlags = .refreshDeviceTreeOnConnection,
@@ -105,7 +124,8 @@ public struct Ocp1ConnectionOptions: Sendable {
     responseTimeout: Duration = .seconds(5),
     reconnectMaxTries: Int = 15,
     reconnectPauseInterval: Duration = .milliseconds(250),
-    reconnectExponentialBackoffThreshold: Range<Int> = 3..<8
+    reconnectExponentialBackoffThreshold: Range<Int> = 3..<8,
+    batchingOptions: BatchingOptions? = nil
   ) {
     self.flags = flags
     self.connectionTimeout = connectionTimeout
@@ -113,6 +133,7 @@ public struct Ocp1ConnectionOptions: Sendable {
     self.reconnectMaxTries = reconnectMaxTries
     self.reconnectPauseInterval = reconnectPauseInterval
     self.reconnectExponentialBackoffThreshold = reconnectExponentialBackoffThreshold
+    self.batchingOptions = batchingOptions
   }
 
   @available(*, deprecated, message: "use Ocp1ConnectionFlags initializer")
@@ -123,7 +144,8 @@ public struct Ocp1ConnectionOptions: Sendable {
     refreshDeviceTreeOnConnection: Bool = true,
     reconnectMaxTries: Int = 15,
     reconnectPauseInterval: Duration = .milliseconds(250),
-    reconnectExponentialBackoffThreshold: Range<Int> = 3..<8
+    reconnectExponentialBackoffThreshold: Range<Int> = 3..<8,
+    batchingOptions: BatchingOptions? = nil,
   ) {
     var flags = Ocp1ConnectionFlags()
     if automaticReconnect { flags.insert(.automaticReconnect) }
@@ -135,7 +157,8 @@ public struct Ocp1ConnectionOptions: Sendable {
       responseTimeout: responseTimeout,
       reconnectMaxTries: reconnectMaxTries,
       reconnectPauseInterval: reconnectPauseInterval,
-      reconnectExponentialBackoffThreshold: reconnectExponentialBackoffThreshold
+      reconnectExponentialBackoffThreshold: reconnectExponentialBackoffThreshold,
+      batchingOptions: batchingOptions
     )
   }
 }
@@ -197,6 +220,7 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
 
   public func set(options: Ocp1ConnectionOptions) async throws {
     let oldFlags = self.options.flags
+    let oldBatchOptions = self.options.batchingOptions
     self.options = options
     if !oldFlags.contains(.automaticReconnect) && options.flags.contains(.automaticReconnect) {
       try await connect()
@@ -208,6 +232,11 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
 
     if oldFlags.symmetricDifference(options.flags).contains(.enableTracing) {
       _configureTracing()
+    }
+
+    if oldBatchOptions != options.batchingOptions {
+      try? await batcher.dequeue()
+      _configureBatching(options.batchingOptions)
     }
   }
 
@@ -365,6 +394,7 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
   /// actor for monitoring response and matching them with requests
   var monitor: Monitor?
   var monitorTask: Task<(), Error>?
+  var batcher: Ocp1MessageBatcher!
 
   private func _configureTracing() {
     if options.flags.contains(.enableTracing) {
@@ -381,6 +411,7 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
     add(object: subscriptionManager)
     add(object: deviceManager)
     _configureTracing()
+    _configureBatching(options.batchingOptions)
   }
 
   func getNextCommandHandle() async -> OcaUint32 {
