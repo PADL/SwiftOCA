@@ -513,8 +513,8 @@ extension _OcaObjectKeyPathRepresentable {
 }
 
 @OcaDevice
-private final class OcaDevicePropertyKeyPathCache {
-  fileprivate static let shared = OcaDevicePropertyKeyPathCache()
+final class OcaDevicePropertyKeyPathCache {
+  static let shared = OcaDevicePropertyKeyPathCache()
 
   enum AccessorType {
     case getter
@@ -524,6 +524,7 @@ private final class OcaDevicePropertyKeyPathCache {
   private struct CacheEntry {
     let keyPaths: [String: AnyKeyPath]
     let methods: [OcaMethodID: (AccessorType, AnyKeyPath)]
+    let properties: [OcaPropertyID: AnyKeyPath]
 
     private init(keyPaths: [String: AnyKeyPath], object: some OcaRoot) {
       self.keyPaths = keyPaths
@@ -537,6 +538,12 @@ private final class OcaDevicePropertyKeyPathCache {
         if let setMethodID = value.setMethodID {
           $0[setMethodID] = (.setter, $1.value)
         }
+      }
+      properties = keyPaths.reduce(into: [:]) {
+        guard let value = object[keyPath: $1.value] as? any OcaDevicePropertyRepresentable else {
+          return
+        }
+        $0[value.propertyID] = $1.value
       }
     }
 
@@ -573,6 +580,18 @@ private final class OcaDevicePropertyKeyPathCache {
     }
 
     return addCacheEntry(for: object).methods[methodID]
+  }
+
+  @OcaDevice
+  func lookupProperty(
+    _ propertyID: OcaPropertyID,
+    for object: some OcaRoot
+  ) -> AnyKeyPath? {
+    if let cacheEntry = _cache[object._metaTypeObjectIdentifier] {
+      return cacheEntry.properties[propertyID]
+    }
+
+    return addCacheEntry(for: object).properties[propertyID]
   }
 }
 
