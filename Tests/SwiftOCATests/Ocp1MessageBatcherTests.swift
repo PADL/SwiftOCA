@@ -278,10 +278,14 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     let message = MockMessage(handle: 100, data: "test")
     try await batcher.enqueue(message, type: .ocaCmd)
 
-    // Wait for periodic dequeue
-    try await Task.sleep(for: .milliseconds(100))
+    // Wait for periodic dequeue with retry for CI reliability
+    var sentCount = 0
+    for _ in 0..<10 {
+      try await Task.sleep(for: .milliseconds(20))
+      sentCount = await handler.sentCount
+      if sentCount >= 1 { break }
+    }
 
-    let sentCount = await handler.sentCount
     XCTAssertEqual(sentCount, 1)
 
     let currentCount = batcher.currentCount
@@ -512,9 +516,15 @@ final class Ocp1MessageBatcherTests: XCTestCase {
 
     // Auto batch should dequeue automatically
     try await autoBatcher.enqueue(message, type: .ocaCmd)
-    try await Task.sleep(for: .milliseconds(50))
 
-    let autoSentCount = await handler.sentCount
+    // Wait with retry for CI reliability
+    var autoSentCount = 0
+    for _ in 0..<10 {
+      try await Task.sleep(for: .milliseconds(10))
+      autoSentCount = await handler.sentCount
+      if autoSentCount >= 1 { break }
+    }
+
     XCTAssertEqual(autoSentCount, 1)
   }
 
