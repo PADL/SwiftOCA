@@ -29,7 +29,7 @@ private func _writeMessageSize(_ size: Int, to bytes: inout [UInt8], at index: I
   bytes[index + 3] = UInt8(size & 0xFF)
 }
 
-private extension _Ocp1MessageCodable {
+extension _Ocp1MessageCodable {
   func encode(type messageType: OcaMessageType, into messageData: inout [UInt8]) throws {
     let offset = messageData.count
 
@@ -43,6 +43,27 @@ private extension _Ocp1MessageCodable {
 }
 
 package extension Ocp1Connection {
+  nonisolated static func encodeOcp1MessagePduData(
+    type messageType: OcaMessageType,
+    encodedPdus: [[UInt8]]
+  ) throws -> [UInt8] {
+    var messagePduData = [UInt8]()
+    let estimatedSize = Self.MinimumPduSize + encodedPdus.reduce(0) { $0 + $1.count }
+    messagePduData.reserveCapacity(estimatedSize)
+    messagePduData.append(Ocp1SyncValue)
+    Ocp1Header(pduType: messageType, messageCount: OcaUint16(encodedPdus.count))
+      .encode(into: &messagePduData)
+
+    encodedPdus.forEach { messagePduData.append(contentsOf: $0) }
+    /// MinimumPduSize == 7
+    /// 0 `syncVal: OcaUint8`
+    /// 1 `protocolVersion: OcaUint16`
+    /// 3 `pduSize: OcaUint32` (size of PDU not including syncVal)
+    _writeMessageSize(messagePduData.count - 1, to: &messagePduData, at: 3)
+
+    return messagePduData
+  }
+
   private nonisolated static func encodeOcp1MessagePdu(
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType

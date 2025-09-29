@@ -21,24 +21,11 @@ import Foundation
 #endif
 
 extension Ocp1Connection {
-  private func sendMessages(
-    _ messages: [Ocp1Message],
-    type messageType: OcaMessageType
-  ) async throws {
-    let messagePduData = try Self.encodeOcp1MessagePdu(messages, type: messageType)
-
-    guard try await write(messagePduData) == messagePduData.count else {
-      throw Ocp1Error.pduSendingFailed
-    }
-
-    lastMessageSentTime = .now
-  }
-
   private func sendMessage(
     _ message: Ocp1Message,
     type messageType: OcaMessageType
   ) async throws {
-    try await sendMessages([message], type: messageType)
+    try await batcher.enqueue(message, type: messageType)
   }
 
   public func sendCommand(_ command: Ocp1Command) async throws {
@@ -73,5 +60,16 @@ extension Ocp1Connection {
       Ocp1KeepAlive.keepAlive(interval: heartbeatTime),
       type: .ocaKeepAlive
     )
+  }
+
+  @Sendable
+  func sendMessagePduData(
+    _ messagePduData: Data
+  ) async throws {
+    guard try await write(messagePduData) == messagePduData.count else {
+      throw Ocp1Error.pduSendingFailed
+    }
+
+    lastMessageSentTime = .now
   }
 }
