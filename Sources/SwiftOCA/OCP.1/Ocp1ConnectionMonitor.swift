@@ -119,7 +119,6 @@ extension Ocp1Connection.Monitor {
 
     repeat {
       let now = ContinuousClock.now
-      let lastMessageSentTime = connection.lastMessageSentTime
 
       if now - lastMessageReceivedTime >= keepAliveThreshold {
         connection.logger
