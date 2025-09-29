@@ -145,7 +145,7 @@ public struct Ocp1ConnectionOptions: Sendable {
     reconnectMaxTries: Int = 15,
     reconnectPauseInterval: Duration = .milliseconds(250),
     reconnectExponentialBackoffThreshold: Range<Int> = 3..<8,
-    batchingOptions: BatchingOptions? = nil,
+    batchingOptions: BatchingOptions? = nil
   ) {
     var flags = Ocp1ConnectionFlags()
     if automaticReconnect { flags.insert(.automaticReconnect) }
