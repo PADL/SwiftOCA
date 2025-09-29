@@ -127,6 +127,26 @@ public class OcaSubscriptionManager: OcaManager {
     try await controller.removeSubscription(.propertyChangeSubscription2(subscription))
   }
 
+  private func getPropertyAndSubscribe(
+    _ subscription: SwiftOCA.OcaSubscriptionManager.AddPropertyChangeSubscription2Parameters,
+    from controller: any OcaController,
+    command: Ocp1Command
+  ) async throws -> Ocp1Response {
+    try await ensureWritable(by: controller, command: command)
+    guard let object = await deviceDelegate?.resolve(objectNumber: subscription.emitter) else {
+      throw Ocp1Error.status(.badONo)
+    }
+    guard let property = OcaDevicePropertyKeyPathCache.shared
+      .lookupProperty(subscription.property, for: object)
+    else {
+      throw Ocp1Error.status(.processingFailed)
+    }
+    let response = try await (object[keyPath: property] as! (any OcaDevicePropertyRepresentable))
+      .getOcp1Response()
+    try await controller.addSubscription(.propertyChangeSubscription2(subscription))
+    return response
+  }
+
   /// the following two functions, however, _do_ mutate state on the subscription manager
   /// and must run on the @OcaDevice global actor
 
@@ -227,6 +247,14 @@ public class OcaSubscriptionManager: OcaManager {
         command: command
       )
       return Ocp1Response()
+    case OcaMethodID("3.12"):
+      let subscription: SwiftOCA.OcaSubscriptionManager
+        .AddPropertyChangeSubscription2Parameters = try decodeCommand(command)
+      return try await getPropertyAndSubscribe(
+        subscription,
+        from: controller,
+        command: command
+      )
     default:
       return try await super.handleCommand(command, from: controller)
     }
