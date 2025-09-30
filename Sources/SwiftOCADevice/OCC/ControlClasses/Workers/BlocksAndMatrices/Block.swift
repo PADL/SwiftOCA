@@ -19,7 +19,7 @@ import AsyncExtensions
 import SwiftOCA
 
 @OcaDevice
-private protocol OcaBlockContainer: OcaRoot {
+public protocol OcaBlockContainer: OcaRoot {
   var members: [OcaRoot] { get }
   var datasetObjects: [OcaDataset] { get async throws }
 }
@@ -49,7 +49,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     self.datasetFilter = datasetFilter
   }
 
-  fileprivate var members: [OcaRoot] { actionObjects }
+  public var members: [OcaRoot] { actionObjects }
 
   private func notifySubscribers(
     actionObjects: [ActionObject],
@@ -167,7 +167,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   )
   public var configurability = OcaBlockConfigurability()
 
-  private typealias BlockApplyFunction<U> = (
+  public typealias BlockApplyFunction<U> = (
     _ member: OcaRoot,
     _ container: OcaBlockContainer
   ) async throws -> U
@@ -203,7 +203,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     )
   }
 
-  private func filterRecursive(
+  public func filterRecursive(
     maxDepth: Int = -1,
     _ isIncluded: @escaping (OcaRoot, OcaBlockContainer) async throws -> Bool
   ) async rethrows -> [OcaRoot] {
@@ -218,7 +218,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     return members
   }
 
-  private func mapRecursive<U: Sendable>(
+  public func mapRecursive<U: Sendable>(
     maxDepth: Int = -1,
     _ transform: BlockApplyFunction<U>
   ) async rethrows -> [U] {
