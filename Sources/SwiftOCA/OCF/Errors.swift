@@ -67,6 +67,7 @@ public enum Ocp1Error: Error, Equatable {
   case remoteDeviceResolutionFailed
   case responseParameterOutOfRange
   case responseTimeout
+  case retryOperation
   case serviceResolutionFailed
   case unknownDataset
   case unknownDatasetMimeType

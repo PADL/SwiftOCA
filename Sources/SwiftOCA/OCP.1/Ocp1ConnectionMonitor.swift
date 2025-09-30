@@ -147,8 +147,9 @@ extension Ocp1Connection.Monitor {
             try Task.checkCancellation()
             do {
               try await receiveMessage(connection)
+            } catch Ocp1Error.invalidHandle {
             } catch Ocp1Error.unknownPduType {
-            } catch Ocp1Error.invalidHandle {}
+            } catch Ocp1Error.retryOperation {}
           } while true
         }
         if connection.heartbeatTime > .zero {
