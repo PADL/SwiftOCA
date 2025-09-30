@@ -229,11 +229,9 @@ public actor OcaDevice {
   private func _notifyEventDelegate(
     _ event: OcaEvent,
     parameters: Data
-  ) throws {
+  ) async throws {
     guard let eventDelegate else { return }
-    Task {
-      await eventDelegate.onEvent(event, parameters: parameters)
-    }
+    await eventDelegate.onEvent(event, parameters: parameters)
   }
 
   private func _notifySubscriptionManager(
@@ -247,18 +245,11 @@ public actor OcaDevice {
       await subscriptionManager
         .enqueueObjectChangedWhilstNotificationsDisabled(event.emitterONo)
     case .normal:
-      await withTaskGroup(of: Void.self) { taskGroup in
-        for endpoint in self.endpoints {
-          for controller in await endpoint.controllers {
-            let controller = controller as! OcaControllerDefaultSubscribing
+      for endpoint in endpoints {
+        for controller in await endpoint.controllers {
+          let controller = controller as! OcaControllerDefaultSubscribing
 
-            taskGroup.addTask {
-              try? await controller.notifySubscribers(
-                event,
-                parameters: parameters
-              )
-            }
-          }
+          try? await controller.notifySubscribers(event, parameters: parameters)
         }
       }
     }
@@ -272,7 +263,7 @@ public actor OcaDevice {
     // manager being initialized
     assert(deviceManager == nil || subscriptionManager != nil)
 
-    try _notifyEventDelegate(event, parameters: parameters)
+    try await _notifyEventDelegate(event, parameters: parameters)
     try await _notifySubscriptionManager(event, parameters: parameters)
   }
 
