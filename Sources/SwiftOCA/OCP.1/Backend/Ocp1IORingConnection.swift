@@ -142,8 +142,16 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   }
 
   override public func read(_ length: Int) async throws -> Data {
-    try await withMappedError { socket in
-      try await Data(socket.receive(count: Ocp1MaximumDatagramPduSize))
+    do {
+      return try await withMappedError { socket in
+        try await Data(socket.receive(count: Ocp1MaximumDatagramPduSize))
+      }
+    } catch let error where error as? Errno == Errno.canceled {
+      // something of an abstraction violation: we wish to ignore
+      // Errno.canceled as it is a spurious error from io_uring (it appears).
+      // we know Ocp1Connection.Monitor will ignore unknownPduType errors in
+      // receiveMessages(), so we squash the error here
+      throw Ocp1Error.unknownPduType
     }
   }
 
