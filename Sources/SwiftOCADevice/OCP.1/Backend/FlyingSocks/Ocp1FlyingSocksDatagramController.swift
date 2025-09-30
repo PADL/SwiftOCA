@@ -63,7 +63,7 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
     await endpoint?.unlockAndRemove(controller: self)
   }
 
-  var heartbeatTime = Duration.seconds(0) {
+  var heartbeatTime = Duration.seconds(1) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }

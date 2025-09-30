@@ -142,7 +142,7 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
     try await close()
   }
 
-  var heartbeatTime = Duration.seconds(1) {
+  var heartbeatTime = Duration.seconds(0) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
@@ -230,7 +230,7 @@ actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramS
     await endpoint?.unlockAndRemove(controller: self)
   }
 
-  var heartbeatTime = Duration.seconds(0) {
+  var heartbeatTime = Duration.seconds(1) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
