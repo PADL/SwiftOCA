@@ -144,7 +144,7 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   }
 
   override public func read(_ length: Int) async throws -> Data {
-    return try await withMappedError { socket in
+    try await withMappedError { socket in
       try await Data(socket.receive(count: Ocp1MaximumDatagramPduSize))
     }
   }
