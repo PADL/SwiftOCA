@@ -32,8 +32,8 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
   let peerID: T
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.now
-  var lastMessageSentTime = ContinuousClock.now
+  var lastMessageReceivedTime = ContinuousClock.recentPast
+  var lastMessageSentTime = ContinuousClock.recentPast
 
   private(set) var isOpen: Bool = false
   weak var endpoint: DatagramProxyDeviceEndpoint<T>?

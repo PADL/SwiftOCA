@@ -34,8 +34,8 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
 
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.now
-  var lastMessageSentTime = ContinuousClock.now
+  var lastMessageReceivedTime = ContinuousClock.recentPast
+  var lastMessageSentTime = ContinuousClock.recentPast
   weak var endpoint: Ocp1FlyingSocksStreamDeviceEndpoint?
 
   private let address: String

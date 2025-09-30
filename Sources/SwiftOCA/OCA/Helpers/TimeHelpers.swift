@@ -27,3 +27,12 @@ package extension Duration {
     TimeInterval(components.seconds) + TimeInterval(components.attoseconds) * 1e-18
   }
 }
+
+package extension ContinuousClock {
+  // a time in the past that's at least N seconds before the current time, where
+  // N is the largest heartbeat value we are likely to see. we can use .epoch
+  // when it is available.
+  static var recentPast: ContinuousClock.Instant {
+    now - .seconds(60)
+  }
+}

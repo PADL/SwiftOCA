@@ -26,8 +26,8 @@ actor OcaLocalController: Ocp1ControllerInternal {
   nonisolated var flags: OcaControllerFlags { .supportsLocking }
   nonisolated var connectionPrefix: String { OcaLocalConnectionPrefix }
 
-  var lastMessageReceivedTime = ContinuousClock.now
-  var lastMessageSentTime = ContinuousClock.now
+  var lastMessageReceivedTime = ContinuousClock.recentPast
+  var lastMessageSentTime = ContinuousClock.recentPast
   var heartbeatTime = Duration.seconds(0)
   var keepAliveTask: Task<(), Error>?
 

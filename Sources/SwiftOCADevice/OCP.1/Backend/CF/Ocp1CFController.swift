@@ -81,8 +81,8 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
   let peerAddress: AnySocketAddress
   var receiveMessageTask: Task<(), Never>?
   var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.now
-  var lastMessageSentTime = ContinuousClock.now
+  var lastMessageReceivedTime = ContinuousClock.recentPast
+  var lastMessageSentTime = ContinuousClock.recentPast
   weak var endpoint: Ocp1CFStreamDeviceEndpoint?
 
   var messages: AnyAsyncSequence<ControllerMessage> {
@@ -208,8 +208,8 @@ actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramS
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
   var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.now
-  var lastMessageSentTime = ContinuousClock.now
+  var lastMessageReceivedTime = ContinuousClock.recentPast
+  var lastMessageSentTime = ContinuousClock.recentPast
 
   private(set) var isOpen: Bool = false
   weak var endpoint: Ocp1CFDatagramDeviceEndpoint?

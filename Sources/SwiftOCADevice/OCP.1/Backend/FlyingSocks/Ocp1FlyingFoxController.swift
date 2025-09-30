@@ -60,8 +60,8 @@ actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
   var endpoint: Ocp1FlyingFoxDeviceEndpoint?
 
   var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.now
-  var lastMessageSentTime = ContinuousClock.now
+  var lastMessageReceivedTime = ContinuousClock.recentPast
+  var lastMessageSentTime = ContinuousClock.recentPast
 
   var messages: AsyncExtensions.AnyAsyncSequence<ControllerMessage> {
     inputStream.ocp1DecodedMessages.eraseToAnyAsyncSequence()

@@ -274,7 +274,7 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
   private var nextCommandHandle = CommandHandleBase
   private var continuousClockReference = ContinuousClockReference()
 
-  var lastMessageSentTime = ContinuousClock.now
+  var lastMessageSentTime = ContinuousClock.recentPast
 
   open nonisolated var connectionPrefix: String {
     fatalError(

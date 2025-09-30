@@ -37,8 +37,8 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   let interfaceIndex: UInt32?
   let localAddress: (any SocketAddress)?
   var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.now
-  var lastMessageSentTime = ContinuousClock.now
+  var lastMessageReceivedTime = ContinuousClock.recentPast
+  var lastMessageSentTime = ContinuousClock.recentPast
 
   private(set) var isOpen: Bool = false
   weak var endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint?
