@@ -46,6 +46,8 @@ fileprivate extension Errno {
       fallthrough
     case .brokenPipe:
       return Ocp1Error.notConnected
+    case .canceled:
+      return Ocp1Error.retryOperation
     default:
       return self
     }
@@ -142,12 +144,8 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   }
 
   override public func read(_ length: Int) async throws -> Data {
-    do {
-      return try await withMappedError { socket in
-        try await Data(socket.receive(count: Ocp1MaximumDatagramPduSize))
-      }
-    } catch let error where error as? Errno == Errno.canceled {
-      throw Ocp1Error.retryOperation
+    return try await withMappedError { socket in
+      try await Data(socket.receive(count: Ocp1MaximumDatagramPduSize))
     }
   }
 
