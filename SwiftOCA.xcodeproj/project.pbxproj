@@ -91,7 +91,7 @@
 		D35592602B520DFC000F633B /* ControllerDefaultSubscribing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */; };
 		D35592622B520E21000F633B /* Logger+Ocp1ControllerInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592612B520E21000F633B /* Logger+Ocp1ControllerInternal.swift */; };
 		D35592642B520E48000F633B /* Ocp1ControllerInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592632B520E48000F633B /* Ocp1ControllerInternal.swift */; };
-		D35BFC7C2E896E2F00183358 /* Ocp1Connection+Batching.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35BFC7B2E896E2F00183358 /* Ocp1Connection+Batching.swift */; };
+		D35BFC7C2E896E2F00183358 /* Ocp1MessageBatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35BFC7B2E896E2F00183358 /* Ocp1MessageBatcher.swift */; };
 		D35BFC7E2E89910600183358 /* Ocp1MessageBatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35BFC7D2E89910600183358 /* Ocp1MessageBatcherTests.swift */; };
 		D35C9DA02BF76E5100D680F2 /* SocketAddress in Frameworks */ = {isa = PBXBuildFile; productRef = D35C9D9F2BF76E5100D680F2 /* SocketAddress */; };
 		D3660FE92CEBE478005FCBEB /* Ocp1FlyingSocksStreamController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3660FE72CEBE478005FCBEB /* Ocp1FlyingSocksStreamController.swift */; };
@@ -417,7 +417,7 @@
 		D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerDefaultSubscribing.swift; sourceTree = "<group>"; };
 		D35592612B520E21000F633B /* Logger+Ocp1ControllerInternal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logger+Ocp1ControllerInternal.swift"; sourceTree = "<group>"; };
 		D35592632B520E48000F633B /* Ocp1ControllerInternal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1ControllerInternal.swift; sourceTree = "<group>"; };
-		D35BFC7B2E896E2F00183358 /* Ocp1Connection+Batching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Ocp1Connection+Batching.swift"; sourceTree = "<group>"; };
+		D35BFC7B2E896E2F00183358 /* Ocp1MessageBatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1MessageBatcher.swift; sourceTree = "<group>"; };
 		D35BFC7D2E89910600183358 /* Ocp1MessageBatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1MessageBatcherTests.swift; sourceTree = "<group>"; };
 		D3660FE52CEBE478005FCBEB /* Ocp1FlyingSocksDatagramController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksDatagramController.swift; sourceTree = "<group>"; };
 		D3660FE62CEBE478005FCBEB /* Ocp1FlyingSocksDatagramDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksDatagramDeviceEndpoint.swift; sourceTree = "<group>"; };
@@ -962,8 +962,8 @@
 				D3AB030B2CF6768D00967322 /* Ocp1Connection+Connect.swift */,
 				D3E6E1AA2A3ACA6C00BF7095 /* Ocp1Connection+Objects.swift */,
 				D3E6E1AB2A3ACA6C00BF7095 /* Ocp1Connection+Messages.swift */,
-				D35BFC7B2E896E2F00183358 /* Ocp1Connection+Batching.swift */,
 				D3E6E1AC2A3ACA6C00BF7095 /* Ocp1Connection+Subscribe.swift */,
+				D35BFC7B2E896E2F00183358 /* Ocp1MessageBatcher.swift */,
 				D3D8FA412B61D6040054FD3C /* ReflectionMirror */,
 				D3AFD3612B32A06700A72E9A /* Encoder */,
 				D3AFD36B2B32A06700A72E9A /* Decoder */,
@@ -1936,7 +1936,7 @@
 				D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */,
 				D3FAC8EA2B5CFBE7009E2775 /* TaskManager.swift in Sources */,
 				D34B5F9E2B65FD0D000C8DD1 /* Grouper.swift in Sources */,
-				D35BFC7C2E896E2F00183358 /* Ocp1Connection+Batching.swift in Sources */,
+				D35BFC7C2E896E2F00183358 /* Ocp1MessageBatcher.swift in Sources */,
 				D3AFD37F2B32A06700A72E9A /* Ocp1Encoder.swift in Sources */,
 				D3C083292A7C700B0020AD57 /* MediaDataTypes.swift in Sources */,
 				D3FAC8E62B5CF926009E2775 /* LibraryManagerDataTypes.swift in Sources */,
