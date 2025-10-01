@@ -20,7 +20,9 @@ import SwiftOCA
 
 @OcaDevice
 public protocol OcaBlockContainer: OcaRoot {
-  var members: [OcaRoot] { get }
+  associatedtype ActionObject: OcaRoot
+
+  var actionObjects: [ActionObject] { get }
   var datasetObjects: [OcaDataset] { get async throws }
 }
 
@@ -48,8 +50,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   public func set(datasetFilter: OcaRoot.SerializationFilterFunction?) {
     self.datasetFilter = datasetFilter
   }
-
-  public var members: [OcaRoot] { actionObjects }
 
   private func notifySubscribers(
     actionObjects: [ActionObject],
@@ -169,18 +169,18 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
   public typealias BlockApplyFunction<U> = (
     _ member: OcaRoot,
-    _ container: OcaBlockContainer
+    _ container: any OcaBlockContainer
   ) async throws -> U
 
   private func applyRecursive(
-    rootObject: OcaBlockContainer,
+    rootObject: any OcaBlockContainer,
     maxDepth: Int,
     depth: Int,
     _ block: BlockApplyFunction<()>
   ) async rethrows {
-    for member in rootObject.members {
+    for member in rootObject.actionObjects {
       try await block(member, rootObject)
-      if let member = member as? OcaBlockContainer, maxDepth == -1 || depth < maxDepth {
+      if let member = member as? any OcaBlockContainer, maxDepth == -1 || depth < maxDepth {
         try await applyRecursive(
           rootObject: member,
           maxDepth: maxDepth,
@@ -205,30 +205,30 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
   public func filterRecursive(
     maxDepth: Int = -1,
-    _ isIncluded: @escaping (OcaRoot, OcaBlockContainer) async throws -> Bool
+    _ isIncluded: @escaping (OcaRoot, any OcaBlockContainer) async throws -> Bool
   ) async rethrows -> [OcaRoot] {
-    var members = [OcaRoot]()
+    var actionObjects = [OcaRoot]()
 
     try await applyRecursive(maxDepth: maxDepth) { member, container in
       if try await isIncluded(member, container) {
-        members.append(member)
+        actionObjects.append(member)
       }
     }
 
-    return members
+    return actionObjects
   }
 
   public func mapRecursive<U: Sendable>(
     maxDepth: Int = -1,
     _ transform: BlockApplyFunction<U>
   ) async rethrows -> [U] {
-    var members = [U]()
+    var actionObjects = [U]()
 
     try await applyRecursive(maxDepth: maxDepth) { member, container in
-      try await members.append(transform(member, container))
+      try await actionObjects.append(transform(member, container))
     }
 
-    return members
+    return actionObjects
   }
 
   func getActionObjectsRecursive(from controller: any OcaController) async throws
@@ -327,18 +327,18 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
   private typealias DatasetApplyFunction<U> = (
     _ member: OcaDataset,
-    _ container: OcaBlockContainer
+    _ container: any OcaBlockContainer
   ) async throws -> U
 
   private func applyRecursive(
-    rootObject: OcaBlockContainer,
+    rootObject: any OcaBlockContainer,
     maxDepth: Int,
     depth: Int,
     _ block: DatasetApplyFunction<()>
   ) async throws {
     for member in try await rootObject.datasetObjects {
       try await block(member, rootObject)
-      if let member = member as? OcaBlockContainer, maxDepth == -1 || depth < maxDepth {
+      if let member = member as? (any OcaBlockContainer), maxDepth == -1 || depth < maxDepth {
         try await applyRecursive(
           rootObject: member,
           maxDepth: maxDepth,
@@ -363,30 +363,30 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
   private func filterRecursive(
     maxDepth: Int = -1,
-    _ isIncluded: @escaping (OcaDataset, OcaBlockContainer) async throws -> Bool
+    _ isIncluded: @escaping (OcaDataset, any OcaBlockContainer) async throws -> Bool
   ) async throws -> [OcaRoot] {
-    var members = [OcaRoot]()
+    var actionObjects = [OcaRoot]()
 
     try await applyRecursive(maxDepth: maxDepth) { member, container in
       if try await isIncluded(member, container) {
-        members.append(member)
+        actionObjects.append(member)
       }
     }
 
-    return members
+    return actionObjects
   }
 
   private func mapRecursive<U: Sendable>(
     maxDepth: Int = -1,
     _ transform: DatasetApplyFunction<U>
   ) async throws -> [U] {
-    var members = [U]()
+    var actionObjects = [U]()
 
     try await applyRecursive(maxDepth: maxDepth) { member, container in
-      try await members.append(transform(member, container))
+      try await actionObjects.append(transform(member, container))
     }
 
-    return members
+    return actionObjects
   }
 
   private func notifySubscribers(
@@ -799,7 +799,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         else { throw Ocp1Error.status(.badFormat) }
       }
 
-      guard let actionObject = members.first(where: { $0.objectNumber == objectNumber }) else {
+      guard let actionObject = actionObjects.first(where: { $0.objectNumber == objectNumber })
+      else {
         if flags.contains(.ignoreUnknownObjectNumbers) { continue }
         else { throw Ocp1Error.objectNotPresent(objectNumber) }
       }
