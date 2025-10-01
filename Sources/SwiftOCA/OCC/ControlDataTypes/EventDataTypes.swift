@@ -370,3 +370,38 @@ public extension OcaPropertyChangedEventData {
     )
   }
 }
+
+public struct OcaSubscription2List: Ocp1ParametersReflectable, Codable, Sendable {
+  public let events: [OcaEvent]
+  public let notificationDeliveryMode: OcaNotificationDeliveryMode
+  public let destinationInformation: OcaNetworkAddress
+
+  public init(
+    events: [OcaEvent],
+    notificationDeliveryMode: OcaNotificationDeliveryMode,
+    destinationInformation: OcaNetworkAddress
+  ) {
+    self.events = events
+    self.notificationDeliveryMode = notificationDeliveryMode
+    self.destinationInformation = destinationInformation
+  }
+}
+
+public struct OcaPropertyChangeSubscription2List: Ocp1ParametersReflectable, Codable, Sendable {
+  public let emitters: [OcaONo]
+  public let properties: [OcaPropertyID]
+  public let notificationDeliveryMode: OcaNotificationDeliveryMode
+  public let destinationInformation: OcaNetworkAddress
+
+  public init(
+    emitters: [OcaONo],
+    properties: [OcaPropertyID],
+    notificationDeliveryMode: OcaNotificationDeliveryMode,
+    destinationInformation: OcaNetworkAddress
+  ) {
+    self.emitters = emitters
+    self.properties = properties
+    self.notificationDeliveryMode = notificationDeliveryMode
+    self.destinationInformation = destinationInformation
+  }
+}
