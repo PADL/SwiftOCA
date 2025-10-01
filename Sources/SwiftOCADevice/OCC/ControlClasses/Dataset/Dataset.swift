@@ -307,7 +307,7 @@ extension OcaDataset {
     guard owner == object.objectNumber else {
       throw Ocp1Error.datasetTargetMismatch
     }
-    try await object.apply(parameterData: blob)
+    try await object.apply(parameterData: blob, controller: controller)
     try await close(handle: handle, controller: controller)
   }
 

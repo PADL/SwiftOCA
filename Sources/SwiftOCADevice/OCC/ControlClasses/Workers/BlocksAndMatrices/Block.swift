@@ -471,7 +471,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
   }
 
-  open func apply(parameterData: OcaLongBlob) async throws {
+  open func apply(parameterData: OcaLongBlob, controller: OcaController?) async throws {
     try await deserializeParameterDataset(from: parameterData)
   }
 
@@ -685,7 +685,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     case OcaMethodID("3.26"):
       let paramData: OcaLongBlob = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await apply(parameterData: paramData)
+      try await apply(parameterData: paramData, controller: controller)
     case OcaMethodID("3.27"):
       let params: SwiftOCA.OcaBlock.ConstructDataSetParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
