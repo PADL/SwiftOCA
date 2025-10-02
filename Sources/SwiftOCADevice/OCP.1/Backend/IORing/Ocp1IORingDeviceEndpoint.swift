@@ -293,7 +293,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
           var controller: ControllerType!
 
           do {
-            let peerAddress = try AnySocketAddress(bytes: messagePdu.name)
+            controller = try self.controller(for: AnySocketAddress(bytes: messagePdu.name))
             try await handle(messagePduData: messagePdu.buffer, from: controller)
           } catch {
             if let controller { await unlockAndRemove(controller: controller) }
