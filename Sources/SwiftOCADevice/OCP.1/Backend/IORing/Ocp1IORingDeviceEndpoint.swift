@@ -306,11 +306,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 
           do {
             let peerAddress = try AnySocketAddress(bytes: messagePdu.name)
-            controller = self.controller(for: peerAddress)
-            let messages = try await controller.decodeMessages(from: messagePdu.buffer)
-            for (message, rrq) in messages {
-              try await controller.handle(for: self, message: message, rrq: rrq)
-            }
+            try await handle(messagePduData: messagePdu.buffer, from: controller)
           } catch {
             if let controller { await unlockAndRemove(controller: controller) }
           }

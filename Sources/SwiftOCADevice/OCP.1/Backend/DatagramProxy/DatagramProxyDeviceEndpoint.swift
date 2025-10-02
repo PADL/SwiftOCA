@@ -65,14 +65,7 @@ public class DatagramProxyDeviceEndpoint<
       for await messagePdu in inputStream {
         let controller = controller(for: messagePdu.0)
         do {
-          let messages = try await controller.decodeMessages(from: messagePdu.1)
-          for (message, rrq) in messages {
-            try await controller.handle(
-              for: self,
-              message: message,
-              rrq: rrq
-            )
-          }
+          try await handle(messagePduData: messagePdu.1, from: controller)
         } catch {
           await unlockAndRemove(controller: controller)
         }

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024 PADL Software Pty Ltd
+// Copyright (c) 2024-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -85,11 +85,11 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
   var lastMessageSentTime = ContinuousClock.recentPast
   weak var endpoint: Ocp1CFStreamDeviceEndpoint?
 
-  var messages: AnyAsyncSequence<ControllerMessage> {
+  var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 
-  private var _messages = AsyncThrowingChannel<ControllerMessage, Error>()
+  private var _messages = AsyncThrowingChannel<Ocp1MessageList, Error>()
   private let socket: _CFSocketWrapper
   let notificationSocket: _CFSocketWrapper
 
@@ -115,11 +115,8 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
     receiveMessageTask = Task { [self] in
       do {
         repeat {
-          try await OcaDevice
-            .receiveMessages { try await Array(socket.read(count: $0)) }
-            .asyncForEach {
-              await _messages.send($0)
-            }
+          try await _messages
+            .send(OcaDevice.receiveMessages { try await Array(socket.read(count: $0)) })
           if Task.isCancelled { break }
         } while true
       } catch {
@@ -214,8 +211,8 @@ actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramS
   private(set) var isOpen: Bool = false
   weak var endpoint: Ocp1CFDatagramDeviceEndpoint?
 
-  var messages: AnyAsyncSequence<ControllerMessage> {
-    AsyncEmptySequence<ControllerMessage>().eraseToAnyAsyncSequence()
+  var messages: AnyAsyncSequence<Ocp1MessageList> {
+    AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
   }
 
   init(

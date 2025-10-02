@@ -204,10 +204,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
             localAddress: messagePdu.localAddress
           )
           do {
-            let messages = try await controller.decodeMessages(from: messagePdu.bytes)
-            for (message, rrq) in messages {
-              try await controller.handle(for: self, message: message, rrq: rrq)
-            }
+            try await handle(messagePduData: messagePdu.bytes, from: controller)
           } catch {
             await unlockAndRemove(controller: controller)
           }

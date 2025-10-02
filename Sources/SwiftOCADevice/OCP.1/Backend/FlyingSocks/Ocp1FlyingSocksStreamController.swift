@@ -40,11 +40,11 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
 
   private let address: String
   private let socket: AsyncSocket
-  private let _messages: AsyncThrowingStream<AsyncSyncSequence<[ControllerMessage]>, Error>
+  private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
   private var socketClosed = false
 
-  var messages: AnyAsyncSequence<ControllerMessage> {
-    _messages.joined().eraseToAnyAsyncSequence()
+  var messages: AnyAsyncSequence<Ocp1MessageList> {
+    _messages.eraseToAnyAsyncSequence()
   }
 
   init(endpoint: Ocp1FlyingSocksStreamDeviceEndpoint, socket: AsyncSocket) throws {
@@ -145,17 +145,14 @@ private extension Ocp1FlyingSocksStreamController {
 }
 
 private extension AsyncThrowingStream
-  where Element == AsyncSyncSequence<[Ocp1ControllerInternal.ControllerMessage]>,
+  where Element == Ocp1MessageList,
   Failure == Error
 {
   static func decodingMessages(
     from bytes: some AsyncBufferedSequence<UInt8>,
     timeout: Duration
   ) -> Self {
-    AsyncThrowingStream<
-      AsyncSyncSequence<[Ocp1ControllerInternal.ControllerMessage]>,
-      Error
-    > {
+    AsyncThrowingStream<Ocp1MessageList, Error> {
       do {
         return try await withThrowingTimeout(of: timeout, clock: .continuous) {
           var iterator = bytes.makeAsyncIterator()
@@ -189,9 +186,9 @@ private extension AsyncThrowingStream
 
 extension OcaDevice {
   static func asyncReceiveMessages(_ read: (Int) async throws -> [UInt8]) async throws
-    -> AsyncSyncSequence<[Ocp1ControllerInternal.ControllerMessage]>
+    -> Ocp1MessageList
   {
-    try await receiveMessages(read).async
+    try await receiveMessages(read)
   }
 }
 

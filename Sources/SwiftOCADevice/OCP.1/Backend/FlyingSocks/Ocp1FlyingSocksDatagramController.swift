@@ -43,8 +43,8 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   private(set) var isOpen: Bool = false
   weak var endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint?
 
-  var messages: AnyAsyncSequence<ControllerMessage> {
-    AsyncEmptySequence<ControllerMessage>().eraseToAnyAsyncSequence()
+  var messages: AnyAsyncSequence<Ocp1MessageList> {
+    AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
   }
 
   init(

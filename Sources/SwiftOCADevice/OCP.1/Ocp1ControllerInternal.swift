@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024 PADL Software Pty Ltd
+// Copyright (c) 2024-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -25,6 +25,34 @@ import Logging
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+struct Ocp1MessageList: Sendable {
+  let responseRequired: Bool
+  let messages: [Ocp1Message]
+
+  private init(responseRequired: Bool, messages: [Ocp1Message]) {
+    self.responseRequired = responseRequired
+    self.messages = messages
+  }
+
+  private init(messageType: OcaMessageType, messages: [Ocp1Message]) {
+    self.init(responseRequired: messageType == .ocaCmdRrq, messages: messages)
+  }
+
+  init(messagePduData data: Data) throws {
+    var messagePdus = [Data]()
+
+    let messageType = try Ocp1Connection.decodeOcp1MessagePdu(from: data, messages: &messagePdus)
+    let messages = try messagePdus.map { messagePdu in
+      try Ocp1Connection.decodeOcp1Message(from: messagePdu, type: messageType)
+    }
+    self.init(messageType: messageType, messages: messages)
+  }
+
+  init(messagePduData data: [UInt8]) throws {
+    try self.init(messagePduData: Data(data))
+  }
+}
+
 /// OcaControllerPrivate should eventually be merged into OcaController once we are ready to
 /// support out-of-tree endpoints
 
@@ -33,15 +61,13 @@ protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, Actor {
 
   nonisolated var connectionPrefix: String { get }
 
-  typealias ControllerMessage = (Ocp1Message, Bool)
-
   /// get an identifier used for logging
   nonisolated var identifier: String { get }
 
   var endpoint: Endpoint? { get }
 
   /// a sequence of (message, isRrq) where isRrq indicates if a response is required
-  var messages: AnyAsyncSequence<ControllerMessage> { get }
+  var messages: AnyAsyncSequence<Ocp1MessageList> { get }
 
   /// last message sent time
   var lastMessageSentTime: ContinuousClock.Instant { get set }
@@ -74,11 +100,10 @@ protocol Ocp1ControllerDatagramSemantics: Actor {
 
 extension Ocp1ControllerInternal {
   /// handle a single message
-  func handle<Endpoint: OcaDeviceEndpointPrivate>(
+  private func _handle<Endpoint: OcaDeviceEndpointPrivate>(
     for endpoint: Endpoint,
-    message: Ocp1Message,
-    rrq: Bool
-  ) async throws {
+    message: Ocp1Message
+  ) async throws -> Ocp1Response? {
     let controller = self as! Endpoint.ControllerType
     var response: Ocp1Response?
 
@@ -115,11 +140,24 @@ extension Ocp1ControllerInternal {
       throw Ocp1Error.invalidMessageType
     }
 
-    if rrq, let response {
-      try await sendMessage(response, type: .ocaRsp)
-    }
     if let response {
       endpoint.logger.response(response, on: controller)
+    }
+
+    return response
+  }
+
+  /// handle a list of messages
+  func handle(
+    for endpoint: some OcaDeviceEndpointPrivate,
+    messageList: Ocp1MessageList
+  ) async throws {
+    let responses = try await messageList.messages.asyncMap { message in
+      try await _handle(for: endpoint, message: message)
+    }
+
+    if messageList.responseRequired {
+      try await sendMessages(responses.compactMap { $0 }, type: .ocaRsp)
     }
   }
 
@@ -130,12 +168,8 @@ extension Ocp1ControllerInternal {
     endpoint.logger.info("controller added", controller: controller)
     await endpoint.add(controller: controller)
     do {
-      for try await (message, rrq) in messages {
-        try await handle(
-          for: endpoint,
-          message: message,
-          rrq: rrq
-        )
+      for try await messageList in messages {
+        try await handle(for: endpoint, messageList: messageList)
       }
     } catch Ocp1Error.notConnected {
     } catch {
@@ -190,7 +224,7 @@ extension Ocp1ControllerInternal {
     }
   }
 
-  func decodeMessages(from messagePduData: [UInt8]) throws -> [ControllerMessage] {
+  func decodeMessages(from messagePduData: [UInt8]) throws -> Ocp1MessageList {
     guard messagePduData.count >= Ocp1Connection.MinimumPduSize,
           messagePduData[0] == Ocp1SyncValue
     else {
@@ -201,16 +235,7 @@ extension Ocp1ControllerInternal {
       throw Ocp1Error.invalidPduSize
     }
 
-    var messagePdus = [Data]()
-    let messageType = try Ocp1Connection.decodeOcp1MessagePdu(
-      from: Data(messagePduData),
-      messages: &messagePdus
-    )
-    let messages = try messagePdus.map {
-      try Ocp1Connection.decodeOcp1Message(from: $0, type: messageType)
-    }
-
-    return messages.map { ($0, messageType == .ocaCmdRrq) }
+    return try Ocp1MessageList(messagePduData: messagePduData)
   }
 
   func sendMessage(
@@ -236,9 +261,7 @@ extension Ocp1ControllerInternal {
 extension OcaDevice {
   typealias ReadCallback = @Sendable (Int) async throws -> [UInt8]
 
-  static func receiveMessages(_ read: ReadCallback) async throws
-    -> [Ocp1ControllerInternal.ControllerMessage]
-  {
+  static func receiveMessages(_ read: ReadCallback) async throws -> Ocp1MessageList {
     var messagePduData = try await read(Ocp1Connection.MinimumPduSize)
 
     guard messagePduData.count != 0 else {
@@ -260,16 +283,7 @@ extension OcaDevice {
     let bytesLeft = Int(pduSize) - (Ocp1Connection.MinimumPduSize - 1)
     messagePduData += try await read(bytesLeft)
 
-    var messagePdus = [Data]()
-    let messageType = try Ocp1Connection.decodeOcp1MessagePdu(
-      from: Data(messagePduData),
-      messages: &messagePdus
-    )
-    let messages = try messagePdus.map {
-      try Ocp1Connection.decodeOcp1Message(from: $0, type: messageType)
-    }
-
-    return messages.map { ($0, messageType == .ocaCmdRrq) }
+    return try Ocp1MessageList(messagePduData: messagePduData)
   }
 }
 
