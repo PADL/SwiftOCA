@@ -66,7 +66,7 @@ protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, Actor {
 
   var endpoint: Endpoint? { get }
 
-  /// a sequence of (message, isRrq) where isRrq indicates if a response is required
+  /// a sequence of message lists, indicating whether a response is required
   var messages: AnyAsyncSequence<Ocp1MessageList> { get }
 
   /// last message sent time
@@ -95,6 +95,7 @@ protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, Actor {
 /// a Keep-alive message from that Controller.
 protocol Ocp1ControllerDatagramSemantics: Actor {
   var isOpen: Bool { get }
+
   func didOpen()
 }
 
