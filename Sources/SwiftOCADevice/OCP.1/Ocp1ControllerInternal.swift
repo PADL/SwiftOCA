@@ -153,7 +153,7 @@ extension Ocp1ControllerInternal {
     messageList: Ocp1MessageList
   ) async throws {
     for message in messageList.messages {
-      endpoint.traceMessage(message, direction: .rx)
+      endpoint.traceMessage(message, controller: self, direction: .rx)
     }
 
     let responses = try await messageList.messages.asyncMap { message in
@@ -163,7 +163,7 @@ extension Ocp1ControllerInternal {
     if messageList.responseRequired {
       let validResponses = responses.compactMap { $0 }
       for response in validResponses {
-        endpoint.traceMessage(response, direction: .tx)
+        endpoint.traceMessage(response, controller: self, direction: .tx)
       }
       try await sendMessages(validResponses, type: .ocaRsp)
     }
