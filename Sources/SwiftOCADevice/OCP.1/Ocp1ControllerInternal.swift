@@ -247,13 +247,6 @@ extension Ocp1ControllerInternal {
     return try Ocp1MessageList(messagePduData: messagePduData)
   }
 
-  func sendMessage(
-    _ message: Ocp1Message,
-    type messageType: OcaMessageType
-  ) async throws {
-    try await sendMessages([message], type: messageType)
-  }
-
   func sendMessages(
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType

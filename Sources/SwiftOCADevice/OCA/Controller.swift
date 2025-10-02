@@ -43,8 +43,17 @@ public protocol OcaController: Actor {
     subscriber: OcaMethod
   ) async throws
 
-  func sendMessage(
-    _ message: Ocp1Message,
+  func sendMessages(
+    _ messages: [Ocp1Message],
     type messageType: OcaMessageType
   ) async throws
+}
+
+public extension OcaController {
+  func sendMessage(
+    _ messages: Ocp1Message,
+    type messageType: OcaMessageType
+  ) async throws {
+    try await sendMessages([messages], type: messageType)
+  }
 }
