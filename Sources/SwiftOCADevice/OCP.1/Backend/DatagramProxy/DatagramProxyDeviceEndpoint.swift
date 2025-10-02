@@ -41,6 +41,7 @@ public class DatagramProxyDeviceEndpoint<
   let timeout: Duration
   let device: OcaDevice
   let logger = Logger(label: "com.padl.SwiftOCADevice.DatagramProxyDeviceEndpoint")
+  nonisolated(unsafe) var enableMessageTracing = false
   let outputStream: AsyncStream<PeerMessagePDU>.Continuation
 
   private var _controllers = [T: ControllerType]()

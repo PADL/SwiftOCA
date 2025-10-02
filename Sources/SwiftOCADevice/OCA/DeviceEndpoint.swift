@@ -26,18 +26,30 @@ public protocol OcaDeviceEndpoint: AnyObject, Sendable {
   var controllers: [OcaController] { get async }
 }
 
+enum OcaMessageDirection {
+  case tx
+  case rx
+}
+
 protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
   associatedtype ControllerType: Ocp1ControllerInternal
 
   var device: OcaDevice { get }
-  var logger: Logger { get }
   var timeout: Duration { get }
+
+  nonisolated var logger: Logger { get }
+  nonisolated var enableMessageTracing: Bool { get }
 
   func add(controller: ControllerType) async
   func remove(controller: ControllerType) async
 }
 
 extension OcaDeviceEndpointPrivate {
+  nonisolated func traceMessage(_ message: some Any, direction: OcaMessageDirection) {
+    guard enableMessageTracing else { return }
+    logger.trace("message \(direction): \(message)")
+  }
+
   func unlockAndRemove(controller: ControllerType) async {
     Task { await device.eventDelegate?.onControllerExpiry(controller) }
     Task {

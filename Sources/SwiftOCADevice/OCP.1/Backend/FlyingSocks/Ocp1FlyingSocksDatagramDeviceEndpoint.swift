@@ -54,6 +54,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   let timeout: Duration
   let device: OcaDevice
   let logger: Logger
+  nonisolated(unsafe) var enableMessageTracing = false
 
   private(set) var socket: Socket?
   private var asyncSocket: AsyncSocket?

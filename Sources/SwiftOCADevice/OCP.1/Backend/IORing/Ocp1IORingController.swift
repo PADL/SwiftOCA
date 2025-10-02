@@ -140,7 +140,6 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
   }
 
   func sendOcp1EncodedData(_ data: Data) async throws {
-    await endpoint?.traceMessage(data, direction: .tx)
     _ = try await socket.write(
       [UInt8](data),
       count: data.count,
@@ -149,7 +148,6 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
   }
 
   func sendOcp1EncodedMessage(_ messagePdu: Message) async throws {
-    await endpoint?.traceMessage(messagePdu, direction: .tx)
     try await notificationSocket.sendMessage(messagePdu)
   }
 

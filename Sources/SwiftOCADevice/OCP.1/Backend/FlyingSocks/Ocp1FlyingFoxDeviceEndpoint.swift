@@ -41,6 +41,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   let timeout: Duration
   let device: OcaDevice
   let logger: Logger
+  nonisolated(unsafe) var enableMessageTracing = false
 
   private var httpServer: HTTPServer!
   private let address: sockaddr_storage

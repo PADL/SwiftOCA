@@ -52,6 +52,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
   let timeout: Duration
   let device: OcaDevice
   let logger: Logger
+  nonisolated(unsafe) var enableMessageTracing = false
 
   private var _controllers = [Ocp1FlyingSocksStreamController]()
   #if canImport(dnssd)
