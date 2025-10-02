@@ -28,6 +28,17 @@ private extension Ocp1ControllerInternal {
   }
 }
 
+extension OcaDeviceEndpointPrivate {
+  nonisolated func traceMessage(
+    _ message: some Any,
+    controller: any Ocp1ControllerInternal,
+    direction: OcaMessageDirection
+  ) {
+    guard enableMessageTracing else { return }
+    logger.trace("message \(direction): \(message)", metadata: controller.loggerMetadata)
+  }
+}
+
 extension Logger {
   func info(_ message: String, controller: any Ocp1ControllerInternal) {
     info("\(message)", metadata: controller.loggerMetadata)

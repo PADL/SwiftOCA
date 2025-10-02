@@ -45,11 +45,6 @@ protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
 }
 
 extension OcaDeviceEndpointPrivate {
-  nonisolated func traceMessage(_ message: some Any, direction: OcaMessageDirection) {
-    guard enableMessageTracing else { return }
-    logger.trace("message \(direction): \(message)")
-  }
-
   func unlockAndRemove(controller: ControllerType) async {
     Task { await device.eventDelegate?.onControllerExpiry(controller) }
     Task {
