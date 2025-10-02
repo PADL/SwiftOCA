@@ -238,10 +238,7 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
         for try await messagePdu in socket!.receivedMessages {
           let controller = controller(for: AnySocketAddress(messagePdu.0))
           do {
-            let messages = try await controller.decodeMessages(from: Array(messagePdu.1))
-            for (message, rrq) in messages {
-              try await controller.handle(for: self, message: message, rrq: rrq)
-            }
+            try await handle(messagePduData: messagePdu.1, from: controller)
           } catch {
             await unlockAndRemove(controller: controller)
           }

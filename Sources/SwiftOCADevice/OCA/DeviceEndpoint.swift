@@ -50,4 +50,13 @@ extension OcaDeviceEndpointPrivate {
     await device.unlockAll(controller: controller)
     await remove(controller: controller)
   }
+
+  func handle(messagePduData: [UInt8], from controller: ControllerType) async throws {
+    let messageList = try await controller.decodeMessages(from: messagePduData)
+    try await controller.handle(for: self, messageList: messageList)
+  }
+
+  func handle(messagePduData: Data, from controller: ControllerType) async throws {
+    try await handle(messagePduData: Array(messagePduData), from: controller)
+  }
 }

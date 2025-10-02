@@ -27,23 +27,14 @@ import Foundation
 import SwiftOCA
 
 fileprivate extension AsyncStream where Element == WSMessage {
-  var ocp1DecodedMessages: AnyAsyncSequence<Ocp1ControllerInternal.ControllerMessage> {
-    flatMap {
+  var ocp1DecodedMessages: AnyAsyncSequence<Ocp1MessageList> {
+    map {
       // TODO: handle OCP.1 PDUs split over multiple frames
       guard case let .data(data) = $0 else {
         throw Ocp1Error.invalidMessageType
       }
 
-      var messagePdus = [Data]()
-      let messageType = try Ocp1Connection.decodeOcp1MessagePdu(
-        from: data,
-        messages: &messagePdus
-      )
-      let messages = try messagePdus.map {
-        try Ocp1Connection.decodeOcp1Message(from: $0, type: messageType)
-      }
-
-      return messages.map { ($0, messageType == .ocaCmdRrq) }.async
+      return try Ocp1MessageList(messagePduData: data)
     }.eraseToAnyAsyncSequence()
   }
 }
@@ -63,7 +54,7 @@ actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
   var lastMessageReceivedTime = ContinuousClock.recentPast
   var lastMessageSentTime = ContinuousClock.recentPast
 
-  var messages: AsyncExtensions.AnyAsyncSequence<ControllerMessage> {
+  var messages: AsyncExtensions.AnyAsyncSequence<Ocp1MessageList> {
     inputStream.ocp1DecodedMessages.eraseToAnyAsyncSequence()
   }
 

@@ -38,23 +38,9 @@ actor OcaLocalController: Ocp1ControllerInternal {
     self.endpoint = endpoint
   }
 
-  var messages: AnyAsyncSequence<ControllerMessage> {
-    endpoint!.requestChannel.flatMap { data in
-      var messagePdus = [Data]()
-
-      let messageType = try Ocp1Connection.decodeOcp1MessagePdu(
-        from: data,
-        messages: &messagePdus
-      )
-
-      return try messagePdus.map { messagePdu in
-        let message = try Ocp1Connection.decodeOcp1Message(
-          from: messagePdu,
-          type: messageType
-        )
-
-        return (message, messageType == .ocaCmdRrq)
-      }.async
+  var messages: AnyAsyncSequence<Ocp1MessageList> {
+    endpoint!.requestChannel.map { data in
+      try Ocp1MessageList(messagePduData: data)
     }.eraseToAnyAsyncSequence()
   }
 

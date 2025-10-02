@@ -76,11 +76,11 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
   var lastMessageSentTime = ContinuousClock.recentPast
   weak var endpoint: Ocp1IORingStreamDeviceEndpoint?
 
-  var messages: AnyAsyncSequence<ControllerMessage> {
+  var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 
-  private var _messages = AsyncThrowingChannel<ControllerMessage, Error>()
+  private var _messages = AsyncThrowingChannel<Ocp1MessageList, Error>()
   private let socket: Socket
   let notificationSocket: Socket
 
@@ -107,12 +107,10 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     receiveMessageTask = Task { [self] in
       do {
         repeat {
-          try await OcaDevice
-            .receiveMessages { try await socket.read(count: $0, awaitingAllRead: true) }
-            .asyncForEach {
-              await self.endpoint?.traceMessage($0.0, direction: .rx)
-              await _messages.send($0)
-            }
+          try await _messages.send(OcaDevice.receiveMessages { try await socket.read(
+            count: $0,
+            awaitingAllRead: true
+          ) })
           if Task.isCancelled { break }
         } while true
       } catch {
@@ -216,8 +214,8 @@ actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerD
   private(set) var isOpen: Bool = false
   weak var endpoint: Ocp1IORingDatagramDeviceEndpoint?
 
-  var messages: AnyAsyncSequence<ControllerMessage> {
-    AsyncEmptySequence<ControllerMessage>().eraseToAnyAsyncSequence()
+  var messages: AnyAsyncSequence<Ocp1MessageList> {
+    AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
   }
 
   init(

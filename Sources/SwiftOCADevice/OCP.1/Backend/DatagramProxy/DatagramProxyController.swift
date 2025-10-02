@@ -38,8 +38,8 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
   private(set) var isOpen: Bool = false
   weak var endpoint: DatagramProxyDeviceEndpoint<T>?
 
-  var messages: AnyAsyncSequence<ControllerMessage> {
-    AsyncEmptySequence<ControllerMessage>().eraseToAnyAsyncSequence()
+  var messages: AnyAsyncSequence<Ocp1MessageList> {
+    AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
   }
 
   init(with peerID: T, endpoint: DatagramProxyDeviceEndpoint<T>) {
