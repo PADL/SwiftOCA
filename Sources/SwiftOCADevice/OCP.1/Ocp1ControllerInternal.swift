@@ -162,11 +162,11 @@ extension Ocp1ControllerInternal {
     }
 
     if messageList.responseRequired {
-      let validResponses = responses.compactMap { $0 }
-      for response in validResponses {
+      let responses = responses.compactMap { $0 }
+      for response in responses {
         endpoint.traceMessage(response, controller: self, direction: .tx)
       }
-      try await sendMessages(validResponses, type: .ocaRsp)
+      try await sendMessages(responses, type: .ocaRsp)
     }
   }
 
