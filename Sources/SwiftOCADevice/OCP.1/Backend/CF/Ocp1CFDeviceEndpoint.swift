@@ -49,6 +49,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   let timeout: Duration
   let device: OcaDevice
   let logger: Logger
+  nonisolated(unsafe) var enableMessageTracing = false
 
   var socket: _CFSocketWrapper?
   #if canImport(dnssd)

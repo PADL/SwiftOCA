@@ -49,7 +49,7 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   let device: OcaDevice
   let logger: Logger
   let ring: IORing
-  var enableMessageTracing = false
+  nonisolated(unsafe) var enableMessageTracing = false
 
   var socket: Socket?
   #if canImport(dnssd)
@@ -131,16 +131,6 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 
   public func setMessageTracingEnabled(to value: Bool) {
     enableMessageTracing = value
-  }
-
-  enum MessageDirection {
-    case tx
-    case rx
-  }
-
-  func traceMessage(_ message: some Any, direction: MessageDirection) {
-    guard enableMessageTracing else { return }
-    logger.trace("message \(direction): \(message)")
   }
 
   deinit {
@@ -302,8 +292,6 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
         for try await messagePdu in messagePdus {
           var controller: ControllerType!
 
-          traceMessage(messagePdu, direction: .rx)
-
           do {
             let peerAddress = try AnySocketAddress(bytes: messagePdu.name)
             try await handle(messagePduData: messagePdu.buffer, from: controller)
@@ -346,7 +334,6 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     guard let socket else {
       throw Ocp1Error.notConnected
     }
-    traceMessage(message, direction: .tx)
     try await socket.sendMessage(message)
   }
 

@@ -31,6 +31,7 @@ public final class OcaLocalDeviceEndpoint: OcaDeviceEndpointPrivate {
   let timeout: Duration = .zero
   let device: OcaDevice
   let logger: Logger
+  nonisolated(unsafe) var enableMessageTracing = false
 
   public var controllers: [OcaController] {
     [controller]
