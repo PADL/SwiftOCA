@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import SwiftUI
 private struct ShowProgressIfWaitingViewModifier: ViewModifier {
   private let wrappedValue: any OcaPropertyRepresentable
   @State
-  private var currentValue: Result<Any, Error>?
+  private var updateToggle = false
 
   init(wrappedValue: any OcaPropertyRepresentable) {
     self.wrappedValue = wrappedValue
@@ -28,21 +28,16 @@ private struct ShowProgressIfWaitingViewModifier: ViewModifier {
 
   func body(content: Content) -> some View {
     Group {
-      if let currentValue {
-        switch currentValue {
-        case .success:
-          content
-        case .failure:
-          content
-        }
+      if wrappedValue.hasValueOrError {
+        content
       } else {
         ProgressView()
       }
     }
     .task {
       do {
-        for try await values in wrappedValue.async {
-          currentValue = values
+        for try await _ in wrappedValue.async {
+          updateToggle.toggle()
         }
       } catch {}
     }
