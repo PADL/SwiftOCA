@@ -138,25 +138,12 @@ public struct OcaBoundedProperty<
     storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
   ) -> PropertyValue {
     get {
-      #if canImport(Darwin)
-      object.access(keyPath: wrappedKeyPath)
-      object[keyPath: storageKeyPath]._storage._registerObservable(
-        _enclosingInstance: object,
-        wrapped: wrappedKeyPath
-      )
-      #endif
-      return object[keyPath: storageKeyPath]._storage
+      object[keyPath: storageKeyPath]._storage
         ._get(
           _enclosingInstance: object
         )
     }
     set {
-      #if canImport(Darwin)
-      object[keyPath: storageKeyPath]._storage._registerObservable(
-        _enclosingInstance: object,
-        wrapped: wrappedKeyPath
-      )
-      #endif
       object[keyPath: storageKeyPath]._storage._set(
         _enclosingInstance: object,
         newValue

@@ -52,6 +52,6 @@ public struct OcaMuteView: OcaView {
         activeColor: .red
       ))
       .padding()
-      .showProgressIfWaiting(object.state)
+      .showProgressIfWaiting(object.$state)
   }
 }

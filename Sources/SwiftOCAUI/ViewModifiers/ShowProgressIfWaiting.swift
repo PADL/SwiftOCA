@@ -17,24 +17,40 @@
 import SwiftOCA
 import SwiftUI
 
-private struct ShowProgressIfWaitingViewModifier<T: Codable>: ViewModifier {
-  let state: OcaProperty<T>.PropertyValue
+private struct ShowProgressIfWaitingViewModifier: ViewModifier {
+  private let wrappedValue: any OcaPropertyRepresentable
+  @State
+  private var currentValue: Result<Any, Error>?
 
-  init(_ state: OcaProperty<T>.PropertyValue) {
-    self.state = state
+  init(wrappedValue: any OcaPropertyRepresentable) {
+    self.wrappedValue = wrappedValue
   }
 
   func body(content: Content) -> some View {
-    if state.hasValueOrError {
-      content
-    } else {
-      ProgressView()
+    Group {
+      if let currentValue {
+        switch currentValue {
+        case .success:
+          content
+        case .failure:
+          content
+        }
+      } else {
+        ProgressView()
+      }
+    }
+    .task {
+      do {
+        for try await values in wrappedValue.async {
+          currentValue = values
+        }
+      } catch {}
     }
   }
 }
 
 public extension View {
-  func showProgressIfWaiting<T: Codable>(_ state: OcaProperty<T>.PropertyValue) -> some View {
-    modifier(ShowProgressIfWaitingViewModifier<T>(state))
+  func showProgressIfWaiting(_ property: any OcaPropertyRepresentable) -> some View {
+    modifier(ShowProgressIfWaitingViewModifier(wrappedValue: property))
   }
 }

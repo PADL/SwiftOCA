@@ -33,7 +33,7 @@ public struct OcaGenericBasicSensorView<T: Codable & Comparable>: OcaView {
 
   public var body: some View {
     Text(String(describing: object.reading))
-      .showProgressIfWaiting(object.reading)
+      .showProgressIfWaiting(object.$reading)
   }
 }
 
@@ -53,6 +53,6 @@ public struct OcaBooleanSensorView: OcaView {
 
   public var body: some View {
     Text(String(describing: object.reading))
-      .showProgressIfWaiting(object.reading)
+      .showProgressIfWaiting(object.$reading)
   }
 }

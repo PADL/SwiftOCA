@@ -68,6 +68,6 @@ public struct OcaLevelSensorView: OcaView {
 
   public var body: some View {
     OcaScaledGaugeView(value: object.value)
-      .showProgressIfWaiting(object.reading)
+      .showProgressIfWaiting(object.$reading)
   }
 }

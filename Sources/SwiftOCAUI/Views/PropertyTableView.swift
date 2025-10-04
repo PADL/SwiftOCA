@@ -17,20 +17,57 @@
 import SwiftOCA
 import SwiftUI
 
-struct Property: Identifiable {
+private struct Property: Identifiable {
   typealias ID = Int
 
   var name: String
   var keyPath: AnyKeyPath
-  var value: any OcaPropertyRepresentable
 
   var id: ID {
-    value.propertyIDs.hashValue
+    keyPath.hashValue
   }
 
-  var idString: String {
+  fileprivate func getValue(from object: OcaRoot) -> any OcaPropertyRepresentable {
+    object[keyPath: keyPath] as! any OcaPropertyRepresentable
+  }
+
+  fileprivate func getIdString(from object: OcaRoot) -> String {
     // FIXME: breakout vector properties
-    value.propertyIDs.map { String(describing: $0) }.joined(separator: ", ")
+    getValue(from: object).propertyIDs.map { String(describing: $0) }.joined(separator: ", ")
+  }
+}
+
+private struct PropertyValueView: View {
+  private let property: Property
+  private let wrappedValue: any OcaPropertyRepresentable
+  @State
+  private var currentValue: Result<Any, Error>?
+
+  init(property: Property, object: OcaRoot) {
+    self.property = property
+    wrappedValue = property.getValue(from: object)
+  }
+
+  var body: some View {
+    Group {
+      if let currentValue {
+        switch currentValue {
+        case let .success(value):
+          Text("\(value)")
+        case let .failure(error):
+          Text("Error: \(error)").foregroundStyle(.tertiary)
+        }
+      } else {
+        ProgressView()
+      }
+    }
+    .task {
+      do {
+        for try await values in wrappedValue.async {
+          currentValue = values
+        }
+      } catch {}
+    }
   }
 }
 
@@ -53,30 +90,27 @@ struct OcaPropertyTableView: OcaView {
       Text(object.navigationLabel).font(.title).padding()
       Table(of: Property.self) {
         TableColumn("Name", value: \.name)
-        TableColumn("ID", value: \.idString)
-        TableColumn("Value") {
-          if $0.value.hasValueOrError {
-            Text($0.value.description).help($0.value.description)
-          } else {
-            ProgressView()
-          }
+        TableColumn("ID") { property in
+          Text(property.getIdString(from: object))
+        }
+        TableColumn("Value") { property in
+          PropertyValueView(property: property, object: object)
         }
       } rows: {
-        let allPropertyKeyPaths: [Property] = object.allPropertyKeyPathsUncached.map {
+        let allProperties: [Property] = object.allPropertyKeyPathsUncached.map {
           propertyName, propertyKeyPath in
           Property(
             name: propertyName,
-            keyPath: propertyKeyPath,
-            value: object[keyPath: propertyKeyPath] as! any OcaPropertyRepresentable
+            keyPath: propertyKeyPath
           )
         }.sorted {
-          $0.value.propertyIDs[0] < $1.value.propertyIDs[0]
+          $0.getValue(from: object).propertyIDs[0] < $1.getValue(from: object).propertyIDs[0]
         }
-        ForEach(allPropertyKeyPaths) { property in
+        ForEach(allProperties) { property in
           TableRow(property)
         }
       }.task {
-        for property in object.allPropertyKeyPaths {
+        for property in await object.allPropertyKeyPaths {
           await (object[keyPath: property.value] as! any OcaPropertyRepresentable)
             .subscribe(object)
         }

@@ -29,9 +29,6 @@ import Glibc
 import Darwin
 #endif
 import Logging
-#if canImport(Darwin)
-import Observation
-#endif
 
 package let Ocp1MaximumDatagramPduSize = 1500
 
@@ -267,9 +264,6 @@ open class Ocp1Connection: Observable, CustomStringConvertible {
   var subscriptions = [OcaEvent: EventSubscriptions]()
   var logger = Logger(label: "com.padl.SwiftOCA")
   var connectionID = 0
-  #if canImport(Darwin)
-  let _$observationRegistrar = Observation.ObservationRegistrar()
-  #endif
 
   private var nextCommandHandle = CommandHandleBase
   private var continuousClockReference = ContinuousClockReference()

@@ -20,9 +20,6 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
-#if canImport(Darwin)
-import Observation
-#endif
 
 open class OcaRoot: CustomStringConvertible, @unchecked
 Sendable,
@@ -33,9 +30,6 @@ Sendable,
   public internal(set) weak var connectionDelegate: Ocp1Connection?
 
   fileprivate var subscriptionCancellable: Ocp1Connection.SubscriptionCancellable?
-  #if canImport(Darwin)
-  fileprivate let _$observationRegistrar = Observation.ObservationRegistrar()
-  #endif
 
   // 1.1
   open class var classID: OcaClassID { OcaClassID("1") }
@@ -217,21 +211,6 @@ extension _OcaObjectKeyPathRepresentable {
       }
     }
   }
-
-  #if canImport(Darwin)
-  nonisolated func access(
-    keyPath: KeyPath<Self, some Any>
-  ) {
-    _$observationRegistrar.access(self, keyPath: keyPath)
-  }
-
-  nonisolated func withMutation<T>(
-    keyPath: KeyPath<Self, some Any>,
-    _ mutation: () throws -> T
-  ) rethrows -> T {
-    try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
-  }
-  #endif
 }
 
 public extension OcaRoot {

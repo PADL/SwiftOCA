@@ -24,9 +24,6 @@ import Foundation
 #endif
 import Logging
 import SystemPackage
-#if canImport(Darwin)
-import Observation
-#endif
 
 private extension Ocp1Error {
   var ocp1ConnectionState: Ocp1ConnectionState? {
@@ -108,25 +105,6 @@ private extension Ocp1ConnectionState {
   }
 }
 
-// MARK: - connection state observation
-
-#if canImport(Darwin)
-extension Ocp1Connection {
-  nonisolated func access(
-    keyPath: KeyPath<Ocp1Connection, some Any>
-  ) {
-    _$observationRegistrar.access(self, keyPath: keyPath)
-  }
-
-  nonisolated func withMutation<T>(
-    keyPath: KeyPath<Ocp1Connection, some Any>,
-    _ mutation: () throws -> T
-  ) rethrows -> T {
-    try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
-  }
-}
-#endif
-
 // MARK: - monitor task management
 
 extension Ocp1Connection {
@@ -185,13 +163,7 @@ extension Ocp1Connection {
   /// wrapper to update the connection state, logging the old and new connection states
   private func _updateConnectionState(_ connectionState: Ocp1ConnectionState) {
     logger.trace("_updateConnectionState: \(currentConnectionState) => \(connectionState)")
-    #if canImport(Darwin)
-    withMutation(keyPath: \.currentConnectionState) {
-      _connectionState.send(connectionState)
-    }
-    #else
     _connectionState.send(connectionState)
-    #endif
   }
 
   /// update the device connection state, called from the connection (for
@@ -297,10 +269,7 @@ extension Ocp1Connection {
   }
 
   public var currentConnectionState: Ocp1ConnectionState {
-    #if canImport(Darwin)
-    access(keyPath: \.currentConnectionState)
-    #endif
-    return _connectionState.value
+    _connectionState.value
   }
 
   public var isConnected: Bool {

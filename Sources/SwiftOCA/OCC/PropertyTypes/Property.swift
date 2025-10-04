@@ -18,9 +18,6 @@ import AsyncAlgorithms
 import AsyncExtensions
 import Atomics
 import Foundation
-#if canImport(Darwin)
-import Observation
-#endif
 
 public struct OcaPropertyResolutionFlags: OptionSet, Sendable {
   public typealias RawValue = UInt32
@@ -164,21 +161,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
   }
 
-  #if canImport(Darwin)
-  typealias ObservableSendHelper = @Sendable (_: OcaRoot?, _: PropertyValue)
-    -> ()
-
-  private(set) var _observableSendHelper = ManagedCriticalState<ObservableSendHelper?>(nil)
-  #endif
-
-  @Sendable
   func _send(_ object: OcaRoot?, _ value: PropertyValue) {
-    #if canImport(Darwin)
-    if let observableSendHelper = _observableSendHelper.criticalState {
-      observableSendHelper(object, value)
-      return
-    }
-    #endif
     subject.send(value)
   }
 
@@ -259,47 +242,16 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
   }
 
-  #if canImport(Darwin)
-  mutating func _registerObservable<T: OcaRoot>(
-    _enclosingInstance object: T,
-    wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>
-  ) {
-    let observableSendHelper: ObservableSendHelper = { @Sendable [subject] object, newValue in
-      guard let object else { return }
-      (object as! T).withMutation(keyPath: wrappedKeyPath) {
-        subject.send(newValue)
-      }
-    }
-    _observableSendHelper.withCriticalRegion {
-      guard $0 == nil else { return }
-      $0 = observableSendHelper
-    }
-  }
-  #endif
-
   public static subscript<T: OcaRoot>(
     _enclosingInstance object: T,
     wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>,
     storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
   ) -> PropertyValue {
     get {
-      #if canImport(Darwin)
-      object.access(keyPath: wrappedKeyPath)
-      object[keyPath: storageKeyPath]._registerObservable(
-        _enclosingInstance: object,
-        wrapped: wrappedKeyPath
-      )
-      #endif
-      return object[keyPath: storageKeyPath]
+      object[keyPath: storageKeyPath]
         ._get(_enclosingInstance: object)
     }
     set {
-      #if canImport(Darwin)
-      object[keyPath: storageKeyPath]._registerObservable(
-        _enclosingInstance: object,
-        wrapped: wrappedKeyPath
-      )
-      #endif
       object[keyPath: storageKeyPath]
         ._set(_enclosingInstance: object, newValue)
     }

@@ -33,6 +33,6 @@ public struct OcaFloat32ActuatorView: OcaView {
 
   public var body: some View {
     OcaLogSliderView(value: object.binding(for: object.$setting).value)
-      .showProgressIfWaiting(object.setting)
+      .showProgressIfWaiting(object.$setting)
   }
 }

@@ -33,6 +33,6 @@ public struct OcaGainView: OcaView {
 
   public var body: some View {
     OcaLogSliderView(value: object.binding(for: object.$gain).value)
-      .showProgressIfWaiting(object.gain)
+      .showProgressIfWaiting(object.$gain)
   }
 }
