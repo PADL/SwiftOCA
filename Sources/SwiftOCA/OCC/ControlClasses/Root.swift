@@ -511,6 +511,32 @@ public protocol OcaOwnable: OcaRoot {
   func _getOwner(flags: OcaPropertyResolutionFlags) async throws -> OcaONo
 }
 
+public extension OcaOwnable {
+  var objectNumberPath: OcaONoPath {
+    get async throws {
+      try await path.1
+    }
+  }
+
+  var objectNumberPathString: String {
+    get async throws {
+      try await "/" + objectNumberPath.map(\.description).joined(separator: "/")
+    }
+  }
+
+  var rolePath: OcaNamePath {
+    get async throws {
+      try await path.0
+    }
+  }
+
+  var rolePathString: String {
+    get async throws {
+      try await "/" + rolePath.joined(separator: "/")
+    }
+  }
+}
+
 protocol OcaOwnablePrivate: OcaOwnable {
   func _set(owner: OcaONo)
 }
