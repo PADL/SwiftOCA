@@ -27,6 +27,13 @@ A sample SwiftUI view library is also included, and a Flutter bridge is under de
 Example use to walk device tree:
 
 ```swift
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#endif
+import SwiftOCA
+
 let connection = try await Ocp1TCPConnection(deviceAddress: makeLoopbackAddress())
 try await connection.connect()
 
