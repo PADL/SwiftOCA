@@ -207,9 +207,15 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     )
 
     do {
-      if address.family == AF_INET || address.family == AF_INET6 {
+      switch address.family {
+      case sa_family_t(AF_INET6):
+        try socket.setIPv6Only()
+        fallthrough
+      case sa_family_t(AF_INET):
         try socket.setReuseAddr()
         try socket.setTcpNoDelay()
+      default:
+        break
       }
       try socket.bind(to: address)
       try socket.listen()
