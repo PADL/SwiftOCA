@@ -336,7 +336,7 @@ Sendable, CustomStringConvertible, Hashable {
   }
 
   public func send(data: Data, to address: (any SocketAddress)? = nil) throws {
-    let result = CFSocketSendData(cfSocket, address?.asData().cfData, data.cfData, 0)
+    let result = CFSocketSendData(cfSocket, address?.data.cfData, data.cfData, 0)
     switch result {
     case .success:
       break
@@ -493,11 +493,13 @@ fileprivate extension CFRunLoopMode {
 #endif
 
 package extension SocketAddress {
-  func asData() -> Data {
+  var data: Data {
     withSockAddr { sa in
-      withUnsafeBytes(of: sa.pointee) {
-        Data(bytes: $0.baseAddress!, count: $0.count)
-      }
+      let buffer = UnsafeBufferPointer(
+        start: UnsafePointer<UInt8>(OpaquePointer(sa)),
+        count: Int(self.size)
+      )
+      return Data(buffer)
     }
   }
 }
@@ -550,13 +552,13 @@ package extension CFSocket {
 
   func set(address: any SocketAddress) throws {
     try CFSocket.throwingErrno {
-      CFSocketSetAddress(self, address.asData().cfData)
+      CFSocketSetAddress(self, address.data.cfData)
     }
   }
 
   func connect(to address: any SocketAddress) throws {
     try CFSocket.throwingErrno {
-      CFSocketConnectToAddress(self, address.asData().cfData, 0)
+      CFSocketConnectToAddress(self, address.data.cfData, 0)
     }
   }
 
@@ -564,7 +566,7 @@ package extension CFSocket {
 
   func sendMessage(_ message: Message) throws {
     try CFSocket.throwingErrno {
-      CFSocketSendData(self, message.0.asData().cfData, message.1.cfData, 0)
+      CFSocketSendData(self, message.0.data.cfData, message.1.cfData, 0)
     }
   }
 
