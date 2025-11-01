@@ -60,7 +60,7 @@ public func deviceAddressToString(
         inet_ntop(AF_INET6, &addr, &buffer, socklen_t(buffer.count))
         var string = String(cString: buffer)
         if includePort {
-          string += ":\(UInt16(bigEndian: cSockAddrIn6.pointee.sin6_port.bigEndian))"
+          string += ":\(UInt16(bigEndian: cSockAddrIn6.pointee.sin6_port))"
         }
         return string
       }
