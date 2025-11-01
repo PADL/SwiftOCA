@@ -129,12 +129,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   public nonisolated var description: String {
-    withUnsafePointer(to: address) { pointer in
-      pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { sa in
-        let presentationAddress = deviceAddressToString(sa)
-        return "\(type(of: self))(address: \(presentationAddress), timeout: \(timeout))"
-      }
-    }
+    "\(type(of: self))(address: \(try! address.presentationAddress), timeout: \(timeout))"
   }
 
   public func run() async throws {
@@ -155,21 +150,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   public nonisolated var port: UInt16 {
-    var address = address
-    return UInt16(bigEndian: withUnsafePointer(to: &address) { address in
-      switch Int32(address.pointee.ss_family) {
-      case AF_INET:
-        address.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
-          sin.pointee.sin_port
-        }
-      case AF_INET6:
-        address.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { sin6 in
-          sin6.pointee.sin6_port
-        }
-      default:
-        0
-      }
-    })
+    (try? address.port) ?? 0
   }
 
   func add(controller: Ocp1FlyingFoxController) async {

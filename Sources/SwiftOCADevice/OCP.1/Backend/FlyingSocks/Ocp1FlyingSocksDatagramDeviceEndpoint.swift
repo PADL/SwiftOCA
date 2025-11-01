@@ -77,20 +77,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
     device: OcaDevice = OcaDevice.shared,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksDatagramDeviceEndpoint")
   ) async throws {
-    let address: any SocketAddress = try addressData.withUnsafeBytes { addressBytes in
-      try addressBytes.withMemoryRebound(to: sockaddr.self) { address in
-        switch address.baseAddress?.pointee.sa_family {
-        case sa_family_t(AF_INET): return address.baseAddress!
-          .withMemoryRebound(to: sockaddr_in.self, capacity: 1) { $0.pointee }
-        case sa_family_t(AF_INET6): return address.baseAddress!
-          .withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { $0.pointee }
-        case sa_family_t(AF_UNIX): return address.baseAddress!
-          .withMemoryRebound(to: sockaddr_un.self, capacity: 1) { $0.pointee }
-        default: throw SocketError.unsupportedAddress
-        }
-      }
-    }
-
+    let address = try AnySocketAddress(data: addressData)
     try await self.init(address: address, timeout: timeout, device: device, logger: logger)
   }
 
@@ -111,19 +98,11 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   }
 
   public nonisolated var description: String {
-    withUnsafePointer(to: address) { pointer in
-      pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { _ in
-        "\(type(of: self))(address: \(presentationAddress), timeout: \(timeout))"
-      }
-    }
+    "\(type(of: self))(address: \(address.presentationAddress), timeout: \(timeout))"
   }
 
   private nonisolated var presentationAddress: String {
-    withUnsafePointer(to: address) { pointer in
-      pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { sa in
-        deviceAddressToString(sa)
-      }
-    }
+    address.presentationAddress
   }
 
   func controller(
@@ -160,7 +139,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
       }
       try await _run(on: socket, pool: pool)
     } catch {
-      logger.critical("server error: \(error.localizedDescription)")
+      logger.critical("server error for \(presentationAddress): \(error.localizedDescription)")
       try? socket.close()
       throw error
     }
@@ -172,7 +151,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
       try await pool.prepare()
       return try makeSocketAndListen()
     } catch {
-      logger.critical("server error: \(error.localizedDescription)")
+      logger.critical("server error for \(presentationAddress): \(error.localizedDescription)")
       throw error
     }
   }
@@ -250,21 +229,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   }
 
   public nonisolated var port: UInt16 {
-    var address = address
-    return UInt16(bigEndian: withUnsafePointer(to: &address) { address in
-      switch family {
-      case AF_INET:
-        address.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
-          sin.pointee.sin_port
-        }
-      case AF_INET6:
-        address.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { sin6 in
-          sin6.pointee.sin6_port
-        }
-      default:
-        0
-      }
-    })
+    address.port
   }
 
   func add(controller: ControllerType) async {}
