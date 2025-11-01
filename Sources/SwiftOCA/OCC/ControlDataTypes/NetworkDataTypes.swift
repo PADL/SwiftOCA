@@ -228,15 +228,10 @@ public struct Ocp1NetworkAddress: Codable, Sendable, Equatable {
 
     switch networkAddress.pointee.sa_family {
     case sa_family_t(AF_INET):
-      networkAddress.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
-        address = deviceAddressToString(networkAddress, includePort: false)
-        port = OcaUint16(bigEndian: sin.pointee.sin_port)
-      }
+      fallthrough
     case sa_family_t(AF_INET6):
-      networkAddress.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { sin6 in
-        address = deviceAddressToString(networkAddress, includePort: false)
-        port = OcaUint16(bigEndian: sin6.pointee.sin6_port)
-      }
+      address = deviceAddressToString(networkAddress.pointee, includePort: false)
+      port = (try? OcaUint16(bigEndian: networkAddress.pointee.port)) ?? 0
     default:
       throw Ocp1Error.unknownServiceType
     }
