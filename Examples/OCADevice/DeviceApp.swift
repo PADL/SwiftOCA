@@ -38,15 +38,19 @@ public enum DeviceApp {
   public static func main() async throws {
     var listenAddress = sockaddr_in()
     listenAddress.sin_family = sa_family_t(AF_INET)
+    listenAddress.sin_addr.s_addr = INADDR_ANY
     listenAddress.sin_port = port.bigEndian
     #if canImport(Darwin)
     listenAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
     #endif
 
-    var listenAddressData = Data()
-    withUnsafeBytes(of: &listenAddress) { bytes in
-      listenAddressData = Data(bytes: bytes.baseAddress!, count: bytes.count)
-    }
+    var listen6Address = sockaddr_in6()
+    listen6Address.sin6_family = sa_family_t(AF_INET6)
+    listen6Address.sin6_addr = in6addr_any
+    listen6Address.sin6_port = (port + 1).bigEndian
+    #if canImport(Darwin)
+    listen6Address.sin6_len = UInt8(MemoryLayout<sockaddr_in6>.size)
+    #endif
 
     let device = OcaDevice.shared
     try await device.initializeDefaultObjects()
@@ -58,32 +62,35 @@ public enum DeviceApp {
     let delegate = DeviceEventDelegate()
     await device.setEventDelegate(delegate)
     #if os(Linux)
-    let streamEndpoint = try await Ocp1IORingStreamDeviceEndpoint(address: listenAddressData)
-    let datagramEndpoint = try await Ocp1IORingDatagramDeviceEndpoint(address: listenAddressData)
+    let streamEndpoint = try await Ocp1IORingStreamDeviceEndpoint(address: listenAddress.data)
+    let datagramEndpoint = try await Ocp1IORingDatagramDeviceEndpoint(address: listenAddress.data)
+    let stream6Endpoint = try await Ocp1IORingStreamDeviceEndpoint(address: listen6Address.data)
+    let datagram6Endpoint = try await Ocp1IORingDatagramDeviceEndpoint(address: listen6Address.data)
     let domainSocketStreamEndpoint =
       try? await Ocp1IORingStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
     let domainSocketDatagramEndpoint =
       try? await Ocp1IORingDatagramDeviceEndpoint(path: "/tmp/oca-device-dg.sock")
     #elseif canImport(FlyingSocks)
-    let streamEndpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(address: listenAddressData)
+    let streamEndpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(address: listenAddress.data)
     let datagramEndpoint =
-      try await Ocp1FlyingSocksDatagramDeviceEndpoint(address: listenAddressData)
+      try await Ocp1FlyingSocksDatagramDeviceEndpoint(address: listenAddress.data)
+    let stream6Endpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(
+      address: listen6Address
+        .data
+    )
+    let datagram6Endpoint = try await Ocp1FlyingSocksDatagramDeviceEndpoint(
+      address: listen6Address
+        .data
+    )
     #else
-    let streamEndpoint = try await Ocp1StreamDeviceEndpoint(address: listenAddressData)
+    let streamEndpoint = try await Ocp1StreamDeviceEndpoint(address: listenAddress.data)
     #endif
     #if canImport(FlyingSocks)
     listenAddress.sin_family = sa_family_t(AF_INET)
     listenAddress.sin_addr.s_addr = INADDR_ANY
-    listenAddress.sin_port = (port + 1).bigEndian
+    listenAddress.sin_port = (port + 2).bigEndian
     listenAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
-
-    listenAddressData = Data()
-    withUnsafeBytes(of: &listenAddress) { bytes in
-      listenAddressData = Data(bytes: bytes.baseAddress!, count: bytes.count)
-    }
-
-    let webSocketEndpoint =
-      try await Ocp1WSDeviceEndpoint(address: listenAddressData)
+    let webSocketEndpoint = try await Ocp1WSDeviceEndpoint(address: listenAddress.data)
     #endif
 
     class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
@@ -130,13 +137,21 @@ public enum DeviceApp {
 
     try await withThrowingTaskGroup(of: Void.self) { taskGroup in
       taskGroup.addTask {
-        print("Starting OCP.1 stream endpoint \(streamEndpoint)...")
+        print("Starting OCP.1 IPv4 stream endpoint \(streamEndpoint)...")
         try await streamEndpoint.run()
+      }
+      taskGroup.addTask {
+        print("Starting OCP.1 IPv6 stream endpoint \(stream6Endpoint)...")
+        try await stream6Endpoint.run()
       }
       #if os(Linux) || canImport(FlyingSocks)
       taskGroup.addTask {
-        print("Starting OCP.1 datagram endpoint \(datagramEndpoint)...")
+        print("Starting OCP.1 IPv4 datagram endpoint \(datagramEndpoint)...")
         try await datagramEndpoint.run()
+      }
+      taskGroup.addTask {
+        print("Starting OCP.1 IPv6 datagram endpoint \(datagram6Endpoint)...")
+        try await datagram6Endpoint.run()
       }
       #endif
       #if canImport(FlyingSocks)
