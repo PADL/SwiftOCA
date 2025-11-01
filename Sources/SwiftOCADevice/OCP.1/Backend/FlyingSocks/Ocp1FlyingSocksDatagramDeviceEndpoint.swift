@@ -166,6 +166,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   func makeSocketAndListen() throws -> Socket {
     let socket = try Socket(domain: family, type: .datagram)
     try socket.setValue(true, for: .localAddressReuse)
+    if address.family == sa_family_t(AF_INET6) { try socket.setIPv6Only() }
     try socket.bind(to: address)
     return socket
   }

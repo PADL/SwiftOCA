@@ -150,6 +150,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
     #if canImport(Darwin)
     try socket.setValue(true, for: .noSIGPIPE)
     #endif
+    if address.family == sa_family_t(AF_INET6) { try socket.setIPv6Only() }
     try socket.bind(to: address)
     try socket.listen()
     return socket
