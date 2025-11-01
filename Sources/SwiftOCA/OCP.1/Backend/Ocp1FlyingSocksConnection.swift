@@ -268,11 +268,17 @@ public extension Socket {
   func setValue<O: SocketOption>(_ value: O.Value, for option: O, level: CInt) throws {
     var value = option.makeSocketValue(from: value)
     let result = withUnsafeBytes(of: &value) {
-      setsockopt(file.rawValue, SOL_SOCKET, option.name, $0.baseAddress!, socklen_t($0.count))
+      setsockopt(file.rawValue, level, option.name, $0.baseAddress!, socklen_t($0.count))
     }
     guard result >= 0 else {
       throw Errno(rawValue: errno)
     }
+  }
+}
+
+package extension Socket {
+  func setIPv6Only() throws {
+    try setValue(1, for: Int32SocketOption(name: IPV6_V6ONLY), level: IPPROTO_IPV6)
   }
 }
 #endif
