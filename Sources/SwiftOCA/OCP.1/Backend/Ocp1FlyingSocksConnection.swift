@@ -50,26 +50,56 @@ fileprivate extension SocketError {
   }
 }
 
-private extension Data {
-  var socketAddress: any SocketAddress {
-    withUnsafeBytes { unbound -> (any SocketAddress) in
-      unbound
-        .withMemoryRebound(
-          to: sockaddr.self
-        ) { addr -> (any SocketAddress) in
-          let sa = addr.baseAddress!
-          switch sa.pointee.sa_family {
-          case sa_family_t(AF_INET):
-            return sa.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { $0.pointee }
-          case sa_family_t(AF_INET6):
-            return sa.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { $0.pointee }
-          case sa_family_t(AF_LOCAL):
-            return sa.withMemoryRebound(to: sockaddr_un.self, capacity: 1) { $0.pointee }
-          default:
-            fatalError("unsupported address family")
-          }
-        }
+package extension AnySocketAddress {
+  init(data: Data) throws {
+    try self.init(bytes: Array(data))
+  }
+
+  init(bytes addressBytes: [UInt8]) throws {
+    try self.init(sockaddr_storage(bytes: addressBytes))
+  }
+
+  var bytes: [UInt8] {
+    let storage = makeStorage()
+    #if canImport(Darwin)
+    let size = storage.ss_len
+    #else
+    let size = switch Int32(family) {
+    case AF_INET: MemoryLayout<sockaddr_in>.size
+    case AF_INET6: MemoryLayout<sockaddr_in6>.size
+    case AF_UNIX: MemoryLayout<sockaddr_un>.size
+    default: MemoryLayout<sockaddr_storage>.size
     }
+    #endif
+    return Array(withUnsafeBytes(of: storage) { $0 }.prefix(Int(size)))
+  }
+
+  var data: Data {
+    Data(bytes)
+  }
+}
+
+package extension SocketAddress {
+  var port: UInt16 {
+    let storage = makeStorage()
+    return withUnsafePointer(to: storage) { address in
+      switch Int32(family) {
+      case AF_INET:
+        address.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
+          sin.pointee.sin_port
+        }
+      case AF_INET6:
+        address.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { sin6 in
+          sin6.pointee.sin6_port
+        }
+      default:
+        0
+      }
+    }
+  }
+
+  var presentationAddress: String {
+    deviceAddressToString(makeStorage())
   }
 }
 
@@ -110,7 +140,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     deviceAddress: Data,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    try self.init(socketAddress: deviceAddress.socketAddress, options: options)
+    try self.init(socketAddress: AnySocketAddress(data: deviceAddress), options: options)
   }
 
   fileprivate init(
