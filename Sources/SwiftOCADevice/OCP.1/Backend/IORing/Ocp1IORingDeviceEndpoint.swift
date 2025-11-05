@@ -331,6 +331,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
       protocol: 0
     )
 
+    if address.family == sa_family_t(AF_INET6) { try socket.setIPv6Only() }
     try socket.bind(to: address)
 
     return socket
