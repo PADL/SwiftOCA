@@ -86,11 +86,11 @@ package extension SocketAddress {
       switch Int32(family) {
       case AF_INET:
         address.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
-          sin.pointee.sin_port
+          UInt16(bigEndian: sin.pointee.sin_port)
         }
       case AF_INET6:
         address.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { sin6 in
-          sin6.pointee.sin6_port
+          UInt16(bigEndian: sin6.pointee.sin6_port)
         }
       default:
         0
