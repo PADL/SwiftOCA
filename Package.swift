@@ -50,6 +50,8 @@ PlatformTargets = []
 #elseif os(macOS) || os(iOS)
 PlatformPackageDependencies = [
   .package(url: "https://github.com/swhitty/FlyingFox", from: "0.20.0"),
+  .package(url: "https://github.com/fwcd/swift-dns-service-discovery", branch: "main"),
+  // TODO: no release cut!
   .package(
     url: "https://github.com/spacenation/swiftui-sliders",
     from: "2.1.0"
@@ -66,6 +68,11 @@ PlatformTargetDependencies = [
     name: "FlyingSocks",
     package: "FlyingFox",
     condition: .when(platforms: [.macOS, .iOS, .android])
+  ),
+  .product(
+    name: "DNSServiceDiscovery",
+    package: "swift-dns-service-discovery",
+    condition: .when(platforms: [.macOS, .iOS])
   ),
 ]
 
@@ -189,7 +196,18 @@ let CommonTargets: [Target] = [
     linkerSettings: [] + ASANLinkerSettings
 
   ),
+  .executableTarget(
+    name: "OCABrokerTest",
+    dependencies: [
+      "SwiftOCA",
+    ],
+    path: "Examples/OCABrokerTest",
+    swiftSettings: [
+      .unsafeFlags(ASANSwiftFlags),
+    ],
+    linkerSettings: [] + ASANLinkerSettings
 
+  ),
   .testTarget(
     name: "SwiftOCATests",
     dependencies: [

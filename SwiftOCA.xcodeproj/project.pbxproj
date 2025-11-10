@@ -39,6 +39,9 @@
 		D32C49DD2B5102A300D73201 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = D32C49DC2B5102A300D73201 /* Logging */; };
 		D32EDEED2D6D7279009673D6 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D32EDEF12D6D7385009673D6 /* EventBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32EDEEF2D6D7385009673D6 /* EventBenchmark.swift */; };
+		D337B8842EC2EFBE00826A4B /* DNSServiceDiscovery in Frameworks */ = {isa = PBXBuildFile; productRef = D337B85B2EC2D9DA00826A4B /* DNSServiceDiscovery */; };
+		D337B8C82EC2FF5D00826A4B /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
+		D337B8CF2EC3030B00826A4B /* BrokerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D337B8CD2EC3030B00826A4B /* BrokerTest.swift */; };
 		D33A35A72B2FB1D600FEDC43 /* MediaClock3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */; };
 		D33A35A92B2FB7BE00FEDC43 /* MediaClockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */; };
 		D33A35AB2B2FBD0700FEDC43 /* DeviceTimeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */; };
@@ -107,6 +110,7 @@
 		D39542302BA8FFC0003A025C /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D395422F2BA8FFC0003A025C /* Root+JSON.swift */; };
 		D3A0BE7C2B717BEC00A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7B2B717BEC00A5AA05 /* Group.swift */; };
 		D3A0BE7E2B71921900A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7D2B71921900A5AA05 /* Group.swift */; };
+		D3AA5FE02EC2A29C000D35FF /* ConnectionBroker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AA5FDF2EC2A29C000D35FF /* ConnectionBroker.swift */; };
 		D3AB030C2CF6768D00967322 /* Ocp1Connection+Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AB030B2CF6768D00967322 /* Ocp1Connection+Connect.swift */; };
 		D3AB030E2CF6BD8F00967322 /* Ocp1IORingConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AB030D2CF6BD8F00967322 /* Ocp1IORingConnection.swift */; };
 		D3AD37792BF089CA00F3F713 /* SystemPackage in Frameworks */ = {isa = PBXBuildFile; productRef = D3AD37782BF089CA00F3F713 /* SystemPackage */; };
@@ -314,6 +318,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		D337B8BF2EC2FF5100826A4B /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		D33B52BA2A706201001A1BA7 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -367,6 +380,8 @@
 		D324D9B42CFC5A3800232790 /* OcaRoot+Binding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaRoot+Binding.swift"; sourceTree = "<group>"; };
 		D32EDEE22D6D7241009673D6 /* OCAEventBenchmark */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCAEventBenchmark; sourceTree = BUILT_PRODUCTS_DIR; };
 		D32EDEEF2D6D7385009673D6 /* EventBenchmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventBenchmark.swift; sourceTree = "<group>"; };
+		D337B8C12EC2FF5100826A4B /* OCABrokerTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCABrokerTest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D337B8CD2EC3030B00826A4B /* BrokerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrokerTest.swift; sourceTree = "<group>"; };
 		D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClock3.swift; sourceTree = "<group>"; };
 		D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClockManager.swift; sourceTree = "<group>"; };
 		D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTimeManager.swift; sourceTree = "<group>"; };
@@ -431,6 +446,7 @@
 		D395422F2BA8FFC0003A025C /* Root+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+JSON.swift"; sourceTree = "<group>"; };
 		D3A0BE7B2B717BEC00A5AA05 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		D3A0BE7D2B71921900A5AA05 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
+		D3AA5FDF2EC2A29C000D35FF /* ConnectionBroker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionBroker.swift; sourceTree = "<group>"; };
 		D3AB030B2CF6768D00967322 /* Ocp1Connection+Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Ocp1Connection+Connect.swift"; sourceTree = "<group>"; };
 		D3AB030D2CF6BD8F00967322 /* Ocp1IORingConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1IORingConnection.swift; sourceTree = "<group>"; };
 		D3AFD3332B2A505D00A72E9A /* AudioProcessingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProcessingManager.swift; sourceTree = "<group>"; };
@@ -612,6 +628,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D337B8BE2EC2FF5100826A4B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D337B8C82EC2FF5D00826A4B /* libSwiftOCA.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D33B527F2A6FD171001A1BA7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -650,6 +674,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D337B8842EC2EFBE00826A4B /* DNSServiceDiscovery in Frameworks */,
 				D3E6E25B2A3D28DD00BF7095 /* AsyncExtensions in Frameworks */,
 				D3E6E1EE2A3ACB0700BF7095 /* AsyncAlgorithms in Frameworks */,
 				D33B52D42A706FD7001A1BA7 /* FlyingSocks in Frameworks */,
@@ -768,6 +793,15 @@
 			name = OCAEventBenchmark;
 			path = Examples/OCAEventBenchmark;
 			sourceTree = "<group>";
+		};
+		D337B8CE2EC3030B00826A4B /* OCABrokerTest */ = {
+			isa = PBXGroup;
+			children = (
+				D337B8CD2EC3030B00826A4B /* BrokerTest.swift */,
+			);
+			name = OCABrokerTest;
+			path = Examples/OCABrokerTest;
+			sourceTree = SOURCE_ROOT;
 		};
 		D33A35B22B2FC4DC00FEDC43 /* ApplicationNetworks */ = {
 			isa = PBXGroup;
@@ -1139,6 +1173,7 @@
 				D3E6E2472A3C0C7700BF7095 /* SwiftOCAUI */,
 				D3028C1C2A3AD57900B8DB42 /* Sources/SwiftOCA */,
 				D3E6E1F72A3ACF5900BF7095 /* Examples/OCABrowser */,
+				D337B8CE2EC3030B00826A4B /* OCABrokerTest */,
 				D3C0830C2A7B01AB0020AD57 /* Tests/SwiftOCADeviceTests */,
 				D3B396DE2BBA4AEE0001B512 /* Tests/SwiftOCATests */,
 				D3E6E1652A3ACA0B00BF7095 /* Products */,
@@ -1157,6 +1192,7 @@
 				D3C0830B2A7B01AB0020AD57 /* SwiftOCADeviceTests.xctest */,
 				D3B396DC2BBA4AB50001B512 /* SwiftOCATests.xctest */,
 				D32EDEE22D6D7241009673D6 /* OCAEventBenchmark */,
+				D337B8C12EC2FF5100826A4B /* OCABrokerTest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1368,6 +1404,7 @@
 				D3E6E1AF2A3ACA6C00BF7095 /* ClassRegistry.swift */,
 				D34B5FA52B67204D000C8DD1 /* Connection.swift */,
 				D3E6E2382A3BD52E00BF7095 /* Browser.swift */,
+				D3AA5FDF2EC2A29C000D35FF /* ConnectionBroker.swift */,
 				D3E6E23E2A3C0B2E00BF7095 /* Helpers */,
 			);
 			path = OCA;
@@ -1504,6 +1541,25 @@
 			productReference = D32EDEE22D6D7241009673D6 /* OCAEventBenchmark */;
 			productType = "com.apple.product-type.tool";
 		};
+		D337B8C02EC2FF5100826A4B /* OCABrokerTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D337B8C52EC2FF5100826A4B /* Build configuration list for PBXNativeTarget "OCABrokerTest" */;
+			buildPhases = (
+				D337B8BD2EC2FF5100826A4B /* Sources */,
+				D337B8BE2EC2FF5100826A4B /* Frameworks */,
+				D337B8BF2EC2FF5100826A4B /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OCABrokerTest;
+			packageProductDependencies = (
+			);
+			productName = BrokerTest;
+			productReference = D337B8C12EC2FF5100826A4B /* OCABrokerTest */;
+			productType = "com.apple.product-type.tool";
+		};
 		D33B52802A6FD171001A1BA7 /* SwiftOCADevice */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D33B52842A6FD171001A1BA7 /* Build configuration list for PBXNativeTarget "SwiftOCADevice" */;
@@ -1611,6 +1667,7 @@
 				D3AD37782BF089CA00F3F713 /* SystemPackage */,
 				D35C9D9F2BF76E5100D680F2 /* SocketAddress */,
 				D3CFA35C2CED4D7500CAE537 /* Atomics */,
+				D337B85B2EC2D9DA00826A4B /* DNSServiceDiscovery */,
 			);
 			productName = SwiftOCA;
 			productReference = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */;
@@ -1660,11 +1717,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1610;
+				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1520;
 				TargetAttributes = {
 					D32EDEE12D6D7241009673D6 = {
 						CreatedOnToolsVersion = 16.1;
+					};
+					D337B8C02EC2FF5100826A4B = {
+						CreatedOnToolsVersion = 16.4;
 					};
 					D33B52802A6FD171001A1BA7 = {
 						CreatedOnToolsVersion = 14.2;
@@ -1707,6 +1767,7 @@
 				D35C9D9E2BF76E5100D680F2 /* XCRemoteSwiftPackageReference "SocketAddress" */,
 				D3CFA35B2CED4D7500CAE537 /* XCRemoteSwiftPackageReference "swift-atomics" */,
 				D37E65FC2E03EA0900D6B4D1 /* XCRemoteSwiftPackageReference "GzipSwift" */,
+				D337B85A2EC2D9B400826A4B /* XCRemoteSwiftPackageReference "swift-dns-service-discovery" */,
 			);
 			productRefGroup = D3E6E1652A3ACA0B00BF7095 /* Products */;
 			projectDirPath = "";
@@ -1720,6 +1781,7 @@
 				D33B52BB2A706201001A1BA7 /* OCADevice */,
 				D3C0830A2A7B01AB0020AD57 /* SwiftOCADeviceTests */,
 				D32EDEE12D6D7241009673D6 /* OCAEventBenchmark */,
+				D337B8C02EC2FF5100826A4B /* OCABrokerTest */,
 			);
 		};
 /* End PBXProject section */
@@ -1756,6 +1818,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				D32EDEF12D6D7385009673D6 /* EventBenchmark.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D337B8BD2EC2FF5100826A4B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D337B8CF2EC3030B00826A4B /* BrokerTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1965,6 +2035,7 @@
 				D3E820E62DFBEF0C001C9DC8 /* Ocp1NWConnection.swift in Sources */,
 				D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */,
 				D30644062A770B640063DA65 /* Notification2.swift in Sources */,
+				D3AA5FE02EC2A29C000D35FF /* ConnectionBroker.swift in Sources */,
 				D34B5FA22B65FD74000C8DD1 /* GrouperDataTypes.swift in Sources */,
 				D3E6E1C72A3ACA9000BF7095 /* Actuator.swift in Sources */,
 				D3BA71192DE990DB00A35C50 /* CommandSetDataTypes.swift in Sources */,
@@ -2095,6 +2166,38 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		D337B8C62EC2FF5100826A4B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D337B8C72EC2FF5100826A4B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = T53Q9CN4T9;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
@@ -2544,6 +2647,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		D337B8C52EC2FF5100826A4B /* Build configuration list for PBXNativeTarget "OCABrokerTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D337B8C62EC2FF5100826A4B /* Debug */,
+				D337B8C72EC2FF5100826A4B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D33B52842A6FD171001A1BA7 /* Build configuration list for PBXNativeTarget "SwiftOCADevice" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -2625,6 +2737,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.6.7;
+			};
+		};
+		D337B85A2EC2D9B400826A4B /* XCRemoteSwiftPackageReference "swift-dns-service-discovery" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/fwcd/swift-dns-service-discovery";
+			requirement = {
+				branch = main;
+				kind = branch;
 			};
 		};
 		D35C9D9E2BF76E5100D680F2 /* XCRemoteSwiftPackageReference "SocketAddress" */ = {
@@ -2711,6 +2831,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D36ECA282A5B20480015174C /* XCRemoteSwiftPackageReference "swift-log" */;
 			productName = Logging;
+		};
+		D337B85B2EC2D9DA00826A4B /* DNSServiceDiscovery */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D337B85A2EC2D9B400826A4B /* XCRemoteSwiftPackageReference "swift-dns-service-discovery" */;
+			productName = DNSServiceDiscovery;
 		};
 		D33B52D32A706FD7001A1BA7 /* FlyingSocks */ = {
 			isa = XCSwiftPackageProductDependency;

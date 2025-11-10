@@ -138,9 +138,9 @@ public extension Ocp1Connection {
     subscriptions.removeAll()
   }
 
-  internal func refreshSubscriptions() async {
+  internal func addSubscriptions(for events: [OcaEvent]) async {
     await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
-      for event in subscriptions.keys {
+      for event in events {
         taskGroup.addTask { [self] in
           try? await subscriptionManager.addSubscription(
             event: event,
@@ -152,6 +152,10 @@ public extension Ocp1Connection {
         }
       }
     }
+  }
+
+  internal func refreshSubscriptions() async {
+    await addSubscriptions(for: Array(subscriptions.keys))
   }
 
   internal func notifySubscribers(of event: OcaEvent, with parameters: Data) {

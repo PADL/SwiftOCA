@@ -30,7 +30,7 @@ public struct OcaModelDescription: Codable, Sendable, CustomStringConvertible {
   }
 }
 
-public struct OcaModelGUID: Equatable, Codable, Sendable, CustomStringConvertible {
+public struct OcaModelGUID: Hashable, Codable, Sendable, CustomStringConvertible {
   public typealias ModelCode = (OcaUint8, OcaUint8, OcaUint8, OcaUint8)
 
   public enum CodingKeys: CodingKey {
@@ -46,6 +46,14 @@ public struct OcaModelGUID: Equatable, Codable, Sendable, CustomStringConvertibl
       lhs.modelCode.1 == rhs.modelCode.1 &&
       lhs.modelCode.2 == rhs.modelCode.2 &&
       lhs.modelCode.3 == rhs.modelCode.3
+  }
+
+  public func hash(into hasher: inout Hasher) {
+    mfrCode.hash(into: &hasher)
+    modelCode.0.hash(into: &hasher)
+    modelCode.1.hash(into: &hasher)
+    modelCode.2.hash(into: &hasher)
+    modelCode.3.hash(into: &hasher)
   }
 
   public let reserved: OcaUint8
@@ -66,6 +74,21 @@ public struct OcaModelGUID: Equatable, Codable, Sendable, CustomStringConvertibl
     self.reserved = reserved
     self.mfrCode = mfrCode
     self.modelCode = modelCode
+  }
+
+  init(_ hexString: String) throws {
+    guard hexString.count == 14 else { throw Ocp1Error.status(.badFormat) }
+
+    let mfrCodeHex = String(hexString.prefix(6))
+    let modelCodeHex = String(hexString.suffix(8))
+
+    reserved = 0
+    mfrCode = try OcaOrganizationID(mfrCodeHex)
+
+    let modelCodeBytes = try [UInt8](hexString: modelCodeHex)
+    guard modelCodeBytes.count == 4 else { throw Ocp1Error.status(.badFormat) }
+
+    modelCode = (modelCodeBytes[0], modelCodeBytes[1], modelCodeBytes[2], modelCodeBytes[3])
   }
 
   @available(*, deprecated)

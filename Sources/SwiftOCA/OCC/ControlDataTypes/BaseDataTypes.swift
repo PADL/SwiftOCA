@@ -514,6 +514,15 @@ public struct OcaOrganizationID: Equatable, Hashable, Codable, Sendable, CustomS
     String(format: "%02X%02X%02X", id.0, id.1, id.2)
   }
 
+  init(_ hexString: String) throws {
+    guard hexString.count == 6 else { throw Ocp1Error.status(.badFormat) }
+
+    let bytes = try [UInt8](hexString: hexString)
+    guard bytes.count == 3 else { throw Ocp1Error.status(.badFormat) }
+
+    id = (bytes[0], bytes[1], bytes[2])
+  }
+
   public static func == (_ lhs: Self, _ rhs: Self) -> Bool {
     lhs.id.0 == rhs.id.0 &&
       lhs.id.1 == rhs.id.1 &&
