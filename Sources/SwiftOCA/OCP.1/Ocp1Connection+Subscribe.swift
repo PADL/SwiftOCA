@@ -129,7 +129,7 @@ public extension Ocp1Connection {
 
   internal func removeSubscriptions() async {
     await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
-      for event in subscriptions.keys {
+      for event in subscribedEvents {
         taskGroup.addTask { [self] in
           try? await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
         }
@@ -155,7 +155,7 @@ public extension Ocp1Connection {
   }
 
   internal func refreshSubscriptions() async {
-    await addSubscriptions(events: Array(subscriptions.keys))
+    await addSubscriptions(events: Array(subscribedEvents))
   }
 
   internal func notifySubscribers(of event: OcaEvent, with parameters: Data) {
@@ -177,4 +177,7 @@ public extension Ocp1Connection {
       }
     }
   }
+
+  @_spi(SwiftOCAPrivate)
+  public var subscribedEvents: [OcaEvent] { Array(subscriptions.keys) }
 }
