@@ -32,4 +32,25 @@ extension Data {
       return String(utf16CodeUnits: chars, count: chars.count)
     }
   }
+
+  init(hexString: String) throws {
+    guard hexString.count % 2 == 0 else { throw Ocp1Error.status(.badFormat) }
+
+    var data = Data(capacity: hexString.count / 2)
+    for i in stride(from: 0, to: hexString.count, by: 2) {
+      let startIndex = hexString.index(hexString.startIndex, offsetBy: i)
+      let endIndex = hexString.index(startIndex, offsetBy: 2)
+      let byteString = String(hexString[startIndex..<endIndex])
+      guard let byte = UInt8(byteString, radix: 16) else { throw Ocp1Error.status(.badFormat) }
+      data.append(byte)
+    }
+
+    self = data
+  }
+}
+
+extension [UInt8] {
+  init(hexString: String) throws {
+    self = try Array(Data(hexString: hexString))
+  }
 }
