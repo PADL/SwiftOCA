@@ -41,7 +41,7 @@ public enum OcaNetworkAdvertisingService: OcaUint8, Codable, Sendable, CaseItera
   case expansionBase = 128
 }
 
-public enum OcaNetworkAdvertisingServiceType: String {
+public enum OcaNetworkAdvertisingServiceType: String, Sendable {
   case none = ""
   case tcp = "_oca._tcp."
   case tcpSecure = "_ocasec._tcp."
