@@ -68,6 +68,21 @@ public struct OcaModelGUID: Equatable, Codable, Sendable, CustomStringConvertibl
     self.modelCode = modelCode
   }
 
+  public init(_ hexString: String) throws {
+    guard hexString.count == 14 else { throw Ocp1Error.status(.badFormat) }
+
+    let mfrCodeHex = String(hexString.prefix(6))
+    let modelCodeHex = String(hexString.suffix(8))
+
+    reserved = 0
+    mfrCode = try OcaOrganizationID(mfrCodeHex)
+
+    let modelCodeBytes = try [UInt8](hexString: modelCodeHex)
+    guard modelCodeBytes.count == 4 else { throw Ocp1Error.status(.badFormat) }
+
+    modelCode = (modelCodeBytes[0], modelCodeBytes[1], modelCodeBytes[2], modelCodeBytes[3])
+  }
+
   @available(*, deprecated)
   public init(reserved: OcaUint8 = 0, mfrCode: OcaOrganizationID, modelCode: OcaUint32) {
     self.reserved = reserved
