@@ -107,13 +107,13 @@ public struct Ocp1ConnectionOptions: Sendable {
     }
   }
 
-  let flags: Ocp1ConnectionFlags
-  let connectionTimeout: Duration
-  let responseTimeout: Duration
-  let reconnectMaxTries: Int
-  let reconnectPauseInterval: Duration
-  let reconnectExponentialBackoffThreshold: Range<Int>
-  let batchingOptions: BatchingOptions?
+  public let flags: Ocp1ConnectionFlags
+  public let connectionTimeout: Duration
+  public let responseTimeout: Duration
+  public let reconnectMaxTries: Int
+  public let reconnectPauseInterval: Duration
+  public let reconnectExponentialBackoffThreshold: Range<Int>
+  public let batchingOptions: BatchingOptions?
 
   public init(
     flags: Ocp1ConnectionFlags = .refreshDeviceTreeOnConnection,
