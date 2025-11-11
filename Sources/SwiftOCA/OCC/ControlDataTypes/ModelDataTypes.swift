@@ -30,7 +30,7 @@ public struct OcaModelDescription: Codable, Sendable, CustomStringConvertible {
   }
 }
 
-public struct OcaModelGUID: Equatable, Codable, Sendable, CustomStringConvertible {
+public struct OcaModelGUID: Hashable, Codable, Sendable, CustomStringConvertible {
   public typealias ModelCode = (OcaUint8, OcaUint8, OcaUint8, OcaUint8)
 
   public enum CodingKeys: CodingKey {
@@ -46,6 +46,14 @@ public struct OcaModelGUID: Equatable, Codable, Sendable, CustomStringConvertibl
       lhs.modelCode.1 == rhs.modelCode.1 &&
       lhs.modelCode.2 == rhs.modelCode.2 &&
       lhs.modelCode.3 == rhs.modelCode.3
+  }
+
+  public func hash(into hasher: inout Hasher) {
+    mfrCode.hash(into: &hasher)
+    modelCode.0.hash(into: &hasher)
+    modelCode.1.hash(into: &hasher)
+    modelCode.2.hash(into: &hasher)
+    modelCode.3.hash(into: &hasher)
   }
 
   public let reserved: OcaUint8
