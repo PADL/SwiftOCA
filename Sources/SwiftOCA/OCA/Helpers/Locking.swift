@@ -10,8 +10,6 @@
 //===----------------------------------------------------------------------===//
 
 #if canImport(Darwin)
-
-#if canImport(Darwin)
 import Darwin
 #elseif canImport(Glibc)
 import Glibc
@@ -154,5 +152,3 @@ struct ManagedCriticalState<State> {
 }
 
 extension ManagedCriticalState: @unchecked Sendable where State: Sendable {}
-
-#endif
