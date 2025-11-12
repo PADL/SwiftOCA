@@ -168,6 +168,7 @@
 		D3C11DBD2A78A3DC00452B2A /* Ocp1Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C11DBC2A78A3DC00452B2A /* Ocp1Controller.swift */; };
 		D3CFA35D2CED4D7500CAE537 /* Atomics in Frameworks */ = {isa = PBXBuildFile; productRef = D3CFA35C2CED4D7500CAE537 /* Atomics */; };
 		D3CFA3602CED4D9F00CAE537 /* Weak.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CFA35F2CED4D9F00CAE537 /* Weak.swift */; };
+		D3CFA3612CED4D9F00CAE537 /* Locking.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CFA35E2CED4D9F00CAE537 /* Locking.swift */; };
 		D3D8FA382B60546E0054FD3C /* DeviceManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA372B60546E0054FD3C /* DeviceManagerDataTypes.swift */; };
 		D3D8FA3A2B608FD60054FD3C /* List2D.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA392B608FD60054FD3C /* List2D.swift */; };
 		D3D8FA492B61D6A50054FD3C /* ReflectionMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D8FA452B61D6A50054FD3C /* ReflectionMirror.swift */; };
@@ -488,6 +489,7 @@
 		D3C0832B2A7C73960020AD57 /* ApplicationNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationNetwork.swift; sourceTree = "<group>"; };
 		D3C11DB82A789C0400452B2A /* DeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEndpoint.swift; sourceTree = "<group>"; };
 		D3C11DBC2A78A3DC00452B2A /* Ocp1Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1Controller.swift; sourceTree = "<group>"; };
+		D3CFA35E2CED4D9F00CAE537 /* Locking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Locking.swift; sourceTree = "<group>"; };
 		D3CFA35F2CED4D9F00CAE537 /* Weak.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Weak.swift; sourceTree = "<group>"; };
 		D3D8FA372B60546E0054FD3C /* DeviceManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManagerDataTypes.swift; sourceTree = "<group>"; };
 		D3D8FA392B608FD60054FD3C /* List2D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = List2D.swift; sourceTree = "<group>"; };
@@ -1376,6 +1378,7 @@
 		D3E6E23E2A3C0B2E00BF7095 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				D3CFA35E2CED4D9F00CAE537 /* Locking.swift */,
 				D3CFA35F2CED4D9F00CAE537 /* Weak.swift */,
 				D3DA69EC2A3DD329001250A1 /* Task+Timeout.swift */,
 				D3E6E16D2A3ACA6C00BF7095 /* Data+Hex.swift */,
@@ -1997,6 +2000,7 @@
 				D3FAC8EC2B5CFC11009E2775 /* TaskManagerDataTypes.swift in Sources */,
 				D3E741482D56331F0044CCBB /* TemperatureSensor.swift in Sources */,
 				D3CFA3602CED4D9F00CAE537 /* Weak.swift in Sources */,
+				D3CFA3612CED4D9F00CAE537 /* Locking.swift in Sources */,
 				D3E6E1B32A3ACA7B00BF7095 /* Ocp1Connection+Codable.swift in Sources */,
 				D3E6E1BE2A3ACA8200BF7095 /* Command.swift in Sources */,
 				D3AFD37B2B32A06700A72E9A /* Ocp1EncoderImpl.swift in Sources */,
