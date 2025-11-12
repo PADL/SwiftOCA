@@ -41,12 +41,23 @@ public enum OcaNetworkAdvertisingService: OcaUint8, Codable, Sendable, CaseItera
   case expansionBase = 128
 }
 
-public enum OcaNetworkAdvertisingServiceType: String, Sendable {
+public enum OcaNetworkAdvertisingServiceType: String, Sendable, CaseIterable {
   case none = ""
   case tcp = "_oca._tcp."
   case tcpSecure = "_ocasec._tcp."
   case udp = "_oca._udp."
   case tcpWebSocket = "_ocaws._tcp."
+
+  init?(_ string: String) {
+    for aCase in Self.allCases {
+      if string == String(describing: aCase) {
+        self = aCase
+        return
+      }
+    }
+
+    return nil
+  }
 }
 
 public struct OcaNetworkAdvertisingMechanism: Codable, Sendable {
