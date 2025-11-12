@@ -42,6 +42,7 @@
 		D337B8F52EC411CB00826A4B /* ConnectionBroker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D337B8F42EC411CB00826A4B /* ConnectionBroker.swift */; };
 		D337B9032EC4384E00826A4B /* BrokerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D337B9012EC4384E00826A4B /* BrokerTest.swift */; };
 		D337B9042EC438B500826A4B /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
+		D337B92A2EC52CA400826A4B /* SocketAddressHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D337B9292EC52CA400826A4B /* SocketAddressHelpers.swift */; };
 		D33A35A72B2FB1D600FEDC43 /* MediaClock3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */; };
 		D33A35A92B2FB7BE00FEDC43 /* MediaClockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */; };
 		D33A35AB2B2FBD0700FEDC43 /* DeviceTimeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */; };
@@ -105,7 +106,6 @@
 		D36ECA2C2A5B24B30015174A /* Ocp1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */; };
 		D370B1482BF6002300BF88BB /* AudioLevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */; };
 		D370B14A2BF600A900BF88BB /* AudioLevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D370B1492BF600A900BF88BB /* AudioLevelSensor.swift */; };
-		D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */; };
 		D38AD8342E8861FA00CE8DA3 /* TimeHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38AD8332E8861FA00CE8DA3 /* TimeHelpers.swift */; };
 		D39542302BA8FFC0003A025C /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D395422F2BA8FFC0003A025C /* Root+JSON.swift */; };
 		D3A0BE7C2B717BEC00A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7B2B717BEC00A5AA05 /* Group.swift */; };
@@ -383,6 +383,7 @@
 		D337B8F42EC411CB00826A4B /* ConnectionBroker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionBroker.swift; sourceTree = "<group>"; };
 		D337B8FA2EC4382700826A4B /* OCABrokerTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCABrokerTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D337B9012EC4384E00826A4B /* BrokerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrokerTest.swift; sourceTree = "<group>"; };
+		D337B9292EC52CA400826A4B /* SocketAddressHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketAddressHelpers.swift; sourceTree = "<group>"; };
 		D33A35A62B2FB1D600FEDC43 /* MediaClock3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClock3.swift; sourceTree = "<group>"; };
 		D33A35A82B2FB7BE00FEDC43 /* MediaClockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaClockManager.swift; sourceTree = "<group>"; };
 		D33A35AA2B2FBD0700FEDC43 /* DeviceTimeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTimeManager.swift; sourceTree = "<group>"; };
@@ -442,7 +443,6 @@
 		D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLevelSensor.swift; sourceTree = "<group>"; };
 		D370B1492BF600A900BF88BB /* AudioLevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLevelSensor.swift; sourceTree = "<group>"; };
-		D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAddressToString.swift; sourceTree = "<group>"; };
 		D38AD8332E8861FA00CE8DA3 /* TimeHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeHelpers.swift; sourceTree = "<group>"; };
 		D395422F2BA8FFC0003A025C /* Root+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+JSON.swift"; sourceTree = "<group>"; };
 		D3A0BE7B2B717BEC00A5AA05 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
@@ -1420,10 +1420,10 @@
 				D3E6E16F2A3ACA6C00BF7095 /* Data+IntegerCodable.swift */,
 				D3E6E1712A3ACA6C00BF7095 /* LengthTaggedData16.swift */,
 				D3BA711A2DE991B700A35C50 /* LengthTaggedData32.swift */,
-				D37F7E1A2A6D2602005F035F /* DeviceAddressToString.swift */,
 				D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */,
 				D301C6762BF0576200488B99 /* UnsafeMutablePointer+PropertyBasePointer.swift */,
 				D38AD8332E8861FA00CE8DA3 /* TimeHelpers.swift */,
+				D337B9292EC52CA400826A4B /* SocketAddressHelpers.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1992,7 +1992,6 @@
 				D3E6E1CE2A3ACA9600BF7095 /* Sensor.swift in Sources */,
 				D3E6E1CF2A3ACA9600BF7095 /* BasicSensors.swift in Sources */,
 				D3E6E1DB2A3ACAA900BF7095 /* EventDataTypes.swift in Sources */,
-				D37F7E1B2A6D2602005F035F /* DeviceAddressToString.swift in Sources */,
 				D3A0BE7E2B71921900A5AA05 /* Group.swift in Sources */,
 				D34B5FA82B6884DA000C8DD1 /* ListProperty.swift in Sources */,
 				D30349D62BBB65E90080FF09 /* Frequency.swift in Sources */,
@@ -2012,6 +2011,7 @@
 				D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */,
 				D3AFD3942B41514400A72E9A /* SignalInput.swift in Sources */,
 				D3E6E1C82A3ACA9000BF7095 /* Gain.swift in Sources */,
+				D337B92A2EC52CA400826A4B /* SocketAddressHelpers.swift in Sources */,
 				D3E6E1B62A3ACA7B00BF7095 /* ClassRegistry.swift in Sources */,
 				D3AFD3842B32A06700A72E9A /* KeyedBinaryDecodingContainer.swift in Sources */,
 				D3AFD3852B32A06700A72E9A /* UnkeyedBinaryDecodingContainer.swift in Sources */,

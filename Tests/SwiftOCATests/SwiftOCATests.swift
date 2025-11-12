@@ -14,8 +14,16 @@
 // limitations under the License.
 //
 
+import SocketAddress
 @testable @_spi(SwiftOCAPrivate) import SwiftOCA
 import XCTest
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#elseif canImport(Android)
+import Android
+#endif
 
 private extension _Ocp1Codable {
   var bytes: [UInt8] {
@@ -913,5 +921,103 @@ extension Ocp1Notification2: Equatable {
       lhs.event == rhs.event &&
       lhs.notificationType == rhs.notificationType &&
       lhs.data == rhs.data
+  }
+}
+
+final class SocketAddressHelperTests: XCTestCase {
+  func testPresentationAddressNoPortIPv4() throws {
+    let ipv4Address = try AnySocketAddress(
+      family: sa_family_t(AF_INET),
+      presentationAddress: "192.168.1.100:8080"
+    )
+    let addressNoPort = try ipv4Address.presentationAddressNoPort
+    XCTAssertEqual(addressNoPort, "192.168.1.100")
+  }
+
+  func testPresentationAddressNoPortIPv4Loopback() throws {
+    let loopbackAddress = try AnySocketAddress(
+      family: sa_family_t(AF_INET),
+      presentationAddress: "127.0.0.1:3000"
+    )
+    let addressNoPort = try loopbackAddress.presentationAddressNoPort
+    XCTAssertEqual(addressNoPort, "127.0.0.1")
+  }
+
+  func testPresentationAddressNoPortIPv4ZeroAddress() throws {
+    let zeroAddress = try AnySocketAddress(
+      family: sa_family_t(AF_INET),
+      presentationAddress: "0.0.0.0:80"
+    )
+    let addressNoPort = try zeroAddress.presentationAddressNoPort
+    XCTAssertEqual(addressNoPort, "0.0.0.0")
+  }
+
+  func testPresentationAddressNoPortIPv6Standard() throws {
+    let ipv6Address = try AnySocketAddress(
+      family: sa_family_t(AF_INET6),
+      presentationAddress: "[2001:db8::1]:8080"
+    )
+    let addressNoPort = try ipv6Address.presentationAddressNoPort
+    XCTAssertEqual(addressNoPort, "2001:db8::1")
+  }
+
+  func testPresentationAddressNoPortIPv6Loopback() throws {
+    let loopbackAddress = try AnySocketAddress(
+      family: sa_family_t(AF_INET6),
+      presentationAddress: "[::1]:3000"
+    )
+    let addressNoPort = try loopbackAddress.presentationAddressNoPort
+    XCTAssertEqual(addressNoPort, "::1")
+  }
+
+  func testPresentationAddressNoPortIPv6FullAddress() throws {
+    let ipv6Address = try AnySocketAddress(
+      family: sa_family_t(AF_INET6),
+      presentationAddress: "[2001:0db8:85a3:0000:0000:8a2e:0370:7334]:443"
+    )
+    let addressNoPort = try ipv6Address.presentationAddressNoPort
+    XCTAssertEqual(addressNoPort, "2001:db8:85a3::8a2e:370:7334")
+  }
+
+  func testPresentationAddressNoPortIPv6ZeroAddress() throws {
+    let zeroAddress = try AnySocketAddress(
+      family: sa_family_t(AF_INET6),
+      presentationAddress: "[::]:80"
+    )
+    let addressNoPort = try zeroAddress.presentationAddressNoPort
+    XCTAssertEqual(addressNoPort, "::")
+  }
+
+  func testPresentationAddressNoPortIPv6WithoutPort() throws {
+    let ipv6Address = try AnySocketAddress(
+      family: sa_family_t(AF_INET6),
+      presentationAddress: "[2001:db8::1]:0"
+    )
+    let addressNoPort = try ipv6Address.presentationAddressNoPort
+    XCTAssertEqual(addressNoPort, "2001:db8::1")
+  }
+
+  func testPresentationAddressNoPortUnixDomainSocket() throws {
+    let unixAddress = try AnySocketAddress(
+      family: sa_family_t(AF_UNIX),
+      presentationAddress: "/tmp/test.socket"
+    )
+    let addressNoPort = try unixAddress.presentationAddressNoPort
+    XCTAssertEqual(addressNoPort, "/tmp/test.socket")
+  }
+
+  func testPresentationAddressNoPortUnixDomainSocketEmptyPath() throws {
+    let unixAddress = try AnySocketAddress(family: sa_family_t(AF_UNIX), presentationAddress: "")
+    let addressNoPort = try unixAddress.presentationAddressNoPort
+    XCTAssertEqual(addressNoPort, "")
+  }
+
+  func testPresentationAddressNoPortUnixDomainSocketWithSpecialChars() throws {
+    let unixAddress = try AnySocketAddress(
+      family: sa_family_t(AF_UNIX),
+      presentationAddress: "/tmp/socket with spaces & symbols!"
+    )
+    let addressNoPort = try unixAddress.presentationAddressNoPort
+    XCTAssertEqual(addressNoPort, "/tmp/socket with spaces & symbols!")
   }
 }

@@ -102,11 +102,13 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
   }
 
   public nonisolated var description: String {
-    "\(type(of: self))(address: \(address.presentationAddress), timeout: \(timeout))"
+    "\(type(of: self))(address: \(presentationAddress), timeout: \(timeout))"
   }
 
   private nonisolated var presentationAddress: String {
-    address.presentationAddress
+    address.withSockAddr {
+      try! $0.pointee.presentationAddress
+    }
   }
 
   public func run() async throws {

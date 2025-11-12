@@ -97,10 +97,6 @@ package extension SocketAddress {
       }
     }
   }
-
-  var presentationAddress: String {
-    deviceAddressToString(makeStorage())
-  }
 }
 
 private actor AsyncSocketPoolMonitor {
@@ -170,7 +166,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
   }
 
   fileprivate nonisolated var _presentationAddress: String {
-    deviceAddressToString(deviceAddress)
+    deviceAddress.socketPresentationAddress!
   }
 
   override public func connectDevice() async throws {
@@ -271,15 +267,6 @@ public final class Ocp1FlyingSocksDatagramConnection: Ocp1FlyingSocksConnection 
   override public func read(_ length: Int) async throws -> Data {
     try await withMappedError { socket in
       try await Data(socket.read(atMost: Ocp1MaximumDatagramPduSize))
-    }
-  }
-}
-
-func deviceAddressToString(_ deviceAddress: any SocketAddress) -> String {
-  var addr = deviceAddress.makeStorage()
-  return withUnsafePointer(to: &addr) {
-    $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-      deviceAddressToString($0)
     }
   }
 }

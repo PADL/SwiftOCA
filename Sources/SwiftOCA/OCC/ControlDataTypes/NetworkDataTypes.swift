@@ -230,7 +230,7 @@ public struct Ocp1NetworkAddress: Codable, Sendable, Equatable {
     case sa_family_t(AF_INET):
       fallthrough
     case sa_family_t(AF_INET6):
-      address = deviceAddressToString(networkAddress.pointee, includePort: false)
+      address = try networkAddress.pointee.presentationAddressNoPort
       port = (try? OcaUint16(bigEndian: networkAddress.pointee.port)) ?? 0
     default:
       throw Ocp1Error.unknownServiceType

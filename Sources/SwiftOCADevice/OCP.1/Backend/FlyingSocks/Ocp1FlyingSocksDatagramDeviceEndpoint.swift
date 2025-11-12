@@ -98,11 +98,13 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   }
 
   public nonisolated var description: String {
-    "\(type(of: self))(address: \(address.presentationAddress), timeout: \(timeout))"
+    "\(type(of: self))(address: \(presentationAddress), timeout: \(timeout))"
   }
 
   private nonisolated var presentationAddress: String {
-    address.presentationAddress
+    address.withSockAddr {
+      try! $0.pointee.presentationAddress
+    }
   }
 
   func controller(

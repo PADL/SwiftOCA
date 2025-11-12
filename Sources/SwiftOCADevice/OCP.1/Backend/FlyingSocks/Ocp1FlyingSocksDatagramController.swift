@@ -92,8 +92,8 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   }
 
   nonisolated var identifier: String {
-    peerAddress.withSockAddr { sa in
-      deviceAddressToString(sa)
+    peerAddress.withSockAddr {
+      try! $0.pointee.presentationAddress
     }
   }
 
