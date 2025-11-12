@@ -63,10 +63,10 @@ private extension SocketAddress {
   }
 }
 
-public class Ocp1NWConnection: Ocp1Connection {
-  fileprivate let deviceAddress: AnySocketAddress
-  fileprivate var queue: DispatchQueue!
-  fileprivate var nwConnection: NWConnection!
+public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
+  fileprivate let _deviceAddress: ManagedCriticalState<AnySocketAddress>
+  fileprivate var _queue: DispatchQueue!
+  fileprivate var _nwConnection: NWConnection!
 
   fileprivate var parameters: NWParameters {
     fatalError("must be implemented by subclass")
@@ -76,15 +76,15 @@ public class Ocp1NWConnection: Ocp1Connection {
     deviceAddress: AnySocketAddress,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    self.deviceAddress = deviceAddress
+    _deviceAddress = ManagedCriticalState(deviceAddress)
     super.init(options: options)
-    nwConnection = try NWConnection(to: nwEndpoint, using: parameters)
-    nwConnection.stateUpdateHandler = { [weak self] state in
+    _nwConnection = try NWConnection(to: nwEndpoint, using: parameters)
+    _nwConnection.stateUpdateHandler = { [weak self] state in
       if let self, state == .cancelled {
         Task { try await self.disconnect() }
       }
     }
-    queue = DispatchQueue(label: connectionPrefix, attributes: .concurrent)
+    _queue = DispatchQueue(label: connectionPrefix, attributes: .concurrent)
   }
 
   public convenience init(
@@ -106,20 +106,34 @@ public class Ocp1NWConnection: Ocp1Connection {
     try self.init(deviceAddress: deviceAddress, options: options)
   }
 
+  public nonisolated var deviceAddress: Data {
+    get {
+      AnySocketAddress(_deviceAddress.criticalState).data
+    }
+    set {
+      do {
+        try _deviceAddress.withCriticalRegion {
+          $0 = try AnySocketAddress(bytes: Array(newValue))
+          Task { await deviceAddressDidChange() }
+        }
+      } catch {}
+    }
+  }
+
   override public func connectDevice() async throws {
-    nwConnection.start(queue: queue)
+    _nwConnection.start(queue: _queue)
     try await super.connectDevice()
   }
 
   override public func disconnectDevice() async throws {
-    nwConnection.stateUpdateHandler = nil
-    nwConnection.cancel()
+    _nwConnection.stateUpdateHandler = nil
+    _nwConnection.cancel()
     try await super.disconnectDevice()
   }
 
   override public func read(_ length: Int) async throws -> Data {
     try await withUnsafeThrowingContinuation { continuation in
-      nwConnection.receive(
+      _nwConnection.receive(
         minimumIncompleteLength: length,
         maximumLength: Ocp1MaximumDatagramPduSize
       ) { data, _, _, error in
@@ -135,7 +149,7 @@ public class Ocp1NWConnection: Ocp1Connection {
   override public func write(_ data: Data) async throws -> Int {
     let isDatagram = isDatagram
     return try await withUnsafeThrowingContinuation { continuation in
-      nwConnection.send(
+      _nwConnection.send(
         content: data,
         isComplete: isDatagram,
         completion: .contentProcessed { error in
@@ -151,12 +165,12 @@ public class Ocp1NWConnection: Ocp1Connection {
 
   fileprivate nonisolated var nwEndpoint: NWEndpoint {
     get throws {
-      try deviceAddress.asNWEndpoint()
+      try _deviceAddress.criticalState.asNWEndpoint()
     }
   }
 
   fileprivate nonisolated var presentationAddress: String {
-    try! deviceAddress.presentationAddress
+    try! _deviceAddress.criticalState.presentationAddress
   }
 }
 

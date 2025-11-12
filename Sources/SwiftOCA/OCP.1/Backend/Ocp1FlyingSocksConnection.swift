@@ -133,8 +133,8 @@ private actor AsyncSocketPoolMonitor {
 }
 
 public class Ocp1FlyingSocksConnection: Ocp1Connection {
-  fileprivate let deviceAddress: any SocketAddress
-  fileprivate var asyncSocket: AsyncSocket?
+  fileprivate let _deviceAddress: ManagedCriticalState<AnySocketAddress>
+  fileprivate var _asyncSocket: AsyncSocket?
 
   public convenience init(
     deviceAddress: Data,
@@ -144,23 +144,44 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
   }
 
   fileprivate init(
-    socketAddress: any SocketAddress,
+    socketAddress: AnySocketAddress,
     options: Ocp1ConnectionOptions
   ) throws {
-    deviceAddress = socketAddress
+    _deviceAddress = ManagedCriticalState<AnySocketAddress>(socketAddress)
     super.init(options: options)
   }
 
   deinit {
-    try? asyncSocket?.close()
+    try? _asyncSocket?.close()
+  }
+
+  nonisolated var deviceAddress: Data {
+    get {
+      AnySocketAddress(_deviceAddress.criticalState).data
+    }
+    set {
+      do {
+        try _deviceAddress.withCriticalRegion {
+          $0 = try AnySocketAddress(data: newValue)
+          Task { await deviceAddressDidChange() }
+        }
+      } catch {}
+    }
+  }
+
+  fileprivate nonisolated var _presentationAddress: String {
+    deviceAddressToString(deviceAddress)
   }
 
   override public func connectDevice() async throws {
-    let socket = try Socket(domain: Int32(deviceAddress.family), type: socketType)
-    try? setSocketOptions(socket)
-    // also connect UDP sockets to ensure we do not receive unsolicited replies
-    try socket.connect(to: deviceAddress)
-    asyncSocket = try await AsyncSocket(
+    let socket = try _deviceAddress.withCriticalRegion { deviceAddress in
+      let socket = try Socket(domain: Int32(deviceAddress.family), type: socketType)
+      try? setSocketOptions(socket, family: deviceAddress.family)
+      // also connect UDP sockets to ensure we do not receive unsolicited replies
+      try socket.connect(to: deviceAddress)
+      return socket
+    }
+    _asyncSocket = try await AsyncSocket(
       socket: socket,
       pool: AsyncSocketPoolMonitor.shared.get()
     )
@@ -169,9 +190,9 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
 
   override public func disconnectDevice() async throws {
     await AsyncSocketPoolMonitor.shared.stop()
-    if let asyncSocket {
-      try asyncSocket.close()
-      self.asyncSocket = nil
+    if let _asyncSocket {
+      try _asyncSocket.close()
+      self._asyncSocket = nil
     }
     try await super.disconnectDevice()
   }
@@ -180,19 +201,19 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     path: String,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    try self.init(socketAddress: sockaddr_un.unix(path: path), options: options)
+    try self.init(socketAddress: AnySocketAddress(sockaddr_un.unix(path: path)), options: options)
   }
 
   fileprivate func withMappedError<T: Sendable>(
     _ block: (_ asyncSocket: AsyncSocket) async throws
       -> T
   ) async throws -> T {
-    guard let asyncSocket else {
+    guard let _asyncSocket else {
       throw Ocp1Error.notConnected
     }
 
     do {
-      return try await block(asyncSocket)
+      return try await block(_asyncSocket)
     } catch let error as SocketError {
       throw error.mappedError
     }
@@ -209,12 +230,12 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     fatalError("socketType must be implemented by a concrete subclass of Ocp1FlyingSocksConnection")
   }
 
-  func setSocketOptions(_ socket: Socket) throws {}
+  func setSocketOptions(_ socket: Socket, family: sa_family_t) throws {}
 }
 
 public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
   override public var connectionPrefix: String {
-    "\(OcaTcpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
+    "\(OcaTcpConnectionPrefix)/\(_presentationAddress)"
   }
 
   override public var isDatagram: Bool { false }
@@ -227,8 +248,8 @@ public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
     }
   }
 
-  override func setSocketOptions(_ socket: Socket) throws {
-    if deviceAddress.family == AF_INET {
+  override func setSocketOptions(_ socket: Socket, family: sa_family_t) throws {
+    if family == AF_INET {
       try socket.setValue(true, for: BoolSocketOption(name: TCP_NODELAY), level: CInt(IPPROTO_TCP))
     }
   }
@@ -236,7 +257,7 @@ public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
 
 public final class Ocp1FlyingSocksDatagramConnection: Ocp1FlyingSocksConnection {
   override public var connectionPrefix: String {
-    "\(OcaUdpConnectionPrefix)/\(deviceAddressToString(deviceAddress))"
+    "\(OcaUdpConnectionPrefix)/\(_presentationAddress)"
   }
 
   override public var heartbeatTime: Duration {

@@ -29,6 +29,7 @@ import Glibc
 import Darwin
 #endif
 import Logging
+import SocketAddress
 
 package let Ocp1MaximumDatagramPduSize = 1500
 
@@ -451,5 +452,20 @@ extension Ocp1Connection: Equatable {
 extension Ocp1Connection: Hashable {
   public nonisolated func hash(into hasher: inout Hasher) {
     hasher.combine(connectionPrefix)
+  }
+}
+
+public protocol Ocp1MutableConnection: Ocp1Connection {
+  var deviceAddress: Data { get set }
+}
+
+extension Ocp1MutableConnection {
+  var socketAddress: (any SocketAddress)? {
+    get {
+      try? AnySocketAddress(bytes: Array(deviceAddress))
+    }
+    set {
+      if let newValue { deviceAddress = newValue.data }
+    }
   }
 }

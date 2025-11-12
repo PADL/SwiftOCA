@@ -187,9 +187,19 @@ let CommonTargets: [Target] = [
       .unsafeFlags(ASANSwiftFlags),
     ],
     linkerSettings: [] + ASANLinkerSettings
+  ),
+  .executableTarget(
+    name: "OCABrokerTest",
+    dependencies: [
+      "SwiftOCA",
+    ],
+    path: "Examples/OCABrokerTest",
+    swiftSettings: [
+      .unsafeFlags(ASANSwiftFlags),
+    ],
+    linkerSettings: [] + ASANLinkerSettings
 
   ),
-
   .testTarget(
     name: "SwiftOCATests",
     dependencies: [

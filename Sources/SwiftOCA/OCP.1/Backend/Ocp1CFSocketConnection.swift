@@ -366,10 +366,10 @@ Sendable, CustomStringConvertible, Hashable {
   }
 }
 
-public class Ocp1CFSocketConnection: Ocp1Connection {
-  fileprivate let deviceAddress: AnySocketAddress
-  fileprivate var socket: _CFSocketWrapper?
-  fileprivate var type: Int32 {
+public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
+  fileprivate let _deviceAddress: ManagedCriticalState<AnySocketAddress>
+  fileprivate var _socket: _CFSocketWrapper?
+  fileprivate var _type: Int32 {
     fatalError("must be implemented by subclass")
   }
 
@@ -377,7 +377,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
     deviceAddress: AnySocketAddress,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    self.deviceAddress = deviceAddress
+    _deviceAddress = ManagedCriticalState(deviceAddress)
     super.init(options: options)
   }
 
@@ -400,17 +400,35 @@ public class Ocp1CFSocketConnection: Ocp1Connection {
     try self.init(deviceAddress: deviceAddress, options: options)
   }
 
+  public nonisolated var deviceAddress: Data {
+    get {
+      AnySocketAddress(_deviceAddress.criticalState).data
+    }
+    set {
+      do {
+        try _deviceAddress.withCriticalRegion {
+          $0 = try AnySocketAddress(bytes: Array(newValue))
+          Task { await deviceAddressDidChange() }
+        }
+      } catch {}
+    }
+  }
+
+  fileprivate nonisolated var _presentationAddress: String {
+    try! _deviceAddress.criticalState.presentationAddress
+  }
+
   private var family: sa_family_t {
-    deviceAddress.family
+    _deviceAddress.criticalState.family
   }
 
   override public func connectDevice() async throws {
-    socket = try await _CFSocketWrapper(address: deviceAddress, type: type)
+    _socket = try await _CFSocketWrapper(address: _deviceAddress.criticalState, type: _type)
     try await super.connectDevice()
   }
 
   override public func disconnectDevice() async throws {
-    socket = nil
+    _socket = nil
     try await super.disconnectDevice()
   }
 }
@@ -420,19 +438,19 @@ public final class Ocp1CFSocketUDPConnection: Ocp1CFSocketConnection {
     .seconds(1)
   }
 
-  override fileprivate var type: Int32 {
+  override fileprivate var _type: Int32 {
     SOCK_DGRAM
   }
 
   override public var connectionPrefix: String {
-    "\(OcaUdpConnectionPrefix)/\(try! deviceAddress.presentationAddress)"
+    "\(OcaUdpConnectionPrefix)/\(_presentationAddress)"
   }
 
   override public var isDatagram: Bool { true }
 
   override public func read(_ length: Int) async throws -> Data {
-    guard let socket else { throw Ocp1Error.notConnected }
-    var iterator = socket.receivedMessages.makeAsyncIterator()
+    guard let _socket else { throw Ocp1Error.notConnected }
+    var iterator = _socket.receivedMessages.makeAsyncIterator()
     guard let data = try await iterator.next()?.1 else {
       throw Ocp1Error.notConnected
     }
@@ -440,31 +458,31 @@ public final class Ocp1CFSocketUDPConnection: Ocp1CFSocketConnection {
   }
 
   override public func write(_ data: Data) async throws -> Int {
-    guard let socket else { throw Ocp1Error.notConnected }
-    try socket.send(data: data)
+    guard let _socket else { throw Ocp1Error.notConnected }
+    try _socket.send(data: data)
     return data.count
   }
 }
 
 public final class Ocp1CFSocketTCPConnection: Ocp1CFSocketConnection {
-  override fileprivate var type: Int32 {
+  override fileprivate var _type: Int32 {
     SOCK_STREAM
   }
 
   override public var connectionPrefix: String {
-    "\(OcaTcpConnectionPrefix)/\(try! deviceAddress.presentationAddress)"
+    "\(OcaTcpConnectionPrefix)/\(_presentationAddress)"
   }
 
   override public var isDatagram: Bool { false }
 
   override public func read(_ length: Int) async throws -> Data {
-    guard let socket else { throw Ocp1Error.notConnected }
-    return try await socket.read(count: length)
+    guard let _socket else { throw Ocp1Error.notConnected }
+    return try await _socket.read(count: length)
   }
 
   override public func write(_ data: Data) async throws -> Int {
-    guard let socket else { throw Ocp1Error.notConnected }
-    return try await socket.write(data: data)
+    guard let _socket else { throw Ocp1Error.notConnected }
+    return try await _socket.write(data: data)
   }
 }
 

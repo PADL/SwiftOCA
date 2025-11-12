@@ -44,6 +44,8 @@ private extension Ocp1Error {
     case .connectionTimeout:
       fallthrough
     case .notConnected:
+      fallthrough
+    case .deviceAddressChanged:
       return true
     default:
       return false
@@ -381,6 +383,12 @@ extension Ocp1Connection {
       logger.trace("reconnection abandoned after too many tries")
       _updateConnectionState(.connectionTimedOut)
       throw Ocp1Error.connectionTimeout
+    }
+  }
+
+  func deviceAddressDidChange() {
+    Task {
+      try await onMonitorError(id: -1, Ocp1Error.deviceAddressChanged)
     }
   }
 

@@ -21,12 +21,19 @@ import Foundation
 
 extension NetService: @unchecked Sendable {}
 
-public class OcaBrowser: NSObject, NetServiceBrowserDelegate, @unchecked
-Sendable {
+public final class OcaBrowser: NSObject, NetServiceBrowserDelegate {
   public enum Result: Sendable {
     case didNotSearch(Error)
     case didFind(NetService)
     case didRemove(NetService)
+
+    var result: Swift.Result<NetService, Error> {
+      switch self {
+      case let .didFind(service): .success(service)
+      case let .didRemove(service): .success(service)
+      case let .didNotSearch(error): .failure(error)
+      }
+    }
   }
 
   private let browser: NetServiceBrowser
@@ -37,22 +44,19 @@ Sendable {
     channel = AsyncChannel<Result>()
     super.init()
     browser.delegate = self
-
-    Task {
-      self.browser.searchForServices(ofType: serviceType.rawValue, inDomain: "local.")
-    }
+    browser.schedule(in: .main, forMode: .default)
+    browser.searchForServices(ofType: serviceType.rawValue, inDomain: "local.")
   }
 
   deinit {
     browser.stop()
+    browser.remove(from: .main, forMode: .default)
   }
 
   public func netServiceBrowserWillSearch(_ browser: NetServiceBrowser) {}
 
   private func netServiceBrowser(_ browser: NetServiceBrowser, didNotSearch error: Error) {
-    Task {
-      await channel.send(Result.didNotSearch(error))
-    }
+    Task { await channel.send(Result.didNotSearch(error)) }
   }
 
   public func netServiceBrowser(
@@ -60,9 +64,7 @@ Sendable {
     didFind service: NetService,
     moreComing: Bool
   ) {
-    Task {
-      await channel.send(Result.didFind(service))
-    }
+    Task { await channel.send(Result.didFind(service)) }
   }
 
   public func netServiceBrowser(
@@ -70,9 +72,7 @@ Sendable {
     didRemove service: NetService,
     moreComing: Bool
   ) {
-    Task {
-      await channel.send(Result.didRemove(service))
-    }
+    Task { await channel.send(Result.didRemove(service)) }
   }
 
   public func netServiceBrowserDidStopSearch(_ browser: NetServiceBrowser) {
@@ -80,11 +80,10 @@ Sendable {
   }
 }
 
-fileprivate final class OcaResolverDelegate: NSObject, NetServiceDelegate, Sendable {
-  typealias ResolutionResult = Result<Data, Error>
-  let channel: AsyncChannel<ResolutionResult>
+final class OcaResolverDelegate: NSObject, NetServiceDelegate, Sendable {
+  let channel: AsyncThrowingChannel<Data, Error>
 
-  init(_ channel: AsyncChannel<ResolutionResult>) {
+  init(_ channel: AsyncThrowingChannel<Data, Error>) {
     self.channel = channel
   }
 
@@ -93,14 +92,14 @@ fileprivate final class OcaResolverDelegate: NSObject, NetServiceDelegate, Senda
   }
 
   func netServiceDidResolveAddress(_ sender: NetService) {
-    Task {
-      guard let addresses = sender.addresses, !addresses.isEmpty else {
-        await channel.send(.failure(Ocp1Error.serviceResolutionFailed))
-        return
-      }
+    guard let addresses = sender.addresses, !addresses.isEmpty else {
+      channel.fail(Ocp1Error.serviceResolutionFailed)
+      return
+    }
 
+    Task {
       for address in addresses {
-        await channel.send(ResolutionResult.success(address))
+        await channel.send(address)
       }
     }
   }
@@ -109,9 +108,7 @@ fileprivate final class OcaResolverDelegate: NSObject, NetServiceDelegate, Senda
     let errorCode = errorDict[NetService.errorCode]!.intValue
     let errorDomain = errorDict[NetService.errorDomain]!.stringValue
 
-    Task {
-      await channel.send(.failure(NSError(domain: errorDomain, code: errorCode)))
-    }
+    channel.fail(NSError(domain: errorDomain, code: errorCode))
   }
 }
 
@@ -132,49 +129,45 @@ extension Ocp1Connection: Ocp1ConnectionFactory {
       throw Ocp1Error.unknownServiceType
     }
 
-    let channel = AsyncChannel<OcaResolverDelegate.ResolutionResult>()
+    let channel = AsyncThrowingChannel<Data, Error>()
     let delegate = OcaResolverDelegate(channel)
     netService.delegate = delegate
     netService.schedule(in: RunLoop.main, forMode: .default)
+    defer { netService.remove(from: RunLoop.main, forMode: .default) }
     netService.resolve(withTimeout: 5)
 
-    for await result in channel {
-      switch result {
-      case let .success(address):
-        // FIXME: support IPv6
-        guard address.withUnsafeBytes({ unbound -> Bool in
-          unbound.withMemoryRebound(to: sockaddr.self) { cSockAddr -> Bool in
-            cSockAddr.baseAddress!.pointee.sa_family == AF_INET
-          }
-        }) == true else {
-          continue
+    for try await address in channel {
+      // FIXME: support IPv6
+      guard address.withUnsafeBytes({ unbound -> Bool in
+        unbound.withMemoryRebound(to: sockaddr.self) { cSockAddr -> Bool in
+          cSockAddr.baseAddress!.pointee.sa_family == AF_INET
         }
-        channel.finish()
+      }) == true else {
+        continue
+      }
+      channel.finish()
 
-        switch serviceType {
-        case .tcp:
-          try await self
-            .init(
-              reassigningSelfTo: Ocp1TCPConnection(
-                deviceAddress: address,
-                options: options
-              ) as! Self
-            )
-          return
-        case .udp:
-          try await self
-            .init(
-              reassigningSelfTo: Ocp1UDPConnection(
-                deviceAddress: address,
-                options: options
-              ) as! Self
-            )
-          return
-        default:
-          throw Ocp1Error.unknownServiceType
-        }
-      case let .failure(error):
-        throw error
+      switch serviceType {
+      case .tcp:
+        try await self
+          .init(
+            reassigningSelfTo: Ocp1TCPConnection(
+              deviceAddress: address,
+              options: options
+            ) as! Self
+          )
+        return
+      case .udp:
+        try await self
+          .init(
+            reassigningSelfTo: Ocp1UDPConnection(
+              deviceAddress: address,
+              options: options
+            ) as! Self
+          )
+        return
+      default:
+        throw Ocp1Error.unknownServiceType
       }
     }
 
@@ -182,4 +175,40 @@ extension Ocp1Connection: Ocp1ConnectionFactory {
   }
 }
 
+extension NetService {
+  /// Decode the TXT record as a string dictionary, or [:] if the data is malformed
+  static func dictionary(fromTXTRecord txtData: Data) -> [String: String] {
+    // https://stackoverflow.com/questions/40193911/nsnetservice-dictionaryfromtxtrecord-fails-an-assertion-on-invalid-input
+    var result = [String: String]()
+    var data = txtData
+
+    while !data.isEmpty {
+      // The first byte of each record is its length, so prefix that much data
+      let recordLength = Int(data.removeFirst())
+      guard data.count >= recordLength else { return [:] }
+      let recordData = data[..<(data.startIndex + recordLength)]
+      data = data.dropFirst(recordLength)
+
+      guard let record = String(bytes: recordData, encoding: .utf8) else { return [:] }
+      // The format of the entry is "key=value"
+      // (According to the reference implementation, = is optional if there is no value,
+      // and any equals signs after the first are part of the value.)
+      // `ommittingEmptySubsequences` is necessary otherwise an empty string will crash the next
+      // line
+      let keyValue = record.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+      let key = String(keyValue[0])
+      // If there's no value, make the value the empty string
+      switch keyValue.count {
+      case 1:
+        result[key] = ""
+      case 2:
+        result[key] = String(keyValue[1])
+      default:
+        fatalError()
+      }
+    }
+
+    return result
+  }
+}
 #endif

@@ -138,7 +138,7 @@ public extension Ocp1Connection {
     subscriptions.removeAll()
   }
 
-  public func addSubscriptions(events: [OcaEvent]) async {
+  func addSubscriptions(events: [OcaEvent]) async {
     await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
       for event in events {
         taskGroup.addTask { [self] in
@@ -178,6 +178,5 @@ public extension Ocp1Connection {
     }
   }
 
-  @_spi(SwiftOCAPrivate)
-  public var subscribedEvents: [OcaEvent] { Array(subscriptions.keys) }
+  var subscribedEvents: [OcaEvent] { Array(subscriptions.keys) }
 }

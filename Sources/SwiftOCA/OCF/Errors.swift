@@ -30,6 +30,7 @@ public enum Ocp1Error: Error, Equatable {
   case datasetReadFailed
   case datasetWriteFailed
   case datasetTargetMismatch
+  case deviceAddressChanged
   case duplicateObject(OcaONo)
   case endpointAlreadyRegistered
   case endpointNotRegistered
