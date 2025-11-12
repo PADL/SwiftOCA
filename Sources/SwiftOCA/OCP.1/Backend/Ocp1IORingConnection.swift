@@ -54,8 +54,8 @@ fileprivate extension Errno {
   }
 }
 
-public class Ocp1IORingConnection: Ocp1Connection {
-  fileprivate let _deviceAddress: any SocketAddress
+public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableConnection {
+  fileprivate let _deviceAddress: ManagedCriticalState<any SocketAddress>
   fileprivate var _socket: Socket?
   fileprivate var _type: Int32 {
     fatalError("must be implemented by subclass")
@@ -72,7 +72,7 @@ public class Ocp1IORingConnection: Ocp1Connection {
     socketAddress: any SocketAddress,
     options: Ocp1ConnectionOptions
   ) throws {
-    _deviceAddress = socketAddress
+    _deviceAddress = ManagedCriticalState(socketAddress)
     super.init(options: options)
   }
 
@@ -108,6 +108,20 @@ public class Ocp1IORingConnection: Ocp1Connection {
       throw error.mappedError
     }
   }
+
+  public nonisolated var deviceAddress: Data {
+    get {
+      AnySocketAddress(_deviceAddress.criticalState).data
+    }
+    set {
+      do {
+        try _deviceAddress.withCriticalRegion {
+          $0 = try AnySocketAddress(bytes: Array(newValue))
+          Task { await deviceAddressDidChange() }
+        }
+      } catch {}
+    }
+  }
 }
 
 public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
@@ -131,14 +145,15 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   }
 
   override public func connectDevice() async throws {
+    let deviceAddress = _deviceAddress.criticalState
     let socket = try Socket(
       ring: IORing.shared,
-      domain: _deviceAddress.family,
+      domain: deviceAddress.family,
       type: __socket_type(UInt32(_type)),
       protocol: 0
     )
 
-    try await socket.connect(to: _deviceAddress)
+    try await socket.connect(to: deviceAddress)
     _socket = socket
     try await super.connectDevice()
   }
@@ -157,7 +172,7 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   }
 
   override public var connectionPrefix: String {
-    "\(OcaUdpConnectionPrefix)/\(try! _deviceAddress.presentationAddress)"
+    "\(OcaUdpConnectionPrefix)/\(try! _deviceAddress.criticalState.presentationAddress)"
   }
 
   override public var isDatagram: Bool { true }
@@ -185,11 +200,12 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   }
 
   override public func connectDevice() async throws {
+    let deviceAddress = _deviceAddress.criticalState
     let localAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
     let ring = try IORing()
     let socket = try Socket(
       ring: ring,
-      domain: _deviceAddress.family,
+      domain: deviceAddress.family,
       type: __socket_type(UInt32(_type)),
       protocol: 0
     )
@@ -202,7 +218,7 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
     try socket.bind(to: localAddress)
     self.localAddress = localAddress
     try await ring.registerFixedBuffers(count: 1, size: receiveBufferSize)
-    try await socket.connect(to: _deviceAddress)
+    try await socket.connect(to: deviceAddress)
     _socket = socket
     try await super.connectDevice()
   }
@@ -233,7 +249,7 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   }
 
   override public var connectionPrefix: String {
-    "\(OcaLocalConnectionPrefix)/\(try! _deviceAddress.presentationAddress)"
+    "\(OcaLocalConnectionPrefix)/\(try! _deviceAddress.criticalState.presentationAddress)"
   }
 
   override public var isDatagram: Bool { true }
@@ -245,16 +261,18 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
   }
 
   override public func connectDevice() async throws {
+    let deviceAddress: any SocketAddress = _deviceAddress.criticalState
+
     let socket = try Socket(
       ring: IORing.shared,
-      domain: _deviceAddress.family,
+      domain: deviceAddress.family,
       type: __socket_type(UInt32(_type)),
       protocol: 0
     )
-    if _deviceAddress.family == AF_INET || _deviceAddress.family == AF_INET6 {
+    if deviceAddress.family == AF_INET || deviceAddress.family == AF_INET6 {
       try socket.setTcpNoDelay()
     }
-    try await socket.connect(to: _deviceAddress)
+    try await socket.connect(to: deviceAddress)
     _socket = socket
     try await super.connectDevice()
   }
@@ -272,9 +290,11 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
   }
 
   override public var connectionPrefix: String {
-    let prefix = _deviceAddress
-      .family == AF_LOCAL ? OcaLocalConnectionPrefix : OcaTcpConnectionPrefix
-    return "\(prefix)/\(try! _deviceAddress.presentationAddress)"
+    _deviceAddress.withCriticalRegion { deviceAddress in
+      let prefix = deviceAddress
+        .family == AF_LOCAL ? OcaLocalConnectionPrefix : OcaTcpConnectionPrefix
+      return "\(prefix)/\(try! deviceAddress.presentationAddress)"
+    }
   }
 
   override public var isDatagram: Bool { false }
