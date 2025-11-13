@@ -380,7 +380,7 @@ public actor OcaConnectionBroker {
   /// - Throws: `Ocp1Error.notConnected` if no connection exists for the device
   /// - Throws: Connection-specific errors during disconnection
   public func disconnect(device: DeviceIdentifier, retiring: Bool = false) async throws {
-    try await withConnectedDevice(device) { connection in
+    try await withDeviceConnection(device) { connection in
       try await connection.disconnect()
     }
     if retiring {
@@ -407,12 +407,11 @@ public actor OcaConnectionBroker {
   /// - Returns: The value returned by the closure
   /// - Throws: `Ocp1Error.notConnected` if no connection exists or the device is not connected
   /// - Throws: Any error thrown by the closure
-  public func withConnectedDevice<T>(
+  public func withDeviceConnection<T>(
     _ device: DeviceIdentifier,
     body: (_ connection: Ocp1Connection) async throws -> T
   ) async throws -> T {
     let connection = try _getRegisteredConnection(for: device)
-    guard await connection.connection.isConnected else { throw Ocp1Error.notConnected }
     return try await body(connection.connection)
   }
 }
