@@ -110,9 +110,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   }
 
   private nonisolated var presentationAddress: String {
-    address.withSockAddr {
-      $0.pointee.unsafelyUnwrappedPresentationAddress
-    }
+    address.makeStorage().unsafelyUnwrappedPresentationAddress
   }
 
   func controller(
