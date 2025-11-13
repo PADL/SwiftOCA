@@ -69,8 +69,8 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
 
   private(set) var socket: Socket?
 
-  private nonisolated var family: Int32 {
-    Int32(address.family)
+  private nonisolated var family: sa_family_t {
+    address.family
   }
 
   public convenience init(
@@ -163,7 +163,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
   }
 
   func makeSocketAndListen() throws -> Socket {
-    let socket = try Socket(domain: family)
+    let socket = try Socket(domain: Int32(family))
     try socket.setValue(true, for: .localAddressReuse)
     #if canImport(Darwin)
     try socket.setValue(true, for: .noSIGPIPE)

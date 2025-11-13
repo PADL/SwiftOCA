@@ -70,13 +70,8 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   private var _endpointRegistrarTask: Task<(), Error>?
   #endif
 
-  private nonisolated var family: Int32 {
-    switch address {
-    case is sockaddr_in: AF_INET
-    case is sockaddr_in6: AF_INET6
-    case is sockaddr_un: AF_UNIX
-    default: AF_UNSPEC
-    }
+  private nonisolated var family: sa_family_t {
+    address.family
   }
 
   public convenience init(
@@ -182,7 +177,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   }
 
   func makeSocketAndListen() throws -> Socket {
-    let socket = try Socket(domain: family, type: .datagram)
+    let socket = try Socket(domain: Int32(family), type: .datagram)
     try socket.setValue(true, for: .localAddressReuse)
     if address.family == sa_family_t(AF_INET6) { try socket.setIPv6Only() }
     try socket.bind(to: address)
