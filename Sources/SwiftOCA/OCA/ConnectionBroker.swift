@@ -58,7 +58,9 @@ public actor OcaConnectionBroker {
   /// A device identifier combines the device's model GUID and serial number to provide
   /// a unique identifier that persists across network sessions. The identifier also
   /// maintains the DNS-SD query information for device resolution.
-  public struct DeviceIdentifier: Sendable, Hashable, CustomStringConvertible {
+  public struct DeviceIdentifier: Sendable, Hashable, Identifiable, CustomStringConvertible {
+    public typealias ID = String
+
     public let serialNumber: OcaString
     public let modelGUID: OcaModelGUID
     public let serviceType: OcaNetworkAdvertisingServiceType
@@ -76,11 +78,11 @@ public actor OcaConnectionBroker {
       hasher.combine(serialNumber)
     }
 
-    public var description: String {
-      "\(serviceType)#\(modelGUID)#\(serialNumber)"
-    }
+    public var id: ID { "\(serviceType)#\(modelGUID)#\(serialNumber)" }
 
-    init(
+    public var description: String { id }
+
+    public init(
       serviceType: OcaNetworkAdvertisingServiceType,
       modelGUID: OcaModelGUID,
       serialNumber: OcaString,
