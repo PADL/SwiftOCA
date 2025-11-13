@@ -34,6 +34,14 @@ import Foundation
 #endif
 import Logging
 import SwiftOCA
+import SystemPackage
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#elseif canImport(Android)
+import Android
+#endif
 
 @OcaDevice
 public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
@@ -119,6 +127,8 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
         #if canImport(dnssd)
         Task { try await runBonjourEndpointRegistrar(for: device) }
         #endif
+      } else if family == AF_UNIX {
+        try? unlinkDomainSocket()
       }
       try await _run(on: socket, pool: pool)
     } catch {
@@ -144,6 +154,14 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
     _endpointRegistrarTask?.cancel()
     #endif
     try? socket?.close()
+  }
+
+  private nonisolated func unlinkDomainSocket() throws {
+    if family == AF_UNIX {
+      if unlink(presentationAddress) < 0 {
+        throw Errno(rawValue: errno)
+      }
+    }
   }
 
   func makeSocketAndListen() throws -> Socket {
@@ -238,6 +256,10 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
 
   func remove(controller: ControllerType) async {
     _controllers.removeAll(where: { $0 == controller })
+  }
+
+  deinit {
+    if family == AF_UNIX { try? unlinkDomainSocket() }
   }
 }
 
