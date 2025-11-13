@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-#if canImport(Darwin)
+#if canImport(Darwin) || canImport(dnssd)
 
 import AsyncAlgorithms
 import AsyncExtensions
@@ -224,7 +224,11 @@ public actor OcaConnectionBroker {
     var browserMonitor: Task<(), Error>?
 
     init(serviceType: OcaNetworkAdvertisingServiceType, broker: OcaConnectionBroker) throws {
+      #if canImport(dnssd)
+      browser = try OcaDNSServiceBrowser(serviceType: serviceType)
+      #else
       browser = try OcaNetServiceBrowser(serviceType: serviceType)
+      #endif
       Task { try await browser.start() }
       browserMonitor = Task { [weak broker] in
         for try await result in browser.browseResults {

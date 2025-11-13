@@ -26,7 +26,7 @@ private let connectionOptions = Ocp1ConnectionOptions(flags: [
 @main
 public enum BrokerTest {
   public static func main() async throws {
-    #if canImport(Darwin)
+    #if canImport(Darwin) || canImport(dnssd)
     let broker = await OcaConnectionBroker(connectionOptions: connectionOptions)
     print("waiting for events from broker...")
     for try await event in await broker.events {
@@ -40,7 +40,7 @@ public enum BrokerTest {
     }
     print("done!")
     #else
-    preconditionFailure("OcaConnectionBroker not yet supported on non-Darwin platforms")
+    preconditionFailure("OcaConnectionBroker not available on this platform")
     #endif
   }
 }
