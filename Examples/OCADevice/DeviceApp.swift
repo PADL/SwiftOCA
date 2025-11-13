@@ -82,6 +82,8 @@ public enum DeviceApp {
       address: listen6Address
         .data
     )
+    let domainSocketStreamEndpoint =
+      try? await Ocp1FlyingSocksStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
     #else
     let streamEndpoint = try await Ocp1StreamDeviceEndpoint(address: listenAddress.data)
     #endif
@@ -153,25 +155,25 @@ public enum DeviceApp {
         print("Starting OCP.1 IPv6 datagram endpoint \(datagram6Endpoint)...")
         try await datagram6Endpoint.run()
       }
-      #endif
-      #if canImport(FlyingSocks)
-      taskGroup.addTask {
-        print("Starting OCP.1 WebSocket endpoint \(webSocketEndpoint)...")
-        try await webSocketEndpoint.run()
-      }
-      #endif
-      #if os(Linux)
       if let domainSocketStreamEndpoint {
         taskGroup.addTask {
           print("Starting OCP.1 domain socket stream endpoint \(domainSocketStreamEndpoint)...")
           try await domainSocketStreamEndpoint.run()
         }
       }
+      #endif
+      #if os(Linux)
       if let domainSocketDatagramEndpoint {
         taskGroup.addTask {
           print("Starting OCP.1 domain socket datagram endpoint \(domainSocketDatagramEndpoint)...")
           try await domainSocketDatagramEndpoint.run()
         }
+      }
+      #endif
+      #if canImport(FlyingSocks)
+      taskGroup.addTask {
+        print("Starting OCP.1 WebSocket endpoint \(webSocketEndpoint)...")
+        try await webSocketEndpoint.run()
       }
       #endif
       taskGroup.addTask {
