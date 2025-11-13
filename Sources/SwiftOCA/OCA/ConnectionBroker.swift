@@ -414,6 +414,14 @@ public actor OcaConnectionBroker {
     let connection = try _getRegisteredConnection(for: device)
     return try await body(connection.connection)
   }
+
+  public func withDeviceConnection<T>(
+    _ device: DeviceIdentifier,
+    body: (_ connection: Ocp1Connection) throws -> T
+  ) throws -> T {
+    let connection = try _getRegisteredConnection(for: device)
+    return try body(connection.connection)
+  }
 }
 
 extension OcaConnectionBroker.DeviceIdentifier {
