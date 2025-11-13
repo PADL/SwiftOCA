@@ -285,7 +285,7 @@ public actor OcaConnectionBroker {
   ///
   /// - Parameter connectionOptions: Configuration options for connections created by this broker.
   ///   Defaults to standard options if not specified.
-  public init(connectionOptions: Ocp1ConnectionOptions = .init()) async {
+  public init(connectionOptions: Ocp1ConnectionOptions = .init()) {
     _connectionOptions = connectionOptions
     var browsers = [OcaNetworkAdvertisingServiceType: BrowserMonitor]()
     for serviceType in [OcaNetworkAdvertisingServiceType.tcp,
