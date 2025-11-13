@@ -38,7 +38,8 @@ class BonjourBrowser: ObservableObject {
                 case let .added(serviceInfo):
                   services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
                 case let .removed(serviceInfo):
-                  services.removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
+                  services
+                    .removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
                 }
               }
             }
@@ -53,7 +54,8 @@ class BonjourBrowser: ObservableObject {
                 case let .added(serviceInfo):
                   services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
                 case let .removed(serviceInfo):
-                  services.removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
+                  services
+                    .removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
                 }
               }
             }
