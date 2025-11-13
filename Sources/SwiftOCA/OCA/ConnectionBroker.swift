@@ -347,6 +347,10 @@ public actor OcaConnectionBroker {
     _registerConnection(connection, for: device)
   }
 
+  public func open(device: DeviceIdentifier) async throws {
+    try await _open(device: device, connect: false)
+  }
+
   /// Establishes a connection to the specified device.
   ///
   /// This method creates a connection to the device if one doesn't exist, and then attempts to
