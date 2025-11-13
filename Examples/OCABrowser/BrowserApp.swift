@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2025 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -21,50 +21,52 @@ import SwiftUI
 
 #if os(macOS)
 class BonjourBrowser: ObservableObject {
-  let udpBrowser = OcaBrowser(serviceType: .udp)
-  let tcpBrowser = OcaBrowser(serviceType: .tcp)
+  let udpBrowser = try! OcaNetServiceBrowser(serviceType: .udp)
+  let tcpBrowser = try! OcaNetServiceBrowser(serviceType: .tcp)
   @Published
-  var services = [NetService]()
+  var services = [AnyOcaNetworkAdvertisingServiceInfo]()
 
   init() {
     Task {
       await withTaskGroup(of: Void.self) { [self] group in
         group.addTask { [self] in
-          for await result in udpBrowser.channel {
-            Task { @MainActor in
-              switch result {
-              case let .didFind(netService):
-                services.append(netService)
-              case let .didRemove(netService):
-                services.removeAll(where: { $0 == netService })
-              case let .didNotSearch(error):
-                debugPrint("OcaBonjourDiscoveryView: \(error)")
+          do {
+            try await udpBrowser.start()
+            for try await result in udpBrowser.browseResults {
+              Task { @MainActor in
+                switch result {
+                case let .added(serviceInfo):
+                  services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
+                case let .removed(serviceInfo):
+                  services.removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
+                }
               }
             }
-          }
+          } catch {}
         }
         group.addTask { [self] in
-          for await result in tcpBrowser.channel {
-            Task { @MainActor in
-              switch result {
-              case let .didFind(netService):
-                services.append(netService)
-              case let .didRemove(netService):
-                services.removeAll(where: { $0 == netService })
-              case let .didNotSearch(error):
-                debugPrint("OcaBonjourDiscoveryView: \(error)")
+          do {
+            try await tcpBrowser.start()
+            for try await result in tcpBrowser.browseResults {
+              Task { @MainActor in
+                switch result {
+                case let .added(serviceInfo):
+                  services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
+                case let .removed(serviceInfo):
+                  services.removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
+                }
               }
             }
-          }
+          } catch {}
         }
       }
     }
   }
 
   @MainActor
-  func service(with id: NetService.ID?) -> NetService? {
-    guard let id else { return nil }
-    return services.first(where: { $0.id == id })
+  func service(with name: String?) -> AnyOcaNetworkAdvertisingServiceInfo? {
+    guard let name else { return nil }
+    return services.first(where: { $0.name == name })
   }
 }
 #endif
@@ -99,9 +101,9 @@ struct SwiftOCABrowser: App {
       #if os(macOS)
       CommandGroup(replacing: .newItem) {
         Menu("Connect") {
-          ForEach(browser.services, id: \.id) { service in
+          ForEach(browser.services, id: \.name) { service in
             Button(service.name) {
-              openWindow(id: "BonjourBrowser", value: service.id)
+              openWindow(id: "BonjourBrowser", value: service.name)
             }
           }
         }

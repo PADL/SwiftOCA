@@ -24,9 +24,9 @@ public struct OcaBonjourDeviceView: View {
   var isConnected = false
   @State
   var lastError: Error? = nil
-  var service: NetService
+  var service: any OcaNetworkAdvertisingServiceInfo
 
-  public init(_ service: NetService) {
+  public init(_ service: any OcaNetworkAdvertisingServiceInfo) {
     self.service = service
   }
 
@@ -40,7 +40,27 @@ public struct OcaBonjourDeviceView: View {
       }
     }.task {
       do {
-        connection = try await Ocp1Connection(service)
+        try await service.resolve()
+        let addresses = try service.addresses
+        guard let firstAddress = addresses.first else {
+          throw Ocp1Error.serviceResolutionFailed
+        }
+
+        switch service.serviceType {
+        case .tcp:
+          connection = try await Ocp1TCPConnection(
+            deviceAddress: firstAddress,
+            options: Ocp1ConnectionOptions()
+          )
+        case .udp:
+          connection = try await Ocp1UDPConnection(
+            deviceAddress: firstAddress,
+            options: Ocp1ConnectionOptions()
+          )
+        default:
+          throw Ocp1Error.unknownServiceType
+        }
+
         if let connection {
           try await connection.connect()
           isConnected = true

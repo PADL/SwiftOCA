@@ -19,41 +19,53 @@ import Foundation
 import SwiftOCA
 import SwiftUI
 
-extension NetService: Identifiable {
-  public typealias ID = String
-
-  public var id: ID {
-    "\(domain)$\(type)$\(name)$\(String(port))"
-  }
-}
-
 public struct OcaBonjourDiscoveryView: View {
-  let udpBrowser = OcaBrowser(serviceType: .udp)
-  let tcpBrowser = OcaBrowser(serviceType: .tcp)
+  let udpBrowser = try! OcaNetServiceBrowser(serviceType: .udp)
+  let tcpBrowser = try! OcaNetServiceBrowser(serviceType: .tcp)
   @State
-  var services = [NetService]()
+  var services = [AnyOcaNetworkAdvertisingServiceInfo]()
   @State
-  var serviceSelection: NetService? = nil
+  var serviceSelection: AnyOcaNetworkAdvertisingServiceInfo? = nil
 
   public init() {}
 
   public var body: some View {
     NavigationStack {
-      List(services, selection: $serviceSelection) { service in
+      List(services, id: \.name, selection: $serviceSelection) { service in
         NavigationLink(destination: OcaBonjourDeviceView(service)) {
           Text(service.name)
         }
       }
     }
     .task {
-      for await result in merge(udpBrowser.channel, tcpBrowser.channel) {
-        switch result {
-        case let .didFind(netService):
-          services.append(netService)
-        case let .didRemove(netService):
-          services.removeAll(where: { $0 == netService })
-        case let .didNotSearch(error):
-          debugPrint("OcaBonjourDiscoveryView: \(error)")
+      await withTaskGroup(of: Void.self) { group in
+        group.addTask {
+          do {
+            try await udpBrowser.start()
+            for try await result in await udpBrowser.browseResults {
+              switch result {
+              case let .added(serviceInfo):
+                services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
+              case let .removed(serviceInfo):
+                services
+                  .removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
+              }
+            }
+          } catch {}
+        }
+        group.addTask {
+          do {
+            try await tcpBrowser.start()
+            for try await result in await tcpBrowser.browseResults {
+              switch result {
+              case let .added(serviceInfo):
+                services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
+              case let .removed(serviceInfo):
+                services
+                  .removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
+              }
+            }
+          } catch {}
         }
       }
     }

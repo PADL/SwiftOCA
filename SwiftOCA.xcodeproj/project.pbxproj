@@ -39,7 +39,6 @@
 		D32C49DD2B5102A300D73201 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = D32C49DC2B5102A300D73201 /* Logging */; };
 		D32EDEED2D6D7279009673D6 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D32EDEF12D6D7385009673D6 /* EventBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32EDEEF2D6D7385009673D6 /* EventBenchmark.swift */; };
-		D337B8F52EC411CB00826A4B /* ConnectionBroker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D337B8F42EC411CB00826A4B /* ConnectionBroker.swift */; };
 		D337B9032EC4384E00826A4B /* BrokerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D337B9012EC4384E00826A4B /* BrokerTest.swift */; };
 		D337B9042EC438B500826A4B /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D337B92A2EC52CA400826A4B /* SocketAddressHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D337B9292EC52CA400826A4B /* SocketAddressHelpers.swift */; };
@@ -243,7 +242,6 @@
 		D3E6E2282A3ACFA100BF7095 /* BrowserApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2222A3ACFA000BF7095 /* BrowserApp.swift */; };
 		D3E6E2292A3ACFA100BF7095 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */; };
 		D3E6E2342A3AD0A800BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
-		D3E6E2392A3BD52E00BF7095 /* Browser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2382A3BD52E00BF7095 /* Browser.swift */; };
 		D3E6E24A2A3C0C7700BF7095 /* MuteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E2492A3C0C7700BF7095 /* MuteView.swift */; };
 		D3E6E24B2A3C0C8D00BF7095 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D3E6E24C2A3C0D6300BF7095 /* libSwiftOCAUI.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */; };
@@ -380,7 +378,6 @@
 		D324D9B42CFC5A3800232790 /* OcaRoot+Binding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaRoot+Binding.swift"; sourceTree = "<group>"; };
 		D32EDEE22D6D7241009673D6 /* OCAEventBenchmark */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCAEventBenchmark; sourceTree = BUILT_PRODUCTS_DIR; };
 		D32EDEEF2D6D7385009673D6 /* EventBenchmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventBenchmark.swift; sourceTree = "<group>"; };
-		D337B8F42EC411CB00826A4B /* ConnectionBroker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionBroker.swift; sourceTree = "<group>"; };
 		D337B8FA2EC4382700826A4B /* OCABrokerTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCABrokerTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D337B9012EC4384E00826A4B /* BrokerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrokerTest.swift; sourceTree = "<group>"; };
 		D337B9292EC52CA400826A4B /* SocketAddressHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketAddressHelpers.swift; sourceTree = "<group>"; };
@@ -578,7 +575,6 @@
 		D3E6E2222A3ACFA000BF7095 /* BrowserApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowserApp.swift; path = Examples/OCABrowser/BrowserApp.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E2242A3ACFA100BF7095 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D3E6E2262A3ACFA100BF7095 /* OCABrowser.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = OCABrowser.entitlements; path = Examples/OCABrowser/OCABrowser.entitlements; sourceTree = SOURCE_ROOT; };
-		D3E6E2382A3BD52E00BF7095 /* Browser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Browser.swift; sourceTree = "<group>"; };
 		D3E6E2432A3C0BA000BF7095 /* libSwiftOCAUI.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCAUI.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3E6E2492A3C0C7700BF7095 /* MuteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MuteView.swift; sourceTree = "<group>"; };
 		D3E6E2502A3C4E2300BF7095 /* ShowProgressIfWaiting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowProgressIfWaiting.swift; sourceTree = "<group>"; };
@@ -614,6 +610,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		D337B9992EC5A02900826A4B /* Browsing */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Browsing; sourceTree = "<group>"; };
 		D348BEF22E02574900F902EC /* Dataset */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Dataset; sourceTree = "<group>"; };
 		D348BEF52E02584400F902EC /* DatasetStorageProviders */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DatasetStorageProviders; sourceTree = "<group>"; };
 		D3BA711C2DE994BB00A35C50 /* DataSets */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DataSets; sourceTree = "<group>"; };
@@ -1403,8 +1400,7 @@
 			children = (
 				D3E6E1AF2A3ACA6C00BF7095 /* ClassRegistry.swift */,
 				D34B5FA52B67204D000C8DD1 /* Connection.swift */,
-				D3E6E2382A3BD52E00BF7095 /* Browser.swift */,
-				D337B8F42EC411CB00826A4B /* ConnectionBroker.swift */,
+				D337B9992EC5A02900826A4B /* Browsing */,
 				D3E6E23E2A3C0B2E00BF7095 /* Helpers */,
 			);
 			path = OCA;
@@ -1654,6 +1650,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				D337B9992EC5A02900826A4B /* Browsing */,
 				D3BA711C2DE994BB00A35C50 /* DataSets */,
 				D3BA71212DE99B4A00A35C50 /* Dataset */,
 			);
@@ -2032,7 +2029,6 @@
 				D3E6E1BC2A3ACA7E00BF7095 /* Errors.swift in Sources */,
 				D3AFD3542B2D082B00A72E9A /* ControlNetwork.swift in Sources */,
 				D3E820E62DFBEF0C001C9DC8 /* Ocp1NWConnection.swift in Sources */,
-				D337B8F52EC411CB00826A4B /* ConnectionBroker.swift in Sources */,
 				D3E6E1DA2A3ACAA900BF7095 /* ApplicationNetworkDataTypes.swift in Sources */,
 				D30644062A770B640063DA65 /* Notification2.swift in Sources */,
 				D34B5FA22B65FD74000C8DD1 /* GrouperDataTypes.swift in Sources */,
@@ -2062,7 +2058,6 @@
 				D3AFD3402B2A8CC000A72E9A /* MiscFrameworkDataTypes.swift in Sources */,
 				D3E6E1C12A3ACA8200BF7095 /* Notification1.swift in Sources */,
 				D3D8FA382B60546E0054FD3C /* DeviceManagerDataTypes.swift in Sources */,
-				D3E6E2392A3BD52E00BF7095 /* Browser.swift in Sources */,
 				D3E6E1DE2A3ACAA900BF7095 /* WellKnownObjectNumbers.swift in Sources */,
 				D3FAC8EC2B5CFC11009E2775 /* TaskManagerDataTypes.swift in Sources */,
 				D3E741482D56331F0044CCBB /* TemperatureSensor.swift in Sources */,
