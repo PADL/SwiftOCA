@@ -415,7 +415,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
   }
 
   fileprivate nonisolated var _presentationAddress: String {
-    try! _deviceAddress.criticalState.presentationAddress
+    _deviceAddress.criticalState.unsafelyUnwrappedPresentationAddress
   }
 
   private var family: sa_family_t {

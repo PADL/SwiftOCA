@@ -148,7 +148,7 @@ public final class Ocp1CFStreamDeviceEndpoint: Ocp1CFDeviceEndpoint,
   }
 
   override public func run() async throws {
-    logger.info("starting \(type(of: self)) on \(try! address.presentationAddress)")
+    logger.info("starting \(type(of: self)) on \(address.unsafelyUnwrappedPresentationAddress)")
     try await super.run()
     socket = try await makeSocketAndListen()
     notificationSocket = try await makeNotificationSocket()
@@ -231,7 +231,7 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
   }
 
   override public func run() async throws {
-    logger.info("starting \(type(of: self)) on \(try! address.presentationAddress)")
+    logger.info("starting \(type(of: self)) on \(address.unsafelyUnwrappedPresentationAddress)")
     try await super.run()
     socket = try await makeSocket()
     repeat {

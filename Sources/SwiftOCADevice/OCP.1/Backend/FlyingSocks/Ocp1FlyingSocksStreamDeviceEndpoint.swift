@@ -115,7 +115,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
 
   private nonisolated var presentationAddress: String {
     address.withSockAddr {
-      try! $0.pointee.presentationAddress
+      $0.pointee.unsafelyUnwrappedPresentationAddress
     }
   }
 

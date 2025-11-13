@@ -111,7 +111,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
 
   private nonisolated var presentationAddress: String {
     address.withSockAddr {
-      try! $0.pointee.presentationAddress
+      $0.pointee.unsafelyUnwrappedPresentationAddress
     }
   }
 

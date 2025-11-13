@@ -93,7 +93,7 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
 
   nonisolated var identifier: String {
     peerAddress.withSockAddr {
-      try! $0.pointee.presentationAddress
+      $0.pointee.unsafelyUnwrappedPresentationAddress
     }
   }
 
