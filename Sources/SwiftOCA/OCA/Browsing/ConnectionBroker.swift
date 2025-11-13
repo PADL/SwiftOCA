@@ -239,6 +239,11 @@ public actor OcaConnectionBroker {
     }
   }
 
+  private static let _defaultServiceTypes = Set([
+    OcaNetworkAdvertisingServiceType.tcp,
+    OcaNetworkAdvertisingServiceType.udp,
+  ])
+
   /// An async sequence of events emitted by the connection broker.
   ///
   /// This sequence provides notifications about device lifecycle changes and connection state
@@ -316,12 +321,13 @@ public actor OcaConnectionBroker {
   ///
   /// - Parameter connectionOptions: Configuration options for connections created by this broker.
   ///   Defaults to standard options if not specified.
-  public init(connectionOptions: Ocp1ConnectionOptions = .init()) {
+  public init(
+    connectionOptions: Ocp1ConnectionOptions = .init(),
+    serviceTypes: Set<OcaNetworkAdvertisingServiceType>? = nil
+  ) {
     _connectionOptions = connectionOptions
     var browsers = [OcaNetworkAdvertisingServiceType: BrowserMonitor]()
-    for serviceType in [OcaNetworkAdvertisingServiceType.tcp,
-                        OcaNetworkAdvertisingServiceType.udp]
-    {
+    for serviceType in serviceTypes ?? Self._defaultServiceTypes {
       browsers[serviceType] = try! BrowserMonitor(serviceType: serviceType, broker: self)
     }
     _browsers = browsers
