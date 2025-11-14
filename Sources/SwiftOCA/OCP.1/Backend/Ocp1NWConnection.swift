@@ -29,6 +29,9 @@ import Foundation
 import Network
 import SocketAddress
 import SystemPackage
+#if canImport(Synchronization)
+import Synchronization
+#endif
 
 private extension SocketAddress {
   private func _asNWEndpointHost() throws -> NWEndpoint.Host {
@@ -64,7 +67,7 @@ private extension SocketAddress {
 }
 
 public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
-  fileprivate let _deviceAddress: ManagedCriticalState<AnySocketAddress>
+  fileprivate let _deviceAddress: Mutex<AnySocketAddress>
   fileprivate var _queue: DispatchQueue!
   fileprivate var _nwConnection: NWConnection!
 
@@ -76,7 +79,7 @@ public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
     deviceAddress: AnySocketAddress,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    _deviceAddress = ManagedCriticalState(deviceAddress)
+    _deviceAddress = Mutex(deviceAddress)
     super.init(options: options)
     _nwConnection = try NWConnection(to: nwEndpoint, using: parameters)
     _nwConnection.stateUpdateHandler = { [weak self] state in
@@ -108,11 +111,11 @@ public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
 
   public nonisolated var deviceAddress: Data {
     get {
-      AnySocketAddress(_deviceAddress.criticalState).data
+      AnySocketAddress(_deviceAddress.criticalValue).data
     }
     set {
       do {
-        try _deviceAddress.withCriticalRegion {
+        try _deviceAddress.withLock {
           $0 = try AnySocketAddress(bytes: Array(newValue))
           Task { await deviceAddressDidChange() }
         }
@@ -165,12 +168,12 @@ public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
 
   fileprivate nonisolated var nwEndpoint: NWEndpoint {
     get throws {
-      try _deviceAddress.criticalState.asNWEndpoint()
+      try _deviceAddress.criticalValue.asNWEndpoint()
     }
   }
 
   fileprivate nonisolated var presentationAddress: String {
-    _deviceAddress.criticalState.unsafelyUnwrappedPresentationAddress
+    _deviceAddress.criticalValue.unsafelyUnwrappedPresentationAddress
   }
 }
 

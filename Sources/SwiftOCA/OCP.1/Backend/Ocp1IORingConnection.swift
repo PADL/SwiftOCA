@@ -36,6 +36,9 @@ internal import IORingUtils
 
 import SocketAddress
 import struct SystemPackage.Errno
+#if canImport(Synchronization)
+import Synchronization
+#endif
 
 fileprivate extension Errno {
   var mappedError: Error {
@@ -55,7 +58,7 @@ fileprivate extension Errno {
 }
 
 public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableConnection {
-  fileprivate let _deviceAddress: ManagedCriticalState<any SocketAddress>
+  fileprivate let _deviceAddress: Mutex<any SocketAddress>
   fileprivate var _socket: Socket?
   fileprivate var _type: Int32 {
     fatalError("must be implemented by subclass")
@@ -72,7 +75,7 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableConnection {
     socketAddress: any SocketAddress,
     options: Ocp1ConnectionOptions
   ) throws {
-    _deviceAddress = ManagedCriticalState(socketAddress)
+    _deviceAddress = Mutex(socketAddress)
     super.init(options: options)
   }
 
@@ -111,11 +114,11 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableConnection {
 
   public nonisolated var deviceAddress: Data {
     get {
-      AnySocketAddress(_deviceAddress.criticalState).data
+      AnySocketAddress(_deviceAddress.criticalValue).data
     }
     set {
       do {
-        try _deviceAddress.withCriticalRegion {
+        try _deviceAddress.withLock {
           $0 = try AnySocketAddress(bytes: Array(newValue))
           Task { await deviceAddressDidChange() }
         }
@@ -145,7 +148,7 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   }
 
   override public func connectDevice() async throws {
-    let deviceAddress = _deviceAddress.criticalState
+    let deviceAddress = _deviceAddress.criticalValue
     let socket = try Socket(
       ring: IORing.shared,
       domain: deviceAddress.family,
@@ -172,7 +175,7 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   }
 
   override public var connectionPrefix: String {
-    "\(OcaUdpConnectionPrefix)/\(_deviceAddress.criticalState.unsafelyUnwrappedPresentationAddress)"
+    "\(OcaUdpConnectionPrefix)/\(_deviceAddress.criticalValue.unsafelyUnwrappedPresentationAddress)"
   }
 
   override public var isDatagram: Bool { true }
@@ -200,7 +203,7 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   }
 
   override public func connectDevice() async throws {
-    let deviceAddress = _deviceAddress.criticalState
+    let deviceAddress = _deviceAddress.criticalValue
     let localAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
     let ring = try IORing()
     let socket = try Socket(
@@ -249,7 +252,7 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   }
 
   override public var connectionPrefix: String {
-    "\(OcaLocalConnectionPrefix)/\(_deviceAddress.criticalState.unsafelyUnwrappedPresentationAddress)"
+    "\(OcaLocalConnectionPrefix)/\(_deviceAddress.criticalValue.unsafelyUnwrappedPresentationAddress)"
   }
 
   override public var isDatagram: Bool { true }
@@ -261,7 +264,7 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
   }
 
   override public func connectDevice() async throws {
-    let deviceAddress: any SocketAddress = _deviceAddress.criticalState
+    let deviceAddress: any SocketAddress = _deviceAddress.criticalValue
 
     let socket = try Socket(
       ring: IORing.shared,
@@ -290,7 +293,7 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
   }
 
   override public var connectionPrefix: String {
-    _deviceAddress.withCriticalRegion { deviceAddress in
+    _deviceAddress.withLock { deviceAddress in
       let prefix = deviceAddress
         .family == AF_LOCAL ? OcaLocalConnectionPrefix : OcaTcpConnectionPrefix
       return "\(prefix)/\(deviceAddress.unsafelyUnwrappedPresentationAddress)"

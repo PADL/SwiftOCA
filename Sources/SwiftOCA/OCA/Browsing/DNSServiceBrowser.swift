@@ -32,6 +32,9 @@ import Android
 #endif
 import Dispatch
 import dnssd
+#if canImport(Synchronization)
+import Synchronization
+#endif
 
 /// A private class that represents a discovered DNS-SD service
 private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecked Sendable {
@@ -61,7 +64,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
   }
 
   // resolved name and addresses, set (semi-)atomically after resolve() called
-  private let _resolutionInfo: ManagedCriticalState<ResolutionInfo?> = .init(nil)
+  private let _resolutionInfo: Mutex<ResolutionInfo?> = .init(nil)
 
   init(
     name: String,
@@ -77,7 +80,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
   var hostname: String {
     get throws {
-      guard let hostname = _resolutionInfo.withCriticalRegion({ $0?.hostname }) else {
+      guard let hostname = _resolutionInfo.withLock({ $0?.hostname }) else {
         throw Ocp1Error.serviceResolutionFailed
       }
       return hostname
@@ -86,7 +89,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
   var port: UInt16 {
     get throws {
-      guard let port = _resolutionInfo.withCriticalRegion({ $0?.port }) else {
+      guard let port = _resolutionInfo.withLock({ $0?.port }) else {
         throw Ocp1Error.serviceResolutionFailed
       }
       return port
@@ -95,7 +98,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
   var addresses: [Data] {
     get throws {
-      guard let addresses = _resolutionInfo.withCriticalRegion({ $0?.addresses }) else {
+      guard let addresses = _resolutionInfo.withLock({ $0?.addresses }) else {
         throw Ocp1Error.serviceResolutionFailed
       }
       return addresses
@@ -104,7 +107,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
   var txtRecords: [String: String] {
     get throws {
-      guard let records = _resolutionInfo.withCriticalRegion({ $0?.txtRecords }) else {
+      guard let records = _resolutionInfo.withLock({ $0?.txtRecords }) else {
         throw Ocp1Error.serviceResolutionFailed
       }
       return records
@@ -113,7 +116,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
   func resolve() async throws {
     // do nothing if already resolved
-    guard _resolutionInfo.criticalState == nil else { return }
+    guard _resolutionInfo.criticalValue == nil else { return }
 
     try await _resolveService()
     try await _resolveAddresses()
@@ -157,7 +160,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
   }
 
   private func _resolveAddresses() async throws {
-    guard let hostname = _resolutionInfo.withCriticalRegion({ $0?.hostname }) else {
+    guard let hostname = _resolutionInfo.withLock({ $0?.hostname }) else {
       throw Ocp1Error.serviceResolutionFailed
     }
 
@@ -204,13 +207,13 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
   }
 
   fileprivate func _setResolveResult(hostname: String, port: UInt16, txtRecords: [String: String]) {
-    _resolutionInfo.withCriticalRegion {
+    _resolutionInfo.withLock {
       $0 = ResolutionInfo(hostname: hostname, port: port, txtRecords: txtRecords)
     }
   }
 
   private func _addAddress(_ address: Data) {
-    _resolutionInfo.withCriticalRegion {
+    _resolutionInfo.withLock {
       $0?.addresses.append(address)
     }
   }

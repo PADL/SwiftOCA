@@ -35,6 +35,9 @@ import Darwin
 #elseif canImport(Android)
 import Android
 #endif
+#if canImport(Synchronization)
+import Synchronization
+#endif
 
 private func cfSocketWrapperDataCallback(
   _ cfSocket: CFSocket?,
@@ -367,7 +370,7 @@ Sendable, CustomStringConvertible, Hashable {
 }
 
 public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
-  fileprivate let _deviceAddress: ManagedCriticalState<AnySocketAddress>
+  fileprivate let _deviceAddress: Mutex<AnySocketAddress>
   fileprivate var _socket: _CFSocketWrapper?
   fileprivate var _type: Int32 {
     fatalError("must be implemented by subclass")
@@ -377,7 +380,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
     deviceAddress: AnySocketAddress,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    _deviceAddress = ManagedCriticalState(deviceAddress)
+    _deviceAddress = Mutex(deviceAddress)
     super.init(options: options)
   }
 
@@ -402,11 +405,11 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
 
   public nonisolated var deviceAddress: Data {
     get {
-      AnySocketAddress(_deviceAddress.criticalState).data
+      AnySocketAddress(_deviceAddress.criticalValue).data
     }
     set {
       do {
-        try _deviceAddress.withCriticalRegion {
+        try _deviceAddress.withLock {
           $0 = try AnySocketAddress(bytes: Array(newValue))
           Task { await deviceAddressDidChange() }
         }
@@ -415,15 +418,15 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
   }
 
   fileprivate nonisolated var _presentationAddress: String {
-    _deviceAddress.criticalState.unsafelyUnwrappedPresentationAddress
+    _deviceAddress.criticalValue.unsafelyUnwrappedPresentationAddress
   }
 
   private var family: sa_family_t {
-    _deviceAddress.criticalState.family
+    _deviceAddress.criticalValue.family
   }
 
   override public func connectDevice() async throws {
-    _socket = try await _CFSocketWrapper(address: _deviceAddress.criticalState, type: _type)
+    _socket = try await _CFSocketWrapper(address: _deviceAddress.criticalValue, type: _type)
     try await super.connectDevice()
   }
 

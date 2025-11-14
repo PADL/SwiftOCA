@@ -9,6 +9,9 @@
 //
 //===----------------------------------------------------------------------===//
 
+#if canImport(Synchronization)
+import Synchronization
+#else
 #if canImport(Darwin)
 import Darwin
 #elseif canImport(Glibc)
@@ -115,16 +118,16 @@ struct Lock {
   }
 }
 
-struct ManagedCriticalState<State> {
-  private final class LockedBuffer: ManagedBuffer<State, Lock.Primitive> {
+struct Mutex<Value> {
+  private final class LockedBuffer: ManagedBuffer<Value, Lock.Primitive> {
     deinit {
       withUnsafeMutablePointerToElements { Lock.deinitialize($0) }
     }
   }
 
-  private let buffer: ManagedBuffer<State, Lock.Primitive>
+  private let buffer: ManagedBuffer<Value, Lock.Primitive>
 
-  init(_ initial: State) {
+  init(_ initial: Value) {
     buffer = LockedBuffer.create(minimumCapacity: 1) { buffer in
       buffer.withUnsafeMutablePointerToElements { Lock.initialize($0) }
       return initial
@@ -132,23 +135,20 @@ struct ManagedCriticalState<State> {
   }
 
   @discardableResult
-  func withCriticalRegion<R>(_ critical: (inout State) throws -> R) rethrows -> R {
+  func withLock<R>(_ critical: (inout Value) throws -> R) rethrows -> R {
     try buffer.withUnsafeMutablePointers { header, lock in
       Lock.lock(lock)
       defer { Lock.unlock(lock) }
       return try critical(&header.pointee)
     }
   }
-
-  func apply(criticalState newState: State) {
-    withCriticalRegion { actual in
-      actual = newState
-    }
-  }
-
-  var criticalState: State {
-    withCriticalRegion { $0 }
-  }
 }
 
-extension ManagedCriticalState: @unchecked Sendable where State: Sendable {}
+extension Mutex: @unchecked Sendable where Value: Sendable {}
+#endif
+
+extension Mutex {
+  var criticalValue: Value {
+    withLock { $0 }
+  }
+}

@@ -32,6 +32,9 @@ import FoundationEssentials
 import Foundation
 #endif
 import SystemPackage
+#if canImport(Synchronization)
+import Synchronization
+#endif
 
 fileprivate extension SocketError {
   var mappedError: Error {
@@ -129,7 +132,7 @@ private actor AsyncSocketPoolMonitor {
 }
 
 public class Ocp1FlyingSocksConnection: Ocp1Connection {
-  fileprivate let _deviceAddress: ManagedCriticalState<AnySocketAddress>
+  fileprivate let _deviceAddress: Mutex<AnySocketAddress>
   fileprivate var _asyncSocket: AsyncSocket?
 
   public convenience init(
@@ -143,7 +146,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     socketAddress: AnySocketAddress,
     options: Ocp1ConnectionOptions
   ) throws {
-    _deviceAddress = ManagedCriticalState<AnySocketAddress>(socketAddress)
+    _deviceAddress = Mutex<AnySocketAddress>(socketAddress)
     super.init(options: options)
   }
 
@@ -153,11 +156,11 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
 
   nonisolated var deviceAddress: Data {
     get {
-      AnySocketAddress(_deviceAddress.criticalState).data
+      AnySocketAddress(_deviceAddress.criticalValue).data
     }
     set {
       do {
-        try _deviceAddress.withCriticalRegion {
+        try _deviceAddress.withLock {
           $0 = try AnySocketAddress(data: newValue)
           Task { await deviceAddressDidChange() }
         }
@@ -170,7 +173,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
   }
 
   override public func connectDevice() async throws {
-    let socket = try _deviceAddress.withCriticalRegion { deviceAddress in
+    let socket = try _deviceAddress.withLock { deviceAddress in
       let socket = try Socket(domain: Int32(deviceAddress.family), type: socketType)
       try? setSocketOptions(socket, family: deviceAddress.family)
       // also connect UDP sockets to ensure we do not receive unsolicited replies
