@@ -112,10 +112,12 @@ Sendable, CustomStringConvertible, Hashable {
     }
   }
 
-  private let channel = AsyncThrowingChannel<Element, Error>()
+  private let channel: AsyncThrowingStream<Element, Error>
+  private let continuation: AsyncThrowingStream<Element, Error>.Continuation
   private var receivedData: Data!
   private var cfSocket: CFSocket!
   private let isDatagram: Bool
+  private var runLoopSource: CFRunLoopSource!
 
   public var acceptedSockets: AnyAsyncSequence<_CFSocketWrapper> {
     channel.map(\.nativeHandle).eraseToAnyAsyncSequence()
@@ -137,20 +139,18 @@ Sendable, CustomStringConvertible, Hashable {
     let data = Unmanaged<CFData>.fromOpaque(cfData).takeUnretainedValue().data
     guard data.count > 0 else {
       if errno == 0 {
-        channel.fail(Ocp1Error.notConnected)
+        continuation.finish(throwing: Ocp1Error.notConnected)
       } else {
-        channel.fail(Errno(rawValue: errno))
+        continuation.finish(throwing: Errno(rawValue: errno))
       }
       return
     }
 
-    Task { @Sendable in
-      if isDatagram {
-        let address = try! AnySocketAddress(bytes: Array(address!.data))
-        await channel.send(.message((address, data)))
-      } else {
-        await channel.send(.data(data))
-      }
+    if isDatagram {
+      let address = try! AnySocketAddress(bytes: Array(address!.data))
+      continuation.yield(.message((address, data)))
+    } else {
+      continuation.yield(.data(data))
     }
   }
 
@@ -162,15 +162,17 @@ Sendable, CustomStringConvertible, Hashable {
   ) {
     nativeHandle!.withMemoryRebound(to: CFSocketNativeHandle.self, capacity: 1) { nativeHandle in
       let nativeHandle = nativeHandle.pointee
-      Task {
-        let socket = try await _CFSocketWrapper(nativeHandle: nativeHandle)
-        await channel.send(.nativeHandle(socket))
+      if let socket = try? _CFSocketWrapper(nativeHandle: nativeHandle) {
+        continuation.yield(.nativeHandle(socket))
       }
     }
   }
 
   deinit {
-    channel.finish()
+    continuation.finish()
+    if let runLoopSource {
+      CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
+    }
   }
 
   public struct Options: OptionSet, Sendable {
@@ -187,13 +189,15 @@ Sendable, CustomStringConvertible, Hashable {
     address: any SocketAddress,
     type: Int32,
     options: Options = []
-  ) async throws {
+  ) throws {
     let proto: CInt = if address.family == AF_INET || address.family == AF_INET6 {
       CInt(type == SOCK_STREAM ? IPPROTO_TCP : IPPROTO_UDP)
     } else {
       0
     }
     isDatagram = type == SOCK_DGRAM
+
+    (channel, continuation) = AsyncThrowingStream.makeStream(of: Element.self, throwing: Error.self)
 
     var context = CFSocketContext()
     context.info = Unmanaged.passUnretained(self).toOpaque()
@@ -243,12 +247,15 @@ Sendable, CustomStringConvertible, Hashable {
       }
       try cfSocket.connect(to: address)
     }
-    try await _addSocketToRunLoop()
+    try _addSocketToRunLoop()
   }
 
-  init(nativeHandle: CFSocketNativeHandle) async throws {
-    var context = CFSocketContext()
+  init(nativeHandle: CFSocketNativeHandle) throws {
     isDatagram = false
+
+    (channel, continuation) = AsyncThrowingStream.makeStream(of: Element.self, throwing: Error.self)
+
+    var context = CFSocketContext()
     context.info = Unmanaged.passUnretained(self).toOpaque()
     let cfSocket: CFSocket?
 
@@ -267,24 +274,20 @@ Sendable, CustomStringConvertible, Hashable {
 
     try? cfSocket.setTcpNoDelay()
     receivedData = Data()
-    try await _addSocketToRunLoop()
+    try _addSocketToRunLoop()
   }
 
-  private func _addSocketToRunLoop() async throws {
+  private func _addSocketToRunLoop() throws {
     var options = CFSocketGetSocketFlags(cfSocket)
     options |= kCFSocketCloseOnInvalidate
     CFSocketSetSocketFlags(cfSocket, options)
     try cfSocket.setBlocking(false)
 
-    let runLoopSource = CFSocketCreateRunLoopSource(kCFAllocatorDefault, cfSocket, 0)
-    try await withTaskCancellationHandler(operation: {
-      CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
-      guard CFSocketIsValid(cfSocket) else {
-        throw mappedLastErrno()
-      }
-    }, onCancel: {
-      CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
-    })
+    runLoopSource = CFSocketCreateRunLoopSource(kCFAllocatorDefault, cfSocket, 0)
+    CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
+    guard CFSocketIsValid(cfSocket) else {
+      throw mappedLastErrno()
+    }
   }
 
   private func drainChannel(atLeast length: Int) async throws {
