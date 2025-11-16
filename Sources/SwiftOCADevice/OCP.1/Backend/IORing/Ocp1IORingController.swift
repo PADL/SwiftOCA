@@ -80,7 +80,8 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     _messages.eraseToAnyAsyncSequence()
   }
 
-  private var _messages = AsyncThrowingChannel<Ocp1MessageList, Error>()
+  private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
+  private let _messagesContinuation: AsyncThrowingStream<Ocp1MessageList, Error>.Continuation
   private let socket: Socket
   let notificationSocket: Socket
 
@@ -97,6 +98,11 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     self.notificationSocket = notificationSocket
     self.endpoint = endpoint
 
+    (_messages, _messagesContinuation) = AsyncThrowingStream.makeStream(
+      of: Ocp1MessageList.self,
+      throwing: Error.self
+    )
+
     peerAddress = try AnySocketAddress(self.socket.peerAddress)
     if peerAddress.family == AF_LOCAL {
       connectionPrefix = OcaLocalConnectionPrefix
@@ -107,14 +113,15 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     receiveMessageTask = Task { [self] in
       do {
         repeat {
-          try await _messages.send(OcaDevice.receiveMessages { try await socket.read(
+          let messages = try await OcaDevice.receiveMessages { try await socket.read(
             count: $0,
             awaitingAllRead: true
-          ) })
+          ) }
+          _messagesContinuation.yield(messages)
           if Task.isCancelled { break }
         } while true
       } catch {
-        _messages.fail(error)
+        _messagesContinuation.finish(throwing: error)
       }
     }
   }
@@ -127,6 +134,8 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
 
     receiveMessageTask?.cancel()
     receiveMessageTask = nil
+
+    _messagesContinuation.finish()
   }
 
   func onConnectionBecomingStale() async throws {
