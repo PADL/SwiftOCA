@@ -224,10 +224,12 @@ public actor OcaConnectionBroker {
     var browserMonitor: Task<(), Error>?
 
     init(serviceType: OcaNetworkAdvertisingServiceType, broker: OcaConnectionBroker) throws {
-      #if canImport(dnssd)
+      #if canImport(Darwin)
+      browser = try OcaNetServiceBrowser(serviceType: serviceType)
+      #elseif canImport(dnssd)
       browser = try OcaDNSServiceBrowser(serviceType: serviceType)
       #else
-      browser = try OcaNetServiceBrowser(serviceType: serviceType)
+      throw Ocp1Error.notImplemented
       #endif
       Task { try await browser.start() }
       browserMonitor = Task { [weak broker] in
