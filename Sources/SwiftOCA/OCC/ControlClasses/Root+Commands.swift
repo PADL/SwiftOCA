@@ -81,9 +81,9 @@ private extension OcaRoot {
   }
 }
 
-extension OcaRoot {
+public extension OcaRoot {
   /// Send a command, not expecting a response
-  func sendCommand<T: Encodable>(
+  final func sendCommand<T: Encodable>(
     methodID: OcaMethodID,
     parameterCount: OcaUint8 = _ocp1ParameterCount(type: T.self),
     parameters: T,
@@ -99,8 +99,10 @@ extension OcaRoot {
   }
 }
 
-extension OcaRoot {
-  struct Placeholder: Codable {}
+public extension OcaRoot {
+  struct Placeholder: Codable {
+    public init() {}
+  }
 
   final func sendCommandRrq<T: Encodable, U: Decodable>(
     methodID: OcaMethodID,
