@@ -20,6 +20,7 @@ import AsyncAlgorithms
 import AsyncExtensions
 import Dispatch
 import Foundation
+import SocketAddress
 
 /// A client-side connection broker that discovers OCA devices via DNS Service Discovery
 /// and manages connections to them.
@@ -158,7 +159,11 @@ public actor OcaConnectionBroker {
     var addresses: [Data] {
       get throws {
         // FIXME: quick and dirty way to preference IPv4 addresses
-        try serviceInfo.addresses.sorted { $0.count < $1.count }
+        try serviceInfo.addresses.sorted { lhs, rhs in
+          let lhs = (try? AnySocketAddress(bytes: Array(lhs)).family) ?? sa_family_t(AF_UNSPEC)
+          let rhs = (try? AnySocketAddress(bytes: Array(rhs)).family) ?? sa_family_t(AF_UNSPEC)
+          return lhs < rhs
+        }
       }
     }
 
