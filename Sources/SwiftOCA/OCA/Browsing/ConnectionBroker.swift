@@ -208,7 +208,7 @@ public actor OcaConnectionBroker {
             eventType: .connectionStateChanged(connectionState),
             deviceIdentifier: deviceIdentifier
           )
-          await broker?._events.send(event)
+          broker?._eventsContinuation.yield(event)
         }
       }
     }
@@ -264,13 +264,13 @@ public actor OcaConnectionBroker {
   /// states change for registered devices.
   ///
   /// - Returns: An async sequence of `Event` instances
-  public var events: AnyAsyncSequence<Event> { _events.eraseToAnyAsyncSequence() }
+  public let events: AsyncStream<Event>
 
   private var _browsers: [OcaNetworkAdvertisingServiceType: BrowserMonitor]!
   private var _devices = [DeviceIdentifier: DeviceInfo]()
   private var _connections = [DeviceIdentifier: DeviceConnection]()
   private let _connectionOptions: Ocp1ConnectionOptions
-  private let _events = AsyncChannel<Event>()
+  private let _eventsContinuation: AsyncStream<Event>.Continuation
 
   private func _getRegisteredConnection(for device: DeviceIdentifier) throws -> DeviceConnection {
     guard let connection = _connections[device] else {
@@ -321,7 +321,7 @@ public actor OcaConnectionBroker {
       return
     }
 
-    await _events.send(event)
+    _eventsContinuation.yield(event)
     await expiringConnection?.expire()
   }
 
@@ -337,11 +337,21 @@ public actor OcaConnectionBroker {
     serviceTypes: Set<OcaNetworkAdvertisingServiceType>? = nil
   ) {
     _connectionOptions = connectionOptions
+
+    // Create AsyncStream for events
+    let (stream, continuation) = AsyncStream<Event>.makeStream()
+    events = stream
+    _eventsContinuation = continuation
+
     var browsers = [OcaNetworkAdvertisingServiceType: BrowserMonitor]()
     for serviceType in serviceTypes ?? Self._defaultServiceTypes {
       browsers[serviceType] = try! BrowserMonitor(serviceType: serviceType, broker: self)
     }
     _browsers = browsers
+  }
+
+  deinit {
+    _eventsContinuation.finish()
   }
 
   private func _registerConnection(_ connection: Ocp1Connection, for device: DeviceIdentifier) {
