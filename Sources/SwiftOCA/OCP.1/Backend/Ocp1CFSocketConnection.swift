@@ -112,7 +112,7 @@ Sendable, CustomStringConvertible, Hashable {
     }
   }
 
-  private let channel: AsyncThrowingStream<Element, Error>
+  private let stream: AsyncThrowingStream<Element, Error>
   private let continuation: AsyncThrowingStream<Element, Error>.Continuation
   private var receivedData: Data!
   private var cfSocket: CFSocket!
@@ -120,11 +120,11 @@ Sendable, CustomStringConvertible, Hashable {
   private var runLoopSource: CFRunLoopSource!
 
   public var acceptedSockets: AnyAsyncSequence<_CFSocketWrapper> {
-    channel.map(\.nativeHandle).eraseToAnyAsyncSequence()
+    stream.map(\.nativeHandle).eraseToAnyAsyncSequence()
   }
 
   public var receivedMessages: AnyAsyncSequence<CFSocket.Message> {
-    channel.map(\.message).eraseToAnyAsyncSequence()
+    stream.map(\.message).eraseToAnyAsyncSequence()
   }
 
   fileprivate nonisolated func dataCallBack(
@@ -197,7 +197,7 @@ Sendable, CustomStringConvertible, Hashable {
     }
     isDatagram = type == SOCK_DGRAM
 
-    (channel, continuation) = AsyncThrowingStream.makeStream(of: Element.self, throwing: Error.self)
+    (stream, continuation) = AsyncThrowingStream.makeStream(of: Element.self, throwing: Error.self)
 
     var context = CFSocketContext()
     context.info = Unmanaged.passUnretained(self).toOpaque()
@@ -253,7 +253,7 @@ Sendable, CustomStringConvertible, Hashable {
   init(nativeHandle: CFSocketNativeHandle) throws {
     isDatagram = false
 
-    (channel, continuation) = AsyncThrowingStream.makeStream(of: Element.self, throwing: Error.self)
+    (stream, continuation) = AsyncThrowingStream.makeStream(of: Element.self, throwing: Error.self)
 
     var context = CFSocketContext()
     context.info = Unmanaged.passUnretained(self).toOpaque()
@@ -293,7 +293,7 @@ Sendable, CustomStringConvertible, Hashable {
   private func drainChannel(atLeast length: Int) async throws {
     guard receivedData.count < length else { return }
 
-    for try await data in channel {
+    for try await data in stream {
       receivedData += data.data
       guard receivedData.count < length else { return }
     }
