@@ -420,6 +420,8 @@ public final class OcaDNSServiceBrowser: OcaNetworkAdvertisingServiceBrowser, @u
     interfaceIndex: UInt32
   ) {
     // Create unique identifier for the service (same as OcaNetworkAdvertisingServiceInfo.id)
+    // FIXME: we probably want to notify if the address changes, should we emit and remove
+    // then an add? or add a new updated type?
     let serviceId = "\(name).\(serviceType.rawValue)\(domain)"
 
     let shouldNotify = _discoveredServices.withLock { discoveredServices in
