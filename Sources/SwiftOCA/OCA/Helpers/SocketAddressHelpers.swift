@@ -16,4 +16,9 @@ package extension SocketAddress {
   var unsafelyUnwrappedPresentationAddress: String {
     try! presentationAddress
   }
+
+  var bytes: [UInt8] {
+    var storage = asStorage()
+    return withUnsafeBytes(of: &storage) { Array($0.prefix(Int(size))) }
+  }
 }

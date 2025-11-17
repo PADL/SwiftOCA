@@ -32,6 +32,7 @@ import Android
 #endif
 import Dispatch
 import dnssd
+import SocketAddress
 
 /// A private class that represents a discovered DNS-SD service
 private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecked Sendable {
@@ -213,28 +214,34 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
       let addresses = sequence(first: result, next: { $0.pointee.ai_next })
         .compactMap { (addrPtr: UnsafeMutablePointer<addrinfo>) -> Data? in
           let addrInfo = addrPtr.pointee
-          guard let addr = addrInfo.ai_addr else { return nil }
+          guard addrInfo.ai_addr != nil else { return nil }
 
-          // Only include IPv4 and IPv6 addresses
-          guard addrInfo.ai_family == AF_INET || addrInfo.ai_family == AF_INET6 else { return nil }
+          let bytes = UnsafeRawBufferPointer(
+            start: addrInfo.ai_addr,
+            count: Int(addrInfo.ai_addrlen)
+          )
+          guard var sockAddr = try? AnySocketAddress(bytes: Array(bytes)) else { return nil }
 
-          // Create a mutable copy of the sockaddr structure to set the port
-          var mutableAddressData = Data(count: Int(addrInfo.ai_addrlen))
-          mutableAddressData.withUnsafeMutableBytes { mutableBytes in
-            // Copy the original address data
-            memcpy(mutableBytes.baseAddress, addr, Int(addrInfo.ai_addrlen))
-
-            // Set the port based on address family
-            if addrInfo.ai_family == AF_INET {
-              let sockaddrIn = mutableBytes.baseAddress!.assumingMemoryBound(to: sockaddr_in.self)
-              sockaddrIn.pointee.sin_port = port.bigEndian
-            } else if addrInfo.ai_family == AF_INET6 {
-              let sockaddrIn6 = mutableBytes.baseAddress!.assumingMemoryBound(to: sockaddr_in6.self)
-              sockaddrIn6.pointee.sin6_port = port.bigEndian
+          switch sockAddr.family {
+          case sa_family_t(AF_INET):
+            sockAddr.withMutableSockAddr {
+              $0.withMemoryRebound(to: sockaddr_in.self, capacity: 1) {
+                $0.pointee.sin_port = port.bigEndian
+              }
             }
+          case sa_family_t(AF_INET6):
+            sockAddr.withMutableSockAddr {
+              $0.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) {
+                $0.pointee.sin6_port = port.bigEndian
+              }
+            }
+          case sa_family_t(AF_LOCAL):
+            break
+          default:
+            return nil
           }
 
-          return mutableAddressData
+          return Data(sockAddr.bytes)
         }
 
       resolutionInfo[Int(interfaceIndex)]!.addresses = Array(addresses)
