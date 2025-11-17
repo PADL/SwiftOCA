@@ -138,7 +138,12 @@ public actor OcaConnectionBroker {
 
   struct DeviceInfo: Sendable, Hashable {
     let deviceIdentifier: DeviceIdentifier
-    let serviceInfo: any OcaNetworkAdvertisingServiceInfo
+    let serviceInfo: AnyOcaNetworkAdvertisingServiceInfo
+
+    init(deviceIdentifier: DeviceIdentifier, serviceInfo: any OcaNetworkAdvertisingServiceInfo) {
+      self.deviceIdentifier = deviceIdentifier
+      self.serviceInfo = AnyOcaNetworkAdvertisingServiceInfo(serviceInfo)
+    }
 
     var serviceType: OcaNetworkAdvertisingServiceType {
       deviceIdentifier.serviceType
