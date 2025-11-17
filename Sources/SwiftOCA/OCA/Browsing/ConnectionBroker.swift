@@ -161,13 +161,14 @@ public actor OcaConnectionBroker {
       }
     }
 
+    private static func addressToFamily(_ data: Data) -> sa_family_t {
+      (try? AnySocketAddress(bytes: Array(data)).family) ?? sa_family_t(AF_UNSPEC)
+    }
+
     var addresses: [Data] {
       get throws {
-        // FIXME: quick and dirty way to preference IPv4 addresses
         try serviceInfo.addresses.sorted { lhs, rhs in
-          let lhs = (try? AnySocketAddress(bytes: Array(lhs)).family) ?? sa_family_t(AF_UNSPEC)
-          let rhs = (try? AnySocketAddress(bytes: Array(rhs)).family) ?? sa_family_t(AF_UNSPEC)
-          return lhs < rhs
+          Self.addressToFamily(lhs) < Self.addressToFamily(rhs)
         }
       }
     }
@@ -182,18 +183,12 @@ public actor OcaConnectionBroker {
     }
 
     static func == (lhs: Self, rhs: Self) -> Bool {
-      if lhs.deviceIdentifier == rhs.deviceIdentifier {
-        let _lhs = try? lhs.serviceInfo.addresses
-        let _rhs = try? rhs.serviceInfo.addresses
-        return _lhs == _rhs
-      } else {
-        return false
-      }
+      lhs.deviceIdentifier == rhs.deviceIdentifier && lhs.serviceInfo == rhs.serviceInfo
     }
 
     func hash(into hasher: inout Hasher) {
       deviceIdentifier.hash(into: &hasher)
-      (try? serviceInfo.addresses).hash(into: &hasher)
+      serviceInfo.hash(into: &hasher)
     }
   }
 
@@ -312,7 +307,7 @@ public actor OcaConnectionBroker {
       expiringConnection = _removeConnection(for: event.deviceIdentifier)
     case .deviceAdded:
       if let existingDevice = _devices[event.deviceIdentifier],
-         existingDevice != device,
+         (try? existingDevice.addresses) != (try? device.addresses),
          let existingConnection = _removeConnection(for: event.deviceIdentifier)
       {
         // notify connection layer of new address
