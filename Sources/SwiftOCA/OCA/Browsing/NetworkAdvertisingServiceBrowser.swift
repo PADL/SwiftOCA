@@ -307,7 +307,7 @@ public protocol OcaNetworkAdvertisingServiceBrowser {
   /// This sequence emits `OcaNetworkAdvertisingServiceBrowserResult` values as services
   /// are discovered or removed from the network. The sequence continues until the browser
   /// is stopped or encounters an unrecoverable error.
-  var browseResults: AnyAsyncSequence<OcaNetworkAdvertisingServiceBrowserResult> { get }
+  var browseResults: AsyncStream<OcaNetworkAdvertisingServiceBrowserResult> { get }
 
   /// Starts the service discovery process.
   ///

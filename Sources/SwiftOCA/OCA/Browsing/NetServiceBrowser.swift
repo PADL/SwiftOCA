@@ -116,18 +116,17 @@ public final class OcaNetServiceBrowser: NSObject, OcaNetworkAdvertisingServiceB
 {
   private let _browser = NetServiceBrowser()
   private let _serviceType: OcaNetworkAdvertisingServiceType
-  private let _browseResults = AsyncChannel<OcaNetworkAdvertisingServiceBrowserResult>()
+  private let _browseResultsContinuation: AsyncStream<OcaNetworkAdvertisingServiceBrowserResult>
+    .Continuation
+  public let browseResults: AsyncStream<OcaNetworkAdvertisingServiceBrowserResult>
 
   public init(serviceType: OcaNetworkAdvertisingServiceType) throws {
     _serviceType = serviceType
+    let (stream, continuation) = AsyncStream<OcaNetworkAdvertisingServiceBrowserResult>.makeStream()
+    browseResults = stream
+    _browseResultsContinuation = continuation
     super.init()
     _browser.delegate = self
-  }
-
-  public var browseResults: AsyncExtensions
-    .AnyAsyncSequence<OcaNetworkAdvertisingServiceBrowserResult>
-  {
-    _browseResults.eraseToAnyAsyncSequence()
   }
 
   public func start() async throws {
@@ -157,7 +156,7 @@ public final class OcaNetServiceBrowser: NSObject, OcaNetworkAdvertisingServiceB
     didFind service: NetService,
     moreComing: Bool
   ) {
-    Task { await _browseResults.send(.added(_NetServiceInfo(netService: service))) }
+    _browseResultsContinuation.yield(.added(_NetServiceInfo(netService: service)))
   }
 
   public func netServiceBrowser(
@@ -165,11 +164,11 @@ public final class OcaNetServiceBrowser: NSObject, OcaNetworkAdvertisingServiceB
     didRemove service: NetService,
     moreComing: Bool
   ) {
-    Task { await _browseResults.send(.removed(_NetServiceInfo(netService: service))) }
+    _browseResultsContinuation.yield(.removed(_NetServiceInfo(netService: service)))
   }
 
   public func netServiceBrowserDidStopSearch(_ browser: NetServiceBrowser) {
-    _browseResults.finish()
+    _browseResultsContinuation.finish()
   }
 }
 

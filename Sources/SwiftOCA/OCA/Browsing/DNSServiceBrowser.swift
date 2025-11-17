@@ -32,9 +32,6 @@ import Android
 #endif
 import Dispatch
 import dnssd
-#if canImport(Synchronization)
-import Synchronization
-#endif
 
 /// A private class that represents a discovered DNS-SD service
 private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecked Sendable {
@@ -42,45 +39,57 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
   let serviceType: OcaNetworkAdvertisingServiceType
   let name: String
   let domain: String
-  let interfaceIndex: UInt32
 
-  // Context objects for passing to C callbacks
-  final class ResolveContext: @unchecked Sendable {
-    let continuation: CheckedContinuation<(), Error>
-    let serviceInfo: _DNSServiceInfo
-    var source: DispatchSourceRead?
-
-    init(continuation: CheckedContinuation<(), Error>, serviceInfo: _DNSServiceInfo) {
-      self.continuation = continuation
-      self.serviceInfo = serviceInfo
-    }
-  }
-
-  private struct ResolutionInfo {
-    var hostname: String
-    var port: UInt16
+  struct ResolutionInfo {
+    var hostname: String!
+    var port: UInt16!
     var addresses: [Data] = []
     var txtRecords: [String: String] = [:]
   }
 
+  // Context objects for passing to C callbacks
+  final class ResolveContext: @unchecked Sendable {
+    let channel: AsyncStream<ResolutionInfo>.Continuation
+    let serviceInfo: _DNSServiceInfo
+    var source: DispatchSourceRead?
+
+    init(channel: AsyncStream<ResolutionInfo>.Continuation, serviceInfo: _DNSServiceInfo) {
+      self.channel = channel
+      self.serviceInfo = serviceInfo
+    }
+  }
+
   // resolved name and addresses, set (semi-)atomically after resolve() called
-  private let _resolutionInfo: Mutex<ResolutionInfo?> = .init(nil)
+  // they are indexed by interface address, which may be sparse (hence a dictionary)
+  let _resolutionInfo: Mutex<[Int: ResolutionInfo]> = .init([:])
 
   init(
     name: String,
     serviceType: OcaNetworkAdvertisingServiceType,
-    domain: String,
-    interfaceIndex: UInt32
+    domain: String
   ) {
     self.name = name
     self.serviceType = serviceType
     self.domain = domain
-    self.interfaceIndex = interfaceIndex
+  }
+
+  // currently we only use the first resolution info, and address, sorted by interface
+  // number but in the future we should try to connect to all resolution infos and
+  // addresses and pick the first and/or least latent one
+  private var _firstResolutionInfo: (Int, ResolutionInfo) {
+    get throws {
+      guard let resolutionInfo = _resolutionInfo.withLock({ resolutionInfo in
+        resolutionInfo.sorted(by: { $0.key < $1.key }).first
+      }) else {
+        throw Ocp1Error.serviceResolutionFailed
+      }
+      return resolutionInfo
+    }
   }
 
   var hostname: String {
     get throws {
-      guard let hostname = _resolutionInfo.withLock({ $0?.hostname }) else {
+      guard let hostname = try _firstResolutionInfo.1.hostname else {
         throw Ocp1Error.serviceResolutionFailed
       }
       return hostname
@@ -89,7 +98,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
   var port: UInt16 {
     get throws {
-      guard let port = _resolutionInfo.withLock({ $0?.port }) else {
+      guard let port = try _firstResolutionInfo.1.port else {
         throw Ocp1Error.serviceResolutionFailed
       }
       return port
@@ -98,7 +107,8 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
   var addresses: [Data] {
     get throws {
-      guard let addresses = _resolutionInfo.withLock({ $0?.addresses }) else {
+      let addresses = try _firstResolutionInfo.1.addresses
+      guard !addresses.isEmpty else {
         throw Ocp1Error.serviceResolutionFailed
       }
       return addresses
@@ -107,26 +117,40 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
   var txtRecords: [String: String] {
     get throws {
-      guard let records = _resolutionInfo.withLock({ $0?.txtRecords }) else {
-        throw Ocp1Error.serviceResolutionFailed
-      }
-      return records
+      try _firstResolutionInfo.1.txtRecords
     }
   }
 
   func resolve() async throws {
     // do nothing if already resolved
-    guard _resolutionInfo.criticalValue == nil else { return }
+    guard _resolutionInfo.criticalValue.isEmpty else { return }
 
-    try await _resolveService()
-    try await _resolveAddresses()
+    // Use kDNSServiceInterfaceIndexAny to resolve on all interfaces
+    // The callbacks will tell us which interfaces have results
+    let stream = _resolveService(interfaceIndex: UInt32(kDNSServiceInterfaceIndexAny))
+
+    // Collect at least one result from the stream
+    var hasResults = false
+    for await _ in stream {
+      hasResults = true
+      // Results are already stored in _resolutionInfo by the callback
+      // We can break after getting the first result since they're all for the same service
+      break
+    }
+
+    guard hasResults else {
+      throw Ocp1Error.serviceResolutionFailed
+    }
+
+    // Now resolve the hostname to IP addresses, just using the first resolution info for now
+    try await _resolveAddresses(interfaceIndex: UInt32(_firstResolutionInfo.0))
   }
 
-  private func _resolveService() async throws {
-    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<(), Error>) in
+  private func _resolveService(interfaceIndex: UInt32) -> AsyncStream<ResolutionInfo> {
+    AsyncStream { continuation in
       var sdRef: DNSServiceRef?
 
-      let resolveContext = ResolveContext(continuation: continuation, serviceInfo: self)
+      let resolveContext = ResolveContext(channel: continuation, serviceInfo: self)
       let context = Unmanaged.passRetained(resolveContext).toOpaque()
 
       let error = DNSServiceResolve(
@@ -142,7 +166,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
       guard error == DNSServiceErrorType(kDNSServiceErr_NoError), let sdRef else {
         Unmanaged<ResolveContext>.fromOpaque(context).release()
-        continuation.resume(throwing: Ocp1Error.serviceResolutionFailed)
+        continuation.finish()
         return
       }
 
@@ -152,69 +176,68 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
       )
 
       source.setEventHandler { DNSServiceProcessResult(sdRef) }
-      source.setCancelHandler { DNSServiceRefDeallocate(sdRef) }
+      source.setCancelHandler {
+        DNSServiceRefDeallocate(sdRef)
+        Unmanaged<ResolveContext>.fromOpaque(context).release()
+      }
+
+      continuation.onTermination = { _ in
+        source.cancel()
+      }
 
       resolveContext.source = source
       source.resume()
     }
   }
 
-  private func _resolveAddresses() async throws {
-    guard let hostname = _resolutionInfo.withLock({ $0?.hostname }) else {
-      throw Ocp1Error.serviceResolutionFailed
-    }
+  private func _resolveAddresses(interfaceIndex: UInt32) async throws {
+    try _resolutionInfo.withLock { resolutionInfo in
+      guard let hostname = resolutionInfo[Int(interfaceIndex)]?.hostname,
+            let port = resolutionInfo[Int(interfaceIndex)]?.port
+      else {
+        throw Ocp1Error.serviceResolutionFailed
+      }
 
-    // Use POSIX getaddrinfo for portability (DNSServiceGetAddrInfo is not available on Linux)
-    try await Task {
       var hints = addrinfo()
       hints.ai_family = AF_UNSPEC // Allow both IPv4 and IPv6
-      hints.ai_socktype = SOCK_STREAM
+      hints.ai_socktype = serviceType == .udp ? SOCK_DGRAM : SOCK_STREAM
 
       var result: UnsafeMutablePointer<addrinfo>?
-      defer {
-        if let result { freeaddrinfo(result) }
-      }
+      defer { if let result { freeaddrinfo(result) } }
 
       let error = getaddrinfo(hostname, nil, &hints, &result)
       guard error == 0, let result else {
         throw Ocp1Error.serviceResolutionFailed
       }
 
-      for addrInfo in sequence(first: result, next: { $0.pointee.ai_next }) {
-        let addrInfo = addrInfo.pointee
-        let addressData: Data
+      let addresses = sequence(first: result, next: { $0.pointee.ai_next })
+        .compactMap { (addrPtr: UnsafeMutablePointer<addrinfo>) -> Data? in
+          let addrInfo = addrPtr.pointee
+          guard let addr = addrInfo.ai_addr else { return nil }
 
-        switch addrInfo.ai_family {
-        case AF_INET:
-          if let addr = addrInfo.ai_addr {
-            addressData = withUnsafeBytes(of: addr.pointee) { bytes in
-              Data(bytes.prefix(MemoryLayout<sockaddr_in>.size))
+          // Only include IPv4 and IPv6 addresses
+          guard addrInfo.ai_family == AF_INET || addrInfo.ai_family == AF_INET6 else { return nil }
+
+          // Create a mutable copy of the sockaddr structure to set the port
+          var mutableAddressData = Data(count: Int(addrInfo.ai_addrlen))
+          mutableAddressData.withUnsafeMutableBytes { mutableBytes in
+            // Copy the original address data
+            memcpy(mutableBytes.baseAddress, addr, Int(addrInfo.ai_addrlen))
+
+            // Set the port based on address family
+            if addrInfo.ai_family == AF_INET {
+              let sockaddrIn = mutableBytes.baseAddress!.assumingMemoryBound(to: sockaddr_in.self)
+              sockaddrIn.pointee.sin_port = port.bigEndian
+            } else if addrInfo.ai_family == AF_INET6 {
+              let sockaddrIn6 = mutableBytes.baseAddress!.assumingMemoryBound(to: sockaddr_in6.self)
+              sockaddrIn6.pointee.sin6_port = port.bigEndian
             }
-            _addAddress(addressData)
           }
-        case AF_INET6:
-          if let addr = addrInfo.ai_addr {
-            addressData = withUnsafeBytes(of: addr.pointee) { bytes in
-              Data(bytes.prefix(MemoryLayout<sockaddr_in6>.size))
-            }
-            _addAddress(addressData)
-          }
-        default:
-          break
+
+          return mutableAddressData
         }
-      }
-    }.value
-  }
 
-  fileprivate func _setResolveResult(hostname: String, port: UInt16, txtRecords: [String: String]) {
-    _resolutionInfo.withLock {
-      $0 = ResolutionInfo(hostname: hostname, port: port, txtRecords: txtRecords)
-    }
-  }
-
-  private func _addAddress(_ address: Data) {
-    _resolutionInfo.withLock {
-      $0?.addresses.append(address)
+      resolutionInfo[Int(interfaceIndex)]!.addresses = Array(addresses)
     }
   }
 
@@ -227,6 +250,37 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
     serviceType.hash(into: &hasher)
     domain.hash(into: &hasher)
   }
+}
+
+// Helper function to parse DNS-SD TXT records
+private func parseTxtRecords(txtLen: UInt16, txtRecord: UnsafePointer<UInt8>?) -> [String: String] {
+  var txtRecords: [String: String] = [:]
+
+  guard txtLen > 0, let txtRecord else { return txtRecords }
+
+  var offset = 0
+  while offset < txtLen {
+    let recordLength = Int(txtRecord[offset])
+    offset += 1
+
+    guard offset + recordLength <= txtLen else { break }
+
+    let recordData = Data(bytes: txtRecord.advanced(by: offset), count: recordLength)
+    offset += recordLength
+
+    if let record = String(data: recordData, encoding: .utf8) {
+      let components = record.split(
+        separator: "=",
+        maxSplits: 1,
+        omittingEmptySubsequences: false
+      )
+      let key = String(components[0])
+      let value = components.count > 1 ? String(components[1]) : ""
+      txtRecords[key] = value
+    }
+  }
+
+  return txtRecords
 }
 
 // C callback thunks
@@ -246,64 +300,48 @@ private func DNSServiceResolveBlock_Thunk(
   guard let context else { return }
 
   let resolveContext = Unmanaged<_DNSServiceInfo.ResolveContext>.fromOpaque(context)
-    .takeRetainedValue()
-
-  defer {
-    resolveContext.source?.cancel()
-  }
+    .takeUnretainedValue()
 
   guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else {
-    resolveContext.continuation.resume(throwing: Ocp1Error.serviceResolutionFailed)
+    resolveContext.channel.finish()
     return
   }
 
   guard let hosttarget else {
-    resolveContext.continuation.resume(throwing: Ocp1Error.serviceResolutionFailed)
+    resolveContext.channel.finish()
     return
   }
 
   let hostname = String(cString: hosttarget)
   let hostPort = UInt16(bigEndian: port)
+  let txtRecords = parseTxtRecords(txtLen: txtLen, txtRecord: txtRecord)
 
-  // Parse TXT records
-  var txtRecords: [String: String] = [:]
-  if txtLen > 0, let txtRecord {
-    var offset = 0
-    while offset < txtLen {
-      let recordLength = Int(txtRecord[offset])
-      offset += 1
-
-      guard offset + recordLength <= txtLen else { break }
-
-      let recordData = Data(bytes: txtRecord.advanced(by: offset), count: recordLength)
-      offset += recordLength
-
-      if let record = String(data: recordData, encoding: .utf8) {
-        let components = record.split(
-          separator: "=",
-          maxSplits: 1,
-          omittingEmptySubsequences: false
-        )
-        let key = String(components[0])
-        let value = components.count > 1 ? String(components[1]) : ""
-        txtRecords[key] = value
-      }
-    }
-  }
-
-  resolveContext.serviceInfo._setResolveResult(
+  let resolutionInfo = _DNSServiceInfo.ResolutionInfo(
     hostname: hostname,
     port: hostPort,
+    addresses: [],
     txtRecords: txtRecords
   )
-  resolveContext.continuation.resume(returning: ())
+
+  // Store result in the service's resolution info dictionary using the interface index from
+  // callback
+  resolveContext.serviceInfo._resolutionInfo.withLock {
+    $0[Int(interfaceIndex)] = resolutionInfo
+  }
+
+  // Send result through the channel
+  resolveContext.channel.yield(resolutionInfo)
 }
 
 /// A DNS-SD browser implementation using dns_sd.h
 public final class OcaDNSServiceBrowser: OcaNetworkAdvertisingServiceBrowser, @unchecked Sendable {
   private let _serviceType: OcaNetworkAdvertisingServiceType
-  private let _browseResults = AsyncChannel<OcaNetworkAdvertisingServiceBrowserResult>()
+  private let _browseResultsContinuation: AsyncStream<OcaNetworkAdvertisingServiceBrowserResult>
+    .Continuation
   private let _browseSource: DispatchSourceRead
+  private let _discoveredServices: Mutex<Set<String>> = .init(Set())
+
+  public let browseResults: AsyncStream<OcaNetworkAdvertisingServiceBrowserResult>
 
   final class BrowseContext: @unchecked Sendable {
     var browser: OcaDNSServiceBrowser?
@@ -315,6 +353,10 @@ public final class OcaDNSServiceBrowser: OcaNetworkAdvertisingServiceBrowser, @u
 
   public init(serviceType: OcaNetworkAdvertisingServiceType) throws {
     _serviceType = serviceType
+
+    let (stream, continuation) = AsyncStream<OcaNetworkAdvertisingServiceBrowserResult>.makeStream()
+    browseResults = stream
+    _browseResultsContinuation = continuation
 
     var sdRef: DNSServiceRef?
 
@@ -350,17 +392,13 @@ public final class OcaDNSServiceBrowser: OcaNetworkAdvertisingServiceBrowser, @u
     browseContext.browser = self
   }
 
-  public nonisolated var browseResults: AnyAsyncSequence<OcaNetworkAdvertisingServiceBrowserResult> {
-    _browseResults.eraseToAnyAsyncSequence()
-  }
-
   public func start() async throws {
     _browseSource.resume()
   }
 
   public func stop() throws {
     _browseSource.cancel()
-    _browseResults.finish()
+    _browseResultsContinuation.finish()
   }
 
   deinit {
@@ -374,15 +412,27 @@ public final class OcaDNSServiceBrowser: OcaNetworkAdvertisingServiceBrowser, @u
     domain: String,
     interfaceIndex: UInt32
   ) {
-    let serviceInfo = _DNSServiceInfo(
-      name: name,
-      serviceType: serviceType,
-      domain: domain,
-      interfaceIndex: interfaceIndex
-    )
+    // Create unique identifier for the service (same as OcaNetworkAdvertisingServiceInfo.id)
+    let serviceId = "\(name).\(serviceType.rawValue)\(domain)"
 
-    Task {
-      await _browseResults.send(isAdd ? .added(serviceInfo) : .removed(serviceInfo))
+    let shouldNotify = _discoveredServices.withLock { discoveredServices in
+      if isAdd {
+        // Only yield .added if this is the first time we see this service
+        discoveredServices.insert(serviceId).inserted
+      } else {
+        // Only yield .removed if we actually had this service
+        discoveredServices.remove(serviceId) != nil
+      }
+    }
+
+    if shouldNotify {
+      let serviceInfo = _DNSServiceInfo(
+        name: name,
+        serviceType: serviceType,
+        domain: domain
+      )
+
+      _browseResultsContinuation.yield(isAdd ? .added(serviceInfo) : .removed(serviceInfo))
     }
   }
 }
@@ -418,17 +468,13 @@ private func DNSServiceBrowseBlock_Thunk(
     return
   }
 
-  let isAdd = (flags & DNSServiceFlags(kDNSServiceFlagsAdd)) != 0
-
-  Task {
-    await browser._handleServiceChange(
-      isAdd: isAdd,
-      name: name,
-      serviceType: serviceType,
-      domain: domain,
-      interfaceIndex: interfaceIndex
-    )
-  }
+  browser._handleServiceChange(
+    isAdd: (flags & DNSServiceFlags(kDNSServiceFlagsAdd)) != 0,
+    name: name,
+    serviceType: serviceType,
+    domain: domain,
+    interfaceIndex: interfaceIndex
+  )
 }
 
 #endif

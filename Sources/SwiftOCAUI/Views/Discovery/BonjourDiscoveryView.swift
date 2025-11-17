@@ -42,7 +42,7 @@ public struct OcaBonjourDiscoveryView: View {
         group.addTask {
           do {
             try await udpBrowser.start()
-            for try await result in await udpBrowser.browseResults {
+            for try await result in udpBrowser.browseResults {
               switch result {
               case let .added(serviceInfo):
                 services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
@@ -56,7 +56,7 @@ public struct OcaBonjourDiscoveryView: View {
         group.addTask {
           do {
             try await tcpBrowser.start()
-            for try await result in await tcpBrowser.browseResults {
+            for try await result in tcpBrowser.browseResults {
               switch result {
               case let .added(serviceInfo):
                 services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
