@@ -85,10 +85,11 @@ public extension OcaRoot {
   /// Send a command, not expecting a response
   final func sendCommand<T: Encodable>(
     methodID: OcaMethodID,
-    parameterCount: OcaUint8 = _ocp1ParameterCount(type: T.self),
+    parameterCount: OcaUint8? = nil,
     parameters: T,
     userInfo: [CodingUserInfoKey: Any]? = nil
   ) async throws {
+    let parameterCount = parameterCount ?? _ocp1ParameterCount(type: T.self)
     let parameterData = try encodeParameters(parameters, userInfo: userInfo)
 
     try await sendCommand(
