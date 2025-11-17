@@ -258,8 +258,8 @@ public actor OcaConnectionBroker {
       #else
       throw Ocp1Error.notImplemented
       #endif
-      Task { try await browser.start() }
-      browserMonitor = Task { [weak broker] in
+      browserMonitor = Task { [weak broker, browser] in
+        try await browser.start()
         for try await result in browser.browseResults {
           try? await broker?._onBrowseResult(result)
         }
