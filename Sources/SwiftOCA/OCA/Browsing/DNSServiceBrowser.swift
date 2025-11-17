@@ -77,7 +77,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
   // currently we only use the first resolution info, and address, sorted by interface
   // number but in the future we should try to connect to all resolution infos and
   // addresses and pick the first and/or least latent one
-  private var _firstResolutionInfo: (Int, ResolutionInfo) {
+  private var _currentResolutionInfo: (Int, ResolutionInfo) {
     get throws {
       guard let resolutionInfo = _resolutionInfo.withLock({ resolutionInfo in
         resolutionInfo.sorted(by: { $0.key < $1.key }).first
@@ -90,7 +90,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
   var hostname: String {
     get throws {
-      guard let hostname = try _firstResolutionInfo.1.hostname else {
+      guard let hostname = try _currentResolutionInfo.1.hostname else {
         throw Ocp1Error.serviceResolutionFailed
       }
       return hostname
@@ -99,7 +99,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
   var port: UInt16 {
     get throws {
-      guard let port = try _firstResolutionInfo.1.port else {
+      guard let port = try _currentResolutionInfo.1.port else {
         throw Ocp1Error.serviceResolutionFailed
       }
       return port
@@ -108,7 +108,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
   var addresses: [Data] {
     get throws {
-      let addresses = try _firstResolutionInfo.1.addresses
+      let addresses = try _currentResolutionInfo.1.addresses
       guard !addresses.isEmpty else {
         throw Ocp1Error.serviceResolutionFailed
       }
@@ -118,7 +118,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
   var txtRecords: [String: String] {
     get throws {
-      try _firstResolutionInfo.1.txtRecords
+      try _currentResolutionInfo.1.txtRecords
     }
   }
 
@@ -144,7 +144,7 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
     }
 
     // Now resolve the hostname to IP addresses, just using the first resolution info for now
-    try await _resolveAddresses(interfaceIndex: UInt32(_firstResolutionInfo.0))
+    try await _resolveAddresses(interfaceIndex: UInt32(_currentResolutionInfo.0))
   }
 
   private func _resolveService(interfaceIndex: UInt32) -> AsyncStream<ResolutionInfo> {
