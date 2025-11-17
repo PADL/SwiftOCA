@@ -190,6 +190,28 @@ public actor OcaConnectionBroker {
       deviceIdentifier.hash(into: &hasher)
       serviceInfo.hash(into: &hasher)
     }
+
+    func openConnection(options: Ocp1ConnectionOptions) async throws -> Ocp1Connection {
+      let connection: Ocp1Connection
+
+      // TODO: happy eyeballs style try to connect to all addresses at once
+      switch serviceType {
+      case .tcp:
+        connection = try await Ocp1TCPConnection(
+          deviceAddress: firstAddress,
+          options: options
+        )
+      case .udp:
+        connection = try await Ocp1UDPConnection(
+          deviceAddress: firstAddress,
+          options: options
+        )
+      default:
+        throw Ocp1Error.unknownServiceType
+      }
+
+      return connection
+    }
   }
 
   private final class DeviceConnection {
@@ -335,7 +357,7 @@ public actor OcaConnectionBroker {
   public init(
     connectionOptions: Ocp1ConnectionOptions = .init(),
     serviceTypes: Set<OcaNetworkAdvertisingServiceType>? = nil
-  ) {
+  ) async {
     _connectionOptions = connectionOptions
 
     // Create AsyncStream for events
@@ -379,22 +401,7 @@ public actor OcaConnectionBroker {
       return
     }
 
-    let connection: Ocp1Connection
-
-    switch deviceInfo.serviceType {
-    case .tcp:
-      connection = try await Ocp1TCPConnection(
-        deviceAddress: deviceInfo.firstAddress,
-        options: _connectionOptions
-      )
-    case .udp:
-      connection = try await Ocp1UDPConnection(
-        deviceAddress: deviceInfo.firstAddress,
-        options: _connectionOptions
-      )
-    default:
-      throw Ocp1Error.unknownServiceType
-    }
+    let connection = try await deviceInfo.openConnection(options: _connectionOptions)
     if connect { try await connection.connect() }
     _registerConnection(connection, for: device)
   }
