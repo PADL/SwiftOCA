@@ -33,7 +33,13 @@ public enum BrokerTest {
       print("\(event)")
       switch event.eventType {
       case .deviceAdded:
-        Task { try await broker.connect(device: event.deviceIdentifier) }
+        Task {
+          do {
+            try await broker.connect(device: event.deviceIdentifier)
+          } catch {
+            print("failed to connect to \(event.deviceIdentifier): \(error)")
+          }
+        }
       default:
         break
       }
