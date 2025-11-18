@@ -357,7 +357,7 @@ public actor OcaConnectionBroker {
   public init(
     connectionOptions: Ocp1ConnectionOptions = .init(),
     serviceTypes: Set<OcaNetworkAdvertisingServiceType>? = nil
-  ) async {
+  ) {
     _connectionOptions = connectionOptions
 
     // Create AsyncStream for events
