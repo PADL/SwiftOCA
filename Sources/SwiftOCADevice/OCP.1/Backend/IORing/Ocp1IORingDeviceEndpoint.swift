@@ -25,12 +25,11 @@ import FoundationEssentials
 import Foundation
 #endif
 import Glibc
+import IORing
 
 #if swift(>=6.0)
-internal import IORing
 internal import IORingUtils
 #else
-@_implementationOnly import IORing
 @_implementationOnly import IORingUtils
 #endif
 
@@ -64,13 +63,14 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     address: any SocketAddress,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint")
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint"),
+    ring: IORing = .shared
   ) async throws {
     self.address = address
     self.timeout = timeout
     self.device = device
     self.logger = logger
-    ring = IORing.shared
+    self.ring = ring
     try await device.add(endpoint: self)
   }
 

@@ -23,13 +23,12 @@ import Foundation
 #endif
 
 import Glibc
+import IORing
 
 #if swift(>=6.0)
-internal import IORing
 internal import IORingFoundation
 internal import IORingUtils
 #else
-@_implementationOnly import IORing
 @_implementationOnly import IORingFoundation
 @_implementationOnly import IORingUtils
 #endif
@@ -58,6 +57,7 @@ fileprivate extension Errno {
 }
 
 public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableConnection {
+  fileprivate let _ring: IORing
   fileprivate let _deviceAddress: Mutex<any SocketAddress>
   fileprivate var _socket: Socket?
   fileprivate var _type: Int32 {
@@ -66,29 +66,34 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableConnection {
 
   public convenience init(
     deviceAddress: Data,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    ring: IORing = .shared
   ) throws {
-    try self.init(socketAddress: deviceAddress.socketAddress, options: options)
+    try self.init(socketAddress: deviceAddress.socketAddress, options: options, ring: ring)
   }
 
   fileprivate init(
     socketAddress: any SocketAddress,
-    options: Ocp1ConnectionOptions
+    options: Ocp1ConnectionOptions,
+    ring: IORing = .shared
   ) throws {
     _deviceAddress = Mutex(socketAddress)
+    _ring = ring
     super.init(options: options)
   }
 
   public convenience init(
     path: String,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    ring: IORing = .shared
   ) throws {
     try self.init(
       socketAddress: sockaddr_un(
         family: sa_family_t(AF_LOCAL),
         presentationAddress: path
       ),
-      options: options
+      options: options,
+      ring: ring
     )
   }
 
@@ -140,17 +145,18 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
 
   override fileprivate init(
     socketAddress: any SocketAddress,
-    options: Ocp1ConnectionOptions
+    options: Ocp1ConnectionOptions,
+    ring: IORing
   ) throws {
     guard socketAddress.family == AF_INET || socketAddress.family == AF_INET6
     else { throw Errno.addressFamilyNotSupported }
-    try super.init(socketAddress: socketAddress, options: options)
+    try super.init(socketAddress: socketAddress, options: options, ring: ring)
   }
 
   override public func connectDevice() async throws {
     let deviceAddress = _deviceAddress.criticalValue
     let socket = try Socket(
-      ring: IORing.shared,
+      ring: _ring,
       domain: deviceAddress.family,
       type: __socket_type(UInt32(_type)),
       protocol: 0
@@ -195,11 +201,12 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
 
   override fileprivate init(
     socketAddress: any SocketAddress,
-    options: Ocp1ConnectionOptions
+    options: Ocp1ConnectionOptions,
+    ring: IORing
   ) throws {
     guard socketAddress.family == AF_LOCAL else { throw Errno.addressFamilyNotSupported }
     localAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
-    try super.init(socketAddress: socketAddress, options: options)
+    try super.init(socketAddress: socketAddress, options: options, ring: ring)
   }
 
   override public func connectDevice() async throws {
@@ -267,7 +274,7 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
     let deviceAddress: any SocketAddress = _deviceAddress.criticalValue
 
     let socket = try Socket(
-      ring: IORing.shared,
+      ring: _ring,
       domain: deviceAddress.family,
       type: __socket_type(UInt32(_type)),
       protocol: 0
