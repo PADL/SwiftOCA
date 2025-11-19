@@ -108,7 +108,7 @@ public actor OcaConnectionBroker {
       self.init(
         serviceType: serviceType,
         modelGUID: modelGUID,
-        serialNumber: components[3],
+        serialNumber: components[2],
         name: ""
       )
     }
