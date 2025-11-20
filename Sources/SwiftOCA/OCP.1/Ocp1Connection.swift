@@ -374,11 +374,8 @@ open class Ocp1Connection: CustomStringConvertible {
       _lastMessageReceivedTime
     }
 
-    var description: String {
-      let connectionString: String = if let connection { connection.description }
-      else { "<null>" }
-
-      return "\(connectionString)[\(_connectionID)]"
+    nonisolated var description: String {
+      "Ocp1Connection.Monitor[\(_connectionID)]"
     }
   }
 
@@ -452,11 +449,11 @@ extension Ocp1Connection: Hashable {
 }
 
 public protocol Ocp1MutableConnection: Ocp1Connection {
-  var deviceAddress: Data { get set }
+  nonisolated var deviceAddress: Data { get set }
 }
 
 extension Ocp1MutableConnection {
-  var socketAddress: (any SocketAddress)? {
+  nonisolated var socketAddress: (any SocketAddress)? {
     get {
       try? AnySocketAddress(bytes: Array(deviceAddress))
     }
