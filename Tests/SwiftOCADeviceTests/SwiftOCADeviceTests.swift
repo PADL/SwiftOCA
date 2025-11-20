@@ -18,10 +18,11 @@
 @testable @_spi(SwiftOCAPrivate) import SwiftOCADevice
 @preconcurrency import XCTest
 
+@OcaDevice
 final class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator, OcaGroupPeerToPeerMember,
   @unchecked Sendable
 {
-  weak var group: SwiftOCADevice.OcaGroup<MyBooleanActuator>?
+  nonisolated(unsafe) weak var group: SwiftOCADevice.OcaGroup<MyBooleanActuator>?
 
   override class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
 
@@ -359,7 +360,7 @@ final class SwiftOCADeviceTests: XCTestCase {
   func testKeyPathUncached() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
-    let endpoint = try await OcaLocalDeviceEndpoint(device: device)
+    _ = try await OcaLocalDeviceEndpoint(device: device)
 
     let testBlock = try await SwiftOCADevice
       .OcaBlock<MyBooleanActuator>(
@@ -378,7 +379,7 @@ final class SwiftOCADeviceTests: XCTestCase {
   func testKeyPathCached() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
-    let endpoint = try await OcaLocalDeviceEndpoint(device: device)
+    _ = try await OcaLocalDeviceEndpoint(device: device)
 
     let testBlock = try await SwiftOCADevice
       .OcaBlock<MyBooleanActuator>(
