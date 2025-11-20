@@ -20,7 +20,7 @@ import AsyncAlgorithms
 import AsyncExtensions
 import Foundation
 
-extension NetService: @unchecked Sendable {}
+extension NetService: @retroactive @unchecked Sendable {}
 
 private final class _NetServiceInfo: OcaNetworkAdvertisingServiceInfo {
   private let _netService: NetService

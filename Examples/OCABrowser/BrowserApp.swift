@@ -20,6 +20,7 @@ import SwiftOCAUI
 import SwiftUI
 
 #if os(macOS)
+@MainActor
 class BonjourBrowser: ObservableObject {
   let udpBrowser = try! OcaNetServiceBrowser(serviceType: .udp)
   let tcpBrowser = try! OcaNetServiceBrowser(serviceType: .tcp)
@@ -33,7 +34,7 @@ class BonjourBrowser: ObservableObject {
           do {
             try await udpBrowser.start()
             for try await result in udpBrowser.browseResults {
-              Task { @MainActor in
+              await MainActor.run {
                 switch result {
                 case let .added(serviceInfo):
                   services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
@@ -49,7 +50,7 @@ class BonjourBrowser: ObservableObject {
           do {
             try await tcpBrowser.start()
             for try await result in tcpBrowser.browseResults {
-              Task { @MainActor in
+              await MainActor.run {
                 switch result {
                 case let .added(serviceInfo):
                   services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
@@ -65,7 +66,6 @@ class BonjourBrowser: ObservableObject {
     }
   }
 
-  @MainActor
   func service(with name: String?) -> AnyOcaNetworkAdvertisingServiceInfo? {
     guard let name else { return nil }
     return services.first(where: { $0.name == name })

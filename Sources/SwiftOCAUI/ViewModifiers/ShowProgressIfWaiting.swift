@@ -37,7 +37,9 @@ private struct ShowProgressIfWaitingViewModifier: ViewModifier {
     .task {
       do {
         for try await _ in wrappedValue.async {
-          updateToggle.toggle()
+          await MainActor.run {
+            updateToggle.toggle()
+          }
         }
       } catch {}
     }

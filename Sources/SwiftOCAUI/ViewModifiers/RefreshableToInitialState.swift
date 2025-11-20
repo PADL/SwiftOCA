@@ -27,7 +27,10 @@ private struct RefreshableToInitialState: ViewModifier {
   }
 
   func body(content: Content) -> some View {
-    content
+    let property = property
+    let object = object
+
+    return content
       .refreshable {
         if let property {
           await property.refresh(object)

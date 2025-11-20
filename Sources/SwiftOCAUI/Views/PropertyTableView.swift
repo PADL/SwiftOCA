@@ -109,7 +109,7 @@ struct OcaPropertyTableView: OcaView {
         ForEach(allProperties) { property in
           TableRow(property)
         }
-      }.task {
+      }.task { @MainActor in
         for property in await object.allPropertyKeyPaths {
           await (object[keyPath: property.value] as! any OcaPropertyRepresentable)
             .subscribe(object)

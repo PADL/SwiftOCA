@@ -71,10 +71,12 @@ public struct OcaBonjourDeviceView: View {
         lastError = error
       }
     }.onDisappear {
-      Task { @OcaConnection in
+      Task { @MainActor in
         if let connection {
           isConnected = false
-          try await connection.disconnect()
+          Task { @OcaConnection in
+            try await connection.disconnect()
+          }
           self.connection = nil
         }
       }

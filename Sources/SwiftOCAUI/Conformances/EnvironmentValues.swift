@@ -18,7 +18,10 @@ import SwiftOCA
 import SwiftUI
 
 private struct NavigationPathKey: EnvironmentKey {
-  static let defaultValue = Binding<NavigationPath>(get: { NavigationPath() }, set: { _ in })
+  nonisolated(unsafe) static let defaultValue = Binding<NavigationPath>(
+    get: { NavigationPath() },
+    set: { _ in }
+  )
 }
 
 extension EnvironmentValues {

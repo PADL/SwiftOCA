@@ -24,7 +24,7 @@ extension OcaIdentificationSensor: OcaViewRepresentable {
 }
 
 @Observable
-private final class OcaIdentificationState: ObservableObject {
+private final class OcaIdentificationState: ObservableObject, @unchecked Sendable {
   var state: Bool = false
 
   func beginIdentifying() async {

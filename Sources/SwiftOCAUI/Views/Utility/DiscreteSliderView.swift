@@ -19,7 +19,7 @@ import Sliders
 import SwiftOCA
 import SwiftUI
 
-struct OcaDiscreteSliderView<Value: FixedWidthInteger & Codable>: View
+struct OcaDiscreteSliderView<Value: FixedWidthInteger & Codable & Sendable>: View
   where Value.Stride: FixedWidthInteger
 {
   @Binding

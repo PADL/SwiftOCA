@@ -23,7 +23,7 @@ extension OcaGenericBasicSensor: OcaViewRepresentable {
   }
 }
 
-public struct OcaGenericBasicSensorView<T: Codable & Comparable>: OcaView {
+public struct OcaGenericBasicSensorView<T: Codable & Comparable & Sendable>: OcaView {
   @State
   var object: OcaGenericBasicSensor<T>
 

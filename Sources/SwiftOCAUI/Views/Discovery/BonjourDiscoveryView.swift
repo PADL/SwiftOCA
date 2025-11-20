@@ -43,12 +43,14 @@ public struct OcaBonjourDiscoveryView: View {
           do {
             try await udpBrowser.start()
             for try await result in udpBrowser.browseResults {
-              switch result {
-              case let .added(serviceInfo):
-                services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
-              case let .removed(serviceInfo):
-                services
-                  .removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
+              await MainActor.run {
+                switch result {
+                case let .added(serviceInfo):
+                  services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
+                case let .removed(serviceInfo):
+                  services
+                    .removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
+                }
               }
             }
           } catch {}
@@ -57,12 +59,14 @@ public struct OcaBonjourDiscoveryView: View {
           do {
             try await tcpBrowser.start()
             for try await result in tcpBrowser.browseResults {
-              switch result {
-              case let .added(serviceInfo):
-                services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
-              case let .removed(serviceInfo):
-                services
-                  .removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
+              await MainActor.run {
+                switch result {
+                case let .added(serviceInfo):
+                  services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
+                case let .removed(serviceInfo):
+                  services
+                    .removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
+                }
               }
             }
           } catch {}
