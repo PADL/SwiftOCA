@@ -148,7 +148,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
   }
 
   func getJsonValue() throws -> any Sendable {
-    let jsonValue: Any = if isNil(subject.value) {
+    let jsonValue: any Sendable = if isNil(subject.value) {
       NSNull()
     } else if JSONSerialization.isValidJSONObject(subject.value) {
       subject.value
@@ -156,7 +156,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
       try JSONEncoder().reencodeAsValidJSONObject(subject.value)
     }
 
-    return jsonValue as! (any Sendable)
+    return jsonValue
   }
 
   func set(object: OcaRoot, command: Ocp1Command) async throws {
