@@ -195,7 +195,7 @@ public struct OcaBoundedProperty<
     _ object: OcaRoot,
     keyPath: AnyKeyPath,
     flags: OcaPropertyResolutionFlags = .defaultFlags
-  ) async throws -> [String: Any] {
+  ) async throws -> [String: any Sendable] {
     let value = try await _getValue(object, flags: flags)
     let jsonKey = try keyPath.jsonKey
     return [

@@ -30,7 +30,7 @@ protocol OcaDevicePropertyRepresentable: Sendable {
   var subject: AsyncCurrentValueSubject<Value> { get }
 
   func getOcp1Response() async throws -> Ocp1Response
-  func getJsonValue() throws -> Any
+  func getJsonValue() throws -> any Sendable
 
   /// setters take an object so that subscribers can be notified
 
@@ -147,7 +147,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     return try OcaRoot.encodeResponse(value)
   }
 
-  func getJsonValue() throws -> Any {
+  func getJsonValue() throws -> any Sendable {
     let jsonValue: Any = if isNil(subject.value) {
       NSNull()
     } else if JSONSerialization.isValidJSONObject(subject.value) {
@@ -156,7 +156,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
       try JSONEncoder().reencodeAsValidJSONObject(subject.value)
     }
 
-    return jsonValue
+    return jsonValue as! (any Sendable)
   }
 
   func set(object: OcaRoot, command: Ocp1Command) async throws {

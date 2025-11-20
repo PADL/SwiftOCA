@@ -136,7 +136,7 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
 
   open func getJsonValue(
     flags: OcaPropertyResolutionFlags = .defaultFlags
-  ) async -> [String: Any] {
+  ) async -> [String: any Sendable] {
     precondition(objectNumber != OcaInvalidONo)
 
     guard self is OcaWorker else {
@@ -157,9 +157,7 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
             self,
             keyPath: propertyKeyPath,
             flags: flags
-          ),
-            let jsonValue = jsonValue as? [String: Sendable]
-          {
+          ) {
             dict.merge(jsonValue) { current, _ in current }
           }
           return dict
@@ -174,7 +172,7 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
     return dict
   }
 
-  public var jsonObject: [String: Any] {
+  public var jsonObject: [String: any Sendable] {
     get async {
       await getJsonValue(flags: .defaultFlags)
     }
@@ -340,7 +338,7 @@ public extension OcaRoot {
       _ object: OcaRoot,
       keyPath: AnyKeyPath,
       flags: OcaPropertyResolutionFlags = .defaultFlags
-    ) async throws -> [String: Any] {
+    ) async throws -> [String: any Sendable] {
       try [keyPath.jsonKey: String(describing: value)]
     }
 

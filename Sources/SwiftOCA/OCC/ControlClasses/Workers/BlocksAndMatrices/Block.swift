@@ -509,7 +509,7 @@ Sendable {
 
   override open func getJsonValue(
     flags: OcaPropertyResolutionFlags = .defaultFlags
-  ) async -> [String: Any] {
+  ) async -> [String: any Sendable] {
     var jsonObject = await super.getJsonValue(flags: flags)
     jsonObject.removeValue(forKey: "ActionObjects")
     jsonObject[OcaJSONPropertyKeys.members.rawValue] = try? await resolveActionObjects()

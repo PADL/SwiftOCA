@@ -27,9 +27,9 @@ package extension JSONEncoder {
     return try JSONDecoder().decode(Value.self, from: data)
   }
 
-  func reencodeAsValidJSONObject(_ value: some Codable) throws -> Any {
+  func reencodeAsValidJSONObject(_ value: some Codable) throws -> any Sendable {
     let data = try encode(value)
-    return try JSONDecoder().decode(AnyDecodable.self, from: data).value
+    return try JSONDecoder().decode(AnyDecodable.self, from: data).value as! any Sendable
   }
 }
 

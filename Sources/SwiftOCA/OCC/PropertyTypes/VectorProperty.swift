@@ -169,7 +169,7 @@ public struct OcaVectorProperty<
     _ object: OcaRoot,
     keyPath: AnyKeyPath,
     flags: OcaPropertyResolutionFlags = .defaultFlags
-  ) async throws -> [String: Any] {
+  ) async throws -> [String: any Sendable] {
     let value = try await _getValue(object, flags: flags)
     return try [keyPath.jsonKey: [value.x, value.y]]
   }

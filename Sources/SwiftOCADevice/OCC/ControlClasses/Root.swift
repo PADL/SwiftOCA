@@ -375,8 +375,8 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   open func serialize(
     flags: SerializationFlags = [],
     isIncluded: SerializationFilterFunction? = nil
-  ) throws -> [String: Any] {
-    var dict = [String: Any]()
+  ) throws -> [String: any Sendable] {
+    var dict = [String: any Sendable]()
 
     precondition(objectNumber != OcaInvalidONo)
 
@@ -472,7 +472,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     }
   }
 
-  public var jsonObject: [String: Any] {
+  public var jsonObject: [String: any Sendable] {
     try! serialize(flags: .ignoreEncodingErrors)
   }
 }
@@ -501,6 +501,7 @@ extension _OcaObjectKeyPathRepresentable {
     OcaDevicePropertyKeyPathCache.shared.keyPaths(for: self)
   }
 
+  @OcaDevice
   var allDevicePropertyKeyPathsUncached: [String: AnyKeyPath] {
     _allKeyPaths(value: self).reduce(into: [:]) {
       if $1.key.hasPrefix("_") {

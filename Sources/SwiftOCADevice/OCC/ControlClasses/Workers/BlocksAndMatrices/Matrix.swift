@@ -393,7 +393,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   override public func serialize(
     flags: OcaRoot.SerializationFlags = [],
     isIncluded: OcaRoot.SerializationFilterFunction? = nil
-  ) throws -> [String: Any] {
+  ) throws -> [String: any Sendable] {
     var jsonObject = try super.serialize(flags: flags, isIncluded: isIncluded)
 
     let membersJson = members.map(defaultValue: nil, \.?.objectNumber)

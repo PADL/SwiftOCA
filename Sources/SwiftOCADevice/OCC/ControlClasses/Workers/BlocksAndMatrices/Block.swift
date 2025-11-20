@@ -765,7 +765,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   override public func serialize(
     flags: OcaRoot.SerializationFlags = [],
     isIncluded: OcaRoot.SerializationFilterFunction? = nil
-  ) throws -> [String: Any] {
+  ) throws -> [String: any Sendable] {
     var jsonObject = try super.serialize(flags: flags, isIncluded: isIncluded)
 
     jsonObject["3.2"] = try actionObjects.compactMap { actionObject in

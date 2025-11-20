@@ -61,7 +61,7 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
     keyPath: AnyKeyPath,
     flags: OcaPropertyResolutionFlags
   ) async throws
-    -> [String: Any]
+    -> [String: any Sendable]
 }
 
 public extension OcaPropertyRepresentable {
@@ -436,9 +436,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     _ object: OcaRoot,
     keyPath: AnyKeyPath,
     flags: OcaPropertyResolutionFlags = .defaultFlags
-  ) async throws -> [String: Any] {
+  ) async throws -> [String: any Sendable] {
     let value = try await _getValue(object, flags: flags)
-    let jsonValue: Any = if isNil(value) {
+    let jsonValue: any Sendable = if isNil(value) {
       NSNull()
     } else if JSONSerialization.isValidJSONObject(value) {
       value
