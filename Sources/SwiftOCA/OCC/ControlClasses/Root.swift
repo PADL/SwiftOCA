@@ -21,10 +21,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-open class OcaRoot: CustomStringConvertible, @unchecked
-Sendable,
-  _OcaObjectKeyPathRepresentable, Observable
-{
+open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyPathRepresentable {
   typealias Root = OcaRoot
 
   public internal(set) weak var connectionDelegate: Ocp1Connection?
