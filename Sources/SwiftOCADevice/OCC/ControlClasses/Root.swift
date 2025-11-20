@@ -491,18 +491,16 @@ extension OcaRoot: Hashable {
 
 protocol _OcaObjectKeyPathRepresentable: OcaRoot {}
 
-extension _OcaObjectKeyPathRepresentable {
+extension OcaRoot {
   fileprivate var _metaTypeObjectIdentifier: ObjectIdentifier {
     ObjectIdentifier(type(of: self))
   }
 
-  @OcaDevice
   var allDevicePropertyKeyPaths: [String: AnyKeyPath] {
     OcaDevicePropertyKeyPathCache.shared.keyPaths(for: self)
   }
 
-  @OcaDevice
-  var allDevicePropertyKeyPathsUncached: [String: AnyKeyPath] {
+  nonisolated(unsafe) var allDevicePropertyKeyPathsUncached: [String: AnyKeyPath] {
     _allKeyPaths(value: self).reduce(into: [:]) {
       if $1.key.hasPrefix("_") {
         $0[String($1.key.dropFirst())] = $1.value
@@ -541,6 +539,7 @@ private final class OcaDevicePropertyKeyPathCache {
       }
     }
 
+    @OcaDevice
     fileprivate init(object: some OcaRoot) {
       let keyPaths = object.allDevicePropertyKeyPathsUncached
       self.init(keyPaths: keyPaths, object: object)
