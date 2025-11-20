@@ -41,7 +41,7 @@ private struct PropertyValueView: View {
   private let property: Property
   private let wrappedValue: any OcaPropertyRepresentable
   @State
-  private var currentValue: Result<Any, Error>?
+  private var currentValue: Result<any Sendable, Error>?
 
   init(property: Property, object: OcaRoot) {
     self.property = property
