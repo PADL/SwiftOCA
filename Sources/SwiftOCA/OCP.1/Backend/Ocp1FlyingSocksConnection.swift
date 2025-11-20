@@ -289,7 +289,7 @@ public extension Socket {
 
 package extension Socket {
   func setIPv6Only() throws {
-    try setValue(1, for: Int32SocketOption(name: IPV6_V6ONLY), level: IPPROTO_IPV6)
+    try setValue(1, for: Int32SocketOption(name: IPV6_V6ONLY), level: CInt(IPPROTO_IPV6))
   }
 }
 #endif

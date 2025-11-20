@@ -38,9 +38,9 @@ public enum DeviceApp {
   public static func main() async throws {
     var listenAddress = sockaddr_in()
     listenAddress.sin_family = sa_family_t(AF_INET)
-    listenAddress.sin_addr.s_addr = INADDR_ANY
+    listenAddress.sin_addr.s_addr = 0  // INADDR_ANY equivalent
     listenAddress.sin_port = port.bigEndian
-    #if canImport(Darwin)
+    #if canImport(Darwin) || os(FreeBSD) || os(OpenBSD)
     listenAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
     #endif
 
@@ -89,9 +89,11 @@ public enum DeviceApp {
     #endif
     #if canImport(FlyingSocks)
     listenAddress.sin_family = sa_family_t(AF_INET)
-    listenAddress.sin_addr.s_addr = INADDR_ANY
+    listenAddress.sin_addr.s_addr = 0  // INADDR_ANY equivalent
     listenAddress.sin_port = (port + 2).bigEndian
+    #if canImport(Darwin) || os(FreeBSD) || os(OpenBSD)
     listenAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+    #endif
     let webSocketEndpoint = try await Ocp1WSDeviceEndpoint(address: listenAddress.data)
     #endif
 
