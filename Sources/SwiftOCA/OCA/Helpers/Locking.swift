@@ -10,7 +10,7 @@
 //===----------------------------------------------------------------------===//
 
 #if swift(>=6.0)
-import Synchronization
+@_exported import Synchronization
 #else
 #if canImport(Darwin)
 import Darwin
