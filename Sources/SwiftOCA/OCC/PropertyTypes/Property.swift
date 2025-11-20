@@ -48,7 +48,7 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
 
   var valueType: Any.Type { get }
 
-  var async: AnyAsyncSequence<Result<Any, Error>> { get }
+  var async: AnyAsyncSequence<Result<any Sendable, Error>> { get }
 
   var propertyIDs: [OcaPropertyID] { get }
   var currentValue: PropertyValue { get }
@@ -85,7 +85,7 @@ public protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
 }
 
 extension OcaPropertySubjectRepresentable {
-  public var async: AnyAsyncSequence<Result<Any, Error>> {
+  public var async: AnyAsyncSequence<Result<any Sendable, Error>> {
     subject.compactMap { value in
       switch value {
       case .initial:
