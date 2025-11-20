@@ -157,7 +157,7 @@ extension Ocp1ControllerInternal {
       endpoint.traceMessage(message, controller: self, direction: .rx)
     }
 
-    let responses = try await messageList.messages.asyncMap { message in
+    let responses = try await messageList.messages.asyncMap { @Sendable message in
       try await _handle(for: endpoint, message: message)
     }
 

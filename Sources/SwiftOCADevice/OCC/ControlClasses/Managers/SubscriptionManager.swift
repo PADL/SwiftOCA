@@ -134,7 +134,7 @@ public class OcaSubscriptionManager: OcaManager {
   ) async throws -> [OcaStatus] {
     try await ensureWritable(by: controller, command: command)
 
-    return await subscription.events.asyncMap { event in
+    return await subscription.events.asyncMap { @Sendable event in
       let returnedStatus: OcaStatus
 
       do {
