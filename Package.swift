@@ -107,7 +107,7 @@ PlatformTargets = [
     linkerSettings: [] + ASANLinkerSettings
   ),
 ]
-SwiftLanguageVersionSetting = [.swiftLanguageMode(.v5)]
+SwiftLanguageVersionSetting = [.swiftLanguageMode(.v5, .when(platforms: [.macOS, .iOS]))]
 #else
 PlatformPackageDependencies = []
 PlatformTargetDependencies = []
