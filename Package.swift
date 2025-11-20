@@ -152,6 +152,7 @@ let CommonTargets: [Target] = [
     ] + PlatformTargetDependencies,
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),
+      .swiftLanguageVersion(.v5, condition: .when(platforms: [.macOS, .iOS])),
     ]
   ),
   .target(
@@ -163,6 +164,7 @@ let CommonTargets: [Target] = [
     ] + PlatformTargetDependencies,
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),
+      .swiftLanguageVersion(.v5, condition: .when(platforms: [.macOS, .iOS])),
     ]
   ),
   .executableTarget(
@@ -230,6 +232,5 @@ let package = Package(
   ],
   products: CommonProducts + PlatformProducts,
   dependencies: CommonPackageDependencies + PlatformPackageDependencies,
-  targets: CommonTargets + PlatformTargets,
-  swiftLanguageVersions: [.v5]
+  targets: CommonTargets + PlatformTargets
 )
