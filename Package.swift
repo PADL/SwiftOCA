@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import Foundation
@@ -19,6 +19,7 @@ let PlatformPackageDependencies: [Package.Dependency]
 let PlatformTargetDependencies: [Target.Dependency]
 let PlatformProducts: [Product]
 let PlatformTargets: [Target]
+let SwiftLanguageVersionSetting: [SwiftSetting]
 
 #if os(Linux)
 PlatformPackageDependencies = [.package(url: "https://github.com/PADL/IORingSwift", from: "0.2.0")]
@@ -47,6 +48,7 @@ PlatformTargetDependencies = [
 
 PlatformProducts = []
 PlatformTargets = []
+SwiftLanguageVersionSetting = []
 #elseif os(macOS) || os(iOS)
 PlatformPackageDependencies = [
   .package(url: "https://github.com/swhitty/FlyingFox", from: "0.20.0"),
@@ -105,11 +107,13 @@ PlatformTargets = [
     linkerSettings: [] + ASANLinkerSettings
   ),
 ]
+SwiftLanguageVersionSetting = [.swiftLanguageMode(.v5)]
 #else
 PlatformPackageDependencies = []
 PlatformTargetDependencies = []
 PlatformProducts = []
 PlatformTargets = []
+SwiftLanguageVersionSetting = []
 #endif
 
 let CommonPackageDependencies: [Package.Dependency] = [
@@ -152,8 +156,7 @@ let CommonTargets: [Target] = [
     ] + PlatformTargetDependencies,
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),
-      .swiftLanguageVersion(.v5, condition: .when(platforms: [.macOS, .iOS])),
-    ]
+    ] + SwiftLanguageVersionSetting
   ),
   .target(
     name: "SwiftOCADevice",
@@ -164,8 +167,7 @@ let CommonTargets: [Target] = [
     ] + PlatformTargetDependencies,
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),
-      .swiftLanguageVersion(.v5, condition: .when(platforms: [.macOS, .iOS])),
-    ]
+    ] + SwiftLanguageVersionSetting
   ),
   .executableTarget(
     name: "OCADevice",
