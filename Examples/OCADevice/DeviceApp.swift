@@ -32,7 +32,7 @@ final class DeviceEventDelegate: OcaDeviceEventDelegate {
 
 @main
 public enum DeviceApp {
-  static var testActuator: SwiftOCADevice.OcaBooleanActuator?
+  nonisolated(unsafe) static var testActuator: SwiftOCADevice.OcaBooleanActuator?
   static let port: UInt16 = 65000
 
   public static func main() async throws {
@@ -137,6 +137,12 @@ public enum DeviceApp {
 
     signal(SIGPIPE, SIG_IGN)
 
+    Task { @OcaDevice in
+      for try await value in gain.$gain {
+        print("gain set to \(value)!")
+      }
+    }
+
     try await withThrowingTaskGroup(of: Void.self) { taskGroup in
       taskGroup.addTask {
         print("Starting OCP.1 IPv4 stream endpoint \(streamEndpoint)...")
@@ -176,11 +182,6 @@ public enum DeviceApp {
         try await webSocketEndpoint.run()
       }
       #endif
-      taskGroup.addTask {
-        for try await value in await gain.$gain {
-          print("gain set to \(value)!")
-        }
-      }
       try await taskGroup.next()
     }
   }
@@ -194,7 +195,7 @@ func serializeDeserialize(
     let jsonResultData = try await JSONSerialization.data(withJSONObject: object.jsonObject)
     print(String(data: jsonResultData, encoding: .utf8)!)
 
-    let decoded = try JSONSerialization.jsonObject(with: jsonResultData) as! [String: Any]
+    let decoded = try JSONSerialization.jsonObject(with: jsonResultData) as! [String: any Sendable]
     try await OcaDevice.shared.deserialize(jsonObject: decoded)
   } catch {
     debugPrint("serialization error: \(error)")
