@@ -532,10 +532,10 @@ private extension OcaGrouper {
     guard connectionStateMonitors[connection] == nil else {
       return
     }
-    connectionStateMonitors[connection] = Task {
+    connectionStateMonitors[connection] = Task { @OcaConnection in
       var hasReconnectedAtLeastOnce = false
 
-      for try await connectionState in await connection.connectionState {
+      for try await connectionState in connection.connectionState {
         var changeType: OcaGrouperStatusChangeType?
 
         switch connectionState {
