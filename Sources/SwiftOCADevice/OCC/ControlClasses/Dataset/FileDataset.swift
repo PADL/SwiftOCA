@@ -18,10 +18,10 @@ import Foundation
 import SwiftOCA
 #if canImport(IORing)
 #if swift(>=6.0)
-internal import IORing
+import IORing
 internal import IORingUtils
 #else
-@_implementationOnly import IORing
+import IORing
 @_implementationOnly import IORingUtils
 #endif
 import struct SystemPackage.Errno

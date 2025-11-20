@@ -23,12 +23,13 @@ import Foundation
 #endif
 
 import Glibc
-import IORing
 
 #if swift(>=6.0)
+public import IORing
 internal import IORingFoundation
 internal import IORingUtils
 #else
+public import IORing
 @_implementationOnly import IORingFoundation
 @_implementationOnly import IORingUtils
 #endif
