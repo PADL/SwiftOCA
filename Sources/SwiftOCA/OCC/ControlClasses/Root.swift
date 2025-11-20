@@ -187,9 +187,9 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
   }
 }
 
-protocol _OcaObjectKeyPathRepresentable: OcaRoot {}
+protocol _OcaObjectKeyPathRepresentable: AnyObject {}
 
-extension _OcaObjectKeyPathRepresentable {
+extension _OcaObjectKeyPathRepresentable where Self: OcaRoot {
   fileprivate var _metaTypeObjectIdentifier: ObjectIdentifier {
     ObjectIdentifier(type(of: self))
   }
@@ -348,6 +348,8 @@ public extension OcaRoot {
     }
   }
 }
+
+extension AnyKeyPath: @retroactive @unchecked Sendable {}
 
 @OcaConnection
 private final class OcaPropertyKeyPathCache {
