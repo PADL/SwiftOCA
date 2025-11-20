@@ -214,7 +214,7 @@ public actor OcaConnectionBroker {
     }
   }
 
-  private final class DeviceConnection {
+  private final class DeviceConnection: @unchecked Sendable {
     let connection: Ocp1Connection
     var connectionStateMonitor: Task<(), Error>?
 
@@ -258,7 +258,7 @@ public actor OcaConnectionBroker {
       #else
       throw Ocp1Error.notImplemented
       #endif
-      browserMonitor = Task { [weak broker, browser] in
+      browserMonitor = Task { @Sendable [weak broker, browser] in
         try await browser.start()
         for try await result in browser.browseResults {
           try? await broker?._onBrowseResult(result)
@@ -383,7 +383,7 @@ public actor OcaConnectionBroker {
   public init(
     connectionOptions: Ocp1ConnectionOptions = .init(),
     serviceTypes: Set<OcaNetworkAdvertisingServiceType>? = nil
-  ) {
+  ) async {
     _connectionOptions = connectionOptions
 
     // Create AsyncStream for events

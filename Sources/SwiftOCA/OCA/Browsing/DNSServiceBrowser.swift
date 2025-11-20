@@ -30,7 +30,7 @@ import Glibc
 #elseif canImport(Android)
 import Android
 #endif
-import Dispatch
+@preconcurrency import Dispatch
 import dnssd
 import SocketAddress
 

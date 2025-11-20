@@ -295,7 +295,7 @@ public enum OcaNetworkAdvertisingServiceBrowserResult: Sendable {
 /// 2. Call `start()` to begin discovery
 /// 3. Process results from the `browseResults` async sequence
 /// 4. Call `stop()` when discovery is no longer needed
-public protocol OcaNetworkAdvertisingServiceBrowser {
+public protocol OcaNetworkAdvertisingServiceBrowser: Sendable {
   /// Creates a new browser for discovering services of the specified type.
   ///
   /// - Parameter serviceType: The type of network advertising service to discover (TCP, UDP, etc.).
