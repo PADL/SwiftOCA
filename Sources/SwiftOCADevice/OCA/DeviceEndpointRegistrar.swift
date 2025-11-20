@@ -59,7 +59,7 @@ extension OcaBonjourRegistrableDeviceEndpoint {
     for try await deviceName in deviceManager.$deviceName {
       try Task.checkCancellation()
       await dnsServiceRegistration?.deregister()
-      dnsServiceRegistration = try? DNSServiceRegistration(
+      dnsServiceRegistration = try? await DNSServiceRegistration(
         name: deviceName,
         regType: serviceType.rawValue,
         port: port,
@@ -73,7 +73,7 @@ extension OcaBonjourRegistrableDeviceEndpoint {
 }
 
 fileprivate actor DNSServiceRegistration {
-  private var sdRef: DNSServiceRef!
+  private nonisolated(unsafe) var sdRef: DNSServiceRef!
   private(set) var flags: DNSServiceFlags = 0
   private(set) var name: String?
   private(set) var domain: String?
@@ -101,7 +101,7 @@ fileprivate actor DNSServiceRegistration {
     host: String? = nil,
     port: UInt16, // in host byte order, unlike DNSServiceRegister() API
     txtRecord: [String: String] = [:]
-  ) throws {
+  ) async throws {
     self.flags = flags
     self.name = name
     self.domain = domain
@@ -112,7 +112,7 @@ fileprivate actor DNSServiceRegistration {
       return [UInt8(keyValue.count)] + keyValue
     }
 
-    var sdRef: DNSServiceRef?
+    nonisolated(unsafe) var sdRef: DNSServiceRef!
 
     let error = txtRecordBuffer.withUnsafeBufferPointer { txtRecordBufferPointer in
       DNSServiceRegister(
