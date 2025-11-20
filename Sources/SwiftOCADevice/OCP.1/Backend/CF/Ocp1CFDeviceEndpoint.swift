@@ -179,11 +179,11 @@ public final class Ocp1CFStreamDeviceEndpoint: Ocp1CFDeviceEndpoint,
   }
 
   private func makeSocketAndListen() async throws -> _CFSocketWrapper {
-    try await _CFSocketWrapper(address: address, type: SwiftOCA.SOCK_STREAM, options: .server)
+    try _CFSocketWrapper(address: address, type: SwiftOCA.SOCK_STREAM, options: .server)
   }
 
   private func makeNotificationSocket() async throws -> _CFSocketWrapper {
-    try await _CFSocketWrapper(address: address, type: SwiftOCA.SOCK_DGRAM, options: .server)
+    try _CFSocketWrapper(address: address, type: SwiftOCA.SOCK_DGRAM, options: .server)
   }
 
   #if canImport(dnssd)
@@ -255,7 +255,7 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
   }
 
   private func makeSocket() async throws -> _CFSocketWrapper {
-    let socket = try await _CFSocketWrapper(
+    let socket = try _CFSocketWrapper(
       address: address,
       type: SwiftOCA.SOCK_DGRAM,
       options: .server

@@ -20,7 +20,7 @@ import AsyncAlgorithms
 import AsyncExtensions
 
 #if swift(>=6.0)
-internal import CoreFoundation
+@preconcurrency package import CoreFoundation
 #else
 @preconcurrency
 @_implementationOnly import CoreFoundation
@@ -34,9 +34,6 @@ import Glibc
 import Darwin
 #elseif canImport(Android)
 import Android
-#endif
-#if canImport(Synchronization)
-import Synchronization
 #endif
 
 private func cfSocketWrapperDataCallback(
@@ -119,11 +116,11 @@ Sendable, CustomStringConvertible, Hashable {
   private let isDatagram: Bool
   private var runLoopSource: CFRunLoopSource!
 
-  public var acceptedSockets: AnyAsyncSequence<_CFSocketWrapper> {
+  package var acceptedSockets: AnyAsyncSequence<_CFSocketWrapper> {
     stream.map(\.nativeHandle).eraseToAnyAsyncSequence()
   }
 
-  public var receivedMessages: AnyAsyncSequence<CFSocket.Message> {
+  package var receivedMessages: AnyAsyncSequence<CFSocket.Message> {
     stream.map(\.message).eraseToAnyAsyncSequence()
   }
 
@@ -429,7 +426,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
   }
 
   override public func connectDevice() async throws {
-    _socket = try await _CFSocketWrapper(address: _deviceAddress.criticalValue, type: _type)
+    _socket = try _CFSocketWrapper(address: _deviceAddress.criticalValue, type: _type)
     try await super.connectDevice()
   }
 
@@ -528,9 +525,6 @@ package extension SocketAddress {
   }
 }
 
-extension CFSocket: @retroactive @unchecked
-Sendable {}
-
 package extension CFSocket {
   var address: AnySocketAddress {
     get throws {
@@ -556,7 +550,7 @@ package extension CFSocket {
     }
   }
 
-  static func throwingErrno(_ block: () -> CFSocketError) throws {
+  internal static func throwingErrno(_ block: () -> CFSocketError) throws {
     let socketError = block()
     switch socketError {
     case .error:
@@ -570,7 +564,7 @@ package extension CFSocket {
     }
   }
 
-  var nativeHandle: CFSocketNativeHandle {
+  internal var nativeHandle: CFSocketNativeHandle {
     CFSocketGetNative(self)
   }
 
@@ -588,7 +582,7 @@ package extension CFSocket {
 
   typealias Message = (any SocketAddress, Data)
 
-  func sendMessage(_ message: Message) throws {
+  internal func sendMessage(_ message: Message) throws {
     try CFSocket.throwingErrno {
       CFSocketSendData(self, message.0.data.cfData, message.1.cfData, 0)
     }
