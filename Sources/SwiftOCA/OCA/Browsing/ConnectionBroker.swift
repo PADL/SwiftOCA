@@ -295,7 +295,6 @@ public actor OcaConnectionBroker {
   private var _connections = [DeviceIdentifier: DeviceConnection]()
   private let _connectionOptions: Ocp1ConnectionOptions
   private let _eventsContinuation: AsyncStream<Event>.Continuation
-  private var _expiringDevices = Set<DeviceIdentifier>()
 
   private func _getRegisteredConnection(for device: DeviceIdentifier) throws -> DeviceConnection {
     guard let connection = _connections[device] else {
@@ -326,9 +325,9 @@ public actor OcaConnectionBroker {
   ) async throws {
     let deviceIdentifier = try await DeviceIdentifier(serviceInfo: serviceInfo)
     let event = Event(eventType: .deviceAdded, deviceIdentifier: deviceIdentifier)
-    let device = DeviceInfo(deviceIdentifier: event.deviceIdentifier, serviceInfo: serviceInfo)
+    let device = DeviceInfo(deviceIdentifier: deviceIdentifier, serviceInfo: serviceInfo)
 
-    if let existingDevice = _devices[event.deviceIdentifier] {
+    if let existingDevice = _devices[deviceIdentifier] {
       try await withDeviceConnection(deviceIdentifier) { existingConnection in
         if (try? existingDevice.addresses) != (try? device.addresses),
            let mutableConnection = existingConnection as? Ocp1MutableConnection
@@ -345,16 +344,12 @@ public actor OcaConnectionBroker {
       }
     }
 
-    _devices[event.deviceIdentifier] = device
+    _devices[deviceIdentifier] = device
     _eventsContinuation.yield(event)
   }
 
   private func _removeDevice(with deviceIdentifier: DeviceIdentifier) {
     _devices[deviceIdentifier] = nil
-  }
-
-  private func _removeExpiredDevice(with deviceIdentifier: DeviceIdentifier) {
-    _expiringDevices.remove(deviceIdentifier)
   }
 
   private func _disableAutomaticReconnect(_ deviceIdentifier: DeviceIdentifier) async throws {
@@ -379,7 +374,6 @@ public actor OcaConnectionBroker {
     }
 
     try await _disableAutomaticReconnect(deviceIdentifier)
-    _expiringDevices.insert(deviceIdentifier)
     _removeDevice(with: deviceIdentifier)
 
     Task { [weak self] in
@@ -392,8 +386,6 @@ public actor OcaConnectionBroker {
         await expiringConnection?.expire()
         _eventsContinuation.yield(event)
       }
-
-      await _removeExpiredDevice(with: deviceIdentifier)
     }
   }
 
