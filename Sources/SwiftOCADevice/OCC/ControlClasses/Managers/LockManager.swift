@@ -116,7 +116,7 @@ public class OcaLockManager: OcaManager {
     lockWaiters.removeValue(forKey: lockWaiterID)
   }
 
-  override public func handleCommand(
+  override open func handleCommand(
     _ command: Ocp1Command,
     from controller: OcaController
   ) async throws -> Ocp1Response {

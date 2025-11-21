@@ -49,7 +49,7 @@ open class OcaDeviceTimeManager: OcaManager {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override public func handleCommand(
+  override open func handleCommand(
     _ command: Ocp1Command,
     from controller: OcaController
   ) async throws -> Ocp1Response {

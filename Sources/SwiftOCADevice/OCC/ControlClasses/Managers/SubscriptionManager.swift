@@ -262,7 +262,7 @@ public class OcaSubscriptionManager: OcaManager {
     state = .normal
   }
 
-  override public func handleCommand(
+  override open func handleCommand(
     _ command: Ocp1Command,
     from controller: any OcaController
   ) async throws -> Ocp1Response {

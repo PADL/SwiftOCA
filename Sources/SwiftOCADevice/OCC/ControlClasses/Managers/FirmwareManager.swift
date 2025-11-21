@@ -26,7 +26,7 @@ open class OcaFirmwareManager: OcaManager {
   )
   public var componentVersions = [OcaVersion]()
 
-  override public func handleCommand(
+  override open func handleCommand(
     _ command: Ocp1Command,
     from controller: OcaController
   ) async throws -> Ocp1Response {

@@ -30,7 +30,7 @@ open class OcaLevelSensor: OcaSensor {
   private var _value: OcaDB = -144.0
   private var _range: ClosedRange<OcaDB> = -144.0...0.0
 
-  override public func handleCommand(
+  override open func handleCommand(
     _ command: Ocp1Command,
     from controller: OcaController
   ) async throws -> Ocp1Response {

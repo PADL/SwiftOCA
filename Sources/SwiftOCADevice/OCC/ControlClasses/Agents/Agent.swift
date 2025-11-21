@@ -32,7 +32,7 @@ open class OcaAgent: OcaRoot, OcaOwnable, OcaLabelRepresentable {
   )
   public var owner = OcaInvalidONo
 
-  override public func handleCommand(
+  override open func handleCommand(
     _ command: Ocp1Command,
     from controller: any OcaController
   ) async throws -> Ocp1Response {
