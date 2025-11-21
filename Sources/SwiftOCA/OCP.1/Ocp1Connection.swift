@@ -237,13 +237,6 @@ open class Ocp1Connection: CustomStringConvertible {
     let oldFlags = self.options.flags
     let oldBatchOptions = self.options.batchingOptions
     self.options = options
-    if !oldFlags.contains(.automaticReconnect) && options.flags.contains(.automaticReconnect) {
-      try await connect()
-    } else if !oldFlags.contains(.refreshDeviceTreeOnConnection) && options.flags
-      .contains(.refreshDeviceTreeOnConnection)
-    {
-      try await refreshDeviceTree()
-    }
 
     if oldFlags.symmetricDifference(options.flags).contains(.enableTracing) {
       _configureTracing()
