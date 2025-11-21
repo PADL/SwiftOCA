@@ -288,11 +288,14 @@ public actor OcaConnectionBroker {
   /// - Returns: An async sequence of `Event` instances
   public let events: AsyncStream<Event>
 
+  private static let DeviceExpiryTimeout = Duration.seconds(2)
+
   private var _browsers: [OcaNetworkAdvertisingServiceType: BrowserMonitor]!
   private var _devices = [DeviceIdentifier: DeviceInfo]()
   private var _connections = [DeviceIdentifier: DeviceConnection]()
   private let _connectionOptions: Ocp1ConnectionOptions
   private let _eventsContinuation: AsyncStream<Event>.Continuation
+  private var _expiringDevices = Set<DeviceIdentifier>()
 
   private func _getRegisteredConnection(for device: DeviceIdentifier) throws -> DeviceConnection {
     guard let connection = _connections[device] else {
@@ -320,32 +323,53 @@ public actor OcaConnectionBroker {
 
   private func _onBrowserDeviceAdded(
     _ serviceInfo: any OcaNetworkAdvertisingServiceInfo
-  ) async throws
-    -> Event
-  {
+  ) async throws {
     let deviceIdentifier = try await DeviceIdentifier(serviceInfo: serviceInfo)
     let event = Event(eventType: .deviceAdded, deviceIdentifier: deviceIdentifier)
     let device = DeviceInfo(deviceIdentifier: event.deviceIdentifier, serviceInfo: serviceInfo)
 
-    if let existingDevice = _devices[event.deviceIdentifier],
-       (try? existingDevice.addresses) != (try? device.addresses),
-       let existingConnection = _removeConnection(for: event.deviceIdentifier)
-    {
-      // notify connection layer of new address
-      if let mutableConnection = existingConnection.connection as? Ocp1MutableConnection {
-        mutableConnection.deviceAddress = try device.firstAddress
+    if let existingDevice = _devices[event.deviceIdentifier] {
+      try await withDeviceConnection(deviceIdentifier) { existingConnection in
+        if (try? existingDevice.addresses) != (try? device.addresses),
+           let mutableConnection = existingConnection as? Ocp1MutableConnection
+        {
+          mutableConnection.deviceAddress = try device.firstAddress
+        }
+
+        // if reconnection was temporarily disabled by _onBrowserDeviceRemoved, reenable it
+        if _connectionOptions.flags.contains(.automaticReconnect),
+           await !existingConnection.options.flags.contains(.automaticReconnect)
+        {
+          try await existingConnection.set(options: _connectionOptions)
+        }
       }
     }
 
     _devices[event.deviceIdentifier] = device
-    return event
+    _eventsContinuation.yield(event)
+  }
+
+  private func _removeDevice(with deviceIdentifier: DeviceIdentifier) {
+    _devices[deviceIdentifier] = nil
+  }
+
+  private func _removeExpiredDevice(with deviceIdentifier: DeviceIdentifier) {
+    _expiringDevices.remove(deviceIdentifier)
+  }
+
+  private func _disableAutomaticReconnect(_ deviceIdentifier: DeviceIdentifier) async throws {
+    guard _connectionOptions.flags.contains(.automaticReconnect) else { return }
+    try await withDeviceConnection(deviceIdentifier) { connection in
+      guard await connection.options.flags.contains(.automaticReconnect) else { return }
+      let options = _connectionOptions
+        .copy(flags: _connectionOptions.flags.subtracting(.automaticReconnect))
+      try await connection.set(options: options)
+    }
   }
 
   private func _onBrowserDeviceRemoved(
     _ serviceInfo: any OcaNetworkAdvertisingServiceInfo
-  ) async throws
-    -> Event
-  {
+  ) async throws {
     // note: we can't initialize a DeviceIdentifier() from the serviceInfo because a removed service
     // cannot be resolved
     guard let deviceIdentifier = _devices.values.first(where: {
@@ -354,23 +378,32 @@ public actor OcaConnectionBroker {
       throw Ocp1Error.serviceResolutionFailed
     }
 
-    let event = Event(eventType: .deviceRemoved, deviceIdentifier: deviceIdentifier)
-    let expiringConnection = _removeConnection(for: deviceIdentifier)
-    _devices[deviceIdentifier] = nil
-    await expiringConnection?.expire()
+    try await _disableAutomaticReconnect(deviceIdentifier)
+    _expiringDevices.insert(deviceIdentifier)
+    _removeDevice(with: deviceIdentifier)
 
-    return event
+    Task { [weak self] in
+      try await Task.sleep(for: Self.DeviceExpiryTimeout)
+      guard let self else { return }
+
+      if await _devices[deviceIdentifier] == nil {
+        let event = Event(eventType: .deviceRemoved, deviceIdentifier: deviceIdentifier)
+        let expiringConnection = await _removeConnection(for: deviceIdentifier)
+        await expiringConnection?.expire()
+        _eventsContinuation.yield(event)
+      }
+
+      await _removeExpiredDevice(with: deviceIdentifier)
+    }
   }
 
   private func _onBrowseResult(_ result: OcaNetworkAdvertisingServiceBrowserResult) async throws {
-    let event = switch result {
+    switch result {
     case let .added(serviceInfo):
       try await _onBrowserDeviceAdded(serviceInfo)
     case let .removed(serviceInfo):
       try await _onBrowserDeviceRemoved(serviceInfo)
     }
-
-    _eventsContinuation.yield(event)
   }
 
   /// Initializes a new connection broker with the specified connection options.

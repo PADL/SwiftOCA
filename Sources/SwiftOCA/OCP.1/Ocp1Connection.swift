@@ -159,6 +159,27 @@ public struct Ocp1ConnectionOptions: Sendable {
       batchingOptions: batchingOptions
     )
   }
+
+  func copy(
+    flags: Ocp1ConnectionFlags? = nil,
+    connectionTimeout: Duration? = nil,
+    responseTimeout: Duration? = nil,
+    reconnectMaxTries: Int? = nil,
+    reconnectPauseInterval: Duration? = nil,
+    reconnectExponentialBackoffThreshold: Range<Int>? = nil,
+    batchingOptions: BatchingOptions? = nil
+  ) -> Self {
+    Self(
+      flags: flags ?? self.flags,
+      connectionTimeout: connectionTimeout ?? self.connectionTimeout,
+      responseTimeout: responseTimeout ?? self.responseTimeout,
+      reconnectMaxTries: reconnectMaxTries ?? self.reconnectMaxTries,
+      reconnectPauseInterval: reconnectPauseInterval ?? self.reconnectPauseInterval,
+      reconnectExponentialBackoffThreshold:
+      reconnectExponentialBackoffThreshold ?? self.reconnectExponentialBackoffThreshold,
+      batchingOptions: batchingOptions ?? self.batchingOptions
+    )
+  }
 }
 
 public enum Ocp1ConnectionState: OcaUint8, Codable, Sendable {
