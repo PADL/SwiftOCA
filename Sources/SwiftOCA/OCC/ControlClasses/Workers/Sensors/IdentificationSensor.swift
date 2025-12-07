@@ -28,9 +28,41 @@ open class OcaIdentificationSensor: OcaSensor, @unchecked Sendable {
 
     // TODO: remove on deinit
     cancellable = try await connectionDelegate.addSubscription(
-      label: "com.padl.SwiftOCA.OcaIdentificationSensor",
+      label: "com.padl.SwiftOCA.OcaIdentificationSensor.callback",
       event: event,
       callback: callback
     )
+  }
+
+  @OcaConnection
+  public var identifyEvents: AsyncStream<()> {
+    AsyncStream { continuation in
+      Task { [weak connectionDelegate] in
+        guard let connectionDelegate else {
+          continuation.finish()
+          return
+        }
+
+        let event = OcaEvent(emitterONo: objectNumber, eventID: Self.identifyEventID)
+
+        do {
+          let cancellable = try await connectionDelegate.addSubscription(
+            label: "com.padl.SwiftOCA.OcaIdentificationSensor.stream",
+            event: event,
+            callback: { _, _ in
+              continuation.yield(())
+            }
+          )
+
+          continuation.onTermination = { [weak connectionDelegate] _ in
+            Task {
+              try? await connectionDelegate?.removeSubscription(cancellable)
+            }
+          }
+        } catch {
+          continuation.finish()
+        }
+      }
+    }
   }
 }
