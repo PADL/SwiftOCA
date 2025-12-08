@@ -538,6 +538,10 @@ public actor OcaConnectionBroker {
     let connection = try _getRegisteredConnection(for: device)
     return try body(connection.connection)
   }
+
+  public var registeredDevices: [DeviceIdentifier] {
+    Array(_devices.keys)
+  }
 }
 
 extension OcaConnectionBroker.DeviceIdentifier {
