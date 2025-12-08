@@ -86,10 +86,99 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
   @OcaProperty(propertyID: OcaPropertyID("3.10"))
   public var busy: OcaProperty<OcaBoolean>.PropertyValue
 
+  public typealias ResetKey = (
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8,
+    OcaUint8
+  )
+
+  public struct SetResetKeyParameters: Ocp1ParametersReflectable, Codable {
+    public let key: ResetKey
+    public let address: OcaNetworkAddress
+
+    public init(key: ResetKey, address: OcaNetworkAddress) {
+      self.key = key
+      self.address = address
+    }
+
+    public var keyBytes: [OcaUint8] {
+      Self._resetKeyToBytes(key)
+    }
+
+    public enum CodingKeys: CodingKey {
+      case key
+      case address
+    }
+
+    private static func _resetKeyToBytes(_ key: ResetKey) -> [OcaUint8] {
+      [key.0, key.1, key.2, key.3, key.4, key.5, key.6, key.7,
+       key.8, key.9, key.10, key.11, key.12, key.13, key.14, key.15]
+    }
+
+    private static func _decodeResetKey(
+      from container: inout UnkeyedDecodingContainer
+    ) throws -> ResetKey {
+      var key: ResetKey = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+      key.0 = try container.decode(OcaUint8.self)
+      key.1 = try container.decode(OcaUint8.self)
+      key.2 = try container.decode(OcaUint8.self)
+      key.3 = try container.decode(OcaUint8.self)
+      key.4 = try container.decode(OcaUint8.self)
+      key.5 = try container.decode(OcaUint8.self)
+      key.6 = try container.decode(OcaUint8.self)
+      key.7 = try container.decode(OcaUint8.self)
+      key.8 = try container.decode(OcaUint8.self)
+      key.9 = try container.decode(OcaUint8.self)
+      key.10 = try container.decode(OcaUint8.self)
+      key.11 = try container.decode(OcaUint8.self)
+      key.12 = try container.decode(OcaUint8.self)
+      key.13 = try container.decode(OcaUint8.self)
+      key.14 = try container.decode(OcaUint8.self)
+      key.15 = try container.decode(OcaUint8.self)
+      return key
+    }
+
+    private static func _encodeResetKey(
+      _ key: ResetKey,
+      to container: inout UnkeyedEncodingContainer
+    ) throws {
+      for byte in _resetKeyToBytes(key) {
+        try container.encode(byte)
+      }
+    }
+
+    public init(from decoder: Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+      var keyContainer = try container.nestedUnkeyedContainer(forKey: .key)
+      key = try Self._decodeResetKey(from: &keyContainer)
+      address = try container.decode(OcaNetworkAddress.self, forKey: .address)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      var keyContainer = container.nestedUnkeyedContainer(forKey: .key)
+      try Self._encodeResetKey(key, to: &keyContainer)
+      try container.encode(address, forKey: .address)
+    }
+  }
+
   // 3.14
-  public func setResetKey(key: OcaBlob, address: OcaNetworkAddress) async throws {
-    // TODO: constrain key to 16 bytes
-    throw Ocp1Error.notImplemented
+  public func setResetKey(key: ResetKey, address: OcaNetworkAddress) async throws {
+    let parameters = SetResetKeyParameters(key: key, address: address)
+    try await sendCommandRrq(methodID: OcaMethodID("3.14"), parameters: parameters)
   }
 
   @OcaProperty(

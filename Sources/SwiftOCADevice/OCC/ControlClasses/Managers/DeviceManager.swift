@@ -160,6 +160,14 @@ open class OcaDeviceManager: OcaManager {
     self.datasetFilter = datasetFilter
   }
 
+  open func setResetKey(
+    key: Data,
+    address: OcaNetworkAddress
+  ) async throws {
+    // must be implemented by subclass
+    throw Ocp1Error.notImplemented
+  }
+
   open func applyPatch(
     datasetONo: OcaONo,
     controller: OcaController?
@@ -189,6 +197,11 @@ open class OcaDeviceManager: OcaManager {
     from controller: OcaController
   ) async throws -> Ocp1Response {
     switch command.methodID {
+    case OcaMethodID("3.14"):
+      let parameters: SwiftOCA.OcaDeviceManager.SetResetKeyParameters = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      try await setResetKey(key: Data(parameters.keyBytes), address: parameters.address)
+      return Ocp1Response()
     case OcaMethodID("3.27"):
       let oNo: OcaONo = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
