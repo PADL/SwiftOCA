@@ -543,7 +543,8 @@ public actor OcaConnectionBroker {
     Array(_devices.keys)
   }
   
-  public func reportRegisteredDevices() {
+  @_spi(SwiftOCAPrivate)
+  public func reenumerateRegisteredDevices() {
     for deviceIdentifier in registeredDevices {
       let event = Event(eventType: .deviceAdded, deviceIdentifier: deviceIdentifier)
       _eventsContinuation.yield(event)
