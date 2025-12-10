@@ -101,6 +101,8 @@
 		D3660FEA2CEBE478005FCBEB /* Ocp1FlyingSocksStreamDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3660FE82CEBE478005FCBEB /* Ocp1FlyingSocksStreamDeviceEndpoint.swift */; };
 		D3660FEB2CEBE478005FCBEB /* Ocp1FlyingSocksDatagramDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3660FE62CEBE478005FCBEB /* Ocp1FlyingSocksDatagramDeviceEndpoint.swift */; };
 		D3660FEC2CEBE478005FCBEB /* Ocp1FlyingSocksDatagramController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3660FE52CEBE478005FCBEB /* Ocp1FlyingSocksDatagramController.swift */; };
+		D36851262EEA26A6000129F3 /* IdentificationActuator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36851252EEA26A6000129F3 /* IdentificationActuator.swift */; };
+		D36851282EEA2700000129F3 /* IdentificationActuator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36851272EEA2700000129F3 /* IdentificationActuator.swift */; };
 		D36ECA212A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA202A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift */; };
 		D36ECA2C2A5B24B30015174A /* Ocp1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */; };
 		D370B1482BF6002300BF88BB /* AudioLevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */; };
@@ -436,6 +438,8 @@
 		D3660FE62CEBE478005FCBEB /* Ocp1FlyingSocksDatagramDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksDatagramDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D3660FE72CEBE478005FCBEB /* Ocp1FlyingSocksStreamController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksStreamController.swift; sourceTree = "<group>"; };
 		D3660FE82CEBE478005FCBEB /* Ocp1FlyingSocksStreamDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksStreamDeviceEndpoint.swift; sourceTree = "<group>"; };
+		D36851252EEA26A6000129F3 /* IdentificationActuator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationActuator.swift; sourceTree = "<group>"; };
+		D36851272EEA2700000129F3 /* IdentificationActuator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentificationActuator.swift; sourceTree = "<group>"; };
 		D36ECA202A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingSocksConnection.swift; sourceTree = "<group>"; };
 		D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLevelSensor.swift; sourceTree = "<group>"; };
@@ -935,6 +939,7 @@
 			children = (
 				D33B52B32A7060BC001A1BA7 /* Actuator.swift */,
 				D33B52B52A7060E0001A1BA7 /* BasicActuators.swift */,
+				D36851272EEA2700000129F3 /* IdentificationActuator.swift */,
 				D351F2022A727411008C5513 /* Mute.swift */,
 				D351F2042A72780A008C5513 /* PanBalance.swift */,
 				D351F2132A729D8B008C5513 /* Switch.swift */,
@@ -1330,6 +1335,7 @@
 		D3E6E1962A3ACA6C00BF7095 /* Actuators */ = {
 			isa = PBXGroup;
 			children = (
+				D36851252EEA26A6000129F3 /* IdentificationActuator.swift */,
 				D3E6E1972A3ACA6C00BF7095 /* PanBalance.swift */,
 				D3E6E1982A3ACA6C00BF7095 /* Mute.swift */,
 				D3E6E1992A3ACA6C00BF7095 /* Switch.swift */,
@@ -1880,6 +1886,7 @@
 				D33B52AE2A702D92001A1BA7 /* SubscriptionManager.swift in Sources */,
 				D351F21C2A72A26E008C5513 /* Matrix.swift in Sources */,
 				D351F2162A729DFC008C5513 /* PolarityState.swift in Sources */,
+				D36851282EEA2700000129F3 /* IdentificationActuator.swift in Sources */,
 				D3B325092B4F6B4900C8335F /* Ocp1FlyingFoxDeviceEndpoint.swift in Sources */,
 				D33A35AD2B2FC29000FEDC43 /* AudioProcessingManager.swift in Sources */,
 				D33A35B82B2FC9C900FEDC43 /* MediaTransportNetwork.swift in Sources */,
@@ -1995,6 +2002,7 @@
 				D3E6E1E22A3ACAA900BF7095 /* SearchDataTypes.swift in Sources */,
 				D3AFD3502B2CF84E00A72E9A /* MediaClock3.swift in Sources */,
 				D3AFD3802B32A06700A72E9A /* Ocp1DecodingState.swift in Sources */,
+				D36851262EEA26A6000129F3 /* IdentificationActuator.swift in Sources */,
 				D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */,
 				D3FAC8EA2B5CFBE7009E2775 /* TaskManager.swift in Sources */,
 				D34B5F9E2B65FD0D000C8DD1 /* Grouper.swift in Sources */,
