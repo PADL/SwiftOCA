@@ -55,7 +55,7 @@ public enum Ocp1Error: Error, Equatable {
   case notConnected
   case notImplemented
   case notSubscribedToEvent
-  case objectAlreadyContainedByBlock
+  case objectAlreadyContainedByBlock(OcaONo)
   case objectClassIsNotSubclass
   case objectClassMismatch
   case objectNotPresent(OcaONo)

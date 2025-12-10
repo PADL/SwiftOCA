@@ -78,12 +78,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
 
     guard !actionObjects.contains(object) else {
-      throw Ocp1Error.objectAlreadyContainedByBlock
+      throw Ocp1Error.objectAlreadyContainedByBlock(object.objectNumber)
     }
 
     if let object = object as? OcaOwnable {
       guard object.owner == OcaInvalidONo else {
-        throw Ocp1Error.objectAlreadyContainedByBlock
+        throw Ocp1Error.objectAlreadyContainedByBlock(object.objectNumber)
       }
       object.owner = objectNumber
     }
