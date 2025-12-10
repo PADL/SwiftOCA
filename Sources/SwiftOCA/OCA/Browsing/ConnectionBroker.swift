@@ -542,6 +542,13 @@ public actor OcaConnectionBroker {
   public var registeredDevices: [DeviceIdentifier] {
     Array(_devices.keys)
   }
+  
+  public func reportRegisteredDevices() {
+    for deviceIdentifier in registeredDevices {
+      let event = Event(eventType: .deviceAdded, deviceIdentifier: deviceIdentifier)
+      _eventsContinuation.yield(event)
+    }
+  }
 }
 
 extension OcaConnectionBroker.DeviceIdentifier {
