@@ -542,7 +542,7 @@ public actor OcaConnectionBroker {
   public var registeredDevices: [DeviceIdentifier] {
     Array(_devices.keys)
   }
-  
+
   @_spi(SwiftOCAPrivate)
   public func reenumerateRegisteredDevices() {
     for deviceIdentifier in registeredDevices {
