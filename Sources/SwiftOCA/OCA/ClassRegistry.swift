@@ -132,6 +132,7 @@ public class OcaClassRegistry {
     try register(OcaFloat32Actuator.self)
     try register(OcaFloat64Actuator.self)
     try register(OcaStringActuator.self)
+    try register(OcaIdentificationActuator.self)
     // TODO: Bitstring support
     // try register(OcaBitstringActuator.self)
 
