@@ -28,7 +28,7 @@ open class OcaTimeSource: OcaAgent {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.2"),
-    getMethodID: OcaMethodID("3.1"),
+    getMethodID: OcaMethodID("3.2"),
     setMethodID: OcaMethodID("3.3")
   )
   public var timeDeliveryMechanism: OcaTimeDeliveryMechanism = .undefined

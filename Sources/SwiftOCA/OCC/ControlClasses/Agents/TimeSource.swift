@@ -85,7 +85,7 @@ open class OcaTimeSource: OcaAgent, @unchecked Sendable {
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
-    getMethodID: OcaMethodID("3.1"),
+    getMethodID: OcaMethodID("3.2"),
     setMethodID: OcaMethodID("3.3")
   )
   public var timeDeliveryMechanism: OcaProperty<OcaTimeDeliveryMechanism>.PropertyValue
