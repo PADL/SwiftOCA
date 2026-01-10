@@ -515,10 +515,10 @@ fileprivate extension CFRunLoopMode {
 
 package extension SocketAddress {
   var data: Data {
-    withSockAddr { sa in
+    withSockAddr { sa, size in
       let buffer = UnsafeBufferPointer(
         start: UnsafePointer<UInt8>(OpaquePointer(sa)),
-        count: Int(self.size)
+        count: Int(size)
       )
       return Data(buffer)
     }

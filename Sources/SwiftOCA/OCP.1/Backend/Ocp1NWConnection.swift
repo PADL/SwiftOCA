@@ -38,7 +38,7 @@ private extension SocketAddress {
     if family == AF_LOCAL {
       try NWEndpoint.Host.name(presentationAddress, nil)
     } else {
-      try withSockAddr { sa in
+      try withSockAddr { sa, _ in
         switch Int32(family) {
         case AF_INET:
           return sa.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in

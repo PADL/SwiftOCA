@@ -224,15 +224,15 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
 
           switch sockAddr.family {
           case sa_family_t(AF_INET):
-            sockAddr.withMutableSockAddr {
-              $0.withMemoryRebound(to: sockaddr_in.self, capacity: 1) {
-                $0.pointee.sin_port = port.bigEndian
+            sockAddr.withMutableSockAddr { sa, size in
+              sa.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { sin in
+                sin.pointee.sin_port = port.bigEndian
               }
             }
           case sa_family_t(AF_INET6):
-            sockAddr.withMutableSockAddr {
-              $0.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) {
-                $0.pointee.sin6_port = port.bigEndian
+            sockAddr.withMutableSockAddr { sa, size in
+              sa.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { sin6 in
+                sin6.pointee.sin6_port = port.bigEndian
               }
             }
           case sa_family_t(AF_LOCAL):
