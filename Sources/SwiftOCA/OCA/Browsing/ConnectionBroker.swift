@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2025 PADL Software Pty Ltd
+// Copyright (c) 2025-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -295,6 +295,7 @@ public actor OcaConnectionBroker {
   private var _connections = [DeviceIdentifier: DeviceConnection]()
   private let _connectionOptions: Ocp1ConnectionOptions
   private let _eventsContinuation: AsyncStream<Event>.Continuation
+  private let _deviceModels: [OcaModelGUID]?
 
   private func _getRegisteredConnection(for device: DeviceIdentifier) throws -> DeviceConnection {
     guard let connection = _connections[device] else {
@@ -324,6 +325,13 @@ public actor OcaConnectionBroker {
     _ serviceInfo: any OcaNetworkAdvertisingServiceInfo
   ) async throws {
     let deviceIdentifier = try await DeviceIdentifier(serviceInfo: serviceInfo)
+
+    // Filter by device model if specified
+    if let deviceModels = _deviceModels,
+       !deviceModels.contains(deviceIdentifier.modelGUID) {
+      return
+    }
+
     let event = Event(eventType: .deviceAdded, deviceIdentifier: deviceIdentifier)
     let device = DeviceInfo(deviceIdentifier: deviceIdentifier, serviceInfo: serviceInfo)
 
@@ -407,9 +415,11 @@ public actor OcaConnectionBroker {
   ///   Defaults to standard options if not specified.
   public init(
     connectionOptions: Ocp1ConnectionOptions = .init(),
-    serviceTypes: Set<OcaNetworkAdvertisingServiceType>? = nil
+    serviceTypes: Set<OcaNetworkAdvertisingServiceType>? = nil,
+    deviceModels: [OcaModelGUID]? = nil
   ) async {
     _connectionOptions = connectionOptions
+    _deviceModels = deviceModels
 
     // Create AsyncStream for events
     let (stream, continuation) = AsyncStream<Event>.makeStream()
