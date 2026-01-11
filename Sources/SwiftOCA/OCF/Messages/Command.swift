@@ -21,8 +21,8 @@ import Foundation
 #endif
 
 public struct Ocp1Parameters: Codable, Sendable {
-  public var parameterCount: OcaUint8
-  public var parameterData: Data
+  public let parameterCount: OcaUint8
+  public let parameterData: Data
 
   public init(parameterCount: OcaUint8, parameterData: Data) {
     self.parameterCount = parameterCount

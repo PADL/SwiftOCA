@@ -20,13 +20,13 @@ public let Ocp1ProtocolVersion: OcaUint16 = Ocp1ProtocolVersion1
 
 public struct Ocp1Header: Codable, Sendable, _Ocp1Codable {
   /// offset 0 (1 relative to start of PDU)
-  public var protocolVersion: OcaUint16
+  public let protocolVersion: OcaUint16
   /// offset 2 (3 relative to start of PDU); size of PDU not including `syncVal`
-  public var pduSize: OcaUint32
+  public let pduSize: OcaUint32
   /// offset 6 (7 relative to start of PDU)
-  public var pduType: OcaMessageType
+  public let pduType: OcaMessageType
   /// offset 7 (8 relative to start of PDU), absent for `ocaKeepAlive` messages
-  public var messageCount: OcaUint16
+  public let messageCount: OcaUint16
 
   init(pduType: OcaMessageType, messageCount: OcaUint16) {
     protocolVersion = Ocp1ProtocolVersion
