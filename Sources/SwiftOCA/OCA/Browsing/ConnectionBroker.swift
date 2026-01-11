@@ -328,7 +328,8 @@ public actor OcaConnectionBroker {
 
     // Filter by device model if specified
     if let deviceModels = _deviceModels,
-       !deviceModels.contains(deviceIdentifier.modelGUID) {
+       !deviceModels.contains(deviceIdentifier.modelGUID)
+    {
       return
     }
 
