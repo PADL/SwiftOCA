@@ -53,32 +53,86 @@ fileprivate extension SocketError {
   }
 }
 
-package extension AnySocketAddress {
-  init(data: Data) throws {
-    try self.init(bytes: Array(data))
-  }
+@_spi(SwiftOCAPrivate)
+public enum FlyingSocks {
+  public struct AnySocketAddress: SocketAddress, Sendable {
+    private let _storage: sockaddr_storage
 
-  init(bytes addressBytes: [UInt8]) throws {
-    try self.init(sockaddr_storage(bytes: addressBytes))
-  }
+    public init(_ address: any SocketAddress) {
+      self.init(address.makeStorage())
+    }
 
-  var bytes: [UInt8] {
-    let storage = makeStorage()
-    #if canImport(Darwin)
-    let size = storage.ss_len
+    public init(_ storage: sockaddr_storage) {
+      _storage = storage
+    }
+
+    public init(data: Data) throws {
+      try self.init(bytes: Array(data))
+    }
+
+    public init(bytes addressBytes: [UInt8]) throws {
+      guard addressBytes.count >= MemoryLayout<sockaddr>.size,
+            addressBytes.count <= MemoryLayout<sockaddr_storage>.size
+      else {
+        throw SocketError.unsupportedAddress
+      }
+
+      var storage = sockaddr_storage()
+      withUnsafeMutablePointer(to: &storage) { ptr in
+        _ = memcpy(ptr, addressBytes, addressBytes.count)
+      }
+      self.init(storage)
+    }
+
+    public var bytes: [UInt8] {
+      Array(withUnsafeBytes(of: _storage) { $0 }.prefix(_size))
+    }
+
+    public var data: Data {
+      Data(bytes)
+    }
+
+    public static var family: sa_family_t {
+      sa_family_t(AF_UNSPEC)
+    }
+
+    #if compiler(>=6.0)
+    public func withSockAddr<
+      R,
+      E: Error
+    >(_ body: (UnsafePointer<sockaddr>, socklen_t) throws(E) -> R) throws(E) -> R {
+      let size = _size
+      return try withUnsafeBytes(of: _storage) { p throws(E) -> R in
+        try body(p.baseAddress!.assumingMemoryBound(to: sockaddr.self), socklen_t(size))
+      }
+    }
     #else
-    let size = switch Int32(family) {
-    case AF_INET: MemoryLayout<sockaddr_in>.size
-    case AF_INET6: MemoryLayout<sockaddr_in6>.size
-    case AF_UNIX: MemoryLayout<sockaddr_un>.size
-    default: MemoryLayout<sockaddr_storage>.size
+    public func withSockAddr<R>(_ body: (UnsafePointer<sockaddr>, socklen_t) throws -> R) rethrows
+      -> R
+    {
+      let size = _size
+      return try withUnsafeBytes(of: _storage) { p in
+        try body(p.baseAddress!.assumingMemoryBound(to: sockaddr.self), socklen_t(size))
+      }
     }
     #endif
-    return Array(withUnsafeBytes(of: storage) { $0 }.prefix(Int(size)))
-  }
 
-  var data: Data {
-    Data(bytes)
+    private var _size: Int {
+      #if canImport(Darwin)
+      return Int(_storage.ss_len)
+      #else
+      switch Int32(_storage.ss_family) {
+      case AF_INET: return MemoryLayout<sockaddr_in>.size
+      case AF_INET6: return MemoryLayout<sockaddr_in6>.size
+      case AF_UNIX: return MemoryLayout<sockaddr_un>.size
+      default: return MemoryLayout<sockaddr_storage>.size
+      }
+      #endif
+    }
+
+    public func makeStorage() -> sockaddr_storage {
+      _storage
+    }
   }
 }
 
@@ -132,21 +186,24 @@ private actor AsyncSocketPoolMonitor {
 }
 
 public class Ocp1FlyingSocksConnection: Ocp1Connection {
-  fileprivate let _deviceAddress: Mutex<AnySocketAddress>
+  fileprivate let _deviceAddress: Mutex<FlyingSocks.AnySocketAddress>
   fileprivate var _asyncSocket: AsyncSocket?
 
   public convenience init(
     deviceAddress: Data,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    try self.init(socketAddress: AnySocketAddress(data: deviceAddress), options: options)
+    try self.init(
+      socketAddress: FlyingSocks.AnySocketAddress(data: deviceAddress),
+      options: options
+    )
   }
 
   fileprivate init(
-    socketAddress: AnySocketAddress,
+    socketAddress: FlyingSocks.AnySocketAddress,
     options: Ocp1ConnectionOptions
   ) throws {
-    _deviceAddress = Mutex<AnySocketAddress>(socketAddress)
+    _deviceAddress = Mutex<FlyingSocks.AnySocketAddress>(socketAddress)
     super.init(options: options)
   }
 
@@ -156,12 +213,12 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
 
   nonisolated var deviceAddress: Data {
     get {
-      AnySocketAddress(_deviceAddress.criticalValue).data
+      _deviceAddress.criticalValue.data
     }
     set {
       do {
         try _deviceAddress.withLock {
-          $0 = try AnySocketAddress(data: newValue)
+          $0 = try FlyingSocks.AnySocketAddress(data: newValue)
           Task { await deviceAddressDidChange() }
         }
       } catch {}
@@ -200,7 +257,10 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     path: String,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    try self.init(socketAddress: AnySocketAddress(sockaddr_un.unix(path: path)), options: options)
+    try self.init(
+      socketAddress: FlyingSocks.AnySocketAddress(sockaddr_un.unix(path: path)),
+      options: options
+    )
   }
 
   fileprivate func withMappedError<T: Sendable>(

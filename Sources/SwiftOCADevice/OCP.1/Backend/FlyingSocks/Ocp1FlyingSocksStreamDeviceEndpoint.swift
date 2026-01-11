@@ -33,6 +33,7 @@ import FoundationEssentials
 import Foundation
 #endif
 import Logging
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 import SystemPackage
 #if canImport(Darwin)
@@ -79,7 +80,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
     device: OcaDevice = OcaDevice.shared,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksStreamDeviceEndpoint")
   ) async throws {
-    let address = try AnySocketAddress(data: addressData)
+    let address = try FlyingSocks.AnySocketAddress(data: addressData)
     try await self.init(address: address, timeout: timeout, device: device, logger: logger)
   }
 

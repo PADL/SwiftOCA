@@ -70,8 +70,8 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   }
 
   func sendOcp1EncodedData(_ data: Data) async throws {
-    let peerAddress = AnySocketAddress(peerAddress)
-    let localAddress = localAddress != nil ? AnySocketAddress(localAddress!) : nil
+    let peerAddress = FlyingSocks.AnySocketAddress(peerAddress)
+    let localAddress = localAddress != nil ? FlyingSocks.AnySocketAddress(localAddress!) : nil
 
     try await sendOcp1EncodedMessage(AsyncSocket.Message(
       peerAddress: peerAddress,
