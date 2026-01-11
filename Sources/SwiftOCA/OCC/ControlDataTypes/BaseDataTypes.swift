@@ -111,6 +111,34 @@ public enum OcaStatus: OcaUint8, Codable, Sendable, CaseIterable {
   case outOfMemory = 16
 }
 
+public struct Ocp1ExtendedStatus: Equatable, Codable, Sendable {
+  public let authority: OcaOrganizationID
+  public let extendedCode: OcaUint32
+  public let extendedInfo: OcaBlob
+
+  public init(
+    authority: OcaOrganizationID,
+    extendedCode: OcaUint32,
+    extendedInfo: OcaBlob
+  ) {
+    self.authority = authority
+    self.extendedCode = extendedCode
+    self.extendedInfo = extendedInfo
+  }
+}
+
+public struct OcaExtendedStatus: Equatable, Codable, Sendable {
+  public let statusCode: OcaStatus
+  public let extendedStatus: Ocp1ExtendedStatus
+
+  public init(statusCode: OcaStatus, extendedStatus: Ocp1ExtendedStatus) {
+    self.statusCode = statusCode
+    self.extendedStatus = extendedStatus
+  }
+}
+
+public let OcaExtendedStatusExtensionID = OcaExtensionID("1.1")
+
 public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
   CustomStringConvertible, ExpressibleByStringLiteral, _Ocp1Codable
 {

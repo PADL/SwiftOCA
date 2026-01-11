@@ -165,13 +165,32 @@ public actor OcaDevice {
     peerToPeerGroupers[object.objectNumber] = nil
   }
 
+  private func _makeExtendedStatusError(
+    command: Ocp1Command,
+    extendedStatus: Ocp1ExtendedStatus? = nil
+  )
+    -> [Ocp1Extension]?
+  {
+    if command.extendedStatusSupported,
+       let extendedStatus,
+       let extensionData: Data = try? Ocp1Encoder()
+       .encode(extendedStatus)
+    {
+      [Ocp1Extension(
+        extensionID: OcaExtendedStatusExtensionID,
+        extensionData: OcaBlob(extensionData)
+      )]
+    } else {
+      nil
+    }
+  }
+
   public func handleCommand(
     _ command: Ocp1Command,
     timeout: Duration = .zero,
     from controller: any OcaController
   ) async -> Ocp1Response {
     let object = objects[command.targetONo]
-
     do {
       guard let object else {
         throw Ocp1Error.status(.badONo)
@@ -190,7 +209,22 @@ public actor OcaDevice {
         }
       }
     } catch let Ocp1Error.status(status) {
-      return .init(responseSize: 0, handle: command.handle, statusCode: status)
+      return .init(
+        responseSize: 0,
+        handle: command.handle,
+        statusCode: status,
+        extensions: _makeExtendedStatusError(command: command)
+      )
+    } catch let Ocp1Error.extendedStatus(extendedStatus) {
+      return .init(
+        responseSize: 0,
+        handle: command.handle,
+        statusCode: extendedStatus.statusCode,
+        extensions: _makeExtendedStatusError(
+          command: command,
+          extendedStatus: extendedStatus.extendedStatus
+        )
+      )
     } catch Ocp1Error.invalidProxyMethodResponse {
       return .init(responseSize: 0, handle: command.handle, statusCode: .invalidRequest)
     } catch Ocp1Error.nilNotEncodable {

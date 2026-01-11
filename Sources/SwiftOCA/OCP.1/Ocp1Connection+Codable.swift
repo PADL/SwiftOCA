@@ -171,6 +171,10 @@ package extension Ocp1Connection {
       }
     case .ocaNtf2:
       message = try Ocp1Notification2(bytes: Array(messageData))
+    case .ocaCmdRrqExtended:
+      message = try Ocp1Command(bytes: Array(messageData), extensionsSupported: true)
+    case .ocaRspExtended:
+      message = try Ocp1Response(bytes: Array(messageData), extensionsSupported: true)
     }
 
     return message

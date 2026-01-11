@@ -34,10 +34,10 @@ public struct Ocp1Decoder {
   public init() {}
 
   /// Decodes a value from a flat Ocp1 representation.
-  public func decode<Value>(_ type: Value.Type, from data: [UInt8]) throws -> Value
+  public func decode<Value>(_ type: Value.Type, from bytes: [UInt8]) throws -> Value
     where Value: Decodable
   {
-    try decode(type, from: Data(data))
+    try decode(type, from: Data(bytes))
   }
 
   /// Decodes a value from a flat Ocp1 representation.
@@ -47,5 +47,18 @@ public struct Ocp1Decoder {
     let state: Ocp1DecodingState
     state = Ocp1DecodingState(data: Data(data), userInfo: userInfo)
     return try Ocp1DecodingState.decode(type, state: state, codingPath: [], userInfo: userInfo)
+  }
+
+  /// Decodes a value from a flat Ocp1 representation.
+  func _decodePartial<Value>(
+    _ type: Value.Type,
+    from bytes: ArraySlice<UInt8>
+  ) throws -> (Value, Int)
+    where Value: Decodable
+  {
+    let state: Ocp1DecodingState
+    state = Ocp1DecodingState(data: Data(bytes), userInfo: userInfo)
+    let value = try Ocp1DecodingState.decode(type, state: state, codingPath: [], userInfo: userInfo)
+    return (value, state.remainingCount)
   }
 }

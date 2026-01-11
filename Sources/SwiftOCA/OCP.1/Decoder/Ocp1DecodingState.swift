@@ -32,6 +32,7 @@ class Ocp1DecodingState {
   private var data: Data
   let userInfo: [CodingUserInfoKey: Any]
   var isAtEnd: Bool { data.isEmpty }
+  var remainingCount: Int { data.count }
 
   init(data: Data, userInfo: [CodingUserInfoKey: Any]) {
     self.data = data

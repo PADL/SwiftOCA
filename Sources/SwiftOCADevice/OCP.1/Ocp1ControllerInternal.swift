@@ -27,15 +27,21 @@ import SwiftOCA
 
 struct Ocp1MessageList: Sendable {
   let responseRequired: Bool
+  let extensionsSupported: Bool
   let messages: [Ocp1Message]
 
-  private init(responseRequired: Bool, messages: [Ocp1Message]) {
+  private init(responseRequired: Bool, extensionsSupported: Bool, messages: [Ocp1Message]) {
     self.responseRequired = responseRequired
+    self.extensionsSupported = extensionsSupported
     self.messages = messages
   }
 
   private init(messageType: OcaMessageType, messages: [Ocp1Message]) {
-    self.init(responseRequired: messageType == .ocaCmdRrq, messages: messages)
+    self.init(
+      responseRequired: messageType.responseRequired,
+      extensionsSupported: messageType == .ocaCmdRrqExtended,
+      messages: messages
+    )
   }
 
   init(messagePduData data: Data) throws {
@@ -103,7 +109,8 @@ extension Ocp1ControllerInternal {
   /// handle a single message
   private func _handle<Endpoint: OcaDeviceEndpointPrivate>(
     for endpoint: Endpoint,
-    message: Ocp1Message
+    message: Ocp1Message,
+    extensionsSupported: Bool
   ) async throws -> Ocp1Response? {
     let controller = self as! Endpoint.ControllerType
     var response: Ocp1Response?
@@ -130,7 +137,8 @@ extension Ocp1ControllerInternal {
       response = Ocp1Response(
         handle: command.handle,
         statusCode: commandResponse.statusCode,
-        parameters: commandResponse.parameters
+        parameters: commandResponse.parameters,
+        extensions: extensionsSupported ? (commandResponse.extensions ?? []) : nil
       )
     case let keepAlive as Ocp1KeepAlive1:
       heartbeatTime = .seconds(keepAlive.heartBeatTime)
@@ -141,10 +149,9 @@ extension Ocp1ControllerInternal {
       throw Ocp1Error.invalidMessageType
     }
 
-    if let response {
-      endpoint.logger.response(response, on: controller)
-    }
+    guard let response else { return nil }
 
+    endpoint.logger.response(response, on: controller)
     return response
   }
 
@@ -158,15 +165,20 @@ extension Ocp1ControllerInternal {
     }
 
     let responses = try await messageList.messages.asyncMap { @Sendable message in
-      try await _handle(for: endpoint, message: message)
+      try await _handle(
+        for: endpoint,
+        message: message,
+        extensionsSupported: messageList.extensionsSupported
+      )
     }
 
     if messageList.responseRequired {
-      let responses = responses.compactMap { $0 }
+      let messageType: OcaMessageType = messageList.extensionsSupported ? .ocaRspExtended : .ocaRsp
+      let responses: [Ocp1Response] = responses.compactMap { $0 }
       for response in responses {
         endpoint.traceMessage(response, controller: self, direction: .tx)
       }
-      try await sendMessages(responses, type: .ocaRsp)
+      try await sendMessages(responses, type: messageType)
     }
   }
 

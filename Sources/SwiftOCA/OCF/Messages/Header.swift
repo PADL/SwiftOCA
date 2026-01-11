@@ -110,3 +110,7 @@ public protocol Ocp1Message: Codable, Sendable {
 }
 
 protocol _Ocp1MessageCodable: Ocp1Message & _Ocp1Codable {}
+
+protocol _Ocp1ExtendedMessageCodable: _Ocp1MessageCodable {
+  init(bytes: borrowing[UInt8], extensionsSupported: Bool) throws
+}

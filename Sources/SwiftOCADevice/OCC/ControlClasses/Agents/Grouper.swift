@@ -464,13 +464,13 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
           } else {
             lastStatus = .ok
           }
-        } catch let Ocp1Error.status(status) {
+        } catch let error as Ocp1Error where error.status != nil {
           if lastStatus == .ok {
             lastStatus = .partiallySucceeded
-          } else if lastStatus != status {
+          } else if lastStatus != error.status {
             lastStatus = .processingFailed
           } else {
-            lastStatus = status
+            lastStatus = error.status
           }
         } catch {
           lastStatus = .processingFailed // shouldn't happen
@@ -757,7 +757,7 @@ private extension OcaGrouper.Enrollment {
         }
       )
     } catch Ocp1Error.alreadySubscribedToEvent {
-    } catch Ocp1Error.status(.invalidRequest) {}
+    } catch let error as Ocp1Error where error.status == .invalidRequest {}
   }
 
   mutating func unsubscribe() async throws {

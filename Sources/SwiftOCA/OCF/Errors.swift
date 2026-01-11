@@ -17,6 +17,7 @@
 public enum Ocp1Error: Error, Equatable {
   /// An OCA status received from a device; should not be used for local errors
   case status(OcaStatus)
+  case extendedStatus(OcaExtendedStatus)
   case exception(Ocp1Notification2ExceptionData)
   case alreadyConnected
   case alreadySubscribedToEvent
@@ -84,4 +85,17 @@ public enum Ocp1Error: Error, Equatable {
 
   // decoding errors
   case stringNotDecodable([UInt8])
+}
+
+public extension Ocp1Error {
+  var status: OcaStatus? {
+    switch self {
+    case let .status(status):
+      status
+    case let .extendedStatus(status):
+      status.statusCode
+    default:
+      nil
+    }
+  }
 }

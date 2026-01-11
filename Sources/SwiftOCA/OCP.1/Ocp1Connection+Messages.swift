@@ -42,13 +42,38 @@ extension Ocp1Connection {
     }
   }
 
+  private func _sendCommandRrqExtendedStatus(_ command: Ocp1Command) async throws -> Ocp1Response {
+    let extendedStatusCommand = Ocp1Command(
+      commandSize: command.commandSize,
+      handle: command.handle,
+      targetONo: command.targetONo,
+      methodID: command.methodID,
+      extensions: [.init(extensionID: OcaExtendedStatusExtensionID, extensionData: .init())]
+    )
+    try await sendMessage(extendedStatusCommand, type: .ocaCmdRrqExtended)
+    return try await response(for: command.handle)
+  }
+
+  private func _sendCommandRrq(_ command: Ocp1Command) async throws -> Ocp1Response {
+    try await sendMessage(command, type: .ocaCmdRrq)
+    return try await response(for: command.handle)
+  }
+
   public func sendCommandRrq(_ command: Ocp1Command) async throws -> Ocp1Response {
     try await withThrowingTimeout(
       of: responseTimeout,
       clock: .continuous,
       operation: { [self] in
-        try await sendMessage(command, type: .ocaCmdRrq)
-        return try await response(for: command.handle)
+        if await options.flags.contains(.extendedStatusSupported) {
+          do {
+            return try await _sendCommandRrqExtendedStatus(command)
+          } catch Ocp1Error.status {
+            try await _disableExtendedStatus()
+            return try await _sendCommandRrq(command)
+          }
+        } else {
+          return try await _sendCommandRrq(command)
+        }
       }, onTimeout: { [self] in
         try await monitor?.resumeTimedOut(handle: command.handle)
       }

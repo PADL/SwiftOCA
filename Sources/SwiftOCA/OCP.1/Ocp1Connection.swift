@@ -79,6 +79,7 @@ public struct Ocp1ConnectionFlags: OptionSet, Sendable {
   public static let retainObjectCacheAfterDisconnect = Ocp1ConnectionFlags(rawValue: 1 << 2)
   public static let enableTracing = Ocp1ConnectionFlags(rawValue: 1 << 3)
   public static let refreshSubscriptionsOnReconnection = Ocp1ConnectionFlags(rawValue: 1 << 4)
+  public static let extendedStatusSupported = Ocp1ConnectionFlags(rawValue: 1 << 5)
 
   public typealias RawValue = UInt
 
@@ -246,6 +247,12 @@ open class Ocp1Connection: CustomStringConvertible {
       try? await batcher.dequeue()
       _configureBatching(options.batchingOptions)
     }
+  }
+
+  func _disableExtendedStatus() async throws {
+    guard options.flags.contains(.extendedStatusSupported) else { return }
+    let options = options.copy(flags: options.flags.subtracting(.extendedStatusSupported))
+    try await set(options: options)
   }
 
   /// Keepalive/ping interval (only necessary for UDP, but useful for other transports)

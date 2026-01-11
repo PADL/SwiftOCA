@@ -545,7 +545,7 @@ public extension OcaBlock {
       if configurability.contains(.signalPaths) {
         await $signalPaths.subscribe(self)
       }
-    } catch Ocp1Error.status(.notImplemented) {}
+    } catch let error as Ocp1Error where error.status == .notImplemented {}
   }
 
   @OcaConnection
@@ -560,7 +560,7 @@ public extension OcaBlock {
         throw Ocp1Error.status(.notImplemented)
       }
       recursiveMembers = try await getActionObjectsRecursive()
-    } catch Ocp1Error.status(.notImplemented) {
+    } catch let error as Ocp1Error where error.status == .notImplemented {
       recursiveMembers = try await getActionObjectsRecursiveFallback()
     }
     var containerMembers: [OcaContainerObjectMember]

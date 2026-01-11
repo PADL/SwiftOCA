@@ -107,13 +107,13 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
           } else {
             lastStatus = .ok
           }
-        } catch let Ocp1Error.status(status) {
+        } catch let error as Ocp1Error where error.status != nil {
           if lastStatus == .ok {
             lastStatus = .partiallySucceeded
-          } else if lastStatus != status {
+          } else if lastStatus != error.status {
             lastStatus = .processingFailed
           } else {
-            lastStatus = status
+            lastStatus = error.status
           }
         } catch {
           lastStatus = .processingFailed // shouldn't happen

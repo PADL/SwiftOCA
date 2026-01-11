@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -53,7 +53,23 @@ private extension OcaRoot {
       parameterData: parameterData
     )
     guard response.statusCode == .ok else {
-      throw Ocp1Error.status(response.statusCode)
+      if let `extension` = response.findExtension(with: OcaExtendedStatusExtensionID) {
+        let extendedStatus: Ocp1ExtendedStatus
+        do {
+          extendedStatus = try Ocp1Decoder().decode(
+            Ocp1ExtendedStatus.self,
+            from: Data(`extension`.extensionData)
+          )
+        } catch {
+          throw Ocp1Error.status(response.statusCode)
+        }
+        throw Ocp1Error.extendedStatus(.init(
+          statusCode: response.statusCode,
+          extendedStatus: extendedStatus
+        ))
+      } else {
+        throw Ocp1Error.status(response.statusCode)
+      }
     }
     guard response.parameters.parameterCount == responseParameterCount else {
       throw Ocp1Error.responseParameterOutOfRange

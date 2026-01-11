@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023-2026 PADL Software Pty Ltd
+// Copyright (c) 2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,19 +14,20 @@
 // limitations under the License.
 //
 
-public enum OcaMessageType: OcaUint8, Codable, Sendable {
-  case ocaCmd = 0
-  case ocaCmdRrq = 1
-  case ocaNtf1 = 2
-  case ocaRsp = 3
-  case ocaKeepAlive = 4
-  case ocaNtf2 = 5
-  case ocaCmdRrqExtended = 0x81
-  case ocaRspExtended = 0x83
-}
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
 
-package extension OcaMessageType {
-  var responseRequired: Bool {
-    self == .ocaCmdRrq || self == .ocaCmdRrqExtended
+public typealias OcaExtensionID = OcaClassID
+
+public struct Ocp1Extension: Sendable, Codable {
+  public let extensionID: OcaExtensionID
+  public let extensionData: OcaBlob
+
+  public init(extensionID: OcaExtensionID, extensionData: OcaBlob) {
+    self.extensionID = extensionID
+    self.extensionData = extensionData
   }
 }

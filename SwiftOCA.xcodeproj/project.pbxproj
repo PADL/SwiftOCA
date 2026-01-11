@@ -39,6 +39,7 @@
 		D32C49DD2B5102A300D73201 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = D32C49DC2B5102A300D73201 /* Logging */; };
 		D32EDEED2D6D7279009673D6 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D32EDEF12D6D7385009673D6 /* EventBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32EDEEF2D6D7385009673D6 /* EventBenchmark.swift */; };
+		D33371592F1459BE00E53B02 /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33371582F1459BE00E53B02 /* Extension.swift */; };
 		D337B9032EC4384E00826A4B /* BrokerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D337B9012EC4384E00826A4B /* BrokerTest.swift */; };
 		D337B9042EC438B500826A4B /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D337B92A2EC52CA400826A4B /* SocketAddressHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D337B9292EC52CA400826A4B /* SocketAddressHelpers.swift */; };
@@ -380,6 +381,7 @@
 		D324D9B42CFC5A3800232790 /* OcaRoot+Binding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaRoot+Binding.swift"; sourceTree = "<group>"; };
 		D32EDEE22D6D7241009673D6 /* OCAEventBenchmark */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCAEventBenchmark; sourceTree = BUILT_PRODUCTS_DIR; };
 		D32EDEEF2D6D7385009673D6 /* EventBenchmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventBenchmark.swift; sourceTree = "<group>"; };
+		D33371582F1459BE00E53B02 /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
 		D337B8FA2EC4382700826A4B /* OCABrokerTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCABrokerTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D337B9012EC4384E00826A4B /* BrokerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrokerTest.swift; sourceTree = "<group>"; };
 		D337B9292EC52CA400826A4B /* SocketAddressHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketAddressHelpers.swift; sourceTree = "<group>"; };
@@ -1365,6 +1367,7 @@
 			children = (
 				D3E6E1A02A3ACA6C00BF7095 /* Command.swift */,
 				D3E6E1A12A3ACA6C00BF7095 /* Response.swift */,
+				D33371582F1459BE00E53B02 /* Extension.swift */,
 				D3E6E1A22A3ACA6C00BF7095 /* Header.swift */,
 				D3E6E1A32A3ACA6C00BF7095 /* KeepAlive.swift */,
 				D3E6E1A42A3ACA6C00BF7095 /* Notification1.swift */,
@@ -2011,6 +2014,7 @@
 				D3C083292A7C700B0020AD57 /* MediaDataTypes.swift in Sources */,
 				D3FAC8E62B5CF926009E2775 /* LibraryManagerDataTypes.swift in Sources */,
 				D3E6E1D12A3ACA9A00BF7095 /* EventHandler.swift in Sources */,
+				D33371592F1459BE00E53B02 /* Extension.swift in Sources */,
 				D3FAC8E02B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift in Sources */,
 				D3AFD35A2B2D226200A72E9A /* MediaTransportApplication.swift in Sources */,
 				D30644042A76CE790063DA65 /* IdentificationSensor.swift in Sources */,

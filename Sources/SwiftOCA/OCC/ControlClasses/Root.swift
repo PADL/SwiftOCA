@@ -262,7 +262,7 @@ public extension OcaRoot {
         callback: onPropertyEvent
       )
     } catch Ocp1Error.alreadySubscribedToEvent {
-    } catch Ocp1Error.status(.invalidRequest) {
+    } catch let error as Ocp1Error where error.status == .invalidRequest {
       // FIXME: in our device implementation not all properties can be subcribed to
     }
   }

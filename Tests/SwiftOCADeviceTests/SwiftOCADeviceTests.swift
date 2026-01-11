@@ -27,6 +27,25 @@ final class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator, OcaGroupPeerTo
   override class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
 
   func set(to value: Bool) async { setting = value }
+
+  override func handleCommand(
+    _ command: Ocp1Command,
+    from controller: any OcaController
+  ) async throws -> Ocp1Response {
+    if command.methodID == OcaMethodID("100.1") {
+      // Always throw an extended status error
+      let extendedStatus = Ocp1ExtendedStatus(
+        authority: OcaOrganizationID((0x12, 0x34, 0x56)),
+        extendedCode: 0xABCD,
+        extendedInfo: OcaBlob(Data("Test extended error info".utf8))
+      )
+      throw Ocp1Error.extendedStatus(OcaExtendedStatus(
+        statusCode: .processingFailed,
+        extendedStatus: extendedStatus
+      ))
+    }
+    return try await super.handleCommand(command, from: controller)
+  }
 }
 
 final class _MyBooleanActuator: SwiftOCA.OcaBooleanActuator, @unchecked
@@ -391,6 +410,69 @@ final class SwiftOCADeviceTests: XCTestCase {
       let keyPaths = await testBlock.allDevicePropertyKeyPaths
       XCTAssertGreaterThan(keyPaths.count, 10)
     }
+  }
+
+  func testExtendedStatus() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let endpoint = try await OcaLocalDeviceEndpoint(device: device)
+
+    let deviceActuator = try await MyBooleanActuator(
+      objectNumber: 1000,
+      role: "Test Actuator",
+      deviceDelegate: device,
+      addToRootBlock: true
+    )
+
+    let connection = await OcaLocalConnection(endpoint)
+    let endpointTask = Task { try? await endpoint.run() }
+    try await connection.connect()
+
+    let actuator: SwiftOCA.OcaBooleanActuator = try await connection.resolve(
+      object: OcaObjectIdentification(
+        oNo: deviceActuator.objectNumber,
+        classIdentification: SwiftOCA.OcaBooleanActuator.classIdentification
+      )
+    )
+
+    // Test 1: Call method 100.1 WITHOUT extended status support
+    // Should receive just the status code
+    do {
+      let _: OcaBoolean = try await actuator.sendCommandRrq(
+        methodID: OcaMethodID("100.1")
+      )
+      XCTFail("Expected error to be thrown")
+    } catch let Ocp1Error.status(status) {
+      // Should get just the status code
+      XCTAssertEqual(status, .processingFailed)
+    } catch {
+      XCTFail("Expected Ocp1Error.status, got \(error)")
+    }
+
+    // Test 2: Call method 100.1 WITH extended status support
+    // Should receive the extended status information
+    try await connection.set(options: Ocp1ConnectionOptions(flags: [.extendedStatusSupported]))
+
+    do {
+      let _: OcaBoolean = try await actuator.sendCommandRrq(
+        methodID: OcaMethodID("100.1")
+      )
+      XCTFail("Expected error to be thrown")
+    } catch let Ocp1Error.extendedStatus(extendedStatus) {
+      // Should get the extended status information
+      XCTAssertEqual(extendedStatus.statusCode, .processingFailed)
+      XCTAssertEqual(extendedStatus.extendedStatus.authority, OcaOrganizationID((0x12, 0x34, 0x56)))
+      XCTAssertEqual(extendedStatus.extendedStatus.extendedCode, 0xABCD)
+      XCTAssertEqual(
+        Data(extendedStatus.extendedStatus.extendedInfo),
+        Data("Test extended error info".utf8)
+      )
+    } catch {
+      XCTFail("Expected Ocp1Error.extendedStatus, got \(error)")
+    }
+
+    endpointTask.cancel()
+    try? await connection.disconnect()
   }
 }
 
