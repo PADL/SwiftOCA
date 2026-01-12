@@ -94,24 +94,18 @@ final class SwiftOCADeviceTests: XCTestCase {
         parameterData: Data(encodedParameters)
       )
     )
-    let encodedCommand: [UInt8] = try Ocp1Encoder().encode(command)
+    let encodedCommand: [UInt8] = command.bytes
     XCTAssertEqual(
       encodedCommand,
       [0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 19, 136, 0, 2, 0, 6, 1, 1, 0, 2]
     )
 
-    let decodedCommand = try Ocp1Decoder().decode(Ocp1Command.self, from: encodedCommand)
+    let decodedCommand = try Ocp1Command(bytes: encodedCommand)
     XCTAssertEqual(command, decodedCommand)
 
     let decodedParameters = try Ocp1Decoder()
       .decode(OcaGetPortNameParameters.self, from: decodedCommand.parameters.parameterData)
     XCTAssertEqual(parameters, decodedParameters)
-
-    let decodedCommandBuiltin = try Ocp1Command(bytes: encodedCommand)
-    XCTAssertEqual(command, decodedCommandBuiltin)
-
-    let encodedCommandBuiltin = command.bytes
-    XCTAssertEqual(encodedCommand, encodedCommandBuiltin)
   }
 
   func testMultipleFieldOcp1Encoding() throws {
@@ -161,14 +155,14 @@ final class SwiftOCADeviceTests: XCTestCase {
         parameterData: Data(encodedParameters)
       )
     )
-    let encodedCommand: [UInt8] = try Ocp1Encoder().encode(command)
+    let encodedCommand: [UInt8] = command.bytes
     XCTAssertEqual(
       encodedCommand,
       [0, 0, 0, 0, 0, 0, 0, 101, 0, 0, 19, 137, 0, 4, 0, 1, 3, 255, 255, 255, 255, 255, 255,
        255, 156, 255, 255, 255, 255, 255, 255, 255, 56, 0, 0, 0, 0, 0, 0, 0, 0]
     )
 
-    let decodedCommand = try Ocp1Decoder().decode(Ocp1Command.self, from: encodedCommand)
+    let decodedCommand = try Ocp1Command(bytes: encodedCommand)
     XCTAssertEqual(command, decodedCommand)
 
     let decodedParameters = try Ocp1Decoder()
