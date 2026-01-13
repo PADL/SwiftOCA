@@ -51,6 +51,11 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
     try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: parameters)
   }
 
+  public func addImageDataAsync(id: OcaUint32, _ imageData: OcaBlob) async throws {
+    let parameters = AddImageDataParameters(id: id, imageData: imageData)
+    try await sendCommand(methodID: OcaMethodID("3.4"), parameters: parameters)
+  }
+
   public func verifyImage(_ verifyData: OcaBlob) async throws {
     try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: verifyData)
   }
