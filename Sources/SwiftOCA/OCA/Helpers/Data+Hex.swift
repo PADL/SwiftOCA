@@ -12,7 +12,7 @@ extension Data {
     let hexDigits = options.contains(.upperCase) ? "0123456789ABCDEF" : "0123456789abcdef"
     if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
       let utf8Digits = Array(hexDigits.utf8)
-      return String(unsafeUninitializedCapacity: 2 * self.count) { ptr -> Int in
+      return String(unsafeUninitializedCapacity: 2 * count) { ptr -> Int in
         var p = ptr.baseAddress!
         for byte in self {
           p[0] = utf8Digits[Int(byte / 16)]
