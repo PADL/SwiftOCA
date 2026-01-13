@@ -1015,3 +1015,175 @@ final class SocketAddressHelperTests: XCTestCase {
     XCTAssertEqual(addressNoPort, "/tmp/socket with spaces & symbols!")
   }
 }
+
+final class UnsafeStringInitializerTests: XCTestCase {
+  // MARK: - OcaPropertyID unsafeString tests
+
+  func testOcaPropertyIDUnsafeStringValid() throws {
+    let propertyID = try OcaPropertyID(unsafeString: "3.5")
+    XCTAssertEqual(propertyID.defLevel, 3)
+    XCTAssertEqual(propertyID.propertyIndex, 5)
+  }
+
+  func testOcaPropertyIDUnsafeStringLargeValues() throws {
+    let propertyID = try OcaPropertyID(unsafeString: "65535.65535")
+    XCTAssertEqual(propertyID.defLevel, 65535)
+    XCTAssertEqual(propertyID.propertyIndex, 65535)
+  }
+
+  func testOcaPropertyIDUnsafeStringMissingComponent() throws {
+    XCTAssertThrowsError(try OcaPropertyID(unsafeString: "3")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaPropertyIDUnsafeStringTooManyComponents() throws {
+    XCTAssertThrowsError(try OcaPropertyID(unsafeString: "3.5.7")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaPropertyIDUnsafeStringNonNumeric() throws {
+    XCTAssertThrowsError(try OcaPropertyID(unsafeString: "abc.5")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+
+    XCTAssertThrowsError(try OcaPropertyID(unsafeString: "3.xyz")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaPropertyIDUnsafeStringEmpty() throws {
+    XCTAssertThrowsError(try OcaPropertyID(unsafeString: "")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaPropertyIDUnsafeStringNegativeValues() throws {
+    XCTAssertThrowsError(try OcaPropertyID(unsafeString: "-1.5")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaPropertyIDUnsafeStringOverflow() throws {
+    XCTAssertThrowsError(try OcaPropertyID(unsafeString: "65536.1")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  // MARK: - OcaMethodID unsafeString tests
+
+  func testOcaMethodIDUnsafeStringValid() throws {
+    let methodID = try OcaMethodID(unsafeString: "2.10")
+    XCTAssertEqual(methodID.defLevel, 2)
+    XCTAssertEqual(methodID.methodIndex, 10)
+  }
+
+  func testOcaMethodIDUnsafeStringLargeValues() throws {
+    let methodID = try OcaMethodID(unsafeString: "65535.65535")
+    XCTAssertEqual(methodID.defLevel, 65535)
+    XCTAssertEqual(methodID.methodIndex, 65535)
+  }
+
+  func testOcaMethodIDUnsafeStringMissingComponent() throws {
+    XCTAssertThrowsError(try OcaMethodID(unsafeString: "2")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaMethodIDUnsafeStringTooManyComponents() throws {
+    XCTAssertThrowsError(try OcaMethodID(unsafeString: "2.10.3")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaMethodIDUnsafeStringNonNumeric() throws {
+    XCTAssertThrowsError(try OcaMethodID(unsafeString: "xyz.10")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+
+    XCTAssertThrowsError(try OcaMethodID(unsafeString: "2.abc")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaMethodIDUnsafeStringEmpty() throws {
+    XCTAssertThrowsError(try OcaMethodID(unsafeString: "")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaMethodIDUnsafeStringNegativeValues() throws {
+    XCTAssertThrowsError(try OcaMethodID(unsafeString: "-2.10")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaMethodIDUnsafeStringOverflow() throws {
+    XCTAssertThrowsError(try OcaMethodID(unsafeString: "65536.10")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  // MARK: - OcaClassID unsafeString tests
+
+  func testOcaClassIDUnsafeStringValid() throws {
+    let classID = try OcaClassID(unsafeString: "1.2.3")
+    XCTAssertEqual(classID.fields, [1, 2, 3])
+  }
+
+  func testOcaClassIDUnsafeStringMinimumValid() throws {
+    let classID = try OcaClassID(unsafeString: "1.2")
+    XCTAssertEqual(classID.fields, [1, 2])
+  }
+
+  func testOcaClassIDUnsafeStringLongChain() throws {
+    let classID = try OcaClassID(unsafeString: "1.2.3.4.5.6")
+    XCTAssertEqual(classID.fields, [1, 2, 3, 4, 5, 6])
+  }
+
+  func testOcaClassIDUnsafeStringLargeValues() throws {
+    let classID = try OcaClassID(unsafeString: "1.65535")
+    XCTAssertEqual(classID.fields, [1, 65535])
+  }
+
+  func testOcaClassIDUnsafeStringSingleComponent() throws {
+    XCTAssertThrowsError(try OcaClassID(unsafeString: "1")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .objectClassMismatch)
+    }
+  }
+
+  func testOcaClassIDUnsafeStringEmpty() throws {
+    XCTAssertThrowsError(try OcaClassID(unsafeString: "")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .objectClassMismatch)
+    }
+  }
+
+  func testOcaClassIDUnsafeStringNonNumeric() throws {
+    XCTAssertThrowsError(try OcaClassID(unsafeString: "1.abc.3")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .objectClassMismatch)
+    }
+
+    XCTAssertThrowsError(try OcaClassID(unsafeString: "xyz.2.3")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .objectClassMismatch)
+    }
+  }
+
+  func testOcaClassIDUnsafeStringNegativeValues() throws {
+    XCTAssertThrowsError(try OcaClassID(unsafeString: "1.-2.3")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .objectClassMismatch)
+    }
+  }
+
+  func testOcaClassIDUnsafeStringOverflow() throws {
+    XCTAssertThrowsError(try OcaClassID(unsafeString: "1.65536")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .objectClassMismatch)
+    }
+  }
+
+  func testOcaClassIDUnsafeStringWithSpaces() throws {
+    XCTAssertThrowsError(try OcaClassID(unsafeString: "1. 2.3")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .objectClassMismatch)
+    }
+  }
+}
