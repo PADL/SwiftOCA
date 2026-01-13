@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2025 PADL Software Pty Ltd
+// Copyright (c) 2025-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ final class Ocp1MessageBatcher: Sendable {
   private typealias EncodedPDU = [UInt8]
   package typealias SendEncodedPDU = @Sendable (_: Data) async throws -> ()
 
-  private let batchSize: OcaUint16
+  private let batchSize: OcaUint32
   private let dequeueInterval: Duration
   private let sendEncodedPdu: SendEncodedPDU
 
@@ -35,7 +35,7 @@ final class Ocp1MessageBatcher: Sendable {
   private var periodicTask: Task<(), Error>?
 
   package init(
-    batchSize: OcaUint16,
+    batchSize: OcaUint32,
     dequeueInterval: Duration = .zero,
     sendEncodedPdu: @escaping SendEncodedPDU
   ) {
@@ -125,16 +125,16 @@ extension Ocp1Connection {
   private func _getEffectiveBatchingOptions(
     _ batchingOptions: Ocp1ConnectionOptions
       .BatchingOptions
-  ) -> (UInt16, Duration) {
+  ) -> (UInt32, Duration) {
     let batchSize = batchingOptions.batchSize ??
-      (isDatagram ? OcaUint16(Ocp1MaximumDatagramPduSize) : OcaUint16.max)
+      (isDatagram ? OcaUint32(Ocp1MaximumDatagramPduSize) : OcaUint32(OcaUint16.max))
     var dequeueInterval = batchingOptions.batchThreshold ?? heartbeatTime / 100
     if dequeueInterval == .zero { dequeueInterval = .milliseconds(10) }
     return (batchSize, dequeueInterval)
   }
 
   func _configureBatching(_ batchingOptions: Ocp1ConnectionOptions.BatchingOptions?) {
-    let batchSize: OcaUint16
+    let batchSize: OcaUint32
     let dequeueInterval: Duration
 
     if let batchingOptions {

@@ -91,12 +91,12 @@ public struct Ocp1ConnectionFlags: OptionSet, Sendable {
 
 public struct Ocp1ConnectionOptions: Sendable {
   public struct BatchingOptions: Equatable, Sendable {
-    let batchSize: UInt16?
+    let batchSize: UInt32?
     let batchThreshold: Duration?
 
     // if batchSize / batchThrehsold are nil, sensible defaults will be used
     // based on the connection type
-    public init(batchSize: UInt16? = nil, batchThreshold: Duration? = nil) throws {
+    public init(batchSize: UInt32? = nil, batchThreshold: Duration? = nil) throws {
       if let batchSize, batchSize < Ocp1Connection.MinimumPduSize {
         throw Ocp1Error.status(.parameterError)
       }
