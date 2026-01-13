@@ -29,7 +29,7 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible, 
   public let defLevel: OcaUint16
   public let eventIndex: OcaUint16
 
-  init(_ string: OcaString) {
+  public init(_ string: OcaString) {
     let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
     defLevel = s[0]
     eventIndex = s[1]
