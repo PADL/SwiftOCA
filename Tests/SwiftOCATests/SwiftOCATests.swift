@@ -1125,6 +1125,60 @@ final class UnsafeStringInitializerTests: XCTestCase {
     }
   }
 
+  // MARK: - OcaEventID unsafeString tests
+
+  func testOcaEventIDUnsafeStringValid() throws {
+    let eventID = try OcaEventID(unsafeString: "2.7")
+    XCTAssertEqual(eventID.defLevel, 2)
+    XCTAssertEqual(eventID.eventIndex, 7)
+  }
+
+  func testOcaEventIDUnsafeStringLargeValues() throws {
+    let eventID = try OcaEventID(unsafeString: "65535.65535")
+    XCTAssertEqual(eventID.defLevel, 65535)
+    XCTAssertEqual(eventID.eventIndex, 65535)
+  }
+
+  func testOcaEventIDUnsafeStringMissingComponent() throws {
+    XCTAssertThrowsError(try OcaEventID(unsafeString: "2")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaEventIDUnsafeStringTooManyComponents() throws {
+    XCTAssertThrowsError(try OcaEventID(unsafeString: "2.7.3")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaEventIDUnsafeStringNonNumeric() throws {
+    XCTAssertThrowsError(try OcaEventID(unsafeString: "xyz.7")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+
+    XCTAssertThrowsError(try OcaEventID(unsafeString: "2.abc")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaEventIDUnsafeStringEmpty() throws {
+    XCTAssertThrowsError(try OcaEventID(unsafeString: "")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaEventIDUnsafeStringNegativeValues() throws {
+    XCTAssertThrowsError(try OcaEventID(unsafeString: "-2.7")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
+  func testOcaEventIDUnsafeStringOverflow() throws {
+    XCTAssertThrowsError(try OcaEventID(unsafeString: "65536.7")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterError))
+    }
+  }
+
   // MARK: - OcaClassID unsafeString tests
 
   func testOcaClassIDUnsafeStringValid() throws {

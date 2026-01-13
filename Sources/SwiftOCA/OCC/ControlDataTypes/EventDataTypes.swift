@@ -40,6 +40,21 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible, 
     self.eventIndex = eventIndex
   }
 
+  public init(unsafeString string: OcaString) throws {
+    let s = string.split(separator: ".", maxSplits: 1)
+    guard s.count == 2 else {
+      throw Ocp1Error.status(.parameterError)
+    }
+
+    guard let defLevel = OcaUint16(s[0]),
+          let eventIndex = OcaUint16(s[1])
+    else {
+      throw Ocp1Error.status(.parameterError)
+    }
+
+    self.init(defLevel: defLevel, eventIndex: eventIndex)
+  }
+
   public var description: String {
     "\(defLevel).\(eventIndex)"
   }
