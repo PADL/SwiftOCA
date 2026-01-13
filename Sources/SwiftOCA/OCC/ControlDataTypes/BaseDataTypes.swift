@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -130,6 +130,21 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
 
   public init(stringLiteral value: String) {
     self.init(value)
+  }
+
+  public init(unsafeString string: OcaString) throws {
+    let s = string.split(separator: ".", maxSplits: 1)
+    guard s.count == 2 else {
+      throw Ocp1Error.status(.parameterError)
+    }
+
+    guard let defLevel = OcaUint16(s[0]),
+          let propertyIndex = OcaUint16(s[1])
+    else {
+      throw Ocp1Error.status(.parameterError)
+    }
+
+    self.init(defLevel: defLevel, propertyIndex: propertyIndex)
   }
 
   public var description: String {
@@ -399,18 +414,18 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
   }
 
   public init(unsafeString string: OcaString) throws {
-    let s = try string.split(separator: ".", maxSplits: 1).map {
-      let value = OcaUint16($0)
-      guard let value else {
-        throw Ocp1Error.status(.badFormat)
-      }
-      return value
-    }
+    let s = string.split(separator: ".", maxSplits: 1)
     guard s.count == 2 else {
-      throw Ocp1Error.status(.badFormat)
+      throw Ocp1Error.status(.parameterError)
     }
-    defLevel = s[0]
-    methodIndex = s[1]
+
+    guard let defLevel = OcaUint16(s[0]),
+          let methodIndex = OcaUint16(s[1])
+    else {
+      throw Ocp1Error.status(.parameterError)
+    }
+
+    self.init(defLevel: defLevel, methodIndex: methodIndex)
   }
 
   public init(stringLiteral value: String) {
