@@ -46,11 +46,14 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
     }
   }
 
-  public func addImageData(id: OcaUint32, _ imageData: OcaBlob) async throws {
+  public func addImageData(
+    id: OcaUint32,
+    _ imageData: OcaBlob,
+    sync: Bool = true
+  ) async throws {
     let parameters = AddImageDataParameters(id: id, imageData: imageData)
 
-    // to improve performance, don't wait for a response for stream connections
-    if let connectionDelegate, await connectionDelegate.isDatagram {
+    if sync {
       try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: parameters)
     } else {
       try await sendCommand(methodID: OcaMethodID("3.4"), parameters: parameters)
