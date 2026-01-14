@@ -95,7 +95,7 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
   let notificationSocket: _CFSocketWrapper
 
   nonisolated var description: String {
-    "\(type(of: self))(socket: \(socket), identifier: \(identifier))"
+    "\(type(of: self))(socket: \(socket))"
   }
 
   init(
