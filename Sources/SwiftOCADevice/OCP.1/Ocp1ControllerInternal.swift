@@ -210,7 +210,7 @@ extension Ocp1ControllerInternal {
 
   func cancelKeepAlive() {
     keepAliveTask?.cancel()
-    self.keepAliveTask = nil
+    keepAliveTask = nil
   }
 
   /// Oca-3 notes that both controller and device send `KeepAlive` messages if they haven't
