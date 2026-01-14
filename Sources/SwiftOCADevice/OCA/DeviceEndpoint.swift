@@ -46,6 +46,8 @@ protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
 
 extension OcaDeviceEndpointPrivate {
   func unlockAndRemove(controller: ControllerType) async {
+    await controller.cancelKeepAlive()
+
     Task { await device.eventDelegate?.onControllerExpiry(controller) }
     Task {
       for dataset in await device.objects.values.compactMap({
