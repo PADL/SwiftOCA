@@ -65,8 +65,6 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
     "\(type(of: self))(peerID: \(String(describing: peerID))"
   }
 
-  func onConnectionBecomingStale() async throws {}
-
   func close() async throws {}
 
   func didOpen() {

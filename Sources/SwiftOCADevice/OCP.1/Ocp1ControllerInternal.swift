@@ -83,9 +83,6 @@ protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, Actor {
 
   func sendOcp1EncodedData(_ data: Data) async throws
 
-  /// cleanup
-  func onConnectionBecomingStale() async throws
-
   /// close the underlying connection (if any)
   func close() async throws
 }
@@ -213,7 +210,6 @@ extension Ocp1ControllerInternal {
         repeat {
           let now = ContinuousClock.now
           if connectionIsStale(now) {
-            try? await onConnectionBecomingStale()
             await endpoint?.unlockAndRemove(controller: self as! Endpoint.ControllerType)
             endpoint?.logger.info("expired controller", controller: self)
             break

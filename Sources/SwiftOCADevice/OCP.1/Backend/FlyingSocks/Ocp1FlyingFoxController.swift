@@ -74,10 +74,6 @@ actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
     }
   }
 
-  func onConnectionBecomingStale() async {
-    await close()
-  }
-
   func sendOcp1EncodedData(_ data: Data) async throws {
     outputStream.yield(.data(data))
   }

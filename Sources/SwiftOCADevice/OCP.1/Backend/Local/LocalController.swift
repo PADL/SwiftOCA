@@ -53,6 +53,4 @@ actor OcaLocalController: Ocp1ControllerInternal {
   }
 
   func close() throws {}
-
-  func onConnectionBecomingStale() async throws {}
 }

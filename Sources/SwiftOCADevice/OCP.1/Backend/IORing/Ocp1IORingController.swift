@@ -138,10 +138,6 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     _messagesContinuation.finish()
   }
 
-  func onConnectionBecomingStale() async throws {
-    try await close()
-  }
-
   var heartbeatTime = Duration.seconds(1) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
@@ -231,10 +227,6 @@ actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerD
   ) {
     self.endpoint = endpoint
     self.peerAddress = peerAddress
-  }
-
-  func onConnectionBecomingStale() async throws {
-    await endpoint?.unlockAndRemove(controller: self)
   }
 
   var heartbeatTime = Duration.seconds(0) {

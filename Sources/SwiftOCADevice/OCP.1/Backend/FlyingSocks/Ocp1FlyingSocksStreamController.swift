@@ -70,10 +70,6 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
     }
   }
 
-  func onConnectionBecomingStale() async throws {
-    try await close()
-  }
-
   func sendOcp1EncodedData(_ data: Data) async throws {
     try await socket.write(data)
   }

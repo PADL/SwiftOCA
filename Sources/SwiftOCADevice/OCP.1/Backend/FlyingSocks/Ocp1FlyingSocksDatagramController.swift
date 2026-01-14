@@ -59,10 +59,6 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
     self.localAddress = localAddress
   }
 
-  func onConnectionBecomingStale() async throws {
-    await endpoint?.unlockAndRemove(controller: self)
-  }
-
   var heartbeatTime = Duration.seconds(1) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)

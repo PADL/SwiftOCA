@@ -144,10 +144,6 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
     _messagesContinuation.finish()
   }
 
-  func onConnectionBecomingStale() async throws {
-    try await close()
-  }
-
   var heartbeatTime = Duration.seconds(0) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
@@ -230,10 +226,6 @@ actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramS
   ) {
     self.endpoint = endpoint
     self.peerAddress = AnySocketAddress(peerAddress)
-  }
-
-  func onConnectionBecomingStale() async throws {
-    await endpoint?.unlockAndRemove(controller: self)
   }
 
   var heartbeatTime = Duration.seconds(1) {
