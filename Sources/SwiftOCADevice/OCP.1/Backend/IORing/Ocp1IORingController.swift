@@ -86,7 +86,7 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
   let notificationSocket: Socket
 
   nonisolated var description: String {
-    "\(type(of: self))(socket: \(socket))"
+    "\(type(of: self))(socket: \(socket), identifier: \(identifier))"
   }
 
   init(
