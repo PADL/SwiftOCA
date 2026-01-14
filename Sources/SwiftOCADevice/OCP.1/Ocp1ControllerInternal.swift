@@ -184,7 +184,6 @@ extension Ocp1ControllerInternal {
       endpoint.logger.error(error, controller: controller)
     }
     await endpoint.unlockAndRemove(controller: controller)
-    try? await close()
     endpoint.logger.info("controller removed", controller: controller)
   }
 
