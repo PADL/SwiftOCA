@@ -199,6 +199,11 @@ extension Ocp1ControllerInternal {
     )
   }
 
+  func cancelKeepAlive() {
+    keepAliveTask?.cancel()
+    self.keepAliveTask = nil
+  }
+
   /// Oca-3 notes that both controller and device send `KeepAlive` messages if they haven't
   /// yet received (or sent) another message during `HeartbeatTime`.
   func heartbeatTimeDidChange(from oldValue: Duration) {
@@ -223,10 +228,9 @@ extension Ocp1ControllerInternal {
           try await Task.sleep(for: sleepTime)
         } while !Task.isCancelled
       }
-    } else if heartbeatTime == .zero, let keepAliveTask {
+    } else if heartbeatTime == .zero {
       // otherwise if the new interval is zero, cancel the task (if any)
-      keepAliveTask.cancel()
-      self.keepAliveTask = nil
+      cancelKeepAlive()
     }
   }
 
