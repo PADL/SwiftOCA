@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024-2025 PADL Software Pty Ltd
+// Copyright (c) 2024-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -157,6 +157,7 @@ extension Ocp1ControllerInternal {
     }
 
     let responses = try await messageList.messages.asyncMap { @Sendable message in
+      // note for stream connections this will only throw for invalidMessageType
       try await _handle(for: endpoint, message: message)
     }
 
@@ -175,14 +176,22 @@ extension Ocp1ControllerInternal {
 
     endpoint.logger.info("controller added", controller: controller)
     await endpoint.add(controller: controller)
-    do {
-      for try await messageList in messages {
-        try await handle(for: endpoint, messageList: messageList)
+
+    await withTaskGroup(of: Void.self) { group in
+      do {
+        for try await messageList in messages {
+          group.addTask {
+            try? await self.handle(for: endpoint, messageList: messageList)
+          }
+        }
+      } catch Ocp1Error.notConnected {
+      } catch {
+        endpoint.logger.error(error, controller: controller)
       }
-    } catch Ocp1Error.notConnected {
-    } catch {
-      endpoint.logger.error(error, controller: controller)
+
+      await group.waitForAll()
     }
+
     await endpoint.unlockAndRemove(controller: controller)
     endpoint.logger.info("controller removed", controller: controller)
   }
