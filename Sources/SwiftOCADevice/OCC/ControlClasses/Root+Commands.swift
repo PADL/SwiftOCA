@@ -18,17 +18,24 @@
 import SwiftOCA
 
 public extension OcaRoot {
+  private nonisolated static func _logUnexpectedParameterCount(
+    _ command: Ocp1Command,
+    expected responseParameterCount: UInt8? = nil
+  ) {
+    Task {
+      await OcaDevice.shared.logger.info(
+        "OcaRoot.decodeCommand(\(command)): unexpected parameter count \(command.parameters.parameterCount), expected \(responseParameterCount != nil ? "\(responseParameterCount!)" : "none")"
+      )
+    }
+  }
+
   nonisolated static func decodeCommand<U: Decodable>(
     _ command: Ocp1Command
   ) throws -> U {
     let responseParameterCount = _ocp1ParameterCount(type: U.self)
     let response = try Ocp1Decoder().decode(U.self, from: command.parameters.parameterData)
     if command.parameters.parameterCount != responseParameterCount {
-      Task {
-        await OcaDevice.shared.logger.info(
-          "OcaRoot.decodeCommand(\(command)): unexpected parameter count \(command.parameters.parameterCount), expected \(responseParameterCount)"
-        )
-      }
+      _logUnexpectedParameterCount(command, expected: responseParameterCount)
       throw Ocp1Error.status(.parameterOutOfRange)
     }
     return response
@@ -46,11 +53,7 @@ public extension OcaRoot {
     guard command.parameters.parameterCount == 0,
           command.parameters.parameterData.isEmpty
     else {
-      Task {
-        await OcaDevice.shared.logger.info(
-          "OcaRoot.decodeCommand(\(command)): unexpected parameter count \(command.parameters.parameterCount), expected none"
-        )
-      }
+      Self._logUnexpectedParameterCount(command)
       throw Ocp1Error.status(.parameterOutOfRange)
     }
   }
