@@ -110,7 +110,7 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
       connectionPrefix = OcaTcpConnectionPrefix
     }
 
-    receiveMessageTask = Task { [self] in
+    receiveMessageTask = Task {
       do {
         repeat {
           let messages = try await OcaDevice.receiveMessages { try await socket.read(

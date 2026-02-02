@@ -82,7 +82,7 @@ public class OcaLockManager: OcaManager {
             let lockWaiter = LockWaiter(continuation: continuation)
             Task { @OcaDevice in self.lockWaiters[lockWaiterID] = lockWaiter }
 
-            lockWaiter.task = Task {
+            lockWaiter.task = Task { [weak self] in
               for await _ in target.lockStateSubject
                 .filter({ $0.lockState == .noLock })
               {

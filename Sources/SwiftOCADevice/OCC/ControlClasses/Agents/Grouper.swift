@@ -532,7 +532,7 @@ private extension OcaGrouper {
     guard connectionStateMonitors[connection] == nil else {
       return
     }
-    connectionStateMonitors[connection] = Task { @OcaConnection in
+    connectionStateMonitors[connection] = Task { @OcaConnection [weak self] in
       var hasReconnectedAtLeastOnce = false
 
       for try await connectionState in connection.connectionState {
@@ -552,7 +552,7 @@ private extension OcaGrouper {
         }
 
         if let changeType {
-          try? await notifySubscribers(group: nil, changeType: changeType)
+          try? await self?.notifySubscribers(group: nil, changeType: changeType)
         }
       }
     }
