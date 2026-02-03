@@ -94,9 +94,11 @@ final class Ocp1MessageBatcher: Sendable {
   private func startPeriodicDequeue() {
     guard periodicTask == nil else { return }
 
-    periodicTask = Task {
+    let dequeueInterval = dequeueInterval
+
+    periodicTask = Task { [weak self, dequeueInterval] in
       try await Task.sleep(for: dequeueInterval) // will check for cancellation
-      try await dequeue()
+      try await self?.dequeue()
     }
   }
 
