@@ -307,9 +307,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
           }
         }
       } catch let error as Errno {
-        // TODO: why do we occasionally run out of buffers on recvmsg()? looking
-        // at kernel code, it appears io_buffer_select() returns NULL (as there
-        // are no datagram domain socket-specific paths that return ENOBUFS).
+        // if the IORing has not being sized properly we may receive noBufferSpace
         guard error == Errno.canceled || error == Errno.noBufferSpace else { throw error }
       } catch {
         logger
