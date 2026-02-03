@@ -156,9 +156,9 @@ extension Ocp1ControllerInternal {
       endpoint.traceMessage(message, controller: self, direction: .rx)
     }
 
-    let responses = try await messageList.messages.asyncMap { @Sendable message in
+    let responses = try await messageList.messages.asyncMap { @Sendable [weak self] message in
       // note for stream connections this will only throw for invalidMessageType
-      try await _handle(for: endpoint, message: message)
+      try await self?._handle(for: endpoint, message: message)
     }
 
     if messageList.responseRequired {
@@ -180,8 +180,8 @@ extension Ocp1ControllerInternal {
     await withTaskGroup(of: Void.self) { group in
       do {
         for try await messageList in messages {
-          group.addTask {
-            try? await self.handle(for: endpoint, messageList: messageList)
+          group.addTask { [weak self] in
+            try? await self?.handle(for: endpoint, messageList: messageList)
           }
         }
       } catch Ocp1Error.notConnected {

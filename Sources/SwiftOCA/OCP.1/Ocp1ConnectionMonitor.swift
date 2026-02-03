@@ -142,19 +142,19 @@ extension Ocp1Connection.Monitor {
   func receiveMessages(_ connection: Ocp1Connection) async throws {
     do {
       try await withThrowingTaskGroup(of: Void.self) { group in
-        group.addTask { [self] in
+        group.addTask { [weak self] in
           repeat {
             try Task.checkCancellation()
             do {
-              try await receiveMessage(connection)
+              try await self?.receiveMessage(connection)
             } catch Ocp1Error.invalidHandle {
             } catch Ocp1Error.unknownPduType {
             } catch Ocp1Error.retryOperation {}
           } while true
         }
         if connection.heartbeatTime > .zero {
-          group.addTask { [self] in
-            try await keepAlive(connection)
+          group.addTask { [weak self] in
+            try await self?.keepAlive(connection)
           }
         }
         try await group.next()
