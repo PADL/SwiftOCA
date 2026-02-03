@@ -34,7 +34,7 @@ extension OcaDeviceEndpointPrivate {
     controller: any Ocp1ControllerInternal,
     direction: OcaMessageDirection
   ) {
-    guard enableMessageTracing else { return }
+    guard enableMessageTracing, logger.logLevel <= .trace else { return }
     logger.trace("message \(direction): \(message)", metadata: controller.loggerMetadata)
   }
 }
