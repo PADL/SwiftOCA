@@ -168,7 +168,8 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
         let clients: AnyAsyncSequence<Socket> = try await socket.accept()
         do {
           for try await client in clients {
-            Task {
+            Task { [weak self] in
+              guard let self else { return }
               let controller =
                 try await Ocp1IORingStreamController(
                   endpoint: self,
