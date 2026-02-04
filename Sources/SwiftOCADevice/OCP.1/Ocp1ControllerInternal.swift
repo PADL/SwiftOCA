@@ -156,9 +156,13 @@ extension Ocp1ControllerInternal {
       endpoint.traceMessage(message, controller: self, direction: .rx)
     }
 
-    let responses = try await messageList.messages.asyncMap { @Sendable [weak self] message in
+    let responses: [Ocp1Response?] = try await messageList.messages.asyncMap { @Sendable [
+      weak self,
+      weak endpoint
+    ] message in
       // note for stream connections this will only throw for invalidMessageType
-      try await self?._handle(for: endpoint, message: message)
+      guard let self, let endpoint else { return nil }
+      return try await _handle(for: endpoint, message: message)
     }
 
     if messageList.responseRequired {
@@ -180,8 +184,9 @@ extension Ocp1ControllerInternal {
     await withTaskGroup(of: Void.self) { group in
       do {
         for try await messageList in messages {
-          group.addTask { [weak self] in
-            try? await self?.handle(for: endpoint, messageList: messageList)
+          group.addTask { [weak self, weak endpoint] in
+            guard let self, let endpoint else { return }
+            try? await handle(for: endpoint, messageList: messageList)
           }
         }
       } catch Ocp1Error.notConnected {
@@ -219,15 +224,18 @@ extension Ocp1ControllerInternal {
     if (heartbeatTime != .zero && heartbeatTime != oldValue) || keepAliveTask == nil {
       // if we have a keepalive interval and it has changed, or we haven't yet started
       // the keepalive task, (re)start it
-      keepAliveTask = Task<(), Error> {
+      keepAliveTask = Task<(), Error> { [weak self, weak endpoint] in
         repeat {
+          guard let self else { break }
           let now = ContinuousClock.now
-          if connectionIsStale(now) {
+          if await connectionIsStale(now) {
             guard !Task.isCancelled else { break }
             await endpoint?.unlockAndRemove(controller: self as! Endpoint.ControllerType)
             endpoint?.logger.info("expired controller", controller: self)
             break
           }
+          let lastMessageSentTime = await lastMessageSentTime
+          let heartbeatTime = await heartbeatTime
           let timeSinceLastMessageSent = now - lastMessageSentTime
           var sleepTime = heartbeatTime
           if timeSinceLastMessageSent >= heartbeatTime {
