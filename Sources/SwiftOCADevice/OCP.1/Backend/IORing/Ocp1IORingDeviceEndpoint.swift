@@ -254,10 +254,66 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 {
   typealias ControllerType = Ocp1IORingDatagramController
 
+  private let _bufferCount: Int?
   var _controllers = [AnySocketAddress: ControllerType]()
 
   override public var controllers: [OcaController] {
     _controllers.map(\.1)
+  }
+
+  public init(
+    address: any SocketAddress,
+    timeout: Duration = OcaDevice.DefaultTimeout,
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint"),
+    bufferCount: Int? = nil,
+    ring: IORing = .shared
+  ) async throws {
+    _bufferCount = bufferCount
+    try await super.init(
+      address: address,
+      timeout: timeout,
+      device: device,
+      logger: logger,
+      ring: ring
+    )
+  }
+
+  public convenience init(
+    address: Data,
+    timeout: Duration = OcaDevice.DefaultTimeout,
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint"),
+    bufferCount: Int? = nil
+  ) async throws {
+    let storage = try sockaddr_storage(bytes: Array(address))
+    try await self.init(
+      address: storage,
+      timeout: timeout,
+      device: device,
+      logger: logger,
+      bufferCount: bufferCount
+    )
+  }
+
+  public convenience init(
+    path: String,
+    timeout: Duration = OcaDevice.DefaultTimeout,
+    device: OcaDevice = OcaDevice.shared,
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint"),
+    bufferCount: Int? = nil
+  ) async throws {
+    let storage = try sockaddr_un(
+      family: sa_family_t(AF_LOCAL),
+      presentationAddress: path
+    )
+    try await self.init(
+      address: storage,
+      timeout: timeout,
+      device: device,
+      logger: logger,
+      bufferCount: bufferCount
+    )
   }
 
   func controller(for controllerAddress: AnySocketAddress) -> ControllerType {
@@ -295,7 +351,10 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 
     repeat {
       do {
-        let messagePdus = try await socket.receiveMessages(count: receiveBufferSize)
+        let messagePdus = try await socket.receiveMessages(
+          count: receiveBufferSize,
+          capacity: _bufferCount
+        )
 
         for try await messagePdu in messagePdus {
           var controller: ControllerType!
