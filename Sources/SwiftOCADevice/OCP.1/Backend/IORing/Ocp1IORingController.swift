@@ -110,15 +110,15 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
       connectionPrefix = OcaTcpConnectionPrefix
     }
 
-    receiveMessageTask = Task { [weak self] in
+    receiveMessageTask = Task { [weak self, socket] in
       do {
         repeat {
+          guard !Task.isCancelled else { break }
           let messages = try await OcaDevice.receiveMessages { try await socket.read(
             count: $0,
             awaitingAllRead: true
           ) }
           self?._messagesContinuation.yield(messages)
-          if Task.isCancelled { break }
         } while true
       } catch {
         self?._messagesContinuation.finish(throwing: error)
@@ -126,7 +126,7 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     }
   }
 
-  func close() async throws {
+  func close() {
     // don't close the socket, it will be closed when last reference is released
 
     keepAliveTask?.cancel()
@@ -135,6 +135,12 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     receiveMessageTask?.cancel()
     receiveMessageTask = nil
 
+    _messagesContinuation.finish()
+  }
+
+  deinit {
+    receiveMessageTask?.cancel()
+    keepAliveTask?.cancel()
     _messagesContinuation.finish()
   }
 

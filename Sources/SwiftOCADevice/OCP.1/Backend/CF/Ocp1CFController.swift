@@ -118,13 +118,13 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
       connectionPrefix = OcaTcpConnectionPrefix
     }
 
-    receiveMessageTask = Task { [weak self] in
+    receiveMessageTask = Task { [weak self, socket] in
       do {
         repeat {
+          guard !Task.isCancelled else { break }
           let messages = try await OcaDevice
             .receiveMessages { try await Array(socket.read(count: $0)) }
           self?._messagesContinuation.yield(messages)
-          if Task.isCancelled { break }
         } while true
       } catch {
         self?._messagesContinuation.finish(throwing: error)
@@ -141,6 +141,12 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
     receiveMessageTask?.cancel()
     receiveMessageTask = nil
 
+    _messagesContinuation.finish()
+  }
+
+  deinit {
+    receiveMessageTask?.cancel()
+    keepAliveTask?.cancel()
     _messagesContinuation.finish()
   }
 

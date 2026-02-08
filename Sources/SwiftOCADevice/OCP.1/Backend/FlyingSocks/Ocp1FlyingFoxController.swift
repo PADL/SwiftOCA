@@ -85,6 +85,11 @@ actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
     keepAliveTask = nil
   }
 
+  deinit {
+    keepAliveTask?.cancel()
+    outputStream.finish()
+  }
+
   nonisolated var identifier: String {
     String(describing: id)
   }

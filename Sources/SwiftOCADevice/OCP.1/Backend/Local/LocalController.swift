@@ -53,4 +53,8 @@ actor OcaLocalController: Ocp1ControllerInternal {
   }
 
   func close() throws {}
+
+  deinit {
+    keepAliveTask?.cancel()
+  }
 }

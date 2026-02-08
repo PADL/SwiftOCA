@@ -87,6 +87,10 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
     keepAliveTask = nil
   }
 
+  deinit {
+    keepAliveTask?.cancel()
+  }
+
   nonisolated var identifier: String {
     address
   }
