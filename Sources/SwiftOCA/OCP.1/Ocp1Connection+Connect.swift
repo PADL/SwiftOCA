@@ -114,6 +114,7 @@ extension Ocp1Connection {
   private func _startMonitor() {
     connectionID &+= 1
     let monitor = Monitor(self, id: connectionID)
+    monitorTask?.cancel()
     monitorTask = Task {
       try await monitor.run()
     }
