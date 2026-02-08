@@ -224,6 +224,7 @@ extension Ocp1ControllerInternal {
     if (heartbeatTime != .zero && heartbeatTime != oldValue) || keepAliveTask == nil {
       // if we have a keepalive interval and it has changed, or we haven't yet started
       // the keepalive task, (re)start it
+      cancelKeepAlive()
       keepAliveTask = Task<(), Error> { [weak self, weak endpoint] in
         repeat {
           guard let self else { break }
