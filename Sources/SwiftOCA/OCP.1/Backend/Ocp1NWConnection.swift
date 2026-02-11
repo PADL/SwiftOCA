@@ -84,7 +84,7 @@ public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
     _nwConnection = try NWConnection(to: nwEndpoint, using: parameters)
     _nwConnection.stateUpdateHandler = { [weak self] state in
       if let self, state == .cancelled {
-        Task { try await self.disconnect() }
+        Task { [weak self] in try await self?.disconnect() }
       }
     }
     _queue = DispatchQueue(label: connectionPrefix, attributes: .concurrent)
