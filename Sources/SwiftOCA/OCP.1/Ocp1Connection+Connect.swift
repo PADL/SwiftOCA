@@ -388,8 +388,8 @@ extension Ocp1Connection {
   }
 
   func deviceAddressDidChange() {
-    Task {
-      try await onMonitorError(id: -1, Ocp1Error.deviceAddressChanged)
+    Task { [weak self] in
+      try await self?.onMonitorError(id: -1, Ocp1Error.deviceAddressChanged)
     }
   }
 

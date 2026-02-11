@@ -148,7 +148,8 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
       returning: [String: Sendable].self
     ) { taskGroup in
       for (_, propertyKeyPath) in await allPropertyKeyPaths {
-        taskGroup.addTask {
+        taskGroup.addTask { [weak self] in
+          guard let self else { return [:] }
           let property =
             self[keyPath: propertyKeyPath] as! (any OcaPropertySubjectRepresentable)
           var dict = [String: Sendable]()

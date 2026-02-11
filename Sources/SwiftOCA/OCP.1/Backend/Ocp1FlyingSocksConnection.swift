@@ -219,7 +219,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
       do {
         try _deviceAddress.withLock {
           $0 = try FlyingSocks.AnySocketAddress(data: newValue)
-          Task { await deviceAddressDidChange() }
+          Task { [weak self] in await self?.deviceAddressDidChange() }
         }
       } catch {}
     }
