@@ -304,7 +304,11 @@ Sendable, CustomStringConvertible, Hashable {
     precondition(!isDatagram)
 
     while receivedData.count < count {
+      let countBefore = receivedData.count
       try await drainChannel(atLeast: count)
+      if receivedData.count == countBefore {
+        throw Ocp1Error.notConnected
+      }
     }
 
     // NOTE: make a copy here, otherwise we will have concurrent access
