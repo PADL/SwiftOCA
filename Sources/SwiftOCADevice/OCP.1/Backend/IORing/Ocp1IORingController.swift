@@ -35,6 +35,8 @@ public import IORing
 
 import SocketAddress
 import SwiftOCA
+import Synchronization
+import struct SystemPackage.Errno
 
 protocol Ocp1IORingControllerPrivate: Ocp1ControllerInternal,
   Ocp1ControllerInternalLightweightNotifyingInternal, Actor,
@@ -82,11 +84,16 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
 
   private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
   private let _messagesContinuation: AsyncThrowingStream<Ocp1MessageList, Error>.Continuation
-  private let socket: Socket
+  private let _socket: Mutex<Socket?>
   let notificationSocket: Socket
 
   nonisolated var description: String {
-    "\(type(of: self))(socket: \(socket))"
+    let socket = socket
+    return "\(type(of: self))(socket: \(socket != nil ? String(describing: socket!) : "<disconnected>"))"
+  }
+
+  private nonisolated var socket: Socket? {
+    _socket.withLock { $0 }
   }
 
   init(
@@ -94,7 +101,7 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     socket: Socket,
     notificationSocket: Socket
   ) async throws {
-    self.socket = socket
+    _socket = .init(socket)
     self.notificationSocket = notificationSocket
     self.endpoint = endpoint
 
@@ -103,17 +110,17 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
       throwing: Error.self
     )
 
-    peerAddress = try AnySocketAddress(self.socket.peerAddress)
+    peerAddress = try AnySocketAddress(socket.peerAddress)
     if peerAddress.family == AF_LOCAL {
       connectionPrefix = OcaLocalConnectionPrefix
     } else {
       connectionPrefix = OcaTcpConnectionPrefix
     }
 
-    receiveMessageTask = Task { [weak self, socket] in
+    receiveMessageTask = Task { [weak self] in
       do {
         repeat {
-          guard !Task.isCancelled else { break }
+          guard !Task.isCancelled, let socket = self?.socket else { break }
           let messages = try await OcaDevice.receiveMessages { try await Data(socket.read(
             count: $0,
             awaitingAllRead: true
@@ -126,14 +133,27 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     }
   }
 
-  func close() {
-    // don't close the socket, it will be closed when last reference is released
+  private func _takeSocket() -> Socket? {
+    _socket.withLock {
+      let socket = $0
+      $0 = nil
+      return socket
+    }
+  }
 
+  func close() async {
     keepAliveTask?.cancel()
     keepAliveTask = nil
 
+    // take and drop the socket reference so no new reads can start;
+    // cancelling the receive task will cancel any pending io_uring read
+    _ = _takeSocket()
     receiveMessageTask?.cancel()
-    receiveMessageTask = nil
+
+    if let receiveMessageTask {
+      _ = await receiveMessageTask.result
+      self.receiveMessageTask = nil
+    }
 
     _messagesContinuation.finish()
   }
@@ -151,6 +171,7 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
   }
 
   func sendOcp1EncodedData(_ data: Data) async throws {
+    guard let socket else { throw Errno.badFileDescriptor }
     _ = try await socket.write(
       [UInt8](data),
       count: data.count,
@@ -163,7 +184,7 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
   }
 
   nonisolated var identifier: String {
-    (try? socket.peerName) ?? "unknown"
+    (try? peerAddress.presentationAddress) ?? "unknown"
   }
 }
 
