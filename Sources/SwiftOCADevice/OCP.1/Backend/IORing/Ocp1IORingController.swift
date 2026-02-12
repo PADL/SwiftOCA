@@ -40,7 +40,7 @@ protocol Ocp1IORingControllerPrivate: Ocp1ControllerInternal,
   Ocp1ControllerInternalLightweightNotifyingInternal, Actor,
   Equatable, Hashable
 {
-  var peerAddress: AnySocketAddress { get }
+  nonisolated var peerAddress: AnySocketAddress { get }
 
   func sendOcp1EncodedMessage(_ message: Message) async throws
 }
@@ -195,21 +195,6 @@ private extension Ocp1NetworkAddress {
   }
 }
 
-extension Ocp1IORingStreamController: Equatable {
-  nonisolated static func == (
-    lhs: Ocp1IORingStreamController,
-    rhs: Ocp1IORingStreamController
-  ) -> Bool {
-    lhs.socket == rhs.socket
-  }
-}
-
-extension Ocp1IORingStreamController: Hashable {
-  nonisolated func hash(into hasher: inout Hasher) {
-    socket.hash(into: &hasher)
-  }
-}
-
 actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerDatagramSemantics {
   nonisolated var flags: OcaControllerFlags { .supportsLocking }
   nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
@@ -260,16 +245,13 @@ actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerD
   }
 }
 
-extension Ocp1IORingDatagramController: Equatable {
-  nonisolated static func == (
-    lhs: Ocp1IORingDatagramController,
-    rhs: Ocp1IORingDatagramController
-  ) -> Bool {
+extension Ocp1IORingControllerPrivate {
+  nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.peerAddress == rhs.peerAddress
   }
 }
 
-extension Ocp1IORingDatagramController: Hashable {
+extension Ocp1IORingControllerPrivate {
   nonisolated func hash(into hasher: inout Hasher) {
     peerAddress.hash(into: &hasher)
   }

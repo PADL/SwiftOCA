@@ -193,21 +193,6 @@ private extension Ocp1NetworkAddress {
   }
 }
 
-extension Ocp1CFStreamController: Equatable {
-  nonisolated static func == (
-    lhs: Ocp1CFStreamController,
-    rhs: Ocp1CFStreamController
-  ) -> Bool {
-    lhs.socket == rhs.socket
-  }
-}
-
-extension Ocp1CFStreamController: Hashable {
-  nonisolated func hash(into hasher: inout Hasher) {
-    socket.hash(into: &hasher)
-  }
-}
-
 actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramSemantics {
   nonisolated var flags: OcaControllerFlags { .supportsLocking }
 
@@ -255,16 +240,13 @@ actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramS
   }
 }
 
-extension Ocp1CFDatagramController: Equatable {
-  nonisolated static func == (
-    lhs: Ocp1CFDatagramController,
-    rhs: Ocp1CFDatagramController
-  ) -> Bool {
+extension Ocp1CFControllerPrivate {
+  nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.peerAddress == rhs.peerAddress
   }
 }
 
-extension Ocp1CFDatagramController: Hashable {
+extension Ocp1CFControllerPrivate {
   nonisolated func hash(into hasher: inout Hasher) {
     peerAddress.hash(into: &hasher)
   }
