@@ -44,4 +44,6 @@ public enum OcaProtocolVersion: OcaUint16, Codable, Sendable {
   case aes70_2018 = 2
   // 2023 revision
   case aes70_2023 = 3
+  // 2024 revision
+  case aes70_2024 = 4
 }
