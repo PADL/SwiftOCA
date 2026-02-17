@@ -144,7 +144,7 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     _messagesContinuation.finish()
   }
 
-  var heartbeatTime = Duration.seconds(1) {
+  var heartbeatTime = Duration.seconds(0) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
@@ -220,7 +220,7 @@ actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerD
     self.peerAddress = peerAddress
   }
 
-  var heartbeatTime = Duration.seconds(0) {
+  var heartbeatTime = Duration.seconds(1) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
