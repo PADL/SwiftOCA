@@ -50,7 +50,11 @@ public struct Ocp1Header: Codable, Sendable, _Ocp1Codable {
       OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint16.self))
     }
 
-    guard protocolVersion == Ocp1ProtocolVersion else {
+    // AES70-3-2024 says that the OCP.1 protocol version should always be 1,
+    // but some clients send higher versions (presumably to match the AES70
+    // revision). accept those; we will need to use different heuristics if the
+    // actual wire protocol changes.
+    guard protocolVersion >= Ocp1ProtocolVersion else {
       throw Ocp1Error.invalidProtocolVersion
     }
 
