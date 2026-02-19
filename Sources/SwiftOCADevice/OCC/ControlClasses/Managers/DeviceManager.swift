@@ -62,7 +62,7 @@ open class OcaDeviceManager: OcaManager {
     propertyID: OcaPropertyID("3.5"),
     getMethodID: OcaMethodID("3.1")
   )
-  public var version: OcaUint16 = OcaProtocolVersion.aes70_2023.rawValue
+  public var version: OcaUint16 = OcaProtocolVersion.aes70_2024.rawValue
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.6"),
