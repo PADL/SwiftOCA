@@ -18,7 +18,16 @@ package extension SocketAddress {
   }
 
   var bytes: [UInt8] {
-    var storage = asStorage()
-    return withUnsafeBytes(of: &storage) { Array($0.prefix(Int(size))) }
+    withSockAddr { sa, size in
+      let buffer = UnsafeBufferPointer(
+        start: UnsafePointer<UInt8>(OpaquePointer(sa)),
+        count: Int(size)
+      )
+      return Array(buffer)
+    }
+  }
+
+  var data: Data {
+    Data(bytes)
   }
 }
