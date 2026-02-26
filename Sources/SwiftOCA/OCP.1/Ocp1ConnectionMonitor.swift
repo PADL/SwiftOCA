@@ -41,7 +41,7 @@ extension Ocp1Connection.Monitor {
     }
     guard messagePduData[0] == Ocp1SyncValue else {
       connection.logger.warning(
-        "PDU has invalid sync value \(messagePduData.prefix(1).hexEncodedString())"
+        "PDU has invalid sync value \(messagePduData.prefix(1).hexString)"
       )
       throw Ocp1Error.invalidSyncValue
     }
