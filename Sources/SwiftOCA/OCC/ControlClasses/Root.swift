@@ -603,7 +603,7 @@ public extension OcaRoot {
 
 package extension OcaONo {
   var oNoString: String {
-    "<\(String(format: "0x%08x", self))>"
+    "<0x\(hexString(width: 8))>"
   }
 
   init?(oNoString: String) {

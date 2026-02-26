@@ -175,7 +175,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   }
 
   public nonisolated var description: String {
-    let objectNumberString = String(format: "0x%08x", objectNumber)
+    let objectNumberString = "0x\(objectNumber.hexString(width: 8))"
     return "\(type(of: self))(objectNumber: \(objectNumberString), role: \(role))"
   }
 

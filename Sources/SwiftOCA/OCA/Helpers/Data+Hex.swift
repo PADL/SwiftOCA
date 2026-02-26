@@ -37,8 +37,8 @@ extension [UInt8] {
   }
 }
 
-extension FixedWidthInteger {
-  package func hexString(width: Int, uppercase: Bool = false) -> String {
+package extension FixedWidthInteger {
+  func hexString(width: Int, uppercase: Bool = false) -> String {
     let s = String(self, radix: 16, uppercase: uppercase)
     guard width > s.count else { return s }
     return String(repeating: "0", count: width - s.count) + s

@@ -22,7 +22,7 @@ extension OcaRoot {
     if case let .success(role) = role {
       role
     } else {
-      String(format: "%02X", objectNumber)
+      objectNumber.oNoString
     }
   }
 }

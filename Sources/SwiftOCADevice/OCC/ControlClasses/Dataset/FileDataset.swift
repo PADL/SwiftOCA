@@ -163,8 +163,8 @@ struct OcaFileDatasetDirEntry: Hashable, CustomStringConvertible {
 
   var relativePath: String {
     get throws {
-      let oNoString = String(format: "%08x", oNo)
-      let targetString = String(format: "%08x", target)
+      let oNoString = oNo.hexString(width: 8)
+      let targetString = target.hexString(width: 8)
 
       return try "\(oNoString)$\(targetString)$\(name)\(mimeType.fileExtension)"
     }
