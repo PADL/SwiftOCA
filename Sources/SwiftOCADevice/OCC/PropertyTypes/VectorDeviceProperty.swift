@@ -68,6 +68,7 @@ public struct OcaVectorDeviceProperty<
     try await storage.getOcp1Response()
   }
 
+  #if NonEmbeddedBuild
   func getJsonValue() throws -> any Sendable {
     let valueDict: [String: Value] =
       ["x": storage.subject.value.x,
@@ -75,12 +76,14 @@ public struct OcaVectorDeviceProperty<
 
     return valueDict
   }
+  #endif
 
   private func setAndNotifySubscribers(object: OcaRoot, _ newValue: OcaVector2D<Value>) async {
     storage.subject.send(newValue)
     try? await notifySubscribers(object: object, newValue)
   }
 
+  #if NonEmbeddedBuild
   func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
     guard let valueDict = jsonValue as? [String: Value] else {
       throw Ocp1Error.status(.badFormat)
@@ -94,6 +97,7 @@ public struct OcaVectorDeviceProperty<
 
     await setAndNotifySubscribers(object: object, OcaVector2D(x: x, y: y))
   }
+  #endif
 
   func set(object: OcaRoot, command: Ocp1Command) async throws {
     let newValue: OcaVector2D<Value> = try object.decodeCommand(command)

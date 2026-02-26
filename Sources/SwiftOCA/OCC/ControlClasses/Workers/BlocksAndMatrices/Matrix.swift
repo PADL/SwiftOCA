@@ -104,6 +104,7 @@ Sendable {
     true
   }
 
+  #if NonEmbeddedBuild
   override open func getJsonValue(
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async -> [String: any Sendable] {
@@ -113,6 +114,7 @@ Sendable {
       .reencodeAsValidJSONObject(membersJson)
     return jsonObject
   }
+  #endif
 }
 
 public extension OcaMatrix {

@@ -134,6 +134,7 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
     }
   }
 
+  #if NonEmbeddedBuild
   open func getJsonValue(
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async -> [String: any Sendable] {
@@ -178,6 +179,7 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
       await getJsonValue(flags: .defaultFlags)
     }
   }
+  #endif
 
   public func propertyKeyPath(for propertyID: OcaPropertyID) async -> AnyKeyPath? {
     await OcaPropertyKeyPathCache.shared.lookupProperty(byID: propertyID, for: self)
@@ -335,6 +337,7 @@ public extension OcaRoot {
       value
     }
 
+    #if NonEmbeddedBuild
     func getJsonValue(
       _ object: OcaRoot,
       keyPath: AnyKeyPath,
@@ -342,6 +345,7 @@ public extension OcaRoot {
     ) async throws -> [String: any Sendable] {
       try [keyPath.jsonKey: String(describing: value)]
     }
+    #endif
 
     @_spi(SwiftOCAPrivate)
     public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {

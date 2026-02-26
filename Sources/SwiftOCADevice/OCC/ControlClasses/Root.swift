@@ -372,6 +372,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     }
   }
 
+  #if NonEmbeddedBuild
   open func serialize(
     flags: SerializationFlags = [],
     isIncluded: SerializationFilterFunction? = nil
@@ -475,6 +476,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   public var jsonObject: [String: any Sendable] {
     try! serialize(flags: .ignoreEncodingErrors)
   }
+  #endif
 }
 
 extension OcaRoot: Equatable {

@@ -15,16 +15,32 @@ if EnableASAN {
   ASANLinkerSettings.append(LinkerSetting.linkedLibrary("asan"))
 }
 
-let PlatformPackageDependencies: [Package.Dependency]
-let PlatformTargetDependencies: [Target.Dependency]
+var PlatformPackageDependencies: [Package.Dependency] = []
+var PlatformTargetDependencies: [Target.Dependency] = []
 let PlatformProducts: [Product]
 let PlatformTargets: [Target]
 let SwiftLanguageVersionSetting: [SwiftSetting]
 
-#if os(Linux)
-PlatformPackageDependencies = [.package(url: "https://github.com/PADL/IORingSwift", from: "0.9.2")]
+PlatformPackageDependencies += [
+  .package(url: "https://github.com/PADL/FlyingFox", branch: "main"),
+]
 
-PlatformTargetDependencies = [
+PlatformTargetDependencies += [
+  .product(
+    name: "FlyingSocks",
+    package: "FlyingFox"
+  ),
+  .product(
+    name: "FlyingFox",
+    package: "FlyingFox",
+    condition: .when(traits: ["NonEmbeddedBuild"])
+  ),
+]
+
+#if os(Linux)
+PlatformPackageDependencies += [.package(url: "https://github.com/PADL/IORingSwift", from: "0.9.2")]
+
+PlatformTargetDependencies += [
   .target(
     name: "dnssd",
     condition: .when(platforms: [.linux])
@@ -32,17 +48,17 @@ PlatformTargetDependencies = [
   .product(
     name: "IORing",
     package: "IORingSwift",
-    condition: .when(platforms: [.linux])
+    condition: .when(platforms: [.linux], traits: ["NonEmbeddedBuild"])
   ),
   .product(
     name: "IORingUtils",
     package: "IORingSwift",
-    condition: .when(platforms: [.linux])
+    condition: .when(platforms: [.linux], traits: ["NonEmbeddedBuild"])
   ),
   .product(
     name: "IORingFoundation",
     package: "IORingSwift",
-    condition: .when(platforms: [.linux])
+    condition: .when(platforms: [.linux], traits: ["NonEmbeddedBuild"])
   ),
 ]
 
@@ -50,24 +66,10 @@ PlatformProducts = []
 PlatformTargets = []
 SwiftLanguageVersionSetting = []
 #elseif os(macOS) || os(iOS)
-PlatformPackageDependencies = [
-  .package(url: "https://github.com/swhitty/FlyingFox", from: "0.20.0"),
+PlatformPackageDependencies += [
   .package(
     url: "https://github.com/spacenation/swiftui-sliders",
     from: "2.1.0"
-  ),
-]
-
-PlatformTargetDependencies = [
-  .product(
-    name: "FlyingFox",
-    package: "FlyingFox",
-    condition: .when(platforms: [.macOS, .iOS, .android])
-  ),
-  .product(
-    name: "FlyingSocks",
-    package: "FlyingFox",
-    condition: .when(platforms: [.macOS, .iOS, .android])
   ),
 ]
 
@@ -147,7 +149,11 @@ let CommonTargets: [Target] = [
     name: "SwiftOCA",
     dependencies: [
       "AsyncExtensions",
-      "AnyCodable",
+      .product(
+        name: "AnyCodable",
+        package: "AnyCodable",
+        condition: .when(traits: ["NonEmbeddedBuild"])
+      ),
       "SocketAddress",
       .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
       .product(name: "SystemPackage", package: "swift-system"),
@@ -233,6 +239,10 @@ let package = Package(
     .iOS(.v17),
   ],
   products: CommonProducts + PlatformProducts,
+  traits: [
+    .default(enabledTraits: ["NonEmbeddedBuild"]),
+    .init(name: "NonEmbeddedBuild", description: "Default build footprint"),
+  ],
   dependencies: CommonPackageDependencies + PlatformPackageDependencies,
   targets: CommonTargets + PlatformTargets
 )

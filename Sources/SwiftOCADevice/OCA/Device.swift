@@ -50,7 +50,9 @@ public actor OcaDevice {
 
   weak var eventDelegate: OcaDeviceEventDelegate?
   weak var connectionBroker: OcaConnectionBroker? = _OcaDefaultConnectionBroker.shared
+  #if NonEmbeddedBuild
   weak var datasetStorageProvider: OcaDatasetStorageProvider?
+  #endif
 
   public func allocateObjectNumber() -> OcaONo {
     repeat {
@@ -279,11 +281,13 @@ public actor OcaDevice {
     self.connectionBroker = connectionBroker
   }
 
+  #if NonEmbeddedBuild
   public func setDatasetStorageProvider(
     _ storageProvider: OcaDatasetStorageProvider
   ) {
     datasetStorageProvider = storageProvider
   }
+  #endif
 
   public func resolve<T: OcaRoot>(objectNumber: OcaONo) -> T? {
     objects[objectNumber] as? T

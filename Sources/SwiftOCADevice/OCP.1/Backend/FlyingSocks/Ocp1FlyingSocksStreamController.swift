@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-#if os(macOS) || os(iOS)
+#if os(macOS) || os(iOS) || !NonEmbedded
 
 import AsyncAlgorithms
 import AsyncExtensions
@@ -26,6 +26,9 @@ import Foundation
 #endif
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
+#if canImport(Glibc)
+import Glibc
+#endif
 
 /// A remote controller
 actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConvertible {
@@ -155,7 +158,7 @@ private extension AsyncThrowingStream
     AsyncThrowingStream<Ocp1MessageList, Error> {
       do {
         return try await withThrowingTimeout(of: timeout, clock: .continuous) {
-          var iterator = bytes.makeAsyncIterator()
+          nonisolated(unsafe) var iterator = bytes.makeAsyncIterator()
           return try await OcaDevice.asyncReceiveMessages { count in
             var nremain = count
             var buffer = [UInt8]()
@@ -185,7 +188,7 @@ private extension AsyncThrowingStream
 }
 
 extension OcaDevice {
-  static func asyncReceiveMessages(_ read: (Int) async throws -> [UInt8]) async throws
+  static func asyncReceiveMessages(_ read: @Sendable (Int) async throws -> [UInt8]) async throws
     -> Ocp1MessageList
   {
     try await receiveMessages(read)

@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if NonEmbeddedBuild
+
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
@@ -312,6 +314,7 @@ extension OcaDataset {
   }
 
   func storeParameters(object: OcaBlock<some OcaRoot>, controller: OcaController?) async throws {
+    #if NonEmbeddedBuild
     guard isParamDataset else {
       throw Ocp1Error.datasetMimeTypeMismatch
     }
@@ -321,6 +324,9 @@ extension OcaDataset {
     let (_, handle) = try await openWrite(lockState: .noLock, controller: controller)
     try await write(handle: handle, position: 0, part: blob, controller: controller)
     try await close(handle: handle, controller: controller)
+    #else
+    throw Ocp1Error.notImplemented
+    #endif
   }
 }
 
@@ -373,3 +379,4 @@ extension OcaDataset {
     try await close(handle: handle, controller: controller)
   }
 }
+#endif

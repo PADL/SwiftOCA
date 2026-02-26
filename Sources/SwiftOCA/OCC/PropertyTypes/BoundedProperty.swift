@@ -191,6 +191,7 @@ public struct OcaBoundedProperty<
     try await _storage._getValue(object, flags: flags)
   }
 
+  #if NonEmbeddedBuild
   public func getJsonValue(
     _ object: OcaRoot,
     keyPath: AnyKeyPath,
@@ -204,6 +205,7 @@ public struct OcaBoundedProperty<
       "\(jsonKey)": value.value,
     ]
   }
+  #endif
 
   @_spi(SwiftOCAPrivate)
   public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {

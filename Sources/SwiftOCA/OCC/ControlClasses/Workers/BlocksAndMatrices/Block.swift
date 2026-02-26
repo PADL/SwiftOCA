@@ -507,6 +507,7 @@ Sendable {
     true
   }
 
+  #if NonEmbeddedBuild
   override open func getJsonValue(
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async -> [String: any Sendable] {
@@ -516,6 +517,7 @@ Sendable {
       .asyncMap { await $0.getJsonValue(flags: flags) }
     return jsonObject
   }
+  #endif
 }
 
 public extension OcaBlock {
