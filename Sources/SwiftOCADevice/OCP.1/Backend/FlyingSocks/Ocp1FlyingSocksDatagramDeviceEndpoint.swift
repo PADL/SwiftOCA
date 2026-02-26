@@ -145,7 +145,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
       }
       try await _run(on: socket, pool: pool)
     } catch {
-      logger.critical("server error for \(presentationAddress): \(error.localizedDescription)")
+      logger.critical("server error for \(presentationAddress): \(error)")
       try? socket.close()
       throw error
     }
@@ -157,7 +157,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
       try await pool.prepare()
       return try makeSocketAndListen()
     } catch {
-      logger.critical("server error for \(presentationAddress): \(error.localizedDescription)")
+      logger.critical("server error for \(presentationAddress): \(error)")
       throw error
     }
   }
