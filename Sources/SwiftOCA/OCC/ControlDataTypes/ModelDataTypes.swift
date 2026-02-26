@@ -61,13 +61,8 @@ public struct OcaModelGUID: Hashable, Codable, Sendable, CustomStringConvertible
   public let modelCode: ModelCode
 
   public var description: String {
-    mfrCode.description + String(
-      format: "%02X%02X%02X%02X",
-      modelCode.0,
-      modelCode.1,
-      modelCode.2,
-      modelCode.3
-    )
+    mfrCode.description + [modelCode.0, modelCode.1, modelCode.2, modelCode.3]
+      .map { $0.hexString(width: 2, uppercase: true) }.joined()
   }
 
   public init(reserved: OcaUint8 = 0, mfrCode: OcaOrganizationID, modelCode: ModelCode) {

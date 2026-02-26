@@ -526,7 +526,7 @@ public struct OcaOrganizationID: Equatable, Hashable, Codable, Sendable, CustomS
   }
 
   public var description: String {
-    String(format: "%02X%02X%02X", id.0, id.1, id.2)
+    [id.0, id.1, id.2].map { $0.hexString(width: 2, uppercase: true) }.joined()
   }
 
   public init(_ hexString: String) throws {
