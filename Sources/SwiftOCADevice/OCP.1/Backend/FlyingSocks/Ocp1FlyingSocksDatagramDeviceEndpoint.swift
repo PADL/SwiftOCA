@@ -199,7 +199,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
             localAddress: messagePdu.localAddress
           )
           do {
-            try await handle(messagePduData: messagePdu.bytes, from: controller)
+            try await handle(messagePduData: messagePdu.payload, from: controller)
           } catch {
             await unlockAndRemove(controller: controller)
           }
