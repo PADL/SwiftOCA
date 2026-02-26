@@ -37,13 +37,13 @@ package extension OcaStringComparisonType {
     case .substring:
       lhs.hasPrefix(rhs)
     case .contains:
-      lhs.contains(rhs)
+      lhs.indices.contains { lhs[$0...].hasPrefix(rhs) }
     case .exactCaseInsensitive:
       lhs.lowercased() == rhs.lowercased()
     case .substringCaseInsensitive:
       lhs.lowercased().hasPrefix(rhs.lowercased())
     case .containsCaseInsensitive:
-      lhs.lowercased().contains(rhs.lowercased())
+      lhs.lowercased().indices.contains { lhs.lowercased()[$0...].hasPrefix(rhs.lowercased()) }
     }
   }
 }
