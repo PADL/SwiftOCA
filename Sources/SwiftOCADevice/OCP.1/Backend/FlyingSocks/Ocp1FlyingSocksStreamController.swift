@@ -55,7 +55,7 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
       try socket.socket.setValue(
         true,
         for: BoolSocketOption(name: TCP_NODELAY),
-        level: IPPROTO_TCP
+        level: CInt(IPPROTO_TCP)
       )
     }
     address = Self.makeIdentifier(from: socket.socket)
