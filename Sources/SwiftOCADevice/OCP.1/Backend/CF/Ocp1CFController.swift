@@ -31,6 +31,7 @@ import Foundation
 import SocketAddress
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
+import Synchronization
 import SystemPackage
 #if canImport(Darwin)
 import Darwin
@@ -91,11 +92,16 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
 
   private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
   private let _messagesContinuation: AsyncThrowingStream<Ocp1MessageList, Error>.Continuation
-  private let socket: _CFSocketWrapper
+  private let _socket: Mutex<_CFSocketWrapper?>
   let notificationSocket: _CFSocketWrapper
 
   nonisolated var description: String {
-    "\(type(of: self))(socket: \(socket))"
+    let socket = socket
+    return "\(type(of: self))(socket: \(socket != nil ? String(describing: socket!) : "<disconnected>"))"
+  }
+
+  private nonisolated var socket: _CFSocketWrapper? {
+    _socket.withLock { $0 }
   }
 
   init(
@@ -103,7 +109,7 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
     socket: _CFSocketWrapper,
     notificationSocket: _CFSocketWrapper
   ) async {
-    self.socket = socket
+    _socket = .init(socket)
     self.notificationSocket = notificationSocket
     peerAddress = socket.peerAddress!
 
@@ -118,10 +124,10 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
       connectionPrefix = OcaTcpConnectionPrefix
     }
 
-    receiveMessageTask = Task { [weak self, socket] in
+    receiveMessageTask = Task { [weak self] in
       do {
         repeat {
-          guard !Task.isCancelled else { break }
+          guard !Task.isCancelled, let socket = self?.socket else { break }
           let messages = try await OcaDevice
             .receiveMessages { try await Array(socket.read(count: $0)) }
           self?._messagesContinuation.yield(messages)
@@ -132,16 +138,23 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
     }
   }
 
-  func close() async throws {
-    // don't close the socket, it will be closed when last reference is released
+  private func closeSocket() {
+    _socket.withLock { $0 = nil }
+  }
 
+  func close() async throws {
     keepAliveTask?.cancel()
     keepAliveTask = nil
 
-    receiveMessageTask?.cancel()
-    receiveMessageTask = nil
+    if let receiveMessageTask {
+      receiveMessageTask.cancel()
+      _ = await receiveMessageTask.result
+      self.receiveMessageTask = nil
+    }
 
     _messagesContinuation.finish()
+
+    closeSocket()
   }
 
   deinit {
@@ -157,6 +170,7 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
   }
 
   func sendOcp1EncodedData(_ data: Data) async throws {
+    guard let socket else { throw Errno.badFileDescriptor }
     _ = try await socket.write(data: data)
   }
 
