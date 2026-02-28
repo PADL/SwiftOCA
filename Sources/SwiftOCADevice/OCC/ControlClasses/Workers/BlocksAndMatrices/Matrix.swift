@@ -390,6 +390,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     true
   }
 
+  #if NonEmbeddedBuild
   override public func serialize(
     flags: OcaRoot.SerializationFlags = [],
     isIncluded: OcaRoot.SerializationFilterFunction? = nil
@@ -438,4 +439,5 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
     try? await notifySubscribers(members: members, changeType: .itemChanged)
   }
+  #endif
 }

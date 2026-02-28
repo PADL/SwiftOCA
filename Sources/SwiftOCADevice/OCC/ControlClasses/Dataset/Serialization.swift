@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if NonEmbeddedBuild
+
 import Foundation
 #if canImport(Gzip)
 import Gzip
@@ -344,3 +346,5 @@ extension OcaDeviceManager {
     )
   }
 }
+
+#endif

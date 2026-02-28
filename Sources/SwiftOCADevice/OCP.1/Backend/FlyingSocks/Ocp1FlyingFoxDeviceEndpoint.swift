@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-#if os(macOS) || os(iOS)
+#if canImport(FlyingFox)
 
 import AsyncExtensions
 import FlyingFox
@@ -26,6 +26,9 @@ import Foundation
 #endif
 import Logging
 import SwiftOCA
+#if canImport(Glibc)
+import Glibc
+#endif
 
 @OcaDevice
 public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,

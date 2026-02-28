@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,11 @@
 
 import AsyncAlgorithms
 import AsyncExtensions
+#if NonEmbeddedBuild || !canImport(FoundationEssentials)
 import Foundation
+#else
+import FoundationEssentials
+#endif
 
 public struct OcaPropertyResolutionFlags: OptionSet, Sendable {
   public typealias RawValue = UInt32
@@ -56,12 +60,14 @@ public protocol OcaPropertyRepresentable: CustomStringConvertible {
   func refresh(_ object: OcaRoot) async
   func subscribe(_ object: OcaRoot) async
 
+  #if NonEmbeddedBuild
   func getJsonValue(
     _ object: OcaRoot,
     keyPath: AnyKeyPath,
     flags: OcaPropertyResolutionFlags
   ) async throws
     -> [String: any Sendable]
+  #endif
 }
 
 public extension OcaPropertyRepresentable {
@@ -432,6 +438,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
   }
 
+  #if NonEmbeddedBuild
   public func getJsonValue(
     _ object: OcaRoot,
     keyPath: AnyKeyPath,
@@ -439,7 +446,12 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
   ) async throws -> [String: any Sendable] {
     let value = try await _getValue(object, flags: flags)
     let jsonValue: any Sendable = if isNil(value) {
+      #if canImport(Foundation) && !canImport(FoundationEssentials)
       NSNull()
+      #else
+      (any Sendable)?.none
+      #endif
+
     } else if JSONSerialization.isValidJSONObject(value) {
       value
     } else {
@@ -448,6 +460,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
     return try [keyPath.jsonKey: jsonValue]
   }
+  #endif
 
   @_spi(SwiftOCAPrivate)
   public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
@@ -486,6 +499,7 @@ extension OcaProperty.PropertyValue: Hashable where Value: Hashable & Codable {
   }
 }
 
+#if NonEmbeddedBuild
 extension AnyKeyPath {
   var jsonKey: String {
     get throws {
@@ -510,3 +524,4 @@ extension AnyKeyPath {
     }
   }
 }
+#endif

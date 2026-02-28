@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+#if NonEmbeddedBuild
 import AnyCodable
 #if canImport(FoundationEssentials)
 import FoundationEssentials
@@ -37,3 +38,4 @@ enum OcaJSONPropertyKeys: String {
   case type
   case members
 }
+#endif

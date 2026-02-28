@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,11 @@
 //
 
 import AsyncExtensions
+#if NonEmbeddedBuild || !canImport(FoundationEssentials)
 import Foundation
+#else
+import FoundationEssentials
+#endif
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
@@ -30,13 +34,16 @@ protocol OcaDevicePropertyRepresentable: Sendable {
   var subject: AsyncCurrentValueSubject<Value> { get }
 
   func getOcp1Response() async throws -> Ocp1Response
-  func getJsonValue() throws -> any Sendable
 
   /// setters take an object so that subscribers can be notified
 
   func set(object: OcaRoot, command: Ocp1Command) async throws
-  func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws
   func set(object: OcaRoot, eventData: OcaPropertyChangedEventData<Value>) async throws
+
+  #if NonEmbeddedBuild
+  func getJsonValue() throws -> any Sendable
+  func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws
+  #endif
 }
 
 extension OcaDevicePropertyRepresentable {
@@ -147,9 +154,14 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     return try OcaRoot.encodeResponse(value)
   }
 
+  #if NonEmbeddedBuild
   func getJsonValue() throws -> any Sendable {
     let jsonValue: any Sendable = if isNil(subject.value) {
+      #if canImport(Foundation) && !canImport(FoundationEssentials)
       NSNull()
+      #else
+      (any Sendable)?.none
+      #endif
     } else if JSONSerialization.isValidJSONObject(subject.value) {
       subject.value
     } else {
@@ -158,6 +170,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
 
     return jsonValue
   }
+  #endif
 
   func set(object: OcaRoot, command: Ocp1Command) async throws {
     let newValue: Value = try OcaRoot.decodeCommand(command)
@@ -173,6 +186,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     }
   }
 
+  #if NonEmbeddedBuild
   func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
     if jsonValue is NSNull {
       if let subject = subject as? AsyncCurrentValueSubjectNilRepresentable {
@@ -216,6 +230,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
       }
     }
   }
+  #endif
 
   private func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {
     let event = OcaEvent(emitterONo: object.objectNumber, eventID: OcaPropertyChangedEventID)
