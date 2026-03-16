@@ -120,6 +120,8 @@ public actor OcaConnectionBroker {
     case deviceAdded
     /// A device has been removed from the network or is no longer available
     case deviceRemoved
+    /// An existing device has been updated (e.g. renamed via DNS-SD)
+    case deviceUpdated
     /// The connection state of a device has changed
     case connectionStateChanged(Ocp1ConnectionState)
   }
@@ -333,10 +335,12 @@ public actor OcaConnectionBroker {
       return
     }
 
-    let event = Event(eventType: .deviceAdded, deviceIdentifier: deviceIdentifier)
     let device = DeviceInfo(deviceIdentifier: deviceIdentifier, serviceInfo: serviceInfo)
+    let isExistingDevice =
+      _devices[deviceIdentifier] != nil || _connections[deviceIdentifier] != nil
 
     if let existingDevice = _devices[deviceIdentifier] {
+      // Device still in _devices (add arrived before remove, or address change)
       try await withDeviceConnection(deviceIdentifier) { existingConnection in
         if (try? existingDevice.addresses) != (try? device.addresses),
            let mutableConnection = existingConnection as? Ocp1MutableConnection
@@ -351,9 +355,22 @@ public actor OcaConnectionBroker {
           try await existingConnection.set(options: _connectionOptions)
         }
       }
+    } else if _connections[deviceIdentifier] != nil {
+      // Device removed from _devices (e.g. DNS-SD name change) but connection persists;
+      // re-enable automatic reconnect
+      try? await withDeviceConnection(deviceIdentifier) { existingConnection in
+        if _connectionOptions.flags.contains(.automaticReconnect),
+           await !existingConnection.options.flags.contains(.automaticReconnect)
+        {
+          try await existingConnection.set(options: _connectionOptions)
+        }
+      }
     }
 
     _devices[deviceIdentifier] = device
+
+    let eventType: EventType = isExistingDevice ? .deviceUpdated : .deviceAdded
+    let event = Event(eventType: eventType, deviceIdentifier: deviceIdentifier)
     _eventsContinuation.yield(event)
   }
 

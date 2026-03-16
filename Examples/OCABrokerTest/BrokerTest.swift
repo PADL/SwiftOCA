@@ -40,6 +40,8 @@ public enum BrokerTest {
             print("failed to connect to \(event.deviceIdentifier): \(error)")
           }
         }
+      case .deviceUpdated:
+        print("device updated: \(event.deviceIdentifier)")
       default:
         break
       }
