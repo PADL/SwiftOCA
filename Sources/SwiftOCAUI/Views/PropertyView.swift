@@ -20,7 +20,7 @@ import SwiftUI
 
 public struct OcaPropertyView<Value: Sendable, Resolved: View>: View {
   let object: OcaRoot
-  let property: any OcaPropertyRepresentable
+  nonisolated(unsafe) let property: any OcaPropertyRepresentable
   let content: (Value) -> Resolved
 
   @State
@@ -71,7 +71,7 @@ public struct OcaPropertyView<Value: Sendable, Resolved: View>: View {
 
 public struct OcaWritablePropertyView<Value: Sendable, Resolved: View>: View {
   let object: OcaRoot
-  let property: any OcaPropertySubjectRepresentable
+  nonisolated(unsafe) let property: any OcaPropertySubjectRepresentable
   let content: (Binding<Value>) -> Resolved
 
   @State
