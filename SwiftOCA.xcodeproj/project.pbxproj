@@ -35,7 +35,6 @@
 		D32229D42ABC270900B56B6B /* Ocp1IORingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229CC2ABC270900B56B6B /* Ocp1IORingController.swift */; };
 		D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */; };
 		D32437CF2BA9276700C89102 /* AnyCodable in Frameworks */ = {isa = PBXBuildFile; productRef = D32437CE2BA9276700C89102 /* AnyCodable */; };
-		D324D9B52CFC5A3800232790 /* OcaRoot+Binding.swift in Sources */ = {isa = PBXBuildFile; fileRef = D324D9B42CFC5A3800232790 /* OcaRoot+Binding.swift */; };
 		D32C49DD2B5102A300D73201 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = D32C49DC2B5102A300D73201 /* Logging */; };
 		D32EDEED2D6D7279009673D6 /* libSwiftOCA.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */; };
 		D32EDEF12D6D7385009673D6 /* EventBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32EDEEF2D6D7385009673D6 /* EventBenchmark.swift */; };
@@ -266,6 +265,7 @@
 		D3E6E29B2A44270300BF7095 /* LevelSensorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29A2A44270300BF7095 /* LevelSensorView.swift */; };
 		D3E6E29E2A443CF100BF7095 /* SystemToggleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29D2A443CF100BF7095 /* SystemToggleStyle.swift */; };
 		D3E6E2A02A452D0A00BF7095 /* ScaledLegendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */; };
+		D3E710EE2F67C431005CC973 /* PropertyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E710ED2F67C431005CC973 /* PropertyView.swift */; };
 		D3E741482D56331F0044CCBB /* TemperatureSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E741472D56331F0044CCBB /* TemperatureSensor.swift */; };
 		D3E7414A2D5633740044CCBB /* TemperatureSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E741492D5633740044CCBB /* TemperatureSensor.swift */; };
 		D3E820E62DFBEF0C001C9DC8 /* Ocp1NWConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E820E52DFBEF0C001C9DC8 /* Ocp1NWConnection.swift */; };
@@ -377,7 +377,6 @@
 		D32229CB2ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1IORingDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D32229CC2ABC270900B56B6B /* Ocp1IORingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ocp1IORingController.swift; sourceTree = "<group>"; };
 		D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEndpointRegistrar.swift; sourceTree = "<group>"; };
-		D324D9B42CFC5A3800232790 /* OcaRoot+Binding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OcaRoot+Binding.swift"; sourceTree = "<group>"; };
 		D32EDEE22D6D7241009673D6 /* OCAEventBenchmark */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCAEventBenchmark; sourceTree = BUILT_PRODUCTS_DIR; };
 		D32EDEEF2D6D7385009673D6 /* EventBenchmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventBenchmark.swift; sourceTree = "<group>"; };
 		D337B8FA2EC4382700826A4B /* OCABrokerTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OCABrokerTest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -598,6 +597,7 @@
 		D3E6E29A2A44270300BF7095 /* LevelSensorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LevelSensorView.swift; path = Sources/SwiftOCAUI/Views/Workers/Sensors/LevelSensorView.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E29D2A443CF100BF7095 /* SystemToggleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemToggleStyle.swift; sourceTree = "<group>"; };
 		D3E6E29F2A452D0A00BF7095 /* ScaledLegendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledLegendView.swift; sourceTree = "<group>"; };
+		D3E710ED2F67C431005CC973 /* PropertyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyView.swift; sourceTree = "<group>"; };
 		D3E741472D56331F0044CCBB /* TemperatureSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureSensor.swift; sourceTree = "<group>"; };
 		D3E741492D5633740044CCBB /* TemperatureSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureSensor.swift; sourceTree = "<group>"; };
 		D3E820E52DFBEF0C001C9DC8 /* Ocp1NWConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1NWConnection.swift; sourceTree = "<group>"; };
@@ -1109,7 +1109,6 @@
 				D3DA69F32A3DF988001250A1 /* EnvironmentValues.swift */,
 				D3E6E2792A417FAE00BF7095 /* OcaArray2D+Extras.swift */,
 				D3E6E2872A43BD1900BF7095 /* OcaDB+Linear.swift */,
-				D324D9B42CFC5A3800232790 /* OcaRoot+Binding.swift */,
 				D3DA69D82A3DA7D6001250A1 /* OcaRoot+Identifiable.swift */,
 			);
 			path = Conformances;
@@ -1444,6 +1443,7 @@
 		D3E6E2482A3C0C7700BF7095 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D3E710ED2F67C431005CC973 /* PropertyView.swift */,
 				D3E6E2942A441D8900BF7095 /* Utility */,
 				D3E6E27C2A4181A000BF7095 /* Discovery */,
 				D3DA69F82A3FEF42001250A1 /* Agents */,
@@ -2094,6 +2094,7 @@
 				D3E6E2632A3D648400BF7095 /* RootBlockView.swift in Sources */,
 				D3E6E25D2A3D2D2500BF7095 /* DetailView.swift in Sources */,
 				D3DA69E22A3DADF1001250A1 /* BlockNavigationSplitView.swift in Sources */,
+				D3E710EE2F67C431005CC973 /* PropertyView.swift in Sources */,
 				D3E6E2A02A452D0A00BF7095 /* ScaledLegendView.swift in Sources */,
 				D3E6E27B2A417FB500BF7095 /* OcaArray2D+Extras.swift in Sources */,
 				D3DA69FE2A427C2F001250A1 /* BooleanActuatorView.swift in Sources */,
@@ -2107,7 +2108,6 @@
 				D3028C1E2A418BAE00B8DB42 /* BonjourDeviceView.swift in Sources */,
 				D3DA69E42A3DCA75001250A1 /* NavigationLabel.swift in Sources */,
 				D3DA69EB2A3DCD60001250A1 /* BlockNavigationStackView.swift in Sources */,
-				D324D9B52CFC5A3800232790 /* OcaRoot+Binding.swift in Sources */,
 				D3E6E2812A43B33D00BF7095 /* PolarityView.swift in Sources */,
 				D3DA69F72A3FE538001250A1 /* DynamicStack.swift in Sources */,
 				D30644092A77EB160063DA65 /* BasicSensorViews.swift in Sources */,

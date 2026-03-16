@@ -32,7 +32,11 @@ public struct OcaGainView: OcaView {
   }
 
   public var body: some View {
-    OcaLogSliderView(value: object.binding(for: object.$gain).value)
-      .showProgressIfWaiting(object.$gain)
+    OcaWritablePropertyView(
+      object,
+      object.$gain
+    ) { (value: Binding<OcaBoundedPropertyValue<OcaDB>>) in
+      OcaLogSliderView(value: value)
+    }
   }
 }

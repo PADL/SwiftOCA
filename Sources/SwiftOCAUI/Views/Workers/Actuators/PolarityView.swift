@@ -23,20 +23,6 @@ extension OcaPolarity: OcaViewRepresentable {
   }
 }
 
-private extension Binding where Value == OcaProperty<OcaPolarityState>.PropertyValue {
-  var value: Binding<Bool> {
-    Binding<Bool>(get: {
-      if case let .success(isInverted) = self.wrappedValue {
-        isInverted == .inverted
-      } else {
-        false
-      }
-    }, set: { isInverted in
-      self.wrappedValue = .success(isInverted ? .inverted : .nonInverted)
-    })
-  }
-}
-
 public struct OcaPolarityView: OcaView {
   @State
   var object: OcaPolarity
@@ -46,9 +32,14 @@ public struct OcaPolarityView: OcaView {
   }
 
   public var body: some View {
-    Toggle(isOn: object.binding(for: object.$state).value) {}
-      .toggleStyle(SymbolToggleStyle(systemImage: "circle.slash", activeColor: .accentColor))
-      .padding()
-      .showProgressIfWaiting(object.$state)
+    OcaWritablePropertyView(object, object.$state) { (value: Binding<OcaPolarityState>) in
+      let boolBinding = Binding<Bool>(
+        get: { value.wrappedValue == .inverted },
+        set: { value.wrappedValue = $0 ? .inverted : .nonInverted }
+      )
+      Toggle(isOn: boolBinding) {}
+        .toggleStyle(SymbolToggleStyle(systemImage: "circle.slash", activeColor: .accentColor))
+        .padding()
+    }
   }
 }

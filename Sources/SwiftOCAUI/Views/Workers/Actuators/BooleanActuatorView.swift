@@ -23,20 +23,6 @@ extension OcaBooleanActuator: OcaViewRepresentable {
   }
 }
 
-private extension Binding where Value == OcaProperty<OcaBoolean>.PropertyValue {
-  var value: Binding<Bool> {
-    Binding<Bool>(get: {
-      if case let .success(isOn) = self.wrappedValue {
-        isOn
-      } else {
-        false
-      }
-    }, set: { isOn in
-      self.wrappedValue = .success(isOn)
-    })
-  }
-}
-
 public struct OcaBooleanView: OcaView {
   @State
   var object: OcaBooleanActuator
@@ -46,9 +32,10 @@ public struct OcaBooleanView: OcaView {
   }
 
   public var body: some View {
-    Toggle(isOn: object.binding(for: object.$setting).value) {}
-      .toggleStyle(SymbolToggleStyle(systemImage: "circle.fill", activeColor: .accentColor))
-      .padding()
-      .showProgressIfWaiting(object.$setting)
+    OcaWritablePropertyView(object, object.$setting) { (value: Binding<OcaBoolean>) in
+      Toggle(isOn: value) {}
+        .toggleStyle(SymbolToggleStyle(systemImage: "circle.fill", activeColor: .accentColor))
+        .padding()
+    }
   }
 }

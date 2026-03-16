@@ -32,7 +32,11 @@ public struct OcaFloat32ActuatorView: OcaView {
   }
 
   public var body: some View {
-    OcaLogSliderView(value: object.binding(for: object.$setting).value)
-      .showProgressIfWaiting(object.$setting)
+    OcaWritablePropertyView(
+      object,
+      object.$setting
+    ) { (value: Binding<OcaBoundedPropertyValue<OcaFloat32>>) in
+      OcaLogSliderView(value: value)
+    }
   }
 }

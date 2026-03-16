@@ -56,17 +56,3 @@ struct OcaLogSliderView: View {
     .id(value.value)
   }
 }
-
-extension Binding where Value == OcaProperty<OcaBoundedPropertyValue<OcaFloat32>>.PropertyValue {
-  var value: Binding<OcaBoundedPropertyValue<OcaFloat32>> {
-    Binding<OcaBoundedPropertyValue<OcaFloat32>>(get: {
-      if case let .success(value) = self.wrappedValue {
-        value
-      } else {
-        OcaBoundedPropertyValue(value: 0.0, in: 0.0...0.0)
-      }
-    }, set: { newValue in
-      self.wrappedValue = .success(newValue)
-    })
-  }
-}
