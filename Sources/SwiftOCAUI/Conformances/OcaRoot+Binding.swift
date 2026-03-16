@@ -18,7 +18,7 @@
 import SwiftOCA
 import SwiftUI
 
-extension OcaRoot {
+public extension OcaRoot {
   func binding<Value: Codable & Sendable>(for property: OcaProperty<Value>)
     -> Binding<OcaProperty<Value>.PropertyValue>
   {
