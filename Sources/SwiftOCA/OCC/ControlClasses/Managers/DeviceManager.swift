@@ -246,6 +246,10 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
     self.init(objectNumber: OcaDeviceManagerONo)
   }
 
+  public func set(deviceName: String) async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: deviceName)
+  }
+
   public func applyPatch(datasetONo: OcaONo) async throws {
     try await sendCommandRrq(methodID: OcaMethodID("3.27"), parameters: datasetONo)
   }
