@@ -227,8 +227,12 @@ public struct Ocp1ConnectionStatistics: Sendable, CustomStringConvertible {
 
 private let CommandHandleBase = OcaUint32(100)
 
+#if !canImport(Darwin)
+protocol Observable {}
+#endif
+
 @OcaConnection
-open class Ocp1Connection: CustomStringConvertible {
+open class Ocp1Connection: Observable, CustomStringConvertible {
   package nonisolated static let MinimumPduSize = 1 /* SyncVal */ + Ocp1Header.HeaderSize
 
   public internal(set) var options: Ocp1ConnectionOptions
