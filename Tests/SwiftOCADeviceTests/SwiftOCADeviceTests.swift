@@ -357,6 +357,64 @@ final class SwiftOCADeviceTests: XCTestCase {
     endpointTask.cancel()
   }
 
+  func testBlockGlobalTypeSerialization() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    _ = try await OcaLocalDeviceEndpoint(device: device)
+
+    let globalTypeBlockONo: OcaONo = 20001
+    let testGlobalType = OcaGlobalTypeIdentifier(
+      authority: OcaOrganizationID((0xFA, 0x2E, 0xE9)),
+      id: 12345
+    )
+
+    let testBlock = try await SwiftOCADevice
+      .OcaBlock<MyBooleanActuator>(
+        objectNumber: globalTypeBlockONo,
+        deviceDelegate: device,
+        addToRootBlock: true
+      )
+    await Task { @OcaDevice in
+      testBlock.globalType = testGlobalType
+    }.value
+
+    let actuator = try await MyBooleanActuator(
+      role: "TestActuator",
+      deviceDelegate: device,
+      addToRootBlock: false
+    )
+    try await testBlock.add(actionObject: actuator)
+
+    // Serialize
+    let jsonObject = try await testBlock.serialize()
+
+    // Verify globalType is in the serialized output
+    XCTAssertNotNil(jsonObject["3.5"])
+
+    // Round-trip through JSONSerialization (as would happen with real storage)
+    let jsonData = try JSONSerialization.data(withJSONObject: jsonObject)
+    let decoded = try JSONSerialization.jsonObject(with: jsonData) as! [String: Sendable]
+
+    // Deserialize back — should succeed with matching globalType
+    try await testBlock.deserialize(jsonObject: decoded)
+
+    // Now set a mismatched globalType and verify deserialization fails
+    let mismatchedGlobalType = OcaGlobalTypeIdentifier(
+      authority: OcaOrganizationID((0x01, 0x02, 0x03)),
+      id: 99999
+    )
+    await Task { @OcaDevice in
+      testBlock.globalType = mismatchedGlobalType
+    }.value
+
+    do {
+      try await testBlock.deserialize(jsonObject: decoded)
+      XCTFail("Expected globalTypeMismatch error")
+    } catch {
+      XCTAssertEqual(error as? Ocp1Error, Ocp1Error.globalTypeMismatch)
+    }
+  }
+
   func testKeyPathUncached() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
