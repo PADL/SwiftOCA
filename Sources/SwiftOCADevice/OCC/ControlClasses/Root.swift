@@ -427,9 +427,12 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     if let blockGlobalType = (self as? any OcaBlockContainer)?.globalType,
        let jsonGlobalType = jsonObject[Self._globalTypePropertyID.description] as? [String: Any]
     {
-      guard let jsonGlobalType = OcaGlobalTypeIdentifier(jsonObject: jsonGlobalType),
-            jsonGlobalType == blockGlobalType
-      else {
+      guard let jsonGlobalType = OcaGlobalTypeIdentifier(jsonObject: jsonGlobalType) else {
+        logger.warning("bad or missing global type ID when deserializing")
+        throw Ocp1Error.status(.badFormat)
+      }
+
+      guard jsonGlobalType == blockGlobalType else {
         logger
           .warning(
             "global type ID mismatch between: decoded \(jsonGlobalType), but expected \(blockGlobalType)"
