@@ -498,6 +498,16 @@ public struct OcaGlobalTypeIdentifier: Codable, Sendable, Equatable {
     self.authority = authority
     self.id = id
   }
+
+  package init?(jsonObject: [String: Any]) {
+    guard let authorityBytes = jsonObject["authority"] as? [UInt8],
+          authorityBytes.count == 3,
+          let id = jsonObject["id"] as? UInt32
+    else {
+      return nil
+    }
+    self.init(authority: .init((authorityBytes[0], authorityBytes[1], authorityBytes[2])), id: id)
+  }
 }
 
 public struct OcaOrganizationID: Equatable, Hashable, Codable, Sendable, CustomStringConvertible {
