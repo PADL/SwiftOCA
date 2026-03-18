@@ -386,9 +386,6 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
 
     dict[objectNumberJSONKey] = objectNumber
     dict[classIDJSONKey] = Self.classID.description
-    if let self = self as? OcaBlock {
-      dict[globalTypeIdentifierJSONKey] = self.globalType?.jsonObject
-    }
     for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
       let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
       if let isIncluded, !isIncluded(self, property.propertyID, property.wrappedValue) {
@@ -405,6 +402,8 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
 
     return dict
   }
+
+  private static let _globalTypePropertyID = OcaPropertyID("3.5")
 
   open func deserialize(
     jsonObject: [String: Sendable],
@@ -425,13 +424,15 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
       throw Ocp1Error.objectClassMismatch
     }
 
-    if let globalType = jsonObject[globalTypeIdentifierJSONKey] as? OcaUint64,
-       let blockGlobalType = (self as? OcaBlock)?.globalType
+    if let blockGlobalType = (self as? any OcaBlockContainer)?.globalType,
+       let jsonGlobalType = jsonObject[Self._globalTypePropertyID.description] as? [String: Any]
     {
-      guard globalType == blockGlobalType.jsonObject else {
+      guard let jsonGlobalType = OcaGlobalTypeIdentifier(jsonObject: jsonGlobalType),
+            jsonGlobalType == blockGlobalType
+      else {
         logger
           .warning(
-            "global type ID mismatch between \(blockGlobalType.jsonObject) and \(globalType)"
+            "global type ID mismatch between: decoded \(jsonGlobalType), but expected \(blockGlobalType)"
           )
         throw Ocp1Error.globalTypeMismatch
       }
