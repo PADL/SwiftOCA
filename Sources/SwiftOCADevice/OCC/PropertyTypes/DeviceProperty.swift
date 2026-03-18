@@ -192,18 +192,32 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
       }
       await setAndNotifySubscribers(object: object, objects)
     } else {
-      let isValidJSONObject = JSONSerialization.isValidJSONObject(subject.value)
-      if !isValidJSONObject,
-         let jsonValue = jsonValue as? Codable
-      {
+      if JSONSerialization.isValidJSONObject(subject.value) {
+        // Value is a JSON-native type (e.g. dictionary, array) — direct cast
+        guard let newValue = jsonValue as? Value else {
+          throw Ocp1Error.status(.badFormat)
+        }
+        await setAndNotifySubscribers(object: object, newValue)
+      } else if let codableValue = jsonValue as? Codable {
+        // Value is a non-JSON Codable type and input conforms to Codable —
+        // round-trip through JSONEncoder to decode as Value
         try await setAndNotifySubscribers(
           object: object,
-          JSONEncoder().reencodeAsValidJSONObject(jsonValue)
+          JSONEncoder().reencodeAsValidJSONObject(codableValue)
         )
-      } else if !isValidJSONObject,
-                Value.self is any RawRepresentable.Type,
+      } else if JSONSerialization.isValidJSONObject(jsonValue) {
+        // Value is a non-JSON Codable type and input is a Foundation container
+        // (e.g. NSDictionary/NSArray from a JSONSerialization round-trip that
+        // doesn't conform to Codable) — serialize to JSON data then decode
+        let data = try JSONSerialization.data(withJSONObject: jsonValue)
+        let decoded = try JSONDecoder().decode(Value.self, from: data)
+        await setAndNotifySubscribers(object: object, decoded)
+      } else if Value.self is any RawRepresentable.Type,
                 let jsonValue = jsonValue as? Int
       {
+        // Value is a RawRepresentable and input is an integer — needed because
+        // NSNumber (from JSONSerialization) doesn't conform to Codable but does
+        // bridge to Int
         try await setAndNotifySubscribers(
           object: object,
           JSONEncoder().reencodeAsValidJSONObject(jsonValue)
