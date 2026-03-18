@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024 PADL Software Pty Ltd
+// Copyright (c) 2024-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,16 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
   override open class var classID: OcaClassID { OcaClassID("1.2.22") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 
-  public private(set) var members = [Member]()
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.1")
+  )
+  public var members: OcaList<Member> = []
+
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.2"),
+    getMethodID: OcaMethodID("3.5")
+  )
+  public var groupController: OcaONo = OcaInvalidONo
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.3"),
@@ -83,11 +92,11 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
     from controller: any OcaController
   ) async throws -> Ocp1Response {
     switch command.methodID {
-    case OcaMethodID("3.1"):
+    case OcaMethodID("3.1"): // GetMembers
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
       return try encodeResponse(members.map(\.objectNumber))
-    case OcaMethodID("3.2"):
+    case OcaMethodID("3.2"): // SetMembers
       let memberONos: [OcaONo] = try decodeCommand(command)
       let members = try await memberONos.asyncMap { @Sendable memberONo in
         guard let member = await deviceDelegate?
@@ -100,7 +109,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
       try await ensureWritable(by: controller, command: command)
       try await set(members: members)
       return Ocp1Response()
-    case OcaMethodID("3.3"):
+    case OcaMethodID("3.3"): // AddMember
       let memberONo: OcaONo = try decodeCommand(command)
       guard let member = await deviceDelegate?.resolve(objectNumber: memberONo) as? Member
       else {
@@ -109,7 +118,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
       try await ensureWritable(by: controller, command: command)
       try await add(member: member)
       return Ocp1Response()
-    case OcaMethodID("3.4"):
+    case OcaMethodID("3.4"): // DeleteMember
       let memberONo: OcaONo = try decodeCommand(command)
       guard let member = await deviceDelegate?.resolve(objectNumber: memberONo) as? Member
       else {
@@ -118,6 +127,10 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
       try await ensureWritable(by: controller, command: command)
       try await delete(member: member)
       return Ocp1Response()
+    case OcaMethodID("3.5"): // GroupControllerONo
+      try decodeNullCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      return try encodeResponse(groupController)
     default:
       return try await super.handleCommand(command, from: controller)
     }
@@ -199,28 +212,10 @@ open class _OcaPeerToPeerGroup<Member: OcaGroupPeerToPeerMember>: OcaGroup<Membe
     member.group = nil
     try await super.delete(member: member)
   }
-
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.5"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(OcaInvalidONo)
-    case OcaMethodID("3.6"):
-      let _: OcaONo = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      throw Ocp1Error.status(.invalidRequest)
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
-  }
 }
 
 open class _OcaGroupControllerGroup<Member: OcaRoot>: OcaGroup<Member> {
-  private var groupController: GroupController?
+  private var _groupController: GroupController?
 
   public init(
     objectNumber: OcaONo? = nil,
@@ -237,29 +232,12 @@ open class _OcaGroupControllerGroup<Member: OcaRoot>: OcaGroup<Member> {
       addToRootBlock: addToRootBlock
     )
 
-    groupController = try await GroupController(self)
+    _groupController = try await GroupController(self)
+    groupController = _groupController!.objectNumber
   }
 
   public required init(from decoder: Decoder) throws {
     throw Ocp1Error.notImplemented
-  }
-
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.5"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(groupController?.objectNumber ?? OcaInvalidONo)
-    case OcaMethodID("3.6"):
-      let _: OcaONo = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      throw Ocp1Error.status(.notImplemented)
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
   }
 
   @OcaDevice
