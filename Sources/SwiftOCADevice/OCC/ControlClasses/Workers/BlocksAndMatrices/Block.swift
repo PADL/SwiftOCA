@@ -24,6 +24,8 @@ public protocol OcaBlockContainer: OcaRoot {
 
   var actionObjects: [ActionObject] { get }
   var datasetObjects: [OcaDataset] { get async throws }
+
+  var globalType: OcaGlobalTypeIdentifier? { get }
 }
 
 open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
