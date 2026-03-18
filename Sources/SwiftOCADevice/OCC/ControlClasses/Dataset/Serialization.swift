@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024-2025 PADL Software Pty Ltd
+// Copyright (c) 2024-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import SwiftOCA
 
 let objectNumberJSONKey = "_oNo"
 let classIDJSONKey = "_classID"
-let globalTypeIdentifierJSONKey = "_globalType"
 
 // for datasets, these keys are merged with the top-level JSON object for validation
 private let datasetVersionJSONKey = "_version"
@@ -113,15 +112,6 @@ private extension OcaModelGUID {
       OcaUint64(modelCode.1) << 16 |
       OcaUint64(modelCode.2) << 8 |
       OcaUint64(modelCode.3) << 0
-  }
-}
-
-extension OcaGlobalTypeIdentifier {
-  var jsonObject: OcaUint64 {
-    OcaUint64(authority.id.0) << 48 |
-      OcaUint64(authority.id.1) << 40 |
-      OcaUint64(authority.id.2) << 32 |
-      OcaUint64(id)
   }
 }
 
