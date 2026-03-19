@@ -191,6 +191,24 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         throw Ocp1Error.status(.badFormat)
       }
       await setAndNotifySubscribers(object: object, objects)
+    } else if let objectNumbers = jsonValue as? [OcaONo] {
+      // resolve an array of object numbers to objects
+      var objects = [OcaRoot]()
+      for oNo in objectNumbers {
+        if let resolved = await device.objects[oNo] {
+          objects.append(resolved)
+        }
+      }
+      guard let objects = objects as? Value else {
+        throw Ocp1Error.status(.badFormat)
+      }
+      await setAndNotifySubscribers(object: object, objects)
+    } else if let objectNumber = jsonValue as? OcaONo {
+      // resolve a single object number to an object
+      guard let resolved = await device.objects[objectNumber] as? Value else {
+        throw Ocp1Error.status(.badFormat)
+      }
+      await setAndNotifySubscribers(object: object, resolved)
     } else {
       if JSONSerialization.isValidJSONObject(subject.value) {
         // Value is a JSON-native type (e.g. dictionary, array) — direct cast

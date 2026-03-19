@@ -142,36 +142,15 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   }
 
   public nonisolated func encode(to encoder: Encoder) throws {
-    if encoder._isOcp1Encoder {
-      var container = encoder.unkeyedContainer()
-      try container.encode(objectNumber)
-    } else {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      try container.encode(Self.classID.description, forKey: .classIdentification)
-      try container.encode(objectNumber, forKey: .objectNumber)
-      try container.encode(lockable, forKey: .lockable)
-      try container.encode(role, forKey: .role)
-    }
+    // Always encode as just the object number. Deep serialization of object
+    // state is handled by OcaBlock.serialize() which calls serialize() on
+    // each action object directly, not through Codable.
+    var container = encoder.unkeyedContainer()
+    try container.encode(objectNumber)
   }
 
   public required nonisolated init(from decoder: Decoder) throws {
-    if decoder._isOcp1Decoder {
-      throw Ocp1Error.notImplemented
-    } else {
-      let container = try decoder.container(keyedBy: CodingKeys.self)
-      let classID = try OcaClassID(
-        container
-          .decode(String.self, forKey: .classIdentification)
-      )
-      guard classID == Self.classID else {
-        throw Ocp1Error.objectClassMismatch
-      }
-
-      objectNumber = try container.decode(OcaONo.self, forKey: .objectNumber)
-      lockable = try container.decode(OcaBoolean.self, forKey: .lockable)
-      role = try container.decode(OcaString.self, forKey: .role)
-      Task { @OcaDevice in deviceDelegate = OcaDevice.shared }
-    }
+    throw Ocp1Error.notImplemented
   }
 
   public nonisolated var description: String {
