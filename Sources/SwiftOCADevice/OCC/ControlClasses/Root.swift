@@ -380,7 +380,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
 
     precondition(objectNumber != OcaInvalidONo)
 
-    guard self is OcaWorker || self is OcaManager else {
+    guard self is OcaWorker || self is OcaManager || self is OcaAgent else {
       return [:]
     }
 
