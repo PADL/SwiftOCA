@@ -149,7 +149,9 @@ extension Ocp1Connection {
     batcher = Ocp1MessageBatcher(
       batchSize: batchSize,
       dequeueInterval: dequeueInterval,
-      sendEncodedPdu: sendMessagePduData
+      sendEncodedPdu: { [weak self] data in
+        try await self?.sendMessagePduData(data)
+      }
     )
   }
 }
