@@ -756,7 +756,7 @@ private extension OcaGrouper.Enrollment {
           try await _forward(event: event, eventData: eventData, grouper: grouper)
         }
       )
-    } catch Ocp1Error.alreadySubscribedToEvent {
+    } catch Ocp1Error.alreadySubscribedToEvent(_) {
     } catch Ocp1Error.status(.invalidRequest) {}
   }
 

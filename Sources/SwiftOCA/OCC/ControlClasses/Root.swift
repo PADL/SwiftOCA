@@ -263,7 +263,7 @@ public extension OcaRoot {
       ) { [weak self] event, data in
         await self?.onPropertyEvent(event: event, eventData: data)
       }
-    } catch Ocp1Error.alreadySubscribedToEvent {
+    } catch Ocp1Error.alreadySubscribedToEvent(_) {
     } catch Ocp1Error.status(.invalidRequest) {
       // FIXME: in our device implementation not all properties can be subcribed to
     }

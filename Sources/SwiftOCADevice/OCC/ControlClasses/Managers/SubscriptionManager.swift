@@ -145,7 +145,7 @@ public class OcaSubscriptionManager: OcaManager {
         )
         try await controller.addSubscription(.subscription2(subscription2))
         returnedStatus = .ok
-      } catch Ocp1Error.alreadySubscribedToEvent {
+      } catch Ocp1Error.alreadySubscribedToEvent(_) {
         returnedStatus = .invalidRequest
       } catch let Ocp1Error.status(status) {
         returnedStatus = status
@@ -200,7 +200,7 @@ public class OcaSubscriptionManager: OcaManager {
         try await controller
           .addSubscription(.propertyChangeSubscription2(propertyChangeSubscription2))
         returnedStatus = .ok
-      } catch Ocp1Error.alreadySubscribedToEvent {
+      } catch Ocp1Error.alreadySubscribedToEvent(_) {
         returnedStatus = .invalidRequest
       } catch let Ocp1Error.status(status) {
         returnedStatus = status

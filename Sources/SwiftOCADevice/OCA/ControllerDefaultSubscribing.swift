@@ -91,7 +91,7 @@ public extension OcaControllerDefaultSubscribing {
     _ subscription: OcaSubscriptionManagerSubscription
   ) async throws {
     guard !hasSubscription(subscription) else {
-      throw Ocp1Error.alreadySubscribedToEvent
+      throw Ocp1Error.alreadySubscribedToEvent(subscription.event)
     }
     guard self is OcaControllerLightweightNotifying ||
       subscription.notificationDeliveryMode == .normal

@@ -86,7 +86,7 @@ public extension Ocp1Connection {
     if let eventSubscriptions = subscriptions[event] {
       precondition(!eventSubscriptions.subscriptions.isEmpty)
       if eventSubscriptions.subscriptions.contains(cancellable) {
-        throw Ocp1Error.alreadySubscribedToEvent
+        throw Ocp1Error.alreadySubscribedToEvent(event)
       }
       eventSubscriptions.subscriptions.insert(cancellable)
     } else {
