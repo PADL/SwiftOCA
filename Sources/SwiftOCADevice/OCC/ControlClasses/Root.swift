@@ -145,7 +145,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     // Always encode as just the object number. Deep serialization of object
     // state is handled by OcaBlock.serialize() which calls serialize() on
     // each action object directly, not through Codable.
-    var container = encoder.unkeyedContainer()
+    var container = encoder.singleValueContainer()
     try container.encode(objectNumber)
   }
 
