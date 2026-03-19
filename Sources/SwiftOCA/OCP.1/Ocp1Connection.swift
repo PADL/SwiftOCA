@@ -396,6 +396,7 @@ open class Ocp1Connection: CustomStringConvertible {
   /// actor for monitoring response and matching them with requests
   var monitor: Monitor?
   var monitorTask: Task<(), Error>?
+  var reconnectTask: Task<(), Error>?
   var batcher: Ocp1MessageBatcher!
 
   private func _configureTracing() {

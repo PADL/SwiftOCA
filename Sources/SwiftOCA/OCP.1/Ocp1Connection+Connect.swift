@@ -131,6 +131,10 @@ extension Ocp1Connection {
       monitorTask.cancel()
       self.monitorTask = nil
     }
+    if let reconnectTask {
+      reconnectTask.cancel()
+      self.reconnectTask = nil
+    }
   }
 }
 
@@ -416,7 +420,10 @@ extension Ocp1Connection {
 
     if reconnectDevice {
       precondition(currentConnectionState == .reconnecting)
-      Task.detached { try await self.reconnectDeviceWithBackoff() }
+      reconnectTask?.cancel()
+      reconnectTask = Task { [weak self] in
+        try await self?.reconnectDeviceWithBackoff()
+      }
     }
   }
 }
