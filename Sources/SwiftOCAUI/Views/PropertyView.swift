@@ -75,7 +75,7 @@ public struct OcaWritablePropertyView<Value: Sendable, Resolved: View>: View {
   let content: (Binding<Value>) -> Resolved
 
   @State
-  private var currentValue: Value?
+  private var currentValue: Result<Value, Error>?
 
   public init(
     _ object: OcaRoot,
@@ -89,9 +89,14 @@ public struct OcaWritablePropertyView<Value: Sendable, Resolved: View>: View {
 
   private var binding: Binding<Value> {
     Binding<Value>(
-      get: { currentValue! },
+      get: {
+        if case let .success(value) = currentValue {
+          return value
+        }
+        preconditionFailure()
+      },
       set: { newValue in
-        currentValue = newValue
+        currentValue = .success(newValue)
         Task {
           try? await property._setValue(object, newValue)
         }
@@ -101,8 +106,13 @@ public struct OcaWritablePropertyView<Value: Sendable, Resolved: View>: View {
 
   public var body: some View {
     Group {
-      if currentValue != nil {
-        content(binding)
+      if let currentValue {
+        switch currentValue {
+        case .success:
+          content(binding)
+        case let .failure(error):
+          Text("Error: \(error.localizedDescription)").foregroundStyle(.tertiary)
+        }
       } else {
         ProgressView()
       }
@@ -111,8 +121,15 @@ public struct OcaWritablePropertyView<Value: Sendable, Resolved: View>: View {
       await property.subscribe(object)
       do {
         for try await result in property.async {
-          if case let .success(value) = result, let typed = value as? Value {
-            currentValue = typed
+          switch result {
+          case let .success(value):
+            if let typed = value as? Value {
+              currentValue = .success(typed)
+            } else {
+              currentValue = .failure(Ocp1Error.status(.badFormat))
+            }
+          case let .failure(error):
+            currentValue = .failure(error)
           }
         }
       } catch {}
