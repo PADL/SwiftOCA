@@ -22,7 +22,7 @@ let PlatformTargets: [Target]
 let SwiftLanguageVersionSetting: [SwiftSetting]
 
 #if os(Linux)
-PlatformPackageDependencies = [.package(url: "https://github.com/PADL/IORingSwift", from: "0.9.2")]
+PlatformPackageDependencies = [.package(url: "https://github.com/PADL/IORingSwift", from: "1.0.0")]
 
 PlatformTargetDependencies = [
   .target(
