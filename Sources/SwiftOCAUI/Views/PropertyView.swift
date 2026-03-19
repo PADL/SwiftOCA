@@ -18,6 +18,28 @@
 import SwiftOCA
 import SwiftUI
 
+private struct OcaPropertyErrorView: View {
+  let error: Error
+
+  @State
+  private var showPopover = false
+
+  var body: some View {
+    Button {
+      showPopover.toggle()
+    } label: {
+      Image(systemName: "exclamationmark.triangle.fill")
+        .foregroundStyle(.yellow)
+    }
+    .buttonStyle(.plain)
+    .popover(isPresented: $showPopover) {
+      Text(error.localizedDescription)
+        .font(.caption)
+        .padding(8)
+    }
+  }
+}
+
 public struct OcaPropertyView<Value: Sendable, Resolved: View>: View {
   let object: OcaRoot
   nonisolated(unsafe) let property: any OcaPropertyRepresentable
@@ -43,7 +65,7 @@ public struct OcaPropertyView<Value: Sendable, Resolved: View>: View {
         case let .success(value):
           content(value)
         case let .failure(error):
-          Text("Error: \(error.localizedDescription)").foregroundStyle(.tertiary)
+          OcaPropertyErrorView(error: error)
         }
       } else {
         ProgressView()
@@ -111,7 +133,7 @@ public struct OcaWritablePropertyView<Value: Sendable, Resolved: View>: View {
         case .success:
           content(binding)
         case let .failure(error):
-          Text("Error: \(error.localizedDescription)").foregroundStyle(.tertiary)
+          OcaPropertyErrorView(error: error)
         }
       } else {
         ProgressView()
