@@ -273,6 +273,7 @@ public extension OcaRoot {
   func unsubscribe() async throws {
     guard let subscriptionCancellable else { throw Ocp1Error.notSubscribedToEvent }
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
+    self.subscriptionCancellable = nil
     try await connectionDelegate.removeSubscription(subscriptionCancellable)
   }
 
