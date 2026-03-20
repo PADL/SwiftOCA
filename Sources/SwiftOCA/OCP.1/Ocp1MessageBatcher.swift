@@ -79,15 +79,34 @@ final class Ocp1MessageBatcher: Sendable {
 
     let canCombine = canCombine(type: messageType) &&
       currentSize + encodedPdu.count <= Int(batchSize)
-    // force immediate dequeing if we cannot combine this message
-    if !canCombine { try await dequeue() }
 
-    encodedPdus.append(encodedPdu)
-    lastMessageType = messageType
+    if !canCombine {
+      // Snapshot and clear the pending batch BEFORE the async send,
+      // then enqueue the new message. This prevents reentrancy issues
+      // where another enqueue() runs during the send's await and
+      // corrupts the batch.
+      let pendingPdus = encodedPdus
+      let pendingType = lastMessageType
+      encodedPdus.removeAll()
+      lastMessageType = nil
+      stopPeriodicDequeue()
 
-    if encodedPdus.count == 1 {
-      // if this is the first enqueued PDU, then start the periodic dequeue
+      // Enqueue the new message before sending, so it's safe from reentrancy
+      encodedPdus.append(encodedPdu)
+      lastMessageType = messageType
       startPeriodicDequeue()
+
+      // Now send the old batch (this may await and release the actor)
+      if let pendingType, !pendingPdus.isEmpty {
+        try await send(encodedPdus: pendingPdus, type: pendingType)
+      }
+    } else {
+      encodedPdus.append(encodedPdu)
+      lastMessageType = messageType
+
+      if encodedPdus.count == 1 {
+        startPeriodicDequeue()
+      }
     }
   }
 
