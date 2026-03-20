@@ -137,7 +137,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
   }
 }
 
-extension OcaGroup {
+public extension OcaGroup {
   func notifySubscribers(
     actionObjects: [Member],
     changeType: OcaPropertyChangeType
