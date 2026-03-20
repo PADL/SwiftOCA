@@ -158,3 +158,96 @@ public struct OcaWritablePropertyView<Value: Sendable, Resolved: View>: View {
     }
   }
 }
+
+public struct OcaWritableTextPropertyView: View {
+  let object: OcaRoot
+  nonisolated(unsafe) let property: any OcaPropertySubjectRepresentable
+  let prompt: String
+
+  @State
+  private var currentValue: Result<OcaString, Error>?
+  @State
+  private var editingValue: OcaString?
+  @FocusState
+  private var isFocused: Bool
+
+  public init(
+    _ object: OcaRoot,
+    _ property: any OcaPropertyRepresentable,
+    prompt: String = "Label"
+  ) {
+    self.object = object
+    self.property = property as! (any OcaPropertySubjectRepresentable)
+    self.prompt = prompt
+  }
+
+  private var binding: Binding<String> {
+    Binding<String>(
+      get: {
+        if let editingValue {
+          return editingValue
+        }
+        if case let .success(value) = currentValue {
+          return value
+        }
+        return ""
+      },
+      set: { newValue in
+        editingValue = newValue
+      }
+    )
+  }
+
+  private func commitEdit() {
+    guard let editingValue else { return }
+    currentValue = .success(editingValue)
+    let value = editingValue
+    self.editingValue = nil
+    Task {
+      try? await property._setValue(object, value)
+    }
+  }
+
+  public var body: some View {
+    Group {
+      if let currentValue {
+        switch currentValue {
+        case .success:
+          TextField(prompt, text: binding)
+            .textFieldStyle(.roundedBorder)
+            .focused($isFocused)
+            .onSubmit {
+              commitEdit()
+            }
+            .onChange(of: isFocused) { _, focused in
+              if !focused {
+                commitEdit()
+              }
+            }
+        case let .failure(error):
+          OcaPropertyErrorView(error: error)
+        }
+      } else {
+        ProgressView()
+      }
+    }
+    .task {
+      await property.subscribe(object)
+      do {
+        for try await result in property.async {
+          guard editingValue == nil else { continue }
+          switch result {
+          case let .success(value):
+            if let typed = value as? OcaString {
+              currentValue = .success(typed)
+            } else {
+              currentValue = .failure(Ocp1Error.status(.badFormat))
+            }
+          case let .failure(error):
+            currentValue = .failure(error)
+          }
+        }
+      } catch {}
+    }
+  }
+}
