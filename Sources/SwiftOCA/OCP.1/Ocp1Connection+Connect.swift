@@ -255,7 +255,7 @@ extension Ocp1Connection {
       break
     default:
       logger.trace("connection failed whilst attempting to connect: \(connectionState)")
-      throw connectionState.error!
+      throw connectionState.error ?? .notConnected
     }
   }
 
@@ -372,7 +372,7 @@ extension Ocp1Connection {
     } else if currentConnectionState == .connecting {
       throw Ocp1Error.connectionAlreadyInProgress
     } else if currentConnectionState != .reconnecting {
-      throw currentConnectionState.error!
+      throw currentConnectionState.error ?? .notConnected
     }
 
     logger
