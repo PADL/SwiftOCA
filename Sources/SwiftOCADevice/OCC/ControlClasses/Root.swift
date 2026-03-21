@@ -89,12 +89,10 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
       lockStateSubject.value
     }
     set {
-      if newValue != lockStateSubject.value {
-        Task {
-          try await notifySubscribers(lockState: newValue)
-        }
-      }
       lockStateSubject.value = newValue
+      Task {
+        try? await notifySubscribers(lockState: newValue)
+      }
     }
   }
 
