@@ -159,7 +159,7 @@ public actor OcaDevice {
     if let object = object as? OcaOwnable,
        let owner = await objects[object.owner] as? OcaBlock
     {
-      try await owner.delete(actionObject: owner)
+      try await owner.delete(actionObject: object)
     }
     objects[object.objectNumber] = nil
     peerToPeerGroupers[object.objectNumber] = nil
