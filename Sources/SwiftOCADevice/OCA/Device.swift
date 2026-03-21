@@ -53,11 +53,12 @@ public actor OcaDevice {
   weak var datasetStorageProvider: OcaDatasetStorageProvider?
 
   public func allocateObjectNumber() -> OcaONo {
-    repeat {
+    while objects[nextObjectNumber] != nil {
       nextObjectNumber += 1
-    } while objects[nextObjectNumber] != nil
+    }
 
-    return nextObjectNumber - 1
+    defer { nextObjectNumber += 1 }
+    return nextObjectNumber
   }
 
   public func initializeDefaultObjects(deviceManager: OcaDeviceManager? = nil) async throws {
