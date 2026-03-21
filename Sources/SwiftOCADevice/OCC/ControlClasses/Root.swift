@@ -572,3 +572,30 @@ public extension OcaOwnable {
 protocol OcaLabelRepresentable: OcaRoot {
   var label: OcaString { get set }
 }
+
+/// protocol for forwarding an event
+@_spi(SwiftOCAPrivate)
+public protocol _OcaEventForwarding {
+  func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws
+}
+
+/// forward an event to a local object
+@_spi(SwiftOCAPrivate)
+extension OcaRoot: _OcaEventForwarding {
+  @_spi(SwiftOCAPrivate)
+  public func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws {
+    guard event.emitterONo == objectNumber, event.eventID == OcaPropertyChangedEventID else {
+      throw Ocp1Error.unhandledEvent
+    }
+
+    for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
+      let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
+      guard property.propertyID == eventData.propertyID else { continue }
+      try await property.set(object: self, eventData: eventData)
+    }
+  }
+}
+
+/// forward an event to a remote object (implementation is in SwiftOCA as it uses private API)
+@_spi(SwiftOCAPrivate)
+extension SwiftOCA.OcaRoot: _OcaEventForwarding {}

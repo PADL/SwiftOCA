@@ -642,29 +642,6 @@ private extension OcaGrouper {
   }
 }
 
-/// protocol for forwarding an event
-private protocol _OcaEventForwarding {
-  func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws
-}
-
-/// forward an event to a local object
-extension OcaRoot: _OcaEventForwarding {
-  func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws {
-    guard event.emitterONo == objectNumber, event.eventID == OcaPropertyChangedEventID else {
-      throw Ocp1Error.unhandledEvent
-    }
-
-    for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
-      let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
-      guard property.propertyID == eventData.propertyID else { continue }
-      try await property.set(object: self, eventData: eventData)
-    }
-  }
-}
-
-/// forward an event to a remote  object (impementation is in SwiftOCA as it uses private API)
-extension SwiftOCA.OcaRoot: _OcaEventForwarding {}
-
 /// forward event to a specific local or remote citizen
 extension OcaGrouper.Citizen: _OcaEventForwarding {
   func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws {
