@@ -313,6 +313,13 @@ public extension OcaRoot {
     var setMethodID: OcaMethodID? { nil }
     var propertyIDs: [OcaPropertyID]
     var value: T
+    let subject: AsyncCurrentValueSubject<PropertyValue>
+
+    init(propertyIDs: [OcaPropertyID], value: T) {
+      self.propertyIDs = propertyIDs
+      self.value = value
+      subject = AsyncCurrentValueSubject(.success(value))
+    }
 
     func refresh(_ object: SwiftOCA.OcaRoot) async {}
     func subscribe(_ object: OcaRoot) async {}
@@ -323,10 +330,6 @@ public extension OcaRoot {
 
     var currentValue: OcaProperty<Value>.PropertyValue {
       OcaProperty<Value>.PropertyValue.success(value)
-    }
-
-    var subject: AsyncCurrentValueSubject<PropertyValue> {
-      AsyncCurrentValueSubject(currentValue)
     }
 
     @_spi(SwiftOCAPrivate) @discardableResult
