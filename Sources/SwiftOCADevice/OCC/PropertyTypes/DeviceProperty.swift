@@ -281,3 +281,19 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     }
   }
 }
+
+extension OcaDevicePropertyRepresentable {
+  func _forward(to remoteObject: SwiftOCA.OcaRoot) async throws {
+    let encodedValue: Data = try Ocp1Encoder().encode(wrappedValue)
+    let eventData = OcaAnyPropertyChangedEventData(
+      propertyID: propertyID,
+      propertyValue: encodedValue,
+      changeType: .currentChanged
+    )
+    let event = OcaEvent(
+      emitterONo: remoteObject.objectNumber,
+      eventID: OcaPropertyChangedEventID
+    )
+    try await remoteObject.forward(event: event, eventData: eventData)
+  }
+}

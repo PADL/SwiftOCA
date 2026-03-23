@@ -599,3 +599,15 @@ extension OcaRoot: _OcaEventForwarding {
 /// forward an event to a remote object (implementation is in SwiftOCA as it uses private API)
 @_spi(SwiftOCAPrivate)
 extension SwiftOCA.OcaRoot: _OcaEventForwarding {}
+
+/// copy all device property values from a local object to a remote object
+@_spi(SwiftOCAPrivate)
+public extension OcaRoot {
+  @_spi(SwiftOCAPrivate)
+  func copyProperties(to remoteObject: SwiftOCA.OcaRoot) async throws {
+    for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
+      let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
+      try await property._forward(to: remoteObject)
+    }
+  }
+}

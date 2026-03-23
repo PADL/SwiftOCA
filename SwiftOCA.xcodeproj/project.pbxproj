@@ -270,6 +270,7 @@
 		D3E7414A2D5633740044CCBB /* TemperatureSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E741492D5633740044CCBB /* TemperatureSensor.swift */; };
 		D3E820E62DFBEF0C001C9DC8 /* Ocp1NWConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E820E52DFBEF0C001C9DC8 /* Ocp1NWConnection.swift */; };
 		D3F2942C2A95D55F00D7F0CD /* Sequence+AsyncMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */; };
+		D3F368D92F713C56008419DC /* ClassRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F368D82F713C56008419DC /* ClassRegistry.swift */; };
 		D3FAC8DE2B5CF25D009E2775 /* FirmwareManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8DD2B5CF25D009E2775 /* FirmwareManager.swift */; };
 		D3FAC8E02B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8DF2B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift */; };
 		D3FAC8E22B5CF3FD009E2775 /* PowerManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8E12B5CF3FD009E2775 /* PowerManagerDataTypes.swift */; };
@@ -602,6 +603,7 @@
 		D3E741492D5633740044CCBB /* TemperatureSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureSensor.swift; sourceTree = "<group>"; };
 		D3E820E52DFBEF0C001C9DC8 /* Ocp1NWConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1NWConnection.swift; sourceTree = "<group>"; };
 		D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sequence+AsyncMap.swift"; sourceTree = "<group>"; };
+		D3F368D82F713C56008419DC /* ClassRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassRegistry.swift; sourceTree = "<group>"; };
 		D3FAC8DD2B5CF25D009E2775 /* FirmwareManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareManager.swift; sourceTree = "<group>"; };
 		D3FAC8DF2B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareManagerDataTypes.swift; sourceTree = "<group>"; };
 		D3FAC8E12B5CF3FD009E2775 /* PowerManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerManagerDataTypes.swift; sourceTree = "<group>"; };
@@ -879,6 +881,7 @@
 				D3C083182A7B0D2C0020AD57 /* Device.swift */,
 				D3C11DB82A789C0400452B2A /* DeviceEndpoint.swift */,
 				D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */,
+				D3F368D82F713C56008419DC /* ClassRegistry.swift */,
 			);
 			path = OCA;
 			sourceTree = "<group>";
@@ -1869,6 +1872,7 @@
 				D33B52A32A702CED001A1BA7 /* Block.swift in Sources */,
 				D33B52B62A7060E0001A1BA7 /* BasicActuators.swift in Sources */,
 				D3C11DB92A789C0400452B2A /* DeviceEndpoint.swift in Sources */,
+				D3F368D92F713C56008419DC /* ClassRegistry.swift in Sources */,
 				D30349D82BBB66460080FF09 /* Frequency.swift in Sources */,
 				D33A35A92B2FB7BE00FEDC43 /* MediaClockManager.swift in Sources */,
 				D33B52932A6FD3A7001A1BA7 /* DeviceProperty.swift in Sources */,
