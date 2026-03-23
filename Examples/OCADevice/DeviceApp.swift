@@ -101,31 +101,45 @@ public enum DeviceApp {
       override open class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
     }
 
+    let blockONo: OcaONo = 10000
+    let matrixONo: OcaONo = 10001
+    let firstActuatorONo: OcaONo = 10010
+    let gainONo: OcaONo = 10020
+
     let matrix = try await SwiftOCADevice
       .OcaMatrix<MyBooleanActuator>(
         rows: 4,
         columns: 2,
+        objectNumber: matrixONo,
         deviceDelegate: device
       )
 
     let block = try await SwiftOCADevice
-      .OcaBlock<SwiftOCADevice.OcaWorker>(role: "Block", deviceDelegate: device)
+      .OcaBlock<SwiftOCADevice.OcaWorker>(
+        objectNumber: blockONo,
+        role: "Block",
+        deviceDelegate: device
+      )
 
     let members = await matrix.members
+    var actuatorONo = firstActuatorONo
     for x in 0..<members.nX {
       for y in 0..<members.nY {
         let coordinate = OcaVector2D(x: OcaMatrixCoordinate(x), y: OcaMatrixCoordinate(y))
         let actuator = try await MyBooleanActuator(
+          objectNumber: actuatorONo,
           role: "Actuator(\(x),\(y))",
           deviceDelegate: device,
           addToRootBlock: false
         )
+        actuatorONo += 1
         try await block.add(actionObject: actuator)
         try await matrix.add(member: actuator, at: coordinate)
       }
     }
 
     let gain = try await SwiftOCADevice.OcaGain(
+      objectNumber: gainONo,
       role: "Gain",
       deviceDelegate: device,
       addToRootBlock: false
