@@ -116,7 +116,8 @@ private extension OcaModelGUID {
 }
 
 extension OcaBlock {
-  func serializeParameterDataset() async throws -> [String: any Sendable] {
+  @_spi(SwiftOCAPrivate)
+  public func serializeParameterDataset() async throws -> [String: any Sendable] {
     var root = try serialize(flags: [], isIncluded: datasetFilter)
 
     root[datasetVersionJSONKey] = OcaJsonDatasetVersion
@@ -126,7 +127,8 @@ extension OcaBlock {
     return root
   }
 
-  func deserializeParameterDataset(_ parameters: [String: any Sendable]) async throws {
+  @_spi(SwiftOCAPrivate)
+  public func deserializeParameterDataset(_ parameters: [String: any Sendable]) async throws {
     guard let version = parameters[datasetVersionJSONKey] as? OcaUint32,
           version == OcaJsonDatasetVersion
     else {
@@ -149,7 +151,8 @@ extension OcaBlock {
     }
   }
 
-  func serializeParameterDataset(compress: Bool) async throws -> OcaLongBlob {
+  @_spi(SwiftOCAPrivate)
+  public func serializeParameterDataset(compress: Bool) async throws -> OcaLongBlob {
     let jsonObject: [String: any Sendable] = try await serializeParameterDataset()
     do {
       let blob = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
@@ -164,7 +167,8 @@ extension OcaBlock {
     }
   }
 
-  func deserializeParameterDataset(from parameterData: OcaLongBlob) async throws {
+  @_spi(SwiftOCAPrivate)
+  public func deserializeParameterDataset(from parameterData: OcaLongBlob) async throws {
     let parameterData = Data(parameterData)
     do {
       #if canImport(Gzip)
