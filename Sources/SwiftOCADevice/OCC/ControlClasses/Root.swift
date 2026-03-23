@@ -151,7 +151,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     throw Ocp1Error.notImplemented
   }
 
-  public nonisolated var description: String {
+  open nonisolated var description: String {
     let objectNumberString = "0x\(objectNumber.hexString(width: 8))"
     return "\(type(of: self))(objectNumber: \(objectNumberString), role: \(role))"
   }
