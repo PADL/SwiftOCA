@@ -57,6 +57,7 @@ public enum DeviceApp {
     let deviceManager = await device.deviceManager!
     Task { @OcaDevice in
       deviceManager.deviceName = "OCA Test"
+      deviceManager.serialNumber = "OCADevice-00000001"
       deviceManager.modelGUID = OcaModelGUID(mfrCode: .init((0, 0, 0)), modelCode: (1, 2, 3, 4))
     }
     let delegate = DeviceEventDelegate()
