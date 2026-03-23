@@ -104,7 +104,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     OcaObjectIdentification(oNo: objectNumber, classIdentification: Self.classIdentification)
   }
 
-  public init(
+  public required init(
     objectNumber: OcaONo? = nil,
     lockable: OcaBoolean = true,
     role: OcaString? = nil,

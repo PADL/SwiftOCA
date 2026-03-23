@@ -198,6 +198,22 @@ open class _OcaPeerToPeerGroup<Member: OcaGroupPeerToPeerMember>: OcaGroup<Membe
     throw Ocp1Error.notImplemented
   }
 
+  public required init(
+    objectNumber: OcaONo? = nil,
+    lockable: OcaBoolean = true,
+    role: OcaString? = nil,
+    deviceDelegate: OcaDevice? = nil,
+    addToRootBlock: Bool = true
+  ) async throws {
+    try await super.init(
+      objectNumber: objectNumber,
+      lockable: lockable,
+      role: role,
+      deviceDelegate: deviceDelegate,
+      addToRootBlock: addToRootBlock
+    )
+  }
+
   override open func set(members: [Member]) async throws {
     members.forEach { $0.group = self }
     try await super.set(members: members)
@@ -240,6 +256,22 @@ open class _OcaGroupControllerGroup<Member: OcaRoot>: OcaGroup<Member> {
     throw Ocp1Error.notImplemented
   }
 
+  public required init(
+    objectNumber: OcaONo? = nil,
+    lockable: OcaBoolean = true,
+    role: OcaString? = nil,
+    deviceDelegate: OcaDevice? = nil,
+    addToRootBlock: Bool = true
+  ) async throws {
+    try await super.init(
+      objectNumber: objectNumber,
+      lockable: lockable,
+      role: role,
+      deviceDelegate: deviceDelegate,
+      addToRootBlock: addToRootBlock
+    )
+  }
+
   @OcaDevice
   public class GroupController: OcaRoot {
     weak var group: _OcaGroupControllerGroup?
@@ -256,6 +288,22 @@ open class _OcaGroupControllerGroup<Member: OcaRoot>: OcaGroup<Member> {
 
     public required init(from decoder: Decoder) throws {
       throw Ocp1Error.notImplemented
+    }
+
+    public required init(
+      objectNumber: OcaONo? = nil,
+      lockable: OcaBoolean = true,
+      role: OcaString? = nil,
+      deviceDelegate: OcaDevice? = nil,
+      addToRootBlock: Bool = true
+    ) async throws {
+      try await super.init(
+        objectNumber: objectNumber,
+        lockable: lockable,
+        role: role,
+        deviceDelegate: deviceDelegate,
+        addToRootBlock: addToRootBlock
+      )
     }
 
     override open func handleCommand(

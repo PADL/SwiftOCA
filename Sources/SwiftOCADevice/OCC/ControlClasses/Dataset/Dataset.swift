@@ -93,6 +93,22 @@ Sendable {
     fatalError("init(from:) has not been implemented")
   }
 
+  public required init(
+    objectNumber: OcaONo? = nil,
+    lockable: OcaBoolean = true,
+    role: OcaString? = nil,
+    deviceDelegate: OcaDevice? = nil,
+    addToRootBlock: Bool = true
+  ) async throws {
+    try await super.init(
+      objectNumber: objectNumber,
+      lockable: lockable,
+      role: role,
+      deviceDelegate: deviceDelegate,
+      addToRootBlock: addToRootBlock
+    )
+  }
+
   private var _nextIOSessionHandle: OcaIOSessionHandle = 1
 
   private struct IOSession {

@@ -45,6 +45,16 @@ open class OcaGenericBasicSensor<T: Codable & Comparable & Sendable>: OcaSensor 
   public required init(from decoder: Decoder) throws {
     throw Ocp1Error.notImplemented
   }
+
+  public required init(
+    objectNumber: OcaONo? = nil,
+    lockable: OcaBoolean = true,
+    role: OcaString? = nil,
+    deviceDelegate: OcaDevice? = nil,
+    addToRootBlock: Bool = true
+  ) async throws {
+    fatalError("not supported")
+  }
 }
 
 open class OcaBasicSensor: OcaSensor {
@@ -84,6 +94,22 @@ open class OcaBooleanSensor: OcaSensor {
 
   public required init(from decoder: Decoder) throws {
     throw Ocp1Error.notImplemented
+  }
+
+  public required init(
+    objectNumber: OcaONo? = nil,
+    lockable: OcaBoolean = true,
+    role: OcaString? = nil,
+    deviceDelegate: OcaDevice? = nil,
+    addToRootBlock: Bool = true
+  ) async throws {
+    try await super.init(
+      objectNumber: objectNumber,
+      lockable: lockable,
+      role: role,
+      deviceDelegate: deviceDelegate,
+      addToRootBlock: addToRootBlock
+    )
   }
 }
 

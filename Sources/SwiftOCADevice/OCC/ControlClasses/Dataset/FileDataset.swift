@@ -230,6 +230,16 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     fatalError("init(from:) has not been implemented")
   }
 
+  required init(
+    objectNumber: OcaONo? = nil,
+    lockable: OcaBoolean = true,
+    role: OcaString? = nil,
+    deviceDelegate: OcaDevice? = nil,
+    addToRootBlock: Bool = true
+  ) async throws {
+    fatalError("not supported")
+  }
+
   var dirEntry: OcaFileDatasetDirEntry {
     get throws {
       try OcaFileDatasetDirEntry(

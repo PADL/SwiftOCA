@@ -428,6 +428,22 @@ open class OcaGrouper<CitizenType: OcaRoot>: OcaAgent {
       throw Ocp1Error.notImplemented
     }
 
+    public required init(
+      objectNumber: OcaONo? = nil,
+      lockable: OcaBoolean = true,
+      role: OcaString? = nil,
+      deviceDelegate: OcaDevice? = nil,
+      addToRootBlock: Bool = true
+    ) async throws {
+      try await super.init(
+        objectNumber: objectNumber,
+        lockable: lockable,
+        role: role,
+        deviceDelegate: deviceDelegate,
+        addToRootBlock: addToRootBlock
+      )
+    }
+
     @OcaDevice
     fileprivate final class Box {
       var lastStatus: OcaStatus?

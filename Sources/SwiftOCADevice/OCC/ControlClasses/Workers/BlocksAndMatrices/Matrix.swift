@@ -62,6 +62,16 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     throw Ocp1Error.notImplemented
   }
 
+  public required init(
+    objectNumber: OcaONo? = nil,
+    lockable: OcaBoolean = true,
+    role: OcaString? = nil,
+    deviceDelegate: OcaDevice? = nil,
+    addToRootBlock: Bool = true
+  ) async throws {
+    fatalError("not supported")
+  }
+
   public class Proxy<ProxyMember: OcaRoot>: OcaRoot {
     weak var matrix: OcaMatrix<ProxyMember>?
 
@@ -83,6 +93,22 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
     public required init(from decoder: Decoder) throws {
       throw Ocp1Error.notImplemented
+    }
+
+    public required init(
+      objectNumber: OcaONo? = nil,
+      lockable: OcaBoolean = true,
+      role: OcaString? = nil,
+      deviceDelegate: OcaDevice? = nil,
+      addToRootBlock: Bool = true
+    ) async throws {
+      try await super.init(
+        objectNumber: objectNumber,
+        lockable: lockable,
+        role: role,
+        deviceDelegate: deviceDelegate,
+        addToRootBlock: addToRootBlock
+      )
     }
 
     @OcaDevice
