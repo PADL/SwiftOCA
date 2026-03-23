@@ -764,7 +764,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     true
   }
 
-  override public func serialize(
+  override open func serialize(
     flags: OcaRoot.SerializationFlags = [],
     isIncluded: OcaRoot.SerializationFilterFunction? = nil
   ) throws -> [String: any Sendable] {
@@ -777,7 +777,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     return jsonObject
   }
 
-  override public func deserialize(
+  override open func deserialize(
     jsonObject: [String: Sendable],
     flags: DeserializationFlags = []
   ) async throws {
