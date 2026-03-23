@@ -631,10 +631,11 @@ public extension OcaRoot {
   func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws {
     for (_, keyPath) in allKeyPaths {
       if let property = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable),
-         property.propertyIDs.contains(eventData.propertyID)
+         property.propertyIDs.contains(eventData.propertyID),
+         let setMethodID = property.setMethodID
       {
         try await sendCommand(
-          methodID: property.setMethodID!,
+          methodID: setMethodID,
           parameters: eventData.propertyValue
         )
         break
