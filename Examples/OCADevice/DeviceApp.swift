@@ -47,7 +47,7 @@ public enum DeviceApp {
     var listen6Address = sockaddr_in6()
     listen6Address.sin6_family = sa_family_t(AF_INET6)
     listen6Address.sin6_addr = in6addr_any
-    listen6Address.sin6_port = (port + 1).bigEndian
+    listen6Address.sin6_port = port.bigEndian
     #if canImport(Darwin)
     listen6Address.sin6_len = UInt8(MemoryLayout<sockaddr_in6>.size)
     #endif
