@@ -469,8 +469,6 @@ public actor OcaConnectionBroker {
     device: DeviceIdentifier,
     connect: Bool = false
   ) async throws {
-    let deviceInfo = try _getDeviceInfo(for: device)
-
     if let connection = try? _getRegisteredConnection(for: device) {
       let connection = connection.connection
       if connect {
@@ -482,9 +480,39 @@ public actor OcaConnectionBroker {
       return
     }
 
+    let deviceInfo = try _getDeviceInfo(for: device)
     let connection = try await deviceInfo.openConnection(options: _connectionOptions)
     if connect { try await connection.connect() }
     _registerConnection(connection, for: device)
+  }
+
+  /// Registers a device with an already-established connection, bypassing DNS-SD discovery.
+  ///
+  /// This is useful for testing or when the device address is known ahead of time.
+  /// After registration, the device is treated as if it were discovered via DNS-SD.
+  ///
+  /// - Parameters:
+  ///   - device: The device identifier to register
+  ///   - connection: The connection to use for this device
+  public func register(
+    device: DeviceIdentifier,
+    connection: Ocp1Connection
+  ) {
+    _registerConnection(connection, for: device)
+    let event = Event(eventType: .deviceAdded, deviceIdentifier: device)
+    _eventsContinuation.yield(event)
+  }
+
+  /// Deregisters a previously registered device, disconnecting and removing its connection.
+  ///
+  /// Emits a `.deviceRemoved` event. This is the counterpart to ``register(device:connection:)``.
+  ///
+  /// - Parameter device: The device identifier to deregister
+  public func deregister(device: DeviceIdentifier) async {
+    let connection = _removeConnection(for: device)
+    await connection?.expire()
+    let event = Event(eventType: .deviceRemoved, deviceIdentifier: device)
+    _eventsContinuation.yield(event)
   }
 
   public func open(device: DeviceIdentifier) async throws {
