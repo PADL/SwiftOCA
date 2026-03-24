@@ -88,7 +88,6 @@ public class OcaClassRegistry {
     try register(OcaPhysicalPosition.self)
     try register(OcaTimeSource.self)
     try register(OcaMediaClock3.self)
-    try register(OcaGrouper.self)
     try register(OcaGroup.self)
     try register(OcaCounterNotifier.self)
     try register(OcaCounterSetAgent.self)

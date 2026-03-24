@@ -91,7 +91,6 @@ public class OcaDeviceClassRegistry {
     // agents
     try register(OcaAgent.self)
     try register(OcaMediaClock3.self)
-    try register(OcaGrouper.self)
     try register(OcaGroup.self)
     try register(OcaCounterNotifier.self)
     try register(OcaCounterSetAgent.self)

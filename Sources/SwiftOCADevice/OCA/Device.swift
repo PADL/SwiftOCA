@@ -43,13 +43,11 @@ public actor OcaDevice {
   public private(set) var deviceManager: OcaDeviceManager!
 
   var objects = [OcaONo: OcaRoot]()
-  var peerToPeerGroupers = [OcaONo: _OcaPeerToPeerGrouperNotifiable]()
   var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
   var endpoints = [OcaDeviceEndpoint]()
   var logger = Logger(label: "com.padl.SwiftOCADevice")
 
   weak var eventDelegate: OcaDeviceEventDelegate?
-  weak var connectionBroker: OcaConnectionBroker? = _OcaDefaultConnectionBroker.shared
   weak var datasetStorageProvider: OcaDatasetStorageProvider?
 
   public func allocateObjectNumber() -> OcaONo {
@@ -129,9 +127,6 @@ public actor OcaDevice {
       )
       Task { @OcaDevice in deviceManager.managers.append(managerDescriptor) }
     }
-    if let object = object as? _OcaPeerToPeerGrouperNotifiable {
-      peerToPeerGroupers[object.objectNumber] = object
-    }
   }
 
   public func deregister(objectNumber: OcaONo) async throws {
@@ -163,7 +158,6 @@ public actor OcaDevice {
       try await owner.delete(actionObject: object)
     }
     objects[object.objectNumber] = nil
-    peerToPeerGroupers[object.objectNumber] = nil
   }
 
   public func handleCommand(
@@ -179,16 +173,7 @@ public actor OcaDevice {
       }
 
       return try await withThrowingTimeout(of: timeout, clock: .continuous) {
-        if command.methodID.defLevel > 1,
-           let peerToPeerObject = object as? any OcaGroupPeerToPeerMember
-        {
-          try await peerToPeerObject.handleCommandForEachPeerToPeerMember(
-            command,
-            from: controller
-          )
-        } else {
-          try await object.handleCommand(command, from: controller)
-        }
+        try await object.handleCommand(command, from: controller)
       }
     } catch let Ocp1Error.status(status) {
       return .init(responseSize: 0, handle: command.handle, statusCode: status)
@@ -222,9 +207,6 @@ public actor OcaDevice {
       event,
       parameters: Ocp1Encoder().encode(parameters)
     )
-    if !peerToPeerGroupers.isEmpty {
-      try await _notifyPeerToPeerGroupers(event, parameters: parameters)
-    }
   }
 
   private func _notifyEventDelegate(
@@ -274,10 +256,6 @@ public actor OcaDevice {
 
   public func setEventDelegate(_ eventDelegate: OcaDeviceEventDelegate) {
     self.eventDelegate = eventDelegate
-  }
-
-  public func setConnectionBroker(_ connectionBroker: OcaConnectionBroker) {
-    self.connectionBroker = connectionBroker
   }
 
   public func setDatasetStorageProvider(
