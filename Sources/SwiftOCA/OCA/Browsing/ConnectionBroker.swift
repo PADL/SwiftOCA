@@ -342,10 +342,12 @@ public actor OcaConnectionBroker {
     if let existingDevice = _devices[deviceIdentifier] {
       // Device still in _devices (add arrived before remove, or address change)
       try await withDeviceConnection(deviceIdentifier) { existingConnection in
-        if (try? existingDevice.addresses) != (try? device.addresses),
+        let addressChanged = (try? existingDevice.addresses) != (try? device.addresses)
+        if addressChanged,
            let mutableConnection = existingConnection as? Ocp1MutableConnection
         {
           mutableConnection.deviceAddress = try device.firstAddress
+          await existingConnection.deviceAddressDidChange()
         }
 
         // if reconnection was temporarily disabled by _onBrowserDeviceRemoved, reenable it

@@ -397,6 +397,10 @@ extension Ocp1Connection {
     }
   }
 
+  func deviceAddressDidChange() async {
+    try? await onMonitorError(id: -1, Ocp1Error.deviceAddressChanged)
+  }
+
   func onMonitorError(id: Int, _ error: Error) async throws {
     logger
       .trace(
