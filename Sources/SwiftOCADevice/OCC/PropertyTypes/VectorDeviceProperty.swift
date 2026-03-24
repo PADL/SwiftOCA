@@ -15,6 +15,7 @@
 //
 
 import AsyncExtensions
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 @propertyWrapper
@@ -114,6 +115,34 @@ public struct OcaVectorDeviceProperty<
     default:
       throw Ocp1Error.unhandledEvent
     }
+  }
+
+  /// Handle type-erased event data by decoding the inner component value and
+  /// updating the corresponding axis. Notifications contain individual x/y
+  /// components, not the full `OcaVector2D`.
+  func set(
+    object: OcaRoot,
+    eventData typeErasedEventData: OcaAnyPropertyChangedEventData
+  ) async throws {
+    let componentEventData = try OcaPropertyChangedEventData<Value>(
+      eventData: typeErasedEventData
+    )
+    var current = storage.subject.value
+    if typeErasedEventData.propertyID == xPropertyID {
+      current.x = componentEventData.propertyValue
+    } else if typeErasedEventData.propertyID == yPropertyID {
+      current.y = componentEventData.propertyValue
+    } else {
+      throw Ocp1Error.unhandledEvent
+    }
+    try await set(
+      object: object,
+      eventData: OcaPropertyChangedEventData<OcaVector2D<Value>>(
+        propertyID: typeErasedEventData.propertyID,
+        propertyValue: current,
+        changeType: componentEventData.changeType
+      )
+    )
   }
 
   private func notifySubscribers(object: OcaRoot, _ newValue: OcaVector2D<Value>) async throws {

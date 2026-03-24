@@ -16,6 +16,7 @@
 
 @preconcurrency
 import AsyncExtensions
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 
 @propertyWrapper
@@ -136,6 +137,30 @@ public struct OcaBoundedDeviceProperty<
     default:
       throw Ocp1Error.unhandledEvent
     }
+  }
+
+  /// Handle type-erased event data by decoding the inner value and wrapping it
+  /// with the current bounds. Notifications always contain the inner value only
+  /// (not the full `OcaBoundedPropertyValue`).
+  func set(
+    object: OcaRoot,
+    eventData typeErasedEventData: OcaAnyPropertyChangedEventData
+  ) async throws {
+    let innerEventData = try OcaPropertyChangedEventData<Value>(
+      eventData: typeErasedEventData
+    )
+    let bounded = OcaBoundedPropertyValue<Value>(
+      value: innerEventData.propertyValue,
+      in: storage.wrappedValue.range
+    )
+    try await set(
+      object: object,
+      eventData: OcaPropertyChangedEventData<OcaBoundedPropertyValue<Value>>(
+        propertyID: innerEventData.propertyID,
+        propertyValue: bounded,
+        changeType: innerEventData.changeType
+      )
+    )
   }
 
   private func notifySubscribers(object: OcaRoot, _ newValue: Value) async throws {
