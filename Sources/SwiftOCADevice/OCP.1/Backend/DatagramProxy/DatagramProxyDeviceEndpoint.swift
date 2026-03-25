@@ -33,7 +33,7 @@ public class DatagramProxyDeviceEndpoint<
   public typealias PeerMessagePDU = (T, [UInt8])
 
   /// Default buffer capacity for input/output streams
-  public static var defaultBufferCapacity: Int { 64 }
+  public nonisolated static var defaultBufferCapacity: Int { 64 }
 
   public var controllers: [OcaController] {
     _controllers.values.map { $0 }
