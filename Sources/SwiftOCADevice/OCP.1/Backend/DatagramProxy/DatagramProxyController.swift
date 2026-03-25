@@ -45,11 +45,18 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
   init(with peerID: T, endpoint: DatagramProxyDeviceEndpoint<T>) {
     self.peerID = peerID
     self.endpoint = endpoint
+    self.heartbeatTime = endpoint.timeout
   }
 
-  var heartbeatTime = Duration.seconds(1) {
+  var heartbeatTime: Duration {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
+    }
+  }
+
+  func startKeepAliveIfNeeded() {
+    if keepAliveTask == nil {
+      heartbeatTimeDidChange(from: .zero)
     }
   }
 
