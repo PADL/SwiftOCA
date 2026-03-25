@@ -32,6 +32,9 @@ public class DatagramProxyDeviceEndpoint<
 >: OcaDeviceEndpointPrivate {
   public typealias PeerMessagePDU = (T, [UInt8])
 
+  /// Default buffer capacity for input/output streams
+  public static var defaultBufferCapacity: Int { 64 }
+
   public var controllers: [OcaController] {
     _controllers.values.map { $0 }
   }
@@ -80,15 +83,14 @@ public class DatagramProxyDeviceEndpoint<
   }
 
   private func controller(for peerID: T) -> ControllerType {
-    var controller: ControllerType!
-
-    controller = _controllers[peerID]
-    if controller == nil {
-      controller = DatagramProxyController(with: peerID, endpoint: self)
-      logger.info("datagram proxy controller added", controller: controller)
-      _controllers[peerID] = controller
+    if let controller = _controllers[peerID] {
+      return controller
     }
 
+    let controller = DatagramProxyController(with: peerID, endpoint: self)
+    logger.info("datagram proxy controller added", controller: controller)
+    _controllers[peerID] = controller
+    Task { await controller.startKeepAliveIfNeeded() }
     return controller
   }
 
