@@ -45,7 +45,7 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
   init(with peerID: T, endpoint: DatagramProxyDeviceEndpoint<T>) {
     self.peerID = peerID
     self.endpoint = endpoint
-    self.heartbeatTime = endpoint.timeout
+    heartbeatTime = endpoint.timeout
   }
 
   var heartbeatTime: Duration {
