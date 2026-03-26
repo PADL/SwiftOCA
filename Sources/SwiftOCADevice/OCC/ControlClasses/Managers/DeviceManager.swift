@@ -170,7 +170,8 @@ open class OcaDeviceManager: OcaManager {
 
   open func applyPatch(
     datasetONo: OcaONo,
-    controller: OcaController?
+    controller: OcaController?,
+    isIncluded: DeserializationFilterFunction? = nil
   ) async throws {
     guard let storageProvider = await deviceDelegate?.datasetStorageProvider else {
       throw Ocp1Error.noDatasetStorageProvider
@@ -179,7 +180,7 @@ open class OcaDeviceManager: OcaManager {
       targetONo: nil,
       datasetONo: datasetONo
     )
-    try await dataset.applyPatch(to: self, controller: controller)
+    try await dataset.applyPatch(to: self, controller: controller, isIncluded: isIncluded)
     mostRecentPatchDatasetONo = datasetONo
   }
 

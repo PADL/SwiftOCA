@@ -779,9 +779,10 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
   override open func deserialize(
     jsonObject: [String: Sendable],
-    flags: DeserializationFlags = []
+    flags: DeserializationFlags = [],
+    isIncluded: DeserializationFilterFunction? = nil
   ) async throws {
-    try await super.deserialize(jsonObject: jsonObject, flags: flags)
+    try await super.deserialize(jsonObject: jsonObject, flags: flags, isIncluded: isIncluded)
 
     guard let actionJsonObjects = jsonObject["3.2"] as? [[String: Sendable]] else {
       return
@@ -807,7 +808,11 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         else { throw Ocp1Error.objectNotPresent(objectNumber) }
       }
 
-      try await actionObject.deserialize(jsonObject: actionJsonObject, flags: flags)
+      try await actionObject.deserialize(
+        jsonObject: actionJsonObject,
+        flags: flags,
+        isIncluded: isIncluded
+      )
     }
   }
 }

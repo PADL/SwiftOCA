@@ -384,7 +384,8 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
 
   open func deserialize(
     jsonObject: [String: Sendable],
-    flags: DeserializationFlags = []
+    flags: DeserializationFlags = [],
+    isIncluded: DeserializationFilterFunction? = nil
   ) async throws {
     guard let deviceDelegate else { throw Ocp1Error.notConnected }
     let logger = await deviceDelegate.logger
@@ -439,6 +440,10 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
           logger.warning("JSON object \(jsonObject) is missing \(propertyName)")
           throw Ocp1Error.status(.parameterOutOfRange)
         }
+      }
+
+      if let isIncluded, await !isIncluded(self, property.propertyID, value) {
+        continue
       }
 
       do {
