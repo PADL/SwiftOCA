@@ -14,109 +14,115 @@
 // limitations under the License.
 //
 
-import AsyncAlgorithms
 import SwiftOCA
 import SwiftOCAUI
 import SwiftUI
 
-#if os(macOS)
-@MainActor
-class BonjourBrowser: ObservableObject {
-  let udpBrowser = try! OcaNetServiceBrowser(serviceType: .udp)
-  let tcpBrowser = try! OcaNetServiceBrowser(serviceType: .tcp)
-  @Published
-  var services = [AnyOcaNetworkAdvertisingServiceInfo]()
+private struct DeviceBrowserView: View {
+  let broker: OcaConnectionBroker
+  @State
+  private var devices = [OcaConnectionBroker.DeviceIdentifier]()
+  @State
+  private var deviceSelection: OcaConnectionBroker.DeviceIdentifier? = nil
 
-  init() {
-    Task {
-      await withTaskGroup(of: Void.self) { [self] group in
-        group.addTask { [self] in
-          do {
-            try await udpBrowser.start()
-            for try await result in udpBrowser.browseResults {
-              await MainActor.run {
-                switch result {
-                case let .added(serviceInfo):
-                  services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
-                case let .removed(serviceInfo):
-                  services
-                    .removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
-                }
-              }
-            }
-          } catch {}
+  var body: some View {
+    NavigationSplitView {
+      List(devices, selection: $deviceSelection) { device in
+        VStack(alignment: .leading, spacing: 2) {
+          Text(device.name)
+            .font(.headline)
+          Text(device.serviceType == .tcp ? "TCP" : "UDP")
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
-        group.addTask { [self] in
-          do {
-            try await tcpBrowser.start()
-            for try await result in tcpBrowser.browseResults {
-              await MainActor.run {
-                switch result {
-                case let .added(serviceInfo):
-                  services.append(AnyOcaNetworkAdvertisingServiceInfo(serviceInfo))
-                case let .removed(serviceInfo):
-                  services
-                    .removeAll(where: { $0 == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo) })
-                }
-              }
-            }
-          } catch {}
+        .tag(device)
+      }
+      .navigationTitle("Devices")
+    } detail: {
+      if let deviceSelection {
+        DeviceDetailView(broker: broker, deviceIdentifier: deviceSelection)
+          .id(deviceSelection)
+      } else {
+        Text("Select a device").font(.title).foregroundStyle(.secondary)
+      }
+    }
+    .task {
+      for await event in await broker.events {
+        switch event.eventType {
+        case .deviceAdded:
+          devices.append(event.deviceIdentifier)
+        case .deviceRemoved:
+          if deviceSelection == event.deviceIdentifier {
+            deviceSelection = nil
+          }
+          devices.removeAll(where: { $0 == event.deviceIdentifier })
+        case .deviceUpdated:
+          if let index = devices.firstIndex(of: event.deviceIdentifier) {
+            devices[index] = event.deviceIdentifier
+          }
+        default:
+          break
         }
       }
     }
   }
+}
 
-  func service(with name: String?) -> AnyOcaNetworkAdvertisingServiceInfo? {
-    guard let name else { return nil }
-    return services.first(where: { $0.name == name })
+private struct DeviceDetailView: View {
+  let broker: OcaConnectionBroker
+  let deviceIdentifier: OcaConnectionBroker.DeviceIdentifier
+  @State
+  private var connection: Ocp1Connection? = nil
+
+  var body: some View {
+    Group {
+      if let connection {
+        OcaRootBlockView(connection)
+      } else {
+        ProgressView()
+      }
+    }
+    .navigationTitle(deviceIdentifier.name)
+    .task {
+      do {
+        try await broker.connect(device: deviceIdentifier)
+        connection = try await broker
+          .withDeviceConnection(deviceIdentifier) { @Sendable connection in
+            connection
+          }
+      } catch {
+        debugPrint("DeviceDetailView: failed to connect to \(deviceIdentifier.name): \(error)")
+      }
+    }
   }
 }
-#endif
 
 @main
 struct SwiftOCABrowser: App {
-  @Environment(\.refresh)
-  private var refresh
-  @Environment(\.openWindow)
-  private var openWindow
-  #if os(macOS)
-  @StateObject
-  var browser = BonjourBrowser()
-  #endif
+  @State
+  private var broker: OcaConnectionBroker? = nil
 
-  @SceneBuilder
   var body: some Scene {
-    Group {
-      WindowGroup(id: "BonjourBrowser", for: String.self) { serviceID in
-        #if os(macOS)
-        if let service = browser.service(with: serviceID.wrappedValue) {
-          OcaBonjourDeviceView(service)
-        } else {
-          Text("Select a device from the File menu").font(.title)
-        }
-        #elseif os(iOS)
-        OcaBonjourDiscoveryView()
-        #endif
+    WindowGroup {
+      if let broker {
+        DeviceBrowserView(broker: broker)
+      } else {
+        ProgressView()
+          .task {
+            broker = await OcaConnectionBroker(
+              connectionOptions: Ocp1ConnectionOptions(flags: [
+                .automaticReconnect,
+                .refreshSubscriptionsOnReconnection,
+                .retainObjectCacheAfterDisconnect,
+              ])
+            )
+          }
       }
     }
     .commands {
-      #if os(macOS)
-      CommandGroup(replacing: .newItem) {
-        Menu("Connect") {
-          ForEach(browser.services, id: \.name) { service in
-            Button(service.name) {
-              openWindow(id: "BonjourBrowser", value: service.name)
-            }
-          }
-        }
-      }
-      #endif
       CommandGroup(replacing: .toolbar) {
-        Button("Refresh") {
-          Task {
-            await refresh?()
-          }
-        }.keyboardShortcut("R")
+        Button("Refresh") {}
+          .keyboardShortcut("R")
       }
     }
   }

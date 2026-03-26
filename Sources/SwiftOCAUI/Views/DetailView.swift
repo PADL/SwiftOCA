@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import Combine
 import SwiftOCA
 import SwiftUI
 
@@ -28,9 +27,53 @@ extension Array where Element: OcaRoot {
   }
 }
 
+// MARK: - OcaViewRepresentable conformances
+// Declared here to ensure the conformance metadata is linked into the
+// same compilation unit as the runtime `is`/`as?` checks.
+
+extension OcaBooleanActuator: OcaViewRepresentable {
+  public var viewType: any OcaView.Type { OcaBooleanView.self }
+}
+
+extension OcaFloat32Actuator: OcaViewRepresentable {
+  public var viewType: any OcaView.Type { OcaFloat32ActuatorView.self }
+}
+
+extension OcaGain: OcaViewRepresentable {
+  public var viewType: any OcaView.Type { OcaGainView.self }
+}
+
+extension OcaMute: OcaViewRepresentable {
+  public var viewType: any OcaView.Type { OcaMuteView.self }
+}
+
+extension OcaPanBalance: OcaViewRepresentable {
+  public var viewType: any OcaView.Type { OcaPanBalanceView.self }
+}
+
+extension OcaPolarity: OcaViewRepresentable {
+  public var viewType: any OcaView.Type { OcaPolarityView.self }
+}
+
+extension OcaGenericBasicSensor: OcaViewRepresentable {
+  public var viewType: any OcaView.Type { OcaGenericBasicSensorView<T>.self }
+}
+
+extension OcaBooleanSensor: OcaViewRepresentable {
+  public var viewType: any OcaView.Type { OcaBooleanSensorView.self }
+}
+
+extension OcaLevelSensor: OcaViewRepresentable {
+  public var viewType: any OcaView.Type { OcaLevelSensorView.self }
+}
+
+extension OcaIdentificationSensor: OcaViewRepresentable {
+  public var viewType: any OcaView.Type { OcaIdentificationSensorView.self }
+}
+
 public struct OcaDetailView: OcaView {
-  let connection: Ocp1Connection
-  let objectIdentification: OcaObjectIdentification
+  let connection: Ocp1Connection?
+  let objectIdentification: OcaObjectIdentification?
 
   @Environment(\.lastError)
   var lastError
@@ -46,31 +89,35 @@ public struct OcaDetailView: OcaView {
   }
 
   public init(_ object: SwiftOCA.OcaRoot) {
-    self.init(object.connectionDelegate!, objectIdentification: object.objectIdentification)
+    connection = nil
+    objectIdentification = nil
+    _object = State(wrappedValue: object)
+  }
+
+  @ViewBuilder
+  static func contentView(_ object: OcaRoot) -> some View {
+    if object is OcaMatrix {
+      OcaMatrixNavigationSplitView(object)
+    } else if let viewRepresentable = object as? OcaViewRepresentable {
+      AnyView(erasing: viewRepresentable.viewType.init(object))
+    } else {
+      OcaPropertyTableView(object)
+    }
   }
 
   public var body: some View {
     Group {
       if let object {
-        let metatype = type(of: object)
-        Group {
-          if metatype == OcaBlock.self {
-            OcaBlockNavigationStackView(object)
-          } else if metatype == OcaMatrix.self {
-            OcaMatrixNavigationSplitView(object)
-          } else if let object = object as? OcaViewRepresentable {
-            // use type erasure as last resort
-            AnyView(erasing: object.viewType.init(object))
-          } else {
-            OcaPropertyTableView(object)
-          }
-        }.refreshableToInitialState(object)
+        Self.contentView(object)
+          .refreshableToInitialState(object)
       } else {
         ProgressView()
       }
     }
     .task {
-      object = try? await connection.resolve(object: objectIdentification)
+      if object == nil, let connection, let objectIdentification {
+        object = try? await connection.resolve(object: objectIdentification)
+      }
     }
   }
 }

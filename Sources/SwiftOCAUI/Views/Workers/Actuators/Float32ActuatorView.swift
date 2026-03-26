@@ -17,12 +17,6 @@
 import SwiftOCA
 import SwiftUI
 
-extension OcaFloat32Actuator: OcaViewRepresentable {
-  public var viewType: any OcaView.Type {
-    OcaFloat32ActuatorView.self
-  }
-}
-
 public struct OcaFloat32ActuatorView: OcaView {
   @State
   var object: OcaFloat32Actuator
