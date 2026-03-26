@@ -415,6 +415,91 @@ final class SwiftOCADeviceTests: XCTestCase {
     }
   }
 
+  /// Test that OcaBoundedDeviceProperty correctly deserializes JSON values after
+  /// a JSONSerialization round-trip, where numeric types may change (e.g. Float
+  /// is read back as Double, or integer JSON numbers become Int instead of Float).
+  func testBoundedPropertyJsonRoundTrip() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    _ = try await OcaLocalDeviceEndpoint(device: device)
+
+    // OcaFloat32Actuator has an @OcaBoundedDeviceProperty<OcaFloat32> at 5.1
+    let actuator = try await SwiftOCADevice.OcaFloat32Actuator(
+      deviceDelegate: device,
+      addToRootBlock: true
+    )
+
+    // Set a known value
+    await Task { @OcaDevice in
+      actuator.setting = OcaBoundedPropertyValue(value: 0.75, in: 0.0...1.0)
+    }.value
+
+    // Serialize, round-trip through JSONSerialization, then deserialize
+    let jsonObject = try await actuator.serialize()
+    let jsonData = try JSONSerialization.data(withJSONObject: jsonObject)
+    let decoded = try JSONSerialization.jsonObject(with: jsonData) as! [String: Sendable]
+
+    // This would fail with badFormat before the fix because JSONSerialization
+    // deserializes Float as Double and the direct cast to [String: Float] fails
+    try await actuator.deserialize(jsonObject: decoded, flags: .ignoreAllErrors)
+
+    let setting = await actuator.setting
+    XCTAssertEqual(setting.value, 0.75, accuracy: 0.0001)
+    XCTAssertEqual(setting.minValue, 0.0)
+    XCTAssertEqual(setting.maxValue, 1.0)
+  }
+
+  /// Test that OcaBoundedDeviceProperty handles integer JSON values (e.g. when
+  /// the bounds are whole numbers like 0 and 1 that JSON encodes as integers).
+  func testBoundedPropertyJsonIntegerValues() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    _ = try await OcaLocalDeviceEndpoint(device: device)
+
+    let actuator = try await SwiftOCADevice.OcaInt32Actuator(
+      deviceDelegate: device,
+      addToRootBlock: true
+    )
+
+    await Task { @OcaDevice in
+      actuator.setting = OcaBoundedPropertyValue(value: 42, in: 0...100)
+    }.value
+
+    let jsonObject = try await actuator.serialize()
+    let jsonData = try JSONSerialization.data(withJSONObject: jsonObject)
+    let decoded = try JSONSerialization.jsonObject(with: jsonData) as! [String: Sendable]
+
+    try await actuator.deserialize(jsonObject: decoded, flags: .ignoreAllErrors)
+
+    let setting = await actuator.setting
+    XCTAssertEqual(setting.value, 42)
+    XCTAssertEqual(setting.minValue, 0)
+    XCTAssertEqual(setting.maxValue, 100)
+  }
+
+  /// Test that OcaBoundedDeviceProperty rejects values outside the deserialized bounds.
+  func testBoundedPropertyJsonOutOfRange() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    _ = try await OcaLocalDeviceEndpoint(device: device)
+
+    let actuator = try await SwiftOCADevice.OcaFloat32Actuator(
+      deviceDelegate: device,
+      addToRootBlock: true
+    )
+
+    // Construct a JSON object where value exceeds the upper bound
+    var jsonObject = try await actuator.serialize()
+    jsonObject["5.1"] = ["v": 2.0, "l": 0.0, "u": 1.0] as [String: Double]
+
+    do {
+      try await actuator.deserialize(jsonObject: jsonObject)
+      XCTFail("Expected badFormat error for out-of-range value")
+    } catch {
+      XCTAssertEqual(error as? Ocp1Error, Ocp1Error.status(.badFormat))
+    }
+  }
+
   func testKeyPathUncached() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
