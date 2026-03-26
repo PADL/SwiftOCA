@@ -36,6 +36,8 @@ struct OcaNavigationLabel: View, OcaView {
   }
 
   var body: some View {
-    Text(object.navigationLabel)
+    OcaPropertyView(object, object.$role) { (role: OcaString) in
+      Text(role)
+    }
   }
 }
