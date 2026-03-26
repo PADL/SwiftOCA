@@ -351,7 +351,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
 
   open func serialize(
     flags: SerializationFlags = [],
-    isIncluded: SerializationFilterFunction? = nil
+    filter: SerializationFilterFunction? = nil
   ) throws -> [String: any Sendable] {
     var dict = [String: any Sendable]()
 
@@ -365,8 +365,16 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     dict[classIDJSONKey] = Self.classID.description
     for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
       let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
-      if let isIncluded, !isIncluded(self, property.propertyID, property.wrappedValue) {
-        continue
+      if let filter {
+        switch filter(self, property.propertyID, property.wrappedValue) {
+        case .ok:
+          break
+        case .ignore:
+          continue
+        case let .replace(newValue):
+          dict[property.propertyID.description] = newValue
+          continue
+        }
       }
       do {
         dict[property.propertyID.description] = try property.getJsonValue()
@@ -385,7 +393,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   open func deserialize(
     jsonObject: [String: Sendable],
     flags: DeserializationFlags = [],
-    isIncluded: DeserializationFilterFunction? = nil
+    filter: DeserializationFilterFunction? = nil
   ) async throws {
     guard let deviceDelegate else { throw Ocp1Error.notConnected }
     let logger = await deviceDelegate.logger
@@ -442,12 +450,20 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
         }
       }
 
-      if let isIncluded, await !isIncluded(self, property.propertyID, value) {
-        continue
+      var effectiveValue = value
+      if let filter {
+        switch await filter(self, property.propertyID, value) {
+        case .ok:
+          break
+        case .ignore:
+          continue
+        case let .replace(newValue):
+          effectiveValue = newValue
+        }
       }
 
       do {
-        try await property.set(object: self, jsonValue: value, device: deviceDelegate)
+        try await property.set(object: self, jsonValue: effectiveValue, device: deviceDelegate)
       } catch {
         logger
           .warning(

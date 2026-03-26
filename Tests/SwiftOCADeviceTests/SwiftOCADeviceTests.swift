@@ -500,6 +500,160 @@ final class SwiftOCADeviceTests: XCTestCase {
     }
   }
 
+  /// Test that the serialization filter can ignore properties
+  func testSerializationFilterIgnore() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    _ = try await OcaLocalDeviceEndpoint(device: device)
+
+    let actuator = try await MyBooleanActuator(
+      role: "FilterTest",
+      deviceDelegate: device,
+      addToRootBlock: true
+    )
+    await actuator.set(to: true)
+
+    // Serialize without filter — setting (property 5.1) should be present
+    let fullJson = try await actuator.serialize()
+    XCTAssertNotNil(fullJson["5.1"])
+
+    // Serialize with filter that ignores property 5.1
+    let filteredJson = try await actuator.serialize(filter: { _, propertyID, _ in
+      propertyID == OcaPropertyID("5.1") ? .ignore : .ok
+    })
+    XCTAssertNil(filteredJson["5.1"])
+    // Other properties should still be present
+    XCTAssertNotNil(filteredJson["_oNo"])
+  }
+
+  /// Test that the serialization filter can replace property values
+  func testSerializationFilterReplace() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    _ = try await OcaLocalDeviceEndpoint(device: device)
+
+    let actuator = try await MyBooleanActuator(
+      role: "ReplaceTest",
+      deviceDelegate: device,
+      addToRootBlock: true
+    )
+    await actuator.set(to: true)
+
+    let json = try await actuator.serialize(filter: { _, propertyID, _ in
+      // Replace the setting value with false
+      if propertyID == OcaPropertyID("5.1") {
+        return .replace(false)
+      }
+      return .ok
+    })
+    XCTAssertEqual(json["5.1"] as? Bool, false)
+  }
+
+  /// Test that the deserialization filter can ignore properties
+  func testDeserializationFilterIgnore() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    _ = try await OcaLocalDeviceEndpoint(device: device)
+
+    let actuator = try await MyBooleanActuator(
+      role: "DeserFilterTest",
+      deviceDelegate: device,
+      addToRootBlock: true
+    )
+    await actuator.set(to: false)
+
+    // Create JSON with setting = true
+    var jsonObject = try await actuator.serialize()
+    jsonObject["5.1"] = true
+
+    // Deserialize with filter that ignores property 5.1
+    try await actuator.deserialize(
+      jsonObject: jsonObject,
+      filter: { _, propertyID, _ in
+        propertyID == OcaPropertyID("5.1") ? .ignore : .ok
+      }
+    )
+
+    // Setting should remain false since the filter ignored it
+    let setting = await actuator.setting
+    XCTAssertFalse(setting)
+  }
+
+  /// Test that the deserialization filter can replace property values
+  func testDeserializationFilterReplace() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    _ = try await OcaLocalDeviceEndpoint(device: device)
+
+    let actuator = try await MyBooleanActuator(
+      role: "DeserReplaceTest",
+      deviceDelegate: device,
+      addToRootBlock: true
+    )
+    await actuator.set(to: false)
+
+    // Create JSON with setting = true
+    var jsonObject = try await actuator.serialize()
+    jsonObject["5.1"] = true
+
+    // Deserialize with filter that replaces the value with false
+    try await actuator.deserialize(
+      jsonObject: jsonObject,
+      filter: { _, propertyID, _ in
+        if propertyID == OcaPropertyID("5.1") {
+          return .replace(false)
+        }
+        return .ok
+      }
+    )
+
+    let setting = await actuator.setting
+    XCTAssertFalse(setting)
+  }
+
+  /// Test that the deserialization filter is propagated through blocks
+  func testDeserializationFilterPropagatedToChildren() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    _ = try await OcaLocalDeviceEndpoint(device: device)
+
+    let testBlock = try await SwiftOCADevice
+      .OcaBlock<MyBooleanActuator>(
+        objectNumber: testBlockONo,
+        deviceDelegate: device,
+        addToRootBlock: true
+      )
+    let actuator = try await MyBooleanActuator(
+      role: "BlockChild",
+      deviceDelegate: device,
+      addToRootBlock: false
+    )
+    try await testBlock.add(actionObject: actuator)
+    await actuator.set(to: false)
+
+    // Serialize the block
+    var jsonObject = try await testBlock.serialize()
+
+    // Modify the child's setting in the JSON
+    if var actionObjects = jsonObject["3.2"] as? [[String: any Sendable]] {
+      actionObjects[0]["5.1"] = true
+      jsonObject["3.2"] = actionObjects as [any Sendable]
+    }
+
+    // Deserialize with filter that ignores setting changes
+    try await testBlock.deserialize(
+      jsonObject: jsonObject,
+      flags: .ignoreAllErrors,
+      filter: { _, propertyID, _ in
+        propertyID == OcaPropertyID("5.1") ? .ignore : .ok
+      }
+    )
+
+    // Child's setting should remain false
+    let setting = await actuator.setting
+    XCTAssertFalse(setting)
+  }
+
   func testKeyPathUncached() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()

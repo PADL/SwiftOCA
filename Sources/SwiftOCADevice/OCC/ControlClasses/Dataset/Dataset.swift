@@ -350,7 +350,7 @@ extension OcaDataset {
   func applyPatch(
     to deviceManager: OcaDeviceManager,
     controller: OcaController?,
-    isIncluded: OcaRoot.DeserializationFilterFunction? = nil
+    filter: OcaRoot.DeserializationFilterFunction? = nil
   ) async throws {
     guard isPatchDataset else {
       throw Ocp1Error.datasetMimeTypeMismatch
@@ -370,7 +370,7 @@ extension OcaDataset {
     guard owner == deviceManager.objectNumber else {
       throw Ocp1Error.datasetTargetMismatch
     }
-    try await deviceManager.deserializePatchDataset(blob, isIncluded: isIncluded)
+    try await deviceManager.deserializePatchDataset(blob, filter: filter)
     try await close(handle: handle, controller: controller)
   }
 
