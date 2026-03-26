@@ -166,6 +166,30 @@ public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
     }
   }
 
+  override public var localAddress: Data? {
+    guard let localEndpoint = _nwConnection?.currentPath?.localEndpoint else { return nil }
+    switch localEndpoint {
+    case let .hostPort(host, port):
+      let address: (any SocketAddress)? = switch host {
+      case let .ipv4(ipv4):
+        try? sockaddr_in(
+          family: sa_family_t(AF_INET),
+          presentationAddress: "\(ipv4):\(port.rawValue)"
+        )
+      case let .ipv6(ipv6):
+        try? sockaddr_in6(
+          family: sa_family_t(AF_INET6),
+          presentationAddress: "[\(ipv6)]:\(port.rawValue)"
+        )
+      default:
+        nil
+      }
+      return address.map { AnySocketAddress($0).data }
+    default:
+      return nil
+    }
+  }
+
   fileprivate nonisolated var nwEndpoint: NWEndpoint {
     get throws {
       try _deviceAddress.criticalValue.asNWEndpoint()

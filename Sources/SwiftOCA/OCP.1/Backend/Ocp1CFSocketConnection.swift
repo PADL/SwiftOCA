@@ -356,6 +356,10 @@ Sendable, CustomStringConvertible, Hashable {
     String(describing: cfSocket)
   }
 
+  public var localAddress: AnySocketAddress? {
+    try? cfSocket.address
+  }
+
   public var peerAddress: AnySocketAddress? {
     try? cfSocket.peerAddress
   }
@@ -415,6 +419,10 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
         }
       } catch {}
     }
+  }
+
+  override public var localAddress: Data? {
+    _socket?.localAddress?.data
   }
 
   fileprivate nonisolated var _presentationAddress: String {
