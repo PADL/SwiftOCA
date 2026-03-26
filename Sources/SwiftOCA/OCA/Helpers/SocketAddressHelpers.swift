@@ -14,7 +14,7 @@ package extension Data {
 
 package extension SocketAddress {
   var unsafelyUnwrappedPresentationAddress: String {
-    try! presentationAddress
+    (try? presentationAddress) ?? "unknown"
   }
 
   var bytes: [UInt8] {
