@@ -197,7 +197,7 @@ public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
   }
 
   fileprivate nonisolated var presentationAddress: String {
-    _deviceAddress.criticalValue.unsafelyUnwrappedPresentationAddress
+    _deviceAddress.criticalValue._presentationAddress
   }
 }
 

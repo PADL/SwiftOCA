@@ -13,7 +13,7 @@ package extension Data {
 }
 
 package extension SocketAddress {
-  var unsafelyUnwrappedPresentationAddress: String {
+  var _presentationAddress: String {
     (try? presentationAddress) ?? "unknown"
   }
 

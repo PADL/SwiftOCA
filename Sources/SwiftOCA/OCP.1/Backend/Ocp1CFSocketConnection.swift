@@ -426,7 +426,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
   }
 
   fileprivate nonisolated var _presentationAddress: String {
-    _deviceAddress.criticalValue.unsafelyUnwrappedPresentationAddress
+    _deviceAddress.criticalValue._presentationAddress
   }
 
   private var family: sa_family_t {

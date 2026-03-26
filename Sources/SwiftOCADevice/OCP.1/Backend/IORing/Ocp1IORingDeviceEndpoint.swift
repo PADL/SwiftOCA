@@ -157,7 +157,7 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   }
 
   override public func run() async throws {
-    logger.info("starting \(type(of: self)) on \(address.unsafelyUnwrappedPresentationAddress)")
+    logger.info("starting \(type(of: self)) on \(address._presentationAddress)")
     try await super.run()
     let socket = try makeSocketAndListen()
     self.socket = socket
@@ -334,7 +334,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   }
 
   override public func run() async throws {
-    logger.info("starting \(type(of: self)) on \(address.unsafelyUnwrappedPresentationAddress)")
+    logger.info("starting \(type(of: self)) on \(address._presentationAddress)")
     try await super.run()
 
     let socket = try makeSocket()
@@ -372,7 +372,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
       } catch {
         logger
           .error(
-            "unexpected error \(error) running \(type(of: self)) event loop on \(address.unsafelyUnwrappedPresentationAddress); no longer servicing requests"
+            "unexpected error \(error) running \(type(of: self)) event loop on \(address._presentationAddress); no longer servicing requests"
           )
         throw error
       }

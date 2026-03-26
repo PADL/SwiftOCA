@@ -187,7 +187,7 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   }
 
   override public var connectionPrefix: String {
-    "\(OcaUdpConnectionPrefix)/\(_deviceAddress.criticalValue.unsafelyUnwrappedPresentationAddress)"
+    "\(OcaUdpConnectionPrefix)/\(_deviceAddress.criticalValue._presentationAddress)"
   }
 
   override public var isDatagram: Bool { true }
@@ -265,7 +265,7 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   }
 
   override public var connectionPrefix: String {
-    "\(OcaLocalConnectionPrefix)/\(_deviceAddress.criticalValue.unsafelyUnwrappedPresentationAddress)"
+    "\(OcaLocalConnectionPrefix)/\(_deviceAddress.criticalValue._presentationAddress)"
   }
 
   override public var isDatagram: Bool { true }
@@ -309,7 +309,7 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
     _deviceAddress.withLock { deviceAddress in
       let prefix = deviceAddress
         .family == AF_LOCAL ? OcaLocalConnectionPrefix : OcaTcpConnectionPrefix
-      return "\(prefix)/\(deviceAddress.unsafelyUnwrappedPresentationAddress)"
+      return "\(prefix)/\(deviceAddress._presentationAddress)"
     }
   }
 
