@@ -16,6 +16,7 @@
 
 @preconcurrency
 import AsyncExtensions
+import Foundation
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
@@ -81,7 +82,13 @@ public struct OcaBoundedDeviceProperty<
   }
 
   func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
-    guard let valueDict = jsonValue as? [String: Value] else {
+    let valueDict: [String: Value]
+    if let dict = jsonValue as? [String: Value] {
+      valueDict = dict
+    } else if JSONSerialization.isValidJSONObject(jsonValue) {
+      let data = try JSONSerialization.data(withJSONObject: jsonValue)
+      valueDict = try JSONDecoder().decode([String: Value].self, from: data)
+    } else {
       throw Ocp1Error.status(.badFormat)
     }
 
