@@ -226,7 +226,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
   }
 
   fileprivate nonisolated var _presentationAddress: String {
-    deviceAddress.socketPresentationAddress!
+    deviceAddress.socketPresentationAddress ?? "unknown"
   }
 
   override public var localAddress: Data? {
