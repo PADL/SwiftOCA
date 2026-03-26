@@ -229,6 +229,19 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     deviceAddress.socketPresentationAddress!
   }
 
+  override public var localAddress: Data? {
+    guard let socket = _asyncSocket?.socket else { return nil }
+    var addr = sockaddr_storage()
+    var len = socklen_t(MemoryLayout<sockaddr_storage>.size)
+    let result = withUnsafeMutablePointer(to: &addr) { ptr in
+      ptr.withMemoryRebound(to: sockaddr.self, capacity: 1) { sa in
+        getsockname(socket.file.rawValue, sa, &len)
+      }
+    }
+    guard result == 0 else { return nil }
+    return FlyingSocks.AnySocketAddress(addr).data
+  }
+
   override public func connectDevice() async throws {
     let socket = try _deviceAddress.withLock { deviceAddress in
       let socket = try Socket(domain: Int32(deviceAddress.family), type: socketType)

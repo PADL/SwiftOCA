@@ -131,6 +131,11 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableConnection {
       } catch {}
     }
   }
+
+  override public var localAddress: Data? {
+    guard let socket = _socket else { return nil }
+    return try? AnySocketAddress(socket.localAddress).data
+  }
 }
 
 public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
@@ -190,7 +195,7 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
 
 public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnection {
   private var receiveBufferSize: Int!
-  private var localAddress: (any SocketAddress)?
+  private var _boundAddress: (any SocketAddress)?
 
   override public var heartbeatTime: Duration {
     .seconds(1)
@@ -206,13 +211,13 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
     ring: IORing
   ) throws {
     guard socketAddress.family == AF_LOCAL else { throw Errno.addressFamilyNotSupported }
-    localAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
+    _boundAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
     try super.init(socketAddress: socketAddress, options: options, ring: ring)
   }
 
   override public func connectDevice() async throws {
     let deviceAddress = _deviceAddress.criticalValue
-    let localAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
+    let boundAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
     let ring = try IORing()
     let socket = try Socket(
       ring: ring,
@@ -226,8 +231,8 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
     } else {
       receiveBufferSize = Ocp1MaximumDatagramPduSize
     }
-    try socket.bind(to: localAddress)
-    self.localAddress = localAddress
+    try socket.bind(to: boundAddress)
+    _boundAddress = boundAddress
     try await ring.registerFixedBuffers(count: 1, size: receiveBufferSize)
     try await socket.connect(to: deviceAddress)
     _socket = socket
@@ -252,8 +257,8 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   }
 
   override public func disconnectDevice() async throws {
-    if let localAddress {
-      _ = try? unlink(localAddress.presentationAddress)
+    if let _boundAddress {
+      _ = try? unlink(_boundAddress.presentationAddress)
     }
     receiveBufferSize = nil
     try await super.disconnectDevice()

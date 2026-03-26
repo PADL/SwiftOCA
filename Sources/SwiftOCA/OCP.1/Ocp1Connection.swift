@@ -449,6 +449,11 @@ open class Ocp1Connection: CustomStringConvertible {
   open var isDatagram: Bool {
     heartbeatTime > .seconds(0)
   }
+
+  /// The local socket address of the connection, if available.
+  open var localAddress: Data? {
+    nil
+  }
 }
 
 extension Ocp1Connection: Equatable {
