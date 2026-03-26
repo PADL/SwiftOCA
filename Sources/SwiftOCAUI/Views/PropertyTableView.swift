@@ -87,7 +87,7 @@ struct OcaPropertyTableView: OcaView {
 
   var body: some View {
     VStack {
-      Text(object.navigationLabel).font(.title).padding()
+      OcaNavigationLabel(object).font(.title).padding()
       Table(of: Property.self) {
         TableColumn("Name", value: \.name)
         TableColumn("ID") { property in
