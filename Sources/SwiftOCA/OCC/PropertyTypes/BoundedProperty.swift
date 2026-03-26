@@ -209,10 +209,13 @@ public struct OcaBoundedProperty<
   public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
     // use flags to avoid subscribing
     var value = try await _getValue(object, flags: [.cacheValue, .returnCachedValue])
-    guard let innerValue = anyValue as? Value else {
+    if let boundedValue = anyValue as? OcaBoundedPropertyValue<Value> {
+      value.value = boundedValue.value
+    } else if let innerValue = anyValue as? Value {
+      value.value = innerValue
+    } else {
       throw Ocp1Error.status(.badFormat)
     }
-    value.value = innerValue
     try await _storage.setValueIfMutable(object, value)
   }
 }

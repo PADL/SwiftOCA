@@ -17,12 +17,6 @@
 import SwiftOCA
 import SwiftUI
 
-extension OcaGain: OcaViewRepresentable {
-  public var viewType: any OcaView.Type {
-    OcaGainView.self
-  }
-}
-
 public struct OcaGainView: OcaView {
   @State
   var object: OcaGain

@@ -17,12 +17,6 @@
 import SwiftOCA
 import SwiftUI
 
-extension OcaIdentificationSensor: OcaViewRepresentable {
-  public var viewType: any OcaView.Type {
-    OcaIdentificationSensorView.self
-  }
-}
-
 @Observable
 private final class OcaIdentificationState: ObservableObject, @unchecked Sendable {
   var state: Bool = false

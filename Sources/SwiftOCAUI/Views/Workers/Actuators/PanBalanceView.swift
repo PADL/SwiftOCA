@@ -18,12 +18,6 @@ import Sliders
 import SwiftOCA
 import SwiftUI
 
-extension OcaPanBalance: OcaViewRepresentable {
-  public var viewType: any OcaView.Type {
-    OcaPanBalanceView.self
-  }
-}
-
 public struct OcaPanBalanceView: OcaView {
   @State
   var object: OcaPanBalance

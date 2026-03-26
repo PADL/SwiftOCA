@@ -17,12 +17,6 @@
 import SwiftOCA
 import SwiftUI
 
-extension OcaBooleanActuator: OcaViewRepresentable {
-  public var viewType: any OcaView.Type {
-    OcaBooleanView.self
-  }
-}
-
 public struct OcaBooleanView: OcaView {
   @State
   var object: OcaBooleanActuator

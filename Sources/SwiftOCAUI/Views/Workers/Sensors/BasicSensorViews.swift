@@ -17,12 +17,6 @@
 import SwiftOCA
 import SwiftUI
 
-extension OcaGenericBasicSensor: OcaViewRepresentable {
-  public var viewType: any OcaView.Type {
-    OcaGenericBasicSensorView<T>.self
-  }
-}
-
 public struct OcaGenericBasicSensorView<T: Codable & Comparable & Sendable>: OcaView {
   @State
   var object: OcaGenericBasicSensor<T>
@@ -34,12 +28,6 @@ public struct OcaGenericBasicSensorView<T: Codable & Comparable & Sendable>: Oca
   public var body: some View {
     Text(String(describing: object.reading))
       .showProgressIfWaiting(object.$reading)
-  }
-}
-
-extension OcaBooleanSensor: OcaViewRepresentable {
-  public var viewType: any OcaView.Type {
-    OcaBooleanSensorView.self
   }
 }
 

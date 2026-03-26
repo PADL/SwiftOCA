@@ -17,12 +17,6 @@
 import SwiftOCA
 import SwiftUI
 
-extension OcaMute: OcaViewRepresentable {
-  public var viewType: any OcaView.Type {
-    OcaMuteView.self
-  }
-}
-
 public struct OcaMuteView: OcaView {
   @State
   var object: OcaMute

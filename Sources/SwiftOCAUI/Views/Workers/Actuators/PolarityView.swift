@@ -17,12 +17,6 @@
 import SwiftOCA
 import SwiftUI
 
-extension OcaPolarity: OcaViewRepresentable {
-  public var viewType: any OcaView.Type {
-    OcaPolarityView.self
-  }
-}
-
 public struct OcaPolarityView: OcaView {
   @State
   var object: OcaPolarity
