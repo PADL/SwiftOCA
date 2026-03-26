@@ -766,12 +766,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
   override open func serialize(
     flags: OcaRoot.SerializationFlags = [],
-    isIncluded: OcaRoot.SerializationFilterFunction? = nil
+    filter: OcaRoot.SerializationFilterFunction? = nil
   ) throws -> [String: any Sendable] {
-    var jsonObject = try super.serialize(flags: flags, isIncluded: isIncluded)
+    var jsonObject = try super.serialize(flags: flags, filter: filter)
 
     jsonObject["3.2"] = try actionObjects.compactMap { actionObject in
-      try actionObject.serialize(flags: flags, isIncluded: isIncluded)
+      try actionObject.serialize(flags: flags, filter: filter)
     }
 
     return jsonObject
@@ -780,9 +780,9 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   override open func deserialize(
     jsonObject: [String: Sendable],
     flags: DeserializationFlags = [],
-    isIncluded: DeserializationFilterFunction? = nil
+    filter: DeserializationFilterFunction? = nil
   ) async throws {
-    try await super.deserialize(jsonObject: jsonObject, flags: flags, isIncluded: isIncluded)
+    try await super.deserialize(jsonObject: jsonObject, flags: flags, filter: filter)
 
     guard let actionJsonObjects = jsonObject["3.2"] as? [[String: Sendable]] else {
       return
@@ -811,7 +811,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       try await actionObject.deserialize(
         jsonObject: actionJsonObject,
         flags: flags,
-        isIncluded: isIncluded
+        filter: filter
       )
     }
   }

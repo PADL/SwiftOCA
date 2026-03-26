@@ -418,9 +418,9 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
   override public func serialize(
     flags: OcaRoot.SerializationFlags = [],
-    isIncluded: OcaRoot.SerializationFilterFunction? = nil
+    filter: OcaRoot.SerializationFilterFunction? = nil
   ) throws -> [String: any Sendable] {
-    var jsonObject = try super.serialize(flags: flags, isIncluded: isIncluded)
+    var jsonObject = try super.serialize(flags: flags, filter: filter)
 
     let membersJson = members.map(defaultValue: nil, \.?.objectNumber)
     do {
@@ -436,11 +436,11 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   override public func deserialize(
     jsonObject: [String: Sendable],
     flags: DeserializationFlags = [],
-    isIncluded: DeserializationFilterFunction? = nil
+    filter: DeserializationFilterFunction? = nil
   ) async throws {
     guard let deviceDelegate else { throw Ocp1Error.notConnected }
 
-    try await super.deserialize(jsonObject: jsonObject, flags: flags, isIncluded: isIncluded)
+    try await super.deserialize(jsonObject: jsonObject, flags: flags, filter: filter)
 
     guard let membersJson = jsonObject["3.5"] as? [[OcaONo]],
           let membersJson = OcaArray2D<OcaONo>(arrayOfArrays: membersJson)

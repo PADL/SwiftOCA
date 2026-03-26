@@ -153,7 +153,7 @@ open class OcaDeviceManager: OcaManager {
   var datasetFilter: OcaRoot.SerializationFilterFunction? = { object, propertyID, _ in
     precondition(object.objectNumber == OcaDeviceManagerONo)
 
-    return propertyID == OcaPropertyID("3.4") // deviceName
+    return propertyID == OcaPropertyID("3.4") ? .ok : .ignore // deviceName
   }
 
   public func set(datasetFilter: OcaRoot.SerializationFilterFunction?) {
@@ -171,7 +171,7 @@ open class OcaDeviceManager: OcaManager {
   open func applyPatch(
     datasetONo: OcaONo,
     controller: OcaController?,
-    isIncluded: DeserializationFilterFunction? = nil
+    filter: DeserializationFilterFunction? = nil
   ) async throws {
     guard let storageProvider = await deviceDelegate?.datasetStorageProvider else {
       throw Ocp1Error.noDatasetStorageProvider
@@ -180,7 +180,7 @@ open class OcaDeviceManager: OcaManager {
       targetONo: nil,
       datasetONo: datasetONo
     )
-    try await dataset.applyPatch(to: self, controller: controller, isIncluded: isIncluded)
+    try await dataset.applyPatch(to: self, controller: controller, filter: filter)
     mostRecentPatchDatasetONo = datasetONo
   }
 

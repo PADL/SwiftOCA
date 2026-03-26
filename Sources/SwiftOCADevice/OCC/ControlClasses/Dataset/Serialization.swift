@@ -77,17 +77,23 @@ public extension OcaRoot {
     ]
   }
 
+  enum SerializationFilterResult<T> {
+    case ok
+    case ignore
+    case replace(T)
+  }
+
   typealias SerializationFilterFunction = @Sendable (
     OcaRoot,
     OcaPropertyID,
     Codable & Sendable
-  ) -> Bool
+  ) -> SerializationFilterResult<Codable & Sendable>
 
   typealias DeserializationFilterFunction = @OcaDevice (
     OcaRoot,
     OcaPropertyID,
     any Sendable
-  ) async -> Bool
+  ) async -> SerializationFilterResult<any Sendable>
 }
 
 public extension OcaDevice {
@@ -95,7 +101,7 @@ public extension OcaDevice {
   func deserialize(
     jsonObject: [String: Sendable],
     flags: OcaRoot.DeserializationFlags = [],
-    isIncluded: OcaRoot.DeserializationFilterFunction? = nil
+    filter: OcaRoot.DeserializationFilterFunction? = nil
   ) async throws -> OcaRoot {
     let objectNumber = try _getObjectNumberFromJsonObject(jsonObject: jsonObject)
 
@@ -104,7 +110,7 @@ public extension OcaDevice {
       throw Ocp1Error.objectNotPresent(objectNumber)
     }
 
-    try await object.deserialize(jsonObject: jsonObject, flags: flags, isIncluded: isIncluded)
+    try await object.deserialize(jsonObject: jsonObject, flags: flags, filter: filter)
 
     return object
   }
@@ -125,7 +131,7 @@ private extension OcaModelGUID {
 public extension OcaBlock {
   @_spi(SwiftOCAPrivate)
   func serializeParameterDataset() async throws -> [String: any Sendable] {
-    var root = try serialize(flags: [], isIncluded: datasetFilter)
+    var root = try serialize(flags: [], filter: datasetFilter)
 
     root[datasetVersionJSONKey] = OcaJsonDatasetVersion
     root[datasetDeviceModelJSONKey] = await deviceDelegate?.deviceManager?.modelGUID.jsonObject
@@ -137,7 +143,7 @@ public extension OcaBlock {
   @_spi(SwiftOCAPrivate)
   func deserializeParameterDataset(
     _ parameters: [String: any Sendable],
-    isIncluded: OcaRoot.DeserializationFilterFunction? = nil
+    filter: OcaRoot.DeserializationFilterFunction? = nil
   ) async throws {
     guard let version = parameters[datasetVersionJSONKey] as? OcaUint32,
           version == OcaJsonDatasetVersion
@@ -155,7 +161,7 @@ public extension OcaBlock {
       throw Ocp1Error.datasetMimeTypeMismatch
     }
     do {
-      try await deserialize(jsonObject: parameters, flags: .ignoreAllErrors, isIncluded: isIncluded)
+      try await deserialize(jsonObject: parameters, flags: .ignoreAllErrors, filter: filter)
     } catch is DecodingError {
       throw Ocp1Error.invalidDatasetFormat
     }
@@ -180,7 +186,7 @@ public extension OcaBlock {
   @_spi(SwiftOCAPrivate)
   func deserializeParameterDataset(
     from parameterData: OcaLongBlob,
-    isIncluded: OcaRoot.DeserializationFilterFunction? = nil
+    filter: OcaRoot.DeserializationFilterFunction? = nil
   ) async throws {
     let parameterData = Data(parameterData)
     do {
@@ -193,7 +199,7 @@ public extension OcaBlock {
       else {
         throw Ocp1Error.invalidDatasetFormat
       }
-      try await deserializeParameterDataset(jsonObject, isIncluded: isIncluded)
+      try await deserializeParameterDataset(jsonObject, filter: filter)
     } catch is DecodingError {
       throw Ocp1Error.invalidDatasetFormat
     }
@@ -204,7 +210,7 @@ extension OcaDeviceManager {
   func serializePatchDataset(paramDatasetONos: Set<OcaONo>) async throws
     -> [String: any Sendable]
   {
-    var root = try serialize(flags: [], isIncluded: datasetFilter)
+    var root = try serialize(flags: [], filter: datasetFilter)
 
     root[datasetVersionJSONKey] = OcaJsonDatasetVersion
     root[datasetDeviceModelJSONKey] = modelGUID.jsonObject
@@ -231,7 +237,7 @@ extension OcaDeviceManager {
 
   func deserializePatchDataset(
     _ jsonObject: [String: any Sendable],
-    isIncluded: OcaRoot.DeserializationFilterFunction? = nil
+    filter: OcaRoot.DeserializationFilterFunction? = nil
   ) async throws {
     guard let deviceDelegate,
           let storageProvider = await deviceDelegate.datasetStorageProvider
@@ -255,7 +261,7 @@ extension OcaDeviceManager {
     }
 
     do {
-      try await deserialize(jsonObject: jsonObject, flags: .ignoreAllErrors, isIncluded: isIncluded)
+      try await deserialize(jsonObject: jsonObject, flags: .ignoreAllErrors, filter: filter)
     } catch is DecodingError {
       throw Ocp1Error.invalidDatasetFormat
     }
@@ -276,7 +282,7 @@ extension OcaDeviceManager {
 
   func deserializePatchDataset(
     _ patchData: OcaLongBlob,
-    isIncluded: OcaRoot.DeserializationFilterFunction? = nil
+    filter: OcaRoot.DeserializationFilterFunction? = nil
   ) async throws {
     let patchData = Data(patchData)
     do {
@@ -290,7 +296,7 @@ extension OcaDeviceManager {
       else {
         throw Ocp1Error.invalidDatasetFormat
       }
-      try await deserializePatchDataset(jsonObject, isIncluded: isIncluded)
+      try await deserializePatchDataset(jsonObject, filter: filter)
     } catch is DecodingError {
       throw Ocp1Error.invalidDatasetFormat
     }
