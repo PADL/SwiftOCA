@@ -88,7 +88,7 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   }
 
   nonisolated var identifier: String {
-    peerAddress.makeStorage().unsafelyUnwrappedPresentationAddress
+    peerAddress.makeStorage()._presentationAddress
   }
 
   nonisolated func matchesPeer(address: SocketAddress) -> Bool {

@@ -129,7 +129,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   public nonisolated var description: String {
-    "\(type(of: self))(address: \(address.unsafelyUnwrappedPresentationAddress), timeout: \(timeout))"
+    "\(type(of: self))(address: \(address._presentationAddress), timeout: \(timeout))"
   }
 
   public func run() async throws {

@@ -115,7 +115,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
   }
 
   private nonisolated var presentationAddress: String {
-    address.makeStorage().unsafelyUnwrappedPresentationAddress
+    address.makeStorage()._presentationAddress
   }
 
   public func run() async throws {
