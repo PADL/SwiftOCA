@@ -27,8 +27,12 @@ struct OcaScaledLegendView: View {
     return 1.0 - CGFloat(OcaDBToFaderGain(dB: dB, in: self.value.range))
   }
 
+  private let thumbHeight: CGFloat = 27.0
+
   var body: some View {
     GeometryReader { geo in
+      let inset = thumbHeight / 2.0
+      let trackHeight = geo.size.height - thumbHeight
       ZStack {
         ForEach(
           Int(value.range.lowerBound / scale)...Int(value.range.upperBound / scale),
@@ -37,7 +41,7 @@ struct OcaScaledLegendView: View {
           Text(String(value * Int(scale)))
             .font(.caption2)
             .frame(maxWidth: 25, alignment: .trailing)
-            .position(x: geo.size.width * 0.5, y: geo.size.height * y(value))
+            .position(x: geo.size.width * 0.5, y: inset + trackHeight * y(value))
         }
       }
     }

@@ -53,6 +53,5 @@ struct OcaLogSliderView: View {
         .valueSliderStyle(VerticalValueSliderStyle())
     }
     .frame(minHeight: 200)
-    .padding(EdgeInsets(top: 25, leading: 0, bottom: 0, trailing: 0))
   }
 }
