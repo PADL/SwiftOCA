@@ -18,15 +18,7 @@ public extension Data {
       precondition(index >= 0)
       precondition(index <= self.count - MemoryLayout<T>.size)
 
-      var value = T()
-      Swift.withUnsafeMutableBytes(of: &value) { valuePtr in
-        valuePtr
-          .copyBytes(from: UnsafeRawBufferPointer(
-            start: pointer.baseAddress!
-              .advanced(by: index),
-            count: MemoryLayout<T>.size
-          ))
-      }
+      let value = pointer.loadUnaligned(fromByteOffset: index, as: T.self)
       switch endianness {
       case .little:
         return value.littleEndian /* does nothing on little endian, swaps on big */
@@ -53,17 +45,8 @@ public extension Data {
       value.bigEndian /* does nothing on big endian, swaps on little */
     }
 
-    replaceSubrange(
-      index..<lastIndex,
-      with: withUnsafePointer(to: byteSwappedValue) { unbound -> Data in
-        unbound
-          .withMemoryRebound(
-            to: UInt8.self,
-            capacity: MemoryLayout<T>.size
-          ) { bytes -> Data in
-            Data(bytes: bytes, count: MemoryLayout<T>.size)
-          }
-      }
-    )
+    Swift.withUnsafeBytes(of: byteSwappedValue) {
+      replaceSubrange(index..<lastIndex, with: $0)
+    }
   }
 }
