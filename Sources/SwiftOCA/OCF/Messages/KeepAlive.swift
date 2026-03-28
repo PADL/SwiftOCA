@@ -67,6 +67,11 @@ public typealias Ocp1KeepAlive = Ocp1KeepAlive1
 package extension Ocp1KeepAlive {
   static func keepAlive(interval heartbeatTime: Duration) -> Ocp1Message {
     let seconds = heartbeatTime.seconds
-    return Ocp1KeepAlive1(heartBeatTime: OcaUint16(seconds == 0 ? 1 : seconds))
+    if seconds >= 1 {
+      return Ocp1KeepAlive1(heartBeatTime: OcaUint16(seconds))
+    } else {
+      let milliseconds = heartbeatTime.milliseconds
+      return Ocp1KeepAlive2(heartBeatTime: OcaUint32(max(milliseconds, 1)))
+    }
   }
 }
