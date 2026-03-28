@@ -173,7 +173,16 @@ public actor OcaDevice {
       }
 
       return try await withThrowingTimeout(of: timeout, clock: .continuous) {
-        try await object.handleCommand(command, from: controller)
+        if command.methodID.defLevel > 1,
+           let peerToPeerObject = object as? any OcaGroupPeerToPeerMember
+        {
+          try await peerToPeerObject.handleCommandForEachPeerToPeerMember(
+            command,
+            from: controller
+          )
+        } else {
+          try await object.handleCommand(command, from: controller)
+        }
       }
     } catch let Ocp1Error.status(status) {
       return .init(responseSize: 0, handle: command.handle, statusCode: status)
