@@ -262,7 +262,9 @@ extension Ocp1ControllerInternal {
     else {
       throw Ocp1Error.invalidSyncValue
     }
-    let pduSize: OcaUint32 = Data(messagePduData).decodeInteger(index: 3)
+    let pduSize = messagePduData.withUnsafeBytes {
+      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 3, as: OcaUint32.self))
+    }
     guard pduSize >= (Ocp1Connection.MinimumPduSize - 1) else {
       throw Ocp1Error.invalidPduSize
     }
@@ -300,7 +302,9 @@ extension OcaDevice {
       throw Ocp1Error.invalidSyncValue
     }
 
-    let pduSize: OcaUint32 = Data(messagePduData).decodeInteger(index: 3)
+    let pduSize = messagePduData.withUnsafeBytes {
+      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 3, as: OcaUint32.self))
+    }
     guard pduSize >= (Ocp1Connection.MinimumPduSize - 1) else {
       throw Ocp1Error.invalidPduSize
     }
