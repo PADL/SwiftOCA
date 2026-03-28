@@ -145,8 +145,9 @@ extension Ocp1Connection.Monitor {
         group.addTask { [weak self] in
           repeat {
             try Task.checkCancellation()
+            guard let self else { return }
             do {
-              try await self?.receiveMessage(connection)
+              try await self.receiveMessage(connection)
             } catch Ocp1Error.invalidHandle {
             } catch Ocp1Error.unknownPduType {
             } catch Ocp1Error.retryOperation {}
