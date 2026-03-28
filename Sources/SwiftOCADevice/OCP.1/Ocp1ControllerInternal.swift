@@ -181,7 +181,7 @@ extension Ocp1ControllerInternal {
     endpoint.logger.info("controller added", controller: controller)
     await endpoint.add(controller: controller)
 
-    await withTaskGroup(of: Void.self) { group in
+    await withDiscardingTaskGroup { group in
       do {
         for try await messageList in messages {
           group.addTask { [weak self, weak endpoint] in
@@ -193,8 +193,6 @@ extension Ocp1ControllerInternal {
       } catch {
         endpoint.logger.error(error, controller: controller)
       }
-
-      await group.waitForAll()
     }
 
     await endpoint.unlockAndRemove(controller: controller)
