@@ -92,22 +92,15 @@ public struct OcaBoundedDeviceProperty<
       throw Ocp1Error.status(.badFormat)
     }
 
-    let value = valueDict["v"]
-    let lowerBound = valueDict["l"]
-    let upperBound = valueDict["u"]
-    guard let value,
-          let lowerBound,
-          let upperBound,
-          lowerBound <= upperBound,
-          value >= lowerBound,
-          value <= upperBound
-    else {
+    guard let value = valueDict["v"] else {
       throw Ocp1Error.status(.badFormat)
     }
 
+    try _validate(value: value)
+
     await setAndNotifySubscribers(
       object: object,
-      OcaBoundedPropertyValue<Value>(value: value, in: lowerBound...upperBound)
+      OcaBoundedPropertyValue<Value>(value: value, in: storage.wrappedValue.range)
     )
   }
 
