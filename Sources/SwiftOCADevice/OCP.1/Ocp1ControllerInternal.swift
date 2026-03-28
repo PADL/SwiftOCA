@@ -219,35 +219,40 @@ extension Ocp1ControllerInternal {
   /// Oca-3 notes that both controller and device send `KeepAlive` messages if they haven't
   /// yet received (or sent) another message during `HeartbeatTime`.
   func heartbeatTimeDidChange(from oldValue: Duration) {
-    if (heartbeatTime != .zero && heartbeatTime != oldValue) || keepAliveTask == nil {
+    if heartbeatTime == .zero {
+      cancelKeepAlive()
+    } else if heartbeatTime != oldValue || keepAliveTask == nil {
       // if we have a keepalive interval and it has changed, or we haven't yet started
       // the keepalive task, (re)start it
       cancelKeepAlive()
       keepAliveTask = Task<(), Error> { [weak self, weak endpoint] in
-        repeat {
-          guard let self else { break }
-          let now = ContinuousClock.now
-          if await connectionIsStale(now) {
-            guard !Task.isCancelled else { break }
-            await endpoint?.unlockAndRemove(controller: self as! Endpoint.ControllerType)
-            endpoint?.logger.info("expired controller", controller: self)
-            break
-          }
-          let lastMessageSentTime = await lastMessageSentTime
-          let heartbeatTime = await heartbeatTime
-          let timeSinceLastMessageSent = now - lastMessageSentTime
-          var sleepTime = heartbeatTime
-          if timeSinceLastMessageSent >= heartbeatTime {
-            try await sendKeepAlive()
-          } else {
-            sleepTime -= timeSinceLastMessageSent
-          }
-          try await Task.sleep(for: sleepTime)
-        } while !Task.isCancelled
+        do {
+          repeat {
+            guard let self else { break }
+            let heartbeatTime = await heartbeatTime
+            let now = ContinuousClock.now
+            if await connectionIsStale(now) {
+              guard !Task.isCancelled else { break }
+              await endpoint?.unlockAndRemove(controller: self as! Endpoint.ControllerType)
+              endpoint?.logger.info("expired controller", controller: self)
+              break
+            }
+            let lastMessageSentTime = await lastMessageSentTime
+            let timeSinceLastMessageSent = ContinuousClock.now - lastMessageSentTime
+            var sleepTime = heartbeatTime
+            if timeSinceLastMessageSent >= heartbeatTime {
+              try await sendKeepAlive()
+            } else {
+              sleepTime -= timeSinceLastMessageSent
+            }
+            try await Task.sleep(for: sleepTime)
+          } while !Task.isCancelled
+        } catch {
+          guard let self, !Task.isCancelled else { return }
+          await endpoint?.unlockAndRemove(controller: self as! Endpoint.ControllerType)
+          endpoint?.logger.info("keepAlive task failed", controller: self)
+        }
       }
-    } else if heartbeatTime == .zero {
-      // otherwise if the new interval is zero, cancel the task (if any)
-      cancelKeepAlive()
     }
   }
 
