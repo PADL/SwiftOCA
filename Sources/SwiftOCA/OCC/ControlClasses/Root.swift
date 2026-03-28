@@ -90,9 +90,12 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
   }
 
   deinit {
-    for (_, keyPath) in allPropertyKeyPathsUncached {
-      let value = self[keyPath: keyPath] as! (any OcaPropertySubjectRepresentable)
-      value.finish()
+    // Only finish @OcaProperty-backed properties (discovered via reflection),
+    // not computed StaticProperty instances which are ephemeral.
+    for (_, keyPath) in allKeyPathsUncached {
+      if let value = self[keyPath: keyPath] as? (any OcaPropertySubjectRepresentable) {
+        value.finish()
+      }
     }
   }
 
