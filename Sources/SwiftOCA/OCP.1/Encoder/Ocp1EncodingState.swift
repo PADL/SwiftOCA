@@ -49,15 +49,11 @@ class Ocp1EncodingState {
   }
 
   func encode(_ value: String) throws {
-    guard let encoded = value.data(using: .utf8) else {
-      throw Ocp1Error.stringNotEncodable(value)
-    }
-
     // Oca-3-2018: the Len part of the OcaString shall define the string length
     // (i.e. the number of Unicode codepoints), not the byte length.
     let length = UInt16(value.unicodeScalars.count)
     try encodeInteger(length)
-    data += encoded
+    data.append(contentsOf: value.utf8)
   }
 
   func encode(_ value: Bool) throws {
