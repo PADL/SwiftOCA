@@ -107,7 +107,7 @@ package extension Ocp1Connection {
       throw Ocp1Error.invalidSyncValue
     }
 
-    let header = try Ocp1Header(bytes: Array(data[1...]))
+    let header = try Ocp1Header(bytes: data[1...])
 
     guard header.pduSize <= 1 /* sync byte */ + data.count else {
       throw Ocp1Error.pduTooShort
@@ -154,23 +154,23 @@ package extension Ocp1Connection {
 
     switch messageType {
     case .ocaCmd:
-      message = try Ocp1Command(bytes: Array(messageData))
+      message = try Ocp1Command(bytes: messageData)
     case .ocaCmdRrq:
-      message = try Ocp1Command(bytes: Array(messageData))
+      message = try Ocp1Command(bytes: messageData)
     case .ocaNtf1:
-      message = try Ocp1Notification1(bytes: Array(messageData))
+      message = try Ocp1Notification1(bytes: messageData)
     case .ocaRsp:
-      message = try Ocp1Response(bytes: Array(messageData))
+      message = try Ocp1Response(bytes: messageData)
     case .ocaKeepAlive:
       if messageData.count == 2 {
-        message = try Ocp1KeepAlive1(bytes: Array(messageData))
+        message = try Ocp1KeepAlive1(bytes: messageData)
       } else if messageData.count == 4 {
-        message = try Ocp1KeepAlive2(bytes: Array(messageData))
+        message = try Ocp1KeepAlive2(bytes: messageData)
       } else {
         throw Ocp1Error.invalidKeepAlivePdu
       }
     case .ocaNtf2:
-      message = try Ocp1Notification2(bytes: Array(messageData))
+      message = try Ocp1Notification2(bytes: messageData)
     }
 
     return message

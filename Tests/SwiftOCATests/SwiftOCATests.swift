@@ -100,7 +100,7 @@ final class SwiftOCADeviceTests: XCTestCase {
       [0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 19, 136, 0, 2, 0, 6, 1, 1, 0, 2]
     )
 
-    let decodedCommand = try Ocp1Command(bytes: encodedCommand)
+    let decodedCommand = try Ocp1Command(bytes: Data(encodedCommand))
     XCTAssertEqual(command, decodedCommand)
 
     let decodedParameters = try Ocp1Decoder()
@@ -162,7 +162,7 @@ final class SwiftOCADeviceTests: XCTestCase {
        255, 156, 255, 255, 255, 255, 255, 255, 255, 56, 0, 0, 0, 0, 0, 0, 0, 0]
     )
 
-    let decodedCommand = try Ocp1Command(bytes: encodedCommand)
+    let decodedCommand = try Ocp1Command(bytes: Data(encodedCommand))
     XCTAssertEqual(command, decodedCommand)
 
     let decodedParameters = try Ocp1Decoder()
@@ -477,7 +477,7 @@ final class SwiftOCADeviceTests: XCTestCase {
       ]
     )
 
-    let decodedNotification = try Ocp1Notification1(bytes: aNotification.bytes)
+    let decodedNotification = try Ocp1Notification1(bytes: Data(aNotification.bytes))
     XCTAssertEqual(decodedNotification, aNotification)
   }
 
@@ -496,7 +496,7 @@ final class SwiftOCADeviceTests: XCTestCase {
       [0, 0, 0, 0, 0, 0, 18, 52, 0, 1, 0, 1, 0, 0, 4, 0, 1, 0, 0, 0, 0, 1]
     )
 
-    let decodedNotification = try Ocp1Notification2(bytes: encodedNotification)
+    let decodedNotification = try Ocp1Notification2(bytes: Data(encodedNotification))
     XCTAssertEqual(decodedNotification, aNotification)
   }
 
@@ -507,7 +507,7 @@ final class SwiftOCADeviceTests: XCTestCase {
       [0, 100]
     )
 
-    let decodedKeepAlive1 = try Ocp1KeepAlive1(bytes: encodedKeepAlive1)
+    let decodedKeepAlive1 = try Ocp1KeepAlive1(bytes: Data(encodedKeepAlive1))
     XCTAssertEqual(decodedKeepAlive1.heartBeatTime, 100)
   }
 
@@ -518,20 +518,20 @@ final class SwiftOCADeviceTests: XCTestCase {
       [0, 0, 0, 200]
     )
 
-    let decodedKeepAlive2 = try Ocp1KeepAlive2(bytes: encodedKeepAlive2)
+    let decodedKeepAlive2 = try Ocp1KeepAlive2(bytes: Data(encodedKeepAlive2))
     XCTAssertEqual(decodedKeepAlive2.heartBeatTime, 200)
   }
 
   func testEmptyOcaBlob() throws {
     let encoded = OcaBlob().bytes
     XCTAssertEqual(encoded, [0, 0])
-    XCTAssertEqual(try OcaBlob(bytes: encoded), OcaBlob())
+    XCTAssertEqual(try OcaBlob(bytes: Data(encoded)), OcaBlob())
   }
 
   func testEmptyOcaLongBlob() throws {
     let encoded = OcaLongBlob().bytes
     XCTAssertEqual(encoded, [0, 0, 0, 0])
-    XCTAssertEqual(try OcaLongBlob(bytes: encoded), OcaLongBlob())
+    XCTAssertEqual(try OcaLongBlob(bytes: Data(encoded)), OcaLongBlob())
   }
 
   func testOcaBlobRoundTrip() throws {
@@ -543,7 +543,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(ocp1EncodedBlob, rawEncodedBlob)
 
     let ocp1DecodedBlob = try Ocp1Decoder().decode(OcaBlob.self, from: rawEncodedBlob)
-    let rawDecodedBlob = try OcaBlob(bytes: ocp1EncodedBlob)
+    let rawDecodedBlob = try OcaBlob(bytes: Data(ocp1EncodedBlob))
 
     XCTAssertEqual(ocp1DecodedBlob, rawDecodedBlob)
   }
@@ -557,20 +557,20 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(ocp1EncodedBlob, rawEncodedBlob)
 
     let ocp1DecodedBlob = try Ocp1Decoder().decode(OcaLongBlob.self, from: rawEncodedBlob)
-    let rawDecodedBlob = try OcaLongBlob(bytes: ocp1EncodedBlob)
+    let rawDecodedBlob = try OcaLongBlob(bytes: Data(ocp1EncodedBlob))
 
     XCTAssertEqual(ocp1DecodedBlob, rawDecodedBlob)
   }
 
   func testEmptyCommand() throws {
     let encoded: [UInt8] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0]
-    let command = try Ocp1Command(bytes: encoded)
+    let command = try Ocp1Command(bytes: Data(encoded))
     XCTAssertEqual(command, Ocp1Command(handle: 0, targetONo: 0, methodID: "1.1"))
   }
 
   func testEmptyResponse() throws {
     let encoded: [UInt8] = [0, 0, 0, 0, 0, 0, 2, 0, 1, 0]
-    let response = try Ocp1Response(bytes: encoded)
+    let response = try Ocp1Response(bytes: Data(encoded))
     XCTAssertEqual(response.statusCode, .protocolVersionError)
     XCTAssertEqual(response.handle, 512)
     XCTAssertEqual(response.parameters.parameterCount, 0)
@@ -579,7 +579,7 @@ final class SwiftOCADeviceTests: XCTestCase {
 
   func testNonEmptyResponse() throws {
     let encoded: [UInt8] = [0, 0, 0, 0, 0, 0, 2, 0, 1, 1, 1]
-    let response = try Ocp1Response(bytes: encoded)
+    let response = try Ocp1Response(bytes: Data(encoded))
     XCTAssertEqual(response.statusCode, .protocolVersionError)
     XCTAssertEqual(response.handle, 512)
     XCTAssertEqual(response.parameters.parameterCount, 1)

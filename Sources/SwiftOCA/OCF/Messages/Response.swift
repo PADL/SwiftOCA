@@ -14,6 +14,12 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
 public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
   public let responseSize: OcaUint32
   public let handle: OcaUint32
@@ -34,7 +40,7 @@ public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
     self.parameters = parameters
   }
 
-  init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing Data) throws {
     guard bytes.count >= 10 else {
       throw Ocp1Error.pduTooShort
     }
@@ -44,11 +50,15 @@ public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
     handle = bytes.withUnsafeBytes {
       OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 4, as: OcaUint32.self))
     }
-    guard let statusCode = OcaStatus(rawValue: bytes[8]) else {
+    let base = bytes.startIndex
+    guard let statusCode = OcaStatus(rawValue: bytes[base + 8]) else {
       throw Ocp1Error.status(.badFormat)
     }
     self.statusCode = statusCode
-    parameters = Ocp1Parameters(parameterCount: bytes[9], parameterData: .init(bytes[10...]))
+    parameters = Ocp1Parameters(
+      parameterCount: bytes[base + 9],
+      parameterData: Data(bytes[(base + 10)...])
+    )
   }
 
   func encode(into bytes: inout [UInt8]) {

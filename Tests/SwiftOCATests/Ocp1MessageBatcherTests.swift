@@ -33,17 +33,17 @@ final class Ocp1MessageBatcherTests: XCTestCase {
       self.data = data
     }
 
-    init(bytes: borrowing[UInt8]) throws {
+    init(bytes: borrowing Data) throws {
       guard bytes.count >= 2 else {
         throw Ocp1Error.invalidMessageSize
       }
-      handle = OcaUint32(bytes[0])
-      let dataLength = Int(bytes[1])
+      let base = bytes.startIndex
+      handle = OcaUint32(bytes[base])
+      let dataLength = Int(bytes[base + 1])
       guard bytes.count >= 2 + dataLength else {
         throw Ocp1Error.invalidMessageSize
       }
-      let dataBytes = Array(bytes[2..<2 + dataLength])
-      data = String(data: Data(dataBytes), encoding: .utf8) ?? ""
+      data = String(data: bytes[(base + 2)..<(base + 2 + dataLength)], encoding: .utf8) ?? ""
     }
 
     func encode(into buffer: inout [UInt8]) {

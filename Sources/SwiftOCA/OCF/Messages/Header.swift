@@ -14,6 +14,12 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
 public let Ocp1SyncValue: OcaUint8 = 0x3B
 public let Ocp1ProtocolVersion1: OcaUint16 = 1
 public let Ocp1ProtocolVersion: OcaUint16 = Ocp1ProtocolVersion1
@@ -41,7 +47,7 @@ public struct Ocp1Header: Codable, Sendable, _Ocp1Codable {
 
   package static let HeaderSize = 9
 
-  init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing Data) throws {
     guard bytes.count >= Self.HeaderSize else {
       throw Ocp1Error.pduTooShort
     }
@@ -66,7 +72,7 @@ public struct Ocp1Header: Codable, Sendable, _Ocp1Codable {
       throw Ocp1Error.invalidPduSize
     }
 
-    guard let pduType = OcaMessageType(rawValue: bytes[6]) else {
+    guard let pduType = OcaMessageType(rawValue: bytes[bytes.startIndex + 6]) else {
       throw Ocp1Error.invalidMessageType
     }
 

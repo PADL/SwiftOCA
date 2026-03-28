@@ -88,7 +88,7 @@ extension LengthTaggedData32: Decodable {
 }
 
 extension LengthTaggedData32: _Ocp1Codable {
-  init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing Data) throws {
     guard bytes.count >= 4 else {
       throw Ocp1Error.pduTooShort
     }
@@ -100,7 +100,8 @@ extension LengthTaggedData32: _Ocp1Codable {
     guard bytes.count >= 4 + count else {
       throw Ocp1Error.pduTooShort
     }
-    wrappedValue = Data(bytes[4..<(4 + count)])
+    let base = bytes.startIndex
+    wrappedValue = Data(bytes[(base + 4)..<(base + 4 + count)])
   }
 
   func encode(into bytes: inout [UInt8]) {

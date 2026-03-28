@@ -57,7 +57,7 @@ public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
     self.parameters = parameters
   }
 
-  init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing Data) throws {
     guard bytes.count >= 17 else {
       throw Ocp1Error.pduTooShort
     }
@@ -70,8 +70,12 @@ public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
     targetONo = bytes.withUnsafeBytes {
       OcaONo(bigEndian: $0.loadUnaligned(fromByteOffset: 8, as: OcaONo.self))
     }
-    methodID = try OcaMethodID(bytes: Array(bytes[12..<16]))
-    parameters = Ocp1Parameters(parameterCount: bytes[16], parameterData: Data(bytes[17...]))
+    let base = bytes.startIndex
+    methodID = try OcaMethodID(bytes: bytes[base + 12..<base + 16])
+    parameters = Ocp1Parameters(
+      parameterCount: bytes[base + 16],
+      parameterData: Data(bytes[(base + 17)...])
+    )
   }
 
   func encode(into bytes: inout [UInt8]) {

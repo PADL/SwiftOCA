@@ -29,7 +29,7 @@ public struct Ocp1KeepAlive1: _Ocp1MessageCodable, Sendable {
     self.heartBeatTime = heartBeatTime
   }
 
-  init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing Data) throws {
     guard bytes.count >= 2 /* messageSize */ else { throw Ocp1Error.pduTooShort }
     let heartBeatTime = bytes
       .withUnsafeBytes { OcaUint16(bigEndian: $0.loadUnaligned(as: OcaUint16.self)) }
@@ -50,7 +50,7 @@ public struct Ocp1KeepAlive2: _Ocp1MessageCodable, Sendable {
     self.heartBeatTime = heartBeatTime
   }
 
-  init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing Data) throws {
     guard bytes.count >= 4 /* messageSize */ else { throw Ocp1Error.pduTooShort }
     let heartBeatTime = bytes
       .withUnsafeBytes { OcaUint32(bigEndian: $0.loadUnaligned(as: OcaUint32.self)) }

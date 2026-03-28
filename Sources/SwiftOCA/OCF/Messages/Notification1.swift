@@ -29,9 +29,9 @@ public struct Ocp1EventData: Codable, Sendable, _Ocp1Codable {
     self.eventParameters = eventParameters
   }
 
-  init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing Data) throws {
     event = try OcaEvent(bytes: bytes)
-    eventParameters = Data(bytes[8...])
+    eventParameters = Data(bytes[(bytes.startIndex + 8)...])
   }
 
   func encode(into bytes: inout [UInt8]) {
@@ -51,14 +51,15 @@ public struct Ocp1NtfParams: Codable, Sendable, _Ocp1Codable {
     self.eventData = eventData
   }
 
-  init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing Data) throws {
     guard bytes.count > 1 else { throw Ocp1Error.pduTooShort }
-    parameterCount = bytes[0]
-    context = try LengthTaggedData(bytes: Array(bytes[1...]))
+    let base = bytes.startIndex
+    parameterCount = bytes[base]
+    context = try LengthTaggedData(bytes: bytes[(base + 1)...])
     // FIXME: abstraction violation
     let eventDataOffset = 1 + 2 + context.count
     precondition(bytes.count >= eventDataOffset)
-    eventData = try Ocp1EventData(bytes: Array(bytes[eventDataOffset...]))
+    eventData = try Ocp1EventData(bytes: bytes[(base + eventDataOffset)...])
   }
 
   func encode(into bytes: inout [UInt8]) {
@@ -90,7 +91,7 @@ public struct Ocp1Notification1: _Ocp1MessageCodable, Sendable {
 
   // FIXME: package visibility required for OCAEventBenchmark
 
-  package init(bytes: borrowing[UInt8]) throws {
+  package init(bytes: borrowing Data) throws {
     guard bytes.count > 12 else { throw Ocp1Error.pduTooShort }
     notificationSize = bytes.withUnsafeBytes {
       OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint32.self))
@@ -98,8 +99,9 @@ public struct Ocp1Notification1: _Ocp1MessageCodable, Sendable {
     targetONo = bytes.withUnsafeBytes {
       OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 4, as: OcaUint32.self))
     }
-    methodID = try OcaMethodID(bytes: Array(bytes[8..<12]))
-    parameters = try Ocp1NtfParams(bytes: Array(bytes[12...]))
+    let base = bytes.startIndex
+    methodID = try OcaMethodID(bytes: bytes[base + 8..<base + 12])
+    parameters = try Ocp1NtfParams(bytes: bytes[(base + 12)...])
   }
 
   package func encode(into bytes: inout [UInt8]) {

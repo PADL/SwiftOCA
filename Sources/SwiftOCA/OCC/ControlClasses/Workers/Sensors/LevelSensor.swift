@@ -14,6 +14,12 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
 open class OcaLevelSensor: OcaSensor, @unchecked
 Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.2") }
@@ -39,7 +45,7 @@ extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Encodable {
 
 extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Decodable {
   @_spi(SwiftOCAPrivate) @inlinable
-  public init(bytes: borrowing[UInt8]) throws {
+  public init(bytes: borrowing Data) throws {
     guard bytes.count >= 9 else {
       throw Ocp1Error.pduTooShort
     }
@@ -49,7 +55,7 @@ extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Decodable {
       let value = OcaUint32(bigEndian: $0.load(fromByteOffset: 4, as: OcaUint32.self))
       return OcaDB(bitPattern: value)
     }
-    guard let changeType = OcaPropertyChangeType(rawValue: bytes[8]) else {
+    guard let changeType = OcaPropertyChangeType(rawValue: bytes[bytes.startIndex + 8]) else {
       throw Ocp1Error.status(.badFormat)
     }
 

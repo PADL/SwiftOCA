@@ -59,7 +59,7 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible, 
     "\(defLevel).\(eventIndex)"
   }
 
-  init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing Data) throws {
     guard bytes.count >= 4 else { throw Ocp1Error.pduTooShort }
 
     defLevel = bytes.withUnsafeBytes {
@@ -87,10 +87,10 @@ public struct OcaEvent: Codable, Hashable, Equatable, Sendable, CustomStringConv
     self.eventID = eventID
   }
 
-  init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing Data) throws {
     guard bytes.count >= 8 else { throw Ocp1Error.pduTooShort }
     let emitterONo = bytes.withUnsafeBytes { OcaONo(bigEndian: $0.loadUnaligned(as: OcaONo.self)) }
-    let eventID = try OcaEventID(bytes: Array(bytes[4...]))
+    let eventID = try OcaEventID(bytes: bytes[(bytes.startIndex + 4)...])
     self.init(emitterONo: emitterONo, eventID: eventID)
   }
 
@@ -321,7 +321,7 @@ public extension OcaAnyPropertyChangedEventData {
     guard data.count > 5 else {
       throw Ocp1Error.pduTooShort
     }
-    let propertyID = try OcaPropertyID(bytes: Array(data[0..<4]))
+    let propertyID = try OcaPropertyID(bytes: data[data.startIndex..<data.startIndex + 4])
     guard let changeType = OcaPropertyChangeType(rawValue: data.last!) else {
       throw Ocp1Error.status(.badFormat)
     }

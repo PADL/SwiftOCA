@@ -14,6 +14,12 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
 public typealias OcaBoolean = Bool
 public typealias OcaBlob = LengthTaggedData16
 public typealias OcaLongBlob = LengthTaggedData32
@@ -161,7 +167,7 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
 
   // SPI visibility for SwiftOCADevice and FlutterSwiftOCA
   @_spi(SwiftOCAPrivate)
-  public init(bytes: borrowing[UInt8]) throws {
+  public init(bytes: borrowing Data) throws {
     guard bytes.count >= 4 else { throw Ocp1Error.pduTooShort }
 
     defLevel = bytes.withUnsafeBytes {
@@ -432,7 +438,7 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
     self.init(value)
   }
 
-  init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing Data) throws {
     guard bytes.count >= 4 else { throw Ocp1Error.pduTooShort }
 
     defLevel = bytes.withUnsafeBytes {

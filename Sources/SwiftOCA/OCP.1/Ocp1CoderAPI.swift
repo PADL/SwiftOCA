@@ -14,6 +14,12 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
 // MARK: - Codable coder
 
 protocol Ocp1ListRepresentable: Collection, Codable where Element: Codable {}
@@ -124,7 +130,7 @@ func _ocp1ParameterCount(value: some Any) -> OcaUint8 {
 // MARK: - builtin encoder
 
 protocol _Ocp1Decodable {
-  init(bytes: borrowing[UInt8]) throws
+  init(bytes: borrowing Data) throws
 }
 
 protocol _Ocp1Encodable {

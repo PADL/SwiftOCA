@@ -78,19 +78,20 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
     throw Ocp1Error.exception(exception)
   }
 
-  init(bytes: borrowing[UInt8]) throws {
+  init(bytes: borrowing Data) throws {
     guard bytes.count >= 14 else {
       throw Ocp1Error.pduTooShort
     }
     notificationSize = bytes.withUnsafeBytes {
       OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint32.self))
     }
-    event = try OcaEvent(bytes: Array(bytes[4..<12]))
-    guard let notificationType = Ocp1Notification2Type(rawValue: bytes[12]) else {
+    let base = bytes.startIndex
+    event = try OcaEvent(bytes: bytes[base + 4..<base + 12])
+    guard let notificationType = Ocp1Notification2Type(rawValue: bytes[base + 12]) else {
       throw Ocp1Error.status(.badFormat)
     }
     self.notificationType = notificationType
-    data = Data(bytes[13...])
+    data = Data(bytes[(base + 13)...])
   }
 
   func encode(into bytes: inout [UInt8]) {

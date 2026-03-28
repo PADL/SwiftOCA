@@ -62,7 +62,7 @@ func encodeNotificationWithBuiltin(_ notification: Ocp1Notification1) throws -> 
 }
 
 func decodeNotificationWithBuiltin(_ data: Data) throws -> Ocp1Notification1 {
-  try Ocp1Notification1(bytes: Array(data))
+  try Ocp1Notification1(bytes: data)
 }
 
 func benchmark(tag: String, _ block: () throws -> ()) rethrows {
