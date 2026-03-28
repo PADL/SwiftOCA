@@ -229,6 +229,11 @@ extension Ocp1Connection {
     }
 
     try await _refreshWithPolicy(isReconnecting: isReconnecting)
+
+    // reset the keepalive timer after the (potentially lengthy) subscription
+    // and property refresh, so that the keepalive monitor does not falsely
+    // trigger a missed heartbeat due to the refresh flood
+    monitor?.updateLastMessageReceivedTime()
   }
 
   /// connect to the OCA device, throwing `Ocp1Error.connectionTimeout` if it times out
