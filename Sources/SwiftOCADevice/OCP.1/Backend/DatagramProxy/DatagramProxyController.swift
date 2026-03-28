@@ -56,6 +56,7 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
 
   func startKeepAliveIfNeeded() {
     if keepAliveTask == nil {
+      lastMessageReceivedTime = .now
       heartbeatTimeDidChange(from: .zero)
     }
   }
