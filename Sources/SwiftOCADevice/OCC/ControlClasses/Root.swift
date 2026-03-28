@@ -90,10 +90,12 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     }
     set {
       lockStateSubject.value = newValue
-      Task {
-        try? await notifySubscribers(lockState: newValue)
-      }
     }
+  }
+
+  private func setLockState(_ newValue: LockState) async {
+    lockState = newValue
+    try? await notifySubscribers(lockState: newValue)
   }
 
   public nonisolated class var classIdentification: OcaClassIdentification {
@@ -201,16 +203,16 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
       return try encodeResponse(lockable)
     case OcaMethodID("1.3"):
       try decodeNullCommand(command)
-      try lockNoReadWrite(controller: controller)
+      try await lockNoReadWrite(controller: controller)
     case OcaMethodID("1.4"):
       try decodeNullCommand(command)
-      try unlock(controller: controller)
+      try await unlock(controller: controller)
     case OcaMethodID("1.5"):
       try decodeNullCommand(command)
       return try encodeResponse(role)
     case OcaMethodID("1.6"):
       try decodeNullCommand(command)
-      try lockNoWrite(controller: controller)
+      try await lockNoWrite(controller: controller)
     case OcaMethodID("1.7"):
       try decodeNullCommand(command)
       return try encodeResponse(lockState.lockState)
@@ -266,7 +268,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     }
   }
 
-  func lockNoWrite(controller: any OcaController) throws {
+  func lockNoWrite(controller: any OcaController) async throws {
     guard controller.flags.contains(.supportsLocking) else {
       throw Ocp1Error.status(.permissionDenied)
     }
@@ -277,7 +279,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
 
     switch lockState {
     case .unlocked:
-      lockState = .lockedNoWrite(controller.id)
+      await setLockState(.lockedNoWrite(controller.id))
     case .lockedNoWrite:
       throw Ocp1Error.status(.locked)
     case let .lockedNoReadWrite(lockholder):
@@ -285,11 +287,11 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
         throw Ocp1Error.status(.locked)
       }
       // downgrade lock
-      lockState = .lockedNoWrite(controller.id)
+      await setLockState(.lockedNoWrite(controller.id))
     }
   }
 
-  func lockNoReadWrite(controller: any OcaController) throws {
+  func lockNoReadWrite(controller: any OcaController) async throws {
     guard controller.flags.contains(.supportsLocking) else {
       throw Ocp1Error.status(.permissionDenied)
     }
@@ -300,18 +302,18 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
 
     switch lockState {
     case .unlocked:
-      lockState = .lockedNoReadWrite(controller.id)
+      await setLockState(.lockedNoReadWrite(controller.id))
     case let .lockedNoWrite(lockholder):
       guard controller.id == lockholder else {
         throw Ocp1Error.status(.locked)
       }
-      lockState = .lockedNoReadWrite(controller.id)
+      await setLockState(.lockedNoReadWrite(controller.id))
     case .lockedNoReadWrite:
       throw Ocp1Error.status(.locked)
     }
   }
 
-  func unlock(controller: any OcaController) throws {
+  func unlock(controller: any OcaController) async throws {
     guard controller.flags.contains(.supportsLocking) else {
       throw Ocp1Error.status(.permissionDenied)
     }
@@ -329,19 +331,19 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
       guard controller.id == lockholder else {
         throw Ocp1Error.status(.locked)
       }
-      lockState = .unlocked
+      await setLockState(.unlocked)
     }
   }
 
-  func setLockState(to lockState: OcaLockState, controller: any OcaController) -> Bool {
+  func setLockState(to lockState: OcaLockState, controller: any OcaController) async -> Bool {
     do {
       switch lockState {
       case .noLock:
-        try unlock(controller: controller)
+        try await unlock(controller: controller)
       case .lockNoWrite:
-        try lockNoWrite(controller: controller)
+        try await lockNoWrite(controller: controller)
       case .lockNoReadWrite:
-        try lockNoReadWrite(controller: controller)
+        try await lockNoReadWrite(controller: controller)
       }
       return true
     } catch {

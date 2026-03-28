@@ -488,15 +488,15 @@ final class SwiftOCADeviceTests: XCTestCase {
       addToRootBlock: true
     )
 
-    // Construct a JSON object where value exceeds the upper bound
+    // Construct a JSON object where value exceeds the server-side upper bound (0...1)
     var jsonObject = try await actuator.serialize()
     jsonObject["5.1"] = ["v": 2.0, "l": 0.0, "u": 1.0] as [String: Double]
 
     do {
       try await actuator.deserialize(jsonObject: jsonObject)
-      XCTFail("Expected badFormat error for out-of-range value")
+      XCTFail("Expected parameterOutOfRange error for out-of-range value")
     } catch {
-      XCTAssertEqual(error as? Ocp1Error, Ocp1Error.status(.badFormat))
+      XCTAssertEqual(error as? Ocp1Error, Ocp1Error.status(.parameterOutOfRange))
     }
   }
 
