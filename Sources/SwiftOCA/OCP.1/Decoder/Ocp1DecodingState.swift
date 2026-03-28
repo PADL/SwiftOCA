@@ -29,14 +29,18 @@ import Foundation
 
 /// The internal state used by the decoders.
 class Ocp1DecodingState {
-  private var data: Data
+  private let data: Data
+  private var cursor: Int
   let userInfo: [CodingUserInfoKey: Any]
-  var isAtEnd: Bool { data.isEmpty }
+  var isAtEnd: Bool { cursor >= data.endIndex }
 
   init(data: Data, userInfo: [CodingUserInfoKey: Any]) {
     self.data = data
+    cursor = data.startIndex
     self.userInfo = userInfo
   }
+
+  private var remaining: Int { data.endIndex - cursor }
 
   func decodeNil() throws -> Bool {
     // Since we don't encode `nil`s, we just always return `false``
@@ -44,9 +48,11 @@ class Ocp1DecodingState {
   }
 
   func decode(_ type: Bool.Type) throws -> Bool {
-    guard let byte = data.popFirst() else {
+    guard remaining >= 1 else {
       throw Ocp1Error.pduTooShort
     }
+    let byte = data[cursor]
+    cursor += 1
     return byte != 0
   }
 
@@ -57,7 +63,8 @@ class Ocp1DecodingState {
 
     // Count the number of valid UTF-8 code units.
     var utf8Count = 0
-    var iterator = data.makeIterator()
+    let slice = data[cursor...]
+    var iterator = slice.makeIterator()
     var utf8Parser = Unicode.UTF8.ForwardParser()
     for _ in 0..<scalarCount {
       switch utf8Parser.parseScalar(from: &iterator) {
@@ -66,13 +73,13 @@ class Ocp1DecodingState {
       case .emptyInput:
         throw Ocp1Error.pduTooShort
       case .error:
-        throw Ocp1Error.stringNotDecodable([UInt8](data))
+        throw Ocp1Error.stringNotDecodable([UInt8](slice))
       }
     }
 
-    // Decode and remove the code units.
-    let utf8Prefix = data.prefix(utf8Count)
-    data.removeFirst(utf8Count)
+    // Decode and advance cursor past the code units.
+    let utf8Prefix = data[cursor..<cursor + utf8Count]
+    cursor += utf8Count
     return String(unsafeUninitializedCapacity: utf8Count) {
       _ = $0.initialize(fromContentsOf: utf8Prefix)
       return utf8Count
@@ -84,15 +91,15 @@ class Ocp1DecodingState {
   {
     let byteWidth = Integer.bitWidth / 8
 
-    guard data.count >= byteWidth else {
+    guard remaining >= byteWidth else {
       throw Ocp1Error.pduTooShort
     }
 
-    let value = data.prefix(byteWidth).withUnsafeBytes {
+    let value = data[cursor..<cursor + byteWidth].withUnsafeBytes {
       Integer(bigEndian: $0.loadUnaligned(as: Integer.self))
     }
 
-    data.removeFirst(byteWidth)
+    cursor += byteWidth
     return value
   }
 
