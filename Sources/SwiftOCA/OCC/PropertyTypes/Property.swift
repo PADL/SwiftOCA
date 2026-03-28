@@ -215,6 +215,10 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     return subject.value
   }
 
+  // NOTE: This spawns an unstructured Task because Swift property wrapper
+  // subscript setters cannot be async. Rapid successive sets may race and
+  // send commands out of order. For ordered updates, use the async
+  // setValueIfMutable(_:_:) method directly.
   func _set(
     _enclosingInstance object: OcaRoot,
     _ newValue: PropertyValue
@@ -487,6 +491,10 @@ extension OcaProperty.PropertyValue: Hashable where Value: Hashable & Codable {
 }
 
 extension AnyKeyPath {
+  // NOTE: This relies on the String(describing:) format of AnyKeyPath which is
+  // not part of Swift's public API. It has been stable in practice but could
+  // break in future Swift versions. A more robust approach would use a reverse
+  // lookup through the property cache.
   var jsonKey: String {
     get throws {
       let fullString = String(describing: self)

@@ -16,6 +16,11 @@ internal import SwiftShims
 @_implementationOnly import SwiftShims
 #endif
 
+// NOTE: These _silgen_name imports use internal Swift runtime entry points that
+// are not covered by ABI stability guarantees. They have been stable since
+// Swift 5.0 and are used by Swift's own Mirror implementation, but may need
+// updating if the runtime internals change in future Swift versions.
+
 @_silgen_name("swift_isClassType")
 func _isClassType(_: Any.Type) -> Bool
 

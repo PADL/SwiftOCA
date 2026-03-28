@@ -272,6 +272,9 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     get {
       object[keyPath: storageKeyPath].get()
     }
+    // NOTE: Spawns an unstructured Task because Swift property wrapper
+    // subscript setters cannot be async. Notifications may arrive out of
+    // order under rapid successive sets.
     set {
       let property = object[keyPath: storageKeyPath]
       property.subject.send(newValue)
