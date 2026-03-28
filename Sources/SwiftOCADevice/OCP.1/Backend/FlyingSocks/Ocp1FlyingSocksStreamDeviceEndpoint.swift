@@ -220,7 +220,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
   @available(iOS, deprecated: 17.0, renamed: "listenForControllersDiscarding(on:)")
   @available(tvOS, deprecated: 17.0, renamed: "listenForControllersDiscarding(on:)")
   private func listenForControllersFallback(on socket: AsyncSocket) async throws {
-    try await withThrowingTaskGroup(of: Void.self) { group in
+    try await withThrowingDiscardingTaskGroup { group in
       for try await socket in socket.sockets {
         group.addTask {
           try await Ocp1FlyingSocksStreamController(endpoint: self, socket: socket)
