@@ -44,8 +44,7 @@ public struct Ocp1Decoder {
   public func decode<Value>(_ type: Value.Type, from data: Data) throws -> Value
     where Value: Decodable
   {
-    let state: Ocp1DecodingState
-    state = Ocp1DecodingState(data: Data(data), userInfo: userInfo)
+    let state = Ocp1DecodingState(data: data, userInfo: userInfo)
     return try Ocp1DecodingState.decode(type, state: state, codingPath: [], userInfo: userInfo)
   }
 }
