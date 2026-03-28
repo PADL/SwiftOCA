@@ -1240,4 +1240,124 @@ final class UnsafeStringInitializerTests: XCTestCase {
       XCTAssertEqual(error as? Ocp1Error, .objectClassMismatch)
     }
   }
+
+  // MARK: - Data Slice Decoding Regression Tests
+
+  /// Verify decoding from non-zero-startIndex Data slices works correctly.
+  /// This guards against regressions in init(bytes: Data) implementations
+  /// that must handle Data.startIndex != 0 when receiving slices.
+  func testCommandDecodingFromDataSlice() throws {
+    let command = Ocp1Command(
+      handle: 42,
+      targetONo: 100,
+      methodID: "3.1",
+      parameters: Ocp1Parameters(parameterCount: 0, parameterData: Data())
+    )
+    let bytes = command.bytes
+    // Prefix with garbage to create a non-zero-startIndex slice
+    let padded = Data([0xFF, 0xFF, 0xFF]) + Data(bytes)
+    let slice = padded[3...]
+    let decoded = try Ocp1Command(bytes: slice)
+    XCTAssertEqual(decoded.handle, 42)
+    XCTAssertEqual(decoded.targetONo, 100)
+    XCTAssertEqual(decoded.methodID, OcaMethodID("3.1"))
+  }
+
+  func testResponseDecodingFromDataSlice() throws {
+    let response = Ocp1Response(
+      handle: 99,
+      statusCode: .ok,
+      parameters: Ocp1Parameters(parameterCount: 1, parameterData: Data([0xAB]))
+    )
+    let bytes = response.bytes
+    let padded = Data([0xFF]) + Data(bytes)
+    let slice = padded[1...]
+    let decoded = try Ocp1Response(bytes: slice)
+    XCTAssertEqual(decoded.handle, 99)
+    XCTAssertEqual(decoded.statusCode, .ok)
+    XCTAssertEqual(decoded.parameters.parameterCount, 1)
+    XCTAssertEqual(decoded.parameters.parameterData, Data([0xAB]))
+  }
+
+  func testKeepAliveDecodingFromDataSlice() throws {
+    let ka1 = Ocp1KeepAlive1(heartBeatTime: 5)
+    let padded = Data([0xFF, 0xFF]) + Data(ka1.bytes)
+    let decoded1 = try Ocp1KeepAlive1(bytes: padded[2...])
+    XCTAssertEqual(decoded1.heartBeatTime, 5)
+
+    let ka2 = Ocp1KeepAlive2(heartBeatTime: 500)
+    let padded2 = Data([0xFF]) + Data(ka2.bytes)
+    let decoded2 = try Ocp1KeepAlive2(bytes: padded2[1...])
+    XCTAssertEqual(decoded2.heartBeatTime, 500)
+  }
+
+  /// Verify full PDU encode→decode round-trip for commands.
+  func testPduRoundTrip() throws {
+    let command = Ocp1Command(
+      handle: 1,
+      targetONo: 5000,
+      methodID: "2.6",
+      parameters: Ocp1Parameters(parameterCount: 1, parameterData: Data([0x01, 0x02]))
+    )
+    let pdu: Data = try Ocp1Connection.encodeOcp1MessagePdu([command], type: .ocaCmdRrq)
+    var messages = [Data]()
+    let messageType = try Ocp1Connection.decodeOcp1MessagePdu(from: pdu, messages: &messages)
+    XCTAssertEqual(messageType, .ocaCmdRrq)
+    XCTAssertEqual(messages.count, 1)
+    let decoded = try Ocp1Connection.decodeOcp1Message(from: messages[0], type: messageType)
+    let decodedCmd = decoded as! Ocp1Command
+    XCTAssertEqual(decodedCmd.handle, 1)
+    XCTAssertEqual(decodedCmd.targetONo, 5000)
+    XCTAssertEqual(decodedCmd.methodID, OcaMethodID("2.6"))
+    XCTAssertEqual(decodedCmd.parameters.parameterData, Data([0x01, 0x02]))
+  }
+
+  /// Verify PDU with multiple messages decodes correctly.
+  func testMultiMessagePduRoundTrip() throws {
+    let cmd1 = Ocp1Command(handle: 1, targetONo: 100, methodID: "1.1")
+    let cmd2 = Ocp1Command(
+      handle: 2,
+      targetONo: 200,
+      methodID: "3.5",
+      parameters: Ocp1Parameters(parameterCount: 1, parameterData: Data([0xFF]))
+    )
+    let pdu: Data = try Ocp1Connection.encodeOcp1MessagePdu([cmd1, cmd2], type: .ocaCmd)
+    var messages = [Data]()
+    let messageType = try Ocp1Connection.decodeOcp1MessagePdu(from: pdu, messages: &messages)
+    XCTAssertEqual(messageType, .ocaCmd)
+    XCTAssertEqual(messages.count, 2)
+
+    let decoded1 = try Ocp1Connection.decodeOcp1Message(
+      from: messages[0],
+      type: messageType
+    ) as! Ocp1Command
+    let decoded2 = try Ocp1Connection.decodeOcp1Message(
+      from: messages[1],
+      type: messageType
+    ) as! Ocp1Command
+    XCTAssertEqual(decoded1.handle, 1)
+    XCTAssertEqual(decoded1.targetONo, 100)
+    XCTAssertEqual(decoded2.handle, 2)
+    XCTAssertEqual(decoded2.targetONo, 200)
+    XCTAssertEqual(decoded2.parameters.parameterData, Data([0xFF]))
+  }
+
+  /// Verify the Ocp1Decoder works with Data slices (non-zero startIndex).
+  func testOcp1DecoderWithDataSlice() throws {
+    let value: OcaUint32 = 0x12345678
+    let encoded: [UInt8] = try Ocp1Encoder().encode(value)
+    let padded = Data([0xFF, 0xFF]) + Data(encoded)
+    let decoded = try Ocp1Decoder().decode(OcaUint32.self, from: padded[2...])
+    XCTAssertEqual(decoded, 0x12345678)
+  }
+
+  /// Verify string encode/decode round-trip with multi-byte UTF-8.
+  func testStringEncodingRoundTrip() throws {
+    let strings = ["hello", "", "日本語", "emoji: 🎵", "café"]
+    for s in strings {
+      let encoded: [UInt8] = try Ocp1Encoder().encode(s)
+      let decoded = try Ocp1Decoder().decode(String.self, from: encoded)
+      XCTAssertEqual(s, decoded, "Round-trip failed for \"\(s)\"")
+    }
+  }
 }
