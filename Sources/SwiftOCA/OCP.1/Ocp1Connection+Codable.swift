@@ -116,29 +116,26 @@ package extension Ocp1Connection {
     let messageCount: OcaUint16 = data.decodeInteger(index: 8)
     var cursor = 1 + Ocp1Header.HeaderSize // start of first message
 
+    let pduEnd = Int(header.pduSize) + 1 // +1 because pduSize excludes sync byte
     for _ in 0..<messageCount {
       precondition(cursor < data.count)
-      var messageData = data
-        .subdata(in: cursor..<Int(header.pduSize) + 1) // because this includes sync byte
 
       if header.pduType != .ocaKeepAlive {
-        if messageData.count < 4 {
+        guard cursor + 4 <= pduEnd else {
           throw Ocp1Error.pduTooShort
         }
-        let messageSize: OcaUint32 = messageData
-          .decodeInteger(index: 0) /// _expects_ length >= 4
+        let messageSize = Int(data[cursor..<cursor + 4].withUnsafeBytes {
+          OcaUint32(bigEndian: $0.loadUnaligned(as: OcaUint32.self))
+        })
 
-        guard messageSize <= messageData.count else {
+        guard cursor + messageSize <= pduEnd else {
           throw Ocp1Error.invalidMessageSize
         }
 
-        messageData = messageData.prefix(Int(messageSize))
-        cursor += Int(messageSize)
-      }
-
-      messages.append(messageData)
-
-      if header.pduType == .ocaKeepAlive {
+        messages.append(data[cursor..<cursor + messageSize])
+        cursor += messageSize
+      } else {
+        messages.append(data[cursor..<pduEnd])
         break
       }
     }
