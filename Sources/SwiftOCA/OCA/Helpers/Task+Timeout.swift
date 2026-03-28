@@ -17,7 +17,7 @@ public func withThrowingTimeout<R: Sendable, C: Clock>(
     defer { group.cancelAll() }
     group.addTask {
       try await Task.sleep(until: deadline, tolerance: tolerance, clock: clock)
-      try await onTimeout?()
+      try? await onTimeout?()
       throw Ocp1Error.responseTimeout
     }
     group.addTask {
