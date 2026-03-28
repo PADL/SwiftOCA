@@ -310,20 +310,22 @@ Sendable, CustomStringConvertible, Hashable {
     return data
   }
 
-  private func _write(_ bytes: [UInt8]) throws -> Int {
-    let n: Int
+  private func _write(_ data: Data) throws -> Int {
+    try data.withUnsafeBytes { bytes in
+      let n: Int
 
-    #if canImport(Glibc)
-    n = Glibc.write(cfSocket.nativeHandle, bytes, bytes.count)
-    #elseif canImport(Darwin)
-    n = Darwin.write(cfSocket.nativeHandle, bytes, bytes.count)
-    #elseif canImport(Android)
-    n = Android.write(cfSocket.nativeHandle, bytes, bytes.count)
-    #else
-    throw Errno.noFunction
-    #endif
-    if n < 0 { throw Errno(rawValue: errno) }
-    return n
+      #if canImport(Glibc)
+      n = Glibc.write(cfSocket.nativeHandle, bytes.baseAddress!, bytes.count)
+      #elseif canImport(Darwin)
+      n = Darwin.write(cfSocket.nativeHandle, bytes.baseAddress!, bytes.count)
+      #elseif canImport(Android)
+      n = Android.write(cfSocket.nativeHandle, bytes.baseAddress!, bytes.count)
+      #else
+      throw Errno.noFunction
+      #endif
+      if n < 0 { throw Errno(rawValue: errno) }
+      return n
+    }
   }
 
   @discardableResult
@@ -331,7 +333,7 @@ Sendable, CustomStringConvertible, Hashable {
     var nwritten = 0
 
     repeat {
-      nwritten += try _write(Array(data[nwritten..<data.count]))
+      nwritten += try _write(data[nwritten...])
       await Task.yield()
     } while nwritten < data.count
 
