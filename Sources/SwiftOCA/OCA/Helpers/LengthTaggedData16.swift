@@ -107,7 +107,7 @@ extension LengthTaggedData16: _Ocp1Codable {
   }
 
   func encode(into bytes: inout [UInt8]) {
-    bytes += Swift.withUnsafeBytes(of: UInt16(wrappedValue.count).bigEndian) { Array($0) }
-    bytes += Array(wrappedValue)
+    Swift.withUnsafeBytes(of: UInt16(wrappedValue.count).bigEndian) { bytes += $0 }
+    wrappedValue.withUnsafeBytes { bytes += $0 }
   }
 }
