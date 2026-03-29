@@ -103,10 +103,6 @@ public struct OcaBoundedDeviceProperty<
       throw Ocp1Error.status(.badFormat)
     }
 
-    guard value >= lowerBound, value <= upperBound else {
-      throw Ocp1Error.status(.parameterOutOfRange)
-    }
-
     await setAndNotifySubscribers(
       object: object,
       OcaBoundedPropertyValue<Value>(value: value, in: lowerBound...upperBound)

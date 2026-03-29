@@ -477,29 +477,6 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(setting.maxValue, 100)
   }
 
-  /// Test that OcaBoundedDeviceProperty rejects values outside the deserialized bounds.
-  func testBoundedPropertyJsonOutOfRange() async throws {
-    let device = OcaDevice()
-    try await device.initializeDefaultObjects()
-    _ = try await OcaLocalDeviceEndpoint(device: device)
-
-    let actuator = try await SwiftOCADevice.OcaFloat32Actuator(
-      deviceDelegate: device,
-      addToRootBlock: true
-    )
-
-    // Construct a JSON object where value exceeds the server-side upper bound (0...1)
-    var jsonObject = try await actuator.serialize()
-    jsonObject["5.1"] = ["v": 2.0, "l": 0.0, "u": 1.0] as [String: Double]
-
-    do {
-      try await actuator.deserialize(jsonObject: jsonObject)
-      XCTFail("Expected parameterOutOfRange error for out-of-range value")
-    } catch {
-      XCTAssertEqual(error as? Ocp1Error, Ocp1Error.status(.parameterOutOfRange))
-    }
-  }
-
   /// Test that the serialization filter can ignore properties
   func testSerializationFilterIgnore() async throws {
     let device = OcaDevice()
