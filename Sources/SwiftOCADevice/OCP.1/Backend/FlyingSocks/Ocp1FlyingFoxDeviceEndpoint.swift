@@ -43,7 +43,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   let logger: Logger
   nonisolated(unsafe) var enableMessageTracing = false
 
-  private var httpServer: HTTPServer!
+  private(set) var httpServer: HTTPServer!
   private let address: sockaddr_storage
   private var _controllers = [Ocp1FlyingFoxController]()
   #if canImport(dnssd)
