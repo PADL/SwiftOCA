@@ -267,6 +267,7 @@
 		D3E820E62DFBEF0C001C9DC8 /* Ocp1NWConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E820E52DFBEF0C001C9DC8 /* Ocp1NWConnection.swift */; };
 		D3F2942C2A95D55F00D7F0CD /* Sequence+AsyncMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */; };
 		D3F368D92F713C56008419DC /* ClassRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F368D82F713C56008419DC /* ClassRegistry.swift */; };
+		D3F369442F78BF99008419DC /* Ocp1FlyingFoxConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F369432F78BF99008419DC /* Ocp1FlyingFoxConnection.swift */; };
 		D3FAC8DE2B5CF25D009E2775 /* FirmwareManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8DD2B5CF25D009E2775 /* FirmwareManager.swift */; };
 		D3FAC8E02B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8DF2B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift */; };
 		D3FAC8E22B5CF3FD009E2775 /* PowerManagerDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FAC8E12B5CF3FD009E2775 /* PowerManagerDataTypes.swift */; };
@@ -596,6 +597,7 @@
 		D3E820E52DFBEF0C001C9DC8 /* Ocp1NWConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1NWConnection.swift; sourceTree = "<group>"; };
 		D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sequence+AsyncMap.swift"; sourceTree = "<group>"; };
 		D3F368D82F713C56008419DC /* ClassRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassRegistry.swift; sourceTree = "<group>"; };
+		D3F369432F78BF99008419DC /* Ocp1FlyingFoxConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingFoxConnection.swift; sourceTree = "<group>"; };
 		D3FAC8DD2B5CF25D009E2775 /* FirmwareManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareManager.swift; sourceTree = "<group>"; };
 		D3FAC8DF2B5CF2F6009E2775 /* FirmwareManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareManagerDataTypes.swift; sourceTree = "<group>"; };
 		D3FAC8E12B5CF3FD009E2775 /* PowerManagerDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerManagerDataTypes.swift; sourceTree = "<group>"; };
@@ -1001,6 +1003,7 @@
 		D37F7E192A6BC015005F035F /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				D3F369432F78BF99008419DC /* Ocp1FlyingFoxConnection.swift */,
 				D3AB030D2CF6BD8F00967322 /* Ocp1IORingConnection.swift */,
 				D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */,
 				D3E820E52DFBEF0C001C9DC8 /* Ocp1NWConnection.swift */,
@@ -1933,6 +1936,7 @@
 				D3AFD34C2B2CEF2B00A72E9A /* CounterDataTypes.swift in Sources */,
 				D3AFD3812B32A06700A72E9A /* Ocp1DecoderImpl.swift in Sources */,
 				D39542302BA8FFC0003A025C /* Root+JSON.swift in Sources */,
+				D3F369442F78BF99008419DC /* Ocp1FlyingFoxConnection.swift in Sources */,
 				D3AFD37E2B32A06700A72E9A /* SingleValueOcp1EncodingContainer.swift in Sources */,
 				D3AFD35E2B30EC2F00A72E9A /* CodingManager.swift in Sources */,
 				D3E6E2782A417AF000BF7095 /* NetworkManager.swift in Sources */,

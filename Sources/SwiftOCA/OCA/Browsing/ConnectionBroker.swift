@@ -208,6 +208,14 @@ public actor OcaConnectionBroker {
           deviceAddress: firstAddress,
           options: options
         )
+      #if os(macOS) || os(iOS)
+      case .tcpWebSocket:
+        let wsURL = URL(string: "ws://\(try host):\(try port)/")!
+        connection = await Ocp1FlyingFoxConnection(
+          url: wsURL,
+          options: options
+        )
+      #endif
       default:
         throw Ocp1Error.unknownServiceType
       }
@@ -277,6 +285,7 @@ public actor OcaConnectionBroker {
   private static let _defaultServiceTypes = Set([
     OcaNetworkAdvertisingServiceType.tcp,
     OcaNetworkAdvertisingServiceType.udp,
+    OcaNetworkAdvertisingServiceType.tcpWebSocket,
   ])
 
   /// An async sequence of events emitted by the connection broker.
