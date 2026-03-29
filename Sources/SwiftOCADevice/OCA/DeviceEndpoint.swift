@@ -61,12 +61,12 @@ extension OcaDeviceEndpointPrivate {
     try? await controller.close()
   }
 
-  func handle(messagePduData: [UInt8], from controller: ControllerType) async throws {
+  func handle(messagePduData: Data, from controller: ControllerType) async throws {
     let messageList = try await controller.decodeMessages(from: messagePduData)
     try await controller.handle(for: self, messageList: messageList)
   }
 
-  func handle(messagePduData: Data, from controller: ControllerType) async throws {
-    try await handle(messagePduData: Array(messagePduData), from: controller)
+  func handle(messagePduData: [UInt8], from controller: ControllerType) async throws {
+    try await handle(messagePduData: Data(messagePduData), from: controller)
   }
 }

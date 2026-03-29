@@ -158,7 +158,7 @@ private extension AsyncThrowingStream
           var iterator = bytes.makeAsyncIterator()
           return try await OcaDevice.asyncReceiveMessages { count in
             var nremain = count
-            var buffer = [UInt8]()
+            var buffer = Data()
             buffer.reserveCapacity(count)
 
             repeat {
@@ -185,7 +185,7 @@ private extension AsyncThrowingStream
 }
 
 extension OcaDevice {
-  static func asyncReceiveMessages(_ read: (Int) async throws -> [UInt8]) async throws
+  static func asyncReceiveMessages(_ read: (Int) async throws -> Data) async throws
     -> Ocp1MessageList
   {
     try await receiveMessages(read)

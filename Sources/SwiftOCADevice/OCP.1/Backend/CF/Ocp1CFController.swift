@@ -123,7 +123,7 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
         repeat {
           guard !Task.isCancelled else { break }
           let messages = try await OcaDevice
-            .receiveMessages { try await Array(socket.read(count: $0)) }
+            .receiveMessages { try await socket.read(count: $0) }
           self?._messagesContinuation.yield(messages)
         } while true
       } catch {

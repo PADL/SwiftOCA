@@ -47,10 +47,6 @@ struct Ocp1MessageList: Sendable {
     }
     self.init(messageType: messageType, messages: messages)
   }
-
-  init(messagePduData data: [UInt8]) throws {
-    try self.init(messagePduData: Data(data))
-  }
 }
 
 /// OcaControllerPrivate should eventually be merged into OcaController once we are ready to
@@ -256,15 +252,13 @@ extension Ocp1ControllerInternal {
     }
   }
 
-  func decodeMessages(from messagePduData: [UInt8]) throws -> Ocp1MessageList {
+  func decodeMessages(from messagePduData: Data) throws -> Ocp1MessageList {
     guard messagePduData.count >= Ocp1Connection.MinimumPduSize,
-          messagePduData[0] == Ocp1SyncValue
+          messagePduData[messagePduData.startIndex] == Ocp1SyncValue
     else {
       throw Ocp1Error.invalidSyncValue
     }
-    let pduSize = messagePduData.withUnsafeBytes {
-      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 3, as: OcaUint32.self))
-    }
+    let pduSize: OcaUint32 = messagePduData.decodeInteger(index: messagePduData.startIndex + 3)
     guard pduSize >= (Ocp1Connection.MinimumPduSize - 1) else {
       throw Ocp1Error.invalidPduSize
     }
@@ -286,7 +280,7 @@ extension Ocp1ControllerInternal {
 }
 
 extension OcaDevice {
-  typealias ReadCallback = @Sendable (Int) async throws -> [UInt8]
+  typealias ReadCallback = @Sendable (Int) async throws -> Data
 
   static func receiveMessages(_ read: ReadCallback) async throws -> Ocp1MessageList {
     var messagePduData = try await read(Ocp1Connection.MinimumPduSize)
@@ -297,14 +291,12 @@ extension OcaDevice {
     }
 
     guard messagePduData.count >= Ocp1Connection.MinimumPduSize,
-          messagePduData[0] == Ocp1SyncValue
+          messagePduData[messagePduData.startIndex] == Ocp1SyncValue
     else {
       throw Ocp1Error.invalidSyncValue
     }
 
-    let pduSize = messagePduData.withUnsafeBytes {
-      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 3, as: OcaUint32.self))
-    }
+    let pduSize: OcaUint32 = messagePduData.decodeInteger(index: messagePduData.startIndex + 3)
     guard pduSize >= (Ocp1Connection.MinimumPduSize - 1) else {
       throw Ocp1Error.invalidPduSize
     }

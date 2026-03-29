@@ -114,10 +114,10 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
       do {
         repeat {
           guard !Task.isCancelled else { break }
-          let messages = try await OcaDevice.receiveMessages { try await socket.read(
+          let messages = try await OcaDevice.receiveMessages { try await Data(socket.read(
             count: $0,
             awaitingAllRead: true
-          ) }
+          )) }
           self?._messagesContinuation.yield(messages)
         } while true
       } catch {
