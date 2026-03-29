@@ -39,6 +39,7 @@ public typealias Ocp1TCPConnection = Ocp1IORingStreamConnection
 #elseif canImport(FlyingSocks)
 public typealias Ocp1UDPConnection = Ocp1FlyingSocksDatagramConnection
 public typealias Ocp1TCPConnection = Ocp1FlyingSocksStreamConnection
+public typealias Ocp1WSConnection = Ocp1FlyingFoxConnection
 #else
 public typealias Ocp1UDPConnection = Ocp1CFSocketUDPConnection
 public typealias Ocp1TCPConnection = Ocp1CFSocketTCPConnection

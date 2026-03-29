@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-#if os(macOS) || os(iOS)
+#if canImport(FlyingFox)
 
 import AsyncExtensions
 import FlyingFox

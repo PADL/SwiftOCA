@@ -22,7 +22,10 @@ let PlatformTargets: [Target]
 let SwiftLanguageVersionSetting: [SwiftSetting]
 
 #if os(Linux)
-PlatformPackageDependencies = [.package(url: "https://github.com/PADL/IORingSwift", from: "1.0.0")]
+PlatformPackageDependencies = [
+  .package(url: "https://github.com/PADL/IORingSwift", from: "1.0.0"),
+  .package(url: "https://github.com/swhitty/FlyingFox", from: "0.20.0"),
+]
 
 PlatformTargetDependencies = [
   .target(
@@ -42,6 +45,11 @@ PlatformTargetDependencies = [
   .product(
     name: "IORingFoundation",
     package: "IORingSwift",
+    condition: .when(platforms: [.linux])
+  ),
+  .product(
+    name: "FlyingFox",
+    package: "FlyingFox",
     condition: .when(platforms: [.linux])
   ),
 ]
