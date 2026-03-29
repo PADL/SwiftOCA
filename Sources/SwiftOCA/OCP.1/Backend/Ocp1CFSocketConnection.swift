@@ -170,6 +170,9 @@ Sendable, CustomStringConvertible, Hashable {
     if let runLoopSource {
       CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
     }
+    if let cfSocket {
+      cfSocket.invalidate()
+    }
   }
 
   public struct Options: OptionSet, Sendable {
@@ -370,6 +373,17 @@ Sendable, CustomStringConvertible, Hashable {
     (try? cfSocket.peerName) ?? "unknown"
   }
 
+  public func close() {
+    continuation.finish()
+    if let runLoopSource {
+      CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, CFRunLoopMode.defaultMode)
+      self.runLoopSource = nil
+    }
+    if let cfSocket {
+      cfSocket.invalidate()
+    }
+  }
+
   public func hash(into hasher: inout Hasher) {
     hasher.combine(cfSocket.nativeHandle)
   }
@@ -441,6 +455,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
   }
 
   override public func disconnectDevice() async throws {
+    _socket?.close()
     _socket = nil
     try await super.disconnectDevice()
   }
