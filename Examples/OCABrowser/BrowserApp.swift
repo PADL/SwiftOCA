@@ -31,7 +31,7 @@ private struct DeviceBrowserView: View {
         VStack(alignment: .leading, spacing: 2) {
           Text(device.name)
             .font(.headline)
-          Text(device.serviceType == .tcp ? "TCP" : "UDP")
+          Text(device.serviceType.shortDescription)
             .font(.caption)
             .foregroundStyle(.secondary)
         }

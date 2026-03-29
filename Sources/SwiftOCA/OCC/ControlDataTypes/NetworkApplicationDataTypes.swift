@@ -48,6 +48,21 @@ public enum OcaNetworkAdvertisingServiceType: String, Sendable, CaseIterable {
   case udp = "_oca._udp."
   case tcpWebSocket = "_ocaws._tcp."
 
+  public var shortDescription: String {
+    switch self {
+    case .none:
+      ""
+    case .tcp:
+      "TCP"
+    case .tcpSecure:
+      "TLS"
+    case .udp:
+      "UDP"
+    case .tcpWebSocket:
+      "WS"
+    }
+  }
+
   init?(_ string: String) {
     for aCase in Self.allCases {
       if string == String(describing: aCase) {
