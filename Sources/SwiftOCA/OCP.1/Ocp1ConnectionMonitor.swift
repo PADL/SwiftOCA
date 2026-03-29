@@ -147,7 +147,7 @@ extension Ocp1Connection.Monitor {
             try Task.checkCancellation()
             guard let self else { return }
             do {
-              try await self.receiveMessage(connection)
+              try await receiveMessage(connection)
             } catch Ocp1Error.invalidHandle {
             } catch Ocp1Error.unknownPduType {
             } catch Ocp1Error.retryOperation {}

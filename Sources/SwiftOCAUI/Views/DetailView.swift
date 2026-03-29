@@ -28,6 +28,7 @@ extension Array where Element: OcaRoot {
 }
 
 // MARK: - OcaViewRepresentable conformances
+
 // Declared here to ensure the conformance metadata is linked into the
 // same compilation unit as the runtime `is`/`as?` checks.
 

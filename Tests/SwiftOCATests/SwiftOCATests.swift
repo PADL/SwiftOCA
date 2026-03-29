@@ -1344,11 +1344,11 @@ final class UnsafeStringInitializerTests: XCTestCase {
 
   /// Verify the Ocp1Decoder works with Data slices (non-zero startIndex).
   func testOcp1DecoderWithDataSlice() throws {
-    let value: OcaUint32 = 0x12345678
+    let value: OcaUint32 = 0x1234_5678
     let encoded: [UInt8] = try Ocp1Encoder().encode(value)
     let padded = Data([0xFF, 0xFF]) + Data(encoded)
     let decoded = try Ocp1Decoder().decode(OcaUint32.self, from: padded[2...])
-    XCTAssertEqual(decoded, 0x12345678)
+    XCTAssertEqual(decoded, 0x1234_5678)
   }
 
   /// Verify string encode/decode round-trip with multi-byte UTF-8.

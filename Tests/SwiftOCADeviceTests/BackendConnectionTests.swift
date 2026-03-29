@@ -41,7 +41,7 @@ private func localhostAddress(port: UInt16) -> Data {
   var addr = sockaddr_in()
   addr.sin_family = sa_family_t(AF_INET)
   addr.sin_port = port.bigEndian
-  addr.sin_addr.s_addr = UInt32(0x7f_00_00_01).bigEndian // 127.0.0.1
+  addr.sin_addr.s_addr = UInt32(0x7F00_0001).bigEndian // 127.0.0.1
   #if canImport(Darwin)
   addr.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
   #endif
