@@ -27,7 +27,7 @@ private struct RefreshableToInitialState: ViewModifier {
   }
 
   func body(content: Content) -> some View {
-    let property = property
+    nonisolated(unsafe) let property = property
     let object = object
 
     return content
