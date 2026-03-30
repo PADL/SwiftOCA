@@ -39,7 +39,7 @@ public class OcaSubscriptionManager: OcaManager {
     from controller: any OcaController,
     command: Ocp1Command
   ) async throws {
-    try await ensureWritable(by: controller, command: command)
+    try await ensureReadable(by: controller, command: command)
     try await controller.addSubscription(.subscription(subscription))
   }
 
@@ -48,7 +48,7 @@ public class OcaSubscriptionManager: OcaManager {
     from controller: any OcaController,
     command: Ocp1Command
   ) async throws {
-    try await ensureWritable(by: controller, command: command)
+    try await ensureReadable(by: controller, command: command)
     try await controller.removeSubscription(
       subscription.event,
       property: nil,
@@ -61,7 +61,7 @@ public class OcaSubscriptionManager: OcaManager {
     from controller: any OcaController,
     command: Ocp1Command
   ) async throws {
-    try await ensureWritable(by: controller, command: command)
+    try await ensureReadable(by: controller, command: command)
     try await controller.addSubscription(.propertyChangeSubscription(subscription))
   }
 
@@ -70,7 +70,7 @@ public class OcaSubscriptionManager: OcaManager {
     from controller: any OcaController,
     command: Ocp1Command
   ) async throws {
-    try await ensureWritable(by: controller, command: command)
+    try await ensureReadable(by: controller, command: command)
     try await controller.removeSubscription(
       OcaEvent(emitterONo: subscription.emitter, eventID: OcaPropertyChangedEventID),
       property: subscription.property,
@@ -96,7 +96,7 @@ public class OcaSubscriptionManager: OcaManager {
     from controller: any OcaController,
     command: Ocp1Command
   ) async throws {
-    try await ensureWritable(by: controller, command: command)
+    try await ensureReadable(by: controller, command: command)
     try await controller.addSubscription(.subscription2(subscription))
   }
 
@@ -105,7 +105,7 @@ public class OcaSubscriptionManager: OcaManager {
     from controller: any OcaController,
     command: Ocp1Command
   ) async throws {
-    try await ensureWritable(by: controller, command: command)
+    try await ensureReadable(by: controller, command: command)
     try await controller.removeSubscription(.subscription2(subscription))
   }
 
@@ -114,7 +114,7 @@ public class OcaSubscriptionManager: OcaManager {
     from controller: any OcaController,
     command: Ocp1Command
   ) async throws {
-    try await ensureWritable(by: controller, command: command)
+    try await ensureReadable(by: controller, command: command)
     try await controller.addSubscription(.propertyChangeSubscription2(subscription))
   }
 
@@ -123,7 +123,7 @@ public class OcaSubscriptionManager: OcaManager {
     from controller: any OcaController,
     command: Ocp1Command
   ) async throws {
-    try await ensureWritable(by: controller, command: command)
+    try await ensureReadable(by: controller, command: command)
     try await controller.removeSubscription(.propertyChangeSubscription2(subscription))
   }
 
@@ -132,7 +132,7 @@ public class OcaSubscriptionManager: OcaManager {
     from controller: any OcaController,
     command: Ocp1Command
   ) async throws -> [OcaStatus] {
-    try await ensureWritable(by: controller, command: command)
+    try await ensureReadable(by: controller, command: command)
 
     return await subscription.events.asyncMap { @Sendable event in
       let returnedStatus: OcaStatus
@@ -162,7 +162,7 @@ public class OcaSubscriptionManager: OcaManager {
     from controller: any OcaController,
     command: Ocp1Command
   ) async throws {
-    try await ensureWritable(by: controller, command: command)
+    try await ensureReadable(by: controller, command: command)
     for event in subscription.events {
       let subscription2 = OcaSubscription2(
         event: event,
@@ -178,7 +178,7 @@ public class OcaSubscriptionManager: OcaManager {
     from controller: any OcaController,
     command: Ocp1Command
   ) async throws -> [OcaStatus] {
-    try await ensureWritable(by: controller, command: command)
+    try await ensureReadable(by: controller, command: command)
 
     guard subscription.emitters.count == subscription.properties.count else {
       throw Ocp1Error.status(.invalidRequest)
@@ -219,7 +219,7 @@ public class OcaSubscriptionManager: OcaManager {
     from controller: any OcaController,
     command: Ocp1Command
   ) async throws {
-    try await ensureWritable(by: controller, command: command)
+    try await ensureReadable(by: controller, command: command)
 
     guard subscription.emitters.count == subscription.properties.count else {
       throw Ocp1Error.status(.invalidRequest)
