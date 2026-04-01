@@ -42,7 +42,7 @@ public struct OcaPropertyResolutionFlags: OptionSet, Sendable {
                                 .subscribeEvents, .cacheErrors])
 }
 
-public protocol OcaPropertyRepresentable: CustomStringConvertible {
+public protocol OcaPropertyRepresentable: CustomStringConvertible, Sendable {
   associatedtype Value: Codable & Sendable
   typealias PropertyValue = OcaProperty<Value>.PropertyValue
 
