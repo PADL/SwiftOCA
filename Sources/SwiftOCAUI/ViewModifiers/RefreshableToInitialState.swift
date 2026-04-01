@@ -27,12 +27,12 @@ private struct RefreshableToInitialState: ViewModifier {
   }
 
   func body(content: Content) -> some View {
-    nonisolated(unsafe) let property = property
     let object = object
 
     return content
       .refreshable {
-        if let property {
+        if let property = self.property {
+          nonisolated(unsafe) let property = property
           await property.refresh(object)
         } else {
           await object.refreshAllSubscribed()
