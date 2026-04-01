@@ -112,7 +112,7 @@ private final class _NetServiceInfo: OcaNetworkAdvertisingServiceInfo {
 }
 
 public final class OcaNetServiceBrowser: NSObject, OcaNetworkAdvertisingServiceBrowser,
-  NetServiceBrowserDelegate
+  NetServiceBrowserDelegate, @unchecked Sendable
 {
   private let _browser = NetServiceBrowser()
   private let _serviceType: OcaNetworkAdvertisingServiceType

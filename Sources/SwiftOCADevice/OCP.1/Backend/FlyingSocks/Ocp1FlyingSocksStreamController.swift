@@ -188,7 +188,7 @@ extension OcaDevice {
   static func asyncReceiveMessages(_ read: (Int) async throws -> Data) async throws
     -> Ocp1MessageList
   {
-    try await receiveMessages(read)
+    try await _receiveMessages(read)
   }
 }
 

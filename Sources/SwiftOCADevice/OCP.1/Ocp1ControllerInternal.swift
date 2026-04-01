@@ -282,7 +282,7 @@ extension Ocp1ControllerInternal {
 extension OcaDevice {
   typealias ReadCallback = @Sendable (Int) async throws -> Data
 
-  static func receiveMessages(_ read: ReadCallback) async throws -> Ocp1MessageList {
+  static func _receiveMessages(_ read: (Int) async throws -> Data) async throws -> Ocp1MessageList {
     var messagePduData = try await read(Ocp1Connection.MinimumPduSize)
 
     guard messagePduData.count != 0 else {
@@ -305,6 +305,10 @@ extension OcaDevice {
     messagePduData += try await read(bytesLeft)
 
     return try Ocp1MessageList(messagePduData: messagePduData)
+  }
+
+  static func receiveMessages(_ read: ReadCallback) async throws -> Ocp1MessageList {
+    try await _receiveMessages(read)
   }
 }
 
