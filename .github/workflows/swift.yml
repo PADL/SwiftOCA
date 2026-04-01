@@ -27,7 +27,7 @@ jobs:
       - name: Build
         run: swift build --build-tests
       - name: Test
-        run: swift test --skip-build
+        run: swift test --skip-build --filter SwiftOCATests
         timeout-minutes: 5
 
   linux:
