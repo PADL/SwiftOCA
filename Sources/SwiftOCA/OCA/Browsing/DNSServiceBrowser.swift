@@ -33,6 +33,7 @@ import Android
 @preconcurrency import Dispatch
 import dnssd
 import SocketAddress
+import Synchronization
 
 /// A private class that represents a discovered DNS-SD service
 private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecked Sendable {

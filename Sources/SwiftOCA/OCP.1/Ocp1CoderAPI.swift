@@ -19,6 +19,7 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+import Synchronization
 
 // MARK: - Codable coder
 

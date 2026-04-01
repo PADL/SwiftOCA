@@ -27,6 +27,7 @@ import AsyncExtensions
 #endif
 import Foundation
 import SocketAddress
+import Synchronization
 import SystemPackage
 #if canImport(Glibc)
 import Glibc
