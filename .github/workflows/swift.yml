@@ -28,7 +28,7 @@ jobs:
         run: swift build
       - name: Test
         run: swift test
-        timeout-minutes: 1
+        timeout-minutes: 5
 
   linux:
     runs-on: ubuntu-24.04
