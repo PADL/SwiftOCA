@@ -25,9 +25,9 @@ jobs:
       - name: Version
         run: swift --version
       - name: Build
-        run: swift build
+        run: swift build --build-tests
       - name: Test
-        run: swift test
+        run: swift test --skip-build
         timeout-minutes: 5
 
   linux:
