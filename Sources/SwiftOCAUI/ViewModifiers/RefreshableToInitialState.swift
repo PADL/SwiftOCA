@@ -31,7 +31,7 @@ private struct RefreshableToInitialState: ViewModifier {
 
     return content
       .refreshable {
-        if let property = self.property {
+        if let property {
           await property.refresh(object)
         } else {
           await object.refreshAllSubscribed()

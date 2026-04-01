@@ -210,7 +210,7 @@ public actor OcaConnectionBroker {
         )
       #if os(macOS) || os(iOS)
       case .tcpWebSocket:
-        let wsURL = URL(string: "ws://\(try host):\(try port)/")!
+        let wsURL = try URL(string: "ws://\(host):\(port)/")!
         connection = await Ocp1FlyingFoxConnection(
           url: wsURL,
           options: options

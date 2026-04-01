@@ -30,7 +30,8 @@ private final class PPMBallistics: ObservableObject {
   /// Display refresh rate
   private static let refreshInterval: TimeInterval = 1.0 / 60.0
 
-  @Published var displayDB: Float = -144.0
+  @Published
+  var displayDB: Float = -144.0
 
   private var peakDB: Float = -144.0
   private var lastUpdate: Date = .now
