@@ -19,7 +19,6 @@ let PlatformPackageDependencies: [Package.Dependency]
 let PlatformTargetDependencies: [Target.Dependency]
 let PlatformProducts: [Product]
 let PlatformTargets: [Target]
-let SwiftLanguageVersionSetting: [SwiftSetting]
 
 #if os(Linux)
 PlatformPackageDependencies = [
@@ -56,7 +55,6 @@ PlatformTargetDependencies = [
 
 PlatformProducts = []
 PlatformTargets = []
-SwiftLanguageVersionSetting = []
 #elseif os(macOS) || os(iOS)
 PlatformPackageDependencies = [
   .package(url: "https://github.com/swhitty/FlyingFox", from: "0.20.0"),
@@ -115,13 +113,11 @@ PlatformTargets = [
     linkerSettings: [] + ASANLinkerSettings
   ),
 ]
-SwiftLanguageVersionSetting = [.swiftLanguageMode(.v5, .when(platforms: [.macOS, .iOS]))]
 #else
 PlatformPackageDependencies = []
 PlatformTargetDependencies = []
 PlatformProducts = []
 PlatformTargets = []
-SwiftLanguageVersionSetting = []
 #endif
 
 let CommonPackageDependencies: [Package.Dependency] = [
@@ -164,7 +160,7 @@ let CommonTargets: [Target] = [
     ] + PlatformTargetDependencies,
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),
-    ] + SwiftLanguageVersionSetting
+    ]
   ),
   .target(
     name: "SwiftOCADevice",
@@ -175,7 +171,7 @@ let CommonTargets: [Target] = [
     ] + PlatformTargetDependencies,
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),
-    ] + SwiftLanguageVersionSetting
+    ]
   ),
   .executableTarget(
     name: "OCADevice",
