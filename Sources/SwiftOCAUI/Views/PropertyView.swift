@@ -168,6 +168,8 @@ public struct OcaWritableTextPropertyView: View {
   private var currentValue: Result<OcaString, Error>?
   @State
   private var editingValue: OcaString?
+  @State
+  private var isEditable = true
   @FocusState
   private var isFocused: Bool
 
@@ -199,6 +201,10 @@ public struct OcaWritableTextPropertyView: View {
   }
 
   private func commitEdit() {
+    guard isEditable else {
+      editingValue = nil
+      return
+    }
     guard let editingValue else { return }
     currentValue = .success(editingValue)
     let value = editingValue
@@ -215,6 +221,7 @@ public struct OcaWritableTextPropertyView: View {
         case .success:
           TextField(prompt, text: binding)
             .textFieldStyle(.roundedBorder)
+            .disabled(!isEditable)
             .focused($isFocused)
             .onSubmit {
               commitEdit()
@@ -247,6 +254,26 @@ public struct OcaWritableTextPropertyView: View {
             }
           case let .failure(error):
             currentValue = .failure(error)
+          }
+        }
+      } catch {}
+    }
+    .task(id: object.objectNumber) {
+      isEditable = false
+      await object.$lockState.refresh(object)
+      await object.$lockState.subscribe(object)
+      do {
+        for try await result in object.$lockState.async {
+          switch result {
+          case let .success(value):
+            guard let lockState = value as? OcaLockState else { continue }
+            let editable = lockState == .noLock
+            isEditable = editable
+            if !editable, isFocused {
+              isFocused = false
+            }
+          case .failure:
+            continue
           }
         }
       } catch {}
