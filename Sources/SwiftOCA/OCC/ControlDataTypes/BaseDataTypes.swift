@@ -291,7 +291,7 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible,
     fields = parent.fields + [
       Self.ProprietaryClassField,
       OcaUint16(authority.id.0),
-      OcaUint16(authority.id.1 << 8 | authority.id.2),
+      (OcaUint16(authority.id.1) << 8) | OcaUint16(authority.id.2),
     ] + extraFields
   }
 

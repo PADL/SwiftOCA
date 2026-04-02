@@ -632,6 +632,18 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(classID, decodedClassID)
   }
 
+  func testProprietaryOcaClassIDAuthorityPacking() {
+    let classID = OcaClassID(
+      parent: OcaClassID("1.1.2.2"),
+      authority: OcaOrganizationID((0x0A, 0xE9, 0x1B)),
+      1
+    )
+
+    XCTAssertEqual(classID.fields, [1, 1, 2, 2, 65535, 10, 59675, 1])
+    XCTAssertEqual(String(describing: classID), "1.1.2.2.65535.10.59675.1")
+    XCTAssertEqual(classID.parent, OcaClassID("1.1.2.2"))
+  }
+
   func testOcaPortIDEncoding() throws {
     let portID = OcaPortID(mode: .output, index: 5)
     let encodedData: [UInt8] = try Ocp1Encoder().encode(portID)
