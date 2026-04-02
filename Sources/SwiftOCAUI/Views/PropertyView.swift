@@ -231,7 +231,9 @@ public struct OcaWritableTextPropertyView: View {
         ProgressView()
       }
     }
-    .task {
+    .task(id: object.objectNumber) {
+      currentValue = nil
+      await property.refresh(object)
       await property.subscribe(object)
       do {
         for try await result in property.async {
