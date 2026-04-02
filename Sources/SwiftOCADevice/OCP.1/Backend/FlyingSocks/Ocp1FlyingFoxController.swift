@@ -26,19 +26,6 @@ import Foundation
 #endif
 import SwiftOCA
 
-fileprivate extension AsyncStream where Element == WSMessage {
-  var ocp1DecodedMessages: AnyAsyncSequence<Ocp1MessageList> {
-    map {
-      // TODO: handle OCP.1 PDUs split over multiple frames
-      guard case let .data(data) = $0 else {
-        throw Ocp1Error.invalidMessageType
-      }
-
-      return try Ocp1MessageList(messagePduData: data)
-    }.eraseToAnyAsyncSequence()
-  }
-}
-
 /// A remote WebSocket endpoint
 actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
   nonisolated var flags: OcaControllerFlags { .supportsLocking }
@@ -46,7 +33,7 @@ actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
 
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
-  private let inputStream: AsyncStream<WSMessage>
+  private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
   private let outputStream: AsyncStream<WSMessage>.Continuation
   var endpoint: Ocp1FlyingFoxDeviceEndpoint?
 
@@ -55,7 +42,7 @@ actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
   var lastMessageSentTime = ContinuousClock.recentPast
 
   var messages: AsyncExtensions.AnyAsyncSequence<Ocp1MessageList> {
-    inputStream.ocp1DecodedMessages.eraseToAnyAsyncSequence()
+    _messages.eraseToAnyAsyncSequence()
   }
 
   init(
@@ -63,9 +50,27 @@ actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
     inputStream: AsyncStream<WSMessage>,
     outputStream: AsyncStream<WSMessage>.Continuation
   ) {
-    self.inputStream = inputStream
     self.outputStream = outputStream
     self.endpoint = endpoint
+    _messages = AsyncThrowingStream { continuation in
+      let task = Task { [inputStream] in
+        do {
+          for await message in inputStream {
+            guard case let .data(data) = message else {
+              throw Ocp1Error.invalidMessageType
+            }
+
+            continuation.yield(try Ocp1MessageList(messagePduData: data))
+          }
+
+          continuation.finish()
+        } catch {
+          continuation.finish(throwing: error)
+        }
+      }
+
+      continuation.onTermination = { @Sendable _ in task.cancel() }
+    }
   }
 
   var heartbeatTime = Duration.seconds(0) {
