@@ -226,6 +226,21 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     false
   }
 
+  public func isReadLocked(by controller: any OcaController) -> Bool {
+    switch lockState {
+    case .unlocked:
+      break
+    case .lockedNoWrite:
+      break
+    case let .lockedNoReadWrite(lockholder):
+      guard controller.id == lockholder else {
+        return true
+      }
+    }
+
+    return false
+  }
+
   open func ensureReadable(
     by controller: any OcaController,
     command: Ocp1Command
@@ -234,16 +249,24 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
       try await deviceManager.ensureReadable(by: controller, command: command)
     }
 
+    guard !isReadLocked(by: controller) else {
+      throw Ocp1Error.status(.locked)
+    }
+  }
+
+  public func isWriteLocked(by controller: any OcaController) -> Bool {
     switch lockState {
     case .unlocked:
       break
-    case .lockedNoWrite:
-      break
+    case let .lockedNoWrite(lockholder):
+      fallthrough
     case let .lockedNoReadWrite(lockholder):
       guard controller.id == lockholder else {
-        throw Ocp1Error.status(.locked)
+        return true
       }
     }
+
+    return false
   }
 
   /// Important note: when subclassing you will typically want to override ensureWritable() to
@@ -256,15 +279,8 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
       try await deviceManager.ensureWritable(by: controller, command: command)
     }
 
-    switch lockState {
-    case .unlocked:
-      break
-    case let .lockedNoWrite(lockholder):
-      fallthrough
-    case let .lockedNoReadWrite(lockholder):
-      guard controller.id == lockholder else {
-        throw Ocp1Error.status(.locked)
-      }
+    guard !isWriteLocked(by: controller) else {
+      throw Ocp1Error.status(.locked)
     }
   }
 
