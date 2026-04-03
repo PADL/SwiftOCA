@@ -53,7 +53,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
   )
   public var saturationMode: OcaString?
 
-  open func set(members: [Member]) async throws {
+  open func set(members: [Member], controller: any OcaController) async throws {
     guard members.allSatisfy({ $0.objectNumber != OcaInvalidONo }) else {
       throw Ocp1Error.status(.badONo)
     }
@@ -61,7 +61,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
     try? await notifySubscribers(actionObjects: members, changeType: .itemChanged)
   }
 
-  open func add(member: Member) async throws {
+  open func add(member: Member, controller: any OcaController) async throws {
     guard member.objectNumber != OcaInvalidONo else {
       throw Ocp1Error.status(.badONo)
     }
@@ -74,7 +74,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
     try? await notifySubscribers(actionObjects: members, changeType: .itemAdded)
   }
 
-  open func delete(member: Member) async throws {
+  open func delete(member: Member, controller: any OcaController) async throws {
     guard member.objectNumber != OcaInvalidONo else {
       throw Ocp1Error.status(.badONo)
     }
@@ -107,7 +107,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
         return member
       }
       try await ensureWritable(by: controller, command: command)
-      try await set(members: members)
+      try await set(members: members, controller: controller)
       return Ocp1Response()
     case OcaMethodID("3.3"): // AddMember
       let memberONo: OcaONo = try decodeCommand(command)
@@ -116,7 +116,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
         throw Ocp1Error.invalidObject(memberONo)
       }
       try await ensureWritable(by: controller, command: command)
-      try await add(member: member)
+      try await add(member: member, controller: controller)
       return Ocp1Response()
     case OcaMethodID("3.4"): // DeleteMember
       let memberONo: OcaONo = try decodeCommand(command)
@@ -125,7 +125,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
         throw Ocp1Error.invalidObject(memberONo)
       }
       try await ensureWritable(by: controller, command: command)
-      try await delete(member: member)
+      try await delete(member: member, controller: controller)
       return Ocp1Response()
     case OcaMethodID("3.5"): // GroupControllerONo
       try decodeNullCommand(command)
@@ -214,19 +214,19 @@ open class _OcaPeerToPeerGroup<Member: OcaGroupPeerToPeerMember>: OcaGroup<Membe
     )
   }
 
-  override open func set(members: [Member]) async throws {
+  override open func set(members: [Member], controller: any OcaController) async throws {
     members.forEach { $0.group = self }
-    try await super.set(members: members)
+    try await super.set(members: members, controller: controller)
   }
 
-  override open func add(member: Member) async throws {
+  override open func add(member: Member, controller: any OcaController) async throws {
     member.group = self
-    try await super.add(member: member)
+    try await super.add(member: member, controller: controller)
   }
 
-  override open func delete(member: Member) async throws {
+  override open func delete(member: Member, controller: any OcaController) async throws {
     member.group = nil
-    try await super.delete(member: member)
+    try await super.delete(member: member, controller: controller)
   }
 }
 
