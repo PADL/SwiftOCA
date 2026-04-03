@@ -53,7 +53,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
   )
   public var saturationMode: OcaString?
 
-  open func set(members: [Member], controller: any OcaController) async throws {
+  open func set(members: [Member], controller: (any OcaController)? = nil) async throws {
     guard members.allSatisfy({ $0.objectNumber != OcaInvalidONo }) else {
       throw Ocp1Error.status(.badONo)
     }
@@ -61,7 +61,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
     try? await notifySubscribers(actionObjects: members, changeType: .itemChanged)
   }
 
-  open func add(member: Member, controller: any OcaController) async throws {
+  open func add(member: Member, controller: (any OcaController)? = nil) async throws {
     guard member.objectNumber != OcaInvalidONo else {
       throw Ocp1Error.status(.badONo)
     }
@@ -74,7 +74,7 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
     try? await notifySubscribers(actionObjects: members, changeType: .itemAdded)
   }
 
-  open func delete(member: Member, controller: any OcaController) async throws {
+  open func delete(member: Member, controller: (any OcaController)? = nil) async throws {
     guard member.objectNumber != OcaInvalidONo else {
       throw Ocp1Error.status(.badONo)
     }
@@ -214,17 +214,17 @@ open class _OcaPeerToPeerGroup<Member: OcaGroupPeerToPeerMember>: OcaGroup<Membe
     )
   }
 
-  override open func set(members: [Member], controller: any OcaController) async throws {
+  override open func set(members: [Member], controller: (any OcaController)? = nil) async throws {
     members.forEach { $0.group = self }
     try await super.set(members: members, controller: controller)
   }
 
-  override open func add(member: Member, controller: any OcaController) async throws {
+  override open func add(member: Member, controller: (any OcaController)? = nil) async throws {
     member.group = self
     try await super.add(member: member, controller: controller)
   }
 
-  override open func delete(member: Member, controller: any OcaController) async throws {
+  override open func delete(member: Member, controller: (any OcaController)? = nil) async throws {
     member.group = nil
     try await super.delete(member: member, controller: controller)
   }
