@@ -60,7 +60,7 @@ actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
               throw Ocp1Error.invalidMessageType
             }
 
-            try continuation.yield(Ocp1MessageList(messagePduData: data))
+            continuation.yield(try Ocp1MessageList(messagePduData: data))
           }
 
           continuation.finish()
