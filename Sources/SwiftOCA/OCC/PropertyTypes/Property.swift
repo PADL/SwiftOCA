@@ -303,7 +303,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
       if flags.contains(.subscribeEvents) {
         let isSubscribed = await (try? object.isSubscribed) ?? false
         if !isSubscribed {
-          Task.detached { try await object.subscribe() }
+          Task { try await object.subscribe() }
         }
       }
 
