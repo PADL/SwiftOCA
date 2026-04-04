@@ -1253,6 +1253,79 @@ final class UnsafeStringInitializerTests: XCTestCase {
     }
   }
 
+  // MARK: - OcaClassID isSubclass tests
+
+  func testIsSubclassIdentity() {
+    let classID: OcaClassID = "1.2.3"
+    XCTAssertTrue(classID.isSubclass(of: classID))
+  }
+
+  func testIsSubclassOfParent() {
+    let parent: OcaClassID = "1.2"
+    let child: OcaClassID = "1.2.3"
+    XCTAssertTrue(child.isSubclass(of: parent))
+  }
+
+  func testIsSubclassOfGrandparent() {
+    let root: OcaClassID = "1"
+    let child: OcaClassID = "1.2.3.4"
+    XCTAssertTrue(child.isSubclass(of: root))
+  }
+
+  func testIsSubclassOfEmptyClassID() {
+    let classID: OcaClassID = "1.2.3"
+    let empty = OcaClassID([])
+    XCTAssertTrue(classID.isSubclass(of: empty))
+  }
+
+  func testIsNotSubclassOfChild() {
+    let parent: OcaClassID = "1.2"
+    let child: OcaClassID = "1.2.3"
+    XCTAssertFalse(parent.isSubclass(of: child))
+  }
+
+  func testIsNotSubclassOfSibling() {
+    let a: OcaClassID = "1.2.3"
+    let b: OcaClassID = "1.2.4"
+    XCTAssertFalse(a.isSubclass(of: b))
+    XCTAssertFalse(b.isSubclass(of: a))
+  }
+
+  func testIsNotSubclassOfUnrelatedClass() {
+    let a: OcaClassID = "1.2.3"
+    let b: OcaClassID = "1.3.3"
+    XCTAssertFalse(a.isSubclass(of: b))
+  }
+
+  func testIsSubclassWithProprietaryClass() {
+    let parent: OcaClassID = "1.2"
+    let authority = OcaOrganizationID((0x01, 0x02, 0x03))
+    let child = OcaClassID(parent: parent, authority: authority, 1 as OcaUint16)
+    XCTAssertTrue(child.isSubclass(of: parent))
+    XCTAssertFalse(parent.isSubclass(of: child))
+  }
+
+  func testIsSubclassProprietarySiblings() {
+    let parent: OcaClassID = "1.2"
+    let authority = OcaOrganizationID((0x01, 0x02, 0x03))
+    let a = OcaClassID(parent: parent, authority: authority, 1 as OcaUint16)
+    let b = OcaClassID(parent: parent, authority: authority, 2 as OcaUint16)
+    XCTAssertFalse(a.isSubclass(of: b))
+    XCTAssertFalse(b.isSubclass(of: a))
+  }
+
+  func testClassIdentificationIsSubclass() {
+    let parentID = OcaClassIdentification(classID: "1.2", classVersion: 2)
+    let childID = OcaClassIdentification(classID: "1.2.3", classVersion: 1)
+    XCTAssertTrue(childID.isSubclass(of: parentID))
+  }
+
+  func testClassIdentificationIsNotSubclassIfVersionTooHigh() {
+    let parentID = OcaClassIdentification(classID: "1.2", classVersion: 1)
+    let childID = OcaClassIdentification(classID: "1.2.3", classVersion: 2)
+    XCTAssertFalse(childID.isSubclass(of: parentID))
+  }
+
   // MARK: - Data Slice Decoding Regression Tests
 
   /// Verify decoding from non-zero-startIndex Data slices works correctly.
