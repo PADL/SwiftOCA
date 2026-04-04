@@ -428,7 +428,10 @@ extension Ocp1Connection {
     }
 
     if reconnectDevice {
-      precondition(currentConnectionState == .reconnecting)
+      guard currentConnectionState == .reconnecting else {
+        logger.trace("connection state changed during disconnect, skipping reconnection")
+        throw currentConnectionState.error ?? Ocp1Error.notConnected
+      }
       reconnectTask?.cancel()
       reconnectTask = Task { [weak self] in
         try await self?.reconnectDeviceWithBackoff()
