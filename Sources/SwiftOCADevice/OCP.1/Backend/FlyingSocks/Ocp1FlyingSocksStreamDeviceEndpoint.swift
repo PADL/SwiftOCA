@@ -216,7 +216,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
   }
   #endif
 
-  @available(macOS, deprecated: 17.0, renamed: "listenForControllersDiscarding(on:)")
+  @available(macOS, deprecated: 14.0, renamed: "listenForControllersDiscarding(on:)")
   @available(iOS, deprecated: 17.0, renamed: "listenForControllersDiscarding(on:)")
   @available(tvOS, deprecated: 17.0, renamed: "listenForControllersDiscarding(on:)")
   private func listenForControllersFallback(on socket: AsyncSocket) async throws {
