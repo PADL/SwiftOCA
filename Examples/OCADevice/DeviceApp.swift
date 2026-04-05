@@ -97,6 +97,12 @@ public enum DeviceApp {
     #endif
     let webSocketEndpoint = try await Ocp1WSDeviceEndpoint(address: listenAddress.data)
     #endif
+    #if canImport(Darwin)
+    let machPortEndpoint = try await Ocp1MachPortDeviceEndpoint(
+      serviceName: "com.padl.OCADevice",
+      device: device
+    )
+    #endif
 
     class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
       override open class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
@@ -197,6 +203,12 @@ public enum DeviceApp {
       taskGroup.addTask {
         print("Starting OCP.1 WebSocket endpoint \(webSocketEndpoint)...")
         try await webSocketEndpoint.run()
+      }
+      #endif
+      #if canImport(Darwin)
+      taskGroup.addTask {
+        print("Starting OCP.1 Mach port endpoint \(machPortEndpoint)...")
+        try await machPortEndpoint.run()
       }
       #endif
       try await taskGroup.next()
