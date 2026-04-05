@@ -15,11 +15,7 @@
 //
 
 import AsyncExtensions
-#if canImport(FoundationEssentials)
-import FoundationEssentials
-#else
 import Foundation
-#endif
 
 open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyPathRepresentable {
   typealias Root = OcaRoot
@@ -345,7 +341,12 @@ public extension OcaRoot {
       keyPath: AnyKeyPath,
       flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> [String: any Sendable] {
-      try [keyPath.jsonKey: String(describing: value)]
+      let jsonValue: any Sendable = if JSONSerialization.isValidJSONObject(value) {
+        value
+      } else {
+        try JSONEncoder().reencodeAsValidJSONObject(value)
+      }
+      return try [keyPath.jsonKey: jsonValue]
     }
 
     @_spi(SwiftOCAPrivate)
