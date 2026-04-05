@@ -606,7 +606,7 @@ public extension OcaRoot {
   }
 }
 
-package extension OcaONo {
+public extension OcaONo {
   var oNoString: String {
     "<0x\(hexString(width: 8))>"
   }
