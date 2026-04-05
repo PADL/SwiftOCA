@@ -75,6 +75,9 @@ public let OcaSecureTcpConnectionPrefix = "ocasec/tcp"
 public let OcaWebSocketTcpConnectionPrefix = "ocaws/tcp"
 public let OcaLocalConnectionPrefix = "oca/local"
 public let OcaDatagramProxyConnectionPrefix = "oca/dg-proxy"
+#if canImport(Darwin)
+public let OcaMachPortConnectionPrefix = "oca/mach"
+#endif
 
 public struct Ocp1ConnectionFlags: OptionSet, Sendable {
   public static let automaticReconnect = Ocp1ConnectionFlags(rawValue: 1 << 0)
