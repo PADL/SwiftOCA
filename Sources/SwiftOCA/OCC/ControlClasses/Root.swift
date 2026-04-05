@@ -345,7 +345,12 @@ public extension OcaRoot {
       keyPath: AnyKeyPath,
       flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> [String: any Sendable] {
-      try [keyPath.jsonKey: String(describing: value)]
+      let jsonValue: any Sendable = if JSONSerialization.isValidJSONObject(value) {
+        value
+      } else {
+        try JSONEncoder().reencodeAsValidJSONObject(value)
+      }
+      return try [keyPath.jsonKey: jsonValue]
     }
 
     @_spi(SwiftOCAPrivate)
