@@ -129,6 +129,7 @@ let CommonPackageDependencies: [Package.Dependency] = [
   .package(url: "https://github.com/lhoward/AsyncExtensions", from: "0.9.0"),
   .package(url: "https://github.com/Flight-School/AnyCodable", from: "0.6.7"),
   .package(url: "https://github.com/1024jp/GzipSwift", from: "6.1.0"),
+  .package(url: "https://github.com/stephencelis/SQLite.swift.git", from: "0.16.0"),
 ]
 
 let CommonProducts: [Product] = [
@@ -168,6 +169,7 @@ let CommonTargets: [Target] = [
       "SwiftOCA",
       .product(name: "Logging", package: "swift-log"),
       .product(name: "Gzip", package: "GzipSwift"),
+      .product(name: "SQLite", package: "SQLite.swift"),
     ] + PlatformTargetDependencies,
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),
