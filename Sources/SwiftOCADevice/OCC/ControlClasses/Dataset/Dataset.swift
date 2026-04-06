@@ -383,8 +383,9 @@ extension OcaDataset {
       throw Ocp1Error.datasetMimeTypeMismatch
     }
 
+    let compress = self is OcaCompressibleDataset
     let blob: OcaLongBlob = try await deviceManager
-      .serializePatchDataset(paramDatasetONos: paramDatasetONos)
+      .serializePatchDataset(paramDatasetONos: paramDatasetONos, compress: compress)
     let (_, handle) = try await openWrite(lockState: .noLock, controller: controller)
     try await write(handle: handle, position: 0, part: blob, controller: controller)
     try await close(handle: handle, controller: controller)
