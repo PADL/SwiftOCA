@@ -40,6 +40,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     deviceDelegate: OcaDevice?
   ) throws {
     let db = try Connection(path)
+    try db.run("PRAGMA auto_vacuum = INCREMENTAL")
     _db = SendableConnectionBox(db)
     self.validDatasetONos = validDatasetONos
     self.validBlockONos = validBlockONos
@@ -263,6 +264,8 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     guard try db.run(query.delete()) > 0 else {
       throw Ocp1Error.unknownDataset
     }
+
+    try db.run("PRAGMA incremental_vacuum")
 
     try? await deviceDelegate?.deregister(objectNumber: datasetONo)
   }
