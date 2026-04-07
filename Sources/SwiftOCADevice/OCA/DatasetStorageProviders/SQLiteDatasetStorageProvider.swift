@@ -227,12 +227,28 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
 
     let newONo = try newDatasetONo ?? allocateONo()
 
+    var newData = oldRow[colData]
+    let oldRowTargetONo = oldRow[colTargetONo].map { OcaONo($0) }
+    if let existingData = newData, oldRowTargetONo != newTargetONo {
+      guard let data = existingData.data(using: .utf8),
+            var jsonObject = try JSONSerialization
+            .jsonObject(with: data) as? [String: Any]
+      else {
+        throw Ocp1Error.invalidDatasetFormat
+      }
+      if jsonObject[objectNumberJSONKey] != nil {
+        jsonObject[objectNumberJSONKey] = newTargetONo
+        let updatedData = try JSONSerialization.data(withJSONObject: jsonObject)
+        newData = String(data: updatedData, encoding: .utf8)
+      }
+    }
+
     try db.run(datasets.insert(
       colDatasetONo <- Int64(newONo),
       colTargetONo <- Int64(newTargetONo),
       colName <- newName,
       colMimeType <- oldRow[colMimeType],
-      colData <- oldRow[colData]
+      colData <- newData
     ))
 
     return newONo
