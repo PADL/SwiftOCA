@@ -16,7 +16,7 @@
 
 #if canImport(Darwin)
 
-import Darwin.Mach
+@preconcurrency import Darwin.Mach
 import Foundation
 import Synchronization
 import SystemPackage
@@ -602,8 +602,7 @@ private func _bootstrap_check_in(
 
 // bootstrap_port is a global mutable var in the Mach headers, which triggers
 // concurrency warnings in Swift 6. It is effectively read-only after process init.
-@_extern(c, "bootstrap_port")
-private nonisolated(unsafe) var _bootstrapPort: mach_port_t
+private let _bootstrapPort: mach_port_t = bootstrap_port
 
 package enum Ocp1MachPortBootstrap {
   package static func lookUp(serviceName: String) throws -> mach_port_t {
