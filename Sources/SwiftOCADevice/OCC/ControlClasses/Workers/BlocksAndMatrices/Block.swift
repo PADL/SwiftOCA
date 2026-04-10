@@ -149,11 +149,16 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     signalPaths.removeValue(forKey: index)
   }
 
+  // this is deprecated (replaced with mostRecentParamDatasetONo) but we return
+  // zero to keep SwiftOCA clients happy
   @OcaDeviceProperty(
-    propertyID: OcaPropertyID("3.9"),
-    getMethodID: OcaMethodID("3.22")
+    propertyID: OcaPropertyID("3.4"),
+    getMethodID: OcaMethodID("3.11")
   )
-  public var mostRecentParamDatasetONo: OcaONo = OcaInvalidONo
+  public var mostRecentParamSetIdentifier: OcaLibVolIdentifier = .init(
+    library: OcaInvalidONo,
+    id: 0
+  )
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.5"),
@@ -172,6 +177,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     getMethodID: OcaMethodID("3.21")
   )
   public var configurability = OcaBlockConfigurability()
+
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.9"),
+    getMethodID: OcaMethodID("3.22")
+  )
+  public var mostRecentParamDatasetONo: OcaONo = OcaInvalidONo
 
   public typealias BlockApplyFunction<U> = (
     _ member: OcaRoot,
