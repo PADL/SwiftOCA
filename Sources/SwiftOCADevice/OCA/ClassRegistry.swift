@@ -165,7 +165,9 @@ public class OcaDeviceClassRegistry {
     try register(OcaControlNetwork.self)
     try register(OcaMediaTransportNetwork.self)
 
+    #if NonEmbeddedBuild
     // datasets
     try register(OcaDataset.self)
+    #endif
   }
 }

@@ -28,7 +28,7 @@ public final class Ocp1MachPortConnection: Ocp1Connection {
   private let serviceName: String
 
   /// send right to the device's per-controller receive port
-  private var serverPort: mach_port_t = mach_port_t(0)
+  private var serverPort: mach_port_t = .init(0)
   /// our local receive port handle
   private var clientHandle: Ocp1MachPortHandle?
   /// serial queue for blocking mach_msg receive calls

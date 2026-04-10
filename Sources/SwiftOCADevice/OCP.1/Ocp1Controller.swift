@@ -16,15 +16,21 @@
 
 import SwiftOCA
 
-#if os(macOS) || os(iOS)
+// macOS, iOS, embedded Linux uses FlyingSocks because it does not pull in
+// Foundation and because not all embedded Linux distributions have recent
+// enough kernels to support io_uring
+
+#if os(macOS) || os(iOS) || !NonEmbeddedBuild
 typealias Ocp1Controller = Ocp1FlyingSocksStreamController
 public typealias Ocp1DeviceEndpoint = Ocp1FlyingSocksStreamDeviceEndpoint
-public typealias Ocp1WSDeviceEndpoint = Ocp1FlyingFoxDeviceEndpoint
 #elseif os(Linux)
 typealias Ocp1Controller = Ocp1IORingStreamController
 public typealias Ocp1DeviceEndpoint = Ocp1IORingStreamDeviceEndpoint
-public typealias Ocp1WSDeviceEndpoint = Ocp1FlyingFoxDeviceEndpoint
 #elseif canImport(Android)
 typealias Ocp1Controller = Ocp1CFStreamController
 public typealias Ocp1DeviceEndpoint = Ocp1CFStreamDeviceEndpoint
+#endif
+
+#if canImport(FlyingFox) && NonEmbeddedBuild
+public typealias Ocp1WSDeviceEndpoint = Ocp1FlyingFoxDeviceEndpoint
 #endif

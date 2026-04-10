@@ -62,7 +62,8 @@ public enum DeviceApp {
     }
     let delegate = DeviceEventDelegate()
     await device.setEventDelegate(delegate)
-    #if os(Linux)
+
+    #if os(Linux) && NonEmbeddedBuild
     let streamEndpoint = try await Ocp1IORingStreamDeviceEndpoint(address: listenAddress.data)
     let datagramEndpoint = try await Ocp1IORingDatagramDeviceEndpoint(address: listenAddress.data)
     let stream6Endpoint = try await Ocp1IORingStreamDeviceEndpoint(address: listen6Address.data)
@@ -71,7 +72,7 @@ public enum DeviceApp {
       try? await Ocp1IORingStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
     let domainSocketDatagramEndpoint =
       try? await Ocp1IORingDatagramDeviceEndpoint(path: "/tmp/oca-device-dg.sock")
-    #elseif canImport(FlyingSocks)
+    #elseif canImport(FlyingSocks) && NonEmbeddedBuild
     let streamEndpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(address: listenAddress.data)
     let datagramEndpoint =
       try await Ocp1FlyingSocksDatagramDeviceEndpoint(address: listenAddress.data)
@@ -86,9 +87,10 @@ public enum DeviceApp {
     let domainSocketStreamEndpoint =
       try? await Ocp1FlyingSocksStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
     #else
-    let streamEndpoint = try await Ocp1StreamDeviceEndpoint(address: listenAddress.data)
+    let streamEndpoint = try await Ocp1DeviceEndpoint(address: listenAddress.data)
     #endif
-    #if canImport(FlyingSocks)
+
+    #if canImport(FlyingFox) && NonEmbeddedBuild
     listenAddress.sin_family = sa_family_t(AF_INET)
     listenAddress.sin_addr.s_addr = 0 // INADDR_ANY equivalent
     listenAddress.sin_port = (port + 2).bigEndian
@@ -153,7 +155,9 @@ public enum DeviceApp {
     )
     try await block.add(actionObject: gain)
 
+    #if NonEmbeddedBuild
     try await serializeDeserialize(device.rootBlock)
+    #endif
 
     let controlNetwork = try await SwiftOCADevice.OcaControlNetwork(deviceDelegate: device)
     Task { @OcaDevice in controlNetwork.state = .running }
@@ -166,6 +170,7 @@ public enum DeviceApp {
       }
     }
 
+    #if NonEmbeddedBuild
     try await withThrowingTaskGroup(of: Void.self) { taskGroup in
       taskGroup.addTask {
         print("Starting OCP.1 IPv4 stream endpoint \(streamEndpoint)...")
@@ -213,9 +218,14 @@ public enum DeviceApp {
       #endif
       try await taskGroup.next()
     }
+    #else
+    print("Starting OCP.1 IPv4 stream endpoint \(streamEndpoint)...")
+    try await streamEndpoint.run()
+    #endif
   }
 }
 
+#if NonEmbeddedBuild
 func serializeDeserialize(
   _ object: SwiftOCADevice
     .OcaBlock<SwiftOCADevice.OcaRoot>
@@ -230,3 +240,4 @@ func serializeDeserialize(
     debugPrint("serialization error: \(error)")
   }
 }
+#endif

@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if NonEmbeddedBuild
+
 import Foundation
 import SwiftOCA
 
@@ -207,3 +209,5 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     try? await deviceDelegate?.deregister(objectNumber: datasetONo)
   }
 }
+
+#endif

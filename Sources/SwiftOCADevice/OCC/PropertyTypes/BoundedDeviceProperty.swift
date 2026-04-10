@@ -16,7 +16,11 @@
 
 @preconcurrency
 import AsyncExtensions
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
@@ -64,6 +68,7 @@ public struct OcaBoundedDeviceProperty<
     try await storage.getOcp1Response()
   }
 
+  #if NonEmbeddedBuild
   func getJsonValue() throws -> any Sendable {
     let valueDict: [String: Value] =
       ["v": storage.subject.value.value,
@@ -72,6 +77,7 @@ public struct OcaBoundedDeviceProperty<
 
     return valueDict
   }
+  #endif
 
   private func setAndNotifySubscribers(
     object: OcaRoot,
@@ -81,6 +87,7 @@ public struct OcaBoundedDeviceProperty<
     try? await notifySubscribers(object: object, newValue.value)
   }
 
+  #if NonEmbeddedBuild
   func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
     let valueDict: [String: Value]
     if let dict = jsonValue as? [String: Value] {
@@ -108,6 +115,7 @@ public struct OcaBoundedDeviceProperty<
       OcaBoundedPropertyValue<Value>(value: value, in: lowerBound...upperBound)
     )
   }
+  #endif
 
   private func _validate(value: Value) throws {
     // check it is in range

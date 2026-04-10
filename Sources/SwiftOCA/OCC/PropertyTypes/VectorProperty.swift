@@ -165,6 +165,7 @@ public struct OcaVectorProperty<
     try await _storage._getValue(object, flags: flags)
   }
 
+  #if NonEmbeddedBuild
   public func getJsonValue(
     _ object: OcaRoot,
     keyPath: AnyKeyPath,
@@ -173,6 +174,7 @@ public struct OcaVectorProperty<
     let value = try await _getValue(object, flags: flags)
     return try [keyPath.jsonKey: [value.x, value.y]]
   }
+  #endif
 
   @_spi(SwiftOCAPrivate)
   public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {

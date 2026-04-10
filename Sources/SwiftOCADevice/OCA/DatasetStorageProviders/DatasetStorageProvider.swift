@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if NonEmbeddedBuild
+
 import SwiftOCA
 
 public protocol OcaDatasetStorageProvider: Actor {
@@ -60,3 +62,5 @@ public protocol OcaDatasetStorageProvider: Actor {
 
   func delete(targetONo: OcaONo?, datasetONo: OcaONo) async throws
 }
+
+#endif

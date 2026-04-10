@@ -23,7 +23,7 @@
 //  SOFTWARE.
 //
 
-#if os(macOS) || os(iOS)
+#if os(macOS) || os(iOS) || !NonEmbeddedBuild
 
 import FlyingSocks
 

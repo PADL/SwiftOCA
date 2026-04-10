@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if NonEmbeddedBuild
+
 import Foundation
 import SQLite
 import SwiftOCA
@@ -113,11 +115,10 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
   }
 
   public func getDatasetObjects(targetONo: OcaONo?) async throws -> [OcaDataset] {
-    let query: Table
-    if let targetONo {
-      query = datasets.filter(colTargetONo == Int64(targetONo) || colTargetONo == nil)
+    let query: Table = if let targetONo {
+      datasets.filter(colTargetONo == Int64(targetONo) || colTargetONo == nil)
     } else {
-      query = datasets
+      datasets
     }
 
     let rows = try Array(db.prepare(query)).map(extractRowInfo)
@@ -270,3 +271,5 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     try? await deviceDelegate?.deregister(objectNumber: datasetONo)
   }
 }
+
+#endif
