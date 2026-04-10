@@ -39,12 +39,14 @@ public typealias Ocp1TCPConnection = Ocp1IORingStreamConnection
 #elseif canImport(FlyingSocks)
 public typealias Ocp1UDPConnection = Ocp1FlyingSocksDatagramConnection
 public typealias Ocp1TCPConnection = Ocp1FlyingSocksStreamConnection
-#if os(macOS) || os(iOS)
-public typealias Ocp1WSConnection = Ocp1FlyingFoxConnection
-#endif
-#else
+#elseif canImport(CoreFoundation) && NonEmbeddedBuild
 public typealias Ocp1UDPConnection = Ocp1CFSocketUDPConnection
 public typealias Ocp1TCPConnection = Ocp1CFSocketTCPConnection
+#endif
+
+#if os(macOS) || os(iOS)
+// note: not available on Linux because some Foundation networking unavailable
+public typealias Ocp1WSConnection = Ocp1FlyingFoxConnection
 #endif
 
 public typealias OcaSubscriptionCallback = @Sendable (OcaEvent, Data) async throws

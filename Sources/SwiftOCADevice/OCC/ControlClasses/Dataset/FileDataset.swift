@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if NonEmbeddedBuild
+
 import Foundation
 import SwiftOCA
 #if canImport(IORing)
@@ -377,3 +379,5 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     try (dirEntry.size, maxSize)
   }
 }
+
+#endif

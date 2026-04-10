@@ -101,6 +101,7 @@ final class SwiftOCADeviceTests: XCTestCase {
       }
     }
 
+    #if NonEmbeddedBuild
     let jsonSerializationExpectation =
       XCTestExpectation(description: "Ensure JSON serialization round-trips")
     let jsonObject = try await device.rootBlock.serialize()
@@ -109,6 +110,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(decoded as NSDictionary, jsonObject as NSDictionary)
     jsonSerializationExpectation.fulfill()
     await fulfillment(of: [jsonSerializationExpectation], timeout: 1)
+    #endif
 
     let connection = await OcaLocalConnection(endpoint)
     let endpointTask = Task { try? await endpoint.run() }
@@ -151,6 +153,7 @@ final class SwiftOCADeviceTests: XCTestCase {
 
     await fulfillment(of: [controllerExpectation2], timeout: 1)
 
+    #if NonEmbeddedBuild
     let datasetParamStorageExpectation =
       XCTestExpectation(description: "Check dataset parameter storage provider")
     let basePath = URL.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -184,6 +187,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     )
     try await deviceManager.applyPatch(datasetONo: patchONo, controller: nil)
     datasetPatchStorageExpectation.fulfill()
+    #endif
 
     try await connection.disconnect()
     endpointTask.cancel()
@@ -357,6 +361,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     endpointTask.cancel()
   }
 
+  #if NonEmbeddedBuild
   func testBlockGlobalTypeSerialization() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
@@ -630,6 +635,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     let setting = await actuator.setting
     XCTAssertFalse(setting)
   }
+  #endif
 
   func testKeyPathUncached() async throws {
     let device = OcaDevice()

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-#if canImport(CoreFoundation)
+#if canImport(CoreFoundation) && NonEmbeddedBuild
 
 import AsyncAlgorithms
 import AsyncExtensions

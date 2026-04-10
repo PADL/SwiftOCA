@@ -49,6 +49,7 @@ extension OcaDeviceEndpointPrivate {
     await controller.cancelKeepAlive()
 
     Task { await device.eventDelegate?.onControllerExpiry(controller) }
+    #if NonEmbeddedBuild
     Task {
       for dataset in await device.objects.values.compactMap({
         $0 as? OcaDataset
@@ -56,6 +57,7 @@ extension OcaDeviceEndpointPrivate {
         await dataset.expireIOSessionHandles(controller: controller)
       }
     }
+    #endif
     await device.unlockAll(controller: controller)
     await remove(controller: controller)
     try? await controller.close()

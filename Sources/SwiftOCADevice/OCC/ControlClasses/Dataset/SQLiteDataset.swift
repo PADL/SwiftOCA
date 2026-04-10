@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if NonEmbeddedBuild
+
 import Foundation
 import SQLite
 import SwiftOCA
@@ -212,3 +214,5 @@ final class OcaSQLiteDataset: OcaDataset, @unchecked Sendable {
     return (OcaUint64(data.count), maxSize)
   }
 }
+
+#endif

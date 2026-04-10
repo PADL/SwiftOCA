@@ -303,8 +303,12 @@ final class MachPortConnectionTests: XCTestCase {
     let tcpMs = Double(tcpElapsed.components.seconds) * 1000.0
       + Double(tcpElapsed.components.attoseconds) / 1e15
 
-    print("Mach port: \(iterations) iterations in \(String(format: "%.1f", machMs))ms (\(String(format: "%.2f", machMs / Double(iterations)))ms/iter)")
-    print("TCP:       \(iterations) iterations in \(String(format: "%.1f", tcpMs))ms (\(String(format: "%.2f", tcpMs / Double(iterations)))ms/iter)")
+    print(
+      "Mach port: \(iterations) iterations in \(String(format: "%.1f", machMs))ms (\(String(format: "%.2f", machMs / Double(iterations)))ms/iter)"
+    )
+    print(
+      "TCP:       \(iterations) iterations in \(String(format: "%.1f", tcpMs))ms (\(String(format: "%.2f", tcpMs / Double(iterations)))ms/iter)"
+    )
     print("Speedup:   \(String(format: "%.1f", tcpMs / machMs))x")
   }
 

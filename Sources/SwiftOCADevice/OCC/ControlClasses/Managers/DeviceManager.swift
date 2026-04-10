@@ -150,6 +150,7 @@ open class OcaDeviceManager: OcaManager {
   )
   public var mostRecentPatchDatasetONo: OcaONo = OcaInvalidONo
 
+  #if NonEmbeddedBuild
   var datasetFilter: OcaRoot.SerializationFilterFunction? = { object, propertyID, _ in
     precondition(object.objectNumber == OcaDeviceManagerONo)
 
@@ -159,6 +160,7 @@ open class OcaDeviceManager: OcaManager {
   public func set(datasetFilter: OcaRoot.SerializationFilterFunction?) {
     self.datasetFilter = datasetFilter
   }
+  #endif
 
   open func setResetKey(
     key: Data,
@@ -168,6 +170,7 @@ open class OcaDeviceManager: OcaManager {
     throw Ocp1Error.notImplemented
   }
 
+  #if NonEmbeddedBuild
   open func applyPatch(
     datasetONo: OcaONo,
     controller: OcaController?,
@@ -183,6 +186,7 @@ open class OcaDeviceManager: OcaManager {
     try await dataset.applyPatch(to: self, controller: controller, filter: filter)
     mostRecentPatchDatasetONo = datasetONo
   }
+  #endif
 
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
@@ -203,11 +207,13 @@ open class OcaDeviceManager: OcaManager {
       try await ensureWritable(by: controller, command: command)
       try await setResetKey(key: Data(parameters.keyBytes), address: parameters.address)
       return Ocp1Response()
+    #if NonEmbeddedBuild
     case OcaMethodID("3.27"):
       let oNo: OcaONo = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
       try await applyPatch(datasetONo: oNo, controller: controller)
       return Ocp1Response()
+    #endif
     default:
       return try await super.handleCommand(command, from: controller)
     }

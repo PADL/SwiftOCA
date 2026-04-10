@@ -23,9 +23,10 @@ public protocol OcaBlockContainer: OcaRoot {
   associatedtype ActionObject: OcaRoot
 
   var actionObjects: [ActionObject] { get }
+  #if NonEmbeddedBuild
   var datasetObjects: [OcaDataset] { get async throws }
-
   var globalType: OcaGlobalTypeIdentifier? { get }
+  #endif
 }
 
 open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
@@ -38,6 +39,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   public var type: OcaONo = OcaInvalidONo
 
   public private(set) var actionObjects = [ActionObject]()
+
+  #if NonEmbeddedBuild
   public var datasetObjects: [OcaDataset] {
     get async throws {
       guard let provider = await deviceDelegate?.datasetStorageProvider else {
@@ -52,6 +55,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   public func set(datasetFilter: OcaRoot.SerializationFilterFunction?) {
     self.datasetFilter = datasetFilter
   }
+  #endif
 
   private func notifySubscribers(
     actionObjects: [ActionObject],
@@ -327,6 +331,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }.collect()
   }
 
+  #if NonEmbeddedBuild
   private typealias DatasetApplyFunction<U> = (
     _ member: OcaDataset,
     _ container: any OcaBlockContainer
@@ -592,6 +597,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   ) async throws -> [OcaDataset] {
     throw Ocp1Error.notImplemented
   }
+  #endif
 
   override open func handleCommand(
     _ command: Ocp1Command,
@@ -671,6 +677,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         resultFlags: params.resultFlags
       )
       return try encodeResponse(searchResult)
+    #if NonEmbeddedBuild
     case OcaMethodID("3.23"):
       let params: OcaONo = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -753,7 +760,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         return OcaDatasetSearchResult(object: blockMember, name: dataset.name, type: dataset.type)
       }
       return try encodeResponse(searchResults)
-    // 3.32 FindDatasetsRecursive
+      // 3.32 FindDatasetsRecursive
+    #endif
     default:
       return try await super.handleCommand(command, from: controller)
     }
@@ -764,6 +772,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     true
   }
 
+  #if NonEmbeddedBuild
   override open func serialize(
     flags: OcaRoot.SerializationFlags = [],
     filter: OcaRoot.SerializationFilterFunction? = nil
@@ -815,6 +824,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       )
     }
   }
+  #endif
 }
 
 public extension OcaRoot {

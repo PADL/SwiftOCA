@@ -34,7 +34,7 @@ private func _MACH_MSGH_BITS(
   remote | (local << 8)
 }
 
-private let _MACH_MSGH_BITS_COMPLEX = mach_msg_bits_t(0x80000000)
+private let _MACH_MSGH_BITS_COMPLEX = mach_msg_bits_t(0x8000_0000)
 private let _MAX_TRAILER_SIZE = MemoryLayout<mach_msg_max_trailer_t>.size
 
 // MARK: - Transport message kinds
@@ -507,11 +507,10 @@ package final class Ocp1MachPortHandle: Sendable {
       } else {
         let msgSize = Int(hdr.pointee.msgh_size)
         let payloadSize = msgSize - headerSize
-        let payload: Data
-        if payloadSize > 0 {
-          payload = Data(bytes: buffer.advanced(by: headerSize), count: payloadSize)
+        let payload = if payloadSize > 0 {
+          Data(bytes: buffer.advanced(by: headerSize), count: payloadSize)
         } else {
-          payload = Data()
+          Data()
         }
         return Ocp1MachPortEnvelope(
           kind: .data,

@@ -48,7 +48,9 @@ public actor OcaDevice {
   var logger = Logger(label: "com.padl.SwiftOCADevice")
 
   weak var eventDelegate: OcaDeviceEventDelegate?
+  #if NonEmbeddedBuild
   weak var datasetStorageProvider: OcaDatasetStorageProvider?
+  #endif
 
   public func allocateObjectNumber() -> OcaONo {
     while objects[nextObjectNumber] != nil {
@@ -267,11 +269,13 @@ public actor OcaDevice {
     self.eventDelegate = eventDelegate
   }
 
+  #if NonEmbeddedBuild
   public func setDatasetStorageProvider(
     _ storageProvider: OcaDatasetStorageProvider
   ) {
     datasetStorageProvider = storageProvider
   }
+  #endif
 
   public func resolve<T: OcaRoot>(objectNumber: OcaONo) -> T? {
     objects[objectNumber] as? T

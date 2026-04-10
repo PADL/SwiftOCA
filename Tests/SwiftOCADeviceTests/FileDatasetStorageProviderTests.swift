@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+#if NonEmbeddedBuild
+
 import Foundation
 @testable @_spi(SwiftOCAPrivate) import SwiftOCA
 @testable @_spi(SwiftOCAPrivate) import SwiftOCADevice
@@ -473,3 +475,5 @@ final class FileDatasetStorageProviderTests: XCTestCase {
     endpointTask.cancel()
   }
 }
+
+#endif
