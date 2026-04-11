@@ -160,6 +160,9 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   }
 
   override public func connectDevice() async throws {
+    // release any existing socket before creating a new one (e.g. during reconnection retries)
+    _socket = nil
+
     let deviceAddress = _deviceAddress.criticalValue
     let socket = try Socket(
       ring: _ring,
@@ -216,6 +219,12 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   }
 
   override public func connectDevice() async throws {
+    // release any existing socket before creating a new one (e.g. during reconnection retries)
+    if let _boundAddress {
+      _ = try? unlink(_boundAddress.presentationAddress)
+    }
+    _socket = nil
+
     let deviceAddress = _deviceAddress.criticalValue
     let boundAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
     let ring = try IORing()
@@ -277,6 +286,9 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
   }
 
   override public func connectDevice() async throws {
+    // release any existing socket before creating a new one (e.g. during reconnection retries)
+    _socket = nil
+
     let deviceAddress: any SocketAddress = _deviceAddress.criticalValue
 
     let socket = try Socket(
