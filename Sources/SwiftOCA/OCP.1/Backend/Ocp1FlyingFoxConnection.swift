@@ -63,6 +63,9 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
   override public var isDatagram: Bool { false }
 
   override public func connectDevice() async throws {
+    // close any existing resources before creating new ones (e.g. during reconnection retries)
+    _cleanupConnection()
+
     let (stream, continuation) = AsyncThrowingStream.makeStream(of: Data.self)
     receivedMessageContinuation = continuation
     receivedMessageStream = stream
@@ -96,10 +99,15 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
       }
     }
 
-    try await super.connectDevice()
+    do {
+      try await super.connectDevice()
+    } catch {
+      _cleanupConnection()
+      throw error
+    }
   }
 
-  override public func disconnectDevice() async throws {
+  private func _cleanupConnection() {
     receiveTask?.cancel()
     receiveTask = nil
     webSocketTask?.cancel(with: .normalClosure, reason: nil)
@@ -109,6 +117,10 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
     receivedMessageStream = nil
     session?.invalidateAndCancel()
     session = nil
+  }
+
+  override public func disconnectDevice() async throws {
+    _cleanupConnection()
     try await super.disconnectDevice()
   }
 

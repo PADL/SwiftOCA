@@ -55,6 +55,16 @@ public final class Ocp1MachPortConnection: Ocp1Connection {
   }
 
   override public func connectDevice() async throws {
+    // close any existing resources before creating new ones (e.g. during reconnection retries)
+    if serverPort != mach_port_t(0) {
+      try? clientHandle?.sendDisconnect(to: serverPort)
+      Ocp1MachPortHandle.deallocateSendRight(serverPort)
+      serverPort = mach_port_t(0)
+    }
+    clientHandle?.destroy()
+    clientHandle = nil
+    receiveQueue = nil
+
     // 1. Look up the device's listener port via bootstrap
     let listenerPort = try Ocp1MachPortBootstrap.lookUp(serviceName: serviceName)
     defer { Ocp1MachPortHandle.deallocateSendRight(listenerPort) }

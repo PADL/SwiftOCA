@@ -246,18 +246,35 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
   }
 
   override public func connectDevice() async throws {
+    // close any existing socket before creating a new one (e.g. during reconnection retries)
+    if let existingSocket = _asyncSocket {
+      try? existingSocket.close()
+      _asyncSocket = nil
+    }
+
     let socket = try _deviceAddress.withLock { deviceAddress in
       let socket = try Socket(domain: Int32(deviceAddress.family), type: socketType)
       try? setSocketOptions(socket, family: deviceAddress.family)
       // also connect UDP sockets to ensure we do not receive unsolicited replies
-      try socket.connect(to: deviceAddress)
+      do {
+        try socket.connect(to: deviceAddress)
+      } catch {
+        try? socket.close()
+        throw error
+      }
       return socket
     }
-    _asyncSocket = try await AsyncSocket(
-      socket: socket,
-      pool: AsyncSocketPoolMonitor.shared.get()
-    )
-    try await super.connectDevice()
+    do {
+      _asyncSocket = try await AsyncSocket(
+        socket: socket,
+        pool: AsyncSocketPoolMonitor.shared.get()
+      )
+      try await super.connectDevice()
+    } catch {
+      try? socket.close()
+      _asyncSocket = nil
+      throw error
+    }
   }
 
   override public func disconnectDevice() async throws {

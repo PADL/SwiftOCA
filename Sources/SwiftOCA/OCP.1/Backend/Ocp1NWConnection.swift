@@ -124,6 +124,17 @@ public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
   }
 
   override public func connectDevice() async throws {
+    // cancel any existing connection before starting a new one (e.g. during reconnection retries)
+    if _nwConnection.state != .setup {
+      _nwConnection.stateUpdateHandler = nil
+      _nwConnection.cancel()
+      _nwConnection = try NWConnection(to: nwEndpoint, using: parameters)
+      _nwConnection.stateUpdateHandler = { [weak self] state in
+        if let self, state == .cancelled {
+          Task { [weak self] in try await self?.disconnect() }
+        }
+      }
+    }
     _nwConnection.start(queue: _queue)
     try await super.connectDevice()
   }
