@@ -65,22 +65,31 @@ Sendable {
 public extension OcaGroup {
   @OcaConnection
   func resolveMembers<T: OcaRoot>() async throws -> [T] {
-    let groupController = try await resolveGroupController()
+    let groupController: OcaRoot? = try? await resolveGroupController()
     return try await resolveMembers(with: groupController)
   }
 
   @OcaConnection
-  func resolveMembers<T: OcaRoot>(with groupController: OcaRoot) async throws -> [T] {
+  func resolveMembers<T: OcaRoot>(with groupController: OcaRoot?) async throws -> [T] {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
     return try await _members.onCompletion(self) { members in
       var resolved = [T]()
-      let groupControllerClassID = type(of: groupController).classIdentification
+      let groupControllerClassID = groupController.map {
+        type(of: $0).classIdentification
+      }
 
       for member in members {
+        let classIdentification: OcaClassIdentification
+        if let groupControllerClassID {
+          classIdentification = groupControllerClassID
+        } else {
+          classIdentification = try await connectionDelegate
+            .getClassIdentification(objectNumber: member)
+        }
         let objectID = OcaObjectIdentification(
           oNo: member,
-          classIdentification: groupControllerClassID
+          classIdentification: classIdentification
         )
         guard let member = try await connectionDelegate.resolve(object: objectID) as? T
         else {
