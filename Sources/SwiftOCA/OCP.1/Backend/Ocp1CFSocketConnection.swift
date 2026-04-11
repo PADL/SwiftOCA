@@ -454,25 +454,26 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
     _deviceAddress.criticalValue.family
   }
 
-  override public func connectDevice() async throws {
-    // close any existing socket before creating a new one (e.g. during reconnection retries)
+  private func _cleanupConnection() {
     _socket?.close()
     _socket = nil
+  }
+
+  override public func connectDevice() async throws {
+    _cleanupConnection()
 
     let socket = try _CFSocketWrapper(address: _deviceAddress.criticalValue, type: _type)
     do {
       _socket = socket
       try await super.connectDevice()
     } catch {
-      socket.close()
-      _socket = nil
+      _cleanupConnection()
       throw error
     }
   }
 
   override public func disconnectDevice() async throws {
-    _socket?.close()
-    _socket = nil
+    _cleanupConnection()
     try await super.disconnectDevice()
   }
 }

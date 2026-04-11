@@ -245,12 +245,15 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     return FlyingSocks.AnySocketAddress(addr).data
   }
 
-  override public func connectDevice() async throws {
-    // close any existing socket before creating a new one (e.g. during reconnection retries)
-    if let existingSocket = _asyncSocket {
-      try? existingSocket.close()
-      _asyncSocket = nil
+  private func _cleanupConnection() {
+    if let _asyncSocket {
+      try? _asyncSocket.close()
+      self._asyncSocket = nil
     }
+  }
+
+  override public func connectDevice() async throws {
+    _cleanupConnection()
 
     let socket = try _deviceAddress.withLock { deviceAddress in
       let socket = try Socket(domain: Int32(deviceAddress.family), type: socketType)
@@ -271,18 +274,14 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
       )
       try await super.connectDevice()
     } catch {
-      try? socket.close()
-      _asyncSocket = nil
+      _cleanupConnection()
       throw error
     }
   }
 
   override public func disconnectDevice() async throws {
     await AsyncSocketPoolMonitor.shared.stop()
-    if let _asyncSocket {
-      try _asyncSocket.close()
-      self._asyncSocket = nil
-    }
+    _cleanupConnection()
     try await super.disconnectDevice()
   }
 

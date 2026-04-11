@@ -54,8 +54,7 @@ public final class Ocp1MachPortConnection: Ocp1Connection {
     true
   }
 
-  override public func connectDevice() async throws {
-    // close any existing resources before creating new ones (e.g. during reconnection retries)
+  private func _cleanupConnection() {
     if serverPort != mach_port_t(0) {
       try? clientHandle?.sendDisconnect(to: serverPort)
       Ocp1MachPortHandle.deallocateSendRight(serverPort)
@@ -64,6 +63,10 @@ public final class Ocp1MachPortConnection: Ocp1Connection {
     clientHandle?.destroy()
     clientHandle = nil
     receiveQueue = nil
+  }
+
+  override public func connectDevice() async throws {
+    _cleanupConnection()
 
     // 1. Look up the device's listener port via bootstrap
     let listenerPort = try Ocp1MachPortBootstrap.lookUp(serviceName: serviceName)
@@ -121,18 +124,7 @@ public final class Ocp1MachPortConnection: Ocp1Connection {
   }
 
   override public func disconnectDevice() async throws {
-    // best-effort disconnect notification
-    if serverPort != mach_port_t(0) {
-      try? clientHandle?.sendDisconnect(to: serverPort)
-      Ocp1MachPortHandle.deallocateSendRight(serverPort)
-      serverPort = mach_port_t(0)
-    }
-
-    receiveQueue = nil
-
-    clientHandle?.destroy()
-    clientHandle = nil
-
+    _cleanupConnection()
     try await super.disconnectDevice()
   }
 

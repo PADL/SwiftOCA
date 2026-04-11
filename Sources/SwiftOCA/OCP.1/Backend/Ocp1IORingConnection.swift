@@ -98,8 +98,12 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableConnection {
     )
   }
 
-  override public func disconnectDevice() async throws {
+  fileprivate func _cleanupConnection() {
     _socket = nil
+  }
+
+  override public func disconnectDevice() async throws {
+    _cleanupConnection()
     try await super.disconnectDevice()
   }
 
@@ -160,8 +164,7 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   }
 
   override public func connectDevice() async throws {
-    // release any existing socket before creating a new one (e.g. during reconnection retries)
-    _socket = nil
+    _cleanupConnection()
 
     let deviceAddress = _deviceAddress.criticalValue
     let socket = try Socket(
@@ -218,12 +221,15 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
     try super.init(socketAddress: socketAddress, options: options, ring: ring)
   }
 
-  override public func connectDevice() async throws {
-    // release any existing socket before creating a new one (e.g. during reconnection retries)
+  override fileprivate func _cleanupConnection() {
     if let _boundAddress {
       _ = try? unlink(_boundAddress.presentationAddress)
     }
-    _socket = nil
+    super._cleanupConnection()
+  }
+
+  override public func connectDevice() async throws {
+    _cleanupConnection()
 
     let deviceAddress = _deviceAddress.criticalValue
     let boundAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
@@ -266,9 +272,6 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   }
 
   override public func disconnectDevice() async throws {
-    if let _boundAddress {
-      _ = try? unlink(_boundAddress.presentationAddress)
-    }
     receiveBufferSize = nil
     try await super.disconnectDevice()
   }
@@ -286,8 +289,7 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
   }
 
   override public func connectDevice() async throws {
-    // release any existing socket before creating a new one (e.g. during reconnection retries)
-    _socket = nil
+    _cleanupConnection()
 
     let deviceAddress: any SocketAddress = _deviceAddress.criticalValue
 
