@@ -152,8 +152,19 @@ extension Ocp1Connection {
   /// refresh any existing subscriptions if the .refreshSubscriptionsOnReconnection flag is set
   private func _refreshSubscriptionsWithPolicy() async {
     if options.flags.contains(.refreshSubscriptionsOnReconnection) {
-      logger.debug("refreshing subscriptions")
+      let events = subscribedEvents
+      logger
+        .trace(
+          "\(self): refreshing \(events.count) subscriptions and \(objects.count) cached objects"
+        )
       await refreshSubscriptions()
+      guard isConnected else {
+        logger
+          .trace(
+            "\(self): connection lost during subscription refresh, skipping property refresh"
+          )
+        return
+      }
       await refreshCachedObjectProperties()
     }
   }
