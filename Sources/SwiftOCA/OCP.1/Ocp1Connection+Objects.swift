@@ -102,6 +102,14 @@ public extension Ocp1Connection {
   internal func refreshCachedObjectProperties() async {
     await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
       for object in objects {
+        guard isConnected else {
+          logger
+            .trace(
+              "\(self): refreshCachedObjectProperties: connection lost, cancelling remaining"
+            )
+          taskGroup.cancelAll()
+          break
+        }
         taskGroup.addTask {
           await object.value.refreshAllSubscribed()
         }
