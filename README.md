@@ -11,16 +11,19 @@ The package consists of three libraries:
 
 All APIs are async-safe and support both macOS and Linux: on macOS, [FlyingFox](https://github.com/swhitty/FlyingFox) is used for socket I/O, and on Linux, [IORingSwift](https://github.com/PADL/IORingSwift).
 
-| Platform | TCP | UDP client | UDP server | WS client | WS server | Local |
-| -:       | :-  | :-         | :-         | :-        | :-        | :-    |
-| macOS    | ✅  | ✅         | ✅         | ❌        | ✅        | ✅    |
-| Linux    | ✅  | ✅         | ✅         | ❌        | ❌        | ✅    |
+| Platform | TCP | UDP client | UDP server | WS client | WS server | Local | Mach |
+| -:       | :-  | :-         | :-         | :-        | :-        | :-    | :-   |
+| macOS    | ✅  | ✅         | ✅         | ✅        | ✅        | ✅    | ✅   |
+| iOS      | ✅  | ✅         | ✅         | ✅        | ✅        | ✅    | ✅   |
+| Linux    | ✅  | ✅         | ✅         | ❌        | ✅        | ✅    | ❌   |
 
 ## Features
 
 ### Controller (SwiftOCA)
 
-* **Device discovery**: `OcaConnectionBroker` discovers AES70 devices via DNS-SD/Bonjour (using `NetServiceBrowser` on Apple platforms, or `libdns_sd` on Linux), with support for both TCP and UDP service types. Devices can also be registered manually for direct connection without DNS-SD.
+* **Device discovery**: `OcaConnectionBroker` discovers AES70 devices via DNS-SD/Bonjour (using `NetServiceBrowser` on Apple platforms, or `libdns_sd` on Linux), with support for TCP, UDP, and WebSocket service types. Devices can also be registered manually for direct connection without DNS-SD.
+* **WebSocket transport**: `Ocp1FlyingFoxConnection` provides client-side WebSocket connectivity on Apple platforms using `URLSessionWebSocketTask`.
+* **Mach port transport**: `Ocp1MachPortConnection` provides fast local IPC between processes on Darwin using Mach ports.
 * **Property observation**: `@OcaProperty` and `@OcaBoundedProperty` wrappers expose property changes as `AsyncSequence` streams, enabling reactive UI updates.
 * **JSON serialization**: read the full state of any remote object or block tree as a JSON-compatible dictionary via `jsonObject`.
 * **Automatic reconnection**: optionally reconnect when a connection drops or a device's IP address changes via mDNS, with configurable options for subscription refresh and object cache retention.
@@ -31,7 +34,7 @@ All APIs are async-safe and support both macOS and Linux: on macOS, [FlyingFox](
 * **`@OcaDeviceProperty`**: property wrapper that manages local state and notifies connected controllers on changes.
 * **Block and matrix containers**: `OcaBlock` and `OcaMatrix` for organizing objects into hierarchical or grid-based topologies.
 * **JSON serialization/deserialization**: persist and restore device state via `serialize`/`deserialize` and the parameter dataset API.
-* **Multiple transport endpoints**: run TCP, UDP, WebSocket, and Unix domain socket endpoints concurrently.
+* **Multiple transport endpoints**: run TCP, UDP, WebSocket, Unix domain socket, and Mach port (Darwin) endpoints concurrently.
 
 ### SwiftOCAUI
 
