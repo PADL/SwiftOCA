@@ -139,16 +139,22 @@ public extension Ocp1Connection {
   }
 
   func addSubscriptions(events: [OcaEvent]) async {
+    let logger = logger
     await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
       for event in events {
         taskGroup.addTask { [self] in
-          try? await subscriptionManager.addSubscription(
-            event: event,
-            subscriber: subscriber,
-            subscriberContext: OcaBlob(),
-            notificationDeliveryMode: .normal,
-            destinationInformation: OcaNetworkAddress()
-          )
+          do {
+            try await subscriptionManager.addSubscription(
+              event: event,
+              subscriber: subscriber,
+              subscriberContext: OcaBlob(),
+              notificationDeliveryMode: .normal,
+              destinationInformation: OcaNetworkAddress()
+            )
+            logger.trace("\(self): addSubscriptions: refreshed \(event)")
+          } catch {
+            logger.warning("\(self): addSubscriptions: failed to refresh \(event): \(error)")
+          }
         }
       }
     }
