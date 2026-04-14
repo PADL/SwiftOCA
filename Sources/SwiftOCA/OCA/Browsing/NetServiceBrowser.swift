@@ -130,8 +130,10 @@ public final class OcaNetServiceBrowser: NSObject, OcaNetworkAdvertisingServiceB
   }
 
   public func start() async throws {
-    _browser.searchForServices(ofType: _serviceType.rawValue, inDomain: "local.")
-    _browser.schedule(in: .main, forMode: .default)
+    await MainActor.run {
+      _browser.schedule(in: .main, forMode: .default)
+      _browser.searchForServices(ofType: _serviceType.rawValue, inDomain: "local.")
+    }
   }
 
   private func _stop() {
