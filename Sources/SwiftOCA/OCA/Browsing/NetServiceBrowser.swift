@@ -100,14 +100,15 @@ private final class _NetServiceInfo: OcaNetworkAdvertisingServiceInfo {
   }
 
   static func == (lhs: _NetServiceInfo, rhs: _NetServiceInfo) -> Bool {
-    lhs.service == rhs.service && lhs.serviceType == rhs.serviceType && lhs._netService
-      .isEqual(rhs._netService)
+    lhs._netService.type == rhs._netService.type &&
+      lhs._netService.name == rhs._netService.name &&
+      lhs._netService.domain == rhs._netService.domain
   }
 
   func hash(into hasher: inout Hasher) {
-    service.hash(into: &hasher)
-    serviceType.hash(into: &hasher)
-    _netService.hash(into: &hasher)
+    _netService.type.hash(into: &hasher)
+    _netService.name.hash(into: &hasher)
+    _netService.domain.hash(into: &hasher)
   }
 }
 
