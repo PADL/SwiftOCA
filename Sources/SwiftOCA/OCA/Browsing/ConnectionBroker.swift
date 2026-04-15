@@ -350,7 +350,7 @@ public actor OcaConnectionBroker {
 
     if let existingDevice = _devices[deviceIdentifier] {
       // Device still in _devices (add arrived before remove, or address change)
-      try await withDeviceConnection(deviceIdentifier) { existingConnection in
+      try? await withDeviceConnection(deviceIdentifier) { existingConnection in
         let addressChanged = (try? existingDevice.addresses) != (try? device.addresses)
         if addressChanged,
            let mutableConnection = existingConnection as? Ocp1MutableConnection
@@ -389,14 +389,13 @@ public actor OcaConnectionBroker {
     _devices[deviceIdentifier] = nil
   }
 
-  private func _disableAutomaticReconnect(_ deviceIdentifier: DeviceIdentifier) async throws {
-    guard _connectionOptions.flags.contains(.automaticReconnect) else { return }
-    try await withDeviceConnection(deviceIdentifier) { connection in
-      guard await connection.options.flags.contains(.automaticReconnect) else { return }
-      let options = _connectionOptions
-        .copy(flags: _connectionOptions.flags.subtracting(.automaticReconnect))
-      try await connection.set(options: options)
-    }
+  private func _disableAutomaticReconnect(_ deviceIdentifier: DeviceIdentifier) async {
+    guard _connectionOptions.flags.contains(.automaticReconnect),
+          let connection = try? _getRegisteredConnection(for: deviceIdentifier)
+    else { return }
+    let options = _connectionOptions
+      .copy(flags: _connectionOptions.flags.subtracting(.automaticReconnect))
+    try? await connection.connection.set(options: options)
   }
 
   private func _onBrowserDeviceRemoved(
@@ -410,7 +409,7 @@ public actor OcaConnectionBroker {
       throw Ocp1Error.serviceResolutionFailed
     }
 
-    try await _disableAutomaticReconnect(deviceIdentifier)
+    await _disableAutomaticReconnect(deviceIdentifier)
     _removeDevice(with: deviceIdentifier)
 
     Task { [weak self] in
