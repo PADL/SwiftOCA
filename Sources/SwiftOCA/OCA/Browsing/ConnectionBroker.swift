@@ -351,8 +351,8 @@ public actor OcaConnectionBroker {
     if let existingDevice = _devices[deviceIdentifier] {
       // Device still in _devices (add arrived before remove, or address change)
       try? await withDeviceConnection(deviceIdentifier) { existingConnection in
-        let addressChanged = (try? existingDevice.addresses) != (try? device.addresses)
-        if addressChanged,
+        let firstAddressChanged = (try? existingDevice.firstAddress) != (try? device.firstAddress)
+        if firstAddressChanged,
            let mutableConnection = existingConnection as? Ocp1MutableConnection
         {
           mutableConnection.deviceAddress = try device.firstAddress
