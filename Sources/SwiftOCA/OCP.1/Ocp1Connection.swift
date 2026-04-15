@@ -30,6 +30,7 @@ import Darwin
 #endif
 import Logging
 import SocketAddress
+import Synchronization
 
 package let Ocp1MaximumDatagramPduSize = 1500
 
@@ -281,7 +282,7 @@ open class Ocp1Connection: CustomStringConvertible {
   }
 
   var subscriptions = [OcaEvent: EventSubscriptions]()
-  var logger = Logger(label: "com.padl.SwiftOCA")
+  nonisolated(unsafe) var logger = Logger(label: "com.padl.SwiftOCA")
   var connectionID = 0
 
   private var nextCommandHandle = CommandHandleBase
@@ -320,15 +321,17 @@ open class Ocp1Connection: CustomStringConvertible {
     }
   }
 
-  /// Monitor structure for matching requests and responses
-  @OcaConnection
+  /// Monitor for matching requests and responses.
+  /// Deliberately not isolated to `@OcaConnection` so that the
+  /// receiveMessages/keepAlive loops run on the default executor and
+  /// are not starved by work on other connections sharing the global actor.
   final class Monitor: Sendable, CustomStringConvertible {
     typealias Continuation = UnsafeContinuation<Ocp1Response, Error>
 
     private let _connection: Weak<Ocp1Connection>
     let _connectionID: Int
-    private var _continuations = [OcaUint32: Continuation]()
-    private var _lastMessageReceivedTime: ContinuousClock.Instant = .now
+    private let _continuations = Mutex<[OcaUint32: Continuation]>([:])
+    private let _lastMessageReceivedTime = Mutex<ContinuousClock.Instant>(.now)
 
     init(_ connection: Ocp1Connection, id: Int) {
       _connection = Weak(connection)
@@ -354,14 +357,18 @@ open class Ocp1Connection: CustomStringConvertible {
     }
 
     func register(handle: OcaUint32, continuation: Continuation) {
-      _continuations[handle] = continuation
+      _continuations.withLock { $0[handle] = continuation }
     }
 
     private func _resumeAllNotConnected() {
-      for continuation in _continuations.values {
+      let continuations = _continuations.withLock { continuations in
+        let values = Array(continuations.values)
+        continuations.removeAll()
+        return values
+      }
+      for continuation in continuations {
         continuation.resume(throwing: Ocp1Error.notConnected)
       }
-      _continuations.removeAll()
     }
 
     func resumeTimedOut(handle: OcaUint32) throws {
@@ -377,26 +384,28 @@ open class Ocp1Connection: CustomStringConvertible {
     private func _findAndRemoveContinuation(
       for handle: OcaUint32
     ) throws -> Continuation {
-      guard let continuation = _continuations[handle] else {
-        throw Ocp1Error.invalidHandle
+      try _continuations.withLock { continuations in
+        guard let continuation = continuations[handle] else {
+          throw Ocp1Error.invalidHandle
+        }
+        continuations.removeValue(forKey: handle)
+        return continuation
       }
-      _continuations.removeValue(forKey: handle)
-      return continuation
     }
 
     func updateLastMessageReceivedTime() {
-      _lastMessageReceivedTime = ContinuousClock.now
+      _lastMessageReceivedTime.withLock { $0 = .now }
     }
 
     fileprivate var outstandingRequests: [OcaUint32] {
-      Array(_continuations.keys)
+      _continuations.withLock { Array($0.keys) }
     }
 
     var lastMessageReceivedTime: ContinuousClock.Instant {
-      _lastMessageReceivedTime
+      _lastMessageReceivedTime.withLock { $0 }
     }
 
-    nonisolated var description: String {
+    var description: String {
       "Ocp1Connection.Monitor[\(_connectionID)]"
     }
   }

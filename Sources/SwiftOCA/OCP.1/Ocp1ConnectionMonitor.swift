@@ -73,7 +73,7 @@ extension Ocp1Connection.Monitor {
       connection.logger.warning("device sent unexpected command \(message); ignoring")
     case let notification as Ocp1Notification1:
       if notification.parameters.parameterCount == 2 {
-        connection.notifySubscribers(
+        await connection.notifySubscribers(
           of: notification.parameters.eventData.event,
           with: notification.parameters.eventData.eventParameters
         )
@@ -86,15 +86,16 @@ extension Ocp1Connection.Monitor {
       break
     case let notification as Ocp1Notification2:
       try notification.throwIfException()
-      connection.notifySubscribers(of: notification.event, with: notification.data)
+      await connection.notifySubscribers(of: notification.event, with: notification.data)
     default:
       throw Ocp1Error.unknownPduType
     }
   }
 
   private func onDatagramConnectionOpen(_ connection: Ocp1Connection) async {
-    if connection.isDatagram, connection.isConnecting {
-      connection.onConnectionOpen()
+    let (isDatagram, isConnecting) = await (connection.isDatagram, connection.isConnecting)
+    if isDatagram, isConnecting {
+      await connection.onConnectionOpen()
     }
   }
 
@@ -109,13 +110,13 @@ extension Ocp1Connection.Monitor {
     await onDatagramConnectionOpen(connection)
 
     for message in messages {
-      // connection.logger.trace("processing message \(message)")
       try await processMessage(connection, message)
     }
   }
 
   private func keepAlive(_ connection: Ocp1Connection) async throws {
-    let keepAliveThreshold = connection.heartbeatTime * 3
+    let heartbeatTime = await connection.heartbeatTime
+    let keepAliveThreshold = heartbeatTime * 3
 
     repeat {
       let now = ContinuousClock.now
@@ -128,9 +129,10 @@ extension Ocp1Connection.Monitor {
         throw Ocp1Error.missingKeepalive
       }
 
-      let timeSinceLastMessageSent = now - connection.lastMessageSentTime
-      var sleepTime = connection.heartbeatTime
-      if timeSinceLastMessageSent >= connection.heartbeatTime {
+      let lastMessageSentTime = await connection.lastMessageSentTime
+      let timeSinceLastMessageSent = now - lastMessageSentTime
+      var sleepTime = heartbeatTime
+      if timeSinceLastMessageSent >= heartbeatTime {
         try await connection.sendKeepAlive()
       } else {
         sleepTime -= timeSinceLastMessageSent
@@ -140,6 +142,8 @@ extension Ocp1Connection.Monitor {
   }
 
   func receiveMessages(_ connection: Ocp1Connection) async throws {
+    let (isDatagram, heartbeatTime) = await (connection.isDatagram, connection.heartbeatTime)
+
     do {
       try await withThrowingTaskGroup(of: Void.self) { group in
         group.addTask { [weak self] in
@@ -153,7 +157,7 @@ extension Ocp1Connection.Monitor {
             } catch Ocp1Error.retryOperation {}
           } while true
         }
-        if connection.heartbeatTime > .zero {
+        if heartbeatTime > .zero {
           group.addTask { [weak self] in
             try await self?.keepAlive(connection)
           }
@@ -165,7 +169,8 @@ extension Ocp1Connection.Monitor {
       // if we're not already in the middle of connecting or re-connecting,
       // possibly trigger a reconnect depending on the autoReconnect policy
       // and the nature of the error
-      if !connection.isConnecting {
+      let isConnecting = await connection.isConnecting
+      if !isConnecting {
         try? await connection.onMonitorError(id: _connectionID, error)
       }
       throw error
