@@ -187,7 +187,7 @@ extension Ocp1Connection {
   /// update the device connection state, called from the connection (for
   /// stream connections) or the monitor task (for datagram connections)
   func onConnectionOpen() {
-    logger.info("connected to \(self)")
+    logger.info("connected to \(self)#\(connectionID)")
     _updateConnectionState(.connected)
   }
 
