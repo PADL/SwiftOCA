@@ -119,14 +119,13 @@ public final class Ocp1QuicDeviceEndpoint: OcaDeviceEndpointPrivate,
     let listener = try QuicListener(registration: registration)
     self.listener = listener
 
+    nonisolated(unsafe) let config = configuration
     listener.onNewConnection { [weak self] _, info in
-      guard let self, let configuration = self.configuration else {
-        return nil
-      }
+      guard let self else { return nil }
 
       let connection = try QuicConnection(
         handle: info.connection,
-        configuration: configuration
+        configuration: config
       ) { [weak self] connection, stream, flags in
         guard let self else { return }
         await self.handlePeerStream(connection: connection, stream: stream, flags: flags)
@@ -174,8 +173,9 @@ public final class Ocp1QuicDeviceEndpoint: OcaDeviceEndpointPrivate,
     stream: QuicStream,
     flags: QuicStreamOpenFlags
   ) async {
-    let controller = _controllers.first { $0.isConnection(connection) }
-    controller?.addPeerStream(stream)
+    if let controller = _controllers.first(where: { $0.isConnection(connection) }) {
+      await controller.addPeerStream(stream)
+    }
   }
 
   func add(controller: ControllerType) async {
@@ -187,9 +187,7 @@ public final class Ocp1QuicDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   deinit {
-    listener = nil
-    configuration = nil
-    registration = nil
+    // QuicListener/Configuration/Registration handle cleanup in their own deinit
   }
 }
 
