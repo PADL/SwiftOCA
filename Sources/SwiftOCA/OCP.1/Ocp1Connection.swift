@@ -78,6 +78,7 @@ public let OcaSecureTcpConnectionPrefix = "ocasec/tcp"
 public let OcaWebSocketTcpConnectionPrefix = "ocaws/tcp"
 public let OcaLocalConnectionPrefix = "oca/local"
 public let OcaDatagramProxyConnectionPrefix = "oca/dg-proxy"
+public let OcaQuicConnectionPrefix = "oca/quic"
 #if canImport(Darwin)
 public let OcaMachPortConnectionPrefix = "oca/mach"
 #endif
@@ -88,6 +89,8 @@ public struct Ocp1ConnectionFlags: OptionSet, Sendable {
   public static let retainObjectCacheAfterDisconnect = Ocp1ConnectionFlags(rawValue: 1 << 2)
   public static let enableTracing = Ocp1ConnectionFlags(rawValue: 1 << 3)
   public static let refreshSubscriptionsOnReconnection = Ocp1ConnectionFlags(rawValue: 1 << 4)
+  /// Disable TLS certificate verification.
+  public static let disableCertificateVerification = Ocp1ConnectionFlags(rawValue: 1 << 5)
 
   public typealias RawValue = UInt
 
