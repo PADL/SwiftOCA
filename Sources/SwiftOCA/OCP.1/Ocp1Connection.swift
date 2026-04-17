@@ -83,6 +83,20 @@ public let OcaQuicConnectionPrefix = "oca/quic"
 public let OcaMachPortConnectionPrefix = "oca/mach"
 #endif
 
+/// Credential for TLS authentication.
+public enum Ocp1TLSCredential: @unchecked Sendable {
+  #if canImport(Security)
+  /// TLS certificate identity.
+  case identity(SecIdentity)
+  #endif
+  /// PEM-encoded certificate and private key file paths.
+  case certificateFile(certPath: String, keyPath: String)
+  /// PEM-encoded certificate and private key in memory.
+  case certificatePEM(certificate: Data, privateKey: Data)
+  /// PKCS#12-encoded certificate and private key.
+  case pkcs12(data: Data, password: String?)
+}
+
 public struct Ocp1ConnectionFlags: OptionSet, Sendable {
   public static let automaticReconnect = Ocp1ConnectionFlags(rawValue: 1 << 0)
   public static let refreshDeviceTreeOnConnection = Ocp1ConnectionFlags(rawValue: 1 << 1)
