@@ -108,6 +108,9 @@
 		D37342812F9255E6000FB06D /* Ocp1MachPortSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D373427F2F9255E6000FB06D /* Ocp1MachPortSupport.swift */; };
 		D37342852F9255F6000FB06D /* Ocp1MachPortController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37342822F9255F6000FB06D /* Ocp1MachPortController.swift */; };
 		D37342862F9255F6000FB06D /* Ocp1MachPortDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37342832F9255F6000FB06D /* Ocp1MachPortDeviceEndpoint.swift */; };
+		D37343202F92591E000FB06D /* Ocp1NWQUICDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D373431E2F92591E000FB06D /* Ocp1NWQUICDeviceEndpoint.swift */; };
+		D37343212F92591E000FB06D /* Ocp1NWQUICController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D373431D2F92591E000FB06D /* Ocp1NWQUICController.swift */; };
+		D373435F2F926EA7000FB06D /* Ocp1QuicConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D373435E2F926EA7000FB06D /* Ocp1QuicConnection.swift */; };
 		D38AD8342E8861FA00CE8DA3 /* TimeHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38AD8332E8861FA00CE8DA3 /* TimeHelpers.swift */; };
 		D39542302BA8FFC0003A025C /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D395422F2BA8FFC0003A025C /* Root+JSON.swift */; };
 		D3A0BE7C2B717BEC00A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7B2B717BEC00A5AA05 /* Group.swift */; };
@@ -447,6 +450,9 @@
 		D373427F2F9255E6000FB06D /* Ocp1MachPortSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1MachPortSupport.swift; sourceTree = "<group>"; };
 		D37342822F9255F6000FB06D /* Ocp1MachPortController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1MachPortController.swift; sourceTree = "<group>"; };
 		D37342832F9255F6000FB06D /* Ocp1MachPortDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1MachPortDeviceEndpoint.swift; sourceTree = "<group>"; };
+		D373431D2F92591E000FB06D /* Ocp1NWQUICController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1NWQUICController.swift; sourceTree = "<group>"; };
+		D373431E2F92591E000FB06D /* Ocp1NWQUICDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1NWQUICDeviceEndpoint.swift; sourceTree = "<group>"; };
+		D373435E2F926EA7000FB06D /* Ocp1QuicConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1QuicConnection.swift; sourceTree = "<group>"; };
 		D38AD8332E8861FA00CE8DA3 /* TimeHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeHelpers.swift; sourceTree = "<group>"; };
 		D395422F2BA8FFC0003A025C /* Root+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+JSON.swift"; sourceTree = "<group>"; };
 		D3A0BE7B2B717BEC00A5AA05 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
@@ -750,6 +756,7 @@
 		D32229C12ABC270900B56B6B /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				D373431F2F92591E000FB06D /* NW */,
 				D37342842F9255F6000FB06D /* MachPort */,
 				D3B727E32BF7598A00D6932F /* CF */,
 				D35592582B51E5C7000F633B /* DatagramProxy */,
@@ -1020,9 +1027,19 @@
 			path = MachPort;
 			sourceTree = "<group>";
 		};
+		D373431F2F92591E000FB06D /* NW */ = {
+			isa = PBXGroup;
+			children = (
+				D373431D2F92591E000FB06D /* Ocp1NWQUICController.swift */,
+				D373431E2F92591E000FB06D /* Ocp1NWQUICDeviceEndpoint.swift */,
+			);
+			path = NW;
+			sourceTree = "<group>";
+		};
 		D37F7E192A6BC015005F035F /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				D373435E2F926EA7000FB06D /* Ocp1QuicConnection.swift */,
 				D373427E2F9255E6000FB06D /* Ocp1MachPortConnection.swift */,
 				D373427F2F9255E6000FB06D /* Ocp1MachPortSupport.swift */,
 				D3F369432F78BF99008419DC /* Ocp1FlyingFoxConnection.swift */,
@@ -1856,6 +1873,8 @@
 				D3A0BE7C2B717BEC00A5AA05 /* Group.swift in Sources */,
 				D32229CE2ABC270900B56B6B /* LocalDeviceEndpoint.swift in Sources */,
 				D33A35B12B2FC30500FEDC43 /* LockManager.swift in Sources */,
+				D37343202F92591E000FB06D /* Ocp1NWQUICDeviceEndpoint.swift in Sources */,
+				D37343212F92591E000FB06D /* Ocp1NWQUICController.swift in Sources */,
 				D351F2032A727411008C5513 /* Mute.swift in Sources */,
 				D351F20C2A729AB3008C5513 /* Sensor.swift in Sources */,
 				D33B52B42A7060BC001A1BA7 /* Actuator.swift in Sources */,
@@ -2029,6 +2048,7 @@
 				D3FAC8EA2B5CFBE7009E2775 /* TaskManager.swift in Sources */,
 				D35BFC7C2E896E2F00183358 /* Ocp1MessageBatcher.swift in Sources */,
 				D3AFD37F2B32A06700A72E9A /* Ocp1Encoder.swift in Sources */,
+				D373435F2F926EA7000FB06D /* Ocp1QuicConnection.swift in Sources */,
 				D3C083292A7C700B0020AD57 /* MediaDataTypes.swift in Sources */,
 				D3FAC8E62B5CF926009E2775 /* LibraryManagerDataTypes.swift in Sources */,
 				D3E6E1D12A3ACA9A00BF7095 /* EventHandler.swift in Sources */,

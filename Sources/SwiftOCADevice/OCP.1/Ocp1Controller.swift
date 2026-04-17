@@ -34,3 +34,8 @@ public typealias Ocp1DeviceEndpoint = Ocp1CFStreamDeviceEndpoint
 #if canImport(FlyingFox) && NonEmbeddedBuild
 public typealias Ocp1WSDeviceEndpoint = Ocp1FlyingFoxDeviceEndpoint
 #endif
+
+#if canImport(Network)
+@available(macOS 14.0, iOS 17.0, *)
+public typealias Ocp1QUICDeviceEndpoint = Ocp1NWQUICDeviceEndpoint
+#endif

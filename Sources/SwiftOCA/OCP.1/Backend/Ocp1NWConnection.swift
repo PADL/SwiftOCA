@@ -27,6 +27,7 @@ internal import CoreFoundation
 #endif
 import Foundation
 import Network
+import Security
 import SocketAddress
 import SystemPackage
 #if canImport(Synchronization)
@@ -75,7 +76,7 @@ public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
     fatalError("must be implemented by subclass")
   }
 
-  private init(
+  fileprivate init(
     deviceAddress: AnySocketAddress,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
@@ -244,6 +245,69 @@ public final class Ocp1NWTCPConnection: Ocp1NWConnection {
     options.enableFastOpen = true
     options.connectionTimeout = Int(self.options.connectionTimeout.seconds)
     return NWParameters(tls: nil, tcp: options)
+  }
+}
+
+@available(macOS 14.0, iOS 17.0, *)
+public final class Ocp1NWQUICConnection: Ocp1NWConnection {
+  private let _credential: Ocp1TLSCredential?
+
+  /// Create a QUIC connection.
+  ///
+  /// - Parameters:
+  ///   - deviceAddress: Serialised socket address of the remote device.
+  ///   - credential: Optional QUIC credential (`.identity` or `.psk`).
+  ///   - options: Connection options. Use `.disableCertificateVerification` to skip peer
+  ///     certificate verification.
+  public init(
+    deviceAddress: Data,
+    credential: Ocp1TLSCredential? = nil,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    _credential = credential
+    let deviceAddress = try AnySocketAddress(bytes: Array(deviceAddress))
+    try super.init(deviceAddress: deviceAddress, options: options)
+  }
+
+  override public var connectionPrefix: String {
+    "\(OcaQuicConnectionPrefix)/\(presentationAddress)"
+  }
+
+  override public var isDatagram: Bool { false }
+
+  override var parameters: NWParameters {
+    let options = NWProtocolQUIC.Options(alpn: ["oca"])
+    options.idleTimeout = Int(self.options.connectionTimeout.seconds)
+    _credential?.apply(to: options.securityProtocolOptions)
+    if self.options.flags.contains(.disableCertificateVerification) {
+      sec_protocol_options_set_verify_block(
+        options.securityProtocolOptions,
+        { _, _, completion in completion(true) },
+        .main
+      )
+    }
+    let parameters = NWParameters(quic: options)
+    return parameters
+  }
+}
+
+@available(macOS 14.0, iOS 17.0, *)
+extension Ocp1TLSCredential {
+  @_spi(SwiftOCAPrivate)
+  public func apply(to protocolOptions: sec_protocol_options_t) {
+    switch self {
+    #if canImport(Security)
+    case let .identity(secIdentity):
+      let identity = sec_identity_create(secIdentity)!
+      sec_protocol_options_set_local_identity(protocolOptions, identity)
+    #endif
+    case let .psk(key, identity):
+      let pskData = key.withUnsafeBytes { DispatchData(bytes: $0) }
+      let idData = identity.withUnsafeBytes { DispatchData(bytes: $0) }
+      sec_protocol_options_add_pre_shared_key(protocolOptions, pskData as dispatch_data_t, idData as dispatch_data_t)
+    default:
+      break
+    }
   }
 }
 

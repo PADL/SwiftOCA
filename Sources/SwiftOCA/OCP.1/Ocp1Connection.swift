@@ -88,6 +88,7 @@ public enum Ocp1TLSCredential: @unchecked Sendable {
   #if canImport(Security)
   /// TLS certificate identity.
   case identity(SecIdentity)
+  case psk(Data, Data)
   #endif
   /// PEM-encoded certificate and private key file paths.
   case certificateFile(certPath: String, keyPath: String)
