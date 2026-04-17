@@ -152,6 +152,10 @@ public extension Ocp1Connection {
               destinationInformation: OcaNetworkAddress()
             )
             logger.trace("\(self): addSubscriptions: refreshed \(event)")
+          } catch is CancellationError {
+            logger.debug("\(self): addSubscriptions: cancelled refreshing \(event)")
+          } catch Ocp1Error.notConnected {
+            logger.debug("\(self): addSubscriptions: aborted refreshing \(event) (not connected)")
           } catch {
             logger.warning("\(self): addSubscriptions: failed to refresh \(event): \(error)")
           }
