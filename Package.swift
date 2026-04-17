@@ -37,9 +37,17 @@ PlatformTargetDependencies += [
 ]
 
 #if os(Linux)
-PlatformPackageDependencies += [.package(url: "https://github.com/PADL/IORingSwift", from: "1.0.0")]
+PlatformPackageDependencies += [
+  .package(url: "https://github.com/PADL/IORingSwift", from: "1.0.0"),
+  .package(path: "../../swift-msquic"),
+]
 
 PlatformTargetDependencies += [
+  .product(
+    name: "SwiftMsQuicStatic",
+    package: "swift-msquic",
+    condition: .when(platforms: [.linux], traits: ["NonEmbeddedBuild"])
+  ),
   .target(
     name: "dnssd",
     condition: .when(platforms: [.linux])
