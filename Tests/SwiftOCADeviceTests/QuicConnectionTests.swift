@@ -125,7 +125,7 @@ final class QuicConnectionTests: XCTestCase {
     // Give the server time to start listening
     try await Task.sleep(for: .milliseconds(500))
 
-    let serverPort = endpoint.port
+    let serverPort = await endpoint.port
     XCTAssertNotEqual(serverPort, 0, "Server should have been assigned a port")
 
     let connection = try await makeQuicConnection(port: serverPort)
@@ -154,7 +154,7 @@ final class QuicConnectionTests: XCTestCase {
 
     try await Task.sleep(for: .milliseconds(500))
 
-    let connection = try await makeQuicConnection(port: endpoint.port)
+    let connection = try await makeQuicConnection(port: await endpoint.port)
     try await connection.connect()
 
     // Verify round-trip: resolve root block members

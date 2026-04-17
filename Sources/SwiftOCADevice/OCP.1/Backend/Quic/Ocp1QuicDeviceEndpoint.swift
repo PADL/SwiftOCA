@@ -71,8 +71,11 @@ public final class Ocp1QuicDeviceEndpoint: OcaDeviceEndpointPrivate,
     "\(type(of: self))(address: \((try? address.presentationAddress) ?? "<unknown>"), timeout: \(timeout))"
   }
 
-  public nonisolated var port: UInt16 {
-    (try? address.port) ?? 0
+  public var port: UInt16 {
+    if let listener, let addr = listener.localAddress {
+      return addr.port
+    }
+    return (try? address.port) ?? 0
   }
 
   public func run() async throws {
