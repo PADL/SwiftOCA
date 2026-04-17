@@ -103,6 +103,11 @@
 		D36ECA2C2A5B24B30015174A /* Ocp1CFSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */; };
 		D370B1482BF6002300BF88BB /* AudioLevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */; };
 		D370B14A2BF600A900BF88BB /* AudioLevelSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D370B1492BF600A900BF88BB /* AudioLevelSensor.swift */; };
+		D373427D2F925569000FB06D /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = D373427C2F925569000FB06D /* SQLite */; };
+		D37342802F9255E6000FB06D /* Ocp1MachPortConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D373427E2F9255E6000FB06D /* Ocp1MachPortConnection.swift */; };
+		D37342812F9255E6000FB06D /* Ocp1MachPortSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D373427F2F9255E6000FB06D /* Ocp1MachPortSupport.swift */; };
+		D37342852F9255F6000FB06D /* Ocp1MachPortController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37342822F9255F6000FB06D /* Ocp1MachPortController.swift */; };
+		D37342862F9255F6000FB06D /* Ocp1MachPortDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37342832F9255F6000FB06D /* Ocp1MachPortDeviceEndpoint.swift */; };
 		D38AD8342E8861FA00CE8DA3 /* TimeHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38AD8332E8861FA00CE8DA3 /* TimeHelpers.swift */; };
 		D39542302BA8FFC0003A025C /* Root+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D395422F2BA8FFC0003A025C /* Root+JSON.swift */; };
 		D3A0BE7C2B717BEC00A5AA05 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A0BE7B2B717BEC00A5AA05 /* Group.swift */; };
@@ -438,6 +443,10 @@
 		D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1CFSocketConnection.swift; sourceTree = "<group>"; };
 		D370B1472BF6002300BF88BB /* AudioLevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLevelSensor.swift; sourceTree = "<group>"; };
 		D370B1492BF600A900BF88BB /* AudioLevelSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLevelSensor.swift; sourceTree = "<group>"; };
+		D373427E2F9255E6000FB06D /* Ocp1MachPortConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1MachPortConnection.swift; sourceTree = "<group>"; };
+		D373427F2F9255E6000FB06D /* Ocp1MachPortSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1MachPortSupport.swift; sourceTree = "<group>"; };
+		D37342822F9255F6000FB06D /* Ocp1MachPortController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1MachPortController.swift; sourceTree = "<group>"; };
+		D37342832F9255F6000FB06D /* Ocp1MachPortDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1MachPortDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D38AD8332E8861FA00CE8DA3 /* TimeHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeHelpers.swift; sourceTree = "<group>"; };
 		D395422F2BA8FFC0003A025C /* Root+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Root+JSON.swift"; sourceTree = "<group>"; };
 		D3A0BE7B2B717BEC00A5AA05 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
@@ -638,6 +647,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D373427D2F925569000FB06D /* SQLite in Frameworks */,
 				D33B528C2A6FD206001A1BA7 /* libSwiftOCA.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -740,6 +750,7 @@
 		D32229C12ABC270900B56B6B /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				D37342842F9255F6000FB06D /* MachPort */,
 				D3B727E32BF7598A00D6932F /* CF */,
 				D35592582B51E5C7000F633B /* DatagramProxy */,
 				D32229C22ABC270900B56B6B /* Local */,
@@ -1000,9 +1011,20 @@
 			path = OCP.1;
 			sourceTree = "<group>";
 		};
+		D37342842F9255F6000FB06D /* MachPort */ = {
+			isa = PBXGroup;
+			children = (
+				D37342822F9255F6000FB06D /* Ocp1MachPortController.swift */,
+				D37342832F9255F6000FB06D /* Ocp1MachPortDeviceEndpoint.swift */,
+			);
+			path = MachPort;
+			sourceTree = "<group>";
+		};
 		D37F7E192A6BC015005F035F /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				D373427E2F9255E6000FB06D /* Ocp1MachPortConnection.swift */,
+				D373427F2F9255E6000FB06D /* Ocp1MachPortSupport.swift */,
 				D3F369432F78BF99008419DC /* Ocp1FlyingFoxConnection.swift */,
 				D3AB030D2CF6BD8F00967322 /* Ocp1IORingConnection.swift */,
 				D36ECA2B2A5B24B30015174A /* Ocp1CFSocketConnection.swift */,
@@ -1576,6 +1598,7 @@
 			);
 			name = SwiftOCADevice;
 			packageProductDependencies = (
+				D373427C2F925569000FB06D /* SQLite */,
 			);
 			productName = SwiftOCADevice;
 			productReference = D33B52812A6FD171001A1BA7 /* libSwiftOCADevice.dylib */;
@@ -1764,6 +1787,7 @@
 				D35C9D9E2BF76E5100D680F2 /* XCRemoteSwiftPackageReference "SocketAddress" */,
 				D3CFA35B2CED4D7500CAE537 /* XCRemoteSwiftPackageReference "swift-atomics" */,
 				D37E65FC2E03EA0900D6B4D1 /* XCRemoteSwiftPackageReference "GzipSwift" */,
+				D373427B2F925569000FB06D /* XCRemoteSwiftPackageReference "SQLite.swift" */,
 			);
 			productRefGroup = D3E6E1652A3ACA0B00BF7095 /* Products */;
 			projectDirPath = "";
@@ -1860,6 +1884,8 @@
 				D355925D2B51E5FF000F633B /* DatagramProxyDeviceEndpoint.swift in Sources */,
 				D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */,
 				D33D595D2B2FD04900963157 /* PortsRepresentable.swift in Sources */,
+				D37342852F9255F6000FB06D /* Ocp1MachPortController.swift in Sources */,
+				D37342862F9255F6000FB06D /* Ocp1MachPortDeviceEndpoint.swift in Sources */,
 				D33B52A32A702CED001A1BA7 /* Block.swift in Sources */,
 				D33B52B62A7060E0001A1BA7 /* BasicActuators.swift in Sources */,
 				D3C11DB92A789C0400452B2A /* DeviceEndpoint.swift in Sources */,
@@ -1969,6 +1995,8 @@
 				D3BA71172DE98B5B00A35C50 /* LoggingDataTypes.swift in Sources */,
 				D3E6E1CC2A3ACA9000BF7095 /* PanBalance.swift in Sources */,
 				D3E6E1D52A3ACA9E00BF7095 /* Root.swift in Sources */,
+				D37342802F9255E6000FB06D /* Ocp1MachPortConnection.swift in Sources */,
+				D37342812F9255E6000FB06D /* Ocp1MachPortSupport.swift in Sources */,
 				D3AFD3832B32A06700A72E9A /* SingleValueBinaryDecodingContainer.swift in Sources */,
 				D3E6E1CA2A3ACA9000BF7095 /* Mute.swift in Sources */,
 				D3F2942C2A95D55F00D7F0CD /* Sequence+AsyncMap.swift in Sources */,
@@ -2410,7 +2438,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_SWIFT_FLAGS = "-package-name swiftoca";
+				OTHER_SWIFT_FLAGS = "-package-name swiftoca -enable-experimental-feature Extern";
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
 			};
@@ -2465,7 +2493,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				OTHER_SWIFT_FLAGS = "-package-name swiftoca";
+				OTHER_SWIFT_FLAGS = "-package-name swiftoca -enable-experimental-feature Extern";
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -2484,7 +2512,7 @@
 				EXECUTABLE_PREFIX = lib;
 				MACH_O_TYPE = staticlib;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				OTHER_SWIFT_FLAGS = "-package-name swiftoca";
+				OTHER_SWIFT_FLAGS = "-package-name swiftoca -enable-experimental-feature Extern";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
@@ -2507,7 +2535,7 @@
 				EXECUTABLE_PREFIX = lib;
 				MACH_O_TYPE = staticlib;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				OTHER_SWIFT_FLAGS = "-package-name swiftoca";
+				OTHER_SWIFT_FLAGS = "-package-name swiftoca -enable-experimental-feature Extern";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
@@ -2762,6 +2790,14 @@
 				kind = branch;
 			};
 		};
+		D373427B2F925569000FB06D /* XCRemoteSwiftPackageReference "SQLite.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stephencelis/SQLite.swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.16.0;
+			};
+		};
 		D37E65FC2E03EA0900D6B4D1 /* XCRemoteSwiftPackageReference "GzipSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/1024jp/GzipSwift";
@@ -2832,6 +2868,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D35C9D9E2BF76E5100D680F2 /* XCRemoteSwiftPackageReference "SocketAddress" */;
 			productName = SocketAddress;
+		};
+		D373427C2F925569000FB06D /* SQLite */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D373427B2F925569000FB06D /* XCRemoteSwiftPackageReference "SQLite.swift" */;
+			productName = SQLite;
 		};
 		D3AD37782BF089CA00F3F713 /* SystemPackage */ = {
 			isa = XCSwiftPackageProductDependency;
