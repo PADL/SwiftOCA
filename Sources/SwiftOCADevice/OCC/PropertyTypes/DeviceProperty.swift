@@ -225,11 +225,10 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
       }
       await setAndNotifySubscribers(object: object, resolved)
     } else {
-      if JSONSerialization.isValidJSONObject(subject.value) {
+      if JSONSerialization.isValidJSONObject(subject.value),
+         let newValue = jsonValue as? Value
+      {
         // Value is a JSON-native type (e.g. dictionary, array) — direct cast
-        guard let newValue = jsonValue as? Value else {
-          throw Ocp1Error.status(.badFormat)
-        }
         await setAndNotifySubscribers(object: object, newValue)
       } else if let codableValue = jsonValue as? Codable {
         // Value is a non-JSON Codable type and input conforms to Codable —
