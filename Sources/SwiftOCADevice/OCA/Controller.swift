@@ -24,6 +24,7 @@ public struct OcaControllerFlags: OptionSet, Sendable {
   public init(rawValue: RawValue) { self.rawValue = rawValue }
 
   public static let supportsLocking = Self(rawValue: 1 << 0)
+  public static let isLocal = Self(rawValue: 1 << 2)
 }
 
 public protocol OcaController: Actor {

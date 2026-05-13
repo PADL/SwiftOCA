@@ -23,7 +23,7 @@ import Foundation
 import SwiftOCA
 
 actor Ocp1MachPortController: Ocp1ControllerInternal {
-  nonisolated var flags: OcaControllerFlags { .supportsLocking }
+  nonisolated var flags: OcaControllerFlags { [.supportsLocking, .isLocal] }
   nonisolated var connectionPrefix: String { OcaMachPortConnectionPrefix }
 
   var lastMessageReceivedTime = ContinuousClock.recentPast

@@ -74,7 +74,13 @@ extension Ocp1CFControllerPrivate {
 }
 
 actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
-  nonisolated var flags: OcaControllerFlags { .supportsLocking }
+  nonisolated var flags: OcaControllerFlags {
+    var flags: OcaControllerFlags = .supportsLocking
+    if peerAddress.family == sa_family_t(AF_LOCAL) {
+      flags.insert(.isLocal)
+    }
+    return flags
+  }
 
   nonisolated let connectionPrefix: String
 

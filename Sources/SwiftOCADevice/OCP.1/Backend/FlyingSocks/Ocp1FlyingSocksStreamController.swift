@@ -32,7 +32,7 @@ import Glibc
 
 /// A remote controller
 actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConvertible {
-  nonisolated var flags: OcaControllerFlags { .supportsLocking }
+  nonisolated let flags: OcaControllerFlags
   nonisolated let connectionPrefix: String
 
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
@@ -53,8 +53,10 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
   init(endpoint: Ocp1FlyingSocksStreamDeviceEndpoint, socket: AsyncSocket) throws {
     if case .unix = try? socket.socket.sockname() {
       connectionPrefix = OcaLocalConnectionPrefix
+      flags = [.supportsLocking, .isLocal]
     } else {
       connectionPrefix = OcaTcpConnectionPrefix
+      flags = .supportsLocking
       try socket.socket.setValue(
         true,
         for: BoolSocketOption(name: TCP_NODELAY),

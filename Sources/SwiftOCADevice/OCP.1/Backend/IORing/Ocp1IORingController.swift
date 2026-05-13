@@ -67,7 +67,14 @@ extension Ocp1IORingControllerPrivate {
 }
 
 actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConvertible {
-  nonisolated var flags: OcaControllerFlags { .supportsLocking }
+  nonisolated var flags: OcaControllerFlags {
+    var flags: OcaControllerFlags = .supportsLocking
+    if peerAddress.family == sa_family_t(AF_LOCAL) {
+      flags.insert(.isLocal)
+    }
+    return flags
+  }
+
   nonisolated let connectionPrefix: String
 
   var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
