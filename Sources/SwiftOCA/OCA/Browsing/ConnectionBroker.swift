@@ -304,6 +304,7 @@ public actor OcaConnectionBroker {
   private var _browsers: [OcaNetworkAdvertisingServiceType: BrowserMonitor]!
   private var _devices = [DeviceIdentifier: DeviceInfo]()
   private var _connections = [DeviceIdentifier: DeviceConnection]()
+  private var _rebootingDevices = [DeviceIdentifier: Task<Void, Never>]()
   private let _connectionOptions: Ocp1ConnectionOptions
   private let _eventsContinuation: AsyncStream<Event>.Continuation
   private let _deviceModels: [OcaModelGUID]?
@@ -348,34 +349,8 @@ public actor OcaConnectionBroker {
     let isExistingDevice =
       _devices[deviceIdentifier] != nil || _connections[deviceIdentifier] != nil
 
-    if let existingDevice = _devices[deviceIdentifier] {
-      // Device still in _devices (add arrived before remove, or address change)
-      try? await withDeviceConnection(deviceIdentifier) { existingConnection in
-        let firstAddressChanged = (try? existingDevice.firstAddress) != (try? device.firstAddress)
-        if firstAddressChanged,
-           let mutableConnection = existingConnection as? Ocp1MutableConnection
-        {
-          mutableConnection.deviceAddress = try device.firstAddress
-          await existingConnection.deviceAddressDidChange()
-        }
-
-        // if reconnection was temporarily disabled by _onBrowserDeviceRemoved, reenable it
-        if _connectionOptions.flags.contains(.automaticReconnect),
-           await !existingConnection.options.flags.contains(.automaticReconnect)
-        {
-          try await existingConnection.set(options: _connectionOptions)
-        }
-      }
-    } else if _connections[deviceIdentifier] != nil {
-      // Device removed from _devices (e.g. DNS-SD name change) but connection persists;
-      // re-enable automatic reconnect
-      try? await withDeviceConnection(deviceIdentifier) { existingConnection in
-        if _connectionOptions.flags.contains(.automaticReconnect),
-           await !existingConnection.options.flags.contains(.automaticReconnect)
-        {
-          try await existingConnection.set(options: _connectionOptions)
-        }
-      }
+    if isExistingDevice {
+      await _refreshConnectionForRediscoveredDevice(deviceIdentifier, newDeviceInfo: device)
     }
 
     _devices[deviceIdentifier] = device
@@ -383,6 +358,32 @@ public actor OcaConnectionBroker {
     let eventType: EventType = isExistingDevice ? .deviceUpdated : .deviceAdded
     let event = Event(eventType: eventType, deviceIdentifier: deviceIdentifier)
     _eventsContinuation.yield(event)
+  }
+
+  /// When DNS-SD re-advertises a device we already have a connection for,
+  /// update the connection's address (if changed) and restore automaticReconnect
+  /// (if it was disabled by a previous _onBrowserDeviceRemoved). This handles
+  /// both the "address change while still in _devices" path and the
+  /// "device disappeared then returned, possibly at a new IP" path.
+  private func _refreshConnectionForRediscoveredDevice(
+    _ deviceIdentifier: DeviceIdentifier,
+    newDeviceInfo: DeviceInfo
+  ) async {
+    try? await withDeviceConnection(deviceIdentifier) { existingConnection in
+      if let mutableConnection = existingConnection as? Ocp1MutableConnection,
+         let newAddress = try? newDeviceInfo.firstAddress,
+         mutableConnection.deviceAddress != newAddress
+      {
+        mutableConnection.deviceAddress = newAddress
+        await existingConnection.deviceAddressDidChange()
+      }
+
+      if _connectionOptions.flags.contains(.automaticReconnect),
+         await !existingConnection.options.flags.contains(.automaticReconnect)
+      {
+        try await existingConnection.set(options: _connectionOptions)
+      }
+    }
   }
 
   private func _removeDevice(with deviceIdentifier: DeviceIdentifier) {
@@ -407,6 +408,14 @@ public actor OcaConnectionBroker {
       $0.serviceInfo == AnyOcaNetworkAdvertisingServiceInfo(serviceInfo)
     })?.deviceIdentifier else {
       throw Ocp1Error.serviceResolutionFailed
+    }
+
+    if _rebootingDevices[deviceIdentifier] != nil {
+      // Device is expected to reboot (e.g. firmware update). Skip the
+      // automatic-reconnect disable and the connection expiry — the reconnect
+      // task should keep running, and the address-change handler in
+      // _onBrowserDeviceAdded will retarget it when the device returns.
+      return
     }
 
     await _disableAutomaticReconnect(deviceIdentifier)
@@ -615,6 +624,40 @@ public actor OcaConnectionBroker {
       let event = Event(eventType: .deviceAdded, deviceIdentifier: deviceIdentifier)
       _eventsContinuation.yield(event)
     }
+  }
+
+  /// Marks a device as expected to reboot (e.g. during a firmware update).
+  ///
+  /// While the grace period is active, a DNS-SD removal for this device will not
+  /// disable automatic reconnect or expire the connection — so the reconnect task
+  /// keeps running, and when the device re-advertises (possibly at a new IP)
+  /// the connection's address is updated automatically.
+  ///
+  /// - Parameters:
+  ///   - device: The device that is about to reboot.
+  ///   - gracePeriod: How long to keep suppressing the normal removal cleanup.
+  ///     If the device hasn't returned by then, the next DNS-SD removal will
+  ///     proceed normally.
+  public func markRebooting(
+    _ device: DeviceIdentifier,
+    gracePeriod: Duration = .seconds(120)
+  ) {
+    _rebootingDevices[device]?.cancel()
+    _rebootingDevices[device] = Task { [weak self] in
+      try? await Task.sleep(for: gracePeriod)
+      guard let self else { return }
+      await self._clearRebootingFlag(device)
+    }
+  }
+
+  /// Clears a reboot-grace flag set by ``markRebooting(_:gracePeriod:)``.
+  public func clearRebooting(_ device: DeviceIdentifier) {
+    _clearRebootingFlag(device)
+  }
+
+  private func _clearRebootingFlag(_ device: DeviceIdentifier) {
+    _rebootingDevices[device]?.cancel()
+    _rebootingDevices[device] = nil
   }
 }
 
