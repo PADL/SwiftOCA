@@ -1,0 +1,234 @@
+//
+// Copyright (c) 2026 PADL Software Pty Ltd
+//
+// Licensed under the Apache License, Version 2.0 (the License);
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+#if canImport(COpenSSL) && canImport(IORing)
+
+import COpenSSL
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+import Glibc
+public import IORing
+internal import IORingUtils
+import SocketAddress
+@_spi(SwiftOCAPrivate)
+import SwiftOCA
+import Synchronization
+import struct SystemPackage.Errno
+
+fileprivate extension Errno {
+  var mappedError: Error {
+    switch self {
+    case .connectionRefused, .connectionReset, .brokenPipe:
+      Ocp1Error.notConnected
+    case .canceled:
+      Ocp1Error.retryOperation
+    default:
+      self
+    }
+  }
+}
+
+/// OCP.1 TLS-secured TCP connection. The socket is owned on the Swift side;
+/// `Ocp1OpenSSLEngine` only sees the memory BIO pair we pump.
+public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableConnection {
+  private let _ring: IORing
+  private let _deviceAddress: Mutex<any SocketAddress>
+  private let _socket: Mutex<Socket?> = .init(nil)
+  private let _credential: Ocp1TLSCredential
+  private let _engine: Ocp1OpenSSLEngine
+
+  override public var connectionPrefix: String {
+    "\(OcaSecureTcpConnectionPrefix)/\(_deviceAddress.criticalValue._presentationAddress)"
+  }
+
+  override public var isDatagram: Bool { false }
+  override public var hasTransportLayerSecurity: Bool { true }
+
+  private init(
+    socketAddress: any SocketAddress,
+    credential: Ocp1TLSCredential,
+    hostname: String?,
+    trustRoots: Ocp1TLSTrustRoots?,
+    revocation: Ocp1TLSRevocationOptions,
+    options: Ocp1ConnectionOptions,
+    ring: IORing
+  ) throws {
+    _deviceAddress = Mutex(socketAddress)
+    _ring = ring
+    _credential = credential
+    let verifyPeer = !options.flags.contains(.disableCertificateVerification)
+    _engine = try Ocp1OpenSSLEngine(
+      mode: .client,
+      credential: credential,
+      verifyPeer: verifyPeer,
+      hostname: hostname,
+      trustRoots: trustRoots,
+      revocation: revocation
+    )
+    super.init(options: options)
+  }
+
+  public convenience init(
+    deviceAddress: Data,
+    credential: Ocp1TLSCredential,
+    hostname: String? = nil,
+    trustRoots: Ocp1TLSTrustRoots? = nil,
+    revocation: Ocp1TLSRevocationOptions = .disabled,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    ring: IORing = .shared
+  ) throws {
+    try self.init(
+      socketAddress: deviceAddress.socketAddress,
+      credential: credential,
+      hostname: hostname,
+      trustRoots: trustRoots,
+      revocation: revocation,
+      options: options,
+      ring: ring
+    )
+  }
+
+  public convenience init(
+    path: String,
+    credential: Ocp1TLSCredential,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    ring: IORing = .shared
+  ) throws {
+    try self.init(
+      socketAddress: sockaddr_un(
+        family: sa_family_t(AF_LOCAL),
+        presentationAddress: path
+      ),
+      credential: credential,
+      hostname: nil,
+      trustRoots: nil,
+      revocation: .disabled,
+      options: options,
+      ring: ring
+    )
+  }
+
+  public nonisolated var deviceAddress: Data {
+    get {
+      AnySocketAddress(_deviceAddress.criticalValue).data
+    }
+    set {
+      do {
+        try _deviceAddress.withLock {
+          $0 = try AnySocketAddress(bytes: Array(newValue))
+          Task { [weak self] in await self?.deviceAddressDidChange() }
+        }
+      } catch {}
+    }
+  }
+
+  override public var localAddress: Data? {
+    guard let socket = _socket.withLock({ $0 }) else { return nil }
+    return try? AnySocketAddress(socket.localAddress).data
+  }
+
+  override public func connectDevice() async throws {
+    // Engine carries SSL state across attempts; reset before each so a
+    // prior failed handshake can't bleed into the next.
+    await _engine.reset()
+    let deviceAddress = _deviceAddress.criticalValue
+    let socket = try Socket(
+      ring: _ring,
+      domain: deviceAddress.family,
+      type: Glibc.SOCK_STREAM,
+      protocol: 0
+    )
+    if deviceAddress.family == AF_INET || deviceAddress.family == AF_INET6 {
+      try socket.setTcpNoDelay()
+    }
+    do {
+      try await socket.connect(to: deviceAddress)
+    } catch let error as Errno {
+      throw error.mappedError
+    }
+    _socket.withLock { $0 = socket }
+
+    let (read, write) = Self.makeTransportClosures(socket)
+    do {
+      try await _engine.handshake(read: read, write: write)
+    } catch {
+      // Drop the socket so a failed handshake doesn't leave half-init
+      // transport state visible to later operations.
+      _socket.withLock { $0 = nil }
+      throw error
+    }
+    try await super.connectDevice()
+  }
+
+  override public func disconnectDevice() async throws {
+    let socket = _socket.withLock { (slot: inout Socket?) -> Socket? in
+      let s = slot
+      slot = nil
+      return s
+    }
+    if let socket {
+      let (read, write) = Self.makeTransportClosures(socket)
+      try? await _engine.shutdown(read: read, write: write)
+    }
+    try await super.disconnectDevice()
+  }
+
+  override public func read(_ length: Int) async throws -> Data {
+    guard let socket = _socket.withLock({ $0 }) else {
+      throw Ocp1Error.notConnected
+    }
+    let (read, write) = Self.makeTransportClosures(socket)
+    do {
+      return try await _engine.read(length, read: read, write: write)
+    } catch let error as Errno {
+      throw error.mappedError
+    }
+  }
+
+  override public func write(_ data: Data) async throws -> Int {
+    guard let socket = _socket.withLock({ $0 }) else {
+      throw Ocp1Error.notConnected
+    }
+    let (read, write) = Self.makeTransportClosures(socket)
+    do {
+      return try await _engine.write(data, read: read, write: write)
+    } catch let error as Errno {
+      throw error.mappedError
+    }
+  }
+
+  /// Wrap a `Socket` (Sendable value type) in the @Sendable read/write
+  /// closures the engine pumps through.
+  private static func makeTransportClosures(
+    _ socket: Socket
+  ) -> (
+    read: @Sendable (Int) async throws -> Data,
+    write: @Sendable (Data) async throws -> Void
+  ) {
+    let read: @Sendable (Int) async throws -> Data = { count in
+      try await Data(socket.read(count: count, awaitingAllRead: false))
+    }
+    let write: @Sendable (Data) async throws -> Void = { data in
+      _ = try await socket.write(Array(data), count: data.count, awaitingAllWritten: true)
+    }
+    return (read, write)
+  }
+}
+
+#endif

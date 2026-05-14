@@ -74,7 +74,6 @@ package let SOCK_DGRAM = Int32(Glibc.SOCK_DGRAM.rawValue)
 
 public let OcaTcpConnectionPrefix = "oca/tcp"
 public let OcaUdpConnectionPrefix = "oca/udp"
-public let OcaSecureTcpConnectionPrefix = "ocasec/tcp"
 public let OcaWebSocketTcpConnectionPrefix = "ocaws/tcp"
 public let OcaLocalConnectionPrefix = "oca/local"
 public let OcaDatagramProxyConnectionPrefix = "oca/dg-proxy"
@@ -88,6 +87,8 @@ public struct Ocp1ConnectionFlags: OptionSet, Sendable {
   public static let retainObjectCacheAfterDisconnect = Ocp1ConnectionFlags(rawValue: 1 << 2)
   public static let enableTracing = Ocp1ConnectionFlags(rawValue: 1 << 3)
   public static let refreshSubscriptionsOnReconnection = Ocp1ConnectionFlags(rawValue: 1 << 4)
+  /// Disable TLS certificate verification.
+  public static let disableCertificateVerification = Ocp1ConnectionFlags(rawValue: 1 << 5)
 
   public typealias RawValue = UInt
 
@@ -465,6 +466,11 @@ open class Ocp1Connection: CustomStringConvertible {
   /// A concrete implementation is free to override this however.
   open var isDatagram: Bool {
     heartbeatTime > .seconds(0)
+  }
+
+  /// Plaintext transports return `false`; TLS-wrapping transports override.
+  open var hasTransportLayerSecurity: Bool {
+    false
   }
 
   /// The local socket address of the connection, if available.

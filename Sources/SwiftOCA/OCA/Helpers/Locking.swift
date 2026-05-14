@@ -1,7 +1,7 @@
 import Synchronization
 
 extension Mutex {
-  var criticalValue: Value {
+  package var criticalValue: Value {
     withLock { $0 }
   }
 }

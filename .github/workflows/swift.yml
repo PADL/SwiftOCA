@@ -37,7 +37,7 @@ jobs:
       - name: Packages
         run: |
           apt-get update
-          apt-get install -y liburing-dev libavahi-compat-libdnssd-dev libavahi-client-dev
+          apt-get install -y liburing-dev libavahi-compat-libdnssd-dev libavahi-client-dev libssl-dev
       - name: Checkout
         uses: actions/checkout@v4
       - name: Version

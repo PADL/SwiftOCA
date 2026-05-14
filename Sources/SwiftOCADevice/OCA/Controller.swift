@@ -24,11 +24,18 @@ public struct OcaControllerFlags: OptionSet, Sendable {
   public init(rawValue: RawValue) { self.rawValue = rawValue }
 
   public static let supportsLocking = Self(rawValue: 1 << 0)
+  /// Set by TLS-wrapping controllers.
+  public static let hasTransportLayerSecurity = Self(rawValue: 1 << 1)
   public static let isLocal = Self(rawValue: 1 << 2)
 }
 
 public protocol OcaController: Actor {
   nonisolated var flags: OcaControllerFlags { get }
+
+  /// Authenticated peer identity; `.anonymous` for plaintext transports.
+  /// Privileged checks MUST consult this — `.hasTransportLayerSecurity`
+  /// only proves *some* trusted peer is on the wire, not which.
+  nonisolated var peerIdentity: OcaPeerIdentity { get }
 
   func addSubscription(
     _ subscription: OcaSubscriptionManagerSubscription
@@ -51,6 +58,8 @@ public protocol OcaController: Actor {
 }
 
 public extension OcaController {
+  nonisolated var peerIdentity: OcaPeerIdentity { .anonymous }
+
   func sendMessage(
     _ messages: Ocp1Message,
     type messageType: OcaMessageType

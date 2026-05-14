@@ -66,28 +66,49 @@ private extension SocketAddress {
   }
 }
 
-public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
-  fileprivate let _deviceAddress: Mutex<AnySocketAddress>
-  fileprivate var _queue: DispatchQueue!
-  fileprivate var _nwConnection: NWConnection!
+open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
+  package let _deviceAddress: Mutex<AnySocketAddress>
+  package var _queue: DispatchQueue!
+  package var _nwConnection: NWConnection!
 
-  fileprivate var parameters: NWParameters {
+  open var parameters: NWParameters {
     fatalError("must be implemented by subclass")
   }
 
-  private init(
+  /// Shared TCP options factory so plaintext and TLS subclasses stay in sync.
+  package func makeTCPOptions() -> NWProtocolTCP.Options {
+    let options = NWProtocolTCP.Options()
+    options.noDelay = true
+    options.enableFastOpen = true
+    options.connectionTimeout = Int(self.options.connectionTimeout.seconds)
+    return options
+  }
+
+  package init(
     deviceAddress: AnySocketAddress,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
     _deviceAddress = Mutex(deviceAddress)
     super.init(options: options)
     _nwConnection = try NWConnection(to: nwEndpoint, using: parameters)
-    _nwConnection.stateUpdateHandler = { [weak self] state in
-      if let self, state == .cancelled {
-        Task { [weak self] in try await self?.disconnect() }
-      }
+    Self._installPostReadyStateHandler(_nwConnection) { [weak self] in
+      try await self?.disconnect()
     }
     _queue = DispatchQueue(label: connectionPrefix, attributes: .concurrent)
+  }
+
+  /// Long-lived state handler installed once `connectDevice` has resolved
+  /// the initial `.ready`/`.failed` race; only `.cancelled` matters here.
+  /// Post-ready `.failed` surfaces via the next read/write.
+  fileprivate static func _installPostReadyStateHandler(
+    _ connection: NWConnection,
+    onCancelled: @Sendable @escaping () async throws -> Void
+  ) {
+    connection.stateUpdateHandler = { state in
+      if state == .cancelled {
+        Task { try await onCancelled() }
+      }
+    }
   }
 
   public convenience init(
@@ -127,10 +148,8 @@ public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
     _nwConnection.stateUpdateHandler = nil
     _nwConnection.cancel()
     _nwConnection = try NWConnection(to: nwEndpoint, using: parameters)
-    _nwConnection.stateUpdateHandler = { [weak self] state in
-      if let self, state == .cancelled {
-        Task { [weak self] in try await self?.disconnect() }
-      }
+    Self._installPostReadyStateHandler(_nwConnection) { [weak self] in
+      try await self?.disconnect()
     }
   }
 
@@ -138,7 +157,41 @@ public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
     if _nwConnection.state != .setup {
       try _cleanupConnection()
     }
-    _nwConnection.start(queue: _queue)
+    // Wait for `.ready`/`.failed` before completing connect — without this
+    // any TLS handshake error is invisible until the first read/write.
+    let connection = _nwConnection!
+    try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+      // Guard against double-resume from transient state toggling.
+      let resumed = Mutex(false)
+      connection.stateUpdateHandler = { state in
+        let outcome: Result<Void, Error>?
+        switch state {
+        case .ready:
+          outcome = .success(())
+        case let .failed(error):
+          outcome = .failure(error)
+        case let .waiting(error):
+          // TLS auth failures surface as `.waiting` (NW retries forever);
+          // treat as terminal during connect rather than hanging.
+          outcome = .failure(error)
+        case .cancelled:
+          outcome = .failure(Ocp1Error.notConnected)
+        default:
+          outcome = nil
+        }
+        guard let outcome else { return }
+        let claimed = resumed.withLock { flag -> Bool in
+          if flag { return false }
+          flag = true
+          return true
+        }
+        if claimed { cont.resume(with: outcome) }
+      }
+      connection.start(queue: _queue)
+    }
+    Self._installPostReadyStateHandler(connection) { [weak self] in
+      try await self?.disconnect()
+    }
     try await super.connectDevice()
   }
 
@@ -203,13 +256,13 @@ public class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
     }
   }
 
-  fileprivate nonisolated var nwEndpoint: NWEndpoint {
+  open nonisolated var nwEndpoint: NWEndpoint {
     get throws {
       try _deviceAddress.criticalValue.asNWEndpoint()
     }
   }
 
-  fileprivate nonisolated var presentationAddress: String {
+  package nonisolated var presentationAddress: String {
     _deviceAddress.criticalValue._presentationAddress
   }
 }
@@ -225,7 +278,7 @@ public final class Ocp1NWUDPConnection: Ocp1NWConnection {
 
   override public var isDatagram: Bool { true }
 
-  override var parameters: NWParameters {
+  override public var parameters: NWParameters {
     let options = NWProtocolUDP.Options()
     return NWParameters(dtls: nil, udp: options)
   }
@@ -238,12 +291,8 @@ public final class Ocp1NWTCPConnection: Ocp1NWConnection {
 
   override public var isDatagram: Bool { false }
 
-  override var parameters: NWParameters {
-    let options = NWProtocolTCP.Options()
-    options.noDelay = true
-    options.enableFastOpen = true
-    options.connectionTimeout = Int(self.options.connectionTimeout.seconds)
-    return NWParameters(tls: nil, tcp: options)
+  override public var parameters: NWParameters {
+    NWParameters(tls: nil, tcp: makeTCPOptions())
   }
 }
 

@@ -39,12 +39,12 @@ public class DatagramProxyDeviceEndpoint<
     _controllers.values.map { $0 }
   }
 
-  typealias ControllerType = DatagramProxyController<T>
+  package typealias ControllerType = DatagramProxyController<T>
 
-  let timeout: Duration
-  let device: OcaDevice
-  let logger = Logger(label: "com.padl.SwiftOCADevice.DatagramProxyDeviceEndpoint")
-  nonisolated(unsafe) var enableMessageTracing = false
+  package let timeout: Duration
+  package let device: OcaDevice
+  package let logger = Logger(label: "com.padl.SwiftOCADevice.DatagramProxyDeviceEndpoint")
+  package nonisolated(unsafe) var enableMessageTracing = false
   let outputStream: AsyncStream<PeerMessagePDU>.Continuation
 
   private var _controllers = [T: ControllerType]()
@@ -95,9 +95,9 @@ public class DatagramProxyDeviceEndpoint<
   }
 
   // only needed for stream-oriented controllers
-  func add(controller: ControllerType) async {}
+  package func add(controller: ControllerType) async {}
 
-  func remove(controller: ControllerType) async {
+  package func remove(controller: ControllerType) async {
     _controllers[controller.peerID] = nil
   }
 }

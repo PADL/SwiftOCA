@@ -17,6 +17,11 @@ if EnableASAN {
 
 var PlatformPackageDependencies: [Package.Dependency] = []
 var PlatformTargetDependencies: [Target.Dependency] = []
+// Linux-only OpenSSL + IORing deps for SwiftOCASecure / SwiftOCASecureDevice.
+// Populated inside #if os(Linux) below; empty on Apple platforms, where these
+// packages are not declared as package dependencies (the secure targets are
+// compiled with the Linux OpenSSL/IORing code paths #if'd out).
+var SecureLinuxTargetDependencies: [Target.Dependency] = []
 let PlatformProducts: [Product]
 let PlatformTargets: [Target]
 
@@ -44,6 +49,10 @@ PlatformTargetDependencies += [
     name: "dnssd",
     condition: .when(platforms: [.linux])
   ),
+  .target(
+    name: "COpenSSL",
+    condition: .when(platforms: [.linux], traits: ["NonEmbeddedBuild"])
+  ),
   .product(
     name: "IORing",
     package: "IORingSwift",
@@ -62,6 +71,23 @@ PlatformTargetDependencies += [
   .product(
     name: "FlyingFox",
     package: "FlyingFox",
+    condition: .when(platforms: [.linux], traits: ["NonEmbeddedBuild"])
+  ),
+]
+
+SecureLinuxTargetDependencies = [
+  .target(
+    name: "COpenSSL",
+    condition: .when(platforms: [.linux], traits: ["NonEmbeddedBuild"])
+  ),
+  .product(
+    name: "IORing",
+    package: "IORingSwift",
+    condition: .when(platforms: [.linux], traits: ["NonEmbeddedBuild"])
+  ),
+  .product(
+    name: "IORingUtils",
+    package: "IORingSwift",
     condition: .when(platforms: [.linux], traits: ["NonEmbeddedBuild"])
   ),
 ]
@@ -137,8 +163,16 @@ let CommonProducts: [Product] = [
     targets: ["SwiftOCA"]
   ),
   .library(
+    name: "SwiftOCASecure",
+    targets: ["SwiftOCASecure"]
+  ),
+  .library(
     name: "SwiftOCADevice",
     targets: ["SwiftOCADevice"]
+  ),
+  .library(
+    name: "SwiftOCASecureDevice",
+    targets: ["SwiftOCASecureDevice"]
   ),
 ]
 
@@ -146,6 +180,14 @@ let CommonTargets: [Target] = [
   .systemLibrary(
     name: "dnssd",
     providers: [.apt(["libavahi-compat-libdnssd-dev"])]
+  ),
+  .systemLibrary(
+    name: "COpenSSL",
+    pkgConfig: "openssl",
+    providers: [
+      .apt(["libssl-dev"]),
+      .yum(["openssl-devel"]),
+    ]
   ),
   .target(
     name: "SwiftOCA",
@@ -168,6 +210,17 @@ let CommonTargets: [Target] = [
     ]
   ),
   .target(
+    name: "SwiftOCASecure",
+    dependencies: [
+      "SwiftOCA",
+      "SocketAddress",
+      .product(name: "Logging", package: "swift-log"),
+    ] + SecureLinuxTargetDependencies,
+    swiftSettings: [
+      .enableExperimentalFeature("StrictConcurrency"),
+    ]
+  ),
+  .target(
     name: "SwiftOCADevice",
     dependencies: [
       "SwiftOCA",
@@ -186,10 +239,27 @@ let CommonTargets: [Target] = [
       .enableExperimentalFeature("StrictConcurrency"),
     ]
   ),
+  .target(
+    name: "SwiftOCASecureDevice",
+    dependencies: [
+      "SwiftOCA",
+      "SwiftOCASecure",
+      "SwiftOCADevice",
+      "SocketAddress",
+      .product(name: "Logging", package: "swift-log"),
+      .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
+      "AsyncExtensions",
+    ] + SecureLinuxTargetDependencies,
+    swiftSettings: [
+      .enableExperimentalFeature("StrictConcurrency"),
+    ]
+  ),
   .executableTarget(
     name: "OCADevice",
     dependencies: [
       "SwiftOCADevice",
+      .target(name: "SwiftOCASecure", condition: .when(traits: ["NonEmbeddedBuild"])),
+      .target(name: "SwiftOCASecureDevice", condition: .when(traits: ["NonEmbeddedBuild"])),
     ],
     path: "Examples/OCADevice",
     swiftSettings: [
@@ -235,6 +305,8 @@ let CommonTargets: [Target] = [
     name: "SwiftOCADeviceTests",
     dependencies: [
       .target(name: "SwiftOCADevice"),
+      .target(name: "SwiftOCASecure", condition: .when(traits: ["NonEmbeddedBuild"])),
+      .target(name: "SwiftOCASecureDevice", condition: .when(traits: ["NonEmbeddedBuild"])),
     ],
     swiftSettings: [
       .unsafeFlags(ASANSwiftFlags),

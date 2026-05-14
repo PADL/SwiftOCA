@@ -28,7 +28,7 @@ import Glibc
 
 #if swift(>=6.0)
 public import IORing
-internal import IORingUtils
+package import IORingUtils
 #else
 public import IORing
 @_implementationOnly import IORingUtils
@@ -41,22 +41,22 @@ import SwiftOCA
 import struct SystemPackage.Errno
 
 @OcaDevice
-public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
+open class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
-  let address: any SocketAddress
-  let timeout: Duration
-  let device: OcaDevice
-  let logger: Logger
-  let ring: IORing
-  nonisolated(unsafe) var enableMessageTracing = false
+  package nonisolated let address: any SocketAddress
+  package nonisolated let timeout: Duration
+  package nonisolated let device: OcaDevice
+  package nonisolated let logger: Logger
+  package nonisolated let ring: IORing
+  package nonisolated(unsafe) var enableMessageTracing = false
 
-  var socket: Socket?
+  package var socket: Socket?
   #if canImport(dnssd)
   private var _endpointRegistrarTask: Task<(), Error>?
   #endif
 
-  public var controllers: [OcaController] {
+  open var controllers: [OcaController] {
     []
   }
 
@@ -75,7 +75,7 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     try await device.add(endpoint: self)
   }
 
-  public nonisolated var description: String {
+  open nonisolated var description: String {
     "\(type(of: self))(address: \((try? address.presentationAddress) ?? "<unknown>"), timeout: \(timeout))"
   }
 
@@ -103,7 +103,7 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   }
 
   #if canImport(dnssd)
-  public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
+  open nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
     .none
   }
   #endif
@@ -112,7 +112,7 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     (try? address.port) ?? 0
   }
 
-  public func run() async throws {
+  open func run() async throws {
     if port != 0 {
       #if canImport(dnssd)
       _endpointRegistrarTask = makeBonjourRegistrarTask(for: device)
@@ -146,7 +146,7 @@ public class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   OcaDeviceEndpointPrivate
 {
-  typealias ControllerType = Ocp1IORingStreamController
+  package typealias ControllerType = Ocp1IORingStreamController
 
   var notificationSocket: Socket?
 
@@ -239,11 +239,11 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   }
   #endif
 
-  func add(controller: ControllerType) async {
+  package func add(controller: ControllerType) async {
     _controllers.append(controller)
   }
 
-  func remove(controller: ControllerType) async {
+  package func remove(controller: ControllerType) async {
     _controllers.removeAll(where: { $0 == controller })
   }
 }
@@ -252,7 +252,7 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   OcaDeviceEndpointPrivate
 {
-  typealias ControllerType = Ocp1IORingDatagramController
+  package typealias ControllerType = Ocp1IORingDatagramController
 
   private let _bufferCount: Int?
   var _controllers = [AnySocketAddress: ControllerType]()
@@ -407,9 +407,9 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     .udp
   }
 
-  func add(controller: ControllerType) async {}
+  package func add(controller: ControllerType) async {}
 
-  func remove(controller: ControllerType) async {
+  package func remove(controller: ControllerType) async {
     _controllers[controller.peerAddress] = nil
   }
 }

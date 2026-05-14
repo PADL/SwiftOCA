@@ -26,12 +26,12 @@ import SwiftOCA
 
 @OcaDevice
 public final class OcaLocalDeviceEndpoint: OcaDeviceEndpointPrivate {
-  typealias ControllerType = OcaLocalController
+  package typealias ControllerType = OcaLocalController
 
-  let timeout: Duration = .zero
-  let device: OcaDevice
-  let logger: Logger
-  nonisolated(unsafe) var enableMessageTracing = false
+  package let timeout: Duration = .zero
+  package let device: OcaDevice
+  package let logger: Logger
+  package nonisolated(unsafe) var enableMessageTracing = false
 
   public var controllers: [OcaController] {
     [controller]
@@ -44,9 +44,9 @@ public final class OcaLocalDeviceEndpoint: OcaDeviceEndpointPrivate {
 
   private var controller: OcaLocalController!
 
-  func add(controller: ControllerType) async {}
+  package func add(controller: ControllerType) async {}
 
-  func remove(controller: ControllerType) async {}
+  package func remove(controller: ControllerType) async {}
 
   public init(
     device: OcaDevice = OcaDevice.shared,

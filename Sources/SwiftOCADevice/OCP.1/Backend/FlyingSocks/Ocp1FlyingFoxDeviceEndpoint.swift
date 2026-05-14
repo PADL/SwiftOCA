@@ -39,16 +39,16 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
-  typealias ControllerType = Ocp1FlyingFoxController
+  package typealias ControllerType = Ocp1FlyingFoxController
 
   public var controllers: [OcaController] {
     _controllers
   }
 
-  let timeout: Duration
-  let device: OcaDevice
-  let logger: Logger
-  nonisolated(unsafe) var enableMessageTracing = false
+  package let timeout: Duration
+  package let device: OcaDevice
+  package let logger: Logger
+  package nonisolated(unsafe) var enableMessageTracing = false
 
   private(set) var httpServer: HTTPServer!
   private let address: sockaddr_storage
@@ -59,7 +59,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   final class Handler: WSMessageHandler, @unchecked
   Sendable {
-    weak var endpoint: Ocp1FlyingFoxDeviceEndpoint?
+    package weak var endpoint: Ocp1FlyingFoxDeviceEndpoint?
 
     init(_ endpoint: Ocp1FlyingFoxDeviceEndpoint) {
       self.endpoint = endpoint
@@ -160,11 +160,11 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     (try? address.port) ?? 0
   }
 
-  func add(controller: Ocp1FlyingFoxController) async {
+  package func add(controller: Ocp1FlyingFoxController) async {
     _controllers.append(controller)
   }
 
-  func remove(controller: Ocp1FlyingFoxController) async {
+  package func remove(controller: Ocp1FlyingFoxController) async {
     _controllers.removeAll(where: { $0.id == controller.id })
   }
 }

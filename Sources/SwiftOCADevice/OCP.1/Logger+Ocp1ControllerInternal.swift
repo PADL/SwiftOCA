@@ -22,37 +22,52 @@ import Foundation
 import Logging
 import SwiftOCA
 
-private extension Ocp1ControllerInternal {
-  nonisolated var loggerMetadata: Logger.Metadata {
+extension Ocp1ControllerInternal {
+  package nonisolated var loggerMetadata: Logger.Metadata {
     ["CONTROLLER": "\(connectionPrefix)/\(identifier)"]
   }
 }
 
+/// Render for trace logs; redact the payload when the target is the
+/// SecurityManager so PSK key material never lands in traces.
+private func _ocp1TraceDescription(_ message: Any) -> String {
+  switch message {
+  case let command as Ocp1Command where command.targetONo == OcaSecurityManagerONo:
+    return
+      "Ocp1Command(handle: \(command.handle), targetONo: \(command.targetONo), methodID: \(command.methodID), parameters: <redacted \(command.parameters.parameterData.count) bytes>)"
+  default:
+    return "\(message)"
+  }
+}
+
 extension OcaDeviceEndpointPrivate {
-  nonisolated func traceMessage(
+  package nonisolated func traceMessage(
     _ message: some Any,
     controller: any Ocp1ControllerInternal,
     direction: OcaMessageDirection
   ) {
     guard enableMessageTracing, logger.logLevel <= .trace else { return }
-    logger.trace("message \(direction): \(message)", metadata: controller.loggerMetadata)
+    logger.trace(
+      "message \(direction): \(_ocp1TraceDescription(message))",
+      metadata: controller.loggerMetadata
+    )
   }
 }
 
 extension Logger {
-  func info(_ message: String, controller: any Ocp1ControllerInternal) {
+  package func info(_ message: String, controller: any Ocp1ControllerInternal) {
     info("\(message)", metadata: controller.loggerMetadata)
   }
 
-  func command(_ command: Ocp1Command, on controller: any Ocp1ControllerInternal) {
-    trace("command \(command)", metadata: controller.loggerMetadata)
+  package func command(_ command: Ocp1Command, on controller: any Ocp1ControllerInternal) {
+    trace("command \(_ocp1TraceDescription(command))", metadata: controller.loggerMetadata)
   }
 
-  func response(_ response: Ocp1Response, on controller: any Ocp1ControllerInternal) {
+  package func response(_ response: Ocp1Response, on controller: any Ocp1ControllerInternal) {
     trace("response \(response)", metadata: controller.loggerMetadata)
   }
 
-  func error(_ error: Error, controller: any Ocp1ControllerInternal) {
+  package func error(_ error: Error, controller: any Ocp1ControllerInternal) {
     warning("error \(error)", metadata: controller.loggerMetadata)
   }
 }

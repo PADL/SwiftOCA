@@ -49,7 +49,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
-  typealias ControllerType = Ocp1FlyingSocksDatagramController
+  package typealias ControllerType = Ocp1FlyingSocksDatagramController
 
   var _controllers = Set<ControllerType>()
 
@@ -60,10 +60,10 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   let pool: AsyncSocketPool
 
   private let address: SocketAddress
-  let timeout: Duration
-  let device: OcaDevice
-  let logger: Logger
-  nonisolated(unsafe) var enableMessageTracing = false
+  package let timeout: Duration
+  package let device: OcaDevice
+  package let logger: Logger
+  package nonisolated(unsafe) var enableMessageTracing = false
 
   private(set) var socket: Socket?
   private var asyncSocket: AsyncSocket?
@@ -247,9 +247,9 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
     address.port
   }
 
-  func add(controller: ControllerType) async {}
+  package func add(controller: ControllerType) async {}
 
-  func remove(controller: ControllerType) async {
+  package func remove(controller: ControllerType) async {
     _controllers.remove(controller)
   }
 

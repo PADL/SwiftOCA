@@ -46,10 +46,10 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
   let address: any SocketAddress
-  let timeout: Duration
-  let device: OcaDevice
-  let logger: Logger
-  nonisolated(unsafe) var enableMessageTracing = false
+  package let timeout: Duration
+  package let device: OcaDevice
+  package let logger: Logger
+  package nonisolated(unsafe) var enableMessageTracing = false
 
   var socket: _CFSocketWrapper?
   #if canImport(dnssd)
@@ -137,7 +137,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 public final class Ocp1CFStreamDeviceEndpoint: Ocp1CFDeviceEndpoint,
   OcaDeviceEndpointPrivate
 {
-  typealias ControllerType = Ocp1CFStreamController
+  package typealias ControllerType = Ocp1CFStreamController
 
   var notificationSocket: _CFSocketWrapper?
 
@@ -192,11 +192,11 @@ public final class Ocp1CFStreamDeviceEndpoint: Ocp1CFDeviceEndpoint,
   }
   #endif
 
-  func add(controller: ControllerType) async {
+  package func add(controller: ControllerType) async {
     _controllers.append(controller)
   }
 
-  func remove(controller: ControllerType) async {
+  package func remove(controller: ControllerType) async {
     _controllers.removeAll(where: { $0 == controller })
   }
 }
@@ -205,7 +205,7 @@ public final class Ocp1CFStreamDeviceEndpoint: Ocp1CFDeviceEndpoint,
 public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
   OcaDeviceEndpointPrivate
 {
-  typealias ControllerType = Ocp1CFDatagramController
+  package typealias ControllerType = Ocp1CFDatagramController
 
   var _controllers = [AnySocketAddress: ControllerType]()
 
@@ -276,9 +276,9 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
   }
   #endif
 
-  func add(controller: ControllerType) async {}
+  package func add(controller: ControllerType) async {}
 
-  func remove(controller: ControllerType) async {
+  package func remove(controller: ControllerType) async {
     _controllers[controller.peerAddress] = nil
   }
 }

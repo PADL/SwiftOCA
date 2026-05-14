@@ -249,9 +249,13 @@ extension Ocp1Connection {
 
   /// connect to the OCA device, throwing `Ocp1Error.connectionTimeout` if it times out
   private func _connectDeviceWithTimeout() async throws {
+    // Plain UDP has no handshake; DTLS over UDP does and can hang, so it
+    // gets the same connect timeout as TCP.
+    let timeout: Duration =
+      (isDatagram && !hasTransportLayerSecurity) ? .zero : _connectionTimeout
     do {
       try await withThrowingTimeout(
-        of: isDatagram ? .zero : _connectionTimeout,
+        of: timeout,
         clock: .continuous
       ) {
         try await self.connectDevice()
@@ -280,6 +284,15 @@ extension Ocp1Connection {
       throw Ocp1Error.alreadyConnected
     } else if isConnecting {
       throw Ocp1Error.connectionAlreadyInProgress
+    }
+    // Audit trail for cert-verification bypass so a flag accidentally
+    // copied into production deployment surfaces loudly in logs.
+    if hasTransportLayerSecurity,
+       options.flags.contains(.disableCertificateVerification)
+    {
+      logger.critical(
+        "\(connectionPrefix): TLS certificate verification is disabled (INSECURE — do not use in production)"
+      )
     }
     _updateConnectionState(.connecting)
     do {
@@ -407,13 +420,13 @@ extension Ocp1Connection {
     }
   }
 
-  func deviceAddressDidChange() {
+  package func deviceAddressDidChange() {
     Task { [weak self] in
       try await self?.onMonitorError(id: -1, Ocp1Error.deviceAddressChanged)
     }
   }
 
-  func deviceAddressDidChange() async {
+  package func deviceAddressDidChange() async {
     try? await onMonitorError(id: -1, Ocp1Error.deviceAddressChanged)
   }
 
