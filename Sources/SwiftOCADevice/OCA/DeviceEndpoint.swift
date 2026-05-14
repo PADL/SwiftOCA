@@ -26,16 +26,16 @@ public protocol OcaDeviceEndpoint: AnyObject, Sendable {
   var controllers: [OcaController] { get async }
 }
 
-enum OcaMessageDirection {
+package enum OcaMessageDirection {
   case tx
   case rx
 }
 
-protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
+package protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
   associatedtype ControllerType: Ocp1ControllerInternal
 
-  var device: OcaDevice { get }
-  var timeout: Duration { get }
+  nonisolated var device: OcaDevice { get }
+  nonisolated var timeout: Duration { get }
 
   nonisolated var logger: Logger { get }
   nonisolated var enableMessageTracing: Bool { get }
@@ -45,7 +45,7 @@ protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
 }
 
 extension OcaDeviceEndpointPrivate {
-  func unlockAndRemove(controller: ControllerType) async {
+  package func unlockAndRemove(controller: ControllerType) async {
     await controller.cancelKeepAlive()
 
     Task { await device.eventDelegate?.onControllerExpiry(controller) }
@@ -63,12 +63,12 @@ extension OcaDeviceEndpointPrivate {
     try? await controller.close()
   }
 
-  func handle(messagePduData: Data, from controller: ControllerType) async throws {
+  package func handle(messagePduData: Data, from controller: ControllerType) async throws {
     let messageList = try await controller.decodeMessages(from: messagePduData)
     try await controller.handle(for: self, messageList: messageList)
   }
 
-  func handle(messagePduData: [UInt8], from controller: ControllerType) async throws {
+  package func handle(messagePduData: [UInt8], from controller: ControllerType) async throws {
     try await handle(messagePduData: Data(messagePduData), from: controller)
   }
 }

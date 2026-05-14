@@ -22,23 +22,23 @@ import Foundation
 #endif
 import SwiftOCA
 
-actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInternal,
+package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInternal,
   Ocp1ControllerDatagramSemantics,
   CustomStringConvertible
 {
-  nonisolated var flags: OcaControllerFlags { .supportsLocking }
-  nonisolated var connectionPrefix: String { OcaDatagramProxyConnectionPrefix }
+  package nonisolated var flags: OcaControllerFlags { .supportsLocking }
+  package nonisolated var connectionPrefix: String { OcaDatagramProxyConnectionPrefix }
 
   let peerID: T
-  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
-  var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.recentPast
-  var lastMessageSentTime = ContinuousClock.recentPast
+  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
+  package var keepAliveTask: Task<(), Error>?
+  package var lastMessageReceivedTime = ContinuousClock.recentPast
+  package var lastMessageSentTime = ContinuousClock.recentPast
 
-  private(set) var isOpen: Bool = false
-  weak var endpoint: DatagramProxyDeviceEndpoint<T>?
+  package private(set) var isOpen: Bool = false
+  package weak var endpoint: DatagramProxyDeviceEndpoint<T>?
 
-  var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<Ocp1MessageList> {
     AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
   }
 
@@ -48,7 +48,7 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
     heartbeatTime = endpoint.timeout
   }
 
-  var heartbeatTime: Duration {
+  package var heartbeatTime: Duration {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
@@ -61,21 +61,21 @@ actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInt
     }
   }
 
-  func sendOcp1EncodedData(_ data: Data) async throws {
+  package func sendOcp1EncodedData(_ data: Data) async throws {
     endpoint?.outputStream.yield((peerID, [UInt8](data)))
   }
 
-  nonisolated var identifier: String {
+  package nonisolated var identifier: String {
     String(describing: peerID)
   }
 
-  nonisolated var description: String {
+  package nonisolated var description: String {
     "\(type(of: self))(peerID: \(String(describing: peerID))"
   }
 
-  func close() async throws {}
+  package func close() async throws {}
 
-  func didOpen() {
+  package func didOpen() {
     isOpen = true
   }
 }

@@ -22,22 +22,22 @@ import Foundation
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
-actor Ocp1MachPortController: Ocp1ControllerInternal {
-  nonisolated var flags: OcaControllerFlags { [.supportsLocking, .isLocal] }
-  nonisolated var connectionPrefix: String { OcaMachPortConnectionPrefix }
+package actor Ocp1MachPortController: Ocp1ControllerInternal {
+  package nonisolated var flags: OcaControllerFlags { [.supportsLocking, .isLocal] }
+  package nonisolated var connectionPrefix: String { OcaMachPortConnectionPrefix }
 
-  var lastMessageReceivedTime = ContinuousClock.recentPast
-  var lastMessageSentTime = ContinuousClock.recentPast
-  var heartbeatTime = Duration.seconds(0) {
+  package var lastMessageReceivedTime = ContinuousClock.recentPast
+  package var lastMessageSentTime = ContinuousClock.recentPast
+  package var heartbeatTime = Duration.seconds(0) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
   }
 
-  var keepAliveTask: Task<(), Error>?
+  package var keepAliveTask: Task<(), Error>?
 
-  weak var endpoint: Ocp1MachPortDeviceEndpoint?
-  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
+  package weak var endpoint: Ocp1MachPortDeviceEndpoint?
+  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
   /// our dedicated receive port for this controller session
   private let receiveHandle: Ocp1MachPortHandle
@@ -45,7 +45,7 @@ actor Ocp1MachPortController: Ocp1ControllerInternal {
   private let clientSendPort: mach_port_t
   private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
 
-  nonisolated let identifier: String
+  package nonisolated let identifier: String
 
   init(
     endpoint: Ocp1MachPortDeviceEndpoint,
@@ -85,15 +85,15 @@ actor Ocp1MachPortController: Ocp1ControllerInternal {
     }
   }
 
-  var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 
-  func sendOcp1EncodedData(_ data: Data) async throws {
+  package func sendOcp1EncodedData(_ data: Data) async throws {
     try receiveHandle.sendData(data, to: clientSendPort)
   }
 
-  func close() throws {
+  package func close() throws {
     try? receiveHandle.sendDisconnect(to: clientSendPort)
     Ocp1MachPortHandle.deallocateSendRight(clientSendPort)
     receiveHandle.destroy()
@@ -101,7 +101,7 @@ actor Ocp1MachPortController: Ocp1ControllerInternal {
 }
 
 extension Ocp1MachPortController: Equatable {
-  nonisolated static func == (
+  package nonisolated static func == (
     lhs: Ocp1MachPortController,
     rhs: Ocp1MachPortController
   ) -> Bool {
@@ -110,7 +110,7 @@ extension Ocp1MachPortController: Equatable {
 }
 
 extension Ocp1MachPortController: Hashable {
-  nonisolated func hash(into hasher: inout Hasher) {
+  package nonisolated func hash(into hasher: inout Hasher) {
     hasher.combine(receiveHandle.port)
   }
 }

@@ -31,22 +31,22 @@ import Glibc
 #endif
 
 /// A remote controller
-actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
-  nonisolated var flags: OcaControllerFlags { .supportsLocking }
-  nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
+package actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
+  package nonisolated var flags: OcaControllerFlags { .supportsLocking }
+  package nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
 
-  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
+  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: any SocketAddress
   let interfaceIndex: UInt32?
   let localAddress: (any SocketAddress)?
-  var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.recentPast
-  var lastMessageSentTime = ContinuousClock.recentPast
+  package var keepAliveTask: Task<(), Error>?
+  package var lastMessageReceivedTime = ContinuousClock.recentPast
+  package var lastMessageSentTime = ContinuousClock.recentPast
 
-  private(set) var isOpen: Bool = false
-  weak var endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint?
+  package private(set) var isOpen: Bool = false
+  package weak var endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint?
 
-  var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<Ocp1MessageList> {
     AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
   }
 
@@ -62,13 +62,13 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
     self.localAddress = localAddress
   }
 
-  var heartbeatTime = Duration.seconds(1) {
+  package var heartbeatTime = Duration.seconds(1) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
   }
 
-  func sendOcp1EncodedData(_ data: Data) async throws {
+  package func sendOcp1EncodedData(_ data: Data) async throws {
     let peerAddress = FlyingSocks.AnySocketAddress(peerAddress)
     let localAddress = localAddress != nil ? FlyingSocks.AnySocketAddress(localAddress!) : nil
 
@@ -84,13 +84,13 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
     try await endpoint?.sendOcp1EncodedMessage(messagePdu)
   }
 
-  func close() async throws {}
+  package func close() async throws {}
 
-  func didOpen() {
+  package func didOpen() {
     isOpen = true
   }
 
-  nonisolated var identifier: String {
+  package nonisolated var identifier: String {
     peerAddress.makeStorage()._presentationAddress
   }
 
@@ -103,7 +103,7 @@ actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
 }
 
 extension Ocp1FlyingSocksDatagramController: Equatable {
-  nonisolated static func == (
+  package nonisolated static func == (
     lhs: Ocp1FlyingSocksDatagramController,
     rhs: Ocp1FlyingSocksDatagramController
   ) -> Bool {
@@ -112,7 +112,7 @@ extension Ocp1FlyingSocksDatagramController: Equatable {
 }
 
 extension Ocp1FlyingSocksDatagramController: Hashable {
-  nonisolated func hash(into hasher: inout Hasher) {
+  package nonisolated func hash(into hasher: inout Hasher) {
     var peerAddress = peerAddress.makeStorage()
     Data(bytes: &peerAddress, count: MemoryLayout<sockaddr_storage>.size).hash(into: &hasher)
   }

@@ -31,22 +31,22 @@ import Glibc
 #endif
 
 /// A remote controller
-actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConvertible {
-  nonisolated let flags: OcaControllerFlags
-  nonisolated let connectionPrefix: String
+package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConvertible {
+  package nonisolated let flags: OcaControllerFlags
+  package nonisolated let connectionPrefix: String
 
-  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
-  var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.recentPast
-  var lastMessageSentTime = ContinuousClock.recentPast
-  weak var endpoint: Ocp1FlyingSocksStreamDeviceEndpoint?
+  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
+  package var keepAliveTask: Task<(), Error>?
+  package var lastMessageReceivedTime = ContinuousClock.recentPast
+  package var lastMessageSentTime = ContinuousClock.recentPast
+  package weak var endpoint: Ocp1FlyingSocksStreamDeviceEndpoint?
 
   private let address: String
   private let socket: AsyncSocket
   private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
   private var socketClosed = false
 
-  var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 
@@ -69,13 +69,13 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
     _messages = AsyncThrowingStream.decodingMessages(from: socket.bytes, timeout: endpoint.timeout)
   }
 
-  var heartbeatTime = Duration.seconds(0) {
+  package var heartbeatTime = Duration.seconds(0) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
   }
 
-  func sendOcp1EncodedData(_ data: Data) async throws {
+  package func sendOcp1EncodedData(_ data: Data) async throws {
     try await socket.write(data)
   }
 
@@ -85,7 +85,7 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
     socketClosed = true
   }
 
-  func close() async throws {
+  package func close() async throws {
     try closeSocket()
 
     keepAliveTask?.cancel()
@@ -96,11 +96,11 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
     keepAliveTask?.cancel()
   }
 
-  nonisolated var identifier: String {
+  package nonisolated var identifier: String {
     address
   }
 
-  nonisolated var description: String {
+  package nonisolated var description: String {
     "\(type(of: self))(address: \(address))"
   }
 
@@ -110,7 +110,7 @@ actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConve
 }
 
 extension Ocp1FlyingSocksStreamController: Equatable {
-  nonisolated static func == (
+  package nonisolated static func == (
     lhs: Ocp1FlyingSocksStreamController,
     rhs: Ocp1FlyingSocksStreamController
   ) -> Bool {
@@ -119,7 +119,7 @@ extension Ocp1FlyingSocksStreamController: Equatable {
 }
 
 extension Ocp1FlyingSocksStreamController: Hashable {
-  nonisolated func hash(into hasher: inout Hasher) {
+  package nonisolated func hash(into hasher: inout Hasher) {
     fileDescriptor.hash(into: &hasher)
   }
 }

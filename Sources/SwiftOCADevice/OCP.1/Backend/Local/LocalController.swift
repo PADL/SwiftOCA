@@ -22,37 +22,37 @@ import Foundation
 #endif
 import SwiftOCA
 
-actor OcaLocalController: Ocp1ControllerInternal {
-  nonisolated var flags: OcaControllerFlags { [.supportsLocking, .isLocal] }
-  nonisolated var connectionPrefix: String { OcaLocalConnectionPrefix }
+package actor OcaLocalController: Ocp1ControllerInternal {
+  package nonisolated var flags: OcaControllerFlags { [.supportsLocking, .isLocal] }
+  package nonisolated var connectionPrefix: String { OcaLocalConnectionPrefix }
 
-  var lastMessageReceivedTime = ContinuousClock.recentPast
-  var lastMessageSentTime = ContinuousClock.recentPast
-  var heartbeatTime = Duration.seconds(0)
-  var keepAliveTask: Task<(), Error>?
+  package var lastMessageReceivedTime = ContinuousClock.recentPast
+  package var lastMessageSentTime = ContinuousClock.recentPast
+  package var heartbeatTime = Duration.seconds(0)
+  package var keepAliveTask: Task<(), Error>?
 
-  weak var endpoint: OcaLocalDeviceEndpoint?
-  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
+  package weak var endpoint: OcaLocalDeviceEndpoint?
+  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
   init(endpoint: OcaLocalDeviceEndpoint) async {
     self.endpoint = endpoint
   }
 
-  var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<Ocp1MessageList> {
     endpoint!.requestChannel.map { data in
       try Ocp1MessageList(messagePduData: data)
     }.eraseToAnyAsyncSequence()
   }
 
-  func sendOcp1EncodedData(_ data: Data) async throws {
+  package func sendOcp1EncodedData(_ data: Data) async throws {
     await endpoint?.responseChannel.send(data)
   }
 
-  nonisolated var identifier: String {
+  package nonisolated var identifier: String {
     "local"
   }
 
-  func close() throws {}
+  package func close() throws {}
 
   deinit {
     keepAliveTask?.cancel()

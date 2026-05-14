@@ -17,6 +17,10 @@
 import Foundation
 import SwiftOCA
 import SwiftOCADevice
+#if NonEmbeddedBuild
+import SwiftOCASecure
+import SwiftOCASecureDevice
+#endif
 #if canImport(Darwin)
 import Darwin
 #elseif canImport(Glibc)
@@ -34,6 +38,28 @@ final class DeviceEventDelegate: OcaDeviceEventDelegate {
 public enum DeviceApp {
   nonisolated(unsafe) static var testActuator: SwiftOCADevice.OcaBooleanActuator?
   static let port: UInt16 = 65000
+  #if NonEmbeddedBuild
+  static let securePort: UInt16 = 65010
+
+  /// PEM paths take precedence over PKCS#12; `nil` falls back to PSK-only.
+  static func tlsCredentialFromEnvironment() -> Ocp1TLSCredential? {
+    let env = ProcessInfo.processInfo.environment
+    if let certPath = env["OCA_TLS_CERT_FILE"], let keyPath = env["OCA_TLS_KEY_FILE"] {
+      return .certificateFile(certPath: certPath, keyPath: keyPath)
+    }
+    if let pkcs12Path = env["OCA_TLS_PKCS12_FILE"],
+       let data = try? Data(contentsOf: URL(fileURLWithPath: pkcs12Path))
+    {
+      return .pkcs12(data: data, password: env["OCA_TLS_PKCS12_PASSWORD"])
+    }
+    return nil
+  }
+
+  /// CA bundle for mTLS; when set, every client must present a chain to it.
+  static func clientTrustRootsFromEnvironment() -> Ocp1TLSTrustRoots? {
+    ProcessInfo.processInfo.environment["OCA_TLS_CLIENT_CA_FILE"].map { .caFile($0) }
+  }
+  #endif
 
   public static func main() async throws {
     var listenAddress = sockaddr_in()
@@ -103,6 +129,32 @@ public enum DeviceApp {
     let machPortEndpoint = try await Ocp1MachPortDeviceEndpoint(
       serviceName: "com.padl.OCADevice",
       device: device
+    )
+    #endif
+
+    #if (canImport(Network) || (canImport(COpenSSL) && canImport(IORing))) && NonEmbeddedBuild
+    // Demo PSK preload (NOT a real credential) for smoke-testing the
+    // ocasec/tcp transport when no cert env vars are set. Cert env vars:
+    //   OCA_TLS_CERT_FILE / OCA_TLS_KEY_FILE     — PEM
+    //   OCA_TLS_PKCS12_FILE / OCA_TLS_PKCS12_PASSWORD — PKCS#12
+    let secureCredential = Self.tlsCredentialFromEnvironment()
+    if secureCredential == nil, let securityManager = await device.securityManager {
+      await Task { @OcaDevice in
+        try? securityManager.loadPreSharedKey(
+          identity: OcaPreSharedKeyIdentityHint,
+          key: Data(repeating: 0, count: 32)
+        )
+      }.value
+    }
+    let secureStreamEndpoint = try await Ocp1TLSStreamDeviceEndpoint(
+      port: securePort,
+      credential: secureCredential,
+      clientCertificateTrustRoots: Self.clientTrustRootsFromEnvironment()
+    )
+    let secureDatagramEndpoint = try await Ocp1TLSDatagramDeviceEndpoint(
+      port: securePort,
+      credential: secureCredential,
+      clientCertificateTrustRoots: Self.clientTrustRootsFromEnvironment()
     )
     #endif
 
@@ -214,6 +266,16 @@ public enum DeviceApp {
       taskGroup.addTask {
         print("Starting OCP.1 Mach port endpoint \(machPortEndpoint)...")
         try await machPortEndpoint.run()
+      }
+      #endif
+      #if canImport(Network) || (canImport(COpenSSL) && canImport(IORing))
+      taskGroup.addTask {
+        print("Starting OCP.1 TLS stream endpoint \(secureStreamEndpoint)...")
+        try await secureStreamEndpoint.run()
+      }
+      taskGroup.addTask {
+        print("Starting OCP.1 DTLS datagram endpoint \(secureDatagramEndpoint)...")
+        try await secureDatagramEndpoint.run()
       }
       #endif
       try await taskGroup.next()

@@ -51,7 +51,7 @@ protocol Ocp1CFControllerPrivate: Ocp1ControllerInternal,
 }
 
 extension Ocp1CFControllerPrivate {
-  func sendOcp1EncodedData(
+  package func sendOcp1EncodedData(
     _ data: Data,
     to destinationAddress: OcaNetworkAddress
   ) async throws {
@@ -68,13 +68,13 @@ extension Ocp1CFControllerPrivate {
     try await sendOcp1EncodedMessage(CFSocket.Message(address: peerAddress, buffer: data))
   }
 
-  nonisolated var identifier: String {
+  package nonisolated var identifier: String {
     (try? peerAddress.presentationAddress) ?? "unknown"
   }
 }
 
-actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
-  nonisolated var flags: OcaControllerFlags {
+package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
+  package nonisolated var flags: OcaControllerFlags {
     var flags: OcaControllerFlags = .supportsLocking
     if peerAddress.family == sa_family_t(AF_LOCAL) {
       flags.insert(.isLocal)
@@ -82,17 +82,17 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
     return flags
   }
 
-  nonisolated let connectionPrefix: String
+  package nonisolated let connectionPrefix: String
 
-  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
+  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
   var receiveMessageTask: Task<(), Never>?
-  var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.recentPast
-  var lastMessageSentTime = ContinuousClock.recentPast
-  weak var endpoint: Ocp1CFStreamDeviceEndpoint?
+  package var keepAliveTask: Task<(), Error>?
+  package var lastMessageReceivedTime = ContinuousClock.recentPast
+  package var lastMessageSentTime = ContinuousClock.recentPast
+  package weak var endpoint: Ocp1CFStreamDeviceEndpoint?
 
-  var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 
@@ -101,7 +101,7 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
   private let _socket: Mutex<_CFSocketWrapper?>
   let notificationSocket: _CFSocketWrapper
 
-  nonisolated var description: String {
+  package nonisolated var description: String {
     let socket = socket
     return "\(type(of: self))(socket: \(socket != nil ? String(describing: socket!) : "<disconnected>"))"
   }
@@ -152,7 +152,7 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
     }
   }
 
-  func close() async throws {
+  package func close() async throws {
     keepAliveTask?.cancel()
     keepAliveTask = nil
 
@@ -174,13 +174,13 @@ actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConvertible {
     _messagesContinuation.finish()
   }
 
-  var heartbeatTime = Duration.seconds(0) {
+  package var heartbeatTime = Duration.seconds(0) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
   }
 
-  func sendOcp1EncodedData(_ data: Data) async throws {
+  package func sendOcp1EncodedData(_ data: Data) async throws {
     guard let socket else { throw Errno.badFileDescriptor }
     _ = try await socket.write(data: data)
   }
@@ -218,21 +218,21 @@ private extension Ocp1NetworkAddress {
   }
 }
 
-actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramSemantics {
-  nonisolated var flags: OcaControllerFlags { .supportsLocking }
+package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramSemantics {
+  package nonisolated var flags: OcaControllerFlags { .supportsLocking }
 
-  nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
+  package nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
 
-  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
+  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
-  var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.recentPast
-  var lastMessageSentTime = ContinuousClock.recentPast
+  package var keepAliveTask: Task<(), Error>?
+  package var lastMessageReceivedTime = ContinuousClock.recentPast
+  package var lastMessageSentTime = ContinuousClock.recentPast
 
-  private(set) var isOpen: Bool = false
-  weak var endpoint: Ocp1CFDatagramDeviceEndpoint?
+  package private(set) var isOpen: Bool = false
+  package weak var endpoint: Ocp1CFDatagramDeviceEndpoint?
 
-  var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<Ocp1MessageList> {
     AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
   }
 
@@ -244,13 +244,13 @@ actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramS
     self.peerAddress = AnySocketAddress(peerAddress)
   }
 
-  var heartbeatTime = Duration.seconds(1) {
+  package var heartbeatTime = Duration.seconds(1) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
   }
 
-  func sendOcp1EncodedData(_ data: Data) async throws {
+  package func sendOcp1EncodedData(_ data: Data) async throws {
     try await sendOcp1EncodedMessage(CFSocket.Message(address: peerAddress, buffer: data))
   }
 
@@ -258,21 +258,21 @@ actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramS
     try await endpoint?.sendOcp1EncodedMessage(messagePdu)
   }
 
-  func close() async throws {}
+  package func close() async throws {}
 
-  func didOpen() {
+  package func didOpen() {
     isOpen = true
   }
 }
 
 extension Ocp1CFControllerPrivate {
-  nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+  package nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.peerAddress == rhs.peerAddress
   }
 }
 
 extension Ocp1CFControllerPrivate {
-  nonisolated func hash(into hasher: inout Hasher) {
+  package nonisolated func hash(into hasher: inout Hasher) {
     peerAddress.hash(into: &hasher)
   }
 }

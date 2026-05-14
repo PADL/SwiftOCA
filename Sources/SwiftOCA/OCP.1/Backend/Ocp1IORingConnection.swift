@@ -40,19 +40,15 @@ import struct SystemPackage.Errno
 import Synchronization
 #endif
 
-fileprivate extension Errno {
+package extension Errno {
   var mappedError: Error {
     switch self {
-    case .connectionRefused:
-      fallthrough
-    case .connectionReset:
-      fallthrough
-    case .brokenPipe:
-      return Ocp1Error.notConnected
+    case .connectionRefused, .connectionReset, .brokenPipe:
+      Ocp1Error.notConnected
     case .canceled:
-      return Ocp1Error.retryOperation
+      Ocp1Error.retryOperation
     default:
-      return self
+      self
     }
   }
 }

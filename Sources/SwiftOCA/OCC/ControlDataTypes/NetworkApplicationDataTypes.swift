@@ -46,6 +46,7 @@ public enum OcaNetworkAdvertisingServiceType: String, Sendable, CaseIterable {
   case tcp = "_oca._tcp."
   case tcpSecure = "_ocasec._tcp."
   case udp = "_oca._udp."
+  case udpSecure = "_ocasec._udp."
   case tcpWebSocket = "_ocaws._tcp."
 
   public var shortDescription: String {
@@ -58,6 +59,8 @@ public enum OcaNetworkAdvertisingServiceType: String, Sendable, CaseIterable {
       "TLS"
     case .udp:
       "UDP"
+    case .udpSecure:
+      "DTLS"
     case .tcpWebSocket:
       "WS"
     }

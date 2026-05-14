@@ -35,6 +35,7 @@ All APIs are async-safe and support both macOS and Linux: on macOS, [FlyingFox](
 * **Block and matrix containers**: `OcaBlock` and `OcaMatrix` for organizing objects into hierarchical or grid-based topologies.
 * **JSON serialization/deserialization**: persist and restore device state via `serialize`/`deserialize` and the parameter dataset API.
 * **Multiple transport endpoints**: run TCP, UDP, WebSocket, Unix domain socket, and Mach port (Darwin) endpoints concurrently.
+* **TLS-secured TCP** (`ocasec`): PSK (AES70 baseline) and X.509 certificate credentials on both Apple and Linux, with optional mTLS and TLS 1.3 external PSK. See [Documentation/TLS.md](Documentation/TLS.md).
 
 ### SwiftOCAUI
 

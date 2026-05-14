@@ -48,7 +48,7 @@ protocol Ocp1IORingControllerPrivate: Ocp1ControllerInternal,
 }
 
 extension Ocp1IORingControllerPrivate {
-  func sendOcp1EncodedData(
+  package func sendOcp1EncodedData(
     _ data: Data,
     to destinationAddress: OcaNetworkAddress
   ) async throws {
@@ -66,8 +66,8 @@ extension Ocp1IORingControllerPrivate {
   }
 }
 
-actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConvertible {
-  nonisolated var flags: OcaControllerFlags {
+package actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConvertible {
+  package nonisolated var flags: OcaControllerFlags {
     var flags: OcaControllerFlags = .supportsLocking
     if peerAddress.family == sa_family_t(AF_LOCAL) {
       flags.insert(.isLocal)
@@ -75,17 +75,17 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     return flags
   }
 
-  nonisolated let connectionPrefix: String
+  package nonisolated let connectionPrefix: String
 
-  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
+  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
   var receiveMessageTask: Task<(), Never>?
-  var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.recentPast
-  var lastMessageSentTime = ContinuousClock.recentPast
-  weak var endpoint: Ocp1IORingStreamDeviceEndpoint?
+  package var keepAliveTask: Task<(), Error>?
+  package var lastMessageReceivedTime = ContinuousClock.recentPast
+  package var lastMessageSentTime = ContinuousClock.recentPast
+  package weak var endpoint: Ocp1IORingStreamDeviceEndpoint?
 
-  var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 
@@ -94,7 +94,7 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
   private let _socket: Mutex<Socket?>
   let notificationSocket: Socket
 
-  nonisolated var description: String {
+  package nonisolated var description: String {
     let socket = socket
     return "\(type(of: self))(socket: \(socket != nil ? String(describing: socket!) : "<disconnected>"))"
   }
@@ -148,7 +148,7 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     }
   }
 
-  func close() async {
+  package func close() async {
     keepAliveTask?.cancel()
     keepAliveTask = nil
 
@@ -171,13 +171,13 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     _messagesContinuation.finish()
   }
 
-  var heartbeatTime = Duration.seconds(0) {
+  package var heartbeatTime = Duration.seconds(0) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
   }
 
-  func sendOcp1EncodedData(_ data: Data) async throws {
+  package func sendOcp1EncodedData(_ data: Data) async throws {
     guard let socket else { throw Errno.badFileDescriptor }
     _ = try await socket.write(
       [UInt8](data),
@@ -190,7 +190,7 @@ actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConve
     try await notificationSocket.sendMessage(messagePdu)
   }
 
-  nonisolated var identifier: String {
+  package nonisolated var identifier: String {
     (try? peerAddress.presentationAddress) ?? "unknown"
   }
 }
@@ -223,20 +223,20 @@ private extension Ocp1NetworkAddress {
   }
 }
 
-actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerDatagramSemantics {
-  nonisolated var flags: OcaControllerFlags { .supportsLocking }
-  nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
+package actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerDatagramSemantics {
+  package nonisolated var flags: OcaControllerFlags { .supportsLocking }
+  package nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
 
-  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
+  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
-  var keepAliveTask: Task<(), Error>?
-  var lastMessageReceivedTime = ContinuousClock.recentPast
-  var lastMessageSentTime = ContinuousClock.recentPast
+  package var keepAliveTask: Task<(), Error>?
+  package var lastMessageReceivedTime = ContinuousClock.recentPast
+  package var lastMessageSentTime = ContinuousClock.recentPast
 
-  private(set) var isOpen: Bool = false
-  weak var endpoint: Ocp1IORingDatagramDeviceEndpoint?
+  package private(set) var isOpen: Bool = false
+  package weak var endpoint: Ocp1IORingDatagramDeviceEndpoint?
 
-  var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<Ocp1MessageList> {
     AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
   }
 
@@ -248,13 +248,13 @@ actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerD
     self.peerAddress = peerAddress
   }
 
-  var heartbeatTime = Duration.seconds(1) {
+  package var heartbeatTime = Duration.seconds(1) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
   }
 
-  func sendOcp1EncodedData(_ data: Data) async throws {
+  package func sendOcp1EncodedData(_ data: Data) async throws {
     try await sendOcp1EncodedMessage(Message(address: peerAddress, buffer: [UInt8](data)))
   }
 
@@ -262,25 +262,25 @@ actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerD
     try await endpoint?.sendOcp1EncodedMessage(messagePdu)
   }
 
-  nonisolated var identifier: String {
+  package nonisolated var identifier: String {
     (try? peerAddress.presentationAddress) ?? "unknown"
   }
 
-  func close() async throws {}
+  package func close() async throws {}
 
-  func didOpen() {
+  package func didOpen() {
     isOpen = true
   }
 }
 
 extension Ocp1IORingControllerPrivate {
-  nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+  package nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.peerAddress == rhs.peerAddress
   }
 }
 
 extension Ocp1IORingControllerPrivate {
-  nonisolated func hash(into hasher: inout Hasher) {
+  package nonisolated func hash(into hasher: inout Hasher) {
     peerAddress.hash(into: &hasher)
   }
 }

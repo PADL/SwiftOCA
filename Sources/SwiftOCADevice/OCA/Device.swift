@@ -41,6 +41,7 @@ public actor OcaDevice {
   public private(set) var rootBlock: OcaBlock<OcaRoot>!
   public private(set) var subscriptionManager: OcaSubscriptionManager!
   public private(set) var deviceManager: OcaDeviceManager!
+  public private(set) var securityManager: OcaSecurityManager!
 
   var objects = [OcaONo: OcaRoot]()
   var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
@@ -61,7 +62,10 @@ public actor OcaDevice {
     return nextObjectNumber
   }
 
-  public func initializeDefaultObjects(deviceManager: OcaDeviceManager? = nil) async throws {
+  public func initializeDefaultObjects(
+    deviceManager: OcaDeviceManager? = nil,
+    securityManager: OcaSecurityManager? = nil
+  ) async throws {
     rootBlock = try await OcaBlock(
       objectNumber: OcaRootBlockONo,
       role: "",
@@ -69,6 +73,11 @@ public actor OcaDevice {
       addToRootBlock: false
     )
     subscriptionManager = try await OcaSubscriptionManager(deviceDelegate: self)
+    if let securityManager {
+      self.securityManager = securityManager
+    } else {
+      self.securityManager = try await OcaSecurityManager(deviceDelegate: self)
+    }
     Task { @OcaDevice in await rootBlock.type = 1 }
     if let deviceManager {
       self.deviceManager = deviceManager

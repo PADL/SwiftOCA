@@ -30,12 +30,12 @@ import SwiftOCA
 /// for bidirectional OCP.1 PDU exchange.
 @OcaDevice
 public final class Ocp1MachPortDeviceEndpoint: OcaDeviceEndpointPrivate, CustomStringConvertible {
-  typealias ControllerType = Ocp1MachPortController
+  package typealias ControllerType = Ocp1MachPortController
 
-  let timeout: Duration
-  let device: OcaDevice
-  let logger: Logger
-  nonisolated(unsafe) var enableMessageTracing = false
+  package let timeout: Duration
+  package let device: OcaDevice
+  package let logger: Logger
+  package nonisolated(unsafe) var enableMessageTracing = false
 
   public var controllers: [OcaController] {
     _controllers
@@ -165,11 +165,11 @@ public final class Ocp1MachPortDeviceEndpoint: OcaDeviceEndpointPrivate, CustomS
     }
   }
 
-  func add(controller: ControllerType) async {
+  package func add(controller: ControllerType) async {
     _controllers.append(controller)
   }
 
-  func remove(controller: ControllerType) async {
+  package func remove(controller: ControllerType) async {
     _controllers.removeAll(where: { $0 == controller })
   }
 }
