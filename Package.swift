@@ -173,7 +173,14 @@ let CommonTargets: [Target] = [
       "SwiftOCA",
       .product(name: "Logging", package: "swift-log"),
       .product(name: "Gzip", package: "GzipSwift"),
-      .product(name: "SQLite", package: "SQLite.swift", condition: .when(traits: ["NonEmbeddedBuild"]))
+      .product(
+        name: "SQLite",
+        package: "SQLite.swift",
+        condition: .when(
+          platforms: [.macOS, .iOS, .tvOS, .watchOS, .visionOS, .linux],
+          traits: ["NonEmbeddedBuild"]
+        )
+      )
     ] + PlatformTargetDependencies,
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),
