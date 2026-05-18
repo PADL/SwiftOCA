@@ -616,6 +616,28 @@ public actor OcaConnectionBroker {
       _eventsContinuation.yield(event)
     }
   }
+
+  /// Restarts the DNS-SD browsers, forcing a fresh re-discovery of currently
+  /// advertised services.
+  ///
+  /// Useful when there is evidence the broker's view is stale — for example
+  /// after a device firmware update, when a device has been re-advertised
+  /// under the same instance name with a changed address.
+  /// `NetServiceBrowser` does not fire `didFind` callbacks when an existing
+  /// service's A record changes; a refresh causes a fresh browser to scan
+  /// `mDNSResponder`'s current state, which picks up address changes via
+  /// the existing `_onBrowserDeviceAdded` path.
+  ///
+  /// Stale `_devices` entries for services that are no longer advertised
+  /// are not cleared by this call; they linger until the underlying DNS-SD
+  /// browser sees them go away or the caller deregisters them explicitly.
+  public func refreshBrowsing() {
+    for serviceType in Array(_browsers.keys) {
+      if let newMonitor = try? BrowserMonitor(serviceType: serviceType, broker: self) {
+        _browsers[serviceType] = newMonitor
+      }
+    }
+  }
 }
 
 extension OcaConnectionBroker.DeviceIdentifier {
