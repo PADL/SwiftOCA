@@ -47,15 +47,38 @@ extension OcaDeviceManager {
 }
 
 extension OcaBonjourRegistrableDeviceEndpoint {
-  // this will run a registration loop until cancelled
-  @OcaDevice
-  func runBonjourEndpointRegistrar(for device: OcaDevice) async throws {
-    let logger = await device.logger
-    let deviceManager = await device.deviceManager!
-    var dnsServiceRegistration: DNSServiceRegistration?
+  // Spawns the registrar without capturing `self` — backends that hold
+  // the returned task strongly would otherwise form a retain cycle
+  // (endpoint → task → self), preventing the deinit-based cancel from
+  // ever firing and the mDNS goodbye from being sent on shutdown.
+  // Reads serviceType/port synchronously here so the Task closure only
+  // captures the extracted values plus `device`.
+  package func makeBonjourRegistrarTask(for device: OcaDevice) -> Task<(), Error> {
+    let serviceType = serviceType
+    let port = port
+    return Task {
+      try await runBonjourEndpointRegistrar(
+        serviceType: serviceType,
+        port: port,
+        for: device
+      )
+    }
+  }
+}
 
-    logger.trace("starting DNS endpoint registration task")
+@OcaDevice
+package func runBonjourEndpointRegistrar(
+  serviceType: OcaNetworkAdvertisingServiceType,
+  port: UInt16,
+  for device: OcaDevice
+) async throws {
+  let logger = await device.logger
+  let deviceManager = await device.deviceManager!
+  var dnsServiceRegistration: DNSServiceRegistration?
 
+  logger.trace("starting DNS endpoint registration task")
+
+  do {
     for try await deviceName in deviceManager.$deviceName {
       try Task.checkCancellation()
       await dnsServiceRegistration?.deregister()
@@ -66,10 +89,17 @@ extension OcaBonjourRegistrableDeviceEndpoint {
         txtRecord: deviceManager.txtRecords
       )
     }
-
+  } catch {
+    // Deregister synchronously on cancel/error so mDNSResponder emits the
+    // goodbye while it (and we) are still around — actor deinit fires
+    // DNSServiceRefDeallocate too, but only when the local var unwinds,
+    // which can race a fast shutdown.
     await dnsServiceRegistration?.deregister()
-    logger.trace("ending DNS endpoint registration task")
+    throw error
   }
+
+  await dnsServiceRegistration?.deregister()
+  logger.trace("ending DNS endpoint registration task")
 }
 
 fileprivate actor DNSServiceRegistration {

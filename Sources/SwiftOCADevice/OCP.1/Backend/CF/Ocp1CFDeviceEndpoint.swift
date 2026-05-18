@@ -110,7 +110,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   public func run() async throws {
     if port != 0 {
       #if canImport(dnssd)
-      _endpointRegistrarTask = Task { try await runBonjourEndpointRegistrar(for: device) }
+      _endpointRegistrarTask = makeBonjourRegistrarTask(for: device)
       #endif
     } else if address.family == AF_LOCAL {
       try? unlinkDomainSocket()

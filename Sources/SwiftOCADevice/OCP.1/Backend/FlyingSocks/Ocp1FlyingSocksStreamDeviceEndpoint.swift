@@ -124,7 +124,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
     do {
       if port != 0 {
         #if canImport(dnssd)
-        Task { try await runBonjourEndpointRegistrar(for: device) }
+        _endpointRegistrarTask = makeBonjourRegistrarTask(for: device)
         #endif
       } else if family == AF_UNIX {
         try? unlinkDomainSocket()

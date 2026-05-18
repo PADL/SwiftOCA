@@ -143,7 +143,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     do {
       if port != 0 {
         #if canImport(dnssd)
-        _endpointRegistrarTask = Task { try await runBonjourEndpointRegistrar(for: device) }
+        _endpointRegistrarTask = makeBonjourRegistrarTask(for: device)
         #endif
       }
       try await httpServer.run()
