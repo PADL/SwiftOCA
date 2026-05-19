@@ -307,6 +307,19 @@ let CommonTargets: [Target] = [
       .target(name: "SwiftOCADevice"),
       .target(name: "SwiftOCASecure", condition: .when(traits: ["NonEmbeddedBuild"])),
       .target(name: "SwiftOCASecureDevice", condition: .when(traits: ["NonEmbeddedBuild"])),
+      // Apple-only test files (WebSocketConnectionTests, AppleTLSPolicyRegressionTests)
+      // import these directly. SwiftPM doesn't re-export a target's deps, so
+      // we have to declare them on the test target too.
+      .product(
+        name: "FlyingSocks",
+        package: "FlyingFox",
+        condition: .when(platforms: [.macOS, .iOS])
+      ),
+      .product(
+        name: "FlyingFox",
+        package: "FlyingFox",
+        condition: .when(platforms: [.macOS, .iOS], traits: ["NonEmbeddedBuild"])
+      ),
     ],
     swiftSettings: [
       .unsafeFlags(ASANSwiftFlags),
