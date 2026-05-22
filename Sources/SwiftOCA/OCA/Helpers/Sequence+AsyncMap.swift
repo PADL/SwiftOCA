@@ -18,7 +18,7 @@
 
 public extension Sequence {
   func asyncMap<T>(
-    _ transform: (Element) async throws -> T
+    _ transform: sending (Element) async throws -> T
   ) async rethrows -> [T] {
     var values = [T]()
 
@@ -30,7 +30,7 @@ public extension Sequence {
   }
 
   func asyncCompactMap<T>(
-    _ transform: (Element) async throws -> T?
+    _ transform: sending (Element) async throws -> T?
   ) async rethrows -> [T] {
     var values = [T]()
 

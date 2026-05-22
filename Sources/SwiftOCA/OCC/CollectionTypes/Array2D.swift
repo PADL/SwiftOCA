@@ -86,7 +86,7 @@ public struct OcaArray2D<Element: Sendable>: Sendable {
 
   public func asyncMap<T>(
     defaultValue: T,
-    _ transform: (Element) async throws -> T
+    _ transform: sending (Element) async throws -> T
   ) async rethrows -> OcaArray2D<T> {
     var mapped = OcaArray2D<T>(nX: nX, nY: nY, defaultValue: defaultValue)
     mapped.items = try await items.asyncMap(transform)
