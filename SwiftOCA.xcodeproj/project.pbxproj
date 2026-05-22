@@ -320,6 +320,10 @@
 		D3527EC72F00DA0100000087 /* LengthTaggedDataJSONTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3527EC72F00DA0100000086 /* LengthTaggedDataJSONTests.swift */; };
 		D3527EC72F00DA0100000090 /* FlyingSocks in Frameworks */ = {isa = PBXBuildFile; productRef = D33B52D32A706FD7001A1BA7 /* FlyingSocks */; };
 		D3527EC72F00DA0100000091 /* FlyingFox in Frameworks */ = {isa = PBXBuildFile; productRef = D3B325042B4F677700C8335F /* FlyingFox */; };
+		D3DE0001000000000000001B /* OcaPeerIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DE0001000000000000001A /* OcaPeerIdentity.swift */; };
+		D3DE0001000000000000002B /* OcaPreSharedKeyProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DE0001000000000000002A /* OcaPreSharedKeyProvider.swift */; };
+		D3DE0001000000000000003B /* OcaSecurityManager+OcaPreSharedKeyProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DE0001000000000000003A /* OcaSecurityManager+OcaPreSharedKeyProvider.swift */; };
+		D3DE0001000000000000004B /* Ocp1NWPeerIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DE0001000000000000004A /* Ocp1NWPeerIdentity.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -707,6 +711,10 @@
 		D3527EC62F00DA0100000005 /* Ocp1TLSDeviceTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Ocp1TLSDeviceTypes.swift; path = Sources/SwiftOCASecureDevice/OCP.1/Ocp1TLSDeviceTypes.swift; sourceTree = SOURCE_ROOT; };
 		D3527EC62F00DA0100000007 /* Ocp1TLSTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Ocp1TLSTypes.swift; path = Sources/SwiftOCASecure/OCP.1/Ocp1TLSTypes.swift; sourceTree = SOURCE_ROOT; };
 		D3527EC62F00DA0100000009 /* Ocp1NWSecureConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Ocp1NWSecureConnection.swift; path = Sources/SwiftOCASecure/OCP.1/Backend/Ocp1NWSecureConnection.swift; sourceTree = SOURCE_ROOT; };
+		D3DE0001000000000000001A /* OcaPeerIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaPeerIdentity.swift; sourceTree = "<group>"; };
+		D3DE0001000000000000002A /* OcaPreSharedKeyProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OcaPreSharedKeyProvider.swift; path = Sources/SwiftOCASecure/OCP.1/OcaPreSharedKeyProvider.swift; sourceTree = SOURCE_ROOT; };
+		D3DE0001000000000000003A /* OcaSecurityManager+OcaPreSharedKeyProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "OcaSecurityManager+OcaPreSharedKeyProvider.swift"; path = "Sources/SwiftOCASecureDevice/OCC/ControlClasses/Managers/OcaSecurityManager+OcaPreSharedKeyProvider.swift"; sourceTree = SOURCE_ROOT; };
+		D3DE0001000000000000004A /* Ocp1NWPeerIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Ocp1NWPeerIdentity.swift; path = Sources/SwiftOCASecureDevice/OCP.1/Backend/Network/Ocp1NWPeerIdentity.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -899,6 +907,7 @@
 			children = (
 				D3527EC62F00DA0100000007 /* Ocp1TLSTypes.swift */,
 				D3527EC62F00DA0100000009 /* Ocp1NWSecureConnection.swift */,
+				D3DE0001000000000000002A /* OcaPreSharedKeyProvider.swift */,
 			);
 			name = Sources/SwiftOCASecure;
 			sourceTree = "<group>";
@@ -909,6 +918,8 @@
 				D3527EC62F00DA0100000005 /* Ocp1TLSDeviceTypes.swift */,
 				D3527EC52F00DA0100000007 /* Ocp1NWSecureTCPDeviceEndpoint.swift */,
 				D3527EC62F00DA0100000001 /* Ocp1NWSecureUDPDeviceEndpoint.swift */,
+				D3DE0001000000000000004A /* Ocp1NWPeerIdentity.swift */,
+				D3DE0001000000000000003A /* OcaSecurityManager+OcaPreSharedKeyProvider.swift */,
 			);
 			name = Sources/SwiftOCASecureDevice;
 			sourceTree = "<group>";
@@ -1591,6 +1602,7 @@
 			children = (
 				D3E6E1AF2A3ACA6C00BF7095 /* ClassRegistry.swift */,
 				D34B5FA52B67204D000C8DD1 /* Connection.swift */,
+				D3DE0001000000000000001A /* OcaPeerIdentity.swift */,
 				D337B9992EC5A02900826A4B /* Browsing */,
 				D3E6E23E2A3C0B2E00BF7095 /* Helpers */,
 			);
@@ -2357,6 +2369,7 @@
 				D3E6E1B32A3ACA7B00BF7095 /* Ocp1Connection+Codable.swift in Sources */,
 				D3E6E1BE2A3ACA8200BF7095 /* Command.swift in Sources */,
 				D3AFD37B2B32A06700A72E9A /* Ocp1EncoderImpl.swift in Sources */,
+				D3DE0001000000000000001B /* OcaPeerIdentity.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2374,6 +2387,7 @@
 			files = (
 				D3527EC72F00DA0100000009 /* Ocp1TLSTypes.swift in Sources */,
 				D3527EC72F00DA010000000A /* Ocp1NWSecureConnection.swift in Sources */,
+				D3DE0001000000000000002B /* OcaPreSharedKeyProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2384,6 +2398,8 @@
 				D3527EC72F00DA0100000018 /* Ocp1TLSDeviceTypes.swift in Sources */,
 				D3527EC72F00DA010000001A /* Ocp1NWSecureUDPDeviceEndpoint.swift in Sources */,
 				D3527EC72F00DA010000001B /* Ocp1NWSecureTCPDeviceEndpoint.swift in Sources */,
+				D3DE0001000000000000004B /* Ocp1NWPeerIdentity.swift in Sources */,
+				D3DE0001000000000000003B /* OcaSecurityManager+OcaPreSharedKeyProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
