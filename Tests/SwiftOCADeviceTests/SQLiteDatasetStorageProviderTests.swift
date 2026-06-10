@@ -14,7 +14,9 @@
 // limitations under the License.
 //
 
-#if NonEmbeddedBuild
+// Mirror the gate on the provider under test (SQLiteDatasetStorageProvider):
+// SQLite is unavailable on some platforms (e.g. Windows).
+#if NonEmbeddedBuild && canImport(SQLite)
 
 import Foundation
 @testable @_spi(SwiftOCAPrivate) import SwiftOCA

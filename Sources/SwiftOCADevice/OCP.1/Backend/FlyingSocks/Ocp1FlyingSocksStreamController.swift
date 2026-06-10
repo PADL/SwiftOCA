@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-#if os(macOS) || os(iOS) || !NonEmbeddedBuild
+#if os(macOS) || os(iOS) || os(Windows) || !NonEmbeddedBuild
 
 import AsyncAlgorithms
 import AsyncExtensions
@@ -28,6 +28,8 @@ import Foundation
 import SwiftOCA
 #if canImport(Glibc)
 import Glibc
+#elseif canImport(WinSDK)
+import WinSDK
 #endif
 
 /// A remote controller

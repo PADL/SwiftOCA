@@ -68,11 +68,7 @@ PlatformTargetDependencies += [
     package: "IORingSwift",
     condition: .when(platforms: [.linux], traits: ["NonEmbeddedBuild"])
   ),
-  .product(
-    name: "FlyingFox",
-    package: "FlyingFox",
-    condition: .when(platforms: [.linux], traits: ["NonEmbeddedBuild"])
-  ),
+  // FlyingFox/FlyingSocks are common to all platforms and added at the top.
 ]
 
 SecureLinuxTargetDependencies = [
@@ -139,8 +135,10 @@ PlatformTargets = [
   ),
 ]
 #else
-PlatformPackageDependencies = []
-PlatformTargetDependencies = []
+// Other platforms (e.g. Windows): keep the common FlyingFox/FlyingSocks
+// baseline appended above — FlyingSocks is the socket transport, since
+// CoreFoundation/Network.framework is not available here. No extra
+// platform packages, products, or targets.
 PlatformProducts = []
 PlatformTargets = []
 #endif
@@ -150,7 +148,7 @@ let CommonPackageDependencies: [Package.Dependency] = [
   .package(url: "https://github.com/apple/swift-log", from: "1.6.2"),
   .package(url: "https://github.com/apple/swift-system", from: "1.6.4"),
   .package(url: "https://github.com/apple/swift-atomics", from: "1.2.0"),
-  .package(url: "https://github.com/PADL/SocketAddress", from: "0.4.5"),
+  .package(url: "https://github.com/PADL/SocketAddress", from: "0.5.1"),
   .package(url: "https://github.com/lhoward/AsyncExtensions", from: "0.9.0"),
   .package(url: "https://github.com/Flight-School/AnyCodable", from: "0.6.7"),
   .package(url: "https://github.com/1024jp/GzipSwift", from: "6.1.0"),
@@ -225,7 +223,16 @@ let CommonTargets: [Target] = [
     dependencies: [
       "SwiftOCA",
       .product(name: "Logging", package: "swift-log"),
-      .product(name: "Gzip", package: "GzipSwift"),
+      .product(
+        name: "Gzip",
+        package: "GzipSwift",
+        // GzipSwift relies on a system `zlib` module, which is unavailable on
+        // Windows. Dataset compression in this target is already guarded by
+        // `#if canImport(Gzip)`, so it degrades gracefully when absent.
+        condition: .when(
+          platforms: [.macOS, .iOS, .tvOS, .watchOS, .visionOS, .linux, .android]
+        )
+      ),
       .product(
         name: "SQLite",
         package: "SQLite.swift",

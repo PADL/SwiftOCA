@@ -23,6 +23,8 @@ import Darwin
 import Glibc
 #elseif canImport(Android)
 import Android
+#elseif canImport(WinSDK)
+import WinSDK
 #endif
 
 private extension _Ocp1Codable {

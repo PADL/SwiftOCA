@@ -27,6 +27,9 @@ import Darwin
 import Glibc
 #elseif canImport(Android)
 import Android
+#elseif canImport(WinSDK)
+import WinSDK
+import SocketAddress // for the Windows sa_family_t typealias
 #endif
 
 final class DeviceEventDelegate: OcaDeviceEventDelegate {
@@ -64,7 +67,11 @@ public enum DeviceApp {
   public static func main() async throws {
     var listenAddress = sockaddr_in()
     listenAddress.sin_family = sa_family_t(AF_INET)
+    #if canImport(WinSDK)
+    listenAddress.sin_addr.S_un.S_addr = 0 // INADDR_ANY
+    #else
     listenAddress.sin_addr.s_addr = 0 // INADDR_ANY equivalent
+    #endif
     listenAddress.sin_port = port.bigEndian
     #if canImport(Darwin) || os(FreeBSD) || os(OpenBSD)
     listenAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
@@ -100,25 +107,33 @@ public enum DeviceApp {
       try? await Ocp1IORingDatagramDeviceEndpoint(path: "/tmp/oca-device-dg.sock")
     #elseif canImport(FlyingSocks) && NonEmbeddedBuild
     let streamEndpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(address: listenAddress.data)
-    let datagramEndpoint =
-      try await Ocp1FlyingSocksDatagramDeviceEndpoint(address: listenAddress.data)
     let stream6Endpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(
       address: listen6Address
         .data
     )
+    #if !os(Windows)
+    // FlyingSocks has no Winsock sendmsg, so datagram device endpoints (and the
+    // Unix-domain demo socket path) are unavailable on Windows.
+    let datagramEndpoint =
+      try await Ocp1FlyingSocksDatagramDeviceEndpoint(address: listenAddress.data)
     let datagram6Endpoint = try await Ocp1FlyingSocksDatagramDeviceEndpoint(
       address: listen6Address
         .data
     )
     let domainSocketStreamEndpoint =
       try? await Ocp1FlyingSocksStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
+    #endif
     #else
     let streamEndpoint = try await Ocp1DeviceEndpoint(address: listenAddress.data)
     #endif
 
     #if canImport(FlyingFox) && NonEmbeddedBuild
     listenAddress.sin_family = sa_family_t(AF_INET)
+    #if canImport(WinSDK)
+    listenAddress.sin_addr.S_un.S_addr = 0 // INADDR_ANY
+    #else
     listenAddress.sin_addr.s_addr = 0 // INADDR_ANY equivalent
+    #endif
     listenAddress.sin_port = (port + 2).bigEndian
     #if canImport(Darwin) || os(FreeBSD) || os(OpenBSD)
     listenAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
@@ -214,7 +229,10 @@ public enum DeviceApp {
     let controlNetwork = try await SwiftOCADevice.OcaControlNetwork(deviceDelegate: device)
     Task { @OcaDevice in controlNetwork.state = .running }
 
+    #if !os(Windows)
+    // Windows has no SIGPIPE; write failures surface as socket errors instead.
     signal(SIGPIPE, SIG_IGN)
+    #endif
 
     Task { @OcaDevice in
       for try await value in gain.$gain {
@@ -232,7 +250,7 @@ public enum DeviceApp {
         print("Starting OCP.1 IPv6 stream endpoint \(stream6Endpoint)...")
         try await stream6Endpoint.run()
       }
-      #if os(Linux) || canImport(FlyingSocks)
+      #if os(Linux) || (canImport(FlyingSocks) && !os(Windows))
       taskGroup.addTask {
         print("Starting OCP.1 IPv4 datagram endpoint \(datagramEndpoint)...")
         try await datagramEndpoint.run()

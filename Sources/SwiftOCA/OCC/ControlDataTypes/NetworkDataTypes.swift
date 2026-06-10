@@ -20,7 +20,10 @@ import Glibc
 import Darwin
 #elseif canImport(Android)
 import Android
+#elseif canImport(WinSDK)
+import WinSDK
 #endif
+import SocketAddress
 
 // CM3
 
