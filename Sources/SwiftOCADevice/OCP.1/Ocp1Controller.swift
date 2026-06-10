@@ -20,7 +20,7 @@ import SwiftOCA
 // Foundation and because not all embedded Linux distributions have recent
 // enough kernels to support io_uring
 
-#if os(macOS) || os(iOS) || !NonEmbeddedBuild
+#if os(macOS) || os(iOS) || os(Windows) || !NonEmbeddedBuild
 typealias Ocp1Controller = Ocp1FlyingSocksStreamController
 public typealias Ocp1DeviceEndpoint = Ocp1FlyingSocksStreamDeviceEndpoint
 #elseif os(Linux)

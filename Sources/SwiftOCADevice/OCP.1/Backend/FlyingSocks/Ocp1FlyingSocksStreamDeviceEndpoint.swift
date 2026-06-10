@@ -23,7 +23,7 @@
 //  SOFTWARE.
 //
 
-#if os(macOS) || os(iOS) || !NonEmbeddedBuild
+#if os(macOS) || os(iOS) || os(Windows) || !NonEmbeddedBuild
 
 import AsyncExtensions
 import FlyingSocks
@@ -42,6 +42,8 @@ import Darwin
 import Glibc
 #elseif canImport(Android)
 import Android
+#elseif canImport(WinSDK)
+import WinSDK
 #endif
 
 @OcaDevice

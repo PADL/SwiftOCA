@@ -23,7 +23,7 @@
 //  SOFTWARE.
 //
 
-#if os(macOS) || os(iOS) || canImport(Android) || !NonEmbeddedBuild
+#if os(macOS) || os(iOS) || os(Windows) || canImport(Android) || !NonEmbeddedBuild
 
 import FlyingSocks
 #if canImport(FoundationEssentials)
@@ -37,6 +37,8 @@ import Synchronization
 #endif
 #if canImport(Glibc)
 import Glibc
+#elseif canImport(WinSDK)
+import WinSDK
 #endif
 
 fileprivate extension SocketError {

@@ -177,7 +177,9 @@ public extension OcaBlock {
       #if canImport(Gzip)
       return try .init(compress ? blob.gzipped() : blob)
       #else
-      guard !compress else { throw Ocp1Error.notImplemented }
+      // Gzip (zlib) is unavailable on this platform; ignore the requested
+      // `compress` flag and store uncompressed. The blob is self-describing
+      // (gzip magic bytes), so readers handle either form transparently.
       return .init(blob)
       #endif
     } catch is EncodingError {
@@ -233,7 +235,9 @@ extension OcaDeviceManager {
       #if canImport(Gzip)
       return try .init(compress ? blob.gzipped() : blob)
       #else
-      guard !compress else { throw Ocp1Error.notImplemented }
+      // Gzip (zlib) is unavailable on this platform; ignore the requested
+      // `compress` flag and store uncompressed. The blob is self-describing
+      // (gzip magic bytes), so readers handle either form transparently.
       return .init(blob)
       #endif
     } catch is EncodingError {
