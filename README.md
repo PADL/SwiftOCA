@@ -9,13 +9,16 @@ The package consists of three libraries:
 * [SwiftOCAUI](Sources/SwiftOCAUI): SwiftUI views for binding to OCA classes (macOS/iOS)
 * [SwiftOCADevice](Sources/SwiftOCADevice): an OCA device (server)
 
-All APIs are async-safe and support both macOS and Linux: on macOS, [FlyingFox](https://github.com/swhitty/FlyingFox) is used for socket I/O, and on Linux, [IORingSwift](https://github.com/PADL/IORingSwift).
+All APIs are async-safe and run on macOS, iOS, Linux, and Windows: Apple platforms and Windows use [FlyingFox](https://github.com/swhitty/FlyingFox) for socket I/O, while Linux uses [IORingSwift](https://github.com/PADL/IORingSwift).
 
-| Platform | TCP | UDP client | UDP server | WS client | WS server | Local | Mach |
-| -:       | :-  | :-         | :-         | :-        | :-        | :-    | :-   |
-| macOS    | ✅  | ✅         | ✅         | ✅        | ✅        | ✅    | ✅   |
-| iOS      | ✅  | ✅         | ✅         | ✅        | ✅        | ✅    | ✅   |
-| Linux    | ✅  | ✅         | ✅         | ❌        | ✅        | ✅    | ❌   |
+| Platform | TCP | UDP | WS client | WS server | Local | Mach |
+| -:       | :-  | :-  | :-        | :-        | :-    | :-   |
+| macOS    | ✅  | ✅  | ✅        | ✅        | ✅    | ✅   |
+| iOS      | ✅  | ✅  | ✅        | ✅        | ✅    | ✅   |
+| Linux    | ✅  | ✅  | ❌        | ✅        | ✅    | ❌   |
+| Windows  | ✅  | ❌  | ❌        | ✅        | ❌    | ❌   |
+
+The WebSocket client (WS client) uses Apple's `URLSessionWebSocketTask` and is therefore available on Apple platforms only. On Windows, datagram (UDP) endpoints are unavailable because FlyingSocks does not implement the `sendmsg`-based message API there, and Unix-domain (Local) sockets are not yet supported. Mach port transport is Darwin-only.
 
 ## Features
 
