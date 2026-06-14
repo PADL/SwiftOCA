@@ -190,7 +190,7 @@ private actor AsyncSocketPoolMonitor {
   }
 }
 
-public class Ocp1FlyingSocksConnection: Ocp1Connection {
+public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableConnection {
   fileprivate let _deviceAddress: Mutex<FlyingSocks.AnySocketAddress>
   fileprivate var _asyncSocket: AsyncSocket?
 
@@ -216,7 +216,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection {
     try? _asyncSocket?.close()
   }
 
-  nonisolated var deviceAddress: Data {
+  public nonisolated var deviceAddress: Data {
     get {
       _deviceAddress.criticalValue.data
     }
