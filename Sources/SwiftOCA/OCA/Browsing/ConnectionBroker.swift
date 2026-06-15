@@ -355,8 +355,9 @@ public actor OcaConnectionBroker {
         if firstAddressChanged,
            let mutableConnection = existingConnection as? Ocp1MutableConnection
         {
+          // the setter fires deviceAddressDidChange() itself (gated on there
+          // being a live connection to migrate)
           mutableConnection.deviceAddress = try device.firstAddress
-          await existingConnection.deviceAddressDidChange()
         }
 
         // if reconnection was temporarily disabled by _onBrowserDeviceRemoved, reenable it

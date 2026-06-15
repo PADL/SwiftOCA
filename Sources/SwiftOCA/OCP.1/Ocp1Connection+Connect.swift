@@ -420,14 +420,24 @@ extension Ocp1Connection {
     }
   }
 
-  package func deviceAddressDidChange() {
+  /// Notify the connection that its `deviceAddress` was mutated underneath it
+  /// (e.g. a reconnect loop re-resolving a hostname, or the connection broker
+  /// following a device that changed address).
+  ///
+  /// A device-address change only needs to tear down and re-establish a *live*
+  /// connection. When we are not connected there is nothing to migrate — the
+  /// next `connectDevice()` reads the new address anyway — and scheduling a
+  /// reconnect here would race a caller that rebinds-then-connects: the
+  /// `.deviceAddressChanged` monitor error is recoverable, so were it to land
+  /// after a concurrent connect had already succeeded it would force a spurious
+  /// disconnect/reconnect. The connection state is therefore snapshotted
+  /// synchronously, at mutation time, so the decision cannot be invalidated by a
+  /// concurrent connect; `onMonitorError` re-checks once it runs on the actor.
+  package nonisolated func deviceAddressDidChange() {
+    guard _connectionState.value != .notConnected else { return }
     Task { [weak self] in
       try await self?.onMonitorError(id: -1, Ocp1Error.deviceAddressChanged)
     }
-  }
-
-  package func deviceAddressDidChange() async {
-    try? await onMonitorError(id: -1, Ocp1Error.deviceAddressChanged)
   }
 
   func onMonitorError(id: Int, _ error: Error) async throws {
