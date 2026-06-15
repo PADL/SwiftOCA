@@ -192,7 +192,7 @@ extension Ocp1Connection {
   }
 
   /// for datagram connections, ensure the timeout is at least twice the heartbeat time
-  private var _connectionTimeout: Duration {
+  package var _connectionTimeout: Duration {
     let timeout = options.connectionTimeout
 
     if isDatagram, timeout < heartbeatTime * 2 {
@@ -325,6 +325,8 @@ extension Ocp1Connection {
 
     try await disconnectDevice()
 
+    (self as? any Ocp1MutableSocketAddressConnection)?._clearConnectedDeviceAddress()
+
     if clearObjectCache {
       await self.clearObjectCache()
     }
@@ -433,7 +435,7 @@ extension Ocp1Connection {
   /// disconnect/reconnect. The connection state is therefore snapshotted
   /// synchronously, at mutation time, so the decision cannot be invalidated by a
   /// concurrent connect; `onMonitorError` re-checks once it runs on the actor.
-  package nonisolated func deviceAddressDidChange() {
+  package nonisolated func deviceAddressesDidChange() {
     guard _connectionState.value != .notConnected else { return }
     Task { [weak self] in
       try await self?.onMonitorError(id: -1, Ocp1Error.deviceAddressChanged)

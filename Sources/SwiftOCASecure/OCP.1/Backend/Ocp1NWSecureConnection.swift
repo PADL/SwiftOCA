@@ -247,7 +247,7 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
   private let trustRoots: Ocp1TLSTrustRoots?
 
   private init(
-    deviceAddress: AnySocketAddress,
+    deviceAddresses: [AnySocketAddress],
     credential: Ocp1TLSCredential,
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
@@ -269,7 +269,7 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
     self.trustRoots = trustRoots
     preloadedAnchors = preloaded
     self.revocation = revocation
-    try super.init(deviceAddress: deviceAddress, options: options)
+    try super.init(deviceAddresses: deviceAddresses, options: options)
   }
 
   public convenience init(
@@ -282,7 +282,7 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
   ) throws {
     let address = try AnySocketAddress(bytes: Array(deviceAddress))
     try self.init(
-      deviceAddress: address,
+      deviceAddresses: [address],
       credential: credential,
       hostname: hostname,
       trustRoots: trustRoots,
@@ -301,7 +301,7 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
       presentationAddress: path
     )
     try self.init(
-      deviceAddress: address,
+      deviceAddresses: [address],
       credential: credential,
       hostname: nil,
       trustRoots: nil,
@@ -363,7 +363,7 @@ public final class Ocp1NWSecureUDPConnection: Ocp1NWConnection {
   }
 
   private init(
-    deviceAddress: AnySocketAddress,
+    deviceAddresses: [AnySocketAddress],
     credential: Ocp1TLSCredential,
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
@@ -383,7 +383,7 @@ public final class Ocp1NWSecureUDPConnection: Ocp1NWConnection {
     self.trustRoots = trustRoots
     preloadedAnchors = preloaded
     self.revocation = revocation
-    try super.init(deviceAddress: deviceAddress, options: options)
+    try super.init(deviceAddresses: deviceAddresses, options: options)
   }
 
   public convenience init(
@@ -396,7 +396,7 @@ public final class Ocp1NWSecureUDPConnection: Ocp1NWConnection {
   ) throws {
     let address = try AnySocketAddress(bytes: Array(deviceAddress))
     try self.init(
-      deviceAddress: address,
+      deviceAddresses: [address],
       credential: credential,
       hostname: hostname,
       trustRoots: trustRoots,

@@ -394,18 +394,19 @@ Sendable, CustomStringConvertible, Hashable {
   }
 }
 
-public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
-  fileprivate let _deviceAddress: Mutex<AnySocketAddress>
+public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
+  package let _deviceAddresses: Mutex<[AnySocketAddress]>
+  package let _connectedDeviceAddress = Mutex<AnySocketAddress?>(nil)
   fileprivate var _socket: _CFSocketWrapper?
   fileprivate var _type: Int32 {
     fatalError("must be implemented by subclass")
   }
 
   private init(
-    deviceAddress: AnySocketAddress,
+    deviceAddresses: [AnySocketAddress],
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    _deviceAddress = Mutex(deviceAddress)
+    _deviceAddresses = Mutex(deviceAddresses)
     super.init(options: options)
   }
 
@@ -414,7 +415,17 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
     let deviceAddress = try AnySocketAddress(bytes: Array(deviceAddress))
-    try self.init(deviceAddress: deviceAddress, options: options)
+    try self.init(deviceAddresses: [deviceAddress], options: options)
+  }
+
+  public convenience init(
+    deviceAddresses: [Data],
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    try self.init(
+      deviceAddresses: deviceAddresses.compactMap { try? AnySocketAddress(bytes: Array($0)) },
+      options: options
+    )
   }
 
   public convenience init(
@@ -425,33 +436,11 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
       family: sa_family_t(AF_LOCAL),
       presentationAddress: path
     )
-    try self.init(deviceAddress: deviceAddress, options: options)
-  }
-
-  public nonisolated var deviceAddress: Data {
-    get {
-      AnySocketAddress(_deviceAddress.criticalValue).data
-    }
-    set {
-      do {
-        try _deviceAddress.withLock {
-          $0 = try AnySocketAddress(bytes: Array(newValue))
-        }
-        deviceAddressDidChange()
-      } catch {}
-    }
+    try self.init(deviceAddresses: [deviceAddress], options: options)
   }
 
   override public var localAddress: Data? {
     _socket?.localAddress?.data
-  }
-
-  fileprivate nonisolated var _presentationAddress: String {
-    _deviceAddress.criticalValue._presentationAddress
-  }
-
-  private var family: sa_family_t {
-    _deviceAddress.criticalValue.family
   }
 
   private func _cleanupConnection() {
@@ -461,15 +450,17 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
 
   override public func connectDevice() async throws {
     _cleanupConnection()
-
-    let socket = try _CFSocketWrapper(address: _deviceAddress.criticalValue, type: _type)
     do {
-      _socket = socket
+      try await _connectFirstReachableDeviceAddress()
       try await super.connectDevice()
     } catch {
       _cleanupConnection()
       throw error
     }
+  }
+
+  package func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
+    _socket = try _CFSocketWrapper(address: deviceAddress, type: _type)
   }
 
   override public func disconnectDevice() async throws {
@@ -488,7 +479,7 @@ public final class Ocp1CFSocketUDPConnection: Ocp1CFSocketConnection {
   }
 
   override public var connectionPrefix: String {
-    "\(OcaUdpConnectionPrefix)/\(_presentationAddress)"
+    "\(OcaUdpConnectionPrefix)/\(_currentPresentationAddress)"
   }
 
   override public var isDatagram: Bool { true }
@@ -515,7 +506,7 @@ public final class Ocp1CFSocketTCPConnection: Ocp1CFSocketConnection {
   }
 
   override public var connectionPrefix: String {
-    "\(OcaTcpConnectionPrefix)/\(_presentationAddress)"
+    "\(OcaTcpConnectionPrefix)/\(_currentPresentationAddress)"
   }
 
   override public var isDatagram: Bool { false }

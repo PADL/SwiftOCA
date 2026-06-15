@@ -170,7 +170,13 @@ public actor OcaConnectionBroker {
     var addresses: [Data] {
       get throws {
         try serviceInfo.addresses.sorted { lhs, rhs in
-          Self.addressToFamily(lhs) < Self.addressToFamily(rhs)
+          let lhsFamily = Self.addressToFamily(lhs), rhsFamily = Self.addressToFamily(rhs)
+          // IPv4 before IPv6 (preference order), then a total order within a
+          // family so the same address set always sorts identically — resolver
+          // reordering is then not mistaken for a change (no reconnect churn),
+          // while a genuine add/remove still is.
+          if lhsFamily != rhsFamily { return lhsFamily < rhsFamily }
+          return Array(lhs).lexicographicallyPrecedes(Array(rhs))
         }
       }
     }
@@ -196,16 +202,15 @@ public actor OcaConnectionBroker {
     func openConnection(options: Ocp1ConnectionOptions) async throws -> Ocp1Connection {
       let connection: Ocp1Connection
 
-      // TODO: happy eyeballs style try to connect to all addresses at once
       switch serviceType {
       case .tcp:
         connection = try await Ocp1TCPConnection(
-          deviceAddress: firstAddress,
+          deviceAddresses: addresses,
           options: options
         )
       case .udp:
         connection = try await Ocp1UDPConnection(
-          deviceAddress: firstAddress,
+          deviceAddresses: addresses,
           options: options
         )
       #if os(macOS) || os(iOS)
@@ -351,13 +356,13 @@ public actor OcaConnectionBroker {
     if let existingDevice = _devices[deviceIdentifier] {
       // Device still in _devices (add arrived before remove, or address change)
       try? await withDeviceConnection(deviceIdentifier) { existingConnection in
-        let firstAddressChanged = (try? existingDevice.firstAddress) != (try? device.firstAddress)
-        if firstAddressChanged,
-           let mutableConnection = existingConnection as? Ocp1MutableConnection
+        let addressesChanged = (try? existingDevice.addresses) != (try? device.addresses)
+        if addressesChanged,
+           let mutableConnection = existingConnection as? Ocp1MutableSocketAddressConnection
         {
-          // the setter fires deviceAddressDidChange() itself (gated on there
+          // the setter fires deviceAddressesDidChange() itself (gated on there
           // being a live connection to migrate)
-          mutableConnection.deviceAddress = try device.firstAddress
+          mutableConnection.deviceAddressData = try device.addresses
         }
 
         // if reconnection was temporarily disabled by _onBrowserDeviceRemoved, reenable it
