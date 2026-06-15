@@ -436,8 +436,8 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableConnection {
       do {
         try _deviceAddress.withLock {
           $0 = try AnySocketAddress(bytes: Array(newValue))
-          Task { [weak self] in await self?.deviceAddressDidChange() }
         }
+        deviceAddressDidChange()
       } catch {}
     }
   }

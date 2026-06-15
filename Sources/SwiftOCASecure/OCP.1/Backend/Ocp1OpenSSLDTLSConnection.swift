@@ -116,8 +116,8 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableConnect
       do {
         try _deviceAddress.withLock {
           $0 = try AnySocketAddress(bytes: Array(newValue))
-          Task { [weak self] in await self?.deviceAddressDidChange() }
         }
+        deviceAddressDidChange()
       } catch {}
     }
   }

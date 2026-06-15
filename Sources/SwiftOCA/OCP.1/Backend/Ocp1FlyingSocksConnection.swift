@@ -224,8 +224,8 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableConnection {
       do {
         try _deviceAddress.withLock {
           $0 = try FlyingSocks.AnySocketAddress(data: newValue)
-          Task { [weak self] in await self?.deviceAddressDidChange() }
         }
+        deviceAddressDidChange()
       } catch {}
     }
   }
