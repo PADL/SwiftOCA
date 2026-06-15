@@ -5,14 +5,6 @@ import Foundation
 #endif
 import SocketAddress
 
-/// The parsed device-address type the socket backends store (see
-/// `Ocp1MutableSocketAddressConnection`). Aliased here — in a file that imports
-/// the PADL `SocketAddress` package cleanly — so a backend whose own file vends a
-/// conflicting `SocketAddress` (FlyingSocks) can still name the storage type
-/// without importing the package and triggering the clash.
-@_spi(SwiftOCAPrivate)
-public typealias _DeviceSocketAddress = AnySocketAddress
-
 package extension Data {
   var socketPresentationAddress: String? {
     guard let socketAddress = try? AnySocketAddress(bytes: Array(self)) else { return nil }

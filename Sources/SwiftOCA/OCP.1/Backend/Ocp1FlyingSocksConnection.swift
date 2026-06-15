@@ -31,6 +31,11 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+// Selectively import only the PADL `AnySocketAddress` struct, not the whole
+// `SocketAddress` package: this file vends its own `AnySocketAddress` via the
+// `FlyingSocks` enum, so a wholesale import would clash with the PADL
+// `SocketAddress` protocol. `FlyingSocks.AnySocketAddress` stays fully qualified.
+import struct SocketAddress.AnySocketAddress
 import SystemPackage
 #if canImport(Synchronization)
 import Synchronization
@@ -191,12 +196,10 @@ private actor AsyncSocketPoolMonitor {
 }
 
 public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
-  // `_DeviceSocketAddress` is a `package` alias of the PADL `AnySocketAddress`
-  // (see SocketAddressHelpers.swift). This file vends its own `AnySocketAddress`
-  // via the `FlyingSocks` enum, so the alias lets it name the storage type
-  // without importing — and clashing with — the PADL `SocketAddress`.
-  @_spi(SwiftOCAPrivate) public let _deviceAddresses: Mutex<[_DeviceSocketAddress]>
-  @_spi(SwiftOCAPrivate) public let _connectedDeviceAddress = Mutex<_DeviceSocketAddress?>(nil)
+  // The bare `AnySocketAddress` here is the PADL struct (selectively imported
+  // above); `FlyingSocks.AnySocketAddress` stays fully qualified everywhere else.
+  @_spi(SwiftOCAPrivate) public let _deviceAddresses: Mutex<[AnySocketAddress]>
+  @_spi(SwiftOCAPrivate) public let _connectedDeviceAddress = Mutex<AnySocketAddress?>(nil)
   fileprivate var _asyncSocket: AsyncSocket?
 
   public init(
@@ -205,7 +208,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddress
   ) throws {
     // Drop any candidate that won't parse rather than discarding the whole list.
     _deviceAddresses = Mutex(deviceAddresses.compactMap {
-      try? _DeviceSocketAddress(bytes: Array($0))
+      try? AnySocketAddress(bytes: Array($0))
     })
     super.init(options: options)
   }
@@ -252,7 +255,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddress
     }
   }
 
-  @_spi(SwiftOCAPrivate) public func _connectDevice(to deviceAddress: _DeviceSocketAddress) async throws {
+  @_spi(SwiftOCAPrivate) public func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
     let fsAddress = try FlyingSocks.AnySocketAddress(data: deviceAddress.data)
     let socket = try Socket(domain: Int32(fsAddress.family), type: socketType)
     try? setSocketOptions(socket, family: fsAddress.family)
