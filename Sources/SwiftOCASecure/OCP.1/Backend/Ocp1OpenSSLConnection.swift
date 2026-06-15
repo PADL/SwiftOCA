@@ -46,22 +46,23 @@ fileprivate extension Errno {
 
 /// OCP.1 TLS-secured TCP connection. The socket is owned on the Swift side;
 /// `Ocp1OpenSSLEngine` only sees the memory BIO pair we pump.
-public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableConnection {
+public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
   private let _ring: IORing
-  private let _deviceAddress: Mutex<any SocketAddress>
+  @_spi(SwiftOCAPrivate) public let _deviceAddresses: Mutex<[AnySocketAddress]>
+  @_spi(SwiftOCAPrivate) public let _connectedDeviceAddress = Mutex<AnySocketAddress?>(nil)
   private let _socket: Mutex<Socket?> = .init(nil)
   private let _credential: Ocp1TLSCredential
   private let _engine: Ocp1OpenSSLEngine
 
   override public var connectionPrefix: String {
-    "\(OcaSecureTcpConnectionPrefix)/\(_deviceAddress.criticalValue._presentationAddress)"
+    "\(OcaSecureTcpConnectionPrefix)/\(_currentPresentationAddress)"
   }
 
   override public var isDatagram: Bool { false }
   override public var hasTransportLayerSecurity: Bool { true }
 
   private init(
-    socketAddress: any SocketAddress,
+    socketAddresses: [any SocketAddress],
     credential: Ocp1TLSCredential,
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
@@ -69,7 +70,7 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableConnection 
     options: Ocp1ConnectionOptions,
     ring: IORing
   ) throws {
-    _deviceAddress = Mutex(socketAddress)
+    _deviceAddresses = Mutex(socketAddresses.map { AnySocketAddress($0) })
     _ring = ring
     _credential = credential
     let verifyPeer = !options.flags.contains(.disableCertificateVerification)
@@ -94,7 +95,27 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableConnection 
     ring: IORing = .shared
   ) throws {
     try self.init(
-      socketAddress: deviceAddress.socketAddress,
+      socketAddresses: [deviceAddress.socketAddress],
+      credential: credential,
+      hostname: hostname,
+      trustRoots: trustRoots,
+      revocation: revocation,
+      options: options,
+      ring: ring
+    )
+  }
+
+  public convenience init(
+    deviceAddresses: [Data],
+    credential: Ocp1TLSCredential,
+    hostname: String? = nil,
+    trustRoots: Ocp1TLSTrustRoots? = nil,
+    revocation: Ocp1TLSRevocationOptions = .disabled,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    ring: IORing = .shared
+  ) throws {
+    try self.init(
+      socketAddresses: deviceAddresses.compactMap { try? $0.socketAddress },
       credential: credential,
       hostname: hostname,
       trustRoots: trustRoots,
@@ -111,10 +132,10 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableConnection 
     ring: IORing = .shared
   ) throws {
     try self.init(
-      socketAddress: sockaddr_un(
+      socketAddresses: [sockaddr_un(
         family: sa_family_t(AF_LOCAL),
         presentationAddress: path
-      ),
+      )],
       credential: credential,
       hostname: nil,
       trustRoots: nil,
@@ -124,30 +145,20 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableConnection 
     )
   }
 
-  public nonisolated var deviceAddress: Data {
-    get {
-      AnySocketAddress(_deviceAddress.criticalValue).data
-    }
-    set {
-      do {
-        try _deviceAddress.withLock {
-          $0 = try AnySocketAddress(bytes: Array(newValue))
-        }
-        deviceAddressDidChange()
-      } catch {}
-    }
-  }
-
   override public var localAddress: Data? {
     guard let socket = _socket.withLock({ $0 }) else { return nil }
     return try? AnySocketAddress(socket.localAddress).data
   }
 
   override public func connectDevice() async throws {
+    try await _connectFirstReachableDeviceAddress()
+    try await super.connectDevice()
+  }
+
+  @_spi(SwiftOCAPrivate) public func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
     // Engine carries SSL state across attempts; reset before each so a
-    // prior failed handshake can't bleed into the next.
+    // prior failed handshake (or candidate) can't bleed into the next.
     await _engine.reset()
-    let deviceAddress = _deviceAddress.criticalValue
     let socket = try Socket(
       ring: _ring,
       domain: deviceAddress.family,
@@ -173,7 +184,6 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableConnection 
       _socket.withLock { $0 = nil }
       throw error
     }
-    try await super.connectDevice()
   }
 
   override public func disconnectDevice() async throws {
