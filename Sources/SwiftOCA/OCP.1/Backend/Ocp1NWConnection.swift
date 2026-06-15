@@ -66,8 +66,9 @@ private extension SocketAddress {
   }
 }
 
-open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
-  package let _deviceAddress: Mutex<AnySocketAddress>
+open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
+  package let _deviceAddresses: Mutex<[AnySocketAddress]>
+  package let _connectedDeviceAddress = Mutex<AnySocketAddress?>(nil)
   package var _queue: DispatchQueue!
   package var _nwConnection: NWConnection!
 
@@ -85,10 +86,10 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
   }
 
   package init(
-    deviceAddress: AnySocketAddress,
+    deviceAddresses: [AnySocketAddress],
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    _deviceAddress = Mutex(deviceAddress)
+    _deviceAddresses = Mutex(deviceAddresses)
     super.init(options: options)
     _nwConnection = try NWConnection(to: nwEndpoint, using: parameters)
     Self._installPostReadyStateHandler(_nwConnection) { [weak self] in
@@ -116,7 +117,17 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
     let deviceAddress = try AnySocketAddress(bytes: Array(deviceAddress))
-    try self.init(deviceAddress: deviceAddress, options: options)
+    try self.init(deviceAddresses: [deviceAddress], options: options)
+  }
+
+  public convenience init(
+    deviceAddresses: [Data],
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    try self.init(
+      deviceAddresses: deviceAddresses.compactMap { try? AnySocketAddress(bytes: Array($0)) },
+      options: options
+    )
   }
 
   public convenience init(
@@ -127,21 +138,7 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
       family: sa_family_t(AF_LOCAL),
       presentationAddress: path
     )
-    try self.init(deviceAddress: deviceAddress, options: options)
-  }
-
-  public nonisolated var deviceAddress: Data {
-    get {
-      AnySocketAddress(_deviceAddress.criticalValue).data
-    }
-    set {
-      do {
-        try _deviceAddress.withLock {
-          $0 = try AnySocketAddress(bytes: Array(newValue))
-        }
-        deviceAddressDidChange()
-      } catch {}
-    }
+    try self.init(deviceAddresses: [deviceAddress], options: options)
   }
 
   private func _cleanupConnection() throws {
@@ -157,42 +154,64 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
     if _nwConnection.state != .setup {
       try _cleanupConnection()
     }
-    // Wait for `.ready`/`.failed` before completing connect — without this
-    // any TLS handshake error is invisible until the first read/write.
+    try await _connectFirstReachableDeviceAddress()
+    try await super.connectDevice()
+  }
+
+  package func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
+    // Rebuild the connection for this specific candidate; NW is given a resolved
+    // endpoint, so each candidate needs its own `NWConnection`.
+    let endpoint = try deviceAddress.asNWEndpoint()
+    _nwConnection = try NWConnection(to: endpoint, using: parameters)
     let connection = _nwConnection!
-    try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-      // Guard against double-resume from transient state toggling.
-      let resumed = Mutex(false)
-      connection.stateUpdateHandler = { state in
-        let outcome: Result<Void, Error>?
-        switch state {
-        case .ready:
-          outcome = .success(())
-        case let .failed(error):
-          outcome = .failure(error)
-        case let .waiting(error):
-          // TLS auth failures surface as `.waiting` (NW retries forever);
-          // treat as terminal during connect rather than hanging.
-          outcome = .failure(error)
-        case .cancelled:
-          outcome = .failure(Ocp1Error.notConnected)
-        default:
-          outcome = nil
+    do {
+      // Wait for `.ready`/`.failed` before completing connect — without this
+      // any TLS handshake error is invisible until the first read/write.
+      try await withTaskCancellationHandler {
+        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+          // Guard against double-resume from transient state toggling.
+          let resumed = Mutex(false)
+          connection.stateUpdateHandler = { state in
+            let outcome: Result<Void, Error>?
+            switch state {
+            case .ready:
+              outcome = .success(())
+            case let .failed(error):
+              outcome = .failure(error)
+            case let .waiting(error):
+              // TLS auth failures surface as `.waiting` (NW retries forever);
+              // treat as terminal during connect rather than hanging.
+              outcome = .failure(error)
+            case .cancelled:
+              outcome = .failure(Ocp1Error.notConnected)
+            default:
+              outcome = nil
+            }
+            guard let outcome else { return }
+            let claimed = resumed.withLock { flag -> Bool in
+              if flag { return false }
+              flag = true
+              return true
+            }
+            if claimed { cont.resume(with: outcome) }
+          }
+          connection.start(queue: _queue)
         }
-        guard let outcome else { return }
-        let claimed = resumed.withLock { flag -> Bool in
-          if flag { return false }
-          flag = true
-          return true
-        }
-        if claimed { cont.resume(with: outcome) }
+      } onCancel: {
+        // When the per-candidate timeout (or any cancellation) fires, drive the
+        // connection to `.cancelled` so the continuation above resumes instead
+        // of leaving the awaiting task parked forever.
+        connection.cancel()
       }
-      connection.start(queue: _queue)
+    } catch {
+      // Tear down this candidate's connection before the next is tried.
+      connection.stateUpdateHandler = nil
+      connection.cancel()
+      throw error
     }
     Self._installPostReadyStateHandler(connection) { [weak self] in
       try await self?.disconnect()
     }
-    try await super.connectDevice()
   }
 
   override public func disconnectDevice() async throws {
@@ -256,14 +275,20 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableConnection {
     }
   }
 
+  /// The endpoint for the *preferred* (first) candidate, used to seed the
+  /// initial connection in `init`/`_cleanupConnection`. The actual connect in
+  /// `_connectDevice(to:)` builds an endpoint per candidate.
   open nonisolated var nwEndpoint: NWEndpoint {
     get throws {
-      try _deviceAddress.criticalValue.asNWEndpoint()
+      guard let first = _deviceAddresses.criticalValue.first else {
+        throw Ocp1Error.notConnected
+      }
+      return try first.asNWEndpoint()
     }
   }
 
   package nonisolated var presentationAddress: String {
-    _deviceAddress.criticalValue._presentationAddress
+    _currentPresentationAddress
   }
 }
 

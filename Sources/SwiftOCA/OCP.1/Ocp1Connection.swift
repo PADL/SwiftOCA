@@ -491,17 +491,139 @@ extension Ocp1Connection: Hashable {
   }
 }
 
-public protocol Ocp1MutableConnection: Ocp1Connection {
-  nonisolated var deviceAddress: Data { get set }
+/// A mutable connection that targets one or more resolved socket addresses (as
+/// opposed to, say, a Mach port or a WebSocket URL). Conformers declare only the
+/// two storage cells plus the per-candidate connect; this extension derives
+/// ``deviceAddresses``, tracks the candidate actually connected to, and drives
+/// first-reachable connect — so the address-handling lives here, with the
+/// backends, rather than on the base `Ocp1Connection`.
+///
+/// `package` for now: an internal mechanism shared by the package's socket
+/// backends, not yet public API.
+package protocol Ocp1MutableSocketAddressConnection: Ocp1Connection {
+  /// Backing store for the candidate addresses, parsed, in preference order. A
+  /// `Mutex` (not actor isolation) because `deviceAddresses` is read and written
+  /// `nonisolated`, off the `@OcaConnection` actor.
+  nonisolated var _deviceAddresses: Mutex<[AnySocketAddress]> { get }
+
+  /// Backing store for the candidate actually connected to (`nil` while
+  /// disconnected). A `Mutex` because it is written from the connect path (the
+  /// chosen candidate can change across reconnects) and read `nonisolated` by the
+  /// presentation accessors.
+  nonisolated var _connectedDeviceAddress: Mutex<AnySocketAddress?> { get }
+
+  /// Establish the underlying transport to a single resolved candidate. Called
+  /// by ``_connectFirstReachableDeviceAddress()`` for each address in turn;
+  /// implementations mutate connection state, so this is `@OcaConnection`
+  /// isolated like ``connectDevice()`` itself.
+  func _connectDevice(to deviceAddress: AnySocketAddress) async throws
 }
 
-extension Ocp1MutableConnection {
-  nonisolated var socketAddress: (any SocketAddress)? {
-    get {
-      try? AnySocketAddress(bytes: Array(deviceAddress))
-    }
+package extension Ocp1MutableSocketAddressConnection {
+  /// The candidate device addresses, in preference order. A hostname can resolve
+  /// to several addresses (e.g. an IPv4 and an IPv6 ULA) and only some may be
+  /// reachable at any moment; `connectDevice()` tries them in order and connects
+  /// to the first that answers. Setting replaces the entire set; a change
+  /// re-resolves the live connection (`deviceAddressesDidChange()`), an unchanged
+  /// set is a no-op.
+  nonisolated var deviceAddresses: [AnySocketAddress] {
+    get { _deviceAddresses.criticalValue }
     set {
-      if let newValue { deviceAddress = newValue.data }
+      let changed = _deviceAddresses.withLock { stored -> Bool in
+        guard stored != newValue else { return false }
+        stored = newValue
+        return true
+      }
+      if changed { deviceAddressesDidChange() }
     }
+  }
+
+  /// Single-address convenience over ``deviceAddresses``: reads the preferred
+  /// (first) candidate; writing replaces the whole set with the one address.
+  nonisolated var deviceAddress: AnySocketAddress? {
+    get { _deviceAddresses.criticalValue.first }
+    set { deviceAddresses = newValue.map { [$0] } ?? [] }
+  }
+
+  /// The candidate actually connected to — which may not be
+  /// `deviceAddresses.first` if the preferred address was unreachable. `nil`
+  /// while disconnected.
+  nonisolated var connectedDeviceAddress: AnySocketAddress? {
+    _connectedDeviceAddress.criticalValue
+  }
+
+  // MARK: `Data`-valued convenience for compatibility with callers that work in
+  // raw `sockaddr` `Data` rather than `AnySocketAddress`.
+
+  /// The candidate addresses as `sockaddr` `Data`. Setting drops any entry that
+  /// does not parse rather than discarding the whole set.
+  nonisolated var deviceAddressData: [Data] {
+    get { deviceAddresses.map(\.data) }
+    set { deviceAddresses = newValue.compactMap { try? AnySocketAddress(bytes: Array($0)) } }
+  }
+}
+
+package extension Ocp1MutableSocketAddressConnection {
+  /// The address currently in use: the connected candidate while connected,
+  /// otherwise the preferred (first) candidate. Use this — not
+  /// `deviceAddresses.first` — for any accessor that describes the live
+  /// connection, so a connect that failed over to a non-preferred address is
+  /// reported accurately.
+  nonisolated var _currentSocketAddress: AnySocketAddress? {
+    _connectedDeviceAddress.criticalValue ?? _deviceAddresses.criticalValue.first
+  }
+
+  /// Numeric presentation ("host:port"/"[v6]:port") of the address currently in
+  /// use, for `connectionPrefix` and logging.
+  nonisolated var _currentPresentationAddress: String {
+    _currentSocketAddress?._presentationAddress ?? "<unknown>"
+  }
+
+  nonisolated func _clearConnectedDeviceAddress() {
+    _connectedDeviceAddress.withLock { $0 = nil }
+  }
+
+  /// Connect to the first candidate in ``deviceAddresses`` for which
+  /// ``_connectDevice(to:)`` succeeds, trying each in preference order, and
+  /// record it as ``connectedDeviceAddress``. The overall connect budget
+  /// (`_connectionTimeout`, applied by `_connectDeviceWithTimeout`) is divided
+  /// across the candidates, so a black-holed early address (SYN dropped, no RST)
+  /// cannot consume the whole budget before the next candidate is tried. The
+  /// real connect *is* the reachability test — there is no separate probe.
+  @OcaConnection
+  func _connectFirstReachableDeviceAddress() async throws {
+    let candidates = _deviceAddresses.criticalValue
+    guard !candidates.isEmpty else { throw Ocp1Error.notConnected }
+
+    _connectedDeviceAddress.withLock { $0 = nil }
+
+    // Single candidate: rely on the outer `_connectDeviceWithTimeout`. Multiple:
+    // give each an equal slice so their sum fits the outer budget (which would
+    // otherwise abort the whole connect at the first candidate's expiry).
+    let perCandidateTimeout: Duration = candidates.count > 1
+      ? _connectionTimeout / candidates.count
+      : .zero
+
+    var lastError: Error?
+    for deviceAddress in candidates {
+      do {
+        if perCandidateTimeout > .zero {
+          try await withThrowingTimeout(of: perCandidateTimeout, clock: .continuous) {
+            [self] in try await _connectDevice(to: deviceAddress)
+          }
+        } else {
+          try await _connectDevice(to: deviceAddress)
+        }
+        _connectedDeviceAddress.withLock { $0 = deviceAddress }
+        if candidates.count > 1 {
+          logger.debug("connectDevice: connected to \(deviceAddress._presentationAddress)")
+        }
+        return
+      } catch {
+        lastError = error
+        logger.debug("connectDevice: \(deviceAddress._presentationAddress) unreachable: \(error)")
+      }
+    }
+    throw lastError ?? Ocp1Error.notConnected
   }
 }
