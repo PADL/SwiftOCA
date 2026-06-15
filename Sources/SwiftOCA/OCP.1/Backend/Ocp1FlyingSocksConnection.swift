@@ -190,48 +190,35 @@ private actor AsyncSocketPoolMonitor {
   }
 }
 
-public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableConnection {
-  fileprivate let _deviceAddress: Mutex<FlyingSocks.AnySocketAddress>
+public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
+  // `_DeviceSocketAddress` is a `package` alias of the PADL `AnySocketAddress`
+  // (see SocketAddressHelpers.swift). This file vends its own `AnySocketAddress`
+  // via the `FlyingSocks` enum, so the alias lets it name the storage type
+  // without importing — and clashing with — the PADL `SocketAddress`.
+  @_spi(SwiftOCAPrivate) public let _deviceAddresses: Mutex<[_DeviceSocketAddress]>
+  @_spi(SwiftOCAPrivate) public let _connectedDeviceAddress = Mutex<_DeviceSocketAddress?>(nil)
   fileprivate var _asyncSocket: AsyncSocket?
+
+  public init(
+    deviceAddresses: [Data],
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    // Drop any candidate that won't parse rather than discarding the whole list.
+    _deviceAddresses = Mutex(deviceAddresses.compactMap {
+      try? _DeviceSocketAddress(bytes: Array($0))
+    })
+    super.init(options: options)
+  }
 
   public convenience init(
     deviceAddress: Data,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    try self.init(
-      socketAddress: FlyingSocks.AnySocketAddress(data: deviceAddress),
-      options: options
-    )
-  }
-
-  fileprivate init(
-    socketAddress: FlyingSocks.AnySocketAddress,
-    options: Ocp1ConnectionOptions
-  ) throws {
-    _deviceAddress = Mutex<FlyingSocks.AnySocketAddress>(socketAddress)
-    super.init(options: options)
+    try self.init(deviceAddresses: [deviceAddress], options: options)
   }
 
   deinit {
     try? _asyncSocket?.close()
-  }
-
-  public nonisolated var deviceAddress: Data {
-    get {
-      _deviceAddress.criticalValue.data
-    }
-    set {
-      do {
-        try _deviceAddress.withLock {
-          $0 = try FlyingSocks.AnySocketAddress(data: newValue)
-        }
-        deviceAddressDidChange()
-      } catch {}
-    }
-  }
-
-  fileprivate nonisolated var _presentationAddress: String {
-    deviceAddress.socketPresentationAddress ?? "unknown"
   }
 
   override public var localAddress: Data? {
@@ -256,29 +243,30 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableConnection {
 
   override public func connectDevice() async throws {
     _cleanupConnection()
-
-    let socket = try _deviceAddress.withLock { deviceAddress in
-      let socket = try Socket(domain: Int32(deviceAddress.family), type: socketType)
-      try? setSocketOptions(socket, family: deviceAddress.family)
-      // also connect UDP sockets to ensure we do not receive unsolicited replies
-      do {
-        try socket.connect(to: deviceAddress)
-      } catch {
-        try? socket.close()
-        throw error
-      }
-      return socket
-    }
     do {
-      _asyncSocket = try await AsyncSocket(
-        socket: socket,
-        pool: AsyncSocketPoolMonitor.shared.get()
-      )
+      try await _connectFirstReachableDeviceAddress()
       try await super.connectDevice()
     } catch {
       _cleanupConnection()
       throw error
     }
+  }
+
+  @_spi(SwiftOCAPrivate) public func _connectDevice(to deviceAddress: _DeviceSocketAddress) async throws {
+    let fsAddress = try FlyingSocks.AnySocketAddress(data: deviceAddress.data)
+    let socket = try Socket(domain: Int32(fsAddress.family), type: socketType)
+    try? setSocketOptions(socket, family: fsAddress.family)
+    // also connect UDP sockets to ensure we do not receive unsolicited replies
+    do {
+      try socket.connect(to: fsAddress)
+    } catch {
+      try? socket.close()
+      throw error
+    }
+    _asyncSocket = try await AsyncSocket(
+      socket: socket,
+      pool: AsyncSocketPoolMonitor.shared.get()
+    )
   }
 
   override public func disconnectDevice() async throws {
@@ -292,7 +280,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableConnection {
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
     try self.init(
-      socketAddress: FlyingSocks.AnySocketAddress(sockaddr_un.unix(path: path)),
+      deviceAddresses: [FlyingSocks.AnySocketAddress(sockaddr_un.unix(path: path)).data],
       options: options
     )
   }
@@ -328,7 +316,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableConnection {
 
 public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
   override public var connectionPrefix: String {
-    "\(OcaTcpConnectionPrefix)/\(_presentationAddress)"
+    "\(OcaTcpConnectionPrefix)/\(_currentPresentationAddress)"
   }
 
   override public var isDatagram: Bool { false }
@@ -350,7 +338,7 @@ public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
 
 public final class Ocp1FlyingSocksDatagramConnection: Ocp1FlyingSocksConnection {
   override public var connectionPrefix: String {
-    "\(OcaUdpConnectionPrefix)/\(_presentationAddress)"
+    "\(OcaUdpConnectionPrefix)/\(_currentPresentationAddress)"
   }
 
   override public var heartbeatTime: Duration {
