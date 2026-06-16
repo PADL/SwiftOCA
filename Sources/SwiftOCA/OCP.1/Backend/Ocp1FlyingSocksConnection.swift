@@ -198,19 +198,28 @@ private actor AsyncSocketPoolMonitor {
 public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
   // The bare `AnySocketAddress` here is the PADL struct (selectively imported
   // above); `FlyingSocks.AnySocketAddress` stays fully qualified everywhere else.
-  package let _deviceAddresses: Mutex<[AnySocketAddress]>
-  package let _connectedDeviceAddress = Mutex<AnySocketAddress?>(nil)
+  package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
   fileprivate var _asyncSocket: AsyncSocket?
 
-  public init(
+  package init(
+    addressState: Ocp1DeviceAddressState,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    _deviceAddressState = Mutex(addressState)
+    super.init(options: options)
+  }
+
+  public convenience init(
     deviceAddresses: [Data],
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
     // Drop any candidate that won't parse rather than discarding the whole list.
-    _deviceAddresses = Mutex(deviceAddresses.compactMap {
-      try? AnySocketAddress(bytes: Array($0))
-    })
-    super.init(options: options)
+    try self.init(
+      addressState: Ocp1DeviceAddressState(
+        addresses: deviceAddresses.compactMap { try? AnySocketAddress(bytes: Array($0)) }
+      ),
+      options: options
+    )
   }
 
   public convenience init(
@@ -218,6 +227,19 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddress
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
     try self.init(deviceAddresses: [deviceAddress], options: options)
+  }
+
+  /// Connect to `host`:`port`, resolved to candidate addresses on each connect
+  /// attempt. An unresolved name is treated as "not reachable yet" and retried.
+  public convenience init(
+    host: String,
+    port: UInt16,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    try self.init(
+      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      options: options
+    )
   }
 
   deinit {

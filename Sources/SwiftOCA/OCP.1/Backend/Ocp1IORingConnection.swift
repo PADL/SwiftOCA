@@ -55,14 +55,13 @@ package extension Errno {
 
 public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
   fileprivate let _ring: IORing
-    package let _deviceAddresses: Mutex<[AnySocketAddress]>
-    package let _connectedDeviceAddress = Mutex<AnySocketAddress?>(nil)
+  package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
   fileprivate var _socket: Socket?
   fileprivate var _type: Int32 {
     fatalError("must be implemented by subclass")
   }
 
-    package func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
+  package func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
     fatalError("must be implemented by subclass")
   }
 
@@ -71,7 +70,13 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableSocketAddressConne
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
     ring: IORing = .shared
   ) throws {
-    try self.init(socketAddresses: [deviceAddress.socketAddress], options: options, ring: ring)
+    try self.init(
+      addressState: Ocp1DeviceAddressState(
+        addresses: [AnySocketAddress(deviceAddress.socketAddress)]
+      ),
+      options: options,
+      ring: ring
+    )
   }
 
   public convenience init(
@@ -80,20 +85,27 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableSocketAddressConne
     ring: IORing = .shared
   ) throws {
     try self.init(
-      socketAddresses: deviceAddresses.compactMap { try? $0.socketAddress },
+      addressState: Ocp1DeviceAddressState(
+        addresses: deviceAddresses.compactMap { try? $0.socketAddress }.map { AnySocketAddress($0) }
+      ),
       options: options,
       ring: ring
     )
   }
 
-  fileprivate init(
-    socketAddresses: [any SocketAddress],
-    options: Ocp1ConnectionOptions,
+  /// Connect to `host`:`port`, resolved to candidate addresses on each connect
+  /// attempt. An unresolved name is treated as "not reachable yet" and retried.
+  public convenience init(
+    host: String,
+    port: UInt16,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
     ring: IORing = .shared
   ) throws {
-    _deviceAddresses = Mutex(socketAddresses.map { AnySocketAddress($0) })
-    _ring = ring
-    super.init(options: options)
+    try self.init(
+      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      options: options,
+      ring: ring
+    )
   }
 
   public convenience init(
@@ -102,13 +114,23 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableSocketAddressConne
     ring: IORing = .shared
   ) throws {
     try self.init(
-      socketAddresses: [sockaddr_un(
+      addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(sockaddr_un(
         family: sa_family_t(AF_LOCAL),
         presentationAddress: path
-      )],
+      ))]),
       options: options,
       ring: ring
     )
+  }
+
+  fileprivate init(
+    addressState: Ocp1DeviceAddressState,
+    options: Ocp1ConnectionOptions,
+    ring: IORing = .shared
+  ) throws {
+    _deviceAddressState = Mutex(addressState)
+    _ring = ring
+    super.init(options: options)
   }
 
   fileprivate func _cleanupConnection() {
@@ -153,13 +175,13 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   }
 
   override fileprivate init(
-    socketAddresses: [any SocketAddress],
+    addressState: Ocp1DeviceAddressState,
     options: Ocp1ConnectionOptions,
     ring: IORing
   ) throws {
-    guard socketAddresses.allSatisfy({ $0.family == AF_INET || $0.family == AF_INET6 })
+    guard addressState.addresses.allSatisfy({ $0.family == AF_INET || $0.family == AF_INET6 })
     else { throw Errno.addressFamilyNotSupported }
-    try super.init(socketAddresses: socketAddresses, options: options, ring: ring)
+    try super.init(addressState: addressState, options: options, ring: ring)
   }
 
   override public func connectDevice() async throws {
@@ -213,14 +235,14 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   }
 
   override fileprivate init(
-    socketAddresses: [any SocketAddress],
+    addressState: Ocp1DeviceAddressState,
     options: Ocp1ConnectionOptions,
     ring: IORing
   ) throws {
-    guard socketAddresses.allSatisfy({ $0.family == AF_LOCAL })
+    guard addressState.addresses.allSatisfy({ $0.family == AF_LOCAL })
     else { throw Errno.addressFamilyNotSupported }
     _boundAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
-    try super.init(socketAddresses: socketAddresses, options: options, ring: ring)
+    try super.init(addressState: addressState, options: options, ring: ring)
   }
 
   override fileprivate func _cleanupConnection() {

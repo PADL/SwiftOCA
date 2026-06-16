@@ -395,8 +395,7 @@ Sendable, CustomStringConvertible, Hashable {
 }
 
 public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
-  package let _deviceAddresses: Mutex<[AnySocketAddress]>
-  package let _connectedDeviceAddress = Mutex<AnySocketAddress?>(nil)
+  package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
   fileprivate var _socket: _CFSocketWrapper?
   fileprivate var _type: Int32 {
     fatalError("must be implemented by subclass")
@@ -406,7 +405,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableSocketAddressCon
     deviceAddresses: [AnySocketAddress],
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    _deviceAddresses = Mutex(deviceAddresses)
+    _deviceAddressState = Mutex(Ocp1DeviceAddressState(addresses: deviceAddresses))
     super.init(options: options)
   }
 

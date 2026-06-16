@@ -49,8 +49,7 @@ fileprivate extension Errno {
 /// rbio for SSL_read to drain one DTLS record at a time.
 public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
   private let _ring: IORing
-  package let _deviceAddresses: Mutex<[AnySocketAddress]>
-  package let _connectedDeviceAddress = Mutex<AnySocketAddress?>(nil)
+  package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
   private let _socket: Mutex<Socket?> = .init(nil)
   private let _credential: Ocp1TLSCredential
   private let _engine: Ocp1OpenSSLEngine
@@ -65,7 +64,7 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
   override public var heartbeatTime: Duration { .seconds(1) }
 
   private init(
-    socketAddresses: [any SocketAddress],
+    addressState: Ocp1DeviceAddressState,
     credential: Ocp1TLSCredential,
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
@@ -73,7 +72,7 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
     options: Ocp1ConnectionOptions,
     ring: IORing
   ) throws {
-    _deviceAddresses = Mutex(socketAddresses.map { AnySocketAddress($0) })
+    _deviceAddressState = Mutex(addressState)
     _ring = ring
     _credential = credential
     let verifyPeer = !options.flags.contains(.disableCertificateVerification)
@@ -99,7 +98,7 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
     ring: IORing = .shared
   ) throws {
     try self.init(
-      socketAddresses: [deviceAddress.socketAddress],
+      addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(deviceAddress.socketAddress)]),
       credential: credential,
       hostname: hostname,
       trustRoots: trustRoots,
@@ -119,7 +118,9 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
     ring: IORing = .shared
   ) throws {
     try self.init(
-      socketAddresses: deviceAddresses.compactMap { try? $0.socketAddress },
+      addressState: Ocp1DeviceAddressState(
+        addresses: deviceAddresses.compactMap { try? $0.socketAddress }.map { AnySocketAddress($0) }
+      ),
       credential: credential,
       hostname: hostname,
       trustRoots: trustRoots,
