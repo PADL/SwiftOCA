@@ -84,10 +84,15 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
     super.init(options: options)
   }
 
-  public convenience init(
+  /// Connect to a pre-resolved address. `sniHostname` sets the TLS server name
+  /// (SNI / certificate verification) *only* — the transport still connects to
+  /// `deviceAddress`. Prefer ``init(host:port:credential:trustRoots:revocation:options:ring:)``,
+  /// which derives the server name from `host`; this `package` initializer
+  /// exists for callers that have already resolved the address.
+  package convenience init(
     deviceAddress: Data,
     credential: Ocp1TLSCredential,
-    hostname: String? = nil,
+    sniHostname: String? = nil,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
@@ -96,7 +101,7 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
     try self.init(
       addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(deviceAddress.socketAddress)]),
       credential: credential,
-      hostname: hostname,
+      hostname: sniHostname,
       trustRoots: trustRoots,
       revocation: revocation,
       options: options,
@@ -104,10 +109,12 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
     )
   }
 
-  public convenience init(
+  /// Multi-address variant of ``init(deviceAddress:credential:sniHostname:trustRoots:revocation:options:ring:)``.
+  /// `sniHostname` is the TLS server name (SNI / certificate verification) only.
+  package convenience init(
     deviceAddresses: [Data],
     credential: Ocp1TLSCredential,
-    hostname: String? = nil,
+    sniHostname: String? = nil,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
@@ -118,7 +125,7 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
         addresses: deviceAddresses.compactMap { try? $0.socketAddress }.map { AnySocketAddress($0) }
       ),
       credential: credential,
-      hostname: hostname,
+      hostname: sniHostname,
       trustRoots: trustRoots,
       revocation: revocation,
       options: options,

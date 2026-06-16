@@ -88,10 +88,15 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
     super.init(options: options)
   }
 
-  public convenience init(
+  /// Connect to a pre-resolved address. `sniHostname` sets the TLS server name
+  /// (SNI / certificate verification) *only* — the transport still connects to
+  /// `deviceAddress`. Prefer ``init(host:port:credential:trustRoots:revocation:options:ring:)``,
+  /// which derives the server name from `host`; this `package` initializer
+  /// exists for callers that have already resolved the address.
+  package convenience init(
     deviceAddress: Data,
     credential: Ocp1TLSCredential,
-    hostname: String? = nil,
+    sniHostname: String? = nil,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
@@ -100,7 +105,7 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
     try self.init(
       addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(deviceAddress.socketAddress)]),
       credential: credential,
-      hostname: hostname,
+      hostname: sniHostname,
       trustRoots: trustRoots,
       revocation: revocation,
       options: options,
@@ -108,10 +113,12 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
     )
   }
 
-  public convenience init(
+  /// Multi-address variant of ``init(deviceAddress:credential:sniHostname:trustRoots:revocation:options:ring:)``.
+  /// `sniHostname` is the TLS server name (SNI / certificate verification) only.
+  package convenience init(
     deviceAddresses: [Data],
     credential: Ocp1TLSCredential,
-    hostname: String? = nil,
+    sniHostname: String? = nil,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
@@ -122,7 +129,29 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
         addresses: deviceAddresses.compactMap { try? $0.socketAddress }.map { AnySocketAddress($0) }
       ),
       credential: credential,
-      hostname: hostname,
+      hostname: sniHostname,
+      trustRoots: trustRoots,
+      revocation: revocation,
+      options: options,
+      ring: ring
+    )
+  }
+
+  /// Connect to `host`:`port`, resolved to candidate addresses on each connect
+  /// attempt. `host` is also the TLS server name (SNI / certificate verification).
+  public convenience init(
+    host: String,
+    port: UInt16,
+    credential: Ocp1TLSCredential,
+    trustRoots: Ocp1TLSTrustRoots? = nil,
+    revocation: Ocp1TLSRevocationOptions = .disabled,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    ring: IORing = .shared
+  ) throws {
+    try self.init(
+      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      credential: credential,
+      hostname: host,
       trustRoots: trustRoots,
       revocation: revocation,
       options: options,

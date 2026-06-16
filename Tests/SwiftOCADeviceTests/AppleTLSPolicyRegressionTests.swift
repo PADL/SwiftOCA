@@ -58,7 +58,7 @@ private func makePSKClientWithTrustRoots(
       identity: OcaPreSharedKeyIdentityHint,
       key: Data(repeating: 0x42, count: 32)
     ),
-    hostname: hostname,
+    sniHostname: hostname,
     trustRoots: .caData(caData)
   )
 }
@@ -85,7 +85,7 @@ private func makeMTLSClient(
   try Ocp1NWSecureTCPConnection(
     deviceAddress: localhostAddress(port: port),
     credential: .pkcs12(data: p12Data, password: testPKCS12Password),
-    hostname: hostname,
+    sniHostname: hostname,
     trustRoots: .caData(caData)
   )
 }
@@ -116,7 +116,7 @@ private func makePSKDTLSClientWithTrustRoots(
       identity: OcaPreSharedKeyIdentityHint,
       key: Data(repeating: 0x42, count: 32)
     ),
-    hostname: hostname,
+    sniHostname: hostname,
     trustRoots: .caData(caData)
   )
 }
@@ -131,7 +131,7 @@ private func makeMTLSDTLSClient(
   try Ocp1NWSecureUDPConnection(
     deviceAddress: localhostUDPAddress(port: port),
     credential: .pkcs12(data: p12Data, password: testPKCS12Password),
-    hostname: hostname,
+    sniHostname: hostname,
     trustRoots: .caData(caData)
   )
 }

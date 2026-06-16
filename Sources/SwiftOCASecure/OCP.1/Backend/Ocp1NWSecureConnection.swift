@@ -247,7 +247,7 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
   private let trustRoots: Ocp1TLSTrustRoots?
 
   private init(
-    deviceAddresses: [AnySocketAddress],
+    addressState: Ocp1DeviceAddressState,
     credential: Ocp1TLSCredential,
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
@@ -269,22 +269,48 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
     self.trustRoots = trustRoots
     preloadedAnchors = preloaded
     self.revocation = revocation
-    try super.init(addressState: Ocp1DeviceAddressState(addresses: deviceAddresses), options: options)
+    try super.init(addressState: addressState, options: options)
   }
 
-  public convenience init(
+  /// Connect to a pre-resolved address. `sniHostname` sets the TLS server name
+  /// (SNI / certificate verification) *only* — the transport still connects to
+  /// `deviceAddress`. Prefer ``init(host:port:credential:trustRoots:revocation:options:)``,
+  /// which derives the server name from `host`; this `package` initializer
+  /// exists for callers that have already resolved the address.
+  package convenience init(
     deviceAddress: Data,
     credential: Ocp1TLSCredential,
-    hostname: String? = nil,
+    sniHostname: String? = nil,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
     let address = try AnySocketAddress(bytes: Array(deviceAddress))
     try self.init(
-      deviceAddresses: [address],
+      addressState: Ocp1DeviceAddressState(addresses: [address]),
       credential: credential,
-      hostname: hostname,
+      hostname: sniHostname,
+      trustRoots: trustRoots,
+      revocation: revocation,
+      options: options
+    )
+  }
+
+  /// Connect to `host`:`port`, resolved natively by Network.framework on each
+  /// connect attempt. `host` is also the TLS server name (SNI / certificate
+  /// verification).
+  public convenience init(
+    host: String,
+    port: UInt16,
+    credential: Ocp1TLSCredential,
+    trustRoots: Ocp1TLSTrustRoots? = nil,
+    revocation: Ocp1TLSRevocationOptions = .disabled,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    try self.init(
+      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      credential: credential,
+      hostname: host,
       trustRoots: trustRoots,
       revocation: revocation,
       options: options
@@ -301,7 +327,7 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
       presentationAddress: path
     )
     try self.init(
-      deviceAddresses: [address],
+      addressState: Ocp1DeviceAddressState(addresses: [address]),
       credential: credential,
       hostname: nil,
       trustRoots: nil,
@@ -363,7 +389,7 @@ public final class Ocp1NWSecureUDPConnection: Ocp1NWConnection {
   }
 
   private init(
-    deviceAddresses: [AnySocketAddress],
+    addressState: Ocp1DeviceAddressState,
     credential: Ocp1TLSCredential,
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
@@ -383,22 +409,48 @@ public final class Ocp1NWSecureUDPConnection: Ocp1NWConnection {
     self.trustRoots = trustRoots
     preloadedAnchors = preloaded
     self.revocation = revocation
-    try super.init(addressState: Ocp1DeviceAddressState(addresses: deviceAddresses), options: options)
+    try super.init(addressState: addressState, options: options)
   }
 
-  public convenience init(
+  /// Connect to a pre-resolved address. `sniHostname` sets the TLS server name
+  /// (SNI / certificate verification) *only* — the transport still connects to
+  /// `deviceAddress`. Prefer ``init(host:port:credential:trustRoots:revocation:options:)``,
+  /// which derives the server name from `host`; this `package` initializer
+  /// exists for callers that have already resolved the address.
+  package convenience init(
     deviceAddress: Data,
     credential: Ocp1TLSCredential,
-    hostname: String? = nil,
+    sniHostname: String? = nil,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
     let address = try AnySocketAddress(bytes: Array(deviceAddress))
     try self.init(
-      deviceAddresses: [address],
+      addressState: Ocp1DeviceAddressState(addresses: [address]),
       credential: credential,
-      hostname: hostname,
+      hostname: sniHostname,
+      trustRoots: trustRoots,
+      revocation: revocation,
+      options: options
+    )
+  }
+
+  /// Connect to `host`:`port`, resolved natively by Network.framework on each
+  /// connect attempt. `host` is also the TLS server name (SNI / certificate
+  /// verification).
+  public convenience init(
+    host: String,
+    port: UInt16,
+    credential: Ocp1TLSCredential,
+    trustRoots: Ocp1TLSTrustRoots? = nil,
+    revocation: Ocp1TLSRevocationOptions = .disabled,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    try self.init(
+      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      credential: credential,
+      hostname: host,
       trustRoots: trustRoots,
       revocation: revocation,
       options: options

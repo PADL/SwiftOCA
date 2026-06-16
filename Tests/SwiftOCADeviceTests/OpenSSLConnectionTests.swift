@@ -38,18 +38,42 @@ private func loopbackAddressData(port: UInt16) -> Data {
   return withUnsafeBytes(of: sin) { Data($0) }
 }
 
+/// Connect over the loopback *by hostname* — the preferred path, which
+/// exercises SwiftOCA's own resolution and derives the SNI server name from
+/// the host. The self-signed test cert carries `IP:127.0.0.1` in its SAN, so
+/// PSK and verification-disabled handshakes don't depend on the SNI name.
+@OcaConnection
+private func makeOpenSSLHostConnection(
+  port: UInt16,
+  credential: Ocp1TLSCredential,
+  trustRoots: Ocp1TLSTrustRoots? = nil,
+  flags: Ocp1ConnectionFlags = .refreshDeviceTreeOnConnection
+) throws -> Ocp1OpenSSLConnection {
+  try Ocp1OpenSSLConnection(
+    host: "127.0.0.1",
+    port: port,
+    credential: credential,
+    trustRoots: trustRoots,
+    options: Ocp1ConnectionOptions(flags: flags)
+  )
+}
+
+/// Connect to a pre-resolved loopback address with an explicit SNI server
+/// name. Used by the certificate tests that assert behaviour for a specific
+/// (possibly mismatched) server name while still targeting the loopback IP —
+/// something the hostname path can't express.
 @OcaConnection
 private func makeOpenSSLConnection(
   port: UInt16,
   credential: Ocp1TLSCredential,
-  hostname: String? = nil,
+  sniHostname: String? = nil,
   trustRoots: Ocp1TLSTrustRoots? = nil,
   flags: Ocp1ConnectionFlags = .refreshDeviceTreeOnConnection
 ) throws -> Ocp1OpenSSLConnection {
   try Ocp1OpenSSLConnection(
     deviceAddress: loopbackAddressData(port: port),
     credential: credential,
-    hostname: hostname,
+    sniHostname: sniHostname,
     trustRoots: trustRoots,
     options: Ocp1ConnectionOptions(flags: flags)
   )
@@ -100,7 +124,7 @@ final class OpenSSLConnectionTests: XCTestCase {
     // Give the endpoint a moment to enter accept()
     try await Task.sleep(for: .milliseconds(100))
 
-    let connection = try await makeOpenSSLConnection(
+    let connection = try await makeOpenSSLHostConnection(
       port: port,
       credential: .preSharedKey(identity: Self.testIdentity, key: Self.testKey)
     )
@@ -180,7 +204,7 @@ final class OpenSSLConnectionTests: XCTestCase {
     let strictConnection = try await makeOpenSSLConnection(
       port: port,
       credential: clientCredential,
-      hostname: "ocp1-test",
+      sniHostname: "ocp1-test",
       flags: []
     )
     do {
@@ -192,7 +216,7 @@ final class OpenSSLConnectionTests: XCTestCase {
     }
 
     // 2. `.disableCertificateVerification` → handshake completes, OCP.1 works.
-    let lenientConnection = try await makeOpenSSLConnection(
+    let lenientConnection = try await makeOpenSSLHostConnection(
       port: port,
       credential: clientCredential,
       flags: [.refreshDeviceTreeOnConnection, .disableCertificateVerification]
@@ -243,7 +267,7 @@ final class OpenSSLConnectionTests: XCTestCase {
     let mutualConnection = try await makeOpenSSLConnection(
       port: port,
       credential: clientCredential,
-      hostname: "ocp1-test",
+      sniHostname: "ocp1-test",
       trustRoots: .caFile(cert.certPath)
     )
     try await mutualConnection.connect()
@@ -268,7 +292,7 @@ final class OpenSSLConnectionTests: XCTestCase {
     try await Task.sleep(for: .milliseconds(100))
 
     let wrongKey = Data(repeating: 0xAA, count: 32) // different from Self.testKey
-    let connection = try await makeOpenSSLConnection(
+    let connection = try await makeOpenSSLHostConnection(
       port: port,
       credential: .preSharedKey(identity: Self.testIdentity, key: wrongKey)
     )
@@ -312,7 +336,7 @@ final class OpenSSLConnectionTests: XCTestCase {
     defer { task.cancel() }
     try await Task.sleep(for: .milliseconds(100))
 
-    let connection = try await makeOpenSSLConnection(
+    let connection = try await makeOpenSSLHostConnection(
       port: port,
       credential: .preSharedKey(identity: Self.testIdentity, key: Self.testKey)
     )
@@ -360,7 +384,7 @@ final class OpenSSLConnectionTests: XCTestCase {
     let connection = try await Ocp1OpenSSLConnection.makeForHostname(
       port: port,
       credential: clientCredential,
-      hostname: "wrong-host",
+      sniHostname: "wrong-host",
       trustRoots: .caFile(cert.certPath)
     )
     do {
@@ -379,13 +403,13 @@ private extension Ocp1OpenSSLConnection {
   static func makeForHostname(
     port: UInt16,
     credential: Ocp1TLSCredential,
-    hostname: String,
+    sniHostname: String,
     trustRoots: Ocp1TLSTrustRoots?
   ) throws -> Ocp1OpenSSLConnection {
     try Ocp1OpenSSLConnection(
       deviceAddress: loopbackAddressData(port: port),
       credential: credential,
-      hostname: hostname,
+      sniHostname: sniHostname,
       trustRoots: trustRoots,
       options: Ocp1ConnectionOptions(flags: .refreshDeviceTreeOnConnection)
     )

@@ -41,11 +41,6 @@ final class TLSFailClosedTests: XCTestCase {
     return sin
   }
 
-  private func loopbackAddressData(port: UInt16) -> Data {
-    let sin = loopbackAddress(port: port)
-    return withUnsafeBytes(of: sin) { Data($0) }
-  }
-
   /// Cert-mode client init with a non-existent CA file must throw rather
   /// than silently fall back to "any cert from any CA passes."
   @OcaConnection
@@ -59,9 +54,9 @@ final class TLSFailClosedTests: XCTestCase {
     }
     XCTAssertThrowsError(
       try Ocp1OpenSSLConnection(
-        deviceAddress: loopbackAddressData(port: 65535),
+        host: "127.0.0.1",
+        port: 65535,
         credential: .certificateFile(certPath: certPath, keyPath: keyPath),
-        hostname: "ocp1-test",
         trustRoots: .caFile(Self.nonexistentCAPath),
         options: Ocp1ConnectionOptions()
       ),

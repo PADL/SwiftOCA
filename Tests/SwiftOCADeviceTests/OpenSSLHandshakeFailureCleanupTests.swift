@@ -42,11 +42,6 @@ final class OpenSSLHandshakeFailureCleanupTests: XCTestCase {
     return sin
   }
 
-  private func loopbackAddressData(port: UInt16) -> Data {
-    let sin = loopbackAddress(port: port)
-    return withUnsafeBytes(of: sin) { Data($0) }
-  }
-
   func testWrongPSKLeavesConnectionClean() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
@@ -69,10 +64,9 @@ final class OpenSSLHandshakeFailureCleanupTests: XCTestCase {
     try await Task.sleep(for: .milliseconds(100))
 
     let connection = try await Ocp1OpenSSLConnection(
-      deviceAddress: loopbackAddressData(port: port),
+      host: "127.0.0.1",
+      port: port,
       credential: .preSharedKey(identity: Self.serverIdentity, key: Self.wrongKey),
-      hostname: nil,
-      trustRoots: nil,
       options: Ocp1ConnectionOptions()
     )
 
