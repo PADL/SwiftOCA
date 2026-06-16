@@ -269,7 +269,7 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
     self.trustRoots = trustRoots
     preloadedAnchors = preloaded
     self.revocation = revocation
-    try super.init(deviceAddresses: deviceAddresses, options: options)
+    try super.init(addressState: Ocp1DeviceAddressState(addresses: deviceAddresses), options: options)
   }
 
   public convenience init(
@@ -383,7 +383,7 @@ public final class Ocp1NWSecureUDPConnection: Ocp1NWConnection {
     self.trustRoots = trustRoots
     preloadedAnchors = preloaded
     self.revocation = revocation
-    try super.init(deviceAddresses: deviceAddresses, options: options)
+    try super.init(addressState: Ocp1DeviceAddressState(addresses: deviceAddresses), options: options)
   }
 
   public convenience init(

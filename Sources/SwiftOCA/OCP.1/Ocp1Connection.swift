@@ -491,26 +491,48 @@ extension Ocp1Connection: Hashable {
   }
 }
 
+/// The mutable address state of a socket connection — the candidate addresses,
+/// the candidate actually connected to, and an optional host:port to re-resolve —
+/// bundled into one value so a backend declares a single `Mutex`-protected cell
+/// and the presentation accessors observe a consistent snapshot under one lock.
+/// A `struct` (not a class) so the `Mutex` owns and protects the value.
+package struct Ocp1DeviceAddressState: Sendable {
+  /// Candidate addresses, in preference order.
+  package var addresses: [AnySocketAddress]
+  /// The candidate the current session connected to (`nil` while disconnected),
+  /// which may differ from `addresses.first` if the preferred address failed.
+  package var connectedAddress: AnySocketAddress?
+  /// When set, the connection resolves this host:port on each connect attempt
+  /// instead of using `addresses` directly (NW resolves it natively and leaves
+  /// `addresses` empty). `Ocp1NetworkAddress.address` may be a hostname or a
+  /// numeric address.
+  package let networkAddress: Ocp1NetworkAddress?
+
+  package init(
+    addresses: [AnySocketAddress] = [],
+    connectedAddress: AnySocketAddress? = nil,
+    networkAddress: Ocp1NetworkAddress? = nil
+  ) {
+    self.addresses = addresses
+    self.connectedAddress = connectedAddress
+    self.networkAddress = networkAddress
+  }
+}
+
 /// A mutable connection that targets one or more resolved socket addresses (as
 /// opposed to, say, a Mach port or a WebSocket URL). Conformers declare only the
-/// two storage cells plus the per-candidate connect; this extension derives
-/// ``deviceAddresses``, tracks the candidate actually connected to, and drives
-/// first-reachable connect — so the address-handling lives here, with the
-/// backends, rather than on the base `Ocp1Connection`.
+/// single `Mutex`-protected ``Ocp1DeviceAddressState`` cell plus the per-candidate
+/// connect; this extension derives ``deviceAddresses``, tracks the candidate
+/// actually connected to, resolves an optional hostname, and drives first-reachable
+/// connect — so the address-handling lives here, not on the base `Ocp1Connection`.
 ///
 /// `package` for now: an internal mechanism shared by the package's socket
 /// backends, not yet public API.
 package protocol Ocp1MutableSocketAddressConnection: Ocp1Connection {
-  /// Backing store for the candidate addresses, parsed, in preference order. A
-  /// `Mutex` (not actor isolation) because `deviceAddresses` is read and written
-  /// `nonisolated`, off the `@OcaConnection` actor.
-  nonisolated var _deviceAddresses: Mutex<[AnySocketAddress]> { get }
-
-  /// Backing store for the candidate actually connected to (`nil` while
-  /// disconnected). A `Mutex` because it is written from the connect path (the
-  /// chosen candidate can change across reconnects) and read `nonisolated` by the
-  /// presentation accessors.
-  nonisolated var _connectedDeviceAddress: Mutex<AnySocketAddress?> { get }
+  /// Single store for the candidate addresses, the connected candidate, and an
+  /// optional hostname. A `Mutex` (not actor isolation) because the accessors are
+  /// read and written `nonisolated`, off the `@OcaConnection` actor.
+  nonisolated var _deviceAddressState: Mutex<Ocp1DeviceAddressState> { get }
 
   /// Establish the underlying transport to a single resolved candidate. Called
   /// by ``_connectFirstReachableDeviceAddress()`` for each address in turn;
@@ -527,11 +549,11 @@ package extension Ocp1MutableSocketAddressConnection {
   /// re-resolves the live connection (`deviceAddressesDidChange()`), an unchanged
   /// set is a no-op.
   nonisolated var deviceAddresses: [AnySocketAddress] {
-    get { _deviceAddresses.criticalValue }
+    get { _deviceAddressState.criticalValue.addresses }
     set {
-      let changed = _deviceAddresses.withLock { stored -> Bool in
-        guard stored != newValue else { return false }
-        stored = newValue
+      let changed = _deviceAddressState.withLock { state -> Bool in
+        guard state.addresses != newValue else { return false }
+        state.addresses = newValue
         return true
       }
       if changed { deviceAddressesDidChange() }
@@ -541,7 +563,7 @@ package extension Ocp1MutableSocketAddressConnection {
   /// Single-address convenience over ``deviceAddresses``: reads the preferred
   /// (first) candidate; writing replaces the whole set with the one address.
   nonisolated var deviceAddress: AnySocketAddress? {
-    get { _deviceAddresses.criticalValue.first }
+    get { _deviceAddressState.criticalValue.addresses.first }
     set { deviceAddresses = newValue.map { [$0] } ?? [] }
   }
 
@@ -549,7 +571,12 @@ package extension Ocp1MutableSocketAddressConnection {
   /// `deviceAddresses.first` if the preferred address was unreachable. `nil`
   /// while disconnected.
   nonisolated var connectedDeviceAddress: AnySocketAddress? {
-    _connectedDeviceAddress.criticalValue
+    _deviceAddressState.criticalValue.connectedAddress
+  }
+
+  /// The host:port this connection resolves, if any.
+  nonisolated var _deviceNetworkAddress: Ocp1NetworkAddress? {
+    _deviceAddressState.criticalValue.networkAddress
   }
 
   // MARK: `Data`-valued convenience for compatibility with callers that work in
@@ -565,37 +592,56 @@ package extension Ocp1MutableSocketAddressConnection {
 
 package extension Ocp1MutableSocketAddressConnection {
   /// The address currently in use: the connected candidate while connected,
-  /// otherwise the preferred (first) candidate. Use this — not
-  /// `deviceAddresses.first` — for any accessor that describes the live
+  /// otherwise the preferred (first) candidate, read under one lock. Use this —
+  /// not `deviceAddresses.first` — for any accessor that describes the live
   /// connection, so a connect that failed over to a non-preferred address is
   /// reported accurately.
   nonisolated var _currentSocketAddress: AnySocketAddress? {
-    _connectedDeviceAddress.criticalValue ?? _deviceAddresses.criticalValue.first
+    _deviceAddressState.withLock { $0.connectedAddress ?? $0.addresses.first }
   }
 
-  /// Numeric presentation ("host:port"/"[v6]:port") of the address currently in
-  /// use, for `connectionPrefix` and logging.
+  /// Numeric presentation of the address currently in use, for `connectionPrefix`
+  /// and logging. A hostname connection reports its (stable) `host:port` so its
+  /// identity doesn't churn as resolution changes the underlying address.
   nonisolated var _currentPresentationAddress: String {
-    _currentSocketAddress?._presentationAddress ?? "<unknown>"
+    _deviceAddressState.withLock { state in
+      if let networkAddress = state.networkAddress {
+        return "\(networkAddress.address):\(networkAddress.port)"
+      }
+      return (state.connectedAddress ?? state.addresses.first)?._presentationAddress ?? "<unknown>"
+    }
   }
 
   nonisolated func _clearConnectedDeviceAddress() {
-    _connectedDeviceAddress.withLock { $0 = nil }
+    _deviceAddressState.withLock { $0.connectedAddress = nil }
   }
 
-  /// Connect to the first candidate in ``deviceAddresses`` for which
-  /// ``_connectDevice(to:)`` succeeds, trying each in preference order, and
-  /// record it as ``connectedDeviceAddress``. The overall connect budget
-  /// (`_connectionTimeout`, applied by `_connectDeviceWithTimeout`) is divided
-  /// across the candidates, so a black-holed early address (SYN dropped, no RST)
-  /// cannot consume the whole budget before the next candidate is tried. The
+  /// Connect to the first reachable candidate, trying each in preference order
+  /// and recording it as ``connectedDeviceAddress``. If a hostname is set it is
+  /// re-resolved (off-actor) first, so a device absent at launch or one that
+  /// moved is picked up on a later attempt. The overall connect budget
+  /// (`_connectionTimeout`) is divided across the candidates, so a black-holed
+  /// early address can't consume the whole budget before the next is tried. The
   /// real connect *is* the reachability test — there is no separate probe.
   @OcaConnection
   func _connectFirstReachableDeviceAddress() async throws {
-    let candidates = _deviceAddresses.criticalValue
-    guard !candidates.isEmpty else { throw Ocp1Error.notConnected }
+    if let networkAddress = _deviceNetworkAddress {
+      // Re-resolve off the actor on each attempt. Set directly (not via the
+      // `deviceAddresses` setter) so it doesn't fire `deviceAddressesDidChange()`
+      // mid-connect.
+      let resolved = await _resolveDeviceAddresses(
+        host: networkAddress.address,
+        port: networkAddress.port,
+        isDatagram: isDatagram
+      )
+      _deviceAddressState.withLock { $0.addresses = resolved }
+    }
 
-    _connectedDeviceAddress.withLock { $0 = nil }
+    let candidates = _deviceAddressState.withLock { state -> [AnySocketAddress] in
+      state.connectedAddress = nil
+      return state.addresses
+    }
+    guard !candidates.isEmpty else { throw Ocp1Error.notConnected }
 
     // Single candidate: rely on the outer `_connectDeviceWithTimeout`. Multiple:
     // give each an equal slice so their sum fits the outer budget (which would
@@ -614,7 +660,7 @@ package extension Ocp1MutableSocketAddressConnection {
         } else {
           try await _connectDevice(to: deviceAddress)
         }
-        _connectedDeviceAddress.withLock { $0 = deviceAddress }
+        _deviceAddressState.withLock { $0.connectedAddress = deviceAddress }
         if candidates.count > 1 {
           logger.debug("connectDevice: connected to \(deviceAddress._presentationAddress)")
         }

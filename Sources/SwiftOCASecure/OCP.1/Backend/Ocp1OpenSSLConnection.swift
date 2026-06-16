@@ -48,8 +48,7 @@ fileprivate extension Errno {
 /// `Ocp1OpenSSLEngine` only sees the memory BIO pair we pump.
 public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
   private let _ring: IORing
-  package let _deviceAddresses: Mutex<[AnySocketAddress]>
-  package let _connectedDeviceAddress = Mutex<AnySocketAddress?>(nil)
+  package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
   private let _socket: Mutex<Socket?> = .init(nil)
   private let _credential: Ocp1TLSCredential
   private let _engine: Ocp1OpenSSLEngine
@@ -62,7 +61,7 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
   override public var hasTransportLayerSecurity: Bool { true }
 
   private init(
-    socketAddresses: [any SocketAddress],
+    addressState: Ocp1DeviceAddressState,
     credential: Ocp1TLSCredential,
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
@@ -70,7 +69,7 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
     options: Ocp1ConnectionOptions,
     ring: IORing
   ) throws {
-    _deviceAddresses = Mutex(socketAddresses.map { AnySocketAddress($0) })
+    _deviceAddressState = Mutex(addressState)
     _ring = ring
     _credential = credential
     let verifyPeer = !options.flags.contains(.disableCertificateVerification)
@@ -95,7 +94,7 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
     ring: IORing = .shared
   ) throws {
     try self.init(
-      socketAddresses: [deviceAddress.socketAddress],
+      addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(deviceAddress.socketAddress)]),
       credential: credential,
       hostname: hostname,
       trustRoots: trustRoots,
@@ -115,9 +114,33 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
     ring: IORing = .shared
   ) throws {
     try self.init(
-      socketAddresses: deviceAddresses.compactMap { try? $0.socketAddress },
+      addressState: Ocp1DeviceAddressState(
+        addresses: deviceAddresses.compactMap { try? $0.socketAddress }.map { AnySocketAddress($0) }
+      ),
       credential: credential,
       hostname: hostname,
+      trustRoots: trustRoots,
+      revocation: revocation,
+      options: options,
+      ring: ring
+    )
+  }
+
+  /// Connect to `host`:`port`, resolved to candidate addresses on each connect
+  /// attempt. `host` is also the TLS server name (SNI / certificate verification).
+  public convenience init(
+    host: String,
+    port: UInt16,
+    credential: Ocp1TLSCredential,
+    trustRoots: Ocp1TLSTrustRoots? = nil,
+    revocation: Ocp1TLSRevocationOptions = .disabled,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    ring: IORing = .shared
+  ) throws {
+    try self.init(
+      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      credential: credential,
+      hostname: host,
       trustRoots: trustRoots,
       revocation: revocation,
       options: options,
@@ -132,10 +155,10 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
     ring: IORing = .shared
   ) throws {
     try self.init(
-      socketAddresses: [sockaddr_un(
+      addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(sockaddr_un(
         family: sa_family_t(AF_LOCAL),
         presentationAddress: path
-      )],
+      ))]),
       credential: credential,
       hostname: nil,
       trustRoots: nil,

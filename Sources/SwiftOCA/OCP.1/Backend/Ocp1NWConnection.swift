@@ -67,8 +67,7 @@ private extension SocketAddress {
 }
 
 open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
-  package let _deviceAddresses: Mutex<[AnySocketAddress]>
-  package let _connectedDeviceAddress = Mutex<AnySocketAddress?>(nil)
+  package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
   package var _queue: DispatchQueue!
   package var _nwConnection: NWConnection!
 
@@ -86,10 +85,10 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
   }
 
   package init(
-    deviceAddresses: [AnySocketAddress],
+    addressState: Ocp1DeviceAddressState,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    _deviceAddresses = Mutex(deviceAddresses)
+    _deviceAddressState = Mutex(addressState)
     super.init(options: options)
     _nwConnection = try NWConnection(to: nwEndpoint, using: parameters)
     Self._installPostReadyStateHandler(_nwConnection) { [weak self] in
@@ -116,8 +115,10 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
     deviceAddress: Data,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    let deviceAddress = try AnySocketAddress(bytes: Array(deviceAddress))
-    try self.init(deviceAddresses: [deviceAddress], options: options)
+    try self.init(
+      addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(bytes: Array(deviceAddress))]),
+      options: options
+    )
   }
 
   public convenience init(
@@ -125,7 +126,23 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
     try self.init(
-      deviceAddresses: deviceAddresses.compactMap { try? AnySocketAddress(bytes: Array($0)) },
+      addressState: Ocp1DeviceAddressState(
+        addresses: deviceAddresses.compactMap { try? AnySocketAddress(bytes: Array($0)) }
+      ),
+      options: options
+    )
+  }
+
+  /// Connect to `host`:`port`, resolved natively by Network.framework (which
+  /// applies Happy Eyeballs across the A/AAAA records itself). The name is not
+  /// pre-resolved, so an absent device is retried by the reconnect machinery.
+  public convenience init(
+    host: String,
+    port: UInt16,
+    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+  ) throws {
+    try self.init(
+      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
       options: options
     )
   }
@@ -134,11 +151,13 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
     path: String,
     options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
   ) throws {
-    let deviceAddress = try AnySocketAddress(
-      family: sa_family_t(AF_LOCAL),
-      presentationAddress: path
+    try self.init(
+      addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(
+        family: sa_family_t(AF_LOCAL),
+        presentationAddress: path
+      )]),
+      options: options
     )
-    try self.init(deviceAddresses: [deviceAddress], options: options)
   }
 
   private func _cleanupConnection() throws {
@@ -154,14 +173,31 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
     if _nwConnection.state != .setup {
       try _cleanupConnection()
     }
-    try await _connectFirstReachableDeviceAddress()
+    if let networkAddress = _deviceNetworkAddress {
+      // Native path: hand NW the hostname and let it resolve and apply Happy
+      // Eyeballs across the A/AAAA records, rather than pre-resolving ourselves.
+      try await _connectDevice(to: Self._nwEndpoint(for: networkAddress))
+    } else {
+      try await _connectFirstReachableDeviceAddress()
+    }
     try await super.connectDevice()
   }
 
   package func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
     // Rebuild the connection for this specific candidate; NW is given a resolved
     // endpoint, so each candidate needs its own `NWConnection`.
-    let endpoint = try deviceAddress.asNWEndpoint()
+    try await _connectDevice(to: deviceAddress.asNWEndpoint())
+  }
+
+  /// The host:port endpoint for native (NW-resolved) connections.
+  fileprivate nonisolated static func _nwEndpoint(for networkAddress: Ocp1NetworkAddress) -> NWEndpoint {
+    NWEndpoint.hostPort(
+      host: .name(networkAddress.address, nil),
+      port: NWEndpoint.Port(integerLiteral: networkAddress.port)
+    )
+  }
+
+  private func _connectDevice(to endpoint: NWEndpoint) async throws {
     _nwConnection = try NWConnection(to: endpoint, using: parameters)
     let connection = _nwConnection!
     do {
@@ -280,7 +316,11 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
   /// `_connectDevice(to:)` builds an endpoint per candidate.
   open nonisolated var nwEndpoint: NWEndpoint {
     get throws {
-      guard let first = _deviceAddresses.criticalValue.first else {
+      let state = _deviceAddressState.criticalValue
+      if let networkAddress = state.networkAddress {
+        return Self._nwEndpoint(for: networkAddress)
+      }
+      guard let first = state.connectedAddress ?? state.addresses.first else {
         throw Ocp1Error.notConnected
       }
       return try first.asNWEndpoint()
