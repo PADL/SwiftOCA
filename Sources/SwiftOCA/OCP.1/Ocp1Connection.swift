@@ -267,7 +267,7 @@ open class Ocp1Connection: CustomStringConvertible {
   public let connectionState: AnyAsyncSequence<Ocp1ConnectionState>
 
   /// Object interning
-  var objects = [OcaONo: OcaRoot]()
+  var objects = OcaObjectCache()
 
   /// Root block, immutable
   public let rootBlock = OcaBlock(objectNumber: OcaRootBlockONo)
@@ -444,7 +444,7 @@ open class Ocp1Connection: CustomStringConvertible {
   open func connectDevice() async throws {}
 
   public func clearObjectCache() async {
-    objects = [:]
+    objects.removeAll()
   }
 
   open func disconnectDevice() async throws {}
