@@ -148,25 +148,16 @@ extension OcaNetworkAdvertisingServiceInfo {
 /// ```
 ///
 /// ## Type Safety
-/// The wrapper preserves the original type's equality and hashing semantics by storing
-/// type-specific closures, ensuring that equality comparisons work correctly even when
-/// comparing services of different underlying types.
+/// The wrapper preserves the original type's equality and hashing semantics by dispatching
+/// directly on the boxed existential, ensuring that equality comparisons work correctly even
+/// when comparing services of different underlying types.
 public struct AnyOcaNetworkAdvertisingServiceInfo: OcaNetworkAdvertisingServiceInfo,
   @unchecked Sendable
 {
   private let _service: any OcaNetworkAdvertisingServiceInfo
-  private let _equals: (any OcaNetworkAdvertisingServiceInfo) -> Bool
-  private let _hash: (inout Hasher) -> ()
 
   public init<T: OcaNetworkAdvertisingServiceInfo>(_ service: T) {
     _service = service
-    _equals = { other in
-      guard let otherTyped = other as? T else { return false }
-      return service == otherTyped
-    }
-    _hash = { hasher in
-      service.hash(into: &hasher)
-    }
   }
 
   public var service: OcaNetworkAdvertisingService {
@@ -217,11 +208,18 @@ public struct AnyOcaNetworkAdvertisingServiceInfo: OcaNetworkAdvertisingServiceI
     lhs: AnyOcaNetworkAdvertisingServiceInfo,
     rhs: AnyOcaNetworkAdvertisingServiceInfo
   ) -> Bool {
-    lhs._equals(rhs._service)
+    lhs._service._isEqual(to: rhs._service)
   }
 
   public func hash(into hasher: inout Hasher) {
-    _hash(&hasher)
+    _service.hash(into: &hasher)
+  }
+}
+
+extension OcaNetworkAdvertisingServiceInfo {
+  fileprivate func _isEqual(to other: any OcaNetworkAdvertisingServiceInfo) -> Bool {
+    guard let other = other as? Self else { return false }
+    return self == other
   }
 }
 
