@@ -22,6 +22,38 @@ var PlatformTargetDependencies: [Target.Dependency] = []
 // packages are not declared as package dependencies (the secure targets are
 // compiled with the Linux OpenSSL/IORing code paths #if'd out).
 var SecureLinuxTargetDependencies: [Target.Dependency] = []
+// Opt-in SwiftNIO + NIOSSL deps for the cross-platform NIO TLS backend in
+// SwiftOCASecure / SwiftOCASecureDevice. Gated by the `SwiftNIOBackend` trait
+// which is NOT in the default set; default builds do not fetch swift-nio.
+let SecureNIOTargetDependencies: [Target.Dependency] = [
+  .product(
+    name: "NIOCore",
+    package: "swift-nio",
+    condition: .when(traits: ["SwiftNIOBackend"])
+  ),
+  .product(
+    name: "NIOPosix",
+    package: "swift-nio",
+    condition: .when(traits: ["SwiftNIOBackend"])
+  ),
+  .product(
+    name: "NIOTLS",
+    package: "swift-nio",
+    condition: .when(traits: ["SwiftNIOBackend"])
+  ),
+  .product(
+    name: "NIOSSL",
+    package: "swift-nio-ssl",
+    condition: .when(traits: ["SwiftNIOBackend"])
+  ),
+  // For SHA-256 peer-cert fingerprints. On Apple, `Crypto` re-exports
+  // `CryptoKit`; on Linux it ships its own implementation.
+  .product(
+    name: "Crypto",
+    package: "swift-crypto",
+    condition: .when(traits: ["SwiftNIOBackend"])
+  ),
+]
 let PlatformProducts: [Product]
 let PlatformTargets: [Target]
 
@@ -153,6 +185,9 @@ let CommonPackageDependencies: [Package.Dependency] = [
   .package(url: "https://github.com/Flight-School/AnyCodable", from: "0.6.7"),
   .package(url: "https://github.com/1024jp/GzipSwift", from: "6.1.0"),
   .package(url: "https://github.com/stephencelis/SQLite.swift.git", from: "0.16.0"),
+  .package(url: "https://github.com/apple/swift-nio", from: "2.65.0"),
+  .package(url: "https://github.com/apple/swift-nio-ssl", from: "2.27.0"),
+  .package(url: "https://github.com/apple/swift-crypto", from: "3.6.0"),
 ]
 
 let CommonProducts: [Product] = [
@@ -213,7 +248,7 @@ let CommonTargets: [Target] = [
       "SwiftOCA",
       "SocketAddress",
       .product(name: "Logging", package: "swift-log"),
-    ] + SecureLinuxTargetDependencies,
+    ] + SecureLinuxTargetDependencies + SecureNIOTargetDependencies,
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),
     ]
@@ -256,7 +291,7 @@ let CommonTargets: [Target] = [
       .product(name: "Logging", package: "swift-log"),
       .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
       "AsyncExtensions",
-    ] + SecureLinuxTargetDependencies,
+    ] + SecureLinuxTargetDependencies + SecureNIOTargetDependencies,
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),
     ]
@@ -345,6 +380,10 @@ let package = Package(
   traits: [
     .default(enabledTraits: ["NonEmbeddedBuild"]),
     .init(name: "NonEmbeddedBuild", description: "Default build footprint"),
+    .init(
+      name: "SwiftNIOBackend",
+      description: "Opt-in SwiftNIO + NIOSSL TLS backend for SwiftOCASecure[Device] (TCP, cert credentials only)"
+    ),
   ],
   dependencies: CommonPackageDependencies + PlatformPackageDependencies,
   targets: CommonTargets + PlatformTargets
