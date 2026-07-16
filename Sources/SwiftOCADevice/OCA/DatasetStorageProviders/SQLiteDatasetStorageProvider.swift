@@ -42,7 +42,21 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     deviceDelegate: OcaDevice?
   ) throws {
     let db = try Connection(path)
-    try db.run("PRAGMA auto_vacuum = INCREMENTAL")
+    // Tuned for frequent writes to flash storage with limited write cycles.
+    // auto_vacuum must be set before any table is created; it only takes effect
+    // on newly created databases (existing databases keep the mode they were
+    // created with), so NONE avoids pointer-map maintenance on every write for
+    // new databases without requiring a migration VACUUM of deployed ones.
+    try db.run("PRAGMA auto_vacuum = NONE")
+    // WAL batches main-database writes into checkpoints, roughly halving write
+    // amplification versus the rollback journal, while synchronous = FULL keeps
+    // every committed write durable across a power cut (the WAL is fsynced on
+    // each commit and replayed on recovery).
+    try db.run("PRAGMA journal_mode = WAL")
+    try db.run("PRAGMA synchronous = FULL")
+    // Wait rather than fail immediately if an external tool (e.g. the sqlite3
+    // CLI) briefly holds a lock.
+    try db.run("PRAGMA busy_timeout = 5000")
     _db = SendableConnectionBox(db)
     self.validDatasetONos = validDatasetONos
     self.validBlockONos = validBlockONos
@@ -266,8 +280,9 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
       throw Ocp1Error.unknownDataset
     }
 
-    try db.run("PRAGMA incremental_vacuum")
-
+    // Deliberately not reclaiming freed pages here: incremental_vacuum on every
+    // delete moves pages and truncates the file, costing extra flash writes. The
+    // dataset ONo space is small and bounded, so freed pages are simply reused.
     try? await deviceDelegate?.deregister(objectNumber: datasetONo)
   }
 }
