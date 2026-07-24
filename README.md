@@ -62,22 +62,37 @@ A Flutter wrapper is available [here](https://github.com/PADL/FlutterSwiftOCA).
 
 ![OCABrowser](Documentation/OCABrowser.png)
 
-### Walking the device tree
+### Connecting to a device
 
-Connect to a device and recursively print the role path of every object:
+A connection can be constructed from a hostname (or IP literal) and port. The name
+is resolved on each connect attempt — `getaddrinfo` for the socket backends, or
+natively by Network.framework (with Happy Eyeballs across the A/AAAA records) for
+`Ocp1NWConnection` — so a device whose address changes, or that is not yet
+reachable, is picked up automatically by the reconnection machinery:
 
 ```swift
 import SwiftOCA
 
-let connection = try await Ocp1TCPConnection(deviceAddress: deviceAddress)
+let connection = try await Ocp1TCPConnection(
+  host: "mixer.local",
+  port: 65000,
+  options: Ocp1ConnectionOptions(flags: [.automaticReconnect])
+)
 try await connection.connect()
+```
 
+Alternatively, construct a connection from a resolved socket address (`deviceAddress`)
+when you already have one — for example from an `OcaConnectionBroker` discovery event.
+
+### Walking the device tree
+
+Given a connected `connection`, recursively print the role path of every object:
+
+```swift
 for actionObject in try await connection.rootBlock.resolveActionObjectsRecursive()
   .compactMap({ $0.memberObject as? OcaOwnable }) {
   try? await print("- \(actionObject.rolePathString)")
 }
-
-try? await connection.disconnect()
 ```
 
 ### Observing property changes
@@ -85,11 +100,6 @@ try? await connection.disconnect()
 Subscribe to a gain property and react to changes:
 
 ```swift
-import SwiftOCA
-
-let connection = try await Ocp1TCPConnection(deviceAddress: deviceAddress)
-try await connection.connect()
-
 let gain = try await connection.resolve(object: OcaGain.self, objectNumber: gainONo)
 for try await value in gain.$gain {
   print("gain changed to \(value) dB")
