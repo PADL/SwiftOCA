@@ -139,5 +139,16 @@ public enum EventBenchmark {
       let m = try decodeMessagePdu(batchedPdu)
       guard m.count == 8 else { throw Failure.messageCount(m.count) }
     }
+
+    try benchmark(tag: "encodeMessagePdu(1 notification)") {
+      let d: Data = try Ocp1Connection.encodeOcp1MessagePdu([aNotification], type: .ocaNtf1)
+      guard d.count == notificationPdu.count else { throw Failure.data((d, notificationPdu)) }
+    }
+
+    let batch = [Ocp1Message](repeating: aNotification, count: 8)
+    try benchmark(tag: "encodeMessagePdu(8 notifications)") {
+      let d: Data = try Ocp1Connection.encodeOcp1MessagePdu(batch, type: .ocaNtf1)
+      guard d.count == batchedPdu.count else { throw Failure.data((d, batchedPdu)) }
+    }
   }
 }

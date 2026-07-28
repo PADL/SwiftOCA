@@ -54,7 +54,8 @@ public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
   func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: responseSize.bigEndian) { bytes += $0 }
     withUnsafeBytes(of: handle.bigEndian) { bytes += $0 }
-    bytes += [statusCode.rawValue]
-    bytes += [parameters.parameterCount] + parameters.parameterData
+    bytes.append(statusCode.rawValue)
+    bytes.append(parameters.parameterCount)
+    bytes.append(contentsOf: parameters.parameterData)
   }
 }

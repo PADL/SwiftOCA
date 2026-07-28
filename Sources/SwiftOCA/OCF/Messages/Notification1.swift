@@ -37,7 +37,7 @@ public struct Ocp1EventData: Codable, Sendable, _Ocp1Codable {
 
   func encode(into bytes: inout [UInt8]) {
     event.encode(into: &bytes)
-    bytes += eventParameters
+    bytes.append(contentsOf: eventParameters)
   }
 }
 
@@ -59,7 +59,7 @@ public struct Ocp1NtfParams: Codable, Sendable, _Ocp1Codable {
   }
 
   func encode(into bytes: inout [UInt8]) {
-    bytes += [parameterCount]
+    bytes.append(parameterCount)
     context.encode(into: &bytes)
     eventData.encode(into: &bytes)
   }

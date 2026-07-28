@@ -89,7 +89,7 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
   func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: notificationSize.bigEndian) { bytes += $0 }
     event.encode(into: &bytes)
-    bytes += [notificationType.rawValue]
-    bytes += data
+    bytes.append(notificationType.rawValue)
+    bytes.append(contentsOf: data)
   }
 }

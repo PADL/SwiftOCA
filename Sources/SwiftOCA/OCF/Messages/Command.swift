@@ -74,6 +74,7 @@ public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
     withUnsafeBytes(of: handle.bigEndian) { bytes += $0 }
     withUnsafeBytes(of: targetONo.bigEndian) { bytes += $0 }
     methodID.encode(into: &bytes)
-    bytes += [parameters.parameterCount] + parameters.parameterData
+    bytes.append(parameters.parameterCount)
+    bytes.append(contentsOf: parameters.parameterData)
   }
 }

@@ -36,11 +36,8 @@ extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Encodable {
   @_spi(SwiftOCAPrivate) @inlinable
   public func encode(into bytes: inout [UInt8]) {
     propertyID.encode(into: &bytes)
-    var packedValue: UInt32 = propertyValue.bitPattern.bigEndian
-    withUnsafeBytes(of: &packedValue) {
-      bytes += $0
-    }
-    bytes += [changeType.rawValue]
+    withUnsafeBytes(of: propertyValue.bitPattern.bigEndian) { bytes.append(contentsOf: $0) }
+    bytes.append(changeType.rawValue)
   }
 }
 
