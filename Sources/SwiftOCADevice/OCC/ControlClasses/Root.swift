@@ -29,7 +29,7 @@ extension OcaController {
 @OcaDevice
 open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPathRepresentable {
   open nonisolated class var classID: OcaClassID { OcaClassID("1") }
-  open nonisolated class var classVersion: OcaClassVersionNumber { 2 }
+  open nonisolated class var classVersion: OcaClassVersionNumber { 3 }
 
   public nonisolated let objectNumber: OcaONo
   public nonisolated let lockable: OcaBoolean
