@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -91,6 +91,7 @@ public class OcaClassRegistry {
     try register(OcaGroup.self)
     try register(OcaCounterNotifier.self)
     try register(OcaCounterSetAgent.self)
+    try register(OcaPowerSupply.self)
 
     // managers
     try register(OcaManager.self)
@@ -140,6 +141,19 @@ public class OcaClassRegistry {
     try register(OcaPanBalance.self)
     try register(OcaPolarity.self)
     try register(OcaSwitch.self)
+    try register(OcaDelay.self)
+    try register(OcaDelayExtended.self)
+    try register(OcaTemperatureActuator.self)
+    try register(OcaSamplingRateConverter.self)
+    try register(OcaSignalGenerator.self)
+    try register(OcaFilterClassical.self)
+    try register(OcaFilterParametric.self)
+    try register(OcaFilterPolynomial.self)
+    try register(OcaFilterFIR.self)
+    try register(OcaFilterArbitraryCurve.self)
+    try register(OcaDynamics.self)
+    try register(OcaDynamicsDetector.self)
+    try register(OcaDynamicsCurve.self)
 
     // sensors
     try register(OcaSensor.self)
@@ -159,6 +173,14 @@ public class OcaClassRegistry {
     try register(OcaLevelSensor.self)
     try register(OcaIdentificationSensor.self)
     try register(OcaTemperatureSensor.self)
+    try register(OcaTimeIntervalSensor.self)
+    try register(OcaFrequencySensor.self)
+    try register(OcaVoltageSensor.self)
+    try register(OcaCurrentSensor.self)
+    try register(OcaImpedanceSensor.self)
+    try register(OcaGainSensor.self)
+    try register(OcaPowerSensor.self)
+    try register(OcaStateSensor.self)
 
     // application networks
     try register(OcaControlNetwork.self)

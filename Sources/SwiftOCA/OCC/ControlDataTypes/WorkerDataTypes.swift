@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -23,9 +23,18 @@ public typealias OcaDBz = OcaDB
 public typealias OcaVoltage = OcaFloat32
 public typealias OcaCurrent = OcaFloat32
 
-public struct OcaImpedance: Codable, Sendable {
-  let magnitude: OcaFloat32
-  let phase: OcaFloat32
+public struct OcaImpedance: Codable, Comparable, Equatable, Sendable {
+  public let magnitude: OcaFloat32
+  public let phase: OcaFloat32
+
+  public init(magnitude: OcaFloat32, phase: OcaFloat32) {
+    self.magnitude = magnitude
+    self.phase = phase
+  }
+
+  public static func < (lhs: Self, rhs: Self) -> Bool {
+    (lhs.magnitude, lhs.phase) < (rhs.magnitude, rhs.phase)
+  }
 }
 
 public enum OcaDelayUnit: OcaUint8, Codable, Sendable, CaseIterable {
@@ -39,22 +48,47 @@ public enum OcaDelayUnit: OcaUint8, Codable, Sendable, CaseIterable {
   case feet = 8
 }
 
-public struct OcaDelayValue: Codable, Sendable {
-  let delayValue: OcaFloat32
-  let delayUnit: OcaDelayUnit
+public struct OcaDelayValue: Codable, Comparable, Equatable, Sendable {
+  public let delayValue: OcaFloat32
+  public let delayUnit: OcaDelayUnit
+
+  public init(delayValue: OcaFloat32, delayUnit: OcaDelayUnit) {
+    self.delayValue = delayValue
+    self.delayUnit = delayUnit
+  }
+
+  /// Note that ordering is only meaningful for values sharing the same unit of measure;
+  /// the AES70 bounds returned by `OcaDelayExtended.GetDelayValue()` always do.
+  public static func < (lhs: Self, rhs: Self) -> Bool {
+    (lhs.delayUnit.rawValue, lhs.delayValue) < (rhs.delayUnit.rawValue, rhs.delayValue)
+  }
 }
 
 public typealias OcaFrequency = OcaFloat32
 
 public typealias OcaFrequencyResponse = OcaMap<OcaFrequency, OcaDB>
 
-public struct OcaTransferFunction: Codable, Sendable {
-  var frequency: OcaList<OcaFrequency>
-  var amplitude: OcaList<OcaFloat32>
-  var phase: OcaList<OcaFloat32>
+public struct OcaTransferFunction: Codable, Equatable, Sendable {
+  public var frequency: OcaList<OcaFrequency>
+  public var amplitude: OcaList<OcaFloat32>
+  public var phase: OcaList<OcaFloat32>
+
+  public init(
+    frequency: OcaList<OcaFrequency> = [],
+    amplitude: OcaList<OcaFloat32> = [],
+    phase: OcaList<OcaFloat32> = []
+  ) {
+    self.frequency = frequency
+    self.amplitude = amplitude
+    self.phase = phase
+  }
 }
 
 public typealias OcaPeriod = OcaUint32 // ms
+
+/// Bitmask selecting which parameters a `SetMultiple()` method applies. Bit numbering is
+/// defined by AES70 on a per-class basis; refer to the class definition.
+public typealias OcaParameterMask = OcaBitSet16
 
 public enum OcaClassicalFilterShape: OcaUint8, Codable, Sendable, CaseIterable {
   case butterworth = 1

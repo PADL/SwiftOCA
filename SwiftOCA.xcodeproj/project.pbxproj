@@ -109,8 +109,6 @@
 		D3527EC72F00DA0100000044 /* AsyncAlgorithms in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E1ED2A3ACB0700BF7095 /* AsyncAlgorithms */; };
 		D3527EC72F00DA0100000045 /* AsyncExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */; };
 		D3527EC72F00DA0100000062 /* Crypto in Frameworks */ = {isa = PBXBuildFile; productRef = D3527EC72F00DA0100000061 /* Crypto */; };
-		D3527EC72F00DA01000000B2 /* BinaryParsing in Frameworks */ = {isa = PBXBuildFile; productRef = D3527EC72F00DA01000000B1 /* BinaryParsing */; };
-		D3527EC72F00DA01000000B3 /* BinaryParsing in Frameworks */ = {isa = PBXBuildFile; productRef = D3527EC72F00DA01000000B1 /* BinaryParsing */; };
 		D3527EC72F00DA0100000071 /* BackendConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3527EC72F00DA0100000070 /* BackendConnectionTests.swift */; };
 		D3527EC72F00DA0100000073 /* FileDatasetStorageProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3527EC72F00DA0100000072 /* FileDatasetStorageProviderTests.swift */; };
 		D3527EC72F00DA0100000075 /* KeepAliveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3527EC72F00DA0100000074 /* KeepAliveTests.swift */; };
@@ -126,6 +124,8 @@
 		D3527EC72F00DA0100000090 /* FlyingSocks in Frameworks */ = {isa = PBXBuildFile; productRef = D33B52D32A706FD7001A1BA7 /* FlyingSocks */; };
 		D3527EC72F00DA0100000091 /* FlyingFox in Frameworks */ = {isa = PBXBuildFile; productRef = D3B325042B4F677700C8335F /* FlyingFox */; };
 		D3527EC72F00DA01000000A1 /* Ocp1NWDatagramDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3527EC72F00DA01000000A0 /* Ocp1NWDatagramDeviceEndpoint.swift */; };
+		D3527EC72F00DA01000000B2 /* BinaryParsing in Frameworks */ = {isa = PBXBuildFile; productRef = D3527EC72F00DA01000000B1 /* BinaryParsing */; };
+		D3527EC72F00DA01000000B3 /* BinaryParsing in Frameworks */ = {isa = PBXBuildFile; productRef = D3527EC72F00DA01000000B1 /* BinaryParsing */; };
 		D355925D2B51E5FF000F633B /* DatagramProxyDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592592B51E5DB000F633B /* DatagramProxyDeviceEndpoint.swift */; };
 		D355925E2B51E604000F633B /* DatagramProxyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D355925B2B51E5DF000F633B /* DatagramProxyController.swift */; };
 		D35592602B520DFC000F633B /* ControllerDefaultSubscribing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */; };
@@ -317,6 +317,36 @@
 		D3E741482D56331F0044CCBB /* TemperatureSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E741472D56331F0044CCBB /* TemperatureSensor.swift */; };
 		D3E7414A2D5633740044CCBB /* TemperatureSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E741492D5633740044CCBB /* TemperatureSensor.swift */; };
 		D3E820E62DFBEF0C001C9DC8 /* Ocp1NWConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E820E52DFBEF0C001C9DC8 /* Ocp1NWConnection.swift */; };
+		D3EC0562301975FF0042AE48 /* Dynamics.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC055D301975FE0042AE48 /* Dynamics.swift */; };
+		D3EC0563301975FF0042AE48 /* Filters.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC055E301975FE0042AE48 /* Filters.swift */; };
+		D3EC0564301975FF0042AE48 /* Delay.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC055C301975FE0042AE48 /* Delay.swift */; };
+		D3EC0565301975FF0042AE48 /* SignalGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC0560301975FE0042AE48 /* SignalGenerator.swift */; };
+		D3EC0566301975FF0042AE48 /* TemperatureActuator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC0561301975FE0042AE48 /* TemperatureActuator.swift */; };
+		D3EC0567301975FF0042AE48 /* SamplingRateConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC055F301975FE0042AE48 /* SamplingRateConverter.swift */; };
+		D3EC056E3019762B0042AE48 /* SamplingRateConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC056B3019762B0042AE48 /* SamplingRateConverter.swift */; };
+		D3EC056F3019762B0042AE48 /* Delay.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05683019762B0042AE48 /* Delay.swift */; };
+		D3EC05703019762B0042AE48 /* Dynamics.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05693019762B0042AE48 /* Dynamics.swift */; };
+		D3EC05713019762B0042AE48 /* Filters.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC056A3019762B0042AE48 /* Filters.swift */; };
+		D3EC05723019762B0042AE48 /* TemperatureActuator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC056D3019762B0042AE48 /* TemperatureActuator.swift */; };
+		D3EC05733019762B0042AE48 /* SignalGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC056C3019762B0042AE48 /* SignalGenerator.swift */; };
+		D3EC057C3019764B0042AE48 /* FrequencySensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05753019764B0042AE48 /* FrequencySensor.swift */; };
+		D3EC057D3019764B0042AE48 /* StateSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05793019764B0042AE48 /* StateSensor.swift */; };
+		D3EC057E3019764B0042AE48 /* ImpedanceSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05773019764B0042AE48 /* ImpedanceSensor.swift */; };
+		D3EC057F3019764B0042AE48 /* PowerSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05783019764B0042AE48 /* PowerSensor.swift */; };
+		D3EC05803019764B0042AE48 /* CurrentSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05743019764B0042AE48 /* CurrentSensor.swift */; };
+		D3EC05813019764B0042AE48 /* VoltageSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC057B3019764B0042AE48 /* VoltageSensor.swift */; };
+		D3EC05823019764B0042AE48 /* GainSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05763019764B0042AE48 /* GainSensor.swift */; };
+		D3EC05833019764B0042AE48 /* TimeIntervalSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC057A3019764B0042AE48 /* TimeIntervalSensor.swift */; };
+		D3EC058C3019765A0042AE48 /* TimeIntervalSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC058A3019765A0042AE48 /* TimeIntervalSensor.swift */; };
+		D3EC058D3019765A0042AE48 /* StateSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05893019765A0042AE48 /* StateSensor.swift */; };
+		D3EC058E3019765A0042AE48 /* GainSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05863019765A0042AE48 /* GainSensor.swift */; };
+		D3EC058F3019765A0042AE48 /* VoltageSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC058B3019765A0042AE48 /* VoltageSensor.swift */; };
+		D3EC05903019765A0042AE48 /* ImpedanceSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05873019765A0042AE48 /* ImpedanceSensor.swift */; };
+		D3EC05913019765A0042AE48 /* CurrentSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05843019765A0042AE48 /* CurrentSensor.swift */; };
+		D3EC05923019765A0042AE48 /* FrequencySensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05853019765A0042AE48 /* FrequencySensor.swift */; };
+		D3EC05933019765A0042AE48 /* PowerSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05883019765A0042AE48 /* PowerSensor.swift */; };
+		D3EC0595301976740042AE48 /* PowerSupply.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC0594301976740042AE48 /* PowerSupply.swift */; };
+		D3EC05973019767F0042AE48 /* PowerSupply.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EC05963019767F0042AE48 /* PowerSupply.swift */; };
 		D3F2942C2A95D55F00D7F0CD /* Sequence+AsyncMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */; };
 		D3F368D92F713C56008419DC /* ClassRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F368D82F713C56008419DC /* ClassRegistry.swift */; };
 		D3F369442F78BF99008419DC /* Ocp1FlyingFoxConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F369432F78BF99008419DC /* Ocp1FlyingFoxConnection.swift */; };
@@ -709,6 +739,36 @@
 		D3E741472D56331F0044CCBB /* TemperatureSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureSensor.swift; sourceTree = "<group>"; };
 		D3E741492D5633740044CCBB /* TemperatureSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureSensor.swift; sourceTree = "<group>"; };
 		D3E820E52DFBEF0C001C9DC8 /* Ocp1NWConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1NWConnection.swift; sourceTree = "<group>"; };
+		D3EC055C301975FE0042AE48 /* Delay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Delay.swift; sourceTree = "<group>"; };
+		D3EC055D301975FE0042AE48 /* Dynamics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dynamics.swift; sourceTree = "<group>"; };
+		D3EC055E301975FE0042AE48 /* Filters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Filters.swift; sourceTree = "<group>"; };
+		D3EC055F301975FE0042AE48 /* SamplingRateConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingRateConverter.swift; sourceTree = "<group>"; };
+		D3EC0560301975FE0042AE48 /* SignalGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalGenerator.swift; sourceTree = "<group>"; };
+		D3EC0561301975FE0042AE48 /* TemperatureActuator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureActuator.swift; sourceTree = "<group>"; };
+		D3EC05683019762B0042AE48 /* Delay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Delay.swift; sourceTree = "<group>"; };
+		D3EC05693019762B0042AE48 /* Dynamics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dynamics.swift; sourceTree = "<group>"; };
+		D3EC056A3019762B0042AE48 /* Filters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Filters.swift; sourceTree = "<group>"; };
+		D3EC056B3019762B0042AE48 /* SamplingRateConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingRateConverter.swift; sourceTree = "<group>"; };
+		D3EC056C3019762B0042AE48 /* SignalGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalGenerator.swift; sourceTree = "<group>"; };
+		D3EC056D3019762B0042AE48 /* TemperatureActuator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureActuator.swift; sourceTree = "<group>"; };
+		D3EC05743019764B0042AE48 /* CurrentSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentSensor.swift; sourceTree = "<group>"; };
+		D3EC05753019764B0042AE48 /* FrequencySensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrequencySensor.swift; sourceTree = "<group>"; };
+		D3EC05763019764B0042AE48 /* GainSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GainSensor.swift; sourceTree = "<group>"; };
+		D3EC05773019764B0042AE48 /* ImpedanceSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImpedanceSensor.swift; sourceTree = "<group>"; };
+		D3EC05783019764B0042AE48 /* PowerSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerSensor.swift; sourceTree = "<group>"; };
+		D3EC05793019764B0042AE48 /* StateSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateSensor.swift; sourceTree = "<group>"; };
+		D3EC057A3019764B0042AE48 /* TimeIntervalSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeIntervalSensor.swift; sourceTree = "<group>"; };
+		D3EC057B3019764B0042AE48 /* VoltageSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoltageSensor.swift; sourceTree = "<group>"; };
+		D3EC05843019765A0042AE48 /* CurrentSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentSensor.swift; sourceTree = "<group>"; };
+		D3EC05853019765A0042AE48 /* FrequencySensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrequencySensor.swift; sourceTree = "<group>"; };
+		D3EC05863019765A0042AE48 /* GainSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GainSensor.swift; sourceTree = "<group>"; };
+		D3EC05873019765A0042AE48 /* ImpedanceSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImpedanceSensor.swift; sourceTree = "<group>"; };
+		D3EC05883019765A0042AE48 /* PowerSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerSensor.swift; sourceTree = "<group>"; };
+		D3EC05893019765A0042AE48 /* StateSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateSensor.swift; sourceTree = "<group>"; };
+		D3EC058A3019765A0042AE48 /* TimeIntervalSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeIntervalSensor.swift; sourceTree = "<group>"; };
+		D3EC058B3019765A0042AE48 /* VoltageSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoltageSensor.swift; sourceTree = "<group>"; };
+		D3EC0594301976740042AE48 /* PowerSupply.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerSupply.swift; sourceTree = "<group>"; };
+		D3EC05963019767F0042AE48 /* PowerSupply.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerSupply.swift; sourceTree = "<group>"; };
 		D3F2942B2A95D55F00D7F0CD /* Sequence+AsyncMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sequence+AsyncMap.swift"; sourceTree = "<group>"; };
 		D3F368D82F713C56008419DC /* ClassRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassRegistry.swift; sourceTree = "<group>"; };
 		D3F369432F78BF99008419DC /* Ocp1FlyingFoxConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1FlyingFoxConnection.swift; sourceTree = "<group>"; };
@@ -1071,6 +1131,14 @@
 		D33B52B12A7060B4001A1BA7 /* Sensors */ = {
 			isa = PBXGroup;
 			children = (
+				D3EC05843019765A0042AE48 /* CurrentSensor.swift */,
+				D3EC05853019765A0042AE48 /* FrequencySensor.swift */,
+				D3EC05863019765A0042AE48 /* GainSensor.swift */,
+				D3EC05873019765A0042AE48 /* ImpedanceSensor.swift */,
+				D3EC05883019765A0042AE48 /* PowerSensor.swift */,
+				D3EC05893019765A0042AE48 /* StateSensor.swift */,
+				D3EC058A3019765A0042AE48 /* TimeIntervalSensor.swift */,
+				D3EC058B3019765A0042AE48 /* VoltageSensor.swift */,
 				D351F20B2A729AB3008C5513 /* Sensor.swift */,
 				D351F20D2A729AF2008C5513 /* BasicSensors.swift */,
 				D351F20F2A729C36008C5513 /* LevelSensor.swift */,
@@ -1084,6 +1152,12 @@
 		D33B52B22A7060B6001A1BA7 /* Actuators */ = {
 			isa = PBXGroup;
 			children = (
+				D3EC055C301975FE0042AE48 /* Delay.swift */,
+				D3EC055D301975FE0042AE48 /* Dynamics.swift */,
+				D3EC055E301975FE0042AE48 /* Filters.swift */,
+				D3EC055F301975FE0042AE48 /* SamplingRateConverter.swift */,
+				D3EC0560301975FE0042AE48 /* SignalGenerator.swift */,
+				D3EC0561301975FE0042AE48 /* TemperatureActuator.swift */,
 				D33B52B32A7060BC001A1BA7 /* Actuator.swift */,
 				D33B52B52A7060E0001A1BA7 /* BasicActuators.swift */,
 				D36851272EEA2700000129F3 /* IdentificationActuator.swift */,
@@ -1112,6 +1186,7 @@
 		D351F2062A72999D008C5513 /* Agents */ = {
 			isa = PBXGroup;
 			children = (
+				D3EC0594301976740042AE48 /* PowerSupply.swift */,
 				D351F2072A7299B0008C5513 /* Agent.swift */,
 				D30349E12BC803280080FF09 /* CounterNotifier.swift */,
 				D30349DB2BC67AD20080FF09 /* CounterSetAgent.swift */,
@@ -1489,6 +1564,7 @@
 		D3E6E18A2A3ACA6C00BF7095 /* Agents */ = {
 			isa = PBXGroup;
 			children = (
+				D3EC05963019767F0042AE48 /* PowerSupply.swift */,
 				D3E6E18B2A3ACA6C00BF7095 /* Agent.swift */,
 				D3A0BE7D2B71921900A5AA05 /* Group.swift */,
 				D3E6E18C2A3ACA6C00BF7095 /* EventHandler.swift */,
@@ -1526,6 +1602,14 @@
 		D3E6E18F2A3ACA6C00BF7095 /* Sensors */ = {
 			isa = PBXGroup;
 			children = (
+				D3EC05743019764B0042AE48 /* CurrentSensor.swift */,
+				D3EC05753019764B0042AE48 /* FrequencySensor.swift */,
+				D3EC05763019764B0042AE48 /* GainSensor.swift */,
+				D3EC05773019764B0042AE48 /* ImpedanceSensor.swift */,
+				D3EC05783019764B0042AE48 /* PowerSensor.swift */,
+				D3EC05793019764B0042AE48 /* StateSensor.swift */,
+				D3EC057A3019764B0042AE48 /* TimeIntervalSensor.swift */,
+				D3EC057B3019764B0042AE48 /* VoltageSensor.swift */,
 				D3E6E1902A3ACA6C00BF7095 /* Sensor.swift */,
 				D3E6E1912A3ACA6C00BF7095 /* BasicSensors.swift */,
 				D3E6E1922A3ACA6C00BF7095 /* LevelSensor.swift */,
@@ -1539,6 +1623,12 @@
 		D3E6E1962A3ACA6C00BF7095 /* Actuators */ = {
 			isa = PBXGroup;
 			children = (
+				D3EC05683019762B0042AE48 /* Delay.swift */,
+				D3EC05693019762B0042AE48 /* Dynamics.swift */,
+				D3EC056A3019762B0042AE48 /* Filters.swift */,
+				D3EC056B3019762B0042AE48 /* SamplingRateConverter.swift */,
+				D3EC056C3019762B0042AE48 /* SignalGenerator.swift */,
+				D3EC056D3019762B0042AE48 /* TemperatureActuator.swift */,
 				D36851252EEA26A6000129F3 /* IdentificationActuator.swift */,
 				D3E6E1972A3ACA6C00BF7095 /* PanBalance.swift */,
 				D3E6E1982A3ACA6C00BF7095 /* Mute.swift */,
@@ -2144,6 +2234,7 @@
 				D32229D32ABC270900B56B6B /* Ocp1IORingDeviceEndpoint.swift in Sources */,
 				D351F2082A7299B0008C5513 /* Agent.swift in Sources */,
 				D35592602B520DFC000F633B /* ControllerDefaultSubscribing.swift in Sources */,
+				D3EC0595301976740042AE48 /* PowerSupply.swift in Sources */,
 				D30349E22BC803280080FF09 /* CounterNotifier.swift in Sources */,
 				D33B52A52A702D04001A1BA7 /* Worker.swift in Sources */,
 				D3FAC8EE2B5CFE3A009E2775 /* FirmwareManager.swift in Sources */,
@@ -2153,6 +2244,12 @@
 				D3AFD35C2B30EC0600A72E9A /* CodingManager.swift in Sources */,
 				D3E7414A2D5633740044CCBB /* TemperatureSensor.swift in Sources */,
 				D351F2122A729CB0008C5513 /* TimeSource.swift in Sources */,
+				D3EC0562301975FF0042AE48 /* Dynamics.swift in Sources */,
+				D3EC0563301975FF0042AE48 /* Filters.swift in Sources */,
+				D3EC0564301975FF0042AE48 /* Delay.swift in Sources */,
+				D3EC0565301975FF0042AE48 /* SignalGenerator.swift in Sources */,
+				D3EC0566301975FF0042AE48 /* TemperatureActuator.swift in Sources */,
+				D3EC0567301975FF0042AE48 /* SamplingRateConverter.swift in Sources */,
 				D33B52AC2A702D4D001A1BA7 /* DeviceManager.swift in Sources */,
 				D355925D2B51E5FF000F633B /* DatagramProxyDeviceEndpoint.swift in Sources */,
 				D32229D62ABD26E100B56B6B /* DeviceEndpointRegistrar.swift in Sources */,
@@ -2181,6 +2278,14 @@
 				D3527EC52F00DA0100000004 /* Ocp1NWStreamController.swift in Sources */,
 				D3527EC52F00DA0100000006 /* Ocp1NWStreamDeviceEndpoint.swift in Sources */,
 				D3527EC72F00DA0100000019 /* Ocp1NWDatagramController.swift in Sources */,
+				D3EC058C3019765A0042AE48 /* TimeIntervalSensor.swift in Sources */,
+				D3EC058D3019765A0042AE48 /* StateSensor.swift in Sources */,
+				D3EC058E3019765A0042AE48 /* GainSensor.swift in Sources */,
+				D3EC058F3019765A0042AE48 /* VoltageSensor.swift in Sources */,
+				D3EC05903019765A0042AE48 /* ImpedanceSensor.swift in Sources */,
+				D3EC05913019765A0042AE48 /* CurrentSensor.swift in Sources */,
+				D3EC05923019765A0042AE48 /* FrequencySensor.swift in Sources */,
+				D3EC05933019765A0042AE48 /* PowerSensor.swift in Sources */,
 				D3527EC72F00DA01000000A1 /* Ocp1NWDatagramDeviceEndpoint.swift in Sources */,
 				D351F21C2A72A26E008C5513 /* Matrix.swift in Sources */,
 				D351F2162A729DFC008C5513 /* PolarityState.swift in Sources */,
@@ -2282,12 +2387,19 @@
 				D3E6E1C42A3ACA8C00BF7095 /* Worker.swift in Sources */,
 				D3BA711B2DE991B700A35C50 /* LengthTaggedData32.swift in Sources */,
 				D3AFD3342B2A505D00A72E9A /* AudioProcessingManager.swift in Sources */,
+				D3EC05973019767F0042AE48 /* PowerSupply.swift in Sources */,
 				D34B5FAA2B688A9A000C8DD1 /* MapProperty.swift in Sources */,
 				D3E6E1C52A3ACA8C00BF7095 /* Block.swift in Sources */,
 				D3E6E1E82A3ACAAD00BF7095 /* Data+Hex.swift in Sources */,
 				D3AFD3362B2A516C00A72E9A /* DeviceTimeManager.swift in Sources */,
 				D306556F2A5254D70083F093 /* TimeSource.swift in Sources */,
 				D301C6772BF0576200488B99 /* UnsafeMutablePointer+PropertyBasePointer.swift in Sources */,
+				D3EC056E3019762B0042AE48 /* SamplingRateConverter.swift in Sources */,
+				D3EC056F3019762B0042AE48 /* Delay.swift in Sources */,
+				D3EC05703019762B0042AE48 /* Dynamics.swift in Sources */,
+				D3EC05713019762B0042AE48 /* Filters.swift in Sources */,
+				D3EC05723019762B0042AE48 /* TemperatureActuator.swift in Sources */,
+				D3EC05733019762B0042AE48 /* SignalGenerator.swift in Sources */,
 				D3AFD3442B2CEA3800A72E9A /* LockManager.swift in Sources */,
 				D3AFD3922B41513300A72E9A /* SummingPoint.swift in Sources */,
 				D3E6E1BF2A3ACA8200BF7095 /* Header.swift in Sources */,
@@ -2363,6 +2475,14 @@
 				D3AFD37C2B32A06700A72E9A /* UnkeyedOcp1EncodingContainer.swift in Sources */,
 				D30349E02BC67E530080FF09 /* CounterNotifier.swift in Sources */,
 				D3E6E1DD2A3ACAA900BF7095 /* Array2D.swift in Sources */,
+				D3EC057C3019764B0042AE48 /* FrequencySensor.swift in Sources */,
+				D3EC057D3019764B0042AE48 /* StateSensor.swift in Sources */,
+				D3EC057E3019764B0042AE48 /* ImpedanceSensor.swift in Sources */,
+				D3EC057F3019764B0042AE48 /* PowerSensor.swift in Sources */,
+				D3EC05803019764B0042AE48 /* CurrentSensor.swift in Sources */,
+				D3EC05813019764B0042AE48 /* VoltageSensor.swift in Sources */,
+				D3EC05823019764B0042AE48 /* GainSensor.swift in Sources */,
+				D3EC05833019764B0042AE48 /* TimeIntervalSensor.swift in Sources */,
 				D36ECA212A5AEB9B0015174A /* Ocp1FlyingSocksConnection.swift in Sources */,
 				D3AFD3422B2CE91B00A72E9A /* MediaClockManager.swift in Sources */,
 				D3E6E1BB2A3ACA7B00BF7095 /* Ocp1Connection.swift in Sources */,
@@ -3193,20 +3313,20 @@
 				minimumVersion = 0.6.7;
 			};
 		};
-		D3527EC72F00DA01000000B0 /* XCRemoteSwiftPackageReference "swift-binary-parsing" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-binary-parsing";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.0.2;
-			};
-		};
 		D3527EC72F00DA0100000060 /* XCRemoteSwiftPackageReference "swift-crypto" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-crypto";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 3.10.0;
+			};
+		};
+		D3527EC72F00DA01000000B0 /* XCRemoteSwiftPackageReference "swift-binary-parsing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-binary-parsing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.0.2;
 			};
 		};
 		D35C9D9E2BF76E5100D680F2 /* XCRemoteSwiftPackageReference "SocketAddress" */ = {
