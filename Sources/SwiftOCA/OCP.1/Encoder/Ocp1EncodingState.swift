@@ -123,10 +123,30 @@ class Ocp1EncodingState {
     }
   }
 
+  private func encodeBlob(_ blob: any Ocp1BlobRepresentable) throws {
+    let blobData = blob.blobData
+    // invalidMessageSize, not arrayOrDataTooBig: the Codable fallback these
+    // bypass throws that, and the two paths must agree for the same input
+    if type(of: blob).lengthTagWidth == 2 {
+      guard let count = UInt16(exactly: blobData.count) else {
+        throw Ocp1Error.invalidMessageSize
+      }
+      try encodeInteger(count)
+    } else {
+      guard let count = UInt32(exactly: blobData.count) else {
+        throw Ocp1Error.invalidMessageSize
+      }
+      try encodeInteger(count)
+    }
+    data += blobData
+  }
+
   func encode(_ value: some Encodable, codingPath: [any CodingKey]) throws {
     switch value {
     case let data as Data:
       self.data += data
+    case let blob as any Ocp1BlobRepresentable:
+      try encodeBlob(blob)
     case let map as any Ocp1MapRepresentable:
       try encodeCount(map)
       try map.withMapItems {

@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 fwcd
-// Portions (c) 2023-2024 PADL Software Pty Ltd
+// Portions (c) 2023-2026 PADL Software Pty Ltd
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -95,8 +95,14 @@ class Ocp1DecodingState {
       throw Ocp1Error.pduTooShort
     }
 
-    let value = data[cursor..<cursor + byteWidth].withUnsafeBytes {
-      Integer(bigEndian: $0.loadUnaligned(as: Integer.self))
+    // load at an offset rather than slicing first: forming a Data slice and
+    // entering withUnsafeBytes once per integer dominated this decoder's cost.
+    // withUnsafeBytes is relative to startIndex, so the cursor must be too.
+    let value = data.withUnsafeBytes {
+      Integer(bigEndian: $0.loadUnaligned(
+        fromByteOffset: cursor - data.startIndex,
+        as: Integer.self
+      ))
     }
 
     cursor += byteWidth
@@ -151,6 +157,25 @@ class Ocp1DecodingState {
     try decodeInteger(type)
   }
 
+  /// Bulk read, so blobs don't go through the container one byte at a time.
+  private func decodeBlob(
+    _ type: any Ocp1BlobRepresentable.Type
+  ) throws -> any Ocp1BlobRepresentable {
+    // Int(exactly:) rather than Int(): on a 32-bit target a declared length
+    // above Int32.max would trap here, before the bounds guard could reject it
+    let declared: UInt32 = if type.lengthTagWidth == 2 {
+      try UInt32(decode(UInt16.self))
+    } else {
+      try decode(UInt32.self)
+    }
+    guard let count = Int(exactly: declared), remaining >= count else {
+      throw Ocp1Error.pduTooShort
+    }
+    let blobData = data[cursor..<cursor + count]
+    cursor += count
+    return type.init(blobData: Data(blobData))
+  }
+
   private func decodeCount(_ type: (some Collection & Decodable).Type) throws -> Int {
     let count: Int = if type is any Ocp1LongList.Type {
       // FIXME: can't support 2^32 length because on 32-bit platforms count is Int32
@@ -181,7 +206,9 @@ class Ocp1DecodingState {
     userInfo: [CodingUserInfoKey: Any]
   ) throws -> T where T: Decodable {
     let count: Int?
-    if let type = type as? any Ocp1MapRepresentable.Type {
+    if let type = type as? any Ocp1BlobRepresentable.Type {
+      return try state.decodeBlob(type) as! T
+    } else if let type = type as? any Ocp1MapRepresentable.Type {
       count = try state.decodeCount(type)
       let decoder = Ocp1DecoderImpl(
         state: state,

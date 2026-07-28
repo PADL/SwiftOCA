@@ -88,6 +88,16 @@ extension LengthTaggedData32: Decodable {
   }
 }
 
+extension LengthTaggedData32: Ocp1BlobRepresentable {
+  static var lengthTagWidth: Int { 4 }
+
+  var blobData: Data { wrappedValue }
+
+  init(blobData: Data) {
+    wrappedValue = blobData
+  }
+}
+
 extension LengthTaggedData32: _Ocp1Codable {
   init(parsing input: inout ParserSpan) throws {
     let count = try Int(UInt32(parsingBigEndian: &input))

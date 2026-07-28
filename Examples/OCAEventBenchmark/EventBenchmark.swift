@@ -150,5 +150,19 @@ public enum EventBenchmark {
       let d: Data = try Ocp1Connection.encodeOcp1MessagePdu(batch, type: .ocaNtf1)
       guard d.count == batchedPdu.count else { throw Failure.data((d, batchedPdu)) }
     }
+
+    // blobs nested in Codable parameter structs
+    for size in [0, 8, 64, 1024] {
+      let blob = OcaBlob(Data(repeating: 0xAB, count: size))
+      let encoded: Data = try Ocp1Encoder().encode(blob)
+      try benchmark(tag: "encodeBlobWithCodable(\(size) bytes)") {
+        let d: Data = try Ocp1Encoder().encode(blob)
+        guard d.count == encoded.count else { throw Failure.data((d, encoded)) }
+      }
+      try benchmark(tag: "decodeBlobWithCodable(\(size) bytes)") {
+        let b = try Ocp1Decoder().decode(OcaBlob.self, from: encoded)
+        guard b.count == size else { throw Failure.messageCount(b.count) }
+      }
+    }
   }
 }

@@ -74,6 +74,19 @@ extension Dictionary: Ocp1MapRepresentable where Key: Codable & Hashable, Value:
   }
 }
 
+/// A length-tagged blob: a count followed by that many raw bytes.
+///
+/// Handled in the coder dispatch alongside `Data`, maps and lists, so the bytes
+/// move in bulk instead of one container call each.
+protocol Ocp1BlobRepresentable {
+  /// width in bytes of the length tag preceding the payload
+  static var lengthTagWidth: Int { get }
+
+  var blobData: Data { get }
+
+  init(blobData: Data)
+}
+
 protocol Ocp1Array2DRepresentable<Element> {
   associatedtype Element: Codable
 }
