@@ -118,7 +118,7 @@ extension Ocp1NWDatagramController: Equatable {
     lhs: Ocp1NWDatagramController,
     rhs: Ocp1NWDatagramController
   ) -> Bool {
-    ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+    lhs === rhs
   }
 }
 

@@ -108,7 +108,7 @@ extension Ocp1NWStreamController: Equatable {
     lhs: Ocp1NWStreamController,
     rhs: Ocp1NWStreamController
   ) -> Bool {
-    ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+    lhs === rhs
   }
 }
 

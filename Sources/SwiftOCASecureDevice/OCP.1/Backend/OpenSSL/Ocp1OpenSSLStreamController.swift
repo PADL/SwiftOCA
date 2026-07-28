@@ -196,7 +196,7 @@ extension Ocp1OpenSSLStreamController: Equatable {
     lhs: Ocp1OpenSSLStreamController,
     rhs: Ocp1OpenSSLStreamController
   ) -> Bool {
-    ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+    lhs === rhs
   }
 }
 
