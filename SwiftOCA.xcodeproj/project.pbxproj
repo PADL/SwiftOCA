@@ -109,6 +109,8 @@
 		D3527EC72F00DA0100000044 /* AsyncAlgorithms in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E1ED2A3ACB0700BF7095 /* AsyncAlgorithms */; };
 		D3527EC72F00DA0100000045 /* AsyncExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = D3E6E25A2A3D28DD00BF7095 /* AsyncExtensions */; };
 		D3527EC72F00DA0100000062 /* Crypto in Frameworks */ = {isa = PBXBuildFile; productRef = D3527EC72F00DA0100000061 /* Crypto */; };
+		D3527EC72F00DA01000000B2 /* BinaryParsing in Frameworks */ = {isa = PBXBuildFile; productRef = D3527EC72F00DA01000000B1 /* BinaryParsing */; };
+		D3527EC72F00DA01000000B3 /* BinaryParsing in Frameworks */ = {isa = PBXBuildFile; productRef = D3527EC72F00DA01000000B1 /* BinaryParsing */; };
 		D3527EC72F00DA0100000071 /* BackendConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3527EC72F00DA0100000070 /* BackendConnectionTests.swift */; };
 		D3527EC72F00DA0100000073 /* FileDatasetStorageProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3527EC72F00DA0100000072 /* FileDatasetStorageProviderTests.swift */; };
 		D3527EC72F00DA0100000075 /* KeepAliveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3527EC72F00DA0100000074 /* KeepAliveTests.swift */; };
@@ -796,6 +798,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D3B396D62BBA4AB50001B512 /* libSwiftOCA.dylib in Frameworks */,
+				D3527EC72F00DA01000000B3 /* BinaryParsing in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -825,6 +828,7 @@
 				D3CFA35D2CED4D7500CAE537 /* Atomics in Frameworks */,
 				D3AD37792BF089CA00F3F713 /* SystemPackage in Frameworks */,
 				D32437CF2BA9276700C89102 /* AnyCodable in Frameworks */,
+				D3527EC72F00DA01000000B2 /* BinaryParsing in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1889,6 +1893,9 @@
 			dependencies = (
 			);
 			name = SwiftOCATests;
+			packageProductDependencies = (
+				D3527EC72F00DA01000000B1 /* BinaryParsing */,
+			);
 			productName = SwiftOCATests;
 			productReference = D3B396DC2BBA4AB50001B512 /* SwiftOCATests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -1943,6 +1950,7 @@
 				D3AD37782BF089CA00F3F713 /* SystemPackage */,
 				D35C9D9F2BF76E5100D680F2 /* SocketAddress */,
 				D3CFA35C2CED4D7500CAE537 /* Atomics */,
+				D3527EC72F00DA01000000B1 /* BinaryParsing */,
 			);
 			productName = SwiftOCA;
 			productReference = D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */;
@@ -2050,6 +2058,7 @@
 				D3CFA35B2CED4D7500CAE537 /* XCRemoteSwiftPackageReference "swift-atomics" */,
 				D37E65FC2E03EA0900D6B4D1 /* XCRemoteSwiftPackageReference "GzipSwift" */,
 				D373427B2F925569000FB06D /* XCRemoteSwiftPackageReference "SQLite.swift" */,
+				D3527EC72F00DA01000000B0 /* XCRemoteSwiftPackageReference "swift-binary-parsing" */,
 			);
 			productRefGroup = D3E6E1652A3ACA0B00BF7095 /* Products */;
 			projectDirPath = "";
@@ -3184,6 +3193,14 @@
 				minimumVersion = 0.6.7;
 			};
 		};
+		D3527EC72F00DA01000000B0 /* XCRemoteSwiftPackageReference "swift-binary-parsing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-binary-parsing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.0.2;
+			};
+		};
 		D3527EC72F00DA0100000060 /* XCRemoteSwiftPackageReference "swift-crypto" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-crypto";
@@ -3294,6 +3311,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D3527EC72F00DA0100000060 /* XCRemoteSwiftPackageReference "swift-crypto" */;
 			productName = Crypto;
+		};
+		D3527EC72F00DA01000000B1 /* BinaryParsing */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3527EC72F00DA01000000B0 /* XCRemoteSwiftPackageReference "swift-binary-parsing" */;
+			productName = BinaryParsing;
 		};
 		D35C9D9F2BF76E5100D680F2 /* SocketAddress */ = {
 			isa = XCSwiftPackageProductDependency;
