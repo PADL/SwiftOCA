@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023-2024 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -211,7 +211,7 @@ public struct Ocp1ConnectionStatistics: Sendable, CustomStringConvertible {
   public let connectionState: Ocp1ConnectionState
   public let connectionID: Int
   public var isConnected: Bool { connectionState == .connected }
-  public let requestCount: Int
+  public let requestCount: UInt64
   public let outstandingRequests: [OcaUint32]
   public let cachedObjectCount: Int
   public let subscribedEvents: [OcaEvent]
@@ -234,8 +234,6 @@ public struct Ocp1ConnectionStatistics: Sendable, CustomStringConvertible {
   """
   }
 }
-
-private let CommandHandleBase = OcaUint32(100)
 
 @OcaConnection
 open class Ocp1Connection: CustomStringConvertible {
@@ -286,7 +284,8 @@ open class Ocp1Connection: CustomStringConvertible {
   nonisolated(unsafe) var logger = Logger(label: "com.padl.SwiftOCA")
   var connectionID = 0
 
-  private var nextCommandHandle = CommandHandleBase
+  /// internal rather than private so tests can wind it to the wrap boundary
+  var nextCommandHandle = UInt64(0)
   private var continuousClockReference = ContinuousClockReference()
 
   var lastMessageSentTime = ContinuousClock.recentPast
@@ -301,7 +300,7 @@ open class Ocp1Connection: CustomStringConvertible {
     Ocp1ConnectionStatistics(
       connectionState: currentConnectionState,
       connectionID: connectionID,
-      requestCount: Int(nextCommandHandle - CommandHandleBase),
+      requestCount: nextCommandHandle,
       outstandingRequests: monitor?.outstandingRequests ?? [],
       cachedObjectCount: objects.count,
       subscribedEvents: Array(subscriptions.keys),
@@ -435,9 +434,22 @@ open class Ocp1Connection: CustomStringConvertible {
     _configureBatching(options.batchingOptions)
   }
 
+  /// The handle is the low 32 bits of the request counter, so it wraps rather
+  /// than trapping: it is a wire field with no meaning beyond matching a
+  /// response to its request, and a controller issuing 10k requests/sec reaches
+  /// 2^32 in about five days. The counter itself is 64-bit and won't wrap.
+  ///
+  /// Handles skip zero on wrap, because zero is the default value of
+  /// `Ocp1Response.handle`: a device answering a protocol error with a
+  /// zero-filled response must not match a live request.
   func getNextCommandHandle() async -> OcaUint32 {
-    let handle = nextCommandHandle
     nextCommandHandle += 1
+    let handle = OcaUint32(truncatingIfNeeded: nextCommandHandle)
+    guard handle != 0 else {
+      // the counter value that would yield 1 is the one being skipped
+      nextCommandHandle += 1
+      return 1
+    }
     return handle
   }
 
