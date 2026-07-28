@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -44,25 +45,19 @@ extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Encodable {
 }
 
 extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Decodable {
-  @_spi(SwiftOCAPrivate) @inlinable
+  @_spi(SwiftOCAPrivate)
   public init(bytes: borrowing Data) throws {
-    guard bytes.count >= 9 else {
-      throw Ocp1Error.pduTooShort
+    self = try Ocp1Error.mapping { [bytes = copy bytes] in
+      try bytes.withParserSpan { try Self(parsing: &$0) }
     }
+  }
 
-    let propertyID = try OcaPropertyID(bytes: bytes)
-    let propertyValue = bytes.withUnsafeBytes {
-      let value = OcaUint32(bigEndian: $0.load(fromByteOffset: 4, as: OcaUint32.self))
-      return OcaDB(bitPattern: value)
-    }
-    guard let changeType = OcaPropertyChangeType(rawValue: bytes[bytes.startIndex + 8]) else {
-      throw Ocp1Error.status(.badFormat)
-    }
-
-    self.init(
-      propertyID: propertyID,
-      propertyValue: propertyValue,
-      changeType: changeType
+  @_spi(SwiftOCAPrivate) @inlinable
+  public init(parsing input: inout ParserSpan) throws {
+    try self.init(
+      propertyID: OcaPropertyID(parsing: &input),
+      propertyValue: OcaDB(bitPattern: OcaUint32(parsingBigEndian: &input)),
+      changeType: OcaPropertyChangeType(parsing: &input)
     )
   }
 }

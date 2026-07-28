@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2025 PADL Software Pty Ltd
+// Copyright (c) 2025-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ let Rounds = 1_000_000
 enum Failure: Error {
   case ntf1((Ocp1Notification1, Ocp1Notification1))
   case data((Data, Data))
+  case messageCount(Int)
 }
 
 extension Ocp1EventData: Equatable {
@@ -63,6 +64,12 @@ func encodeNotificationWithBuiltin(_ notification: Ocp1Notification1) throws -> 
 
 func decodeNotificationWithBuiltin(_ data: Data) throws -> Ocp1Notification1 {
   try Ocp1Notification1(bytes: data)
+}
+
+/// Exercises the whole top-level framing path — sync byte, header, per-message
+/// framing and message bodies — as a device or controller sees it off the wire.
+func decodeMessagePdu(_ pdu: Data) throws -> [Ocp1Message] {
+  try Ocp1Connection.decodeOcp1MessagePdu(from: pdu).1
 }
 
 func benchmark(tag: String, _ block: () throws -> ()) rethrows {
@@ -113,6 +120,24 @@ public enum EventBenchmark {
     try benchmark(tag: "decodeNotificationWithBuiltin") {
       let n = try decodeNotificationWithBuiltin(EncodedNotification)
       guard n == aNotification else { throw Failure.ntf1((n, aNotification)) }
+    }
+
+    let notificationPdu: Data = try Ocp1Connection.encodeOcp1MessagePdu(
+      [aNotification],
+      type: .ocaNtf1
+    )
+    try benchmark(tag: "decodeMessagePdu(1 notification)") {
+      let m = try decodeMessagePdu(notificationPdu)
+      guard m.count == 1 else { throw Failure.messageCount(m.count) }
+    }
+
+    let batchedPdu: Data = try Ocp1Connection.encodeOcp1MessagePdu(
+      Array(repeating: aNotification, count: 8),
+      type: .ocaNtf1
+    )
+    try benchmark(tag: "decodeMessagePdu(8 notifications)") {
+      let m = try decodeMessagePdu(batchedPdu)
+      guard m.count == 8 else { throw Failure.messageCount(m.count) }
     }
   }
 }

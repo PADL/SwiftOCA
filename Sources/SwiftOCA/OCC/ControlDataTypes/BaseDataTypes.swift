@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -167,14 +168,17 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
 
   // SPI visibility for SwiftOCADevice and FlutterSwiftOCA
   @_spi(SwiftOCAPrivate)
-  public init(bytes: borrowing Data) throws {
-    guard bytes.count >= 4 else { throw Ocp1Error.pduTooShort }
+  public init(parsing input: inout ParserSpan) throws {
+    defLevel = try OcaUint16(parsingBigEndian: &input)
+    propertyIndex = try OcaUint16(parsingBigEndian: &input)
+  }
 
-    defLevel = bytes.withUnsafeBytes {
-      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint16.self))
-    }
-    propertyIndex = bytes.withUnsafeBytes {
-      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 2, as: OcaUint16.self))
+  // SPI visibility for SwiftOCADevice and FlutterSwiftOCA, which decode a
+  // property ID from a standalone buffer rather than mid-PDU
+  @_spi(SwiftOCAPrivate)
+  public init(bytes: borrowing Data) throws {
+    self = try Ocp1Error.mapping { [bytes = copy bytes] in
+      try bytes.withParserSpan { try Self(parsing: &$0) }
     }
   }
 
@@ -427,15 +431,9 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
     self.init(value)
   }
 
-  init(bytes: borrowing Data) throws {
-    guard bytes.count >= 4 else { throw Ocp1Error.pduTooShort }
-
-    defLevel = bytes.withUnsafeBytes {
-      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint16.self))
-    }
-    methodIndex = bytes.withUnsafeBytes {
-      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 2, as: OcaUint16.self))
-    }
+  init(parsing input: inout ParserSpan) throws {
+    defLevel = try OcaUint16(parsingBigEndian: &input)
+    methodIndex = try OcaUint16(parsingBigEndian: &input)
   }
 
   func encode(into bytes: inout [UInt8]) {

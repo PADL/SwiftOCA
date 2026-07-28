@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2025 PADL Software Pty Ltd
+// Copyright (c) 2025-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 @testable @_spi(SwiftOCAPrivate) import SwiftOCA
 import XCTest
 
@@ -33,17 +34,11 @@ final class Ocp1MessageBatcherTests: XCTestCase {
       self.data = data
     }
 
-    init(bytes: borrowing Data) throws {
-      guard bytes.count >= 2 else {
-        throw Ocp1Error.invalidMessageSize
-      }
-      let base = bytes.startIndex
-      handle = OcaUint32(bytes[base])
-      let dataLength = Int(bytes[base + 1])
-      guard bytes.count >= 2 + dataLength else {
-        throw Ocp1Error.invalidMessageSize
-      }
-      data = String(data: bytes[(base + 2)..<(base + 2 + dataLength)], encoding: .utf8) ?? ""
+    init(parsing input: inout ParserSpan) throws {
+      handle = try OcaUint32(OcaUint8(parsing: &input))
+      let dataLength = try Int(OcaUint8(parsing: &input))
+      let encodedData = try Data(parsing: &input, byteCount: dataLength)
+      data = String(data: encodedData, encoding: .utf8) ?? ""
     }
 
     func encode(into buffer: inout [UInt8]) {

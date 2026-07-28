@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -24,9 +24,8 @@ import Foundation
 
 extension Ocp1Connection.Monitor {
   private func receiveMessagePdu(
-    _ connection: Ocp1Connection,
-    messages: inout [Data]
-  ) async throws -> OcaMessageType {
+    _ connection: Ocp1Connection
+  ) async throws -> (OcaMessageType, [Ocp1Message]) {
     var messagePduData = try await connection.read(Ocp1Connection.MinimumPduSize)
 
     guard messagePduData.count > 0 else {
@@ -58,10 +57,7 @@ extension Ocp1Connection.Monitor {
       messagePduData += try await connection.read(bytesLeft)
     }
 
-    return try Ocp1Connection.decodeOcp1MessagePdu(
-      from: messagePduData,
-      messages: &messages
-    )
+    return try Ocp1Connection.decodeOcp1MessagePdu(from: messagePduData)
   }
 
   private func processMessage(
@@ -100,11 +96,7 @@ extension Ocp1Connection.Monitor {
   }
 
   private func receiveMessage(_ connection: Ocp1Connection) async throws {
-    var messagePdus = [Data]()
-    let messageType = try await receiveMessagePdu(connection, messages: &messagePdus)
-    let messages = try messagePdus.map {
-      try Ocp1Connection.decodeOcp1Message(from: $0, type: messageType)
-    }
+    let (_, messages) = try await receiveMessagePdu(connection)
 
     updateLastMessageReceivedTime()
     await onDatagramConnectionOpen(connection)
@@ -142,7 +134,7 @@ extension Ocp1Connection.Monitor {
   }
 
   func receiveMessages(_ connection: Ocp1Connection) async throws {
-    let (isDatagram, heartbeatTime) = await (connection.isDatagram, connection.heartbeatTime)
+    let heartbeatTime = await connection.heartbeatTime
 
     do {
       try await withThrowingTaskGroup(of: Void.self) { group in

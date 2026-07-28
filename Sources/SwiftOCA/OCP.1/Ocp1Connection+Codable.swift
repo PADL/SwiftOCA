@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -95,81 +96,93 @@ package extension Ocp1Connection {
     return Data(bytes)
   }
 
+  /// Decodes a complete OCP.1 PDU into its constituent messages.
+  ///
+  /// The whole PDU is parsed in a single pass over one `ParserSpan`. Each
+  /// message is decoded from a sub-span bounded by its own declared size, so a
+  /// message can neither read past the PDU nor into its neighbour, and a PDU
+  /// that declares more bytes (or more messages) than it delivers throws rather
+  /// than trapping — both matter because `data` here is unvalidated input
+  /// straight off the wire.
   nonisolated static func decodeOcp1MessagePdu(
-    from data: Data,
-    messages: inout [Data]
-  ) throws -> OcaMessageType {
-    guard data.count >= 1 + Ocp1Header.HeaderSize else {
-      throw Ocp1Error.invalidPduSize
+    from data: Data
+  ) throws -> (OcaMessageType, [Ocp1Message]) {
+    try Ocp1Error.mapping {
+      try data.withParserSpan { try _decodeOcp1MessagePdu(&$0) }
     }
+  }
 
-    guard data[0] == Ocp1SyncValue else {
+  private nonisolated static func _decodeOcp1MessagePdu(
+    _ input: inout ParserSpan
+  ) throws -> (OcaMessageType, [Ocp1Message]) {
+    guard try OcaUint8(parsing: &input) == Ocp1SyncValue else {
       throw Ocp1Error.invalidSyncValue
     }
 
-    let header = try Ocp1Header(bytes: data[1...])
+    let header = try Ocp1Header(parsing: &input)
 
-    guard header.pduSize <= 1 /* sync byte */ + data.count else {
-      throw Ocp1Error.pduTooShort
+    /// `pduSize` counts every byte after `syncVal`, so the messages occupy the
+    /// `pduSize - HeaderSize` bytes following the header. Slicing here is what
+    /// bounds the rest of the parse: if the sender declared more than it sent,
+    /// this throws `pduTooShort` instead of running off the end of the buffer.
+    var body = try input.sliceSpan(
+      byteCount: Int(header.pduSize) - Ocp1Header.HeaderSize
+    )
+
+    if header.pduType == .ocaKeepAlive {
+      /// Keep-alive messages carry no per-message size field; the message is
+      /// the remainder of the PDU, and `messageCount` is not meaningful.
+      return (header.pduType, [try decodeOcp1KeepAlive(parsing: &body)])
     }
 
-    let messageCount: OcaUint16 = data.decodeInteger(index: 8)
-    var cursor = 1 + Ocp1Header.HeaderSize // start of first message
+    var messages = [Ocp1Message]()
+    messages.reserveCapacity(Int(header.messageCount))
 
-    let pduEnd = Int(header.pduSize) + 1 // +1 because pduSize excludes sync byte
-    for _ in 0..<messageCount {
-      precondition(cursor < data.count)
-
-      if header.pduType != .ocaKeepAlive {
-        guard cursor + 4 <= pduEnd else {
-          throw Ocp1Error.pduTooShort
-        }
-        let messageSize = Int(data[cursor..<cursor + 4].withUnsafeBytes {
-          OcaUint32(bigEndian: $0.loadUnaligned(as: OcaUint32.self))
-        })
-
-        guard cursor + messageSize <= pduEnd else {
-          throw Ocp1Error.invalidMessageSize
-        }
-
-        messages.append(data[cursor..<cursor + messageSize])
-        cursor += messageSize
-      } else {
-        messages.append(data[cursor..<pduEnd])
-        break
+    for _ in 0..<header.messageCount {
+      /// The size field is part of the message it describes, so read it from a
+      /// lookahead span and leave `body` positioned at the start of the message.
+      var lookahead = try body.seeking(toRelativeOffset: 0)
+      let messageSize = try Int(OcaUint32(parsingBigEndian: &lookahead))
+      guard messageSize >= MemoryLayout<OcaUint32>.size else {
+        throw Ocp1Error.invalidMessageSize
       }
+      var message = try body.sliceSpan(byteCount: messageSize)
+      try messages.append(decodeOcp1Message(parsing: &message, type: header.pduType))
     }
 
-    return header.pduType
+    return (header.pduType, messages)
   }
 
-  nonisolated static func decodeOcp1Message(
-    from messageData: Data,
+  private nonisolated static func decodeOcp1Message(
+    parsing input: inout ParserSpan,
     type messageType: OcaMessageType
   ) throws -> Ocp1Message {
-    let message: Ocp1Message
-
     switch messageType {
-    case .ocaCmd:
-      message = try Ocp1Command(bytes: messageData)
-    case .ocaCmdRrq:
-      message = try Ocp1Command(bytes: messageData)
+    case .ocaCmd, .ocaCmdRrq:
+      try Ocp1Command(parsing: &input)
     case .ocaNtf1:
-      message = try Ocp1Notification1(bytes: messageData)
+      try Ocp1Notification1(parsing: &input)
     case .ocaRsp:
-      message = try Ocp1Response(bytes: messageData)
-    case .ocaKeepAlive:
-      if messageData.count == 2 {
-        message = try Ocp1KeepAlive1(bytes: messageData)
-      } else if messageData.count == 4 {
-        message = try Ocp1KeepAlive2(bytes: messageData)
-      } else {
-        throw Ocp1Error.invalidKeepAlivePdu
-      }
+      try Ocp1Response(parsing: &input)
     case .ocaNtf2:
-      message = try Ocp1Notification2(bytes: messageData)
+      try Ocp1Notification2(parsing: &input)
+    case .ocaKeepAlive:
+      try decodeOcp1KeepAlive(parsing: &input)
     }
+  }
 
-    return message
+  private nonisolated static func decodeOcp1KeepAlive(
+    parsing input: inout ParserSpan
+  ) throws -> Ocp1Message {
+    /// The two keep-alive variants are distinguished only by their length:
+    /// `Ocp1KeepAlive1` carries seconds, `Ocp1KeepAlive2` milliseconds.
+    switch input.count {
+    case MemoryLayout<OcaUint16>.size:
+      try Ocp1KeepAlive1(parsing: &input)
+    case MemoryLayout<OcaUint32>.size:
+      try Ocp1KeepAlive2(parsing: &input)
+    default:
+      throw Ocp1Error.invalidKeepAlivePdu
+    }
   }
 }

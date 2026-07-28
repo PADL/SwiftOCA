@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -90,20 +91,9 @@ extension LengthTaggedData16: Decodable {
 }
 
 extension LengthTaggedData16: _Ocp1Codable {
-  init(bytes: borrowing Data) throws {
-    guard bytes.count >= 2 else {
-      throw Ocp1Error.pduTooShort
-    }
-
-    let count = Int(bytes.withUnsafeBytes {
-      UInt16(bigEndian: $0.loadUnaligned(as: UInt16.self))
-    })
-
-    guard bytes.count >= 2 + count else {
-      throw Ocp1Error.pduTooShort
-    }
-    let base = bytes.startIndex
-    wrappedValue = Data(bytes[(base + 2)..<(base + 2 + count)])
+  init(parsing input: inout ParserSpan) throws {
+    let count = try Int(UInt16(parsingBigEndian: &input))
+    wrappedValue = try Data(parsing: &input, byteCount: count)
   }
 
   func encode(into bytes: inout [UInt8]) {

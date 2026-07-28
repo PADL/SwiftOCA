@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -78,20 +79,11 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
     throw Ocp1Error.exception(exception)
   }
 
-  init(bytes: borrowing Data) throws {
-    guard bytes.count >= 14 else {
-      throw Ocp1Error.pduTooShort
-    }
-    notificationSize = bytes.withUnsafeBytes {
-      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint32.self))
-    }
-    let base = bytes.startIndex
-    event = try OcaEvent(bytes: bytes[base + 4..<base + 12])
-    guard let notificationType = Ocp1Notification2Type(rawValue: bytes[base + 12]) else {
-      throw Ocp1Error.status(.badFormat)
-    }
-    self.notificationType = notificationType
-    data = Data(bytes[(base + 13)...])
+  init(parsing input: inout ParserSpan) throws {
+    notificationSize = try OcaUint32(parsingBigEndian: &input)
+    event = try OcaEvent(parsing: &input)
+    notificationType = try Ocp1Notification2Type(parsing: &input)
+    data = Data(parsingRemainingBytes: &input)
   }
 
   func encode(into bytes: inout [UInt8]) {

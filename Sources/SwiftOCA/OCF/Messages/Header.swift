@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -47,14 +48,8 @@ public struct Ocp1Header: Codable, Sendable, _Ocp1Codable {
 
   package static let HeaderSize = 9
 
-  init(bytes: borrowing Data) throws {
-    guard bytes.count >= Self.HeaderSize else {
-      throw Ocp1Error.pduTooShort
-    }
-
-    protocolVersion = bytes.withUnsafeBytes {
-      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint16.self))
-    }
+  init(parsing input: inout ParserSpan) throws {
+    protocolVersion = try OcaUint16(parsingBigEndian: &input)
 
     // AES70-3-2024 says that the OCP.1 protocol version should always be 1,
     // but some clients send higher versions (presumably to match the AES70
@@ -64,23 +59,14 @@ public struct Ocp1Header: Codable, Sendable, _Ocp1Codable {
       throw Ocp1Error.invalidProtocolVersion
     }
 
-    pduSize = bytes.withUnsafeBytes {
-      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 2, as: OcaUint32.self))
-    }
+    pduSize = try OcaUint32(parsingBigEndian: &input)
 
     guard pduSize >= Self.HeaderSize else {
       throw Ocp1Error.invalidPduSize
     }
 
-    guard let pduType = OcaMessageType(rawValue: bytes[bytes.startIndex + 6]) else {
-      throw Ocp1Error.invalidMessageType
-    }
-
-    self.pduType = pduType
-
-    messageCount = bytes.withUnsafeBytes {
-      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 7, as: OcaUint16.self))
-    }
+    pduType = try OcaMessageType(parsing: &input)
+    messageCount = try OcaUint16(parsingBigEndian: &input)
   }
 
   func encode(into bytes: inout [UInt8]) {

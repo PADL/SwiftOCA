@@ -39,12 +39,7 @@ package struct Ocp1MessageList: Sendable {
   }
 
   package init(messagePduData data: Data) throws {
-    var messagePdus = [Data]()
-
-    let messageType = try Ocp1Connection.decodeOcp1MessagePdu(from: data, messages: &messagePdus)
-    let messages = try messagePdus.map { messagePdu in
-      try Ocp1Connection.decodeOcp1Message(from: messagePdu, type: messageType)
-    }
+    let (messageType, messages) = try Ocp1Connection.decodeOcp1MessagePdu(from: data)
     self.init(messageType: messageType, messages: messages)
   }
 }

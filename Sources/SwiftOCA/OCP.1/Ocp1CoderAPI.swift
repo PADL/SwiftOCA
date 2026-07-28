@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -130,8 +131,24 @@ func _ocp1ParameterCount(value: some Any) -> OcaUint8 {
 
 // MARK: - builtin encoder
 
+/// A type that decodes itself directly from the wire, bypassing `Codable`.
+///
+/// Conformers consume bytes from a `ParserSpan`, which bounds every read to the
+/// enclosing PDU and reports overruns by throwing rather than trapping. Only the
+/// top-level OCP.1 framing uses this path; message *parameters* are still
+/// decoded with `Ocp1Decoder`.
 protocol _Ocp1Decodable {
-  init(bytes: borrowing Data) throws
+  init(parsing input: inout ParserSpan) throws
+}
+
+extension _Ocp1Decodable {
+  /// Decodes from a standalone buffer, for call sites that hold a whole PDU
+  /// rather than a position within one.
+  init(bytes: borrowing Data) throws {
+    self = try Ocp1Error.mapping { [bytes = copy bytes] in
+      try bytes.withParserSpan { try Self(parsing: &$0) }
+    }
+  }
 }
 
 protocol _Ocp1Encodable {

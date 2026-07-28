@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+import BinaryParsing
 
 public enum Ocp1Error: Error, Equatable {
   /// An OCA status received from a device; should not be used for local errors
@@ -84,4 +86,26 @@ public enum Ocp1Error: Error, Equatable {
 
   // decoding errors
   case stringNotDecodable([UInt8])
+}
+
+extension Ocp1Error {
+  /// Runs `body`, translating any `ParsingError` raised by `BinaryParsing` into
+  /// the equivalent `Ocp1Error`.
+  ///
+  /// The builtin PDU decoders throw `Ocp1Error` directly for protocol-level
+  /// faults they detect themselves, but bounds violations surface from
+  /// `BinaryParsing` as `ParsingError`. Callers up the stack — and the test
+  /// suite — match on `Ocp1Error`, so the boundary that hands a PDU to the
+  /// parser is responsible for the translation.
+  package static func mapping<T>(_ body: () throws -> T) throws -> T {
+    do {
+      return try body()
+    } catch let error as ParsingError {
+      if error.status == .insufficientData {
+        throw Ocp1Error.pduTooShort
+      } else {
+        throw Ocp1Error.status(.badFormat)
+      }
+    }
+  }
 }

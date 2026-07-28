@@ -1387,12 +1387,10 @@ final class UnsafeStringInitializerTests: XCTestCase {
       parameters: Ocp1Parameters(parameterCount: 1, parameterData: Data([0x01, 0x02]))
     )
     let pdu: Data = try Ocp1Connection.encodeOcp1MessagePdu([command], type: .ocaCmdRrq)
-    var messages = [Data]()
-    let messageType = try Ocp1Connection.decodeOcp1MessagePdu(from: pdu, messages: &messages)
+    let (messageType, messages) = try Ocp1Connection.decodeOcp1MessagePdu(from: pdu)
     XCTAssertEqual(messageType, .ocaCmdRrq)
     XCTAssertEqual(messages.count, 1)
-    let decoded = try Ocp1Connection.decodeOcp1Message(from: messages[0], type: messageType)
-    let decodedCmd = decoded as! Ocp1Command
+    let decodedCmd = messages[0] as! Ocp1Command
     XCTAssertEqual(decodedCmd.handle, 1)
     XCTAssertEqual(decodedCmd.targetONo, 5000)
     XCTAssertEqual(decodedCmd.methodID, OcaMethodID("2.6"))
@@ -1409,19 +1407,12 @@ final class UnsafeStringInitializerTests: XCTestCase {
       parameters: Ocp1Parameters(parameterCount: 1, parameterData: Data([0xFF]))
     )
     let pdu: Data = try Ocp1Connection.encodeOcp1MessagePdu([cmd1, cmd2], type: .ocaCmd)
-    var messages = [Data]()
-    let messageType = try Ocp1Connection.decodeOcp1MessagePdu(from: pdu, messages: &messages)
+    let (messageType, messages) = try Ocp1Connection.decodeOcp1MessagePdu(from: pdu)
     XCTAssertEqual(messageType, .ocaCmd)
     XCTAssertEqual(messages.count, 2)
 
-    let decoded1 = try Ocp1Connection.decodeOcp1Message(
-      from: messages[0],
-      type: messageType
-    ) as! Ocp1Command
-    let decoded2 = try Ocp1Connection.decodeOcp1Message(
-      from: messages[1],
-      type: messageType
-    ) as! Ocp1Command
+    let decoded1 = messages[0] as! Ocp1Command
+    let decoded2 = messages[1] as! Ocp1Command
     XCTAssertEqual(decoded1.handle, 1)
     XCTAssertEqual(decoded1.targetONo, 100)
     XCTAssertEqual(decoded2.handle, 2)

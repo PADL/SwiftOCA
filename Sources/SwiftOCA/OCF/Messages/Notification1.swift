@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023-2025 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -29,9 +30,9 @@ public struct Ocp1EventData: Codable, Sendable, _Ocp1Codable {
     self.eventParameters = eventParameters
   }
 
-  init(bytes: borrowing Data) throws {
-    event = try OcaEvent(bytes: bytes)
-    eventParameters = Data(bytes[(bytes.startIndex + 8)...])
+  init(parsing input: inout ParserSpan) throws {
+    event = try OcaEvent(parsing: &input)
+    eventParameters = Data(parsingRemainingBytes: &input)
   }
 
   func encode(into bytes: inout [UInt8]) {
@@ -51,15 +52,10 @@ public struct Ocp1NtfParams: Codable, Sendable, _Ocp1Codable {
     self.eventData = eventData
   }
 
-  init(bytes: borrowing Data) throws {
-    guard bytes.count > 1 else { throw Ocp1Error.pduTooShort }
-    let base = bytes.startIndex
-    parameterCount = bytes[base]
-    context = try LengthTaggedData(bytes: bytes[(base + 1)...])
-    // FIXME: abstraction violation
-    let eventDataOffset = 1 + 2 + context.count
-    precondition(bytes.count >= eventDataOffset)
-    eventData = try Ocp1EventData(bytes: bytes[(base + eventDataOffset)...])
+  init(parsing input: inout ParserSpan) throws {
+    parameterCount = try OcaUint8(parsing: &input)
+    context = try LengthTaggedData(parsing: &input)
+    eventData = try Ocp1EventData(parsing: &input)
   }
 
   func encode(into bytes: inout [UInt8]) {
@@ -92,16 +88,16 @@ public struct Ocp1Notification1: _Ocp1MessageCodable, Sendable {
   // FIXME: package visibility required for OCAEventBenchmark
 
   package init(bytes: borrowing Data) throws {
-    guard bytes.count > 12 else { throw Ocp1Error.pduTooShort }
-    notificationSize = bytes.withUnsafeBytes {
-      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint32.self))
+    self = try Ocp1Error.mapping { [bytes = copy bytes] in
+      try bytes.withParserSpan { try Self(parsing: &$0) }
     }
-    targetONo = bytes.withUnsafeBytes {
-      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 4, as: OcaUint32.self))
-    }
-    let base = bytes.startIndex
-    methodID = try OcaMethodID(bytes: bytes[base + 8..<base + 12])
-    parameters = try Ocp1NtfParams(bytes: bytes[(base + 12)...])
+  }
+
+  package init(parsing input: inout ParserSpan) throws {
+    notificationSize = try OcaUint32(parsingBigEndian: &input)
+    targetONo = try OcaONo(parsingBigEndian: &input)
+    methodID = try OcaMethodID(parsing: &input)
+    parameters = try Ocp1NtfParams(parsing: &input)
   }
 
   package func encode(into bytes: inout [UInt8]) {

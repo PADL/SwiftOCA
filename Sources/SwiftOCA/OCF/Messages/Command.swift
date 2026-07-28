@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -57,24 +58,14 @@ public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
     self.parameters = parameters
   }
 
-  init(bytes: borrowing Data) throws {
-    guard bytes.count >= 17 else {
-      throw Ocp1Error.pduTooShort
-    }
-    commandSize = bytes.withUnsafeBytes {
-      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint32.self))
-    }
-    handle = bytes.withUnsafeBytes {
-      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 4, as: OcaUint32.self))
-    }
-    targetONo = bytes.withUnsafeBytes {
-      OcaONo(bigEndian: $0.loadUnaligned(fromByteOffset: 8, as: OcaONo.self))
-    }
-    let base = bytes.startIndex
-    methodID = try OcaMethodID(bytes: bytes[base + 12..<base + 16])
-    parameters = Ocp1Parameters(
-      parameterCount: bytes[base + 16],
-      parameterData: Data(bytes[(base + 17)...])
+  init(parsing input: inout ParserSpan) throws {
+    commandSize = try OcaUint32(parsingBigEndian: &input)
+    handle = try OcaUint32(parsingBigEndian: &input)
+    targetONo = try OcaONo(parsingBigEndian: &input)
+    methodID = try OcaMethodID(parsing: &input)
+    parameters = try Ocp1Parameters(
+      parameterCount: OcaUint8(parsing: &input),
+      parameterData: Data(parsingRemainingBytes: &input)
     )
   }
 

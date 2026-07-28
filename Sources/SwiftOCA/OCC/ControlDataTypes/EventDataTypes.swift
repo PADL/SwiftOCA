@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023-2025 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -59,15 +60,9 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible, 
     "\(defLevel).\(eventIndex)"
   }
 
-  init(bytes: borrowing Data) throws {
-    guard bytes.count >= 4 else { throw Ocp1Error.pduTooShort }
-
-    defLevel = bytes.withUnsafeBytes {
-      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint16.self))
-    }
-    eventIndex = bytes.withUnsafeBytes {
-      OcaUint16(bigEndian: $0.loadUnaligned(fromByteOffset: 2, as: OcaUint16.self))
-    }
+  init(parsing input: inout ParserSpan) throws {
+    defLevel = try OcaUint16(parsingBigEndian: &input)
+    eventIndex = try OcaUint16(parsingBigEndian: &input)
   }
 
   func encode(into bytes: inout [UInt8]) {
@@ -87,11 +82,11 @@ public struct OcaEvent: Codable, Hashable, Equatable, Sendable, CustomStringConv
     self.eventID = eventID
   }
 
-  init(bytes: borrowing Data) throws {
-    guard bytes.count >= 8 else { throw Ocp1Error.pduTooShort }
-    let emitterONo = bytes.withUnsafeBytes { OcaONo(bigEndian: $0.loadUnaligned(as: OcaONo.self)) }
-    let eventID = try OcaEventID(bytes: bytes[(bytes.startIndex + 4)...])
-    self.init(emitterONo: emitterONo, eventID: eventID)
+  init(parsing input: inout ParserSpan) throws {
+    try self.init(
+      emitterONo: OcaONo(parsingBigEndian: &input),
+      eventID: OcaEventID(parsing: &input)
+    )
   }
 
   func encode(into bytes: inout [UInt8]) {

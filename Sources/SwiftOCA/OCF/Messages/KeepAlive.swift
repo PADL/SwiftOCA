@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -29,11 +30,8 @@ public struct Ocp1KeepAlive1: _Ocp1MessageCodable, Sendable {
     self.heartBeatTime = heartBeatTime
   }
 
-  init(bytes: borrowing Data) throws {
-    guard bytes.count >= 2 /* messageSize */ else { throw Ocp1Error.pduTooShort }
-    let heartBeatTime = bytes
-      .withUnsafeBytes { OcaUint16(bigEndian: $0.loadUnaligned(as: OcaUint16.self)) }
-    self.init(heartBeatTime: heartBeatTime)
+  init(parsing input: inout ParserSpan) throws {
+    try self.init(heartBeatTime: OcaUint16(parsingBigEndian: &input))
   }
 
   func encode(into bytes: inout [UInt8]) {
@@ -50,11 +48,8 @@ public struct Ocp1KeepAlive2: _Ocp1MessageCodable, Sendable {
     self.heartBeatTime = heartBeatTime
   }
 
-  init(bytes: borrowing Data) throws {
-    guard bytes.count >= 4 /* messageSize */ else { throw Ocp1Error.pduTooShort }
-    let heartBeatTime = bytes
-      .withUnsafeBytes { OcaUint32(bigEndian: $0.loadUnaligned(as: OcaUint32.self)) }
-    self.init(heartBeatTime: heartBeatTime)
+  init(parsing input: inout ParserSpan) throws {
+    try self.init(heartBeatTime: OcaUint32(parsingBigEndian: &input))
   }
 
   func encode(into bytes: inout [UInt8]) {

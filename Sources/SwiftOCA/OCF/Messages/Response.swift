@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -40,24 +41,13 @@ public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
     self.parameters = parameters
   }
 
-  init(bytes: borrowing Data) throws {
-    guard bytes.count >= 10 else {
-      throw Ocp1Error.pduTooShort
-    }
-    responseSize = bytes.withUnsafeBytes {
-      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 0, as: OcaUint32.self))
-    }
-    handle = bytes.withUnsafeBytes {
-      OcaUint32(bigEndian: $0.loadUnaligned(fromByteOffset: 4, as: OcaUint32.self))
-    }
-    let base = bytes.startIndex
-    guard let statusCode = OcaStatus(rawValue: bytes[base + 8]) else {
-      throw Ocp1Error.status(.badFormat)
-    }
-    self.statusCode = statusCode
-    parameters = Ocp1Parameters(
-      parameterCount: bytes[base + 9],
-      parameterData: Data(bytes[(base + 10)...])
+  init(parsing input: inout ParserSpan) throws {
+    responseSize = try OcaUint32(parsingBigEndian: &input)
+    handle = try OcaUint32(parsingBigEndian: &input)
+    statusCode = try OcaStatus(parsing: &input)
+    parameters = try Ocp1Parameters(
+      parameterCount: OcaUint8(parsing: &input),
+      parameterData: Data(parsingRemainingBytes: &input)
     )
   }
 

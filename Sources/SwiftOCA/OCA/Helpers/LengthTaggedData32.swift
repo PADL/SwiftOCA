@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023-2025 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -88,20 +89,9 @@ extension LengthTaggedData32: Decodable {
 }
 
 extension LengthTaggedData32: _Ocp1Codable {
-  init(bytes: borrowing Data) throws {
-    guard bytes.count >= 4 else {
-      throw Ocp1Error.pduTooShort
-    }
-
-    let count = Int(bytes.withUnsafeBytes {
-      UInt32(bigEndian: $0.loadUnaligned(as: UInt32.self))
-    })
-
-    guard bytes.count >= 4 + count else {
-      throw Ocp1Error.pduTooShort
-    }
-    let base = bytes.startIndex
-    wrappedValue = Data(bytes[(base + 4)..<(base + 4 + count)])
+  init(parsing input: inout ParserSpan) throws {
+    let count = try Int(UInt32(parsingBigEndian: &input))
+    wrappedValue = try Data(parsing: &input, byteCount: count)
   }
 
   func encode(into bytes: inout [UInt8]) {
