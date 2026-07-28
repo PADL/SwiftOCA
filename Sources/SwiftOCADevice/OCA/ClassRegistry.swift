@@ -95,6 +95,7 @@ public class OcaDeviceClassRegistry {
     try register(OcaCounterNotifier.self)
     try register(OcaCounterSetAgent.self)
     try register(OcaTimeSource.self)
+    try register(OcaPowerSupply.self)
 
     // managers
     try register(OcaManager.self)
@@ -139,6 +140,19 @@ public class OcaDeviceClassRegistry {
     try register(OcaSignalInput.self)
     try register(OcaSignalOutput.self)
     try register(OcaSummingPoint.self)
+    try register(OcaDelay.self)
+    try register(OcaDelayExtended.self)
+    try register(OcaTemperatureActuator.self)
+    try register(OcaSamplingRateConverter.self)
+    try register(OcaSignalGenerator.self)
+    try register(OcaFilterClassical.self)
+    try register(OcaFilterParametric.self)
+    try register(OcaFilterPolynomial.self)
+    try register(OcaFilterFIR.self)
+    try register(OcaFilterArbitraryCurve.self)
+    try register(OcaDynamics.self)
+    try register(OcaDynamicsDetector.self)
+    try register(OcaDynamicsCurve.self)
 
     // sensors
     try register(OcaSensor.self)
@@ -159,6 +173,14 @@ public class OcaDeviceClassRegistry {
     try register(OcaAudioLevelSensor.self)
     try register(OcaIdentificationSensor.self)
     try register(OcaTemperatureSensor.self)
+    try register(OcaTimeIntervalSensor.self)
+    try register(OcaFrequencySensor.self)
+    try register(OcaVoltageSensor.self)
+    try register(OcaCurrentSensor.self)
+    try register(OcaImpedanceSensor.self)
+    try register(OcaGainSensor.self)
+    try register(OcaPowerSensor.self)
+    try register(OcaStateSensor.self)
 
     // application networks
     try register(OcaApplicationNetwork.self)

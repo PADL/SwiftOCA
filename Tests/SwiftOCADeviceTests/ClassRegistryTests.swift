@@ -38,6 +38,28 @@ struct ClassRegistryTests {
       == SwiftOCADevice.OcaMediaClock3.self)
     #expect(try registry.match(classID: OcaClassID("1.2.16"))
       == SwiftOCADevice.OcaTimeSource.self)
+    #expect(try registry.match(classID: OcaClassID("1.1.1.14"))
+      == SwiftOCADevice.OcaDynamics.self)
+    #expect(try registry.match(classID: OcaClassID("1.1.1.7.1"))
+      == SwiftOCADevice.OcaDelayExtended.self)
+  }
+
+  @Test @OcaDevice
+  func resolvesNewlyAddedClasses() throws {
+    let registry = OcaDeviceClassRegistry.shared
+
+    #expect(try registry.match(classID: OcaClassID("1.1.2.7"))
+      == SwiftOCADevice.OcaVoltageSensor.self)
+    #expect(try registry.match(classID: OcaClassID("1.1.2.11"))
+      == SwiftOCADevice.OcaPowerSensor.self)
+    #expect(try registry.match(classID: OcaClassID("1.1.2.12"))
+      == SwiftOCADevice.OcaStateSensor.self)
+    #expect(try registry.match(classID: OcaClassID("1.1.1.16"))
+      == SwiftOCADevice.OcaDynamicsCurve.self)
+    #expect(try registry.match(classID: OcaClassID("1.1.1.23"))
+      == SwiftOCADevice.OcaSamplingRateConverter.self)
+    #expect(try registry.match(classID: OcaClassID("1.2.7"))
+      == SwiftOCADevice.OcaPowerSupply.self)
   }
 
   /// an unknown subclass still resolves to the nearest registered superclass
