@@ -812,12 +812,13 @@ package actor Ocp1OpenSSLEngine {
     try await clearingOpenSSLErrors {
       while !handshakeComplete {
         let ret = SSL_do_handshake(ssl)
+        let err = ret == 1 ? 0 : SSL_get_error(ssl, ret)
         try await drainOutbound(write: networkWrite)
         if ret == 1 {
           handshakeComplete = true
           return
         }
-        try await serviceWantSignal(ret: ret, read: networkRead, write: networkWrite)
+        try await serviceWantSignal(err: err, read: networkRead, write: networkWrite)
       }
     }
   }
@@ -840,12 +841,13 @@ package actor Ocp1OpenSSLEngine {
         let ret = buffer.withUnsafeMutableBufferPointer { buf -> CInt in
           SSL_read(ssl, buf.baseAddress, CInt(want))
         }
+        let err = ret > 0 ? 0 : SSL_get_error(ssl, ret)
         try await drainOutbound(write: networkWrite)
         if ret > 0 {
           result.append(contentsOf: buffer.prefix(Int(ret)))
           continue
         }
-        try await serviceWantSignal(ret: ret, read: networkRead, write: networkWrite)
+        try await serviceWantSignal(err: err, read: networkRead, write: networkWrite)
       }
       return result
     }
@@ -868,12 +870,13 @@ package actor Ocp1OpenSSLEngine {
           let base = raw.bindMemory(to: UInt8.self).baseAddress!.advanced(by: written)
           return SSL_write(ssl, base, CInt(remaining))
         }
+        let err = ret > 0 ? 0 : SSL_get_error(ssl, ret)
         try await drainOutbound(write: networkWrite)
         if ret > 0 {
           written += Int(ret)
           continue
         }
-        try await serviceWantSignal(ret: ret, read: networkRead, write: networkWrite)
+        try await serviceWantSignal(err: err, read: networkRead, write: networkWrite)
       }
       return written
     }
@@ -973,11 +976,12 @@ package actor Ocp1OpenSSLEngine {
         let ret = buffer.withUnsafeMutableBufferPointer { buf -> CInt in
           SSL_read(ssl, buf.baseAddress, CInt(buf.count))
         }
+        let err = ret > 0 ? 0 : SSL_get_error(ssl, ret)
         try await drainOutbound(write: networkWrite)
         if ret > 0 {
           return Data(buffer.prefix(Int(ret)))
         }
-        try await serviceWantSignal(ret: ret, read: networkRead, write: networkWrite)
+        try await serviceWantSignal(err: err, read: networkRead, write: networkWrite)
       }
     }
   }
@@ -1000,11 +1004,11 @@ package actor Ocp1OpenSSLEngine {
       }
       if !handshakeComplete {
         let ret = SSL_do_handshake(ssl)
+        let err = ret == 1 ? 0 : SSL_get_error(ssl, ret)
         try await drainOutbound(write: networkWrite)
         if ret == 1 {
           handshakeComplete = true
         } else {
-          let err = SSL_get_error(ssl, ret)
           switch err {
           case SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
             return nil
@@ -1019,11 +1023,11 @@ package actor Ocp1OpenSSLEngine {
       let n = buffer.withUnsafeMutableBufferPointer { buf -> CInt in
         SSL_read(ssl, buf.baseAddress, CInt(buf.count))
       }
+      let err = n > 0 ? 0 : SSL_get_error(ssl, n)
       try await drainOutbound(write: networkWrite)
       if n > 0 {
         return Data(buffer.prefix(Int(n)))
       }
-      let err = SSL_get_error(ssl, n)
       switch err {
       case SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
         return nil
@@ -1101,13 +1105,15 @@ package actor Ocp1OpenSSLEngine {
   /// Advance the transport in whichever direction OpenSSL last signaled;
   /// throw on terminal errors. WANT_READ pulls from the network and feeds
   /// `rbio`; WANT_WRITE drains `wbio`; ZERO_RETURN is close_notify.
+  /// `err` must be captured by the caller immediately after its `SSL_*` call:
+  /// `SSL_get_error` reads thread-local state, and an await in between can move
+  /// the task to another thread, yielding a code from someone else's handshake.
   private func serviceWantSignal(
-    ret: CInt,
+    err: CInt,
     read networkRead: @Sendable (Int) async throws -> Data,
     write networkWrite: @Sendable (Data) async throws -> Void
   ) async throws {
     guard let ssl else { throw Ocp1Error.notConnected }
-    let err = SSL_get_error(ssl, ret)
     switch err {
     case SSL_ERROR_WANT_READ:
       let chunk = try await networkRead(Self.readBufferSize)
