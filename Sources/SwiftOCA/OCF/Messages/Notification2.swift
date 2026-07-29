@@ -80,6 +80,12 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
   }
 
   init(parsing input: inout ParserSpan) throws {
+    // notificationSize(4) + event(8) + notificationType(1) fixed bytes plus at
+    // least one byte of `data`; reject a truncated notification rather than
+    // surfacing it as a valid empty-payload event.
+    guard input.count >= 14 else {
+      throw Ocp1Error.pduTooShort
+    }
     notificationSize = try OcaUint32(parsingBigEndian: &input)
     event = try OcaEvent(parsing: &input)
     notificationType = try Ocp1Notification2Type(parsing: &input)

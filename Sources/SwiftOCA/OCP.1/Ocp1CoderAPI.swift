@@ -158,6 +158,13 @@ extension _Ocp1Decodable {
   /// Decodes from a standalone buffer, for call sites that hold a whole PDU
   /// rather than a position within one.
   init(bytes: borrowing Data) throws {
+    try self.init(decodingOcp1Bytes: bytes)
+  }
+
+  /// Shared body behind every `init(bytes:)`: this internal default plus the
+  /// `package`/`@_spi public` redeclarations that exist only to widen its
+  /// visibility. The span-bootstrapping and error-mapping contract lives here.
+  init(decodingOcp1Bytes bytes: borrowing Data) throws {
     self = try Ocp1Error.mapping { [bytes = copy bytes] in
       try bytes.withParserSpan { try Self(parsing: &$0) }
     }

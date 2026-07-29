@@ -126,7 +126,7 @@ package extension Ocp1Connection {
     /// bounds the rest of the parse: if the sender declared more than it sent,
     /// this throws `pduTooShort` instead of running off the end of the buffer.
     var body = try input.sliceSpan(
-      byteCount: Int(header.pduSize) - Ocp1Header.HeaderSize
+      byteCount: Int(throwingOnOverflow: header.pduSize) - Ocp1Header.HeaderSize
     )
 
     if header.pduType == .ocaKeepAlive {
@@ -142,7 +142,7 @@ package extension Ocp1Connection {
       /// The size field is part of the message it describes, so read it from a
       /// lookahead span and leave `body` positioned at the start of the message.
       var lookahead = try body.seeking(toRelativeOffset: 0)
-      let messageSize = try Int(OcaUint32(parsingBigEndian: &lookahead))
+      let messageSize = try Int(throwingOnOverflow: OcaUint32(parsingBigEndian: &lookahead))
       guard messageSize >= MemoryLayout<OcaUint32>.size else {
         throw Ocp1Error.invalidMessageSize
       }

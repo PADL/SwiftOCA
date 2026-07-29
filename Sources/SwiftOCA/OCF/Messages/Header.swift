@@ -65,7 +65,11 @@ public struct Ocp1Header: Codable, Sendable, _Ocp1Codable {
       throw Ocp1Error.invalidPduSize
     }
 
-    pduType = try OcaMessageType(parsing: &input)
+    let rawPduType = try OcaUint8(parsing: &input)
+    guard let pduType = OcaMessageType(rawValue: rawPduType) else {
+      throw Ocp1Error.invalidMessageType
+    }
+    self.pduType = pduType
     messageCount = try OcaUint16(parsingBigEndian: &input)
   }
 

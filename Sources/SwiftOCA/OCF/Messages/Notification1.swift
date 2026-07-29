@@ -88,9 +88,7 @@ public struct Ocp1Notification1: _Ocp1MessageCodable, Sendable {
   // FIXME: package visibility required for OCAEventBenchmark
 
   package init(bytes: borrowing Data) throws {
-    self = try Ocp1Error.mapping { [bytes = copy bytes] in
-      try bytes.withParserSpan { try Self(parsing: &$0) }
-    }
+    try self.init(decodingOcp1Bytes: bytes)
   }
 
   package init(parsing input: inout ParserSpan) throws {

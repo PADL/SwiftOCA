@@ -177,9 +177,7 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
   // property ID from a standalone buffer rather than mid-PDU
   @_spi(SwiftOCAPrivate)
   public init(bytes: borrowing Data) throws {
-    self = try Ocp1Error.mapping { [bytes = copy bytes] in
-      try bytes.withParserSpan { try Self(parsing: &$0) }
-    }
+    try self.init(decodingOcp1Bytes: bytes)
   }
 
   // SPI visibility for SwiftOCADevice and FlutterSwiftOCA

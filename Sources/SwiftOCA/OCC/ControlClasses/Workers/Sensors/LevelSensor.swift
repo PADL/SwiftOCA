@@ -44,9 +44,7 @@ extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Encodable {
 extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Decodable {
   @_spi(SwiftOCAPrivate)
   public init(bytes: borrowing Data) throws {
-    self = try Ocp1Error.mapping { [bytes = copy bytes] in
-      try bytes.withParserSpan { try Self(parsing: &$0) }
-    }
+    try self.init(decodingOcp1Bytes: bytes)
   }
 
   @_spi(SwiftOCAPrivate) @inlinable

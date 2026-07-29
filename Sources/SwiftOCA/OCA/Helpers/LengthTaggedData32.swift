@@ -79,7 +79,13 @@ extension LengthTaggedData32: Decodable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
 
-    let count = try Int(container.decode(UInt32.self))
+    let rawCount = try container.decode(UInt32.self)
+    guard let count = Int(exactly: rawCount) else {
+      throw DecodingError.dataCorruptedError(
+        in: container,
+        debugDescription: "LengthTaggedData32 length \(rawCount) exceeds Int.max"
+      )
+    }
     wrappedValue = Data(count: count)
     for i in 0..<count {
       let byte = try container.decode(UInt8.self)
@@ -100,7 +106,7 @@ extension LengthTaggedData32: Ocp1BlobRepresentable {
 
 extension LengthTaggedData32: _Ocp1Codable {
   init(parsing input: inout ParserSpan) throws {
-    let count = try Int(UInt32(parsingBigEndian: &input))
+    let count = try Int(throwingOnOverflow: UInt32(parsingBigEndian: &input))
     wrappedValue = try Data(parsing: &input, byteCount: count)
   }
 
