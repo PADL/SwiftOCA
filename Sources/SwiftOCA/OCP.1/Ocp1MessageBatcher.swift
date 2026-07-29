@@ -67,9 +67,9 @@ final class Ocp1MessageBatcher: Sendable {
     try await sendEncodedPdu(Data(encodedPdu))
   }
 
-  package func enqueue(_ message: Ocp1Message, type messageType: OcaMessageType) async throws {
+  func enqueue(_ message: some _Ocp1MessageCodable, type messageType: OcaMessageType) async throws {
     var encodedPdu = EncodedPDU()
-    try (message as! _Ocp1MessageCodable).encode(type: messageType, into: &encodedPdu)
+    try message.encode(type: messageType, into: &encodedPdu)
 
     // short-circuit, send immediately if batching is disabled
     guard dequeueInterval > .zero else {

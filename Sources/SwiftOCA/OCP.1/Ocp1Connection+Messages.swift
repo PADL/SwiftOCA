@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -22,42 +22,50 @@ import Foundation
 
 extension Ocp1Connection {
   private func sendMessage(
-    _ message: Ocp1Message,
+    _ message: some _Ocp1MessageCodable,
     type messageType: OcaMessageType
   ) async throws {
     try await batcher.enqueue(message, type: messageType)
   }
 
-  public func sendCommand(_ command: Ocp1Command) async throws {
-    try await sendMessage(command, type: .ocaCmd)
-  }
-
-  private func response(for handle: OcaUint32) async throws -> Ocp1Response {
+  /// `command.handle` is assigned here, replacing whatever the caller set:
+  /// only the connection knows which handles it has issued.
+  public func sendCommand(_ command: consuming Ocp1Command) async throws {
     guard let monitor else {
       throw Ocp1Error.notConnected
     }
 
-    return try await withUnsafeThrowingContinuation { continuation in
-      monitor.register(handle: handle, continuation: continuation)
-    }
+    monitor.allocateCommandHandle(&command, responseRequired: false)
+    try await sendMessage(command, type: .ocaCmd)
   }
 
-  public func sendCommandRrq(_ command: Ocp1Command) async throws -> Ocp1Response {
-    try await withThrowingTimeout(
+  /// `command.handle` is assigned here, replacing whatever the caller set:
+  /// only the connection knows which handles are in flight.
+  public func sendCommandRrq(_ command: consuming Ocp1Command) async throws -> Ocp1Response {
+    guard let monitor else {
+      throw Ocp1Error.notConnected
+    }
+
+    let handle = monitor.allocateCommandHandle(&command, responseRequired: true)
+    defer { monitor.releaseCommandHandle(handle) }
+
+    let request = consume command
+
+    return try await withThrowingTimeout(
       of: responseTimeout,
       clock: .continuous,
       operation: { [self] in
-        try await sendMessage(command, type: .ocaCmdRrq)
-        return try await response(for: command.handle)
-      }, onTimeout: { [self] in
-        try await monitor?.resumeTimedOut(handle: command.handle)
+        try await sendMessage(request, type: .ocaCmdRrq)
+        return try await monitor.response(for: handle)
+      }, onTimeout: {
+        monitor.resumeTimedOut(handle: handle)
       }
     )
   }
 
   func sendKeepAlive() async throws {
     try await sendMessage(
-      Ocp1KeepAlive.keepAlive(interval: heartbeatTime),
+      Ocp1KeepAlive.message(interval: heartbeatTime),
       type: .ocaKeepAlive
     )
   }

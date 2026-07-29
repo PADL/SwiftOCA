@@ -27,9 +27,8 @@ private extension OcaRoot {
     parameterData: Data
   ) async throws {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
-    let command = await Ocp1Command(
+    let command = Ocp1Command(
       commandSize: 0,
-      handle: connectionDelegate.getNextCommandHandle(),
       targetONo: objectNumber,
       methodID: methodID,
       parameters: Ocp1Parameters(
@@ -163,9 +162,8 @@ public extension OcaRoot {
   ) async throws -> Ocp1Response {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
-    let command = await Ocp1Command(
+    let command = Ocp1Command(
       commandSize: 0,
-      handle: connectionDelegate.getNextCommandHandle(),
       targetONo: objectNumber,
       methodID: methodID,
       parameters: Ocp1Parameters(

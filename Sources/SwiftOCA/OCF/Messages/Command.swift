@@ -37,7 +37,8 @@ public struct Ocp1Parameters: Codable, Sendable {
 
 public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
   public let commandSize: OcaUint32
-  public let handle: OcaUint32
+  /// assigned by the connection when the command is sent
+  public var handle: OcaUint32
   public let targetONo: OcaONo
   public let methodID: OcaMethodID
   public let parameters: Ocp1Parameters
@@ -46,7 +47,7 @@ public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
 
   public init(
     commandSize: OcaUint32 = 0,
-    handle: OcaUint32,
+    handle: OcaUint32 = 0,
     targetONo: OcaONo,
     methodID: OcaMethodID,
     parameters: Ocp1Parameters = .init()
