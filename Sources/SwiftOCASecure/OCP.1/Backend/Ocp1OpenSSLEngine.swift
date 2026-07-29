@@ -813,12 +813,18 @@ package actor Ocp1OpenSSLEngine {
       while !handshakeComplete {
         let ret = SSL_do_handshake(ssl)
         let err = ret == 1 ? 0 : SSL_get_error(ssl, ret)
+        let detail = Self.diagnostics(for: err)
         try await drainOutbound(write: networkWrite)
         if ret == 1 {
           handshakeComplete = true
           return
         }
-        try await serviceWantSignal(err: err, read: networkRead, write: networkWrite)
+        try await serviceWantSignal(
+          err: err,
+          detail: detail,
+          read: networkRead,
+          write: networkWrite
+        )
       }
     }
   }
@@ -842,12 +848,18 @@ package actor Ocp1OpenSSLEngine {
           SSL_read(ssl, buf.baseAddress, CInt(want))
         }
         let err = ret > 0 ? 0 : SSL_get_error(ssl, ret)
+        let detail = Self.diagnostics(for: err)
         try await drainOutbound(write: networkWrite)
         if ret > 0 {
           result.append(contentsOf: buffer.prefix(Int(ret)))
           continue
         }
-        try await serviceWantSignal(err: err, read: networkRead, write: networkWrite)
+        try await serviceWantSignal(
+          err: err,
+          detail: detail,
+          read: networkRead,
+          write: networkWrite
+        )
       }
       return result
     }
@@ -871,12 +883,18 @@ package actor Ocp1OpenSSLEngine {
           return SSL_write(ssl, base, CInt(remaining))
         }
         let err = ret > 0 ? 0 : SSL_get_error(ssl, ret)
+        let detail = Self.diagnostics(for: err)
         try await drainOutbound(write: networkWrite)
         if ret > 0 {
           written += Int(ret)
           continue
         }
-        try await serviceWantSignal(err: err, read: networkRead, write: networkWrite)
+        try await serviceWantSignal(
+          err: err,
+          detail: detail,
+          read: networkRead,
+          write: networkWrite
+        )
       }
       return written
     }
@@ -977,11 +995,17 @@ package actor Ocp1OpenSSLEngine {
           SSL_read(ssl, buf.baseAddress, CInt(buf.count))
         }
         let err = ret > 0 ? 0 : SSL_get_error(ssl, ret)
+        let detail = Self.diagnostics(for: err)
         try await drainOutbound(write: networkWrite)
         if ret > 0 {
           return Data(buffer.prefix(Int(ret)))
         }
-        try await serviceWantSignal(err: err, read: networkRead, write: networkWrite)
+        try await serviceWantSignal(
+          err: err,
+          detail: detail,
+          read: networkRead,
+          write: networkWrite
+        )
       }
     }
   }
@@ -1005,6 +1029,7 @@ package actor Ocp1OpenSSLEngine {
       if !handshakeComplete {
         let ret = SSL_do_handshake(ssl)
         let err = ret == 1 ? 0 : SSL_get_error(ssl, ret)
+        let detail = Self.diagnostics(for: err)
         try await drainOutbound(write: networkWrite)
         if ret == 1 {
           handshakeComplete = true
@@ -1105,11 +1130,12 @@ package actor Ocp1OpenSSLEngine {
   /// Advance the transport in whichever direction OpenSSL last signaled;
   /// throw on terminal errors. WANT_READ pulls from the network and feeds
   /// `rbio`; WANT_WRITE drains `wbio`; ZERO_RETURN is close_notify.
-  /// `err` must be captured by the caller immediately after its `SSL_*` call:
-  /// `SSL_get_error` reads thread-local state, and an await in between can move
-  /// the task to another thread, yielding a code from someone else's handshake.
+  /// `err` and `detail` must be captured by the caller immediately after its
+  /// `SSL_*` call: both read thread-local state, and an await in between can
+  /// move the task to another thread, yielding another connection's diagnosis.
   private func serviceWantSignal(
     err: CInt,
+    detail: String,
     read networkRead: @Sendable (Int) async throws -> Data,
     write networkWrite: @Sendable (Data) async throws -> Void
   ) async throws {
@@ -1128,7 +1154,7 @@ package actor Ocp1OpenSSLEngine {
     case SSL_ERROR_ZERO_RETURN:
       throw Ocp1Error.notConnected
     default:
-      throw Ocp1OpenSSLError(code: err, detail: Self.collectErrorMessages())
+      throw Ocp1OpenSSLError(code: err, detail: detail)
     }
   }
 
@@ -1290,6 +1316,17 @@ package actor Ocp1OpenSSLEngine {
       throw Ocp1OpenSSLError(code: 0, detail: collectErrorMessages())
     }
     return result
+  }
+
+  /// Drains the queue for a terminal code, on the thread that produced it.
+  /// A want-signal leaves it alone: there is nothing to report yet.
+  private static func diagnostics(for err: CInt) -> String {
+    switch err {
+    case SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE, 0:
+      ""
+    default:
+      collectErrorMessages()
+    }
   }
 
   fileprivate static func collectErrorMessages() -> String {
