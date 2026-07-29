@@ -59,8 +59,10 @@ public struct Ocp1KeepAlive2: _Ocp1MessageCodable, Sendable {
 
 public typealias Ocp1KeepAlive = Ocp1KeepAlive1
 
-package extension Ocp1KeepAlive {
-  static func keepAlive(interval heartbeatTime: Duration) -> Ocp1Message {
+extension Ocp1KeepAlive {
+  /// Seconds if the interval is at least one, milliseconds otherwise: two
+  /// distinct message types, so the choice can only be made at runtime.
+  static func message(interval heartbeatTime: Duration) -> any _Ocp1MessageCodable {
     let seconds = heartbeatTime.seconds
     if seconds >= 1 {
       return Ocp1KeepAlive1(heartBeatTime: OcaUint16(seconds))
@@ -68,5 +70,13 @@ package extension Ocp1KeepAlive {
       let milliseconds = heartbeatTime.milliseconds
       return Ocp1KeepAlive2(heartBeatTime: OcaUint32(max(milliseconds, 1)))
     }
+  }
+}
+
+package extension Ocp1KeepAlive {
+  /// `_Ocp1MessageCodable` is internal, so callers in other modules — which
+  /// batch messages heterogeneously anyway — get the wider erasure.
+  static func keepAlive(interval heartbeatTime: Duration) -> Ocp1Message {
+    message(interval: heartbeatTime)
   }
 }

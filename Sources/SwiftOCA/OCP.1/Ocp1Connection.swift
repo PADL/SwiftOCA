@@ -284,8 +284,6 @@ open class Ocp1Connection: CustomStringConvertible {
   nonisolated(unsafe) var logger = Logger(label: "com.padl.SwiftOCA")
   var connectionID = 0
 
-  /// internal rather than private so tests can wind it to the wrap boundary
-  var nextCommandHandle = UInt64(0)
   private var continuousClockReference = ContinuousClockReference()
 
   var lastMessageSentTime = ContinuousClock.recentPast
@@ -300,7 +298,7 @@ open class Ocp1Connection: CustomStringConvertible {
     Ocp1ConnectionStatistics(
       connectionState: currentConnectionState,
       connectionID: connectionID,
-      requestCount: nextCommandHandle,
+      requestCount: monitor?.requestCount ?? 0,
       outstandingRequests: monitor?.outstandingRequests ?? [],
       cachedObjectCount: objects.count,
       subscribedEvents: Array(subscriptions.keys),
@@ -318,95 +316,6 @@ open class Ocp1Connection: CustomStringConvertible {
       return heartbeatTime * 2
     } else {
       return timeout
-    }
-  }
-
-  /// Monitor for matching requests and responses.
-  /// Deliberately not isolated to `@OcaConnection` so that the
-  /// receiveMessages/keepAlive loops run on the default executor and
-  /// are not starved by work on other connections sharing the global actor.
-  final class Monitor: Sendable, CustomStringConvertible {
-    typealias Continuation = UnsafeContinuation<Ocp1Response, Error>
-
-    private let _connection: Weak<Ocp1Connection>
-    let _connectionID: Int
-    private let _continuations = Mutex<[OcaUint32: Continuation]>([:])
-    private let _lastMessageReceivedTime = Mutex<ContinuousClock.Instant>(.now)
-
-    init(_ connection: Ocp1Connection, id: Int) {
-      _connection = Weak(connection)
-      _connectionID = id
-      updateLastMessageReceivedTime()
-    }
-
-    var connection: Ocp1Connection? {
-      _connection.object
-    }
-
-    func run() async throws {
-      guard let connection else { throw Ocp1Error.notConnected }
-      do {
-        try await receiveMessages(connection)
-      } catch Ocp1Error.notConnected {
-        _resumeAllNotConnected()
-      }
-    }
-
-    func stop() {
-      _resumeAllNotConnected()
-    }
-
-    func register(handle: OcaUint32, continuation: Continuation) {
-      _continuations.withLock { $0[handle] = continuation }
-    }
-
-    private func _resumeAllNotConnected() {
-      let continuations = _continuations.withLock { continuations in
-        let values = Array(continuations.values)
-        continuations.removeAll()
-        return values
-      }
-      for continuation in continuations {
-        continuation.resume(throwing: Ocp1Error.notConnected)
-      }
-    }
-
-    func resumeTimedOut(handle: OcaUint32) throws {
-      let continuation = try _findAndRemoveContinuation(for: handle)
-      continuation.resume(with: Result<Ocp1Response, Ocp1Error>.failure(Ocp1Error.responseTimeout))
-    }
-
-    func resume(with response: Ocp1Response) throws {
-      let continuation = try _findAndRemoveContinuation(for: response.handle)
-      continuation.resume(with: Result<Ocp1Response, Ocp1Error>.success(response))
-    }
-
-    private func _findAndRemoveContinuation(
-      for handle: OcaUint32
-    ) throws -> Continuation {
-      try _continuations.withLock { continuations in
-        guard let continuation = continuations[handle] else {
-          throw Ocp1Error.invalidHandle
-        }
-        continuations.removeValue(forKey: handle)
-        return continuation
-      }
-    }
-
-    func updateLastMessageReceivedTime() {
-      _lastMessageReceivedTime.withLock { $0 = .now }
-    }
-
-    fileprivate var outstandingRequests: [OcaUint32] {
-      _continuations.withLock { Array($0.keys) }
-    }
-
-    var lastMessageReceivedTime: ContinuousClock.Instant {
-      _lastMessageReceivedTime.withLock { $0 }
-    }
-
-    var description: String {
-      "Ocp1Connection.Monitor[\(_connectionID)]"
     }
   }
 
@@ -432,25 +341,6 @@ open class Ocp1Connection: CustomStringConvertible {
     add(object: deviceManager)
     _configureTracing()
     _configureBatching(options.batchingOptions)
-  }
-
-  /// The handle is the low 32 bits of the request counter, so it wraps rather
-  /// than trapping: it is a wire field with no meaning beyond matching a
-  /// response to its request, and a controller issuing 10k requests/sec reaches
-  /// 2^32 in about five days. The counter itself is 64-bit and won't wrap.
-  ///
-  /// Handles skip zero on wrap, because zero is the default value of
-  /// `Ocp1Response.handle`: a device answering a protocol error with a
-  /// zero-filled response must not match a live request.
-  func getNextCommandHandle() async -> OcaUint32 {
-    nextCommandHandle += 1
-    let handle = OcaUint32(truncatingIfNeeded: nextCommandHandle)
-    guard handle != 0 else {
-      // the counter value that would yield 1 is the one being skipped
-      nextCommandHandle += 1
-      return 1
-    }
-    return handle
   }
 
   open func connectDevice() async throws {}
