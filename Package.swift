@@ -17,6 +17,72 @@ if EnableASAN {
 
 var PlatformPackageDependencies: [Package.Dependency] = []
 var PlatformTargetDependencies: [Target.Dependency] = []
+
+// Android NSD support, gated on SWIFTOCA_ANDROID_NSD.
+//
+// NB: an environment variable rather than a manifest `#if os(Android)`, because
+// a manifest's `#if os(...)` describes the *build host*, not the build target --
+// Android is cross-compiled from macOS or Linux, so `os(Android)` is never true
+// here. This matches FlutterSwift's FLUTTER_SWIFT_JVM gate; the Android gradle
+// build sets it.
+//
+// A trait would be the tidier switch, but cannot work alone: the swift-java
+// plugin usage below takes no condition (PluginUsage has no `condition:`), so
+// pruning swift-java via a trait leaves the plugin product dangling and breaks
+// every non-Android build.
+//
+// When JAVA_HOME is absent the jni.h flags are simply omitted; the target is
+// unreachable in that case anyway.
+var AndroidNSDSwiftSettings: [SwiftSetting] = []
+
+if let javaHome = ProcessInfo.processInfo.environment["JAVA_HOME"] {
+  let javaIncludePath = ProcessInfo.processInfo
+    .environment["JAVA_INCLUDE_PATH"] ?? "\(javaHome)/include"
+  #if os(Linux)
+  let javaPlatformIncludePath = "\(javaIncludePath)/linux"
+  #else
+  let javaPlatformIncludePath = "\(javaIncludePath)/darwin"
+  #endif
+
+  AndroidNSDSwiftSettings = [
+    .unsafeFlags([
+      "-I\(javaIncludePath)",
+      "-I\(javaPlatformIncludePath)",
+    ]),
+  ]
+}
+
+let AndroidNSDBuild = (ProcessInfo.processInfo.environment["SWIFTOCA_ANDROID_NSD"]
+  .flatMap(Bool.init)) ?? false
+
+var AndroidTargets: [Target] = []
+
+if AndroidNSDBuild {
+  AndroidTargets += [
+    .target(
+      name: "AndroidNetworkServiceDiscovery",
+      dependencies: [
+        .product(name: "SwiftJava", package: "swift-java"),
+      ],
+      swiftSettings: AndroidNSDSwiftSettings,
+      plugins: [
+        .plugin(name: "JavaCompilerPlugin", package: "swift-java"),
+        .plugin(name: "SwiftJavaPlugin", package: "swift-java"),
+      ]
+    ),
+  ]
+
+  PlatformPackageDependencies += [
+    .package(url: "https://github.com/swiftlang/swift-java", branch: "main"),
+  ]
+
+  PlatformTargetDependencies += [
+    .target(
+      name: "AndroidNetworkServiceDiscovery",
+      condition: .when(platforms: [.android])
+    ),
+  ]
+}
 // Linux-only OpenSSL + IORing deps for SwiftOCASecure / SwiftOCASecureDevice.
 // Populated inside #if os(Linux) below; empty on Apple platforms, where these
 // packages are not declared as package dependencies (the secure targets are
@@ -349,5 +415,5 @@ let package = Package(
     .init(name: "NonEmbeddedBuild", description: "Default build footprint"),
   ],
   dependencies: CommonPackageDependencies + PlatformPackageDependencies,
-  targets: CommonTargets + PlatformTargets
+  targets: CommonTargets + PlatformTargets + AndroidTargets
 )

@@ -14,13 +14,18 @@
 // limitations under the License.
 //
 
-#if canImport(Darwin) || canImport(dnssd)
+#if canImport(Darwin) || canImport(dnssd) || os(Android)
 
 import AsyncAlgorithms
 import AsyncExtensions
 import Dispatch
 import Foundation
 import SocketAddress
+#if os(Android)
+// sa_family_t and AF_UNSPEC come from Bionic, which Foundation does not
+// re-export on Android.
+import Android
+#endif
 
 /// A client-side connection broker that discovers OCA devices via DNS Service Discovery
 /// and manages connections to them.
@@ -270,6 +275,8 @@ public actor OcaConnectionBroker {
       browser = try OcaNetServiceBrowser(serviceType: serviceType)
       #elseif canImport(dnssd)
       browser = try OcaDNSServiceBrowser(serviceType: serviceType)
+      #elseif os(Android)
+      browser = try OcaNsdServiceBrowser(serviceType: serviceType)
       #else
       throw Ocp1Error.notImplemented
       #endif
