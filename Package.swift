@@ -17,6 +17,84 @@ if EnableASAN {
 
 var PlatformPackageDependencies: [Package.Dependency] = []
 var PlatformTargetDependencies: [Target.Dependency] = []
+
+// Android NSD support, gated on the `AndroidNSD` trait.
+//
+// NB: this is a trait rather than a manifest `#if os(Android)`, because a
+// manifest's `#if os(...)` describes the *build host*, not the build target --
+// Android is cross-compiled from macOS or Linux, so `os(Android)` is never true
+// here. A trait also lets SwiftPM prune swift-java (and its swift-syntax
+// dependency) from the resolved graph entirely when the trait is off, so
+// non-Android consumers never fetch it.
+//
+// The jni.h include path is resolved eagerly because the manifest cannot read
+// enabled traits; when JAVA_HOME is absent we simply omit the flags, as the
+// target is unreachable with the trait disabled.
+var AndroidNSDSwiftSettings: [SwiftSetting] = []
+
+if let javaHome = ProcessInfo.processInfo.environment["JAVA_HOME"] {
+  let javaIncludePath = ProcessInfo.processInfo
+    .environment["JAVA_INCLUDE_PATH"] ?? "\(javaHome)/include"
+  #if os(Linux)
+  let javaPlatformIncludePath = "\(javaIncludePath)/linux"
+  #else
+  let javaPlatformIncludePath = "\(javaIncludePath)/darwin"
+  #endif
+
+  AndroidNSDSwiftSettings = [
+    .unsafeFlags([
+      "-I\(javaIncludePath)",
+      "-I\(javaPlatformIncludePath)",
+    ]),
+  ]
+}
+
+// The target declaration itself has to be gated on something the manifest can
+// evaluate, which a trait is not: `Target.PluginUsage.plugin(name:package:)`
+// takes no condition, so the swift-java plugin usage below is unconditional. If
+// the trait prunes swift-java from the resolved graph, that plugin product no
+// longer exists and every non-Android build fails with "product
+// 'JavaCompilerPlugin' ... not found in package 'swift-java'".
+//
+// So SWIFTOCA_ANDROID_NSD decides whether the target exists at all (the Android
+// build sets it), while the AndroidNSD trait remains the switch consumers use
+// to link it. Folding the two back into one is what splitting this target into
+// its own package would buy -- see Documentation/AndroidNSD.md.
+let AndroidNSDBuild = (ProcessInfo.processInfo.environment["SWIFTOCA_ANDROID_NSD"]
+  .flatMap(Bool.init)) ?? false
+
+var AndroidTargets: [Target] = []
+
+if AndroidNSDBuild {
+  AndroidTargets += [
+    .target(
+      name: "AndroidNetworkServiceDiscovery",
+      dependencies: [
+        .product(
+          name: "SwiftJava",
+          package: "swift-java",
+          condition: .when(traits: ["AndroidNSD"])
+        ),
+      ],
+      swiftSettings: AndroidNSDSwiftSettings,
+      plugins: [
+        .plugin(name: "JavaCompilerPlugin", package: "swift-java"),
+        .plugin(name: "SwiftJavaPlugin", package: "swift-java"),
+      ]
+    ),
+  ]
+
+  PlatformPackageDependencies += [
+    .package(url: "https://github.com/swiftlang/swift-java", branch: "main"),
+  ]
+
+  PlatformTargetDependencies += [
+    .target(
+      name: "AndroidNetworkServiceDiscovery",
+      condition: .when(platforms: [.android], traits: ["AndroidNSD"])
+    ),
+  ]
+}
 // Linux-only OpenSSL + IORing deps for SwiftOCASecure / SwiftOCASecureDevice.
 // Populated inside #if os(Linux) below; empty on Apple platforms, where these
 // packages are not declared as package dependencies (the secure targets are
@@ -347,7 +425,11 @@ let package = Package(
   traits: [
     .default(enabledTraits: ["NonEmbeddedBuild"]),
     .init(name: "NonEmbeddedBuild", description: "Default build footprint"),
+    .init(
+      name: "AndroidNSD",
+      description: "Discover OCA devices via Android's NsdManager (requires swift-java)"
+    ),
   ],
   dependencies: CommonPackageDependencies + PlatformPackageDependencies,
-  targets: CommonTargets + PlatformTargets
+  targets: CommonTargets + PlatformTargets + AndroidTargets
 )
