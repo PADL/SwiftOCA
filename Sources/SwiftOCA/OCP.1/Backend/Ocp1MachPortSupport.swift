@@ -14,7 +14,13 @@
 // limitations under the License.
 //
 
-#if canImport(Darwin)
+// The Mach port transport is macOS-only, not Darwin-wide. The bootstrap_*
+// routines it needs (`bootstrap_register` in particular) are unavailable to
+// sandboxed apps and are flagged by App Store binary validation, so merely
+// linking them into an iOS app gets the submission rejected -- even if the
+// transport is never used. `os(macOS)` is false for Mac Catalyst (which is
+// os(iOS)) as well as tvOS/watchOS/visionOS, which is what we want.
+#if os(macOS)
 
 @preconcurrency import Darwin.Mach
 import Foundation

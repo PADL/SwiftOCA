@@ -221,7 +221,9 @@ open class OcaDeviceManager: OcaManager {
 }
 
 private func getPlatformUUID() -> String {
-  #if canImport(Darwin)
+  // IOKit is macOS-only: it is not a public framework on iOS/tvOS/watchOS, where
+  // this failed to compile at all. Those platforms take the empty fallback.
+  #if os(macOS)
   let platformExpertDevice = IOServiceMatching("IOPlatformExpertDevice")
   let platformExpert: io_service_t = IOServiceGetMatchingService(
     kIOMainPortDefault,

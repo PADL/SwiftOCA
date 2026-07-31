@@ -77,7 +77,8 @@ public let OcaUdpConnectionPrefix = "oca/udp"
 public let OcaWebSocketTcpConnectionPrefix = "ocaws/tcp"
 public let OcaLocalConnectionPrefix = "oca/local"
 public let OcaDatagramProxyConnectionPrefix = "oca/dg-proxy"
-#if canImport(Darwin)
+// macOS-only, not Darwin-wide: see Ocp1MachPortSupport.swift.
+#if os(macOS)
 public let OcaMachPortConnectionPrefix = "oca/mach"
 #endif
 

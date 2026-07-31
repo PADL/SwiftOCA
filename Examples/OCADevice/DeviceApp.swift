@@ -140,7 +140,7 @@ public enum DeviceApp {
     #endif
     let webSocketEndpoint = try await Ocp1WSDeviceEndpoint(address: listenAddress.data)
     #endif
-    #if canImport(Darwin)
+    #if os(macOS)
     let machPortEndpoint = try await Ocp1MachPortDeviceEndpoint(
       serviceName: "com.padl.OCADevice",
       device: device
@@ -280,7 +280,7 @@ public enum DeviceApp {
         try await webSocketEndpoint.run()
       }
       #endif
-      #if canImport(Darwin)
+      #if os(macOS)
       taskGroup.addTask {
         print("Starting OCP.1 Mach port endpoint \(machPortEndpoint)...")
         try await machPortEndpoint.run()

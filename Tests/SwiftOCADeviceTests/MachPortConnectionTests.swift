@@ -14,7 +14,8 @@
 // limitations under the License.
 //
 
-#if canImport(Darwin)
+// macOS-only, not Darwin-wide: see Ocp1MachPortSupport.swift.
+#if os(macOS)
 
 @testable @_spi(SwiftOCAPrivate) import SwiftOCA
 @testable @_spi(SwiftOCAPrivate) import SwiftOCADevice

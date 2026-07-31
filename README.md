@@ -14,11 +14,11 @@ All APIs are async-safe and run on macOS, iOS, Linux, and Windows: Apple platfor
 | Platform | TCP | UDP | WS client | WS server | Local | Mach |
 | -:       | :-  | :-  | :-        | :-        | :-    | :-   |
 | macOS    | ✅  | ✅  | ✅        | ✅        | ✅    | ✅   |
-| iOS      | ✅  | ✅  | ✅        | ✅        | ✅    | ✅   |
+| iOS      | ✅  | ✅  | ✅        | ✅        | ✅    | ❌   |
 | Linux    | ✅  | ✅  | ❌        | ✅        | ✅    | ❌   |
 | Windows  | ✅  | ❌  | ❌        | ✅        | ❌    | ❌   |
 
-The WebSocket client (WS client) uses Apple's `URLSessionWebSocketTask` and is therefore available on Apple platforms only. On Windows, datagram (UDP) endpoints are unavailable because FlyingSocks does not implement the `sendmsg`-based message API there, and Unix-domain (Local) sockets are not yet supported. Mach port transport is Darwin-only.
+The WebSocket client (WS client) uses Apple's `URLSessionWebSocketTask` and is therefore available on Apple platforms only. On Windows, datagram (UDP) endpoints are unavailable because FlyingSocks does not implement the `sendmsg`-based message API there, and Unix-domain (Local) sockets are not yet supported. Mach port transport is macOS-only: it depends on the `bootstrap_*` service APIs, which are unavailable to sandboxed apps and are rejected by App Store binary validation, so it is compiled out on iOS (including Mac Catalyst) and the other embedded Apple platforms.
 
 ## Features
 
@@ -26,7 +26,7 @@ The WebSocket client (WS client) uses Apple's `URLSessionWebSocketTask` and is t
 
 * **Device discovery**: `OcaConnectionBroker` discovers AES70 devices via DNS-SD/Bonjour (using `NetServiceBrowser` on Apple platforms, or `libdns_sd` on Linux), with support for TCP, UDP, and WebSocket service types. Devices can also be registered manually for direct connection without DNS-SD.
 * **WebSocket transport**: `Ocp1FlyingFoxConnection` provides client-side WebSocket connectivity on Apple platforms using `URLSessionWebSocketTask`.
-* **Mach port transport**: `Ocp1MachPortConnection` provides fast local IPC between processes on Darwin using Mach ports.
+* **Mach port transport**: `Ocp1MachPortConnection` provides fast local IPC between processes on macOS using Mach ports.
 * **Property observation**: `@OcaProperty` and `@OcaBoundedProperty` wrappers expose property changes as `AsyncSequence` streams, enabling reactive UI updates.
 * **JSON serialization**: read the full state of any remote object or block tree as a JSON-compatible dictionary via `jsonObject`.
 * **Automatic reconnection**: optionally reconnect when a connection drops or a device's IP address changes via mDNS, with configurable options for subscription refresh and object cache retention.
@@ -37,7 +37,7 @@ The WebSocket client (WS client) uses Apple's `URLSessionWebSocketTask` and is t
 * **`@OcaDeviceProperty`**: property wrapper that manages local state and notifies connected controllers on changes.
 * **Block and matrix containers**: `OcaBlock` and `OcaMatrix` for organizing objects into hierarchical or grid-based topologies.
 * **JSON serialization/deserialization**: persist and restore device state via `serialize`/`deserialize` and the parameter dataset API.
-* **Multiple transport endpoints**: run TCP, UDP, WebSocket, Unix domain socket, and Mach port (Darwin) endpoints concurrently.
+* **Multiple transport endpoints**: run TCP, UDP, WebSocket, Unix domain socket, and Mach port (macOS) endpoints concurrently.
 * **TLS-secured TCP** (`ocasec`): PSK (AES70 baseline) and X.509 certificate credentials on both Apple and Linux, with optional mTLS and TLS 1.3 external PSK. See [Documentation/TLS.md](Documentation/TLS.md).
 
 ### SwiftOCAUI

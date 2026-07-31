@@ -14,7 +14,8 @@
 // limitations under the License.
 //
 
-#if canImport(Darwin)
+// macOS-only, not Darwin-wide: see Ocp1MachPortSupport.swift.
+#if os(macOS)
 
 import AsyncExtensions
 import Darwin.Mach
