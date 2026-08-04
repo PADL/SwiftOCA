@@ -162,4 +162,52 @@ final class PropertySubscriptionTests: XCTestCase {
 
     try await harness.connection.disconnect()
   }
+
+  /// disconnect() empties the connection's subscription map without clearing
+  /// each object's cancellable. With .retainObjectCacheAfterDisconnect the
+  /// object survives holding one the connection no longer has; treating that as
+  /// "already subscribed" makes every later subscribe() a permanent no-op.
+  ///
+  /// Asserts on the connection, not the object's own isSubscribed, which is the
+  /// stale value under test.
+  func testObjectReRegistersAfterConnectionDroppedItsSubscription() async throws {
+    let harness = try await makeHarness()
+    defer { harness.endpointTask.cancel() }
+
+    let objectNumber: OcaONo = 0x0001_0003
+    let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
+    let (_, clientBlock) = try await makeBlockPair(
+      harness, objectNumber: objectNumber, role: "Retained"
+    )
+
+    await clientBlock.$label.subscribe(clientBlock)
+    let subscribed = await awaitConnectionSubscription(harness, event)
+    XCTAssertTrue(subscribed, "precondition: object should have subscribed")
+    // isSubscribed(event:) goes true when the entry is inserted, which is before
+    // the device-side AddSubscription completes; let it land before tearing down
+    try await Task.sleep(for: .milliseconds(300))
+
+    await harness.connection.removeSubscriptions()
+    let cleared = await harness.connection.isSubscribed(event: event)
+    XCTAssertFalse(cleared, "precondition: subscription map should be empty")
+
+    await clientBlock.$label.subscribe(clientBlock)
+    let reRegistered = await awaitConnectionSubscription(harness, event)
+    XCTAssertTrue(
+      reRegistered,
+      "object did not re-register after the connection dropped its subscription"
+    )
+  }
+
+  /// Waits until the connection holds a subscription for `event`.
+  private func awaitConnectionSubscription(
+    _ harness: Harness, _ event: OcaEvent, timeout: Duration = .seconds(5)
+  ) async -> Bool {
+    let deadline = ContinuousClock.now + timeout
+    while ContinuousClock.now < deadline {
+      if await harness.connection.isSubscribed(event: event) { return true }
+      try? await Task.sleep(for: .milliseconds(25))
+    }
+    return await harness.connection.isSubscribed(event: event)
+  }
 }

@@ -258,8 +258,12 @@ public extension OcaRoot {
 
   @OcaConnection
   func subscribe() async throws {
-    guard subscriptionCancellable == nil else { return } // already subscribed
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
+    if let subscriptionCancellable, connectionDelegate.isSubscribed(subscriptionCancellable) {
+      return // already subscribed
+    }
+    // a cancellable the connection no longer holds is stale; re-register
+    subscriptionCancellable = nil
     let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
     do {
       subscriptionCancellable = try await connectionDelegate.addSubscription(
@@ -301,10 +305,12 @@ public extension OcaRoot {
 
   internal var isSubscribed: Bool {
     get async throws {
-      guard connectionDelegate != nil else { throw Ocp1Error.noConnectionDelegate }
-      // this object's own handler, not the connection's: another component's
-      // subscription to the same event doesn't feed our property subjects
-      return subscriptionCancellable != nil
+      guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
+      // this object's own live registration: another component's handler
+      // doesn't feed our property subjects, and a cancellable the connection
+      // has dropped is stale
+      guard let subscriptionCancellable else { return false }
+      return await connectionDelegate.isSubscribed(subscriptionCancellable)
     }
   }
 
