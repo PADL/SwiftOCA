@@ -301,9 +301,10 @@ public extension OcaRoot {
 
   internal var isSubscribed: Bool {
     get async throws {
-      guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
-      let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-      return await connectionDelegate.isSubscribed(event: event)
+      guard connectionDelegate != nil else { throw Ocp1Error.noConnectionDelegate }
+      // this object's own handler, not the connection's: another component's
+      // subscription to the same event doesn't feed our property subjects
+      return subscriptionCancellable != nil
     }
   }
 
