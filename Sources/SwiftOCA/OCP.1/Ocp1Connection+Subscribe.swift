@@ -92,15 +92,27 @@ public extension Ocp1Connection {
     } else {
       let eventSubscriptions = EventSubscriptions()
       eventSubscriptions.subscriptions.insert(cancellable)
+      // inserted before the await so concurrent callers coalesce onto this
+      // subscription rather than each issuing their own
       subscriptions[event] = eventSubscriptions
 
-      try await subscriptionManager.addSubscription(
-        event: event,
-        subscriber: subscriber,
-        subscriberContext: OcaBlob(),
-        notificationDeliveryMode: .normal,
-        destinationInformation: OcaNetworkAddress()
-      )
+      do {
+        try await subscriptionManager.addSubscription(
+          event: event,
+          subscriber: subscriber,
+          subscriberContext: OcaBlob(),
+          notificationDeliveryMode: .normal,
+          destinationInformation: OcaNetworkAddress()
+        )
+      } catch {
+        // roll back, otherwise isSubscribed(event:) reports true with nothing
+        // registered on the device and callers never retry
+        eventSubscriptions.subscriptions.remove(cancellable)
+        if eventSubscriptions.subscriptions.isEmpty {
+          subscriptions[event] = nil
+        }
+        throw error
+      }
       logger.trace("addSubscription: added new OCA subscription for \(event)")
     }
     logger.trace("addSubscription: added \(cancellable) to subscription set")
