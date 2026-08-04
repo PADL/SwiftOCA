@@ -420,6 +420,19 @@ package struct Ocp1DeviceAddressState: Sendable {
     self.connectedAddress = connectedAddress
     self.networkAddress = networkAddress
   }
+
+  /// Whether replacing the candidates with `newAddresses` requires migrating a
+  /// live connection.
+  ///
+  /// Only when the candidate actually connected to is no longer offered. A
+  /// multi-homed host advertises the same device on every interface, so the set
+  /// legitimately gains and loses *secondary* addresses while the connected one
+  /// stays reachable; migrating on those tears down a working connection, and
+  /// with `.automaticReconnect` it repeats on every advertisement.
+  package func requiresMigration(replacingWith newAddresses: [AnySocketAddress]) -> Bool {
+    guard let connectedAddress else { return true }
+    return !newAddresses.contains(connectedAddress)
+  }
 }
 
 /// A mutable connection that targets one or more resolved socket addresses (as
@@ -448,18 +461,40 @@ package extension Ocp1MutableSocketAddressConnection {
   /// The candidate device addresses, in preference order. A hostname can resolve
   /// to several addresses (e.g. an IPv4 and an IPv6 ULA) and only some may be
   /// reachable at any moment; `connectDevice()` tries them in order and connects
-  /// to the first that answers. Setting replaces the entire set; a change
-  /// re-resolves the live connection (`deviceAddressesDidChange()`), an unchanged
-  /// set is a no-op.
+  /// to the first that answers. Setting replaces the entire set; an unchanged set
+  /// is a no-op.
+  ///
+  /// A change re-resolves the live connection (`deviceAddressesDidChange()`)
+  /// only when the address actually in use is no longer among the candidates.
+  /// A multi-homed host advertises the same device on every interface, so the
+  /// candidate set legitimately gains and loses *secondary* addresses while the
+  /// connected one remains reachable; migrating on those would tear down a
+  /// working connection, and with `.automaticReconnect` it would happen again on
+  /// every subsequent advertisement.
   nonisolated var deviceAddresses: [AnySocketAddress] {
     get { _deviceAddressState.criticalValue.addresses }
     set {
-      let changed = _deviceAddressState.withLock { state -> Bool in
-        guard state.addresses != newValue else { return false }
-        state.addresses = newValue
-        return true
+      let outcome = _deviceAddressState
+        .withLock { state -> (migrate: Bool, from: [AnySocketAddress])? in
+          guard state.addresses != newValue else { return nil }
+          let previous = state.addresses
+          let migrate = state.requiresMigration(replacingWith: newValue)
+          state.addresses = newValue
+          return (migrate, previous)
+        }
+
+      guard let outcome else { return }
+
+      let from = outcome.from.map(\._presentationAddress)
+      let to = newValue.map(\._presentationAddress)
+      if outcome.migrate {
+        logger.info("device addresses changed from \(from) to \(to), migrating connection")
+        deviceAddressesDidChange()
+      } else {
+        logger.debug(
+          "device addresses changed from \(from) to \(to), keeping connection to \(_currentPresentationAddress)"
+        )
       }
-      if changed { deviceAddressesDidChange() }
     }
   }
 
