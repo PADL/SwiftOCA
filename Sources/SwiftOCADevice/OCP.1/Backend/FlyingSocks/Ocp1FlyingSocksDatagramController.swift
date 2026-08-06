@@ -40,6 +40,7 @@ package actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   let interfaceIndex: UInt32?
   let localAddress: (any SocketAddress)?
   package var keepAliveTask: Task<(), Error>?
+  package let writeQueue: Ocp1WriteQueue? = nil
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
 

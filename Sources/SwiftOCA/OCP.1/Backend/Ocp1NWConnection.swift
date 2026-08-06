@@ -75,6 +75,12 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
     fatalError("must be implemented by subclass")
   }
 
+  /// NWConnection takes the whole content per send and orders them internally, so it never
+  /// resumes a PDU from an offset.
+  override public var isMessageOriented: Bool {
+    true
+  }
+
   /// Shared TCP options factory so plaintext and TLS subclasses stay in sync.
   package func makeTCPOptions() -> NWProtocolTCP.Options {
     let options = NWProtocolTCP.Options()

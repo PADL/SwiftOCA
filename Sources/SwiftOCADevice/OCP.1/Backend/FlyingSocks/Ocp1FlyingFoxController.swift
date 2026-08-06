@@ -38,6 +38,7 @@ package actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConve
   package var endpoint: Ocp1FlyingFoxDeviceEndpoint?
 
   package var keepAliveTask: Task<(), Error>?
+  package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
 

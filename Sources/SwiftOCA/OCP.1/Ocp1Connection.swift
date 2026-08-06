@@ -324,6 +324,10 @@ open class Ocp1Connection: CustomStringConvertible {
   var monitor: Monitor?
   var monitorTask: Task<(), Error>?
   var reconnectTask: Task<(), Error>?
+  /// Serialises transport writes where a PDU can be written partially and resumed from
+  /// an offset. Datagram transports write whole PDUs and bypass it.
+  lazy var writeQueue = Ocp1WriteQueue()
+
   var batcher: Ocp1MessageBatcher!
 
   private func _configureTracing() {
@@ -365,10 +369,16 @@ open class Ocp1Connection: CustomStringConvertible {
     fatalError("write must be implemented by a concrete subclass of Ocp1Connection")
   }
 
-  /// by default, connection implementations that require heartbeats are assumed to use datagrams.
-  /// A concrete implementation is free to override this however.
+  /// Datagram transports must override this. Defaulting to `false` costs a stream subclass
+  /// nothing, whereas defaulting to `true` would silently skip write serialisation for one.
   open var isDatagram: Bool {
-    heartbeatTime > .seconds(0)
+    false
+  }
+
+  /// `true` when `write` delivers a whole PDU, so it can bypass the write queue. Datagram
+  /// transports are message-oriented; so is any stream whose `write` cannot split a PDU.
+  open var isMessageOriented: Bool {
+    isDatagram
   }
 
   /// Plaintext transports return `false`; TLS-wrapping transports override.

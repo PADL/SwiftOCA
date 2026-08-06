@@ -39,6 +39,7 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
 
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   package var keepAliveTask: Task<(), Error>?
+  package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: Ocp1FlyingSocksStreamDeviceEndpoint?

@@ -34,6 +34,11 @@ public final class OcaLocalConnection: Ocp1Connection {
     super.init(options: options)
   }
 
+  /// `write` hands the whole PDU to a channel, so there is nothing for the queue to protect.
+  override public var isMessageOriented: Bool {
+    true
+  }
+
   override public var connectionPrefix: String {
     OcaLocalConnectionPrefix
   }
