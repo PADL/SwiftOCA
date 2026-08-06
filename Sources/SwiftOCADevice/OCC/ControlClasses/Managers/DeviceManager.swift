@@ -237,7 +237,7 @@ private func getPlatformUUID() -> String {
   )
   IOObjectRelease(platformExpert)
 
-  return serialNumberAsCFString?.takeUnretainedValue() as! String
+  return serialNumberAsCFString?.takeRetainedValue() as! String
   #else
   ""
   #endif
