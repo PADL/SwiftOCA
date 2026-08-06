@@ -32,6 +32,7 @@ package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1Contr
   let peerID: T
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   package var keepAliveTask: Task<(), Error>?
+  package var outboundQueue: Ocp1OutboundQueue?
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
 

@@ -49,6 +49,7 @@ package actor Ocp1NWDatagramController: Ocp1ControllerInternal,
 
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   package var keepAliveTask: Task<(), Error>?
+  package var outboundQueue: Ocp1OutboundQueue?
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: Ocp1NWDatagramDeviceEndpoint?

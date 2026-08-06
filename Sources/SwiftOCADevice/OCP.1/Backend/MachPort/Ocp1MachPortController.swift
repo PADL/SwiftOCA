@@ -36,6 +36,7 @@ package actor Ocp1MachPortController: Ocp1ControllerInternal {
   }
 
   package var keepAliveTask: Task<(), Error>?
+  package var outboundQueue: Ocp1OutboundQueue?
 
   package weak var endpoint: Ocp1MachPortDeviceEndpoint?
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()

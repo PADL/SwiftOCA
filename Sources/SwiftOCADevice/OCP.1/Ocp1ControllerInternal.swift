@@ -72,6 +72,9 @@ package protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, Actor 
   /// keep alive task
   var keepAliveTask: Task<(), Error>? { get set }
 
+  /// serialises outbound writes; created on first send
+  var outboundQueue: Ocp1OutboundQueue? { get set }
+
   func sendOcp1EncodedData(_ data: Data) async throws
 
   /// close the underlying connection (if any)
@@ -261,16 +264,43 @@ extension Ocp1ControllerInternal {
     return try Ocp1MessageList(messagePduData: messagePduData)
   }
 
+  /// Queue `messages` for transmission and return. Does not wait for the transport, so
+  /// a peer that has stopped reading cannot stall the caller — which may be this
+  /// controller's own command handling, or the task that emitted an event.
   package func sendMessages(
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType
   ) async throws {
     lastMessageSentTime = .now
 
-    try await sendOcp1EncodedData(Ocp1Connection.encodeOcp1MessagePdu(
-      messages,
-      type: messageType
-    ))
+    let data = try Ocp1Connection.encodeOcp1MessagePdu(messages, type: messageType)
+
+    let queue: Ocp1OutboundQueue
+    if let outboundQueue {
+      queue = outboundQueue
+    } else {
+      // lazily, because not every endpoint runs handle(for:) — the datagram and DTLS
+      // backends dispatch messages directly
+      queue = Ocp1OutboundQueue(
+        controller: self,
+        depth: endpoint?.outboundQueueDepth ?? Ocp1OutboundQueue.defaultDepth
+      )
+      outboundQueue = queue
+    }
+
+    guard queue.enqueue(data) else {
+      // Nothing here is droppable: a command response has no retry and a missed
+      // notification desynchronises the peer with no way to tell. A backlog this deep
+      // means the transport is gone, so report it as such and let teardown run.
+      try? await close()
+      throw Ocp1Error.notConnected
+    }
+  }
+
+  /// Stop writing and discard the backlog. Called from endpoint teardown.
+  package func cancelOutboundQueue() {
+    outboundQueue?.cancel()
+    outboundQueue = nil
   }
 }
 

@@ -45,6 +45,11 @@ package protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
 }
 
 extension OcaDeviceEndpointPrivate {
+  /// How many outbound messages a controller of this endpoint may fall behind before its
+  /// transport is treated as gone. Override where a deployment's notification rate needs
+  /// more headroom than default jitter tolerance.
+  package var outboundQueueDepth: Int { Ocp1OutboundQueue.defaultDepth }
+
   package func unlockAndRemove(controller: ControllerType) async {
     await controller.cancelKeepAlive()
 
@@ -60,6 +65,7 @@ extension OcaDeviceEndpointPrivate {
     #endif
     await device.unlockAll(controller: controller)
     await remove(controller: controller)
+    await controller.cancelOutboundQueue()
     try? await controller.close()
   }
 

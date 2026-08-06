@@ -30,6 +30,7 @@ package actor OcaLocalController: Ocp1ControllerInternal {
   package var lastMessageSentTime = ContinuousClock.recentPast
   package var heartbeatTime = Duration.seconds(0)
   package var keepAliveTask: Task<(), Error>?
+  package var outboundQueue: Ocp1OutboundQueue?
 
   package weak var endpoint: OcaLocalDeviceEndpoint?
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()

@@ -81,6 +81,7 @@ package actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStr
   let peerAddress: AnySocketAddress
   var receiveMessageTask: Task<(), Never>?
   package var keepAliveTask: Task<(), Error>?
+  package var outboundQueue: Ocp1OutboundQueue?
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: Ocp1IORingStreamDeviceEndpoint?
@@ -230,6 +231,7 @@ package actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1Con
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
   package var keepAliveTask: Task<(), Error>?
+  package var outboundQueue: Ocp1OutboundQueue?
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
 
