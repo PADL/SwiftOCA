@@ -47,6 +47,7 @@ package actor Ocp1OpenSSLStreamController: Ocp1ControllerInternal, CustomStringC
 
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   package var keepAliveTask: Task<(), Error>?
+  package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: Ocp1OpenSSLStreamDeviceEndpoint?

@@ -74,8 +74,16 @@ extension Ocp1Connection {
   func sendMessagePduData(
     _ messagePduData: Data
   ) async throws {
-    guard try await write(messagePduData) == messagePduData.count else {
-      throw Ocp1Error.pduSendingFailed
+    if isMessageOriented {
+      guard try await write(messagePduData) == messagePduData.count else {
+        throw Ocp1Error.pduSendingFailed
+      }
+    } else {
+      try await writeQueue.serialised { [self] in
+        guard try await write(messagePduData) == messagePduData.count else {
+          throw Ocp1Error.pduSendingFailed
+        }
+      }
     }
 
     lastMessageSentTime = .now

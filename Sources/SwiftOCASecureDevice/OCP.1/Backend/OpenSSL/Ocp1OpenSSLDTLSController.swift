@@ -54,6 +54,7 @@ package actor Ocp1OpenSSLDTLSController: Ocp1ControllerInternal,
 
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   package var keepAliveTask: Task<(), Error>?
+  package let writeQueue: Ocp1WriteQueue? = nil
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package private(set) var isOpen: Bool = false

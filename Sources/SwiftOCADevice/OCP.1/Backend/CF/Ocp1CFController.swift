@@ -88,6 +88,7 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
   let peerAddress: AnySocketAddress
   var receiveMessageTask: Task<(), Never>?
   package var keepAliveTask: Task<(), Error>?
+  package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: Ocp1CFStreamDeviceEndpoint?
@@ -226,6 +227,7 @@ package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerD
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
   package var keepAliveTask: Task<(), Error>?
+  package let writeQueue: Ocp1WriteQueue? = nil
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
 

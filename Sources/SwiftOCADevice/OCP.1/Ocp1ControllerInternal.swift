@@ -72,6 +72,13 @@ package protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, Actor 
   /// keep alive task
   var keepAliveTask: Task<(), Error>? { get set }
 
+  /// `nil` for datagram transports, which write whole PDUs. Stream transports resume a
+  /// write from an offset, which is what lets two concurrent writers interleave.
+  var writeQueue: Ocp1WriteQueue? { get }
+
+  /// Reach this only through `sendMessages`, which serialises on `writeQueue`. Stream
+  /// backends resume writes from an offset, so two callers here at once interleave their
+  /// PDUs on the wire.
   func sendOcp1EncodedData(_ data: Data) async throws
 
   /// close the underlying connection (if any)
@@ -267,10 +274,14 @@ extension Ocp1ControllerInternal {
   ) async throws {
     lastMessageSentTime = .now
 
-    try await sendOcp1EncodedData(Ocp1Connection.encodeOcp1MessagePdu(
-      messages,
-      type: messageType
-    ))
+    let data = try Ocp1Connection.encodeOcp1MessagePdu(messages, type: messageType)
+    if let writeQueue {
+      try await writeQueue.serialised { [self] in
+        try await sendOcp1EncodedData(data)
+      }
+    } else {
+      try await sendOcp1EncodedData(data)
+    }
   }
 }
 
