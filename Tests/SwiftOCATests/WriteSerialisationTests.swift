@@ -94,6 +94,12 @@ private func makeConnection() -> ChunkedWriteConnection {
   ChunkedWriteConnection(options: Ocp1ConnectionOptions())
 }
 
+/// The queue is guarded by the connection's isolation, so its depth is read from there.
+@OcaConnection
+private func pendingWriters(on connection: Ocp1Connection) -> Int {
+  connection.writeQueue.pending
+}
+
 private func pdu(_ tag: UInt8, count: Int = 8) -> Data {
   Data(repeating: tag, count: count)
 }
@@ -119,7 +125,6 @@ final class WriteSerialisationTests: XCTestCase {
     tags: [UInt8],
     pduSize: Int
   ) async -> [Task<Void, Never>] {
-    let queue = await connection.writeQueue
     var writers = [Task<Void, Never>]()
     for (i, tag) in tags.enumerated() {
       writers.append(Task { try? await connection.sendMessagePduData(pdu(tag, count: pduSize)) })
@@ -128,10 +133,10 @@ final class WriteSerialisationTests: XCTestCase {
         continue
       }
       let deadline = ContinuousClock.now.advanced(by: .seconds(5))
-      while await queue.pending < i, ContinuousClock.now < deadline {
+      while await pendingWriters(on: connection) < i, ContinuousClock.now < deadline {
         await Task.yield()
       }
-      let depth = await queue.pending
+      let depth = await pendingWriters(on: connection)
       XCTAssertEqual(depth, i, "writer \(i) did not reach the queue")
     }
     return writers
@@ -236,5 +241,27 @@ final class WriteSerialisationTests: XCTestCase {
     try? await Task.sleep(for: .milliseconds(700))
 
     XCTAssertEqual(connection.byteCount(0xAA), 8, "cancellation truncated an in-flight PDU")
+  }
+
+  /// The shield must also hold the queue for as long as it shields. Were the cancelled caller
+  /// to abandon its write and release, the next writer would interleave with bytes still going
+  /// out — the very thing the queue exists to stop.
+  func testCancelledInFlightWriteStillExcludesTheNextWriter() async throws {
+    let connection = await makeConnection()
+    connection.midWritePause = .milliseconds(400)
+
+    let first = Task { try await connection.sendMessagePduData(pdu(0xAA)) }
+    await waitUntil { connection.didEnterWrite }
+    let second = Task { try await connection.sendMessagePduData(pdu(0xBB)) }
+    try await Task.sleep(for: .milliseconds(50))
+
+    first.cancel()
+    _ = try? await first.value
+    _ = try? await second.value
+    try? await Task.sleep(for: .milliseconds(900))
+
+    let peak = connection.maxInFlight
+    XCTAssertEqual(peak, 1, "\(peak) writers in the transport at once after a cancelled write")
+    XCTAssertEqual(connection.runs, 2, "the queued writer interleaved with the shielded write")
   }
 }

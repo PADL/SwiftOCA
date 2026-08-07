@@ -15,7 +15,15 @@
 //
 
 /// Serialises transport writes for one connection, in submission order.
-package actor Ocp1WriteQueue {
+///
+/// State is guarded by the owner's isolation, not the queue's own: each connection and
+/// controller owns its queue and touches it only from its own context, so `serialised` takes
+/// an isolated parameter and runs there. As an actor it instead took the caller off its
+/// executor to reach the queue and made the write re-acquire it — four executor round-trips
+/// per PDU to guard a `Bool` and an array. The transports submit their I/O to an executor of
+/// their own regardless (`IORing` is an actor), so there is nothing to gain by moving the
+/// bookkeeping off the caller's.
+package final class Ocp1WriteQueue {
   private var isBusy = false
   private var waiters = [UnsafeContinuation<Void, Never>]()
   private var head = 0
@@ -27,7 +35,7 @@ package actor Ocp1WriteQueue {
     waiters.count - head
   }
 
-  private func acquire() async {
+  private func acquire(isolation: isolated (any Actor)?) async {
     guard isBusy else {
       isBusy = true
       return
@@ -57,14 +65,20 @@ package actor Ocp1WriteQueue {
   /// Runs `body` with exclusive, ordered access to the transport.
   ///
   /// Cancellation drops a PDU only before its first byte. Once a write has begun it runs to
-  /// completion, because stream backends resume from an offset: aborting midway leaves a
-  /// fragment on the wire and desyncs framing for every writer after it.
+  /// completion, and holds the queue until it does, because stream backends resume from an
+  /// offset: aborting midway leaves a fragment on the wire and desyncs framing for every
+  /// writer after it.
+  ///
+  /// The shield is an unstructured `Task`, which inherits the caller's isolation but not its
+  /// cancellation. `Task.detached` would shield equally but inherits neither, putting the
+  /// write back on a different executor — and at default priority.
   package func serialised<T: Sendable>(
-    _ body: @escaping @Sendable () async throws -> T
+    isolation: isolated (any Actor)? = #isolation,
+    _ body: nonisolated(nonsending) @escaping @Sendable () async throws -> T
   ) async throws -> T {
-    await acquire()
+    await acquire(isolation: isolation)
     defer { release() }
     try Task.checkCancellation()
-    return try await Task.detached { try await body() }.value
+    return try await Task { try await body() }.value
   }
 }
