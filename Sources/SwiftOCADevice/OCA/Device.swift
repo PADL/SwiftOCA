@@ -248,11 +248,15 @@ public actor OcaDevice {
       await subscriptionManager
         .enqueueObjectChangedWhilstNotificationsDisabled(event.emitterONo)
     case .normal:
-      for endpoint in endpoints {
-        for controller in await endpoint.controllers {
-          let controller = controller as! OcaControllerDefaultSubscribing
-
-          try? await controller.notifySubscribers(event, parameters: parameters)
+      let subscribers = await endpoints
+        .asyncMap { await $0.controllers }
+        .flatMap { $0 }
+        .map { $0 as! any OcaControllerDefaultSubscribing }
+      await withDiscardingTaskGroup { group in
+        for subscriber in subscribers {
+          group.addTask {
+            try? await subscriber.notifySubscribers(event, parameters: parameters)
+          }
         }
       }
     }
