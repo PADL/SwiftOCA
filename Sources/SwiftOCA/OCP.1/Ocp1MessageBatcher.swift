@@ -33,6 +33,7 @@ final class Ocp1MessageBatcher: Sendable {
   private var lastMessageType: OcaMessageType?
 
   private var periodicTask: Task<(), Error>?
+  private var periodicGeneration = 0
 
   package init(
     batchSize: OcaUint32,
@@ -114,31 +115,40 @@ final class Ocp1MessageBatcher: Sendable {
     guard periodicTask == nil else { return }
 
     let dequeueInterval = dequeueInterval
+    periodicGeneration &+= 1
+    let generation = periodicGeneration
 
     periodicTask = Task { [weak self, dequeueInterval] in
       try await Task.sleep(for: dequeueInterval) // will check for cancellation
-      try await self?.dequeue(stoppingTimer: false)
+      try await self?.dequeue(timerGeneration: generation)
     }
   }
 
   private func stopPeriodicDequeue() {
     periodicTask?.cancel()
     periodicTask = nil
+    // A timer already past its sleep cannot be cancelled; bump so it no longer matches and
+    // cannot clear a successor's reference.
+    periodicGeneration &+= 1
   }
 
-  /// `stoppingTimer` is `false` when called from `periodicTask` itself, which would otherwise
-  /// cancel the task it is running in and leave the send below running under cancellation.
-  func dequeue(stoppingTimer: Bool = true) async throws {
+  /// `timerGeneration` is set when called from `periodicTask` itself, which must not cancel the
+  /// task it is running in: that would leave the send below running under cancellation. It
+  /// clears only its own reference, and does so even when the batch turns out to be empty,
+  /// otherwise `startPeriodicDequeue` would see a stale task and never arm another timer.
+  func dequeue(timerGeneration: Int? = nil) async throws {
+    if let timerGeneration, timerGeneration == periodicGeneration {
+      periodicTask = nil
+    }
+
     guard let lastMessageType, !encodedPdus.isEmpty else { return }
 
     let encodedPdus = encodedPdus
     self.encodedPdus.removeAll()
     self.lastMessageType = nil
 
-    if stoppingTimer {
+    if timerGeneration == nil {
       stopPeriodicDequeue()
-    } else {
-      periodicTask = nil
     }
     try await send(encodedPdus: encodedPdus, type: lastMessageType)
   }

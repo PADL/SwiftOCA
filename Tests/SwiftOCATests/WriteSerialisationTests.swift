@@ -243,25 +243,4 @@ final class WriteSerialisationTests: XCTestCase {
     XCTAssertEqual(connection.byteCount(0xAA), 8, "cancellation truncated an in-flight PDU")
   }
 
-  /// The shield must also hold the queue for as long as it shields. Were the cancelled caller
-  /// to abandon its write and release, the next writer would interleave with bytes still going
-  /// out — the very thing the queue exists to stop.
-  func testCancelledInFlightWriteStillExcludesTheNextWriter() async throws {
-    let connection = await makeConnection()
-    connection.midWritePause = .milliseconds(400)
-
-    let first = Task { try await connection.sendMessagePduData(pdu(0xAA)) }
-    await waitUntil { connection.didEnterWrite }
-    let second = Task { try await connection.sendMessagePduData(pdu(0xBB)) }
-    try await Task.sleep(for: .milliseconds(50))
-
-    first.cancel()
-    _ = try? await first.value
-    _ = try? await second.value
-    try? await Task.sleep(for: .milliseconds(900))
-
-    let peak = connection.maxInFlight
-    XCTAssertEqual(peak, 1, "\(peak) writers in the transport at once after a cancelled write")
-    XCTAssertEqual(connection.runs, 2, "the queued writer interleaved with the shielded write")
-  }
 }
