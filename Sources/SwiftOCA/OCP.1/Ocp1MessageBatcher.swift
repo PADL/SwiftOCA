@@ -117,7 +117,7 @@ final class Ocp1MessageBatcher: Sendable {
 
     periodicTask = Task { [weak self, dequeueInterval] in
       try await Task.sleep(for: dequeueInterval) // will check for cancellation
-      try await self?.dequeue()
+      try await self?.dequeue(stoppingTimer: false)
     }
   }
 
@@ -126,14 +126,20 @@ final class Ocp1MessageBatcher: Sendable {
     periodicTask = nil
   }
 
-  func dequeue() async throws {
+  /// `stoppingTimer` is `false` when called from `periodicTask` itself, which would otherwise
+  /// cancel the task it is running in and leave the send below running under cancellation.
+  func dequeue(stoppingTimer: Bool = true) async throws {
     guard let lastMessageType, !encodedPdus.isEmpty else { return }
 
     let encodedPdus = encodedPdus
     self.encodedPdus.removeAll()
     self.lastMessageType = nil
 
-    stopPeriodicDequeue()
+    if stoppingTimer {
+      stopPeriodicDequeue()
+    } else {
+      periodicTask = nil
+    }
     try await send(encodedPdus: encodedPdus, type: lastMessageType)
   }
 

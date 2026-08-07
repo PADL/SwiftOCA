@@ -294,6 +294,33 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     XCTAssertEqual(currentCount, 0)
   }
 
+  /// The timer must not deliver its own batch under cancellation. `Ocp1WriteQueue` drops a PDU
+  /// whose task is already cancelled, so a batch sent that way never reaches the wire and the
+  /// command behind it times out.
+  @OcaConnection
+  func testPeriodicDequeueSendsUncancelled() async throws {
+    let handler = TestSendHandler()
+    let batcher = Ocp1MessageBatcher(
+      batchSize: 1000,
+      dequeueInterval: .milliseconds(50)
+    ) { data in
+      try Task.checkCancellation()
+      try await handler.sendEncodedPDU(data)
+    }
+
+    let message = MockMessage(handle: 100, data: "test")
+    try await batcher.enqueue(message, type: .ocaCmd)
+
+    var sentCount = 0
+    for _ in 0..<10 {
+      try await Task.sleep(for: .milliseconds(20))
+      sentCount = await handler.sentCount
+      if sentCount >= 1 { break }
+    }
+
+    XCTAssertEqual(sentCount, 1, "the periodic dequeue cancelled the task sending its own batch")
+  }
+
   @OcaConnection
   func testZeroIntervalDisablesPeriodicDequeue() async throws {
     let handler = TestSendHandler()
