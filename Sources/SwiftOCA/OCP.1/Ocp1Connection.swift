@@ -326,7 +326,7 @@ open class Ocp1Connection: CustomStringConvertible {
   var reconnectTask: Task<(), Error>?
   /// Serialises transport writes where a PDU can be written partially and resumed from
   /// an offset. Datagram transports write whole PDUs and bypass it.
-  lazy var writeQueue = Ocp1WriteQueue()
+  let writeQueue = Ocp1WriteQueue()
 
   var batcher: Ocp1MessageBatcher!
 
