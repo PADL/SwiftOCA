@@ -44,7 +44,7 @@ import struct SystemPackage.Errno
 /// runtime additions take effect on the next handshake.
 @OcaDevice
 public final class Ocp1OpenSSLStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
-  @preconcurrency OcaDeviceEndpointPrivate
+  OcaDeviceEndpointPrivate
 {
   package typealias ControllerType = Ocp1OpenSSLStreamController
 

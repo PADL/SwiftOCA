@@ -67,6 +67,7 @@ extension Ocp1Connection {
       _connection.object
     }
 
+    @concurrent
     func run() async throws {
       guard let connection else { throw Ocp1Error.notConnected }
       do {
@@ -386,6 +387,7 @@ extension Ocp1Connection.Monitor {
     } while true
   }
 
+  @concurrent
   func receiveMessages(_ connection: Ocp1Connection) async throws {
     let heartbeatTime = await connection.heartbeatTime
 

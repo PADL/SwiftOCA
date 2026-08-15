@@ -313,6 +313,7 @@ extension OcaDevice {
     return try Ocp1MessageList(messagePduData: messagePduData)
   }
 
+  @concurrent
   package static func receiveMessages(_ read: ReadCallback) async throws -> Ocp1MessageList {
     try await _receiveMessages(read)
   }

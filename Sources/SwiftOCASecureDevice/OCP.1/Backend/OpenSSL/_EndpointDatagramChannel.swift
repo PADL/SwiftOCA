@@ -39,12 +39,14 @@ final class _EndpointDatagramChannel: Ocp1DatagramChannel, @unchecked Sendable {
     self.peer = peer
   }
 
+  @concurrent
   func send(_ data: Data) async throws {
     if closed.withLock({ $0 }) { throw Ocp1Error.notConnected }
     guard let endpoint else { throw Ocp1Error.notConnected }
     try await endpoint.sendDatagram(data, to: peer)
   }
 
+  @concurrent
   func close() async {
     closed.withLock { $0 = true }
   }

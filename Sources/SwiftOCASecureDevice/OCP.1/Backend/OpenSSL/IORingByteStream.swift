@@ -29,14 +29,17 @@ internal import IORingUtils
 struct IORingByteStream: Ocp1ByteStream {
   let socket: Socket
 
+  @concurrent
   func read(count: Int, awaitingAllRead: Bool) async throws -> Data {
     try await Data(socket.read(count: count, awaitingAllRead: awaitingAllRead))
   }
 
+  @concurrent
   func write(_ data: Data) async throws {
     _ = try await socket.write(Array(data), count: data.count, awaitingAllWritten: true)
   }
 
+  @concurrent
   func close() async {}
 }
 

@@ -25,11 +25,14 @@ import Foundation
 protocol Ocp1ByteStream: Sendable {
   /// Read up to `count` bytes (or exactly `count` when `awaitingAllRead`).
   /// Throws `Ocp1Error.notConnected` on EOF.
+  @concurrent
   func read(count: Int, awaitingAllRead: Bool) async throws -> Data
 
   /// Write all of `data`; throw on partial write or peer reset.
+  @concurrent
   func write(_ data: Data) async throws
 
   /// Idempotent close. Subsequent reads should throw `.notConnected`.
+  @concurrent
   func close() async
 }

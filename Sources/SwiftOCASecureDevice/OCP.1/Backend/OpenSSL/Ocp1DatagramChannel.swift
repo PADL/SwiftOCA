@@ -24,8 +24,10 @@ import Foundation
 /// push-feeds inbound datagrams to `ingestDatagram(_:)` separately.
 protocol Ocp1DatagramChannel: Sendable {
   /// Send one datagram to the bound peer.
+  @concurrent
   func send(_ data: Data) async throws
 
   /// Idempotent close. After close, `send` throws `.notConnected`.
+  @concurrent
   func close() async
 }

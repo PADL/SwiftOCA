@@ -82,7 +82,7 @@ public struct Ocp1OpenSSLDTLSEndpointOptions: Sendable {
 
 @OcaDevice
 public final class Ocp1OpenSSLDTLSDeviceEndpoint: Ocp1IORingDeviceEndpoint,
-  @preconcurrency OcaDeviceEndpointPrivate
+  OcaDeviceEndpointPrivate
 {
   package typealias ControllerType = Ocp1OpenSSLDTLSController
 

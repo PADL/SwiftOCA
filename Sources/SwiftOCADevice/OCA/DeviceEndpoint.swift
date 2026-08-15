@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -40,7 +40,9 @@ package protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
   nonisolated var logger: Logger { get }
   nonisolated var enableMessageTracing: Bool { get }
 
+  @OcaDevice
   func add(controller: ControllerType) async
+  @OcaDevice
   func remove(controller: ControllerType) async
 }
 

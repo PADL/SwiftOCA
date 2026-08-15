@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -627,7 +627,7 @@ public protocol _OcaEventForwarding {
 /// forward an event to a local object
 @_spi(SwiftOCAPrivate)
 extension OcaRoot: _OcaEventForwarding {
-  @_spi(SwiftOCAPrivate)
+  @_spi(SwiftOCAPrivate) @OcaDevice
   public func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws {
     guard event.emitterONo == objectNumber, event.eventID == OcaPropertyChangedEventID else {
       throw Ocp1Error.unhandledEvent
