@@ -32,6 +32,9 @@ private final class ChunkedWriteConnection: Ocp1Connection, @unchecked Sendable 
   nonisolated(unsafe) private(set) var didEnterWrite = false
   /// how long the first writer occupies the transport, to park a second one in the queue
   nonisolated(unsafe) var holdFirstWrite: Duration = .zero
+  /// how long the first writer waits for a second to reach the transport, so that their
+  /// bytes race. Only the tests that submit writers concurrently need it.
+  nonisolated(unsafe) var awaitSecondWriter: Duration = .zero
   /// a throwing suspension partway through the PDU, so an aborted write truncates it
   nonisolated(unsafe) var midWritePause: Duration = .zero
   private var inFlight = 0
@@ -60,8 +63,11 @@ private final class ChunkedWriteConnection: Ocp1Connection, @unchecked Sendable 
       try await Task.sleep(for: holdFirstWrite)
     }
 
-    // Bounded, so serialisation holding the second writer out does not deadlock.
-    for _ in 0..<64 where entered < 2 {
+    // Bounded by wall time, so serialisation holding the second writer out does not
+    // deadlock. A yield budget cannot bound it: 64 yields is microseconds on an idle
+    // machine and expires before the second task is even scheduled on a loaded one.
+    let rendezvous = ContinuousClock.now.advanced(by: awaitSecondWriter)
+    while entered < 2, ContinuousClock.now < rendezvous {
       await Task.yield()
     }
 
@@ -160,6 +166,7 @@ final class WriteSerialisationTests: XCTestCase {
   func testBypassingTheQueueInterleavesPdus() async throws {
     let connection = await makeConnection()
     connection.datagram = true
+    connection.awaitSecondWriter = .seconds(5)
 
     await sendConcurrently(on: connection, tags: [0xAA, 0xBB])
 
@@ -170,6 +177,9 @@ final class WriteSerialisationTests: XCTestCase {
 
   func testWriteQueueSerialisesStreamPdus() async throws {
     let connection = await makeConnection()
+    // Paid in full whenever the queue works, so it is kept short: a broken queue lets the
+    // second writer in at once.
+    connection.awaitSecondWriter = .milliseconds(500)
 
     await sendConcurrently(on: connection, tags: [0xAA, 0xBB, 0xCC, 0xDD])
 
