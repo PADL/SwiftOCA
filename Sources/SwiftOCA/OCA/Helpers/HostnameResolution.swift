@@ -65,12 +65,19 @@ private func _resolveDeviceAddressesBlocking(
   var hints = addrinfo()
   hints.ai_family = AF_UNSPEC // both IPv4 and IPv6
   hints.ai_socktype = isDatagram ? SOCK_DGRAM : SOCK_STREAM
-  hints.ai_flags = AI_ADDRCONFIG // only families with a configured local address
+  // Use an IP literal exactly as given: without AI_NUMERICHOST, Apple's
+  // resolver on a NAT64 network rewrites IPv4 literals to the NAT64 prefix,
+  // black-holing private device addresses behind the ISP's gateway.
+  hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV
 
   var result: UnsafeMutablePointer<addrinfo>?
-  guard getaddrinfo(host, String(port), &hints, &result) == 0, let result else {
-    return []
+  if getaddrinfo(host, String(port), &hints, &result) != 0 {
+    hints.ai_flags = AI_ADDRCONFIG // only families with a configured local address
+    guard getaddrinfo(host, String(port), &hints, &result) == 0 else {
+      return []
+    }
   }
+  guard let result else { return [] }
   defer { freeaddrinfo(result) }
 
   var addresses: [AnySocketAddress] = []
