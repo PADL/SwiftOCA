@@ -280,18 +280,22 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddress
   package func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
     let fsAddress = try FlyingSocks.AnySocketAddress(data: deviceAddress.data)
     let socket = try Socket(domain: Int32(fsAddress.family), type: socketType)
-    try? setSocketOptions(socket, family: fsAddress.family)
-    // also connect UDP sockets to ensure we do not receive unsolicited replies
     do {
-      try socket.connect(to: fsAddress)
+      try? setSocketOptions(socket, family: fsAddress.family)
+      // Wrap before connecting: AsyncSocket marks the socket non-blocking, so
+      // connect suspends on the pool and stays cancellable — a blocked syscall
+      // would let one black-holed candidate eat the whole connect budget.
+      // also connect UDP sockets to ensure we do not receive unsolicited replies
+      let asyncSocket = try await AsyncSocket(
+        socket: socket,
+        pool: AsyncSocketPoolMonitor.shared.get()
+      )
+      try await asyncSocket.connect(to: fsAddress)
+      _asyncSocket = asyncSocket
     } catch {
       try? socket.close()
       throw error
     }
-    _asyncSocket = try await AsyncSocket(
-      socket: socket,
-      pool: AsyncSocketPoolMonitor.shared.get()
-    )
   }
 
   override public func disconnectDevice() async throws {
