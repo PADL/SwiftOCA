@@ -70,10 +70,11 @@ public struct OcaBoundedDeviceProperty<
 
   #if NonEmbeddedBuild
   func getJsonValue() throws -> any Sendable {
-    let valueDict: [String: Value] =
-      ["v": storage.subject.value.value,
-       "l": storage.subject.value.range.lowerBound,
-       "u": storage.subject.value.range.upperBound]
+    // a gain's range is commonly bounded by -inf dB, which JSON cannot encode
+    let valueDict: [String: any Sendable] =
+      ["v": _jsonNonFiniteSafe(storage.subject.value.value),
+       "l": _jsonNonFiniteSafe(storage.subject.value.range.lowerBound),
+       "u": _jsonNonFiniteSafe(storage.subject.value.range.upperBound)]
 
     return valueDict
   }
@@ -94,7 +95,9 @@ public struct OcaBoundedDeviceProperty<
       valueDict = dict
     } else if JSONSerialization.isValidJSONObject(jsonValue) {
       let data = try JSONSerialization.data(withJSONObject: jsonValue)
-      valueDict = try JSONDecoder().decode([String: Value].self, from: data)
+      let decoder = JSONDecoder()
+      decoder.nonConformingFloatDecodingStrategy = _nonConformingFloatDecodingStrategy
+      valueDict = try decoder.decode([String: Value].self, from: data)
     } else {
       throw Ocp1Error.status(.badFormat)
     }

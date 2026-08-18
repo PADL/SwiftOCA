@@ -199,10 +199,11 @@ public struct OcaBoundedProperty<
   ) async throws -> [String: any Sendable] {
     let value = try await _getValue(object, flags: flags)
     let jsonKey = try keyPath.jsonKey
+    // a gain's range is commonly bounded by -inf dB, which JSON cannot encode
     return [
-      "Min\(jsonKey)": value.minValue,
-      "Max\(jsonKey)": value.maxValue,
-      "\(jsonKey)": value.value,
+      "Min\(jsonKey)": _jsonNonFiniteSafe(value.minValue),
+      "Max\(jsonKey)": _jsonNonFiniteSafe(value.maxValue),
+      "\(jsonKey)": _jsonNonFiniteSafe(value.value),
     ]
   }
   #endif
