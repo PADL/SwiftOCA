@@ -242,7 +242,9 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         // (e.g. NSDictionary/NSArray from a JSONSerialization round-trip that
         // doesn't conform to Codable) — serialize to JSON data then decode
         let data = try JSONSerialization.data(withJSONObject: jsonValue)
-        let decoded = try JSONDecoder().decode(Value.self, from: data)
+        let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = _nonConformingFloatDecodingStrategy
+        let decoded = try decoder.decode(Value.self, from: data)
         await setAndNotifySubscribers(object: object, decoded)
       } else if Value.self is any RawRepresentable.Type,
                 let jsonValue = jsonValue as? Int
