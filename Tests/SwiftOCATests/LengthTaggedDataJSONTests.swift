@@ -49,7 +49,7 @@ import Testing
     storage["testKey"] = LengthTaggedData16(Data([0xDE, 0xAD, 0xBE, 0xEF]))
 
     // This is what getJsonValue() does when isValidJSONObject returns false
-    let reencoded: any Sendable = try JSONEncoder().reencodeAsValidJSONObject(storage)
+    let reencoded: any Sendable = try SwiftOCA.reencodeAsValidJSONObject(storage)
     print("Reencoded type: \(type(of: reencoded)), value: \(reencoded)")
 
     // Then it gets serialized via JSONSerialization.data(withJSONObject:)
@@ -76,7 +76,7 @@ import Testing
     if isValid {
       reencoded = storage
     } else {
-      reencoded = try JSONEncoder().reencodeAsValidJSONObject(storage)
+      reencoded = try SwiftOCA.reencodeAsValidJSONObject(storage)
     }
     print("Reencoded type: \(type(of: reencoded)), value: \(reencoded)")
 

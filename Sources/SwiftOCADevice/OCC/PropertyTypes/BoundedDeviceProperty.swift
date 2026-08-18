@@ -95,9 +95,7 @@ public struct OcaBoundedDeviceProperty<
       valueDict = dict
     } else if JSONSerialization.isValidJSONObject(jsonValue) {
       let data = try JSONSerialization.data(withJSONObject: jsonValue)
-      let decoder = JSONDecoder()
-      decoder.nonConformingFloatDecodingStrategy = _nonConformingFloatDecodingStrategy
-      valueDict = try decoder.decode([String: Value].self, from: data)
+      valueDict = try _jsonDecoder().decode([String: Value].self, from: data)
     } else {
       throw Ocp1Error.status(.badFormat)
     }
@@ -111,6 +109,12 @@ public struct OcaBoundedDeviceProperty<
           lowerBound <= upperBound
     else {
       throw Ocp1Error.status(.badFormat)
+    }
+
+    // matches the OCP.1 set path's _validate: reject a current value outside
+    // the incoming bounds (this also rejects NaN, which fails every comparison)
+    guard value >= lowerBound, value <= upperBound else {
+      throw Ocp1Error.status(.parameterOutOfRange)
     }
 
     await setAndNotifySubscribers(

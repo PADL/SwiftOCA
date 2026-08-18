@@ -25,34 +25,53 @@ import Foundation
 /// JSON has no encoding for non-finite numbers, and on Darwin one reaching
 /// NSJSONSerialization raises an unrecoverable ObjC exception. Spell them the
 /// way JSONDecoder's .convertFromString accepts, so they survive a round-trip.
-package let _nonConformingFloatEncodingStrategy = JSONEncoder.NonConformingFloatEncodingStrategy
-  .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+private let _jsonPositiveInfinity = "Infinity"
+private let _jsonNegativeInfinity = "-Infinity"
+private let _jsonNaN = "NaN"
 
-package let _nonConformingFloatDecodingStrategy = JSONDecoder.NonConformingFloatDecodingStrategy
-  .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+/// A JSONEncoder that spells non-finite numbers as strings.
+package func _jsonEncoder() -> JSONEncoder {
+  let encoder = JSONEncoder()
+  encoder.nonConformingFloatEncodingStrategy = .convertToString(
+    positiveInfinity: _jsonPositiveInfinity,
+    negativeInfinity: _jsonNegativeInfinity,
+    nan: _jsonNaN
+  )
+  return encoder
+}
+
+/// A JSONDecoder that revives `_jsonEncoder()`'s non-finite spellings.
+package func _jsonDecoder() -> JSONDecoder {
+  let decoder = JSONDecoder()
+  decoder.nonConformingFloatDecodingStrategy = .convertFromString(
+    positiveInfinity: _jsonPositiveInfinity,
+    negativeInfinity: _jsonNegativeInfinity,
+    nan: _jsonNaN
+  )
+  return decoder
+}
 
 /// A non-finite number in a hand-built JSON container bypasses JSONEncoder;
 /// replace it with its .convertFromString spelling.
 package func _jsonNonFiniteSafe(_ value: any Sendable) -> any Sendable {
   guard let float = value as? any BinaryFloatingPoint, !float.isFinite else { return value }
-  if float.isNaN { return "NaN" }
-  return float.sign == .minus ? "-Infinity" : "Infinity"
+  if float.isNaN { return _jsonNaN }
+  return float.sign == .minus ? _jsonNegativeInfinity : _jsonPositiveInfinity
 }
 
-package extension JSONEncoder {
-  func reencodeAsValidJSONObject<Value: Codable>(_ value: some Codable) throws -> Value {
-    nonConformingFloatEncodingStrategy = _nonConformingFloatEncodingStrategy
-    let decoder = JSONDecoder()
-    decoder.nonConformingFloatDecodingStrategy = _nonConformingFloatDecodingStrategy
-    let data = try encode(value)
-    return try decoder.decode(Value.self, from: data)
-  }
+/// Re-encode `value` for a *typed* destination: non-finite numbers round-trip
+/// through their string spelling back to real floats, so the result is NOT
+/// necessarily valid for a JSONSerialization container — use the untyped
+/// overload when the destination is one.
+package func reencodeAsValidJSONObject<Value: Codable>(_ value: some Codable) throws -> Value {
+  try _jsonDecoder().decode(Value.self, from: _jsonEncoder().encode(value))
+}
 
-  func reencodeAsValidJSONObject(_ value: some Codable) throws -> any Sendable {
-    nonConformingFloatEncodingStrategy = _nonConformingFloatEncodingStrategy
-    let data = try encode(value)
-    return try JSONDecoder().decode(AnyDecodable.self, from: data).value as! any Sendable
-  }
+/// Re-encode `value` into JSONSerialization-safe types; non-finite numbers
+/// come back as their string spelling.
+package func reencodeAsValidJSONObject(_ value: some Codable) throws -> any Sendable {
+  try JSONDecoder().decode(AnyDecodable.self, from: _jsonEncoder().encode(value))
+    .value as! any Sendable
 }
 
 enum OcaJSONPropertyKeys: String {

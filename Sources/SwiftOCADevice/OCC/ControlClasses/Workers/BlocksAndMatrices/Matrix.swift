@@ -425,7 +425,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
     let membersJson = members.map(defaultValue: nil, \.?.objectNumber)
     do {
-      jsonObject["3.5"] = try JSONEncoder().reencodeAsValidJSONObject(membersJson)
+      jsonObject["3.5"] = try reencodeAsValidJSONObject(membersJson)
     } catch {
       guard flags.contains(.ignoreEncodingErrors) else {
         throw error

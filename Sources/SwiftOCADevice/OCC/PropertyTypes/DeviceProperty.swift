@@ -156,7 +156,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     } else if JSONSerialization.isValidJSONObject(subject.value) {
       subject.value
     } else {
-      try JSONEncoder().reencodeAsValidJSONObject(subject.value)
+      try reencodeAsValidJSONObject(subject.value)
     }
 
     return jsonValue
@@ -230,21 +230,24 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
       {
         // Value is a JSON-native type (e.g. dictionary, array) — direct cast
         await setAndNotifySubscribers(object: object, newValue)
+      } else if let string = jsonValue as? String {
+        // Darwin's JSONSerialization yields fragments as NSString, which does
+        // not cast to Codable; round-trip explicitly so a saved "Infinity" or
+        // "NaN" scalar restores to its float value
+        try await setAndNotifySubscribers(object: object, reencodeAsValidJSONObject(string))
       } else if let codableValue = jsonValue as? Codable {
         // Value is a non-JSON Codable type and input conforms to Codable —
         // round-trip through JSONEncoder to decode as Value
         try await setAndNotifySubscribers(
           object: object,
-          JSONEncoder().reencodeAsValidJSONObject(codableValue)
+          reencodeAsValidJSONObject(codableValue)
         )
       } else if JSONSerialization.isValidJSONObject(jsonValue) {
         // Value is a non-JSON Codable type and input is a Foundation container
         // (e.g. NSDictionary/NSArray from a JSONSerialization round-trip that
         // doesn't conform to Codable) — serialize to JSON data then decode
         let data = try JSONSerialization.data(withJSONObject: jsonValue)
-        let decoder = JSONDecoder()
-        decoder.nonConformingFloatDecodingStrategy = _nonConformingFloatDecodingStrategy
-        let decoded = try decoder.decode(Value.self, from: data)
+        let decoded = try _jsonDecoder().decode(Value.self, from: data)
         await setAndNotifySubscribers(object: object, decoded)
       } else if Value.self is any RawRepresentable.Type,
                 let jsonValue = jsonValue as? Int
@@ -254,7 +257,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
         // bridge to Int
         try await setAndNotifySubscribers(
           object: object,
-          JSONEncoder().reencodeAsValidJSONObject(jsonValue)
+          reencodeAsValidJSONObject(jsonValue)
         )
       } else {
         guard let newValue = jsonValue as? Value else {
