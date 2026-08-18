@@ -31,6 +31,17 @@ struct JSONNonFiniteTests {
   }
 
   @Test
+  func containersAreSanitizedRecursively() {
+    let sanitized = _jsonNonFiniteSafe(
+      ["bounds": [-Float.infinity, Float(20)] as [any Sendable]] as [String: any Sendable]
+    )
+    #expect(JSONSerialization.isValidJSONObject(sanitized))
+    let bounds = (sanitized as? [String: any Sendable])?["bounds"] as? [any Sendable]
+    #expect(bounds?.first as? String == "-Infinity")
+    #expect(bounds?.last as? Float == 20)
+  }
+
+  @Test
   func finiteValuesPassThroughUnchanged() {
     #expect(_jsonNonFiniteSafe(Float(-10)) as? Float == -10)
     #expect(_jsonNonFiniteSafe(OcaUint16(42)) as? OcaUint16 == 42)

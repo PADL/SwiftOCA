@@ -52,11 +52,20 @@ package func _jsonDecoder() -> JSONDecoder {
 }
 
 /// A non-finite number in a hand-built JSON container bypasses JSONEncoder;
-/// replace it with its .convertFromString spelling.
+/// replace it (recursing through containers) with its .convertFromString
+/// spelling.
 package func _jsonNonFiniteSafe(_ value: any Sendable) -> any Sendable {
-  guard let float = value as? any BinaryFloatingPoint, !float.isFinite else { return value }
-  if float.isNaN { return _jsonNaN }
-  return float.sign == .minus ? _jsonNegativeInfinity : _jsonPositiveInfinity
+  switch value {
+  case let float as any BinaryFloatingPoint where !float.isFinite:
+    if float.isNaN { return _jsonNaN }
+    return float.sign == .minus ? _jsonNegativeInfinity : _jsonPositiveInfinity
+  case let array as [any Sendable]:
+    return array.map { _jsonNonFiniteSafe($0) }
+  case let dictionary as [String: any Sendable]:
+    return dictionary.mapValues { _jsonNonFiniteSafe($0) }
+  default:
+    return value
+  }
 }
 
 /// Re-encode `value` for a *typed* destination: non-finite numbers round-trip
