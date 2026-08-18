@@ -459,7 +459,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     } else if JSONSerialization.isValidJSONObject(value) {
       value
     } else {
-      try JSONEncoder().reencodeAsValidJSONObject(value)
+      try reencodeAsValidJSONObject(value)
     }
 
     return try [keyPath.jsonKey: jsonValue]

@@ -358,7 +358,7 @@ public extension OcaRoot {
       let jsonValue: any Sendable = if JSONSerialization.isValidJSONObject(value) {
         value
       } else {
-        try JSONEncoder().reencodeAsValidJSONObject(value)
+        try reencodeAsValidJSONObject(value)
       }
       return try [keyPath.jsonKey: jsonValue]
     }

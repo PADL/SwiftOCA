@@ -391,7 +391,8 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
         case .ignore:
           continue
         case let .replace(newValue):
-          dict[property.propertyID.description] = newValue
+          // a caller-supplied replacement bypasses getJsonValue's sanitization
+          dict[property.propertyID.description] = _jsonNonFiniteSafe(newValue)
           continue
         }
       }

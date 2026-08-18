@@ -39,15 +39,13 @@ struct JSONNonFiniteTests {
 
   @Test
   func reencodingProducesAValidJSONObject() throws {
-    let reencoded = try JSONEncoder()
-      .reencodeAsValidJSONObject(["Gain": Float(3), "MinGain": -Float.infinity])
+    let reencoded = try reencodeAsValidJSONObject(["Gain": Float(3), "MinGain": -Float.infinity])
     #expect(JSONSerialization.isValidJSONObject(["value": reencoded]))
   }
 
   @Test
   func typedReencodingRoundTripsNonFiniteValues() throws {
-    let value: [Float] = try JSONEncoder()
-      .reencodeAsValidJSONObject([-Float.infinity, 3, Float.nan])
+    let value: [Float] = try reencodeAsValidJSONObject([-Float.infinity, 3, Float.nan])
     #expect(value[0] == -.infinity)
     #expect(value[1] == 3)
     #expect(value[2].isNaN)
