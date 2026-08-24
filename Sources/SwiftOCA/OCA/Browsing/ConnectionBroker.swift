@@ -316,6 +316,7 @@ public actor OcaConnectionBroker {
   private var _browsers: [OcaNetworkAdvertisingServiceType: BrowserMonitor]!
   private var _devices = [DeviceIdentifier: DeviceInfo]()
   private var _connections = [DeviceIdentifier: DeviceConnection]()
+  private var _pendingOpens = [DeviceIdentifier: Task<Ocp1Connection, Error>]()
   private let _connectionOptions: Ocp1ConnectionOptions
   private let _eventsContinuation: AsyncStream<Event>.Continuation
   private let _deviceModels: [OcaModelGUID]?
@@ -431,6 +432,7 @@ public actor OcaConnectionBroker {
 
       if await _devices[deviceIdentifier] == nil {
         let event = Event(eventType: .deviceRemoved, deviceIdentifier: deviceIdentifier)
+        await _cancelPendingOpen(for: deviceIdentifier)
         let expiringConnection = await _removeConnection(for: deviceIdentifier)
         await expiringConnection?.expire()
         _eventsContinuation.yield(event)
@@ -486,25 +488,56 @@ public actor OcaConnectionBroker {
     )
   }
 
+  private func _connect(_ connection: Ocp1Connection) async throws {
+    do {
+      try await connection.connect()
+    } catch Ocp1Error.alreadyConnected {
+    } catch Ocp1Error.connectionAlreadyInProgress {}
+  }
+
+  private func _cancelPendingOpen(for device: DeviceIdentifier) {
+    _pendingOpens.removeValue(forKey: device)?.cancel()
+  }
+
   func _open(
     device: DeviceIdentifier,
     connect: Bool = false
   ) async throws {
     if let connection = try? _getRegisteredConnection(for: device) {
-      let connection = connection.connection
-      if connect {
-        do {
-          try await connection.connect()
-        } catch Ocp1Error.alreadyConnected {
-        } catch Ocp1Error.connectionAlreadyInProgress {}
-      }
+      if connect { try await _connect(connection.connection) }
+      return
+    }
+
+    // the actor can be re-entered whilst suspended in openConnection()/connect()
+    // below; concurrent callers must await the in-flight open rather than create
+    // (and connect) a second Ocp1Connection for the same device
+    if let pending = _pendingOpens[device] {
+      let connection = try await pending.value
+      if connect { try await _connect(connection) }
       return
     }
 
     let deviceInfo = try _getDeviceInfo(for: device)
-    let connection = try await deviceInfo.openConnection(options: _connectionOptions)
-    if connect { try await connection.connect() }
-    _registerConnection(connection, for: device)
+    let pending = Task { () -> Ocp1Connection in
+      let connection = try await deviceInfo.openConnection(options: _connectionOptions)
+      if connect { try await connection.connect() }
+      do {
+        // the device may have been deregistered whilst we were suspended
+        try Task.checkCancellation()
+      } catch {
+        try? await connection.disconnect()
+        throw error
+      }
+      _registerConnection(connection, for: device)
+      return connection
+    }
+    _pendingOpens[device] = pending
+    defer {
+      if _pendingOpens[device] == pending {
+        _pendingOpens[device] = nil
+      }
+    }
+    _ = try await pending.value
   }
 
   /// Registers a device with an already-established connection, bypassing DNS-SD discovery.
@@ -519,6 +552,7 @@ public actor OcaConnectionBroker {
     device: DeviceIdentifier,
     connection: Ocp1Connection
   ) {
+    _cancelPendingOpen(for: device)
     _registerConnection(connection, for: device)
     let event = Event(eventType: .deviceAdded, deviceIdentifier: device)
     _eventsContinuation.yield(event)
@@ -530,6 +564,7 @@ public actor OcaConnectionBroker {
   ///
   /// - Parameter device: The device identifier to deregister
   public func deregister(device: DeviceIdentifier) async {
+    _cancelPendingOpen(for: device)
     let connection = _removeConnection(for: device)
     await connection?.expire()
     let event = Event(eventType: .deviceRemoved, deviceIdentifier: device)
