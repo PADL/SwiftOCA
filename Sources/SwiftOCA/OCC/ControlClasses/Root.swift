@@ -266,8 +266,11 @@ public extension OcaRoot {
     subscriptionCancellable = nil
     let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
     do {
+      // per-object label: aliased proxies for the same ONo (e.g. a resolved
+      // subclass alongside a connection's built-in manager) must each register
+      // their own callback, or the loser's property subjects never see events
       subscriptionCancellable = try await connectionDelegate.addSubscription(
-        label: "com.padl.SwiftOCA.OcaRoot",
+        label: "com.padl.SwiftOCA.OcaRoot.\(ObjectIdentifier(self))",
         event: event
       ) { [weak self] event, data in
         await self?.onPropertyEvent(event: event, eventData: data)
