@@ -311,13 +311,13 @@ public actor OcaConnectionBroker {
   /// - Returns: An async sequence of `Event` instances
   public let events: AsyncStream<Event>
 
-  private static let DeviceExpiryTimeout = Duration.seconds(2)
-
   private var _browsers: [OcaNetworkAdvertisingServiceType: BrowserMonitor]!
   private var _devices = [DeviceIdentifier: DeviceInfo]()
   private var _connections = [DeviceIdentifier: DeviceConnection]()
   private var _pendingOpens = [DeviceIdentifier: Task<Ocp1Connection, Error>]()
+  private var _deviceExpiryTasks = [DeviceIdentifier: Task<Void, Error>]()
   private let _connectionOptions: Ocp1ConnectionOptions
+  private let _deviceExpiryTimeout: Duration
   private let _eventsContinuation: AsyncStream<Event>.Continuation
   private let _deviceModels: [OcaModelGUID]?
 
@@ -360,39 +360,15 @@ public actor OcaConnectionBroker {
     let device = DeviceInfo(deviceIdentifier: deviceIdentifier, serviceInfo: serviceInfo)
     let isExistingDevice =
       _devices[deviceIdentifier] != nil || _connections[deviceIdentifier] != nil
+    _devices[deviceIdentifier] = device
 
-    if let existingDevice = _devices[deviceIdentifier] {
-      // Device still in _devices (add arrived before remove, or address change)
-      try? await withDeviceConnection(deviceIdentifier) { existingConnection in
-        let addressesChanged = (try? existingDevice.addresses) != (try? device.addresses)
-        if addressesChanged,
-           let mutableConnection = existingConnection as? Ocp1MutableSocketAddressConnection
-        {
-          // the setter fires deviceAddressesDidChange() itself (gated on there
-          // being a live connection to migrate)
-          mutableConnection.deviceAddressData = try device.addresses
-        }
-
-        // if reconnection was temporarily disabled by _onBrowserDeviceRemoved, reenable it
-        if _connectionOptions.flags.contains(.automaticReconnect),
-           await !existingConnection.options.flags.contains(.automaticReconnect)
-        {
-          try await existingConnection.set(options: _connectionOptions)
-        }
-      }
-    } else if _connections[deviceIdentifier] != nil {
-      // Device removed from _devices (e.g. DNS-SD name change) but connection persists;
-      // re-enable automatic reconnect
-      try? await withDeviceConnection(deviceIdentifier) { existingConnection in
-        if _connectionOptions.flags.contains(.automaticReconnect),
-           await !existingConnection.options.flags.contains(.automaticReconnect)
-        {
-          try await existingConnection.set(options: _connectionOptions)
-        }
+    // Keep a live connection's candidate addresses current; the setter ignores
+    // an unchanged set and migrates only when the address in use disappears.
+    try? withDeviceConnection(deviceIdentifier) { existingConnection in
+      if let mutableConnection = existingConnection as? Ocp1MutableSocketAddressConnection {
+        mutableConnection.deviceAddressData = try device.addresses
       }
     }
-
-    _devices[deviceIdentifier] = device
 
     let eventType: EventType = isExistingDevice ? .deviceUpdated : .deviceAdded
     let event = Event(eventType: eventType, deviceIdentifier: deviceIdentifier)
@@ -401,15 +377,6 @@ public actor OcaConnectionBroker {
 
   private func _removeDevice(with deviceIdentifier: DeviceIdentifier) {
     _devices[deviceIdentifier] = nil
-  }
-
-  private func _disableAutomaticReconnect(_ deviceIdentifier: DeviceIdentifier) async {
-    guard _connectionOptions.flags.contains(.automaticReconnect),
-          let connection = try? _getRegisteredConnection(for: deviceIdentifier)
-    else { return }
-    let options = _connectionOptions
-      .copy(flags: _connectionOptions.flags.subtracting(.automaticReconnect))
-    try? await connection.connection.set(options: options)
   }
 
   private func _onBrowserDeviceRemoved(
@@ -423,24 +390,45 @@ public actor OcaConnectionBroker {
       throw Ocp1Error.serviceResolutionFailed
     }
 
-    await _disableAutomaticReconnect(deviceIdentifier)
     _removeDevice(with: deviceIdentifier)
+    _scheduleDeviceExpiry(for: deviceIdentifier)
+  }
 
-    Task { [weak self] in
-      try await Task.sleep(for: Self.DeviceExpiryTimeout)
-      guard let self else { return }
-
-      if await _devices[deviceIdentifier] == nil {
-        let event = Event(eventType: .deviceRemoved, deviceIdentifier: deviceIdentifier)
-        await _cancelPendingOpen(for: deviceIdentifier)
-        let expiringConnection = await _removeConnection(for: deviceIdentifier)
-        await expiringConnection?.expire()
-        _eventsContinuation.yield(event)
-      }
+  /// A browse removal is a hint, not a fact: a device re-registering under
+  /// another DNS-SD instance name sends a goodbye for the old one first.
+  private func _scheduleDeviceExpiry(for deviceIdentifier: DeviceIdentifier) {
+    guard _deviceExpiryTasks[deviceIdentifier] == nil else { return }
+    let timeout = _deviceExpiryTimeout
+    _deviceExpiryTasks[deviceIdentifier] = Task { [weak self] in
+      repeat {
+        try await Task.sleep(for: timeout)
+      } while await self?._expireDeviceIfAbsent(deviceIdentifier) == false
     }
   }
 
-  private func _onBrowseResult(_ result: OcaNetworkAdvertisingServiceBrowserResult) async throws {
+  /// Returns false while the device is unadvertised but its connection is still
+  /// alive; the expiry task then checks again after another timeout.
+  private func _expireDeviceIfAbsent(_ deviceIdentifier: DeviceIdentifier) async -> Bool {
+    if _devices[deviceIdentifier] == nil, let connection = _connections[deviceIdentifier] {
+      if await connection.connection.isConnected { return false }
+    }
+
+    // re-check between suspensions: a concurrent add may have re-registered the
+    // device, and its .deviceAdded/.deviceUpdated must not be contradicted
+    if _devices[deviceIdentifier] == nil {
+      _cancelPendingOpen(for: deviceIdentifier)
+      let expiringConnection = _removeConnection(for: deviceIdentifier)
+      await expiringConnection?.expire()
+    }
+
+    _deviceExpiryTasks[deviceIdentifier] = nil
+    if _devices[deviceIdentifier] == nil {
+      _eventsContinuation.yield(Event(eventType: .deviceRemoved, deviceIdentifier: deviceIdentifier))
+    }
+    return true
+  }
+
+  func _onBrowseResult(_ result: OcaNetworkAdvertisingServiceBrowserResult) async throws {
     switch result {
     case let .added(serviceInfo):
       try await _onBrowserDeviceAdded(serviceInfo)
@@ -459,10 +447,12 @@ public actor OcaConnectionBroker {
   public init(
     connectionOptions: Ocp1ConnectionOptions = .init(),
     serviceTypes: Set<OcaNetworkAdvertisingServiceType>? = nil,
-    deviceModels: [OcaModelGUID]? = nil
+    deviceModels: [OcaModelGUID]? = nil,
+    deviceExpiryTimeout: Duration = .seconds(10)
   ) async {
     _connectionOptions = connectionOptions
     _deviceModels = deviceModels
+    _deviceExpiryTimeout = deviceExpiryTimeout
 
     // Create AsyncStream for events
     let (stream, continuation) = AsyncStream<Event>.makeStream()
