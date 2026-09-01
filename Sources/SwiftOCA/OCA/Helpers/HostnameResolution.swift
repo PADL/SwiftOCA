@@ -27,6 +27,17 @@ import Darwin
 import Glibc
 #elseif canImport(Android)
 import Android
+#elseif canImport(WinSDK)
+import WinSDK
+
+/// Winsock has to be started before any of its routines are used, and resolving a name is
+/// usually the first of them — the transport starts it when it makes a socket, which is not
+/// until a candidate address has been resolved to connect to. Starting it twice is harmless:
+/// Windows counts the starts and the stops.
+private let _winsockIsStarted: Bool = {
+  var data = WSADATA()
+  return WSAStartup(0x0202, &data) == 0
+}()
 #endif
 
 /// `getaddrinfo` is a blocking syscall with no portable async form, so run it on
@@ -62,6 +73,10 @@ private func _resolveDeviceAddressesBlocking(
   port: UInt16,
   isDatagram: Bool
 ) -> [AnySocketAddress] {
+  #if canImport(WinSDK)
+  guard _winsockIsStarted else { return [] }
+  #endif
+
   var hints = addrinfo()
   hints.ai_family = AF_UNSPEC // both IPv4 and IPv6
   hints.ai_socktype = isDatagram ? SOCK_DGRAM : SOCK_STREAM
