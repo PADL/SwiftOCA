@@ -268,13 +268,34 @@ open class Ocp1Connection: CustomStringConvertible {
   /// Object interning
   var objects = [OcaONo: OcaRoot]()
 
-  /// Root block, immutable
-  public let rootBlock = OcaBlock(objectNumber: OcaRootBlockONo)
+  private let _rootBlock = OcaBlock(objectNumber: OcaRootBlockONo)
 
   /// Well known managers, immutable
-  let subscriptionManager = OcaSubscriptionManager()
-  public let deviceManager = OcaDeviceManager()
-  public let networkManager = OcaNetworkManager()
+  private let _subscriptionManager = OcaSubscriptionManager()
+  private let _deviceManager = OcaDeviceManager()
+  private let _networkManager = OcaNetworkManager()
+
+  // The well-known proxies return the deepest subclass resolved so far (a
+  // vendor subclass replaces the built-in base instance in the object
+  // registry), falling back to the built-in instance. Successive reads can
+  // return different instances as deeper classes are resolved; capture the
+  // result when a stable observation target is needed.
+
+  public var rootBlock: OcaBlock {
+    objects[OcaRootBlockONo] as? OcaBlock ?? _rootBlock
+  }
+
+  public var deviceManager: OcaDeviceManager {
+    objects[OcaDeviceManagerONo] as? OcaDeviceManager ?? _deviceManager
+  }
+
+  public var networkManager: OcaNetworkManager {
+    objects[OcaNetworkManagerONo] as? OcaNetworkManager ?? _networkManager
+  }
+
+  var subscriptionManager: OcaSubscriptionManager {
+    objects[OcaSubscriptionManagerONo] as? OcaSubscriptionManager ?? _subscriptionManager
+  }
 
   @OcaConnection
   final class EventSubscriptions {
@@ -341,9 +362,10 @@ open class Ocp1Connection: CustomStringConvertible {
   public init(options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()) {
     connectionState = _connectionState.eraseToAnyAsyncSequence()
     self.options = options
-    add(object: rootBlock)
-    add(object: subscriptionManager)
-    add(object: deviceManager)
+    add(object: _rootBlock)
+    add(object: _subscriptionManager)
+    add(object: _deviceManager)
+    add(object: _networkManager)
     _configureTracing()
     _configureBatching(options.batchingOptions)
   }
