@@ -26,6 +26,7 @@
 #if os(macOS) || os(iOS) || os(Windows) || canImport(Android) || !NonEmbeddedBuild
 
 import FlyingSocks
+import Logging
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
@@ -169,16 +170,37 @@ package extension SocketAddress {
 private actor AsyncSocketPoolMonitor {
   static let shared = AsyncSocketPoolMonitor()
 
-  private let pool: some AsyncSocketPool = SocketPool.make()
+  private static let logger = Logger(label: "com.padl.SwiftOCA")
+
+  private var pool: any AsyncSocketPool = SocketPool.make()
+  private var generation = 0
   private var task: Task<(), Error>?
 
-  func get() async throws -> some AsyncSocketPool {
+  func get() async throws -> any AsyncSocketPool {
     guard task == nil else { return pool }
+    let pool = pool, generation = generation
     try await pool.prepare()
-    task = Task {
-      try await pool.run()
+    task = Task { [weak self] in
+      // SocketPool.run() is not restartable: one kqueue/epoll error (e.g. a
+      // peer's socket closed mid-poll) permanently kills the pool and with it
+      // every connection in the process. Build a fresh pool so reconnecting
+      // connections can recover.
+      do {
+        try await pool.run()
+      } catch is CancellationError {
+      } catch {
+        Self.logger.warning("socket pool event loop failed: \(error), rebuilding pool")
+      }
+      await self?._rebuild(ifCurrent: generation)
     }
     return pool
+  }
+
+  private func _rebuild(ifCurrent staleGeneration: Int) {
+    guard staleGeneration == generation else { return }
+    generation += 1
+    task = nil
+    pool = SocketPool.make()
   }
 
   func stop() {
@@ -326,6 +348,21 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddress
       return try await block(_asyncSocket)
     } catch let error as SocketError {
       throw error.mappedError
+    } catch is CancellationError where !Task.isCancelled {
+      // spurious resumption from the socket pool tearing down its waiters
+      // after its event loop died; recoverable, unlike a real cancellation
+      throw Ocp1Error.notConnected
+    } catch let error as Ocp1Error {
+      throw error
+    } catch is CancellationError {
+      throw CancellationError()
+    } catch let error as Errno {
+      throw error
+    } catch {
+      // e.g. the pool's "Not Ready" error once its event loop has died;
+      // treat as connection loss so the monitor reconnects onto a fresh pool
+      logger.debug("socket error \(error), treating as connection loss")
+      throw Ocp1Error.notConnected
     }
   }
 
