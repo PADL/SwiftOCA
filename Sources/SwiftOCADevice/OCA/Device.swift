@@ -24,10 +24,29 @@ import Foundation
 import Logging
 import SwiftOCA
 
+/// Event parameters that are encoded on demand, so a recipient that only needs the event
+/// never pays for encoding them.
+public struct OcaEventParameters: Sendable {
+  private let _encode: @Sendable () throws -> Data
+
+  init(_ encode: @escaping @Sendable () throws -> Data) {
+    _encode = encode
+  }
+
+  init(_ encoded: Data) {
+    _encode = { encoded }
+  }
+
+  /// OCP.1 encoding of the parameters; each access encodes afresh
+  public var encoded: Data {
+    get throws { try _encode() }
+  }
+}
+
 public protocol OcaDeviceEventDelegate: AnyObject, Sendable {
   func onEvent(
     _ event: OcaEvent,
-    parameters: Data
+    parameters: OcaEventParameters
   ) async
 
   func onControllerExpiry(_ controller: OcaController) async
@@ -223,24 +242,38 @@ public actor OcaDevice {
     _ event: OcaEvent,
     parameters: OcaPropertyChangedEventData<some Codable & Sendable>
   ) async throws {
-    try await notifySubscribers(
+    try await _notifySubscribers(
       event,
-      parameters: Ocp1Encoder().encode(parameters)
+      parameters: OcaEventParameters { try Ocp1Encoder().encode(parameters) as Data }
     )
   }
 
-  private func _notifyEventDelegate(
+  public func notifySubscribers(
     _ event: OcaEvent,
     parameters: Data
   ) async throws {
-    guard let eventDelegate else { return }
-    await eventDelegate.onEvent(event, parameters: parameters)
+    try await _notifySubscribers(event, parameters: OcaEventParameters(parameters))
   }
 
-  private func _notifySubscriptionManager(
+  func notifySubscribers(_ event: OcaEvent) async throws {
+    try await _notifySubscribers(event, parameters: OcaEventParameters(Data()))
+  }
+
+  /// Parameters are only encoded for a recipient that asks for them: the event delegate on
+  /// demand, and controllers only if one is subscribed to the emitter. Most property changes
+  /// have neither, e.g. every structural change made while a device builds its object tree.
+  private func _notifySubscribers(
     _ event: OcaEvent,
-    parameters: Data
+    parameters: OcaEventParameters
   ) async throws {
+    // if we are using a custom device manager, it may set properties prior to the subscription
+    // manager being initialized
+    assert(deviceManager == nil || subscriptionManager != nil)
+
+    if let eventDelegate {
+      await eventDelegate.onEvent(event, parameters: parameters)
+    }
+
     guard let subscriptionManager else { return }
 
     switch await subscriptionManager.state {
@@ -248,10 +281,9 @@ public actor OcaDevice {
       await subscriptionManager
         .enqueueObjectChangedWhilstNotificationsDisabled(event.emitterONo)
     case .normal:
-      let subscribers = await endpoints
-        .asyncMap { await $0.controllers }
-        .flatMap { $0 }
-        .map { $0 as! any OcaControllerDefaultSubscribing }
+      let subscribers = await _subscribers(to: event)
+      guard !subscribers.isEmpty else { return }
+      let parameters = try parameters.encoded
       await withDiscardingTaskGroup { group in
         for subscriber in subscribers {
           group.addTask {
@@ -262,20 +294,13 @@ public actor OcaDevice {
     }
   }
 
-  public func notifySubscribers(
-    _ event: OcaEvent,
-    parameters: Data
-  ) async throws {
-    // if we are using a custom device manager, it may set properties prior to the subscription
-    // manager being initialized
-    assert(deviceManager == nil || subscriptionManager != nil)
-
-    try await _notifyEventDelegate(event, parameters: parameters)
-    try await _notifySubscriptionManager(event, parameters: parameters)
-  }
-
-  func notifySubscribers(_ event: OcaEvent) async throws {
-    try await notifySubscribers(event, parameters: Data())
+  /// Controllers holding at least one subscription to the event's emitter.
+  private func _subscribers(to event: OcaEvent) async -> [any OcaControllerDefaultSubscribing] {
+    await endpoints
+      .asyncMap { await $0.controllers }
+      .flatMap { $0 }
+      .map { $0 as! any OcaControllerDefaultSubscribing }
+      .asyncCompactMap { await $0.isSubscribed(toEventsFrom: event.emitterONo) ? $0 : nil }
   }
 
   public func setEventDelegate(_ eventDelegate: OcaDeviceEventDelegate) {

@@ -17,8 +17,8 @@
 // https://www.swiftbysundell.com/articles/async-and-concurrent-forEach-and-map/
 
 public extension Sequence {
-  func asyncMap<T>(
-    _ transform: sending (Element) async throws -> T
+  nonisolated(nonsending) func asyncMap<T>(
+    _ transform: nonisolated(nonsending) (Element) async throws -> T
   ) async rethrows -> [T] {
     var values = [T]()
 
@@ -29,8 +29,8 @@ public extension Sequence {
     return values
   }
 
-  func asyncCompactMap<T>(
-    _ transform: sending (Element) async throws -> T?
+  nonisolated(nonsending) func asyncCompactMap<T>(
+    _ transform: nonisolated(nonsending) (Element) async throws -> T?
   ) async rethrows -> [T] {
     var values = [T]()
 

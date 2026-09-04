@@ -77,6 +77,12 @@ public extension OcaControllerDefaultSubscribing {
     ).count > 0
   }
 
+  /// Whether any subscription exists for events from `emitterONo`; lets the device decide
+  /// whether an event is worth encoding before it calls `notifySubscribers`.
+  func isSubscribed(toEventsFrom emitterONo: OcaONo) -> Bool {
+    !(subscriptions[emitterONo]?.isEmpty ?? true)
+  }
+
   private func hasSubscription(
     _ subscription: OcaSubscriptionManagerSubscription
   ) -> Bool {

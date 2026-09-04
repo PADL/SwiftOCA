@@ -33,7 +33,7 @@ import SocketAddress // for the Windows sa_family_t typealias
 #endif
 
 final class DeviceEventDelegate: OcaDeviceEventDelegate {
-  func onEvent(_ event: SwiftOCA.OcaEvent, parameters: Data) async {}
+  func onEvent(_ event: SwiftOCA.OcaEvent, parameters: OcaEventParameters) async {}
   func onControllerExpiry(_ controller: OcaController) async {}
 }
 
