@@ -20,21 +20,22 @@ public enum Aes67Adaptation {
   public static let identifier: OcaAdaptationIdentifier = "OcaAes67"
   public static let streamSourceRegistryPurpose: OcaString = "stream-source-registry"
 
+  /// Class ID fields are written in decimal, so these suffixes are 2100 to 2102.
   public static let mediaTransportApplicationClassID = OcaClassID(
     parent: OcaClassID("1.7.1"),
     authority: OcaClassID.AESCompanyID,
-    0x2100
+    2100
   )
 
   public static let mediaTransportSessionAgentClassID = OcaClassID(
     parent: OcaClassID("1.2.20"),
     authority: OcaClassID.AESCompanyID,
-    0x2101
+    2101
   )
 
   public static let streamSourceListAgentClassID = OcaClassID(
     parent: OcaClassID("1.2"),
     authority: OcaClassID.AESCompanyID,
-    0x2102
+    2102
   )
 }

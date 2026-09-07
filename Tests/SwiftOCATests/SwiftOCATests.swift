@@ -649,7 +649,7 @@ final class SwiftOCADeviceTests: XCTestCase {
   }
 
   func testMilanClassIDAndStreamFormats() throws {
-    XCTAssertEqual(MilanAdaptation.sessionAgentClassID.description, "1.2.20.65535.0.2910.8704")
+    XCTAssertEqual(MilanAdaptation.sessionAgentClassID.description, "1.2.20.65535.0.2910.2200")
     XCTAssertEqual(MilanAdaptation.sessionAgentClassID.parent, OcaClassID("1.2.20"))
     XCTAssertEqual(MilanAdaptation.inputEndpointID(streamIndex: 0), 1)
     XCTAssertEqual(MilanAdaptation.outputEndpointID(streamIndex: 0), 1001)

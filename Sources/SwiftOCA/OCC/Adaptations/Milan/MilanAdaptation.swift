@@ -25,10 +25,11 @@ public enum MilanAdaptation {
   public static let outputEndpointIDOffset: OcaMediaStreamEndpointID = 1000
 
   /// AES70-22 §5.2: MilanOcaMediaTransportSessionAgent is 1.2.20.A.2200 with A = AES.
+  /// Class ID fields are written in decimal, so the suffix is 2200 rather than 0x2200.
   public static let sessionAgentClassID = OcaClassID(
     parent: OcaClassID("1.2.20"),
     authority: OcaClassID.AESCompanyID,
-    0x2200
+    2200
   )
 
   public static func inputEndpointID(streamIndex: OcaUint16) -> OcaMediaStreamEndpointID {
