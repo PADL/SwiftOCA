@@ -545,6 +545,10 @@ final class SwiftOCADeviceTests: XCTestCase {
     let macAddress = try XCTUnwrap(OcaMACAddress(string: "00:0b:5e:01:02:03"))
     let encodedMacAddress = Data([0x00, 0x0B, 0x5E, 0x01, 0x02, 0x03])
 
+    XCTAssertNil(OcaMACAddress(string: "00:zz:5e:01:02:03:04"))
+    XCTAssertNil(OcaMACAddress(string: "00:0b:5e:01:02"))
+    XCTAssertNil(OcaMACAddress(string: "0000:0b:5e:01:02:03"))
+
     XCTAssertEqual(try Ocp1Encoder().encode(macAddress), encodedMacAddress)
     XCTAssertEqual(try Ocp1Decoder().decode(OcaMACAddress.self, from: encodedMacAddress), macAddress)
     XCTAssertEqual(macAddress.description, "00:0b:5e:01:02:03")

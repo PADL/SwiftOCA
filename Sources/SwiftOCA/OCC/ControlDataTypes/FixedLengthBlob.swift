@@ -35,9 +35,13 @@ public struct OcaMACAddress: Codable, Sendable, Hashable, CustomStringConvertibl
   }
 
   public init?(string: String) {
-    let octets = string.split(whereSeparator: { $0 == ":" || $0 == "-" })
-      .compactMap { UInt8($0, radix: 16) }
-    guard octets.count == Self.byteCount else { return nil }
+    let fields = string.split(whereSeparator: { $0 == ":" || $0 == "-" })
+    guard fields.count == Self.byteCount else { return nil }
+    var octets = [OcaUint8]()
+    for field in fields {
+      guard field.count <= 2, let octet = UInt8(field, radix: 16) else { return nil }
+      octets.append(octet)
+    }
     bytes = octets
   }
 
