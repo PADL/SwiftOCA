@@ -17,7 +17,8 @@
 import SwiftOCA
 
 /// AES70-22 §7.4: one session per input endpoint, bound with ConfigureConnection,
-/// unbound with ResetSession, and started or stopped with SetStreamingEnabled.
+/// unbound with ResetSession, and started or stopped with SetStreamingEnabled. A
+/// concrete subclass implements those hooks and refuses the methods Milan omits.
 open class MilanOcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
   override open class var classID: OcaClassID { MilanAdaptation.sessionAgentClassID }
 
@@ -87,25 +88,5 @@ open class MilanOcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
       state: state,
       adaptationData: milanStatus.blob
     ))
-  }
-
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.4"), // AddSession
-         OcaMethodID("3.5"), // ConfigureSession
-         OcaMethodID("3.6"), // DeleteSession
-         OcaMethodID("3.9"), // StartStreaming
-         OcaMethodID("3.10"), // StopStreaming
-         OcaMethodID("3.13"), // AddConnection
-         OcaMethodID("3.15"), // DeleteConnection
-         OcaMethodID("3.16"), // DeleteConnections
-         OcaMethodID("3.18"): // SetAdaptationData
-      throw Ocp1Error.status(.notImplemented)
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
   }
 }

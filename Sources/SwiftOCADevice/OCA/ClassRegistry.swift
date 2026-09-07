@@ -96,6 +96,8 @@ public class OcaDeviceClassRegistry {
     try register(OcaCounterSetAgent.self)
     try register(OcaMediaTransportSessionAgent.self)
     try register(MilanOcaMediaTransportSessionAgent.self)
+    try register(Aes67OcaMediaTransportSessionAgent.self)
+    try register(Aes67StreamSourceListAgent.self)
     try register(OcaTimeSource.self)
     try register(OcaPowerSupply.self)
 
@@ -193,6 +195,8 @@ public class OcaDeviceClassRegistry {
     try register(OcaNetworkInterface.self)
     try register(OcaNetworkApplication.self)
     try register(OcaMediaTransportApplication.self)
+    try register(Aes67OcaMediaTransportApplication.self)
+    try register(DanteOcaMediaTransportApplication.self)
 
     #if NonEmbeddedBuild
     // datasets

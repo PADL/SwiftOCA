@@ -642,6 +642,54 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertNil(MilanStreamFormat(mediaStreamMode: .undefined))
   }
 
+  func testAes67AndDanteAdaptationDataEncoding() throws {
+    let ipParameters = Aes67EndpointIPParameters(
+      networkAssignmentID: 1,
+      sourceAddress: "10.0.0.1",
+      destinationAddress: "239.1.2.3",
+      timeToLive: 16,
+      sourcePort: 5004,
+      destinationPort: 5004
+    )
+    let aes67 = Aes67EndpointAdaptationData(
+      ipParameters: [ipParameters],
+      payloadType: 96,
+      transmissionCapabilities: [.unicastCapable, .multicastCapable],
+      presentationTimeOffset: 1e-3
+    )
+    XCTAssertEqual(try aes67.blob.decode(Aes67EndpointAdaptationData.self), aes67)
+    XCTAssertEqual(
+      try Ocp1Encoder().encode(Aes67StreamTransmissionCapabilities([.unicastCapable, .defaultSecurityCapable])) as [UInt8],
+      [0x00, 0x09]
+    )
+    XCTAssertEqual(Aes67Adaptation.mediaTransportApplicationClassID.parent, OcaClassID("1.7.1"))
+
+    let dante = DanteChannelEndpointAdaptationData(
+      remoteAddress: DanteChannelAddress(device: "console", channel: "01"),
+      subscriptionStatus: .subscribedToUnicastFlow,
+      channelMute: .muted,
+      latency: 1e-3,
+      mediaProtocol: .atp,
+      streamEndpointID: 7
+    )
+    XCTAssertEqual(try dante.blob.decode(DanteChannelEndpointAdaptationData.self), dante)
+    XCTAssertEqual(DanteChannelAddress(string: "01@console"), dante.remoteAddress)
+    XCTAssertEqual(dante.remoteAddress.description, "01@console")
+    XCTAssertNil(DanteChannelAddress(string: "nonsense"))
+    let channelEndpoint = OcaChannelEndpoint(
+      idExternal: OcaBlob(Array("01".utf8)),
+      direction: .input,
+      connectionState: .running,
+      adaptationData: try dante.blob,
+      portMap: [OcaPortID(mode: .output, index: 1)]
+    )
+    XCTAssertEqual(
+      try Ocp1Decoder().decode(OcaChannelEndpoint.self, from: Ocp1Encoder().encode(channelEndpoint) as [UInt8]),
+      channelEndpoint
+    )
+    XCTAssertEqual(DanteAdaptation.mediaTransportApplicationClassID.parent, OcaClassID("1.7.1"))
+  }
+
   func testBuiltinEncoderDecoderNtf1() throws {
     let eventParameters = Data([0x00, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01])
     let eventData = Ocp1EventData(

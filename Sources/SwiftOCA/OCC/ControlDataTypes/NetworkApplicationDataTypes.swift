@@ -149,7 +149,7 @@ public struct OcaNetworkInterfaceStatus: Codable, Sendable, Equatable {
 public typealias OcaIP4Address = OcaString
 public typealias OcaIP4AddressAndPrefix = OcaString
 
-public struct OcaIP4Gateway: Codable, Sendable {
+public struct OcaIP4Gateway: Codable, Sendable, Equatable {
   public let destinationPrefix: OcaIP4AddressAndPrefix
   public let gatewayAddress: OcaIP4Address
   public let metric: OcaUint16
@@ -172,7 +172,7 @@ public enum OcaIP4AutoconfigMode: OcaUint8, Codable, Sendable, CaseIterable {
   case linkLocal = 3
 }
 
-public struct OcaIP4NetworkSettings: Codable, Sendable {
+public struct OcaIP4NetworkSettings: Ocp1TypedBlobRepresentable, Sendable, Equatable {
   public let addressAndPrefix: OcaIP4AddressAndPrefix
   public let autoconfigMode: OcaIP4AutoconfigMode
   public let dhcpServerAddress: OcaIP4Address
@@ -203,7 +203,7 @@ public struct OcaIP4NetworkSettings: Codable, Sendable {
 public typealias OcaIP6Address = OcaString
 public typealias OcaIP6AddressAndPrefix = OcaString
 
-public struct OcaIP6Gateway: Codable, Sendable {
+public struct OcaIP6Gateway: Codable, Sendable, Equatable {
   public let destinationPrefix: OcaIP6AddressAndPrefix
   public let gatewayAddress: OcaIP6Address
   public let metric: OcaUint16
@@ -226,7 +226,7 @@ public enum OcaIP6AutoconfigMode: OcaUint8, Codable, Sendable, CaseIterable {
   case dhcpStateful = 3
 }
 
-public struct OcaIP6NetworkSettings: Codable, Sendable {
+public struct OcaIP6NetworkSettings: Ocp1TypedBlobRepresentable, Sendable, Equatable {
   public let addressAndPrefix: OcaIP6AddressAndPrefix
   public let autoconfigMode: OcaIP6AutoconfigMode
   public let linkLocalAddress: OcaIP6Address

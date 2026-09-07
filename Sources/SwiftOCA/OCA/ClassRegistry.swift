@@ -93,6 +93,8 @@ public class OcaClassRegistry {
     try register(OcaCounterSetAgent.self)
     try register(OcaMediaTransportSessionAgent.self)
     try register(MilanOcaMediaTransportSessionAgent.self)
+    try register(Aes67OcaMediaTransportSessionAgent.self)
+    try register(Aes67StreamSourceListAgent.self)
     try register(OcaPowerSupply.self)
 
     // managers
@@ -192,6 +194,8 @@ public class OcaClassRegistry {
     // networks
     try register(OcaNetworkApplication.self)
     try register(OcaMediaTransportApplication.self)
+    try register(Aes67OcaMediaTransportApplication.self)
+    try register(DanteOcaMediaTransportApplication.self)
     try register(OcaNetworkInterface.self)
   }
 }
