@@ -37,15 +37,7 @@ open class OcaCounterSetAgent: OcaAgent, @unchecked Sendable {
     )
   }
 
-  public struct CounterNotifierParameters: Ocp1ParametersReflectable {
-    public let id: OcaID16
-    public let oNo: OcaONo
-
-    public init(id: OcaID16, oNo: OcaONo) {
-      self.id = id
-      self.oNo = oNo
-    }
-  }
+  public typealias CounterNotifierParameters = OcaCounterNotifierParameters
 
   public func attach(counter id: OcaID16, to oNo: OcaONo) async throws {
     try await sendCommandRrq(

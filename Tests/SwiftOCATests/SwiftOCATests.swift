@@ -519,6 +519,56 @@ final class SwiftOCADeviceTests: XCTestCase {
     )
   }
 
+  func testMACAddressEncoding() throws {
+    let macAddress = try XCTUnwrap(OcaMACAddress(string: "00:0b:5e:01:02:03"))
+    let encodedMacAddress = Data([0x00, 0x0B, 0x5E, 0x01, 0x02, 0x03])
+
+    XCTAssertEqual(try Ocp1Encoder().encode(macAddress), encodedMacAddress)
+    XCTAssertEqual(try Ocp1Decoder().decode(OcaMACAddress.self, from: encodedMacAddress), macAddress)
+    XCTAssertEqual(macAddress.description, "00:0b:5e:01:02:03")
+    XCTAssertNil(OcaMACAddress(string: "00:0b:5e"))
+  }
+
+  func testTypedBlobRoundTrip() throws {
+    let counterSetID = OcaMediaStreamEndpointCounterSetID(ownerONo: 0x0A00_0002, endpointID: 1001)
+    let blob = try counterSetID.blob
+    let encodedBlob = Data([
+      0x00, 0x0C, // blob length
+      0x0A, 0x00, 0x00, 0x02, // ownerONo
+      0x00, 0x03, 0x00, 0x0C, // counterSetsPropertyID 3.12
+      0x00, 0x00, 0x03, 0xE9, // endpointID
+    ])
+
+    XCTAssertEqual(try Ocp1Encoder().encode(blob), encodedBlob)
+    XCTAssertEqual(try blob.decode(OcaMediaStreamEndpointCounterSetID.self), counterSetID)
+    XCTAssertEqual(try OcaBlob(typed: counterSetID), blob)
+
+    let list = [OcaUint16(1), 2, 3]
+    XCTAssertEqual(try list.blob.decode([OcaUint16].self), list)
+  }
+
+  func testCounterSetHelpers() {
+    var counterSet = OcaCounterSet(counter: [
+      OcaCounter(id: 1, value: 5, initialValue: 0, role: "LINK_UP", notifiers: []),
+      OcaCounter(id: 2, value: 0, initialValue: 0, role: "LINK_DOWN", notifiers: []),
+    ])
+
+    XCTAssertTrue(counterSet.increment(counter: 1))
+    XCTAssertEqual(counterSet.counter(id: 1)?.value, 6)
+    XCTAssertTrue(counterSet.set(counter: 2, value: 9))
+    XCTAssertFalse(counterSet.set(counter: 3, value: 9))
+    XCTAssertTrue(counterSet.attach(notifier: 4096, to: 1))
+    XCTAssertTrue(counterSet.attach(notifier: 4096, to: 1))
+    XCTAssertEqual(counterSet.counter(id: 1)?.notifiers, [4096])
+    XCTAssertTrue(counterSet.detach(notifier: 4096, from: 1))
+    XCTAssertEqual(counterSet.counter(id: 1)?.notifiers, [] as [OcaONo])
+    counterSet.reset(counter: 2)
+    XCTAssertEqual(counterSet.counter(id: 2)?.value, 0)
+    XCTAssertEqual(counterSet.counter(id: 1)?.value, 6)
+    counterSet.reset()
+    XCTAssertEqual(counterSet.counter(id: 1)?.value, 0)
+  }
+
   func testBuiltinEncoderDecoderNtf1() throws {
     let eventParameters = Data([0x00, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01])
     let eventData = Ocp1EventData(

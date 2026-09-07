@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct OcaCounter: Codable, Sendable {
+public struct OcaCounter: Codable, Sendable, Equatable {
   public var id: OcaID16
   public var value: OcaUint64
   public var initialValue: OcaUint64
@@ -38,11 +38,11 @@ public struct OcaCounter: Codable, Sendable {
 
 public typealias OcaCounterSetID = OcaBlob
 
-public struct OcaCounterSet: Codable, Sendable {
+public struct OcaCounterSet: Codable, Sendable, Equatable {
   public var id: OcaCounterSetID
-  public let counter: OcaList<OcaCounter>
+  public var counter: OcaList<OcaCounter>
 
-  public init(id: OcaCounterSetID, counter: OcaList<OcaCounter>) {
+  public init(id: OcaCounterSetID = OcaBlob(), counter: OcaList<OcaCounter> = []) {
     self.id = id
     self.counter = counter
   }
@@ -76,5 +76,62 @@ public struct OcaCounterNotifierFilterParameters: Codable, Sendable {
     self.operator = `operator`
     self.period = period
     self.countDelta = countDelta
+  }
+}
+
+public struct OcaCounterNotifierParameters: Ocp1ParametersReflectable {
+  public let id: OcaID16
+  public let oNo: OcaONo
+
+  public init(id: OcaID16, oNo: OcaONo) {
+    self.id = id
+    self.oNo = oNo
+  }
+}
+
+public extension OcaCounterSet {
+  func counter(id: OcaID16) -> OcaCounter? {
+    counter.first { $0.id == id }
+  }
+
+  private func index(of id: OcaID16) -> Int? {
+    counter.firstIndex { $0.id == id }
+  }
+
+  /// Sets a counter's value, returning false if no counter has that ID.
+  @discardableResult
+  mutating func set(counter id: OcaID16, value: OcaUint64) -> Bool {
+    guard let index = index(of: id) else { return false }
+    counter[index].value = value
+    return true
+  }
+
+  @discardableResult
+  mutating func increment(counter id: OcaID16, by delta: OcaUint64 = 1) -> Bool {
+    guard let index = index(of: id) else { return false }
+    counter[index].value &+= delta
+    return true
+  }
+
+  mutating func reset(counter id: OcaID16? = nil) {
+    for index in counter.indices where id == nil || counter[index].id == id {
+      counter[index].value = counter[index].initialValue
+    }
+  }
+
+  @discardableResult
+  mutating func attach(notifier oNo: OcaONo, to id: OcaID16) -> Bool {
+    guard let index = index(of: id) else { return false }
+    if !counter[index].notifiers.contains(oNo) {
+      counter[index].notifiers.append(oNo)
+    }
+    return true
+  }
+
+  @discardableResult
+  mutating func detach(notifier oNo: OcaONo, from id: OcaID16) -> Bool {
+    guard let index = index(of: id) else { return false }
+    counter[index].notifiers.removeAll { $0 == oNo }
+    return true
   }
 }

@@ -71,11 +71,25 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   private func notifySubscribers(
     lockState: LockState
   ) async throws {
-    let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-    let parameters = OcaPropertyChangedEventData<OcaLockState>(
+    try await notifySubscribers(
       propertyID: OcaPropertyID("1.6"),
-      propertyValue: lockState.lockState,
+      value: lockState.lockState,
       changeType: .currentChanged
+    )
+  }
+
+  /// Emits a PropertyChanged event for a property. Controllers replace the whole
+  /// property value on item changes too, so `value` must be the complete collection.
+  public func notifySubscribers<T: Codable & Sendable>(
+    propertyID: OcaPropertyID,
+    value: T,
+    changeType: OcaPropertyChangeType
+  ) async throws {
+    let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
+    let parameters = OcaPropertyChangedEventData<T>(
+      propertyID: propertyID,
+      propertyValue: value,
+      changeType: changeType
     )
 
     try await deviceDelegate?.notifySubscribers(
@@ -83,6 +97,9 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
       parameters: parameters
     )
   }
+
+  /// Properties that reflect live device state and are never persisted in datasets.
+  open class var transientPropertyIDs: Set<OcaPropertyID> { [] }
 
   var lockState: LockState {
     get {
@@ -384,6 +401,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     dict[classIDJSONKey] = Self.classID.description
     for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
       let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
+      if Self.transientPropertyIDs.contains(property.propertyID) { continue }
       if let filter {
         switch filter(self, property.propertyID, property.wrappedValue) {
         case .ok:
@@ -461,6 +479,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
       let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
       let propertyName = property.propertyID.description
 
+      if Self.transientPropertyIDs.contains(property.propertyID) { continue }
       guard let value = jsonObject[propertyName] else {
         if flags.contains(.ignoreMissingProperties) {
           continue
