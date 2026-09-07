@@ -15,14 +15,25 @@
 //
 
 open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Sendable {
-  override open class var classID: OcaClassID { OcaClassID("1.7.1") }
-  override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID {
+    OcaClassID("1.7.1")
+  }
 
-  func add(port label: OcaString, mode: OcaIODirection) async throws -> OcaPortID {
-    struct AddPortParameters: Ocp1ParametersReflectable {
-      let label: OcaString
-      let mode: OcaPortMode
+  override open class var classVersion: OcaClassVersionNumber {
+    3
+  }
+
+  public struct AddPortParameters: Ocp1ParametersReflectable {
+    public let label: OcaString
+    public let mode: OcaPortMode
+
+    public init(label: OcaString, mode: OcaPortMode) {
+      self.label = label
+      self.mode = mode
     }
+  }
+
+  public func add(port label: OcaString, mode: OcaPortMode) async throws -> OcaPortID {
     let params = AddPortParameters(label: label, mode: mode)
     return try await sendCommandRrq(
       methodID: OcaMethodID("3.1"),
@@ -30,7 +41,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     )
   }
 
-  func delete(port id: OcaPortID) async throws {
+  public func delete(port id: OcaPortID) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.2"),
       parameters: id
@@ -41,7 +52,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     propertyID: OcaPropertyID("3.1"),
     getMethodID: OcaMethodID("3.3")
   )
-  public var ports: OcaProperty<OcaPort>.PropertyValue
+  public var ports: OcaListProperty<OcaPort>.PropertyValue
 
   public func getPortName() async throws -> OcaString {
     try await sendCommandRrq(methodID: OcaMethodID("3.4"))

@@ -36,61 +36,70 @@ public enum OcaMediaStreamEndpointCommand: OcaUint8, Codable, Sendable, CaseIter
   case stop = 7
 }
 
-public final class OcaMediaStreamEndpoint: Codable, Sendable {
-  public let iDInternal: OcaMediaStreamEndpointID
-  public let iDExternal: OcaBlob
-  public let direction: OcaIODirection
-  public let userLabel: OcaString
-  public let networkAssignmentIDs: OcaList<OcaID16>
-  public let streamModeCapabilityIDs: OcaList<OcaID16>
-  public let clockONo: OcaONo
-  public let channelMapDynamic: OcaBoolean
-  public let channelMap: OcaMultiMap<OcaUint16, OcaPortID>
-  public let alignmentLevel: OcaDBFS
-  public let currentStreamMode: OcaMediaStreamMode
-  public let securityType: OcaSecurityType
-  public let streamCastMode: OcaMediaStreamCastMode
-  public let adaptationData: OcaAdaptationData
-  public let redundantSetID: OcaID16
+public struct OcaMediaStreamEndpoint: Codable, Sendable, Equatable {
+  public var idInternal: OcaMediaStreamEndpointID
+  public var idExternal: OcaBlob
+  public var direction: OcaIODirection
+  public var userLabel: OcaString
+  public var networkAssignmentIDs: OcaList<OcaID16>
+  public var streamModeCapabilityIDs: OcaList<OcaID16>
+  public var clockONo: OcaONo
+  public var channelMapDynamic: OcaBoolean
+  public var channelMap: OcaMultiMap<OcaUint16, OcaPortID>
+  public var alignmentLevel: OcaDBFS
+  public var currentStreamMode: OcaMediaStreamMode
+  public var securityType: OcaSecurityType
+  public var streamCastMode: OcaMediaStreamCastMode
+  public var adaptationData: OcaAdaptationData
+  public var redundantSetID: OcaID16
 
-  public init(from decoder: Decoder) throws {
-    let container = try decoder.container(keyedBy: CodingKeys.self)
-    iDInternal = try container.decode(OcaMediaStreamEndpointID.self, forKey: .iDInternal)
-    iDExternal = try container.decode(OcaBlob.self, forKey: .iDExternal)
-    direction = try container.decode(OcaIODirection.self, forKey: .direction)
-    userLabel = try container.decode(OcaString.self, forKey: .userLabel)
-    networkAssignmentIDs = try container.decode([OcaID16].self, forKey: .networkAssignmentIDs)
-    streamModeCapabilityIDs = try container.decode(
-      [OcaID16].self,
-      forKey: .streamModeCapabilityIDs
-    )
-    clockONo = try container.decode(OcaONo.self, forKey: .clockONo)
-    channelMapDynamic = try container.decode(OcaBoolean.self, forKey: .channelMapDynamic)
-    channelMap = try container.decode(
-      OcaMultiMap<OcaUint16, OcaPortID>.self,
-      forKey: .channelMap
-    )
-    alignmentLevel = try container.decode(OcaDBFS.self, forKey: .alignmentLevel)
-    currentStreamMode = try container.decode(
-      OcaMediaStreamMode.self,
-      forKey: .currentStreamMode
-    )
-    securityType = try container.decode(OcaSecurityType.self, forKey: .securityType)
-    streamCastMode = try container.decode(OcaMediaStreamCastMode.self, forKey: .streamCastMode)
-    adaptationData = try container.decode(OcaAdaptationData.self, forKey: .adaptationData)
-    redundantSetID = try container.decode(OcaID16.self, forKey: .redundantSetID)
+  public init(
+    idInternal: OcaMediaStreamEndpointID,
+    idExternal: OcaBlob = OcaBlob(),
+    direction: OcaIODirection,
+    userLabel: OcaString = "",
+    networkAssignmentIDs: OcaList<OcaID16> = [],
+    streamModeCapabilityIDs: OcaList<OcaID16> = [],
+    clockONo: OcaONo = OcaInvalidONo,
+    channelMapDynamic: OcaBoolean = false,
+    channelMap: OcaMultiMap<OcaUint16, OcaPortID> = [:],
+    alignmentLevel: OcaDBFS = .nan,
+    currentStreamMode: OcaMediaStreamMode = .undefined,
+    securityType: OcaSecurityType = .none,
+    streamCastMode: OcaMediaStreamCastMode = .none,
+    adaptationData: OcaAdaptationData = OcaBlob(),
+    redundantSetID: OcaID16 = 0
+  ) {
+    self.idInternal = idInternal
+    self.idExternal = idExternal
+    self.direction = direction
+    self.userLabel = userLabel
+    self.networkAssignmentIDs = networkAssignmentIDs
+    self.streamModeCapabilityIDs = streamModeCapabilityIDs
+    self.clockONo = clockONo
+    self.channelMapDynamic = channelMapDynamic
+    self.channelMap = channelMap
+    self.alignmentLevel = alignmentLevel
+    self.currentStreamMode = currentStreamMode
+    self.securityType = securityType
+    self.streamCastMode = streamCastMode
+    self.adaptationData = adaptationData
+    self.redundantSetID = redundantSetID
   }
 }
 
-public struct OcaMediaStreamEndpointStatus: Codable, Sendable {
-  public let state: OcaMediaStreamEndpointState
-  public let errorCode: OcaUint16
+public struct OcaMediaStreamEndpointStatus: Codable, Sendable, Equatable {
+  public var state: OcaMediaStreamEndpointState
+  public var errorCode: OcaUint16
 
-  public init(state: OcaMediaStreamEndpointState, errorCode: OcaUint16) {
+  public init(state: OcaMediaStreamEndpointState, errorCode: OcaUint16 = 0) {
     self.state = state
     self.errorCode = errorCode
   }
 }
+
+public typealias OcaMediaStreamEndpointStatusMap =
+  OcaMap<OcaMediaStreamEndpointID, OcaMediaStreamEndpointStatus>
 
 public enum OcaMediaFrameFormat: OcaUint8, Codable, Sendable, CaseIterable {
   case undefined = 0
@@ -102,58 +111,59 @@ public enum OcaMediaFrameFormat: OcaUint8, Codable, Sendable, CaseIterable {
   case extensionPoint = 65
 }
 
-// MIME type example: audio/pcm;rate=48000;encoding=float;bits=32 or audio/L32
-
-public struct OcaMediaStreamMode: Codable, Sendable {
-  public let frameFormat: OcaMediaFrameFormat
-  public let encodingType: OcaMimeType
-  public let samplingRate: OcaFrequency
-  public let channelCount: OcaUint16
-  public let packetTime: OcaTimeInterval
-  public let mediaStreamEndpoint: OcaMediaStreamEndpoint
+public struct OcaMediaStreamMode: Codable, Sendable, Hashable {
+  public var frameFormat: OcaMediaFrameFormat
+  public var encodingType: OcaMimeType
+  public var samplingRate: OcaFrequency
+  public var channelCount: OcaUint16
+  public var packetTime: OcaTimeInterval
 
   public init(
     frameFormat: OcaMediaFrameFormat,
     encodingType: OcaMimeType,
     samplingRate: OcaFrequency,
     channelCount: OcaUint16,
-    packetTime: OcaTimeInterval,
-    mediaStreamEndpoint: OcaMediaStreamEndpoint
+    packetTime: OcaTimeInterval
   ) {
     self.frameFormat = frameFormat
     self.encodingType = encodingType
     self.samplingRate = samplingRate
     self.channelCount = channelCount
     self.packetTime = packetTime
-    self.mediaStreamEndpoint = mediaStreamEndpoint
   }
+
+  public static let undefined = OcaMediaStreamMode(
+    frameFormat: .undefined,
+    encodingType: "",
+    samplingRate: 0,
+    channelCount: 0,
+    packetTime: 0
+  )
 }
 
-public struct OcaMediaStreamModeCapability: Codable, Sendable {
-  public let id: OcaID16
-  public let name: OcaString
-  public let direction: OcaMediaStreamModeCapabilityDirection
-  public let frameFormatList: [OcaMediaFrameFormat]
-  public let encodingTypeList: [OcaMimeType]
-  public let samplingRateList: [OcaFrequency]
-  public let channelCountList: [OcaUint16]
-  public let channelCountRange: Range<OcaUint16>
-  public let packetTimeList: [OcaTimeInterval]
-  public let packetTimeRange: Range<OcaTimeInterval>
-  public let mediaStreamEndpoint: OcaMediaStreamEndpoint
+public struct OcaMediaStreamModeCapability: Codable, Sendable, Equatable {
+  public var id: OcaID16
+  public var name: OcaString
+  public var direction: OcaMediaStreamModeCapabilityDirection
+  public var frameFormatList: OcaList<OcaMediaFrameFormat>
+  public var encodingTypeList: OcaList<OcaMimeType>
+  public var samplingRateList: OcaList<OcaFrequency>
+  public var channelCountList: OcaList<OcaUint16>
+  public var channelCountRange: OcaInterval<OcaUint16>
+  public var packetTimeList: OcaList<OcaTimeInterval>
+  public var packetTimeRange: OcaInterval<OcaTimeInterval>
 
   public init(
     id: OcaID16,
     name: OcaString,
     direction: OcaMediaStreamModeCapabilityDirection,
-    frameFormatList: [OcaMediaFrameFormat],
-    encodingTypeList: [OcaMimeType],
-    samplingRateList: [OcaFrequency],
-    channelCountList: [OcaUint16],
-    channelCountRange: Range<OcaUint16>,
-    packetTimeList: [OcaTimeInterval],
-    packetTimeRange: Range<OcaTimeInterval>,
-    mediaStreamEndpoint: OcaMediaStreamEndpoint
+    frameFormatList: OcaList<OcaMediaFrameFormat>,
+    encodingTypeList: OcaList<OcaMimeType>,
+    samplingRateList: OcaList<OcaFrequency>,
+    channelCountList: OcaList<OcaUint16>,
+    channelCountRange: OcaInterval<OcaUint16>,
+    packetTimeList: OcaList<OcaTimeInterval>,
+    packetTimeRange: OcaInterval<OcaTimeInterval>
   ) {
     self.id = id
     self.name = name
@@ -165,35 +175,44 @@ public struct OcaMediaStreamModeCapability: Codable, Sendable {
     self.channelCountRange = channelCountRange
     self.packetTimeList = packetTimeList
     self.packetTimeRange = packetTimeRange
-    self.mediaStreamEndpoint = mediaStreamEndpoint
   }
 }
 
-public enum OcaMediaStreamModeCapabilityDirection: OcaUint8, Codable, Sendable, CaseIterable {
-  case input = 1
-  case output = 2
+/// Bitset: bit 0 = input, bit 1 = output.
+public struct OcaMediaStreamModeCapabilityDirection: OptionSet, Codable, Sendable, Hashable {
+  public let rawValue: OcaUint16
+
+  public init(rawValue: OcaUint16) {
+    self.rawValue = rawValue
+  }
+
+  public static let input = OcaMediaStreamModeCapabilityDirection(rawValue: 1 << 0)
+  public static let output = OcaMediaStreamModeCapabilityDirection(rawValue: 1 << 1)
 }
 
-public struct OcaMediaTransportSession: Codable, Sendable {
+public typealias OcaMediaTransportSessionID = OcaUint32
+public typealias OcaMediaTransportSessionConnectionID = OcaUint32
+
+public struct OcaMediaTransportSession: Codable, Sendable, Equatable {
   public typealias ConnectionStateMap =
     [OcaMediaTransportSessionConnectionID: OcaMediaTransportSessionConnectionState]
 
-  public let idInternal: OcaMediaTransportSessionID
-  public let idExternal: OcaBlob
-  public let userLabel: OcaString
-  public let streamingEnabled: OcaBoolean
-  public let adaptationData: OcaAdaptationData
-  public let connections: [OcaMediaTransportSessionConnection]
-  public let connectionStates: ConnectionStateMap
+  public var idInternal: OcaMediaTransportSessionID
+  public var idExternal: OcaBlob
+  public var userLabel: OcaString
+  public var streamingEnabled: OcaBoolean
+  public var adaptationData: OcaAdaptationData
+  public var connections: [OcaMediaTransportSessionConnection]
+  public var connectionStates: ConnectionStateMap
 
   public init(
     idInternal: OcaMediaTransportSessionID,
-    idExternal: OcaBlob,
-    userLabel: OcaString,
-    streamingEnabled: OcaBoolean,
-    adaptationData: OcaAdaptationData,
-    connections: [OcaMediaTransportSessionConnection],
-    connectionStates: ConnectionStateMap
+    idExternal: OcaBlob = OcaBlob(),
+    userLabel: OcaString = "",
+    streamingEnabled: OcaBoolean = false,
+    adaptationData: OcaAdaptationData = OcaBlob(),
+    connections: [OcaMediaTransportSessionConnection] = [],
+    connectionStates: ConnectionStateMap = [:]
   ) {
     self.idInternal = idInternal
     self.idExternal = idExternal
@@ -205,13 +224,10 @@ public struct OcaMediaTransportSession: Codable, Sendable {
   }
 }
 
-public struct OcaMediaTransportSessionConnection: Codable, Sendable {
-  public let id: OcaMediaTransportSessionConnectionID
-  public let localEndpointID: OcaMediaStreamEndpointID
-  public let remoteEndpointID: OcaBlob
-  /*
-   public let mediaTransportSession: OcaMediaTransportSession
-   */
+public struct OcaMediaTransportSessionConnection: Codable, Sendable, Equatable {
+  public var id: OcaMediaTransportSessionConnectionID
+  public var localEndpointID: OcaMediaStreamEndpointID
+  public var remoteEndpointID: OcaBlob
 
   public init(
     id: OcaMediaTransportSessionConnectionID,
@@ -224,11 +240,9 @@ public struct OcaMediaTransportSessionConnection: Codable, Sendable {
   }
 }
 
-public typealias OcaMediaTransportSessionConnectionID = OcaUint32
-
-public struct OcaMediaTransportSessionConnectionState: Codable, Sendable {
-  public let localEndpointState: OcaMediaStreamEndpointState
-  public let remoteEndpointState: OcaMediaStreamEndpointState
+public struct OcaMediaTransportSessionConnectionState: Codable, Sendable, Equatable {
+  public var localEndpointState: OcaMediaStreamEndpointState
+  public var remoteEndpointState: OcaMediaStreamEndpointState
 
   public init(
     localEndpointState: OcaMediaStreamEndpointState,
@@ -239,8 +253,6 @@ public struct OcaMediaTransportSessionConnectionState: Codable, Sendable {
   }
 }
 
-public typealias OcaMediaTransportSessionID = OcaUint32
-
 public enum OcaMediaTransportSessionState: OcaUint8, Codable, Sendable, CaseIterable {
   case unconfigured = 1
   case configured = 2
@@ -249,25 +261,28 @@ public enum OcaMediaTransportSessionState: OcaUint8, Codable, Sendable, CaseIter
   case error = 5
 }
 
-public struct OcaMediaTransportSessionStatus: Codable, Sendable {
-  public let state: OcaMediaTransportSessionState
-  public let adaptationData: OcaBlob
+public struct OcaMediaTransportSessionStatus: Codable, Sendable, Equatable {
+  public var state: OcaMediaTransportSessionState
+  public var adaptationData: OcaAdaptationData
 
-  public init(state: OcaMediaTransportSessionState, adaptationData: OcaBlob) {
+  public init(state: OcaMediaTransportSessionState, adaptationData: OcaAdaptationData = OcaBlob()) {
     self.state = state
     self.adaptationData = adaptationData
   }
 }
 
-public struct OcaMediaTransportTimingParameters: Codable, Sendable {
-  public let minReceiveBufferCapacity: OcaTimeInterval
-  public let maxReceiveBufferCapacity: OcaTimeInterval
-  public let transmissionTimeVariation: OcaTimeInterval
+public typealias OcaMediaTransportSessionStatusMap =
+  OcaMap<OcaMediaTransportSessionID, OcaMediaTransportSessionStatus>
+
+public struct OcaMediaTransportTimingParameters: Codable, Sendable, Equatable {
+  public var minReceiveBufferCapacity: OcaTimeInterval
+  public var maxReceiveBufferCapacity: OcaTimeInterval
+  public var transmissionTimeVariation: OcaTimeInterval
 
   public init(
-    minReceiveBufferCapacity: OcaTimeInterval,
-    maxReceiveBufferCapacity: OcaTimeInterval,
-    transmissionTimeVariation: OcaTimeInterval
+    minReceiveBufferCapacity: OcaTimeInterval = 0,
+    maxReceiveBufferCapacity: OcaTimeInterval = 0,
+    transmissionTimeVariation: OcaTimeInterval = 0
   ) {
     self.minReceiveBufferCapacity = minReceiveBufferCapacity
     self.maxReceiveBufferCapacity = maxReceiveBufferCapacity

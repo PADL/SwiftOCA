@@ -15,22 +15,22 @@
 //
 
 public struct OcaCounter: Codable, Sendable {
-  public let id: OcaID16
-  public let value: OcaUint64
-  public let innitialValue: OcaUint64
-  public let role: OcaString
-  public let notifiers: OcaList<OcaONo>
+  public var id: OcaID16
+  public var value: OcaUint64
+  public var initialValue: OcaUint64
+  public var role: OcaString
+  public var notifiers: OcaList<OcaONo>
 
   public init(
     id: OcaID16,
     value: OcaUint64,
-    innitialValue: OcaUint64,
+    initialValue: OcaUint64,
     role: OcaString,
     notifiers: OcaList<OcaONo>
   ) {
     self.id = id
     self.value = value
-    self.innitialValue = innitialValue
+    self.initialValue = initialValue
     self.role = role
     self.notifiers = notifiers
   }
@@ -39,7 +39,7 @@ public struct OcaCounter: Codable, Sendable {
 public typealias OcaCounterSetID = OcaBlob
 
 public struct OcaCounterSet: Codable, Sendable {
-  public let id: OcaCounterSetID
+  public var id: OcaCounterSetID
   public let counter: OcaList<OcaCounter>
 
   public init(id: OcaCounterSetID, counter: OcaList<OcaCounter>) {
@@ -51,7 +51,7 @@ public struct OcaCounterSet: Codable, Sendable {
 public struct OcaCounterUpdate: Codable, Sendable {
   public let counterSetID: OcaCounterSetID
   public let counterID: OcaID16
-  public let value: OcaUint64
+  public var value: OcaUint64
 
   public init(counterSetID: OcaCounterSetID, counterID: OcaID16, value: OcaUint64) {
     self.counterSetID = counterSetID

@@ -176,7 +176,7 @@ final class SwiftOCADeviceTests: XCTestCase {
   }
 
   func testVector_AES70_3_2023_8_2_4() throws {
-    let value = OcaCounter(id: 3, value: 100, innitialValue: 0, role: "Errors", notifiers: [])
+    let value = OcaCounter(id: 3, value: 100, initialValue: 0, role: "Errors", notifiers: [])
     let referenceValue = [
       0,
       3,
@@ -424,6 +424,99 @@ final class SwiftOCADeviceTests: XCTestCase {
 
     let ocp1Decoder = Ocp1Decoder()
     XCTAssertEqual(try ocp1Decoder.decode(OcaMediaSinkConnector.self, from: encodedSink), sink)
+  }
+
+  func testMediaStreamEndpointEncoding() throws {
+    let endpoint = OcaMediaStreamEndpoint(
+      idInternal: 1,
+      idExternal: OcaBlob([0xAB, 0xCD]),
+      direction: .input,
+      userLabel: "in",
+      networkAssignmentIDs: [1],
+      channelMapDynamic: true,
+      channelMap: [1: [OcaPortID(mode: .output, index: 1)]],
+      alignmentLevel: -20.0,
+      currentStreamMode: OcaMediaStreamMode(
+        frameFormat: .aaf,
+        encodingType: "audio/L32",
+        samplingRate: 48000,
+        channelCount: 8,
+        packetTime: 125e-6
+      ),
+      streamCastMode: .multicast
+    )
+    let encodedEndpoint = Data([
+      0x00, 0x00, 0x00, 0x01, // idInternal
+      0x00, 0x02, 0xAB, 0xCD, // idExternal
+      0x01, // direction
+      0x00, 0x02, 0x69, 0x6E, // userLabel
+      0x00, 0x01, 0x00, 0x01, // networkAssignmentIDs
+      0x00, 0x00, // streamModeCapabilityIDs
+      0x00, 0x00, 0x00, 0x00, // clockONo
+      0x01, // channelMapDynamic
+      0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x02, 0x00, 0x01, // channelMap
+      0xC1, 0xA0, 0x00, 0x00, // alignmentLevel
+      0x02, // frameFormat
+      0x00, 0x09, 0x61, 0x75, 0x64, 0x69, 0x6F, 0x2F, 0x4C, 0x33, 0x32, // encodingType
+      0x47, 0x3B, 0x80, 0x00, // samplingRate
+      0x00, 0x08, // channelCount
+      0x3F, 0x20, 0x62, 0x4D, 0xD2, 0xF1, 0xA9, 0xFC, // packetTime
+      0x00, // securityType
+      0x02, // streamCastMode
+      0x00, 0x00, // adaptationData
+      0x00, 0x00, // redundantSetID
+    ])
+
+    XCTAssertEqual(try Ocp1Encoder().encode(endpoint), encodedEndpoint)
+    XCTAssertEqual(
+      try Ocp1Decoder().decode(OcaMediaStreamEndpoint.self, from: encodedEndpoint),
+      endpoint
+    )
+  }
+
+  func testMediaStreamModeCapabilityEncoding() throws {
+    let capability = OcaMediaStreamModeCapability(
+      id: 1,
+      name: "",
+      direction: [.input, .output],
+      frameFormatList: [.aaf],
+      encodingTypeList: ["audio/L32"],
+      samplingRateList: [48000],
+      channelCountList: [],
+      channelCountRange: 1...8,
+      packetTimeList: [125e-6],
+      packetTimeRange: 0...0
+    )
+    let encodedCapability = Data([
+      0x00, 0x01, // id
+      0x00, 0x00, // name
+      0x00, 0x03, // direction
+      0x00, 0x01, 0x02, // frameFormatList
+      0x00, 0x01, 0x00, 0x09, 0x61, 0x75, 0x64, 0x69, 0x6F, 0x2F, 0x4C, 0x33, 0x32,
+      0x00, 0x01, 0x47, 0x3B, 0x80, 0x00, // samplingRateList
+      0x00, 0x00, // channelCountList
+      0x00, 0x01, 0x00, 0x08, // channelCountRange
+      0x00, 0x01, 0x3F, 0x20, 0x62, 0x4D, 0xD2, 0xF1, 0xA9, 0xFC, // packetTimeList
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // packetTimeRange
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    ])
+
+    XCTAssertEqual(try Ocp1Encoder().encode(capability), encodedCapability)
+    XCTAssertEqual(
+      try Ocp1Decoder().decode(OcaMediaStreamModeCapability.self, from: encodedCapability),
+      capability
+    )
+  }
+
+  func testIntervalEncoding() throws {
+    let interval: OcaInterval<OcaUint16> = 1...8
+    let encodedInterval = Data([0x00, 0x01, 0x00, 0x08])
+
+    XCTAssertEqual(try Ocp1Encoder().encode(interval), encodedInterval)
+    XCTAssertEqual(
+      try Ocp1Decoder().decode(OcaInterval<OcaUint16>.self, from: encodedInterval),
+      interval
+    )
   }
 
   func testBuiltinEncoderDecoderNtf1() throws {
@@ -1390,7 +1483,7 @@ final class UnsafeStringInitializerTests: XCTestCase {
     let (messageType, messages) = try Ocp1Connection.decodeOcp1MessagePdu(from: pdu)
     XCTAssertEqual(messageType, .ocaCmdRrq)
     XCTAssertEqual(messages.count, 1)
-    let decodedCmd = messages[0] as! Ocp1Command
+    let decodedCmd = try XCTUnwrap(messages[0] as? Ocp1Command)
     XCTAssertEqual(decodedCmd.handle, 1)
     XCTAssertEqual(decodedCmd.targetONo, 5000)
     XCTAssertEqual(decodedCmd.methodID, OcaMethodID("2.6"))
@@ -1411,8 +1504,8 @@ final class UnsafeStringInitializerTests: XCTestCase {
     XCTAssertEqual(messageType, .ocaCmd)
     XCTAssertEqual(messages.count, 2)
 
-    let decoded1 = messages[0] as! Ocp1Command
-    let decoded2 = messages[1] as! Ocp1Command
+    let decoded1 = try XCTUnwrap(messages[0] as? Ocp1Command)
+    let decoded2 = try XCTUnwrap(messages[1] as? Ocp1Command)
     XCTAssertEqual(decoded1.handle, 1)
     XCTAssertEqual(decoded1.targetONo, 100)
     XCTAssertEqual(decoded2.handle, 2)

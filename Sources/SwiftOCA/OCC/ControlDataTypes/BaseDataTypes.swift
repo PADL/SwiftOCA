@@ -561,7 +561,7 @@ public enum OcaLockState: OcaUint8, Codable, Sendable, CaseIterable {
 public typealias OcaID16 = OcaUint16
 public typealias OcaID32 = OcaUint32
 
-public typealias OcaInterval = Range
+public typealias OcaInterval = ClosedRange
 
 public typealias OcaJsonValue = OcaString
 public typealias OcaParameterRecord = OcaJsonValue

@@ -16,8 +16,13 @@
 
 open class OcaNetworkInterface: OcaRoot, OcaOwnablePrivate, @unchecked
 Sendable {
-  override open class var classID: OcaClassID { OcaClassID("1.6") }
-  override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID {
+    OcaClassID("1.6")
+  }
+
+  override open class var classVersion: OcaClassVersionNumber {
+    3
+  }
 
   @OcaProperty(
     propertyID: OcaPropertyID("2.1"),
@@ -66,29 +71,29 @@ Sendable {
   )
   public var precedence: OcaProperty<OcaUint16>.PropertyValue
 
-  // "OcaIP4" or "OcaIP6"
+  /// "OcaIP4" or "OcaIP6"
   @OcaProperty(
     propertyID: OcaPropertyID("2.7"),
     getMethodID: OcaMethodID("2.13")
   )
   public var adaptationIdentifier: OcaProperty<OcaAdaptationIdentifier>.PropertyValue
 
-  // encoded OcaIP4NetworkSettings or OcaIP6NetworkSettings
+  /// adaptation-specific, e.g. encoded OcaIP4NetworkSettings or MilanNetworkInterfaceAdaptationData
   @OcaProperty(
     propertyID: OcaPropertyID("2.8"),
     getMethodID: OcaMethodID("2.14")
   )
-  public var activeNetworkSettings: OcaProperty<OcaBlob>.PropertyValue
+  public var currentAdaptationData: OcaProperty<OcaBlob>.PropertyValue
 
-  // encoded OcaIP4NetworkSettings or OcaIP6NetworkSettings
+  /// adaptation-specific, e.g. encoded OcaIP4NetworkSettings or MilanNetworkInterfaceAdaptationData
   @OcaProperty(
     propertyID: OcaPropertyID("2.9"),
     getMethodID: OcaMethodID("2.15"),
     setMethodID: OcaMethodID("2.16")
   )
-  public var targetNetworkSettings: OcaProperty<OcaBlob>.PropertyValue
+  public var requestedAdaptationData: OcaProperty<OcaBlob>.PropertyValue
 
-  // encoded OcaIP4NetworkSettings or OcaIP6NetworkSettings
+  /// adaptation-specific, e.g. encoded OcaIP4NetworkSettings or MilanNetworkInterfaceAdaptationData
   @OcaProperty(
     propertyID: OcaPropertyID("2.10"),
     getMethodID: OcaMethodID("2.17")
