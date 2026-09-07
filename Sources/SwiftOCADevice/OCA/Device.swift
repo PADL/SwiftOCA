@@ -22,24 +22,35 @@ import FoundationEssentials
 import Foundation
 #endif
 import Logging
-import SwiftOCA
+@_spi(SwiftOCAPrivate) import SwiftOCA
 
 /// Event parameters that are encoded on demand, so a recipient that only needs the event
 /// never pays for encoding them.
 public struct OcaEventParameters: Sendable {
+  private let _eventID: OcaEventID
   private let _encode: @Sendable () throws -> Data
 
-  init(_ encode: @escaping @Sendable () throws -> Data) {
+  init(eventID: OcaEventID, _ encode: @escaping @Sendable () throws -> Data) {
+    _eventID = eventID
     _encode = encode
   }
 
-  init(_ encoded: Data) {
+  init(eventID: OcaEventID, _ encoded: Data) {
+    _eventID = eventID
     _encode = { encoded }
   }
 
   /// OCP.1 encoding of the parameters; each access encodes afresh
   public var encoded: Data {
     get throws { try _encode() }
+  }
+
+  /// The ID of the property that changed; throws for any event but PropertyChanged.
+  public var changedPropertyID: OcaPropertyID {
+    get throws {
+      guard _eventID == OcaPropertyChangedEventID else { throw Ocp1Error.unhandledEvent }
+      return try OcaAnyPropertyChangedEventData(data: encoded).propertyID
+    }
   }
 }
 
@@ -244,7 +255,7 @@ public actor OcaDevice {
   ) async throws {
     try await _notifySubscribers(
       event,
-      parameters: OcaEventParameters { try Ocp1Encoder().encode(parameters) as Data }
+      parameters: OcaEventParameters(eventID: event.eventID) { try Ocp1Encoder().encode(parameters) as Data }
     )
   }
 
@@ -252,11 +263,11 @@ public actor OcaDevice {
     _ event: OcaEvent,
     parameters: Data
   ) async throws {
-    try await _notifySubscribers(event, parameters: OcaEventParameters(parameters))
+    try await _notifySubscribers(event, parameters: OcaEventParameters(eventID: event.eventID, parameters))
   }
 
   func notifySubscribers(_ event: OcaEvent) async throws {
-    try await _notifySubscribers(event, parameters: OcaEventParameters(Data()))
+    try await _notifySubscribers(event, parameters: OcaEventParameters(eventID: event.eventID, Data()))
   }
 
   /// Parameters are only encoded for a recipient that asks for them: the event delegate on
