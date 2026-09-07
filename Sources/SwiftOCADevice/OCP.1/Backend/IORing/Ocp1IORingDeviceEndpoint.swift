@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ open class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   package nonisolated let device: OcaDevice
   package nonisolated let logger: Logger
   package nonisolated let ring: IORing
+  package nonisolated let controlProtocol: OcaControlProtocol
   package nonisolated(unsafe) var enableMessageTracing = false
 
   package var socket: Socket?
@@ -64,12 +65,14 @@ open class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     address: any SocketAddress,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint"),
     ring: IORing = .shared
   ) async throws {
     self.address = address
     self.timeout = timeout
     self.device = device
+    self.controlProtocol = controlProtocol
     self.logger = logger
     self.ring = ring
     try await device.add(endpoint: self)
@@ -83,23 +86,37 @@ open class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     address: Data,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint")
   ) async throws {
     let storage = try sockaddr_storage(bytes: Array(address))
-    try await self.init(address: storage, timeout: timeout, device: device, logger: logger)
+    try await self.init(
+      address: storage,
+      timeout: timeout,
+      device: device,
+      controlProtocol: controlProtocol,
+      logger: logger
+    )
   }
 
   public convenience init(
     path: String,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint")
   ) async throws {
     let storage = try sockaddr_un(
       family: sa_family_t(AF_LOCAL),
       presentationAddress: path
     )
-    try await self.init(address: storage, timeout: timeout, device: device, logger: logger)
+    try await self.init(
+      address: storage,
+      timeout: timeout,
+      device: device,
+      controlProtocol: controlProtocol,
+      logger: logger
+    )
   }
 
   #if canImport(dnssd)
@@ -138,7 +155,9 @@ open class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     #if canImport(dnssd)
     _endpointRegistrarTask?.cancel()
     #endif
-    if address.family == AF_LOCAL { try? unlinkDomainSocket() }
+    if address.family == AF_LOCAL {
+      try? unlinkDomainSocket()
+    }
   }
 }
 
@@ -233,7 +252,7 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 
   #if canImport(dnssd)
   override public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
-    .tcp
+    OcaNetworkAdvertisingServiceType.tcp.withControlProtocol(controlProtocol)
   }
   #endif
 
@@ -263,6 +282,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     address: any SocketAddress,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint"),
     bufferCount: Int? = nil,
     ring: IORing = .shared
@@ -272,6 +292,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
       address: address,
       timeout: timeout,
       device: device,
+      controlProtocol: controlProtocol,
       logger: logger,
       ring: ring
     )
@@ -281,6 +302,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     address: Data,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint"),
     bufferCount: Int? = nil
   ) async throws {
@@ -289,6 +311,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
       address: storage,
       timeout: timeout,
       device: device,
+      controlProtocol: controlProtocol,
       logger: logger,
       bufferCount: bufferCount
     )
@@ -298,6 +321,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     path: String,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint"),
     bufferCount: Int? = nil
   ) async throws {
@@ -309,6 +333,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
       address: storage,
       timeout: timeout,
       device: device,
+      controlProtocol: controlProtocol,
       logger: logger,
       bufferCount: bufferCount
     )
@@ -361,7 +386,9 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
             controller = try self.controller(for: AnySocketAddress(bytes: messagePdu.name))
             try await handle(messagePduData: messagePdu.buffer, from: controller)
           } catch {
-            if let controller { await unlockAndRemove(controller: controller) }
+            if let controller {
+              await unlockAndRemove(controller: controller)
+            }
           }
         }
       } catch let error as Errno {
@@ -388,7 +415,9 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
       protocol: 0
     )
 
-    if address.family == sa_family_t(AF_INET6) { try socket.setIPv6Only() }
+    if address.family == sa_family_t(AF_INET6) {
+      try socket.setIPv6Only()
+    }
     try socket.bind(to: address)
 
     return socket
@@ -402,7 +431,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   }
 
   override public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
-    .udp
+    OcaNetworkAdvertisingServiceType.udp.withControlProtocol(controlProtocol)
   }
 
   package func add(controller: ControllerType) async {}

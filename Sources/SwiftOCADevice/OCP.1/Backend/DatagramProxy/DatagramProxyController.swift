@@ -38,6 +38,7 @@ package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1Contr
 
   package private(set) var isOpen: Bool = false
   package weak var endpoint: DatagramProxyDeviceEndpoint<T>?
+  package let controlProtocol: OcaControlProtocol
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
     AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
@@ -46,6 +47,7 @@ package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1Contr
   init(with peerID: T, endpoint: DatagramProxyDeviceEndpoint<T>) {
     self.peerID = peerID
     self.endpoint = endpoint
+    controlProtocol = endpoint.controlProtocol
     heartbeatTime = endpoint.timeout
   }
 

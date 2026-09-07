@@ -21,6 +21,11 @@ public class OcaClassRegistry {
   /// Mapping of classID to class name
   private var classIDMap = [OcaClassIdentification: OcaRoot.Type]()
 
+  /// Every registered class, for tooling and tests.
+  package var registeredClasses: [OcaClassIdentification: OcaRoot.Type] {
+    classIDMap
+  }
+
   public func register<T: OcaRoot>(
     classID: OcaClassID = T.classID,
     classVersion: OcaClassVersionNumber = T.classVersion,

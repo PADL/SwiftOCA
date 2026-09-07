@@ -62,9 +62,10 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
   }
 
   // 1.3
+  private static let _objectNumberPropertyID = OcaPropertyID("1.3")
   public let objectNumber: OcaONo
   private var _objectNumber: StaticProperty<OcaONo> {
-    StaticProperty<OcaONo>(propertyIDs: [OcaPropertyID("1.3")], value: objectNumber)
+    StaticProperty<OcaONo>(propertyIDs: [Self._objectNumberPropertyID], value: objectNumber)
   }
 
   @OcaProperty(
@@ -143,6 +144,9 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
   }
 
   #if NonEmbeddedBuild
+  /// The object's properties as OCP.2 JSON: each property under its wire name with
+  /// its AES70-4 marshaled value, the same encoding the protocol carries. Every member
+  /// is a property; the class is identified by `ClassID` and `ClassVersion`.
   open func getJsonValue(
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async -> [String: any Sendable] {
@@ -173,11 +177,21 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
           return dict
         }
       }
-      let type = String(describing: type(of: self))
       return await taskGroup.collect()
         .reduce(into: [String: Sendable]()) { $0.merge($1) { $1 } }
-        .merging([OcaJSONPropertyKeys.type.rawValue: type], uniquingKeysWith: { $1 })
     }
+  }
+
+  /// The OCP.2 wire name of a property for the JSON export, derived from its Swift
+  /// name with no exceptions: the object number resolves to `ObjectNumber`, which is
+  /// what AES70-2 calls that property (`ONo` is the model's name for object-number
+  /// *parameters* and struct fields, not for this). A property the reflected table
+  /// does not know falls back to its property ID.
+  func _jsonPropertyName(for propertyID: OcaPropertyID) -> String {
+    guard let name = propertyName(for: propertyID) else {
+      return propertyID.description
+    }
+    return Ocp2Naming.wireName(name)
   }
 
   public var jsonObject: [String: any Sendable] {
@@ -193,6 +207,12 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
 
   public func propertyKeyPath(for name: String) -> AnyKeyPath? {
     OcaPropertyKeyPathCache.shared.lookupProperty(byName: name, for: self)
+  }
+
+  /// The Swift name of the property with `propertyID`, from which its OCP.2 wire name
+  /// is derived.
+  public func propertyName(for propertyID: OcaPropertyID) -> String? {
+    OcaPropertyKeyPathCache.shared.lookupPropertyName(byID: propertyID, for: self)
   }
 }
 
@@ -242,19 +262,17 @@ public extension OcaRoot {
 
   @OcaConnection
   private func onPropertyEvent(event: OcaEvent, eventData data: Data) {
-    let decoder = Ocp1Decoder()
+    // event data arrives in the connection's format
+    let format = connectionDelegate?.controlProtocol.parameterFormat ?? .ocp1
     // the property with this ID from the class's key paths, worked out once, rather than
     // reading every property of the object in turn, computed ones included, and casting
     // each to find it
-    guard let propertyID = try? decoder.decode(
-      OcaPropertyID.self,
-      from: data
-    ),
+    guard let propertyID = try? OcaEventDataCoding.propertyID(from: data, format: format),
       let keyPath = OcaPropertyKeyPathCache.shared.lookupProperty(byID: propertyID, for: self),
       let value = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable)
     else { return }
 
-    try? value.onEvent(self, event: event, eventData: data)
+    try? value.onEvent(self, event: event, eventData: data, format: format)
   }
 
   @OcaConnection
@@ -325,8 +343,20 @@ public extension OcaRoot {
 
     typealias Value = T
 
+    var getMethodID: OcaMethodID? {
+      nil
+    }
+
     var setMethodID: OcaMethodID? {
       nil
+    }
+
+    func _ocp2WireName(_ object: OcaRoot) -> String? {
+      object._jsonPropertyName(for: propertyIDs[0])
+    }
+
+    func _ocp2ResponseNames(_ object: OcaRoot) -> [String]? {
+      _ocp2WireName(object).map { [$0] }
     }
 
     var propertyIDs: [OcaPropertyID]
@@ -364,12 +394,8 @@ public extension OcaRoot {
       keyPath: AnyKeyPath,
       flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> [String: any Sendable] {
-      let jsonValue: any Sendable = if JSONSerialization.isValidJSONObject(value) {
-        value
-      } else {
-        try reencodeAsValidJSONObject(value)
-      }
-      return try [keyPath.jsonKey: jsonValue]
+      let name = _ocp2WireName(object) ?? propertyIDs[0].description
+      return try [name: Ocp2JSON.sendable(Ocp2Encoder().encodeValue(value))]
     }
     #endif
 
@@ -393,6 +419,7 @@ private final class OcaPropertyKeyPathCache: Sendable {
     let keyPaths: [String: AnyKeyPath]
     let propertiesByID: [OcaPropertyID: AnyKeyPath]
     let propertiesByName: [String: AnyKeyPath]
+    let propertyNamesByID: [OcaPropertyID: String]
 
     private init(keyPaths: [String: AnyKeyPath], object: some OcaRoot) {
       self.keyPaths = keyPaths
@@ -403,6 +430,15 @@ private final class OcaPropertyKeyPathCache: Sendable {
 
         for propertyID in value.propertyIDs {
           $0[propertyID] = $1.value
+        }
+      }
+      propertyNamesByID = keyPaths.reduce(into: [:]) {
+        guard let value = object[keyPath: $1.value] as? any OcaPropertySubjectRepresentable else {
+          return
+        }
+
+        for propertyID in value.propertyIDs {
+          $0[propertyID] = $1.key
         }
       }
       propertiesByName = keyPaths.reduce(into: [:]) {
@@ -456,6 +492,13 @@ private final class OcaPropertyKeyPathCache: Sendable {
     for object: some OcaRoot
   ) -> AnyKeyPath? {
     cacheEntry(for: object).propertiesByName[name]
+  }
+
+  fileprivate func lookupPropertyName(
+    byID propertyID: OcaPropertyID,
+    for object: some OcaRoot
+  ) -> String? {
+    cacheEntry(for: object).propertyNamesByID[propertyID]
   }
 }
 

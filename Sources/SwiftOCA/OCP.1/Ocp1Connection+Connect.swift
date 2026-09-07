@@ -193,8 +193,8 @@ extension Ocp1Connection {
   package var _connectionTimeout: Duration {
     let timeout = options.connectionTimeout
 
-    if isDatagram, timeout < heartbeatTime * 2 {
-      return heartbeatTime * 2
+    if isDatagram, timeout < effectiveHeartbeatTime * 2 {
+      return effectiveHeartbeatTime * 2
     } else {
       return timeout
     }
@@ -224,7 +224,7 @@ extension Ocp1Connection {
   private func _didConnectDevice(isReconnecting: Bool) async throws {
     _startMonitor()
 
-    if heartbeatTime > .zero {
+    if effectiveHeartbeatTime > .zero {
       // send keepalive, necessary to open UDP connection
       try await sendKeepAlive()
     }

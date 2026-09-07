@@ -63,6 +63,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
   package let timeout: Duration
   package let device: OcaDevice
   package let logger: Logger
+  package let controlProtocol: OcaControlProtocol
   package nonisolated(unsafe) var enableMessageTracing = false
 
   private var _controllers = [Ocp1FlyingSocksStreamController]()
@@ -80,31 +81,47 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
     address addressData: Data,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksStreamDeviceEndpoint")
   ) async throws {
     let address = try FlyingSocks.AnySocketAddress(data: addressData)
-    try await self.init(address: address, timeout: timeout, device: device, logger: logger)
+    try await self.init(
+      address: address,
+      timeout: timeout,
+      device: device,
+      controlProtocol: controlProtocol,
+      logger: logger
+    )
   }
 
   public convenience init(
     path: String,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksStreamDeviceEndpoint")
   ) async throws {
     let address = sockaddr_un.unix(path: path).makeStorage()
-    try await self.init(address: address, timeout: timeout, device: device, logger: logger)
+    try await self.init(
+      address: address,
+      timeout: timeout,
+      device: device,
+      controlProtocol: controlProtocol,
+      logger: logger
+    )
   }
 
   private init(
     address: some SocketAddress,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksStreamDeviceEndpoint")
   ) async throws {
     self.address = address
     self.timeout = timeout
     self.device = device
+    self.controlProtocol = controlProtocol
     self.logger = logger
 
     pool = Self.defaultPool()
@@ -251,7 +268,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
   }
 
   public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
-    .tcp
+    OcaNetworkAdvertisingServiceType.tcp.withControlProtocol(controlProtocol)
   }
 
   public nonisolated var port: UInt16 {

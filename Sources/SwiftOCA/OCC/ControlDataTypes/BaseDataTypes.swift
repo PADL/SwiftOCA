@@ -168,21 +168,21 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
     }
   }
 
-  // SPI visibility for SwiftOCADevice and FlutterSwiftOCA
+  /// SPI visibility for SwiftOCADevice and FlutterSwiftOCA
   @_spi(SwiftOCAPrivate)
   public init(parsing input: inout ParserSpan) throws {
     defLevel = try OcaUint16(parsingBigEndian: &input)
     propertyIndex = try OcaUint16(parsingBigEndian: &input)
   }
 
-  // SPI visibility for SwiftOCADevice and FlutterSwiftOCA, which decode a
-  // property ID from a standalone buffer rather than mid-PDU
+  /// SPI visibility for SwiftOCADevice and FlutterSwiftOCA, which decode a
+  /// property ID from a standalone buffer rather than mid-PDU
   @_spi(SwiftOCAPrivate)
   public init(bytes: borrowing Data) throws {
     try self.init(decodingOcp1Bytes: bytes)
   }
 
-  // SPI visibility for SwiftOCADevice and FlutterSwiftOCA
+  /// SPI visibility for SwiftOCADevice and FlutterSwiftOCA
   @_spi(SwiftOCAPrivate)
   public func encode(into bytes: inout [UInt8]) {
     withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
@@ -678,3 +678,74 @@ public struct OcaOPath: Codable, Sendable {
     self.oNo = oNo
   }
 }
+
+#if NonEmbeddedBuild
+/// The OCP.2 forms of the identifier datatypes (AES70-4 8.11.1), applied by the
+/// OCP.2 coder rather than by the types' `Codable` conformances, which stay as the
+/// OCP.1 coder expects them.
+package extension OcaClassID {
+  /// A JSON array of class indices; a nonstandard class embeds its authority as
+  /// `[65535, "<6 hex digits>"]` in place of the three authority fields.
+  var ocp2JSON: [Any] {
+    var json = [Any]()
+    var index = 0
+    while index < fields.count {
+      let field = fields[index]
+      if field == Self.ProprietaryClassField, index + 2 < fields.count {
+        let authority = OcaOrganizationID((
+          OcaUint8(truncatingIfNeeded: fields[index + 1]),
+          OcaUint8(fields[index + 2] >> 8),
+          OcaUint8(fields[index + 2] & 0xFF)
+        ))
+        json.append([Int(field), authority.description] as [Any])
+        index += 3
+      } else {
+        json.append(Int(field))
+        index += 1
+      }
+    }
+    return json
+  }
+
+  init(ocp2JSON json: Any) throws {
+    guard let elements = json as? [Any] else { throw Ocp1Error.status(.badFormat) }
+    var fields = [OcaUint16]()
+    for element in elements {
+      if let authority = element as? [Any] {
+        guard authority.count == 2,
+              try Ocp2JSON.integer(OcaUint16.self, from: authority[0]) == Self
+              .ProprietaryClassField,
+              let hex = authority[1] as? String
+        else {
+          throw Ocp1Error.status(.badFormat)
+        }
+        let organization = try OcaOrganizationID(hex)
+        fields += [
+          Self.ProprietaryClassField,
+          OcaUint16(organization.id.0),
+          (OcaUint16(organization.id.1) << 8) | OcaUint16(organization.id.2),
+        ]
+      } else {
+        try fields.append(Ocp2JSON.integer(OcaUint16.self, from: element))
+      }
+    }
+    self.init(fields)
+  }
+}
+
+/// `[DefLevel, Index]`, optionally followed by the element's name, which has no
+/// programmatic effect (AES70-4 8.11.1.5).
+package func _ocp2ElementID(_ defLevel: OcaUint16, _ index: OcaUint16) -> [Int] {
+  [Int(defLevel), Int(index)]
+}
+
+package func _ocp2ElementID(from json: Any) throws -> (OcaUint16, OcaUint16) {
+  guard let array = json as? [Any], array.count == 2 || array.count == 3 else {
+    throw Ocp1Error.status(.badFormat)
+  }
+  return try (
+    Ocp2JSON.integer(OcaUint16.self, from: array[0]),
+    Ocp2JSON.integer(OcaUint16.self, from: array[1])
+  )
+}
+#endif

@@ -50,14 +50,16 @@ Sendable {
   public func add(member objectNumber: OcaONo) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.3"),
-      parameters: objectNumber
+      parameters: objectNumber,
+      parameterNames: ["Member"] // name not in AES70-2023 model
     )
   }
 
   public func delete(member objectNumber: OcaONo) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.4"),
-      parameters: objectNumber
+      parameters: objectNumber,
+      parameterNames: ["Member"] // name not in AES70-2023 model
     )
   }
 }

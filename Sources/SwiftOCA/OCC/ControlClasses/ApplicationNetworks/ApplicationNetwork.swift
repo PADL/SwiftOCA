@@ -66,7 +66,8 @@ Sendable {
   public func control(_ command: OcaApplicationNetworkCommand) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("2.10"),
-      parameters: command
+      parameters: command,
+      parameterNames: ["Command"]
     )
   }
 

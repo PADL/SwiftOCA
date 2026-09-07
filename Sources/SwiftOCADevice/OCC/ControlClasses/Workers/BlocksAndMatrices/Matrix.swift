@@ -403,13 +403,13 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     case OcaMethodID("3.5"):
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(memberObjectNumbers, name: "members")
+      return try controller.encodeResponse(memberObjectNumbers, name: "Members")
     case OcaMethodID("3.7"):
       let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
       let objectNumber = members[Int(coordinates.x), Int(coordinates.y)]?
         .objectNumber ?? OcaInvalidONo
-      return try controller.encodeResponse(objectNumber, name: "memberONo")
+      return try controller.encodeResponse(objectNumber, name: "MemberONo")
     case OcaMethodID("3.8"):
       let parameters: SwiftOCA.OcaMatrix.SetMemberParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)

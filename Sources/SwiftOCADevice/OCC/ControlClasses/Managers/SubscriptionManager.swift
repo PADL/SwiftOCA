@@ -262,10 +262,19 @@ public class OcaSubscriptionManager: OcaManager {
     state = .normal
   }
 
+  /// EV1 subscription methods; OCP.2 supports only EV2 (AES70-4 6.3.6.1)
+  private static let ev1MethodIDs: Set<OcaMethodID> = [
+    OcaMethodID("3.1"), OcaMethodID("3.2"), OcaMethodID("3.5"), OcaMethodID("3.6"),
+  ]
+
   override open func handleCommand(
     _ command: Ocp1Command,
     from controller: any OcaController
   ) async throws -> Ocp1Response {
+    if command.parameters.format == .ocp2, Self.ev1MethodIDs.contains(command.methodID) {
+      throw Ocp1Error.status(.notImplemented)
+    }
+
     switch command.methodID {
     case OcaMethodID("3.1"):
       let subscription: SwiftOCA.OcaSubscriptionManager

@@ -24,7 +24,8 @@ import SwiftOCA
 
 package actor OcaLocalController: Ocp1ControllerInternal {
   package nonisolated var flags: OcaControllerFlags { [.supportsLocking, .isLocal] }
-  package nonisolated var connectionPrefix: String { OcaLocalConnectionPrefix }
+  package nonisolated var connectionPrefix: String { _connectionPrefix }
+  private nonisolated let _connectionPrefix: String
 
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
@@ -33,15 +34,21 @@ package actor OcaLocalController: Ocp1ControllerInternal {
   package let writeQueue: Ocp1WriteQueue? = nil
 
   package weak var endpoint: OcaLocalDeviceEndpoint?
+  package let controlProtocol: OcaControlProtocol
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
   init(endpoint: OcaLocalDeviceEndpoint) async {
     self.endpoint = endpoint
+    controlProtocol = endpoint.controlProtocol
+    _connectionPrefix = endpoint.controlProtocol == .ocp1
+      ? OcaLocalConnectionPrefix
+      : OcaJsonLocalConnectionPrefix
   }
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
-    endpoint!.requestChannel.map { data in
-      try Ocp1MessageList(messagePduData: data)
+    let controlProtocol = endpoint!.controlProtocol
+    return endpoint!.requestChannel.map { data in
+      try Ocp1MessageList(messagePduData: data, controlProtocol: controlProtocol)
     }.eraseToAnyAsyncSequence()
   }
 

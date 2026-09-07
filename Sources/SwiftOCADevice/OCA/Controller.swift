@@ -37,6 +37,11 @@ public protocol OcaController: Actor {
   /// only proves *some* trusted peer is on the wire, not which.
   nonisolated var peerIdentity: OcaPeerIdentity { get }
 
+  /// The control protocol this controller speaks; notifications and responses are
+  /// encoded to match. Fixed for the controller's lifetime — it comes from the
+  /// endpoint that accepted it — so it is `nonisolated` and needs no synchronisation.
+  nonisolated var controlProtocol: OcaControlProtocol { get }
+
   func addSubscription(
     _ subscription: OcaSubscriptionManagerSubscription
   ) async throws
@@ -59,6 +64,8 @@ public protocol OcaController: Actor {
 
 public extension OcaController {
   nonisolated var peerIdentity: OcaPeerIdentity { .anonymous }
+
+  nonisolated var controlProtocol: OcaControlProtocol { .ocp1 }
 
   func sendMessage(
     _ messages: Ocp1Message,

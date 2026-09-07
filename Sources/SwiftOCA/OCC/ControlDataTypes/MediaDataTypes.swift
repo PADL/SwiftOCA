@@ -171,13 +171,13 @@ public struct OcaMediaSourceConnector: Codable, Sendable {
   }
 }
 
-public enum OcaMediaPlayOption: OcaUint8, Codable, Sendable {
+public enum OcaMediaPlayOption: OcaUint8, Codable, Sendable, CaseIterable {
   case normal = 0
   case autoclose = 1
   case repeatInterval = 2
 }
 
-public enum OcaMediaRecorderPlayerState: OcaUint8, Codable, Sendable {
+public enum OcaMediaRecorderPlayerState: OcaUint8, Codable, Sendable, CaseIterable {
   case idle = 0
   case stopped = 1
   case seeking = 2
@@ -185,7 +185,7 @@ public enum OcaMediaRecorderPlayerState: OcaUint8, Codable, Sendable {
   case playing = 4
 }
 
-public enum OcaMediaAccessMode: OcaUint8, Codable, Sendable {
+public enum OcaMediaAccessMode: OcaUint8, Codable, Sendable, CaseIterable {
   case none = 0
   case play = 1
   case record = 2
@@ -193,7 +193,7 @@ public enum OcaMediaAccessMode: OcaUint8, Codable, Sendable {
 
 public typealias OcaMediaTrackFunction = OcaBitSet16
 
-public enum OcaMediaVolumePositionType: OcaUint16, Codable, Sendable {
+public enum OcaMediaVolumePositionType: OcaUint16, Codable, Sendable, CaseIterable {
   case samples = 0
   case seconds = 1
 }

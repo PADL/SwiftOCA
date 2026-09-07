@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023-2024 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -33,7 +33,9 @@ import Glibc
 /// A remote controller
 package actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   package nonisolated var flags: OcaControllerFlags { .supportsLocking }
-  package nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
+  package nonisolated var connectionPrefix: String {
+    controlProtocol == .ocp1 ? OcaUdpConnectionPrefix : OcaJsonUdpConnectionPrefix
+  }
 
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: any SocketAddress
@@ -46,6 +48,7 @@ package actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
 
   package private(set) var isOpen: Bool = false
   package weak var endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint?
+  package let controlProtocol: OcaControlProtocol
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
     AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
@@ -58,6 +61,7 @@ package actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
     localAddress: (any SocketAddress)?
   ) {
     self.endpoint = endpoint
+    controlProtocol = endpoint.controlProtocol
     self.peerAddress = peerAddress
     self.interfaceIndex = interfaceIndex
     self.localAddress = localAddress

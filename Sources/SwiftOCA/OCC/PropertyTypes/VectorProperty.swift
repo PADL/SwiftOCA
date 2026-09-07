@@ -76,7 +76,7 @@ public struct OcaVectorProperty<
 
   public let xPropertyID: OcaPropertyID
   public let yPropertyID: OcaPropertyID
-  public let getMethodID: OcaMethodID
+  public let getMethodID: OcaMethodID?
   public let setMethodID: OcaMethodID?
 
   public init(from decoder: Decoder) throws {
@@ -116,17 +116,35 @@ public struct OcaVectorProperty<
     xPropertyID: OcaPropertyID,
     yPropertyID: OcaPropertyID,
     getMethodID: OcaMethodID,
-    setMethodID: OcaMethodID? = nil
+    setMethodID: OcaMethodID? = nil,
+    ocp2Name: String? = nil
   ) {
     self.xPropertyID = xPropertyID
     self.yPropertyID = yPropertyID
     self.getMethodID = getMethodID
     self.setMethodID = setMethodID
+    // The storage stands in for a pair of properties, so it has no property ID of
+    // its own and must not borrow one: an ID that resolves (1.1 is OcaRoot's
+    // `classID`) would name the OCP.2 parameters after that property. Leaving both
+    // the ID unresolvable and `ocp2Name` unset keeps `_ocp2WireName` nil, so the
+    // encoder names the parameters after the vector record's own fields (`X`, `Y`),
+    // which is what the model specifies. `ocp2Name` still applies to the JSON export
+    // through this wrapper's own `_ocp2WireName`.
     _storage = OcaProperty(
-      propertyID: OcaPropertyID("1.1"),
+      propertyID: OcaPropertyID("0.0"),
       getMethodID: getMethodID,
       setMethodID: setMethodID
     )
+  }
+
+  public func _ocp2WireName(_ object: OcaRoot) -> String? {
+    if let ocp2Name = _storage.ocp2Name { return ocp2Name }
+    guard let name = object.propertyName(for: xPropertyID) else { return nil }
+    return Ocp2Naming.wireName(name)
+  }
+
+  public func _ocp2ResponseNames(_ object: OcaRoot) -> [String]? {
+    _ocp2WireName(object).map { [$0] }
   }
 
   public static subscript<T: OcaRoot>(
@@ -143,13 +161,18 @@ public struct OcaVectorProperty<
     }
   }
 
-  func onEvent(_ object: OcaRoot, event: OcaEvent, eventData data: Data) throws {
+  func onEvent(
+    _ object: OcaRoot,
+    event: OcaEvent,
+    eventData data: Data,
+    format: OcaParameterFormat
+  ) throws {
     precondition(event.eventID == OcaPropertyChangedEventID)
 
-    let decoder = Ocp1Decoder()
-    let eventData = try decoder.decode(
+    let eventData = try OcaEventDataCoding.decode(
       OcaPropertyChangedEventData<Value>.self,
-      from: data
+      from: data,
+      format: format
     )
     precondition(propertyIDs.contains(eventData.propertyID))
 
@@ -195,7 +218,8 @@ public struct OcaVectorProperty<
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async throws -> [String: any Sendable] {
     let value = try await _getValue(object, flags: flags)
-    return try [keyPath.jsonKey: [value.x, value.y]]
+    let name = _ocp2WireName(object) ?? xPropertyID.description
+    return [name: Ocp2JSON.sendable(try Ocp2Encoder().encodeValue(value))]
   }
   #endif
 

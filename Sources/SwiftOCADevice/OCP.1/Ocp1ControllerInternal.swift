@@ -38,14 +38,19 @@ package struct Ocp1MessageList: Sendable {
     self.init(responseRequired: messageType == .ocaCmdRrq, messages: messages)
   }
 
+  /// OCP.1 framing; backends that only speak OCP.1 use this.
   package init(messagePduData data: Data) throws {
-    let (messageType, messages) = try Ocp1Connection.decodeOcp1MessagePdu(from: data)
+    try self.init(messagePduData: data, controlProtocol: .ocp1)
+  }
+
+  package init(messagePduData data: Data, controlProtocol: OcaControlProtocol) throws {
+    let (messageType, messages) = try controlProtocol.decodePdu(data)
     self.init(messageType: messageType, messages: messages)
   }
 }
 
-/// OcaControllerPrivate should eventually be merged into OcaController once we are ready to
-/// support out-of-tree endpoints
+// OcaControllerPrivate should eventually be merged into OcaController once we are ready to
+// support out-of-tree endpoints
 
 package protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, Actor {
   associatedtype Endpoint: OcaDeviceEndpointPrivate
@@ -94,7 +99,7 @@ package protocol Ocp1ControllerDatagramSemantics: Actor {
   func didOpen()
 }
 
-extension Ocp1ControllerInternal {
+package extension Ocp1ControllerInternal {
   /// handle a single message
   private func _handle<Endpoint: OcaDeviceEndpointPrivate>(
     for endpoint: Endpoint,
@@ -127,6 +132,8 @@ extension Ocp1ControllerInternal {
       heartbeatTime = .seconds(keepAlive.heartBeatTime)
     case let keepAlive as Ocp1KeepAlive2:
       heartbeatTime = .milliseconds(keepAlive.heartBeatTime)
+    case is Ocp2DeviceReset:
+      endpoint.logger.info("device reset requested by \(controller); not supported")
     default:
       endpoint.logger.info("received unknown message \(message)")
       throw Ocp1Error.invalidMessageType
@@ -140,7 +147,7 @@ extension Ocp1ControllerInternal {
   }
 
   /// handle a list of messages
-  package func handle(
+  func handle(
     for endpoint: some OcaDeviceEndpointPrivate,
     messageList: Ocp1MessageList
   ) async throws {
@@ -167,7 +174,7 @@ extension Ocp1ControllerInternal {
   }
 
   /// handle messages until an error
-  package func handle<Endpoint: OcaDeviceEndpointPrivate>(for endpoint: Endpoint) async {
+  func handle<Endpoint: OcaDeviceEndpointPrivate>(for endpoint: Endpoint) async {
     let controller = self as! Endpoint.ControllerType
 
     endpoint.logger.info("controller added", controller: controller)
@@ -203,14 +210,14 @@ extension Ocp1ControllerInternal {
     )
   }
 
-  package func cancelKeepAlive() {
+  func cancelKeepAlive() {
     keepAliveTask?.cancel()
     keepAliveTask = nil
   }
 
   /// Oca-3 notes that both controller and device send `KeepAlive` messages if they haven't
   /// yet received (or sent) another message during `HeartbeatTime`.
-  package func heartbeatTimeDidChange(from oldValue: Duration) {
+  func heartbeatTimeDidChange(from oldValue: Duration) {
     if heartbeatTime == .zero {
       cancelKeepAlive()
     } else if heartbeatTime != oldValue || keepAliveTask == nil {
@@ -248,27 +255,17 @@ extension Ocp1ControllerInternal {
     }
   }
 
-  package func decodeMessages(from messagePduData: Data) throws -> Ocp1MessageList {
-    guard messagePduData.count >= Ocp1Connection.MinimumPduSize,
-          messagePduData[messagePduData.startIndex] == Ocp1SyncValue
-    else {
-      throw Ocp1Error.invalidSyncValue
-    }
-    let pduSize: OcaUint32 = messagePduData.decodeInteger(index: messagePduData.startIndex + 3)
-    guard pduSize >= (Ocp1Connection.MinimumPduSize - 1) else {
-      throw Ocp1Error.invalidPduSize
-    }
-
-    return try Ocp1MessageList(messagePduData: messagePduData)
+  func decodeMessages(from messagePduData: Data) throws -> Ocp1MessageList {
+    try Ocp1MessageList(messagePduData: messagePduData, controlProtocol: controlProtocol)
   }
 
-  package func sendMessages(
+  func sendMessages(
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType
   ) async throws {
     lastMessageSentTime = .now
 
-    let data = try Ocp1Connection.encodeOcp1MessagePdu(messages, type: messageType)
+    let data = try controlProtocol.encodePdu(messages, type: messageType)
     if let writeQueue {
       try await writeQueue.serialised { [self] in
         try await sendOcp1EncodedData(data)
@@ -282,34 +279,38 @@ extension Ocp1ControllerInternal {
 extension OcaDevice {
   package typealias ReadCallback = @Sendable (Int) async throws -> Data
 
+  /// Reads and decodes one PDU. `reader` is owned by the calling receive loop and
+  /// carries buffered bytes from one call to the next on stream transports.
+  static func _receiveMessages(
+    reader: any OcaPduReader,
+    controlProtocol: OcaControlProtocol,
+    read: (_ count: Int, _ awaitingAllRead: Bool) async throws -> Data
+  ) async throws -> Ocp1MessageList {
+    let messagePduData = try await reader.nextPdu(read: read)
+    return try Ocp1MessageList(messagePduData: messagePduData, controlProtocol: controlProtocol)
+  }
+
+  /// OCP.1-only convenience for backends with an exact-length read: OCP.1 always
+  /// awaits all of a read.
   static func _receiveMessages(_ read: (Int) async throws -> Data) async throws -> Ocp1MessageList {
-    var messagePduData = try await read(Ocp1Connection.MinimumPduSize)
-
-    guard messagePduData.count != 0 else {
-      // 0 length on EOF
-      throw Ocp1Error.notConnected
-    }
-
-    guard messagePduData.count >= Ocp1Connection.MinimumPduSize,
-          messagePduData[messagePduData.startIndex] == Ocp1SyncValue
-    else {
-      throw Ocp1Error.invalidSyncValue
-    }
-
-    let pduSize: OcaUint32 = messagePduData.decodeInteger(index: messagePduData.startIndex + 3)
-    guard pduSize >= (Ocp1Connection.MinimumPduSize - 1) else {
-      throw Ocp1Error.invalidPduSize
-    }
-
-    let bytesLeft = Int(pduSize) - (Ocp1Connection.MinimumPduSize - 1)
-    messagePduData += try await read(bytesLeft)
-
-    return try Ocp1MessageList(messagePduData: messagePduData)
+    try await _receiveMessages(
+      reader: Ocp1PduReader(maximumPduSize: Int.max),
+      controlProtocol: .ocp1,
+      read: { count, _ in try await read(count) }
+    )
   }
 
   @concurrent
   package static func receiveMessages(_ read: ReadCallback) async throws -> Ocp1MessageList {
     try await _receiveMessages(read)
+  }
+
+  static func asyncReceiveMessages(
+    reader: any OcaPduReader,
+    controlProtocol: OcaControlProtocol,
+    read: (_ count: Int, _ awaitingAllRead: Bool) async throws -> Data
+  ) async throws -> Ocp1MessageList {
+    try await _receiveMessages(reader: reader, controlProtocol: controlProtocol, read: read)
   }
 }
 
@@ -320,20 +321,20 @@ package protocol Ocp1ControllerInternalLightweightNotifyingInternal: OcaControll
   ) async throws
 }
 
-extension Ocp1ControllerInternalLightweightNotifyingInternal {
-  package func sendMessage(
+package extension Ocp1ControllerInternalLightweightNotifyingInternal {
+  func sendMessage(
     _ message: Ocp1Message,
     type messageType: OcaMessageType,
     to destinationAddress: OcaNetworkAddress
   ) async throws {
-    try await sendOcp1EncodedData(Ocp1Connection.encodeOcp1MessagePdu(
+    try await sendOcp1EncodedData(controlProtocol.encodePdu(
       [message],
       type: messageType
     ), to: destinationAddress)
   }
 }
 
-// https://www.swiftbysundell.com/articles/async-and-concurrent-forEach-and-map/
+/// https://www.swiftbysundell.com/articles/async-and-concurrent-forEach-and-map/
 extension Sequence {
   func asyncForEach(
     _ operation: @Sendable (Element) async throws -> ()

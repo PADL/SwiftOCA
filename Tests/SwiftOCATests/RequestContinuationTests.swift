@@ -41,7 +41,7 @@ private final class MockConnection: Ocp1Connection, @unchecked Sendable {
 
   override var heartbeatTime: Duration { .zero }
 
-  override func read(_ length: Int) async throws -> Data {
+  override func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     // no device on the other end: block until cancelled
     try await Task.sleep(for: .seconds(3600))
     throw Ocp1Error.notConnected

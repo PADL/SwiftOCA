@@ -43,11 +43,17 @@ public enum OcaNetworkAdvertisingService: OcaUint8, Codable, Sendable, CaseItera
 
 public enum OcaNetworkAdvertisingServiceType: String, Sendable, CaseIterable {
   case none = ""
+  // OCP.1 (AES70-3)
   case tcp = "_oca._tcp."
   case tcpSecure = "_ocasec._tcp."
   case udp = "_oca._udp."
   case udpSecure = "_ocasec._udp."
   case tcpWebSocket = "_ocaws._tcp."
+  // OCP.2 (AES70-4 Table 4)
+  case tcpJson = "_ocajson._tcp."
+  case tcpSecureJson = "_ocajsonsec._tcp."
+  case udpJson = "_ocajson._udp."
+  case tcpWebSocketJson = "_ocajsonws._tcp."
 
   public var shortDescription: String {
     switch self {
@@ -63,6 +69,54 @@ public enum OcaNetworkAdvertisingServiceType: String, Sendable, CaseIterable {
       "DTLS"
     case .tcpWebSocket:
       "WS"
+    case .tcpJson:
+      "TCP/JSON"
+    case .tcpSecureJson:
+      "TLS/JSON"
+    case .udpJson:
+      "UDP/JSON"
+    case .tcpWebSocketJson:
+      "WS/JSON"
+    }
+  }
+
+  /// The control protocol the service speaks.
+  public var controlProtocol: OcaControlProtocol {
+    switch self {
+    case .none, .tcp, .tcpSecure, .udp, .udpSecure, .tcpWebSocket:
+      .ocp1
+    case .tcpJson, .tcpSecureJson, .udpJson, .tcpWebSocketJson:
+      #if NonEmbeddedBuild
+      .ocp2
+      #else
+      .ocp1
+      #endif
+    }
+  }
+
+  /// The OCP.1 service type for the same transport.
+  public var transport: OcaNetworkAdvertisingServiceType {
+    switch self {
+    case .tcpJson: .tcp
+    case .tcpSecureJson: .tcpSecure
+    case .udpJson: .udp
+    case .tcpWebSocketJson: .tcpWebSocket
+    default: self
+    }
+  }
+
+  /// The service type for this transport and `controlProtocol`.
+  public func withControlProtocol(_ controlProtocol: OcaControlProtocol) -> Self {
+    switch (transport, controlProtocol) {
+    case (_, .ocp1):
+      return transport
+    #if NonEmbeddedBuild
+    case (.tcp, .ocp2): return .tcpJson
+    case (.tcpSecure, .ocp2): return .tcpSecureJson
+    case (.udp, .ocp2): return .udpJson
+    case (.tcpWebSocket, .ocp2): return .tcpWebSocketJson
+    case (_, .ocp2): return transport
+    #endif
     }
   }
 
@@ -98,15 +152,15 @@ public struct OcaNetworkAdvertisingMechanism: Codable, Sendable, Equatable {
 }
 
 public struct OcaNetworkInterfaceAssignment: Codable, Sendable, Equatable {
-  // internal ID
+  /// internal ID
   public let id: OcaID16
-  // ONo of network interface
+  /// ONo of network interface
   public let networkInterfaceONo: OcaONo
-  // assignment-specific, e.g. IP port as encoded UInt16
+  /// assignment-specific, e.g. IP port as encoded UInt16
   public let networkBindingParameters: OcaBlob
-  // zero or more PSK identifies that apply to the IP port
+  /// zero or more PSK identifies that apply to the IP port
   public let securityKeyIdentities: [OcaString]
-  // list of advertising mechanisms
+  /// list of advertising mechanisms
   public let advertisingMechanisms: [OcaNetworkAdvertisingMechanism]
 
   public init(

@@ -829,8 +829,11 @@ package actor Ocp1OpenSSLEngine {
     }
   }
 
+  /// Exactly `count` bytes when `awaitingAllRead`, else between 1 and `count` as soon
+  /// as any are decrypted.
   package func read(
     _ count: Int,
+    awaitingAllRead: Bool,
     read networkRead: @Sendable (Int) async throws -> Data,
     write networkWrite: @Sendable (Data) async throws -> Void
   ) async throws -> Data {
@@ -842,7 +845,7 @@ package actor Ocp1OpenSSLEngine {
       var result = Data()
       result.reserveCapacity(count)
       var buffer = [UInt8](repeating: 0, count: count)
-      while result.count < count {
+      while result.count < (awaitingAllRead ? count : 1) {
         let want = count - result.count
         let ret = buffer.withUnsafeMutableBufferPointer { buf -> CInt in
           SSL_read(ssl, buf.baseAddress, CInt(want))

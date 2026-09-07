@@ -53,6 +53,7 @@ package actor Ocp1NWDatagramController: Ocp1ControllerInternal,
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: Ocp1NWDatagramDeviceEndpoint?
+  package let controlProtocol: OcaControlProtocol
 
   private let connection: NWConnection
   private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
@@ -71,6 +72,7 @@ package actor Ocp1NWDatagramController: Ocp1ControllerInternal,
 
   init(endpoint: Ocp1NWDatagramDeviceEndpoint, connection: NWConnection) {
     self.endpoint = endpoint
+    controlProtocol = endpoint.controlProtocol
     self.connection = connection
     flags = endpoint.controllerFlags
     connectionPrefix = endpoint.controllerConnectionPrefix

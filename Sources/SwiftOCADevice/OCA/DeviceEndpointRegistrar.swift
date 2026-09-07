@@ -33,15 +33,33 @@ import Logging
 public protocol OcaBonjourRegistrableDeviceEndpoint: OcaDeviceEndpoint {
   var serviceType: OcaNetworkAdvertisingServiceType { get }
   var port: UInt16 { get }
+  /// Endpoint-specific TXT records (e.g. a WebSocket `path`), in registration order.
+  var txtRecordAdditions: [(String, String)] { get }
+  /// Every service advertised for this endpoint, each with its TXT records. Defaults to
+  /// the one `serviceType`; an endpoint serving several control protocols lists one each.
+  var advertisedServices: [(
+    serviceType: OcaNetworkAdvertisingServiceType,
+    txtRecordAdditions: [(String, String)]
+  )] { get }
+}
+
+public extension OcaBonjourRegistrableDeviceEndpoint {
+  var txtRecordAdditions: [(String, String)] { [] }
+
+  var advertisedServices: [(
+    serviceType: OcaNetworkAdvertisingServiceType,
+    txtRecordAdditions: [(String, String)]
+  )] {
+    [(serviceType, txtRecordAdditions)]
+  }
 }
 
 extension OcaDeviceManager {
   /// In registration order: AES70 requires the record to begin with `txtvers` and
-  /// `protovers`, in that order.
-  var txtRecords: [(String, String)] {
-    [
-      ("txtvers", "1"),
-      ("protovers", "\(version)"),
+  /// `protovers`, in that order. An endpoint's `additions` follow them, as AES70-4
+  /// lists `path` after the two, then the device's own records.
+  func txtRecords(adding additions: [(String, String)] = []) -> [(String, String)] {
+    [("txtvers", "1"), ("protovers", "\(version)")] + additions + [
       ("modelGUID", "\(modelGUID)"),
       ("serialNumber", "\(serialNumber)"),
     ]
@@ -53,17 +71,26 @@ extension OcaBonjourRegistrableDeviceEndpoint {
   // the returned task strongly would otherwise form a retain cycle
   // (endpoint → task → self), preventing the deinit-based cancel from
   // ever firing and the mDNS goodbye from being sent on shutdown.
-  // Reads serviceType/port synchronously here so the Task closure only
-  // captures the extracted values plus `device`.
+  // Reads the advertised services and port synchronously here so the Task
+  // closure only captures the extracted values plus `device`.
   package func makeBonjourRegistrarTask(for device: OcaDevice) -> Task<(), Error> {
-    let serviceType = serviceType
+    let services = advertisedServices
     let port = port
     return Task {
-      try await runBonjourEndpointRegistrar(
-        serviceType: serviceType,
-        port: port,
-        for: device
-      )
+      // one registration per service, all cancelled with the task
+      try await withThrowingTaskGroup(of: Void.self) { group in
+        for service in services {
+          group.addTask {
+            try await runBonjourEndpointRegistrar(
+              serviceType: service.serviceType,
+              port: port,
+              txtRecordAdditions: service.txtRecordAdditions,
+              for: device
+            )
+          }
+        }
+        try await group.waitForAll()
+      }
     }
   }
 }
@@ -72,6 +99,7 @@ extension OcaBonjourRegistrableDeviceEndpoint {
 package func runBonjourEndpointRegistrar(
   serviceType: OcaNetworkAdvertisingServiceType,
   port: UInt16,
+  txtRecordAdditions: [(String, String)] = [],
   for device: OcaDevice
 ) async throws {
   let logger = await device.logger
@@ -88,7 +116,7 @@ package func runBonjourEndpointRegistrar(
         name: deviceName,
         regType: serviceType.rawValue,
         port: port,
-        txtRecord: deviceManager.txtRecords
+        txtRecord: deviceManager.txtRecords(adding: txtRecordAdditions)
       )
     }
   } catch {

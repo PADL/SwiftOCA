@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -200,7 +200,7 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
     _socket = socket
   }
 
-  override public func read(_ length: Int) async throws -> Data {
+  override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     try await withMappedError { socket in
       try await Data(socket.receive(count: Ocp1MaximumDatagramPduSize))
     }
@@ -214,7 +214,8 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   }
 
   override public var connectionPrefix: String {
-    "\(OcaUdpConnectionPrefix)/\(_currentPresentationAddress)"
+    let prefix = _connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
+    return "\(prefix)/\(_currentPresentationAddress)"
   }
 
   override public var isDatagram: Bool { true }
@@ -278,7 +279,7 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
     _socket = socket
   }
 
-  override public func read(_ length: Int) async throws -> Data {
+  override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     try await withMappedError { socket in
       try await Data(socket.readFixed(
         count: receiveBufferSize,
@@ -301,7 +302,8 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   }
 
   override public var connectionPrefix: String {
-    "\(OcaLocalConnectionPrefix)/\(_currentPresentationAddress)"
+    let prefix = _connectionPrefix(ocp1: OcaLocalConnectionPrefix, ocp2: OcaJsonLocalConnectionPrefix)
+    return "\(prefix)/\(_currentPresentationAddress)"
   }
 
   override public var isDatagram: Bool { true }
@@ -332,9 +334,9 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
     _socket = socket
   }
 
-  override public func read(_ length: Int) async throws -> Data {
+  override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     try await withMappedError { socket in
-      try await Data(socket.read(count: length, awaitingAllRead: true))
+      try await Data(socket.read(count: length, awaitingAllRead: awaitingAllRead))
     }
   }
 
@@ -346,7 +348,8 @@ public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
 
   override public var connectionPrefix: String {
     let prefix = _currentSocketAddress?.family == sa_family_t(AF_LOCAL)
-      ? OcaLocalConnectionPrefix : OcaTcpConnectionPrefix
+      ? _connectionPrefix(ocp1: OcaLocalConnectionPrefix, ocp2: OcaJsonLocalConnectionPrefix)
+      : _connectionPrefix(ocp1: OcaTcpConnectionPrefix, ocp2: OcaJsonTcpConnectionPrefix)
     return "\(prefix)/\(_currentPresentationAddress)"
   }
 

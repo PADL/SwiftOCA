@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2025 PADL Software Pty Ltd
+// Copyright (c) 2025-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -261,13 +261,13 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
     try await super.disconnectDevice()
   }
 
-  override public func read(_ length: Int) async throws -> Data {
+  override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     // a stream hands over whatever is buffered, so a read bounded only by the datagram
     // size takes the start of the next PDU as well; a datagram is returned whole
     let maximumLength = isDatagram ? Ocp1MaximumDatagramPduSize : length
     return try await withUnsafeThrowingContinuation { continuation in
       _nwConnection.receive(
-        minimumIncompleteLength: length,
+        minimumIncompleteLength: awaitingAllRead ? length : 1,
         maximumLength: maximumLength
       ) { data, _, _, error in
         if let error {
@@ -347,7 +347,8 @@ public final class Ocp1NWUDPConnection: Ocp1NWConnection {
   }
 
   override public var connectionPrefix: String {
-    "\(OcaUdpConnectionPrefix)/\(presentationAddress)"
+    let prefix = _connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
+    return "\(prefix)/\(presentationAddress)"
   }
 
   override public var isDatagram: Bool { true }
@@ -360,7 +361,8 @@ public final class Ocp1NWUDPConnection: Ocp1NWConnection {
 
 public final class Ocp1NWTCPConnection: Ocp1NWConnection {
   override public var connectionPrefix: String {
-    "\(OcaTcpConnectionPrefix)/\(presentationAddress)"
+    let prefix = _connectionPrefix(ocp1: OcaTcpConnectionPrefix, ocp2: OcaJsonTcpConnectionPrefix)
+    return "\(prefix)/\(presentationAddress)"
   }
 
   override public var isDatagram: Bool { false }

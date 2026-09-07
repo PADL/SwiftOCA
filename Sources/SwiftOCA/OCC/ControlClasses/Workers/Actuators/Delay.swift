@@ -44,7 +44,8 @@ open class OcaDelayExtended: OcaDelay, @unchecked Sendable {
   {
     try await sendCommandRrq(
       methodID: OcaMethodID("5.3"),
-      parameters: unitOfMeasure
+      parameters: unitOfMeasure,
+      parameterNames: ["UoM"]
     )
   }
 }

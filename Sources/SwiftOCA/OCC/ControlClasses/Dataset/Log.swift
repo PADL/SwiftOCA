@@ -35,7 +35,8 @@ open class OcaLog: OcaDataset, @unchecked Sendable {
   public func add(logRecord entry: OcaLogRecord) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.1"),
-      parameters: entry
+      parameters: entry,
+      parameterNames: ["Entry"]
     )
   }
 

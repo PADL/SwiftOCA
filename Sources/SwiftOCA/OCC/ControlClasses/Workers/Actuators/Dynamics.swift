@@ -373,7 +373,10 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
     )
   {
     let parameters: GetFloat32ListParameters =
-      try await sendCommandRrq(methodID: OcaMethodID("4.5"))
+      try await sendCommandRrq(
+        methodID: OcaMethodID("4.5"),
+        responseNames: ["Slopes", "MinSlope", "MaxSlope"]
+      )
     return (parameters.values, parameters.minValues, parameters.maxValues)
   }
 
@@ -385,7 +388,10 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
     )
   {
     let parameters: GetFloat32ListParameters =
-      try await sendCommandRrq(methodID: OcaMethodID("4.7"))
+      try await sendCommandRrq(
+        methodID: OcaMethodID("4.7"),
+        responseNames: ["Parameters", "MinParameter", "MaxParameter"]
+      )
     return (parameters.values, parameters.minValues, parameters.maxValues)
   }
 
@@ -438,7 +444,16 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
         kneeParameters: kneeParameters,
         dynamicGainFloor: dynamicGainFloor,
         dynamicGainCeiling: dynamicGainCeiling
-      )
+      ),
+      parameterNames: [
+        "Mask",
+        "NSegments",
+        "Thresholds",
+        "Slope",
+        "KneeParameter",
+        "DynamicGainFloor",
+        "DynamicGainCeiling",
+      ]
     )
   }
 }

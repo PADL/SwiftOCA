@@ -14,6 +14,12 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
 public struct OcaModelDescription: Codable, Sendable, CustomStringConvertible {
   public let manufacturer: OcaString
   public let name: OcaString
@@ -101,6 +107,17 @@ public struct OcaModelGUID: Hashable, Codable, Sendable, CustomStringConvertible
     reserved = try container.decode(OcaUint8.self, forKey: .reserved)
     mfrCode = try container.decode(OcaOrganizationID.self, forKey: .mfrCode)
 
+    #if NonEmbeddedBuild
+    if decoder._isOcp2Decoder {
+      // OcaBlobFixedLen<4>: base64
+      let bytes = try container.decode(Data.self, forKey: .modelCode)
+      guard bytes.count == 4 else { throw Ocp1Error.status(.badFormat) }
+      modelCode = (bytes[bytes.startIndex], bytes[bytes.startIndex + 1],
+                   bytes[bytes.startIndex + 2], bytes[bytes.startIndex + 3])
+      return
+    }
+    #endif
+
     var modelCodeContainer = try container.nestedUnkeyedContainer(forKey: .modelCode)
     modelCode = try (
       modelCodeContainer.decode(OcaUint8.self),
@@ -114,6 +131,16 @@ public struct OcaModelGUID: Hashable, Codable, Sendable, CustomStringConvertible
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(reserved, forKey: .reserved)
     try container.encode(mfrCode, forKey: .mfrCode)
+
+    #if NonEmbeddedBuild
+    if encoder._isOcp2Encoder {
+      try container.encode(
+        Data([modelCode.0, modelCode.1, modelCode.2, modelCode.3]),
+        forKey: .modelCode
+      )
+      return
+    }
+    #endif
 
     var modelCodeContainer = container.nestedUnkeyedContainer(forKey: .modelCode)
     try modelCodeContainer.encode(modelCode.0)

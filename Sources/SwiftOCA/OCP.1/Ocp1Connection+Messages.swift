@@ -67,7 +67,7 @@ extension Ocp1Connection {
 
   func sendKeepAlive() async throws {
     try await sendMessage(
-      Ocp1KeepAlive.message(interval: heartbeatTime),
+      Ocp1KeepAlive.message(interval: effectiveHeartbeatTime),
       type: .ocaKeepAlive
     )
   }

@@ -99,7 +99,7 @@ public struct OcaEvent: Codable, Hashable, Equatable, Sendable, CustomStringConv
   }
 }
 
-public enum OcaPropertyChangeType: OcaUint8, Codable, Equatable, Sendable {
+public enum OcaPropertyChangeType: OcaUint8, Codable, Equatable, Sendable, CaseIterable {
   case currentChanged = 1
   case minChanged = 2
   case maxChanged = 3

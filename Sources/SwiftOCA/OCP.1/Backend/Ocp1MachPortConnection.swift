@@ -129,7 +129,7 @@ public final class Ocp1MachPortConnection: Ocp1Connection {
     try await super.disconnectDevice()
   }
 
-  override public func read(_ length: Int) async throws -> Data {
+  override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     guard let handle = clientHandle, let queue = receiveQueue else {
       throw Ocp1Error.notConnected
     }

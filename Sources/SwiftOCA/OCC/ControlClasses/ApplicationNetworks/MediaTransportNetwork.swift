@@ -94,7 +94,11 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
   public func getSourceConnector(_ id: OcaMediaConnectorID) async throws
     -> OcaMediaSourceConnector
   {
-    try await sendCommandRrq(methodID: OcaMethodID("3.10"), parameters: id)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.10"),
+      parameters: id,
+      parameterNames: ["ID"]
+    )
   }
 
   public func getSinkConnectors() async throws -> [OcaMediaSinkConnector] {
@@ -102,7 +106,11 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
   }
 
   public func getSinkConnector(_ id: OcaMediaConnectorID) async throws -> OcaMediaSinkConnector {
-    try await sendCommandRrq(methodID: OcaMethodID("3.12"), parameters: id)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.12"),
+      parameters: id,
+      parameterNames: ["ID"]
+    )
   }
 
   public func getConnectorsStatuses() async throws -> [OcaMediaConnectorStatus] {
@@ -112,7 +120,11 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
   public func getConnectorStatus(_ id: OcaMediaConnectorID) async throws
     -> OcaMediaConnectorStatus
   {
-    try await sendCommandRrq(methodID: OcaMethodID("3.14"), parameters: id)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.14"),
+      parameters: id,
+      parameterNames: ["ConnectorID"]
+    )
   }
 
   public struct AddSourceConnectorParameters: Ocp1ParametersReflectable {
@@ -230,6 +242,10 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
   }
 
   public func deleteConnector(_ id: OcaMediaConnectorID) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.24"), parameters: id)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.24"),
+      parameters: id,
+      parameterNames: ["ID"]
+    )
   }
 }

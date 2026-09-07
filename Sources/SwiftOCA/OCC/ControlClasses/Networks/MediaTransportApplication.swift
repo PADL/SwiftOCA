@@ -150,7 +150,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   public func delete(port id: OcaPortID) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.2"),
-      parameters: id
+      parameters: id,
+      parameterNames: ["ID"]
     )
   }
 
@@ -203,14 +204,16 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   public func deletePortClockMapEntry(portID: OcaPortID) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.9"),
-      parameters: portID
+      parameters: portID,
+      parameterNames: ["ID"]
     )
   }
 
   public func get(portID: OcaPortID) async throws -> OcaPortClockMapEntry {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.10"),
-      parameters: portID
+      parameters: portID,
+      parameterNames: ["ID"]
     )
   }
 

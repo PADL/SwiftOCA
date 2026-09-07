@@ -23,33 +23,67 @@ import Foundation
 #endif
 import Logging
 @_spi(SwiftOCAPrivate) import SwiftOCA
+import Synchronization
 
-/// Event parameters that are encoded on demand, so a recipient that only needs the event
-/// never pays for encoding them.
+/// Event parameters that are encoded on demand, in the format of whichever controller
+/// receives them, so a recipient that only needs the event never pays for encoding
+/// them. Encoding happens on each access: a controller's fan-out asks for one format
+/// for all of its own subscriptions, so there is little to memoise and nothing here
+/// needs synchronising.
 public struct OcaEventParameters: Sendable {
-  private let _eventID: OcaEventID
-  private let _encode: @Sendable () throws -> Data
+  private let _encode: @Sendable (OcaParameterFormat) throws -> Data
 
-  init(eventID: OcaEventID, _ encode: @escaping @Sendable () throws -> Data) {
-    _eventID = eventID
+  /// The property a property-changed event refers to, if known; lets a controller
+  /// filter per-property subscriptions without decoding the parameters.
+  public let propertyID: OcaPropertyID?
+
+  init(
+    _ encode: @escaping @Sendable (OcaParameterFormat) throws -> Data,
+    propertyID: OcaPropertyID?
+  ) {
     _encode = encode
+    self.propertyID = propertyID
   }
 
-  init(eventID: OcaEventID, _ encoded: Data) {
-    _eventID = eventID
-    _encode = { encoded }
+  init(_ value: OcaPropertyChangedEventData<some Codable & Sendable>) {
+    self.init({ try OcaEventDataCoding.encode(value, format: $0) }, propertyID: value.propertyID)
   }
 
-  /// OCP.1 encoding of the parameters; each access encodes afresh
+  init(_ value: some Codable & Sendable) {
+    self.init({ try OcaEventDataCoding.encode(value, format: $0) }, propertyID: nil)
+  }
+
+  /// Pre-encoded OCP.1 parameters. A property-changed event's property ID is read from
+  /// the encoding so per-property filtering still works.
+  init(_ encoded: Data, event: OcaEvent? = nil) {
+    let propertyID: OcaPropertyID? = if event?.eventID == OcaPropertyChangedEventID {
+      try? OcaEventDataCoding.propertyID(from: encoded, format: .ocp1)
+    } else {
+      nil
+    }
+    self.init({ format in
+      guard format == .ocp1 || encoded.isEmpty else {
+        throw Ocp1Error.unsupportedControlProtocol
+      }
+      return encoded
+    }, propertyID: propertyID)
+  }
+
+  /// OCP.1 encoding of the parameters
   public var encoded: Data {
-    get throws { try _encode() }
+    get throws { try encoded(as: .ocp1) }
+  }
+
+  /// The parameters in `format`, encoded on each access.
+  public func encoded(as format: OcaParameterFormat = .ocp1) throws -> Data {
+    try _encode(format)
   }
 
   /// The ID of the property that changed; throws for any event but PropertyChanged.
   public var changedPropertyID: OcaPropertyID {
     get throws {
-      guard _eventID == OcaPropertyChangedEventID else { throw Ocp1Error.unhandledEvent }
-      return try OcaAnyPropertyChangedEventData(data: encoded).propertyID
+      guard let propertyID else { throw Ocp1Error.unhandledEvent }
+      return propertyID
     }
   }
 }
@@ -212,6 +246,8 @@ public actor OcaDevice {
         throw Ocp1Error.status(.badONo)
       }
 
+      // the response format comes from the controller, which knows the protocol it
+      // speaks; nothing is carried implicitly
       if command.methodID.defLevel > 1,
          let peerToPeerObject = object as? any OcaGroupPeerToPeerMember
       {
@@ -250,21 +286,28 @@ public actor OcaDevice {
     _ event: OcaEvent,
     parameters: OcaPropertyChangedEventData<some Codable & Sendable>
   ) async throws {
-    try await _notifySubscribers(
-      event,
-      parameters: OcaEventParameters(eventID: event.eventID) { try Ocp1Encoder().encode(parameters) as Data }
-    )
+    try await _notifySubscribers(event, parameters: OcaEventParameters(parameters))
   }
 
+  /// `parameters` is any event-specific data structure; it is encoded per controller.
+  public func notifySubscribers(
+    _ event: OcaEvent,
+    eventData parameters: some Codable & Sendable
+  ) async throws {
+    try await _notifySubscribers(event, parameters: OcaEventParameters(parameters))
+  }
+
+  /// OCP.1-encoded parameters; OCP.2 controllers cannot be notified from these unless
+  /// they are empty.
   public func notifySubscribers(
     _ event: OcaEvent,
     parameters: Data
   ) async throws {
-    try await _notifySubscribers(event, parameters: OcaEventParameters(eventID: event.eventID, parameters))
+    try await _notifySubscribers(event, parameters: OcaEventParameters(parameters, event: event))
   }
 
   func notifySubscribers(_ event: OcaEvent) async throws {
-    try await _notifySubscribers(event, parameters: OcaEventParameters(eventID: event.eventID, Data()))
+    try await _notifySubscribers(event, parameters: OcaEventParameters(Data(), event: event))
   }
 
   /// Parameters are only encoded for a recipient that asks for them: the event delegate on
@@ -291,7 +334,6 @@ public actor OcaDevice {
     case .normal:
       let subscribers = await _subscribers(to: event)
       guard !subscribers.isEmpty else { return }
-      let parameters = try parameters.encoded
       await withDiscardingTaskGroup { group in
         for subscriber in subscribers {
           group.addTask {

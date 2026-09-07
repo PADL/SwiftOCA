@@ -72,6 +72,44 @@ public extension Ocp1Connection {
     subscriptions[event] != nil
   }
 
+  /// OCP.2 supports only EV2 subscriptions; OCP.1 keeps the EV1 form for the
+  /// widest device compatibility.
+  private func _addSubscription(_ event: OcaEvent) async throws {
+    switch controlProtocol {
+    case .ocp1:
+      try await subscriptionManager.addSubscription(
+        event: event,
+        subscriber: subscriber,
+        subscriberContext: OcaBlob(),
+        notificationDeliveryMode: .normal,
+        destinationInformation: OcaNetworkAddress()
+      )
+    #if NonEmbeddedBuild
+    case .ocp2:
+      try await subscriptionManager.addSubscription2(
+        event: event,
+        notificationDeliveryMode: .normal,
+        destinationInformation: OcaNetworkAddress()
+      )
+    #endif
+    }
+  }
+
+  private func _removeSubscription(_ event: OcaEvent) async throws {
+    switch controlProtocol {
+    case .ocp1:
+      try await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
+    #if NonEmbeddedBuild
+    case .ocp2:
+      try await subscriptionManager.removeSubscription2(
+        event: event,
+        notificationDeliveryMode: .normal,
+        destinationInformation: OcaNetworkAddress()
+      )
+    #endif
+    }
+  }
+
   func isSubscribed(_ cancellable: SubscriptionCancellable) -> Bool {
     guard let eventSubscriptions = subscriptions[cancellable.event] else { return false }
     return eventSubscriptions.subscriptions.contains(cancellable)
@@ -97,13 +135,7 @@ public extension Ocp1Connection {
       subscriptions[event] = eventSubscriptions
 
       do {
-        try await subscriptionManager.addSubscription(
-          event: event,
-          subscriber: subscriber,
-          subscriberContext: OcaBlob(),
-          notificationDeliveryMode: .normal,
-          destinationInformation: OcaNetworkAddress()
-        )
+        try await _addSubscription(event)
       } catch {
         // roll back, otherwise isSubscribed(event:) reports true with nothing
         // registered on the device and callers never retry
@@ -131,10 +163,7 @@ public extension Ocp1Connection {
     logger.trace("removeSubscription: removed \(cancellable) from subscription set")
     if eventSubscriptions.subscriptions.isEmpty {
       subscriptions[cancellable.event] = nil
-      try await subscriptionManager.removeSubscription(
-        event: cancellable.event,
-        subscriber: subscriber
-      )
+      try await _removeSubscription(cancellable.event)
       logger.trace("removeSubscription: removed OCA subscription for \(cancellable.event)")
     }
   }
@@ -143,7 +172,7 @@ public extension Ocp1Connection {
     await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
       for event in subscribedEvents {
         taskGroup.addTask { [self] in
-          try? await subscriptionManager.removeSubscription(event: event, subscriber: subscriber)
+          try? await _removeSubscription(event)
         }
       }
     }
@@ -156,13 +185,7 @@ public extension Ocp1Connection {
       for event in events {
         taskGroup.addTask { [self] in
           do {
-            try await subscriptionManager.addSubscription(
-              event: event,
-              subscriber: subscriber,
-              subscriberContext: OcaBlob(),
-              notificationDeliveryMode: .normal,
-              destinationInformation: OcaNetworkAddress()
-            )
+            try await _addSubscription(event)
             logger.trace("\(self): addSubscriptions: refreshed \(event)")
           } catch is CancellationError {
             logger.debug("\(self): addSubscriptions: cancelled refreshing \(event)")

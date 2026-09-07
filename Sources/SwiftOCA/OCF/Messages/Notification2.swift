@@ -53,7 +53,12 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
   let notificationSize: OcaUint32
   let event: OcaEvent
   let notificationType: Ocp1Notification2Type
+  /// Event data (`.event`) or an OCP.1-encoded `Ocp1Notification2ExceptionData`
+  /// (`.exception`). Event data is in `dataFormat`.
   let data: Data
+  /// The marshaling of `data` for an `.event` notification. Exception data is always
+  /// OCP.1-encoded, whatever the framing, so `throwIfException` works for both.
+  package let dataFormat: OcaParameterFormat
 
   public var messageSize: OcaUint32 { notificationSize }
 
@@ -63,10 +68,52 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
     notificationType: Ocp1Notification2Type,
     data: Data
   ) {
+    self.init(
+      notificationSize: notificationSize,
+      event: event,
+      notificationType: notificationType,
+      data: data,
+      dataFormat: .ocp1
+    )
+  }
+
+  package init(
+    notificationSize: OcaUint32 = 0,
+    event: OcaEvent,
+    notificationType: Ocp1Notification2Type,
+    data: Data,
+    dataFormat: OcaParameterFormat
+  ) {
     self.notificationSize = notificationSize
     self.event = event
     self.notificationType = notificationType
     self.data = data
+    self.dataFormat = dataFormat
+  }
+
+  enum CodingKeys: CodingKey {
+    case notificationSize
+    case event
+    case notificationType
+    case data
+  }
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.init(
+      notificationSize: try container.decode(OcaUint32.self, forKey: .notificationSize),
+      event: try container.decode(OcaEvent.self, forKey: .event),
+      notificationType: try container.decode(Ocp1Notification2Type.self, forKey: .notificationType),
+      data: try container.decode(Data.self, forKey: .data)
+    )
+  }
+
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(notificationSize, forKey: .notificationSize)
+    try container.encode(event, forKey: .event)
+    try container.encode(notificationType, forKey: .notificationType)
+    try container.encode(data, forKey: .data)
   }
 
   func throwIfException() throws {
@@ -90,6 +137,7 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
     event = try OcaEvent(parsing: &input)
     notificationType = try Ocp1Notification2Type(parsing: &input)
     data = Data(parsingRemainingBytes: &input)
+    dataFormat = .ocp1
   }
 
   func encode(into bytes: inout [UInt8]) {

@@ -72,6 +72,10 @@ open class OcaSecurityManager: OcaManager, @unchecked Sendable {
   }
 
   public func deletePreSharedKey(identity: OcaString) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: identity)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.5"),
+      parameters: identity,
+      parameterNames: ["Identity"]
+    )
   }
 }

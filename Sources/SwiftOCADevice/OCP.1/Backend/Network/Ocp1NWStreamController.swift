@@ -50,6 +50,7 @@ package actor Ocp1NWStreamController: Ocp1ControllerInternal, CustomStringConver
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: Ocp1NWStreamDeviceEndpoint?
+  package let controlProtocol: OcaControlProtocol
 
   private let connection: NWConnection
   private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
@@ -67,11 +68,17 @@ package actor Ocp1NWStreamController: Ocp1ControllerInternal, CustomStringConver
 
   init(endpoint: Ocp1NWStreamDeviceEndpoint, connection: NWConnection) {
     self.endpoint = endpoint
+    controlProtocol = endpoint.controlProtocol
     self.connection = connection
     flags = endpoint.controllerFlags
     connectionPrefix = endpoint.controllerConnectionPrefix
     identifier = Self.makeIdentifier(from: connection)
-    _messages = Self.makeMessagesStream(on: connection, timeout: endpoint.timeout)
+    _messages = Self.makeMessagesStream(
+      on: connection,
+      timeout: endpoint.timeout,
+      controlProtocol: endpoint.controlProtocol,
+      maximumPduSize: endpoint.maximumPduSize
+    )
   }
 
   package func sendOcp1EncodedData(_ data: Data) async throws {
@@ -135,32 +142,41 @@ private extension Ocp1NWStreamController {
 
   static func makeMessagesStream(
     on connection: NWConnection,
-    timeout: Duration
+    timeout: Duration,
+    controlProtocol: OcaControlProtocol,
+    maximumPduSize: Int
   ) -> AsyncThrowingStream<Ocp1MessageList, Error> {
     // one timer for every read on the connection, rather than a sleep per message that the
     // runtime would keep for the whole timeout after the message arrived
     let deadlines = DeadlineTimer()
+    let reader = controlProtocol.makeReader(isMessageOriented: false, maximumPduSize: maximumPduSize)
     return AsyncThrowingStream { () async throws -> Ocp1MessageList? in
       try await deadlines.withThrowingTimeout(of: timeout) {
-        try await OcaDevice.asyncReceiveMessages { count in
-          try await connection.receiveExactly(count)
-        }
+        try await OcaDevice.asyncReceiveMessages(
+          reader: reader,
+          controlProtocol: controlProtocol,
+          read: { count, awaitingAllRead in
+            try await connection.receive(count, awaitingAllRead: awaitingAllRead)
+          }
+        )
       }
     }
   }
 }
 
 extension NWConnection {
-  /// Maps graceful peer-close to `.notConnected`.
-  fileprivate func receiveExactly(_ count: Int) async throws -> Data {
+  /// Exactly `count` bytes when `awaitingAllRead`, else between 1 and `count` as soon
+  /// as any arrive. Maps graceful peer-close to `.notConnected`.
+  fileprivate func receive(_ count: Int, awaitingAllRead: Bool) async throws -> Data {
     try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
-      receive(minimumIncompleteLength: count, maximumLength: count) { data, _, isComplete, error in
+      receive(
+        minimumIncompleteLength: awaitingAllRead ? count : 1,
+        maximumLength: count
+      ) { data, _, _, error in
         if let error {
           continuation.resume(throwing: error)
-        } else if let data, data.count == count {
+        } else if let data, awaitingAllRead ? data.count == count : !data.isEmpty {
           continuation.resume(returning: data)
-        } else if isComplete {
-          continuation.resume(throwing: Ocp1Error.notConnected)
         } else {
           continuation.resume(throwing: Ocp1Error.notConnected)
         }

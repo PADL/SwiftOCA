@@ -382,16 +382,20 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddress
 
 public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
   override public var connectionPrefix: String {
-    "\(OcaTcpConnectionPrefix)/\(_currentPresentationAddress)"
+    let prefix = _connectionPrefix(ocp1: OcaTcpConnectionPrefix, ocp2: OcaJsonTcpConnectionPrefix)
+    return "\(prefix)/\(_currentPresentationAddress)"
   }
 
   override public var isDatagram: Bool { false }
 
   override var socketType: SocketType { .stream }
 
-  override public func read(_ length: Int) async throws -> Data {
+  override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     try await withMappedError { socket in
-      try await Data(socket.read(bytes: length))
+      if awaitingAllRead {
+        return try await Data(socket.read(bytes: length))
+      }
+      return try await Data(socket.read(atMost: length))
     }
   }
 
@@ -404,7 +408,8 @@ public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
 
 public final class Ocp1FlyingSocksDatagramConnection: Ocp1FlyingSocksConnection {
   override public var connectionPrefix: String {
-    "\(OcaUdpConnectionPrefix)/\(_currentPresentationAddress)"
+    let prefix = _connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
+    return "\(prefix)/\(_currentPresentationAddress)"
   }
 
   override public var heartbeatTime: Duration {
@@ -415,7 +420,7 @@ public final class Ocp1FlyingSocksDatagramConnection: Ocp1FlyingSocksConnection 
 
   override var socketType: SocketType { .datagram }
 
-  override public func read(_ length: Int) async throws -> Data {
+  override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     try await withMappedError { socket in
       try await Data(socket.read(atMost: Ocp1MaximumDatagramPduSize))
     }

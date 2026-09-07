@@ -30,5 +30,6 @@ Sendable {
 }
 
 protocol OcaPropertyChangeEventNotifiable: OcaPropertySubjectRepresentable {
-  func onEvent(_ object: OcaRoot, event: OcaEvent, eventData: Data) throws
+  /// `eventData` is in `format`: OCP.1 bytes or an OCP.2 JSON object.
+  func onEvent(_ object: OcaRoot, event: OcaEvent, eventData: Data, format: OcaParameterFormat) throws
 }

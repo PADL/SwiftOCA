@@ -223,7 +223,7 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
     try await super.disconnectDevice()
   }
 
-  override public func read(_ length: Int) async throws -> Data {
+  override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     guard let socket = _socket.withLock({ $0 }) else {
       throw Ocp1Error.notConnected
     }

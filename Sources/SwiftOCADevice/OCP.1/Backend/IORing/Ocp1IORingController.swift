@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -85,6 +85,7 @@ package actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStr
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: Ocp1IORingStreamDeviceEndpoint?
+  package let controlProtocol: OcaControlProtocol
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
@@ -112,6 +113,7 @@ package actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStr
     _socket = .init(socket)
     self.notificationSocket = notificationSocket
     self.endpoint = endpoint
+    controlProtocol = endpoint.controlProtocol
 
     (_messages, _messagesContinuation) = AsyncThrowingStream.makeStream(
       of: Ocp1MessageList.self,
@@ -119,20 +121,26 @@ package actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStr
     )
 
     peerAddress = try AnySocketAddress(socket.peerAddress)
+    let isJson = endpoint.controlProtocol != .ocp1
     if peerAddress.family == AF_LOCAL {
-      connectionPrefix = OcaLocalConnectionPrefix
+      connectionPrefix = isJson ? OcaJsonLocalConnectionPrefix : OcaLocalConnectionPrefix
     } else {
-      connectionPrefix = OcaTcpConnectionPrefix
+      connectionPrefix = isJson ? OcaJsonTcpConnectionPrefix : OcaTcpConnectionPrefix
     }
 
+    let controlProtocol = endpoint.controlProtocol
+    let maximumPduSize = endpoint.maximumPduSize
     receiveMessageTask = Task { [weak self] in
+      // one reader for the life of the connection: it buffers bytes between PDUs
+      let reader = controlProtocol.makeReader(isMessageOriented: false, maximumPduSize: maximumPduSize)
       do {
         repeat {
           guard !Task.isCancelled, let socket = self?.socket else { break }
-          let messages = try await OcaDevice.receiveMessages { try await Data(socket.read(
-            count: $0,
-            awaitingAllRead: true
-          )) }
+          let messages = try await OcaDevice.asyncReceiveMessages(
+            reader: reader,
+            controlProtocol: controlProtocol,
+            read: { try await Data(socket.read(count: $0, awaitingAllRead: $1)) }
+          )
           self?._messagesContinuation.yield(messages)
         } while true
       } catch {
@@ -224,9 +232,16 @@ private extension Ocp1NetworkAddress {
   }
 }
 
-package actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1ControllerDatagramSemantics {
-  package nonisolated var flags: OcaControllerFlags { .supportsLocking }
-  package nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
+package actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate,
+  Ocp1ControllerDatagramSemantics
+{
+  package nonisolated var flags: OcaControllerFlags {
+    .supportsLocking
+  }
+
+  package nonisolated var connectionPrefix: String {
+    controlProtocol == .ocp1 ? OcaUdpConnectionPrefix : OcaJsonUdpConnectionPrefix
+  }
 
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
@@ -237,6 +252,7 @@ package actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1Con
 
   package private(set) var isOpen: Bool = false
   package weak var endpoint: Ocp1IORingDatagramDeviceEndpoint?
+  package let controlProtocol: OcaControlProtocol
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
     AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
@@ -247,6 +263,7 @@ package actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate, Ocp1Con
     peerAddress: AnySocketAddress
   ) {
     self.endpoint = endpoint
+    controlProtocol = endpoint.controlProtocol
     self.peerAddress = peerAddress
   }
 

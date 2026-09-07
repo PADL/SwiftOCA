@@ -14,6 +14,12 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
 public enum OcaResetCause: OcaUint8, Sendable, Codable, CaseIterable {
   case powerOn = 0
   case internalError = 1
@@ -27,7 +33,8 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.2")
+    getMethodID: OcaMethodID("3.2"),
+    ocp2Name: "GUID"
   )
   public var modelGUID: OcaProperty<OcaModelGUID>.PropertyValue
 
@@ -39,34 +46,39 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.3"),
-    getMethodID: OcaMethodID("3.6")
+    getMethodID: OcaMethodID("3.6"),
+    ocp2Name: "Description"
   )
   public var modelDescription: OcaProperty<OcaModelDescription>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.4"),
-    setMethodID: OcaMethodID("3.5")
+    setMethodID: OcaMethodID("3.5"),
+    ocp2Name: "Name"
   )
   public var deviceName: OcaProperty<OcaString>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.5"),
-    getMethodID: OcaMethodID("3.1")
+    getMethodID: OcaMethodID("3.1"),
+    ocp2Name: "OcaVersion"
   )
   public var version: OcaProperty<OcaUint16>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.6"),
     getMethodID: OcaMethodID("3.7"),
-    setMethodID: OcaMethodID("3.8")
+    setMethodID: OcaMethodID("3.8"),
+    ocp2Name: "Role"
   )
   public var deviceRole: OcaProperty<OcaString>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.9"),
-    setMethodID: OcaMethodID("3.10")
+    setMethodID: OcaMethodID("3.10"),
+    ocp2Name: "Code"
   )
   public var userInventoryCode: OcaProperty<OcaString>.PropertyValue
 
@@ -128,6 +140,12 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
        key.8, key.9, key.10, key.11, key.12, key.13, key.14, key.15]
     }
 
+    /// `bytes.count` must be 16.
+    private static func _resetKey(from bytes: [OcaUint8]) -> ResetKey {
+      (bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
+       bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15])
+    }
+
     private static func _decodeResetKey(
       from container: inout UnkeyedDecodingContainer
     ) throws -> ResetKey {
@@ -162,6 +180,16 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
 
     public init(from decoder: Decoder) throws {
       let container = try decoder.container(keyedBy: CodingKeys.self)
+      #if NonEmbeddedBuild
+      if decoder._isOcp2Decoder {
+        // OcaBlobFixedLen<16>: base64
+        let bytes = try container.decode(Data.self, forKey: .key)
+        guard bytes.count == 16 else { throw Ocp1Error.status(.badFormat) }
+        key = Self._resetKey(from: Array(bytes))
+        address = try container.decode(OcaNetworkAddress.self, forKey: .address)
+        return
+      }
+      #endif
       var keyContainer = try container.nestedUnkeyedContainer(forKey: .key)
       key = try Self._decodeResetKey(from: &keyContainer)
       address = try container.decode(OcaNetworkAddress.self, forKey: .address)
@@ -169,6 +197,13 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
 
     public func encode(to encoder: Encoder) throws {
       var container = encoder.container(keyedBy: CodingKeys.self)
+      #if NonEmbeddedBuild
+      if encoder._isOcp2Encoder {
+        try container.encode(Data(Self._resetKeyToBytes(key)), forKey: .key)
+        try container.encode(address, forKey: .address)
+        return
+      }
+      #endif
       var keyContainer = container.nestedUnkeyedContainer(forKey: .key)
       try Self._encodeResetKey(key, to: &keyContainer)
       try container.encode(address, forKey: .address)
@@ -207,7 +242,8 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.14"),
-    getMethodID: OcaMethodID("3.20")
+    getMethodID: OcaMethodID("3.20"),
+    ocp2Name: "ID"
   )
   public var deviceRevisionID: OcaProperty<OcaString>.PropertyValue
 
@@ -225,20 +261,23 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.17"),
-    getMethodID: OcaMethodID("3.23")
+    getMethodID: OcaMethodID("3.23"),
+    ocp2Name: "State"
   )
   public var operationalState: OcaProperty<OcaDeviceOperationalState>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.18"),
     getMethodID: OcaMethodID("3.24"),
-    setMethodID: OcaMethodID("3.25")
+    setMethodID: OcaMethodID("3.25"),
+    ocp2Name: "Enabled"
   )
   public var loggingEnabled: OcaProperty<OcaBoolean>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.19"),
-    getMethodID: OcaMethodID("3.26")
+    getMethodID: OcaMethodID("3.26"),
+    ocp2Name: "ONo"
   )
   public var mostRecentPatchDatasetONo: OcaProperty<OcaONo>.PropertyValue
 
@@ -247,10 +286,18 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
   }
 
   public func set(deviceName: String) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: deviceName)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.5"),
+      parameters: deviceName,
+      parameterNames: ["Name"]
+    )
   }
 
   public func applyPatch(datasetONo: OcaONo) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.27"), parameters: datasetONo)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.27"),
+      parameters: datasetONo,
+      parameterNames: ["ONo"]
+    )
   }
 }

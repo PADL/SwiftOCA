@@ -52,6 +52,10 @@ protocol Ocp1MapRepresentable<Key, Value>: Collection, Codable {
   associatedtype Value: Codable
 
   init(from: Ocp1DecoderImpl) throws
+  #if NonEmbeddedBuild
+  /// OCP.2 marshals a map as an array of `[key, value]` pairs.
+  init(ocp2State: Ocp2DecodingState, json: Any, codingPath: [any CodingKey]) throws
+  #endif
   func withMapItems(_ block: (Key, Value) throws -> ()) rethrows
 }
 
@@ -66,6 +70,25 @@ extension Dictionary: Ocp1MapRepresentable where Key: Codable & Hashable, Value:
     let mapItemSet = try Set<Ocp1MapItem<Key, Value>>(from: ocp1Decoder)
     self.init(mapItemSet: mapItemSet)
   }
+
+  #if NonEmbeddedBuild
+  init(ocp2State state: Ocp2DecodingState, json: Any, codingPath: [any CodingKey]) throws {
+    guard let items = json as? [Any] else {
+      throw Ocp1Error.status(.badFormat)
+    }
+    var dictionary = [Key: Value]()
+    dictionary.reserveCapacity(items.count)
+    for item in items {
+      guard let pair = item as? [Any], pair.count == 2 else {
+        throw Ocp1Error.status(.badFormat)
+      }
+      let key = try state.decode(Key.self, from: pair[0], codingPath: codingPath)
+      let value = try state.decode(Value.self, from: pair[1], codingPath: codingPath)
+      dictionary[key] = value
+    }
+    self = dictionary
+  }
+  #endif
 
   func withMapItems(_ block: (Key, Value) throws -> ()) rethrows {
     for (key, value) in self {

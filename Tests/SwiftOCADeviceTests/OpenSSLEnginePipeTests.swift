@@ -64,6 +64,7 @@ final class OpenSSLEnginePipeTests: XCTestCase {
         )
         return try await engine.read(
           payload.count,
+          awaitingAllRead: true,
           read: { c in try await stream.read(count: c, awaitingAllRead: false) },
           write: { d in try await stream.write(d) }
         )
@@ -81,6 +82,7 @@ final class OpenSSLEnginePipeTests: XCTestCase {
         // Echo whatever we receive.
         let inbound = try await engine.read(
           payload.count,
+          awaitingAllRead: true,
           read: { c in try await stream.read(count: c, awaitingAllRead: false) },
           write: { d in try await stream.write(d) }
         )
@@ -221,6 +223,7 @@ final class OpenSSLEnginePipeTests: XCTestCase {
         )
         return try await engine.read(
           payload.count,
+          awaitingAllRead: true,
           read: { c in try await stream.read(count: c, awaitingAllRead: false) },
           write: { d in try await stream.write(d) }
         )
@@ -236,6 +239,7 @@ final class OpenSSLEnginePipeTests: XCTestCase {
         )
         let inbound = try await engine.read(
           payload.count,
+          awaitingAllRead: true,
           read: { c in try await stream.read(count: c, awaitingAllRead: false) },
           write: { d in try await stream.write(d) }
         )
@@ -301,6 +305,7 @@ final class OpenSSLEnginePipeTests: XCTestCase {
         )
         return try await engine.read(
           payload.count,
+          awaitingAllRead: true,
           read: { c in try await stream.read(count: c, awaitingAllRead: false) },
           write: { d in try await stream.write(d) }
         )
@@ -354,6 +359,7 @@ final class OpenSSLEnginePipeTests: XCTestCase {
         )
         return try await engine.read(
           payload.count,
+          awaitingAllRead: true,
           read: { c in try await stream.read(count: c, awaitingAllRead: false) },
           write: { d in try await stream.write(d) }
         )

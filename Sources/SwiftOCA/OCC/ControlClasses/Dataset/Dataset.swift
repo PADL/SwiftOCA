@@ -71,7 +71,8 @@ Sendable {
   public func openRead(lockState: OcaLockState) async throws -> (OcaUint64, OcaIOSessionHandle) {
     let result: OpenReadParameters = try await sendCommandRrq(
       methodID: OcaMethodID("2.1"),
-      parameters: lockState
+      parameters: lockState,
+      parameterNames: ["RequestedLockState"]
     )
     return (result.datasetSize, result.handle)
   }
@@ -90,7 +91,8 @@ Sendable {
   public func openWrite(lockState: OcaLockState) async throws -> (OcaUint64, OcaIOSessionHandle) {
     let result: OpenWriteParameters = try await sendCommandRrq(
       methodID: OcaMethodID("2.2"),
-      parameters: lockState
+      parameters: lockState,
+      parameterNames: ["RequestedLockState"]
     )
     return (result.maxPartSize, result.handle)
   }
@@ -98,7 +100,8 @@ Sendable {
   public func close(handle: OcaIOSessionHandle) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("2.3"),
-      parameters: handle
+      parameters: handle,
+      parameterNames: ["Handle"]
     )
   }
 
@@ -159,7 +162,8 @@ Sendable {
   public func clear(handle: OcaIOSessionHandle) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("2.6"),
-      parameters: handle
+      parameters: handle,
+      parameterNames: ["Handle"]
     )
   }
 

@@ -1,0 +1,86 @@
+//
+// Copyright (c) 2026 PADL Software Pty Ltd
+//
+// Licensed under the Apache License, Version 2.0 (the License);
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
+/// Event data as delivered by a notification: OCP.1 bytes or an OCP.2 JSON object.
+package enum OcaEventDataCoding {
+  /// Decodes event-specific data in `format`.
+  package static func decode<T: Decodable>(
+    _ type: T.Type,
+    from data: Data,
+    format: OcaParameterFormat
+  ) throws -> T {
+    switch format {
+    case .ocp1:
+      return try Ocp1Decoder().decode(type, from: data)
+    case .ocp2:
+      #if NonEmbeddedBuild
+      return try Ocp2Decoder().decodeValue(type, from: Ocp2JSON.parse(data))
+      #else
+      throw Ocp1Error.unsupportedControlProtocol
+      #endif
+    }
+  }
+
+  /// The property a property-changed event refers to, without decoding its value.
+  package static func propertyID(from data: Data, format: OcaParameterFormat) throws -> OcaPropertyID {
+    switch format {
+    case .ocp1:
+      return try OcaPropertyID(bytes: data)
+    case .ocp2:
+      #if NonEmbeddedBuild
+      guard let object = try Ocp2JSON.parse(data) as? [String: Any],
+            let propertyID = Ocp2Decoder.member(named: "PropertyID", in: object)
+      else {
+        throw Ocp1Error.status(.badFormat)
+      }
+      return try Ocp2Decoder().decodeValue(OcaPropertyID.self, from: propertyID)
+      #else
+      throw Ocp1Error.unsupportedControlProtocol
+      #endif
+    }
+  }
+
+  /// Encodes event-specific data in `format`.
+  package static func encode(_ value: some Encodable, format: OcaParameterFormat) throws -> Data {
+    switch format {
+    case .ocp1:
+      return try Ocp1Encoder().encode(value)
+    case .ocp2:
+      #if NonEmbeddedBuild
+      return try Ocp2JSON.serialize(Ocp2Encoder().encodeValue(value))
+      #else
+      throw Ocp1Error.unsupportedControlProtocol
+      #endif
+    }
+  }
+}
+
+package extension OcaControlProtocol {
+  var parameterFormat: OcaParameterFormat {
+    switch self {
+    case .ocp1: .ocp1
+    #if NonEmbeddedBuild
+    case .ocp2: .ocp2
+    #endif
+    }
+  }
+}

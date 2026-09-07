@@ -272,7 +272,7 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
 
   #if canImport(dnssd)
   override public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
-    .udp
+    OcaNetworkAdvertisingServiceType.udp.withControlProtocol(controlProtocol)
   }
   #endif
 
