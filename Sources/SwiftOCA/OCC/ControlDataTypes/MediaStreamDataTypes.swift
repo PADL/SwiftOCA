@@ -86,6 +86,25 @@ public struct OcaMediaStreamEndpoint: Codable, Sendable, Equatable {
     self.adaptationData = adaptationData
     self.redundantSetID = redundantSetID
   }
+
+  // AlignmentLevel is NaN when unused, so compare it bitwise.
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.idInternal == rhs.idInternal &&
+      lhs.idExternal == rhs.idExternal &&
+      lhs.direction == rhs.direction &&
+      lhs.userLabel == rhs.userLabel &&
+      lhs.networkAssignmentIDs == rhs.networkAssignmentIDs &&
+      lhs.streamModeCapabilityIDs == rhs.streamModeCapabilityIDs &&
+      lhs.clockONo == rhs.clockONo &&
+      lhs.channelMapDynamic == rhs.channelMapDynamic &&
+      lhs.channelMap == rhs.channelMap &&
+      lhs.alignmentLevel.bitPattern == rhs.alignmentLevel.bitPattern &&
+      lhs.currentStreamMode == rhs.currentStreamMode &&
+      lhs.securityType == rhs.securityType &&
+      lhs.streamCastMode == rhs.streamCastMode &&
+      lhs.adaptationData == rhs.adaptationData &&
+      lhs.redundantSetID == rhs.redundantSetID
+  }
 }
 
 public struct OcaMediaStreamEndpointStatus: Codable, Sendable, Equatable {

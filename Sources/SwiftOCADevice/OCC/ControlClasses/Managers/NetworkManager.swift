@@ -33,6 +33,18 @@ open class OcaNetworkManager: OcaManager {
   )
   public var mediaTransportNetworks = [OcaMediaTransportNetwork]()
 
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.5"),
+    getMethodID: OcaMethodID("3.5")
+  )
+  public var networkInterfaces = [OcaNetworkInterface]()
+
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.6"),
+    getMethodID: OcaMethodID("3.6")
+  )
+  public var networkApplications = [OcaNetworkApplication]()
+
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
       objectNumber: OcaNetworkManagerONo,

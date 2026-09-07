@@ -62,6 +62,19 @@ struct ClassRegistryTests {
       == SwiftOCADevice.OcaPowerSupply.self)
   }
 
+  @Test @OcaDevice
+  func resolvesCM4Classes() throws {
+    let registry = OcaDeviceClassRegistry.shared
+    #expect(try registry.match(classID: OcaClassID("1.6"))
+      == SwiftOCADevice.OcaNetworkInterface.self)
+    #expect(try registry.match(classID: OcaClassID("1.7"))
+      == SwiftOCADevice.OcaNetworkApplication.self)
+    #expect(try registry.match(classID: OcaClassID("1.7.1"))
+      == SwiftOCADevice.OcaMediaTransportApplication.self)
+    #expect(try registry.match(classID: OcaClassID("1.2.20"))
+      == SwiftOCADevice.OcaMediaTransportSessionAgent.self)
+  }
+
   /// an unknown subclass still resolves to the nearest registered superclass
   @Test @OcaDevice
   func fallsBackToSuperclass() throws {

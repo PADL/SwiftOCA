@@ -42,6 +42,18 @@ open class OcaNetworkManager: OcaManager, @unchecked Sendable {
   )
   public var mediaTransportNetworks: OcaListProperty<OcaONo>.PropertyValue
 
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.5"),
+    getMethodID: OcaMethodID("3.5")
+  )
+  public var networkInterfaces: OcaListProperty<OcaONo>.PropertyValue
+
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.6"),
+    getMethodID: OcaMethodID("3.6")
+  )
+  public var networkApplications: OcaListProperty<OcaONo>.PropertyValue
+
   convenience init() {
     self.init(objectNumber: OcaNetworkManagerONo)
   }
