@@ -101,9 +101,9 @@ public struct MilanStreamFormat: Hashable, Sendable {
         encodingTypeList: [MilanAdaptation.aafEncodingType],
         samplingRateList: [sampleRate],
         channelCountList: upTo ? [] : [channelCount],
-        channelCountRange: upTo ? 1...channelCount : 0...0,
+        channelCountRange: OcaInterval(upTo ? 1...channelCount : 0...0),
         packetTimeList: [MilanAdaptation.packetTime],
-        packetTimeRange: 0...0
+        packetTimeRange: OcaInterval(0...0)
       )
     case .crf:
       OcaMediaStreamModeCapability(
@@ -114,9 +114,9 @@ public struct MilanStreamFormat: Hashable, Sendable {
         encodingTypeList: [],
         samplingRateList: [sampleRate],
         channelCountList: [0],
-        channelCountRange: 0...0,
+        channelCountRange: OcaInterval(0...0),
         packetTimeList: [MilanAdaptation.packetTime],
-        packetTimeRange: 0...0
+        packetTimeRange: OcaInterval(0...0)
       )
     }
   }

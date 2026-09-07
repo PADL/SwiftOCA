@@ -483,9 +483,9 @@ final class SwiftOCADeviceTests: XCTestCase {
       encodingTypeList: ["audio/L32"],
       samplingRateList: [48000],
       channelCountList: [],
-      channelCountRange: 1...8,
+      channelCountRange: OcaInterval(1...8),
       packetTimeList: [125e-6],
-      packetTimeRange: 0...0
+      packetTimeRange: OcaInterval(0...0)
     )
     let encodedCapability = Data([
       0x00, 0x01, // id
@@ -495,10 +495,11 @@ final class SwiftOCADeviceTests: XCTestCase {
       0x00, 0x01, 0x00, 0x09, 0x61, 0x75, 0x64, 0x69, 0x6F, 0x2F, 0x4C, 0x33, 0x32,
       0x00, 0x01, 0x47, 0x3B, 0x80, 0x00, // samplingRateList
       0x00, 0x00, // channelCountList
-      0x00, 0x01, 0x00, 0x08, // channelCountRange
+      0x00, 0x01, 0x00, 0x08, 0x00, 0x0C, // channelCountRange
       0x00, 0x01, 0x3F, 0x20, 0x62, 0x4D, 0xD2, 0xF1, 0xA9, 0xFC, // packetTimeList
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // packetTimeRange
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x0C,
     ])
 
     XCTAssertEqual(try Ocp1Encoder().encode(capability), encodedCapability)
@@ -509,14 +510,35 @@ final class SwiftOCADeviceTests: XCTestCase {
   }
 
   func testIntervalEncoding() throws {
-    let interval: OcaInterval<OcaUint16> = 1...8
-    let encodedInterval = Data([0x00, 0x01, 0x00, 0x08])
+    let interval = OcaInterval<OcaUint16>(1...8)
+    let encodedInterval = Data([0x00, 0x01, 0x00, 0x08, 0x00, 0x0C])
 
     XCTAssertEqual(try Ocp1Encoder().encode(interval), encodedInterval)
     XCTAssertEqual(
       try Ocp1Decoder().decode(OcaInterval<OcaUint16>.self, from: encodedInterval),
       interval
     )
+    XCTAssertTrue(interval.contains(8))
+    XCTAssertFalse(interval.contains(0))
+    XCTAssertEqual(Array(1...16)[OcaInterval<Int>(1...8)], [2, 3, 4, 5, 6, 7, 8, 9])
+
+    let halfOpen = OcaInterval<OcaUint16>(1..<8)
+    XCTAssertEqual(
+      try Ocp1Encoder().encode(halfOpen),
+      Data([0x00, 0x01, 0x00, 0x08, 0x00, 0x04])
+    )
+    XCTAssertFalse(halfOpen.contains(8))
+
+    let from = OcaInterval<OcaUint16>(1...)
+    XCTAssertEqual(try Ocp1Encoder().encode(from), Data([0x00, 0x01, 0x00, 0x01, 0x00, 0x06]))
+    XCTAssertNil(from.upperBound)
+    XCTAssertTrue(from.contains(.max))
+
+    let upTo = OcaInterval<OcaUint16>(..<8)
+    XCTAssertEqual(try Ocp1Encoder().encode(upTo), Data([0x00, 0x08, 0x00, 0x08, 0x00, 0x01]))
+    XCTAssertNil(upTo.lowerBound)
+    XCTAssertTrue(upTo.contains(.min))
+    XCTAssertFalse(upTo.contains(8))
   }
 
   func testMACAddressEncoding() throws {
@@ -612,8 +634,8 @@ final class SwiftOCADeviceTests: XCTestCase {
       audioUnits: [MilanAudioUnit(
         name: "Audio Unit",
         clockONo: 0x0A00_0003,
-        inputOcaPortIndexRange: 0...0,
-        outputOcaPortIndexRange: 1...16
+        inputOcaPortIndexRange: OcaInterval(0...0),
+        outputOcaPortIndexRange: OcaInterval(1...16)
       )]
     )
     XCTAssertEqual(
@@ -634,7 +656,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(MilanStreamFormat(mediaStreamMode: aaf.mediaStreamMode)?.channelCount, 8)
     let capability = aaf.mediaStreamModeCapability(id: 1, direction: .input)
     XCTAssertEqual(capability.channelCountList, [])
-    XCTAssertEqual(capability.channelCountRange, 1...8)
+    XCTAssertEqual(capability.channelCountRange, OcaInterval(1...8))
     XCTAssertEqual(capability.encodingTypeList, ["audio/L32"])
     let crf = MilanStreamFormat.crf(sampleRate: 48000).mediaStreamModeCapability(id: 2, direction: [.input, .output])
     XCTAssertEqual(crf.frameFormatList, [.crf_milan])

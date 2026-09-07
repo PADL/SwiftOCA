@@ -77,7 +77,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     getMethodID: OcaMethodID("3.20"),
     setMethodID: OcaMethodID("3.14")
   )
-  public var alignmentLevelLimits: OcaInterval<OcaDBFS> = -20.0 ... -20.0
+  public var alignmentLevelLimits = OcaInterval<OcaDBFS>(min: -20.0, max: -20.0)
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.10"),

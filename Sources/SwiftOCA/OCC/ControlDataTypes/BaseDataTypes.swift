@@ -562,7 +562,98 @@ public enum OcaLockState: OcaUint8, Codable, Sendable, CaseIterable {
 public typealias OcaID16 = OcaUint16
 public typealias OcaID32 = OcaUint32
 
-public typealias OcaInterval = ClosedRange
+public struct OcaIntervalBounds: OptionSet, Codable, Sendable, Hashable {
+  public static let minOmitted = OcaIntervalBounds(rawValue: 1 << 0)
+  public static let maxOmitted = OcaIntervalBounds(rawValue: 1 << 1)
+  public static let minInclusive = OcaIntervalBounds(rawValue: 1 << 2)
+  public static let maxInclusive = OcaIntervalBounds(rawValue: 1 << 3)
+
+  /// The bounds of a closed interval, the only kind a Swift range can express.
+  public static let closed: OcaIntervalBounds = [.minInclusive, .maxInclusive]
+
+  public let rawValue: OcaBitSet16
+
+  public init(rawValue: OcaBitSet16) {
+    self.rawValue = rawValue
+  }
+}
+
+/// An interval of values, either of whose bounds may be omitted or exclusive.
+public struct OcaInterval<Bound: Codable & Sendable & Comparable>: Codable, Sendable {
+  public var min: Bound
+  public var max: Bound
+  public var bounds: OcaIntervalBounds
+
+  public init(min: Bound, max: Bound, bounds: OcaIntervalBounds = .closed) {
+    self.min = min
+    self.max = max
+    self.bounds = bounds
+  }
+
+  public init(_ range: ClosedRange<Bound>) {
+    self.init(min: range.lowerBound, max: range.upperBound)
+  }
+
+  public init(_ range: Range<Bound>) {
+    self.init(min: range.lowerBound, max: range.upperBound, bounds: [.minInclusive])
+  }
+
+  /// The omitted bound still occupies its place on the wire; its value is disregarded.
+  public init(_ range: PartialRangeFrom<Bound>) {
+    self.init(
+      min: range.lowerBound,
+      max: range.lowerBound,
+      bounds: [.minInclusive, .maxOmitted]
+    )
+  }
+
+  public init(_ range: PartialRangeThrough<Bound>) {
+    self.init(
+      min: range.upperBound,
+      max: range.upperBound,
+      bounds: [.minOmitted, .maxInclusive]
+    )
+  }
+
+  public init(_ range: PartialRangeUpTo<Bound>) {
+    self.init(min: range.upperBound, max: range.upperBound, bounds: [.minOmitted])
+  }
+
+  /// The lower bound, or `nil` when it is omitted.
+  public var lowerBound: Bound? { bounds.contains(.minOmitted) ? nil : min }
+
+  /// The upper bound, or `nil` when it is omitted.
+  public var upperBound: Bound? { bounds.contains(.maxOmitted) ? nil : max }
+
+  public func contains(_ value: Bound) -> Bool {
+    if let lowerBound, value < lowerBound || (value == lowerBound && !bounds.contains(.minInclusive)) {
+      return false
+    }
+    if let upperBound, value > upperBound || (value == upperBound && !bounds.contains(.maxInclusive)) {
+      return false
+    }
+    return true
+  }
+}
+
+extension OcaInterval: RangeExpression {
+  public func relative<C: Collection>(to collection: C) -> Range<Bound> where C.Index == Bound {
+    let lower: Bound = if let lowerBound {
+      bounds.contains(.minInclusive) ? lowerBound : collection.index(after: lowerBound)
+    } else {
+      collection.startIndex
+    }
+    let upper: Bound = if let upperBound {
+      bounds.contains(.maxInclusive) ? collection.index(after: upperBound) : upperBound
+    } else {
+      collection.endIndex
+    }
+    return lower..<upper
+  }
+}
+
+extension OcaInterval: Equatable where Bound: Equatable {}
+extension OcaInterval: Hashable where Bound: Hashable {}
 
 public typealias OcaJsonValue = OcaString
 public typealias OcaParameterRecord = OcaJsonValue
