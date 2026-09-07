@@ -542,6 +542,17 @@ extension OcaRoot {
     OcaDevicePropertyKeyPathCache.shared.keyPaths(for: self)
   }
 
+  /// Signals every change to any device property of this object, each element being the
+  /// ID of the property whose value changed (each property's current value is signalled
+  /// first). Lets another object follow this one without this one knowing about it.
+  /// Ends when the object is deinitialised.
+  public var propertyChanges: AnyAsyncSequence<OcaPropertyID> {
+    let changes = allDevicePropertyKeyPaths.values.compactMap { keyPath in
+      (self[keyPath: keyPath] as? any OcaDevicePropertyRepresentable)?.changeSignals
+    }
+    return AsyncMergeSequence(changes).eraseToAnyAsyncSequence()
+  }
+
   // nonisolated(unsafe) is required because this is called from deinit (which
   // cannot be async). This is safe in practice because it only reads immutable
   // property wrapper metadata (propertyID, methodIDs) set at init time, and the

@@ -55,6 +55,13 @@ extension OcaDevicePropertyRepresentable {
   var async: AnyAsyncSequence<Value> {
     subject.eraseToAnyAsyncSequence()
   }
+
+  /// Signals each change of the property's value, identified by the property's ID
+  /// (the current value is signalled first).
+  var changeSignals: AnyAsyncSequence<OcaPropertyID> {
+    let propertyID = propertyID
+    return subject.map { _ in propertyID }.eraseToAnyAsyncSequence()
+  }
 }
 
 extension AsyncCurrentValueSubject: AsyncCurrentValueSubjectNilRepresentable
