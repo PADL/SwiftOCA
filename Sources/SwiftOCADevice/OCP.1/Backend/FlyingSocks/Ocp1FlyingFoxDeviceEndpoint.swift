@@ -50,6 +50,10 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   package let timeout: Duration
   package let device: OcaDevice
   package let logger: Logger
+  /// The HTTP path each control protocol is served on, advertised as its service's `path`
+  /// TXT record when it is not `/` (AES70-4 Table 5). Protocols sharing a path are told
+  /// apart by the WebSocket subprotocol the client offers.
+  public nonisolated let paths: [OcaControlProtocol: String]
   package nonisolated(unsafe) var enableMessageTracing = false
 
   private(set) var httpServer: HTTPServer!
@@ -64,9 +68,15 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     package weak var endpoint: Ocp1FlyingFoxDeviceEndpoint?
     /// the peer the WebSocket upgrade came from, for logging
     private let identifier: String
+    package let controlProtocol: OcaControlProtocol
 
-    init(_ endpoint: Ocp1FlyingFoxDeviceEndpoint?, peer: HTTPRequest.Address?) {
+    init(
+      _ endpoint: Ocp1FlyingFoxDeviceEndpoint?,
+      controlProtocol: OcaControlProtocol,
+      peer: HTTPRequest.Address?
+    ) {
       self.endpoint = endpoint
+      self.controlProtocol = controlProtocol
       identifier = switch peer {
       case let .ip4(address, port), let .ip6(address, port):
         "\(address):\(port)"
@@ -83,6 +93,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
       AsyncStream<WSMessage> { continuation in
         let controller = Ocp1FlyingFoxController(
           endpoint: endpoint,
+          controlProtocol: controlProtocol,
           identifier: identifier,
           inputStream: client,
           outputStream: continuation
@@ -98,10 +109,15 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     }
   }
 
+  /// Serves each of `controlProtocols` at its path in `paths`, or at `/`. Protocols
+  /// sharing a path are told apart by the subprotocol the client offers: `AES70-OCP.2`
+  /// for OCP.2, none for OCP.1.
   public convenience init(
     address: Data,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocols: Set<OcaControlProtocol> = [.ocp1],
+    paths: [OcaControlProtocol: String] = [:],
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingFoxDeviceEndpoint")
   ) async throws {
     var storage = sockaddr_storage()
@@ -110,18 +126,32 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
         memcpy(dst.baseAddress!, src.baseAddress!, src.count)
       }
     }
-    try await self.init(address: storage, timeout: timeout, device: device, logger: logger)
+    try await self.init(
+      address: storage,
+      timeout: timeout,
+      device: device,
+      controlProtocols: controlProtocols,
+      paths: paths,
+      logger: logger
+    )
   }
 
   private init(
     address: sockaddr_storage,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocols: Set<OcaControlProtocol> = [.ocp1],
+    paths: [OcaControlProtocol: String] = [:],
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingFoxDeviceEndpoint")
   ) async throws {
+    guard !controlProtocols.isEmpty else { throw Ocp1Error.unsupportedControlProtocol }
     self.device = device
     self.address = address
     self.timeout = timeout
+    self.paths = Dictionary(uniqueKeysWithValues: controlProtocols.map { controlProtocol in
+      let path = paths[controlProtocol] ?? "/"
+      return (controlProtocol, path.hasPrefix("/") ? path : "/" + path)
+    })
     self.logger = logger
 
     // FIXME: API impedance mismatch
@@ -143,14 +173,31 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
       timeout: timeout.timeInterval
     )
 
-    await httpServer.appendRoute("GET /") { [weak self] request in
-      // one handler per upgrade, so the controller knows its peer
-      try await WebSocketHTTPHandler.webSocket(Handler(self, peer: request.remoteAddress))
-        .handleRequest(request)
+    // one route per path; the protocols sharing it are told apart by the subprotocol
+    let routes = Dictionary(grouping: self.paths, by: \.value).mapValues { $0.map(\.key) }
+    for (path, sharing) in routes {
+      await httpServer.appendRoute(HTTPRoute("GET \(path)")) { [weak self] request in
+        let offered = request.headers[Self.webSocketProtocolHeader]?
+          .split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) } ?? []
+        let controlProtocol = Self.controlProtocol(offering: offered, among: sharing)
+        // one handler per upgrade, so the controller knows its peer
+        var response = try await WebSocketHTTPHandler
+          .webSocket(Handler(self, controlProtocol: controlProtocol, peer: request.remoteAddress))
+          .handleRequest(request)
+        // RFC 6455 4.2.2: echo the subprotocol we speak if the client offered it
+        if let subprotocol = controlProtocol.webSocketSubprotocol,
+           response.statusCode == .switchingProtocols, offered.contains(subprotocol)
+        {
+          response.headers[Self.webSocketProtocolHeader] = subprotocol
+        }
+        return response
+      }
     }
 
     try await device.add(endpoint: self)
   }
+
+  nonisolated static let webSocketProtocolHeader = HTTPHeader("Sec-WebSocket-Protocol")
 
   public nonisolated var description: String {
     "\(type(of: self))(address: \(address._presentationAddress), timeout: \(timeout))"
@@ -169,8 +216,44 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     }
   }
 
+  /// The protocols served, in `OcaControlProtocol` order.
+  public nonisolated var controlProtocols: [OcaControlProtocol] {
+    OcaControlProtocol.allCases.filter { paths[$0] != nil }
+  }
+
+  /// The protocol a WebSocket upgrade on a shared path speaks: the one whose subprotocol
+  /// the client offered, else the one with none (OCP.1), else the first, as a client need
+  /// not offer a subprotocol at all.
+  nonisolated static func controlProtocol(
+    offering offered: [String],
+    among sharing: [OcaControlProtocol]
+  ) -> OcaControlProtocol {
+    let sharing = OcaControlProtocol.allCases.filter(sharing.contains)
+    return sharing.first { $0.webSocketSubprotocol.map(offered.contains) ?? false }
+      ?? sharing.first { $0.webSocketSubprotocol == nil }
+      ?? sharing[0]
+  }
+
+  /// The first protocol's service; `advertisedServices` has one per protocol.
   public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
-    .tcpWebSocket
+    advertisedServices[0].serviceType
+  }
+
+  public nonisolated var txtRecordAdditions: [(String, String)] {
+    advertisedServices[0].txtRecordAdditions
+  }
+
+  public nonisolated var advertisedServices: [(
+    serviceType: OcaNetworkAdvertisingServiceType,
+    txtRecordAdditions: [(String, String)]
+  )] {
+    controlProtocols.map { controlProtocol in
+      let path = paths[controlProtocol]!
+      return (
+        OcaNetworkAdvertisingServiceType.tcpWebSocket.withControlProtocol(controlProtocol),
+        path == "/" ? [] : [("path", path)]
+      )
+    }
   }
 
   public nonisolated var port: UInt16 {

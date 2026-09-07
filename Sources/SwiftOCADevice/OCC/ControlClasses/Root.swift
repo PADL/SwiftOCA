@@ -193,7 +193,11 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     case .getter:
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try await property.getResponse(for: controller, names: nil)
+      // name the response's parameters after the property
+      return try await property.getResponse(
+        for: controller,
+        names: property.responseNames(propertyName: method.2)
+      )
     case .setter:
       try await ensureWritable(by: controller, command: command)
       try await property.set(object: self, command: command)
@@ -218,7 +222,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
       return try controller.encodeResponse(response)
     case OcaMethodID("1.2"):
       try decodeNullCommand(command)
-      return try controller.encodeResponse(lockable, name: "lockable")
+      return try controller.encodeResponse(lockable, name: "Lockable")
     case OcaMethodID("1.3"):
       try decodeNullCommand(command)
       try await lockNoReadWrite(controller: controller)
@@ -583,7 +587,8 @@ private final class OcaDevicePropertyKeyPathCache: Sendable {
 
   private struct CacheEntry: Sendable {
     let keyPaths: [String: AnyKeyPath]
-    let methods: [OcaMethodID: (AccessorType, AnyKeyPath)]
+    /// accessor kind, key path, and the property's Swift name
+    let methods: [OcaMethodID: (AccessorType, AnyKeyPath, String)]
 
     private init(keyPaths: [String: AnyKeyPath], object: some OcaRoot) {
       self.keyPaths = keyPaths
@@ -592,10 +597,10 @@ private final class OcaDevicePropertyKeyPathCache: Sendable {
           return
         }
         if let getMethodID = value.getMethodID {
-          $0[getMethodID] = (.getter, $1.value)
+          $0[getMethodID] = (.getter, $1.value, $1.key)
         }
         if let setMethodID = value.setMethodID {
-          $0[setMethodID] = (.setter, $1.value)
+          $0[setMethodID] = (.setter, $1.value, $1.key)
         }
       }
     }
@@ -633,7 +638,7 @@ private final class OcaDevicePropertyKeyPathCache: Sendable {
   fileprivate func lookupMethod(
     _ methodID: OcaMethodID,
     for object: some OcaRoot
-  ) -> (AccessorType, AnyKeyPath)? {
+  ) -> (AccessorType, AnyKeyPath, String)? {
     cacheEntry(for: object).methods[methodID]
   }
 }

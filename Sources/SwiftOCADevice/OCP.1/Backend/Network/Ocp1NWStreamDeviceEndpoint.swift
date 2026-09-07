@@ -45,6 +45,7 @@ open class Ocp1NWStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
   package let timeout: Duration
   package let device: OcaDevice
   package nonisolated let logger: Logger
+  package let controlProtocol: OcaControlProtocol
   package nonisolated(unsafe) var enableMessageTracing = false
 
   private let _port: NWEndpoint.Port
@@ -90,6 +91,7 @@ open class Ocp1NWStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
     port: UInt16,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1NWStreamDeviceEndpoint")
   ) async throws {
     guard let nwPort = NWEndpoint.Port(rawValue: port) else {
@@ -98,6 +100,7 @@ open class Ocp1NWStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
     _port = nwPort
     self.timeout = timeout
     self.device = device
+    self.controlProtocol = controlProtocol
     self.logger = logger
     queue = DispatchQueue(label: "com.padl.SwiftOCADevice.NWListener.\(port)")
 
@@ -258,11 +261,11 @@ public final class Ocp1NWTCPDeviceEndpoint: Ocp1NWStreamDeviceEndpoint {
   }
 
   override public nonisolated var controllerConnectionPrefix: String {
-    OcaTcpConnectionPrefix
+    controlProtocol == .ocp1 ? OcaTcpConnectionPrefix : OcaJsonTcpConnectionPrefix
   }
 
   override public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
-    .tcp
+    OcaNetworkAdvertisingServiceType.tcp.withControlProtocol(controlProtocol)
   }
 }
 

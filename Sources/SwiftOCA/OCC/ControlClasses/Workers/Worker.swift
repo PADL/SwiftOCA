@@ -86,7 +86,8 @@ Sendable {
   public func delete(portID id: OcaPortID) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("2.4"),
-      parameters: id
+      parameters: id,
+      parameterNames: ["ID"]
     )
   }
 
@@ -129,7 +130,8 @@ Sendable {
   public func get(portID: OcaPortID) async throws -> OcaPortClockMapEntry {
     try await sendCommandRrq(
       methodID: OcaMethodID("2.16"),
-      parameters: portID
+      parameters: portID,
+      parameterNames: ["ID"]
     )
   }
 
@@ -146,7 +148,8 @@ Sendable {
   public func deletePortClockMapEntry(portID: OcaPortID) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("2.18"),
-      parameters: portID
+      parameters: portID,
+      parameterNames: ["ID"]
     )
   }
 }

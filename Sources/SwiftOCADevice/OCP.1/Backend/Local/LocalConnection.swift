@@ -40,7 +40,7 @@ public final class OcaLocalConnection: Ocp1Connection {
   }
 
   override public var connectionPrefix: String {
-    OcaLocalConnectionPrefix
+    _connectionPrefix(ocp1: OcaLocalConnectionPrefix, ocp2: OcaJsonLocalConnectionPrefix)
   }
 
   override public var heartbeatTime: Duration {
@@ -53,7 +53,7 @@ public final class OcaLocalConnection: Ocp1Connection {
     endpoint.requestChannel.finish()
   }
 
-  override public func read(_ length: Int) async throws -> Data {
+  override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     for await data in endpoint.responseChannel {
       return data
     }

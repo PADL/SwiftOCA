@@ -43,6 +43,7 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: Ocp1FlyingSocksStreamDeviceEndpoint?
+  package let controlProtocol: OcaControlProtocol
 
   private let address: String
   private let socket: AsyncSocket
@@ -53,11 +54,12 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
   }
 
   init(endpoint: Ocp1FlyingSocksStreamDeviceEndpoint, socket: AsyncSocket) throws {
+    let isJson = endpoint.controlProtocol != .ocp1
     if case .unix = try? socket.socket.sockname() {
-      connectionPrefix = OcaLocalConnectionPrefix
+      connectionPrefix = isJson ? OcaJsonLocalConnectionPrefix : OcaLocalConnectionPrefix
       flags = [.supportsLocking, .isLocal]
     } else {
-      connectionPrefix = OcaTcpConnectionPrefix
+      connectionPrefix = isJson ? OcaJsonTcpConnectionPrefix : OcaTcpConnectionPrefix
       flags = .supportsLocking
       try socket.socket.setValue(
         true,
@@ -67,8 +69,14 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
     }
     address = Self.makeIdentifier(from: socket.socket)
     self.endpoint = endpoint
+    controlProtocol = endpoint.controlProtocol
     self.socket = socket
-    _messages = AsyncThrowingStream.decodingMessages(from: socket.bytes, timeout: endpoint.timeout)
+    _messages = AsyncThrowingStream.decodingMessages(
+      from: socket.bytes,
+      timeout: endpoint.timeout,
+      controlProtocol: endpoint.controlProtocol,
+      maximumPduSize: endpoint.maximumPduSize
+    )
   }
 
   package var heartbeatTime = Duration.seconds(0) {
@@ -160,31 +168,41 @@ private extension AsyncThrowingStream
 {
   static func decodingMessages(
     from bytes: some AsyncBufferedSequence<UInt8>,
-    timeout: Duration
+    timeout: Duration,
+    controlProtocol: OcaControlProtocol,
+    maximumPduSize: Int
   ) -> Self {
+    // one iterator and one reader for the life of the connection: the reader
+    // buffers bytes between PDUs, so neither can be recreated per PDU
+    nonisolated(unsafe) var iterator = bytes.makeAsyncIterator()
+    let reader = controlProtocol.makeReader(isMessageOriented: false, maximumPduSize: maximumPduSize)
     // one timer for every read on the connection, rather than a sleep per message that the
     // runtime would keep for the whole timeout after the message arrived
     let deadlines = DeadlineTimer()
+
     return AsyncThrowingStream<Ocp1MessageList, Error> {
       do {
         return try await deadlines.withThrowingTimeout(of: timeout) {
-          nonisolated(unsafe) var iterator = bytes.makeAsyncIterator()
-          return try await OcaDevice.asyncReceiveMessages { count in
-            var nremain = count
-            var buffer = Data()
-            buffer.reserveCapacity(count)
+          try await OcaDevice.asyncReceiveMessages(
+            reader: reader,
+            controlProtocol: controlProtocol,
+            read: { count, awaitingAllRead in
+              var nremain = count
+              var buffer = Data()
+              buffer.reserveCapacity(count)
 
-            repeat {
-              let read = try await iterator.nextBuffer(suggested: nremain)
-              guard let read, !read.isEmpty else {
-                throw Ocp1Error.notConnected // EOF on zero bytes
-              }
-              buffer += read
-              nremain -= read.count
-            } while nremain > 0
+              repeat {
+                let read = try await iterator.nextBuffer(suggested: nremain)
+                guard let read, !read.isEmpty else {
+                  throw Ocp1Error.notConnected // EOF on zero bytes
+                }
+                buffer += read
+                nremain -= read.count
+              } while awaitingAllRead && nremain > 0
 
-            return buffer
-          }
+              return buffer
+            }
+          )
         }
       } catch Ocp1Error.pduTooShort {
         return nil
@@ -194,14 +212,6 @@ private extension AsyncThrowingStream
         throw error
       }
     }
-  }
-}
-
-extension OcaDevice {
-  static func asyncReceiveMessages(_ read: (Int) async throws -> Data) async throws
-    -> Ocp1MessageList
-  {
-    try await _receiveMessages(read)
   }
 }
 

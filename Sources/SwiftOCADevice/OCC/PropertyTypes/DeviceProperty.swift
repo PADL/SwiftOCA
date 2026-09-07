@@ -36,6 +36,13 @@ protocol OcaDevicePropertyRepresentable: Sendable {
   func getResponse(for controller: any OcaController, names: [String]?) async throws
     -> Ocp1Response
 
+  /// The AES70-2A name of the accessor parameter where it differs from the Swift
+  /// property name upper-cased; `nil` derives it.
+  var ocp2Name: String? { get }
+
+  /// OCP.2 names for the getter's response parameters, given the property's Swift name
+  func responseNames(propertyName: String) -> [String]
+
   /// setters take an object so that subscribers can be notified
 
   func set(object: OcaRoot, command: Ocp1Command) async throws
@@ -51,6 +58,17 @@ protocol OcaDevicePropertyRepresentable: Sendable {
 extension OcaDevicePropertyRepresentable {
   func finish() {
     subject.send(.finished)
+  }
+
+  var ocp2Name: String? { nil }
+
+  /// The property's OCP.2 wire name given its Swift name.
+  func wireName(propertyName: String) -> String {
+    ocp2Name ?? Ocp2Naming.wireName(propertyName)
+  }
+
+  func responseNames(propertyName: String) -> [String] {
+    [wireName(propertyName: propertyName)]
   }
 
   var async: AnyAsyncSequence<Value> {
@@ -92,6 +110,10 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
   /// The OCA set method ID, if present
   public let setMethodID: OcaMethodID?
 
+  /// The AES70-2A name of the accessor parameter, where it differs from the Swift
+  /// property name upper-cased (the model's `Name` for `deviceName`).
+  public let ocp2Name: String?
+
   /// Placeholder only
   public var wrappedValue: Value {
     get { subject.value }
@@ -106,23 +128,27 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     wrappedValue: Value,
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID? = nil,
-    setMethodID: OcaMethodID? = nil
+    setMethodID: OcaMethodID? = nil,
+    ocp2Name: String? = nil
   ) {
     subject = AsyncCurrentValueSubject(wrappedValue)
     self.propertyID = propertyID
     self.getMethodID = getMethodID
     self.setMethodID = setMethodID
+    self.ocp2Name = ocp2Name
   }
 
   public init(
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID? = nil,
-    setMethodID: OcaMethodID? = nil
+    setMethodID: OcaMethodID? = nil,
+    ocp2Name: String? = nil
   ) where Value: ExpressibleByNilLiteral {
     subject = AsyncCurrentValueSubject(nil)
     self.propertyID = propertyID
     self.getMethodID = getMethodID
     self.setMethodID = setMethodID
+    self.ocp2Name = ocp2Name
   }
 
   func get() -> Value {

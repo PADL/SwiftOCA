@@ -432,11 +432,11 @@ extension NWConnectionTests {
     let connection = try await makeNWTCPConnection(port: server.port)
     // the transport alone: connect() would start a monitor reading alongside
     try await connection.connectDevice()
-    let first = try await connection.read(7)
+    let first = try await connection.read(7, awaitingAllRead: true)
     XCTAssertEqual(Array(first), Array(payload[..<7]))
     // a read that took more than asked left nothing for the next, which would wait forever
     guard first.count == 7 else { return }
-    let rest = try await connection.read(13)
+    let rest = try await connection.read(13, awaitingAllRead: true)
     XCTAssertEqual(Array(rest), Array(payload[7...]))
     try await connection.disconnectDevice()
   }

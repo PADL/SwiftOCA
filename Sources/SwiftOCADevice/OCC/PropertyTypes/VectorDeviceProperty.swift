@@ -58,16 +58,28 @@ public struct OcaVectorDeviceProperty<
     xPropertyID: OcaPropertyID,
     yPropertyID: OcaPropertyID,
     getMethodID: OcaMethodID? = nil,
-    setMethodID: OcaMethodID? = nil
+    setMethodID: OcaMethodID? = nil,
+    ocp2Name: String? = nil
   ) {
     storage = OcaDeviceProperty(
       wrappedValue: wrappedValue,
       propertyID: xPropertyID,
       getMethodID: getMethodID,
-      setMethodID: setMethodID
+      setMethodID: setMethodID,
+      ocp2Name: ocp2Name
     )
 
     self.yPropertyID = yPropertyID
+  }
+
+  public var ocp2Name: String? { storage.ocp2Name }
+
+  /// A vector's getter returns one record with two fields, so it supplies no explicit
+  /// names: the encoder derives `X` and `Y` from the record. A single name would be
+  /// assigned to the first field and the second derived, which matches neither the
+  /// model nor what this library's own controller asks for.
+  func responseNames(propertyName: String) -> [String] {
+    []
   }
 
   func getResponse(for controller: any OcaController, names: [String]?) async throws

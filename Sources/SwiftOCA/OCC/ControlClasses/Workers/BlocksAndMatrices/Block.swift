@@ -124,21 +124,24 @@ Sendable {
   ) async throws -> OcaONo {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.2"),
-      parameters: constructionParameters
+      parameters: constructionParameters,
+      parameterNames: ["ConstructionParameters"]
     )
   }
 
   public func constructActionObject(factory factoryONo: OcaONo) async throws -> OcaONo {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.3"),
-      parameters: factoryONo
+      parameters: factoryONo,
+      parameterNames: ["FactoryONo"]
     )
   }
 
   public func delete(actionObject objectNumber: OcaONo) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.4"),
-      parameters: objectNumber
+      parameters: objectNumber,
+      parameterNames: ["ObjectNumber"]
     )
   }
 
@@ -189,14 +192,16 @@ Sendable {
   public func add(signalPath path: OcaSignalPath) async throws -> OcaUint16 {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.7"),
-      parameters: path
+      parameters: path,
+      parameterNames: ["Path"]
     )
   }
 
   public func delete(signalPath index: OcaUint16) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.8"),
-      parameters: index
+      parameters: index,
+      parameterNames: ["Index"]
     )
   }
 
@@ -207,7 +212,8 @@ Sendable {
   public func apply(paramSet identifier: OcaLibVolIdentifier) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.12"),
-      parameters: identifier
+      parameters: identifier,
+      parameterNames: ["Identifier"]
     )
   }
 
@@ -218,7 +224,8 @@ Sendable {
   public func store(currentParamSet identifier: OcaLibVolIdentifier) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.14"),
-      parameters: identifier
+      parameters: identifier,
+      parameterNames: ["Identifier"]
     )
   }
 
@@ -360,11 +367,19 @@ Sendable {
   }
 
   public func apply(paramDataset: OcaONo) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.23"), parameters: paramDataset)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.23"),
+      parameters: paramDataset,
+      parameterNames: ["ONo"]
+    )
   }
 
   public func store(currentParameterData: OcaONo) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.24"), parameters: currentParameterData)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.24"),
+      parameters: currentParameterData,
+      parameterNames: ["ONo"]
+    )
   }
 
   public func fetchCurrentParameterData() async throws -> OcaLongBlob {
@@ -372,7 +387,11 @@ Sendable {
   }
 
   public func apply(parameterData: OcaLongBlob) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.26"), parameters: parameterData)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.26"),
+      parameters: parameterData,
+      parameterNames: ["Data"]
+    )
   }
 
   @_spi(SwiftOCAPrivate)
@@ -514,7 +533,8 @@ Sendable {
     var jsonObject = await super.getJsonValue(flags: flags)
     // the property carries object identifications; the dump carries the objects
     // themselves, under that same property's name
-    jsonObject["ActionObjects"] = try? await resolveActionObjects()
+    jsonObject[_jsonPropertyName(for: $actionObjects.propertyID)] =
+      try? await resolveActionObjects()
       .asyncMap { await $0.getJsonValue(flags: flags) }
     return jsonObject
   }

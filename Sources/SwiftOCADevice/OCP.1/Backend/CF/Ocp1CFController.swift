@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024-2025 PADL Software Pty Ltd
+// Copyright (c) 2024-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -92,6 +92,7 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: Ocp1CFStreamDeviceEndpoint?
+  package let controlProtocol: OcaControlProtocol
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
@@ -116,6 +117,7 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
     socket: _CFSocketWrapper,
     notificationSocket: _CFSocketWrapper
   ) async {
+    controlProtocol = endpoint.controlProtocol
     _socket = .init(socket)
     self.notificationSocket = notificationSocket
     peerAddress = socket.peerAddress!
@@ -125,10 +127,11 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
       throwing: Error.self
     )
 
+    let isJson = endpoint.controlProtocol != .ocp1
     if peerAddress.family == AF_LOCAL {
-      connectionPrefix = OcaLocalConnectionPrefix
+      connectionPrefix = isJson ? OcaJsonLocalConnectionPrefix : OcaLocalConnectionPrefix
     } else {
-      connectionPrefix = OcaTcpConnectionPrefix
+      connectionPrefix = isJson ? OcaJsonTcpConnectionPrefix : OcaTcpConnectionPrefix
     }
 
     receiveMessageTask = Task { [weak self] in
@@ -222,7 +225,9 @@ private extension Ocp1NetworkAddress {
 package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramSemantics {
   package nonisolated var flags: OcaControllerFlags { .supportsLocking }
 
-  package nonisolated var connectionPrefix: String { OcaUdpConnectionPrefix }
+  package nonisolated var connectionPrefix: String {
+    controlProtocol == .ocp1 ? OcaUdpConnectionPrefix : OcaJsonUdpConnectionPrefix
+  }
 
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
@@ -233,6 +238,7 @@ package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerD
 
   package private(set) var isOpen: Bool = false
   package weak var endpoint: Ocp1CFDatagramDeviceEndpoint?
+  package let controlProtocol: OcaControlProtocol
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
     AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
@@ -243,6 +249,7 @@ package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerD
     peerAddress: any SocketAddress
   ) {
     self.endpoint = endpoint
+    controlProtocol = endpoint.controlProtocol
     self.peerAddress = AnySocketAddress(peerAddress)
   }
 

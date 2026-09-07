@@ -31,6 +31,7 @@ public final class OcaLocalDeviceEndpoint: OcaDeviceEndpointPrivate {
   package let timeout: Duration = .zero
   package let device: OcaDevice
   package let logger: Logger
+  package let controlProtocol: OcaControlProtocol
   package nonisolated(unsafe) var enableMessageTracing = false
 
   public var controllers: [OcaController] {
@@ -50,9 +51,11 @@ public final class OcaLocalDeviceEndpoint: OcaDeviceEndpointPrivate {
 
   public init(
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaLocalDeviceEndpoint")
   ) async throws {
     self.device = device
+    self.controlProtocol = controlProtocol
     self.logger = logger
 
     controller = await OcaLocalController(endpoint: self)

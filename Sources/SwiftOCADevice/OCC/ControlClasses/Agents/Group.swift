@@ -371,14 +371,15 @@ extension OcaGroup {
     }
 
     if !exceptions.isEmpty {
-      let exceptionData: [UInt8] = try Ocp1Encoder().encode(exceptions)
+      let format = await controller.controlProtocol.parameterFormat
       let notification = Ocp1Notification2(
         event: OcaEvent(
           emitterONo: group.objectNumber,
           eventID: OcaGroupExceptionEventID
         ),
         notificationType: .event,
-        data: Data(exceptionData)
+        data: try OcaEventDataCoding.encode(exceptions, format: format),
+        dataFormat: format
       )
       try await controller.sendMessage(notification, type: .ocaNtf2)
     }

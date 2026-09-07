@@ -76,6 +76,11 @@ public let OcaTcpConnectionPrefix = "oca/tcp"
 public let OcaUdpConnectionPrefix = "oca/udp"
 public let OcaWebSocketTcpConnectionPrefix = "ocaws/tcp"
 public let OcaLocalConnectionPrefix = "oca/local"
+// OCP.2 (AES70-4) equivalents, named after the DNS-SD service types
+public let OcaJsonTcpConnectionPrefix = "ocajson/tcp"
+public let OcaJsonUdpConnectionPrefix = "ocajson/udp"
+public let OcaJsonWebSocketTcpConnectionPrefix = "ocajsonws/tcp"
+public let OcaJsonLocalConnectionPrefix = "ocajson/local"
 public let OcaDatagramProxyConnectionPrefix = "oca/dg-proxy"
 // macOS-only, not Darwin-wide: see Ocp1MachPortSupport.swift.
 #if os(macOS)
@@ -126,6 +131,14 @@ public struct Ocp1ConnectionOptions: Sendable {
   public let reconnectPauseInterval: Duration
   public let reconnectExponentialBackoffThreshold: Range<Int>
   public let batchingOptions: BatchingOptions?
+  /// The control protocol to speak; the transport is chosen by the connection class.
+  public let controlProtocol: OcaControlProtocol
+  /// Largest PDU accepted from the device. Only enforced for OCP.2 (OCP.1 PDUs are
+  /// bounded by their 32-bit size field).
+  public let maximumPduSize: Int
+  /// Overrides the transport's default keep-alive interval when set; `.zero` disables
+  /// keep-alives.
+  public let heartbeatTime: Duration?
 
   public init(
     flags: Ocp1ConnectionFlags = .refreshDeviceTreeOnConnection,
@@ -134,7 +147,10 @@ public struct Ocp1ConnectionOptions: Sendable {
     reconnectMaxTries: Int = 15,
     reconnectPauseInterval: Duration = .milliseconds(250),
     reconnectExponentialBackoffThreshold: Range<Int> = 3..<8,
-    batchingOptions: BatchingOptions? = nil
+    batchingOptions: BatchingOptions? = nil,
+    controlProtocol: OcaControlProtocol = .ocp1,
+    maximumPduSize: Int = OcaControlProtocol.defaultMaximumPduSize,
+    heartbeatTime: Duration? = nil
   ) {
     self.flags = flags
     self.connectionTimeout = connectionTimeout
@@ -143,6 +159,9 @@ public struct Ocp1ConnectionOptions: Sendable {
     self.reconnectPauseInterval = reconnectPauseInterval
     self.reconnectExponentialBackoffThreshold = reconnectExponentialBackoffThreshold
     self.batchingOptions = batchingOptions
+    self.controlProtocol = controlProtocol
+    self.maximumPduSize = maximumPduSize
+    self.heartbeatTime = heartbeatTime
   }
 
   @available(*, deprecated, message: "use Ocp1ConnectionFlags initializer")
@@ -178,7 +197,10 @@ public struct Ocp1ConnectionOptions: Sendable {
     reconnectMaxTries: Int? = nil,
     reconnectPauseInterval: Duration? = nil,
     reconnectExponentialBackoffThreshold: Range<Int>? = nil,
-    batchingOptions: BatchingOptions? = nil
+    batchingOptions: BatchingOptions? = nil,
+    controlProtocol: OcaControlProtocol? = nil,
+    maximumPduSize: Int? = nil,
+    heartbeatTime: Duration?? = nil
   ) -> Self {
     Self(
       flags: flags ?? self.flags,
@@ -188,7 +210,10 @@ public struct Ocp1ConnectionOptions: Sendable {
       reconnectPauseInterval: reconnectPauseInterval ?? self.reconnectPauseInterval,
       reconnectExponentialBackoffThreshold:
       reconnectExponentialBackoffThreshold ?? self.reconnectExponentialBackoffThreshold,
-      batchingOptions: batchingOptions ?? self.batchingOptions
+      batchingOptions: batchingOptions ?? self.batchingOptions,
+      controlProtocol: controlProtocol ?? self.controlProtocol,
+      maximumPduSize: maximumPduSize ?? self.maximumPduSize,
+      heartbeatTime: heartbeatTime ?? self.heartbeatTime
     )
   }
 }
@@ -245,6 +270,11 @@ open class Ocp1Connection: CustomStringConvertible {
   public func set(options: Ocp1ConnectionOptions) async throws {
     let oldFlags = self.options.flags
     let oldBatchOptions = self.options.batchingOptions
+    // the control protocol is fixed at initialization: construct a new connection to
+    // speak a different one
+    guard options.controlProtocol == controlProtocol else {
+      throw Ocp1Error.unsupportedControlProtocol
+    }
     self.options = options
 
     if oldFlags.symmetricDifference(options.flags).contains(.enableTracing) {
@@ -261,6 +291,15 @@ open class Ocp1Connection: CustomStringConvertible {
   open var heartbeatTime: Duration {
     .seconds(1)
   }
+
+  /// The keep-alive interval in force: the options override, else the transport default.
+  var effectiveHeartbeatTime: Duration {
+    options.heartbeatTime ?? heartbeatTime
+  }
+
+  /// The control protocol this connection speaks, fixed at initialization. Readable off
+  /// the actor because parameter encoding happens wherever a command is built.
+  public nonisolated let controlProtocol: OcaControlProtocol
 
   let _connectionState = AsyncCurrentValueSubject<Ocp1ConnectionState>(.notConnected)
   public let connectionState: AnyAsyncSequence<Ocp1ConnectionState>
@@ -334,8 +373,8 @@ open class Ocp1Connection: CustomStringConvertible {
   var responseTimeout: Duration {
     let timeout = options.responseTimeout
 
-    if isDatagram, timeout < heartbeatTime * 2 {
-      return heartbeatTime * 2
+    if isDatagram, timeout < effectiveHeartbeatTime * 2 {
+      return effectiveHeartbeatTime * 2
     } else {
       return timeout
     }
@@ -362,6 +401,7 @@ open class Ocp1Connection: CustomStringConvertible {
   public init(options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()) {
     connectionState = _connectionState.eraseToAnyAsyncSequence()
     self.options = options
+    controlProtocol = options.controlProtocol
     add(object: _rootBlock)
     add(object: _subscriptionManager)
     add(object: _deviceManager)
@@ -383,7 +423,12 @@ open class Ocp1Connection: CustomStringConvertible {
   }
 
   /// API to be impmlemented by concrete classes
-  open func read(_ length: Int) async throws -> Data {
+  ///
+  /// Returns exactly `length` bytes when `awaitingAllRead`, else between 1 and `length`
+  /// as soon as any are available, for framings that cannot know a PDU's length up
+  /// front (OCP.2). A message-oriented transport returns one whole message either way,
+  /// ignoring `length`.
+  open func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     fatalError("read must be implemented by a concrete subclass of Ocp1Connection")
   }
 
@@ -411,6 +456,16 @@ open class Ocp1Connection: CustomStringConvertible {
   /// The local socket address of the connection, if available.
   open var localAddress: Data? {
     nil
+  }
+
+  /// The connection prefix for the protocol in use: `ocp1` on OCP.1, `ocp2` on OCP.2.
+  package nonisolated func _connectionPrefix(ocp1: String, ocp2: String) -> String {
+    switch controlProtocol {
+    case .ocp1: ocp1
+    #if NonEmbeddedBuild
+    case .ocp2: ocp2
+    #endif
+    }
   }
 }
 

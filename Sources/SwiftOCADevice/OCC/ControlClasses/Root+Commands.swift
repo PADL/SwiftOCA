@@ -14,9 +14,18 @@
 // limitations under the License.
 //
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+/// The format a command arrived in, and so the format its response must take. Bound
+/// by `OcaDevice.handleCommand` around dispatch so the per-class `handleCommand`
+/// overrides need not know which protocol the controller speaks. `responseNames`
+/// names an OCP.2 response's parameters (see `Ocp2Encoder.encodeParameters`).
 public extension OcaRoot {
   private nonisolated static func _logUnexpectedParameterCount(
     _ command: Ocp1Command,
@@ -32,13 +41,28 @@ public extension OcaRoot {
   nonisolated static func decodeCommand<U: Decodable>(
     _ command: Ocp1Command
   ) throws -> U {
-    let responseParameterCount = _ocp1ParameterCount(type: U.self)
-    let response = try Ocp1Decoder().decode(U.self, from: command.parameters.parameterData)
-    if command.parameters.parameterCount != responseParameterCount {
-      _logUnexpectedParameterCount(command, expected: responseParameterCount)
-      throw Ocp1Error.status(.parameterOutOfRange)
+    switch command.parameters.format {
+    case .ocp1:
+      let responseParameterCount = _ocp1ParameterCount(type: U.self)
+      let response = try Ocp1Decoder().decode(U.self, from: command.parameters.parameterData)
+      if command.parameters.parameterCount != responseParameterCount {
+        _logUnexpectedParameterCount(command, expected: responseParameterCount)
+        throw Ocp1Error.status(.parameterOutOfRange)
+      }
+      return response
+    case .ocp2:
+      #if NonEmbeddedBuild
+      do {
+        return try Ocp2Decoder().decodeParameters(U.self, from: command.parameters.parameterData)
+      } catch let error as Ocp1Error {
+        throw error
+      } catch {
+        throw Ocp1Error.status(.parameterError)
+      }
+      #else
+      throw Ocp1Error.unsupportedControlProtocol
+      #endif
     }
-    return response
   }
 
   final nonisolated func decodeCommand<U: Decodable>(
@@ -67,23 +91,40 @@ public extension OcaRoot {
 }
 
 public extension OcaController {
-  /// Encodes a response in the protocol this controller speaks. `names` names the
-  /// response's parameters, for a protocol that names them; OCP.1 does not.
+  /// Encodes a response in the protocol this controller speaks. On OCP.2 the
+  /// parameters are named by `names`, else derived from the value's field names; a
+  /// scalar without a name goes out as `Ocp2Naming.unnamedParameter`.
   nonisolated func encodeResponse<T: Encodable>(
     _ parameters: T,
     names: [String]? = nil,
     statusCode: OcaStatus = .ok
   ) throws -> Ocp1Response {
-    let parameterCount = _ocp1ParameterCount(type: T.self)
-    let encoder = Ocp1Encoder()
-    let parameters = try Ocp1Parameters(
-      parameterCount: parameterCount,
-      parameterData: encoder.encode(parameters)
-    )
-    return Ocp1Response(statusCode: statusCode, parameters: parameters)
+    switch controlProtocol {
+    case .ocp1:
+      let parameterCount = _ocp1ParameterCount(type: T.self)
+      let encoder = Ocp1Encoder()
+      let parameters = try Ocp1Parameters(
+        parameterCount: parameterCount,
+        parameterData: encoder.encode(parameters)
+      )
+      return Ocp1Response(statusCode: statusCode, parameters: parameters)
+    case .ocp2:
+      #if NonEmbeddedBuild
+      let object = try Ocp2Encoder().encodeParameters(
+        parameters,
+        parameterNames: names
+      )
+      let parameters = try Ocp1Parameters(
+        ocp2ParameterData: object.isEmpty ? Data() : Ocp2JSON.serialize(object)
+      )
+      return Ocp1Response(statusCode: statusCode, parameters: parameters)
+      #else
+      throw Ocp1Error.unsupportedControlProtocol
+      #endif
+    }
   }
 
-  /// A single-parameter response whose name, for a protocol that names it, is `name`.
+  /// A single-parameter response whose OCP.2 name is `name`.
   nonisolated func encodeResponse(
     _ parameter: some Encodable,
     name: String,

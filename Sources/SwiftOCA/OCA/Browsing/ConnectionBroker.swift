@@ -213,8 +213,10 @@ public actor OcaConnectionBroker {
 
     func openConnection(options: Ocp1ConnectionOptions) async throws -> Ocp1Connection {
       let connection: Ocp1Connection
+      // the service type decides the protocol; the caller's options decide the rest
+      let options = options.copy(controlProtocol: serviceType.controlProtocol)
 
-      switch serviceType {
+      switch serviceType.transport {
       case .tcp:
         connection = try await Ocp1TCPConnection(
           deviceAddresses: addresses,
@@ -305,6 +307,9 @@ public actor OcaConnectionBroker {
     OcaNetworkAdvertisingServiceType.tcp,
     OcaNetworkAdvertisingServiceType.udp,
     OcaNetworkAdvertisingServiceType.tcpWebSocket,
+    OcaNetworkAdvertisingServiceType.tcpJson,
+    OcaNetworkAdvertisingServiceType.udpJson,
+    OcaNetworkAdvertisingServiceType.tcpWebSocketJson,
   ])
 
   /// An async sequence of events emitted by the connection broker.

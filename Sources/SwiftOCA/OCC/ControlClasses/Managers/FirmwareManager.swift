@@ -33,7 +33,11 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
   }
 
   public func beginActiveImageUpdate(component: OcaComponent) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.3"), parameters: component)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.3"),
+      parameters: component,
+      parameterNames: ["Component"]
+    )
   }
 
   public struct AddImageDataParameters: Ocp1ParametersReflectable {
@@ -61,7 +65,11 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
   }
 
   public func verifyImage(_ verifyData: OcaBlob) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: verifyData)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.5"),
+      parameters: verifyData,
+      parameterNames: ["VerifyData"]
+    )
   }
 
   public func endActiveImageUpdate() async throws {

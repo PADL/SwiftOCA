@@ -17,8 +17,13 @@
 import SwiftOCA
 
 open class OcaApplicationNetwork: OcaRoot, OcaOwnable, OcaLabelRepresentable {
-  override open class var classID: OcaClassID { OcaClassID("1.4") }
-  override open class var classVersion: OcaClassVersionNumber { 1 }
+  override open class var classID: OcaClassID {
+    OcaClassID("1.4")
+  }
+
+  override open class var classVersion: OcaClassVersionNumber {
+    1
+  }
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.1"),

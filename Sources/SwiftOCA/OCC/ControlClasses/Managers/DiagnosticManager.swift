@@ -23,6 +23,10 @@ open class OcaDiagnosticManager: OcaManager, @unchecked Sendable {
   }
 
   public func getLockStatus(_ oNo: OcaONo) async throws -> OcaString {
-    try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameters: oNo)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.1"),
+      parameters: oNo,
+      parameterNames: ["ONo"] // name not in AES70-2023 model
+    )
   }
 }

@@ -106,6 +106,7 @@ package actor Ocp1OpenSSLStreamController: Ocp1ControllerInternal, CustomStringC
           let messages = try await OcaDevice.receiveMessages { count in
             try await engineRef.read(
               count,
+              awaitingAllRead: true,
               read: { c in try await streamRef.read(count: c, awaitingAllRead: false) },
               write: { d in try await streamRef.write(d) }
             )

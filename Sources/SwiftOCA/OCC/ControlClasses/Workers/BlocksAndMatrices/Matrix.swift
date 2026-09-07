@@ -109,7 +109,8 @@ Sendable {
   ) async -> [String: any Sendable] {
     var jsonObject = await super.getJsonValue(flags: flags)
     let membersJson = try? await resolveMembers().map(defaultValue: nil, \.?.objectNumber)
-    jsonObject["Members"] = try? reencodeAsValidJSONObject(membersJson)
+    jsonObject[_jsonPropertyName(for: $members.propertyID)] =
+      (try? Ocp2Encoder().encodeValue(membersJson)).map { Ocp2JSON.sendable($0) }
     return jsonObject
   }
   #endif

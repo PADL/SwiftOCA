@@ -27,7 +27,8 @@ open class OcaDeviceManager: OcaManager {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.2")
+    getMethodID: OcaMethodID("3.2"),
+    ocp2Name: "GUID"
   )
   public var modelGUID = OcaModelGUID(
     reserved: 0,
@@ -43,7 +44,8 @@ open class OcaDeviceManager: OcaManager {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.3"),
-    getMethodID: OcaMethodID("3.6")
+    getMethodID: OcaMethodID("3.6"),
+    ocp2Name: "Description"
   )
   public var modelDescription = OcaModelDescription(
     manufacturer: "PADL",
@@ -54,27 +56,31 @@ open class OcaDeviceManager: OcaManager {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.4"),
-    setMethodID: OcaMethodID("3.5")
+    setMethodID: OcaMethodID("3.5"),
+    ocp2Name: "Name"
   )
   public var deviceName = ""
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.5"),
-    getMethodID: OcaMethodID("3.1")
+    getMethodID: OcaMethodID("3.1"),
+    ocp2Name: "OcaVersion"
   )
   public var version: OcaUint16 = OcaProtocolVersion.aes70_2024.rawValue
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.6"),
     getMethodID: OcaMethodID("3.7"),
-    setMethodID: OcaMethodID("3.8")
+    setMethodID: OcaMethodID("3.8"),
+    ocp2Name: "Role"
   )
   public var deviceRole = ""
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.9"),
-    setMethodID: OcaMethodID("3.10")
+    setMethodID: OcaMethodID("3.10"),
+    ocp2Name: "Code"
   )
   public var userInventoryCode = ""
 
@@ -115,7 +121,8 @@ open class OcaDeviceManager: OcaManager {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.14"),
-    getMethodID: OcaMethodID("3.20")
+    getMethodID: OcaMethodID("3.20"),
+    ocp2Name: "ID"
   )
   public var deviceRevisionID = ""
 
@@ -133,20 +140,23 @@ open class OcaDeviceManager: OcaManager {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.17"),
-    getMethodID: OcaMethodID("3.23")
+    getMethodID: OcaMethodID("3.23"),
+    ocp2Name: "State"
   )
   public var operationalState = OcaDeviceOperationalState()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.18"),
     getMethodID: OcaMethodID("3.24"),
-    setMethodID: OcaMethodID("3.25")
+    setMethodID: OcaMethodID("3.25"),
+    ocp2Name: "Enabled"
   )
   public var loggingEnabled = false
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.19"),
-    getMethodID: OcaMethodID("3.26")
+    getMethodID: OcaMethodID("3.26"),
+    ocp2Name: "ONo"
   )
   public var mostRecentPatchDatasetONo: OcaONo = OcaInvalidONo
 

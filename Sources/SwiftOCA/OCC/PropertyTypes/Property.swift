@@ -81,7 +81,16 @@ public extension OcaPropertyRepresentable {
 /// line tool which manages its own cache but shouldn't be used by applications generally
 @_spi(SwiftOCAPrivate)
 public protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
+  var getMethodID: OcaMethodID? { get }
   var setMethodID: OcaMethodID? { get }
+
+  /// The property's OCP.2 wire name: an explicit `ocp2Name`, else derived from its
+  /// Swift name (`Ocp2Naming.wireName`).
+  func _ocp2WireName(_ object: OcaRoot) -> String?
+
+  /// The OCP.2 names of the getter's response parameters (a bounded property's
+  /// `Gain`, `minGain`, `maxGain`).
+  func _ocp2ResponseNames(_ object: OcaRoot) -> [String]?
 
   var subject: AsyncCurrentValueSubject<PropertyValue> { get }
 
@@ -122,7 +131,9 @@ extension OcaPropertySubjectRepresentable {
 public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
   OcaPropertyChangeEventNotifiable
 {
-  public var valueType: Any.Type { Value.self }
+  public var valueType: Any.Type {
+    Value.self
+  }
 
   /// All property IDs supported by this property
   public var propertyIDs: [OcaPropertyID] {
@@ -203,9 +214,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     subject.value
   }
 
-  /// It's not possible to wrap `subscript(_enclosingInstance:wrapped:storage:)` because we can't
-  /// cast struct key paths to `ReferenceWritableKeyPath`. For property wrapper wrappers, use
-  /// these internal get/set functions.
+  // It's not possible to wrap `subscript(_enclosingInstance:wrapped:storage:)` because we can't
+  // cast struct key paths to `ReferenceWritableKeyPath`. For property wrapper wrappers, use
+  // these internal get/set functions.
 
   func _get(
     _enclosingInstance object: OcaRoot
@@ -270,15 +281,21 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
   typealias SetValueTransformer = @Sendable (OcaRoot, Value) async throws -> Encodable
   private let setValueTransformer: SetValueTransformer?
 
+  /// The AES70-2A name of the property's accessor parameter, where it differs from
+  /// the Swift property name upper-cased (the model's `Name` for `deviceName`).
+  public let ocp2Name: String?
+
   init(
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID?,
     setMethodID: OcaMethodID?,
+    ocp2Name: String? = nil,
     setValueTransformer: SetValueTransformer?
   ) {
     self.propertyID = propertyID
     self.getMethodID = getMethodID
     self.setMethodID = setMethodID
+    self.ocp2Name = ocp2Name
     subject = AsyncCurrentValueSubject(PropertyValue.initial)
     self.setValueTransformer = setValueTransformer
   }
@@ -286,12 +303,14 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
   public init(
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID? = nil,
-    setMethodID: OcaMethodID? = nil
+    setMethodID: OcaMethodID? = nil,
+    ocp2Name: String? = nil
   ) {
     self.init(
       propertyID: propertyID,
       getMethodID: getMethodID,
       setMethodID: setMethodID,
+      ocp2Name: ocp2Name,
       setValueTransformer: nil
     )
   }
@@ -327,7 +346,10 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
         }
       }
 
-      let returnValue: Value = try await object.sendCommandRrq(methodID: getMethodID)
+      let returnValue: Value = try await object.sendCommandRrq(
+        methodID: getMethodID,
+        responseNames: _ocp2ResponseNamesIfNeeded(object)
+      )
       if flags.contains(.cacheValue) {
         _send(object, .success(returnValue))
       }
@@ -350,6 +372,36 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
   }
 
+  /// Names are only looked up (an actor hop into the key-path cache) on an OCP.2
+  /// connection; OCP.1 never needs them.
+  private func _ocp2WireNameIfNeeded(_ object: OcaRoot) -> String? {
+    guard object.connectionDelegate?.controlProtocol != .ocp1 else { return nil }
+    return _ocp2WireName(object)
+  }
+
+  private func _ocp2ResponseNamesIfNeeded(_ object: OcaRoot) -> [String]? {
+    guard object.connectionDelegate?.controlProtocol != .ocp1 else { return nil }
+    return _ocp2ResponseNames(object)
+  }
+
+  public func _ocp2WireName(_ object: OcaRoot) -> String? {
+    if let ocp2Name {
+      return ocp2Name
+    }
+    guard let name = object.propertyName(for: propertyID) else { return nil }
+    return Ocp2Naming.wireName(name)
+  }
+
+  /// OCP.2 names for the getter's response: the property's wire name, or for a
+  /// bounded value the `Gain`, `minGain`, `maxGain` triple.
+  public func _ocp2ResponseNames(_ object: OcaRoot) -> [String]? {
+    guard let wireName = _ocp2WireName(object) else { return nil }
+    if Value.self is any OcaBoundedPropertyValueRepresentable.Type {
+      return Ocp2Naming.boundedWireNames(wireName)
+    }
+    return [wireName]
+  }
+
   func setValueIfMutable(
     _ object: OcaRoot,
     _ value: Value
@@ -364,17 +416,22 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
       value
     }
 
+    // on OCP.2 the parameter is named after the property
+    let parameterNames = _ocp2WireNameIfNeeded(object).map { [$0] }
+
     // setters need to support variable parameter counts
     if try await object.isSubscribed {
       // we'll get a notification (hoepfully) so, don't require a reply
       try await object.sendCommand(
         methodID: setMethodID!,
-        parameters: newValue
+        parameters: newValue,
+        parameterNames: parameterNames
       )
     } else {
       try await object.sendCommandRrq(
         methodID: setMethodID!,
-        parameters: newValue
+        parameters: newValue,
+        parameterNames: parameterNames
       )
 
       // if we're not expecting an event, then be sure to update it here
@@ -390,12 +447,18 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     _send(object, .initial)
   }
 
-  func onEvent(_ object: OcaRoot, event: OcaEvent, eventData data: Data) throws {
+  func onEvent(
+    _ object: OcaRoot,
+    event: OcaEvent,
+    eventData data: Data,
+    format: OcaParameterFormat
+  ) throws {
     precondition(event.eventID == OcaPropertyChangedEventID)
 
-    let eventData = try Ocp1Decoder().decode(
+    let eventData = try OcaEventDataCoding.decode(
       OcaPropertyChangedEventData<Value>.self,
-      from: data
+      from: data,
+      format: format
     )
     precondition(propertyIDs.contains(eventData.propertyID))
 
@@ -443,26 +506,15 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
   }
 
   #if NonEmbeddedBuild
+  /// The property as OCP.2 JSON: its wire name and its AES70-4 marshaled value.
   public func getJsonValue(
     _ object: OcaRoot,
     keyPath: AnyKeyPath,
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async throws -> [String: any Sendable] {
     let value = try await _getValue(object, flags: flags)
-    let jsonValue: any Sendable = if isNil(value) {
-      #if canImport(Foundation) && !canImport(FoundationEssentials)
-      NSNull()
-      #else
-      (any Sendable)?.none
-      #endif
-
-    } else if JSONSerialization.isValidJSONObject(value) {
-      value
-    } else {
-      try reencodeAsValidJSONObject(value)
-    }
-
-    return try [keyPath.jsonKey: jsonValue]
+    let name = _ocp2WireName(object) ?? propertyID.description
+    return try [name: Ocp2JSON.sendable(Ocp2Encoder().encodeValue(value))]
   }
   #endif
 
@@ -502,34 +554,3 @@ extension OcaProperty.PropertyValue: Hashable where Value: Hashable & Codable {
     }
   }
 }
-
-#if NonEmbeddedBuild
-extension AnyKeyPath {
-  // NOTE: This relies on the String(describing:) format of AnyKeyPath which is
-  // not part of Swift's public API. It has been stable in practice but could
-  // break in future Swift versions. A more robust approach would use a reverse
-  // lookup through the property cache.
-  var jsonKey: String {
-    get throws {
-      let fullString = String(describing: self)
-
-      // Find the last dot to separate the type from the property
-      guard let lastDotIndex = fullString.lastIndex(of: ".") else {
-        throw Ocp1Error.status(.badFormat)
-      }
-
-      let propertyPart = String(fullString[fullString.index(after: lastDotIndex)...])
-
-      // Remove leading underscore if present
-      guard propertyPart.hasPrefix("_") else {
-        throw Ocp1Error.status(.badFormat)
-      }
-
-      let withoutUnderscore = String(propertyPart.dropFirst())
-
-      // Capitalize first letter
-      return withoutUnderscore.prefix(1).uppercased() + withoutUnderscore.dropFirst()
-    }
-  }
-}
-#endif

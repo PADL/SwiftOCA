@@ -31,8 +31,8 @@ import Glibc
 #elseif canImport(Android)
 import Android
 #elseif canImport(WinSDK)
-import WinSDK
 import SocketAddress // for the Windows sa_family_t typealias
+import WinSDK
 #endif
 
 final class DeviceEventDelegate: OcaDeviceEventDelegate {
@@ -145,7 +145,21 @@ public enum DeviceApp {
     #if canImport(Darwin) || os(FreeBSD) || os(OpenBSD)
     listenAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
     #endif
-    let webSocketEndpoint = try await Ocp1WSDeviceEndpoint(address: listenAddress.data)
+    // OCP.1 and OCP.2 share the WebSocket port: OCP.2 clients offer the AES70-OCP.2
+    // subprotocol
+    let webSocketEndpoint = try await Ocp1WSDeviceEndpoint(
+      address: listenAddress.data,
+      controlProtocols: [.ocp1, .ocp2]
+    )
+    #endif
+
+    // OCP.2 (AES70-4, JSON) over TCP on its own port, port+3
+    #if (os(Linux) || canImport(FlyingSocks)) && NonEmbeddedBuild
+    listenAddress.sin_port = (port + 3).bigEndian
+    let jsonStreamEndpoint = try await Ocp1DeviceEndpoint(
+      address: listenAddress.data,
+      controlProtocol: .ocp2
+    )
     #endif
     #if os(macOS)
     let machPortEndpoint = try await Ocp1MachPortDeviceEndpoint(
@@ -181,7 +195,9 @@ public enum DeviceApp {
     #endif
 
     class MyBooleanActuator: SwiftOCADevice.OcaBooleanActuator {
-      override open class var classID: OcaClassID { OcaClassID(parent: super.classID, 65280) }
+      override open class var classID: OcaClassID {
+        OcaClassID(parent: super.classID, 65280)
+      }
     }
 
     let blockONo: OcaONo = 10000
@@ -283,8 +299,14 @@ public enum DeviceApp {
       #endif
       #if canImport(FlyingSocks)
       taskGroup.addTask {
-        print("Starting OCP.1 WebSocket endpoint \(webSocketEndpoint)...")
+        print("Starting OCP.1 and OCP.2 WebSocket endpoint \(webSocketEndpoint)...")
         try await webSocketEndpoint.run()
+      }
+      #endif
+      #if os(Linux) || canImport(FlyingSocks)
+      taskGroup.addTask {
+        print("Starting OCP.2 IPv4 stream endpoint \(jsonStreamEndpoint)...")
+        try await jsonStreamEndpoint.run()
       }
       #endif
       #if os(macOS)

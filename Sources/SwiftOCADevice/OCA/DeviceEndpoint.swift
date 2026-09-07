@@ -40,6 +40,13 @@ package protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
   nonisolated var logger: Logger { get }
   nonisolated var enableMessageTracing: Bool { get }
 
+  /// The control protocol controllers on this endpoint speak. Defaults to OCP.1.
+  nonisolated var controlProtocol: OcaControlProtocol { get }
+
+  /// Largest PDU accepted from a controller (enforced for OCP.2 framing). Override to
+  /// narrow it: the default lets a peer buffer 16 MB before a PDU is framed.
+  nonisolated var maximumPduSize: Int { get }
+
   @OcaDevice
   func add(controller: ControllerType) async
   @OcaDevice
@@ -47,6 +54,10 @@ package protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
 }
 
 extension OcaDeviceEndpointPrivate {
+  package nonisolated var controlProtocol: OcaControlProtocol { .ocp1 }
+
+  package nonisolated var maximumPduSize: Int { OcaControlProtocol.defaultMaximumPduSize }
+
   package func unlockAndRemove(controller: ControllerType) async {
     await controller.cancelKeepAlive()
 

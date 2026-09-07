@@ -26,6 +26,7 @@ The WebSocket client (WS client) uses Apple's `URLSessionWebSocketTask` and is t
 
 * **Device discovery**: `OcaConnectionBroker` discovers AES70 devices via DNS-SD/Bonjour (using `NetServiceBrowser` on Apple platforms, or `libdns_sd` on Linux), with support for TCP, UDP, and WebSocket service types. Devices can also be registered manually for direct connection without DNS-SD.
 * **WebSocket transport**: `Ocp1FlyingFoxConnection` provides client-side WebSocket connectivity on Apple platforms using `URLSessionWebSocketTask`.
+* **OCP.2 (AES70-4)**: the JSON protocol is a per-connection option (`Ocp1ConnectionOptions(controlProtocol: .ocp2)`) over TCP, WebSocket and the local loopback; the broker discovers `_ocajson._tcp` and `_ocajsonws._tcp` services. See [Documentation/OCP2.md](Documentation/OCP2.md).
 * **Mach port transport**: `Ocp1MachPortConnection` provides fast local IPC between processes on macOS using Mach ports.
 * **Property observation**: `@OcaProperty` and `@OcaBoundedProperty` wrappers expose property changes as `AsyncSequence` streams, enabling reactive UI updates.
 * **JSON serialization**: read the full state of any remote object or block tree as a JSON-compatible dictionary via `jsonObject`.
@@ -38,6 +39,7 @@ The WebSocket client (WS client) uses Apple's `URLSessionWebSocketTask` and is t
 * **Block and matrix containers**: `OcaBlock` and `OcaMatrix` for organizing objects into hierarchical or grid-based topologies.
 * **JSON serialization/deserialization**: persist and restore device state via `serialize`/`deserialize` and the parameter dataset API.
 * **Multiple transport endpoints**: run TCP, UDP, WebSocket, Unix domain socket, and Mach port (macOS) endpoints concurrently.
+* **OCP.2 (AES70-4)** endpoints: pass `controlProtocol: .ocp2` to the TCP or WebSocket endpoint to serve JSON controllers; they advertise the `_ocajson` service types.
 * **TLS-secured TCP** (`ocasec`): PSK (AES70 baseline) and X.509 certificate credentials on both Apple and Linux, with optional mTLS and TLS 1.3 external PSK. See [Documentation/TLS.md](Documentation/TLS.md).
 
 ### SwiftOCAUI
@@ -55,6 +57,7 @@ Sample code can be found in [Examples](Examples):
 * **[OCADevice](Examples/OCADevice)** — a sample AES70 device with a gain control, boolean actuator matrix, and multiple transport endpoints.
 * **[OCABrowser](Examples/OCABrowser)** — a macOS SwiftUI app that discovers devices via Bonjour and provides a navigable block browser with specialized control views.
 * **[OCABrokerTest](Examples/OCABrokerTest)** — a command-line tool that discovers devices and auto-connects as they appear.
+* **[Scripts/ocp2-nc.sh](Examples/Scripts/ocp2-nc.sh)** — a shell script that drives an OCP.2 (AES70-4) device with `nc`, for poking at one without a controller.
 
 [ocacli](https://github.com/PADL/ocacli) is a command-line OCA controller that is implemented using SwiftOCA. SwiftOCA is also compatible with third-party OCA controllers such as [AES70Explorer](https://aes70explorer.com).
 
@@ -125,6 +128,25 @@ let gain = try await OcaGain(
 let endpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(address: listenAddress)
 try await endpoint.run()
 ```
+
+### Talking to a device with `nc`
+
+An OCP.2 device frames one JSON PDU per line, so a single `nc` is enough to poke
+at one — no client library, no framing to get right. Against the sample device's
+OCP.2 stream endpoint (port 65003):
+
+```sh
+$ echo '{"ProtocolVersion":1,"Commands":[{"Handle":1,"TargetONo":1,"MethodID":[3,4]}]}' \
+    | nc -w 2 localhost 65003
+{"ProtocolVersion":1,"Responses":[{"StatusCode":"OK","Parameters":{"Name":"OCA Test"},"Handle":1}]}
+```
+
+`TargetONo` 1 is `OcaDeviceManager`, `MethodID` is `[DefLevel, Index]` (3.4 is
+`GetDeviceName`), and `Parameters` are keyed by their AES70-2A names.
+[Examples/Scripts/ocp2-nc.sh](Examples/Scripts/ocp2-nc.sh) goes further: several
+commands in one PDU, `CommandNRs`, keep-alives, and an EV2 subscription that
+receives a notification. The WebSocket endpoint negotiates the `AES70-OCP.2`
+subprotocol, so reach that one with `websocat` rather than `nc`.
 
 ### Discovering devices with OcaConnectionBroker
 

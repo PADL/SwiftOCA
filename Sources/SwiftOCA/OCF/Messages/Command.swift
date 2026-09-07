@@ -21,22 +21,58 @@ import FoundationEssentials
 import Foundation
 #endif
 
+/// Method parameters as carried on the wire. For OCP.1, `parameterCount` positional
+/// values encoded in `parameterData`; for OCP.2, `parameterData` is the serialised JSON
+/// `Parameters` object and `parameterCount` is unused.
 public struct Ocp1Parameters: Codable, Sendable {
   public let parameterCount: OcaUint8
   public let parameterData: Data
+  public let format: OcaParameterFormat
 
   public init(parameterCount: OcaUint8, parameterData: Data) {
     self.parameterCount = parameterCount
     self.parameterData = parameterData
+    format = .ocp1
+  }
+
+  /// OCP.2 parameters: `parameterData` is a serialised JSON object.
+  public init(ocp2ParameterData parameterData: Data) {
+    parameterCount = 0
+    self.parameterData = parameterData
+    format = .ocp2
   }
 
   public init() {
     self.init(parameterCount: 0, parameterData: Data())
   }
 
-  /// `true` when no parameters are carried.
+  /// `true` when no parameters are carried, in either format.
   public var isEmpty: Bool {
-    parameterCount == 0 && parameterData.isEmpty
+    switch format {
+    case .ocp1:
+      parameterCount == 0 && parameterData.isEmpty
+    case .ocp2:
+      parameterData.isEmpty
+    }
+  }
+
+  enum CodingKeys: CodingKey {
+    case parameterCount
+    case parameterData
+  }
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.init(
+      parameterCount: try container.decode(OcaUint8.self, forKey: .parameterCount),
+      parameterData: try container.decode(Data.self, forKey: .parameterData)
+    )
+  }
+
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(parameterCount, forKey: .parameterCount)
+    try container.encode(parameterData, forKey: .parameterData)
   }
 }
 

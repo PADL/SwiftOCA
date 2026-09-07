@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023-2024 PADL Software Pty Ltd
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -300,6 +300,22 @@ Sendable, CustomStringConvertible, Hashable {
     }
   }
 
+  /// Between 1 and `maxLength` bytes, as soon as any are buffered or arrive.
+  public func readSome(atMost maxLength: Int) async throws -> Data {
+    precondition(!isDatagram)
+
+    if receivedData.isEmpty {
+      try await drainChannel(atLeast: 1)
+      guard !receivedData.isEmpty else {
+        throw Ocp1Error.notConnected
+      }
+    }
+
+    let data = Data(receivedData.prefix(maxLength))
+    receivedData = receivedData.dropFirst(data.count)
+    return data
+  }
+
   public func read(count: Int) async throws -> Data {
     precondition(!isDatagram)
 
@@ -478,12 +494,13 @@ public final class Ocp1CFSocketUDPConnection: Ocp1CFSocketConnection {
   }
 
   override public var connectionPrefix: String {
-    "\(OcaUdpConnectionPrefix)/\(_currentPresentationAddress)"
+    let prefix = _connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
+    return "\(prefix)/\(_currentPresentationAddress)"
   }
 
   override public var isDatagram: Bool { true }
 
-  override public func read(_ length: Int) async throws -> Data {
+  override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     guard let _socket else { throw Ocp1Error.notConnected }
     var iterator = _socket.receivedMessages.makeAsyncIterator()
     guard let data = try await iterator.next()?.1 else {
@@ -505,14 +522,18 @@ public final class Ocp1CFSocketTCPConnection: Ocp1CFSocketConnection {
   }
 
   override public var connectionPrefix: String {
-    "\(OcaTcpConnectionPrefix)/\(_currentPresentationAddress)"
+    let prefix = _connectionPrefix(ocp1: OcaTcpConnectionPrefix, ocp2: OcaJsonTcpConnectionPrefix)
+    return "\(prefix)/\(_currentPresentationAddress)"
   }
 
   override public var isDatagram: Bool { false }
 
-  override public func read(_ length: Int) async throws -> Data {
+  override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     guard let _socket else { throw Ocp1Error.notConnected }
-    return try await _socket.read(count: length)
+    if awaitingAllRead {
+      return try await _socket.read(count: length)
+    }
+    return try await _socket.readSome(atMost: length)
   }
 
   override public func write(_ data: Data) async throws -> Int {

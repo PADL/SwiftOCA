@@ -22,10 +22,12 @@ import FoundationEssentials
 import Foundation
 #endif
 
-/// A client-side OCP.1 connection over WebSockets.
+/// A client-side OCP.1 or OCP.2 connection over WebSockets.
 ///
-/// WebSocket ping/pong frames handle connection liveness, so no OCP.1 keepalive
-/// (heartbeat) messages are required. `heartbeatTime` is `.zero`.
+/// WebSocket ping/pong frames handle connection liveness, so no keepalive
+/// (heartbeat) messages are required by default; `heartbeatTime` is `.zero` unless
+/// the options override it. OCP.1 travels in binary frames, OCP.2 in text frames with
+/// the `AES70-OCP.2` subprotocol (AES70-4 10.4.3.4).
 public final class Ocp1FlyingFoxConnection: Ocp1Connection {
   private let url: URL
   private var webSocketTask: URLSessionWebSocketTask?
@@ -52,7 +54,11 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
   }
 
   override public nonisolated var connectionPrefix: String {
-    "\(OcaWebSocketTcpConnectionPrefix)/\(url.absoluteString)"
+    let prefix = _connectionPrefix(
+      ocp1: OcaWebSocketTcpConnectionPrefix,
+      ocp2: OcaJsonWebSocketTcpConnectionPrefix
+    )
+    return "\(prefix)/\(url.absoluteString)"
   }
 
   /// WebSocket ping/pong handles liveness; no OCP.1 keepalive needed.
@@ -72,11 +78,18 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
 
     let session = URLSession(configuration: .default)
     self.session = session
-    let task = session.webSocketTask(with: url)
-    task.maximumMessageSize = Int(UInt16.max)
+    let task: URLSessionWebSocketTask = if let subprotocol = controlProtocol.webSocketSubprotocol {
+      session.webSocketTask(with: url, protocols: [subprotocol])
+    } else {
+      session.webSocketTask(with: url)
+    }
+    task.maximumMessageSize = controlProtocol.webSocketUsesTextFrames
+      ? options.maximumPduSize
+      : Int(UInt16.max)
     webSocketTask = task
     task.resume()
 
+    let usesTextFrames = controlProtocol.webSocketUsesTextFrames
     receiveTask = Task { [weak self] in
       while !Task.isCancelled {
         guard let self else { return }
@@ -84,11 +97,15 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
           let message = try await task.receive()
           switch message {
           case let .data(data):
+            guard !usesTextFrames else {
+              // AES70-4 10.4.3.4.4: OCP.2 travels in text frames only
+              task.cancel(with: .unsupportedData, reason: nil)
+              receivedMessageContinuation?.finish(throwing: Ocp1Error.notConnected)
+              return
+            }
             receivedMessageContinuation?.yield(data)
           case let .string(string):
-            if let data = string.data(using: .utf8) {
-              receivedMessageContinuation?.yield(data)
-            }
+            receivedMessageContinuation?.yield(Data(string.utf8))
           @unknown default:
             break
           }
@@ -124,7 +141,9 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
     try await super.disconnectDevice()
   }
 
-  override public func read(_ length: Int) async throws -> Data {
+  /// One frame per read, whatever `length` and `awaitingAllRead`: the transport is
+  /// message-oriented.
+  override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     guard let receivedMessageStream else {
       throw Ocp1Error.notConnected
     }
@@ -138,7 +157,11 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
     guard let webSocketTask else {
       throw Ocp1Error.notConnected
     }
-    try await webSocketTask.send(.data(data))
+    if controlProtocol.webSocketUsesTextFrames {
+      try await webSocketTask.send(.string(String(decoding: data, as: UTF8.self)))
+    } else {
+      try await webSocketTask.send(.data(data))
+    }
     return data.count
   }
 }

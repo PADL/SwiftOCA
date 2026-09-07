@@ -129,19 +129,24 @@ public extension OcaControllerDefaultSubscribing {
     }
   }
 
+  /// OCP.1-encoded parameters
   func notifySubscribers(
     _ event: OcaEvent,
     parameters: Data
+  ) async throws {
+    try await notifySubscribers(event, parameters: OcaEventParameters(parameters, event: event))
+  }
+
+  func notifySubscribers(
+    _ event: OcaEvent,
+    parameters eventParameters: OcaEventParameters
   ) async throws {
     guard let subscriptions = subscriptions[event.emitterONo] else {
       return
     }
 
-    let property: OcaPropertyID? = if event.eventID == OcaPropertyChangedEventID {
-      try OcaPropertyID(bytes: parameters)
-    } else {
-      nil
-    }
+    let property = eventParameters.propertyID
+    let format = controlProtocol.parameterFormat
 
     for subscription in subscriptions {
       guard subscription.property == nil || property == subscription.property else {
@@ -150,6 +155,11 @@ public extension OcaControllerDefaultSubscribing {
 
       switch subscription.version {
       case .ev1:
+        guard format == .ocp1 else {
+          // EV1 subscriptions are refused on OCP.2, so this cannot arise
+          throw Ocp1Error.unsupportedControlProtocol
+        }
+        let parameters = try eventParameters.encoded(as: .ocp1)
         let eventData = Ocp1EventData(
           event: subscription.event,
           eventParameters: parameters
@@ -179,7 +189,8 @@ public extension OcaControllerDefaultSubscribing {
         let notification = Ocp1Notification2(
           event: subscription.event,
           notificationType: .event,
-          data: parameters
+          data: try eventParameters.encoded(as: format),
+          dataFormat: format
         )
         if subscription.notificationDeliveryMode == .lightweight {
           try await (self as! OcaControllerLightweightNotifying)

@@ -83,7 +83,4 @@ package func reencodeAsValidJSONObject(_ value: some Codable) throws -> any Send
     .value as! any Sendable
 }
 
-enum OcaJSONPropertyKeys: String {
-  case type
-}
 #endif

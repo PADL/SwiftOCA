@@ -21,10 +21,14 @@ import FoundationEssentials
 import Foundation
 #endif
 
+/// Marks a bounded property value, whose OCP.2 response is named after the property
+/// (`Gain`, `minGain`, `maxGain`) rather than after its fields.
+public protocol OcaBoundedPropertyValueRepresentable {}
+
 public struct OcaBoundedPropertyValue<
   Value: Codable & Comparable &
     Sendable
->: Ocp1ParametersReflectable, Codable, Equatable, Sendable {
+>: Ocp1ParametersReflectable, Codable, Equatable, Sendable, OcaBoundedPropertyValueRepresentable {
   public var value: Value
   public var minValue: Value
   public var maxValue: Value
@@ -82,6 +86,7 @@ public struct OcaBoundedProperty<
     [_storage.propertyID]
   }
 
+  public var getMethodID: OcaMethodID? { _storage.getMethodID }
   public var setMethodID: OcaMethodID? { _storage.setMethodID }
 
   fileprivate var _storage: Property
@@ -122,14 +127,24 @@ public struct OcaBoundedProperty<
   public init(
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID,
-    setMethodID: OcaMethodID? = nil
+    setMethodID: OcaMethodID? = nil,
+    ocp2Name: String? = nil
   ) {
     _storage = OcaProperty(
       propertyID: propertyID,
       getMethodID: getMethodID,
       setMethodID: setMethodID,
+      ocp2Name: ocp2Name,
       setValueTransformer: { $1.value }
     )
+  }
+
+  public func _ocp2WireName(_ object: OcaRoot) -> String? {
+    _storage._ocp2WireName(object)
+  }
+
+  public func _ocp2ResponseNames(_ object: OcaRoot) -> [String]? {
+    _storage._ocp2ResponseNames(object)
   }
 
   public static subscript<T: OcaRoot>(
@@ -151,13 +166,18 @@ public struct OcaBoundedProperty<
     }
   }
 
-  func onEvent(_ object: OcaRoot, event: OcaEvent, eventData data: Data) throws {
+  func onEvent(
+    _ object: OcaRoot,
+    event: OcaEvent,
+    eventData data: Data,
+    format: OcaParameterFormat
+  ) throws {
     precondition(event.eventID == OcaPropertyChangedEventID)
 
-    let decoder = Ocp1Decoder()
-    let eventData = try decoder.decode(
+    let eventData = try OcaEventDataCoding.decode(
       OcaPropertyChangedEventData<Value>.self,
-      from: data
+      from: data,
+      format: format
     )
     precondition(propertyIDs.contains(eventData.propertyID))
 
@@ -198,12 +218,14 @@ public struct OcaBoundedProperty<
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async throws -> [String: any Sendable] {
     let value = try await _getValue(object, flags: flags)
-    let jsonKey = try keyPath.jsonKey
-    // a gain's range is commonly bounded by -inf dB, which JSON cannot encode
+    // the shape of the property's OCP.2 getter response: Gain, minGain, maxGain
+    let names = _ocp2ResponseNames(object)
+      ?? Ocp2Naming.boundedWireNames(propertyIDs[0].description)
+    let encoder = Ocp2Encoder()
     return [
-      "Min\(jsonKey)": _jsonNonFiniteSafe(value.minValue),
-      "Max\(jsonKey)": _jsonNonFiniteSafe(value.maxValue),
-      "\(jsonKey)": _jsonNonFiniteSafe(value.value),
+      names[0]: Ocp2JSON.sendable(try encoder.encodeValue(value.value)),
+      names[1]: Ocp2JSON.sendable(try encoder.encodeValue(value.minValue)),
+      names[2]: Ocp2JSON.sendable(try encoder.encodeValue(value.maxValue)),
     ]
   }
   #endif

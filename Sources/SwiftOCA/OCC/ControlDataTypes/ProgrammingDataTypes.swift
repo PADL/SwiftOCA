@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public enum OcaRelationalOperator: OcaUint8, Codable, Sendable {
+public enum OcaRelationalOperator: OcaUint8, Codable, Sendable, CaseIterable {
   case none = 0
   case equality = 1
   case inequality = 2

@@ -28,6 +28,7 @@ final class Ocp1MessageBatcher: Sendable {
   private let batchSize: OcaUint32
   private let dequeueInterval: Duration
   private let sendEncodedPdu: SendEncodedPDU
+  private let controlProtocol: OcaControlProtocol
 
   private var encodedPdus = [EncodedPDU]()
   private var lastMessageType: OcaMessageType?
@@ -38,10 +39,12 @@ final class Ocp1MessageBatcher: Sendable {
   package init(
     batchSize: OcaUint32,
     dequeueInterval: Duration = .zero,
+    controlProtocol: OcaControlProtocol = .ocp1,
     sendEncodedPdu: @escaping SendEncodedPDU
   ) {
     self.batchSize = batchSize
     self.dequeueInterval = dequeueInterval
+    self.controlProtocol = controlProtocol
     self.sendEncodedPdu = sendEncodedPdu
   }
 
@@ -50,7 +53,8 @@ final class Ocp1MessageBatcher: Sendable {
   }
 
   var currentSize: Int {
-    Ocp1Connection.MinimumPduSize + encodedPdus.reduce(0) { $0 + $1.count }
+    controlProtocol.pduOverhead(messageCount: encodedPdus.count + 1) +
+      encodedPdus.reduce(0) { $0 + $1.count }
   }
 
   private func canCombine(type messageType: OcaMessageType) -> Bool {
@@ -60,17 +64,19 @@ final class Ocp1MessageBatcher: Sendable {
   }
 
   private func send(encodedPdus: [EncodedPDU], type messageType: OcaMessageType) async throws {
-    let encodedPdu = try Ocp1Connection.encodeOcp1MessagePduData(
+    let encodedPdu = try controlProtocol.assemblePdu(
       type: messageType,
-      encodedPdus: encodedPdus
+      encodedMessages: encodedPdus
     )
 
     try await sendEncodedPdu(Data(encodedPdu))
   }
 
-  func enqueue(_ message: some _Ocp1MessageCodable, type messageType: OcaMessageType) async throws {
-    var encodedPdu = EncodedPDU()
-    try message.encode(type: messageType, into: &encodedPdu)
+  func enqueue(
+    _ message: some _Ocp1MessageCodable,
+    type messageType: OcaMessageType
+  ) async throws {
+    let encodedPdu: EncodedPDU = try controlProtocol.encodeMessage(message, type: messageType)
 
     // short-circuit, send immediately if batching is disabled
     guard dequeueInterval > .zero else {
@@ -165,7 +171,7 @@ extension Ocp1Connection {
   ) -> (UInt32, Duration) {
     let batchSize = batchingOptions.batchSize ??
       (isDatagram ? OcaUint32(Ocp1MaximumDatagramPduSize) : OcaUint32(OcaUint16.max))
-    var dequeueInterval = batchingOptions.batchThreshold ?? heartbeatTime / 100
+    var dequeueInterval = batchingOptions.batchThreshold ?? effectiveHeartbeatTime / 100
     if dequeueInterval == .zero { dequeueInterval = .milliseconds(10) }
     return (batchSize, dequeueInterval)
   }
@@ -184,6 +190,7 @@ extension Ocp1Connection {
     batcher = Ocp1MessageBatcher(
       batchSize: batchSize,
       dequeueInterval: dequeueInterval,
+      controlProtocol: controlProtocol,
       sendEncodedPdu: { [weak self] data in
         try await self?.sendMessagePduData(data)
       }

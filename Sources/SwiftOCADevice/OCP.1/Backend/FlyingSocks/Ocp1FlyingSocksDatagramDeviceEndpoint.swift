@@ -62,6 +62,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   private let address: SocketAddress
   package let timeout: Duration
   package let device: OcaDevice
+  package let controlProtocol: OcaControlProtocol
   package let logger: Logger
   package nonisolated(unsafe) var enableMessageTracing = false
 
@@ -79,21 +80,30 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
     address addressData: Data,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksDatagramDeviceEndpoint")
   ) async throws {
     let address = try FlyingSocks.AnySocketAddress(data: addressData)
-    try await self.init(address: address, timeout: timeout, device: device, logger: logger)
+    try await self.init(
+      address: address,
+      timeout: timeout,
+      device: device,
+      controlProtocol: controlProtocol,
+      logger: logger
+    )
   }
 
   private init(
     address: SocketAddress,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
+    controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksDatagramDeviceEndpoint")
   ) async throws {
     self.address = address
     self.timeout = timeout
     self.device = device
+    self.controlProtocol = controlProtocol
     self.logger = logger
 
     pool = Self.defaultPool()
@@ -247,7 +257,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
   }
 
   public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
-    .udp
+    OcaNetworkAdvertisingServiceType.udp.withControlProtocol(controlProtocol)
   }
 
   public nonisolated var port: UInt16 {

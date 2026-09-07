@@ -91,7 +91,9 @@ extension Ocp1Connection {
       repeat {
         requests.count += 1
         let handle = OcaUint32(truncatingIfNeeded: requests.count)
-        if handle != 0 { return handle }
+        if handle != 0 {
+          return handle
+        }
       } while true
     }
 
@@ -139,7 +141,9 @@ extension Ocp1Connection {
     /// Reaching that needs 2^32 requests on one connection, so it is accepted.
     func releaseCommandHandle(_ handle: OcaUint32) {
       _requests.withLock { requests in
-        if case .waiting = requests.entries[handle] { return }
+        if case .waiting = requests.entries[handle] {
+          return
+        }
         requests.entries.removeValue(forKey: handle)
       }
     }
@@ -242,7 +246,9 @@ extension Ocp1Connection {
     /// state it means to exercise instead of sleeping and hoping.
     func isWaiting(handle: OcaUint32) -> Bool {
       _requests.withLock {
-        if case .waiting = $0.entries[handle] { return true }
+        if case .waiting = $0.entries[handle] {
+          return true
+        }
         return false
       }
     }
@@ -273,40 +279,35 @@ extension Ocp1Connection {
 
 extension Ocp1Connection.Monitor {
   private func receiveMessagePdu(
-    _ connection: Ocp1Connection
+    _ connection: Ocp1Connection,
+    reader: any OcaPduReader,
+    source: ReadSource
   ) async throws -> (OcaMessageType, [Ocp1Message]) {
-    var messagePduData = try await connection.read(Ocp1Connection.MinimumPduSize)
-
-    guard messagePduData.count > 0 else {
-      throw Ocp1Error.notConnected
+    let messagePduData: Data
+    do {
+      messagePduData = try await reader.nextPdu(read: source.read)
+    } catch let error as Ocp1Error {
+      switch error {
+      case .pduTooShort, .invalidSyncValue, .invalidPduSize:
+        connection.logger.warning("\(connection): dropping malformed PDU: \(error)")
+      default:
+        break
+      }
+      throw error
     }
 
-    // just parse enough of the protocol in order to read rest of message
-    // `syncVal: OcaUint8` || `protocolVersion: OcaUint16` || `pduSize: OcaUint32`
-    guard messagePduData.count >= Ocp1Connection.MinimumPduSize else {
-      connection.logger.warning("PDU of size \(messagePduData.count) is too short")
-      throw Ocp1Error.pduTooShort
-    }
-    guard messagePduData[0] == Ocp1SyncValue else {
-      connection.logger.warning(
-        "PDU has invalid sync value \(messagePduData.prefix(1).hexString)"
-      )
-      throw Ocp1Error.invalidSyncValue
-    }
+    return try connection.controlProtocol.decodePdu(messagePduData)
+  }
 
-    let pduSize: OcaUint32 = messagePduData.decodeInteger(index: 3)
-    guard pduSize >= (Ocp1Connection.MinimumPduSize - 1)
-    else { // doesn't include sync byte
-      connection.logger.warning("PDU size \(pduSize) is less than minimum PDU size")
-      throw Ocp1Error.invalidPduSize
-    }
+  /// The connection's read entry point, formed once per receive loop rather than per
+  /// PDU: `connection.read` is a partial application of an actor-isolated method, so
+  /// each mention of it allocates a closure.
+  struct ReadSource {
+    let read: (Int, Bool) async throws -> Data
 
-    let bytesLeft = Int(pduSize) + 1 - messagePduData.count
-    if bytesLeft > 0 {
-      messagePduData += try await connection.read(bytesLeft)
+    init(_ connection: Ocp1Connection) {
+      read = connection.read(_:awaitingAllRead:)
     }
-
-    return try Ocp1Connection.decodeOcp1MessagePdu(from: messagePduData)
   }
 
   private func processMessage(
@@ -344,8 +345,16 @@ extension Ocp1Connection.Monitor {
     }
   }
 
-  private func receiveMessage(_ connection: Ocp1Connection) async throws {
-    let (_, messages) = try await receiveMessagePdu(connection)
+  private func receiveMessage(
+    _ connection: Ocp1Connection,
+    reader: any OcaPduReader,
+    source: ReadSource
+  ) async throws {
+    let (_, messages) = try await receiveMessagePdu(
+      connection,
+      reader: reader,
+      source: source
+    )
 
     updateLastMessageReceivedTime()
     await onDatagramConnectionOpen(connection)
@@ -365,7 +374,7 @@ extension Ocp1Connection.Monitor {
   }
 
   private func keepAlive(_ connection: Ocp1Connection) async throws {
-    let heartbeatTime = await connection.heartbeatTime
+    let heartbeatTime = await connection.effectiveHeartbeatTime
     let keepAliveThreshold = heartbeatTime * 3
 
     repeat {
@@ -393,15 +402,30 @@ extension Ocp1Connection.Monitor {
 
   @concurrent
   func receiveMessages(_ connection: Ocp1Connection) async throws {
-    let heartbeatTime = await connection.heartbeatTime
+    let heartbeatTime = await connection.effectiveHeartbeatTime
+    let controlProtocol = connection.controlProtocol
+    // `isMessageOriented` describes writes (whole PDUs per send, so the write queue
+    // can be bypassed); a stream that takes whole PDUs on send may still deliver
+    // coalesced or partial ones on receive. Only a datagram guarantees one PDU per
+    // read, so that is what the reader is given.
+    let (isDatagram, maximumPduSize) = await (
+      connection.isDatagram,
+      connection.options.maximumPduSize
+    )
 
     do {
       try await withThrowingTaskGroup(of: Void.self) { group in
         group.addTask { [weak self] in
+          // one reader per receive loop: it buffers bytes between PDUs
+          let reader = controlProtocol.makeReader(
+            isMessageOriented: isDatagram,
+            maximumPduSize: maximumPduSize
+          )
+          let source = ReadSource(connection)
           repeat {
             try Task.checkCancellation()
             guard let self else { return }
-            try await receiveMessage(connection)
+            try await receiveMessage(connection, reader: reader, source: source)
           } while true
         }
         if heartbeatTime > .zero {

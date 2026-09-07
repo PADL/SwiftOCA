@@ -25,7 +25,11 @@ open class OcaDeviceTimeManager: OcaManager, @unchecked Sendable {
   }
 
   public func set(deviceTimeNTP time: OcaTimeNTP) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.2"), parameters: time)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.2"),
+      parameters: time,
+      parameterNames: ["DeviceTime"]
+    )
   }
 
   @OcaProperty(
@@ -48,7 +52,11 @@ open class OcaDeviceTimeManager: OcaManager, @unchecked Sendable {
   }
 
   public func set(deviceTimePTP time: OcaTime) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameters: time)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.7"),
+      parameters: time,
+      parameterNames: ["DeviceTime"]
+    )
   }
 
   public convenience init() {

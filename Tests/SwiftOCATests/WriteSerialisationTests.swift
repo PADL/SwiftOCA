@@ -46,7 +46,7 @@ private final class ChunkedWriteConnection: Ocp1Connection, @unchecked Sendable 
 
   override var heartbeatTime: Duration { .zero }
 
-  override func read(_ length: Int) async throws -> Data {
+  override func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     try await Task.sleep(for: .seconds(3600))
     throw Ocp1Error.notConnected
   }
