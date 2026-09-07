@@ -287,7 +287,9 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     try await sendCommandRrq(methodID: OcaMethodID("3.24"), parameters: id)
   }
 
-  public func add(endpoint: OcaMediaStreamEndpoint) async throws -> OcaMediaStreamEndpointID {
+  /// Returns the given descriptor with its IDInternal set to the ID the device allocated.
+  @discardableResult
+  public func add(endpoint: OcaMediaStreamEndpoint) async throws -> OcaMediaStreamEndpoint {
     try await sendCommandRrq(methodID: OcaMethodID("3.25"), parameters: endpoint)
   }
 

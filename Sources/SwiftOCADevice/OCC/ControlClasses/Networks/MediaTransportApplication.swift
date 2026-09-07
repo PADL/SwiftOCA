@@ -190,7 +190,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func add(endpoint: OcaMediaStreamEndpoint) async throws -> OcaMediaStreamEndpointID {
+  /// Returns the given descriptor with its IDInternal set to the allocated endpoint ID.
+  open func add(endpoint: OcaMediaStreamEndpoint) async throws -> OcaMediaStreamEndpoint {
     throw Ocp1Error.status(.notImplemented)
   }
 

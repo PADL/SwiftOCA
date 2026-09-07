@@ -115,7 +115,9 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
     try await sendCommandRrq(methodID: OcaMethodID("3.3"), parameters: id)
   }
 
-  public func add(session: OcaMediaTransportSession) async throws -> OcaMediaTransportSessionID {
+  /// Returns the given descriptor with its IDInternal set to the ID the device allocated.
+  @discardableResult
+  public func add(session: OcaMediaTransportSession) async throws -> OcaMediaTransportSession {
     try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: session)
   }
 
@@ -154,10 +156,12 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
 
   // MARK: - Connections
 
+  /// Returns the given descriptor with its ID set to the ID the device allocated.
+  @discardableResult
   public func add(
     connection: OcaMediaTransportSessionConnection,
     to sessionID: OcaMediaTransportSessionID
-  ) async throws -> OcaMediaTransportSessionConnectionID {
+  ) async throws -> OcaMediaTransportSessionConnection {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.13"),
       parameters: AddConnectionParameters(sessionID: sessionID, connection: connection)

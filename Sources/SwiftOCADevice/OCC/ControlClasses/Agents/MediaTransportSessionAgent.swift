@@ -106,7 +106,8 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
 
   // MARK: - Overridable behaviour
 
-  open func add(session: OcaMediaTransportSession) async throws -> OcaMediaTransportSessionID {
+  /// Returns the given descriptor with its IDInternal set to the allocated session ID.
+  open func add(session: OcaMediaTransportSession) async throws -> OcaMediaTransportSession {
     throw Ocp1Error.status(.notImplemented)
   }
 
@@ -134,10 +135,11 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     throw Ocp1Error.status(.notImplemented)
   }
 
+  /// Returns the given descriptor with its ID set to the allocated connection ID.
   open func add(
     connection: OcaMediaTransportSessionConnection,
     to sessionID: OcaMediaTransportSessionID
-  ) async throws -> OcaMediaTransportSessionConnectionID {
+  ) async throws -> OcaMediaTransportSessionConnection {
     throw Ocp1Error.status(.notImplemented)
   }
 

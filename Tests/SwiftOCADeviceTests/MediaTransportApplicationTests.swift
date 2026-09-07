@@ -62,16 +62,11 @@ func XCTAssertThrowsStatus(
 private final class TestMediaTransportApplication: SwiftOCADevice.OcaMediaTransportApplication {
   var appliedCommands = [(OcaMediaStreamEndpointID, OcaMediaStreamEndpointCommand)]()
 
-  override func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.25"):
-      throw Ocp1Error.status(.notImplemented)
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  override func add(endpoint: OcaMediaStreamEndpoint) async throws -> OcaMediaStreamEndpoint {
+    var endpoint = endpoint
+    endpoint.idInternal = (endpoints.map(\.idInternal).max() ?? 0) + 1
+    insert(endpoint: endpoint, status: OcaMediaStreamEndpointStatus(state: .ready))
+    return endpoint
   }
 
   override func applyEndpointCommand(
@@ -161,9 +156,12 @@ final class MediaTransportApplicationTests: XCTestCase {
     XCTAssertEqual(application.appliedCommands.first?.0, 1)
     XCTAssertEqual(application.appliedCommands.first?.1, .start)
 
-    await XCTAssertThrowsStatus(.notImplemented) {
-      try await client.add(endpoint: OcaMediaStreamEndpoint(idInternal: 2, direction: .input))
-    }
+    // AddEndpoint returns the whole descriptor carrying the allocated ID
+    let added = try await client
+      .add(endpoint: OcaMediaStreamEndpoint(idInternal: 0, direction: .input, userLabel: "Added"))
+    XCTAssertEqual(added.idInternal, 1002)
+    XCTAssertEqual(added.userLabel, "Added")
+    XCTAssertEqual(try application.endpoint(1002).direction, .input)
     await XCTAssertThrowsStatus(.notImplemented) {
       try await client.setEndpoint(1, alignmentLevel: -18.0)
     }

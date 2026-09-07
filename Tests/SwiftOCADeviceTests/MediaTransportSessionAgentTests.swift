@@ -28,11 +28,30 @@ private final class TestSessionAgent: SwiftOCADevice.OcaMediaTransportSessionAge
     from controller: any OcaController
   ) async throws -> Ocp1Response {
     switch command.methodID {
-    case OcaMethodID("3.4"), OcaMethodID("3.9"):
+    case OcaMethodID("3.9"):
       throw Ocp1Error.status(.notImplemented)
     default:
       return try await super.handleCommand(command, from: controller)
     }
+  }
+
+  override func add(session: OcaMediaTransportSession) async throws -> OcaMediaTransportSession {
+    var session = session
+    session.idInternal = (sessions.map(\.idInternal).max() ?? 0) + 1
+    insert(session: session, status: OcaMediaTransportSessionStatus(state: .unconfigured))
+    return session
+  }
+
+  override func add(
+    connection: OcaMediaTransportSessionConnection,
+    to sessionID: OcaMediaTransportSessionID
+  ) async throws -> OcaMediaTransportSessionConnection {
+    var session = try session(sessionID)
+    var connection = connection
+    connection.id = (session.connections.map(\.id).max() ?? 0) + 1
+    session.connections.append(connection)
+    try update(session: session)
+    return connection
   }
 
   override func configureConnection(
@@ -108,9 +127,16 @@ final class MediaTransportSessionAgentTests: XCTestCase {
     let streaming = try await client.getSession(1)
     XCTAssertTrue(streaming.streamingEnabled)
 
-    await XCTAssertThrowsStatus(.notImplemented) {
-      try await client.add(session: OcaMediaTransportSession(idInternal: 2))
-    }
+    // AddSession and AddConnection return the whole descriptor carrying the allocated ID
+    let added = try await client.add(session: OcaMediaTransportSession(idInternal: 0))
+    XCTAssertEqual(added.idInternal, 2)
+    let connection = try await client.add(
+      connection: OcaMediaTransportSessionConnection(id: 0, localEndpointID: 5, remoteEndpointID: OcaBlob()),
+      to: 2
+    )
+    XCTAssertEqual(connection.id, 1)
+    XCTAssertEqual(connection.localEndpointID, 5)
+
     await XCTAssertThrowsStatus(.notImplemented) { try await client.startStreaming(session: 1) }
     await XCTAssertThrowsStatus(.notImplemented) { try await client.reset(session: 1) }
     await XCTAssertThrowsStatus(.parameterOutOfRange) { try await client.getSession(9) }
