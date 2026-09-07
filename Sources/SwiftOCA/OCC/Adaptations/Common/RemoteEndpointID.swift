@@ -55,6 +55,23 @@ public enum OcaRemoteEndpointID {
   }
 }
 
+/// Session status adaptation data is adaptation-specific; this renders the forms the
+/// library knows so tools can show them without decoding them.
+public enum OcaSessionStatusDescription {
+  public static func description(of blob: OcaBlob, sessionType: OcaString) -> String? {
+    switch sessionType {
+    case MilanAdaptation.sessionType:
+      guard let milan = try? blob.decode(MilanSessionStatusAdaptationData.self) else { return nil }
+      var text = "\(milan.substate)"
+      if milan.srpFailureCode != 0 { text += " srp=\(milan.srpFailureCode)" }
+      if milan.msrpAccumulatedLatency != 0 { text += " latency=\(milan.msrpAccumulatedLatency)ns" }
+      return text
+    default:
+      return nil
+    }
+  }
+}
+
 extension OcaBlob {
   init?(hexString: String) {
     let digits = hexString.hasPrefix("0x") ? String(hexString.dropFirst(2)) : hexString
