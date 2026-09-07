@@ -98,6 +98,20 @@ public struct MilanMediaStreamEndpointIDExternal: Ocp1TypedBlobRepresentable, Se
     self.entityID = entityID
     self.streamIndex = streamIndex
   }
+
+  /// "<entity ID in hex>:<stream index>", the form used by controllers and tools.
+  public init?(string: String) {
+    let parts = string.split(separator: ":", maxSplits: 1).map(String.init)
+    guard parts.count == 2,
+          let entityID = OcaUint64(parts[0].hasPrefix("0x") ? String(parts[0].dropFirst(2)) : parts[0], radix: 16),
+          let streamIndex = OcaUint16(parts[1])
+    else { return nil }
+    self.init(entityID: entityID, streamIndex: streamIndex)
+  }
+
+  public var description: String {
+    "\(String(entityID, radix: 16)):\(streamIndex)"
+  }
 }
 
 /// OcaMediaStreamEndpoint.AdaptationData; all zero while the endpoint is NotReady.

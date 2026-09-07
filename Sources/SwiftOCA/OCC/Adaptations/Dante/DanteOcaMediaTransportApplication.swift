@@ -63,6 +63,25 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication, @unc
     try await sendCommandRrq(methodID: OcaMethodID("4.5"), parameters: id)
   }
 
+  /// Installs a Dante subscription (AES70-23 §9.2.3): SetChannelEndpoint with the
+  /// transmit channel as the receive channel endpoint's RemoteAddress.
+  public func subscribe(channelEndpoint id: OcaID16, to address: DanteChannelAddress) async throws {
+    var endpoint = try await getChannelEndpoint(id)
+    var data = (try? endpoint.adaptationData.decode(DanteChannelEndpointAdaptationData.self))
+      ?? DanteChannelEndpointAdaptationData(mediaProtocol: .atp)
+    data.remoteAddress = address
+    endpoint.adaptationData = try data.blob
+    try await setChannelEndpoint(id, endpoint)
+  }
+
+  /// `address` is "<channel>@<device>".
+  public func subscribe(channelEndpoint id: OcaID16, to address: String) async throws {
+    guard let address = DanteChannelAddress(string: address) else {
+      throw Ocp1Error.status(.parameterError)
+    }
+    try await subscribe(channelEndpoint: id, to: address)
+  }
+
   public func add(channelEndpoint: OcaChannelEndpoint) async throws -> OcaID16 {
     try await sendCommandRrq(methodID: OcaMethodID("4.6"), parameters: channelEndpoint)
   }
