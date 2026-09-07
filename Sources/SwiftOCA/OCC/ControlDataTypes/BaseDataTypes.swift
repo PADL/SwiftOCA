@@ -205,7 +205,7 @@ public struct OcaPortID: Codable, Sendable, Hashable {
   }
 }
 
-public struct OcaPort: Codable, Sendable {
+public struct OcaPort: Codable, Sendable, Equatable {
   public let owner: OcaONo
   public let id: OcaPortID
   public let name: OcaString
@@ -217,7 +217,7 @@ public struct OcaPort: Codable, Sendable {
   }
 }
 
-public struct OcaSignalPath: Codable, Sendable {
+public struct OcaSignalPath: Codable, Sendable, Equatable {
   public let sourcePort: OcaPort
   public let sinkPort: OcaPort
 
