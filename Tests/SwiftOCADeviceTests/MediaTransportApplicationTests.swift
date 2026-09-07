@@ -209,3 +209,28 @@ final class MediaTransportApplicationTests: XCTestCase {
     await XCTAssertThrowsStatus(.notImplemented) { try await client.apply(command: .restart) }
   }
 }
+
+final class PropertyChangesTests: XCTestCase {
+  /// `propertyChanges` signals every property once for its current value, then the ID of
+  /// each property whose value changes.
+  func testPropertyChangesSignalsTheChangedPropertyID() async throws {
+    let harness = try await CM4TestHarness.make()
+    defer { harness.endpointTask.cancel() }
+    let application = try await OcaMediaTransportApplication(
+      objectNumber: 0x8000_0001,
+      deviceDelegate: harness.device
+    )
+    let propertyCount = await application.allDevicePropertyKeyPaths.count
+    var iterator = await application.propertyChanges.makeAsyncIterator()
+
+    var initial = Set<OcaPropertyID>()
+    for _ in 0..<propertyCount {
+      if let id = try await iterator.next() { initial.insert(id) }
+    }
+    XCTAssertEqual(initial.count, propertyCount)
+
+    await Task { @OcaDevice in application.adaptationIdentifier = "changed" }.value
+    let changed = try await iterator.next()
+    XCTAssertEqual(changed, OcaPropertyID("2.4"))
+  }
+}
