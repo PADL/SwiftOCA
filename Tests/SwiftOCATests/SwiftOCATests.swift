@@ -676,6 +676,21 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(DanteChannelAddress(string: "01@console"), dante.remoteAddress)
     XCTAssertEqual(dante.remoteAddress.description, "01@console")
     XCTAssertNil(DanteChannelAddress(string: "nonsense"))
+    let danteApplication = DanteMediaTransportApplicationAdaptationData(
+      aes67Supported: true,
+      aes67Mode: .disabled,
+      aes67RebootMode: .enabled,
+      rtpMulticastAddressPrefix: "239.69.0.0",
+      rtpDestinationPort: 5004,
+      rtpFramesPerPacket: 48,
+      rtpReceiveLatency: 2e-3
+    )
+    XCTAssertEqual(
+      try danteApplication.blob.decode(DanteMediaTransportApplicationAdaptationData.self),
+      danteApplication
+    )
+    // bool, two enums, 2-byte length + 10-char string, port, fpp, float64
+    XCTAssertEqual(try danteApplication.blob.count, 1 + 1 + 1 + 12 + 2 + 2 + 8)
     let channelEndpoint = OcaChannelEndpoint(
       idExternal: OcaBlob(Array("01".utf8)),
       direction: .input,
