@@ -92,6 +92,7 @@ public class OcaClassRegistry {
     try register(OcaCounterNotifier.self)
     try register(OcaCounterSetAgent.self)
     try register(OcaMediaTransportSessionAgent.self)
+    try register(MilanOcaMediaTransportSessionAgent.self)
     try register(OcaPowerSupply.self)
 
     // managers

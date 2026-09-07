@@ -116,6 +116,45 @@ final class MediaTransportSessionAgentTests: XCTestCase {
     await XCTAssertThrowsStatus(.parameterOutOfRange) { try await client.getSession(9) }
   }
 
+  @OcaDevice
+  func testMilanSessionAgent() async throws {
+    let harness = try await CM4TestHarness.make()
+    defer { harness.endpointTask.cancel() }
+    let agentONo: OcaONo = 0x0001_0021
+    let agent = try await SwiftOCADevice.MilanOcaMediaTransportSessionAgent(
+      objectNumber: agentONo,
+      role: "Milan Session Agent",
+      deviceDelegate: harness.device,
+      addToRootBlock: true
+    )
+    agent.insert(session: try SwiftOCADevice.MilanOcaMediaTransportSessionAgent.makeSession(inputEndpointID: 1))
+    try agent.update(
+      sessionID: 1,
+      state: .configured,
+      milanStatus: MilanSessionStatusAdaptationData(substate: .sourceNotPresent)
+    )
+    let client: SwiftOCA.MilanOcaMediaTransportSessionAgent = try await harness.resolve(agentONo)
+
+    let sessionType = try await client.$sessionType._getValue(client, flags: [])
+    XCTAssertEqual(sessionType, "OcaMilan")
+    let (state, milanStatus) = try await client.milanStatus(for: 1)
+    XCTAssertEqual(state, .configured)
+    XCTAssertEqual(milanStatus.substate, .sourceNotPresent)
+    let session = try await client.getSession(1)
+    XCTAssertEqual(
+      try session.connections.first?.remoteEndpointID.decode(MilanMediaStreamEndpointIDExternal.self),
+      .unbound
+    )
+    await XCTAssertThrowsStatus(.notImplemented) { try await client.startStreaming(session: 1) }
+    await XCTAssertThrowsStatus(.notImplemented) {
+      try await client.add(session: OcaMediaTransportSession(idInternal: 2))
+    }
+    // ConfigureConnection is left to the transport-specific subclass
+    await XCTAssertThrowsStatus(.notImplemented) {
+      try await client.configureConnection(localEndpointID: 1, remote: .unbound)
+    }
+  }
+
   #if NonEmbeddedBuild
   @OcaDevice
   func testSessionStatusesAreTransient() async throws {

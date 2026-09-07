@@ -569,6 +569,79 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(counterSet.counter(id: 1)?.value, 0)
   }
 
+  func testMilanAdaptationDataEncoding() throws {
+    let interfaceData = MilanNetworkInterfaceAdaptationData(
+      timeSourceONo: 0x0A00_0004,
+      macAddress: try XCTUnwrap(OcaMACAddress(string: "00:22:97:00:00:01"))
+    )
+    XCTAssertEqual(
+      try Ocp1Encoder().encode(interfaceData) as [UInt8],
+      [0x0A, 0x00, 0x00, 0x04, 0x00, 0x22, 0x97, 0x00, 0x00, 0x01]
+    )
+
+    let external = MilanMediaStreamEndpointIDExternal(entityID: 0x0022_97FF_FE00_0001, streamIndex: 1)
+    XCTAssertEqual(
+      try Ocp1Encoder().encode(external) as [UInt8],
+      [0x00, 0x22, 0x97, 0xFF, 0xFE, 0x00, 0x00, 0x01, 0x00, 0x01]
+    )
+    XCTAssertEqual(try external.blob.decode(MilanMediaStreamEndpointIDExternal.self), external)
+    XCTAssertEqual(try MilanMediaStreamEndpointIDExternal.unbound.blob.count, 10)
+
+    let status = MilanSessionStatusAdaptationData(
+      substate: .reservationError,
+      acmpFailureCode: 0,
+      srpFailureBridgeID: 0x1122_3344_5566_7788,
+      srpFailureCode: 4,
+      msrpAccumulatedLatency: 0
+    )
+    XCTAssertEqual(
+      try Ocp1Encoder().encode(status) as [UInt8],
+      [0x03, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x04, 0x00, 0x00, 0x00, 0x00]
+    )
+
+    let endpointData = MilanMediaStreamEndpointAdaptationData(vlanID: 2, presentationTimeOffset: 2_000_000)
+    XCTAssertTrue(endpointData.hasOnlyWritableFields)
+    XCTAssertFalse(MilanMediaStreamEndpointAdaptationData(streamID: 1).hasOnlyWritableFields)
+    XCTAssertEqual((try Ocp1Encoder().encode(MilanMediaStreamEndpointAdaptationData.notReady) as [UInt8]).count, 24)
+
+    let transportData = MilanMediaTransportAdaptationData(
+      entityID: 1,
+      protocolVersion: 1,
+      certificationVersion: 0,
+      redundancySupported: false,
+      audioUnits: [MilanAudioUnit(
+        name: "Audio Unit",
+        clockONo: 0x0A00_0003,
+        inputOcaPortIndexRange: 0...0,
+        outputOcaPortIndexRange: 1...16
+      )]
+    )
+    XCTAssertEqual(
+      try transportData.blob.decode(MilanMediaTransportAdaptationData.self),
+      transportData
+    )
+  }
+
+  func testMilanClassIDAndStreamFormats() throws {
+    XCTAssertEqual(MilanAdaptation.sessionAgentClassID.description, "1.2.20.65535.0.2910.8704")
+    XCTAssertEqual(MilanAdaptation.sessionAgentClassID.parent, OcaClassID("1.2.20"))
+    XCTAssertEqual(MilanAdaptation.inputEndpointID(streamIndex: 0), 1)
+    XCTAssertEqual(MilanAdaptation.outputEndpointID(streamIndex: 0), 1001)
+
+    XCTAssertEqual(MilanStreamFormat.supported.count, 18)
+    let aaf = MilanStreamFormat.aaf(sampleRate: 48000, channelCount: 8, upTo: true)
+    XCTAssertEqual(aaf.mediaStreamMode.frameFormat, .aaf)
+    XCTAssertEqual(MilanStreamFormat(mediaStreamMode: aaf.mediaStreamMode)?.channelCount, 8)
+    let capability = aaf.mediaStreamModeCapability(id: 1, direction: .input)
+    XCTAssertEqual(capability.channelCountList, [])
+    XCTAssertEqual(capability.channelCountRange, 1...8)
+    XCTAssertEqual(capability.encodingTypeList, ["audio/L32"])
+    let crf = MilanStreamFormat.crf(sampleRate: 48000).mediaStreamModeCapability(id: 2, direction: [.input, .output])
+    XCTAssertEqual(crf.frameFormatList, [.crf_milan])
+    XCTAssertEqual(crf.channelCountList, [0])
+    XCTAssertNil(MilanStreamFormat(mediaStreamMode: .undefined))
+  }
+
   func testBuiltinEncoderDecoderNtf1() throws {
     let eventParameters = Data([0x00, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01])
     let eventData = Ocp1EventData(

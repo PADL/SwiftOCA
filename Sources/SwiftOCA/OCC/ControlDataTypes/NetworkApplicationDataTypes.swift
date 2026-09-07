@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public struct OcaPortClockMapEntry: Codable, Sendable {
+public struct OcaPortClockMapEntry: Codable, Sendable, Equatable {
   public let clockONo: OcaONo
   public let srcType: OcaSamplingRateConverterType
 
@@ -78,7 +78,7 @@ public enum OcaNetworkAdvertisingServiceType: String, Sendable, CaseIterable {
   }
 }
 
-public struct OcaNetworkAdvertisingMechanism: Codable, Sendable {
+public struct OcaNetworkAdvertisingMechanism: Codable, Sendable, Equatable {
   public let service: OcaNetworkAdvertisingService
   /// JSON-encoded parameters, e.g.
   /// ServerAddresses: [`1.2.3.4`]
@@ -97,7 +97,7 @@ public struct OcaNetworkAdvertisingMechanism: Codable, Sendable {
   }
 }
 
-public struct OcaNetworkInterfaceAssignment: Codable, Sendable {
+public struct OcaNetworkInterfaceAssignment: Codable, Sendable, Equatable {
   // internal ID
   public let id: OcaID16
   // ONo of network interface
@@ -136,7 +136,7 @@ public enum OcaNetworkInterfaceState: OcaUint8, Codable, Sendable, CaseIterable 
   case fault = 2
 }
 
-public struct OcaNetworkInterfaceStatus: Codable, Sendable {
+public struct OcaNetworkInterfaceStatus: Codable, Sendable, Equatable {
   public let state: OcaNetworkInterfaceState
   public let adaptationData: OcaAdaptationData
 

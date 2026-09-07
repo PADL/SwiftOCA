@@ -246,6 +246,7 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible,
   static let ProprietaryTestClassFieldMask = OcaUint16(0xFF00)
   static let ProprietaryClassField = OcaUint16(0xFFFF)
   public static let OcaAllianceCompanyID = OcaOrganizationID((0xFA, 0x2E, 0xE9))
+  public static let AESCompanyID = OcaOrganizationID((0x00, 0x0B, 0x5E))
 
   public init(_ string: OcaString) {
     fields = string.split(separator: ".").map { OcaUint16($0)! }

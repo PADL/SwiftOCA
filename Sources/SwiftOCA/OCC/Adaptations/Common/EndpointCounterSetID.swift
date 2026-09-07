@@ -16,7 +16,7 @@
 
 /// Contents of `OcaCounterSet.ID` for endpoint countersets; identical in AES70-21
 /// (Aes67EndpointCounterSetID) and AES70-22 (MilanEndpointCounterSetID).
-public struct OcaMediaStreamEndpointCounterSetID: Ocp1TypedBlobRepresentable, Equatable {
+public struct OcaMediaStreamEndpointCounterSetID: Ocp1TypedBlobRepresentable, Sendable, Equatable {
   public static let counterSetsPropertyID = OcaPropertyID("3.12")
 
   public var ownerONo: OcaONo
