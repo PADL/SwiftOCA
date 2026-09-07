@@ -67,10 +67,28 @@ Sendable {
   )
   public var counterSet: OcaProperty<OcaCounterSet>.PropertyValue
 
-  // 2.11 getCounter
-  // 2.12 attachCounterNotifier
-  // 2.13 detachCounterNotifier
-  // 2.14 resetCounters
+  public func get(counter id: OcaID16) async throws -> OcaCounter {
+    try await sendCommandRrq(methodID: OcaMethodID("2.11"), parameters: id)
+  }
+
+  public func attach(counter id: OcaID16, to oNo: OcaONo) async throws {
+    try await sendCommandRrq(
+      methodID: OcaMethodID("2.12"),
+      parameters: OcaCounterNotifierParameters(id: id, oNo: oNo)
+    )
+  }
+
+  public func detach(counter id: OcaID16, from oNo: OcaONo) async throws {
+    try await sendCommandRrq(
+      methodID: OcaMethodID("2.13"),
+      parameters: OcaCounterNotifierParameters(id: id, oNo: oNo)
+    )
+  }
+
+  /// Resets one counter, or all counters when `id` is zero.
+  public func resetCounters(id: OcaID16 = 0) async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("2.14"), parameters: id)
+  }
 }
 
 extension OcaNetworkApplication {
