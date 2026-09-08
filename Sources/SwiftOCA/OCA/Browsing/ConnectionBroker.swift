@@ -204,6 +204,13 @@ public actor OcaConnectionBroker {
       serviceInfo.hash(into: &hasher)
     }
 
+    /// The WebSocket path from the `path` TXT record (AES70-4 Table 5), `/` by default.
+    var webSocketPath: String {
+      let path = (try? serviceInfo.txtRecords["path"]) ?? nil
+      guard let path, !path.isEmpty else { return "/" }
+      return path.hasPrefix("/") ? path : "/" + path
+    }
+
     func openConnection(options: Ocp1ConnectionOptions) async throws -> Ocp1Connection {
       let connection: Ocp1Connection
 
@@ -220,7 +227,7 @@ public actor OcaConnectionBroker {
         )
       #if os(macOS) || os(iOS)
       case .tcpWebSocket:
-        let wsURL = try URL(string: "ws://\(host):\(port)/")!
+        let wsURL = try URL(string: "ws://\(host):\(port)\(webSocketPath)")!
         connection = await Ocp1FlyingFoxConnection(
           url: wsURL,
           options: options
