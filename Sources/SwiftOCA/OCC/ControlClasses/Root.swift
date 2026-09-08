@@ -28,15 +28,19 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
 
   fileprivate var subscriptionCancellable: Ocp1Connection.SubscriptionCancellable?
 
-  // 1.1
-  open class var classID: OcaClassID { OcaClassID("1") }
+  /// 1.1
+  open class var classID: OcaClassID {
+    OcaClassID("1")
+  }
 
   private var _classID: StaticProperty<OcaClassID> {
     StaticProperty<OcaClassID>(propertyIDs: [OcaPropertyID("1.1")], value: Self.classID)
   }
 
-  // 1.2
-  open class var classVersion: OcaClassVersionNumber { 3 }
+  /// 1.2
+  open class var classVersion: OcaClassVersionNumber {
+    3
+  }
 
   private var _classVersion: StaticProperty<OcaClassVersionNumber> {
     StaticProperty<OcaClassVersionNumber>(
@@ -147,7 +151,7 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
       return [:]
     }
 
-    let dict = await withTaskGroup(
+    return await withTaskGroup(
       of: [String: Sendable].self,
       returning: [String: Sendable].self
     ) { taskGroup in
@@ -173,8 +177,6 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
         .reduce(into: [String: Sendable]()) { $0.merge($1) { $1 } }
         .merging([OcaJSONPropertyKeys.type.rawValue: type], uniquingKeysWith: { $1 })
     }
-
-    return dict
   }
 
   public var jsonObject: [String: any Sendable] {
@@ -318,11 +320,16 @@ public extension OcaRoot {
   }
 
   internal struct StaticProperty<T: Codable & Sendable>: OcaPropertySubjectRepresentable, Sendable {
-    var valueType: Any.Type { T.self }
+    var valueType: Any.Type {
+      T.self
+    }
 
     typealias Value = T
 
-    var setMethodID: OcaMethodID? { nil }
+    var setMethodID: OcaMethodID? {
+      nil
+    }
+
     var propertyIDs: [OcaPropertyID]
     var value: T
     let subject: AsyncCurrentValueSubject<PropertyValue>
@@ -468,11 +475,11 @@ extension OcaRoot: Hashable {
 }
 
 public struct OcaGetPathParameters: Ocp1ParametersReflectable {
-  public var namePath: OcaNamePath
+  public var rolePath: OcaNamePath
   public var oNoPath: OcaONoPath
 
-  public init(namePath: OcaNamePath, oNoPath: OcaONoPath) {
-    self.namePath = namePath
+  public init(rolePath: OcaNamePath, oNoPath: OcaONoPath) {
+    self.rolePath = rolePath
     self.oNoPath = oNoPath
   }
 }
@@ -481,7 +488,7 @@ extension OcaRoot {
   func getPath(methodID: OcaMethodID) async throws -> (OcaNamePath, OcaONoPath) {
     let responseParams: OcaGetPathParameters
     responseParams = try await sendCommandRrq(methodID: methodID)
-    return (responseParams.namePath, responseParams.oNoPath)
+    return (responseParams.rolePath, responseParams.oNoPath)
   }
 }
 

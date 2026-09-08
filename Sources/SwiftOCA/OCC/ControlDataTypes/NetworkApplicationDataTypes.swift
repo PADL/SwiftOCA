@@ -26,11 +26,11 @@ public struct OcaPortClockMapEntry: Codable, Sendable, Equatable {
 
 public struct OcaSetPortClockMapEntryParameters: Ocp1ParametersReflectable {
   public let portID: OcaPortID
-  public let portClockMapEntry: OcaPortClockMapEntry
+  public let entry: OcaPortClockMapEntry
 
-  public init(portID: OcaPortID, portClockMapEntry: OcaPortClockMapEntry) {
+  public init(portID: OcaPortID, entry: OcaPortClockMapEntry) {
     self.portID = portID
-    self.portClockMapEntry = portClockMapEntry
+    self.entry = entry
   }
 }
 

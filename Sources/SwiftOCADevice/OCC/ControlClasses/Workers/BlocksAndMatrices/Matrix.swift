@@ -25,7 +25,9 @@ import SwiftOCA
 private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF
 
 open class OcaMatrix<Member: OcaRoot>: OcaWorker {
-  override open class var classID: OcaClassID { OcaClassID("1.1.5") }
+  override open class var classID: OcaClassID {
+    OcaClassID("1.1.5")
+  }
 
   public private(set) var members: OcaArray2D<Member?>
 
@@ -294,15 +296,21 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
       .y == OcaMatrixWildcardCoordinate
     {
       for object in members.items {
-        if let object { try await body(object) }
+        if let object {
+          try await body(object)
+        }
       }
     } else if currentXY.x == OcaMatrixWildcardCoordinate {
       for x in 0..<members.nX {
-        if let object = members[x, Int(currentXY.y)] { try await body(object) }
+        if let object = members[x, Int(currentXY.y)] {
+          try await body(object)
+        }
       }
     } else if currentXY.y == OcaMatrixWildcardCoordinate {
       for y in 0..<members.nY {
-        if let object = members[Int(currentXY.x), y] { try await body(object) }
+        if let object = members[Int(currentXY.x), y] {
+          try await body(object)
+        }
       }
     } else {
       precondition(currentXY.x < members.nX)
@@ -328,7 +336,8 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   )
   public var portsPerColumn: OcaUint8 = 0
 
-  struct MatrixSize<T: Codable>: Codable {
+  /// GetSize's six output parameters (a record, so each is counted and named)
+  struct MatrixSize<T: Codable>: Ocp1ParametersReflectable {
     var xSize: T
     var ySize: T
     var minXSize: T
@@ -446,19 +455,28 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     guard let membersJson = jsonObject["3.5"] as? [[OcaONo]],
           let membersJson = OcaArray2D<OcaONo>(arrayOfArrays: membersJson)
     else {
-      if flags.contains(.ignoreDecodingErrors) { return }
-      else { throw Ocp1Error.status(.badFormat) }
+      if flags.contains(.ignoreDecodingErrors) {
+        return
+      } else {
+        throw Ocp1Error.status(.badFormat)
+      }
     }
 
     members = try await membersJson.asyncMap(defaultValue: nil) { @Sendable objectNumber in
       guard let member = await deviceDelegate.objects[objectNumber] else {
-        if flags.contains(.ignoreUnknownObjectNumbers) { return nil }
-        else { throw Ocp1Error.objectNotPresent(objectNumber) }
+        if flags.contains(.ignoreUnknownObjectNumbers) {
+          return nil
+        } else {
+          throw Ocp1Error.objectNotPresent(objectNumber)
+        }
       }
 
       guard let member = member as? Member else {
-        if flags.contains(.ignoreObjectClassMismatches) { return nil }
-        else { throw Ocp1Error.objectClassMismatch }
+        if flags.contains(.ignoreObjectClassMismatches) {
+          return nil
+        } else {
+          throw Ocp1Error.objectClassMismatch
+        }
       }
 
       return member

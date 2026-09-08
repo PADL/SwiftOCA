@@ -16,8 +16,13 @@
 
 open class OcaWorker: OcaRoot, OcaOwnablePrivate, @unchecked
 Sendable {
-  override open class var classID: OcaClassID { OcaClassID("1.1") }
-  override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID {
+    OcaClassID("1.1")
+  }
+
+  override open class var classVersion: OcaClassVersionNumber {
+    3
+  }
 
   @OcaProperty(
     propertyID: OcaPropertyID("2.1"),
@@ -39,7 +44,7 @@ Sendable {
   )
   public var label: OcaProperty<OcaString>.PropertyValue
 
-  // 2.4
+  /// 2.4
   @OcaProperty(
     propertyID: OcaPropertyID("2.4"),
     getMethodID: OcaMethodID("2.10")
@@ -61,23 +66,23 @@ Sendable {
   )
   public var portClockMap: OcaMapProperty<OcaPortID, OcaPortClockMapEntry>.PropertyValue
 
-  // 2.3
+  /// 2.3
   public func add(
     port label: OcaString,
     mode: OcaPortMode
   ) async throws -> OcaPortID {
     struct AddPortParameters: Ocp1ParametersReflectable {
-      let label: OcaString
+      let name: OcaString
       let mode: OcaPortMode
     }
-    let params = AddPortParameters(label: label, mode: mode)
+    let params = AddPortParameters(name: label, mode: mode)
     return try await sendCommandRrq(
       methodID: OcaMethodID("2.3"),
       parameters: params
     )
   }
 
-  // 2.4
+  /// 2.4
   public func delete(portID id: OcaPortID) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("2.4"),
@@ -85,7 +90,7 @@ Sendable {
     )
   }
 
-  // 2.6
+  /// 2.6
   public func get(portID: OcaPortID) async throws -> OcaString {
     let params = OcaGetPortNameParameters(portID: portID)
     return try await sendCommandRrq(
@@ -94,9 +99,21 @@ Sendable {
     )
   }
 
-  // 2.7
+  /// OcaWorker.SetPortName names its port `ID`, where the other port-bearing
+  /// classes say `PortID` (`OcaSetPortNameParameters`).
+  public struct SetPortNameParameters: Ocp1ParametersReflectable {
+    public let id: OcaPortID
+    public let name: OcaString
+
+    public init(id: OcaPortID, name: OcaString) {
+      self.id = id
+      self.name = name
+    }
+  }
+
+  /// 2.7
   public func set(portID: OcaPortID, name: OcaString) async throws {
-    let params = OcaSetPortNameParameters(portID: portID, name: name)
+    let params = SetPortNameParameters(id: portID, name: name)
     try await sendCommandRrq(
       methodID: OcaMethodID("2.7"),
       parameters: params
@@ -121,7 +138,7 @@ Sendable {
       methodID: OcaMethodID("2.17"),
       parameters: OcaSetPortClockMapEntryParameters(
         portID: portID,
-        portClockMapEntry: portClockMapEntry
+        entry: portClockMapEntry
       )
     )
   }

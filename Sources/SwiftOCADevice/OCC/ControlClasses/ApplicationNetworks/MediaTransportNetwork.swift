@@ -17,8 +17,13 @@
 import SwiftOCA
 
 open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentable {
-  override open class var classID: OcaClassID { OcaClassID("1.4.2") }
-  override open class var classVersion: OcaClassVersionNumber { 1 }
+  override open class var classID: OcaClassID {
+    OcaClassID("1.4.2")
+  }
+
+  override open class var classVersion: OcaClassVersionNumber {
+    1
+  }
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
@@ -159,7 +164,13 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     case OcaMethodID("3.3"):
       return try await encodeResponse(handleGetPortName(command, from: controller))
     case OcaMethodID("3.4"):
-      try await handleSetPortName(command, from: controller)
+      let params: OcaSetPortNameParameters = try decodeCommand(command)
+      try await handleSetPortName(
+        command,
+        from: controller,
+        portID: params.portID,
+        name: params.name
+      )
       return Ocp1Response()
     case OcaMethodID("3.9"):
       try decodeNullCommand(command)
@@ -207,43 +218,43 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
       let params: SwiftOCA.OcaMediaTransportNetwork
         .ControlConnectorParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await controlConnector(params.id, command: params.command)
+      try await controlConnector(params.connectorID, command: params.command)
       return Ocp1Response()
     case OcaMethodID("3.18"):
       let params: SwiftOCA.OcaMediaTransportNetwork
         .SetSourceConnectorPinMapParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await setSourceConnector(params.id, pinMap: params.pinMap)
+      try await setSourceConnector(params.connectorID, pinMap: params.channelPinMap)
       return Ocp1Response()
     case OcaMethodID("3.19"):
       let params: SwiftOCA.OcaMediaTransportNetwork
         .SetSinkConnectorPinMapParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await setSinkConnector(params.id, pinMap: params.pinMap)
+      try await setSinkConnector(params.connectorID, pinMap: params.channelPinMap)
       return Ocp1Response()
     case OcaMethodID("3.20"):
       let params: SwiftOCA.OcaMediaTransportNetwork
         .SetConnectorConnectionParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await setConnector(params.id, connection: params.connection)
+      try await setConnector(params.connectorID, connection: params.connection)
       return Ocp1Response()
     case OcaMethodID("3.21"):
       let params: SwiftOCA.OcaMediaTransportNetwork
         .SetConnectorCodingParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await setConnector(params.id, coding: params.coding)
+      try await setConnector(params.connectorID, coding: params.coding)
       return Ocp1Response()
     case OcaMethodID("3.22"):
       let params: SwiftOCA.OcaMediaTransportNetwork
         .SetConnectorAlignmentLevelParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await setConnector(params.id, alignmentLevel: params.alignmentLevel)
+      try await setConnector(params.connectorID, alignmentLevel: params.level)
       return Ocp1Response()
     case OcaMethodID("3.23"):
       let params: SwiftOCA.OcaMediaTransportNetwork
         .SetConnectorAlignmentGainParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await setConnector(params.id, alignmentGain: params.alignmentGain)
+      try await setConnector(params.connectorID, alignmentGain: params.gain)
       return Ocp1Response()
     case OcaMethodID("3.24"):
       let id: OcaMediaConnectorID = try decodeCommand(command)

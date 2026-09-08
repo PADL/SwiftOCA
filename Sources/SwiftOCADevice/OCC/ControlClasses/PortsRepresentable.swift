@@ -47,18 +47,21 @@ extension OcaPortsRepresentable {
     return portName
   }
 
+  /// The record differs per class (OcaWorker names the port `ID`, the others
+  /// `PortID`), so the caller decodes it.
   @OcaDevice
   func handleSetPortName(
     _ command: Ocp1Command,
-    from controller: OcaController
+    from controller: OcaController,
+    portID: OcaPortID,
+    name: OcaString
   ) async throws {
-    let params: OcaSetPortNameParameters = try decodeCommand(command)
     try await ensureWritable(by: controller, command: command)
-    guard let index = ports.firstIndex(where: { $0.id == params.portID }) else {
+    guard let index = ports.firstIndex(where: { $0.id == portID }) else {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
     let port = ports[index]
-    let newPort = OcaPort(owner: port.owner, id: port.id, name: params.name)
+    let newPort = OcaPort(owner: port.owner, id: port.id, name: name)
     ports.replaceSubrange(index...index, with: [newPort])
   }
 }
@@ -126,7 +129,7 @@ extension OcaPortClockMapRepresentable {
   ) async throws {
     let parameters: OcaSetPortClockMapEntryParameters = try decodeCommand(command)
     try await ensureWritable(by: controller, command: command)
-    portClockMap[parameters.portID] = parameters.portClockMapEntry
+    portClockMap[parameters.portID] = parameters.entry
   }
 
   func handleDeletePortClockMapEntry(

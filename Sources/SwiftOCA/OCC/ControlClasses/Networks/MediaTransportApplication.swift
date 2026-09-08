@@ -15,17 +15,23 @@
 //
 
 open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Sendable {
-  override open class var classID: OcaClassID { OcaClassID("1.7.1") }
-  override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID {
+    OcaClassID("1.7.1")
+  }
+
+  override open class var classVersion: OcaClassVersionNumber {
+    3
+  }
 
   // MARK: - Parameter structures shared with SwiftOCADevice
 
+  /// OcaMediaTransportApplication.AddPort names its label `Name`.
   public struct AddPortParameters: Ocp1ParametersReflectable {
-    public let label: OcaString
+    public let name: OcaString
     public let mode: OcaPortMode
 
-    public init(label: OcaString, mode: OcaPortMode) {
-      self.label = label
+    public init(name: OcaString, mode: OcaPortMode) {
+      self.name = name
       self.mode = mode
     }
   }
@@ -137,7 +143,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   public func add(port label: OcaString, mode: OcaPortMode) async throws -> OcaPortID {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.1"),
-      parameters: AddPortParameters(label: label, mode: mode)
+      parameters: AddPortParameters(name: label, mode: mode)
     )
   }
 
@@ -175,15 +181,22 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   )
   public var portClockMap: OcaMapProperty<OcaPortID, OcaPortClockMapEntry>.PropertyValue
 
-  public typealias SetPortClockMapEntryParameters = OcaSetPortClockMapEntryParameters
+  /// OcaMediaTransportApplication.SetPortClockMapEntry names its port `ID`, where
+  /// OcaWorker says `PortID` (`OcaSetPortClockMapEntryParameters`).
+  public struct SetPortClockMapEntryParameters: Ocp1ParametersReflectable {
+    public let id: OcaPortID
+    public let entry: OcaPortClockMapEntry
+
+    public init(id: OcaPortID, entry: OcaPortClockMapEntry) {
+      self.id = id
+      self.entry = entry
+    }
+  }
 
   public func set(portID: OcaPortID, portClockMapEntry: OcaPortClockMapEntry) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.8"),
-      parameters: SetPortClockMapEntryParameters(
-        portID: portID,
-        portClockMapEntry: portClockMapEntry
-      )
+      parameters: SetPortClockMapEntryParameters(id: portID, entry: portClockMapEntry)
     )
   }
 

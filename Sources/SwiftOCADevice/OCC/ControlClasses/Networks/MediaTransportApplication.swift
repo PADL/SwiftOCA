@@ -294,7 +294,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     case OcaMethodID("3.1"):
       let parameters: Parameters.AddPortParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      return try await encodeResponse(add(port: parameters.label, mode: parameters.mode))
+      return try await encodeResponse(add(port: parameters.name, mode: parameters.mode))
     case OcaMethodID("3.2"):
       let portID: OcaPortID = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -303,7 +303,13 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     case OcaMethodID("3.4"):
       return try await encodeResponse(handleGetPortName(command, from: controller))
     case OcaMethodID("3.5"):
-      try await handleSetPortName(command, from: controller)
+      let params: OcaSetPortNameParameters = try decodeCommand(command)
+      try await handleSetPortName(
+        command,
+        from: controller,
+        portID: params.portID,
+        name: params.name
+      )
       return Ocp1Response()
     case OcaMethodID("3.8"):
       try await handleSetPortClockMapEntry(command, from: controller)

@@ -15,8 +15,13 @@
 //
 
 open class OcaSecurityManager: OcaManager, @unchecked Sendable {
-  override open class var classID: OcaClassID { OcaClassID("1.3.2") }
-  override open class var classVersion: OcaClassVersionNumber { 3 }
+  override open class var classID: OcaClassID {
+    OcaClassID("1.3.2")
+  }
+
+  override open class var classVersion: OcaClassVersionNumber {
+    3
+  }
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
@@ -46,8 +51,18 @@ open class OcaSecurityManager: OcaManager, @unchecked Sendable {
     }
   }
 
+  public struct ChangePreSharedKeyParameters: Ocp1ParametersReflectable {
+    public let identity: OcaString
+    public let newKey: OcaBlob
+
+    public init(identity: OcaString, newKey: OcaBlob) {
+      self.identity = identity
+      self.newKey = newKey
+    }
+  }
+
   public func changePreSharedKey(identity: OcaString, key: OcaBlob) async throws {
-    let parameters = AddPreSharedKeyParameters(identity: identity, key: key)
+    let parameters = ChangePreSharedKeyParameters(identity: identity, newKey: key)
     try await sendCommandRrq(methodID: OcaMethodID("3.3"), parameters: parameters)
   }
 

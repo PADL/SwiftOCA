@@ -19,7 +19,9 @@ import SwiftOCA
 open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMapRepresentable,
   OcaLabelRepresentable
 {
-  override open class var classID: OcaClassID { OcaClassID("1.1") }
+  override open class var classID: OcaClassID {
+    OcaClassID("1.1")
+  }
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.1"),
@@ -41,7 +43,7 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
   )
   public var label = ""
 
-  // 2.4
+  /// 2.4
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.4"),
     getMethodID: OcaMethodID("2.10")
@@ -70,7 +72,8 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
     case OcaMethodID("2.6"):
       return try await encodeResponse(handleGetPortName(command, from: controller))
     case OcaMethodID("2.7"):
-      try await handleSetPortName(command, from: controller)
+      let params: SwiftOCA.OcaWorker.SetPortNameParameters = try decodeCommand(command)
+      try await handleSetPortName(command, from: controller, portID: params.id, name: params.name)
       return Ocp1Response()
     case OcaMethodID("2.13"):
       return try await encodeResponse(path)

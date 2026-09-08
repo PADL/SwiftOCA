@@ -24,13 +24,19 @@ public protocol OcaBlockContainer: OcaRoot {
 
   var actionObjects: [ActionObject] { get }
   #if NonEmbeddedBuild
-  var datasetObjects: [OcaDataset] { get async throws }
-  var globalType: OcaGlobalTypeIdentifier? { get }
+  var datasetObjects: [OcaDataset] {
+    get async throws
+  }
+  var globalType: OcaGlobalTypeIdentifier? {
+    get
+  }
   #endif
 }
 
 open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
-  override open class var classID: OcaClassID { OcaClassID("1.1.3") }
+  override open class var classID: OcaClassID {
+    OcaClassID("1.1.3")
+  }
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
@@ -149,8 +155,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     signalPaths.removeValue(forKey: index)
   }
 
-  // this is deprecated (replaced with mostRecentParamDatasetONo) but we return
-  // zero to keep SwiftOCA clients happy
+  /// this is deprecated (replaced with mostRecentParamDatasetONo) but we return
+  /// zero to keep SwiftOCA clients happy
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.11")
@@ -818,14 +824,20 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       do {
         objectNumber = try _getObjectNumberFromJsonObject(jsonObject: actionJsonObject)
       } catch {
-        if flags.contains(.ignoreDecodingErrors) { continue }
-        else { throw Ocp1Error.status(.badFormat) }
+        if flags.contains(.ignoreDecodingErrors) {
+          continue
+        } else {
+          throw Ocp1Error.status(.badFormat)
+        }
       }
 
       guard let actionObject = actionObjects.first(where: { $0.objectNumber == objectNumber })
       else {
-        if flags.contains(.ignoreUnknownObjectNumbers) { continue }
-        else { throw Ocp1Error.objectNotPresent(objectNumber) }
+        if flags.contains(.ignoreUnknownObjectNumbers) {
+          continue
+        } else {
+          throw Ocp1Error.objectNotPresent(objectNumber)
+        }
       }
 
       try await actionObject.deserialize(
@@ -882,7 +894,7 @@ public extension OcaRoot {
 
   var path: OcaGetPathParameters {
     get async {
-      await OcaGetPathParameters(namePath: rolePath, oNoPath: objectNumberPath)
+      await OcaGetPathParameters(rolePath: rolePath, oNoPath: objectNumberPath)
     }
   }
 }
