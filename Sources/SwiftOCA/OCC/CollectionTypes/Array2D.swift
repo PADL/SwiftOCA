@@ -14,6 +14,10 @@
 // limitations under the License.
 //
 
+/// AES70 `OcaList2D`: a fixed-size grid of `nX` columns by `nY` rows, laid out as `nY`
+/// contiguous rows of `nX` elements. Indexing, `init(arrayOfArrays:)` and both coders all
+/// read `items` that way — OCP.1 as the flat run of elements behind the two dimensions,
+/// JSON as an array of rows.
 public struct OcaArray2D<Element: Sendable>: Sendable {
   public let nX, nY: Int
   public private(set) var items: [Element]
@@ -28,23 +32,19 @@ public struct OcaArray2D<Element: Sendable>: Sendable {
     self.init(nX: Int(nX), nY: Int(nY), defaultValue: defaultValue)
   }
 
-  public init?(arrayOfArrays items: [[Element]]) {
-    var columnCount: Int?
+  /// Fails unless every row is the same length.
+  public init?(arrayOfArrays rows: [[Element]]) {
+    let columnCount = rows.first?.count ?? 0
+    guard rows.allSatisfy({ $0.count == columnCount }) else { return nil }
 
-    guard items.allSatisfy({ row in
-      if let columnCount {
-        return row.count == columnCount
-      } else {
-        columnCount = row.count
-        return true
-      }
-    }) else {
-      return nil
-    }
+    nX = columnCount
+    nY = rows.count
+    items = Array(rows.joined())
+  }
 
-    nX = columnCount ?? 0
-    nY = items.count
-    self.items = items.reduce([], +)
+  /// The grid as `nY` rows of `nX` elements; the inverse of `init(arrayOfArrays:)`.
+  public var arrayOfArrays: [[Element]] {
+    (0..<nY).map { y in Array(items[(y * nX)..<((y + 1) * nX)]) }
   }
 
   private func indexIsValid(x: Int, y: Int) -> Bool {
@@ -58,21 +58,21 @@ public struct OcaArray2D<Element: Sendable>: Sendable {
   public subscript(x: Int, y: Int) -> Element {
     get {
       assert(indexIsValid(x: x, y: y), "Index out of range")
-      return items[(x * nY) + y]
+      return items[(y * nX) + x]
     }
     set {
       assert(indexIsValid(x: x, y: y), "Index out of range")
-      items[(x * nY) + y] = newValue
+      items[(y * nX) + x] = newValue
     }
   }
 
   public mutating func insert(_ newElement: Element, x: Int, y: Int) {
-    items.insert(newElement, at: (x * nY) + y)
+    items.insert(newElement, at: (y * nX) + x)
   }
 
   @discardableResult
   public mutating func remove(x: Int, y: Int) -> Element {
-    items.remove(at: (x * nY) + y)
+    items.remove(at: (y * nX) + x)
   }
 
   public func map<T>(
@@ -135,13 +135,8 @@ extension OcaArray2D: Codable where Element: Codable {
         try container.encode(items[index])
       }
     } else {
-      // `items` is stored as `nY` rows of `nX` columns (see `init(arrayOfArrays:)`),
-      // which is also AES70-4's array-of-rows form
-      var rowsContainer = encoder.unkeyedContainer()
-      for y in 0..<nY {
-        var rowContainer = rowsContainer.nestedUnkeyedContainer()
-        try rowContainer.encode(contentsOf: items[(y * nX)..<(y * nX + nX)])
-      }
+      var container = encoder.singleValueContainer()
+      try container.encode(arrayOfArrays)
     }
   }
 }
