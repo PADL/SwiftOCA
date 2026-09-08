@@ -111,7 +111,7 @@ extension OcaArray2D: Codable where Element: Codable {
         try items.insert(container.decode(Element.self), at: index)
       }
     } else {
-      var container = try decoder.unkeyedContainer()
+      let container = try decoder.singleValueContainer()
       let items = try container.decode([[Element]].self)
 
       guard let array2D = Self(arrayOfArrays: items) else {
@@ -135,10 +135,12 @@ extension OcaArray2D: Codable where Element: Codable {
         try container.encode(items[index])
       }
     } else {
-      var columnContainer = encoder.unkeyedContainer()
-      for x in 0..<nX {
-        var rowContainer = columnContainer.nestedUnkeyedContainer()
-        try rowContainer.encode(contentsOf: items[(x * nY)..<(x * nY + nY)])
+      // `items` is stored as `nY` rows of `nX` columns (see `init(arrayOfArrays:)`),
+      // which is also AES70-4's array-of-rows form
+      var rowsContainer = encoder.unkeyedContainer()
+      for y in 0..<nY {
+        var rowContainer = rowsContainer.nestedUnkeyedContainer()
+        try rowContainer.encode(contentsOf: items[(y * nX)..<(y * nX + nX)])
       }
     }
   }
