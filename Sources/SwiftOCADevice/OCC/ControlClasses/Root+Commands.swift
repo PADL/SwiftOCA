@@ -50,9 +50,7 @@ public extension OcaRoot {
   final nonisolated func decodeNullCommand(
     _ command: Ocp1Command
   ) throws {
-    guard command.parameters.parameterCount == 0,
-          command.parameters.parameterData.isEmpty
-    else {
+    guard command.parameters.isEmpty else {
       Self._logUnexpectedParameterCount(command)
       throw Ocp1Error.status(.parameterOutOfRange)
     }

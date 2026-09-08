@@ -33,6 +33,11 @@ public struct Ocp1Parameters: Codable, Sendable {
   public init() {
     self.init(parameterCount: 0, parameterData: Data())
   }
+
+  /// `true` when no parameters are carried.
+  public var isEmpty: Bool {
+    parameterCount == 0 && parameterData.isEmpty
+  }
 }
 
 public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
