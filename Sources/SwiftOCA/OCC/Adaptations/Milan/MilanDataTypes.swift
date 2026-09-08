@@ -19,9 +19,9 @@
 /// OcaNetworkInterface.CurrentAdaptationData
 public struct MilanNetworkInterfaceAdaptationData: Ocp1TypedBlobRepresentable, Sendable, Equatable {
   public var timeSourceONo: OcaONo
-  public var macAddress: OcaMACAddress
+  public var macAddress: OcaMacAddress
 
-  public init(timeSourceONo: OcaONo, macAddress: OcaMACAddress) {
+  public init(timeSourceONo: OcaONo, macAddress: OcaMacAddress) {
     self.timeSourceONo = timeSourceONo
     self.macAddress = macAddress
   }
@@ -117,7 +117,7 @@ public struct MilanMediaStreamEndpointIDExternal: Ocp1TypedBlobRepresentable, Se
 /// OcaMediaStreamEndpoint.AdaptationData; all zero while the endpoint is NotReady.
 public struct MilanMediaStreamEndpointAdaptationData: Ocp1TypedBlobRepresentable, Sendable, Equatable {
   public var streamID: OcaUint64
-  public var macAddress: OcaMACAddress
+  public var macAddress: OcaMacAddress
   public var vlanID: OcaUint16
   public var bufferLength: OcaUint32
   public var presentationTimeOffset: OcaUint32
@@ -126,7 +126,7 @@ public struct MilanMediaStreamEndpointAdaptationData: Ocp1TypedBlobRepresentable
 
   public init(
     streamID: OcaUint64 = 0,
-    macAddress: OcaMACAddress = .zero,
+    macAddress: OcaMacAddress = .zero,
     vlanID: OcaUint16 = 0,
     bufferLength: OcaUint32 = 0,
     presentationTimeOffset: OcaUint32 = 0

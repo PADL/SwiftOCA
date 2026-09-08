@@ -542,17 +542,17 @@ final class SwiftOCADeviceTests: XCTestCase {
   }
 
   func testMACAddressEncoding() throws {
-    let macAddress = try XCTUnwrap(OcaMACAddress(string: "00:0b:5e:01:02:03"))
+    let macAddress = try XCTUnwrap(OcaMacAddress(string: "00:0b:5e:01:02:03"))
     let encodedMacAddress = Data([0x00, 0x0B, 0x5E, 0x01, 0x02, 0x03])
 
-    XCTAssertNil(OcaMACAddress(string: "00:zz:5e:01:02:03:04"))
-    XCTAssertNil(OcaMACAddress(string: "00:0b:5e:01:02"))
-    XCTAssertNil(OcaMACAddress(string: "0000:0b:5e:01:02:03"))
+    XCTAssertNil(OcaMacAddress(string: "00:zz:5e:01:02:03:04"))
+    XCTAssertNil(OcaMacAddress(string: "00:0b:5e:01:02"))
+    XCTAssertNil(OcaMacAddress(string: "0000:0b:5e:01:02:03"))
 
     XCTAssertEqual(try Ocp1Encoder().encode(macAddress), encodedMacAddress)
-    XCTAssertEqual(try Ocp1Decoder().decode(OcaMACAddress.self, from: encodedMacAddress), macAddress)
+    XCTAssertEqual(try Ocp1Decoder().decode(OcaMacAddress.self, from: encodedMacAddress), macAddress)
     XCTAssertEqual(macAddress.description, "00:0b:5e:01:02:03")
-    XCTAssertNil(OcaMACAddress(string: "00:0b:5e"))
+    XCTAssertNil(OcaMacAddress(string: "00:0b:5e"))
   }
 
   func testTypedBlobRoundTrip() throws {
@@ -598,7 +598,7 @@ final class SwiftOCADeviceTests: XCTestCase {
   func testMilanAdaptationDataEncoding() throws {
     let interfaceData = MilanNetworkInterfaceAdaptationData(
       timeSourceONo: 0x0A00_0004,
-      macAddress: try XCTUnwrap(OcaMACAddress(string: "00:22:97:00:00:01"))
+      macAddress: try XCTUnwrap(OcaMacAddress(string: "00:22:97:00:00:01"))
     )
     XCTAssertEqual(
       try Ocp1Encoder().encode(interfaceData) as [UInt8],

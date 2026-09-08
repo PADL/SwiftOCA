@@ -62,7 +62,7 @@ public enum Ocp1IPParametersType: OcaUint8, Codable, Sendable, CaseIterable {
 }
 
 public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
-  public typealias EUI48 = (OcaUint8, OcaUint8, OcaUint8, OcaUint8, OcaUint8, OcaUint8)
+  public typealias EUI48 = OcaMacAddress.EUI48
 
   public let version: OcaUint16 // 1
   public let hostname: OcaString
@@ -88,7 +88,7 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
     linkUp: OcaBoolean,
     adapterSpeed: OcaUint64,
     parametersType: Ocp1IPParametersType,
-    macAddress: (OcaUint8, OcaUint8, OcaUint8, OcaUint8, OcaUint8, OcaUint8),
+    macAddress: EUI48,
     linkType: OcaNetworkLinkType
   ) {
     self.version = version
