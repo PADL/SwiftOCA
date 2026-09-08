@@ -116,6 +116,8 @@ public enum OcaStatus: OcaUint8, Codable, Sendable, CaseIterable {
   case permissionDenied = 15
   /// Device did not have enough available memory to process the Command
   case outOfMemory = 16
+  /// AES70-2024: the device is temporarily unable to process the request
+  case busy = 17
 }
 
 public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
