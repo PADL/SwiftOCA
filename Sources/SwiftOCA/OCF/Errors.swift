@@ -77,6 +77,8 @@ public enum Ocp1Error: Error, Equatable {
   case unknownDatasetVersion
   case unhandledEvent
   case unknownPduType
+  /// an OCP.1-only API was used on an OCP.2 connection, or vice versa
+  case unsupportedControlProtocol
   case unknownServiceType
 
   // encoding errors
