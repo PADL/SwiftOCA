@@ -167,7 +167,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   }
 
   public required nonisolated init(from decoder: Decoder) throws {
-    throw Ocp1Error.status(.notImplemented)
+    throw DecodingError.objectNotDecodable(decoder)
   }
 
   open nonisolated var description: String {
@@ -685,5 +685,18 @@ public extension OcaRoot {
       let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
       try await property._forward(to: remoteObject)
     }
+  }
+}
+
+public extension DecodingError {
+  /// What a device object's `init(from:)` throws. Device objects are `Codable` because
+  /// the property and event types that hold them require it, but they are never
+  /// decoded: only the device can resolve an object number to an object, and a
+  /// `Decoder` cannot reach it.
+  static func objectNotDecodable(_ decoder: Decoder) -> DecodingError {
+    .dataCorrupted(.init(
+      codingPath: decoder.codingPath,
+      debugDescription: "device objects are resolved by object number, not decoded"
+    ))
   }
 }

@@ -100,7 +100,7 @@ final class OcaSQLiteDataset: OcaDataset, @unchecked Sendable {
   }
 
   required nonisolated init(from decoder: Decoder) throws {
-    fatalError("init(from:) has not been implemented")
+    throw DecodingError.objectNotDecodable(decoder)
   }
 
   required init(

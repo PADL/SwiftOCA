@@ -43,7 +43,7 @@ open class OcaGenericBasicSensor<T: Codable & Comparable & Sendable>: OcaSensor 
   }
 
   public required init(from decoder: Decoder) throws {
-    throw Ocp1Error.status(.notImplemented)
+    throw DecodingError.objectNotDecodable(decoder)
   }
 
   public required init(
@@ -93,7 +93,7 @@ open class OcaBooleanSensor: OcaSensor {
   }
 
   public required init(from decoder: Decoder) throws {
-    throw Ocp1Error.status(.notImplemented)
+    throw DecodingError.objectNotDecodable(decoder)
   }
 
   public required init(

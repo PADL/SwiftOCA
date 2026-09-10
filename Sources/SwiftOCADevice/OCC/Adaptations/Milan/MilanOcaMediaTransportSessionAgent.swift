@@ -40,7 +40,7 @@ open class MilanOcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
   }
 
   public required init(from decoder: Decoder) throws {
-    throw Ocp1Error.status(.notImplemented)
+    throw DecodingError.objectNotDecodable(decoder)
   }
 
   /// A session in the shape of AES70-22 Tables 24 and 25.

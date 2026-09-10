@@ -59,7 +59,7 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication {
   }
 
   public required init(from decoder: Decoder) throws {
-    throw Ocp1Error.status(.notImplemented)
+    throw DecodingError.objectNotDecodable(decoder)
   }
 
   public func channelEndpoint(_ id: OcaID16) throws -> OcaChannelEndpoint {
