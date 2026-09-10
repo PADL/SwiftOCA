@@ -267,6 +267,75 @@ final class NWConnectionTests: XCTestCase {
   }
 }
 
+/// A TCP server on 127.0.0.1 that sends `payload` to its first client in one write,
+/// then holds the connection open until `close()`.
+private final class OneShotTCPServer: @unchecked Sendable {
+  let port: UInt16
+  private let listener: Int32
+  private let lock = NSLock()
+  private var client: Int32 = -1
+
+  init(sending payload: [UInt8]) throws {
+    let fd = socket(AF_INET, Darwin.SOCK_STREAM, 0)
+    guard fd >= 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
+    let address = localhostAddress(port: 0)
+    let bound = address.withUnsafeBytes {
+      bind(fd, $0.baseAddress!.assumingMemoryBound(to: sockaddr.self), socklen_t($0.count))
+    }
+    guard bound == 0, listen(fd, 1) == 0 else {
+      let error = POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+      Darwin.close(fd)
+      throw error
+    }
+    var name = sockaddr_in()
+    var length = socklen_t(MemoryLayout<sockaddr_in>.size)
+    _ = withUnsafeMutablePointer(to: &name) {
+      $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { getsockname(fd, $0, &length) }
+    }
+    listener = fd
+    port = UInt16(bigEndian: name.sin_port)
+
+    DispatchQueue.global().async { [self] in
+      let client = accept(fd, nil, nil)
+      guard client >= 0 else { return }
+      _ = payload.withUnsafeBytes { Darwin.write(client, $0.baseAddress, $0.count) }
+      lock.lock()
+      self.client = client
+      lock.unlock()
+    }
+  }
+
+  func close() {
+    lock.lock()
+    let client = client
+    lock.unlock()
+    if client >= 0 { Darwin.close(client) }
+    Darwin.close(listener)
+  }
+}
+
+extension NWConnectionTests {
+  /// Two OCP.1 PDUs can arrive in one TCP segment. An exact read must return the bytes
+  /// it asked for and leave the rest for the next read; asking Network.framework for up
+  /// to a datagram's worth took both, and the second PDU was lost.
+  func testNWTCPExactReadTakesOnlyWhatWasAskedFor() async throws {
+    let payload = [UInt8](0..<20)
+    let server = try OneShotTCPServer(sending: payload)
+    defer { server.close() }
+
+    let connection = try await makeNWTCPConnection(port: server.port)
+    // the transport alone: connect() would start a monitor reading alongside
+    try await connection.connectDevice()
+    let first = try await connection.read(7)
+    XCTAssertEqual(Array(first), Array(payload[..<7]))
+    // a read that took more than asked left nothing for the next, which would wait forever
+    guard first.count == 7 else { return }
+    let rest = try await connection.read(13)
+    XCTAssertEqual(Array(rest), Array(payload[7...]))
+    try await connection.disconnectDevice()
+  }
+}
+
 @OcaConnection
 private func makeNWSecureTCPConnection(
   port: UInt16,

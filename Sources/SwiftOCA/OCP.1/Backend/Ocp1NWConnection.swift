@@ -262,10 +262,13 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
   }
 
   override public func read(_ length: Int) async throws -> Data {
-    try await withUnsafeThrowingContinuation { continuation in
+    // a stream hands over whatever is buffered, so a read bounded only by the datagram
+    // size takes the start of the next PDU as well; a datagram is returned whole
+    let maximumLength = isDatagram ? Ocp1MaximumDatagramPduSize : length
+    return try await withUnsafeThrowingContinuation { continuation in
       _nwConnection.receive(
         minimumIncompleteLength: length,
-        maximumLength: Ocp1MaximumDatagramPduSize
+        maximumLength: maximumLength
       ) { data, _, _, error in
         if let error {
           continuation.resume(throwing: error)
