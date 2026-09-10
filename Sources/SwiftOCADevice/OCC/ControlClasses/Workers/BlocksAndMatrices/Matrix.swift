@@ -408,7 +408,10 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
       }
       currentXY = coordinates
       try lockSelfAndProxy(controller: controller)
-      fallthrough
+      // lock the new current member as LockCurrent (3.15) does — not by falling
+      // through, since 3.15 begins by requiring an empty parameter list and this
+      // command carries the two coordinates
+      try await withCurrentObject { try await $0.lockNoReadWrite(controller: controller) }
     case OcaMethodID("3.15"):
       try decodeNullCommand(command)
       try await withCurrentObject { try await $0.lockNoReadWrite(controller: controller) }
