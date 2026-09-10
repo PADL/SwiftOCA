@@ -45,15 +45,11 @@ private func nanoseconds(_ d: Duration) -> Double {
 
 private func report(_ name: String, _ nsPerOp: [Double]) {
   let s = nsPerOp.sorted()
-  print(String(
-    format: "RESULT\t%@\t%.1f\t%.1f\t%.1f\t%d",
-    name,
-    s.first ?? 0,
-    s[s.count / 2],
-    s.last ?? 0,
-    s.count
-  ))
-  fflush(stdout)
+  let figures = [s.first ?? 0, s[s.count / 2], s.last ?? 0].map { String(format: "%.1f", $0) }
+  print((["RESULT", name] + figures + ["\(s.count)"]).joined(separator: "\t"))
+  // flush every stream: on Glibc `stdout` is a global var, which Swift 6 rejects as a
+  // data race to name
+  fflush(nil)
 }
 
 func bench(_ name: String, reps: Int = 7, iters: Int, _ body: () throws -> ()) {
