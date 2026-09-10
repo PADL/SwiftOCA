@@ -227,4 +227,57 @@ final class MatrixTests: XCTestCase {
       XCTAssertEqual(status, .parameterOutOfRange)
     }
   }
+
+  private func awaitSubscription(_ object: SwiftOCA.OcaRoot) async -> Bool {
+    let deadline = ContinuousClock.now + .seconds(5)
+    while ContinuousClock.now < deadline {
+      if (try? await object.isSubscribed) == true { return true }
+      try? await Task.sleep(for: .milliseconds(25))
+    }
+    return false
+  }
+
+  /// A member change is notified as GetMembers returns the members: object numbers,
+  /// `OcaInvalidONo` for an empty cell. A `nil` member cannot be encoded, so a
+  /// notification carrying the members themselves reached nobody.
+  func testRemovingAMemberNotifiesAnEmptyCell() async throws {
+    let h = try await makeHarness()
+    defer { Task { await h.tearDown() } }
+
+    await h.matrix.$members.subscribe(h.matrix)
+    let subscribed = await awaitSubscription(h.matrix)
+    XCTAssertTrue(subscribed, "precondition: the matrix should have subscribed")
+
+    let emptied = Seen()
+    let consumer = Task {
+      for try await result in h.matrix.$members.async {
+        if case let .success(value) = result,
+           let members = value as? OcaArray2D<OcaONo>,
+           members[1, 0] == OcaInvalidONo
+        {
+          await emptied.set()
+          return
+        }
+      }
+    }
+    defer { consumer.cancel() }
+
+    let deviceMatrix = h.deviceMatrix
+    try await { @OcaDevice in
+      try await deviceMatrix.remove(coordinate: OcaVector2D(x: 1, y: 0))
+    }()
+
+    var notified = false
+    let deadline = ContinuousClock.now + .seconds(5)
+    while !notified, ContinuousClock.now < deadline {
+      try? await Task.sleep(for: .milliseconds(25))
+      notified = await emptied.value
+    }
+    XCTAssertTrue(notified, "the client did not see (1,0) emptied")
+  }
+}
+
+private actor Seen {
+  private(set) var value = false
+  func set() { value = true }
 }

@@ -240,20 +240,18 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     y: OcaMatrixWildcardCoordinate
   )
 
-  private func notifySubscribers(
-    members: OcaArray2D<Member?>,
-    changeType: OcaPropertyChangeType
-  ) async throws {
-    let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-    let parameters = OcaPropertyChangedEventData<OcaArray2D<Member?>>(
-      propertyID: OcaPropertyID("3.5"),
-      propertyValue: members,
-      changeType: changeType
-    )
+  /// The members as GetMembers (3.5) returns them and their change notifications carry
+  /// them: object numbers, with `OcaInvalidONo` for an empty cell, which as a `nil`
+  /// member OCP.1 cannot encode.
+  private var memberObjectNumbers: OcaArray2D<OcaONo> {
+    members.map(defaultValue: OcaInvalidONo) { $0?.objectNumber ?? OcaInvalidONo }
+  }
 
-    try await deviceDelegate?.notifySubscribers(
-      event,
-      parameters: parameters
+  private func notifyMembersChanged(_ changeType: OcaPropertyChangeType) async throws {
+    try await notifySubscribers(
+      propertyID: OcaPropertyID("3.5"),
+      value: memberObjectNumbers,
+      changeType: changeType
     )
   }
 
@@ -270,7 +268,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
     members[Int(coordinate.x), Int(coordinate.y)] = object
-    try? await notifySubscribers(members: members, changeType: .itemAdded)
+    try? await notifyMembersChanged(.itemAdded)
   }
 
   open func remove(coordinate: OcaVector2D<OcaMatrixCoordinate>) async throws {
@@ -281,7 +279,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
       throw Ocp1Error.status(.parameterError)
     }
     members[Int(coordinate.x), Int(coordinate.y)] = nil
-    try? await notifySubscribers(members: members, changeType: .itemDeleted)
+    try? await notifyMembersChanged(.itemDeleted)
   }
 
   open func set(
@@ -293,7 +291,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
     members[Int(coordinate.x), Int(coordinate.y)] = object
-    try? await notifySubscribers(members: members, changeType: .itemChanged)
+    try? await notifyMembersChanged(.itemChanged)
   }
 
   /// The members of the current area — the whole matrix, a row, a column or a single
@@ -401,9 +399,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     case OcaMethodID("3.5"):
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
-      let members = members
-        .map(defaultValue: OcaInvalidONo) { $0?.objectNumber ?? OcaInvalidONo }
-      return try controller.encodeResponse(members, name: "members")
+      return try controller.encodeResponse(memberObjectNumbers, name: "members")
     case OcaMethodID("3.7"):
       let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
@@ -516,7 +512,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
       return member
     }
 
-    try? await notifySubscribers(members: members, changeType: .itemChanged)
+    try? await notifyMembersChanged(.itemChanged)
   }
   #endif
 }
