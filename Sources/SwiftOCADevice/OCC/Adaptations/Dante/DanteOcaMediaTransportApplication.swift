@@ -111,7 +111,7 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication {
     case OcaMethodID("4.3"):
       let id: OcaID16 = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(channelEndpoint(id))
+      return try controller.encodeResponse(channelEndpoint(id))
     case OcaMethodID("4.4"):
       let parameters: DanteParameters.SetChannelEndpointParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -125,7 +125,7 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication {
     case OcaMethodID("4.6"):
       let channelEndpoint: OcaChannelEndpoint = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      return try await encodeResponse(add(channelEndpoint: channelEndpoint))
+      return try await controller.encodeResponse(add(channelEndpoint: channelEndpoint))
     case OcaMethodID("4.7"):
       let id: OcaID16 = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)

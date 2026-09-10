@@ -253,7 +253,7 @@ Sendable {
         datasetSize: datasetSize,
         handle: handle
       )
-      return try encodeResponse(response)
+      return try controller.encodeResponse(response)
     case OcaMethodID("2.2"):
       let lockState: OcaLockState = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -262,7 +262,7 @@ Sendable {
         maxPartSize: maxPartSize,
         handle: handle
       )
-      return try encodeResponse(response)
+      return try controller.encodeResponse(response)
     case OcaMethodID("2.3"):
       let handle: OcaIOSessionHandle = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -276,7 +276,7 @@ Sendable {
         partSize: params.partSize,
         controller: controller
       )
-      return try encodeResponse(SwiftOCA.OcaDataset.ReadResultParameters(
+      return try controller.encodeResponse(SwiftOCA.OcaDataset.ReadResultParameters(
         endOfData: endOfData,
         part: part
       ))

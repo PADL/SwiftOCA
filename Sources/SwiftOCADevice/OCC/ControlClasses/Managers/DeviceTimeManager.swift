@@ -57,7 +57,7 @@ open class OcaDeviceTimeManager: OcaManager {
     case OcaMethodID("3.1"):
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try await encodeResponse(deviceTimeNTP)
+      return try await controller.encodeResponse(deviceTimeNTP, name: "DeviceTime")
     case OcaMethodID("3.2"):
       let deviceTimeNTP: OcaTimeNTP = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -69,7 +69,7 @@ open class OcaDeviceTimeManager: OcaManager {
       guard let currentDeviceTimeSource else {
         throw Ocp1Error.status(.invalidRequest)
       }
-      return try encodeResponse(currentDeviceTimeSource)
+      return try controller.encodeResponse(currentDeviceTimeSource, name: "TimeSourceONo")
     case OcaMethodID("3.5"):
       let newDeviceTimeSourceONo: OcaONo = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -83,7 +83,7 @@ open class OcaDeviceTimeManager: OcaManager {
     case OcaMethodID("3.6"):
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try await encodeResponse(deviceTimePTP)
+      return try await controller.encodeResponse(deviceTimePTP, name: "DeviceTime")
     case OcaMethodID("3.7"):
       let deviceTimePTP: OcaTime = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)

@@ -39,7 +39,7 @@ open class OcaLevelSensor: OcaSensor {
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
       let value = OcaBoundedPropertyValue<OcaDB>(value: _value, in: _range)
-      return try encodeResponse(value)
+      return try controller.encodeResponse(value, names: ["Reading", "minReading", "maxReading"])
     default:
       return try await super.handleCommand(command, from: controller)
     }

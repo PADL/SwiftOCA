@@ -165,7 +165,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
       if command.methodID.defLevel == 1 {
         if command.methodID.methodIndex == 1 {
           let response = ProxyMember.classIdentification
-          return try encodeResponse(response)
+          return try controller.encodeResponse(response, name: "ClassIdentification")
         } else {
           return try await super.handleCommand(command, from: controller)
         }
@@ -397,19 +397,19 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         minYSize: 0,
         maxYSize: size.y
       )
-      return try encodeResponse(matrixSize)
+      return try controller.encodeResponse(matrixSize)
     case OcaMethodID("3.5"):
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
       let members = members
         .map(defaultValue: OcaInvalidONo) { $0?.objectNumber ?? OcaInvalidONo }
-      return try encodeResponse(members)
+      return try controller.encodeResponse(members, name: "members")
     case OcaMethodID("3.7"):
       let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
       let objectNumber = members[Int(coordinates.x), Int(coordinates.y)]?
         .objectNumber ?? OcaInvalidONo
-      return try encodeResponse(objectNumber)
+      return try controller.encodeResponse(objectNumber, name: "memberONo")
     case OcaMethodID("3.8"):
       let parameters: SwiftOCA.OcaMatrix.SetMemberParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -427,7 +427,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     case OcaMethodID("3.9"):
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(proxy.objectNumber)
+      return try controller.encodeResponse(proxy.objectNumber, name: "ONo")
     case OcaMethodID("3.2"):
       // SetCurrentXY locks the matrix and its proxy, but not the members (AES70-2)
       try await setCurrentXY(command, from: controller)

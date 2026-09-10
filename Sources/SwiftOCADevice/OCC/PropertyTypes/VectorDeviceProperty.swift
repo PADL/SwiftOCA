@@ -70,8 +70,10 @@ public struct OcaVectorDeviceProperty<
     self.yPropertyID = yPropertyID
   }
 
-  func getOcp1Response() async throws -> Ocp1Response {
-    try await storage.getOcp1Response()
+  func getResponse(for controller: any OcaController, names: [String]?) async throws
+    -> Ocp1Response
+  {
+    try await storage.getResponse(for: controller, names: names)
   }
 
   #if NonEmbeddedBuild

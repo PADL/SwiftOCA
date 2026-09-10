@@ -294,14 +294,14 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     case OcaMethodID("3.1"):
       let parameters: Parameters.AddPortParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      return try await encodeResponse(add(port: parameters.name, mode: parameters.mode))
+      return try await controller.encodeResponse(add(port: parameters.name, mode: parameters.mode))
     case OcaMethodID("3.2"):
       let portID: OcaPortID = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
       try await delete(port: portID)
       return Ocp1Response()
     case OcaMethodID("3.4"):
-      return try await encodeResponse(handleGetPortName(command, from: controller))
+      return try await controller.encodeResponse(handleGetPortName(command, from: controller))
     case OcaMethodID("3.5"):
       let params: OcaSetPortNameParameters = try decodeCommand(command)
       try await handleSetPortName(
@@ -318,11 +318,11 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
       try await handleDeletePortClockMapEntry(command, from: controller)
       return Ocp1Response()
     case OcaMethodID("3.10"):
-      return try await encodeResponse(handleGetPortClockMapEntry(command, from: controller))
+      return try await controller.encodeResponse(handleGetPortClockMapEntry(command, from: controller))
     case OcaMethodID("3.11"):
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(Parameters.MaxEndpointCounts(
+      return try controller.encodeResponse(Parameters.MaxEndpointCounts(
         maxInputEndpoints: maxInputEndpoints,
         maxOutputEndpoints: maxOutputEndpoints
       ))
@@ -332,19 +332,19 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
       guard let capability = mediaStreamModeCapabilities.first(where: { $0.id == id }) else {
         throw Ocp1Error.status(.parameterOutOfRange)
       }
-      return try encodeResponse(capability)
+      return try controller.encodeResponse(capability)
     case OcaMethodID("3.22"):
       let id: OcaMediaStreamEndpointID = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(endpoint(id))
+      return try controller.encodeResponse(endpoint(id))
     case OcaMethodID("3.24"):
       let id: OcaMediaStreamEndpointID = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(endpointStatus(id))
+      return try controller.encodeResponse(endpointStatus(id))
     case OcaMethodID("3.25"):
       let endpoint: OcaMediaStreamEndpoint = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      return try await encodeResponse(add(endpoint: endpoint))
+      return try await controller.encodeResponse(add(endpoint: endpoint))
     case OcaMethodID("3.26"):
       let id: OcaMediaStreamEndpointID = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -380,7 +380,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     case OcaMethodID("3.32"):
       let id: OcaMediaStreamEndpointID = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try await encodeResponse(getEndpointTimeSource(id))
+      return try await controller.encodeResponse(getEndpointTimeSource(id))
     case OcaMethodID("3.33"):
       let parameters: Parameters.SetEndpointAdaptationDataParameters =
         try decodeCommand(command)
@@ -390,7 +390,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     case OcaMethodID("3.35"):
       let id: OcaMediaStreamEndpointID = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(endpointCounterSet(id))
+      return try controller.encodeResponse(endpointCounterSet(id))
     case OcaMethodID("3.36"):
       let parameters: Parameters.EndpointCounterParameters = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
@@ -399,7 +399,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
       else {
         throw Ocp1Error.status(.parameterOutOfRange)
       }
-      return try encodeResponse(counter)
+      return try controller.encodeResponse(counter)
     case OcaMethodID("3.37"):
       let parameters: Parameters.EndpointCounterNotifierParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)

@@ -628,19 +628,19 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
       let actionObjects = actionObjects.map(\.objectIdentification)
-      return try encodeResponse(actionObjects)
+      return try controller.encodeResponse(actionObjects, name: "Objects")
     case OcaMethodID("3.6"):
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
       let actionObjects: [OcaBlockMember] =
         try await getActionObjectsRecursive(from: controller)
-      return try encodeResponse(actionObjects)
+      return try controller.encodeResponse(actionObjects, name: "Objects")
     case OcaMethodID("3.7"):
       try decodeNullCommand(command)
       try await ensureWritable(by: controller, command: command)
       let path: OcaSignalPath = try decodeCommand(command)
       let index = try await add(signalPath: path)
-      return try encodeResponse(index)
+      return try controller.encodeResponse(index, name: "Index")
     case OcaMethodID("3.8"):
       try decodeNullCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -651,7 +651,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       try await ensureReadable(by: controller, command: command)
       let signalPaths: [OcaUint16: OcaSignalPath] =
         try await getSignalPathsRecursive(from: controller)
-      return try encodeResponse(signalPaths)
+      return try controller.encodeResponse(signalPaths, name: "SignalPaths")
     case OcaMethodID("3.17"):
       let params: SwiftOCA.OcaBlock
         .FindActionObjectsByRoleParameters = try decodeCommand(command)
@@ -662,7 +662,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         searchClassID: params.searchClassID,
         resultFlags: params.resultFlags
       )
-      return try encodeResponse(searchResult)
+      return try controller.encodeResponse(searchResult, name: "Result")
     case OcaMethodID("3.18"):
       let params: SwiftOCA.OcaBlock
         .FindActionObjectsByRoleParameters = try decodeCommand(command)
@@ -673,7 +673,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         searchClassID: params.searchClassID,
         resultFlags: params.resultFlags
       )
-      return try encodeResponse(searchResult)
+      return try controller.encodeResponse(searchResult, name: "Result")
     case OcaMethodID("3.19"):
       let params: SwiftOCA.OcaBlock
         .FindActionObjectsByRoleParameters = try decodeCommand(command)
@@ -684,7 +684,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         searchClassID: params.searchClassID,
         resultFlags: params.resultFlags
       )
-      return try encodeResponse(searchResult)
+      return try controller.encodeResponse(searchResult, name: "Result")
     case OcaMethodID("3.20"):
       let params: SwiftOCA.OcaBlock
         .FindActionObjectsByPathParameters = try decodeCommand(command)
@@ -693,7 +693,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         actionObjectsByRolePath: params.searchPath,
         resultFlags: params.resultFlags
       )
-      return try encodeResponse(searchResult)
+      return try controller.encodeResponse(searchResult, name: "Result")
     #if NonEmbeddedBuild
     case OcaMethodID("3.23"):
       let params: OcaONo = try decodeCommand(command)
@@ -707,7 +707,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
       let paramData = try await fetchCurrentParameterData()
-      return try encodeResponse(paramData)
+      return try controller.encodeResponse(paramData, name: "Data")
     case OcaMethodID("3.26"):
       let paramData: OcaLongBlob = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -723,7 +723,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         initialContents: params.initialContents,
         controller: controller
       )
-      return try encodeResponse(oNo)
+      return try controller.encodeResponse(oNo, name: "ObjectNumber")
     case OcaMethodID("3.28"):
       let params: SwiftOCA.OcaBlock.DuplicateDataSetParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -734,12 +734,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         newMaxSize: params.newMaxSize,
         controller: controller
       )
-      return try encodeResponse(oNo)
+      return try controller.encodeResponse(oNo, name: "NewONo")
     case OcaMethodID("3.29"):
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
       let datasetObjecst = try await datasetObjects.map(\.objectIdentification)
-      return try encodeResponse(datasetObjecst)
+      return try controller.encodeResponse(datasetObjecst, name: "Objects")
     case OcaMethodID("3.30"):
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
@@ -750,7 +750,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
             containerObjectNumber: dataset.owner
           )
         }
-      return try encodeResponse(datasetObjects)
+      return try controller.encodeResponse(datasetObjects, name: "Objects")
     case OcaMethodID("3.31"):
       let params: SwiftOCA.OcaBlock.FindDatasetsParameters = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
@@ -776,7 +776,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         )
         return OcaDatasetSearchResult(object: blockMember, name: dataset.name, type: dataset.type)
       }
-      return try encodeResponse(searchResults)
+      return try controller.encodeResponse(searchResults, name: "Datasets")
       // 3.32 FindDatasetsRecursive
     #endif
     default:

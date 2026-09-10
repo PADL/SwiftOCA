@@ -308,7 +308,7 @@ public class OcaSubscriptionManager: OcaManager {
       // Returns maximum byte length of payload of EV1 subscriber context parameter that this
       // device supports
       let maximumSubscriberContextLength = OcaUint16(4)
-      return try encodeResponse(maximumSubscriberContextLength)
+      return try controller.encodeResponse(maximumSubscriberContextLength, name: "Max")
     case OcaMethodID("3.8"):
       let subscription: SwiftOCA.OcaSubscriptionManager
         .AddSubscription2Parameters = try decodeCommand(command)
@@ -340,11 +340,10 @@ public class OcaSubscriptionManager: OcaManager {
     case OcaMethodID("3.12"):
       let subscription: SwiftOCA.OcaSubscriptionManager
         .AddSubscription2ListParameters = try decodeCommand(command)
-      return try await encodeResponse(addSubscription2List(
-        subscription,
-        from: controller,
-        command: command
-      ))
+      return try await controller.encodeResponse(
+        addSubscription2List(subscription, from: controller, command: command),
+        name: "Statuses" // name not in AES70-2023 model
+      )
     case OcaMethodID("3.13"):
       let subscription: SwiftOCA.OcaSubscriptionManager
         .RemoveSubscription2ListParameters = try decodeCommand(command)
@@ -353,11 +352,10 @@ public class OcaSubscriptionManager: OcaManager {
     case OcaMethodID("3.14"):
       let subscription: SwiftOCA.OcaSubscriptionManager
         .AddPropertyChangeSubscription2ListParameters = try decodeCommand(command)
-      return try await encodeResponse(addPropertyChangeSubscription2List(
-        subscription,
-        from: controller,
-        command: command
-      ))
+      return try await controller.encodeResponse(
+        addPropertyChangeSubscription2List(subscription, from: controller, command: command),
+        name: "Statuses" // name not in AES70-2023 model
+      )
     case OcaMethodID("3.15"):
       let subscription: SwiftOCA.OcaSubscriptionManager
         .RemovePropertyChangeSubscription2ListParameters = try decodeCommand(command)

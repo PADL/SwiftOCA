@@ -192,7 +192,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     case .getter:
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try await property.getOcp1Response()
+      return try await property.getResponse(for: controller, names: nil)
     case .setter:
       try await ensureWritable(by: controller, command: command)
       try await property.set(object: self, command: command)
@@ -214,10 +214,10 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
           classIdentification: objectIdentification
             .classIdentification
         )
-      return try encodeResponse(response)
+      return try controller.encodeResponse(response)
     case OcaMethodID("1.2"):
       try decodeNullCommand(command)
-      return try encodeResponse(lockable)
+      return try controller.encodeResponse(lockable, name: "lockable")
     case OcaMethodID("1.3"):
       try decodeNullCommand(command)
       try await lockNoReadWrite(controller: controller)
@@ -226,13 +226,13 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
       try await unlock(controller: controller)
     case OcaMethodID("1.5"):
       try decodeNullCommand(command)
-      return try encodeResponse(role)
+      return try controller.encodeResponse(role, name: "Role")
     case OcaMethodID("1.6"):
       try decodeNullCommand(command)
       try await lockNoWrite(controller: controller)
     case OcaMethodID("1.7"):
       try decodeNullCommand(command)
-      return try encodeResponse(lockState.lockState)
+      return try controller.encodeResponse(lockState.lockState, name: "State")
     default:
       return try await handlePropertyAccessor(command, from: controller)
     }

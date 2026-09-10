@@ -40,7 +40,10 @@ open class OcaDiagnosticManager: OcaManager {
       guard let object = await deviceDelegate?.resolve(objectNumber: oNo) else {
         throw Ocp1Error.status(.badONo)
       }
-      return try encodeResponse(String(describing: object.lockState))
+      return try controller.encodeResponse(
+        String(describing: object.lockState),
+        name: "StatusDescription" // name not in AES70-2023 model
+      )
     default:
       return try await super.handleCommand(command, from: controller)
     }

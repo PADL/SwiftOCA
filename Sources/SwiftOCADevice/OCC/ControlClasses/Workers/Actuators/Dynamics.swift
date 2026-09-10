@@ -343,12 +343,16 @@ open class OcaDynamicsCurve: OcaActuator {
     case OcaMethodID("4.5"):
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(_float32ListParameters(slopes, in: slopeRange))
+      return try controller.encodeResponse(
+        _float32ListParameters(slopes, in: slopeRange),
+        names: ["Slopes", "minSlope", "maxSlope"]
+      )
     case OcaMethodID("4.7"):
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(
-        _float32ListParameters(kneeParameters, in: kneeParameterRange)
+      return try controller.encodeResponse(
+        _float32ListParameters(kneeParameters, in: kneeParameterRange),
+        names: ["Parameters", "minParameter", "maxParameter"]
       )
     case OcaMethodID("4.13"):
       let parameters: SwiftOCA.OcaDynamicsCurve.SetMultipleParameters =
@@ -372,7 +376,7 @@ open class OcaDynamicsCurve: OcaActuator {
         minThreshold: thresholdRange.lowerBound,
         maxThreshold: thresholdRange.upperBound
       )
-      return try encodeResponse(parameters)
+      return try controller.encodeResponse(parameters)
     default:
       return try await super.handleCommand(command, from: controller)
     }

@@ -39,7 +39,7 @@ open class OcaAgent: OcaRoot, OcaOwnable, OcaLabelRepresentable {
     switch command.methodID {
     case OcaMethodID("2.4"):
       try decodeNullCommand(command)
-      return try await encodeResponse(path)
+      return try await controller.encodeResponse(path)
     default:
       return try await super.handleCommand(command, from: controller)
     }

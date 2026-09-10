@@ -68,7 +68,7 @@ open class OcaMediaClock3: OcaAgent {
         rate: currentRate,
         timeSourceONo: timeSourceONo
       )
-      return try encodeResponse(params)
+      return try controller.encodeResponse(params)
     case OcaMethodID("3.4"):
       let params: SwiftOCA.OcaMediaClock3.SetCurrentRateParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)

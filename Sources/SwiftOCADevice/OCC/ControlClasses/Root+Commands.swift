@@ -56,8 +56,22 @@ public extension OcaRoot {
     }
   }
 
+  @available(*, unavailable, message: "call encodeResponse on the controller handling the command")
   nonisolated static func encodeResponse<T: Encodable>(
     _ parameters: T,
+    names: [String]? = nil,
+    statusCode: OcaStatus = .ok
+  ) throws -> Ocp1Response {
+    fatalError("unavailable")
+  }
+}
+
+public extension OcaController {
+  /// Encodes a response in the protocol this controller speaks. `names` names the
+  /// response's parameters, for a protocol that names them; OCP.1 does not.
+  nonisolated func encodeResponse<T: Encodable>(
+    _ parameters: T,
+    names: [String]? = nil,
     statusCode: OcaStatus = .ok
   ) throws -> Ocp1Response {
     let parameterCount = _ocp1ParameterCount(type: T.self)
@@ -66,14 +80,15 @@ public extension OcaRoot {
       parameterCount: parameterCount,
       parameterData: encoder.encode(parameters)
     )
-
     return Ocp1Response(statusCode: statusCode, parameters: parameters)
   }
 
-  final nonisolated func encodeResponse(
-    _ parameters: some Encodable,
+  /// A single-parameter response whose name, for a protocol that names it, is `name`.
+  nonisolated func encodeResponse(
+    _ parameter: some Encodable,
+    name: String,
     statusCode: OcaStatus = .ok
   ) throws -> Ocp1Response {
-    try Self.encodeResponse(parameters, statusCode: statusCode)
+    try encodeResponse(parameter, names: [name], statusCode: statusCode)
   }
 }

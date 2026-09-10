@@ -62,7 +62,7 @@ open class OcaDelayExtended: OcaDelay {
     case OcaMethodID("5.3"):
       let unitOfMeasure: OcaDelayUnit = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try await encodeResponse(getDelayValue(convertedTo: unitOfMeasure))
+      return try await controller.encodeResponse(getDelayValue(convertedTo: unitOfMeasure), name: "Value")
     default:
       return try await super.handleCommand(command, from: controller)
     }

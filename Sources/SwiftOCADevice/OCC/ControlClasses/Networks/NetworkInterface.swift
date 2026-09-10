@@ -132,11 +132,11 @@ open class OcaNetworkInterface: OcaRoot, OcaOwnable, OcaLabelRepresentable,
     switch command.methodID {
     case OcaMethodID("2.4"):
       try decodeNullCommand(command)
-      return try await encodeResponse(path)
+      return try await controller.encodeResponse(path)
     case OcaMethodID("2.21"):
       let id: OcaID16 = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(counter(id: id))
+      return try controller.encodeResponse(counter(id: id))
     case OcaMethodID("2.22"):
       let parameters: OcaCounterNotifierParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)

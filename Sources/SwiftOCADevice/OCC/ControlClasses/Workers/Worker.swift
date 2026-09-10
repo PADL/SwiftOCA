@@ -70,16 +70,16 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
   ) async throws -> Ocp1Response {
     switch command.methodID {
     case OcaMethodID("2.6"):
-      return try await encodeResponse(handleGetPortName(command, from: controller))
+      return try await controller.encodeResponse(handleGetPortName(command, from: controller), name: "Name")
     case OcaMethodID("2.7"):
       let params: SwiftOCA.OcaWorker.SetPortNameParameters = try decodeCommand(command)
       try await handleSetPortName(command, from: controller, portID: params.id, name: params.name)
       return Ocp1Response()
     case OcaMethodID("2.13"):
-      return try await encodeResponse(path)
+      return try await controller.encodeResponse(path)
     case OcaMethodID("2.16"):
       let portClockMapEntry = try await handleGetPortClockMapEntry(command, from: controller)
-      return try encodeResponse(portClockMapEntry)
+      return try controller.encodeResponse(portClockMapEntry, name: "Entry")
     case OcaMethodID("2.17"):
       try await handleSetPortClockMapEntry(command, from: controller)
       return Ocp1Response()

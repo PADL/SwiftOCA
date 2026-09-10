@@ -74,7 +74,7 @@ open class OcaApplicationNetwork: OcaRoot, OcaOwnable, OcaLabelRepresentable {
       try await control(params)
       return Ocp1Response()
     case OcaMethodID("2.11"):
-      return try await encodeResponse(path)
+      return try await controller.encodeResponse(path)
     default:
       return try await super.handleCommand(command, from: controller)
     }

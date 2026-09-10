@@ -95,7 +95,10 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
     case OcaMethodID("3.1"): // GetMembers
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(members.map(\.objectNumber))
+      return try controller.encodeResponse(
+        members.map(\.objectNumber),
+        name: "Members" // name not in AES70-2023 model
+      )
     case OcaMethodID("3.2"): // SetMembers
       let memberONos: [OcaONo] = try decodeCommand(command)
       let members = try await memberONos.asyncMap { @Sendable memberONo in
@@ -130,7 +133,10 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
     case OcaMethodID("3.5"): // GroupControllerONo
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(groupController)
+      return try controller.encodeResponse(
+        groupController,
+        name: "GroupController" // name not in AES70-2023 model
+      )
     default:
       return try await super.handleCommand(command, from: controller)
     }
@@ -313,7 +319,7 @@ open class _OcaGroupControllerGroup<Member: OcaRoot>: OcaGroup<Member> {
       if command.methodID.defLevel == 1 {
         if command.methodID.methodIndex == 1 {
           let response = Member.classIdentification
-          return try encodeResponse(response)
+          return try controller.encodeResponse(response, name: "ClassIdentification")
         } else {
           return try await super.handleCommand(command, from: controller)
         }

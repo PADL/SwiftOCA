@@ -51,7 +51,7 @@ open class OcaPowerSensor: OcaSensor {
         minPower: power.minValue,
         maxPower: power.maxValue
       )
-      return try encodeResponse(parameters)
+      return try controller.encodeResponse(parameters)
     default:
       return try await super.handleCommand(command, from: controller)
     }

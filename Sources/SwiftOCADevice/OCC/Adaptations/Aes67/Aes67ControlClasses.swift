@@ -87,14 +87,14 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
     case OcaMethodID("4.1"):
       let parameters: Aes67Parameters.EndpointStreamModeParameters = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try await encodeResponse(getEndpointDelayConstraints(
+      return try await controller.encodeResponse(getEndpointDelayConstraints(
         parameters.endpointID,
         streamMode: parameters.streamMode
       ))
     case OcaMethodID("4.2"):
       let parameters: Aes67Parameters.EndpointStreamModeParameters = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try await encodeResponse(getPresentationTimeOffsetConstraints(
+      return try await controller.encodeResponse(getPresentationTimeOffsetConstraints(
         parameters.endpointID,
         streamMode: parameters.streamMode
       ))
@@ -106,11 +106,11 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
     case OcaMethodID("4.4"):
       let id: OcaMediaStreamEndpointID = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try await encodeResponse(getSubmittedSDP(id))
+      return try await controller.encodeResponse(getSubmittedSDP(id))
     case OcaMethodID("4.5"):
       let id: OcaMediaStreamEndpointID = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try await encodeResponse(getActiveSDP(id))
+      return try await controller.encodeResponse(getActiveSDP(id))
     default:
       return try await super.handleCommand(command, from: controller)
     }
@@ -183,7 +183,7 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
     case OcaMethodID("4.1"):
       let id: OcaMediaTransportSessionID = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try await encodeResponse(getSIPParameterRecord(session: id))
+      return try await controller.encodeResponse(getSIPParameterRecord(session: id))
     case OcaMethodID("4.2"):
       let parameters: Aes67Parameters.SIPParameterRecordParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -192,7 +192,7 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
     case OcaMethodID("4.3"):
       let parameters: Aes67Parameters.SIPParameterKeyParameters = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try await encodeResponse(getSIPParameter(
+      return try await controller.encodeResponse(getSIPParameter(
         session: parameters.sessionID,
         key: parameters.key
       ))

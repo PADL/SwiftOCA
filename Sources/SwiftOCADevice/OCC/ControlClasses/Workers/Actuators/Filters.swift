@@ -225,7 +225,7 @@ open class OcaFilterPolynomial: OcaActuator {
       try decodeNullCommand(command)
       try await ensureReadable(by: controller, command: command)
       let parameters = SwiftOCA.OcaFilterPolynomial.CoefficientsParameters(a: a, b: b)
-      return try encodeResponse(parameters)
+      return try controller.encodeResponse(parameters)
     case OcaMethodID("4.2"):
       let parameters: SwiftOCA.OcaFilterPolynomial.CoefficientsParameters =
         try decodeCommand(command)

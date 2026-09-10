@@ -173,11 +173,11 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     case OcaMethodID("3.3"):
       let id: OcaMediaTransportSessionID = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(session(id))
+      return try controller.encodeResponse(session(id))
     case OcaMethodID("3.4"):
       let session: OcaMediaTransportSession = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      return try await encodeResponse(add(session: session))
+      return try await controller.encodeResponse(add(session: session))
     case OcaMethodID("3.5"):
       let session: OcaMediaTransportSession = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -211,11 +211,11 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     case OcaMethodID("3.12"):
       let id: OcaMediaTransportSessionID = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try encodeResponse(sessionStatus(id))
+      return try controller.encodeResponse(sessionStatus(id))
     case OcaMethodID("3.13"):
       let parameters: Parameters.AddConnectionParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      return try await encodeResponse(add(
+      return try await controller.encodeResponse(add(
         connection: parameters.connection,
         to: parameters.sessionID
       ))

@@ -33,7 +33,8 @@ protocol OcaDevicePropertyRepresentable: Sendable {
 
   var subject: AsyncCurrentValueSubject<Value> { get }
 
-  func getOcp1Response() async throws -> Ocp1Response
+  func getResponse(for controller: any OcaController, names: [String]?) async throws
+    -> Ocp1Response
 
   /// setters take an object so that subscribers can be notified
 
@@ -144,12 +145,14 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     }
   }
 
-  func getOcp1Response() async throws -> Ocp1Response {
+  func getResponse(for controller: any OcaController, names: [String]?) async throws
+    -> Ocp1Response
+  {
     let value: Value = get()
     if isNil(value) {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
-    return try OcaRoot.encodeResponse(value)
+    return try controller.encodeResponse(value, names: names)
   }
 
   #if NonEmbeddedBuild
