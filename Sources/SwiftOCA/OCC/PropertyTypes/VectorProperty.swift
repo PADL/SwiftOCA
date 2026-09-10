@@ -178,6 +178,9 @@ public struct OcaVectorProperty<
 
   @_spi(SwiftOCAPrivate)
   public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
-    throw Ocp1Error.notImplemented
+    guard let value = anyValue as? OcaVector2D<Value> else {
+      throw Ocp1Error.status(.badFormat)
+    }
+    try await _storage.setValueIfMutable(object, value)
   }
 }
