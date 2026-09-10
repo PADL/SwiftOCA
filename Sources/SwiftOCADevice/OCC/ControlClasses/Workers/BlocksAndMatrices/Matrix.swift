@@ -298,7 +298,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
   /// The members of the current area — the whole matrix, a row, a column or a single
   /// cell, according to the wildcards in `currentXY`. Empty cells are skipped.
-  private func currentMembers() -> [Member] {
+  private var currentMembers: [Member] {
     let members = members
     if currentXY.x == OcaMatrixWildcardCoordinate, currentXY.y == OcaMatrixWildcardCoordinate {
       return members.items.compactMap { $0 }
@@ -314,7 +314,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   }
 
   func withCurrentObject(_ body: @Sendable (_ object: Member) async throws -> ()) async rethrows {
-    for object in currentMembers() {
+    for object in currentMembers {
       try await body(object)
     }
   }
@@ -435,7 +435,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
       // SetCurrentXYLock also locks every member of the new current area, failing
       // without locking any of them if one cannot be locked (AES70-2)
       try await setCurrentXY(command, from: controller)
-      let members = currentMembers()
+      let members = currentMembers
       for member in members {
         try Self.ensureLockable(member, by: controller)
       }
@@ -445,7 +445,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     case OcaMethodID("3.16"):
       // UnlockCurrent must not fail on a member that is already unlocked (AES70-2)
       try decodeNullCommand(command)
-      for member in currentMembers() {
+      for member in currentMembers {
         if case .unlocked = member.lockState { continue }
         try await member.unlock(controller: controller)
       }
