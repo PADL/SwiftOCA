@@ -189,7 +189,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
 
   // 3.16
   public func clearResetCause() async throws {
-    throw Ocp1Error.notImplemented
+    try await sendCommandRrq(methodID: OcaMethodID("3.16"))
   }
 
   @OcaProperty(

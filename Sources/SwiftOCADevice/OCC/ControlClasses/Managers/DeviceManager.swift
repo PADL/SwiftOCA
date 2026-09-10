@@ -207,6 +207,11 @@ open class OcaDeviceManager: OcaManager {
       try await ensureWritable(by: controller, command: command)
       try await setResetKey(key: Data(parameters.keyBytes), address: parameters.address)
       return Ocp1Response()
+    case OcaMethodID("3.16"):
+      try decodeNullCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      resetCause = .powerOn
+      return Ocp1Response()
     #if NonEmbeddedBuild
     case OcaMethodID("3.27"):
       let oNo: OcaONo = try decodeCommand(command)
