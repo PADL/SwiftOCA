@@ -291,33 +291,59 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     try? await notifySubscribers(members: members, changeType: .itemChanged)
   }
 
-  func withCurrentObject(_ body: @Sendable (_ object: Member) async throws -> ()) async rethrows {
-    if currentXY.x == OcaMatrixWildcardCoordinate && currentXY
-      .y == OcaMatrixWildcardCoordinate
-    {
-      for object in members.items {
-        if let object {
-          try await body(object)
-        }
-      }
+  /// The members of the current area — the whole matrix, a row, a column or a single
+  /// cell, according to the wildcards in `currentXY`. Empty cells are skipped.
+  private func currentMembers() -> [Member] {
+    let members = members
+    if currentXY.x == OcaMatrixWildcardCoordinate, currentXY.y == OcaMatrixWildcardCoordinate {
+      return members.items.compactMap { $0 }
     } else if currentXY.x == OcaMatrixWildcardCoordinate {
-      for x in 0..<members.nX {
-        if let object = members[x, Int(currentXY.y)] {
-          try await body(object)
-        }
-      }
+      return (0..<members.nX).compactMap { members[$0, Int(currentXY.y)] }
     } else if currentXY.y == OcaMatrixWildcardCoordinate {
-      for y in 0..<members.nY {
-        if let object = members[Int(currentXY.x), y] {
-          try await body(object)
-        }
-      }
+      return (0..<members.nY).compactMap { members[Int(currentXY.x), $0] }
     } else {
       precondition(currentXY.x < members.nX)
       precondition(currentXY.y < members.nY)
+      return [members[Int(currentXY.x), Int(currentXY.y)]].compactMap { $0 }
+    }
+  }
 
-      if let object = members[Int(currentXY.x), Int(currentXY.y)] {
-        try await body(object)
+  func withCurrentObject(_ body: @Sendable (_ object: Member) async throws -> ()) async rethrows {
+    for object in currentMembers() {
+      try await body(object)
+    }
+  }
+
+  /// SetCurrentXY's work, shared with SetCurrentXYLock: validate and set the current
+  /// area, then lock the matrix and its proxy until the next proxy call.
+  private func setCurrentXY(_ command: Ocp1Command, from controller: any OcaController) async throws {
+    let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
+    try await ensureWritable(by: controller, command: command)
+    let members = members
+    guard coordinates.x < members.nX || coordinates.x == OcaMatrixWildcardCoordinate,
+          coordinates.y < members.nY || coordinates.y == OcaMatrixWildcardCoordinate
+    else {
+      throw Ocp1Error.status(.parameterOutOfRange)
+    }
+    currentXY = coordinates
+    try lockSelfAndProxy(controller: controller)
+  }
+
+  /// Whether `lockNoReadWrite` would succeed for `member`, checked up front so that
+  /// SetCurrentXYLock can fail before locking anything.
+  private static func ensureLockable(_ member: Member, by controller: any OcaController) throws {
+    guard controller.flags.contains(.supportsLocking) else {
+      throw Ocp1Error.status(.permissionDenied)
+    }
+    guard member.lockable else {
+      throw Ocp1Error.status(.notImplemented)
+    }
+    switch member.lockState {
+    case .unlocked:
+      break
+    case let .lockedNoWrite(lockholder), let .lockedNoReadWrite(lockholder):
+      guard controller.id == lockholder else {
+        throw Ocp1Error.status(.locked)
       }
     }
   }
@@ -398,26 +424,26 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
       try await ensureReadable(by: controller, command: command)
       return try encodeResponse(proxy.objectNumber)
     case OcaMethodID("3.2"):
-      let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      let members = members
-      guard coordinates.x < members.nX || coordinates.x == OcaMatrixWildcardCoordinate,
-            coordinates.y < members.nY || coordinates.y == OcaMatrixWildcardCoordinate
-      else {
-        throw Ocp1Error.status(.parameterOutOfRange)
-      }
-      currentXY = coordinates
-      try lockSelfAndProxy(controller: controller)
-      // lock the new current member as LockCurrent (3.15) does — not by falling
-      // through, since 3.15 begins by requiring an empty parameter list and this
-      // command carries the two coordinates
-      try await withCurrentObject { try await $0.lockNoReadWrite(controller: controller) }
+      // SetCurrentXY locks the matrix and its proxy, but not the members (AES70-2)
+      try await setCurrentXY(command, from: controller)
     case OcaMethodID("3.15"):
-      try decodeNullCommand(command)
-      try await withCurrentObject { try await $0.lockNoReadWrite(controller: controller) }
+      // SetCurrentXYLock also locks every member of the new current area, failing
+      // without locking any of them if one cannot be locked (AES70-2)
+      try await setCurrentXY(command, from: controller)
+      let members = currentMembers()
+      for member in members {
+        try Self.ensureLockable(member, by: controller)
+      }
+      for member in members {
+        try await member.lockNoReadWrite(controller: controller)
+      }
     case OcaMethodID("3.16"):
+      // UnlockCurrent must not fail on a member that is already unlocked (AES70-2)
       try decodeNullCommand(command)
-      try await withCurrentObject { try await $0.unlock(controller: controller) }
+      for member in currentMembers() {
+        if case .unlocked = member.lockState { continue }
+        try await member.unlock(controller: controller)
+      }
     default:
       return try await super.handleCommand(command, from: controller)
     }
