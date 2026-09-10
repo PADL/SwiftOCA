@@ -130,22 +130,23 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
         do {
           response = try await object.handleCommand(command, from: controller)
-          if lastStatus != .ok {
-            lastStatus = .partiallySucceeded
-          } else {
-            lastStatus = .ok
-          }
+          record(.ok)
         } catch let Ocp1Error.status(status) {
-          if lastStatus == .ok {
-            lastStatus = .partiallySucceeded
-          } else if lastStatus != status {
-            lastStatus = .processingFailed
-          } else {
-            lastStatus = status
-          }
+          record(status)
         } catch {
-          lastStatus = .processingFailed // shouldn't happen
+          record(.processingFailed) // shouldn't happen
         }
+      }
+
+      /// The first member's status stands until another disagrees: then success mixed
+      /// with failure is partial success, and differing failures a processing failure.
+      private func record(_ status: OcaStatus) {
+        guard let lastStatus else {
+          self.lastStatus = status
+          return
+        }
+        guard lastStatus != status else { return }
+        self.lastStatus = lastStatus == .ok || status == .ok ? .partiallySucceeded : .processingFailed
       }
 
       func getResponse() throws -> Ocp1Response {
