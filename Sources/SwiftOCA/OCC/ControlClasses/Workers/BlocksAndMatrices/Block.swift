@@ -512,8 +512,9 @@ Sendable {
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async -> [String: any Sendable] {
     var jsonObject = await super.getJsonValue(flags: flags)
-    jsonObject.removeValue(forKey: "ActionObjects")
-    jsonObject[OcaJSONPropertyKeys.members.rawValue] = try? await resolveActionObjects()
+    // the property carries object identifications; the dump carries the objects
+    // themselves, under that same property's name
+    jsonObject["ActionObjects"] = try? await resolveActionObjects()
       .asyncMap { await $0.getJsonValue(flags: flags) }
     return jsonObject
   }

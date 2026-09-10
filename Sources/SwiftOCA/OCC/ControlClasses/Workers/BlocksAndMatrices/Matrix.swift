@@ -110,7 +110,7 @@ Sendable {
   ) async -> [String: any Sendable] {
     var jsonObject = await super.getJsonValue(flags: flags)
     let membersJson = try? await resolveMembers().map(defaultValue: nil, \.?.objectNumber)
-    jsonObject[OcaJSONPropertyKeys.members.rawValue] = try? reencodeAsValidJSONObject(membersJson)
+    jsonObject["Members"] = try? reencodeAsValidJSONObject(membersJson)
     return jsonObject
   }
   #endif
