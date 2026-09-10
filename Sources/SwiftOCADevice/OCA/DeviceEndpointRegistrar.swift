@@ -36,12 +36,14 @@ public protocol OcaBonjourRegistrableDeviceEndpoint: OcaDeviceEndpoint {
 }
 
 extension OcaDeviceManager {
-  var txtRecords: [String: String] {
+  /// In registration order: AES70 requires the record to begin with `txtvers` and
+  /// `protovers`, in that order.
+  var txtRecords: [(String, String)] {
     [
-      "txtvers": "1",
-      "protovers": "\(version)",
-      "modelGUID": "\(modelGUID)",
-      "serialNumber": "\(serialNumber)",
+      ("txtvers", "1"),
+      ("protovers", "\(version)"),
+      ("modelGUID", "\(modelGUID)"),
+      ("serialNumber", "\(serialNumber)"),
     ]
   }
 }
@@ -130,7 +132,7 @@ fileprivate actor DNSServiceRegistration {
     domain: String? = nil,
     host: String? = nil,
     port: UInt16, // in host byte order, unlike DNSServiceRegister() API
-    txtRecord: [String: String] = [:]
+    txtRecord: [(String, String)] = []
   ) async throws {
     self.flags = flags
     self.name = name
