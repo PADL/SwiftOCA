@@ -205,11 +205,14 @@ public struct OcaBoundedDeviceProperty<
     get {
       object[keyPath: storageKeyPath].storage.get()
     }
+    // NOTE: as for OcaDeviceProperty, the value is stored at once so that a read
+    // straight after the set sees it; only the notification needs the Task.
     set {
       let property = object[keyPath: storageKeyPath]
+      property.storage.subject.send(newValue)
 
       Task {
-        await property.setAndNotifySubscribers(object: object, newValue)
+        try? await property.notifySubscribers(object: object, newValue.value)
       }
     }
   }
