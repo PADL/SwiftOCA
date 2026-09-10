@@ -197,7 +197,11 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
       guard controller.id == lockholder else {
         throw Ocp1Error.status(.locked)
       }
-      lockStatePriorToSetCurrentXY = lockState
+      // a repeated SetCurrentXY must not replace the state the first one saved with
+      // its own temporary lock, or the proxy call that restores it leaves us locked
+      if lockStatePriorToSetCurrentXY == nil {
+        lockStatePriorToSetCurrentXY = lockState
+      }
       lockState = .lockedNoReadWrite(controller.id)
     }
     proxy.lockState = lockState
