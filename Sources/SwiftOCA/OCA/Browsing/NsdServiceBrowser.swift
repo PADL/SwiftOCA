@@ -86,7 +86,7 @@ public final class OcaNsdServiceBrowser: OcaNetworkAdvertisingServiceBrowser, @u
 
   public init(serviceType: OcaNetworkAdvertisingServiceType) throws {
     guard AndroidNsd.isConfigured else {
-      throw Ocp1Error.notImplemented
+      throw Ocp1Error.serviceBrowsingUnavailable
     }
 
     _serviceType = serviceType

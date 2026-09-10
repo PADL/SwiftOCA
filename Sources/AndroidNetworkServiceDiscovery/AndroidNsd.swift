@@ -29,7 +29,7 @@ import SwiftJava
 /// host application hands a `Context` over once at startup.
 ///
 /// Call this before constructing an `OcaConnectionBroker`; browsing throws
-/// `Ocp1Error.notImplemented` until it has been called.
+/// `Ocp1Error.serviceBrowsingUnavailable` until it has been called.
 ///
 /// Pass the *application* context, not an Activity: Android may destroy and
 /// recreate the Activity while the broker outlives it, and holding the Activity

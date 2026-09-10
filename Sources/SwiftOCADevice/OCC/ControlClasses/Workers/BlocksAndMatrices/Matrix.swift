@@ -61,7 +61,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   }
 
   public required init(from decoder: Decoder) throws {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   public required init(
@@ -94,7 +94,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     }
 
     public required init(from decoder: Decoder) throws {
-      throw Ocp1Error.notImplemented
+      throw Ocp1Error.status(.notImplemented)
     }
 
     public required init(

@@ -195,7 +195,7 @@ open class _OcaPeerToPeerGroup<Member: OcaGroupPeerToPeerMember>: OcaGroup<Membe
   }
 
   public required init(from decoder: Decoder) throws {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   public required init(
@@ -253,7 +253,7 @@ open class _OcaGroupControllerGroup<Member: OcaRoot>: OcaGroup<Member> {
   }
 
   public required init(from decoder: Decoder) throws {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   public required init(
@@ -287,7 +287,7 @@ open class _OcaGroupControllerGroup<Member: OcaRoot>: OcaGroup<Member> {
     }
 
     public required init(from decoder: Decoder) throws {
-      throw Ocp1Error.notImplemented
+      throw Ocp1Error.status(.notImplemented)
     }
 
     public required init(

@@ -200,18 +200,18 @@ Sendable {
     lockState: OcaLockState,
     controller: OcaController?
   ) async throws -> (OcaUint64, OcaIOSessionHandle) {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   open func openWrite(
     lockState: OcaLockState,
     controller: OcaController?
   ) async throws -> (OcaUint64, OcaIOSessionHandle) {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   open func close(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   open func read(
@@ -220,7 +220,7 @@ Sendable {
     partSize: OcaUint64,
     controller: OcaController?
   ) async throws -> (OcaBoolean, OcaLongBlob) {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   open func write(
@@ -229,15 +229,15 @@ Sendable {
     part: OcaLongBlob,
     controller: OcaController?
   ) async throws {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   open func clear(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   open func getDataSetSizes() async throws -> (OcaUint64, OcaUint64) {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   override open func handleCommand(
@@ -341,7 +341,7 @@ extension OcaDataset {
     try await write(handle: handle, position: 0, part: blob, controller: controller)
     try await close(handle: handle, controller: controller)
     #else
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
     #endif
   }
 }

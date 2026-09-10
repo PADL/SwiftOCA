@@ -167,7 +167,7 @@ open class OcaDeviceManager: OcaManager {
     address: OcaNetworkAddress
   ) async throws {
     // must be implemented by subclass
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   #if NonEmbeddedBuild

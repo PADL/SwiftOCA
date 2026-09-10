@@ -612,7 +612,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     type: OcaMimeType,
     typeComparisonType: OcaStringComparisonType
   ) async throws -> [OcaDataset] {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
   #endif
 

@@ -55,7 +55,6 @@ public enum Ocp1Error: Error, Equatable {
   case noInitialValue
   case noMatchingTypeForClass
   case notConnected
-  case notImplemented
   case notSubscribedToEvent
   case objectAlreadyContainedByBlock(OcaONo)
   case objectClassIsNotSubclass
@@ -72,6 +71,8 @@ public enum Ocp1Error: Error, Equatable {
   case responseTimeout
   case retryOperation
   case serviceResolutionFailed
+  /// service browsing is not available on this platform, or failed to start
+  case serviceBrowsingUnavailable
   case unknownDataset
   case unknownDatasetMimeType
   case unknownDatasetVersion

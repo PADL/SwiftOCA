@@ -48,7 +48,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
   }
 
   public required init(from decoder: Decoder) throws {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   open func getEndpointDelayConstraints(
@@ -142,7 +142,7 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
   }
 
   public required init(from decoder: Decoder) throws {
-    throw Ocp1Error.notImplemented
+    throw Ocp1Error.status(.notImplemented)
   }
 
   /// Default: the session's adaptation data, which AES70-21 defines as the SIP record.

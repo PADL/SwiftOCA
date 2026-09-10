@@ -285,7 +285,7 @@ public actor OcaConnectionBroker {
       #elseif os(Android)
       browser = try OcaNsdServiceBrowser(serviceType: serviceType)
       #else
-      throw Ocp1Error.notImplemented
+      throw Ocp1Error.serviceBrowsingUnavailable
       #endif
       browserMonitor = Task { @Sendable [weak broker, browser] in
         try await browser.start()

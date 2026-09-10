@@ -383,7 +383,7 @@ public final class OcaDNSServiceBrowser: OcaNetworkAdvertisingServiceBrowser, @u
 
     guard error == DNSServiceErrorType(kDNSServiceErr_NoError), let sdRef else {
       Unmanaged<BrowseContext>.fromOpaque(context).release()
-      throw Ocp1Error.notImplemented
+      throw Ocp1Error.serviceBrowsingUnavailable
     }
 
     let source = DispatchSource.makeReadSource(

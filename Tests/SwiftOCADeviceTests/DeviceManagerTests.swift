@@ -30,4 +30,18 @@ final class DeviceManagerTests: XCTestCase {
     try await harness.connection.deviceManager.clearResetCause()
     XCTAssertEqual(deviceManager.resetCause, .powerOn)
   }
+
+  /// AES70-4 requires NotImplemented of SetResetKey on a device without the reset
+  /// mechanism, which is what the base OcaDeviceManager is.
+  @OcaDevice
+  func testSetResetKeyAnswersNotImplementedWithoutAResetMechanism() async throws {
+    let harness = try await CM4TestHarness.make()
+    defer { harness.endpointTask.cancel() }
+
+    let key: SwiftOCA.OcaDeviceManager.ResetKey = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    await XCTAssertThrowsStatus(.notImplemented) {
+      try await harness.connection.deviceManager
+        .setResetKey(key: key, address: OcaNetworkAddress())
+    }
+  }
 }
