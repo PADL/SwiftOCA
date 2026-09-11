@@ -203,7 +203,6 @@ public actor OcaDevice {
 
   public func handleCommand(
     _ command: Ocp1Command,
-    timeout: Duration = .zero,
     from controller: any OcaController
   ) async -> Ocp1Response {
     let object = objects[command.targetONo]
@@ -213,17 +212,15 @@ public actor OcaDevice {
         throw Ocp1Error.status(.badONo)
       }
 
-      return try await withThrowingTimeout(of: timeout, clock: .continuous) {
-        if command.methodID.defLevel > 1,
-           let peerToPeerObject = object as? any OcaGroupPeerToPeerMember
-        {
-          try await peerToPeerObject.handleCommandForEachPeerToPeerMember(
-            command,
-            from: controller
-          )
-        } else {
-          try await object.handleCommand(command, from: controller)
-        }
+      if command.methodID.defLevel > 1,
+         let peerToPeerObject = object as? any OcaGroupPeerToPeerMember
+      {
+        return try await peerToPeerObject.handleCommandForEachPeerToPeerMember(
+          command,
+          from: controller
+        )
+      } else {
+        return try await object.handleCommand(command, from: controller)
       }
     } catch let Ocp1Error.status(status) {
       return .init(responseSize: 0, handle: command.handle, statusCode: status)
