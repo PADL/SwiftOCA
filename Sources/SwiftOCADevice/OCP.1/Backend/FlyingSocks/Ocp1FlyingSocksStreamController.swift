@@ -26,7 +26,10 @@ import Foundation
 #endif
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
-#if canImport(Glibc)
+import Synchronization
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
 import Glibc
 #elseif canImport(WinSDK)
 import WinSDK
@@ -46,8 +49,8 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
 
   private let address: String
   private let socket: AsyncSocket
+  private let lifetime: Ocp1FlyingSocksSocketLifetime
   private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
-  private var socketClosed = false
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
@@ -69,7 +72,13 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
     address = Self.makeIdentifier(from: socket.socket)
     self.endpoint = endpoint
     self.socket = socket
-    _messages = AsyncThrowingStream.decodingMessages(from: socket.bytes, timeout: endpoint.timeout)
+    let lifetime = Ocp1FlyingSocksSocketLifetime(socket)
+    self.lifetime = lifetime
+    _messages = AsyncThrowingStream.decodingMessages(
+      from: socket.bytes,
+      timeout: endpoint.timeout,
+      onEnd: { lifetime.readEnded() }
+    )
   }
 
   package var heartbeatTime = Duration.seconds(0) {
@@ -82,14 +91,12 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
     try await socket.write(data)
   }
 
-  private func closeSocket() throws {
-    guard !socketClosed else { return }
-    try socket.close()
-    socketClosed = true
-  }
-
   package func close() async throws {
-    try closeSocket()
+    // Shut the socket down rather than close it. The message loop may be suspended reading
+    // it, as when a keepalive expires, and closing the descriptor under that read would
+    // leave the socket pool waiting on it for good. Shutting it down wakes the read with
+    // end of file, and the descriptor is closed once the message stream has ended.
+    lifetime.shutDown()
 
     keepAliveTask?.cancel()
     keepAliveTask = nil
@@ -109,6 +116,70 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
 
   private nonisolated var fileDescriptor: Socket.FileDescriptor {
     socket.socket.file
+  }
+}
+
+/// Closes a controller's socket exactly once, and never while its message stream is
+/// suspended reading it. A socket closed under a suspended read leaves the FlyingSocks
+/// socket pool waiting on a descriptor that reports nothing more, and that a socket accepted
+/// later may be given (swhitty/FlyingFox#244). So `shutDown()`, from `close()`, shuts the
+/// socket down, which wakes the read with end of file, and the socket is closed by whichever
+/// comes last of that and the stream ending. The shutdown and the close are both made under
+/// the lock, so neither can reach a descriptor already closed and given to another socket.
+private final class Ocp1FlyingSocksSocketLifetime: Sendable {
+  private struct State {
+    var readEnded = false
+    var shutDown = false
+    var closed = false
+  }
+
+  private let socket: AsyncSocket
+  private let state = Mutex(State())
+
+  init(_ socket: AsyncSocket) {
+    self.socket = socket
+  }
+
+  /// From `close()`: shut the socket down, closing it at once if the stream has ended.
+  func shutDown() {
+    state.withLock { state in
+      guard !state.closed else { return }
+      state.shutDown = true
+      if state.readEnded {
+        state.closed = true
+        try? socket.close()
+      } else {
+        // wakes the read the stream is suspended on; the stream then ends and closes it
+        Self.shutDownBothDirections(socket.socket.file)
+      }
+    }
+  }
+
+  /// From the message stream once it has ended, so that no read is suspended on the socket.
+  func readEnded() {
+    state.withLock { state in
+      state.readEnded = true
+      guard state.shutDown, !state.closed else { return }
+      state.closed = true
+      try? socket.close()
+    }
+  }
+
+  deinit {
+    // if neither got as far as closing it
+    state.withLock { state in
+      guard !state.closed else { return }
+      state.closed = true
+      try? socket.close()
+    }
+  }
+
+  private static func shutDownBothDirections(_ file: Socket.FileDescriptor) {
+    #if canImport(WinSDK)
+    _ = shutdown(file.rawValue, SD_BOTH)
+    #else
+    _ = shutdown(file.rawValue, Int32(SHUT_RDWR))
+    #endif
   }
 }
 
@@ -156,9 +227,11 @@ private extension AsyncThrowingStream
   where Element == Ocp1MessageList,
   Failure == Error
 {
+  /// `onEnd` is called when the stream ends, however it ends, and so has no read suspended.
   static func decodingMessages(
     from bytes: some AsyncBufferedSequence<UInt8>,
-    timeout: Duration
+    timeout: Duration,
+    onEnd: @escaping @Sendable () -> ()
   ) -> Self {
     // one timer for every read on the connection, rather than a sleep per message that the
     // runtime would keep for the whole timeout after the message arrived
@@ -185,10 +258,13 @@ private extension AsyncThrowingStream
           }
         }
       } catch Ocp1Error.pduTooShort {
+        onEnd()
         return nil
       } catch SocketError.disconnected {
+        onEnd()
         throw Ocp1Error.notConnected
       } catch {
+        onEnd()
         throw error
       }
     }
