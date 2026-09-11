@@ -15,6 +15,9 @@
 //
 
 import Foundation
+#if canImport(IORing)
+import IORing
+#endif
 import SwiftOCA
 import SwiftOCADevice
 #if NonEmbeddedBuild
@@ -65,6 +68,10 @@ public enum DeviceApp {
   #endif
 
   public static func main() async throws {
+    #if canImport(IORing)
+    // the executor's threads never exit, and every task runs there: see IORingSwift's README
+    try IORing.installExecutor(policy: .global)
+    #endif
     var listenAddress = sockaddr_in()
     listenAddress.sin_family = sa_family_t(AF_INET)
     #if canImport(WinSDK)

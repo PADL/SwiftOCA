@@ -401,9 +401,7 @@ extension Ocp1Connection.Monitor {
           repeat {
             try Task.checkCancellation()
             guard let self else { return }
-            do {
-              try await receiveMessage(connection)
-            } catch Ocp1Error.retryOperation {}
+            try await receiveMessage(connection)
           } while true
         }
         if heartbeatTime > .zero {

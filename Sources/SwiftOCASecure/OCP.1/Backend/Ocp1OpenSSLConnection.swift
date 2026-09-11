@@ -36,8 +36,6 @@ fileprivate extension Errno {
     switch self {
     case .connectionRefused, .connectionReset, .brokenPipe:
       Ocp1Error.notConnected
-    case .canceled:
-      Ocp1Error.retryOperation
     default:
       self
     }

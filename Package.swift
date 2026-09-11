@@ -16,6 +16,8 @@ if EnableASAN {
 }
 
 var PlatformPackageDependencies: [Package.Dependency] = []
+// the executor OCADevice selects, on the platform that has it
+var OCADevicePlatformDependencies: [Target.Dependency] = []
 var PlatformTargetDependencies: [Target.Dependency] = []
 
 // Android NSD support, gated on SWIFTOCA_ANDROID_NSD.
@@ -108,7 +110,8 @@ PlatformTargetDependencies += [
 ]
 
 #if os(Linux)
-PlatformPackageDependencies += [.package(url: "https://github.com/PADL/IORingSwift", from: "1.0.0")]
+PlatformPackageDependencies += [.package(url: "https://github.com/PADL/IORingSwift", from: "2.0.0")]
+OCADevicePlatformDependencies += [.product(name: "IORing", package: "IORingSwift")]
 
 PlatformTargetDependencies += [
   .target(
@@ -335,7 +338,7 @@ let CommonTargets: [Target] = [
       "SwiftOCADevice",
       .target(name: "SwiftOCASecure", condition: .when(traits: ["NonEmbeddedBuild"])),
       .target(name: "SwiftOCASecureDevice", condition: .when(traits: ["NonEmbeddedBuild"])),
-    ],
+    ] + OCADevicePlatformDependencies,
     path: "Examples/OCADevice",
     swiftSettings: [
       .unsafeFlags(ASANSwiftFlags),
