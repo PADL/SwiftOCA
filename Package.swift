@@ -344,6 +344,11 @@ let CommonTargets: [Target] = [
 
   ),
   .executableTarget(
+    name: "OCAPerfBench",
+    dependencies: ["SwiftOCA", "SwiftOCADevice"],
+    path: "Examples/OCAPerfBench"
+  ),
+  .executableTarget(
     name: "OCAEventBenchmark",
     dependencies: [
       "SwiftOCA",
