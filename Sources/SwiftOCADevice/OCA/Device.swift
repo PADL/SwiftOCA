@@ -69,6 +69,20 @@ public struct OcaEventParameters: Sendable {
     }, propertyID: propertyID)
   }
 
+  /// Pre-encoded OCP.1 parameters together with the value they encode, for a sender that
+  /// encodes its own OCP.1 bytes: OCP.1 keeps those bytes, and any other protocol encodes
+  /// from the value on demand, so only a controller speaking one pays for it.
+  init<T: Codable & Sendable>(_ encoded: Data, value: OcaPropertyChangedEventData<T>) {
+    self.init({ format in
+      switch format {
+      case .ocp1:
+        return encoded
+      case .ocp2:
+        return try OcaEventDataCoding.encode(value, format: format)
+      }
+    }, propertyID: value.propertyID)
+  }
+
   /// OCP.1 encoding of the parameters
   public var encoded: Data {
     get throws { try encoded(as: .ocp1) }
@@ -304,6 +318,16 @@ public actor OcaDevice {
     parameters: Data
   ) async throws {
     try await _notifySubscribers(event, parameters: OcaEventParameters(parameters, event: event))
+  }
+
+  /// OCP.1-encoded parameters and the value they encode, for a sender that encodes its own
+  /// OCP.1 bytes: OCP.2 controllers are encoded for from the value, rather than missing out.
+  public func notifySubscribers<T: Codable & Sendable>(
+    _ event: OcaEvent,
+    parameters: Data,
+    value: OcaPropertyChangedEventData<T>
+  ) async throws {
+    try await _notifySubscribers(event, parameters: OcaEventParameters(parameters, value: value))
   }
 
   func notifySubscribers(_ event: OcaEvent) async throws {

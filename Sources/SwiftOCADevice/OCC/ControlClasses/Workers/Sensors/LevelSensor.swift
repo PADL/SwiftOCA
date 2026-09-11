@@ -61,7 +61,7 @@ open class OcaLevelSensor: OcaSensor {
     bytes.reserveCapacity(9)
     parameters.encode(into: &bytes)
 
-    try await deviceDelegate.notifySubscribers(event, parameters: Data(bytes))
+    try await deviceDelegate.notifySubscribers(event, parameters: Data(bytes), value: parameters)
   }
 
   // for API compatibility, but prefer to use update(reading:) to set value
