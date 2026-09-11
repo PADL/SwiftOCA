@@ -38,6 +38,7 @@ package actor Ocp1NWStreamController: Ocp1ControllerInternal, CustomStringConver
   package nonisolated var peerIdentity: OcaPeerIdentity {
     _peerIdentity.withLock { $0 }
   }
+
   package nonisolated func setPeerIdentity(_ identity: OcaPeerIdentity) {
     _peerIdentity.withLock { $0 = identity }
   }
@@ -136,8 +137,11 @@ private extension Ocp1NWStreamController {
     on connection: NWConnection,
     timeout: Duration
   ) -> AsyncThrowingStream<Ocp1MessageList, Error> {
-    AsyncThrowingStream { () async throws -> Ocp1MessageList? in
-      try await withThrowingTimeout(of: timeout, clock: .continuous) {
+    // one timer for every read on the connection, rather than a sleep per message that the
+    // runtime would keep for the whole timeout after the message arrived
+    let deadlines = DeadlineTimer()
+    return AsyncThrowingStream { () async throws -> Ocp1MessageList? in
+      try await deadlines.withThrowingTimeout(of: timeout) {
         try await OcaDevice.asyncReceiveMessages { count in
           try await connection.receiveExactly(count)
         }

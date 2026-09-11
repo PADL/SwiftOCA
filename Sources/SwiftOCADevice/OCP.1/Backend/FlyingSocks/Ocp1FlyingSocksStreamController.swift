@@ -160,9 +160,12 @@ private extension AsyncThrowingStream
     from bytes: some AsyncBufferedSequence<UInt8>,
     timeout: Duration
   ) -> Self {
-    AsyncThrowingStream<Ocp1MessageList, Error> {
+    // one timer for every read on the connection, rather than a sleep per message that the
+    // runtime would keep for the whole timeout after the message arrived
+    let deadlines = DeadlineTimer()
+    return AsyncThrowingStream<Ocp1MessageList, Error> {
       do {
-        return try await withThrowingTimeout(of: timeout, clock: .continuous) {
+        return try await deadlines.withThrowingTimeout(of: timeout) {
           nonisolated(unsafe) var iterator = bytes.makeAsyncIterator()
           return try await OcaDevice.asyncReceiveMessages { count in
             var nremain = count

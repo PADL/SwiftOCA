@@ -27,7 +27,7 @@ import Synchronization
 /// when it wakes to find nothing waiting, so it outlives the last wait by at most the
 /// sleep it had already begun: stopping as each wait is cancelled would park a timer per
 /// request again.
-final class DeadlineTimer: Sendable {
+package final class DeadlineTimer: Sendable {
   typealias Instant = ContinuousClock.Instant
   private typealias Continuation = UnsafeContinuation<(), Error>
 
@@ -57,7 +57,27 @@ final class DeadlineTimer: Sendable {
 
   private let state = Mutex(State())
 
-  init() {}
+  package init() {}
+
+  /// Runs `operation`, and if it hasn't returned within `duration`, calls `onTimeout` and
+  /// throws `Ocp1Error.responseTimeout`; a zero duration means no timeout. The race is
+  /// `withThrowingTimeout`'s, but its deadline is a wait on this timer, so an operation
+  /// that wins, as a response or a read almost always does, leaves nothing behind.
+  package func withThrowingTimeout<R: Sendable>(
+    of duration: Duration,
+    operation: @escaping @Sendable () async throws -> R,
+    onTimeout: (@Sendable () async throws -> ())? = nil
+  ) async throws -> R {
+    try await _withThrowingTimeout(
+      of: duration,
+      clock: .continuous,
+      operation: operation,
+      onTimeout: onTimeout,
+      sleepingUntil: { deadline in
+        try await self.wait(until: deadline)
+      }
+    )
+  }
 
   /// Returns at `deadline`, or throws `CancellationError` as soon as the calling task is
   /// cancelled.
