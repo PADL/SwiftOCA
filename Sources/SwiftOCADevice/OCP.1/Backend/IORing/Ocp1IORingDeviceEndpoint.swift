@@ -185,8 +185,6 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
           )
           break
         }
-      } catch let error where error as? Errno == Errno.canceled {
-        logger.debug("received cancelation, trying to accept() again")
       } catch {
         logger.info("received error \(error), bailing")
         break
@@ -368,7 +366,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
         }
       } catch let error as Errno {
         // if the IORing has not being sized properly we may receive noBufferSpace
-        guard error == Errno.canceled || error == Errno.noBufferSpace else { throw error }
+        guard error == Errno.noBufferSpace else { throw error }
       } catch {
         logger
           .error(

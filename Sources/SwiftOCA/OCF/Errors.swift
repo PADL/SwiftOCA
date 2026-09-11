@@ -69,7 +69,6 @@ public enum Ocp1Error: Error, Equatable {
   case remoteDeviceResolutionFailed
   case responseParameterOutOfRange
   case responseTimeout
-  case retryOperation
   case serviceResolutionFailed
   /// service browsing is not available on this platform, or failed to start
   case serviceBrowsingUnavailable

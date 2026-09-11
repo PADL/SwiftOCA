@@ -179,8 +179,6 @@ public final class Ocp1OpenSSLStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
           )
           break
         }
-      } catch let error where error as? Errno == Errno.canceled {
-        logger.debug("received cancelation, trying to accept() again")
       } catch {
         logger.info("received error \(error), bailing")
         break

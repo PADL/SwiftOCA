@@ -214,7 +214,7 @@ public final class Ocp1OpenSSLDTLSDeviceEndpoint: Ocp1IORingDeviceEndpoint,
           spawnPeerIngest(payload: payload, controller: controller, peerAddress: peerAddress)
         }
       } catch let error as Errno {
-        guard error == .canceled || error == .noBufferSpace else { throw error }
+        guard error == .noBufferSpace else { throw error }
       } catch {
         logger.error(
           "unexpected error \(error) in \(type(of: self)) on \(address._presentationAddress); no longer servicing"
