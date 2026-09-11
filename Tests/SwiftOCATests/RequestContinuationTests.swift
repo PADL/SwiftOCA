@@ -445,4 +445,29 @@ final class RequestContinuationTests: XCTestCase {
     let outstanding = await connection.statistics.outstandingRequests
     XCTAssertEqual(outstanding, [])
   }
+
+  /// A request answered in time leaves nothing waiting on the connection's deadline
+  /// timer: the wait for its timeout goes as soon as the response wins, rather than
+  /// staying, as a `Task.sleep` did, for the whole timeout.
+  func testAnsweredRequestLeavesNoDeadlineBehind() async throws {
+    let connection = await makeConnection(responseTimeout: .seconds(30))
+    let monitor = await installMonitor(on: connection)
+
+    let command = Ocp1Command(
+      handle: Self.handle,
+      targetONo: 5000,
+      methodID: OcaMethodID("2.6")
+    )
+    let request = Task { try await connection.sendCommandRrq(command) }
+
+    // the first handle the monitor allocates
+    let handle: OcaUint32 = 1
+    try await waitUntilWaiting(monitor, handle: handle)
+    try monitor.resume(with: makeResponse(handle: handle))
+
+    let received = try await request.value
+    XCTAssertEqual(received.handle, handle)
+    // the task group returns only once its timeout child has finished
+    XCTAssertEqual(monitor.deadlines.outstanding, 0)
+  }
 }

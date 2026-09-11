@@ -51,14 +51,21 @@ extension Ocp1Connection {
 
     let request = consume command
 
-    return try await withThrowingTimeout(
+    // the connection's timer rather than a sleep of our own, which the runtime would keep
+    // for the whole timeout after the response arrived
+    let deadlines = monitor.deadlines
+    return try await _withThrowingTimeout(
       of: responseTimeout,
       clock: .continuous,
       operation: { [self] in
         try await sendMessage(request, type: .ocaCmdRrq)
         return try await monitor.response(for: handle)
-      }, onTimeout: {
+      },
+      onTimeout: {
         monitor.resumeTimedOut(handle: handle)
+      },
+      sleepingUntil: { deadline in
+        try await deadlines.wait(until: deadline)
       }
     )
   }
