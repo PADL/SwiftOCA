@@ -23,8 +23,10 @@ import Synchronization
 /// once, but the runtime keeps the timer, and with it the task's memory, until the
 /// deadline passes. At thousands of requests a second that is hundreds of thousands of
 /// parked timers, and as many late wake-ups. Here a cancelled wait is removed and
-/// resumed at once, and a single loop, running only while waits are outstanding,
-/// sleeps until the earliest deadline.
+/// resumed at once, and a single loop sleeps until the earliest deadline. The loop stops
+/// when it wakes to find nothing waiting, so it outlives the last wait by at most the
+/// sleep it had already begun: stopping as each wait is cancelled would park a timer per
+/// request again.
 final class DeadlineTimer: Sendable {
   typealias Instant = ContinuousClock.Instant
   private typealias Continuation = UnsafeContinuation<(), Error>
@@ -146,23 +148,26 @@ final class DeadlineTimer: Sendable {
         return nil
       }
       let now = Instant.now
-      var due = [Continuation]()
+      var due = [(id: UInt64, continuation: Continuation)]()
       var next: Instant?
       for (id, wait) in state.waits {
         guard case let .waiting(deadline, continuation) = wait else { continue }
         if deadline <= now {
-          state.waits[id] = nil
-          due.append(continuation)
+          due.append((id, continuation))
         } else if next.map({ deadline < $0 }) ?? true {
           next = deadline
         }
+      }
+      // removed after iterating, as removing during it would copy the table
+      for (id, _) in due {
+        state.waits[id] = nil
       }
       if let next {
         state.loop?.wakesAt = next
       } else {
         state.loop = nil // nothing waits; the next wait starts a loop
       }
-      return (due, next)
+      return (due.map(\.continuation), next)
     }
   }
 }
