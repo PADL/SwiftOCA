@@ -187,11 +187,11 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
   }
   #endif
 
-  public func propertyKeyPath(for propertyID: OcaPropertyID) async -> AnyKeyPath? {
+  public func propertyKeyPath(for propertyID: OcaPropertyID) -> AnyKeyPath? {
     OcaPropertyKeyPathCache.shared.lookupProperty(byID: propertyID, for: self)
   }
 
-  public func propertyKeyPath(for name: String) async -> AnyKeyPath? {
+  public func propertyKeyPath(for name: String) -> AnyKeyPath? {
     OcaPropertyKeyPathCache.shared.lookupProperty(byName: name, for: self)
   }
 }
