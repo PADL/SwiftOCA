@@ -149,6 +149,66 @@ final class FlyingSocksEndpointCancellationTests: XCTestCase {
   }
 }
 
+// MARK: - FlyingSocks controller close
+
+/// Closing a controller while its message loop is reading, as a keepalive expiry does, must
+/// end the loop. The read has to be woken, not left suspended on a closed descriptor that the
+/// socket pool would never report on again. The descriptor is closed once the controller is
+/// released.
+final class FlyingSocksControllerCloseTests: XCTestCase {
+  private actor Flag {
+    var isSet = false
+
+    func set() {
+      isSet = true
+    }
+  }
+
+  func testClosingAControllerWhileItReadsEndsItsMessageLoop() async throws {
+    let device = OcaDevice()
+    let (endpoint, listeningSocket, _) = try await makeTCPEndpoint(device: device)
+    let endpointTask = Task { try await endpoint._run(on: listeningSocket, pool: endpoint.pool) }
+    defer { endpointTask.cancel() }
+
+    var files: [Int32] = [-1, -1]
+    XCTAssertEqual(Darwin.socketpair(AF_UNIX, Darwin.SOCK_STREAM, 0, &files), 0)
+    let peer = Socket(file: .init(rawValue: files[1]))
+    defer { try? peer.close() }
+    let pool = await endpoint.pool
+
+    let loopEnded = Flag()
+    weak var releasedController: Ocp1FlyingSocksStreamController?
+    do {
+      let controller = try Ocp1FlyingSocksStreamController(
+        endpoint: endpoint,
+        socket: AsyncSocket(socket: Socket(file: .init(rawValue: files[0])), pool: pool)
+      )
+      releasedController = controller
+      Task {
+        await controller.handle(for: endpoint)
+        await loopEnded.set()
+      }
+      // long enough for the message loop to be suspended reading the socket
+      try await Task.sleep(for: .milliseconds(200))
+
+      try await controller.close()
+    }
+
+    let deadline = ContinuousClock.now + .seconds(2)
+    while !(await loopEnded.isSet), ContinuousClock.now < deadline {
+      try await Task.sleep(for: .milliseconds(10))
+    }
+    let ended = await loopEnded.isSet
+    XCTAssertTrue(ended, "closing the controller should end its message loop")
+
+    while releasedController != nil, ContinuousClock.now < deadline {
+      try await Task.sleep(for: .milliseconds(10))
+    }
+    XCTAssertNil(releasedController, "the controller should be released once its loop has ended")
+    XCTAssertEqual(fcntl(files[0], F_GETFD), -1, "releasing the controller should close its socket")
+  }
+}
+
 // MARK: - CFSocket TCP connection tests
 
 final class CFSocketConnectionTests: XCTestCase {
