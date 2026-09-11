@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024 PADL Software Pty Ltd
+// Copyright (c) 2024-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ package actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConve
   private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
   private let outputStream: AsyncStream<WSMessage>.Continuation
   package var endpoint: Ocp1FlyingFoxDeviceEndpoint?
+  package nonisolated let identifier: String
 
   package var keepAliveTask: Task<(), Error>?
   package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
@@ -48,11 +49,13 @@ package actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConve
 
   init(
     endpoint: Ocp1FlyingFoxDeviceEndpoint?,
+    identifier: String,
     inputStream: AsyncStream<WSMessage>,
     outputStream: AsyncStream<WSMessage>.Continuation
   ) {
     self.outputStream = outputStream
     self.endpoint = endpoint
+    self.identifier = identifier
     _messages = AsyncThrowingStream { continuation in
       let task = Task { [inputStream] in
         do {
@@ -96,12 +99,8 @@ package actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConve
     outputStream.finish()
   }
 
-  package nonisolated var identifier: String {
-    String(describing: id)
-  }
-
   package nonisolated var description: String {
-    "\(type(of: self))(id: \(id))"
+    "\(type(of: self))(address: \(identifier))"
   }
 }
 

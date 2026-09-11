@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024 PADL Software Pty Ltd
+// Copyright (c) 2024-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -62,9 +62,19 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   final class Handler: WSMessageHandler, @unchecked
   Sendable {
     package weak var endpoint: Ocp1FlyingFoxDeviceEndpoint?
+    /// the peer the WebSocket upgrade came from, for logging
+    private let identifier: String
 
-    init(_ endpoint: Ocp1FlyingFoxDeviceEndpoint) {
+    init(_ endpoint: Ocp1FlyingFoxDeviceEndpoint?, peer: HTTPRequest.Address?) {
       self.endpoint = endpoint
+      identifier = switch peer {
+      case let .ip4(address, port), let .ip6(address, port):
+        "\(address):\(port)"
+      case let .unix(path) where !path.isEmpty:
+        path
+      default:
+        "unknown"
+      }
     }
 
     func makeMessages(for client: AsyncStream<WSMessage>) async throws
@@ -73,6 +83,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
       AsyncStream<WSMessage> { continuation in
         let controller = Ocp1FlyingFoxController(
           endpoint: endpoint,
+          identifier: identifier,
           inputStream: client,
           outputStream: continuation
         )
@@ -132,7 +143,11 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
       timeout: timeout.timeInterval
     )
 
-    await httpServer.appendRoute("GET /", to: .webSocket(Handler(self)))
+    await httpServer.appendRoute("GET /") { [weak self] request in
+      // one handler per upgrade, so the controller knows its peer
+      try await WebSocketHTTPHandler.webSocket(Handler(self, peer: request.remoteAddress))
+        .handleRequest(request)
+    }
 
     try await device.add(endpoint: self)
   }
