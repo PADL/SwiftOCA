@@ -6,13 +6,13 @@ throughput over time, and latency from the moment of connection. It uses only th
 OCP.1 API, so the same source builds against any revision of SwiftOCA.
 `compare.sh` builds two revisions with it and puts them side by side.
 
-It lives on the `perfbench` branch and is not meant to be merged: `compare.sh`
-copies the harness into each revision it builds, so the revisions being compared
-need not contain it.
+`compare.sh` copies the harness into each revision it builds, so the revisions being
+compared need not contain it: any two commits will do, including ones from before
+the harness was added.
 
 ## Comparing two revisions
 
-From a checkout of the `perfbench` branch:
+From a checkout of `main`:
 
 ```sh
 git fetch origin
@@ -24,8 +24,8 @@ the script:
 
 1. exports the commit (`git archive`) into a build directory of its own,
    `~/.cache/ocaperf/<commit>`, the first time it sees that commit,
-2. copies in this branch's `PerfBench.swift` and adds an `OCAPerfBench` target to
-   its `Package.swift`, so both revisions run the same harness source,
+2. copies in this checkout's `PerfBench.swift`, and adds an `OCAPerfBench` target to
+   its `Package.swift` if it has none, so both revisions run the same harness source,
 3. copies in this checkout's `Package.resolved`, so both build against the same
    dependencies, and
 4. builds it in release mode with debug info (`-Xswiftc -g -Xcc -g`, which leaves
@@ -84,6 +84,7 @@ that, a run with the defaults takes around 10 minutes.
 | `profile.<transport>.maxrss.KiB` | peak resident memory at the end of the loop |
 | `connect.<transport>.blockNNN` | round-trip time in consecutive blocks from the moment of connection, with no warm-up, across `BENCH_CONNECTIONS` fresh connections |
 | `connect.<transport>.firstblock.cNN` | the first block of each connection: if only `c01` is slow, the early cost is paid once per process; if every connection's is, per connection |
+| `connect.<transport>.connection.cNN` | each connection's mean over all its blocks. On Linux, loopback TCP connections have been seen to settle, each for its whole life, at one of two speeds (about 35 and 43 µs a round trip), so the block medians move by that much with how many connections came up slow. Compare these rows before reading a difference in the blocks as real |
 
 ## Getting stable numbers
 
@@ -141,7 +142,7 @@ large, hence the lower sampling rate (`-F 999`). To confirm a binary has debug i
 
 ## Running the binary directly
 
-On the `perfbench` branch, which is `main` plus this benchmark:
+In a checkout of `main`:
 
 ```sh
 swift build -c release -Xswiftc -g -Xcc -g --product OCAPerfBench
@@ -166,8 +167,8 @@ and profile mode also prints `PROFILE <count> round trips in <seconds>s <transpo
 
 To compare the OCP.1 performance of two revisions on this machine:
 
-1. In a SwiftOCA checkout, run `git fetch origin` and `git checkout perfbench`
-   (or `git checkout -b perfbench origin/perfbench` the first time).
+1. In a SwiftOCA checkout, run `git fetch origin` and `git checkout main`, then
+   `git merge --ff-only origin/main`.
 2. Check the machine is idle, and on Linux that the CPU governor is
    `performance` if you are allowed to set it.
 3. Run

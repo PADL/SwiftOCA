@@ -471,6 +471,13 @@ func runConnectTimeline(
   for n in 0..<connections {
     report("connect.\(transport).firstblock.c\(padded(n + 1, 2))", [samples[0][n]])
   }
+  // A connection can run at one of two speeds for its whole life, so the block medians
+  // above move with how many connections came up slow. Each connection's own mean shows
+  // which ones did.
+  for n in 0..<connections {
+    let mean = samples.reduce(0) { $0 + $1[n] } / Double(blocks)
+    report("connect.\(transport).connection.c\(padded(n + 1, 2))", [mean])
+  }
 }
 
 /// Device-to-controller notification pipeline: N property changes on the device,
