@@ -20,6 +20,7 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+import Synchronization
 
 open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyPathRepresentable {
   typealias Root = OcaRoot
@@ -186,12 +187,12 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
   }
   #endif
 
-  public func propertyKeyPath(for propertyID: OcaPropertyID) async -> AnyKeyPath? {
-    await OcaPropertyKeyPathCache.shared.lookupProperty(byID: propertyID, for: self)
+  public func propertyKeyPath(for propertyID: OcaPropertyID) -> AnyKeyPath? {
+    OcaPropertyKeyPathCache.shared.lookupProperty(byID: propertyID, for: self)
   }
 
-  public func propertyKeyPath(for name: String) async -> AnyKeyPath? {
-    await OcaPropertyKeyPathCache.shared.lookupProperty(byName: name, for: self)
+  public func propertyKeyPath(for name: String) -> AnyKeyPath? {
+    OcaPropertyKeyPathCache.shared.lookupProperty(byName: name, for: self)
   }
 }
 
@@ -202,7 +203,6 @@ extension _OcaObjectKeyPathRepresentable where Self: OcaRoot {
     ObjectIdentifier(type(of: self))
   }
 
-  @OcaConnection
   var allKeyPaths: [String: AnyKeyPath] {
     OcaPropertyKeyPathCache.shared.keyPaths(for: self)
   }
@@ -243,19 +243,18 @@ public extension OcaRoot {
   @OcaConnection
   private func onPropertyEvent(event: OcaEvent, eventData data: Data) {
     let decoder = Ocp1Decoder()
+    // the property with this ID from the class's key paths, worked out once, rather than
+    // reading every property of the object in turn, computed ones included, and casting
+    // each to find it
     guard let propertyID = try? decoder.decode(
       OcaPropertyID.self,
       from: data
-    ) else { return }
+    ),
+      let keyPath = OcaPropertyKeyPathCache.shared.lookupProperty(byID: propertyID, for: self),
+      let value = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable)
+    else { return }
 
-    for (_, keyPath) in allKeyPaths {
-      if let value = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable),
-         value.propertyIDs.contains(propertyID)
-      {
-        try? value.onEvent(self, event: event, eventData: data)
-        break
-      }
-    }
+    try? value.onEvent(self, event: event, eventData: data)
   }
 
   @OcaConnection
@@ -383,11 +382,14 @@ public extension OcaRoot {
 
 extension AnyKeyPath: @retroactive @unchecked Sendable {}
 
-@OcaConnection
-private final class OcaPropertyKeyPathCache {
+/// Each class's property key paths, worked out once and shared by every instance of the
+/// class. Synchronous, and safe to use from any thread: building an entry reads the
+/// object's property wrappers, whose stored fields are constants, their values living in
+/// their subjects.
+private final class OcaPropertyKeyPathCache: Sendable {
   fileprivate static let shared = OcaPropertyKeyPathCache()
 
-  private struct CacheEntry {
+  private struct CacheEntry: Sendable {
     let keyPaths: [String: AnyKeyPath]
     let propertiesByID: [OcaPropertyID: AnyKeyPath]
     let propertiesByName: [String: AnyKeyPath]
@@ -418,45 +420,42 @@ private final class OcaPropertyKeyPathCache {
     }
   }
 
-  private var _cache = [ObjectIdentifier: CacheEntry]()
+  private let _cache = Mutex([ObjectIdentifier: CacheEntry]())
 
-  private func addCacheEntry(for object: some OcaRoot) -> CacheEntry {
-    let cacheEntry = CacheEntry(object: object)
-    _cache[object._metaTypeObjectIdentifier] = cacheEntry
-    return cacheEntry
-  }
-
-  @OcaConnection
-  fileprivate func keyPaths(for object: some OcaRoot) -> [String: AnyKeyPath] {
-    if let cacheEntry = _cache[object._metaTypeObjectIdentifier] {
-      return cacheEntry.keyPaths
+  private func cacheEntry(for object: some OcaRoot) -> CacheEntry {
+    let key = object._metaTypeObjectIdentifier
+    if let cacheEntry = _cache.withLock({ $0[key] }) {
+      return cacheEntry
     }
 
-    return addCacheEntry(for: object).keyPaths
+    // built outside the lock, as it reflects over the object; two threads building the
+    // same class's entry at once build the same thing, and the first stored is kept
+    let cacheEntry = CacheEntry(object: object)
+    return _cache.withLock { cache in
+      if let existing = cache[key] {
+        return existing
+      }
+      cache[key] = cacheEntry
+      return cacheEntry
+    }
   }
 
-  @OcaConnection
+  fileprivate func keyPaths(for object: some OcaRoot) -> [String: AnyKeyPath] {
+    cacheEntry(for: object).keyPaths
+  }
+
   fileprivate func lookupProperty(
     byID propertyID: OcaPropertyID,
     for object: some OcaRoot
   ) -> AnyKeyPath? {
-    if let cacheEntry = _cache[object._metaTypeObjectIdentifier] {
-      return cacheEntry.propertiesByID[propertyID]
-    }
-
-    return addCacheEntry(for: object).propertiesByID[propertyID]
+    cacheEntry(for: object).propertiesByID[propertyID]
   }
 
-  @OcaConnection
   fileprivate func lookupProperty(
     byName name: String,
     for object: some OcaRoot
   ) -> AnyKeyPath? {
-    if let cacheEntry = _cache[object._metaTypeObjectIdentifier] {
-      return cacheEntry.propertiesByName[name]
-    }
-
-    return addCacheEntry(for: object).propertiesByName[name]
+    cacheEntry(for: object).propertiesByName[name]
   }
 }
 
