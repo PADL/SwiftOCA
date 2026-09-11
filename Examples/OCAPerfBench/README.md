@@ -22,18 +22,24 @@ Examples/OCAPerfBench/compare.sh origin/main origin/ocp2
 Any two refs the checkout can resolve will do (branches, tags, commits). For each,
 the script:
 
-1. checks it out into a temporary worktree,
+1. exports the commit (`git archive`) into a build directory of its own,
+   `~/.cache/ocaperf/<commit>`, the first time it sees that commit,
 2. copies in this branch's `PerfBench.swift` and adds an `OCAPerfBench` target to
    its `Package.swift`, so both revisions run the same harness source,
 3. copies in this checkout's `Package.resolved`, so both build against the same
    dependencies, and
-4. builds it in release mode.
+4. builds it in release mode: from scratch the first time, then incrementally.
+
+Files are copied in only when their contents differ, so a later run of the same
+commit rebuilds only what changed, usually nothing, and takes seconds. A branch
+that moves, or is force-pushed, gets a new commit and so a new build directory,
+built once. Old ones stay until you remove them (`rm -rf ~/.cache/ocaperf`).
 
 It then runs the two binaries alternately, reversing the order every round, and
 prints one line per benchmark: the median across rounds of each run's median, and
 the second ref's difference from the first. Figures are ns/op, except
 `*.maxrss.KiB` (peak memory in KiB); lower is better throughout, so a positive
-difference is a slowdown. The worktrees are removed when it finishes.
+difference is a slowdown.
 
 | option | default | meaning |
 |---|---|---|
@@ -46,15 +52,17 @@ difference is a slowdown. The worktrees are removed when it finishes.
 | environment | meaning |
 |---|---|
 | `SWIFT` | the swift command to build with, e.g. `SWIFT="swiftly run +6.3.3 swift"` |
-| `PIN` | a prefix for each benchmark run, e.g. `PIN="taskset -c 2,3"` |
+| `PIN` | a prefix for each benchmark run, e.g. `PIN="taskset -c 2,3"`; it does not pin the builds |
 | `PERF` | if set, record each `profile` and `connect` run with `perf record -g` into the `-o` directory (default `./ocaperf-results`) |
+| `OCAPERF_CACHE` | where the per-commit build directories are kept (default `${XDG_CACHE_HOME:-~/.cache}/ocaperf`) |
 | `BENCH_TRANSPORT` | transport for `profile` (default `local`) and `connect` (default `tcp`): `local`, `tcp` or `udp` |
 | `BENCH_SLICE` | `profile`: seconds per reported slice (default 5) |
 | `BENCH_CONNECTIONS` | `connect`: fresh connections per run (default 5) |
 | `BENCH_BLOCKS` | `connect`: blocks timed on each connection (default 40) |
 | `BENCH_BLOCK_SIZE` | `connect`: round trips per block (default 500) |
 
-A full run with the defaults takes around 15 to 20 minutes, most of it building.
+The first run of a commit builds it from scratch, which takes a few minutes; after
+that, a run with the defaults takes around 10 minutes.
 
 ## What is measured
 
@@ -87,6 +95,8 @@ keep the noise down:
   measures the total CPU work of an exchange; `PIN="taskset -c 2,3"` gives them a
   core each, which is closer to real use. Choose two physical cores sharing a cache,
   not hyperthread siblings and not CPU 0 (see `lscpu -e=CPU,CORE,SOCKET,NODE,L3`).
+  Set `PIN` rather than running the script under `taskset`: that would pin the
+  builds as well, and the script warns if it finds itself pinned.
 - On a laptop, stay on mains power throughout: moving to battery can change clock
   speed mid-run.
 - If a difference matters, run again with more rounds (`-r 9`) and check it holds.
@@ -116,9 +126,9 @@ perf report -i perf-profile/perf-b-profile-1.data --no-children | swift demangle
 ```
 
 The same works for `-m connect`, which records mostly the early life of each
-connection. `perf record` keeps the binaries in its build-id cache (`~/.debug`), so
-reports still resolve symbols after the script removes its worktrees. If `perf`
-refuses to record, allow it with `sudo sysctl kernel.perf_event_paranoid=1`.
+connection. The binaries stay in their build directories, and `perf record` also
+keeps copies in its build-id cache (`~/.debug`), so reports resolve symbols later.
+If `perf` refuses to record, allow it with `sudo sysctl kernel.perf_event_paranoid=1`.
 
 ## Running the binary directly
 

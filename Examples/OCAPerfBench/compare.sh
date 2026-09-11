@@ -19,26 +19,31 @@
 #   Examples/OCAPerfBench/compare.sh [-r rounds] [-s seconds] [-p port]
 #                                    [-m modes] [-o dir] ref-a ref-b
 #
-# Each revision is checked out into a temporary worktree, given this directory's
-# PerfBench.swift and an OCAPerfBench target (so the refs need not contain the
-# benchmark, and both build the same harness source), given this checkout's
-# Package.resolved (so both build against the same dependencies), and built in
-# release mode. The two binaries then run alternately, reversing the order each
-# round, so that drift in load or clock speed falls on both alike. For each benchmark
-# it prints the median across rounds of each run's median, and ref-b's difference
-# from ref-a. Lower is better throughout, so a positive difference is a slowdown.
+# Each revision is exported into a build directory of its own, kept between runs
+# and keyed by commit, given this directory's PerfBench.swift and an OCAPerfBench
+# target (so the refs need not contain the benchmark, and both build the same harness
+# source) and this checkout's Package.resolved (so both build against the same
+# dependencies), and built in release mode: from scratch the first time, then
+# incrementally, so a later run of the same commit rebuilds only what changed. The
+# two binaries then run alternately, reversing the order each round, so that drift
+# in load or clock speed falls on both alike. For each benchmark it prints the median
+# across rounds of each run's median, and ref-b's difference from ref-a. Lower is
+# better throughout, so a positive difference is a slowdown.
 #
 # Modes (-m, default "codec e2e profile"): codec, e2e, notify, profile, connect.
 # See README.md for what each measures.
 #
 # Environment:
-#   SWIFT  the swift command to build with (default: swift),
-#          e.g. SWIFT="swiftly run +6.3.3 swift"
-#   PIN    a prefix for each benchmark run, e.g. PIN="taskset -c 2,3"
-#   PERF   if set, record each profile and connect run with `perf record -g` into
-#          the -o directory (default ./ocaperf-results), for `perf diff`
+#   SWIFT          the swift command to build with (default: swift),
+#                  e.g. SWIFT="swiftly run +6.3.3 swift"
+#   PIN            a prefix for each benchmark run, e.g. PIN="taskset -c 2,3"; the
+#                  builds are not pinned, so do not wrap this script in taskset
+#   PERF           if set, record each profile and connect run with `perf record -g`
+#                  into the -o directory (default ./ocaperf-results), for `perf diff`
+#   OCAPERF_CACHE  where the per-commit build directories are kept
+#                  (default: ${XDG_CACHE_HOME:-~/.cache}/ocaperf)
 #   BENCH_TRANSPORT, BENCH_SLICE, BENCH_CONNECTIONS, BENCH_BLOCKS, BENCH_BLOCK_SIZE
-#          pass through to the harness; see README.md
+#                  pass through to the harness; see README.md
 
 set -eu
 
@@ -79,6 +84,7 @@ done
 swift=${SWIFT:-swift}
 pin=${PIN:-}
 perf=${PERF:-}
+cache=${OCAPERF_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/ocaperf}
 if [ -n "$perf" ] && [ -z "$outdir" ]; then outdir=ocaperf-results; fi
 if [ -n "$outdir" ]; then
   mkdir -p "$outdir"
@@ -90,17 +96,31 @@ work=$(mktemp -d "${TMPDIR:-/tmp}/ocaperf.XXXXXX")
 tab=$(printf '\t')
 
 cleanup() {
-  git -C "$repo" worktree remove --force "$work/a" 2>/dev/null || true
-  git -C "$repo" worktree remove --force "$work/b" 2>/dev/null || true
-  rm -rf "$work"
+  rm -rf "$work" # the per-commit build directories stay in the cache
 }
 trap cleanup EXIT INT TERM
 
-# Gives a checkout this directory's harness and, unless it has one, an OCAPerfBench
-# target, placed before the OCAEventBenchmark target that every revision has.
+# Wrapping the script in taskset pins the builds as well as the runs.
+if command -v nproc >/dev/null 2>&1; then
+  usable=$(nproc)
+  online=$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo "$usable")
+  if [ "$usable" -lt "$online" ]; then
+    echo "note: this script may use only $usable of $online CPUs, so its builds are" \
+      "limited too; set PIN to pin the runs instead of wrapping it in taskset" >&2
+  fi
+fi
+
+# Copies $1 to $2 unless $2 already has the same contents, so that an unchanged file
+# keeps its timestamp and the next incremental build has nothing to recompile.
+update() { # from to
+  cmp -s "$1" "$2" 2>/dev/null || cp "$1" "$2"
+}
+
+# Gives a build directory this directory's harness and, unless it has one, an
+# OCAPerfBench target, placed before the OCAEventBenchmark target every revision has.
 inject() { # dir
   mkdir -p "$1/Examples/OCAPerfBench"
-  cp "$here/PerfBench.swift" "$1/Examples/OCAPerfBench/"
+  update "$here/PerfBench.swift" "$1/Examples/OCAPerfBench/PerfBench.swift"
   if ! grep -q 'name: "OCAPerfBench"' "$1/Package.swift"; then
     awk '
       /name: "OCAEventBenchmark",/ && !done {
@@ -122,13 +142,21 @@ inject() { # dir
 }
 
 build() { # label ref
-  git -C "$repo" worktree add --quiet --detach "$work/$1" "$2"
-  inject "$work/$1"
-  if [ -f "$repo/Package.resolved" ]; then
-    cp "$repo/Package.resolved" "$work/$1/"
+  sha=$(git -C "$repo" rev-parse --verify "$2^{commit}")
+  dir=$cache/$sha
+  if [ ! -d "$dir" ]; then
+    mkdir -p "$cache"
+    export=$(mktemp -d "$cache/.export.XXXXXX")
+    git -C "$repo" archive "$sha" | tar -x -C "$export"
+    mv "$export" "$dir"
   fi
-  echo "building $1: $2 ($(git -C "$repo" rev-parse --short "$2"))" >&2
-  (cd "$work/$1" && $swift build -c release --product OCAPerfBench >&2)
+  inject "$dir"
+  if [ -f "$repo/Package.resolved" ]; then
+    update "$repo/Package.resolved" "$dir/Package.resolved"
+  fi
+  echo "building $1: $2 ($(git -C "$repo" rev-parse --short "$sha")) in $dir" >&2
+  (cd "$dir" && $swift build -c release --product OCAPerfBench >&2)
+  ln -s "$dir" "$work/$1"
 }
 
 run() { # label mode round
