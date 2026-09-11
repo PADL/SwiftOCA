@@ -17,6 +17,7 @@
 import AsyncExtensions
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
+import Synchronization
 
 extension OcaController {
   typealias ID = ObjectIdentifier
@@ -534,7 +535,7 @@ extension OcaRoot: Hashable {
 protocol _OcaObjectKeyPathRepresentable: OcaRoot {}
 
 extension OcaRoot {
-  fileprivate var _metaTypeObjectIdentifier: ObjectIdentifier {
+  fileprivate nonisolated var _metaTypeObjectIdentifier: ObjectIdentifier {
     ObjectIdentifier(type(of: self))
   }
 
@@ -568,16 +569,19 @@ extension OcaRoot {
   }
 }
 
-@OcaDevice
-private final class OcaDevicePropertyKeyPathCache {
+/// Each class's device property key paths and accessor methods, worked out once and shared
+/// by every instance of the class. Synchronous, and safe to use from any thread: building
+/// an entry reads only the property wrappers' metadata, which is set at initialisation
+/// (see `allDevicePropertyKeyPathsUncached`).
+private final class OcaDevicePropertyKeyPathCache: Sendable {
   fileprivate static let shared = OcaDevicePropertyKeyPathCache()
 
-  enum AccessorType {
+  enum AccessorType: Sendable {
     case getter
     case setter
   }
 
-  private struct CacheEntry {
+  private struct CacheEntry: Sendable {
     let keyPaths: [String: AnyKeyPath]
     let methods: [OcaMethodID: (AccessorType, AnyKeyPath)]
 
@@ -596,40 +600,41 @@ private final class OcaDevicePropertyKeyPathCache {
       }
     }
 
-    @OcaDevice
     fileprivate init(object: some OcaRoot) {
       let keyPaths = object.allDevicePropertyKeyPathsUncached
       self.init(keyPaths: keyPaths, object: object)
     }
   }
 
-  private var _cache = [ObjectIdentifier: CacheEntry]()
+  private let _cache = Mutex([ObjectIdentifier: CacheEntry]())
 
-  private func addCacheEntry(for object: some OcaRoot) -> CacheEntry {
-    let cacheEntry = CacheEntry(object: object)
-    _cache[object._metaTypeObjectIdentifier] = cacheEntry
-    return cacheEntry
-  }
-
-  @OcaDevice
-  fileprivate func keyPaths(for object: some OcaRoot) -> [String: AnyKeyPath] {
-    if let cacheEntry = _cache[object._metaTypeObjectIdentifier] {
-      return cacheEntry.keyPaths
+  private func cacheEntry(for object: some OcaRoot) -> CacheEntry {
+    let key = object._metaTypeObjectIdentifier
+    if let cacheEntry = _cache.withLock({ $0[key] }) {
+      return cacheEntry
     }
 
-    return addCacheEntry(for: object).keyPaths
+    // built outside the lock, as it reflects over the object; two threads building the
+    // same class's entry at once build the same thing, and the first stored is kept
+    let cacheEntry = CacheEntry(object: object)
+    return _cache.withLock { cache in
+      if let existing = cache[key] {
+        return existing
+      }
+      cache[key] = cacheEntry
+      return cacheEntry
+    }
   }
 
-  @OcaDevice
+  fileprivate func keyPaths(for object: some OcaRoot) -> [String: AnyKeyPath] {
+    cacheEntry(for: object).keyPaths
+  }
+
   fileprivate func lookupMethod(
     _ methodID: OcaMethodID,
     for object: some OcaRoot
   ) -> (AccessorType, AnyKeyPath)? {
-    if let cacheEntry = _cache[object._metaTypeObjectIdentifier] {
-      return cacheEntry.methods[methodID]
-    }
-
-    return addCacheEntry(for: object).methods[methodID]
+    cacheEntry(for: object).methods[methodID]
   }
 }
 
