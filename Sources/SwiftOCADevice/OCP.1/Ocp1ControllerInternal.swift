@@ -117,13 +117,7 @@ extension Ocp1ControllerInternal {
     switch message {
     case let command as Ocp1Command:
       endpoint.logger.command(command, on: controller)
-      // disable timeout for firmware updates
-      let timeout = command.targetONo == OcaFirmwareManagerONo ? .zero : endpoint.timeout
-      let commandResponse = await endpoint.device.handleCommand(
-        command,
-        timeout: timeout,
-        from: controller
-      )
+      let commandResponse = await endpoint.device.handleCommand(command, from: controller)
       response = Ocp1Response(
         handle: command.handle,
         statusCode: commandResponse.statusCode,
