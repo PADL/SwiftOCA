@@ -28,7 +28,8 @@ the script:
    its `Package.swift`, so both revisions run the same harness source,
 3. copies in this checkout's `Package.resolved`, so both build against the same
    dependencies, and
-4. builds it in release mode: from scratch the first time, then incrementally.
+4. builds it in release mode with debug info (`-Xswiftc -g -Xcc -g`, which leaves
+   the generated code unchanged), from scratch the first time, then incrementally.
 
 Files are copied in only when their contents differ, so a later run of the same
 commit rebuilds only what changed, usually nothing, and takes seconds. A branch
@@ -52,8 +53,10 @@ difference is a slowdown.
 | environment | meaning |
 |---|---|
 | `SWIFT` | the swift command to build with, e.g. `SWIFT="swiftly run +6.3.3 swift"` |
+| `BUILD_FLAGS` | extra flags for the release build (default `-Xswiftc -g -Xcc -g`: debug info, for `perf`) |
 | `PIN` | a prefix for each benchmark run, e.g. `PIN="taskset -c 2,3"`; it does not pin the builds |
-| `PERF` | if set, record each `profile` and `connect` run with `perf record -g` into the `-o` directory (default `./ocaperf-results`) |
+| `PERF` | if set, record each `profile` and `connect` run with `perf record` into the `-o` directory (default `./ocaperf-results`) |
+| `PERF_ARGS` | options for `perf record` (default `--call-graph dwarf -F 999`) |
 | `OCAPERF_CACHE` | where the per-commit build directories are kept (default `${XDG_CACHE_HOME:-~/.cache}/ocaperf`) |
 | `BENCH_TRANSPORT` | transport for `profile` (default `local`) and `connect` (default `tcp`): `local`, `tcp` or `udp` |
 | `BENCH_SLICE` | `profile`: seconds per reported slice (default 5) |
@@ -130,12 +133,18 @@ connection. The binaries stay in their build directories, and `perf record` also
 keeps copies in its build-id cache (`~/.debug`), so reports resolve symbols later.
 If `perf` refuses to record, allow it with `sudo sysctl kernel.perf_event_paranoid=1`.
 
+Both revisions are optimised builds with debug info, so `perf` names functions,
+including inlined ones, and has line numbers. Recording uses DWARF call graphs,
+since optimised Swift code need not keep frame pointers; that makes the data files
+large, hence the lower sampling rate (`-F 999`). To confirm a binary has debug info:
+`readelf -S ~/.cache/ocaperf/<commit>/.build/release/OCAPerfBench | grep debug_info`.
+
 ## Running the binary directly
 
 On the `perfbench` branch, which is `main` plus this benchmark:
 
 ```sh
-swift build -c release --product OCAPerfBench
+swift build -c release -Xswiftc -g -Xcc -g --product OCAPerfBench
 BENCH_ONLY=codec .build/release/OCAPerfBench
 BENCH_ONLY=e2e BENCH_PORT=56000 .build/release/OCAPerfBench
 BENCH_ONLY=notify .build/release/OCAPerfBench

@@ -23,8 +23,9 @@
 # and keyed by commit, given this directory's PerfBench.swift and an OCAPerfBench
 # target (so the refs need not contain the benchmark, and both build the same harness
 # source) and this checkout's Package.resolved (so both build against the same
-# dependencies), and built in release mode: from scratch the first time, then
-# incrementally, so a later run of the same commit rebuilds only what changed. The
+# dependencies), and built in release mode with debug info: from scratch the first
+# time, then incrementally, so a later run of the same commit rebuilds only what
+# changed. The
 # two binaries then run alternately, reversing the order each round, so that drift
 # in load or clock speed falls on both alike. For each benchmark it prints the median
 # across rounds of each run's median, and ref-b's difference from ref-a. Lower is
@@ -36,10 +37,15 @@
 # Environment:
 #   SWIFT          the swift command to build with (default: swift),
 #                  e.g. SWIFT="swiftly run +6.3.3 swift"
+#   BUILD_FLAGS    extra flags for the release build (default: -Xswiftc -g -Xcc -g,
+#                  debug info, which leaves the code unchanged and lets perf name
+#                  functions, inlined ones included, and unwind stacks)
 #   PIN            a prefix for each benchmark run, e.g. PIN="taskset -c 2,3"; the
 #                  builds are not pinned, so do not wrap this script in taskset
-#   PERF           if set, record each profile and connect run with `perf record -g`
+#   PERF           if set, record each profile and connect run with `perf record`
 #                  into the -o directory (default ./ocaperf-results), for `perf diff`
+#   PERF_ARGS      options for perf record (default: --call-graph dwarf -F 999:
+#                  optimised code need not keep frame pointers)
 #   OCAPERF_CACHE  where the per-commit build directories are kept
 #                  (default: ${XDG_CACHE_HOME:-~/.cache}/ocaperf)
 #   BENCH_TRANSPORT, BENCH_SLICE, BENCH_CONNECTIONS, BENCH_BLOCKS, BENCH_BLOCK_SIZE
@@ -82,6 +88,8 @@ for mode in $modes; do
 done
 
 swift=${SWIFT:-swift}
+build_flags=${BUILD_FLAGS:-"-Xswiftc -g -Xcc -g"}
+perf_args=${PERF_ARGS:-"--call-graph dwarf -F 999"}
 pin=${PIN:-}
 perf=${PERF:-}
 cache=${OCAPERF_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/ocaperf}
@@ -155,7 +163,7 @@ build() { # label ref
     update "$repo/Package.resolved" "$dir/Package.resolved"
   fi
   echo "building $1: $2 ($(git -C "$repo" rev-parse --short "$sha")) in $dir" >&2
-  (cd "$dir" && $swift build -c release --product OCAPerfBench >&2)
+  (cd "$dir" && $swift build -c release $build_flags --product OCAPerfBench >&2)
   ln -s "$dir" "$work/$1"
 }
 
@@ -167,7 +175,7 @@ run() { # label mode round
     case $2 in
     profile | connect)
       data=$outdir/perf-$1-$2-$3.data
-      record="perf record -g -o $data --"
+      record="perf record $perf_args -o $data --"
       ;;
     esac
   fi
