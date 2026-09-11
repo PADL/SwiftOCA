@@ -57,6 +57,10 @@ extension Ocp1Connection {
     private let _requests = Mutex<Requests>(Requests())
     private let _lastMessageReceivedTime = Mutex<ContinuousClock.Instant>(.now)
 
+    /// Every request's response deadline on this connection: one timer, rather than a
+    /// `Task.sleep` per request that outlives the request by the whole timeout.
+    let deadlines = DeadlineTimer()
+
     init(_ connection: Ocp1Connection, id: Int) {
       _connection = Weak(connection)
       _connectionID = id
