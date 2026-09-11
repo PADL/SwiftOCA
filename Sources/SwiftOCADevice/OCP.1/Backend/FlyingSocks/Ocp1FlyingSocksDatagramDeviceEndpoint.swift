@@ -145,8 +145,15 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
       }
       try await _run(on: socket, pool: pool)
     } catch {
-      logger.critical("server error for \(presentationAddress): \(error)")
       try? socket.close()
+      // Cancelling the endpoint cancels the socket pool, which stops its event queue under
+      // the wait in progress, so on Darwin the wait fails with EBADF rather than as a
+      // cancellation. Whatever the pool throws, it is shutdown, not a server error.
+      guard !Task.isCancelled else {
+        try? await device.remove(endpoint: self)
+        throw CancellationError()
+      }
+      logger.critical("server error for \(presentationAddress): \(error)")
       throw error
     }
     try await device.remove(endpoint: self)

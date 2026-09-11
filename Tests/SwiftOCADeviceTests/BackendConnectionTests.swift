@@ -103,6 +103,52 @@ private func makeNWUDPConnection(
 }
 #endif
 
+// MARK: - FlyingSocks endpoint cancellation
+
+/// Cancelling `run()` stops the endpoint's socket pool, whose wait in progress then fails
+/// (with EBADF from kevent on Darwin) rather than as a cancellation. `run()` should still
+/// end with `CancellationError`, and leave the device without the endpoint.
+final class FlyingSocksEndpointCancellationTests: XCTestCase {
+  func testCancellingStreamEndpointRunRemovesIt() async throws {
+    let device = OcaDevice()
+    let endpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(
+      address: localhostAddress(port: 0),
+      device: device
+    )
+    try await assertCancellingRun(of: endpoint, on: device) { try await endpoint.run() }
+  }
+
+  func testCancellingDatagramEndpointRunRemovesIt() async throws {
+    let device = OcaDevice()
+    let endpoint = try await Ocp1FlyingSocksDatagramDeviceEndpoint(
+      address: localhostAddress(port: 0),
+      device: device
+    )
+    try await assertCancellingRun(of: endpoint, on: device) { try await endpoint.run() }
+  }
+
+  private func assertCancellingRun(
+    of endpoint: any OcaDeviceEndpoint,
+    on device: OcaDevice,
+    _ run: @escaping @Sendable () async throws -> ()
+  ) async throws {
+    var registered = await device.endpoints.contains { $0 === endpoint }
+    XCTAssertTrue(registered)
+
+    let task = Task { try await run() }
+    // long enough for the socket pool to be waiting on its event queue
+    try await Task.sleep(for: .milliseconds(200))
+    task.cancel()
+    do {
+      try await task.value
+      XCTFail("expected CancellationError")
+    } catch is CancellationError {}
+
+    registered = await device.endpoints.contains { $0 === endpoint }
+    XCTAssertFalse(registered, "a cancelled endpoint should no longer be registered")
+  }
+}
+
 // MARK: - CFSocket TCP connection tests
 
 final class CFSocketConnectionTests: XCTestCase {
