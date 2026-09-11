@@ -47,7 +47,6 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
   private let address: String
   private let socket: AsyncSocket
   private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
-  private var socketClosed = false
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
@@ -82,14 +81,16 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
     try await socket.write(data)
   }
 
-  private func closeSocket() throws {
-    guard !socketClosed else { return }
-    try socket.close()
-    socketClosed = true
-  }
-
   package func close() async throws {
-    try closeSocket()
+    // A keepalive expiry closes the controller while its message loop is suspended reading
+    // the socket. Closing the descriptor under that read would never wake it, so shut the
+    // socket down instead: the read sees end of file and the loop ends, as FlyingFox expects
+    // before a socket is closed. The descriptor is closed when the controller is released.
+    #if canImport(WinSDK)
+    _ = shutdown(socket.socket.file.rawValue, SD_BOTH)
+    #else
+    _ = shutdown(socket.socket.file.rawValue, Int32(SHUT_RDWR))
+    #endif
 
     keepAliveTask?.cancel()
     keepAliveTask = nil
@@ -97,6 +98,7 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
 
   deinit {
     keepAliveTask?.cancel()
+    try? socket.close()
   }
 
   package nonisolated var identifier: String {
