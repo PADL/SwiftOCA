@@ -75,7 +75,7 @@ package actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
 
     try await sendOcp1EncodedMessage(AsyncSocket.Message(
       peerAddress: peerAddress,
-      bytes: Array(data),
+      payload: data,
       interfaceIndex: interfaceIndex,
       localAddress: localAddress
     ))
