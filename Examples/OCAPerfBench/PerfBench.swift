@@ -17,10 +17,11 @@
 // OCP.1 performance harness, written against the OCP.1 API so that the same source
 // measures any two revisions of SwiftOCA: see README.md and compare.sh.
 //
-// Prints one machine-readable line per benchmark:
-//   RESULT <name> <min ns/op> <median ns/op> <max ns/op> <reps>
+// Prints one machine-readable line per benchmark, in ns/op unless its name says
+// otherwise:
+//   RESULT <name> <min> <median> <max> <samples>
 // and, in profile mode, one line with the round trips completed:
-//   PROFILE <count> round trips in <seconds>s
+//   PROFILE <count> round trips in <seconds>s <transport>
 
 import Foundation
 import SwiftOCA
@@ -292,74 +293,184 @@ func makeBenchDevice() async throws
   return (device, block)
 }
 
-/// Nothing but the smallest round trip, for as long as asked: gives a profiler a
-/// steady state to sample rather than a mixture of exchanges.
-func runProfileLoop(_ device: OcaDevice, seconds: Double) async throws {
-  let endpoint = try await OcaLocalDeviceEndpoint(device: device)
-  let endpointTask = Task { do { try await endpoint.run() } catch {} }
-  defer { endpointTask.cancel() }
-  let connection = await OcaLocalConnection(endpoint)
-  try await connection.connect()
-
-  let deadline = ContinuousClock.now + .seconds(seconds)
-  var count = 0
-  while ContinuousClock.now < deadline {
-    let response = try await connection.sendCommandRrq(getDeviceName)
-    sink &+= UInt64(response.statusCode.rawValue)
-    count += 1
-  }
-  print("PROFILE\t\(count) round trips in \(seconds)s")
-  try await connection.disconnect()
+enum BenchError: Error {
+  case unknownTransport(String)
+  case needsPort(String)
 }
 
-/// The local transport hands whole PDUs across a channel, so these figures are
-/// the coding and dispatch path with the transport taken out of the equation.
+/// Runs `body` with a controller connected over `transport` (local, tcp or udp) to an
+/// endpoint of its own. The local transport hands whole PDUs across a channel, so its
+/// figures are the coding and dispatch path with the transport taken out.
+func withConnection(
+  _ transport: String,
+  _ device: OcaDevice,
+  port: UInt16,
+  _ body: (Ocp1Connection) async throws -> ()
+) async throws {
+  switch transport {
+  case "local":
+    let endpoint = try await OcaLocalDeviceEndpoint(device: device)
+    let endpointTask = Task { do { try await endpoint.run() } catch {} }
+    defer { endpointTask.cancel() }
+    let connection = await OcaLocalConnection(endpoint)
+    try await connection.connect()
+    try await body(connection)
+    try await connection.disconnect()
+  case "tcp":
+    guard port != 0 else { throw BenchError.needsPort(transport) }
+    let endpoint = try await Ocp1DeviceEndpoint(
+      address: localhostAddress(port: port),
+      timeout: .seconds(5),
+      device: device
+    )
+    let endpointTask = Task { do { try await endpoint.run() } catch {} }
+    defer { endpointTask.cancel() }
+    try await Task.sleep(for: .milliseconds(500))
+    let connection = try await Ocp1TCPConnection(
+      deviceAddress: localhostAddress(port: port),
+      options: Ocp1ConnectionOptions()
+    )
+    try await connection.connect()
+    try await body(connection)
+    try await connection.disconnect()
+  case "udp":
+    guard port != 0 else { throw BenchError.needsPort(transport) }
+    let endpoint = try await BenchDatagramDeviceEndpoint(
+      address: localhostAddress(port: port),
+      timeout: .seconds(5),
+      device: device
+    )
+    let endpointTask = Task { do { try await endpoint.run() } catch {} }
+    defer { endpointTask.cancel() }
+    try await Task.sleep(for: .milliseconds(500))
+    let connection = try await Ocp1UDPConnection(
+      deviceAddress: localhostAddress(port: port),
+      options: Ocp1ConnectionOptions()
+    )
+    try await connection.connect()
+    try await body(connection)
+    try await connection.disconnect()
+  default:
+    throw BenchError.unknownTransport(transport)
+  }
+}
+
 func runLocalBenchmarks(_ device: OcaDevice) async throws {
-  let endpoint = try await OcaLocalDeviceEndpoint(device: device)
-  let endpointTask = Task { do { try await endpoint.run() } catch {} }
-  defer { endpointTask.cancel() }
-  let connection = await OcaLocalConnection(endpoint)
-  try await connection.connect()
-  await runRoundTrips("local", connection)
-  try await connection.disconnect()
+  try await withConnection("local", device, port: 0) { await runRoundTrips("local", $0) }
 }
 
 func runTCPBenchmarks(_ device: OcaDevice, port: UInt16) async throws {
-  let endpoint = try await Ocp1DeviceEndpoint(
-    address: localhostAddress(port: port),
-    timeout: .seconds(5),
-    device: device
-  )
-  let endpointTask = Task { do { try await endpoint.run() } catch {} }
-  defer { endpointTask.cancel() }
-  try await Task.sleep(for: .milliseconds(500))
-
-  let connection = try await Ocp1TCPConnection(
-    deviceAddress: localhostAddress(port: port),
-    options: Ocp1ConnectionOptions()
-  )
-  try await connection.connect()
-  await runRoundTrips("tcp", connection)
-  try await connection.disconnect()
+  try await withConnection("tcp", device, port: port) { await runRoundTrips("tcp", $0) }
 }
 
 func runUDPBenchmarks(_ device: OcaDevice, port: UInt16) async throws {
-  let endpoint = try await BenchDatagramDeviceEndpoint(
-    address: localhostAddress(port: port),
-    timeout: .seconds(5),
-    device: device
-  )
-  let endpointTask = Task { do { try await endpoint.run() } catch {} }
-  defer { endpointTask.cancel() }
-  try await Task.sleep(for: .milliseconds(500))
+  try await withConnection("udp", device, port: port) { await runRoundTrips("udp", $0) }
+}
 
-  let connection = try await Ocp1UDPConnection(
-    deviceAddress: localhostAddress(port: port),
-    options: Ocp1ConnectionOptions()
-  )
-  try await connection.connect()
-  await runRoundTrips("udp", connection)
-  try await connection.disconnect()
+/// Peak resident memory in KiB: VmHWM from /proc on Linux, ru_maxrss elsewhere.
+private func peakMemoryKiB() -> Double {
+  #if os(Linux)
+  guard let status = try? String(contentsOfFile: "/proc/self/status", encoding: .utf8),
+        let line = status.split(separator: "\n").first(where: { $0.hasPrefix("VmHWM:") })
+  else { return 0 }
+  let fields = line.split(whereSeparator: { $0 == " " || $0 == "\t" })
+  return fields.count > 1 ? Double(fields[1]) ?? 0 : 0
+  #else
+  var usage = rusage()
+  getrusage(RUSAGE_SELF, &usage)
+  return Double(usage.ru_maxrss) / 1024 // bytes on Darwin
+  #endif
+}
+
+/// `n` zero-padded to `width` digits, so that a series sorts in order.
+private func padded(_ n: Int, _ width: Int) -> String {
+  let digits = String(n)
+  return String(repeating: "0", count: max(0, width - digits.count)) + digits
+}
+
+/// Nothing but the smallest round trip, for as long as asked: gives a profiler a
+/// steady state to sample rather than a mixture of exchanges. Each `slice` seconds is
+/// reported separately, so a cost that grows with the number of requests shows as a
+/// rising series, and the peak memory at the end.
+func runProfileLoop(
+  _ device: OcaDevice,
+  transport: String,
+  port: UInt16,
+  seconds: Double,
+  slice: Double
+) async throws {
+  try await withConnection(transport, device, port: port) { connection in
+    try await profileLoop(connection, transport: transport, seconds: seconds, slice: slice)
+  }
+  report("profile.\(transport).maxrss.KiB", [peakMemoryKiB()])
+}
+
+private func profileLoop(
+  _ connection: Ocp1Connection,
+  transport: String,
+  seconds: Double,
+  slice: Double
+) async throws {
+  let start = ContinuousClock.now
+  let end = start + .seconds(seconds)
+  var sliceStart = start
+  var slices = 0
+  var inSlice = 0
+  var total = 0
+  while true {
+    let now = ContinuousClock.now
+    if now >= end || now >= sliceStart + .seconds(slice) {
+      if inSlice > 0 {
+        slices += 1
+        let label = "profile.\(transport).t\(padded(Int((Double(slices) * slice).rounded()), 4))s"
+        report(label, [nanoseconds(now - sliceStart) / Double(inSlice)])
+      }
+      if now >= end { break }
+      sliceStart = now
+      inSlice = 0
+    }
+    let response = try await connection.sendCommandRrq(getDeviceName)
+    sink &+= UInt64(response.statusCode.rawValue)
+    inSlice += 1
+    total += 1
+  }
+  print("PROFILE\t\(total) round trips in \(seconds)s\t\(transport)")
+}
+
+/// Round-trip time from the moment of connection, in consecutive blocks of
+/// `blockSize` with no warm-up, over `connections` fresh connections in turn: shows
+/// whether the first exchanges on a connection cost more, for how long, and whether
+/// every connection pays it or only the first in the process.
+func runConnectTimeline(
+  _ device: OcaDevice,
+  transport: String,
+  port: UInt16,
+  connections: Int,
+  blocks: Int,
+  blockSize: Int
+) async throws {
+  guard connections > 0, blocks > 0, blockSize > 0 else { return }
+  var samples = [[Double]](repeating: [], count: blocks)
+  for n in 0..<connections {
+    // a port pair of its own for each connection, so no endpoint waits on the last one's
+    let connectionPort = port == 0 ? 0 : port + UInt16(2 * n)
+    try await withConnection(transport, device, port: connectionPort) { connection in
+      for block in 0..<blocks {
+        let start = ContinuousClock.now
+        for _ in 0..<blockSize {
+          let response = try await connection.sendCommandRrq(getDeviceName)
+          sink &+= UInt64(response.statusCode.rawValue)
+        }
+        samples[block].append(nanoseconds(ContinuousClock.now - start) / Double(blockSize))
+      }
+    }
+  }
+  for (block, values) in samples.enumerated() {
+    report("connect.\(transport).block\(padded(block + 1, 3))", values)
+  }
+  for n in 0..<connections {
+    report("connect.\(transport).firstblock.c\(padded(n + 1, 2))", [samples[0][n]])
+  }
 }
 
 /// Device-to-controller notification pipeline: N property changes on the device,
@@ -440,8 +551,22 @@ enum PerfBench {
     }
     if only == "profile" {
       let (device, _) = try await makeBenchDevice()
+      let transport = environment["BENCH_TRANSPORT"] ?? "local"
       let seconds = Double(environment["BENCH_SECONDS"] ?? "20") ?? 20
-      try await runProfileLoop(device, seconds: seconds)
+      let slice = Double(environment["BENCH_SLICE"] ?? "5") ?? 5
+      try await runProfileLoop(device, transport: transport, port: port, seconds: seconds, slice: slice)
+      return
+    }
+    if only == "connect" {
+      let (device, _) = try await makeBenchDevice()
+      try await runConnectTimeline(
+        device,
+        transport: environment["BENCH_TRANSPORT"] ?? "tcp",
+        port: port,
+        connections: Int(environment["BENCH_CONNECTIONS"] ?? "5") ?? 5,
+        blocks: Int(environment["BENCH_BLOCKS"] ?? "40") ?? 40,
+        blockSize: Int(environment["BENCH_BLOCK_SIZE"] ?? "500") ?? 500
+      )
       return
     }
     if only == nil || only == "e2e" || only == "notify" {
