@@ -253,13 +253,14 @@ public class OcaSubscriptionManager: OcaManager {
       emitterONo: objectNumber,
       eventID: SwiftOCA.OcaSubscriptionManager.SynchronizeStateEventID
     )
-    let parameters: Data = try Ocp1Encoder()
-      .encode(
-        OcaObjectListEventData(objectList: Array(objectsChangedWhilstNotificationsDisabled))
-      )
-    try await deviceDelegate?.notifySubscribers(event, parameters: parameters)
+    let parameters = OcaObjectListEventData(
+      objectList: Array(objectsChangedWhilstNotificationsDisabled)
+    )
     objectsChangedWhilstNotificationsDisabled.removeAll()
+    // notifications must be back on before SynchronizeState is emitted: while they are
+    // off the event saying what changed is itself queued as another change, not sent
     state = .normal
+    try await deviceDelegate?.notifySubscribers(event, eventData: parameters)
   }
 
   /// EV1 subscription methods; OCP.2 supports only EV2 (AES70-4 6.3.6.1)
