@@ -17,13 +17,63 @@
 @testable @_spi(SwiftOCAPrivate) import SwiftOCA
 import XCTest
 
-/// The timer `sendCommandRrq` waits on for its response deadline. A wait must return
-/// at its deadline, throw at once when cancelled whether or not it has suspended yet,
-/// fire on time even when it falls due before a wait already pending, and leave
-/// nothing behind.
+/// The timer `sendCommandRrq` waits on for its response deadline, and a device stream
+/// controller for each read. A wait must return at its deadline, throw at once when
+/// cancelled whether or not it has suspended yet, fire on time even when it falls due
+/// before a wait already pending, and leave nothing behind.
 final class DeadlineTimerTests: XCTestCase {
   /// generous, so that a slow scheduler cannot turn these into flakes
   private static let slack = Duration.seconds(2)
+
+  private actor Flag {
+    var isSet = false
+
+    func set() {
+      isSet = true
+    }
+  }
+
+  func testTimeoutReturnsWhatTheOperationReturns() async throws {
+    let timer = DeadlineTimer()
+    let result = try await timer.withThrowingTimeout(of: .seconds(60)) { 42 }
+    XCTAssertEqual(result, 42)
+    XCTAssertEqual(timer.outstanding, 0, "the deadline should go with the operation")
+  }
+
+  func testTimeoutThrowsAndCallsOnTimeout() async throws {
+    let timer = DeadlineTimer()
+    let onTimeoutCalled = Flag()
+    let start = ContinuousClock.now
+    do {
+      _ = try await timer.withThrowingTimeout(
+        of: .milliseconds(50),
+        operation: {
+          try await Task.sleep(for: .seconds(60))
+          return 0
+        },
+        onTimeout: {
+          await onTimeoutCalled.set()
+        }
+      )
+      XCTFail("expected responseTimeout")
+    } catch Ocp1Error.responseTimeout {}
+
+    XCTAssertGreaterThanOrEqual(ContinuousClock.now - start, .milliseconds(50))
+    XCTAssertLessThan(ContinuousClock.now - start, Self.slack)
+    let called = await onTimeoutCalled.isSet
+    XCTAssertTrue(called)
+    XCTAssertEqual(timer.outstanding, 0)
+  }
+
+  func testZeroTimeoutMeansNoTimeout() async throws {
+    let timer = DeadlineTimer()
+    let result = try await timer.withThrowingTimeout(of: .zero) {
+      try await Task.sleep(for: .milliseconds(50))
+      return 1
+    }
+    XCTAssertEqual(result, 1)
+    XCTAssertEqual(timer.outstanding, 0)
+  }
 
   private func waitUntilOutstanding(_ timer: DeadlineTimer, _ count: Int) async throws {
     let deadline = ContinuousClock.now.advanced(by: .seconds(5))
