@@ -22,6 +22,8 @@ public class OcaDeviceClassRegistry {
 
   private var _classIDMap = [OcaClassIdentification: OcaRoot.Type]()
 
+  package var registeredClasses: [OcaClassIdentification: OcaRoot.Type] { _classIDMap }
+
   public func register<T: OcaRoot>(
     classID: OcaClassID = T.classID,
     classVersion: OcaClassVersionNumber = T.classVersion,
