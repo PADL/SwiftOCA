@@ -173,11 +173,11 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     case OcaMethodID("3.3"):
       let id: OcaMediaTransportSessionID = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(session(id))
+      return try controller.encodeResponse(session(id), name: "Session")
     case OcaMethodID("3.4"):
       let session: OcaMediaTransportSession = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      return try await controller.encodeResponse(add(session: session))
+      return try await controller.encodeResponse(add(session: session), name: "Session")
     case OcaMethodID("3.5"):
       let session: OcaMediaTransportSession = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
@@ -211,14 +211,15 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     case OcaMethodID("3.12"):
       let id: OcaMediaTransportSessionID = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(sessionStatus(id))
+      // the model names GetSessionStatus's output Session, like GetSession's
+      return try controller.encodeResponse(sessionStatus(id), name: "Session")
     case OcaMethodID("3.13"):
       let parameters: Parameters.AddConnectionParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      return try await controller.encodeResponse(add(
-        connection: parameters.connection,
-        to: parameters.sessionID
-      ))
+      return try await controller.encodeResponse(
+        add(connection: parameters.connection, to: parameters.sessionID),
+        name: "Connection"
+      )
     case OcaMethodID("3.14"):
       let parameters: Parameters.ConfigureConnectionParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)

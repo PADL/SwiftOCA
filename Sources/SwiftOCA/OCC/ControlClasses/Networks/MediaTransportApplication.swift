@@ -263,7 +263,11 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   public func getMediaStreamModeCapability(
     id: OcaID16
   ) async throws -> OcaMediaStreamModeCapability {
-    try await sendCommandRrq(methodID: OcaMethodID("3.17"), parameters: id)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.17"),
+      parameters: id,
+      parameterNames: ["CapabilityID"]
+    )
   }
 
   @OcaProperty(
@@ -292,7 +296,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   public var endpoints: OcaListProperty<OcaMediaStreamEndpoint>.PropertyValue
 
   public func getEndpoint(_ id: OcaMediaStreamEndpointID) async throws -> OcaMediaStreamEndpoint {
-    try await sendCommandRrq(methodID: OcaMethodID("3.22"), parameters: id)
+    try await sendCommandRrq(methodID: OcaMethodID("3.22"), parameters: id, parameterNames: ["ID"])
   }
 
   @OcaProperty(
@@ -308,17 +312,21 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   public func getEndpointStatus(
     _ id: OcaMediaStreamEndpointID
   ) async throws -> OcaMediaStreamEndpointStatus {
-    try await sendCommandRrq(methodID: OcaMethodID("3.24"), parameters: id)
+    try await sendCommandRrq(methodID: OcaMethodID("3.24"), parameters: id, parameterNames: ["ID"])
   }
 
   /// Returns the given descriptor with its IDInternal set to the ID the device allocated.
   @discardableResult
   public func add(endpoint: OcaMediaStreamEndpoint) async throws -> OcaMediaStreamEndpoint {
-    try await sendCommandRrq(methodID: OcaMethodID("3.25"), parameters: endpoint)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.25"),
+      parameters: endpoint,
+      parameterNames: ["Endpoint"]
+    )
   }
 
   public func delete(endpoint id: OcaMediaStreamEndpointID) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.26"), parameters: id)
+    try await sendCommandRrq(methodID: OcaMethodID("3.26"), parameters: id, parameterNames: ["ID"])
   }
 
   public func applyEndpointCommand(
@@ -371,7 +379,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   public func getEndpointTimeSource(
     _ id: OcaMediaStreamEndpointID
   ) async throws -> EndpointTimeSource {
-    try await sendCommandRrq(methodID: OcaMethodID("3.32"), parameters: id)
+    try await sendCommandRrq(methodID: OcaMethodID("3.32"), parameters: id, parameterNames: ["ID"])
   }
 
   public func setEndpoint(
@@ -394,7 +402,11 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   public var endpointCounterSets: OcaMapProperty<OcaID16, OcaCounterSet>.PropertyValue
 
   public func getEndpointCounterSet(_ id: OcaMediaStreamEndpointID) async throws -> OcaCounterSet {
-    try await sendCommandRrq(methodID: OcaMethodID("3.35"), parameters: id)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.35"),
+      parameters: id,
+      parameterNames: ["EndpointID"]
+    )
   }
 
   public func getEndpointCounter(
