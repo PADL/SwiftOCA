@@ -21,6 +21,14 @@ import Foundation
 /// case-insensitively, a single-parameter object is accepted whatever its member is
 /// called, enumerations may be spelled by name or number, and an integer may arrive
 /// as a string.
+/// Casts a metatype to a protocol existential out of line, on the erased type: the
+/// optimiser folds the same cast on a specialised conforming metatype into an
+/// existential with the wrong conformances and asserts (Swift 6.3.3, -O).
+@inline(never)
+private func erasedCast<U>(_ type: Any.Type, to _: U.Type) -> U? {
+  type as? U
+}
+
 public struct Ocp2Decoder {
   public var userInfo: [CodingUserInfoKey: Any] = [:]
 
@@ -55,7 +63,7 @@ public struct Ocp2Decoder {
     if object.count == 1, let json = object.values.first {
       return try state.decode(type, from: json, codingPath: [])
     }
-    if object.isEmpty, let optional = type as? any ExpressibleByNilLiteral.Type {
+    if object.isEmpty, let optional = erasedCast(type, to: (any ExpressibleByNilLiteral.Type).self) {
       return optional.init(nilLiteral: ()) as! T
     }
     throw Ocp1Error.status(.parameterError)
@@ -120,13 +128,15 @@ final class Ocp2DecodingState {
     if type == OcaOrganizationID.self {
       return try OcaOrganizationID(Ocp2JSON.string(from: json)) as! T
     }
-    if let blobType = type as? any Ocp1BlobRepresentable.Type {
+    if let blobType = erasedCast(type, to: (any Ocp1BlobRepresentable.Type).self) {
       return try blobType.init(blobData: Ocp2JSON.data(from: json)) as! T
     }
-    if let mapType = type as? any Ocp1MapRepresentable.Type {
+    if let mapType = erasedCast(type, to: (any Ocp1MapRepresentable.Type).self) {
       return try mapType.init(ocp2State: self, json: json, codingPath: codingPath) as! T
     }
-    if let string = json as? String, let enumType = type as? any CaseIterable.Type {
+    if let string = json as? String,
+       let enumType = erasedCast(type, to: (any CaseIterable.Type).self)
+    {
       // an enumeration spelled by name: match the Swift case name
       if let value = Self.enumCase(named: string, of: enumType) as? T {
         return value
