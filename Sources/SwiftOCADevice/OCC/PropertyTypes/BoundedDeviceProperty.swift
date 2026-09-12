@@ -55,18 +55,21 @@ public struct OcaBoundedDeviceProperty<
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID? = nil,
     setMethodID: OcaMethodID? = nil,
-    ocp2Name: String? = nil
+    ocp2Name: String? = nil,
+    ocp2SetName: String? = nil
   ) {
     storage = OcaDeviceProperty(
       wrappedValue: wrappedValue,
       propertyID: propertyID,
       getMethodID: getMethodID,
       setMethodID: setMethodID,
-      ocp2Name: ocp2Name
+      ocp2Name: ocp2Name,
+      ocp2SetName: ocp2SetName
     )
   }
 
   public var ocp2Name: String? { storage.ocp2Name }
+  public var ocp2SetName: String? { storage.ocp2SetName }
 
   func getResponse(for controller: any OcaController, names: [String]?) async throws
     -> Ocp1Response

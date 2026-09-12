@@ -92,6 +92,10 @@ public protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
   /// `Gain`, `minGain`, `maxGain`).
   func _ocp2ResponseNames(_ object: OcaRoot) -> [String]?
 
+  /// The OCP.2 name of the setter's parameter, which the model sometimes spells
+  /// differently from the getter's response (`Message` out, `Text` in).
+  func _ocp2SetName(_ object: OcaRoot) -> String?
+
   var subject: AsyncCurrentValueSubject<PropertyValue> { get }
 
   func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws
@@ -100,6 +104,11 @@ public protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
 }
 
 extension OcaPropertySubjectRepresentable {
+  /// Unless a property states one, the setter's parameter is named as the getter's.
+  public func _ocp2SetName(_ object: OcaRoot) -> String? {
+    _ocp2WireName(object)
+  }
+
   public var async: AnyAsyncSequence<Result<any Sendable, Error>> {
     subject.compactMap { value in
       switch value {
@@ -285,17 +294,23 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
   /// the Swift property name upper-cased (the model's `Name` for `deviceName`).
   public let ocp2Name: String?
 
+  /// The AES70-2A name of the setter's parameter, where the model names it differently
+  /// from the getter's response (`Message` out, `Text` in); `nil` uses `ocp2Name`.
+  public let ocp2SetName: String?
+
   init(
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID?,
     setMethodID: OcaMethodID?,
     ocp2Name: String? = nil,
+    ocp2SetName: String? = nil,
     setValueTransformer: SetValueTransformer?
   ) {
     self.propertyID = propertyID
     self.getMethodID = getMethodID
     self.setMethodID = setMethodID
     self.ocp2Name = ocp2Name
+    self.ocp2SetName = ocp2SetName
     subject = AsyncCurrentValueSubject(PropertyValue.initial)
     self.setValueTransformer = setValueTransformer
   }
@@ -304,13 +319,15 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID? = nil,
     setMethodID: OcaMethodID? = nil,
-    ocp2Name: String? = nil
+    ocp2Name: String? = nil,
+    ocp2SetName: String? = nil
   ) {
     self.init(
       propertyID: propertyID,
       getMethodID: getMethodID,
       setMethodID: setMethodID,
       ocp2Name: ocp2Name,
+      ocp2SetName: ocp2SetName,
       setValueTransformer: nil
     )
   }
@@ -374,9 +391,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
   /// Names are only looked up (an actor hop into the key-path cache) on an OCP.2
   /// connection; OCP.1 never needs them.
-  private func _ocp2WireNameIfNeeded(_ object: OcaRoot) -> String? {
+  private func _ocp2SetNameIfNeeded(_ object: OcaRoot) -> String? {
     guard object.connectionDelegate?.controlProtocol != .ocp1 else { return nil }
-    return _ocp2WireName(object)
+    return _ocp2SetName(object)
   }
 
   private func _ocp2ResponseNamesIfNeeded(_ object: OcaRoot) -> [String]? {
@@ -390,6 +407,13 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     }
     guard let name = object.propertyName(for: propertyID) else { return nil }
     return Ocp2Naming.wireName(name)
+  }
+
+  public func _ocp2SetName(_ object: OcaRoot) -> String? {
+    if let ocp2SetName {
+      return ocp2SetName
+    }
+    return _ocp2WireName(object)
   }
 
   /// OCP.2 names for the getter's response: the property's wire name, or for a
@@ -416,8 +440,8 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
       value
     }
 
-    // on OCP.2 the parameter is named after the property
-    let parameterNames = _ocp2WireNameIfNeeded(object).map { [$0] }
+    // on OCP.2 the parameter carries the setter's model name
+    let parameterNames = _ocp2SetNameIfNeeded(object).map { [$0] }
 
     // setters need to support variable parameter counts
     if try await object.isSubscribed {
