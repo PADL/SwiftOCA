@@ -127,7 +127,7 @@ final class Ocp2DeviceNamingOracleTests: XCTestCase {
         let setter = lookup(property.setMethodID)
         for (method, expected, sent) in [
           (getter, getter?.outputs, responseNames),
-          (setter, setter?.inputs, [property.wireName(propertyName: swiftName)]),
+          (setter, setter?.inputs, [property.setName(propertyName: swiftName)]),
         ] {
           guard let method, let expected, !expected.isEmpty else { continue }
           checked.insert("\(definingClass)/\(method.methodID)")

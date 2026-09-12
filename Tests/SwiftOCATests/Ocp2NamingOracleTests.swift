@@ -117,6 +117,7 @@ final class Ocp2NamingOracleTests: XCTestCase {
         guard let wireName = property._ocp2WireName(object),
               let derived = property._ocp2ResponseNames(object)
         else { continue }
+        let setName = property._ocp2SetName(object) ?? wireName
 
         // the accessor lives on the class at the property's definition level
         var definingClass = classID
@@ -131,7 +132,7 @@ final class Ocp2NamingOracleTests: XCTestCase {
         let setter = lookup(property.setMethodID)
         for (method, expected, sent) in [
           (getter, getter?.outputs, derived),
-          (setter, setter?.inputs, [wireName]),
+          (setter, setter?.inputs, [setName]),
         ] {
           guard let method, let expected, !expected.isEmpty else { continue }
           checked.insert("\(definingClass)/\(method.methodID)")
