@@ -57,7 +57,8 @@ open class OcaDeviceManager: OcaManager {
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.4"),
     setMethodID: OcaMethodID("3.5"),
-    ocp2Name: "Name"
+    ocp2Name: "Name",
+    ocp2SetName: "Name"
   )
   public var deviceName = ""
 
@@ -72,7 +73,8 @@ open class OcaDeviceManager: OcaManager {
     propertyID: OcaPropertyID("3.6"),
     getMethodID: OcaMethodID("3.7"),
     setMethodID: OcaMethodID("3.8"),
-    ocp2Name: "Role"
+    ocp2Name: "Role",
+    ocp2SetName: "Role"
   )
   public var deviceRole = ""
 
@@ -80,7 +82,8 @@ open class OcaDeviceManager: OcaManager {
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.9"),
     setMethodID: OcaMethodID("3.10"),
-    ocp2Name: "Code"
+    ocp2Name: "Code",
+    ocp2SetName: "Code"
   )
   public var userInventoryCode = ""
 
@@ -109,7 +112,9 @@ open class OcaDeviceManager: OcaManager {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.12"),
     getMethodID: OcaMethodID("3.17"),
-    setMethodID: OcaMethodID("3.18")
+    setMethodID: OcaMethodID("3.18"),
+    ocp2Name: "Message",
+    ocp2SetName: "Text"
   )
   public var message = ""
 
@@ -149,7 +154,8 @@ open class OcaDeviceManager: OcaManager {
     propertyID: OcaPropertyID("3.18"),
     getMethodID: OcaMethodID("3.24"),
     setMethodID: OcaMethodID("3.25"),
-    ocp2Name: "Enabled"
+    ocp2Name: "Enabled",
+    ocp2SetName: "Enabled"
   )
   public var loggingEnabled = false
 

@@ -62,7 +62,8 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
     propertyID: OcaPropertyID("2.6"),
     getMethodID: OcaMethodID("2.14"),
     setMethodID: OcaMethodID("2.15"),
-    ocp2Name: "Map"
+    ocp2Name: "Map",
+    ocp2SetName: "Map"
   )
   public var portClockMap: OcaMap<OcaPortID, OcaPortClockMapEntry> = [:]
 

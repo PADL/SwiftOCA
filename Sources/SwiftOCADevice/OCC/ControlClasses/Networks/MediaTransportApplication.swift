@@ -38,7 +38,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.6"),
     setMethodID: OcaMethodID("3.7"),
-    ocp2Name: "Map"
+    ocp2Name: "Map",
+    ocp2SetName: "Map"
   )
   public var portClockMap = OcaMap<OcaPortID, OcaPortClockMapEntry>()
 
@@ -66,7 +67,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.15"),
     setMethodID: OcaMethodID("3.16"),
-    ocp2Name: "Capabilities"
+    ocp2Name: "Capabilities",
+    ocp2SetName: "Capabilities"
   )
   public var mediaStreamModeCapabilities = [OcaMediaStreamModeCapability]()
 
@@ -74,7 +76,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     propertyID: OcaPropertyID("3.8"),
     getMethodID: OcaMethodID("3.18"),
     setMethodID: OcaMethodID("3.19"),
-    ocp2Name: "Parameters"
+    ocp2Name: "Parameters",
+    ocp2SetName: "Parameters"
   )
   public var transportTimingParameters = OcaMediaTransportTimingParameters()
 
@@ -82,7 +85,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     propertyID: OcaPropertyID("3.9"),
     getMethodID: OcaMethodID("3.20"),
     setMethodID: OcaMethodID("3.14"),
-    ocp2Name: "Limits"
+    ocp2Name: "Limits",
+    ocp2SetName: "Limits"
   )
   public var alignmentLevelLimits = OcaInterval<OcaDBFS>(min: -20.0, max: -20.0)
 
@@ -110,7 +114,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     propertyID: OcaPropertyID("3.13"),
     getMethodID: OcaMethodID("3.40"),
     setMethodID: OcaMethodID("3.41"),
-    ocp2Name: "ONos"
+    ocp2Name: "ONos",
+    ocp2SetName: "ONos"
   )
   public var transportSessionControlAgentONos = [OcaONo]()
 

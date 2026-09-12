@@ -42,7 +42,8 @@ Sendable {
     propertyID: OcaPropertyID("2.3"),
     getMethodID: OcaMethodID("2.5"),
     setMethodID: OcaMethodID("2.6"),
-    ocp2Name: "Assignments"
+    ocp2Name: "Assignments",
+    ocp2SetName: "Assignments"
   )
   public var networkInterfaceAssignments: OcaListProperty<OcaNetworkInterfaceAssignment>
     .PropertyValue
@@ -60,7 +61,8 @@ Sendable {
     propertyID: OcaPropertyID("2.5"),
     getMethodID: OcaMethodID("2.8"),
     setMethodID: OcaMethodID("2.9"),
-    ocp2Name: "Data"
+    ocp2Name: "Data",
+    ocp2SetName: "Data"
   )
   public var adaptationData: OcaProperty<OcaAdaptationData>.PropertyValue
 

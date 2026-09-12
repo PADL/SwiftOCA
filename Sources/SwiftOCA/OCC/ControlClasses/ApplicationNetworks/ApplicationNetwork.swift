@@ -40,14 +40,17 @@ Sendable {
     propertyID: OcaPropertyID("2.3"),
     getMethodID: OcaMethodID("2.4"),
     setMethodID: OcaMethodID("2.5"),
-    ocp2Name: "Name"
+    ocp2Name: "Name",
+    ocp2SetName: "Name"
   )
   public var serviceID: OcaProperty<OcaApplicationNetworkServiceID>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("2.4"),
     getMethodID: OcaMethodID("2.6"),
-    setMethodID: OcaMethodID("2.7")
+    setMethodID: OcaMethodID("2.7"),
+    ocp2Name: "SystemInterfaces",
+    ocp2SetName: "Descriptors"
   )
   public var systemInterfaces: OcaListProperty<OcaNetworkSystemInterfaceDescriptor>
     .PropertyValue

@@ -30,7 +30,8 @@ open class OcaTimeSource: OcaAgent {
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.2"),
     setMethodID: OcaMethodID("3.3"),
-    ocp2Name: "Mechanism"
+    ocp2Name: "Mechanism",
+    ocp2SetName: "Mechanism"
   )
   public var timeDeliveryMechanism: OcaTimeDeliveryMechanism = .undefined
 
@@ -38,7 +39,8 @@ open class OcaTimeSource: OcaAgent {
     propertyID: OcaPropertyID("3.3"),
     getMethodID: OcaMethodID("3.4"),
     setMethodID: OcaMethodID("3.5"),
-    ocp2Name: "Parameters"
+    ocp2Name: "Parameters",
+    ocp2SetName: "Parameters"
   )
   public var referenceSDPDescription: OcaSDPString = ""
 
@@ -53,7 +55,8 @@ open class OcaTimeSource: OcaAgent {
     propertyID: OcaPropertyID("3.5"),
     getMethodID: OcaMethodID("3.8"),
     setMethodID: OcaMethodID("3.9"),
-    ocp2Name: "ID"
+    ocp2Name: "ID",
+    ocp2SetName: "ID"
   )
   public var referenceID: OcaString = ""
 
@@ -67,7 +70,8 @@ open class OcaTimeSource: OcaAgent {
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.12"),
     setMethodID: OcaMethodID("3.13"),
-    ocp2Name: "Record"
+    ocp2Name: "Record",
+    ocp2SetName: "Record"
   )
   public var timeDeliveryParameters: OcaParameterRecord = "{}"
 
