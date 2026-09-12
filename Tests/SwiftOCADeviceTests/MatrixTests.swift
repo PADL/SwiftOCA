@@ -105,9 +105,20 @@ final class MatrixTests: XCTestCase {
     )
   }
 
-  // GetSize is not exercised: the device returns the model's six output parameters
-  // (xSize, ySize, minXSize, maxXSize, minYSize, maxYSize) but the client's `size` is a
-  // two-field vector, which OCP.1's response parameter count check rejects.
+  /// GetSize (3.3) returns six values: the size and each axis's bounds.
+  func testSizeCarriesEachAxisBounds() async throws {
+    let h = try await makeHarness()
+    defer { Task { await h.tearDown() } }
+
+    let size = try await h.matrix.$size._getValue(h.matrix, flags: [])
+    XCTAssertEqual(size.x, Self.columns)
+    XCTAssertEqual(size.y, Self.rows)
+    XCTAssertEqual(size.minX, 0)
+    XCTAssertEqual(size.maxX, Self.columns)
+    XCTAssertEqual(size.minY, 0)
+    XCTAssertEqual(size.maxY, Self.rows)
+  }
+
   func testMembers() async throws {
     let h = try await makeHarness()
     defer { Task { await h.tearDown() } }
