@@ -23,7 +23,8 @@ open class OcaSignalGenerator: OcaActuator, @unchecked Sendable {
     propertyID: OcaPropertyID("4.1"),
     getMethodID: OcaMethodID("4.1"),
     setMethodID: OcaMethodID("4.2"),
-    ocp2Name: "Frequency"
+    ocp2Name: "Frequency",
+    ocp2SetName: "Frequency"
   )
   public var frequency1: OcaBoundedProperty<OcaFrequency>.PropertyValue
 
@@ -32,7 +33,8 @@ open class OcaSignalGenerator: OcaActuator, @unchecked Sendable {
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.3"),
     setMethodID: OcaMethodID("4.4"),
-    ocp2Name: "Frequency"
+    ocp2Name: "Frequency",
+    ocp2SetName: "Frequency"
   )
   public var frequency2: OcaBoundedProperty<OcaFrequency>.PropertyValue
 

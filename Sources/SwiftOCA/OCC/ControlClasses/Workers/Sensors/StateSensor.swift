@@ -34,7 +34,8 @@ open class OcaStateSensor: OcaSensor, @unchecked Sendable {
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.2"),
     setMethodID: OcaMethodID("4.3"),
-    ocp2Name: "Names"
+    ocp2Name: "Names",
+    ocp2SetName: "Names"
   )
   public var stateNames: OcaProperty<OcaList<OcaString>>.PropertyValue
 }

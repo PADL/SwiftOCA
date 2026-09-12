@@ -35,7 +35,8 @@ open class OcaStateSensor: OcaSensor {
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.2"),
     setMethodID: OcaMethodID("4.3"),
-    ocp2Name: "Names"
+    ocp2Name: "Names",
+    ocp2SetName: "Names"
   )
   public var stateNames: OcaList<OcaString> = []
 }

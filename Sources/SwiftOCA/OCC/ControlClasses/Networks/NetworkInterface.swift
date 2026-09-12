@@ -53,7 +53,9 @@ Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("2.4"),
     getMethodID: OcaMethodID("2.7"),
-    setMethodID: OcaMethodID("2.8")
+    setMethodID: OcaMethodID("2.8"),
+    ocp2Name: "Name",
+    ocp2SetName: "Identifier"
   )
   public var systemIOInterfaceName: OcaProperty<OcaString>.PropertyValue
 
@@ -61,7 +63,8 @@ Sendable {
     propertyID: OcaPropertyID("2.5"),
     getMethodID: OcaMethodID("2.9"),
     setMethodID: OcaMethodID("2.10"),
-    ocp2Name: "Id"
+    ocp2Name: "Id",
+    ocp2SetName: "Id"
   )
   public var groupID: OcaProperty<OcaUint16>.PropertyValue
 
@@ -93,7 +96,8 @@ Sendable {
     propertyID: OcaPropertyID("2.9"),
     getMethodID: OcaMethodID("2.15"),
     setMethodID: OcaMethodID("2.16"),
-    ocp2Name: "Settings"
+    ocp2Name: "Settings",
+    ocp2SetName: "Settings"
   )
   public var requestedAdaptationData: OcaProperty<OcaBlob>.PropertyValue
 

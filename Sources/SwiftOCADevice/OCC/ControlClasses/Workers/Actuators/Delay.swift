@@ -21,10 +21,14 @@ open class OcaDelay: OcaActuator {
   override open class var classVersion: OcaClassVersionNumber { 3 }
 
   /// delay in seconds
+  // the model names the setter's parameter `delayTime` where its getter says `Time`;
+  // OcaDelayExtended is self-consistent, so the difference is with the committee
   @OcaBoundedDeviceProperty(
     propertyID: OcaPropertyID("4.1"),
     getMethodID: OcaMethodID("4.1"),
-    setMethodID: OcaMethodID("4.2")
+    setMethodID: OcaMethodID("4.2"),
+    ocp2Name: "Time",
+    ocp2SetName: "Time"
   )
   public var delayTime = OcaBoundedPropertyValue<OcaTimeInterval>(value: 0, in: 0...1)
 }
@@ -38,7 +42,8 @@ open class OcaDelayExtended: OcaDelay {
     propertyID: OcaPropertyID("5.1"),
     getMethodID: OcaMethodID("5.1"),
     setMethodID: OcaMethodID("5.2"),
-    ocp2Name: "Value"
+    ocp2Name: "Value",
+    ocp2SetName: "Value"
   )
   public var delayValue = OcaBoundedPropertyValue<OcaDelayValue>(
     value: OcaDelayValue(delayValue: 0, delayUnit: .time),

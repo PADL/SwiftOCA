@@ -109,7 +109,8 @@ open class OcaFilterParametric: OcaActuator {
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.3"),
     setMethodID: OcaMethodID("4.4"),
-    ocp2Name: "Type"
+    ocp2Name: "Type",
+    ocp2SetName: "Type"
   )
   public var shape: OcaParametricEQShape = .none
 
@@ -118,7 +119,8 @@ open class OcaFilterParametric: OcaActuator {
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.5"),
     setMethodID: OcaMethodID("4.6"),
-    ocp2Name: "Width"
+    ocp2Name: "Width",
+    ocp2SetName: "Width"
   )
   public var widthParameter = OcaBoundedPropertyValue<OcaFloat32>(value: 1, in: 0.1...100)
 
@@ -126,7 +128,8 @@ open class OcaFilterParametric: OcaActuator {
     propertyID: OcaPropertyID("4.4"),
     getMethodID: OcaMethodID("4.7"),
     setMethodID: OcaMethodID("4.8"),
-    ocp2Name: "Gain"
+    ocp2Name: "Gain",
+    ocp2SetName: "Gain"
   )
   public var inBandGain = OcaBoundedPropertyValue<OcaDB>(value: 0.0, in: -144.0...20.0)
 
@@ -135,7 +138,8 @@ open class OcaFilterParametric: OcaActuator {
     propertyID: OcaPropertyID("4.5"),
     getMethodID: OcaMethodID("4.9"),
     setMethodID: OcaMethodID("4.10"),
-    ocp2Name: "Shape"
+    ocp2Name: "Shape",
+    ocp2SetName: "Shape"
   )
   public var shapeParameter = OcaBoundedPropertyValue<OcaFloat32>(value: 0, in: 0...1)
 
@@ -199,7 +203,8 @@ open class OcaFilterPolynomial: OcaActuator {
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.3"),
     setMethodID: OcaMethodID("4.4"),
-    ocp2Name: "Rate"
+    ocp2Name: "Rate",
+    ocp2SetName: "Rate"
   )
   public var sampleRate = OcaBoundedPropertyValue<OcaFrequency>(
     value: 48000,
@@ -267,7 +272,8 @@ open class OcaFilterFIR: OcaActuator {
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.4"),
     setMethodID: OcaMethodID("4.5"),
-    ocp2Name: "Rate"
+    ocp2Name: "Rate",
+    ocp2SetName: "Rate"
   )
   public var sampleRate = OcaBoundedPropertyValue<OcaFrequency>(
     value: 48000,
@@ -291,7 +297,8 @@ open class OcaFilterArbitraryCurve: OcaActuator {
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.3"),
     setMethodID: OcaMethodID("4.4"),
-    ocp2Name: "Rate"
+    ocp2Name: "Rate",
+    ocp2SetName: "Rate"
   )
   public var sampleRate = OcaBoundedPropertyValue<OcaFrequency>(
     value: 48000,

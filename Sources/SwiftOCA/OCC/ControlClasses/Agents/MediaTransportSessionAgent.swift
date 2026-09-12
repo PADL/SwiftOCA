@@ -106,7 +106,8 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.17"),
     setMethodID: OcaMethodID("3.18"),
-    ocp2Name: "Data"
+    ocp2Name: "Data",
+    ocp2SetName: "Data"
   )
   public var adaptationData: OcaProperty<OcaAdaptationData>.PropertyValue
 
