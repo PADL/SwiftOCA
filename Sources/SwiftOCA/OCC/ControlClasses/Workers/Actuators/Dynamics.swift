@@ -304,8 +304,8 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
   override open class var classVersion: OcaClassVersionNumber { 3 }
 
   /// the curve is composed of (n + 1) straight line segments joined by (n) knees
-  // the model names this setter's parameter `Slope`, copied from the slope methods,
-  // and the getter's bounds `minN`/`maxN`; both are with the committee
+  // the 2023 model named this setter's parameter `Slope`, copied from the slope methods,
+  // and the getter's bounds `minN`/`maxN`; both are corrected to `NSegments`
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.1"),
     getMethodID: OcaMethodID("4.1"),
