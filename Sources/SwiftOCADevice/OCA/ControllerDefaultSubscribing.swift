@@ -149,6 +149,11 @@ public extension OcaControllerDefaultSubscribing {
     let format = controlProtocol.parameterFormat
 
     for subscription in subscriptions {
+      // subscriptions are kept per emitter, so an emitter's other events must not be
+      // delivered to a controller that subscribed to only one of them
+      guard subscription.event.eventID == event.eventID else {
+        continue
+      }
       guard subscription.property == nil || property == subscription.property else {
         continue
       }
