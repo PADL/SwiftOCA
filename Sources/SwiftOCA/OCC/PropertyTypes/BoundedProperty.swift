@@ -128,21 +128,21 @@ public struct OcaBoundedProperty<
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID,
     setMethodID: OcaMethodID? = nil,
-    ocp2Name: String? = nil,
+    ocp2GetName: String? = nil,
     ocp2SetName: String? = nil
   ) {
     _storage = OcaProperty(
       propertyID: propertyID,
       getMethodID: getMethodID,
       setMethodID: setMethodID,
-      ocp2Name: ocp2Name,
+      ocp2GetName: ocp2GetName,
       ocp2SetName: ocp2SetName,
       setValueTransformer: { $1.value }
     )
   }
 
-  public func _ocp2WireName(_ object: OcaRoot) -> String? {
-    _storage._ocp2WireName(object)
+  public func _ocp2GetName(_ object: OcaRoot) -> String? {
+    _storage._ocp2GetName(object)
   }
 
   public func _ocp2SetName(_ object: OcaRoot) -> String? {

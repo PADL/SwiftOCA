@@ -32,7 +32,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.2"),
-    ocp2Name: "OcaPorts"
+    ocp2GetName: "OcaPorts"
   )
   public var ports: OcaListProperty<OcaPort>.PropertyValue
 
@@ -67,14 +67,14 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
   @OcaProperty(
     propertyID: OcaPropertyID("3.5"),
     getMethodID: OcaMethodID("3.7"),
-    ocp2Name: "MaxPins"
+    ocp2GetName: "MaxPins"
   )
   public var maxPinsPerConnector: OcaProperty<OcaUint16>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.6"),
     getMethodID: OcaMethodID("3.8"),
-    ocp2Name: "MaxPins"
+    ocp2GetName: "MaxPins"
   )
   public var maxPortsPerPin: OcaProperty<OcaUint16>.PropertyValue
 

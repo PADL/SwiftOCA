@@ -45,14 +45,14 @@ open class OcaNetworkManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.5"),
     getMethodID: OcaMethodID("3.5"),
-    ocp2Name: "ONos"
+    ocp2GetName: "ONos"
   )
   public var networkInterfaces: OcaListProperty<OcaONo>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.6"),
     getMethodID: OcaMethodID("3.6"),
-    ocp2Name: "ONos"
+    ocp2GetName: "ONos"
   )
   public var networkApplications: OcaListProperty<OcaONo>.PropertyValue
 

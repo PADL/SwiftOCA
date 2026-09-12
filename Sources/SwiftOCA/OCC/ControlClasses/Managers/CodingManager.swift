@@ -21,7 +21,7 @@ open class OcaCodingManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
     getMethodID: OcaMethodID("3.1"),
-    ocp2Name: "Schemes"
+    ocp2GetName: "Schemes"
   )
   public var availableEncodingSchemes: OcaMapProperty<OcaMediaCodingSchemeID, OcaString>
     .PropertyValue
@@ -29,7 +29,7 @@ open class OcaCodingManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.2"),
-    ocp2Name: "Schemes"
+    ocp2GetName: "Schemes"
   )
   public var availableDecodingSchemes: OcaMapProperty<OcaMediaCodingSchemeID, OcaString>
     .PropertyValue

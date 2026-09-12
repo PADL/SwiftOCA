@@ -34,7 +34,7 @@ Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("2.2"),
     getMethodID: OcaMethodID("2.5"),
-    ocp2Name: "OcaPorts"
+    ocp2GetName: "OcaPorts"
   )
   public var ports: OcaListProperty<OcaPort>.PropertyValue
 
@@ -64,7 +64,7 @@ Sendable {
     propertyID: OcaPropertyID("2.6"),
     getMethodID: OcaMethodID("2.14"),
     setMethodID: OcaMethodID("2.15"),
-    ocp2Name: "Map",
+    ocp2GetName: "Map",
     ocp2SetName: "Map"
   )
   public var portClockMap: OcaMapProperty<OcaPortID, OcaPortClockMapEntry>.PropertyValue

@@ -220,7 +220,7 @@ final class Ocp2WireNameTests: XCTestCase {
       )
     )
 
-    // OcaDynamics 4.4 SetFunction(Func): a wrapper's setter, named by its ocp2Name
+    // OcaDynamics 4.4 SetFunction(Func): a wrapper's setter, named by its ocp2SetName
     let setFunction = Task {
       try? await dynamics.$function._setValue(dynamics, OcaDynamicsFunction.compress)
     }

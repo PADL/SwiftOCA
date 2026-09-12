@@ -34,7 +34,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
     getMethodID: OcaMethodID("3.2"),
-    ocp2Name: "GUID"
+    ocp2GetName: "GUID"
   )
   public var modelGUID: OcaProperty<OcaModelGUID>.PropertyValue
 
@@ -47,7 +47,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.3"),
     getMethodID: OcaMethodID("3.6"),
-    ocp2Name: "Description"
+    ocp2GetName: "Description"
   )
   public var modelDescription: OcaProperty<OcaModelDescription>.PropertyValue
 
@@ -55,7 +55,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.4"),
     setMethodID: OcaMethodID("3.5"),
-    ocp2Name: "Name",
+    ocp2GetName: "Name",
     ocp2SetName: "Name"
   )
   public var deviceName: OcaProperty<OcaString>.PropertyValue
@@ -63,7 +63,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.5"),
     getMethodID: OcaMethodID("3.1"),
-    ocp2Name: "OcaVersion"
+    ocp2GetName: "OcaVersion"
   )
   public var version: OcaProperty<OcaUint16>.PropertyValue
 
@@ -71,7 +71,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
     propertyID: OcaPropertyID("3.6"),
     getMethodID: OcaMethodID("3.7"),
     setMethodID: OcaMethodID("3.8"),
-    ocp2Name: "Role",
+    ocp2GetName: "Role",
     ocp2SetName: "Role"
   )
   public var deviceRole: OcaProperty<OcaString>.PropertyValue
@@ -80,7 +80,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.9"),
     setMethodID: OcaMethodID("3.10"),
-    ocp2Name: "Code",
+    ocp2GetName: "Code",
     ocp2SetName: "Code"
   )
   public var userInventoryCode: OcaProperty<OcaString>.PropertyValue
@@ -234,7 +234,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
     propertyID: OcaPropertyID("3.12"),
     getMethodID: OcaMethodID("3.17"),
     setMethodID: OcaMethodID("3.18"),
-    ocp2Name: "Message",
+    ocp2GetName: "Message",
     ocp2SetName: "Text"
   )
   public var message: OcaProperty<OcaString>.PropertyValue
@@ -248,7 +248,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.14"),
     getMethodID: OcaMethodID("3.20"),
-    ocp2Name: "ID"
+    ocp2GetName: "ID"
   )
   public var deviceRevisionID: OcaProperty<OcaString>.PropertyValue
 
@@ -267,7 +267,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.17"),
     getMethodID: OcaMethodID("3.23"),
-    ocp2Name: "State"
+    ocp2GetName: "State"
   )
   public var operationalState: OcaProperty<OcaDeviceOperationalState>.PropertyValue
 
@@ -275,7 +275,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
     propertyID: OcaPropertyID("3.18"),
     getMethodID: OcaMethodID("3.24"),
     setMethodID: OcaMethodID("3.25"),
-    ocp2Name: "Enabled",
+    ocp2GetName: "Enabled",
     ocp2SetName: "Enabled"
   )
   public var loggingEnabled: OcaProperty<OcaBoolean>.PropertyValue
@@ -283,7 +283,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.19"),
     getMethodID: OcaMethodID("3.26"),
-    ocp2Name: "ONo"
+    ocp2GetName: "ONo"
   )
   public var mostRecentPatchDatasetONo: OcaProperty<OcaONo>.PropertyValue
 

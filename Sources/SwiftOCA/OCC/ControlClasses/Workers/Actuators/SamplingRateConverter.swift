@@ -21,7 +21,7 @@ open class OcaSamplingRateConverter: OcaActuator, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("4.1"),
     getMethodID: OcaMethodID("4.1"),
-    ocp2Name: "SrcType"
+    ocp2GetName: "SrcType"
   )
   public var type: OcaProperty<OcaSamplingRateConverterType>.PropertyValue
 }

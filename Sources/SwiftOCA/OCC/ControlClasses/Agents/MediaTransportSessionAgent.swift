@@ -82,7 +82,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
     getMethodID: OcaMethodID("3.1"),
-    ocp2Name: "Type"
+    ocp2GetName: "Type"
   )
   public var sessionType: OcaProperty<OcaString>.PropertyValue
 
@@ -95,7 +95,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.3"),
     getMethodID: OcaMethodID("3.11"),
-    ocp2Name: "Sessions"
+    ocp2GetName: "Sessions"
   )
   public var sessionStatuses: OcaMapProperty<
     OcaMediaTransportSessionID,
@@ -106,7 +106,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.17"),
     setMethodID: OcaMethodID("3.18"),
-    ocp2Name: "Data",
+    ocp2GetName: "Data",
     ocp2SetName: "Data"
   )
   public var adaptationData: OcaProperty<OcaAdaptationData>.PropertyValue

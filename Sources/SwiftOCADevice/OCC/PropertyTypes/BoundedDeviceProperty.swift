@@ -55,7 +55,7 @@ public struct OcaBoundedDeviceProperty<
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID? = nil,
     setMethodID: OcaMethodID? = nil,
-    ocp2Name: String? = nil,
+    ocp2GetName: String? = nil,
     ocp2SetName: String? = nil
   ) {
     storage = OcaDeviceProperty(
@@ -63,12 +63,12 @@ public struct OcaBoundedDeviceProperty<
       propertyID: propertyID,
       getMethodID: getMethodID,
       setMethodID: setMethodID,
-      ocp2Name: ocp2Name,
+      ocp2GetName: ocp2GetName,
       ocp2SetName: ocp2SetName
     )
   }
 
-  public var ocp2Name: String? { storage.ocp2Name }
+  public var ocp2GetName: String? { storage.ocp2GetName }
   public var ocp2SetName: String? { storage.ocp2SetName }
 
   func getResponse(for controller: any OcaController, names: [String]?) async throws
@@ -79,7 +79,7 @@ public struct OcaBoundedDeviceProperty<
 
   /// `Gain`, `minGain`, `maxGain`
   func responseNames(propertyName: String) -> [String] {
-    Ocp2Naming.boundedWireNames(wireName(propertyName: propertyName))
+    Ocp2Naming.boundedWireNames(getName(propertyName: propertyName))
   }
 
   #if NonEmbeddedBuild

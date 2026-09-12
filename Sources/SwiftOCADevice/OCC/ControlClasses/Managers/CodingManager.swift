@@ -23,14 +23,14 @@ open class OcaCodingManager: OcaManager {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
     getMethodID: OcaMethodID("3.1"),
-    ocp2Name: "Schemes"
+    ocp2GetName: "Schemes"
   )
   public var availableEncodingSchemes: [OcaMediaCodingSchemeID: OcaString] = [:]
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.2"),
-    ocp2Name: "Schemes"
+    ocp2GetName: "Schemes"
   )
   public var availableDecodingSchemes: [OcaMediaCodingSchemeID: OcaString] = [:]
 

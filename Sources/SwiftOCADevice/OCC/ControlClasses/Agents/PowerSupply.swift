@@ -29,7 +29,7 @@ open class OcaPowerSupply: OcaAgent {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.2"),
-    ocp2Name: "Info"
+    ocp2GetName: "Info"
   )
   public var modelInfo: OcaString = ""
 
@@ -52,7 +52,7 @@ open class OcaPowerSupply: OcaAgent {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.5"),
     getMethodID: OcaMethodID("3.6"),
-    ocp2Name: "Fraction"
+    ocp2GetName: "Fraction"
   )
   public var loadFractionAvailable: OcaFloat32 = -1
 
@@ -61,7 +61,7 @@ open class OcaPowerSupply: OcaAgent {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.6"),
     getMethodID: OcaMethodID("3.7"),
-    ocp2Name: "Fraction"
+    ocp2GetName: "Fraction"
   )
   public var storageFractionAvailable: OcaFloat32 = -1
 

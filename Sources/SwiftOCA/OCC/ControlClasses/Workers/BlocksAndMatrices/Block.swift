@@ -72,21 +72,21 @@ Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.5"),
-    ocp2Name: "Objects"
+    ocp2GetName: "Objects"
   )
   public var actionObjects: OcaListProperty<OcaObjectIdentification>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.3"),
     getMethodID: OcaMethodID("3.9"),
-    ocp2Name: "Members"
+    ocp2GetName: "Members"
   )
   public var signalPaths: OcaMapProperty<OcaUint16, OcaSignalPath>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.11"),
-    ocp2Name: "Identifier"
+    ocp2GetName: "Identifier"
   )
   public var mostRecentParamSetIdentifier: OcaProperty<OcaLibVolIdentifier>.PropertyValue
 
@@ -105,7 +105,7 @@ Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.29"),
-    ocp2Name: "Objects"
+    ocp2GetName: "Objects"
   )
   public var datasetObjects: OcaProperty<[OcaObjectIdentification]>.PropertyValue
 
@@ -118,7 +118,7 @@ Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.9"),
     getMethodID: OcaMethodID("3.22"),
-    ocp2Name: "ONo"
+    ocp2GetName: "ONo"
   )
   public var mostRecentParamDatasetONo: OcaProperty<OcaONo>.PropertyValue
 

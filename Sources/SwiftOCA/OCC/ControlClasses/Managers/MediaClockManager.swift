@@ -21,7 +21,7 @@ open class OcaMediaClockManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
     getMethodID: OcaMethodID("3.2"),
-    ocp2Name: "MediaClockTypes"
+    ocp2GetName: "MediaClockTypes"
   )
   public var clockTypesSupported: OcaListProperty<OcaMediaClockType>.PropertyValue
 
@@ -34,7 +34,7 @@ open class OcaMediaClockManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.3"),
     getMethodID: OcaMethodID("3.3"),
-    ocp2Name: "Clocks"
+    ocp2GetName: "Clocks"
   )
   public var clock3s: OcaListProperty<OcaONo>.PropertyValue
 

@@ -49,7 +49,7 @@ Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("2.5"),
     getMethodID: OcaMethodID("2.14"),
-    ocp2Name: "Time"
+    ocp2GetName: "Time"
   )
   public var lastModificationTime: OcaProperty<OcaTime>.PropertyValue
 

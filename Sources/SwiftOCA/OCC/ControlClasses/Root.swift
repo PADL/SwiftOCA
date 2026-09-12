@@ -88,7 +88,7 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
   @OcaProperty(
     propertyID: OcaPropertyID("1.6"),
     getMethodID: OcaMethodID("1.7"),
-    ocp2Name: "State"
+    ocp2GetName: "State"
   )
   public var lockState: OcaProperty<OcaLockState>.PropertyValue
 
@@ -350,12 +350,12 @@ public extension OcaRoot {
       nil
     }
 
-    func _ocp2WireName(_ object: OcaRoot) -> String? {
+    func _ocp2GetName(_ object: OcaRoot) -> String? {
       object._jsonPropertyName(for: propertyIDs[0])
     }
 
     func _ocp2ResponseNames(_ object: OcaRoot) -> [String]? {
-      _ocp2WireName(object).map { [$0] }
+      _ocp2GetName(object).map { [$0] }
     }
 
     var propertyIDs: [OcaPropertyID]
@@ -393,7 +393,7 @@ public extension OcaRoot {
       keyPath: AnyKeyPath,
       flags: OcaPropertyResolutionFlags = .defaultFlags
     ) async throws -> [String: any Sendable] {
-      let name = _ocp2WireName(object) ?? propertyIDs[0].description
+      let name = _ocp2GetName(object) ?? propertyIDs[0].description
       return try [name: Ocp2JSON.sendable(Ocp2Encoder().encodeValue(value))]
     }
     #endif

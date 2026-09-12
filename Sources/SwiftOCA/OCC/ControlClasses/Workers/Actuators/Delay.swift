@@ -25,7 +25,7 @@ open class OcaDelay: OcaActuator, @unchecked Sendable {
     propertyID: OcaPropertyID("4.1"),
     getMethodID: OcaMethodID("4.1"),
     setMethodID: OcaMethodID("4.2"),
-    ocp2Name: "Time",
+    ocp2GetName: "Time",
     ocp2SetName: "Time"
   )
   public var delayTime: OcaBoundedProperty<OcaTimeInterval>.PropertyValue
@@ -40,7 +40,7 @@ open class OcaDelayExtended: OcaDelay, @unchecked Sendable {
     propertyID: OcaPropertyID("5.1"),
     getMethodID: OcaMethodID("5.1"),
     setMethodID: OcaMethodID("5.2"),
-    ocp2Name: "Value",
+    ocp2GetName: "Value",
     ocp2SetName: "Value"
   )
   public var delayValue: OcaBoundedProperty<OcaDelayValue>.PropertyValue

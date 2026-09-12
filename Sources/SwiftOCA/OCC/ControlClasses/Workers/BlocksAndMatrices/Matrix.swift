@@ -54,7 +54,7 @@ Sendable {
     propertyID: OcaPropertyID("3.6"),
     getMethodID: OcaMethodID("3.9"),
     setMethodID: OcaMethodID("3.10"),
-    ocp2Name: "ONo",
+    ocp2GetName: "ONo",
     ocp2SetName: "ONo"
   )
   public var proxy: OcaProperty<OcaONo>.PropertyValue
@@ -63,7 +63,7 @@ Sendable {
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.11"),
     setMethodID: OcaMethodID("3.12"),
-    ocp2Name: "Ports",
+    ocp2GetName: "Ports",
     ocp2SetName: "Ports"
   )
   public var portsPerRow: OcaProperty<OcaUint8>.PropertyValue
@@ -72,7 +72,7 @@ Sendable {
     propertyID: OcaPropertyID("3.8"),
     getMethodID: OcaMethodID("3.13"),
     setMethodID: OcaMethodID("3.14"),
-    ocp2Name: "Ports",
+    ocp2GetName: "Ports",
     ocp2SetName: "Ports"
   )
   public var portsPerColumn: OcaProperty<OcaUint8>.PropertyValue
