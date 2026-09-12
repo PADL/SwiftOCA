@@ -400,7 +400,7 @@ final class Ocp2MessageTests: XCTestCase {
       handle: 49,
       targetONo: 5000,
       methodID: OcaMethodID("4.2"),
-      parameters: Ocp1Parameters(
+      parameters: OcaParameters(
         ocp2ParameterData: Ocp2Encoder().encodeParametersData(Float(-3.5), parameterNames: ["Gain"])
       )
     )
@@ -433,7 +433,7 @@ final class Ocp2MessageTests: XCTestCase {
       handle: 1,
       targetONo: 1,
       methodID: OcaMethodID("4.2"),
-      parameters: Ocp1Parameters(parameterCount: 1, parameterData: Data([0, 0, 0, 0]))
+      parameters: OcaParameters(parameterCount: 1, parameterData: Data([0, 0, 0, 0]))
     )
     XCTAssertThrowsError(try OcaControlProtocol.ocp2.encodePdu([command], type: .ocaCmdRrq))
   }

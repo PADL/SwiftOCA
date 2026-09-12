@@ -23,7 +23,7 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication, @unc
   public typealias ChannelEndpointMap = OcaMap<OcaID16, OcaChannelEndpoint>
   public typealias ChannelEndpointOperatingStateMap = OcaMap<OcaID16, OcaAdaptationData>
 
-  public struct SetChannelEndpointParameters: Ocp1ParametersReflectable {
+  public struct SetChannelEndpointParameters: OcaParametersReflectable {
     public let id: OcaID16
     public let channelEndpoint: OcaChannelEndpoint
 

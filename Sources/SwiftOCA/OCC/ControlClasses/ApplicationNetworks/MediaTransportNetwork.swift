@@ -130,7 +130,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     )
   }
 
-  public struct AddSourceConnectorParameters: Ocp1ParametersReflectable {
+  public struct AddSourceConnectorParameters: OcaParametersReflectable {
     public var connector: OcaMediaSourceConnector
     public let initialStatus: OcaMediaConnectorState
   }
@@ -146,7 +146,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     connector = try await sendCommandRrq(methodID: OcaMethodID("3.15"), parameters: parameters)
   }
 
-  public struct AddSinkConnectorParameters: Ocp1ParametersReflectable {
+  public struct AddSinkConnectorParameters: OcaParametersReflectable {
     public let initialStatus: OcaMediaConnectorState
     public var connector: OcaMediaSinkConnector
   }
@@ -162,7 +162,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     connector = try await sendCommandRrq(methodID: OcaMethodID("3.16"), parameters: parameters)
   }
 
-  public struct ControlConnectorParameters: Ocp1ParametersReflectable {
+  public struct ControlConnectorParameters: OcaParametersReflectable {
     public let connectorID: OcaMediaConnectorID
     public let command: OcaMediaConnectorCommand
   }
@@ -175,7 +175,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     try await sendCommandRrq(methodID: OcaMethodID("3.17"), parameters: parameters)
   }
 
-  public struct SetSourceConnectorPinMapParameters: Ocp1ParametersReflectable {
+  public struct SetSourceConnectorPinMapParameters: OcaParametersReflectable {
     public let connectorID: OcaMediaConnectorID
     public let channelPinMap: [OcaUint16: OcaPortID]
   }
@@ -188,7 +188,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     try await sendCommandRrq(methodID: OcaMethodID("3.18"), parameters: parameters)
   }
 
-  public struct SetSinkConnectorPinMapParameters: Ocp1ParametersReflectable {
+  public struct SetSinkConnectorPinMapParameters: OcaParametersReflectable {
     public let connectorID: OcaMediaConnectorID
     public let channelPinMap: [OcaUint16: [OcaPortID]]
   }
@@ -201,7 +201,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     try await sendCommandRrq(methodID: OcaMethodID("3.19"), parameters: parameters)
   }
 
-  public struct SetConnectorConnectionParameters: Ocp1ParametersReflectable {
+  public struct SetConnectorConnectionParameters: OcaParametersReflectable {
     public let connectorID: OcaMediaConnectorID
     public let connection: OcaMediaConnection
   }
@@ -214,7 +214,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     try await sendCommandRrq(methodID: OcaMethodID("3.20"), parameters: parameters)
   }
 
-  public struct SetConnectorCodingParameters: Ocp1ParametersReflectable {
+  public struct SetConnectorCodingParameters: OcaParametersReflectable {
     public let connectorID: OcaMediaConnectorID
     public let coding: OcaMediaCoding
   }
@@ -224,7 +224,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     try await sendCommandRrq(methodID: OcaMethodID("3.21"), parameters: parameters)
   }
 
-  public struct SetConnectorAlignmentLevelParameters: Ocp1ParametersReflectable {
+  public struct SetConnectorAlignmentLevelParameters: OcaParametersReflectable {
     public let connectorID: OcaMediaConnectorID
     public let level: OcaDBFS
   }
@@ -234,7 +234,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     try await sendCommandRrq(methodID: OcaMethodID("3.22"), parameters: parameters)
   }
 
-  public struct SetConnectorAlignmentGainParameters: Ocp1ParametersReflectable {
+  public struct SetConnectorAlignmentGainParameters: OcaParametersReflectable {
     public let connectorID: OcaMediaConnectorID
     public let gain: OcaDB
   }

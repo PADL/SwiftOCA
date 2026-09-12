@@ -139,7 +139,7 @@ open class OcaDynamics: OcaActuator, @unchecked Sendable {
   public var slope: OcaBoundedProperty<OcaFloat32>.PropertyValue
 
   @_spi(SwiftOCAPrivate)
-  public struct SetMultipleParameters: Ocp1ParametersReflectable {
+  public struct SetMultipleParameters: OcaParametersReflectable {
     public let mask: OcaParameterMask
     public let function: OcaDynamicsFunction
     public let threshold: OcaDBr
@@ -256,7 +256,7 @@ open class OcaDynamicsDetector: OcaActuator, @unchecked Sendable {
   public var holdTime: OcaBoundedProperty<OcaTimeInterval>.PropertyValue
 
   @_spi(SwiftOCAPrivate)
-  public struct SetMultipleParameters: Ocp1ParametersReflectable {
+  public struct SetMultipleParameters: OcaParametersReflectable {
     public let mask: OcaParameterMask
     public let law: OcaLevelDetectionLaw
     public let attackTime: OcaTimeInterval
@@ -363,7 +363,7 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
   public var dynamicGainCeiling: OcaBoundedProperty<OcaDB>.PropertyValue
 
   @_spi(SwiftOCAPrivate)
-  public struct GetThresholdsParameters: Ocp1ParametersReflectable {
+  public struct GetThresholdsParameters: OcaParametersReflectable {
     public let thresholds: OcaList<OcaDBr>
     public let minThreshold: OcaDBz
     public let maxThreshold: OcaDBz
@@ -380,7 +380,7 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
   }
 
   @_spi(SwiftOCAPrivate)
-  public struct GetFloat32ListParameters: Ocp1ParametersReflectable {
+  public struct GetFloat32ListParameters: OcaParametersReflectable {
     public let values: OcaList<OcaFloat32>
     public let minValues: OcaList<OcaFloat32>
     public let maxValues: OcaList<OcaFloat32>
@@ -435,7 +435,7 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
   }
 
   @_spi(SwiftOCAPrivate)
-  public struct SetMultipleParameters: Ocp1ParametersReflectable {
+  public struct SetMultipleParameters: OcaParametersReflectable {
     public let mask: OcaParameterMask
     public let nSegments: OcaUint8
     public let thresholds: OcaList<OcaDBr>

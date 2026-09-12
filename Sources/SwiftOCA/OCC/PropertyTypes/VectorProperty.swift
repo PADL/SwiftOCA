@@ -21,7 +21,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-public struct OcaVector2D<T: Codable & Sendable & FixedWidthInteger>: Ocp1ParametersReflectable,
+public struct OcaVector2D<T: Codable & Sendable & FixedWidthInteger>: OcaParametersReflectable,
   Codable, Sendable
 {
   public var x, y: T
@@ -35,7 +35,7 @@ public struct OcaVector2D<T: Codable & Sendable & FixedWidthInteger>: Ocp1Parame
 /// A vector with each axis's bounds, in the order AES70-2 returns them from a
 /// getter such as `OcaMatrix.GetSize`.
 public struct OcaBoundedVector2D<T: Codable & Sendable & FixedWidthInteger>:
-  Ocp1ParametersReflectable, Codable, Sendable
+  OcaParametersReflectable, Codable, Sendable
 {
   public var x, y: T
   public var minX, maxX: T

@@ -55,7 +55,7 @@ open class OcaFilterClassical: OcaActuator, @unchecked Sendable {
   public var parameter: OcaBoundedProperty<OcaFloat32>.PropertyValue
 
   @_spi(SwiftOCAPrivate)
-  public struct SetMultipleParameters: Ocp1ParametersReflectable {
+  public struct SetMultipleParameters: OcaParametersReflectable {
     public let mask: OcaParameterMask
     public let frequency: OcaFrequency
     public let passband: OcaFilterPassband
@@ -153,7 +153,7 @@ open class OcaFilterParametric: OcaActuator, @unchecked Sendable {
   public var shapeParameter: OcaBoundedProperty<OcaFloat32>.PropertyValue
 
   @_spi(SwiftOCAPrivate)
-  public struct SetMultipleParameters: Ocp1ParametersReflectable {
+  public struct SetMultipleParameters: OcaParametersReflectable {
     public let mask: OcaParameterMask
     public let frequency: OcaFrequency
     public let shape: OcaParametricEQShape
@@ -236,7 +236,7 @@ open class OcaFilterPolynomial: OcaActuator, @unchecked Sendable {
   public var maxOrder: OcaProperty<OcaUint8>.PropertyValue
 
   @_spi(SwiftOCAPrivate)
-  public struct CoefficientsParameters: Ocp1ParametersReflectable {
+  public struct CoefficientsParameters: OcaParametersReflectable {
     public let a: OcaList<OcaFloat32>
     public let b: OcaList<OcaFloat32>
 
@@ -297,7 +297,7 @@ open class OcaFilterArbitraryCurve: OcaActuator, @unchecked Sendable {
 
   /// SetTransferFunction takes the curve's three lists as separate parameters,
   /// where GetTransferFunction returns them as one structure.
-  public struct SetTransferFunctionParameters: Ocp1ParametersReflectable {
+  public struct SetTransferFunctionParameters: OcaParametersReflectable {
     public let frequency: OcaList<OcaFrequency>
     public let amplitude: OcaList<OcaFloat32>
     public let phase: OcaList<OcaFloat32>

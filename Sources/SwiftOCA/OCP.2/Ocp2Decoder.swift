@@ -48,7 +48,7 @@ public struct Ocp2Decoder {
       return OcaRoot.Placeholder() as! T
     }
 
-    if type is Ocp1ParametersReflectable.Type {
+    if type is OcaParametersReflectable.Type {
       let fieldNames = Ocp2Naming.fieldNames(of: type)
       let names = Ocp2Naming.parameterNames(explicit: parameterNames, fieldNames: fieldNames)
       let frame = Ocp2NamingFrame(parameterNames: names, fieldNames: fieldNames)

@@ -27,7 +27,7 @@ public struct Ocp2Encoder {
 
   /// Encodes a method's parameters as the OCP.2 `Parameters` object.
   ///
-  /// A parameter record (`Ocp1ParametersReflectable`) becomes one member per stored
+  /// A parameter record (`OcaParametersReflectable`) becomes one member per stored
   /// property, named by `parameterNames` in declaration order and then by the derived
   /// wire name. Anything else is a single parameter named `parameterNames.first`, or
   /// `Ocp2Naming.unnamedParameter` when no name was supplied.
@@ -41,7 +41,7 @@ public struct Ocp2Encoder {
 
     let state = Ocp2EncodingState(userInfo: userInfo)
 
-    if type(of: value) is Ocp1ParametersReflectable.Type {
+    if type(of: value) is OcaParametersReflectable.Type {
       let fieldNames = Ocp2Naming.fieldNames(of: type(of: value))
       let names = Ocp2Naming.parameterNames(explicit: parameterNames, fieldNames: fieldNames)
       let node = Ocp2EncodingNode()

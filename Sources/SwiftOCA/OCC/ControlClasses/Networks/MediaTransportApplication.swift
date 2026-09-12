@@ -26,7 +26,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   // MARK: - Parameter structures shared with SwiftOCADevice
 
   /// OcaMediaTransportApplication.AddPort names its label `Name`.
-  public struct AddPortParameters: Ocp1ParametersReflectable {
+  public struct AddPortParameters: OcaParametersReflectable {
     public let name: OcaString
     public let mode: OcaPortMode
 
@@ -36,7 +36,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
-  public struct MaxEndpointCounts: Ocp1ParametersReflectable, Equatable {
+  public struct MaxEndpointCounts: OcaParametersReflectable, Equatable {
     public let maxInputEndpoints: OcaUint16
     public let maxOutputEndpoints: OcaUint16
 
@@ -46,7 +46,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
-  public struct ApplyEndpointCommandParameters: Ocp1ParametersReflectable {
+  public struct ApplyEndpointCommandParameters: OcaParametersReflectable {
     public let id: OcaMediaStreamEndpointID
     public let command: OcaMediaStreamEndpointCommand
 
@@ -56,7 +56,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
-  public struct SetEndpointUserLabelParameters: Ocp1ParametersReflectable {
+  public struct SetEndpointUserLabelParameters: OcaParametersReflectable {
     public let id: OcaMediaStreamEndpointID
     public let userLabel: OcaString
 
@@ -66,7 +66,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
-  public struct SetEndpointMediaStreamModeParameters: Ocp1ParametersReflectable {
+  public struct SetEndpointMediaStreamModeParameters: OcaParametersReflectable {
     public let id: OcaMediaStreamEndpointID
     public let mediaStreamMode: OcaMediaStreamMode
 
@@ -76,7 +76,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
-  public struct SetEndpointChannelMapParameters: Ocp1ParametersReflectable {
+  public struct SetEndpointChannelMapParameters: OcaParametersReflectable {
     public let id: OcaMediaStreamEndpointID
     public let channelMap: OcaMultiMap<OcaUint16, OcaPortID>
 
@@ -86,7 +86,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
-  public struct SetEndpointAlignmentLevelParameters: Ocp1ParametersReflectable {
+  public struct SetEndpointAlignmentLevelParameters: OcaParametersReflectable {
     public let id: OcaMediaStreamEndpointID
     public let alignmentLevel: OcaDBFS
 
@@ -96,7 +96,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
-  public struct SetEndpointAdaptationDataParameters: Ocp1ParametersReflectable {
+  public struct SetEndpointAdaptationDataParameters: OcaParametersReflectable {
     public let id: OcaMediaStreamEndpointID
     public let adaptationData: OcaAdaptationData
 
@@ -106,7 +106,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
-  public struct EndpointTimeSource: Ocp1ParametersReflectable, Equatable {
+  public struct EndpointTimeSource: OcaParametersReflectable, Equatable {
     public let referenceType: OcaTimeReferenceType
     public let referenceID: OcaString
 
@@ -116,7 +116,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
-  public struct EndpointCounterParameters: Ocp1ParametersReflectable {
+  public struct EndpointCounterParameters: OcaParametersReflectable {
     public let endpointID: OcaMediaStreamEndpointID
     public let counterID: OcaID16
 
@@ -126,7 +126,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
-  public struct EndpointCounterNotifierParameters: Ocp1ParametersReflectable {
+  public struct EndpointCounterNotifierParameters: OcaParametersReflectable {
     public let endpointID: OcaMediaStreamEndpointID
     public let counterID: OcaID16
     public let oNo: OcaONo
@@ -187,7 +187,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
 
   /// OcaMediaTransportApplication.SetPortClockMapEntry names its port `ID`, where
   /// OcaWorker says `PortID` (`OcaSetPortClockMapEntryParameters`).
-  public struct SetPortClockMapEntryParameters: Ocp1ParametersReflectable {
+  public struct SetPortClockMapEntryParameters: OcaParametersReflectable {
     public let id: OcaPortID
     public let entry: OcaPortClockMapEntry
 

@@ -18,7 +18,7 @@ open class OcaLockManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.14") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 
-  public struct LockWaitParameters: Ocp1ParametersReflectable {
+  public struct LockWaitParameters: OcaParametersReflectable {
     public let target: OcaONo
     public let type: OcaLockState
     public let timeout: OcaTimeInterval

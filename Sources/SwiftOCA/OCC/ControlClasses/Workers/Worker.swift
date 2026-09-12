@@ -74,7 +74,7 @@ Sendable {
     port label: OcaString,
     mode: OcaPortMode
   ) async throws -> OcaPortID {
-    struct AddPortParameters: Ocp1ParametersReflectable {
+    struct AddPortParameters: OcaParametersReflectable {
       let name: OcaString
       let mode: OcaPortMode
     }
@@ -105,7 +105,7 @@ Sendable {
 
   /// OcaWorker.SetPortName names its port `ID`, where the other port-bearing
   /// classes say `PortID` (`OcaSetPortNameParameters`).
-  public struct SetPortNameParameters: Ocp1ParametersReflectable {
+  public struct SetPortNameParameters: OcaParametersReflectable {
     public let id: OcaPortID
     public let name: OcaString
 

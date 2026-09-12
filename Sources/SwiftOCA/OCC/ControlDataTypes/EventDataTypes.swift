@@ -204,7 +204,7 @@ public struct OcaObservationListEventData: Codable, Sendable {
   }
 }
 
-public struct OcaSubscription: Ocp1ParametersReflectable, Codable, Equatable, Hashable, Sendable {
+public struct OcaSubscription: OcaParametersReflectable, Codable, Equatable, Hashable, Sendable {
   public let event: OcaEvent
   public let subscriber: OcaMethod
   public let subscriberContext: OcaBlob
@@ -226,7 +226,7 @@ public struct OcaSubscription: Ocp1ParametersReflectable, Codable, Equatable, Ha
   }
 }
 
-public struct OcaPropertyChangeSubscription: Ocp1ParametersReflectable, Codable, Equatable,
+public struct OcaPropertyChangeSubscription: OcaParametersReflectable, Codable, Equatable,
   Hashable,
   Sendable
 {
@@ -254,7 +254,7 @@ public struct OcaPropertyChangeSubscription: Ocp1ParametersReflectable, Codable,
   }
 }
 
-public struct OcaSubscription2: Ocp1ParametersReflectable, Codable, Equatable, Hashable, Sendable {
+public struct OcaSubscription2: OcaParametersReflectable, Codable, Equatable, Hashable, Sendable {
   public let event: OcaEvent
   public let notificationDeliveryMode: OcaNotificationDeliveryMode
   public let destinationInformation: OcaNetworkAddress
@@ -270,7 +270,7 @@ public struct OcaSubscription2: Ocp1ParametersReflectable, Codable, Equatable, H
   }
 }
 
-public struct OcaPropertyChangeSubscription2: Ocp1ParametersReflectable, Codable, Equatable,
+public struct OcaPropertyChangeSubscription2: OcaParametersReflectable, Codable, Equatable,
   Hashable, Sendable
 {
   public let emitter: OcaONo
@@ -353,7 +353,7 @@ public extension OcaPropertyChangedEventData {
   }
 }
 
-public struct OcaSubscription2List: Ocp1ParametersReflectable, Codable, Sendable {
+public struct OcaSubscription2List: OcaParametersReflectable, Codable, Sendable {
   public let events: [OcaEvent]
   public let notificationDeliveryMode: OcaNotificationDeliveryMode
   public let destinationInformation: OcaNetworkAddress
@@ -369,7 +369,7 @@ public struct OcaSubscription2List: Ocp1ParametersReflectable, Codable, Sendable
   }
 }
 
-public struct OcaPropertyChangeSubscription2List: Ocp1ParametersReflectable, Codable, Sendable {
+public struct OcaPropertyChangeSubscription2List: OcaParametersReflectable, Codable, Sendable {
   public let emitters: [OcaONo]
   public let properties: [OcaPropertyID]
   public let notificationDeliveryMode: OcaNotificationDeliveryMode

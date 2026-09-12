@@ -27,7 +27,7 @@ private extension OcaRoot {
 
   func sendCommand(
     methodID: OcaMethodID,
-    parameters: Ocp1Parameters
+    parameters: OcaParameters
   ) async throws {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
     let command = Ocp1Command(
@@ -41,9 +41,9 @@ private extension OcaRoot {
 
   func sendCommandRrq(
     methodID: OcaMethodID,
-    parameters: Ocp1Parameters,
+    parameters: OcaParameters,
     responseParameterCount: OcaUint8
-  ) async throws -> Ocp1Parameters {
+  ) async throws -> OcaParameters {
     let response = try await sendCommandRrq(methodID: methodID, parameters: parameters)
     guard response.statusCode == .ok else {
       throw Ocp1Error.status(response.statusCode)
@@ -63,12 +63,12 @@ private extension OcaRoot {
     parameterCount: OcaUint8? = nil,
     parameterNames: [String]? = nil,
     userInfo: [CodingUserInfoKey: Any]? = nil
-  ) throws -> Ocp1Parameters {
+  ) throws -> OcaParameters {
     switch _controlProtocol {
     case .ocp1:
       var encoder = Ocp1Encoder()
       if let userInfo { encoder.userInfo = userInfo }
-      return try Ocp1Parameters(
+      return try OcaParameters(
         parameterCount: parameterCount ?? _ocp1ParameterCount(type: type(of: parameters)),
         parameterData: encoder.encode(parameters)
       )
@@ -76,7 +76,7 @@ private extension OcaRoot {
     case .ocp2:
       var encoder = Ocp2Encoder()
       if let userInfo { encoder.userInfo = userInfo }
-      return try Ocp1Parameters(
+      return try OcaParameters(
         ocp2Parameters: encoder.encodeParameters(parameters, parameterNames: parameterNames)
       )
     #endif
@@ -85,7 +85,7 @@ private extension OcaRoot {
 
   func decodeResponse<U: Decodable>(
     _ type: U.Type,
-    from parameters: Ocp1Parameters,
+    from parameters: OcaParameters,
     parameterNames: [String]? = nil,
     userInfo: [CodingUserInfoKey: Any]? = nil
   ) throws -> U {
@@ -185,7 +185,7 @@ public extension OcaRoot {
   ) async throws {
     _ = try await sendCommandRrq(
       methodID: methodID,
-      parameters: Ocp1Parameters(),
+      parameters: OcaParameters(),
       responseParameterCount: 0
     )
   }
@@ -195,7 +195,7 @@ public extension OcaRoot {
   /// Send pre-encoded parameters; they must be in the connection's format.
   final func sendCommandRrq(
     methodID: OcaMethodID,
-    parameters: Ocp1Parameters
+    parameters: OcaParameters
   ) async throws -> Ocp1Response {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
     guard parameters.isEmpty || parameters.format == connectionDelegate.controlProtocol.parameterFormat
@@ -220,7 +220,7 @@ public extension OcaRoot {
   ) async throws -> Ocp1Response {
     try await sendCommandRrq(
       methodID: methodID,
-      parameters: Ocp1Parameters(parameterCount: parameterCount, parameterData: parameterData)
+      parameters: OcaParameters(parameterCount: parameterCount, parameterData: parameterData)
     )
   }
 }

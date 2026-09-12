@@ -207,7 +207,7 @@ final class MalformedPduTests: XCTestCase {
         handle: 2,
         targetONo: 200,
         methodID: "3.5",
-        parameters: Ocp1Parameters(parameterCount: 1, parameterData: Data([0xFF, 0xFE]))
+        parameters: OcaParameters(parameterCount: 1, parameterData: Data([0xFF, 0xFE]))
       ),
     ]
     let wellFormed: Data = try Ocp1Connection.encodeOcp1MessagePdu(commands, type: .ocaCmd)
@@ -232,7 +232,7 @@ final class MalformedPduTests: XCTestCase {
       handle: 1,
       targetONo: 5000,
       methodID: "2.6",
-      parameters: Ocp1Parameters(parameterCount: 1, parameterData: Data([0x01, 0x02]))
+      parameters: OcaParameters(parameterCount: 1, parameterData: Data([0x01, 0x02]))
     )
     let wellFormed: Data = try Ocp1Connection.encodeOcp1MessagePdu([command], type: .ocaCmdRrq)
 

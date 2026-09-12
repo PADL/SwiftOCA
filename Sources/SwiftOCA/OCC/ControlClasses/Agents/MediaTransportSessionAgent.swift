@@ -20,7 +20,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
 
   // MARK: - Parameter structures shared with SwiftOCADevice
 
-  public struct SetStreamingEnabledParameters: Ocp1ParametersReflectable {
+  public struct SetStreamingEnabledParameters: OcaParametersReflectable {
     public let sessionID: OcaMediaTransportSessionID
     public let enabled: OcaBoolean
 
@@ -30,7 +30,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
     }
   }
 
-  public struct AddConnectionParameters: Ocp1ParametersReflectable {
+  public struct AddConnectionParameters: OcaParametersReflectable {
     public let sessionID: OcaMediaTransportSessionID
     public let connection: OcaMediaTransportSessionConnection
 
@@ -45,7 +45,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
 
   /// Parameter shape needs verification against AES70-2A; AES70-22 shows
   /// ConfigureConnection(LocalEndpointID, RemoteEndpointID) with the session implied.
-  public struct ConfigureConnectionParameters: Ocp1ParametersReflectable {
+  public struct ConfigureConnectionParameters: OcaParametersReflectable {
     public let sessionID: OcaMediaTransportSessionID
     public let connectionID: OcaMediaTransportSessionConnectionID
     public let localEndpointID: OcaMediaStreamEndpointID
@@ -64,7 +64,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
     }
   }
 
-  public struct SessionConnectionParameters: Ocp1ParametersReflectable {
+  public struct SessionConnectionParameters: OcaParametersReflectable {
     public let sessionID: OcaMediaTransportSessionID
     public let connectionID: OcaMediaTransportSessionConnectionID
 

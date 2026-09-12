@@ -35,7 +35,7 @@ public enum OcaControlProtocol: String, Codable, Sendable, CaseIterable {
   #endif
 }
 
-/// The marshaling of `Ocp1Parameters.parameterData`.
+/// The marshaling of `OcaParameters.parameterData`.
 public enum OcaParameterFormat: Sendable, Hashable {
   /// positional OCP.1 bytes, counted by `parameterCount`
   case ocp1

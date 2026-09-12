@@ -515,7 +515,7 @@ extension OcaRoot: Hashable {
   }
 }
 
-public struct OcaGetPathParameters: Ocp1ParametersReflectable {
+public struct OcaGetPathParameters: OcaParametersReflectable {
   public var rolePath: OcaNamePath
   public var oNoPath: OcaONoPath
 
@@ -533,7 +533,7 @@ extension OcaRoot {
   }
 }
 
-public struct OcaGetPortNameParameters: Ocp1ParametersReflectable {
+public struct OcaGetPortNameParameters: OcaParametersReflectable {
   public let portID: OcaPortID
 
   public init(portID: OcaPortID) {
@@ -541,7 +541,7 @@ public struct OcaGetPortNameParameters: Ocp1ParametersReflectable {
   }
 }
 
-public struct OcaSetPortNameParameters: Ocp1ParametersReflectable {
+public struct OcaSetPortNameParameters: OcaParametersReflectable {
   public let portID: OcaPortID
   public let name: OcaString
 

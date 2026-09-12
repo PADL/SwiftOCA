@@ -122,7 +122,7 @@ Sendable {
   )
   public var mostRecentParamDatasetONo: OcaProperty<OcaONo>.PropertyValue
 
-  public struct ConstructActionObjectParameters: Ocp1ParametersReflectable {
+  public struct ConstructActionObjectParameters: OcaParametersReflectable {
     public let classID: OcaClassID
     public let constructionParameters: [OcaConstructionParameter]
 
@@ -271,7 +271,7 @@ Sendable {
     }
   }
 
-  public struct FindActionObjectsByRoleParameters: Ocp1ParametersReflectable {
+  public struct FindActionObjectsByRoleParameters: OcaParametersReflectable {
     public let searchName: OcaString
     public let nameComparisonType: OcaStringComparisonType
     public let searchClassID: OcaClassID
@@ -334,7 +334,7 @@ Sendable {
     return searchResults
   }
 
-  public struct FindActionObjectsByPathParameters: Ocp1ParametersReflectable {
+  public struct FindActionObjectsByPathParameters: OcaParametersReflectable {
     public let searchPath: OcaNamePath
     public let resultFlags: OcaActionObjectSearchResultFlags
 
@@ -413,7 +413,7 @@ Sendable {
   }
 
   @_spi(SwiftOCAPrivate)
-  public struct ConstructDataSetParameters: Ocp1ParametersReflectable {
+  public struct ConstructDataSetParameters: OcaParametersReflectable {
     public let classID: OcaClassID
     public let name: OcaString
     public let type: OcaMimeType
@@ -453,7 +453,7 @@ Sendable {
   }
 
   @_spi(SwiftOCAPrivate)
-  public struct DuplicateDataSetParameters: Ocp1ParametersReflectable {
+  public struct DuplicateDataSetParameters: OcaParametersReflectable {
     public let oldONo: OcaONo
     public let targetBlockONo: OcaONo
     public let newName: OcaString
@@ -487,7 +487,7 @@ Sendable {
   }
 
   @_spi(SwiftOCAPrivate)
-  public struct FindDatasetsParameters: Ocp1ParametersReflectable {
+  public struct FindDatasetsParameters: OcaParametersReflectable {
     public let name: OcaString
     public let nameComparisonType: OcaStringComparisonType
     public let type: OcaMimeType

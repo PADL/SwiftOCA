@@ -25,7 +25,7 @@ public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
   public let responseSize: OcaUint32
   public let handle: OcaUint32
   public let statusCode: OcaStatus
-  public let parameters: Ocp1Parameters
+  public let parameters: OcaParameters
 
   public var messageSize: OcaUint32 { responseSize }
 
@@ -33,7 +33,7 @@ public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
     responseSize: OcaUint32 = 0,
     handle: OcaUint32 = 0,
     statusCode: OcaStatus = .ok,
-    parameters: Ocp1Parameters = Ocp1Parameters()
+    parameters: OcaParameters = OcaParameters()
   ) {
     self.responseSize = responseSize
     self.handle = handle
@@ -45,7 +45,7 @@ public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
     responseSize = try OcaUint32(parsingBigEndian: &input)
     handle = try OcaUint32(parsingBigEndian: &input)
     statusCode = try OcaStatus(parsing: &input)
-    parameters = try Ocp1Parameters(
+    parameters = try OcaParameters(
       parameterCount: OcaUint8(parsing: &input),
       parameterData: Data(parsingRemainingBytes: &input)
     )

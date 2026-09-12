@@ -103,7 +103,7 @@ public extension OcaController {
     case .ocp1:
       let parameterCount = _ocp1ParameterCount(type: T.self)
       let encoder = Ocp1Encoder()
-      let parameters = try Ocp1Parameters(
+      let parameters = try OcaParameters(
         parameterCount: parameterCount,
         parameterData: encoder.encode(parameters)
       )
@@ -114,7 +114,7 @@ public extension OcaController {
         parameters,
         parameterNames: names
       )
-      return Ocp1Response(statusCode: statusCode, parameters: Ocp1Parameters(ocp2Parameters: object))
+      return Ocp1Response(statusCode: statusCode, parameters: OcaParameters(ocp2Parameters: object))
       #else
       throw Ocp1Error.unsupportedControlProtocol
       #endif

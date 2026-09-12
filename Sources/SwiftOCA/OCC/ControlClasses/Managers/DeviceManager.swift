@@ -120,7 +120,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
     OcaUint8
   )
 
-  public struct SetResetKeyParameters: Ocp1ParametersReflectable, Codable {
+  public struct SetResetKeyParameters: OcaParametersReflectable, Codable {
     public let key: ResetKey
     public let address: OcaNetworkAddress
 

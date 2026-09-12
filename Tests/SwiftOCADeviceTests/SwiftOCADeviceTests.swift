@@ -40,8 +40,8 @@ extension OcaGetPortNameParameters: Equatable {
   }
 }
 
-extension Ocp1Parameters: Equatable {
-  public static func == (lhs: Ocp1Parameters, rhs: Ocp1Parameters) -> Bool {
+extension OcaParameters: Equatable {
+  public static func == (lhs: OcaParameters, rhs: OcaParameters) -> Bool {
     lhs.parameterData == rhs.parameterData && lhs.parameterCount == rhs.parameterCount
   }
 }

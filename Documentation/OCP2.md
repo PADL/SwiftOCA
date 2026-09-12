@@ -79,7 +79,7 @@ from Swift identifiers rather than carrying a copy of the model:
    `MinGain`, `MaxGain`). Where the model's spelling differs, pass `ocp2GetName:`
    to the property wrapper on both sides, e.g. `OcaDeviceManager`'s
    `deviceName` is the model's `Name`.
-2. **Parameter records** (`Ocp1ParametersReflectable` structs) use their field
+2. **Parameter records** (`OcaParametersReflectable` structs) use their field
    names, upper-cased; an explicit `CodingKeys` enum forces a spelling.
 3. **Hand-written methods** name single parameters explicitly:
    `encodeResponse(value, name: "Result")` on the device,
@@ -111,8 +111,8 @@ and add `ocp2GetName:` overrides where exact spelling matters for a peer.
   `.maximumPduSize` and `.heartbeatTime` (overrides a transport's default
   keep-alive; WebSocket OCP.1 relies on ping/pong, so set one for OCP.2 if the
   device requires keep-alives).
-- `Ocp1Parameters.format` says whether `parameterData` is OCP.1 bytes or a
-  serialised OCP.2 `Parameters` object; `Ocp1Parameters(ocp2ParameterData:)`
+- `OcaParameters.format` says whether `parameterData` is OCP.1 bytes or a
+  serialised OCP.2 `Parameters` object; `OcaParameters(ocp2ParameterData:)`
   builds the latter.
 - `OcaEventParameters.encoded(as:)` encodes event data for either protocol;
   `OcaControllerDefaultSubscribing.notifySubscribers(_:parameters:)` takes it

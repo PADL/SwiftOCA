@@ -91,7 +91,7 @@ open class OcaSignalGenerator: OcaActuator, @unchecked Sendable {
   }
 
   @_spi(SwiftOCAPrivate)
-  public struct SetMultipleParameters: Ocp1ParametersReflectable {
+  public struct SetMultipleParameters: OcaParametersReflectable {
     public let mask: OcaParameterMask
     public let frequency1: OcaFrequency
     public let frequency2: OcaFrequency

@@ -41,8 +41,8 @@ extension OcaGetPortNameParameters: Equatable {
   }
 }
 
-extension Ocp1Parameters: Equatable {
-  public static func == (lhs: Ocp1Parameters, rhs: Ocp1Parameters) -> Bool {
+extension OcaParameters: Equatable {
+  public static func == (lhs: OcaParameters, rhs: OcaParameters) -> Bool {
     lhs.parameterData == rhs.parameterData && lhs.parameterCount == rhs.parameterCount
   }
 }
@@ -91,7 +91,7 @@ final class SwiftOCADeviceTests: XCTestCase {
       handle: 100,
       targetONo: 5000,
       methodID: OcaMethodID("2.6"),
-      parameters: Ocp1Parameters(
+      parameters: OcaParameters(
         parameterCount: _ocp1ParameterCount(value: parameters),
         parameterData: Data(encodedParameters)
       )
@@ -152,7 +152,7 @@ final class SwiftOCADeviceTests: XCTestCase {
       handle: 101,
       targetONo: 5001,
       methodID: OcaMethodID("4.1"),
-      parameters: Ocp1Parameters(
+      parameters: OcaParameters(
         parameterCount: _ocp1ParameterCount(value: parameters),
         parameterData: Data(encodedParameters)
       )
@@ -1628,7 +1628,7 @@ final class UnsafeStringInitializerTests: XCTestCase {
       handle: 42,
       targetONo: 100,
       methodID: "3.1",
-      parameters: Ocp1Parameters(parameterCount: 0, parameterData: Data())
+      parameters: OcaParameters(parameterCount: 0, parameterData: Data())
     )
     let bytes = command.bytes
     // Prefix with garbage to create a non-zero-startIndex slice
@@ -1644,7 +1644,7 @@ final class UnsafeStringInitializerTests: XCTestCase {
     let response = Ocp1Response(
       handle: 99,
       statusCode: .ok,
-      parameters: Ocp1Parameters(parameterCount: 1, parameterData: Data([0xAB]))
+      parameters: OcaParameters(parameterCount: 1, parameterData: Data([0xAB]))
     )
     let bytes = response.bytes
     let padded = Data([0xFF]) + Data(bytes)
@@ -1674,7 +1674,7 @@ final class UnsafeStringInitializerTests: XCTestCase {
       handle: 1,
       targetONo: 5000,
       methodID: "2.6",
-      parameters: Ocp1Parameters(parameterCount: 1, parameterData: Data([0x01, 0x02]))
+      parameters: OcaParameters(parameterCount: 1, parameterData: Data([0x01, 0x02]))
     )
     let pdu: Data = try Ocp1Connection.encodeOcp1MessagePdu([command], type: .ocaCmdRrq)
     let (messageType, messages) = try Ocp1Connection.decodeOcp1MessagePdu(from: pdu)
@@ -1694,7 +1694,7 @@ final class UnsafeStringInitializerTests: XCTestCase {
       handle: 2,
       targetONo: 200,
       methodID: "3.5",
-      parameters: Ocp1Parameters(parameterCount: 1, parameterData: Data([0xFF]))
+      parameters: OcaParameters(parameterCount: 1, parameterData: Data([0xFF]))
     )
     let pdu: Data = try Ocp1Connection.encodeOcp1MessagePdu([cmd1, cmd2], type: .ocaCmd)
     let (messageType, messages) = try Ocp1Connection.decodeOcp1MessagePdu(from: pdu)

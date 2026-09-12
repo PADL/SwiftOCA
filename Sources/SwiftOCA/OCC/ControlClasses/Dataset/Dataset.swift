@@ -59,7 +59,7 @@ Sendable {
   public var maxSize: OcaProperty<OcaUint64>.PropertyValue
 
   @_spi(SwiftOCAPrivate)
-  public struct OpenReadParameters: Ocp1ParametersReflectable {
+  public struct OpenReadParameters: OcaParametersReflectable {
     public let datasetSize: OcaUint64
     public let handle: OcaIOSessionHandle
 
@@ -79,7 +79,7 @@ Sendable {
   }
 
   @_spi(SwiftOCAPrivate)
-  public struct OpenWriteParameters: Ocp1ParametersReflectable {
+  public struct OpenWriteParameters: OcaParametersReflectable {
     public let maxPartSize: OcaUint64
     public let handle: OcaIOSessionHandle
 
@@ -107,7 +107,7 @@ Sendable {
   }
 
   @_spi(SwiftOCAPrivate)
-  public struct ReadParameters: Ocp1ParametersReflectable {
+  public struct ReadParameters: OcaParametersReflectable {
     public let handle: OcaIOSessionHandle
     public let position: OcaUint64
     public let partSize: OcaUint64
@@ -120,7 +120,7 @@ Sendable {
   }
 
   @_spi(SwiftOCAPrivate)
-  public struct ReadResultParameters: Ocp1ParametersReflectable {
+  public struct ReadResultParameters: OcaParametersReflectable {
     public let endOfData: OcaBoolean
     public let part: OcaLongBlob
 
@@ -143,7 +143,7 @@ Sendable {
   }
 
   @_spi(SwiftOCAPrivate)
-  public struct WriteParameters: Ocp1ParametersReflectable {
+  public struct WriteParameters: OcaParametersReflectable {
     public let handle: OcaIOSessionHandle
     public let position: OcaUint64
     public let part: OcaLongBlob
@@ -169,7 +169,7 @@ Sendable {
   }
 
   @_spi(SwiftOCAPrivate)
-  public struct GetDataSetSizesParameters: Ocp1ParametersReflectable {
+  public struct GetDataSetSizesParameters: OcaParametersReflectable {
     public let currentSize: OcaUint64
     public let maxSize: OcaUint64
   }

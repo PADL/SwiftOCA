@@ -41,7 +41,7 @@ open class OcaSecurityManager: OcaManager, @unchecked Sendable {
     try await sendCommandRrq(methodID: OcaMethodID("3.2"))
   }
 
-  public struct AddPreSharedKeyParameters: Ocp1ParametersReflectable {
+  public struct AddPreSharedKeyParameters: OcaParametersReflectable {
     public let identity: OcaString
     public let key: OcaBlob
 
@@ -51,7 +51,7 @@ open class OcaSecurityManager: OcaManager, @unchecked Sendable {
     }
   }
 
-  public struct ChangePreSharedKeyParameters: Ocp1ParametersReflectable {
+  public struct ChangePreSharedKeyParameters: OcaParametersReflectable {
     public let identity: OcaString
     public let newKey: OcaBlob
 

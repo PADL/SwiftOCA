@@ -24,7 +24,7 @@ import Foundation
 /// Method parameters as carried on the wire. For OCP.1, `parameterCount` positional
 /// values encoded in `parameterData`; for OCP.2, the parsed JSON `Parameters` object,
 /// which `parameterData` serialises on demand, and `parameterCount` is unused.
-public struct Ocp1Parameters: Codable, Sendable {
+public struct OcaParameters: Codable, Sendable {
   /// One payload rather than one per format, so an OCP.1 connection carries no JSON
   /// object to initialise, retain and release on every message it decodes.
   private enum Storage: Sendable {
@@ -132,7 +132,7 @@ public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
   public var handle: OcaUint32
   public let targetONo: OcaONo
   public let methodID: OcaMethodID
-  public let parameters: Ocp1Parameters
+  public let parameters: OcaParameters
 
   public var messageSize: OcaUint32 { commandSize }
 
@@ -141,7 +141,7 @@ public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
     handle: OcaUint32 = 0,
     targetONo: OcaONo,
     methodID: OcaMethodID,
-    parameters: Ocp1Parameters = .init()
+    parameters: OcaParameters = .init()
   ) {
     self.commandSize = commandSize
     self.handle = handle
@@ -155,7 +155,7 @@ public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
     handle = try OcaUint32(parsingBigEndian: &input)
     targetONo = try OcaONo(parsingBigEndian: &input)
     methodID = try OcaMethodID(parsing: &input)
-    parameters = try Ocp1Parameters(
+    parameters = try OcaParameters(
       parameterCount: OcaUint8(parsing: &input),
       parameterData: Data(parsingRemainingBytes: &input)
     )
