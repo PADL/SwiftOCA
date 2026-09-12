@@ -27,9 +27,9 @@ import Synchronization
 
 /// Event parameters that are encoded on demand, in the format of whichever controller
 /// receives them, so a recipient that only needs the event never pays for encoding
-/// them. Encoding happens on each access: a controller's fan-out asks for one format
-/// for all of its own subscriptions, so there is little to memoise and nothing here
-/// needs synchronising.
+/// them. Encoding happens on each access: a controller's fan-out encodes once for all
+/// of its own subscriptions, so there is little to memoise and nothing here needs
+/// synchronising.
 public struct OcaEventParameters: Sendable {
   private let _encode: @Sendable (OcaParameterFormat) throws -> Data
 
@@ -358,10 +358,17 @@ public actor OcaDevice {
     case .normal:
       let subscribers = await _subscribers(to: event)
       guard !subscribers.isEmpty else { return }
+      let logger = logger
       await withDiscardingTaskGroup { group in
         for subscriber in subscribers {
           group.addTask {
-            try? await subscriber.notifySubscribers(event, parameters: parameters)
+            do {
+              try await subscriber.notifySubscribers(event, parameters: parameters)
+            } catch Ocp1Error.notConnected {
+              // a controller on its way out
+            } catch {
+              logger.warning("failed to notify \(subscriber) of \(event): \(error)")
+            }
           }
         }
       }

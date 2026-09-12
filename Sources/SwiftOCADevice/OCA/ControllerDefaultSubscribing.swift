@@ -147,6 +147,14 @@ public extension OcaControllerDefaultSubscribing {
 
     let property = eventParameters.propertyID
     let format = controlProtocol.parameterFormat
+    // encoded once, for the first subscription that is delivered
+    var encoded: Data?
+    func parameters() throws -> Data {
+      if let encoded { return encoded }
+      let data = try eventParameters.encoded(as: format)
+      encoded = data
+      return data
+    }
 
     for subscription in subscriptions {
       // subscriptions are kept per emitter, so an emitter's other events must not be
@@ -164,10 +172,9 @@ public extension OcaControllerDefaultSubscribing {
           // EV1 subscriptions are refused on OCP.2, so this cannot arise
           throw Ocp1Error.unsupportedControlProtocol
         }
-        let parameters = try eventParameters.encoded(as: .ocp1)
         let eventData = Ocp1EventData(
           event: subscription.event,
-          eventParameters: parameters
+          eventParameters: try parameters()
         )
         let ntfParams = Ocp1NtfParams(
           parameterCount: 2,
@@ -194,7 +201,7 @@ public extension OcaControllerDefaultSubscribing {
         let notification = Ocp1Notification2(
           event: subscription.event,
           notificationType: .event,
-          data: try eventParameters.encoded(as: format),
+          data: try parameters(),
           dataFormat: format
         )
         if subscription.notificationDeliveryMode == .lightweight {
