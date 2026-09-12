@@ -117,6 +117,16 @@ Sendable {
   )
   public var mostRecentParamDatasetONo: OcaProperty<OcaONo>.PropertyValue
 
+  public struct ConstructActionObjectParameters: Ocp1ParametersReflectable {
+    public let classID: OcaClassID
+    public let constructionParameters: [OcaConstructionParameter]
+
+    public init(classID: OcaClassID, constructionParameters: [OcaConstructionParameter]) {
+      self.classID = classID
+      self.constructionParameters = constructionParameters
+    }
+  }
+
   // 3.2
   public func constructActionObject(
     classID: OcaClassID,
@@ -124,8 +134,11 @@ Sendable {
   ) async throws -> OcaONo {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.2"),
-      parameters: constructionParameters,
-      parameterNames: ["ConstructionParameters"]
+      parameters: ConstructActionObjectParameters(
+        classID: classID,
+        constructionParameters: constructionParameters
+      ),
+      parameterNames: ["ClassID", "ConstructionParameters"]
     )
   }
 
