@@ -55,7 +55,8 @@ open class OcaNetworkInterface: OcaRoot, OcaOwnable, OcaLabelRepresentable,
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.5"),
     getMethodID: OcaMethodID("2.9"),
-    setMethodID: OcaMethodID("2.10")
+    setMethodID: OcaMethodID("2.10"),
+    ocp2Name: "Id"
   )
   public var groupID: OcaUint16 = 0
 
@@ -68,26 +69,30 @@ open class OcaNetworkInterface: OcaRoot, OcaOwnable, OcaLabelRepresentable,
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.7"),
-    getMethodID: OcaMethodID("2.13")
+    getMethodID: OcaMethodID("2.13"),
+    ocp2Name: "Identifier"
   )
   public var adaptationIdentifier: OcaAdaptationIdentifier = ""
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.8"),
-    getMethodID: OcaMethodID("2.14")
+    getMethodID: OcaMethodID("2.14"),
+    ocp2Name: "Settings"
   )
   public var currentAdaptationData: OcaAdaptationData = OcaBlob()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.9"),
     getMethodID: OcaMethodID("2.15"),
-    setMethodID: OcaMethodID("2.16")
+    setMethodID: OcaMethodID("2.16"),
+    ocp2Name: "Settings"
   )
   public var requestedAdaptationData: OcaAdaptationData = OcaBlob()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.10"),
-    getMethodID: OcaMethodID("2.17")
+    getMethodID: OcaMethodID("2.17"),
+    ocp2Name: "Pending"
   )
   public var networkSettingPending = false
 

@@ -25,7 +25,8 @@ open class OcaSignalGenerator: OcaActuator {
   @OcaBoundedDeviceProperty(
     propertyID: OcaPropertyID("4.1"),
     getMethodID: OcaMethodID("4.1"),
-    setMethodID: OcaMethodID("4.2")
+    setMethodID: OcaMethodID("4.2"),
+    ocp2Name: "Frequency"
   )
   public var frequency1 = OcaBoundedPropertyValue<OcaFrequency>(value: 1000, in: 10...20000)
 
@@ -33,7 +34,8 @@ open class OcaSignalGenerator: OcaActuator {
   @OcaBoundedDeviceProperty(
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.3"),
-    setMethodID: OcaMethodID("4.4")
+    setMethodID: OcaMethodID("4.4"),
+    ocp2Name: "Frequency"
   )
   public var frequency2 = OcaBoundedPropertyValue<OcaFrequency>(value: 20000, in: 10...20000)
 

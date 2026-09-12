@@ -32,7 +32,8 @@ open class OcaDeviceTimeManager: OcaManager {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.3")
+    getMethodID: OcaMethodID("3.3"),
+    ocp2Name: "TimeSourceONos"
   )
   public var timeSources = [OcaTimeSource]()
 

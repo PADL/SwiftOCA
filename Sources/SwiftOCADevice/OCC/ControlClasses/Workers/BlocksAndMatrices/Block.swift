@@ -138,7 +138,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.3"),
-    getMethodID: OcaMethodID("3.9")
+    getMethodID: OcaMethodID("3.9"),
+    ocp2Name: "Members"
   )
   public var signalPaths = OcaMap<OcaUint16, OcaSignalPath>()
 
@@ -159,7 +160,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   /// zero to keep SwiftOCA clients happy
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.4"),
-    getMethodID: OcaMethodID("3.11")
+    getMethodID: OcaMethodID("3.11"),
+    ocp2Name: "Identifier"
   )
   public var mostRecentParamSetIdentifier: OcaLibVolIdentifier = .init(
     library: OcaInvalidONo,
@@ -186,7 +188,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.9"),
-    getMethodID: OcaMethodID("3.22")
+    getMethodID: OcaMethodID("3.22"),
+    ocp2Name: "ONo"
   )
   public var mostRecentParamDatasetONo: OcaONo = OcaInvalidONo
 

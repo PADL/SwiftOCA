@@ -22,7 +22,8 @@ open class OcaSamplingRateConverter: OcaActuator {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("4.1"),
-    getMethodID: OcaMethodID("4.1")
+    getMethodID: OcaMethodID("4.1"),
+    ocp2Name: "SrcType"
   )
   public var type: OcaSamplingRateConverterType = .none
 }

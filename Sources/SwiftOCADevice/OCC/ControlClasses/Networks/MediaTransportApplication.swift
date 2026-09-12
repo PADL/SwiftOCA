@@ -29,14 +29,16 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.3")
+    getMethodID: OcaMethodID("3.3"),
+    ocp2Name: "OcaPorts"
   )
   public var ports = [OcaPort]()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.6"),
-    setMethodID: OcaMethodID("3.7")
+    setMethodID: OcaMethodID("3.7"),
+    ocp2Name: "Map"
   )
   public var portClockMap = OcaMap<OcaPortID, OcaPortClockMapEntry>()
 
@@ -48,34 +50,39 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.5"),
-    getMethodID: OcaMethodID("3.12")
+    getMethodID: OcaMethodID("3.12"),
+    ocp2Name: "Value"
   )
   public var maxPortsPerChannel: OcaUint16 = 0
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.6"),
-    getMethodID: OcaMethodID("3.13")
+    getMethodID: OcaMethodID("3.13"),
+    ocp2Name: "Value"
   )
   public var maxChannelsPerEndpoint: OcaUint16 = 0
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.15"),
-    setMethodID: OcaMethodID("3.16")
+    setMethodID: OcaMethodID("3.16"),
+    ocp2Name: "Capabilities"
   )
   public var mediaStreamModeCapabilities = [OcaMediaStreamModeCapability]()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.8"),
     getMethodID: OcaMethodID("3.18"),
-    setMethodID: OcaMethodID("3.19")
+    setMethodID: OcaMethodID("3.19"),
+    ocp2Name: "Parameters"
   )
   public var transportTimingParameters = OcaMediaTransportTimingParameters()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.9"),
     getMethodID: OcaMethodID("3.20"),
-    setMethodID: OcaMethodID("3.14")
+    setMethodID: OcaMethodID("3.14"),
+    ocp2Name: "Limits"
   )
   public var alignmentLevelLimits = OcaInterval<OcaDBFS>(min: -20.0, max: -20.0)
 
@@ -87,20 +94,23 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.11"),
-    getMethodID: OcaMethodID("3.23")
+    getMethodID: OcaMethodID("3.23"),
+    ocp2Name: "Statuses"
   )
   public var endpointStatuses = OcaMediaStreamEndpointStatusMap()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.12"),
-    getMethodID: OcaMethodID("3.34")
+    getMethodID: OcaMethodID("3.34"),
+    ocp2Name: "Sets"
   )
   public var endpointCounterSets = OcaMap<OcaID16, OcaCounterSet>()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.13"),
     getMethodID: OcaMethodID("3.40"),
-    setMethodID: OcaMethodID("3.41")
+    setMethodID: OcaMethodID("3.41"),
+    ocp2Name: "ONos"
   )
   public var transportSessionControlAgentONos = [OcaONo]()
 

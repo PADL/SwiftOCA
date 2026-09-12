@@ -28,7 +28,8 @@ open class OcaPowerSupply: OcaAgent {
   /// implementation-dependent model information
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.2"),
-    getMethodID: OcaMethodID("3.2")
+    getMethodID: OcaMethodID("3.2"),
+    ocp2Name: "Info"
   )
   public var modelInfo: OcaString = ""
 
@@ -50,7 +51,8 @@ open class OcaPowerSupply: OcaAgent {
   /// range zero to one; a negative value indicates the data is unavailable
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.5"),
-    getMethodID: OcaMethodID("3.6")
+    getMethodID: OcaMethodID("3.6"),
+    ocp2Name: "Fraction"
   )
   public var loadFractionAvailable: OcaFloat32 = -1
 
@@ -58,7 +60,8 @@ open class OcaPowerSupply: OcaAgent {
   /// range zero to one; a negative value indicates the data is unavailable
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.6"),
-    getMethodID: OcaMethodID("3.7")
+    getMethodID: OcaMethodID("3.7"),
+    ocp2Name: "Fraction"
   )
   public var storageFractionAvailable: OcaFloat32 = -1
 

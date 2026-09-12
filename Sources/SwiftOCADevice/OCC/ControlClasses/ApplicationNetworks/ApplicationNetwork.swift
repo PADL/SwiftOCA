@@ -41,7 +41,8 @@ open class OcaApplicationNetwork: OcaRoot, OcaOwnable, OcaLabelRepresentable {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.3"),
     getMethodID: OcaMethodID("2.4"),
-    setMethodID: OcaMethodID("2.5")
+    setMethodID: OcaMethodID("2.5"),
+    ocp2Name: "Name"
   )
   public var serviceID: OcaApplicationNetworkServiceID = .init()
 
