@@ -22,25 +22,63 @@ import Foundation
 #endif
 
 /// Method parameters as carried on the wire. For OCP.1, `parameterCount` positional
-/// values encoded in `parameterData`; for OCP.2, `parameterData` is the serialised JSON
-/// `Parameters` object and `parameterCount` is unused.
+/// values encoded in `parameterData`; for OCP.2, the parsed JSON `Parameters` object,
+/// which `parameterData` serialises on demand, and `parameterCount` is unused.
 public struct Ocp1Parameters: Codable, Sendable {
   public let parameterCount: OcaUint8
-  public let parameterData: Data
   public let format: OcaParameterFormat
+  private let _ocp1Data: Data
+  #if NonEmbeddedBuild
+  private let _ocp2Object: [String: any Sendable]
+  #endif
+
+  public var parameterData: Data {
+    switch format {
+    case .ocp1:
+      return _ocp1Data
+    case .ocp2:
+      #if NonEmbeddedBuild
+      // the object was parsed or encoded as valid JSON, so serialising cannot fail
+      return _ocp2Object.isEmpty ? Data() : (try? Ocp2JSON.serialize(_ocp2Object)) ?? Data()
+      #else
+      return Data()
+      #endif
+    }
+  }
+
+  /// The OCP.2 `Parameters` object, or `nil` on OCP.1.
+  public var ocp2Parameters: [String: Any]? {
+    #if NonEmbeddedBuild
+    guard format == .ocp2 else { return nil }
+    return _ocp2Object
+    #else
+    return nil
+    #endif
+  }
 
   public init(parameterCount: OcaUint8, parameterData: Data) {
     self.parameterCount = parameterCount
-    self.parameterData = parameterData
+    _ocp1Data = parameterData
     format = .ocp1
+    #if NonEmbeddedBuild
+    _ocp2Object = [:]
+    #endif
   }
 
-  /// OCP.2 parameters: `parameterData` is a serialised JSON object.
-  public init(ocp2ParameterData parameterData: Data) {
+  #if NonEmbeddedBuild
+  /// OCP.2 parameters from the parsed `Parameters` object.
+  public init(ocp2Parameters object: [String: Any]) {
     parameterCount = 0
-    self.parameterData = parameterData
+    _ocp1Data = Data()
+    _ocp2Object = Ocp2JSON.sendableObject(object)
     format = .ocp2
   }
+
+  /// OCP.2 parameters from a serialised JSON object; empty data is no parameters.
+  public init(ocp2ParameterData parameterData: Data) throws {
+    self.init(ocp2Parameters: parameterData.isEmpty ? [:] : try Ocp2JSON.parseObject(parameterData))
+  }
+  #endif
 
   public init() {
     self.init(parameterCount: 0, parameterData: Data())
@@ -50,9 +88,13 @@ public struct Ocp1Parameters: Codable, Sendable {
   public var isEmpty: Bool {
     switch format {
     case .ocp1:
-      parameterCount == 0 && parameterData.isEmpty
+      return parameterCount == 0 && _ocp1Data.isEmpty
     case .ocp2:
-      parameterData.isEmpty
+      #if NonEmbeddedBuild
+      return _ocp2Object.isEmpty
+      #else
+      return true
+      #endif
     }
   }
 
