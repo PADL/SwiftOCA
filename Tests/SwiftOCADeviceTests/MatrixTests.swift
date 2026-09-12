@@ -105,7 +105,8 @@ final class MatrixTests: XCTestCase {
     )
   }
 
-  /// GetSize (3.3) returns six values: the size and each axis's bounds.
+  /// GetSize (3.3) returns six values: the size and each axis's bounds. The grid is
+  /// allocated at construction, so each bound is the axis's current extent.
   func testSizeCarriesEachAxisBounds() async throws {
     let h = try await makeHarness()
     defer { Task { await h.tearDown() } }
@@ -113,10 +114,30 @@ final class MatrixTests: XCTestCase {
     let size = try await h.matrix.$size._getValue(h.matrix, flags: [])
     XCTAssertEqual(size.x, Self.columns)
     XCTAssertEqual(size.y, Self.rows)
-    XCTAssertEqual(size.minX, 0)
+    XCTAssertEqual(size.minX, Self.columns)
     XCTAssertEqual(size.maxX, Self.columns)
-    XCTAssertEqual(size.minY, 0)
+    XCTAssertEqual(size.minY, Self.rows)
     XCTAssertEqual(size.maxY, Self.rows)
+  }
+
+  /// SetSize (3.4) is refused rather than silently ignored, and leaves the size alone.
+  func testResizeIsRefused() async throws {
+    let h = try await makeHarness()
+    defer { Task { await h.tearDown() } }
+
+    do {
+      try await h.matrix.sendCommandRrq(
+        methodID: OcaMethodID("3.4"),
+        parameters: OcaVector2D<OcaMatrixCoordinate>(x: Self.columns + 1, y: Self.rows + 1)
+      )
+      XCTFail("a resize request was accepted")
+    } catch let error as Ocp1Error {
+      XCTAssertEqual(error, .status(.notImplemented))
+    }
+
+    let size = try await h.matrix.$size._getValue(h.matrix, flags: [])
+    XCTAssertEqual(size.x, Self.columns)
+    XCTAssertEqual(size.y, Self.rows)
   }
 
   func testMembers() async throws {

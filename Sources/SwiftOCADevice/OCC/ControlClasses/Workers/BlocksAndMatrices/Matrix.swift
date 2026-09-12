@@ -365,7 +365,9 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   )
   public var portsPerColumn: OcaUint8 = 0
 
-  /// GetSize's six output parameters (a record, so each is counted and named)
+  /// GetSize's six output parameters, spelled as AES70-2 names them; the client
+  /// decodes the same shape as `OcaBoundedVector2D`. A record, so each parameter is
+  /// counted and named. The size is derived from the grid, so no property holds it.
   struct MatrixSize<T: Codable>: Ocp1ParametersReflectable {
     var xSize: T
     var ySize: T
@@ -387,12 +389,14 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         x: OcaMatrixCoordinate(members.nX),
         y: OcaMatrixCoordinate(members.nY)
       )
+      // the grid is allocated at construction and SetSize (3.4) is not implemented,
+      // so each axis's bounds are its current extent
       let matrixSize = MatrixSize<OcaMatrixCoordinate>(
         xSize: size.x,
         ySize: size.y,
-        minXSize: 0,
+        minXSize: size.x,
         maxXSize: size.x,
-        minYSize: 0,
+        minYSize: size.y,
         maxYSize: size.y
       )
       return try controller.encodeResponse(matrixSize)
