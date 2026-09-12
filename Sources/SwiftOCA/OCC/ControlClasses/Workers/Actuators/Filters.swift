@@ -282,10 +282,29 @@ open class OcaFilterArbitraryCurve: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.13") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 
+  /// SetTransferFunction takes the curve's three lists as separate parameters,
+  /// where GetTransferFunction returns them as one structure.
+  public struct SetTransferFunctionParameters: Ocp1ParametersReflectable {
+    public let frequency: OcaList<OcaFrequency>
+    public let amplitude: OcaList<OcaFloat32>
+    public let phase: OcaList<OcaFloat32>
+
+    public init(_ transferFunction: OcaTransferFunction) {
+      frequency = transferFunction.frequency
+      amplitude = transferFunction.amplitude
+      phase = transferFunction.phase
+    }
+
+    public var transferFunction: OcaTransferFunction {
+      OcaTransferFunction(frequency: frequency, amplitude: amplitude, phase: phase)
+    }
+  }
+
   @OcaProperty(
     propertyID: OcaPropertyID("4.1"),
     getMethodID: OcaMethodID("4.1"),
-    setMethodID: OcaMethodID("4.2")
+    setMethodID: OcaMethodID("4.2"),
+    setValueTransformer: { OcaFilterArbitraryCurve.SetTransferFunctionParameters($1) }
   )
   public var transferFunction: OcaProperty<OcaTransferFunction>.PropertyValue
 
