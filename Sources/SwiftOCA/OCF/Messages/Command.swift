@@ -73,6 +73,7 @@ public struct Ocp1Parameters: Codable, Sendable {
   /// The OCP.2 `Parameters` object as the `Sendable` containers it is stored in, or `nil`
   /// on OCP.1; `ocp2Parameters` upcast, so that a received object can be carried across a
   /// task boundary without being walked again.
+  @_spi(SwiftOCAPrivate)
   public var ocp2SendableParameters: [String: any Sendable]? {
     #if NonEmbeddedBuild
     guard case let .ocp2(object) = storage else { return nil }
