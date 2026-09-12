@@ -35,6 +35,12 @@ typealias BenchDatagramDeviceEndpoint = Ocp1IORingDatagramDeviceEndpoint
 typealias BenchDatagramDeviceEndpoint = Ocp1FlyingSocksDatagramDeviceEndpoint
 #endif
 
+/// OCP.1 (default) or OCP.2, selected with BENCH_PROTOCOL=ocp2. Both ends must agree,
+/// so it is threaded into every endpoint and every connection below.
+let benchProtocol: OcaControlProtocol =
+  ProcessInfo.processInfo.environment["BENCH_PROTOCOL"] == "ocp2" ? .ocp2 : .ocp1
+let benchProtocolLabel = benchProtocol == .ocp2 ? "ocp2" : "ocp1"
+
 nonisolated(unsafe) var sink: UInt64 = 0
 
 // MARK: - measurement
@@ -47,7 +53,7 @@ private func nanoseconds(_ d: Duration) -> Double {
 private func report(_ name: String, _ nsPerOp: [Double]) {
   let s = nsPerOp.sorted()
   let figures = [s.first ?? 0, s[s.count / 2], s.last ?? 0].map { String(format: "%.1f", $0) }
-  print((["RESULT", name] + figures + ["\(s.count)"]).joined(separator: "\t"))
+  print((["RESULT", "\(benchProtocolLabel).\(name)"] + figures + ["\(s.count)"]).joined(separator: "\t"))
   // flush every stream: on Glibc `stdout` is a global var, which Swift 6 rejects as a
   // data race to name
   fflush(nil)
@@ -229,14 +235,26 @@ private let getDeviceName = Ocp1Command(
 
 private let benchBlockONo: OcaONo = 0x0001_0001
 
-/// SetLabel on the bench block: a large command, an empty response.
+/// SetLabel on the bench block: a large command, an empty response. The parameters must be
+/// encoded in the protocol the connection speaks: OCP.1 positional bytes cannot be framed as
+/// OCP.2, which rejects them rather than passing a blob through. OcaWorker.label declares no
+/// ocp2SetName, so its wire name is derived from the property: `Label`.
 private func setLabel(_ text: String) throws -> Ocp1Command {
-  try Ocp1Command(
+  let parameters: OcaParameters
+  switch benchProtocol {
+  case .ocp1:
+    parameters = try OcaParameters(parameterCount: 1, parameterData: Ocp1Encoder().encode(text))
+  case .ocp2:
+    parameters = try OcaParameters(
+      ocp2Parameters: Ocp2Encoder().encodeParameters(text, parameterNames: ["Label"])
+    )
+  }
+  return Ocp1Command(
     commandSize: 0,
     handle: 0,
     targetONo: benchBlockONo,
     methodID: OcaMethodID("2.9"),
-    parameters: OcaParameters(parameterCount: 1, parameterData: Ocp1Encoder().encode(text))
+    parameters: parameters
   )
 }
 
@@ -309,10 +327,13 @@ func withConnection(
 ) async throws {
   switch transport {
   case "local":
-    let endpoint = try await OcaLocalDeviceEndpoint(device: device)
+    let endpoint = try await OcaLocalDeviceEndpoint(device: device, controlProtocol: benchProtocol)
     let endpointTask = Task { do { try await endpoint.run() } catch {} }
     defer { endpointTask.cancel() }
-    let connection = await OcaLocalConnection(endpoint)
+    let connection = await OcaLocalConnection(
+      endpoint,
+      options: Ocp1ConnectionOptions(controlProtocol: benchProtocol)
+    )
     try await connection.connect()
     try await body(connection)
     try await connection.disconnect()
@@ -321,14 +342,15 @@ func withConnection(
     let endpoint = try await Ocp1DeviceEndpoint(
       address: localhostAddress(port: port),
       timeout: .seconds(5),
-      device: device
+      device: device,
+      controlProtocol: benchProtocol
     )
     let endpointTask = Task { do { try await endpoint.run() } catch {} }
     defer { endpointTask.cancel() }
     try await Task.sleep(for: .milliseconds(500))
     let connection = try await Ocp1TCPConnection(
       deviceAddress: localhostAddress(port: port),
-      options: Ocp1ConnectionOptions()
+      options: Ocp1ConnectionOptions(controlProtocol: benchProtocol)
     )
     try await connection.connect()
     try await body(connection)
@@ -338,14 +360,15 @@ func withConnection(
     let endpoint = try await BenchDatagramDeviceEndpoint(
       address: localhostAddress(port: port),
       timeout: .seconds(5),
-      device: device
+      device: device,
+      controlProtocol: benchProtocol
     )
     let endpointTask = Task { do { try await endpoint.run() } catch {} }
     defer { endpointTask.cancel() }
     try await Task.sleep(for: .milliseconds(500))
     let connection = try await Ocp1UDPConnection(
       deviceAddress: localhostAddress(port: port),
-      options: Ocp1ConnectionOptions()
+      options: Ocp1ConnectionOptions(controlProtocol: benchProtocol)
     )
     try await connection.connect()
     try await body(connection)
@@ -434,7 +457,7 @@ private func profileLoop(
     inSlice += 1
     total += 1
   }
-  print("PROFILE\t\(total) round trips in \(seconds)s\t\(transport)")
+  print("PROFILE\t\(total) round trips in \(seconds)s\t\(transport)\t\(benchProtocolLabel)")
 }
 
 /// Round-trip time from the moment of connection, in consecutive blocks of
@@ -488,10 +511,15 @@ func runNotificationBenchmark(
   _ deviceBlock: SwiftOCADevice.OcaBlock<SwiftOCADevice.OcaRoot>,
   sets: Int
 ) async throws {
-  let endpoint = try await OcaLocalDeviceEndpoint(device: device)
+  // this benchmark makes its own pair rather than going through withConnection, so it must
+  // select the protocol too, else it silently measures OCP.1 whatever BENCH_PROTOCOL says
+  let endpoint = try await OcaLocalDeviceEndpoint(device: device, controlProtocol: benchProtocol)
   let endpointTask = Task { do { try await endpoint.run() } catch {} }
   defer { endpointTask.cancel() }
-  let connection = await OcaLocalConnection(endpoint)
+  let connection = await OcaLocalConnection(
+    endpoint,
+    options: Ocp1ConnectionOptions(controlProtocol: benchProtocol)
+  )
   try await connection.connect()
 
   let clientBlock: SwiftOCA.OcaBlock = try await connection.resolve(
