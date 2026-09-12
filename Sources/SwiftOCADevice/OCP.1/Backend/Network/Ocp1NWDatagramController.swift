@@ -77,7 +77,7 @@ package actor Ocp1NWDatagramController: Ocp1ControllerInternal,
     flags = endpoint.controllerFlags
     connectionPrefix = endpoint.controllerConnectionPrefix
     identifier = Self.makeIdentifier(from: connection)
-    _messages = Self.makeMessagesStream(on: connection)
+    _messages = Self.makeMessagesStream(on: connection, controlProtocol: controlProtocol)
   }
 
   package func sendOcp1EncodedData(_ data: Data) async throws {
@@ -142,13 +142,14 @@ private extension Ocp1NWDatagramController {
   }
 
   /// One whole datagram per element; one datagram may carry multiple
-  /// concatenated OCP.1 PDUs.
+  /// concatenated OCP.1 PDUs, or one newline-terminated OCP.2 PDU.
   static func makeMessagesStream(
-    on connection: NWConnection
+    on connection: NWConnection,
+    controlProtocol: OcaControlProtocol
   ) -> AsyncThrowingStream<Ocp1MessageList, Error> {
     AsyncThrowingStream { () async throws -> Ocp1MessageList? in
       let datagram = try await connection.receiveOneDatagram()
-      return try Ocp1MessageList(messagePduData: datagram)
+      return try Ocp1MessageList(messagePduData: datagram, controlProtocol: controlProtocol)
     }
   }
 }
