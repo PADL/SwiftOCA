@@ -883,8 +883,13 @@ final class Ocp2LargeHierarchyTests: XCTestCase {
   private static let gainsPerBlock = 999
   private static let depth = 1000
 
-  // the walk under test is the explicit one, not the tree refresh on connect
-  private static let options = Ocp1ConnectionOptions(flags: [], controlProtocol: .ocp2)
+  // the walk under test is the explicit one, not the tree refresh on connect; a
+  // ten-thousand-member response takes seconds on a slow or sanitized build
+  private static let options = Ocp1ConnectionOptions(
+    flags: [],
+    responseTimeout: .seconds(60),
+    controlProtocol: .ocp2
+  )
 
   private func assertRecursiveMembers(
     of fixture: TCPFixture,
