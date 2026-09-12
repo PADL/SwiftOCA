@@ -303,4 +303,22 @@ open class OcaFilterArbitraryCurve: OcaActuator {
     getMethodID: OcaMethodID("4.6")
   )
   public var tfMaxLength: OcaUint16 = 0
+
+  /// SetTransferFunction carries the curve's three lists as separate parameters,
+  /// which the property wrapper's own setter would reject.
+  override open func handleCommand(
+    _ command: Ocp1Command,
+    from controller: any OcaController
+  ) async throws -> Ocp1Response {
+    switch command.methodID {
+    case OcaMethodID("4.2"):
+      let parameters: SwiftOCA.OcaFilterArbitraryCurve
+        .SetTransferFunctionParameters = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      transferFunction = parameters.transferFunction
+      return Ocp1Response()
+    default:
+      return try await super.handleCommand(command, from: controller)
+    }
+  }
 }
