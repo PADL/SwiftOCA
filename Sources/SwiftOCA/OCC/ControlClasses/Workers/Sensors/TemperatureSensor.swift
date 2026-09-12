@@ -17,9 +17,9 @@
 open class OcaTemperatureSensor: OcaSensor, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.5") }
 
-  @OcaProperty(
+  @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.1"),
     getMethodID: OcaMethodID("4.1")
   )
-  public var reading: OcaProperty<OcaTemperature>.PropertyValue
+  public var reading: OcaBoundedProperty<OcaTemperature>.PropertyValue
 }
