@@ -19,9 +19,10 @@ import SwiftOCA
 open class OcaTemperatureSensor: OcaSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.5") }
 
-  @OcaDeviceProperty(
+  /// bounded below by absolute zero; a subclass narrows the range it can report
+  @OcaBoundedDeviceProperty(
     propertyID: OcaPropertyID("4.1"),
     getMethodID: OcaMethodID("4.1")
   )
-  public var reading: OcaTemperature = 0.0
+  public var reading = OcaBoundedPropertyValue<OcaTemperature>(value: 0.0, in: -273.15...1000.0)
 }
