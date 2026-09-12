@@ -272,7 +272,7 @@ public class OcaSubscriptionManager: OcaManager {
     _ command: Ocp1Command,
     from controller: any OcaController
   ) async throws -> Ocp1Response {
-    if command.parameters.format == .ocp2, Self.ev1MethodIDs.contains(command.methodID) {
+    if controller.controlProtocol != .ocp1, Self.ev1MethodIDs.contains(command.methodID) {
       throw Ocp1Error.status(.notImplemented)
     }
 

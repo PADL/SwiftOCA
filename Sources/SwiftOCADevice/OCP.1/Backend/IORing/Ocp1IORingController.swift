@@ -121,11 +121,16 @@ package actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStr
     )
 
     peerAddress = try AnySocketAddress(socket.peerAddress)
-    let isJson = endpoint.controlProtocol != .ocp1
-    if peerAddress.family == AF_LOCAL {
-      connectionPrefix = isJson ? OcaJsonLocalConnectionPrefix : OcaLocalConnectionPrefix
+    connectionPrefix = if peerAddress.family == AF_LOCAL {
+      endpoint.controlProtocol.connectionPrefix(
+        ocp1: OcaLocalConnectionPrefix,
+        ocp2: OcaJsonLocalConnectionPrefix
+      )
     } else {
-      connectionPrefix = isJson ? OcaJsonTcpConnectionPrefix : OcaTcpConnectionPrefix
+      endpoint.controlProtocol.connectionPrefix(
+        ocp1: OcaTcpConnectionPrefix,
+        ocp2: OcaJsonTcpConnectionPrefix
+      )
     }
 
     let controlProtocol = endpoint.controlProtocol
@@ -240,7 +245,7 @@ package actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate,
   }
 
   package nonisolated var connectionPrefix: String {
-    controlProtocol == .ocp1 ? OcaUdpConnectionPrefix : OcaJsonUdpConnectionPrefix
+    controlProtocol.connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
   }
 
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
