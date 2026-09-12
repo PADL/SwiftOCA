@@ -253,7 +253,7 @@ public struct OcaBoundedVectorProperty<
 
   public let xPropertyID: OcaPropertyID
   public let yPropertyID: OcaPropertyID
-  public let getMethodID: OcaMethodID
+  public let getMethodID: OcaMethodID?
   public let setMethodID: OcaMethodID?
 
   public init(from decoder: Decoder) throws {
@@ -308,6 +308,16 @@ public struct OcaBoundedVectorProperty<
     )
   }
 
+  /// AES70-2 names the size parameters, and the device answers with those names; the
+  /// record's own fields would derive `X` and `MinX`, which no conforming peer sends.
+  public func _ocp2ResponseNames(_ object: OcaRoot) -> [String]? {
+    ["xSize", "ySize", "minXSize", "maxXSize", "minYSize", "maxYSize"]
+  }
+
+  public func _ocp2GetName(_ object: OcaRoot) -> String? {
+    _ocp2ResponseNames(object)?.first
+  }
+
   public static subscript<T: OcaRoot>(
     _enclosingInstance object: T,
     wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>,
@@ -322,12 +332,16 @@ public struct OcaBoundedVectorProperty<
     }
   }
 
-  func onEvent(_ object: OcaRoot, event: OcaEvent, eventData data: Data) throws {
+  func onEvent(
+    _ object: OcaRoot,
+    event: OcaEvent,
+    eventData encodedEventData: OcaEncodedEventData
+  ) throws {
     precondition(event.eventID == OcaPropertyChangedEventID)
 
-    let eventData = try Ocp1Decoder().decode(
+    let eventData = try OcaEventDataCoding.decode(
       OcaPropertyChangedEventData<Value>.self,
-      from: data
+      from: encodedEventData
     )
     precondition(propertyIDs.contains(eventData.propertyID))
 
@@ -368,7 +382,8 @@ public struct OcaBoundedVectorProperty<
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async throws -> [String: any Sendable] {
     let value = try await _getValue(object, flags: flags)
-    return try [keyPath.jsonKey: [value.x, value.y]]
+    let name = object._jsonPropertyName(for: xPropertyID)
+    return [name: Ocp2JSON.sendable(try Ocp2Encoder().encodeValue(value))]
   }
   #endif
 
