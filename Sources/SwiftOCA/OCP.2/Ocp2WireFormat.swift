@@ -53,17 +53,20 @@ package final class Ocp2PduReader: OcaPduReader {
       return pdu
     }
 
+    // the cap applies to the PDU itself, so a line may run to CR LF beyond it
+    let maximumLineSize = maximumPduSize + 2
     while true {
       if let index = buffer[scanned...].firstIndex(of: Self.newline) {
+        var end = index
+        if end > 0, buffer[end - 1] == Self.carriageReturn {
+          end -= 1
+        }
         // a transport may hand over more than was asked for (a whole WebSocket
         // frame), so the cap applies to the PDU itself, not to the read size
-        guard index <= maximumPduSize else { throw Ocp1Error.invalidPduSize }
-        var line = Array(buffer[..<index])
+        guard end <= maximumPduSize else { throw Ocp1Error.invalidPduSize }
+        let line = Array(buffer[..<end])
         buffer.removeSubrange(...index)
         scanned = 0
-        if line.last == Self.carriageReturn {
-          line.removeLast()
-        }
         // an empty line between PDUs is tolerated
         if line.isEmpty {
           continue
@@ -71,10 +74,10 @@ package final class Ocp2PduReader: OcaPduReader {
         return Data(line)
       }
       scanned = buffer.count
-      guard buffer.count < maximumPduSize else {
+      guard buffer.count < maximumLineSize else {
         throw Ocp1Error.invalidPduSize
       }
-      let chunk = try await read(min(Self.readChunk, maximumPduSize - buffer.count), false)
+      let chunk = try await read(min(Self.readChunk, maximumLineSize - buffer.count), false)
       guard !chunk.isEmpty else { throw Ocp1Error.notConnected }
       buffer += chunk
     }

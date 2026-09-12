@@ -614,6 +614,21 @@ final class Ocp2MessageTests: XCTestCase {
     }
   }
 
+  func testReaderAcceptsAPduOfExactlyMaximumSize() async throws {
+    // the cap excludes the terminator, however it is delivered
+    let exact = String(repeating: "x", count: 1024)
+    for chunks in [[exact + "\n"], [exact + "\r\n"], [exact, "\n"], [exact, "\r", "\n"]] {
+      let pdus = try await readAll(chunks, maximumPduSize: 1024)
+      XCTAssertEqual(pdus, [exact], "\(chunks.map(\.count))")
+    }
+    do {
+      _ = try await readAll([exact + "x\n"], maximumPduSize: 1024)
+      XCTFail("expected an error")
+    } catch {
+      XCTAssertEqual(error as? Ocp1Error, .invalidPduSize)
+    }
+  }
+
   func testReaderEnforcesMaximumPduSizeWithinOneRead() async {
     // a transport may deliver a whole frame at once: the cap still applies
     let big = String(repeating: "x", count: 2048) + "\n"
