@@ -378,8 +378,7 @@ extension OcaGroup {
           eventID: OcaGroupExceptionEventID
         ),
         notificationType: .event,
-        data: try OcaEventDataCoding.encode(exceptions, format: format),
-        dataFormat: format
+        eventData: try OcaEventDataCoding.encodeEventData(exceptions, format: format)
       )
       try await controller.sendMessage(notification, type: .ocaNtf2)
     }

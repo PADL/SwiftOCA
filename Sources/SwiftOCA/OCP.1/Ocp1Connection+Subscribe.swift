@@ -52,11 +52,27 @@ public extension Ocp1Connection {
     public let label: String?
     public let event: OcaEvent
     public let callback: OcaSubscriptionCallback
+    /// Delivers event data as it arrived, so OCP.2 data is serialised only for a
+    /// `callback` that wants bytes.
+    let deliver: OcaEventDataHandler
 
     init(label: String?, event: OcaEvent, callback: @escaping OcaSubscriptionCallback) {
       self.label = label
       self.event = event
       self.callback = callback
+      deliver = { event, eventData in try await callback(event, eventData.data) }
+    }
+
+    init(
+      label: String?,
+      event: OcaEvent,
+      format: OcaParameterFormat,
+      handler: @escaping OcaEventDataHandler
+    ) {
+      self.label = label
+      self.event = event
+      callback = { event, data in try await handler(event, OcaEncodedEventData(data, format: format)) }
+      deliver = handler
     }
 
     public var description: String {
@@ -120,7 +136,29 @@ public extension Ocp1Connection {
     event: OcaEvent,
     callback: @escaping OcaSubscriptionCallback
   ) async throws -> SubscriptionCancellable {
-    let cancellable = SubscriptionCancellable(label: label, event: event, callback: callback)
+    try await _addSubscription(SubscriptionCancellable(label: label, event: event, callback: callback))
+  }
+
+  /// A subscription handed event data as it arrived: OCP.1 bytes, or OCP.2 data
+  /// already parsed. Named apart from `addSubscription` so a trailing closure that
+  /// ignores its arguments stays unambiguous for public callers.
+  package func addEventDataSubscription(
+    label: String? = nil,
+    event: OcaEvent,
+    handler: @escaping OcaEventDataHandler
+  ) async throws -> SubscriptionCancellable {
+    try await _addSubscription(SubscriptionCancellable(
+      label: label,
+      event: event,
+      format: controlProtocol.parameterFormat,
+      handler: handler
+    ))
+  }
+
+  private func _addSubscription(_ cancellable: SubscriptionCancellable) async throws
+    -> SubscriptionCancellable
+  {
+    let event = cancellable.event
     if let eventSubscriptions = subscriptions[event] {
       precondition(!eventSubscriptions.subscriptions.isEmpty)
       if eventSubscriptions.subscriptions.contains(cancellable) {
@@ -203,7 +241,7 @@ public extension Ocp1Connection {
     await addSubscriptions(events: Array(subscribedEvents))
   }
 
-  internal func notifySubscribers(of event: OcaEvent, with parameters: Data) {
+  internal func notifySubscribers(of event: OcaEvent, with eventData: OcaEncodedEventData) {
     guard let eventSubscriptions = subscriptions[event],
           !eventSubscriptions.subscriptions.isEmpty
     else {
@@ -216,7 +254,7 @@ public extension Ocp1Connection {
       await withTaskGroup(of: Void.self, returning: Void.self) { taskGroup in
         for subscription in subscriptions {
           taskGroup.addTask {
-            try? await subscription.callback(event, parameters)
+            try? await subscription.deliver(event, eventData)
           }
         }
       }

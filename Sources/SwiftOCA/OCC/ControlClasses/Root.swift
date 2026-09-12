@@ -262,18 +262,16 @@ public extension OcaRoot {
   }
 
   @OcaConnection
-  private func onPropertyEvent(event: OcaEvent, eventData data: Data) {
-    // event data arrives in the connection's format
-    let format = connectionDelegate?.controlProtocol.parameterFormat ?? .ocp1
+  private func onPropertyEvent(event: OcaEvent, eventData: OcaEncodedEventData) {
     // the property with this ID from the class's key paths, worked out once, rather than
     // reading every property of the object in turn, computed ones included, and casting
     // each to find it
-    guard let propertyID = try? OcaEventDataCoding.propertyID(from: data, format: format),
+    guard let propertyID = try? OcaEventDataCoding.propertyID(from: eventData),
       let keyPath = OcaPropertyKeyPathCache.shared.lookupProperty(byID: propertyID, for: self),
       let value = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable)
     else { return }
 
-    try? value.onEvent(self, event: event, eventData: data, format: format)
+    try? value.onEvent(self, event: event, eventData: eventData)
   }
 
   @OcaConnection
@@ -289,11 +287,11 @@ public extension OcaRoot {
       // per-object label: aliased proxies for the same ONo (e.g. a resolved
       // subclass alongside a connection's built-in manager) must each register
       // their own callback, or the loser's property subjects never see events
-      subscriptionCancellable = try await connectionDelegate.addSubscription(
+      subscriptionCancellable = try await connectionDelegate.addEventDataSubscription(
         label: "com.padl.SwiftOCA.OcaRoot.\(ObjectIdentifier(self))",
         event: event
-      ) { [weak self] event, data in
-        await self?.onPropertyEvent(event: event, eventData: data)
+      ) { [weak self] event, eventData in
+        await self?.onPropertyEvent(event: event, eventData: eventData)
       }
     } catch Ocp1Error.alreadySubscribedToEvent(_) {
     } catch Ocp1Error.status(.invalidRequest) {

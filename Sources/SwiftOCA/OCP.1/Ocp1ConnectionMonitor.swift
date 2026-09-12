@@ -321,7 +321,7 @@ extension Ocp1Connection.Monitor {
       if notification.parameters.parameterCount == 2 {
         await connection.notifySubscribers(
           of: notification.parameters.eventData.event,
-          with: notification.parameters.eventData.eventParameters
+          with: .ocp1(notification.parameters.eventData.eventParameters)
         )
       }
     case let response as Ocp1Response:
@@ -332,7 +332,7 @@ extension Ocp1Connection.Monitor {
       break
     case let notification as Ocp1Notification2:
       try notification.throwIfException()
-      await connection.notifySubscribers(of: notification.event, with: notification.data)
+      await connection.notifySubscribers(of: notification.event, with: notification.eventData)
     default:
       throw Ocp1Error.unknownPduType
     }

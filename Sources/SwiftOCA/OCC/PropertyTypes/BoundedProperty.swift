@@ -169,15 +169,13 @@ public struct OcaBoundedProperty<
   func onEvent(
     _ object: OcaRoot,
     event: OcaEvent,
-    eventData data: Data,
-    format: OcaParameterFormat
+    eventData encodedEventData: OcaEncodedEventData
   ) throws {
     precondition(event.eventID == OcaPropertyChangedEventID)
 
     let eventData = try OcaEventDataCoding.decode(
       OcaPropertyChangedEventData<Value>.self,
-      from: data,
-      format: format
+      from: encodedEventData
     )
     precondition(propertyIDs.contains(eventData.propertyID))
 

@@ -20,6 +20,63 @@ import FoundationEssentials
 import Foundation
 #endif
 
+/// Event data as a notification carries it: OCP.1 bytes, or the OCP.2 JSON value as
+/// parsed from or encoded for the wire, `nil` when there is none. The value is passed
+/// through unserialised, so only a recipient wanting bytes pays for them.
+package enum OcaEncodedEventData: Sendable {
+  case ocp1(Data)
+  #if NonEmbeddedBuild
+  case ocp2((any Sendable)?)
+  #endif
+
+  /// Wire bytes in `format`; OCP.2 data is parsed, which can fail.
+  package init(_ data: Data, format: OcaParameterFormat) throws {
+    switch format {
+    case .ocp1:
+      self = .ocp1(data)
+    case .ocp2:
+      #if NonEmbeddedBuild
+      self = .ocp2(data.isEmpty ? nil : Ocp2JSON.sendable(try Ocp2JSON.parse(data)))
+      #else
+      throw Ocp1Error.unsupportedControlProtocol
+      #endif
+    }
+  }
+
+  package var format: OcaParameterFormat {
+    switch self {
+    case .ocp1: .ocp1
+    #if NonEmbeddedBuild
+    case .ocp2: .ocp2
+    #endif
+    }
+  }
+
+  package var isEmpty: Bool {
+    switch self {
+    case let .ocp1(data): data.isEmpty
+    #if NonEmbeddedBuild
+    case let .ocp2(value): value == nil
+    #endif
+    }
+  }
+
+  /// The wire bytes, serialised on demand for OCP.2.
+  package var data: Data {
+    get throws {
+      switch self {
+      case let .ocp1(data):
+        return data
+      #if NonEmbeddedBuild
+      case let .ocp2(value):
+        guard let value else { return Data() }
+        return try Ocp2JSON.serialize(value)
+      #endif
+      }
+    }
+  }
+}
+
 /// Event data as delivered by a notification: OCP.1 bytes or an OCP.2 JSON object.
 /// A subscription callback receives the data in the connection's `parameterFormat`.
 public enum OcaEventDataCoding {
@@ -29,45 +86,60 @@ public enum OcaEventDataCoding {
     from data: Data,
     format: OcaParameterFormat
   ) throws -> T {
-    switch format {
-    case .ocp1:
+    try decode(type, from: OcaEncodedEventData(data, format: format))
+  }
+
+  package static func decode<T: Decodable>(
+    _ type: T.Type,
+    from eventData: OcaEncodedEventData
+  ) throws -> T {
+    switch eventData {
+    case let .ocp1(data):
       return try Ocp1Decoder().decode(type, from: data)
-    case .ocp2:
-      #if NonEmbeddedBuild
-      return try Ocp2Decoder().decodeValue(type, from: Ocp2JSON.parse(data))
-      #else
-      throw Ocp1Error.unsupportedControlProtocol
-      #endif
+    #if NonEmbeddedBuild
+    case let .ocp2(value):
+      guard let value else { throw Ocp1Error.status(.badFormat) }
+      return try Ocp2Decoder().decodeValue(type, from: value)
+    #endif
     }
   }
 
   /// The property a property-changed event refers to, without decoding its value.
   public static func propertyID(from data: Data, format: OcaParameterFormat) throws -> OcaPropertyID {
-    switch format {
-    case .ocp1:
+    try propertyID(from: OcaEncodedEventData(data, format: format))
+  }
+
+  package static func propertyID(from eventData: OcaEncodedEventData) throws -> OcaPropertyID {
+    switch eventData {
+    case let .ocp1(data):
       return try OcaPropertyID(bytes: data)
-    case .ocp2:
-      #if NonEmbeddedBuild
-      guard let object = try Ocp2JSON.parse(data) as? [String: Any],
+    #if NonEmbeddedBuild
+    case let .ocp2(value):
+      guard let object = value as? [String: Any],
             let propertyID = Ocp2Decoder.member(named: "PropertyID", in: object)
       else {
         throw Ocp1Error.status(.badFormat)
       }
       return try Ocp2Decoder().decodeValue(OcaPropertyID.self, from: propertyID)
-      #else
-      throw Ocp1Error.unsupportedControlProtocol
-      #endif
+    #endif
     }
   }
 
   /// Encodes event-specific data in `format`.
   public static func encode(_ value: some Encodable, format: OcaParameterFormat) throws -> Data {
+    try encodeEventData(value, format: format).data
+  }
+
+  package static func encodeEventData(
+    _ value: some Encodable,
+    format: OcaParameterFormat
+  ) throws -> OcaEncodedEventData {
     switch format {
     case .ocp1:
-      return try Ocp1Encoder().encode(value)
+      return .ocp1(try Ocp1Encoder().encode(value))
     case .ocp2:
       #if NonEmbeddedBuild
-      return try Ocp2JSON.serialize(Ocp2Encoder().encodeValue(value))
+      return .ocp2(Ocp2JSON.sendable(try Ocp2Encoder().encodeValue(value)))
       #else
       throw Ocp1Error.unsupportedControlProtocol
       #endif
