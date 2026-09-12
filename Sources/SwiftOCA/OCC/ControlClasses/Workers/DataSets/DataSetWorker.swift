@@ -20,7 +20,8 @@ open class OcaDatasetWorker: OcaWorker, @unchecked Sendable {
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.1")
+    getMethodID: OcaMethodID("3.1"),
+    ocp2Name: "ONo"
   )
   public var datasetONo: OcaProperty<OcaONo>.PropertyValue
 }

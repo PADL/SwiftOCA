@@ -23,7 +23,8 @@ open class OcaStateSensor: OcaSensor, @unchecked Sendable {
   /// value of this property inclusive
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.1"),
-    getMethodID: OcaMethodID("4.1")
+    getMethodID: OcaMethodID("4.1"),
+    ocp2Name: "State"
   )
   public var reading: OcaBoundedProperty<OcaUint16>.PropertyValue
 
@@ -32,7 +33,8 @@ open class OcaStateSensor: OcaSensor, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.2"),
-    setMethodID: OcaMethodID("4.3")
+    setMethodID: OcaMethodID("4.3"),
+    ocp2Name: "Names"
   )
   public var stateNames: OcaProperty<OcaList<OcaString>>.PropertyValue
 }

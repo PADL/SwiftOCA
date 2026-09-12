@@ -157,7 +157,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.3")
+    getMethodID: OcaMethodID("3.3"),
+    ocp2Name: "OcaPorts"
   )
   public var ports: OcaListProperty<OcaPort>.PropertyValue
 
@@ -178,7 +179,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.6"),
-    setMethodID: OcaMethodID("3.7")
+    setMethodID: OcaMethodID("3.7"),
+    ocp2Name: "Map"
   )
   public var portClockMap: OcaMapProperty<OcaPortID, OcaPortClockMapEntry>.PropertyValue
 
@@ -235,13 +237,15 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.5"),
-    getMethodID: OcaMethodID("3.12")
+    getMethodID: OcaMethodID("3.12"),
+    ocp2Name: "Value"
   )
   public var maxPortsPerChannel: OcaProperty<OcaUint16>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.6"),
-    getMethodID: OcaMethodID("3.13")
+    getMethodID: OcaMethodID("3.13"),
+    ocp2Name: "Value"
   )
   public var maxChannelsPerEndpoint: OcaProperty<OcaUint16>.PropertyValue
 
@@ -250,7 +254,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   @OcaProperty(
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.15"),
-    setMethodID: OcaMethodID("3.16")
+    setMethodID: OcaMethodID("3.16"),
+    ocp2Name: "Capabilities"
   )
   public var mediaStreamModeCapabilities: OcaListProperty<OcaMediaStreamModeCapability>
     .PropertyValue
@@ -264,7 +269,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   @OcaProperty(
     propertyID: OcaPropertyID("3.8"),
     getMethodID: OcaMethodID("3.18"),
-    setMethodID: OcaMethodID("3.19")
+    setMethodID: OcaMethodID("3.19"),
+    ocp2Name: "Parameters"
   )
   public var transportTimingParameters: OcaProperty<OcaMediaTransportTimingParameters>
     .PropertyValue
@@ -272,7 +278,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   @OcaProperty(
     propertyID: OcaPropertyID("3.9"),
     getMethodID: OcaMethodID("3.20"),
-    setMethodID: OcaMethodID("3.14")
+    setMethodID: OcaMethodID("3.14"),
+    ocp2Name: "Limits"
   )
   public var alignmentLevelLimits: OcaProperty<OcaInterval<OcaDBFS>>.PropertyValue
 
@@ -290,7 +297,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.11"),
-    getMethodID: OcaMethodID("3.23")
+    getMethodID: OcaMethodID("3.23"),
+    ocp2Name: "Statuses"
   )
   public var endpointStatuses: OcaMapProperty<
     OcaMediaStreamEndpointID,
@@ -380,7 +388,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.12"),
-    getMethodID: OcaMethodID("3.34")
+    getMethodID: OcaMethodID("3.34"),
+    ocp2Name: "Sets"
   )
   public var endpointCounterSets: OcaMapProperty<OcaID16, OcaCounterSet>.PropertyValue
 
@@ -444,7 +453,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   @OcaProperty(
     propertyID: OcaPropertyID("3.13"),
     getMethodID: OcaMethodID("3.40"),
-    setMethodID: OcaMethodID("3.41")
+    setMethodID: OcaMethodID("3.41"),
+    ocp2Name: "ONos"
   )
   public var transportSessionControlAgentONos: OcaListProperty<OcaONo>.PropertyValue
 }

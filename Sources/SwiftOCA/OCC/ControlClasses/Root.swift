@@ -87,7 +87,8 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
 
   @OcaProperty(
     propertyID: OcaPropertyID("1.6"),
-    getMethodID: OcaMethodID("1.7")
+    getMethodID: OcaMethodID("1.7"),
+    ocp2Name: "State"
   )
   public var lockState: OcaProperty<OcaLockState>.PropertyValue
 

@@ -86,14 +86,16 @@ open class OcaTimeSource: OcaAgent, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.2"),
-    setMethodID: OcaMethodID("3.3")
+    setMethodID: OcaMethodID("3.3"),
+    ocp2Name: "Mechanism"
   )
   public var timeDeliveryMechanism: OcaProperty<OcaTimeDeliveryMechanism>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.3"),
     getMethodID: OcaMethodID("3.4"),
-    setMethodID: OcaMethodID("3.5")
+    setMethodID: OcaMethodID("3.5"),
+    ocp2Name: "Parameters"
   )
   public var referenceSDPDescription: OcaProperty<OcaSDPString>.PropertyValue
 
@@ -107,7 +109,8 @@ open class OcaTimeSource: OcaAgent, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.5"),
     getMethodID: OcaMethodID("3.8"),
-    setMethodID: OcaMethodID("3.9")
+    setMethodID: OcaMethodID("3.9"),
+    ocp2Name: "ID"
   )
   public var referenceID: OcaProperty<OcaString>.PropertyValue
 
@@ -120,7 +123,8 @@ open class OcaTimeSource: OcaAgent, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.12"),
-    setMethodID: OcaMethodID("3.13")
+    setMethodID: OcaMethodID("3.13"),
+    ocp2Name: "Record"
   )
   public var timeDeliveryParameters: OcaProperty<OcaParameterRecord>.PropertyValue
 

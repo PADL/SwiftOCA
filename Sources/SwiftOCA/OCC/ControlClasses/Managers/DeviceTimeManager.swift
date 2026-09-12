@@ -34,14 +34,16 @@ open class OcaDeviceTimeManager: OcaManager, @unchecked Sendable {
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.3")
+    getMethodID: OcaMethodID("3.3"),
+    ocp2Name: "TimeSourceONos"
   )
   public var timeSources: OcaListProperty<OcaONo>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.4"),
-    setMethodID: OcaMethodID("3.5")
+    setMethodID: OcaMethodID("3.5"),
+    ocp2Name: "TimeSourceONo"
   )
   public var currentDeviceTimeSource: OcaProperty<OcaONo>.PropertyValue
 
