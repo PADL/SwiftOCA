@@ -22,13 +22,15 @@ open class OcaMediaClockManager: OcaManager {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.2")
+    getMethodID: OcaMethodID("3.2"),
+    ocp2Name: "MediaClockTypes"
   )
   public var clockTypesSupported = [OcaMediaClockType]()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.3"),
-    getMethodID: OcaMethodID("3.3")
+    getMethodID: OcaMethodID("3.3"),
+    ocp2Name: "Clocks"
   )
   public var clock3s = [OcaMediaClock3]()
 

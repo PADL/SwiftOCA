@@ -41,20 +41,23 @@ open class OcaNetworkApplication: OcaRoot, OcaOwnable, OcaLabelRepresentable,
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.3"),
     getMethodID: OcaMethodID("2.5"),
-    setMethodID: OcaMethodID("2.6")
+    setMethodID: OcaMethodID("2.6"),
+    ocp2Name: "Assignments"
   )
   public var networkInterfaceAssignments = [OcaNetworkInterfaceAssignment]()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.4"),
-    getMethodID: OcaMethodID("2.7")
+    getMethodID: OcaMethodID("2.7"),
+    ocp2Name: "Identifier"
   )
   public var adaptationIdentifier: OcaAdaptationIdentifier = ""
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.5"),
     getMethodID: OcaMethodID("2.8"),
-    setMethodID: OcaMethodID("2.9")
+    setMethodID: OcaMethodID("2.9"),
+    ocp2Name: "Data"
   )
   public var adaptationData: OcaAdaptationData = OcaBlob()
 

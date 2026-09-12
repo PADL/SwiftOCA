@@ -354,14 +354,16 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.11"),
-    setMethodID: OcaMethodID("3.12")
+    setMethodID: OcaMethodID("3.12"),
+    ocp2Name: "Ports"
   )
   public var portsPerRow: OcaUint8 = 0
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.8"),
     getMethodID: OcaMethodID("3.13"),
-    setMethodID: OcaMethodID("3.14")
+    setMethodID: OcaMethodID("3.14"),
+    ocp2Name: "Ports"
   )
   public var portsPerColumn: OcaUint8 = 0
 

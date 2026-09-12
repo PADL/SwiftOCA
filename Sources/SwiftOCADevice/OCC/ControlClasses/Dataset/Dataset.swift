@@ -53,7 +53,8 @@ Sendable {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.5"),
-    getMethodID: OcaMethodID("2.14")
+    getMethodID: OcaMethodID("2.14"),
+    ocp2Name: "Time"
   )
   public var lastModificationTime = OcaTime()
 

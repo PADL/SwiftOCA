@@ -37,7 +37,8 @@ open class OcaDelayExtended: OcaDelay {
   @OcaBoundedDeviceProperty(
     propertyID: OcaPropertyID("5.1"),
     getMethodID: OcaMethodID("5.1"),
-    setMethodID: OcaMethodID("5.2")
+    setMethodID: OcaMethodID("5.2"),
+    ocp2Name: "Value"
   )
   public var delayValue = OcaBoundedPropertyValue<OcaDelayValue>(
     value: OcaDelayValue(delayValue: 0, delayUnit: .time),

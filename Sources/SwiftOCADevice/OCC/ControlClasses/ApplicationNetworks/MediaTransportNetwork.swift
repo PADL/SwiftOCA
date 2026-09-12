@@ -27,7 +27,8 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.1")
+    getMethodID: OcaMethodID("3.1"),
+    ocp2Name: "OcaPorts"
   )
   public var `protocol`: OcaNetworkMediaProtocol = .none
 
@@ -51,13 +52,15 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.5"),
-    getMethodID: OcaMethodID("3.7")
+    getMethodID: OcaMethodID("3.7"),
+    ocp2Name: "MaxPins"
   )
   public var maxPinsPerConnector: OcaUint16 = 0
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.6"),
-    getMethodID: OcaMethodID("3.8")
+    getMethodID: OcaMethodID("3.8"),
+    ocp2Name: "MaxPins"
   )
   public var maxPortsPerPin: OcaUint16 = 0
 

@@ -35,13 +35,15 @@ open class OcaNetworkManager: OcaManager {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.5"),
-    getMethodID: OcaMethodID("3.5")
+    getMethodID: OcaMethodID("3.5"),
+    ocp2Name: "ONos"
   )
   public var networkInterfaces = [OcaNetworkInterface]()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.6"),
-    getMethodID: OcaMethodID("3.6")
+    getMethodID: OcaMethodID("3.6"),
+    ocp2Name: "ONos"
   )
   public var networkApplications = [OcaNetworkApplication]()
 
