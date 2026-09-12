@@ -70,6 +70,18 @@ public struct Ocp1Parameters: Codable, Sendable {
     #endif
   }
 
+  /// The OCP.2 `Parameters` object as the `Sendable` containers it is stored in, or `nil`
+  /// on OCP.1; `ocp2Parameters` upcast, so that a received object can be carried across a
+  /// task boundary without being walked again.
+  public var ocp2SendableParameters: [String: any Sendable]? {
+    #if NonEmbeddedBuild
+    guard case let .ocp2(object) = storage else { return nil }
+    return object
+    #else
+    return nil
+    #endif
+  }
+
   public init(parameterCount: OcaUint8, parameterData: Data) {
     self.parameterCount = parameterCount
     storage = .ocp1(parameterData)
