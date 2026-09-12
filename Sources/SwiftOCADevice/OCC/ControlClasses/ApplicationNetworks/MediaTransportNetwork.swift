@@ -61,13 +61,13 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
   )
   public var maxPortsPerPin: OcaUint16 = 0
 
-  @OcaDeviceProperty(
+  @OcaBoundedDeviceProperty(
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.25")
   )
   public var alignmentLevel = OcaBoundedPropertyValue<OcaDBFS>(value: -20.0, in: -20.0 ... -20.0)
 
-  @OcaDeviceProperty(
+  @OcaBoundedDeviceProperty(
     propertyID: OcaPropertyID("3.8"),
     getMethodID: OcaMethodID("3.26")
   )
