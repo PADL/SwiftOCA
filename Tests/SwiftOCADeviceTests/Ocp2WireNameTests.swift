@@ -130,6 +130,32 @@ final class Ocp2WireNameTests: XCTestCase {
     XCTAssertEqual(parameters["Name"] as? String, "In 1")
   }
 
+  func testSetterParameterIsNamedSeparatelyFromTheGetter() async throws {
+    let fixture = try await makeFixture()
+    defer { fixture.tearDown() }
+
+    // OcaDeviceManager 3.17 GetMessage → Message, but 3.18 SetMessage ← Text
+    let before = try await Self.responseParameters(
+      fixture,
+      targetONo: OcaDeviceManagerONo,
+      methodID: "3,17"
+    )
+    XCTAssertEqual(Set(before.keys), ["Message"])
+
+    _ = try await Self.responseParameters(
+      fixture,
+      targetONo: OcaDeviceManagerONo,
+      methodID: "3,18",
+      parameters: "{\"Text\":\"on air\"}"
+    )
+    let after = try await Self.responseParameters(
+      fixture,
+      targetONo: OcaDeviceManagerONo,
+      methodID: "3,17"
+    )
+    XCTAssertEqual(after["Message"] as? String, "on air")
+  }
+
   func testRecordParametersAreNamedByField() async throws {
     let fixture = try await makeFixture()
     defer { fixture.tearDown() }
@@ -211,6 +237,16 @@ final class Ocp2WireNameTests: XCTestCase {
     getEndpoint.cancel()
     XCTAssertEqual(scalar.methodID, [3, 22])
     XCTAssertEqual(Set(scalar.parameters.keys), ["ID"])
+
+    // OcaDeviceManager 3.18 SetMessage(Text): the setter's name is not the getter's
+    let deviceManager = await connection.deviceManager
+    let setMessage = Task {
+      try? await deviceManager.$message._setValue(deviceManager, "on air")
+    }
+    let differing = try await Self.nextCommand(from: endpoint)
+    setMessage.cancel()
+    XCTAssertEqual(differing.methodID, [3, 18])
+    XCTAssertEqual(Set(differing.parameters.keys), ["Text"])
   }
 }
 
