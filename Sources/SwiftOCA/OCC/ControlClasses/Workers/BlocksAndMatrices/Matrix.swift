@@ -34,15 +34,14 @@ Sendable {
   )
   public var currentXY: OcaVectorProperty<OcaMatrixCoordinate>.PropertyValue
 
-  // TODO: GetSize() also returns min/max size which hopefully we can ignore
-
-  @OcaVectorProperty(
+  /// GetSize returns the size with each axis's bounds; SetSize takes the size alone.
+  @OcaBoundedVectorProperty(
     xPropertyID: OcaPropertyID("3.3"),
     yPropertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.3"),
     setMethodID: OcaMethodID("3.4")
   )
-  public var size: OcaVectorProperty<OcaMatrixCoordinate>.PropertyValue
+  public var size: OcaBoundedVectorProperty<OcaMatrixCoordinate>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.5"),

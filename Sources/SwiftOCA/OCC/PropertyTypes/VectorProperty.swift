@@ -32,6 +32,29 @@ public struct OcaVector2D<T: Codable & Sendable & FixedWidthInteger>: Ocp1Parame
   }
 }
 
+/// A vector with each axis's bounds, in the order AES70-2 returns them from a
+/// getter such as `OcaMatrix.GetSize`.
+public struct OcaBoundedVector2D<T: Codable & Sendable & FixedWidthInteger>:
+  Ocp1ParametersReflectable, Codable, Sendable
+{
+  public var x, y: T
+  public var minX, maxX: T
+  public var minY, maxY: T
+
+  public init(x: T, y: T, minX: T, maxX: T, minY: T, maxY: T) {
+    self.x = x
+    self.y = y
+    self.minX = minX
+    self.maxX = maxX
+    self.minY = minY
+    self.maxY = maxY
+  }
+
+  public var vector: OcaVector2D<T> {
+    OcaVector2D(x: x, y: y)
+  }
+}
+
 @propertyWrapper
 public struct OcaVectorProperty<
   Value: Codable & Sendable &
@@ -179,6 +202,157 @@ public struct OcaVectorProperty<
   @_spi(SwiftOCAPrivate)
   public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
     guard let value = anyValue as? OcaVector2D<Value> else {
+      throw Ocp1Error.status(.badFormat)
+    }
+    try await _storage.setValueIfMutable(object, value)
+  }
+}
+
+/// A property pair whose getter returns the pair with each axis's bounds and whose
+/// setter takes the pair alone, as AES70-2 defines `OcaMatrix`'s size.
+@propertyWrapper
+public struct OcaBoundedVectorProperty<
+  Value: Codable & Sendable &
+    FixedWidthInteger
+>: OcaPropertyChangeEventNotifiable, Codable, Sendable {
+  public var valueType: Any.Type { Property.PropertyValue.self }
+
+  @_spi(SwiftOCAPrivate)
+  public var subject: AsyncCurrentValueSubject<PropertyValue> { _storage.subject }
+
+  fileprivate var _storage: Property
+
+  public typealias Property = OcaProperty<OcaBoundedVector2D<Value>>
+  public typealias PropertyValue = Property.PropertyValue
+
+  public var propertyIDs: [OcaPropertyID] {
+    [xPropertyID, yPropertyID]
+  }
+
+  public let xPropertyID: OcaPropertyID
+  public let yPropertyID: OcaPropertyID
+  public let getMethodID: OcaMethodID
+  public let setMethodID: OcaMethodID?
+
+  public init(from decoder: Decoder) throws {
+    fatalError()
+  }
+
+  /// Placeholder only
+  public func encode(to encoder: Encoder) throws {
+    fatalError()
+  }
+
+  @available(*, unavailable, message: """
+  @OcaBoundedVectorProperty is only available on properties of classes
+  """)
+  public var wrappedValue: PropertyValue {
+    get { fatalError() }
+    nonmutating set { fatalError() }
+  }
+
+  public func refresh(_ object: OcaRoot) async {
+    await _storage.refresh(object)
+  }
+
+  public var currentValue: PropertyValue {
+    _storage.currentValue
+  }
+
+  public func subscribe(_ object: OcaRoot) async {
+    await _storage.subscribe(object)
+  }
+
+  public var description: String {
+    _storage.description
+  }
+
+  public init(
+    xPropertyID: OcaPropertyID,
+    yPropertyID: OcaPropertyID,
+    getMethodID: OcaMethodID,
+    setMethodID: OcaMethodID? = nil
+  ) {
+    self.xPropertyID = xPropertyID
+    self.yPropertyID = yPropertyID
+    self.getMethodID = getMethodID
+    self.setMethodID = setMethodID
+    // the bounds are read-only, so the setter sends the pair alone
+    _storage = OcaProperty(
+      propertyID: OcaPropertyID("1.1"),
+      getMethodID: getMethodID,
+      setMethodID: setMethodID,
+      setValueTransformer: { $1.vector }
+    )
+  }
+
+  public static subscript<T: OcaRoot>(
+    _enclosingInstance object: T,
+    wrapped wrappedKeyPath: ReferenceWritableKeyPath<T, PropertyValue>,
+    storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
+  ) -> PropertyValue {
+    get {
+      object[keyPath: storageKeyPath]._storage
+        ._get(_enclosingInstance: object)
+    }
+    set {
+      object[keyPath: storageKeyPath]._storage._set(_enclosingInstance: object, newValue)
+    }
+  }
+
+  func onEvent(_ object: OcaRoot, event: OcaEvent, eventData data: Data) throws {
+    precondition(event.eventID == OcaPropertyChangedEventID)
+
+    let eventData = try Ocp1Decoder().decode(
+      OcaPropertyChangedEventData<Value>.self,
+      from: data
+    )
+    precondition(propertyIDs.contains(eventData.propertyID))
+
+    // TODO: support add/delete
+    switch eventData.changeType {
+    case .currentChanged:
+      guard case let .success(currentValue) = _storage.currentValue else {
+        throw Ocp1Error.noInitialValue
+      }
+      var value = currentValue
+      if eventData.propertyID == xPropertyID {
+        value.x = eventData.propertyValue
+      } else {
+        value.y = eventData.propertyValue
+      }
+      _storage._send(object, .success(value))
+    default:
+      throw Ocp1Error.unhandledEvent
+    }
+  }
+
+  public var projectedValue: Self {
+    self
+  }
+
+  @_spi(SwiftOCAPrivate) @discardableResult
+  public func _getValue(
+    _ object: OcaRoot,
+    flags: OcaPropertyResolutionFlags = .defaultFlags
+  ) async throws -> OcaBoundedVector2D<Value> {
+    try await _storage._getValue(object, flags: flags)
+  }
+
+  #if NonEmbeddedBuild
+  public func getJsonValue(
+    _ object: OcaRoot,
+    keyPath: AnyKeyPath,
+    flags: OcaPropertyResolutionFlags = .defaultFlags
+  ) async throws -> [String: any Sendable] {
+    let value = try await _getValue(object, flags: flags)
+    return try [keyPath.jsonKey: [value.x, value.y]]
+  }
+  #endif
+
+  @_spi(SwiftOCAPrivate)
+  public func _setValue(_ object: OcaRoot, _ anyValue: Any) async throws {
+    guard let value = anyValue as? OcaBoundedVector2D<Value> else {
       throw Ocp1Error.status(.badFormat)
     }
     try await _storage.setValueIfMutable(object, value)
