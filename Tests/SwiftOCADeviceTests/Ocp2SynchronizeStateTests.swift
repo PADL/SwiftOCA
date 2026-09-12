@@ -94,6 +94,20 @@ final class Ocp2SynchronizeStateTests: XCTestCase {
       "\(controlProtocol) controller did not receive SynchronizeState listing the changed object",
       line: line
     )
+
+    // the manager emits other events of its own while notifications are toggled; a
+    // subscription to one event must not be sent them
+    for payload in received.payloads {
+      XCTAssertNoThrow(
+        try OcaEventDataCoding.decode(
+          OcaObjectListEventData.self,
+          from: payload,
+          format: format
+        ),
+        "a subscription to SynchronizeState received another event's data",
+        line: line
+      )
+    }
   }
 
   private struct Harness {
