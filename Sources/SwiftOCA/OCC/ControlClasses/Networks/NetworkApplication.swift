@@ -71,7 +71,11 @@ Sendable {
   public var counterSet: OcaProperty<OcaCounterSet>.PropertyValue
 
   public func get(counter id: OcaID16) async throws -> OcaCounter {
-    try await sendCommandRrq(methodID: OcaMethodID("2.11"), parameters: id)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("2.11"),
+      parameters: id,
+      parameterNames: ["CounterID"]
+    )
   }
 
   public func attach(counter id: OcaID16, to oNo: OcaONo) async throws {
