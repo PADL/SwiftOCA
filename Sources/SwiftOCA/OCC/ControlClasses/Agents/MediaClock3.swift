@@ -50,7 +50,7 @@ open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
   public var supportedRates: OcaMultiMapProperty<OcaONo, OcaMediaClockRate>.PropertyValue
 
   @_spi(SwiftOCAPrivate)
-  public struct GetCurrentRateParameters: Ocp1ParametersReflectable {
+  public struct GetCurrentRateParameters: OcaParametersReflectable {
     public let rate: OcaMediaClockRate
     public let timeSourceONo: OcaONo
 

@@ -28,7 +28,7 @@ public protocol OcaBoundedPropertyValueRepresentable {}
 public struct OcaBoundedPropertyValue<
   Value: Codable & Comparable &
     Sendable
->: Ocp1ParametersReflectable, Codable, Equatable, Sendable, OcaBoundedPropertyValueRepresentable {
+>: OcaParametersReflectable, Codable, Equatable, Sendable, OcaBoundedPropertyValueRepresentable {
   public var value: Value
   public var minValue: Value
   public var maxValue: Value

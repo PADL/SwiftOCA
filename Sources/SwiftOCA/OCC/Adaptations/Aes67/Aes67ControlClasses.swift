@@ -19,7 +19,7 @@
 open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unchecked Sendable {
   override open class var classID: OcaClassID { Aes67Adaptation.mediaTransportApplicationClassID }
 
-  public struct EndpointStreamModeParameters: Ocp1ParametersReflectable {
+  public struct EndpointStreamModeParameters: OcaParametersReflectable {
     public let endpointID: OcaMediaStreamEndpointID
     public let streamMode: OcaMediaStreamMode
 
@@ -29,7 +29,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
     }
   }
 
-  public struct EndpointDelayConstraints: Ocp1ParametersReflectable, Equatable {
+  public struct EndpointDelayConstraints: OcaParametersReflectable, Equatable {
     public let bufferingTimeRange: OcaInterval<OcaTimeInterval>
     public let processingTimeRange: OcaInterval<OcaTimeInterval>
 
@@ -42,7 +42,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
     }
   }
 
-  public struct PresentationTimeOffsetConstraints: Ocp1ParametersReflectable, Equatable {
+  public struct PresentationTimeOffsetConstraints: OcaParametersReflectable, Equatable {
     public let range: OcaInterval<OcaTimeInterval>
     public let list: [OcaTimeInterval]
 
@@ -52,7 +52,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
     }
   }
 
-  public struct SubmitSDPParameters: Ocp1ParametersReflectable {
+  public struct SubmitSDPParameters: OcaParametersReflectable {
     public let endpointID: OcaMediaStreamEndpointID
     public let sdp: OcaSDPString
 
@@ -111,7 +111,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
 open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { Aes67Adaptation.mediaTransportSessionAgentClassID }
 
-  public struct SIPParameterRecordParameters: Ocp1ParametersReflectable {
+  public struct SIPParameterRecordParameters: OcaParametersReflectable {
     public let sessionID: OcaMediaTransportSessionID
     public let parameterRecord: OcaParameterRecord
 
@@ -121,7 +121,7 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @u
     }
   }
 
-  public struct SIPParameterKeyParameters: Ocp1ParametersReflectable {
+  public struct SIPParameterKeyParameters: OcaParametersReflectable {
     public let sessionID: OcaMediaTransportSessionID
     public let key: OcaString
 
@@ -131,7 +131,7 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @u
     }
   }
 
-  public struct SIPParameterParameters: Ocp1ParametersReflectable {
+  public struct SIPParameterParameters: OcaParametersReflectable {
     public let sessionID: OcaMediaTransportSessionID
     public let key: OcaString
     public let value: OcaJsonValue

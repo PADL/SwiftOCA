@@ -133,7 +133,7 @@ package extension Decoder {
 }
 
 public protocol Ocp1LongList {}
-public protocol Ocp1ParametersReflectable: Codable {}
+public protocol OcaParametersReflectable: Codable {}
 
 private let _parameterCountCache = Mutex<[ObjectIdentifier: OcaUint8]>([:])
 
@@ -144,7 +144,7 @@ package func _ocp1ParameterCount(type: (some Any).Type) -> OcaUint8 {
   }
 
   let result: OcaUint8
-  if type is Ocp1ParametersReflectable.Type {
+  if type is OcaParametersReflectable.Type {
     var count: OcaUint8 = 0
     _forEachField(of: type) { _, _, _, _ in
       count += 1

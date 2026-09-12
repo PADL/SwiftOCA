@@ -40,7 +40,7 @@ open class OcaPowerManager: OcaManager, @unchecked Sendable {
   public var activePowerSupplies: OcaListProperty<OcaONo>.PropertyValue
 
   // 3.5 exchangePowerSupply(old, new, powerOffOld)
-  public struct ExchangePowerSupplyParameters: Ocp1ParametersReflectable {
+  public struct ExchangePowerSupplyParameters: OcaParametersReflectable {
     public let oldPsu: OcaONo
     public let newPsu: OcaONo
     public let powerOffOld: OcaBoolean

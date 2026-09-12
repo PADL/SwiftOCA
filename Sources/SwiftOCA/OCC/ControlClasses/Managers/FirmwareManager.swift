@@ -40,7 +40,7 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
     )
   }
 
-  public struct AddImageDataParameters: Ocp1ParametersReflectable {
+  public struct AddImageDataParameters: OcaParametersReflectable {
     public let id: OcaUint32
     public let imageData: OcaBlob
 
@@ -76,7 +76,7 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
     try await sendCommandRrq(methodID: OcaMethodID("3.6"))
   }
 
-  public struct BeginPassiveComponentUpdateParameters: Ocp1ParametersReflectable {
+  public struct BeginPassiveComponentUpdateParameters: OcaParametersReflectable {
     public let component: OcaComponent
     public let serverAddress: OcaNetworkAddress
     public let updateFileName: OcaString

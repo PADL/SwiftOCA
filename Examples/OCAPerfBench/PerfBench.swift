@@ -91,17 +91,17 @@ func benchAsync(
 // MARK: - fixtures
 
 /// A four-byte scalar parameter, as a gain setter carries.
-private let smallParameters = Ocp1Parameters(
+private let smallParameters = OcaParameters(
   parameterCount: 1,
   parameterData: Data([0x3F, 0x80, 0x00, 0x00])
 )
 
 /// A parameter block the size of a long string or a member list.
-private func parameters(bytes: Int) -> Ocp1Parameters {
-  Ocp1Parameters(parameterCount: 1, parameterData: Data(repeating: 0xAB, count: bytes))
+private func parameters(bytes: Int) -> OcaParameters {
+  OcaParameters(parameterCount: 1, parameterData: Data(repeating: 0xAB, count: bytes))
 }
 
-private func command(_ parameters: Ocp1Parameters) -> Ocp1Command {
+private func command(_ parameters: OcaParameters) -> Ocp1Command {
   Ocp1Command(
     commandSize: 0,
     handle: 1,
@@ -111,7 +111,7 @@ private func command(_ parameters: Ocp1Parameters) -> Ocp1Command {
   )
 }
 
-private func response(_ parameters: Ocp1Parameters) -> Ocp1Response {
+private func response(_ parameters: OcaParameters) -> Ocp1Response {
   Ocp1Response(responseSize: 0, handle: 1, statusCode: .ok, parameters: parameters)
 }
 
@@ -224,7 +224,7 @@ private let getDeviceName = Ocp1Command(
   handle: 0,
   targetONo: OcaDeviceManagerONo,
   methodID: OcaMethodID("3.4"),
-  parameters: Ocp1Parameters()
+  parameters: OcaParameters()
 )
 
 private let benchBlockONo: OcaONo = 0x0001_0001
@@ -236,7 +236,7 @@ private func setLabel(_ text: String) throws -> Ocp1Command {
     handle: 0,
     targetONo: benchBlockONo,
     methodID: OcaMethodID("2.9"),
-    parameters: Ocp1Parameters(parameterCount: 1, parameterData: Ocp1Encoder().encode(text))
+    parameters: OcaParameters(parameterCount: 1, parameterData: Ocp1Encoder().encode(text))
   )
 }
 
@@ -246,7 +246,7 @@ private let getLabel = Ocp1Command(
   handle: 0,
   targetONo: benchBlockONo,
   methodID: OcaMethodID("2.8"),
-  parameters: Ocp1Parameters()
+  parameters: OcaParameters()
 )
 
 /// Drives the same three exchanges over whichever transport is handed in, so the

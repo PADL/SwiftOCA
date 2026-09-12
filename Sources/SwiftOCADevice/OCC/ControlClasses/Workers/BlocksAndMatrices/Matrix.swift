@@ -372,7 +372,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   /// GetSize's six output parameters, spelled as AES70-2 names them; the client
   /// decodes the same shape as `OcaBoundedVector2D`. A record, so each parameter is
   /// counted and named. The size is derived from the grid, so no property holds it.
-  struct MatrixSize<T: Codable>: Ocp1ParametersReflectable {
+  struct MatrixSize<T: Codable>: OcaParametersReflectable {
     var xSize: T
     var ySize: T
     var minXSize: T

@@ -134,7 +134,7 @@ package enum Ocp2Message {
 
   /// The `Parameters` object, or `nil` when there are none. OCP.1-encoded parameters
   /// cannot be represented and are an error rather than a silent blob.
-  private static func parametersObject(_ parameters: Ocp1Parameters) throws -> [String: Any]? {
+  private static func parametersObject(_ parameters: OcaParameters) throws -> [String: Any]? {
     switch parameters.format {
     case .ocp2:
       guard let object = parameters.ocp2Parameters, !object.isEmpty else { return nil }
@@ -295,10 +295,10 @@ package enum Ocp2Message {
     return object
   }
 
-  private static func parameters(_ json: Any?) throws -> Ocp1Parameters {
-    guard let json, !(json is NSNull) else { return Ocp1Parameters(ocp2Parameters: [:]) }
+  private static func parameters(_ json: Any?) throws -> OcaParameters {
+    guard let json, !(json is NSNull) else { return OcaParameters(ocp2Parameters: [:]) }
     guard let object = json as? [String: Any] else { throw Ocp1Error.status(.badFormat) }
-    return Ocp1Parameters(ocp2Parameters: object)
+    return OcaParameters(ocp2Parameters: object)
   }
 
   private static func decodeCommand(_ json: Any) throws -> Ocp1Command {

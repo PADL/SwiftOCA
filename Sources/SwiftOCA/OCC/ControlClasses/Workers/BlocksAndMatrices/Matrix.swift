@@ -82,7 +82,7 @@ Sendable {
     return try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameters: xy)
   }
 
-  public struct SetMemberParameters: Ocp1ParametersReflectable {
+  public struct SetMemberParameters: OcaParametersReflectable {
     public let x: OcaMatrixCoordinate
     public let y: OcaMatrixCoordinate
     public let memberONo: OcaONo

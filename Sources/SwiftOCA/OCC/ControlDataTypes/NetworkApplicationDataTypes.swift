@@ -24,7 +24,7 @@ public struct OcaPortClockMapEntry: Codable, Sendable, Equatable {
   }
 }
 
-public struct OcaSetPortClockMapEntryParameters: Ocp1ParametersReflectable {
+public struct OcaSetPortClockMapEntryParameters: OcaParametersReflectable {
   public let portID: OcaPortID
   public let entry: OcaPortClockMapEntry
 

@@ -31,7 +31,7 @@ open class OcaPowerSensor: OcaSensor, @unchecked Sendable {
   public var powerFactor: OcaProperty<OcaFloat32>.PropertyValue
 
   @_spi(SwiftOCAPrivate)
-  public struct GetReadingParameters: Ocp1ParametersReflectable {
+  public struct GetReadingParameters: OcaParametersReflectable {
     public let power: OcaFloat32
     public let powerFactor: OcaFloat32
     public let minPower: OcaFloat32

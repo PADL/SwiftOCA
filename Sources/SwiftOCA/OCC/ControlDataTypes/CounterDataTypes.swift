@@ -79,7 +79,7 @@ public struct OcaCounterNotifierFilterParameters: Codable, Sendable {
   }
 }
 
-public struct OcaCounterNotifierParameters: Ocp1ParametersReflectable {
+public struct OcaCounterNotifierParameters: OcaParametersReflectable {
   public let id: OcaID16
   public let oNo: OcaONo
 
