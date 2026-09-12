@@ -153,6 +153,21 @@ open class OcaFloat64Sensor: OcaGenericBasicSensor<OcaFloat64> {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.1.11") }
 }
 
-open class OcaStringSensor: OcaGenericBasicSensor<OcaString> {
+/// AES70-2 gives the string sensor a plain reading (5.1) and a maximum length
+/// of its own (5.2, 5.3), not the generic basic sensor's bounded reading.
+open class OcaStringSensor: OcaBasicSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.1.12") }
+
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("5.1"),
+    getMethodID: OcaMethodID("5.1")
+  )
+  public var reading: OcaString = ""
+
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("5.2"),
+    getMethodID: OcaMethodID("5.2"),
+    setMethodID: OcaMethodID("5.3")
+  )
+  public var maxLen: OcaUint16 = 0
 }
