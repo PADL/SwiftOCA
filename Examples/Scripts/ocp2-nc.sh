@@ -27,6 +27,17 @@ if [ -n "$JQ" ] && ! command -v "$JQ" >/dev/null 2>&1; then
   JQ=
 fi
 
+# Half-closing the send side after each PDU makes the device answer and hang up
+# at once, instead of holding the session open until nc gives up: -N is OpenBSD
+# nc, -q 0 GNU. WAIT caps the wait when nc can do neither.
+NC_EOF=
+if nc -h 2>&1 | grep -q -- '-N'; then
+  NC_EOF=-N
+elif nc -h 2>&1 | grep -q -- '-q '; then
+  NC_EOF='-q 0'
+fi
+WAIT=${WAIT:-2}
+
 # The PDUs below are written across several lines for legibility, so fold each
 # back into the single line OCP.2 frames.
 compact() {
@@ -37,10 +48,11 @@ show() {
   if [ -n "$JQ" ]; then "$JQ" .; else cat; fi
 }
 
-# Send one PDU, print the reply. -w bounds the read: the device holds the
-# connection open for further commands, so nc would otherwise wait forever.
+# Send one PDU, print the reply. $NC_EOF is unquoted so that -q 0 splits into
+# the two words nc wants; the device closes on end-of-input, so the reply ends
+# the exchange and a CommandNR that answers nothing costs nothing either.
 pdu() {
-  printf '%s' "$1" | compact | nc -w 2 "$HOST" "$PORT" | show
+  printf '%s' "$1" | compact | nc $NC_EOF -w "$WAIT" "$HOST" "$PORT" | show
 }
 
 # ONo 1 is OcaDeviceManager, ONo 4 OcaSubscriptionManager and ONo 100 the root
@@ -91,7 +103,7 @@ echo "== subscribe to OcaDeviceManager's PropertyChanged event, then change a pr
           "Event":{"EmitterONo":1,"EventID":[1,1]},
           "NotificationDeliveryMode":1,"DestinationInformation":""}}]}' | compact
   sleep 4
-} | nc "$HOST" "$PORT" | show &
+} | nc $NC_EOF "$HOST" "$PORT" | show &
 subscriber=$!
 
 sleep 1
