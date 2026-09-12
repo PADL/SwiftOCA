@@ -31,7 +31,8 @@ open class OcaLibraryManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.5"),
-    setMethodID: OcaMethodID("3.6")
+    setMethodID: OcaMethodID("3.6"),
+    ocp2Name: "ID"
   )
   public var currentPatch: OcaProperty<OcaLibVolIdentifier>.PropertyValue
 

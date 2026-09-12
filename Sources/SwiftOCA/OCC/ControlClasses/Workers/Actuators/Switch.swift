@@ -27,14 +27,16 @@ open class OcaSwitch: OcaActuator, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.5"),
-    setMethodID: OcaMethodID("4.6")
+    setMethodID: OcaMethodID("4.6"),
+    ocp2Name: "Names"
   )
   public var positionNames: OcaListProperty<OcaString>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.9"),
-    setMethodID: OcaMethodID("4.10")
+    setMethodID: OcaMethodID("4.10"),
+    ocp2Name: "Flags"
   )
   public var positionEnableds: OcaListProperty<OcaBoolean>.PropertyValue
 }

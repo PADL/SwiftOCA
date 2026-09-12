@@ -513,7 +513,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async throws -> [String: any Sendable] {
     let value = try await _getValue(object, flags: flags)
-    let name = _ocp2WireName(object) ?? propertyID.description
+    // keyed by the property, not its accessor parameter: the model reuses parameter
+    // names (`Time`) across a class's properties
+    let name = object._jsonPropertyName(for: propertyID)
     return try [name: Ocp2JSON.sendable(Ocp2Encoder().encodeValue(value))]
   }
   #endif

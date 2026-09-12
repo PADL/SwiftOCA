@@ -60,7 +60,8 @@ Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("2.5"),
     getMethodID: OcaMethodID("2.9"),
-    setMethodID: OcaMethodID("2.10")
+    setMethodID: OcaMethodID("2.10"),
+    ocp2Name: "Id"
   )
   public var groupID: OcaProperty<OcaUint16>.PropertyValue
 
@@ -74,14 +75,16 @@ Sendable {
   /// "OcaIP4" or "OcaIP6"
   @OcaProperty(
     propertyID: OcaPropertyID("2.7"),
-    getMethodID: OcaMethodID("2.13")
+    getMethodID: OcaMethodID("2.13"),
+    ocp2Name: "Identifier"
   )
   public var adaptationIdentifier: OcaProperty<OcaAdaptationIdentifier>.PropertyValue
 
   /// adaptation-specific, e.g. encoded OcaIP4NetworkSettings or MilanNetworkInterfaceAdaptationData
   @OcaProperty(
     propertyID: OcaPropertyID("2.8"),
-    getMethodID: OcaMethodID("2.14")
+    getMethodID: OcaMethodID("2.14"),
+    ocp2Name: "Settings"
   )
   public var currentAdaptationData: OcaProperty<OcaBlob>.PropertyValue
 
@@ -89,14 +92,16 @@ Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("2.9"),
     getMethodID: OcaMethodID("2.15"),
-    setMethodID: OcaMethodID("2.16")
+    setMethodID: OcaMethodID("2.16"),
+    ocp2Name: "Settings"
   )
   public var requestedAdaptationData: OcaProperty<OcaBlob>.PropertyValue
 
   /// adaptation-specific, e.g. encoded OcaIP4NetworkSettings or MilanNetworkInterfaceAdaptationData
   @OcaProperty(
     propertyID: OcaPropertyID("2.10"),
-    getMethodID: OcaMethodID("2.17")
+    getMethodID: OcaMethodID("2.17"),
+    ocp2Name: "Pending"
   )
   public var networkSettingPending: OcaProperty<OcaBoolean>.PropertyValue
 

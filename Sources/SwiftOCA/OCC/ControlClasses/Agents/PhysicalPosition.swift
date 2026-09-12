@@ -105,7 +105,8 @@ open class OcaPhysicalPosition: OcaAgent, @unchecked Sendable {
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
-    getMethodID: OcaMethodID("3.2")
+    getMethodID: OcaMethodID("3.2"),
+    ocp2Name: "Flags"
   )
   public var positionDescriptorFieldFlags: OcaProperty<OcaPositionDescriptorFieldFlags>
     .PropertyValue

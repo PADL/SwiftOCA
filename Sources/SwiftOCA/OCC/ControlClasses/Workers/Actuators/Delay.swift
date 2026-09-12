@@ -35,7 +35,8 @@ open class OcaDelayExtended: OcaDelay, @unchecked Sendable {
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("5.1"),
     getMethodID: OcaMethodID("5.1"),
-    setMethodID: OcaMethodID("5.2")
+    setMethodID: OcaMethodID("5.2"),
+    ocp2Name: "Value"
   )
   public var delayValue: OcaBoundedProperty<OcaDelayValue>.PropertyValue
 

@@ -28,14 +28,16 @@ open class OcaDynamics: OcaActuator, @unchecked Sendable {
   /// the instantaneous gain of the dynamics element
   @OcaProperty(
     propertyID: OcaPropertyID("4.2"),
-    getMethodID: OcaMethodID("4.2")
+    getMethodID: OcaMethodID("4.2"),
+    ocp2Name: "Gain"
   )
   public var dynamicGain: OcaProperty<OcaDB>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.3"),
-    setMethodID: OcaMethodID("4.4")
+    setMethodID: OcaMethodID("4.4"),
+    ocp2Name: "Func"
   )
   public var function: OcaProperty<OcaDynamicsFunction>.PropertyValue
 
@@ -57,49 +59,56 @@ open class OcaDynamics: OcaActuator, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("4.6"),
     getMethodID: OcaMethodID("4.9"),
-    setMethodID: OcaMethodID("4.10")
+    setMethodID: OcaMethodID("4.10"),
+    ocp2Name: "Units"
   )
   public var thresholdPresentationUnits: OcaProperty<OcaPresentationUnit>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("4.7"),
     getMethodID: OcaMethodID("4.11"),
-    setMethodID: OcaMethodID("4.12")
+    setMethodID: OcaMethodID("4.12"),
+    ocp2Name: "Law"
   )
   public var detectorLaw: OcaProperty<OcaLevelDetectionLaw>.PropertyValue
 
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.8"),
     getMethodID: OcaMethodID("4.13"),
-    setMethodID: OcaMethodID("4.14")
+    setMethodID: OcaMethodID("4.14"),
+    ocp2Name: "Time"
   )
   public var attackTime: OcaBoundedProperty<OcaTimeInterval>.PropertyValue
 
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.9"),
     getMethodID: OcaMethodID("4.15"),
-    setMethodID: OcaMethodID("4.16")
+    setMethodID: OcaMethodID("4.16"),
+    ocp2Name: "Time"
   )
   public var releaseTime: OcaBoundedProperty<OcaTimeInterval>.PropertyValue
 
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.10"),
     getMethodID: OcaMethodID("4.17"),
-    setMethodID: OcaMethodID("4.18")
+    setMethodID: OcaMethodID("4.18"),
+    ocp2Name: "Time"
   )
   public var holdTime: OcaBoundedProperty<OcaTimeInterval>.PropertyValue
 
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.11"),
     getMethodID: OcaMethodID("4.21"),
-    setMethodID: OcaMethodID("4.22")
+    setMethodID: OcaMethodID("4.22"),
+    ocp2Name: "Limit"
   )
   public var dynamicGainCeiling: OcaBoundedProperty<OcaDB>.PropertyValue
 
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.12"),
     getMethodID: OcaMethodID("4.19"),
-    setMethodID: OcaMethodID("4.20")
+    setMethodID: OcaMethodID("4.20"),
+    ocp2Name: "Limit"
   )
   public var dynamicGainFloor: OcaBoundedProperty<OcaDB>.PropertyValue
 
@@ -107,7 +116,8 @@ open class OcaDynamics: OcaActuator, @unchecked Sendable {
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.13"),
     getMethodID: OcaMethodID("4.23"),
-    setMethodID: OcaMethodID("4.24")
+    setMethodID: OcaMethodID("4.24"),
+    ocp2Name: "Parameter"
   )
   public var kneeParameter: OcaBoundedProperty<OcaFloat32>.PropertyValue
 
@@ -212,21 +222,24 @@ open class OcaDynamicsDetector: OcaActuator, @unchecked Sendable {
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.3"),
-    setMethodID: OcaMethodID("4.4")
+    setMethodID: OcaMethodID("4.4"),
+    ocp2Name: "Time"
   )
   public var attackTime: OcaBoundedProperty<OcaTimeInterval>.PropertyValue
 
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.5"),
-    setMethodID: OcaMethodID("4.6")
+    setMethodID: OcaMethodID("4.6"),
+    ocp2Name: "Time"
   )
   public var releaseTime: OcaBoundedProperty<OcaTimeInterval>.PropertyValue
 
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.4"),
     getMethodID: OcaMethodID("4.7"),
-    setMethodID: OcaMethodID("4.8")
+    setMethodID: OcaMethodID("4.8"),
+    ocp2Name: "Time"
   )
   public var holdTime: OcaBoundedProperty<OcaTimeInterval>.PropertyValue
 
@@ -290,14 +303,16 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
   /// retrieved with ``getThresholds()`` rather than by property accessor
   @OcaProperty(
     propertyID: OcaPropertyID("4.2"),
-    setMethodID: OcaMethodID("4.4")
+    setMethodID: OcaMethodID("4.4"),
+    ocp2Name: "Threshold"
   )
   public var thresholds: OcaProperty<OcaList<OcaDBr>>.PropertyValue
 
   /// segment slopes; retrieved with ``getSlopes()``, which returns per-element limits
   @OcaProperty(
     propertyID: OcaPropertyID("4.3"),
-    setMethodID: OcaMethodID("4.6")
+    setMethodID: OcaMethodID("4.6"),
+    ocp2Name: "Slope"
   )
   public var slopes: OcaProperty<OcaList<OcaFloat32>>.PropertyValue
 
@@ -305,21 +320,24 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
   /// limits
   @OcaProperty(
     propertyID: OcaPropertyID("4.4"),
-    setMethodID: OcaMethodID("4.8")
+    setMethodID: OcaMethodID("4.8"),
+    ocp2Name: "Parameters"
   )
   public var kneeParameters: OcaProperty<OcaList<OcaFloat32>>.PropertyValue
 
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.5"),
     getMethodID: OcaMethodID("4.11"),
-    setMethodID: OcaMethodID("4.12")
+    setMethodID: OcaMethodID("4.12"),
+    ocp2Name: "Gain"
   )
   public var dynamicGainFloor: OcaBoundedProperty<OcaDB>.PropertyValue
 
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.6"),
     getMethodID: OcaMethodID("4.9"),
-    setMethodID: OcaMethodID("4.10")
+    setMethodID: OcaMethodID("4.10"),
+    ocp2Name: "Gain"
   )
   public var dynamicGainCeiling: OcaBoundedProperty<OcaDB>.PropertyValue
 

@@ -44,7 +44,8 @@ open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.5"),
-    getMethodID: OcaMethodID("3.7")
+    getMethodID: OcaMethodID("3.7"),
+    ocp2Name: "Rates"
   )
   public var supportedRates: OcaMultiMapProperty<OcaONo, OcaMediaClockRate>.PropertyValue
 

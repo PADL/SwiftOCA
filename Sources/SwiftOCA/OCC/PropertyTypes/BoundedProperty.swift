@@ -218,9 +218,9 @@ public struct OcaBoundedProperty<
     flags: OcaPropertyResolutionFlags = .defaultFlags
   ) async throws -> [String: any Sendable] {
     let value = try await _getValue(object, flags: flags)
-    // the shape of the property's OCP.2 getter response: Gain, minGain, maxGain
-    let names = _ocp2ResponseNames(object)
-      ?? Ocp2Naming.boundedWireNames(propertyIDs[0].description)
+    // the shape of the getter response (Gain, MinGain, MaxGain) under the property's
+    // own name, as accessor parameter names repeat within a class
+    let names = Ocp2Naming.boundedWireNames(object._jsonPropertyName(for: propertyIDs[0]))
     let encoder = Ocp2Encoder()
     return [
       names[0]: Ocp2JSON.sendable(try encoder.encodeValue(value.value)),

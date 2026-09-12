@@ -117,7 +117,8 @@ open class OcaFilterParametric: OcaActuator, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.3"),
-    setMethodID: OcaMethodID("4.4")
+    setMethodID: OcaMethodID("4.4"),
+    ocp2Name: "Type"
   )
   public var shape: OcaProperty<OcaParametricEQShape>.PropertyValue
 
@@ -125,14 +126,16 @@ open class OcaFilterParametric: OcaActuator, @unchecked Sendable {
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.5"),
-    setMethodID: OcaMethodID("4.6")
+    setMethodID: OcaMethodID("4.6"),
+    ocp2Name: "Width"
   )
   public var widthParameter: OcaBoundedProperty<OcaFloat32>.PropertyValue
 
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.4"),
     getMethodID: OcaMethodID("4.7"),
-    setMethodID: OcaMethodID("4.8")
+    setMethodID: OcaMethodID("4.8"),
+    ocp2Name: "Gain"
   )
   public var inBandGain: OcaBoundedProperty<OcaDB>.PropertyValue
 
@@ -140,7 +143,8 @@ open class OcaFilterParametric: OcaActuator, @unchecked Sendable {
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.5"),
     getMethodID: OcaMethodID("4.9"),
-    setMethodID: OcaMethodID("4.10")
+    setMethodID: OcaMethodID("4.10"),
+    ocp2Name: "Shape"
   )
   public var shapeParameter: OcaBoundedProperty<OcaFloat32>.PropertyValue
 
@@ -213,14 +217,16 @@ open class OcaFilterPolynomial: OcaActuator, @unchecked Sendable {
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.3"),
-    setMethodID: OcaMethodID("4.4")
+    setMethodID: OcaMethodID("4.4"),
+    ocp2Name: "Rate"
   )
   public var sampleRate: OcaBoundedProperty<OcaFrequency>.PropertyValue
 
   /// the maximum number of elements of ``a`` and ``b``
   @OcaProperty(
     propertyID: OcaPropertyID("4.4"),
-    getMethodID: OcaMethodID("4.5")
+    getMethodID: OcaMethodID("4.5"),
+    ocp2Name: "Order"
   )
   public var maxOrder: OcaProperty<OcaUint8>.PropertyValue
 
@@ -273,7 +279,8 @@ open class OcaFilterFIR: OcaActuator, @unchecked Sendable {
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.4"),
-    setMethodID: OcaMethodID("4.5")
+    setMethodID: OcaMethodID("4.5"),
+    ocp2Name: "Rate"
   )
   public var sampleRate: OcaBoundedProperty<OcaFrequency>.PropertyValue
 }
@@ -312,21 +319,24 @@ open class OcaFilterArbitraryCurve: OcaActuator, @unchecked Sendable {
   @OcaBoundedProperty(
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.3"),
-    setMethodID: OcaMethodID("4.4")
+    setMethodID: OcaMethodID("4.4"),
+    ocp2Name: "Rate"
   )
   public var sampleRate: OcaBoundedProperty<OcaFrequency>.PropertyValue
 
   /// minimum number of points the transfer function must specify
   @OcaProperty(
     propertyID: OcaPropertyID("4.3"),
-    getMethodID: OcaMethodID("4.5")
+    getMethodID: OcaMethodID("4.5"),
+    ocp2Name: "Min"
   )
   public var tfMinLength: OcaProperty<OcaUint16>.PropertyValue
 
   /// maximum number of points the transfer function may specify
   @OcaProperty(
     propertyID: OcaPropertyID("4.4"),
-    getMethodID: OcaMethodID("4.6")
+    getMethodID: OcaMethodID("4.6"),
+    ocp2Name: "Max"
   )
   public var tfMaxLength: OcaProperty<OcaUint16>.PropertyValue
 }
