@@ -578,6 +578,22 @@ private struct RawWebSocket {
   }
 
   func receive() async throws -> (opcode: UInt8, payload: [UInt8]) {
+    let (_, opcode, payload) = try await receiveFrame()
+    return (opcode, payload)
+  }
+
+  /// Reads one message, reassembling it from continuation frames.
+  func receiveMessage() async throws -> (opcode: UInt8, payload: [UInt8]) {
+    var (fin, opcode, payload) = try await receiveFrame()
+    while !fin {
+      let (nextFin, _, fragment) = try await receiveFrame()
+      payload += fragment
+      fin = nextFin
+    }
+    return (opcode, payload)
+  }
+
+  private func receiveFrame() async throws -> (fin: Bool, opcode: UInt8, payload: [UInt8]) {
     let header = try await socket.read(bytes: 2)
     var length = Int(header[1] & 0x7F)
     if length == 126 {
@@ -588,7 +604,7 @@ private struct RawWebSocket {
     let mask = header[1] & 0x80 != 0 ? try await socket.read(bytes: 4) : nil
     var payload = length > 0 ? try await socket.read(bytes: length) : []
     if let mask { payload = payload.enumerated().map { $1 ^ mask[$0 % 4] } }
-    return (header[0] & 0x0F, payload)
+    return (header[0] & 0x80 != 0, header[0] & 0x0F, payload)
   }
 
   /// Reads until the device's close frame and returns its status code.
@@ -809,6 +825,117 @@ final class Ocp2WebSocketTests: XCTestCase {
     )
     let response = try XCTUnwrap((object["Responses"] as? [[String: Any]])?.first, file: file, line: line)
     XCTAssertEqual(response["StatusCode"] as? String, "OK", file: file, line: line)
+  }
+}
+
+// MARK: - large hierarchies
+
+/// `blocks` blocks under the root, each holding `perBlock` gains.
+@OcaDevice
+private func buildWideHierarchy(_ device: OcaDevice, blocks: Int, perBlock: Int) async throws {
+  var oNo: OcaONo = 0x0010_0000
+  for b in 0..<blocks {
+    let block = try await SwiftOCADevice.OcaBlock<SwiftOCADevice.OcaRoot>(
+      objectNumber: oNo, role: "Block \(b)", deviceDelegate: device, addToRootBlock: true
+    )
+    oNo += 1
+    for g in 0..<perBlock {
+      let gain = try await SwiftOCADevice.OcaGain(
+        objectNumber: oNo, role: "Gain \(g)", deviceDelegate: device, addToRootBlock: false
+      )
+      try await block.add(actionObject: gain)
+      oNo += 1
+    }
+  }
+}
+
+/// A chain of `depth` nested blocks under the root.
+@OcaDevice
+private func buildDeepHierarchy(_ device: OcaDevice, depth: Int) async throws {
+  var oNo: OcaONo = 0x0020_0000
+  var parent: SwiftOCADevice.OcaBlock<SwiftOCADevice.OcaRoot>?
+  for d in 0..<depth {
+    let block = try await SwiftOCADevice.OcaBlock<SwiftOCADevice.OcaRoot>(
+      objectNumber: oNo, role: "Level \(d)", deviceDelegate: device, addToRootBlock: parent == nil
+    )
+    try await parent?.add(actionObject: block)
+    parent = block
+    oNo += 1
+  }
+}
+
+/// Every object number reachable from the device's root block.
+@OcaDevice
+private func recursiveMemberONos(of device: OcaDevice) async -> Set<OcaONo> {
+  Set(await device.rootBlock!.mapRecursive { member, _ in member.objectNumber })
+}
+
+private let getMembersRecursiveOnRoot = Data(
+  "{\"ProtocolVersion\":1,\"Commands\":[{\"Handle\":1,\"TargetONo\":\(OcaRootBlockONo),\"MethodID\":[3,6]}]}\n"
+    .utf8
+)
+
+/// A GetMembersRecursive answer is the largest PDU a device sends. Ten thousand members
+/// put the JSON response well past the reader's 64 KiB chunk and any single WebSocket
+/// frame; a thousand nested blocks recurse on both device and controller.
+final class Ocp2LargeHierarchyTests: XCTestCase {
+  private static let wideBlocks = 10
+  private static let gainsPerBlock = 999
+  private static let depth = 1000
+
+  // the walk under test is the explicit one, not the tree refresh on connect
+  private static let options = Ocp1ConnectionOptions(flags: [], controlProtocol: .ocp2)
+
+  private func assertRecursiveMembers(
+    of fixture: TCPFixture,
+    file: StaticString = #filePath,
+    line: UInt = #line
+  ) async throws {
+    let expected = await recursiveMemberONos(of: fixture.device)
+    let connection = try await makeStreamConnection(port: fixture.port, options: Self.options)
+    try await connection.connect()
+
+    let members: OcaList<OcaBlockMember> = try await connection.rootBlock.getActionObjectsRecursive()
+    XCTAssertEqual(Set(members.map(\.memberObjectIdentification.oNo)), expected, file: file, line: line)
+    let resolved = try await connection.rootBlock.resolveActionObjectsRecursive()
+    XCTAssertEqual(resolved.count, expected.count, file: file, line: line)
+
+    try await connection.disconnect()
+  }
+
+  func testWideHierarchyOverTCP() async throws {
+    let fixture = try await TCPFixture()
+    defer { fixture.tearDown() }
+    try await buildWideHierarchy(fixture.device, blocks: Self.wideBlocks, perBlock: Self.gainsPerBlock)
+    try await assertRecursiveMembers(of: fixture)
+  }
+
+  func testDeepHierarchyOverTCP() async throws {
+    let fixture = try await TCPFixture()
+    defer { fixture.tearDown() }
+    try await buildDeepHierarchy(fixture.device, depth: Self.depth)
+    try await assertRecursiveMembers(of: fixture)
+  }
+
+  func testWideHierarchyOverWebSocket() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    try await buildWideHierarchy(device, blocks: Self.wideBlocks, perBlock: Self.gainsPerBlock)
+    let expected = await recursiveMemberONos(of: device)
+    let (_, endpointTask, port) = try await makeWSEndpoint(device: device)
+    defer { endpointTask.cancel() }
+
+    let webSocket = try await RawWebSocket(port: port)
+    try await webSocket.send(opcode: 0x1, getMembersRecursiveOnRoot)
+    let (opcode, payload) = try await webSocket.receiveMessage()
+    await webSocket.close()
+
+    XCTAssertEqual(opcode, 0x1, "expected a text frame")
+    let object = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(payload)) as? [String: Any])
+    let response = try XCTUnwrap((object["Responses"] as? [[String: Any]])?.first)
+    XCTAssertEqual(response["StatusCode"] as? String, "OK")
+    let objects = try XCTUnwrap((response["Parameters"] as? [String: Any])?["Objects"] as? [Any])
+    XCTAssertEqual(objects.count, expected.count)
   }
 }
 
