@@ -50,6 +50,8 @@ public typealias Ocp1TCPConnection = Ocp1CFSocketTCPConnection
 public typealias Ocp1WSConnection = Ocp1FlyingFoxConnection
 #endif
 
+/// Event data arrives in the connection's `controlProtocol.parameterFormat`; decode it
+/// with `OcaEventDataCoding`.
 public typealias OcaSubscriptionCallback = @Sendable (OcaEvent, Data) async throws
   -> ()
 
@@ -133,8 +135,7 @@ public struct Ocp1ConnectionOptions: Sendable {
   public let batchingOptions: BatchingOptions?
   /// The control protocol to speak; the transport is chosen by the connection class.
   public let controlProtocol: OcaControlProtocol
-  /// Largest PDU accepted from the device. Only enforced for OCP.2 (OCP.1 PDUs are
-  /// bounded by their 32-bit size field).
+  /// Largest PDU accepted from the device, excluding OCP.2's line terminator.
   public let maximumPduSize: Int
   /// Overrides the transport's default keep-alive interval when set; `.zero` disables
   /// keep-alives.
@@ -267,15 +268,12 @@ open class Ocp1Connection: CustomStringConvertible {
 
   public internal(set) var options: Ocp1ConnectionOptions
 
+  /// The control protocol is fixed at initialization, so the one in `options` is
+  /// ignored: construct a new connection to speak a different one.
   public func set(options: Ocp1ConnectionOptions) async throws {
     let oldFlags = self.options.flags
     let oldBatchOptions = self.options.batchingOptions
-    // the control protocol is fixed at initialization: construct a new connection to
-    // speak a different one
-    guard options.controlProtocol == controlProtocol else {
-      throw Ocp1Error.unsupportedControlProtocol
-    }
-    self.options = options
+    self.options = options.copy(controlProtocol: controlProtocol)
 
     if oldFlags.symmetricDifference(options.flags).contains(.enableTracing) {
       _configureTracing()
@@ -460,12 +458,7 @@ open class Ocp1Connection: CustomStringConvertible {
 
   /// The connection prefix for the protocol in use: `ocp1` on OCP.1, `ocp2` on OCP.2.
   package nonisolated func _connectionPrefix(ocp1: String, ocp2: String) -> String {
-    switch controlProtocol {
-    case .ocp1: ocp1
-    #if NonEmbeddedBuild
-    case .ocp2: ocp2
-    #endif
-    }
+    controlProtocol.connectionPrefix(ocp1: ocp1, ocp2: ocp2)
   }
 }
 
