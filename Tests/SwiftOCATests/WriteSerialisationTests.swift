@@ -35,6 +35,9 @@ private final class ChunkedWriteConnection: Ocp1Connection, @unchecked Sendable 
   /// how long the first writer waits for a second to reach the transport, so that their
   /// bytes race. Only the tests that submit writers concurrently need it.
   nonisolated(unsafe) var awaitSecondWriter: Duration = .zero
+  /// how long a writer waits mid-PDU for a concurrent writer's byte to land. Only the
+  /// test that asserts unserialised writes interleave needs it.
+  nonisolated(unsafe) var awaitInterleave: Duration = .zero
   /// a throwing suspension partway through the PDU, so an aborted write truncates it
   nonisolated(unsafe) var midWritePause: Duration = .zero
   private var inFlight = 0
@@ -77,6 +80,16 @@ private final class ChunkedWriteConnection: Ocp1Connection, @unchecked Sendable 
       }
       chunks.append(byte)
       await Task.yield()
+      // Yielding alone cannot make two concurrent writers alternate: it enqueues the
+      // resumption on the global executor, so which writer the connection's actor takes
+      // next is the scheduler's choice, and a loaded runner lets one append its whole
+      // PDU before the other is resumed at all. Wait for the other writer's byte
+      // instead. Costs nothing when no one else holds the transport, which is every
+      // test but one -- and when the write queue is doing its job.
+      let interleave = ContinuousClock.now.advanced(by: awaitInterleave)
+      while inFlight > 1, chunks.last == byte, ContinuousClock.now < interleave {
+        await Task.yield()
+      }
     }
     return data.count
   }
@@ -167,6 +180,7 @@ final class WriteSerialisationTests: XCTestCase {
     let connection = await makeConnection()
     connection.datagram = true
     connection.awaitSecondWriter = .seconds(5)
+    connection.awaitInterleave = .seconds(1)
 
     await sendConcurrently(on: connection, tags: [0xAA, 0xBB])
 
