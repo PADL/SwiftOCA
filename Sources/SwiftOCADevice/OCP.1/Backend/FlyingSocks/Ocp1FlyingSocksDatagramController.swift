@@ -34,7 +34,7 @@ import Glibc
 package actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   package nonisolated var flags: OcaControllerFlags { .supportsLocking }
   package nonisolated var connectionPrefix: String {
-    controlProtocol == .ocp1 ? OcaUdpConnectionPrefix : OcaJsonUdpConnectionPrefix
+    controlProtocol.connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
   }
 
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()

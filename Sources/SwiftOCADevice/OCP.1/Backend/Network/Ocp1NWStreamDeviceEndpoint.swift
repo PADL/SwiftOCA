@@ -261,7 +261,7 @@ public final class Ocp1NWTCPDeviceEndpoint: Ocp1NWStreamDeviceEndpoint {
   }
 
   override public nonisolated var controllerConnectionPrefix: String {
-    controlProtocol == .ocp1 ? OcaTcpConnectionPrefix : OcaJsonTcpConnectionPrefix
+    controlProtocol.connectionPrefix(ocp1: OcaTcpConnectionPrefix, ocp2: OcaJsonTcpConnectionPrefix)
   }
 
   override public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {

@@ -40,9 +40,10 @@ package actor OcaLocalController: Ocp1ControllerInternal {
   init(endpoint: OcaLocalDeviceEndpoint) async {
     self.endpoint = endpoint
     controlProtocol = endpoint.controlProtocol
-    _connectionPrefix = endpoint.controlProtocol == .ocp1
-      ? OcaLocalConnectionPrefix
-      : OcaJsonLocalConnectionPrefix
+    _connectionPrefix = endpoint.controlProtocol.connectionPrefix(
+      ocp1: OcaLocalConnectionPrefix,
+      ocp2: OcaJsonLocalConnectionPrefix
+    )
   }
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {

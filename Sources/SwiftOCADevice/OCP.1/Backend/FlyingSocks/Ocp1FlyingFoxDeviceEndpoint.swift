@@ -177,6 +177,8 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     let routes = Dictionary(grouping: self.paths, by: \.value).mapValues { $0.map(\.key) }
     for (path, sharing) in routes {
       await httpServer.appendRoute(HTTPRoute("GET \(path)")) { [weak self] request in
+        // FlyingFox keeps only the last of a repeated header, so a subprotocol
+        // offered on a second Sec-WebSocket-Protocol line is not seen
         let offered = request.headers[Self.webSocketProtocolHeader]?
           .split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) } ?? []
         let controlProtocol = Self.controlProtocol(offering: offered, among: sharing)

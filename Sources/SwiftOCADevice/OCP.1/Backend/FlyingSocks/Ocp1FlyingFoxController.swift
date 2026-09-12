@@ -69,9 +69,10 @@ package actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConve
     self.controlProtocol = controlProtocol
     let usesTextFrames = controlProtocol.webSocketUsesTextFrames
     _usesTextFrames = usesTextFrames
-    _connectionPrefix = usesTextFrames
-      ? OcaJsonWebSocketTcpConnectionPrefix
-      : OcaWebSocketTcpConnectionPrefix
+    _connectionPrefix = controlProtocol.connectionPrefix(
+      ocp1: OcaWebSocketTcpConnectionPrefix,
+      ocp2: OcaJsonWebSocketTcpConnectionPrefix
+    )
     let maximumPduSize = endpoint?.maximumPduSize ?? OcaControlProtocol.defaultMaximumPduSize
     _messages = AsyncThrowingStream { continuation in
       let task = Task { [inputStream] in

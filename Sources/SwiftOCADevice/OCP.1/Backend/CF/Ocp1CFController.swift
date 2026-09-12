@@ -127,11 +127,16 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
       throwing: Error.self
     )
 
-    let isJson = endpoint.controlProtocol != .ocp1
-    if peerAddress.family == AF_LOCAL {
-      connectionPrefix = isJson ? OcaJsonLocalConnectionPrefix : OcaLocalConnectionPrefix
+    connectionPrefix = if peerAddress.family == AF_LOCAL {
+      endpoint.controlProtocol.connectionPrefix(
+        ocp1: OcaLocalConnectionPrefix,
+        ocp2: OcaJsonLocalConnectionPrefix
+      )
     } else {
-      connectionPrefix = isJson ? OcaJsonTcpConnectionPrefix : OcaTcpConnectionPrefix
+      endpoint.controlProtocol.connectionPrefix(
+        ocp1: OcaTcpConnectionPrefix,
+        ocp2: OcaJsonTcpConnectionPrefix
+      )
     }
 
     receiveMessageTask = Task { [weak self] in
@@ -226,7 +231,7 @@ package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerD
   package nonisolated var flags: OcaControllerFlags { .supportsLocking }
 
   package nonisolated var connectionPrefix: String {
-    controlProtocol == .ocp1 ? OcaUdpConnectionPrefix : OcaJsonUdpConnectionPrefix
+    controlProtocol.connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
   }
 
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()

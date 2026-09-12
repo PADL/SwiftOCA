@@ -152,6 +152,16 @@ package extension OcaControlProtocol {
     }
   }
 
+  /// The connection prefix for the protocol in use: `ocp1` on OCP.1, `ocp2` on OCP.2.
+  func connectionPrefix(ocp1: String, ocp2: String) -> String {
+    switch self {
+    case .ocp1: ocp1
+    #if NonEmbeddedBuild
+    case .ocp2: ocp2
+    #endif
+    }
+  }
+
   /// WebSocket subprotocol to offer/accept, or `nil` for none.
   var webSocketSubprotocol: String? {
     switch self {

@@ -54,12 +54,17 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
   }
 
   init(endpoint: Ocp1FlyingSocksStreamDeviceEndpoint, socket: AsyncSocket) throws {
-    let isJson = endpoint.controlProtocol != .ocp1
     if case .unix = try? socket.socket.sockname() {
-      connectionPrefix = isJson ? OcaJsonLocalConnectionPrefix : OcaLocalConnectionPrefix
+      connectionPrefix = endpoint.controlProtocol.connectionPrefix(
+        ocp1: OcaLocalConnectionPrefix,
+        ocp2: OcaJsonLocalConnectionPrefix
+      )
       flags = [.supportsLocking, .isLocal]
     } else {
-      connectionPrefix = isJson ? OcaJsonTcpConnectionPrefix : OcaTcpConnectionPrefix
+      connectionPrefix = endpoint.controlProtocol.connectionPrefix(
+        ocp1: OcaTcpConnectionPrefix,
+        ocp2: OcaJsonTcpConnectionPrefix
+      )
       flags = .supportsLocking
       try socket.socket.setValue(
         true,
