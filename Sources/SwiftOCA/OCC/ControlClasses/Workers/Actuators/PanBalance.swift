@@ -28,7 +28,7 @@ open class OcaPanBalance: OcaActuator, @unchecked Sendable {
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.3"),
     setMethodID: OcaMethodID("4.4"),
-    ocp2Name: "Gain",
+    ocp2GetName: "Gain",
     ocp2SetName: "Gain"
   )
   public var midpointGain: OcaBoundedProperty<OcaDB>.PropertyValue

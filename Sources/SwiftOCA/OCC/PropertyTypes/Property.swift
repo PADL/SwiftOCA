@@ -84,9 +84,9 @@ public protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
   var getMethodID: OcaMethodID? { get }
   var setMethodID: OcaMethodID? { get }
 
-  /// The property's OCP.2 wire name: an explicit `ocp2Name`, else derived from its
-  /// Swift name (`Ocp2Naming.wireName`).
-  func _ocp2WireName(_ object: OcaRoot) -> String?
+  /// The property's OCP.2 getter name: an explicit `ocp2GetName`, else derived from
+  /// its Swift name (`Ocp2Naming.wireName`).
+  func _ocp2GetName(_ object: OcaRoot) -> String?
 
   /// The OCP.2 names of the getter's response parameters (a bounded property's
   /// `Gain`, `minGain`, `maxGain`).
@@ -106,7 +106,7 @@ public protocol OcaPropertySubjectRepresentable: OcaPropertyRepresentable {
 extension OcaPropertySubjectRepresentable {
   /// Unless a property states one, the setter's parameter is named as the getter's.
   public func _ocp2SetName(_ object: OcaRoot) -> String? {
-    _ocp2WireName(object)
+    _ocp2GetName(object)
   }
 
   public var async: AnyAsyncSequence<Result<any Sendable, Error>> {
@@ -292,24 +292,24 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
 
   /// The AES70-2A name of the property's accessor parameter, where it differs from
   /// the Swift property name upper-cased (the model's `Name` for `deviceName`).
-  public let ocp2Name: String?
+  public let ocp2GetName: String?
 
   /// The AES70-2A name of the setter's parameter, where the model names it differently
-  /// from the getter's response (`Message` out, `Text` in); `nil` uses `ocp2Name`.
+  /// from the getter's response (`Message` out, `Text` in); `nil` uses `ocp2GetName`.
   public let ocp2SetName: String?
 
   init(
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID?,
     setMethodID: OcaMethodID?,
-    ocp2Name: String? = nil,
+    ocp2GetName: String? = nil,
     ocp2SetName: String? = nil,
     setValueTransformer: SetValueTransformer?
   ) {
     self.propertyID = propertyID
     self.getMethodID = getMethodID
     self.setMethodID = setMethodID
-    self.ocp2Name = ocp2Name
+    self.ocp2GetName = ocp2GetName
     self.ocp2SetName = ocp2SetName
     subject = AsyncCurrentValueSubject(PropertyValue.initial)
     self.setValueTransformer = setValueTransformer
@@ -319,14 +319,14 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID? = nil,
     setMethodID: OcaMethodID? = nil,
-    ocp2Name: String? = nil,
+    ocp2GetName: String? = nil,
     ocp2SetName: String? = nil
   ) {
     self.init(
       propertyID: propertyID,
       getMethodID: getMethodID,
       setMethodID: setMethodID,
-      ocp2Name: ocp2Name,
+      ocp2GetName: ocp2GetName,
       ocp2SetName: ocp2SetName,
       setValueTransformer: nil
     )
@@ -401,9 +401,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     return _ocp2ResponseNames(object)
   }
 
-  public func _ocp2WireName(_ object: OcaRoot) -> String? {
-    if let ocp2Name {
-      return ocp2Name
+  public func _ocp2GetName(_ object: OcaRoot) -> String? {
+    if let ocp2GetName {
+      return ocp2GetName
     }
     guard let name = object.propertyName(for: propertyID) else { return nil }
     return Ocp2Naming.wireName(name)
@@ -413,17 +413,17 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     if let ocp2SetName {
       return ocp2SetName
     }
-    return _ocp2WireName(object)
+    return _ocp2GetName(object)
   }
 
-  /// OCP.2 names for the getter's response: the property's wire name, or for a
+  /// OCP.2 names for the getter's response: the property's getter name, or for a
   /// bounded value the `Gain`, `minGain`, `maxGain` triple.
   public func _ocp2ResponseNames(_ object: OcaRoot) -> [String]? {
-    guard let wireName = _ocp2WireName(object) else { return nil }
+    guard let getName = _ocp2GetName(object) else { return nil }
     if Value.self is any OcaBoundedPropertyValueRepresentable.Type {
-      return Ocp2Naming.boundedWireNames(wireName)
+      return Ocp2Naming.boundedWireNames(getName)
     }
-    return [wireName]
+    return [getName]
   }
 
   func setValueIfMutable(

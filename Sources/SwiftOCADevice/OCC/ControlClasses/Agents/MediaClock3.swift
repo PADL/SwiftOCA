@@ -48,7 +48,7 @@ open class OcaMediaClock3: OcaAgent {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.5"),
     getMethodID: OcaMethodID("3.7"),
-    ocp2Name: "Rates"
+    ocp2GetName: "Rates"
   )
   public var supportedRates: OcaMultiMap<OcaONo, OcaMediaClockRate> = [:]
 

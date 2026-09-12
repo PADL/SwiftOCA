@@ -30,7 +30,7 @@ open class OcaSwitch: OcaActuator {
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.5"),
     setMethodID: OcaMethodID("4.6"),
-    ocp2Name: "Names",
+    ocp2GetName: "Names",
     ocp2SetName: "Names"
   )
   public var positionNames = [OcaString]()
@@ -39,7 +39,7 @@ open class OcaSwitch: OcaActuator {
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.9"),
     setMethodID: OcaMethodID("4.10"),
-    ocp2Name: "Flags",
+    ocp2GetName: "Flags",
     ocp2SetName: "Flags"
   )
   public var positionEnableds = [OcaBoolean]()

@@ -27,7 +27,7 @@ open class OcaPowerSupply: OcaAgent, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.2"),
-    ocp2Name: "Info"
+    ocp2GetName: "Info"
   )
   public var modelInfo: OcaProperty<OcaString>.PropertyValue
 
@@ -50,7 +50,7 @@ open class OcaPowerSupply: OcaAgent, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.5"),
     getMethodID: OcaMethodID("3.6"),
-    ocp2Name: "Fraction"
+    ocp2GetName: "Fraction"
   )
   public var loadFractionAvailable: OcaProperty<OcaFloat32>.PropertyValue
 
@@ -59,7 +59,7 @@ open class OcaPowerSupply: OcaAgent, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.6"),
     getMethodID: OcaMethodID("3.7"),
-    ocp2Name: "Fraction"
+    ocp2GetName: "Fraction"
   )
   public var storageFractionAvailable: OcaProperty<OcaFloat32>.PropertyValue
 

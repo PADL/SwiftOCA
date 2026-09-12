@@ -35,7 +35,7 @@ open class OcaMediaRecorderPlayer: OcaDatasetWorker, @unchecked Sendable {
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.10"),
     setMethodID: OcaMethodID("4.11"),
-    ocp2Name: "Functions",
+    ocp2GetName: "Functions",
     ocp2SetName: "Functions"
   )
   public var trackFunctions: OcaProperty<[OcaMediaTrackFunction]>.PropertyValue
@@ -44,7 +44,7 @@ open class OcaMediaRecorderPlayer: OcaDatasetWorker, @unchecked Sendable {
     propertyID: OcaPropertyID("4.4"),
     getMethodID: OcaMethodID("4.12"),
     setMethodID: OcaMethodID("4.13"),
-    ocp2Name: "Option",
+    ocp2GetName: "Option",
     ocp2SetName: "Option"
   )
   public var playOption: OcaProperty<OcaMediaPlayOption>.PropertyValue

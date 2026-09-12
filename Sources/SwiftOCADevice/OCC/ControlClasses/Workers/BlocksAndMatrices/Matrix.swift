@@ -355,7 +355,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.11"),
     setMethodID: OcaMethodID("3.12"),
-    ocp2Name: "Ports",
+    ocp2GetName: "Ports",
     ocp2SetName: "Ports"
   )
   public var portsPerRow: OcaUint8 = 0
@@ -364,7 +364,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     propertyID: OcaPropertyID("3.8"),
     getMethodID: OcaMethodID("3.13"),
     setMethodID: OcaMethodID("3.14"),
-    ocp2Name: "Ports",
+    ocp2GetName: "Ports",
     ocp2SetName: "Ports"
   )
   public var portsPerColumn: OcaUint8 = 0

@@ -28,14 +28,14 @@ open class OcaPowerManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.3"),
-    ocp2Name: "PsuList"
+    ocp2GetName: "PsuList"
   )
   public var powerSupplies: OcaListProperty<OcaONo>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.3"),
     getMethodID: OcaMethodID("3.4"),
-    ocp2Name: "PsuList"
+    ocp2GetName: "PsuList"
   )
   public var activePowerSupplies: OcaListProperty<OcaONo>.PropertyValue
 
@@ -68,7 +68,7 @@ open class OcaPowerManager: OcaManager, @unchecked Sendable {
   @OcaProperty(
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.6"),
-    ocp2Name: "State"
+    ocp2GetName: "State"
   )
   public var autoState: OcaProperty<OcaBoolean>.PropertyValue
 

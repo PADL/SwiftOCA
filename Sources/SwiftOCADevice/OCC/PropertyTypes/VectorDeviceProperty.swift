@@ -59,20 +59,20 @@ public struct OcaVectorDeviceProperty<
     yPropertyID: OcaPropertyID,
     getMethodID: OcaMethodID? = nil,
     setMethodID: OcaMethodID? = nil,
-    ocp2Name: String? = nil
+    ocp2GetName: String? = nil
   ) {
     storage = OcaDeviceProperty(
       wrappedValue: wrappedValue,
       propertyID: xPropertyID,
       getMethodID: getMethodID,
       setMethodID: setMethodID,
-      ocp2Name: ocp2Name
+      ocp2GetName: ocp2GetName
     )
 
     self.yPropertyID = yPropertyID
   }
 
-  public var ocp2Name: String? { storage.ocp2Name }
+  public var ocp2GetName: String? { storage.ocp2GetName }
 
   /// A vector's getter returns one record with two fields, so it supplies no explicit
   /// names: the encoder derives `X` and `Y` from the record. A single name would be

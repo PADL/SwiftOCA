@@ -26,7 +26,7 @@ import XCTest
 /// alone is not a deviation: SwiftOCA upper-cases the first letter on send and
 /// `Ocp2Naming.matches` folds case on receipt, and the model itself spells 32 of its
 /// parameter names both ways (`Gain`/`gain`, `Label`/`label`). What is left is the
-/// names no derivation recovers, which need an `ocp2Name:` on the property wrapper.
+/// names no derivation recovers, which need an `ocp2GetName:` on the property wrapper.
 ///
 /// Informational: it prints every deviation and fails only if the model cannot be
 /// read. Point `AES70_2_XMI` at `AES70-2-2023-231218.xmi` (or a later revision) to
@@ -114,10 +114,10 @@ final class Ocp2NamingOracleTests: XCTestCase {
               let propertyID = property.propertyIDs.first
         else { continue }
         _ = swiftName
-        guard let wireName = property._ocp2WireName(object),
+        guard let getName = property._ocp2GetName(object),
               let derived = property._ocp2ResponseNames(object)
         else { continue }
-        let setName = property._ocp2SetName(object) ?? wireName
+        let setName = property._ocp2SetName(object) ?? getName
 
         // the accessor lives on the class at the property's definition level
         var definingClass = classID

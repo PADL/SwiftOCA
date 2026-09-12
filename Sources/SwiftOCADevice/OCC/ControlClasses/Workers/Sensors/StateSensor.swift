@@ -26,7 +26,7 @@ open class OcaStateSensor: OcaSensor {
   @OcaBoundedDeviceProperty(
     propertyID: OcaPropertyID("4.1"),
     getMethodID: OcaMethodID("4.1"),
-    ocp2Name: "State"
+    ocp2GetName: "State"
   )
   public var reading = OcaBoundedPropertyValue<OcaUint16>(value: 0, in: 0...0)
 
@@ -35,7 +35,7 @@ open class OcaStateSensor: OcaSensor {
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.2"),
     setMethodID: OcaMethodID("4.3"),
-    ocp2Name: "Names",
+    ocp2GetName: "Names",
     ocp2SetName: "Names"
   )
   public var stateNames: OcaList<OcaString> = []

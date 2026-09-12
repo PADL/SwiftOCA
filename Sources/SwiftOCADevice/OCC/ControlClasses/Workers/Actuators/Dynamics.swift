@@ -32,7 +32,7 @@ open class OcaDynamics: OcaActuator {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.2"),
-    ocp2Name: "Gain"
+    ocp2GetName: "Gain"
   )
   public var dynamicGain: OcaDB = 0.0
 
@@ -40,7 +40,7 @@ open class OcaDynamics: OcaActuator {
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.3"),
     setMethodID: OcaMethodID("4.4"),
-    ocp2Name: "Func",
+    ocp2GetName: "Func",
     ocp2SetName: "Func"
   )
   public var function: OcaDynamicsFunction = .none
@@ -64,7 +64,7 @@ open class OcaDynamics: OcaActuator {
     propertyID: OcaPropertyID("4.6"),
     getMethodID: OcaMethodID("4.9"),
     setMethodID: OcaMethodID("4.10"),
-    ocp2Name: "Units",
+    ocp2GetName: "Units",
     ocp2SetName: "Units"
   )
   public var thresholdPresentationUnits: OcaPresentationUnit = .dBu
@@ -73,7 +73,7 @@ open class OcaDynamics: OcaActuator {
     propertyID: OcaPropertyID("4.7"),
     getMethodID: OcaMethodID("4.11"),
     setMethodID: OcaMethodID("4.12"),
-    ocp2Name: "Law",
+    ocp2GetName: "Law",
     ocp2SetName: "Law"
   )
   public var detectorLaw: OcaLevelDetectionLaw = .none
@@ -82,7 +82,7 @@ open class OcaDynamics: OcaActuator {
     propertyID: OcaPropertyID("4.8"),
     getMethodID: OcaMethodID("4.13"),
     setMethodID: OcaMethodID("4.14"),
-    ocp2Name: "Time",
+    ocp2GetName: "Time",
     ocp2SetName: "Time"
   )
   public var attackTime = OcaBoundedPropertyValue<OcaTimeInterval>(value: 0, in: 0...1)
@@ -91,7 +91,7 @@ open class OcaDynamics: OcaActuator {
     propertyID: OcaPropertyID("4.9"),
     getMethodID: OcaMethodID("4.15"),
     setMethodID: OcaMethodID("4.16"),
-    ocp2Name: "Time",
+    ocp2GetName: "Time",
     ocp2SetName: "Time"
   )
   public var releaseTime = OcaBoundedPropertyValue<OcaTimeInterval>(value: 0, in: 0...1)
@@ -100,7 +100,7 @@ open class OcaDynamics: OcaActuator {
     propertyID: OcaPropertyID("4.10"),
     getMethodID: OcaMethodID("4.17"),
     setMethodID: OcaMethodID("4.18"),
-    ocp2Name: "Time",
+    ocp2GetName: "Time",
     ocp2SetName: "Time"
   )
   public var holdTime = OcaBoundedPropertyValue<OcaTimeInterval>(value: 0, in: 0...1)
@@ -109,7 +109,7 @@ open class OcaDynamics: OcaActuator {
     propertyID: OcaPropertyID("4.11"),
     getMethodID: OcaMethodID("4.21"),
     setMethodID: OcaMethodID("4.22"),
-    ocp2Name: "Limit",
+    ocp2GetName: "Limit",
     ocp2SetName: "Limit"
   )
   public var dynamicGainCeiling = OcaBoundedPropertyValue<OcaDB>(
@@ -121,7 +121,7 @@ open class OcaDynamics: OcaActuator {
     propertyID: OcaPropertyID("4.12"),
     getMethodID: OcaMethodID("4.19"),
     setMethodID: OcaMethodID("4.20"),
-    ocp2Name: "Limit",
+    ocp2GetName: "Limit",
     ocp2SetName: "Limit"
   )
   public var dynamicGainFloor = OcaBoundedPropertyValue<OcaDB>(
@@ -134,7 +134,7 @@ open class OcaDynamics: OcaActuator {
     propertyID: OcaPropertyID("4.13"),
     getMethodID: OcaMethodID("4.23"),
     setMethodID: OcaMethodID("4.24"),
-    ocp2Name: "Parameter",
+    ocp2GetName: "Parameter",
     ocp2SetName: "Parameter"
   )
   public var kneeParameter = OcaBoundedPropertyValue<OcaFloat32>(value: 0, in: 0...1)
@@ -210,7 +210,7 @@ open class OcaDynamicsDetector: OcaActuator {
     propertyID: OcaPropertyID("4.2"),
     getMethodID: OcaMethodID("4.3"),
     setMethodID: OcaMethodID("4.4"),
-    ocp2Name: "Time",
+    ocp2GetName: "Time",
     ocp2SetName: "Time"
   )
   public var attackTime = OcaBoundedPropertyValue<OcaTimeInterval>(value: 0, in: 0...1)
@@ -219,7 +219,7 @@ open class OcaDynamicsDetector: OcaActuator {
     propertyID: OcaPropertyID("4.3"),
     getMethodID: OcaMethodID("4.5"),
     setMethodID: OcaMethodID("4.6"),
-    ocp2Name: "Time",
+    ocp2GetName: "Time",
     ocp2SetName: "Time"
   )
   public var releaseTime = OcaBoundedPropertyValue<OcaTimeInterval>(value: 0, in: 0...1)
@@ -228,7 +228,7 @@ open class OcaDynamicsDetector: OcaActuator {
     propertyID: OcaPropertyID("4.4"),
     getMethodID: OcaMethodID("4.7"),
     setMethodID: OcaMethodID("4.8"),
-    ocp2Name: "Time",
+    ocp2GetName: "Time",
     ocp2SetName: "Time"
   )
   public var holdTime = OcaBoundedPropertyValue<OcaTimeInterval>(value: 0, in: 0...1)
@@ -279,7 +279,7 @@ open class OcaDynamicsCurve: OcaActuator {
     propertyID: OcaPropertyID("4.1"),
     getMethodID: OcaMethodID("4.1"),
     setMethodID: OcaMethodID("4.2"),
-    ocp2Name: "NSegments",
+    ocp2GetName: "NSegments",
     ocp2SetName: "NSegments"
   )
   public var nSegments = OcaBoundedPropertyValue<OcaUint8>(value: 1, in: 1...8)
@@ -289,7 +289,7 @@ open class OcaDynamicsCurve: OcaActuator {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("4.2"),
     setMethodID: OcaMethodID("4.4"),
-    ocp2Name: "Threshold",
+    ocp2GetName: "Threshold",
     ocp2SetName: "Threshold"
   )
   public var thresholds: OcaList<OcaDBr> = []
@@ -299,7 +299,7 @@ open class OcaDynamicsCurve: OcaActuator {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("4.3"),
     setMethodID: OcaMethodID("4.6"),
-    ocp2Name: "Slope",
+    ocp2GetName: "Slope",
     ocp2SetName: "Slope"
   )
   public var slopes: OcaList<OcaFloat32> = []
@@ -309,7 +309,7 @@ open class OcaDynamicsCurve: OcaActuator {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("4.4"),
     setMethodID: OcaMethodID("4.8"),
-    ocp2Name: "Parameters",
+    ocp2GetName: "Parameters",
     ocp2SetName: "Parameters"
   )
   public var kneeParameters: OcaList<OcaFloat32> = []
@@ -318,7 +318,7 @@ open class OcaDynamicsCurve: OcaActuator {
     propertyID: OcaPropertyID("4.5"),
     getMethodID: OcaMethodID("4.11"),
     setMethodID: OcaMethodID("4.12"),
-    ocp2Name: "Gain",
+    ocp2GetName: "Gain",
     ocp2SetName: "Gain"
   )
   public var dynamicGainFloor = OcaBoundedPropertyValue<OcaDB>(
@@ -330,7 +330,7 @@ open class OcaDynamicsCurve: OcaActuator {
     propertyID: OcaPropertyID("4.6"),
     getMethodID: OcaMethodID("4.9"),
     setMethodID: OcaMethodID("4.10"),
-    ocp2Name: "Gain",
+    ocp2GetName: "Gain",
     ocp2SetName: "Gain"
   )
   public var dynamicGainCeiling = OcaBoundedPropertyValue<OcaDB>(

@@ -76,7 +76,7 @@ from Swift identifiers rather than carrying a copy of the model:
 
 1. **Property accessors** are named after the Swift property, first letter
    upper-cased (`gain` → `Gain`; a bounded property's getter returns `Gain`,
-   `MinGain`, `MaxGain`). Where the model's spelling differs, pass `ocp2Name:`
+   `MinGain`, `MaxGain`). Where the model's spelling differs, pass `ocp2GetName:`
    to the property wrapper on both sides, e.g. `OcaDeviceManager`'s
    `deviceName` is the model's `Name`.
 2. **Parameter records** (`Ocp1ParametersReflectable` structs) use their field
@@ -103,7 +103,7 @@ run
 AES70_2_XMI=/path/to/AES70-2-2023-231218.xmi swift test --filter Ocp2NamingOracleTests
 ```
 
-and add `ocp2Name:` overrides where exact spelling matters for a peer.
+and add `ocp2GetName:` overrides where exact spelling matters for a peer.
 
 ## API notes
 
