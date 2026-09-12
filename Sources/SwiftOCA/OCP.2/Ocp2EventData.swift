@@ -21,9 +21,10 @@ import Foundation
 #endif
 
 /// Event data as delivered by a notification: OCP.1 bytes or an OCP.2 JSON object.
-package enum OcaEventDataCoding {
+/// A subscription callback receives the data in the connection's `parameterFormat`.
+public enum OcaEventDataCoding {
   /// Decodes event-specific data in `format`.
-  package static func decode<T: Decodable>(
+  public static func decode<T: Decodable>(
     _ type: T.Type,
     from data: Data,
     format: OcaParameterFormat
@@ -41,7 +42,7 @@ package enum OcaEventDataCoding {
   }
 
   /// The property a property-changed event refers to, without decoding its value.
-  package static func propertyID(from data: Data, format: OcaParameterFormat) throws -> OcaPropertyID {
+  public static func propertyID(from data: Data, format: OcaParameterFormat) throws -> OcaPropertyID {
     switch format {
     case .ocp1:
       return try OcaPropertyID(bytes: data)
@@ -60,7 +61,7 @@ package enum OcaEventDataCoding {
   }
 
   /// Encodes event-specific data in `format`.
-  package static func encode(_ value: some Encodable, format: OcaParameterFormat) throws -> Data {
+  public static func encode(_ value: some Encodable, format: OcaParameterFormat) throws -> Data {
     switch format {
     case .ocp1:
       return try Ocp1Encoder().encode(value)
@@ -74,7 +75,8 @@ package enum OcaEventDataCoding {
   }
 }
 
-package extension OcaControlProtocol {
+public extension OcaControlProtocol {
+  /// The format of parameters and event data carried by this protocol.
   var parameterFormat: OcaParameterFormat {
     switch self {
     case .ocp1: .ocp1
