@@ -75,17 +75,17 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
   )
   public var maxPortsPerPin: OcaProperty<OcaUint16>.PropertyValue
 
-  @OcaProperty(
+  @OcaBoundedProperty(
     propertyID: OcaPropertyID("3.7"),
     getMethodID: OcaMethodID("3.25")
   )
-  public var alignmentLevel: OcaProperty<OcaDBFS>.PropertyValue
+  public var alignmentLevel: OcaBoundedProperty<OcaDBFS>.PropertyValue
 
-  @OcaProperty(
+  @OcaBoundedProperty(
     propertyID: OcaPropertyID("3.8"),
     getMethodID: OcaMethodID("3.26")
   )
-  public var alignmentGain: OcaProperty<OcaDB>.PropertyValue
+  public var alignmentGain: OcaBoundedProperty<OcaDB>.PropertyValue
 
   public func getSourceConnectors() async throws -> [OcaMediaSourceConnector] {
     try await sendCommandRrq(methodID: OcaMethodID("3.9"))
