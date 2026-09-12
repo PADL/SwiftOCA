@@ -76,9 +76,8 @@ private extension OcaRoot {
     case .ocp2:
       var encoder = Ocp2Encoder()
       if let userInfo { encoder.userInfo = userInfo }
-      let object = try encoder.encodeParameters(parameters, parameterNames: parameterNames)
       return try Ocp1Parameters(
-        ocp2ParameterData: object.isEmpty ? Data() : Ocp2JSON.serialize(object)
+        ocp2Parameters: encoder.encodeParameters(parameters, parameterNames: parameterNames)
       )
     #endif
     }
@@ -101,7 +100,7 @@ private extension OcaRoot {
       if let userInfo { decoder.userInfo = userInfo }
       return try decoder.decodeParameters(
         U.self,
-        from: parameters.parameterData,
+        from: parameters.ocp2Parameters,
         parameterNames: parameterNames
       )
       #else

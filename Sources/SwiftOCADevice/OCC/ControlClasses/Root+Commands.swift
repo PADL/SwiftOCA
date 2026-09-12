@@ -53,7 +53,7 @@ public extension OcaRoot {
     case .ocp2:
       #if NonEmbeddedBuild
       do {
-        return try Ocp2Decoder().decodeParameters(U.self, from: command.parameters.parameterData)
+        return try Ocp2Decoder().decodeParameters(U.self, from: command.parameters.ocp2Parameters)
       } catch let error as Ocp1Error {
         throw error
       } catch {
@@ -114,10 +114,7 @@ public extension OcaController {
         parameters,
         parameterNames: names
       )
-      let parameters = try Ocp1Parameters(
-        ocp2ParameterData: object.isEmpty ? Data() : Ocp2JSON.serialize(object)
-      )
-      return Ocp1Response(statusCode: statusCode, parameters: parameters)
+      return Ocp1Response(statusCode: statusCode, parameters: Ocp1Parameters(ocp2Parameters: object))
       #else
       throw Ocp1Error.unsupportedControlProtocol
       #endif

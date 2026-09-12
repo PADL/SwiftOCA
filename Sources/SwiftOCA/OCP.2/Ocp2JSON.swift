@@ -159,8 +159,13 @@ package enum Ocp2JSON {
   }
 }
 
-/// Lets the JSON export convert coder output into `Sendable` containers.
+/// Lets the JSON export and message parameters hold coder output as `Sendable`
+/// containers.
 package extension Ocp2JSON {
+  static func sendableObject(_ object: [String: Any]) -> [String: any Sendable] {
+    object.mapValues { sendable($0) }
+  }
+
   static func sendable(_ json: Any) -> any Sendable {
     switch json {
     case let object as [String: Any]:

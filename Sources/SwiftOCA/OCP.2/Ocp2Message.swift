@@ -20,9 +20,8 @@ import Foundation
 /// AES70-4 clause 6.3: the OCP.2 PDU is a JSON object with `ProtocolVersion` and
 /// exactly one payload member. Messages are the same model types OCP.1 uses.
 ///
-/// Encoding assembles text directly so a message's already-serialised `Parameters`
-/// object can be spliced in unchanged; decoding goes through `JSONSerialization` and
-/// re-serialises each `Parameters` object for the message model.
+/// A message carries its `Parameters` as the parsed JSON object, so encoding splices
+/// it into the PDU and decoding stores the parsed member, without serialising either.
 package enum Ocp2Message {
   package static let protocolVersion = 1
 
@@ -138,8 +137,8 @@ package enum Ocp2Message {
   private static func parametersObject(_ parameters: Ocp1Parameters) throws -> [String: Any]? {
     switch parameters.format {
     case .ocp2:
-      guard !parameters.parameterData.isEmpty else { return nil }
-      return try Ocp2JSON.parseObject(parameters.parameterData)
+      guard let object = parameters.ocp2Parameters, !object.isEmpty else { return nil }
+      return object
     case .ocp1:
       guard parameters.isEmpty else { throw Ocp1Error.invalidMessageType }
       return nil
@@ -294,10 +293,9 @@ package enum Ocp2Message {
   }
 
   private static func parameters(_ json: Any?) throws -> Ocp1Parameters {
-    guard let json, !(json is NSNull) else { return Ocp1Parameters(ocp2ParameterData: Data()) }
+    guard let json, !(json is NSNull) else { return Ocp1Parameters(ocp2Parameters: [:]) }
     guard let object = json as? [String: Any] else { throw Ocp1Error.status(.badFormat) }
-    guard !object.isEmpty else { return Ocp1Parameters(ocp2ParameterData: Data()) }
-    return try Ocp1Parameters(ocp2ParameterData: Ocp2JSON.serialize(object))
+    return Ocp1Parameters(ocp2Parameters: object)
   }
 
   private static func decodeCommand(_ json: Any) throws -> Ocp1Command {
