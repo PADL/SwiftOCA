@@ -148,12 +148,12 @@ public extension OcaControllerDefaultSubscribing {
     let property = eventParameters.propertyID
     let format = controlProtocol.parameterFormat
     // encoded once, for the first subscription that is delivered
-    var encoded: Data?
-    func parameters() throws -> Data {
+    var encoded: OcaEncodedEventData?
+    func parameters() throws -> OcaEncodedEventData {
       if let encoded { return encoded }
-      let data = try eventParameters.encoded(as: format)
-      encoded = data
-      return data
+      let eventData = try eventParameters.encodedEventData(as: format)
+      encoded = eventData
+      return eventData
     }
 
     for subscription in subscriptions {
@@ -174,7 +174,7 @@ public extension OcaControllerDefaultSubscribing {
         }
         let eventData = Ocp1EventData(
           event: subscription.event,
-          eventParameters: try parameters()
+          eventParameters: try parameters().data
         )
         let ntfParams = Ocp1NtfParams(
           parameterCount: 2,
@@ -201,8 +201,7 @@ public extension OcaControllerDefaultSubscribing {
         let notification = Ocp1Notification2(
           event: subscription.event,
           notificationType: .event,
-          data: try parameters(),
-          dataFormat: format
+          eventData: try parameters()
         )
         if subscription.notificationDeliveryMode == .lightweight {
           try await (self as! OcaControllerLightweightNotifying)

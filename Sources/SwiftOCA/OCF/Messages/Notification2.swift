@@ -53,14 +53,41 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
   let notificationSize: OcaUint32
   let event: OcaEvent
   let notificationType: Ocp1Notification2Type
-  /// Event data (`.event`) or an OCP.1-encoded `Ocp1Notification2ExceptionData`
-  /// (`.exception`). Event data is in `dataFormat`.
-  let data: Data
-  /// The marshaling of `data` for an `.event` notification. Exception data is always
-  /// OCP.1-encoded, whatever the framing, so `throwIfException` works for both.
+  /// OCP.1 event data (`.event`) or an OCP.1-encoded `Ocp1Notification2ExceptionData`
+  /// (`.exception`). Exception data is always OCP.1-encoded, whatever the framing,
+  /// so `throwIfException` works for both.
+  private let _data: Data
+  #if NonEmbeddedBuild
+  /// OCP.2 event data, held as parsed and serialised only if `data` is asked for.
+  private let _ocp2Value: (any Sendable)?
+  #endif
+  /// The marshaling of the event data for an `.event` notification.
   package let dataFormat: OcaParameterFormat
 
   public var messageSize: OcaUint32 { notificationSize }
+
+  /// The event data as wire bytes.
+  var data: Data {
+    switch dataFormat {
+    case .ocp1:
+      return _data
+    case .ocp2:
+      // parsed or encoded as valid JSON, so serialising cannot fail
+      return (try? eventData.data) ?? Data()
+    }
+  }
+
+  /// The event data as it was received or encoded.
+  package var eventData: OcaEncodedEventData {
+    #if NonEmbeddedBuild
+    switch dataFormat {
+    case .ocp1: .ocp1(_data)
+    case .ocp2: .ocp2(_ocp2Value)
+    }
+    #else
+    .ocp1(_data)
+    #endif
+  }
 
   public init(
     notificationSize: OcaUint32 = 0,
@@ -72,8 +99,7 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
       notificationSize: notificationSize,
       event: event,
       notificationType: notificationType,
-      data: data,
-      dataFormat: .ocp1
+      eventData: .ocp1(data)
     )
   }
 
@@ -81,14 +107,25 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
     notificationSize: OcaUint32 = 0,
     event: OcaEvent,
     notificationType: Ocp1Notification2Type,
-    data: Data,
-    dataFormat: OcaParameterFormat
+    eventData: OcaEncodedEventData
   ) {
     self.notificationSize = notificationSize
     self.event = event
     self.notificationType = notificationType
-    self.data = data
-    self.dataFormat = dataFormat
+    switch eventData {
+    case let .ocp1(data):
+      _data = data
+      dataFormat = .ocp1
+      #if NonEmbeddedBuild
+      _ocp2Value = nil
+      #endif
+    #if NonEmbeddedBuild
+    case let .ocp2(value):
+      _data = Data()
+      _ocp2Value = value
+      dataFormat = .ocp2
+    #endif
+    }
   }
 
   enum CodingKeys: CodingKey {
@@ -136,8 +173,11 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
     notificationSize = try OcaUint32(parsingBigEndian: &input)
     event = try OcaEvent(parsing: &input)
     notificationType = try Ocp1Notification2Type(parsing: &input)
-    data = Data(parsingRemainingBytes: &input)
+    _data = Data(parsingRemainingBytes: &input)
     dataFormat = .ocp1
+    #if NonEmbeddedBuild
+    _ocp2Value = nil
+    #endif
   }
 
   func encode(into bytes: inout [UInt8]) {

@@ -460,8 +460,7 @@ final class Ocp2MessageTests: XCTestCase {
     let notification = try Ocp1Notification2(
       event: event,
       notificationType: .event,
-      data: Ocp2JSON.serialize(Ocp2Encoder().encodeValue(eventData)),
-      dataFormat: .ocp2
+      eventData: .ocp2(Ocp2JSON.sendable(Ocp2Encoder().encodeValue(eventData)))
     )
     let exception = try Ocp1Notification2(
       event: event,

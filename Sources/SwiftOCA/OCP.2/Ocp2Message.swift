@@ -160,9 +160,12 @@ package enum Ocp2Message {
       var event: [String: Any] = [
         Key.eventIdentification: eventIdentificationObject(notification.event),
       ]
-      if !notification.data.isEmpty {
-        guard notification.dataFormat == .ocp2 else { throw Ocp1Error.invalidMessageType }
-        event[Key.eventData] = try Ocp2JSON.parse(notification.data)
+      if !notification.eventData.isEmpty {
+        // OCP.1-encoded event data cannot be represented
+        guard case let .ocp2(value?) = notification.eventData else {
+          throw Ocp1Error.invalidMessageType
+        }
+        event[Key.eventData] = value
       }
       return [Key.event: event]
     case .exception:
@@ -382,16 +385,15 @@ package enum Ocp2Message {
         keys: [Key.eventIdentification, Key.event, Key.eventData],
         required: []
       )
-      let eventData: Data = if let data = object[Key.eventData], !(data is NSNull) {
-        try Ocp2JSON.serialize(data)
+      let eventData: (any Sendable)? = if let data = object[Key.eventData], !(data is NSNull) {
+        Ocp2JSON.sendable(data)
       } else {
-        Data()
+        nil
       }
       return try Ocp1Notification2(
         event: eventIdentification(object),
         notificationType: .event,
-        data: eventData,
-        dataFormat: .ocp2
+        eventData: .ocp2(eventData)
       )
     }
 
@@ -422,8 +424,7 @@ package enum Ocp2Message {
     return try Ocp1Notification2(
       event: eventIdentification(object),
       notificationType: .exception,
-      data: Ocp1Encoder().encode(exception),
-      dataFormat: .ocp1
+      eventData: .ocp1(Ocp1Encoder().encode(exception))
     )
   }
 }

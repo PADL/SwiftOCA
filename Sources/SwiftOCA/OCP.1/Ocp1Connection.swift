@@ -55,6 +55,9 @@ public typealias Ocp1WSConnection = Ocp1FlyingFoxConnection
 public typealias OcaSubscriptionCallback = @Sendable (OcaEvent, Data) async throws
   -> ()
 
+/// A subscription handler given event data as it arrived, unserialised on OCP.2.
+package typealias OcaEventDataHandler = @Sendable (OcaEvent, OcaEncodedEventData) async throws -> ()
+
 #if canImport(Darwin)
 package let SOCK_STREAM: Int32 = Darwin.SOCK_STREAM
 package let SOCK_DGRAM: Int32 = Darwin.SOCK_DGRAM

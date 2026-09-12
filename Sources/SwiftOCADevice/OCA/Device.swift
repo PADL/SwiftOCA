@@ -31,14 +31,14 @@ import Synchronization
 /// of its own subscriptions, so there is little to memoise and nothing here needs
 /// synchronising.
 public struct OcaEventParameters: Sendable {
-  private let _encode: @Sendable (OcaParameterFormat) throws -> Data
+  private let _encode: @Sendable (OcaParameterFormat) throws -> OcaEncodedEventData
 
   /// The property a property-changed event refers to, if known; lets a controller
   /// filter per-property subscriptions without decoding the parameters.
   public let propertyID: OcaPropertyID?
 
   init(
-    _ encode: @escaping @Sendable (OcaParameterFormat) throws -> Data,
+    _ encode: @escaping @Sendable (OcaParameterFormat) throws -> OcaEncodedEventData,
     propertyID: OcaPropertyID?
   ) {
     _encode = encode
@@ -46,11 +46,14 @@ public struct OcaEventParameters: Sendable {
   }
 
   init(_ value: OcaPropertyChangedEventData<some Codable & Sendable>) {
-    self.init({ try OcaEventDataCoding.encode(value, format: $0) }, propertyID: value.propertyID)
+    self.init(
+      { try OcaEventDataCoding.encodeEventData(value, format: $0) },
+      propertyID: value.propertyID
+    )
   }
 
   init(_ value: some Codable & Sendable) {
-    self.init({ try OcaEventDataCoding.encode(value, format: $0) }, propertyID: nil)
+    self.init({ try OcaEventDataCoding.encodeEventData(value, format: $0) }, propertyID: nil)
   }
 
   /// Pre-encoded OCP.1 parameters. A property-changed event's property ID is read from
@@ -65,7 +68,7 @@ public struct OcaEventParameters: Sendable {
       guard format == .ocp1 || encoded.isEmpty else {
         throw Ocp1Error.unsupportedControlProtocol
       }
-      return encoded
+      return try OcaEncodedEventData(encoded, format: format)
     }, propertyID: propertyID)
   }
 
@@ -76,9 +79,9 @@ public struct OcaEventParameters: Sendable {
     self.init({ format in
       switch format {
       case .ocp1:
-        return encoded
+        return .ocp1(encoded)
       case .ocp2:
-        return try OcaEventDataCoding.encode(value, format: format)
+        return try OcaEventDataCoding.encodeEventData(value, format: format)
       }
     }, propertyID: value.propertyID)
   }
@@ -90,6 +93,12 @@ public struct OcaEventParameters: Sendable {
 
   /// The parameters in `format`, encoded on each access.
   public func encoded(as format: OcaParameterFormat = .ocp1) throws -> Data {
+    try _encode(format).data
+  }
+
+  /// The parameters in `format`, as a notification carries them: OCP.2 data stays a
+  /// JSON value until the PDU is serialised.
+  package func encodedEventData(as format: OcaParameterFormat) throws -> OcaEncodedEventData {
     try _encode(format)
   }
 
