@@ -27,14 +27,14 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.1"),
-    ocp2Name: "OcaPorts"
+    getMethodID: OcaMethodID("3.1")
   )
   public var `protocol`: OcaNetworkMediaProtocol = .none
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.2"),
-    getMethodID: OcaMethodID("3.2")
+    getMethodID: OcaMethodID("3.2"),
+    ocp2Name: "OcaPorts"
   )
   public var ports = [OcaPort]()
 
