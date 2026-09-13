@@ -189,6 +189,33 @@ final class WebSocketConnectionTests: XCTestCase {
       "Server controller was not cleaned up after WebSocket client disconnected"
     )
   }
+
+  /// A route appended to the endpoint serves plain requests, including on the control
+  /// protocol's path, while WebSocket upgrades still reach the control protocol.
+  func testWSAppendedRouteSharesPath() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+
+    let (endpoint, endpointTask, port) = try await makeWSEndpoint(device: device)
+    defer { endpointTask.cancel() }
+
+    await endpoint.appendRoute(HTTPRoute("GET /*")) { _ in
+      HTTPResponse(statusCode: .ok, body: Data("static".utf8))
+    }
+
+    for path in ["/", "/index.html"] {
+      let url = URL(string: "http://127.0.0.1:\(port)\(path)")!
+      let (data, response) = try await URLSession.shared.data(from: url)
+      XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200, path)
+      XCTAssertEqual(String(decoding: data, as: UTF8.self), "static", path)
+    }
+
+    let connection = await makeWSConnection(port: port)
+    try await connection.connect()
+    let deviceManagerONo = await connection.deviceManager.objectNumber
+    XCTAssertEqual(deviceManagerONo, OcaDeviceManagerONo)
+    try await connection.disconnect()
+  }
 }
 
 #endif
