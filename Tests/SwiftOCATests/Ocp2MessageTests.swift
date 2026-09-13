@@ -367,10 +367,6 @@ final class Ocp2MessageTests: XCTestCase {
     XCTAssertThrowsError(try decode(Self.exampleX02))
     XCTAssertThrowsError(try decode(Self.exampleX03))
     XCTAssertThrowsError(
-      try decode("{\"ProtocolVersion\":2,\"KeepAlive\":{\"HeartbeatTimeout\":1}}\n")
-    )
-    XCTAssertThrowsError(try decode("{\"KeepAlive\":{\"HeartbeatTimeout\":1}}\n"))
-    XCTAssertThrowsError(
       try decode(
         "{\"ProtocolVersion\":1,\"KeepAlive\":{\"HeartbeatTimeout\":1},\"Responses\":[]}\n"
       )
@@ -382,6 +378,69 @@ final class Ocp2MessageTests: XCTestCase {
     )
     XCTAssertThrowsError(try decode("[1,2]\n"))
     XCTAssertThrowsError(try decode("not json\n"))
+  }
+
+  private func keepAlivePdu(version: String) -> String {
+    "{\"ProtocolVersion\":\(version),\"KeepAlive\":{\"HeartbeatTimeout\":6000}}\n"
+  }
+
+  private func responsesPdu(version: String) -> String {
+    "{\"ProtocolVersion\":\(version),\"Responses\":[{\"Handle\":7,\"StatusCode\":3}]}\n"
+  }
+
+  /// As with OCP.1, a `ProtocolVersion` above 1 is accepted and decodes as 1 does.
+  func testHigherProtocolVersionsAreAccepted() throws {
+    let (keepAliveType, keepAlive) = try decode(keepAlivePdu(version: "1"))
+    let (responsesType, responses) = try decode(responsesPdu(version: "1"))
+    let expectedTimeout = try XCTUnwrap(keepAlive.first as? Ocp1KeepAlive2).heartBeatTime
+    let expectedResponse = try XCTUnwrap(responses.first as? Ocp1Response)
+
+    for version in ["2", "3"] {
+      let (type, messages) = try decode(keepAlivePdu(version: version))
+      XCTAssertEqual(type, keepAliveType)
+      XCTAssertEqual(messages.count, 1)
+      XCTAssertEqual((messages.first as? Ocp1KeepAlive2)?.heartBeatTime, expectedTimeout)
+
+      let (rspType, rsp) = try decode(responsesPdu(version: version))
+      XCTAssertEqual(rspType, responsesType)
+      XCTAssertEqual(rsp.count, 1)
+      let response = try XCTUnwrap(rsp.first as? Ocp1Response)
+      XCTAssertEqual(response.handle, expectedResponse.handle)
+      XCTAssertEqual(response.statusCode, expectedResponse.statusCode)
+      XCTAssertEqual(response.parameters.isEmpty, expectedResponse.parameters.isEmpty)
+    }
+  }
+
+  func testProtocolVersionBelowOneIsRejected() {
+    for version in ["0", "-1"] {
+      XCTAssertThrowsError(try decode(keepAlivePdu(version: version))) { error in
+        XCTAssertEqual(error as? Ocp1Error, .invalidProtocolVersion)
+      }
+    }
+  }
+
+  func testMissingProtocolVersionIsBadFormat() {
+    XCTAssertThrowsError(try decode("{\"KeepAlive\":{\"HeartbeatTimeout\":1}}\n")) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.badFormat))
+    }
+  }
+
+  /// `ProtocolVersion` goes through `Ocp2JSON.integer`, which takes an integral string
+  /// (AES70-4's examples send some integers as strings) but not a fraction or other text.
+  func testNonIntegerProtocolVersion() throws {
+    let (type, messages) = try decode(keepAlivePdu(version: "\"1\""))
+    XCTAssertEqual(type, .ocaKeepAlive)
+    XCTAssertEqual((messages.first as? Ocp1KeepAlive2)?.heartBeatTime, 6000)
+
+    XCTAssertThrowsError(try decode(keepAlivePdu(version: "1.5"))) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.parameterOutOfRange))
+    }
+    XCTAssertThrowsError(try decode(keepAlivePdu(version: "\"one\""))) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.badFormat))
+    }
+    XCTAssertThrowsError(try decode(keepAlivePdu(version: "null"))) { error in
+      XCTAssertEqual(error as? Ocp1Error, .status(.badFormat))
+    }
   }
 
   // MARK: encoding

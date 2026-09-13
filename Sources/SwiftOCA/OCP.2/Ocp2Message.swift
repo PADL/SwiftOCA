@@ -240,7 +240,12 @@ package enum Ocp2Message {
     guard let version = object[Key.protocolVersion] else {
       throw Ocp1Error.status(.badFormat)
     }
-    guard try Ocp2JSON.integer(Int.self, from: version) == protocolVersion else {
+    // AES70-4 clause 6.3.3 says that the OCP.2 protocol version for this
+    // (2024) version of AES70 shall be 1, and that it shall only change if the
+    // OCP.2 protocol itself changes. as with OCP.1, accept higher versions
+    // (some peers may send the AES70 revision); we will need to use different
+    // heuristics if the actual wire protocol changes.
+    guard try Ocp2JSON.integer(Int.self, from: version) >= protocolVersion else {
       throw Ocp1Error.invalidProtocolVersion
     }
 

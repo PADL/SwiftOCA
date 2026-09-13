@@ -734,7 +734,7 @@ final class Ocp2WebSocketTests: XCTestCase {
     defer { endpointTask.cancel() }
 
     let webSocket = try await RawWebSocket(port: port)
-    try await webSocket.send(opcode: 0x1, Data("{\"ProtocolVersion\":2,\"KeepAlive\":{\"HeartbeatTimeout\":1}}\n".utf8))
+    try await webSocket.send(opcode: 0x1, Data("{\"ProtocolVersion\":0,\"KeepAlive\":{\"HeartbeatTimeout\":1}}\n".utf8))
     let closeCode = try await webSocket.closeCode()
     XCTAssertEqual(closeCode, 1007)
     await webSocket.close()
