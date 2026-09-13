@@ -110,7 +110,17 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
               receivedMessageContinuation?.yield(data)
             }
           case let .string(string):
-            receivedMessageContinuation?.yield(Data(string.utf8))
+            guard usesTextFrames else {
+              // AES70-3 8.4.3.4.4: a text frame on OCP.1 closes with 1011 (UNEXPECTED)
+              task.cancel(with: .internalServerError, reason: nil)
+              receivedMessageContinuation?.finish(throwing: Ocp1Error.notConnected)
+              return
+            }
+            // an empty text frame adds nothing to the byte stream (AES70-4 10.4.3.4.4),
+            // and the reader would take it for EOF
+            if !string.isEmpty {
+              receivedMessageContinuation?.yield(Data(string.utf8))
+            }
           @unknown default:
             break
           }

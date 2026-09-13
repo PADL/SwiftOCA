@@ -130,8 +130,8 @@ package actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConve
   }
 
   /// The next frame's payload, requiring text frames on OCP.2 and binary on OCP.1. An
-  /// empty binary frame adds nothing to the byte stream, so it is skipped rather than
-  /// returned, which the reader would take for EOF.
+  /// empty frame adds nothing to the byte stream, so it is skipped rather than returned,
+  /// which the reader would take for EOF.
   private static func nextFrame(
     _ frames: inout AsyncStream<WSMessage>.AsyncIterator,
     text: Bool
@@ -145,6 +145,7 @@ package actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConve
         if data.isEmpty { continue }
         return data
       case let .text(string) where text:
+        if string.isEmpty { continue }
         return Data(string.utf8)
       case .close:
         throw Ocp1Error.notConnected
