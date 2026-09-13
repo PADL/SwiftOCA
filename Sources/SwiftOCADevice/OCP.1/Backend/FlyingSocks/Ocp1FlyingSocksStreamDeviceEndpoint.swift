@@ -145,8 +145,6 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
         #if canImport(dnssd)
         _endpointRegistrarTask = makeBonjourRegistrarTask(for: device)
         #endif
-      } else if family == AF_UNIX {
-        try? unlinkDomainSocket()
       }
       try await _run(on: socket, pool: pool)
     } catch {
@@ -183,13 +181,16 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
 
   private nonisolated func unlinkDomainSocket() throws {
     if family == AF_UNIX {
-      if unlink(presentationAddress) < 0 {
+      if unlink(presentationAddress) < 0, errno != ENOENT {
         throw Errno(rawValue: errno)
       }
     }
   }
 
   func makeSocketAndListen() throws -> Socket {
+    // a socket file left behind by an earlier endpoint would make bind fail; it must be
+    // removed before binding, as unlinking afterwards removes the file clients connect to
+    try unlinkDomainSocket()
     let socket = try Socket(domain: Int32(family))
     try socket.setValue(true, for: .localAddressReuse)
     #if canImport(Darwin)
