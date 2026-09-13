@@ -59,8 +59,7 @@ package final class Ocp1PduReader: OcaPduReader {
       throw Ocp1Error.pduTooShort
     }
 
-    let bytesLeft = try pduLength(messagePduData, at: messagePduData.startIndex) -
-      messagePduData.count
+    let bytesLeft = try pduLength(messagePduData, at: 0) - messagePduData.count
     if bytesLeft > 0 {
       messagePduData += try await read(bytesLeft, true)
     }
@@ -71,21 +70,30 @@ package final class Ocp1PduReader: OcaPduReader {
   private func nextStreamPdu(
     read: (_ count: Int, _ awaitingAllRead: Bool) async throws -> Data
   ) async throws -> Data {
-    try await fill(Ocp1Connection.MinimumPduSize, read: read)
-    let length = try pduLength(buffer, at: buffer.startIndex + offset)
-    try await fill(length, read: read)
-
-    // the common case, one read or frame holding exactly one PDU, needs no copy
-    if offset == 0, buffer.count == length {
-      defer { buffer = Data() }
-      return buffer
+    // read only what is not already buffered, so a PDU left over from an earlier
+    // read, or a whole frame, needs no further call
+    if buffer.count - offset < Ocp1Connection.MinimumPduSize {
+      try await fill(Ocp1Connection.MinimumPduSize, read: read)
     }
-    let start = buffer.startIndex + offset
-    let pdu = Data(buffer[start..<(start + length)])
-    offset += length
-    if offset == buffer.count {
+    let length = try pduLength(buffer, at: offset)
+    if buffer.count - offset < length {
+      try await fill(length, read: read)
+    }
+
+    let data = buffer
+    let start = offset
+    // the common case, one read or frame holding exactly one PDU, needs no copy
+    if start == 0, data.count == length {
+      buffer = Data()
+      return data
+    }
+    let pduStart = data.startIndex + start
+    let pdu = Data(data[pduStart..<(pduStart + length)])
+    if start + length == data.count {
       buffer = Data()
       offset = 0
+    } else {
+      offset = start + length
     }
     return pdu
   }
@@ -114,20 +122,23 @@ package final class Ocp1PduReader: OcaPduReader {
     }
   }
 
-  /// The length, sync byte included, of the PDU whose header starts at `start`.
-  private func pduLength(_ data: Data, at start: Data.Index) throws -> Int {
+  /// The length, sync byte included, of the PDU whose header starts `offset` bytes
+  /// into `data`, which must hold at least `MinimumPduSize` bytes from there.
+  private func pduLength(_ data: Data, at offset: Int) throws -> Int {
     // just parse enough of the protocol in order to read rest of message
     // `syncVal: OcaUint8` || `protocolVersion: OcaUint16` || `pduSize: OcaUint32`
-    guard data[start] == Ocp1SyncValue else {
+    guard data[data.startIndex + offset] == Ocp1SyncValue else {
       throw Ocp1Error.invalidSyncValue
     }
-    let pduSize = data[(start + 3)..<(start + 7)].reduce(0) { $0 << 8 | Int($1) }
+    let pduSize: OcaUint32 = data.decodeInteger(index: offset + 3)
     guard pduSize >= (Ocp1Connection.MinimumPduSize - 1) else { // doesn't include sync byte
       throw Ocp1Error.invalidPduSize
     }
-    guard pduSize <= maximumPduSize else {
+    // compared without converting, so a size too large for Int on a 32-bit platform is
+    // rejected rather than trapping
+    guard pduSize <= maximumPduSize, pduSize < Int.max else {
       throw Ocp1Error.invalidPduSize
     }
-    return pduSize + 1
+    return Int(pduSize) + 1
   }
 }
