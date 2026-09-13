@@ -657,7 +657,7 @@
 		D3DA69FA2A3FEF52001250A1 /* DeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManager.swift; sourceTree = "<group>"; };
 		D3DA69FD2A427C2F001250A1 /* BooleanActuatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BooleanActuatorView.swift; sourceTree = "<group>"; };
 		D3DE0001000000000000001A /* OcaPeerIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaPeerIdentity.swift; sourceTree = "<group>"; };
-		D3DE0001000000000000002A /* OcaPreSharedKeyProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OcaPreSharedKeyProvider.swift; path = Sources/SwiftOCASecure/OCP.1/OcaPreSharedKeyProvider.swift; sourceTree = SOURCE_ROOT; };
+		D3DE0001000000000000002A /* OcaPreSharedKeyProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OcaPreSharedKeyProvider.swift; path = Sources/SwiftOCASecure/OCA/OcaPreSharedKeyProvider.swift; sourceTree = SOURCE_ROOT; };
 		D3DE0001000000000000003A /* OcaSecurityManager+OcaPreSharedKeyProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "OcaSecurityManager+OcaPreSharedKeyProvider.swift"; path = "Sources/SwiftOCASecureDevice/OCC/ControlClasses/Managers/OcaSecurityManager+OcaPreSharedKeyProvider.swift"; sourceTree = SOURCE_ROOT; };
 		D3DE0001000000000000004A /* Ocp1NWPeerIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Ocp1NWPeerIdentity.swift; path = Sources/SwiftOCASecureDevice/OCP.1/Backend/Network/Ocp1NWPeerIdentity.swift; sourceTree = SOURCE_ROOT; };
 		D3E6E1642A3ACA0B00BF7095 /* libSwiftOCA.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSwiftOCA.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -953,8 +953,6 @@
 				D35592582B51E5C7000F633B /* DatagramProxy */,
 				D32229C22ABC270900B56B6B /* Local */,
 				D32229C62ABC270900B56B6B /* FlyingSocks */,
-				D32229CA2ABC270900B56B6B /* IORing */,
-				D3527EC52F00DA0100000009 /* Network */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -972,13 +970,7 @@
 		D32229C62ABC270900B56B6B /* FlyingSocks */ = {
 			isa = PBXGroup;
 			children = (
-				D3660FE52CEBE478005FCBEB /* OcaFlyingSocksDatagramController.swift */,
-				D3660FE62CEBE478005FCBEB /* OcaFlyingSocksDatagramDeviceEndpoint.swift */,
-				D3660FE72CEBE478005FCBEB /* OcaFlyingSocksStreamController.swift */,
-				D3660FE82CEBE478005FCBEB /* OcaFlyingSocksStreamDeviceEndpoint.swift */,
 				D32229C82ABC270900B56B6B /* Ocp1FlyingSocksLogging.swift */,
-				D3B325082B4F6B4900C8335F /* OcaFlyingFoxDeviceEndpoint.swift */,
-				D3B325062B4F679B00C8335F /* OcaFlyingFoxController.swift */,
 			);
 			path = FlyingSocks;
 			sourceTree = "<group>";
@@ -1034,7 +1026,6 @@
 			isa = PBXGroup;
 			children = (
 				D32229C12ABC270900B56B6B /* Backend */,
-				D3C11DBC2A78A3DC00452B2A /* OcaTCPController.swift */,
 				D35592632B520E48000F633B /* Ocp1ControllerInternal.swift */,
 				D35592612B520E21000F633B /* Logger+Ocp1ControllerInternal.swift */,
 			);
@@ -1085,6 +1076,8 @@
 				D3C11DB82A789C0400452B2A /* DeviceEndpoint.swift */,
 				D32229D52ABD26E100B56B6B /* DeviceEndpointRegistrar.swift */,
 				D3F368D82F713C56008419DC /* ClassRegistry.swift */,
+				D3C11DBC2A78A3DC00452B2A /* OcaTCPController.swift */,
+				D3F0CA102FB6A1C000D1A002 /* Backend */,
 			);
 			path = OCA;
 			sourceTree = "<group>";
@@ -1244,13 +1237,6 @@
 			children = (
 				D306440C2A781C280063DA65 /* Ocp1CoderAPI.swift */,
 				D37F7E192A6BC015005F035F /* Backend */,
-				D3E6E1B12A3ACA6C00BF7095 /* OcaConnection.swift */,
-				D3E6E1A92A3ACA6C00BF7095 /* OcaConnectionMonitor.swift */,
-				D3E6E1AE2A3ACA6C00BF7095 /* OcaConnection+Codable.swift */,
-				D3AB030B2CF6768D00967322 /* OcaConnection+Connect.swift */,
-				D3E6E1AA2A3ACA6C00BF7095 /* OcaConnection+Objects.swift */,
-				D3E6E1AB2A3ACA6C00BF7095 /* OcaConnection+Messages.swift */,
-				D3E6E1AC2A3ACA6C00BF7095 /* OcaConnection+Subscribe.swift */,
 				D35BFC7B2E896E2F00183358 /* Ocp1MessageBatcher.swift */,
 				D3D8FA412B61D6040054FD3C /* ReflectionMirror */,
 				D3AFD3612B32A06700A72E9A /* Encoder */,
@@ -1273,11 +1259,6 @@
 			children = (
 				D373427E2F9255E6000FB06D /* Ocp1MachPortConnection.swift */,
 				D373427F2F9255E6000FB06D /* Ocp1MachPortSupport.swift */,
-				D3F369432F78BF99008419DC /* OcaFlyingFoxConnection.swift */,
-				D3AB030D2CF6BD8F00967322 /* OcaIORingConnection.swift */,
-				D36ECA2B2A5B24B30015174A /* OcaCFSocketConnection.swift */,
-				D3E820E52DFBEF0C001C9DC8 /* OcaNWConnection.swift */,
-				D36ECA202A5AEB9B0015174A /* OcaFlyingSocksConnection.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -1703,6 +1684,14 @@
 				D3DE0001000000000000001A /* OcaPeerIdentity.swift */,
 				D337B9992EC5A02900826A4B /* Browsing */,
 				D3E6E23E2A3C0B2E00BF7095 /* Helpers */,
+				D3E6E1B12A3ACA6C00BF7095 /* OcaConnection.swift */,
+				D3E6E1A92A3ACA6C00BF7095 /* OcaConnectionMonitor.swift */,
+				D3E6E1AE2A3ACA6C00BF7095 /* OcaConnection+Codable.swift */,
+				D3AB030B2CF6768D00967322 /* OcaConnection+Connect.swift */,
+				D3E6E1AA2A3ACA6C00BF7095 /* OcaConnection+Objects.swift */,
+				D3E6E1AB2A3ACA6C00BF7095 /* OcaConnection+Messages.swift */,
+				D3E6E1AC2A3ACA6C00BF7095 /* OcaConnection+Subscribe.swift */,
+				D3F0CA102FB6A1C000D1A001 /* Backend */,
 			);
 			path = OCA;
 			sourceTree = "<group>";
@@ -1794,6 +1783,41 @@
 				D306440E2A7832900063DA65 /* IdentificationSensorView.swift */,
 			);
 			path = Sensors;
+			sourceTree = "<group>";
+		};
+		D3F0CA102FB6A1C000D1A001 /* Backend */ = {
+			isa = PBXGroup;
+			children = (
+				D3F369432F78BF99008419DC /* OcaFlyingFoxConnection.swift */,
+				D3AB030D2CF6BD8F00967322 /* OcaIORingConnection.swift */,
+				D36ECA2B2A5B24B30015174A /* OcaCFSocketConnection.swift */,
+				D3E820E52DFBEF0C001C9DC8 /* OcaNWConnection.swift */,
+				D36ECA202A5AEB9B0015174A /* OcaFlyingSocksConnection.swift */,
+			);
+			path = Backend;
+			sourceTree = "<group>";
+		};
+		D3F0CA102FB6A1C000D1A002 /* Backend */ = {
+			isa = PBXGroup;
+			children = (
+				D3F0CA102FB6A1C000D1A003 /* FlyingSocks */,
+				D32229CA2ABC270900B56B6B /* IORing */,
+				D3527EC52F00DA0100000009 /* Network */,
+			);
+			path = Backend;
+			sourceTree = "<group>";
+		};
+		D3F0CA102FB6A1C000D1A003 /* FlyingSocks */ = {
+			isa = PBXGroup;
+			children = (
+				D3660FE52CEBE478005FCBEB /* OcaFlyingSocksDatagramController.swift */,
+				D3660FE62CEBE478005FCBEB /* OcaFlyingSocksDatagramDeviceEndpoint.swift */,
+				D3660FE72CEBE478005FCBEB /* OcaFlyingSocksStreamController.swift */,
+				D3660FE82CEBE478005FCBEB /* OcaFlyingSocksStreamDeviceEndpoint.swift */,
+				D3B325082B4F6B4900C8335F /* OcaFlyingFoxDeviceEndpoint.swift */,
+				D3B325062B4F679B00C8335F /* OcaFlyingFoxController.swift */,
+			);
+			path = FlyingSocks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

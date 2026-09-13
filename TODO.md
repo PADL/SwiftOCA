@@ -15,10 +15,10 @@ Concurrency issues
 ------------------
 
 ```
-SwiftOCA/OCP.1/Ocp1ConnectionMonitor.swift:143:23: warning: passing argument of non-sendable type 'inout ThrowingTaskGroup<Void, any Error>' outside of global actor 'OcaConnection'-isolated context may introduce data races
-SwiftOCA/OCP.1/Backend/OcaCFSocketConnection.swift:429:32: warning: passing argument of non-sendable type 'inout AnyAsyncIterator<CFSocket.Message>' (aka 'inout AnyAsyncIterator<(any SocketAddress, Data)>') outside of global actor 'OcaConnection'-isolated context may introduce data races
-SwiftOCADevice/OCP.1/Backend/FlyingSocks/OcaFlyingFoxController.swift:64:41: warning: type 'AnyAsyncSequence<(any Ocp1Message, Bool)>' does not conform to the 'Sendable' protocol
-SwiftOCADevice/OCP.1/Backend/FlyingSocks/OcaFlyingFoxDeviceEndpoint.swift:123:13: warning: passing argument of non-sendable type 'any SocketAddress' into actor-isolated context may introduce data races
+SwiftOCA/OCA/OcaConnectionMonitor.swift:143:23: warning: passing argument of non-sendable type 'inout ThrowingTaskGroup<Void, any Error>' outside of global actor 'OcaConnection'-isolated context may introduce data races
+SwiftOCA/OCA/Backend/OcaCFSocketConnection.swift:429:32: warning: passing argument of non-sendable type 'inout AnyAsyncIterator<CFSocket.Message>' (aka 'inout AnyAsyncIterator<(any SocketAddress, Data)>') outside of global actor 'OcaConnection'-isolated context may introduce data races
+SwiftOCADevice/OCA/Backend/FlyingSocks/OcaFlyingFoxController.swift:64:41: warning: type 'AnyAsyncSequence<(any Ocp1Message, Bool)>' does not conform to the 'Sendable' protocol
+SwiftOCADevice/OCA/Backend/FlyingSocks/OcaFlyingFoxDeviceEndpoint.swift:123:13: warning: passing argument of non-sendable type 'any SocketAddress' into actor-isolated context may introduce data races
 SwiftOCADevice/OCP.1/Backend/FlyingSocks/Ocp1FlyingSocksDeviceEndpoint.swift:173:23: warning: passing argument of non-sendable type 'inout ThrowingTaskGroup<Void, any Error>' outside of global actor 'OcaDevice'-isolated context may introduce data races
 ```
 
