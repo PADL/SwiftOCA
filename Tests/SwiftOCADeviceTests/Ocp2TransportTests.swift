@@ -522,7 +522,7 @@ private func makeWSEndpoint(
 
 /// A minimal RFC 6455 client, so the handshake and close codes can be checked on
 /// Linux, where URLSession's WebSocket support depends on how libcurl was built.
-private struct RawWebSocket {
+struct RawWebSocket {
   let socket: AsyncSocket
   let negotiatedProtocol: String?
 
