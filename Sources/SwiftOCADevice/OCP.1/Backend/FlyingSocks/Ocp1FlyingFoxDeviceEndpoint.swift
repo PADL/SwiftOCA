@@ -173,10 +173,13 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
       timeout: timeout.timeInterval
     )
 
-    // one route per path; the protocols sharing it are told apart by the subprotocol
+    // one route per path; the protocols sharing it are told apart by the subprotocol.
+    // Routes match upgrades only, so any other request to the path falls through to a
+    // route added with `appendRoute`.
     let routes = Dictionary(grouping: self.paths, by: \.value).mapValues { $0.map(\.key) }
     for (path, sharing) in routes {
-      await httpServer.appendRoute(HTTPRoute("GET \(path)")) { [weak self] request in
+      let route = HTTPRoute("GET \(path)", headers: [Self.upgradeHeader: "websocket"])
+      await httpServer.appendRoute(route) { [weak self] request in
         // FlyingFox keeps only the last of a repeated header, so a subprotocol
         // offered on a second Sec-WebSocket-Protocol line is not seen
         let offered = request.headers[Self.webSocketProtocolHeader]?
@@ -200,6 +203,23 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   nonisolated static let webSocketProtocolHeader = HTTPHeader("Sec-WebSocket-Protocol")
+  nonisolated static let upgradeHeader = HTTPHeader("Upgrade")
+
+  /// Serves `route` alongside the control protocols, for example static files for a web
+  /// user interface. The control protocols' routes, which match WebSocket upgrades only,
+  /// take precedence, so `route` may share their paths (e.g. `GET /*`).
+  public func appendRoute(_ route: HTTPRoute, to handler: some HTTPHandler) async {
+    await httpServer.appendRoute(route, to: handler)
+  }
+
+  /// Serves `route` alongside the control protocols with a closure; see
+  /// `appendRoute(_:to:)`.
+  public func appendRoute(
+    _ route: HTTPRoute,
+    handler: @Sendable @escaping (HTTPRequest) async throws -> HTTPResponse
+  ) async {
+    await httpServer.appendRoute(route, handler: handler)
+  }
 
   public nonisolated var description: String {
     "\(type(of: self))(address: \(address._presentationAddress), timeout: \(timeout))"
