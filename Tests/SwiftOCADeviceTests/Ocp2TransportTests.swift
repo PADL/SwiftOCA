@@ -740,6 +740,31 @@ final class Ocp2WebSocketTests: XCTestCase {
     await webSocket.close()
   }
 
+  /// AES70-4 10.4.3.4.4: text frames are a byte stream, so an empty one adds nothing, on its
+  /// own or inside a PDU, rather than being taken for the end of the connection.
+  func testEmptyTextFrameIsSkipped() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let (_, endpointTask, port) = try await makeWSEndpoint(device: device)
+    defer { endpointTask.cancel() }
+
+    let webSocket = try await RawWebSocket(port: port)
+    try await webSocket.send(opcode: 0x1, Data())
+    try await assertOcp2RoundTrip(webSocket)
+
+    let command = Data(
+      "{\"ProtocolVersion\":1,\"Commands\":[{\"Handle\":2,\"TargetONo\":1,\"MethodID\":[1,1]}]}\n"
+        .utf8
+    )
+    for frame in [command.prefix(16), Data(), command.dropFirst(16)] {
+      try await webSocket.send(opcode: 0x1, Data(frame))
+    }
+    let (opcode, payload) = try await webSocket.receive()
+    XCTAssertEqual(opcode, 0x1, "expected a text frame")
+    XCTAssertEqual(payload.first, UInt8(ascii: "{"), "expected an OCP.2 PDU")
+    await webSocket.close()
+  }
+
   /// OCP.1 and OCP.2 on one port and path: the offered subprotocol picks the protocol.
   func testOneEndpointServesBothProtocols() async throws {
     let device = OcaDevice()

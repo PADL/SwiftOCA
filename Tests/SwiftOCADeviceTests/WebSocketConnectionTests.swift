@@ -475,6 +475,134 @@ extension WebSocketConnectionTests {
     let values = await offered.values
     XCTAssertEqual(values.last, "AES70-OCP.1")
   }
+
+  /// AES70-3 8.4.3.4.4: a controller too closes the connection with UNEXPECTED (1011) when
+  /// it receives a text frame.
+  func testWSClientClosesOcp1TextFrame1011() async throws {
+    let device = try await makeNamedDevice()
+    let (endpoint, endpointTask, port) = try await makeWSEndpoint(device: device)
+    defer { endpointTask.cancel() }
+    let (injector, url) = await makeFrameInjector(endpoint, port: port, controlProtocol: .ocp1)
+
+    let connection = await Ocp1FlyingFoxConnection(url: url)
+    try await connection.connect()
+    injector.inject(WSFrame(fin: true, opcode: .text, mask: nil, payload: Data("hello".utf8)))
+    let closeCode = await injector.firstCloseCode()
+    XCTAssertEqual(closeCode, 1011)
+    try? await connection.disconnect()
+  }
+
+  /// AES70-4 10.4.3.4.4: text frames are a byte stream, so an empty one adds nothing, and the
+  /// client does not take it for the end of the connection.
+  func testWSClientSkipsEmptyOcp2TextFrame() async throws {
+    let device = try await makeNamedDevice()
+    let (endpoint, endpointTask, port) = try await makeWSEndpoint(
+      device: device,
+      controlProtocols: [.ocp2]
+    )
+    defer { endpointTask.cancel() }
+    let (injector, url) = await makeFrameInjector(endpoint, port: port, controlProtocol: .ocp2)
+
+    let connection = await Ocp1FlyingFoxConnection(
+      url: url,
+      options: Ocp1ConnectionOptions(controlProtocol: .ocp2)
+    )
+    try await connection.connect()
+    injector.inject(WSFrame(fin: true, opcode: .text, mask: nil, payload: Data()))
+    _ = try await connection.getClassIdentification(objectNumber: OcaRootBlockONo)
+    let isConnected = await connection.isConnected
+    XCTAssertTrue(isConnected)
+    try await connection.disconnect()
+    let closeCode = await injector.firstCloseCode()
+    XCTAssertEqual(closeCode, 1000, "the client should close only when disconnected")
+  }
+}
+
+/// Stands between a client and the endpoint's handler, to send the client frames a device
+/// would not, including an empty one, which a `WSMessage` cannot express, and to see the
+/// close codes the client sends back.
+private final class FrameInjector: WSHandler, @unchecked Sendable {
+  private let handler: MessageFrameWSHandler
+  private let lock = NSLock()
+  private var framesOut: AsyncStream<WSFrame>.Continuation?
+  private let closeCodes: AsyncStream<UInt16>
+  private let closeCodesIn: AsyncStream<UInt16>.Continuation
+
+  init(_ endpoint: Ocp1FlyingFoxDeviceEndpoint, controlProtocol: OcaControlProtocol) {
+    handler = MessageFrameWSHandler(
+      handler: Ocp1FlyingFoxDeviceEndpoint.Handler(
+        endpoint,
+        controlProtocol: controlProtocol,
+        peer: nil
+      )
+    )
+    (closeCodes, closeCodesIn) = AsyncStream.makeStream()
+  }
+
+  /// Sends the client `frame`, after the frames the device has sent so far.
+  func inject(_ frame: WSFrame) {
+    lock.withLock { framesOut }?.yield(frame)
+  }
+
+  /// The first close code the client sends, or `nil` if it sends none within `timeout`.
+  func firstCloseCode(timeout: Duration = .seconds(5)) async -> UInt16? {
+    await withTaskGroup(of: UInt16?.self) { [closeCodes] group in
+      group.addTask { await closeCodes.first { _ in true } }
+      group.addTask {
+        try? await Task.sleep(for: timeout)
+        return nil
+      }
+      defer { group.cancelAll() }
+      return await group.next() ?? nil
+    }
+  }
+
+  func makeFrames(for client: AsyncThrowingStream<WSFrame, any Error>) async throws
+    -> AsyncStream<WSFrame>
+  {
+    let closeCodesIn = closeCodesIn
+    let observed = AsyncThrowingStream<WSFrame, any Error> { continuation in
+      let task = Task {
+        do {
+          for try await frame in client {
+            if frame.opcode == .close, frame.payload.count >= 2 {
+              closeCodesIn.yield(frame.payload.prefix(2).reduce(0) { $0 << 8 | UInt16($1) })
+            }
+            continuation.yield(frame)
+          }
+          continuation.finish()
+        } catch {
+          continuation.finish(throwing: error)
+        }
+      }
+      continuation.onTermination = { @Sendable _ in task.cancel() }
+    }
+    let deviceFrames = try await handler.makeFrames(for: observed)
+    let (frames, framesOut) = AsyncStream.makeStream(of: WSFrame.self)
+    lock.withLock { self.framesOut = framesOut }
+    let task = Task {
+      for await frame in deviceFrames {
+        framesOut.yield(frame)
+      }
+      framesOut.finish()
+    }
+    framesOut.onTermination = { @Sendable _ in task.cancel() }
+    return frames
+  }
+}
+
+/// Serves `endpoint`'s `controlProtocol` through a `FrameInjector` at `/inject`, a route on
+/// the endpoint's own server, and returns the URL to connect to. A second `HTTPServer` would
+/// do, but in a full test run one started after another's has left later WebSocket upgrades
+/// unanswered.
+private func makeFrameInjector(
+  _ endpoint: Ocp1FlyingFoxDeviceEndpoint,
+  port: UInt16,
+  controlProtocol: OcaControlProtocol
+) async -> (FrameInjector, URL) {
+  let injector = FrameInjector(endpoint, controlProtocol: controlProtocol)
+  await endpoint.appendRoute(HTTPRoute("GET /inject"), to: WebSocketHTTPHandler(handler: injector))
+  return (injector, URL(string: "ws://127.0.0.1:\(port)/inject")!)
 }
 
 #endif
