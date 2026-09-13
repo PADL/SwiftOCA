@@ -226,6 +226,11 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   public func run() async throws {
+    // HTTPServer binds when it runs, so a socket file left behind by an earlier endpoint
+    // must be removed first, but not while this endpoint's server is already running
+    let socketPath = await httpServer.isListening ? nil : socketPath
+    if let socketPath { try unlinkSocketFile(at: socketPath) }
+    defer { if let socketPath { try? unlinkSocketFile(at: socketPath) } }
     do {
       if port != 0 {
         #if canImport(dnssd)
@@ -280,6 +285,10 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   public nonisolated var port: UInt16 {
     (try? address.port) ?? 0
+  }
+
+  private nonisolated var socketPath: String? {
+    address.ss_family == sa_family_t(AF_LOCAL) ? address._presentationAddress : nil
   }
 
   package func add(controller: Ocp1FlyingFoxController) async {
