@@ -659,6 +659,41 @@ public actor OcaConnectionBroker {
     Array(_devices.keys)
   }
 
+  /// Returns the resolved DNS-SD service info for a discovered device.
+  ///
+  /// This lets a caller that uses the broker only for browsing connect to the device itself,
+  /// using the advertised hostname, port, addresses, service type and TXT records (such as
+  /// `path` for WebSocket services). The service info is resolved before `.deviceAdded` or
+  /// `.deviceUpdated` is emitted, so no connection or further resolution is needed.
+  ///
+  /// The service info is available after a `.deviceAdded` or `.deviceUpdated` event, until
+  /// the device stops being advertised. A DNS-SD removal makes it unavailable at once, before
+  /// the `.deviceRemoved` event that follows the expiry timeout. Devices registered with
+  /// ``register(device:connection:)`` have no service info.
+  ///
+  /// - Parameter device: The device identifier for the discovered device
+  /// - Returns: The device's resolved service info
+  /// - Throws: `Ocp1Error.endpointNotRegistered` if the device isn't currently discovered
+  public func serviceInfo(for device: DeviceIdentifier) throws
+    -> AnyOcaNetworkAdvertisingServiceInfo
+  {
+    try _getDeviceInfo(for: device).serviceInfo
+  }
+
+  /// Returns the resolved addresses of a discovered device, in the order the broker tries them.
+  ///
+  /// IPv4 addresses come before IPv6 addresses, and addresses within a family have a stable
+  /// order, so the same address set always gives the same array. Each element is a raw
+  /// `sockaddr` structure. Availability is the same as for ``serviceInfo(for:)``.
+  ///
+  /// - Parameter device: The device identifier for the discovered device
+  /// - Returns: The device's addresses, in preference order
+  /// - Throws: `Ocp1Error.endpointNotRegistered` if the device isn't currently discovered
+  /// - Throws: Service-specific errors if the addresses can't be read
+  public func deviceAddresses(for device: DeviceIdentifier) throws -> [Data] {
+    try _getDeviceInfo(for: device).addresses
+  }
+
   @_spi(SwiftOCAPrivate)
   public func reenumerateRegisteredDevices() {
     for deviceIdentifier in registeredDevices {
