@@ -186,9 +186,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
 
   private nonisolated func unlinkDomainSocket() throws {
     if family == AF_UNIX {
-      if unlink(presentationAddress) < 0, errno != ENOENT {
-        throw Errno(rawValue: errno)
-      }
+      try unlinkSocketFile(at: presentationAddress)
     }
   }
 
