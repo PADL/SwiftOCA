@@ -110,8 +110,8 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   /// Serves each of `controlProtocols` at its path in `paths`, or at `/`. Protocols
-  /// sharing a path are told apart by the subprotocol the client offers: `AES70-OCP.2`
-  /// for OCP.2, none for OCP.1.
+  /// sharing a path are told apart by the subprotocol the client offers: `AES70-OCP.1`
+  /// for OCP.1, `AES70-OCP.2` for OCP.2. A client offering neither gets OCP.1.
   public convenience init(
     address: Data,
     timeout: Duration = OcaDevice.DefaultTimeout,
@@ -248,17 +248,18 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     OcaControlProtocol.allCases.filter { paths[$0] != nil }
   }
 
-  /// The protocol a WebSocket upgrade on a shared path speaks: the one whose subprotocol
-  /// the client offered, else the one with none (OCP.1), else the first, as a client need
-  /// not offer a subprotocol at all.
+  /// The protocol a WebSocket upgrade on a shared path speaks: the first the client
+  /// offered, in its order of preference, else OCP.1, else the first served. AES70-3
+  /// 8.4.3.4.2 has a controller offer `AES70-OCP.1`, but controllers that predate it
+  /// offer no subprotocol.
   nonisolated static func controlProtocol(
     offering offered: [String],
     among sharing: [OcaControlProtocol]
   ) -> OcaControlProtocol {
     let sharing = OcaControlProtocol.allCases.filter(sharing.contains)
-    return sharing.first { $0.webSocketSubprotocol.map(offered.contains) ?? false }
-      ?? sharing.first { $0.webSocketSubprotocol == nil }
-      ?? sharing[0]
+    return offered.lazy.compactMap { subprotocol in
+      sharing.first { $0.webSocketSubprotocol == subprotocol }
+    }.first ?? (sharing.contains(.ocp1) ? .ocp1 : sharing[0])
   }
 
   /// The first protocol's service; `advertisedServices` has one per protocol.

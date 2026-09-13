@@ -26,8 +26,9 @@ import Foundation
 ///
 /// WebSocket ping/pong frames handle connection liveness, so no keepalive
 /// (heartbeat) messages are required by default; `heartbeatTime` is `.zero` unless
-/// the options override it. OCP.1 travels in binary frames, OCP.2 in text frames with
-/// the `AES70-OCP.2` subprotocol (AES70-4 10.4.3.4).
+/// the options override it. OCP.1 travels in binary frames with the `AES70-OCP.1`
+/// subprotocol (AES70-3 8.4.3.4), OCP.2 in text frames with the `AES70-OCP.2`
+/// subprotocol (AES70-4 10.4.3.4).
 public final class Ocp1FlyingFoxConnection: Ocp1Connection {
   private let url: URL
   private var webSocketTask: URLSessionWebSocketTask?
@@ -103,7 +104,11 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
               receivedMessageContinuation?.finish(throwing: Ocp1Error.notConnected)
               return
             }
-            receivedMessageContinuation?.yield(data)
+            // an empty binary frame adds nothing to the byte stream (AES70-3 8.4.3.4.4),
+            // and the reader would take it for EOF
+            if !data.isEmpty {
+              receivedMessageContinuation?.yield(data)
+            }
           case let .string(string):
             receivedMessageContinuation?.yield(Data(string.utf8))
           @unknown default:
@@ -141,8 +146,9 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
     try await super.disconnectDevice()
   }
 
-  /// One frame per read, whatever `length` and `awaitingAllRead`: the transport is
-  /// message-oriented.
+  /// One frame per read, whatever `length` and `awaitingAllRead`. The reader keeps what
+  /// it does not use, as a frame may hold several PDUs or part of one (AES70-3 8.4.3.4.4,
+  /// AES70-4 10.4.3.4.4).
   override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     guard let receivedMessageStream else {
       throw Ocp1Error.notConnected

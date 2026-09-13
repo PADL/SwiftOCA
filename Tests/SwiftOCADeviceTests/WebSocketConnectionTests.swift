@@ -40,13 +40,15 @@ private func localhostAddress(port: UInt16) -> Data {
 /// wait until it is listening, then return the endpoint, its task, and actual port.
 private func makeWSEndpoint(
   device: OcaDevice,
+  controlProtocols: Set<OcaControlProtocol> = [.ocp1],
   timeout: Duration = .seconds(5)
 ) async throws -> (Ocp1FlyingFoxDeviceEndpoint, Task<(), Error>, UInt16) {
   let address = localhostAddress(port: 0)
   let endpoint = try await Ocp1FlyingFoxDeviceEndpoint(
     address: address,
     timeout: timeout,
-    device: device
+    device: device,
+    controlProtocols: controlProtocols
   )
   let endpointTask = Task { try await endpoint.run() }
   // Wait for the HTTP server to bind and start listening
@@ -217,5 +219,264 @@ final class WebSocketConnectionTests: XCTestCase {
     try await connection.disconnect()
   }
 }
+
+#if NonEmbeddedBuild
+
+// MARK: - AES70-3 8.4.3.4
+
+private let deviceName = "AES70-3 WebSocket device"
+
+private func makeNamedDevice() async throws -> OcaDevice {
+  let device = OcaDevice()
+  try await device.initializeDefaultObjects()
+  let deviceManager = await device.deviceManager!
+  await { @OcaDevice in deviceManager.deviceName = deviceName }()
+  return device
+}
+
+/// A GetDeviceName command on the device manager, as one OCP.1 PDU.
+private func getDeviceNamePdu(handle: OcaUint32) throws -> Data {
+  try OcaControlProtocol.ocp1.encodePdu(
+    [Ocp1Command(handle: handle, targetONo: OcaDeviceManagerONo, methodID: OcaMethodID("3.4"))],
+    type: .ocaCmdRrq
+  )
+}
+
+private extension RawWebSocket {
+  /// Reads binary frames as one byte stream, as AES70-3 8.4.3.4.4 requires of a
+  /// controller too, until a response has arrived for each of `handles`.
+  func ocp1Responses(for handles: Set<OcaUint32>) async throws -> [OcaUint32: Ocp1Response] {
+    let reader = OcaControlProtocol.ocp1.makeReader(
+      isMessageOriented: false,
+      maximumPduSize: OcaControlProtocol.defaultMaximumPduSize
+    )
+    var responses = [OcaUint32: Ocp1Response]()
+    while !handles.isSubset(of: responses.keys) {
+      let pdu = try await reader.nextPdu { _, _ in
+        while true {
+          let (opcode, payload) = try await receiveMessage()
+          switch opcode {
+          case 0x2 where !payload.isEmpty: return Data(payload)
+          case 0x2, 0x9, 0xA: continue
+          default: throw Ocp1Error.invalidMessageType
+          }
+        }
+      }
+      let (messageType, messages) = try OcaControlProtocol.ocp1.decodePdu(pdu)
+      guard messageType == .ocaRsp else { continue }
+      for case let response as Ocp1Response in messages {
+        responses[response.handle] = response
+      }
+    }
+    return responses
+  }
+
+  /// Sends a GetDeviceName in one binary frame and checks the answer.
+  func assertOcp1RoundTrip(file: StaticString = #filePath, line: UInt = #line) async throws {
+    try await send(opcode: 0x2, getDeviceNamePdu(handle: 1))
+    try await assertDeviceName(ocp1Responses(for: [1])[1], file: file, line: line)
+  }
+}
+
+private func assertDeviceName(
+  _ response: Ocp1Response?,
+  file: StaticString = #filePath,
+  line: UInt = #line
+) throws {
+  let response = try XCTUnwrap(response, file: file, line: line)
+  XCTAssertEqual(response.statusCode, .ok, file: file, line: line)
+  let name = try Ocp1Decoder().decode(OcaString.self, from: response.parameters.parameterData)
+  XCTAssertEqual(name, deviceName, file: file, line: line)
+}
+
+/// Records the subprotocols each WebSocket upgrade offered.
+private actor OfferedSubprotocols {
+  var values = [String?]()
+  func append(_ value: String?) { values.append(value) }
+}
+
+extension WebSocketConnectionTests {
+  /// AES70-3 8.4.3.4.2: a controller offers `AES70-OCP.1`, which the device echoes, as a
+  /// browser fails a connection whose offered subprotocols the server does not select.
+  func testWSOcp1SubprotocolIsEchoed() async throws {
+    let device = try await makeNamedDevice()
+    let (_, endpointTask, port) = try await makeWSEndpoint(device: device)
+    defer { endpointTask.cancel() }
+
+    let webSocket = try await RawWebSocket(port: port, protocols: ["AES70-OCP.1"])
+    XCTAssertEqual(webSocket.negotiatedProtocol, "AES70-OCP.1")
+    try await webSocket.assertOcp1RoundTrip()
+    await webSocket.close()
+  }
+
+  /// A controller that predates AES70-3 8.4.3.4.2 offers no subprotocol, and still gets
+  /// OCP.1, with none echoed.
+  func testWSNoSubprotocolSpeaksOcp1() async throws {
+    let device = try await makeNamedDevice()
+    let (_, endpointTask, port) = try await makeWSEndpoint(
+      device: device,
+      controlProtocols: [.ocp1, .ocp2]
+    )
+    defer { endpointTask.cancel() }
+
+    let webSocket = try await RawWebSocket(port: port, protocols: [])
+    XCTAssertNil(webSocket.negotiatedProtocol)
+    try await webSocket.assertOcp1RoundTrip()
+    await webSocket.close()
+  }
+
+  /// On a path serving both, the subprotocol picks the protocol, in the client's order of
+  /// preference when it offers both.
+  func testWSSubprotocolSelectsProtocol() async throws {
+    let device = try await makeNamedDevice()
+    let (_, endpointTask, port) = try await makeWSEndpoint(
+      device: device,
+      controlProtocols: [.ocp1, .ocp2]
+    )
+    defer { endpointTask.cancel() }
+
+    for protocols in [["AES70-OCP.1"], ["AES70-OCP.1", "AES70-OCP.2"]] {
+      let webSocket = try await RawWebSocket(port: port, protocols: protocols)
+      XCTAssertEqual(webSocket.negotiatedProtocol, "AES70-OCP.1", "\(protocols)")
+      try await webSocket.assertOcp1RoundTrip()
+      await webSocket.close()
+    }
+
+    for protocols in [["AES70-OCP.2"], ["AES70-OCP.2", "AES70-OCP.1"]] {
+      let webSocket = try await RawWebSocket(port: port, protocols: protocols)
+      XCTAssertEqual(webSocket.negotiatedProtocol, "AES70-OCP.2", "\(protocols)")
+      try await webSocket.send(
+        opcode: 0x1,
+        Data(
+          "{\"ProtocolVersion\":1,\"Commands\":[{\"Handle\":1,\"TargetONo\":1,\"MethodID\":[1,1]}]}\n"
+            .utf8
+        )
+      )
+      let (opcode, payload) = try await webSocket.receive()
+      XCTAssertEqual(opcode, 0x1, "expected a text frame for \(protocols)")
+      XCTAssertEqual(payload.first, UInt8(ascii: "{"), "expected an OCP.2 PDU for \(protocols)")
+      await webSocket.close()
+    }
+  }
+
+  /// AES70-3 8.4.3.4.4: a text frame closes the connection with UNEXPECTED (1011).
+  func testWSOcp1TextFrameCloses1011() async throws {
+    let device = try await makeNamedDevice()
+    let (_, endpointTask, port) = try await makeWSEndpoint(device: device)
+    defer { endpointTask.cancel() }
+
+    let webSocket = try await RawWebSocket(port: port, protocols: ["AES70-OCP.1"])
+    try await webSocket.send(opcode: 0x1, Data("hello".utf8))
+    let closeCode = try await webSocket.closeCode()
+    XCTAssertEqual(closeCode, 1011)
+    await webSocket.close()
+  }
+
+  /// AES70-3 8.4.3.4.4: a malformed OCP.1 message closes the connection with BAD_DATA
+  /// (1007), whether its framing or its content is bad.
+  func testWSMalformedOcp1PduCloses1007() async throws {
+    let device = try await makeNamedDevice()
+    let (_, endpointTask, port) = try await makeWSEndpoint(device: device)
+    defer { endpointTask.cancel() }
+
+    let malformed: [(String, [UInt8])] = [
+      ("bad sync byte", [0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x09, 0x04, 0x00, 0x00]),
+      ("PDU size too small", [0x3B, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02, 0x04, 0x00, 0x00]),
+      ("PDU size too large", [0x3B, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x04, 0x00, 0x00]),
+      // one command, whose size is shorter than its own size field
+      (
+        "undecodable command",
+        [0x3B, 0x00, 0x01, 0x00, 0x00, 0x00, 0x0D, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02]
+      ),
+    ]
+    for (name, pdu) in malformed {
+      let webSocket = try await RawWebSocket(port: port, protocols: ["AES70-OCP.1"])
+      try await webSocket.send(opcode: 0x2, Data(pdu))
+      let closeCode = try await webSocket.closeCode()
+      XCTAssertEqual(closeCode, 1007, name)
+      await webSocket.close()
+    }
+  }
+
+  /// AES70-3 8.4.3.4.4: binary frames are a byte stream, so one frame may hold two PDUs.
+  func testWSTwoOcp1PdusInOneFrame() async throws {
+    let device = try await makeNamedDevice()
+    let (_, endpointTask, port) = try await makeWSEndpoint(device: device)
+    defer { endpointTask.cancel() }
+
+    let webSocket = try await RawWebSocket(port: port, protocols: ["AES70-OCP.1"])
+    try await webSocket.send(opcode: 0x2, getDeviceNamePdu(handle: 1) + getDeviceNamePdu(handle: 2))
+    let responses = try await webSocket.ocp1Responses(for: [1, 2])
+    try assertDeviceName(responses[1])
+    try assertDeviceName(responses[2])
+    await webSocket.close()
+  }
+
+  /// AES70-3 8.4.3.4.4: binary frames are a byte stream, so a PDU may span frames,
+  /// including an empty one, and a frame may end one PDU and begin the next.
+  func testWSOcp1PduSplitAcrossFrames() async throws {
+    let device = try await makeNamedDevice()
+    let (_, endpointTask, port) = try await makeWSEndpoint(device: device)
+    defer { endpointTask.cancel() }
+
+    let webSocket = try await RawWebSocket(port: port, protocols: ["AES70-OCP.1"])
+    let first = try getDeviceNamePdu(handle: 1)
+    let second = try getDeviceNamePdu(handle: 2)
+    // splits inside the first header, inside its body, and inside the second header
+    for frame in [
+      first.prefix(4),
+      first[4..<12],
+      Data(),
+      first[12...] + second.prefix(3),
+      second.dropFirst(3),
+    ] {
+      try await webSocket.send(opcode: 0x2, Data(frame))
+    }
+    let responses = try await webSocket.ocp1Responses(for: [1, 2])
+    try assertDeviceName(responses[1])
+    try assertDeviceName(responses[2])
+    await webSocket.close()
+  }
+
+  /// SwiftOCA's client offers `AES70-OCP.1`, and still connects to a device that predates
+  /// AES70-3 8.4.3.4.2 and so does not echo it: URLSessionWebSocketTask, like RFC 6455
+  /// 4.1, fails a handshake only for a subprotocol it did not offer.
+  func testWSClientOffersOcp1AndToleratesNoEcho() async throws {
+    let device = try await makeNamedDevice()
+    let (endpoint, endpointTask, _) = try await makeWSEndpoint(device: device)
+    defer { endpointTask.cancel() }
+
+    // an OCP.1 route as it was before the subprotocol was echoed
+    let offered = OfferedSubprotocols()
+    let server = try HTTPServer(address: .inet(ip4: "127.0.0.1", port: 0), timeout: 5)
+    await server.appendRoute("GET /") { request in
+      await offered.append(request.headers[Ocp1FlyingFoxDeviceEndpoint.webSocketProtocolHeader])
+      return try await WebSocketHTTPHandler
+        .webSocket(Ocp1FlyingFoxDeviceEndpoint.Handler(endpoint, controlProtocol: .ocp1, peer: nil))
+        .handleRequest(request)
+    }
+    let serverTask = Task { try await server.run() }
+    defer { serverTask.cancel() }
+    try await server.waitUntilListening(timeout: 5)
+    guard case let .ip4(_, port) = await server.listeningAddress else {
+      throw Ocp1Error.notConnected
+    }
+
+    let webSocket = try await RawWebSocket(port: port, protocols: ["AES70-OCP.1"])
+    XCTAssertNil(webSocket.negotiatedProtocol, "the legacy route should not echo")
+    await webSocket.close()
+
+    let connection = await makeWSConnection(port: port)
+    try await connection.connect()
+    let name = try await connection.deviceManager.$deviceName._getValue(connection.deviceManager)
+    XCTAssertEqual(name, deviceName)
+    try await connection.disconnect()
+
+    let values = await offered.values
+    XCTAssertEqual(values.last, "AES70-OCP.1")
+  }
+}
+
+#endif
 
 #endif

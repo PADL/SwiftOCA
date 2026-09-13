@@ -144,7 +144,7 @@ package extension OcaControlProtocol {
   func makeReader(isMessageOriented: Bool, maximumPduSize: Int) -> any OcaPduReader {
     switch self {
     case .ocp1:
-      Ocp1PduReader(maximumPduSize: maximumPduSize)
+      Ocp1PduReader(isMessageOriented: isMessageOriented, maximumPduSize: maximumPduSize)
     #if NonEmbeddedBuild
     case .ocp2:
       Ocp2PduReader(isMessageOriented: isMessageOriented, maximumPduSize: maximumPduSize)
@@ -162,11 +162,11 @@ package extension OcaControlProtocol {
     }
   }
 
-  /// WebSocket subprotocol to offer/accept, or `nil` for none.
+  /// WebSocket subprotocol to offer/accept (AES70-3 8.4.3.4.2, AES70-4 10.4.3.4.2).
   var webSocketSubprotocol: String? {
     switch self {
     case .ocp1:
-      nil
+      "AES70-OCP.1"
     #if NonEmbeddedBuild
     case .ocp2:
       "AES70-OCP.2"

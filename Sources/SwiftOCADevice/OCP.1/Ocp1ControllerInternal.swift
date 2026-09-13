@@ -294,7 +294,7 @@ extension OcaDevice {
   /// awaits all of a read.
   static func _receiveMessages(_ read: (Int) async throws -> Data) async throws -> Ocp1MessageList {
     try await _receiveMessages(
-      reader: Ocp1PduReader(maximumPduSize: Int.max),
+      reader: Ocp1PduReader(isMessageOriented: false, maximumPduSize: Int.max),
       controlProtocol: .ocp1,
       read: { count, _ in try await read(count) }
     )
