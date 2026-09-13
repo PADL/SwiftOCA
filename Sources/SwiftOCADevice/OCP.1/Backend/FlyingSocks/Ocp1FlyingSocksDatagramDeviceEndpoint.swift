@@ -144,7 +144,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
 
   public func run() async throws {
     let socket = try await preparePoolAndSocket()
-    logger.info("starting \(type(of: self)) on \(presentationAddress)")
+    logger.info("starting \(type(of: self)) (\(controlProtocol)) on \(presentationAddress)")
     do {
       if port != 0 {
         #if canImport(dnssd)

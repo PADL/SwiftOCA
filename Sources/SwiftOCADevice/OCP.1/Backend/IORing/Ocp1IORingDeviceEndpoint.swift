@@ -176,7 +176,7 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   }
 
   override public func run() async throws {
-    logger.info("starting \(type(of: self)) on \(address._presentationAddress)")
+    logger.info("starting \(type(of: self)) (\(controlProtocol)) on \(address._presentationAddress)")
     try await super.run()
     let socket = try makeSocketAndListen()
     self.socket = socket
@@ -357,7 +357,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   }
 
   override public func run() async throws {
-    logger.info("starting \(type(of: self)) on \(address._presentationAddress)")
+    logger.info("starting \(type(of: self)) (\(controlProtocol)) on \(address._presentationAddress)")
     try await super.run()
 
     let socket = try makeSocket()

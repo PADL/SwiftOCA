@@ -146,7 +146,7 @@ open class Ocp1NWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
       connections.continuation.yield(connection)
     }
     listener.start(queue: queue)
-    logger.info("starting \(type(of: self)) on port \(_port.rawValue)")
+    logger.info("starting \(type(of: self)) (\(controlProtocol)) on port \(_port.rawValue)")
 
     // Bonjour registration is wired up in `_resolveBoundPort` once the
     // OS-assigned port is known — DNS-SD silently rejects port 0.
