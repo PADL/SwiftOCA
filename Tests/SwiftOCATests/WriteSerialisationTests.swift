@@ -25,7 +25,7 @@ import XCTest
 /// A connection whose `write` reports partial progress, as the stream backends do:
 /// each suspends mid-PDU and resumes from an offset, which is what lets a second
 /// writer interleave its bytes with the first.
-private final class ChunkedWriteConnection: Ocp1Connection, @unchecked Sendable {
+private final class ChunkedWriteConnection: OcaConnection, @unchecked Sendable {
   nonisolated(unsafe) var datagram = false
   nonisolated(unsafe) private(set) var chunks = [UInt8]()
   nonisolated(unsafe) private(set) var maxInFlight = 0
@@ -108,14 +108,14 @@ private final class ChunkedWriteConnection: Ocp1Connection, @unchecked Sendable 
   }
 }
 
-@OcaConnection
+@OcaConnectionActor
 private func makeConnection() -> ChunkedWriteConnection {
-  ChunkedWriteConnection(options: Ocp1ConnectionOptions())
+  ChunkedWriteConnection(options: OcaConnectionOptions())
 }
 
 /// The queue is guarded by the connection's isolation, so its depth is read from there.
-@OcaConnection
-private func pendingWriters(on connection: Ocp1Connection) -> Int {
+@OcaConnectionActor
+private func pendingWriters(on connection: OcaConnection) -> Int {
   connection.writeQueue.pending
 }
 

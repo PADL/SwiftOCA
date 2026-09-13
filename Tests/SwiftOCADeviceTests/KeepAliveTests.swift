@@ -52,9 +52,9 @@ private func localhostAddress(port: UInt16) -> Data {
 private func makeTCPEndpoint(
   device: OcaDevice,
   timeout: Duration = .seconds(5)
-) async throws -> (Ocp1FlyingSocksStreamDeviceEndpoint, Socket, UInt16) {
+) async throws -> (OcaFlyingSocksStreamDeviceEndpoint, Socket, UInt16) {
   let serverAddress = localhostAddress(port: 0)
-  let endpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(
+  let endpoint = try await OcaFlyingSocksStreamDeviceEndpoint(
     address: serverAddress,
     timeout: timeout,
     device: device
@@ -65,14 +65,14 @@ private func makeTCPEndpoint(
 }
 
 /// Create and connect a TCP client to the given port
-@OcaConnection
+@OcaConnectionActor
 private func makeTCPConnection(
   port: UInt16
-) async throws -> Ocp1FlyingSocksStreamConnection {
+) async throws -> OcaFlyingSocksStreamConnection {
   let clientAddress = localhostAddress(port: port)
-  let connection = try Ocp1FlyingSocksStreamConnection(
+  let connection = try OcaFlyingSocksStreamConnection(
     deviceAddress: clientAddress,
-    options: Ocp1ConnectionOptions(flags: .refreshDeviceTreeOnConnection)
+    options: OcaConnectionOptions(flags: .refreshDeviceTreeOnConnection)
   )
   return connection
 }

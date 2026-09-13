@@ -22,13 +22,13 @@ import FlyingSocks
 @testable @_spi(SwiftOCAPrivate) import SwiftOCADevice
 @preconcurrency import XCTest
 
-@OcaConnection
+@OcaConnectionActor
 private func makeDomainSocketConnection(
   path: String
-) async throws -> Ocp1FlyingSocksStreamConnection {
-  try Ocp1FlyingSocksStreamConnection(
+) async throws -> OcaFlyingSocksStreamConnection {
+  try OcaFlyingSocksStreamConnection(
     path: path,
-    options: Ocp1ConnectionOptions(flags: .refreshDeviceTreeOnConnection)
+    options: OcaConnectionOptions(flags: .refreshDeviceTreeOnConnection)
   )
 }
 
@@ -71,7 +71,7 @@ final class FlyingSocksDomainSocketEndpointTests: XCTestCase {
 
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
-    let endpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(path: path, device: device)
+    let endpoint = try await OcaFlyingSocksStreamDeviceEndpoint(path: path, device: device)
     let endpointTask = Task { try await endpoint.run() }
     defer { endpointTask.cancel() }
 
@@ -90,7 +90,7 @@ final class FlyingSocksDomainSocketEndpointTests: XCTestCase {
     if staleSocket { try makeStaleSocket(at: path, type: .datagram) }
 
     let device = OcaDevice()
-    let endpoint = try await Ocp1FlyingSocksDatagramDeviceEndpoint(
+    let endpoint = try await OcaFlyingSocksDatagramDeviceEndpoint(
       address: FlyingSocks.AnySocketAddress(sockaddr_un.unix(path: path)).data,
       device: device
     )
@@ -157,14 +157,14 @@ final class FlyingFoxDomainSocketEndpointTests: XCTestCase {
   private func makeEndpoint(
     path: String,
     device: OcaDevice
-  ) async throws -> Ocp1FlyingFoxDeviceEndpoint {
-    try await Ocp1FlyingFoxDeviceEndpoint(
+  ) async throws -> OcaFlyingFoxDeviceEndpoint {
+    try await OcaFlyingFoxDeviceEndpoint(
       address: FlyingSocks.AnySocketAddress(sockaddr_un.unix(path: path)).data,
       device: device
     )
   }
 
-  /// `Ocp1FlyingFoxConnection` uses `URLSession`, which cannot reach a domain socket, so
+  /// `OcaFlyingFoxConnection` uses `URLSession`, which cannot reach a domain socket, so
   /// this upgrades a raw connection and gets the root block's class identification.
   private func assertOcp1RoundTrip(path: String) async throws {
     let socket = try await AsyncSocket.connected(to: sockaddr_un.unix(path: path))
@@ -182,13 +182,13 @@ final class FlyingFoxDomainSocketEndpointTests: XCTestCase {
     XCTAssertTrue(statusLine.hasPrefix("HTTP/1.1 101"), String(statusLine))
 
     let command = Ocp1Command(handle: 1, targetONo: OcaRootBlockONo, methodID: OcaMethodID("1.1"))
-    let pdu: Data = try Ocp1Connection.encodeOcp1MessagePdu([command], type: .ocaCmdRrq)
+    let pdu: Data = try OcaConnection.encodeOcp1MessagePdu([command], type: .ocaCmdRrq)
     try await socket.write(Data(makeMaskedBinaryFrame(Array(pdu))))
 
     while true {
       let (opcode, payload) = try await readFrame(from: socket)
       guard opcode == 0x2 else { continue }
-      let (messageType, messages) = try Ocp1Connection.decodeOcp1MessagePdu(from: Data(payload))
+      let (messageType, messages) = try OcaConnection.decodeOcp1MessagePdu(from: Data(payload))
       guard messageType == .ocaRsp, let response = messages.first as? Ocp1Response
       else { continue }
       XCTAssertEqual(response.handle, 1)

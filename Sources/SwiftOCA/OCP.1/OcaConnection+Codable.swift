@@ -43,7 +43,7 @@ extension _Ocp1MessageCodable {
   }
 }
 
-package extension Ocp1Connection {
+package extension OcaConnection {
   nonisolated static func encodeOcp1MessagePduData(
     type messageType: OcaMessageType,
     encodedPdus: [[UInt8]]

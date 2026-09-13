@@ -27,7 +27,7 @@ import Foundation
 import Synchronization
 import SystemPackage
 
-// OcaMachPortConnectionPrefix is defined in Ocp1Connection.swift
+// OcaMachPortConnectionPrefix is defined in OcaConnection.swift
 
 // MARK: - Swift equivalents of Mach macros
 

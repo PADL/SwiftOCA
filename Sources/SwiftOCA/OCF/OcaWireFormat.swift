@@ -71,7 +71,7 @@ package extension OcaControlProtocol {
   func encodePdu(_ messages: [Ocp1Message], type messageType: OcaMessageType) throws -> Data {
     switch self {
     case .ocp1:
-      try Ocp1Connection.encodeOcp1MessagePdu(messages, type: messageType)
+      try OcaConnection.encodeOcp1MessagePdu(messages, type: messageType)
     #if NonEmbeddedBuild
     case .ocp2:
       try Ocp2Message.encodePdu(messages, type: messageType)
@@ -83,7 +83,7 @@ package extension OcaControlProtocol {
   func decodePdu(_ data: Data) throws -> (OcaMessageType, [Ocp1Message]) {
     switch self {
     case .ocp1:
-      try Ocp1Connection.decodeOcp1MessagePdu(from: data)
+      try OcaConnection.decodeOcp1MessagePdu(from: data)
     #if NonEmbeddedBuild
     case .ocp2:
       try Ocp2Message.decodePdu(data)
@@ -118,7 +118,7 @@ package extension OcaControlProtocol {
   ) throws -> [UInt8] {
     switch self {
     case .ocp1:
-      try Ocp1Connection.encodeOcp1MessagePduData(type: messageType, encodedPdus: encodedMessages)
+      try OcaConnection.encodeOcp1MessagePduData(type: messageType, encodedPdus: encodedMessages)
     #if NonEmbeddedBuild
     case .ocp2:
       try Ocp2Message.assemblePdu(type: messageType, encodedMessages: encodedMessages)
@@ -131,7 +131,7 @@ package extension OcaControlProtocol {
   func pduOverhead(messageCount: Int) -> Int {
     switch self {
     case .ocp1:
-      Ocp1Connection.MinimumPduSize
+      OcaConnection.MinimumPduSize
     #if NonEmbeddedBuild
     case .ocp2:
       Ocp2Message.pduOverhead(messageCount: messageCount)

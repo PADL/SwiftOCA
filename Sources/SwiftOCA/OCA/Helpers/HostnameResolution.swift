@@ -41,7 +41,7 @@ private let _winsockIsStarted: Bool = {
 #endif
 
 /// `getaddrinfo` is a blocking syscall with no portable async form, so run it on
-/// a dedicated queue — never on the `OcaConnection` global actor — and present an
+/// a dedicated queue — never on the `OcaConnectionActor` global actor — and present an
 /// `async` interface. This keeps name resolution asynchronous from the caller's
 /// perspective: the actor (and the Swift cooperative pool) is never blocked.
 private let _resolverQueue = DispatchQueue(

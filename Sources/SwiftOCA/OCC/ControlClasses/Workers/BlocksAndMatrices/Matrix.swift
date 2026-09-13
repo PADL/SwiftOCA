@@ -127,13 +127,13 @@ public extension OcaMatrix {
 
   typealias SparseMembers = OcaArray2D<OcaRoot?>
 
-  @OcaConnection
+  @OcaConnectionActor
   func resolveMembers() async throws -> SparseMembers {
     let proxy = try await resolveProxy()
     return try await resolveMembers(with: proxy)
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func resolveMembers(with proxy: OcaRoot) async throws -> SparseMembers {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
@@ -155,7 +155,7 @@ public extension OcaMatrix {
     }
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func resolveProxy<T: OcaRoot>() async throws -> T {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 

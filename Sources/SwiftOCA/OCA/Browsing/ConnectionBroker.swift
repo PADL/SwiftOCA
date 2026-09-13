@@ -128,7 +128,7 @@ public actor OcaConnectionBroker {
     /// An existing device has been updated (e.g. renamed via DNS-SD)
     case deviceUpdated
     /// The connection state of a device has changed
-    case connectionStateChanged(Ocp1ConnectionState)
+    case connectionStateChanged(OcaConnectionState)
   }
 
   /// An event emitted by the connection broker containing information about device lifecycle
@@ -211,26 +211,26 @@ public actor OcaConnectionBroker {
       return path.hasPrefix("/") ? path : "/" + path
     }
 
-    func openConnection(options: Ocp1ConnectionOptions) async throws -> Ocp1Connection {
-      let connection: Ocp1Connection
+    func openConnection(options: OcaConnectionOptions) async throws -> OcaConnection {
+      let connection: OcaConnection
       // the service type decides the protocol; the caller's options decide the rest
       let options = options.copy(controlProtocol: serviceType.controlProtocol)
 
       switch serviceType.transport {
       case .tcp:
-        connection = try await Ocp1TCPConnection(
+        connection = try await OcaTCPConnection(
           deviceAddresses: addresses,
           options: options
         )
       case .udp:
-        connection = try await Ocp1UDPConnection(
+        connection = try await OcaUDPConnection(
           deviceAddresses: addresses,
           options: options
         )
       #if os(macOS) || os(iOS)
       case .tcpWebSocket:
         let wsURL = try URL(string: "ws://\(host):\(port)\(webSocketPath)")!
-        connection = await Ocp1FlyingFoxConnection(
+        connection = await OcaFlyingFoxConnection(
           url: wsURL,
           options: options
         )
@@ -244,16 +244,16 @@ public actor OcaConnectionBroker {
   }
 
   private final class DeviceConnection: @unchecked Sendable {
-    let connection: Ocp1Connection
+    let connection: OcaConnection
     var connectionStateMonitor: Task<(), Error>?
 
     init(
       deviceIdentifier: DeviceIdentifier,
-      connection: Ocp1Connection,
+      connection: OcaConnection,
       broker: OcaConnectionBroker
     ) {
       self.connection = connection
-      connectionStateMonitor = Task { @OcaConnection [weak broker] in
+      connectionStateMonitor = Task { @OcaConnectionActor [weak broker] in
         for try await connectionState in connection.connectionState {
           let event = Event(
             eventType: .connectionStateChanged(connectionState),
@@ -326,9 +326,9 @@ public actor OcaConnectionBroker {
   private var _browsers: [OcaNetworkAdvertisingServiceType: BrowserMonitor]!
   private var _devices = [DeviceIdentifier: DeviceInfo]()
   private var _connections = [DeviceIdentifier: DeviceConnection]()
-  private var _pendingOpens = [DeviceIdentifier: Task<Ocp1Connection, Error>]()
+  private var _pendingOpens = [DeviceIdentifier: Task<OcaConnection, Error>]()
   private var _deviceExpiryTasks = [DeviceIdentifier: Task<Void, Error>]()
-  private let _connectionOptions: Ocp1ConnectionOptions
+  private let _connectionOptions: OcaConnectionOptions
   private let _deviceExpiryTimeout: Duration
   private let _eventsContinuation: AsyncStream<Event>.Continuation
   private let _deviceModels: [OcaModelGUID]?
@@ -457,7 +457,7 @@ public actor OcaConnectionBroker {
   /// - Parameter connectionOptions: Configuration options for connections created by this broker.
   ///   Defaults to standard options if not specified.
   public init(
-    connectionOptions: Ocp1ConnectionOptions = .init(),
+    connectionOptions: OcaConnectionOptions = .init(),
     serviceTypes: Set<OcaNetworkAdvertisingServiceType>? = nil,
     deviceModels: [OcaModelGUID]? = nil,
     deviceExpiryTimeout: Duration = .seconds(10)
@@ -482,7 +482,7 @@ public actor OcaConnectionBroker {
     _eventsContinuation.finish()
   }
 
-  private func _registerConnection(_ connection: Ocp1Connection, for device: DeviceIdentifier) {
+  private func _registerConnection(_ connection: OcaConnection, for device: DeviceIdentifier) {
     _connections[device] = DeviceConnection(
       deviceIdentifier: device,
       connection: connection,
@@ -490,7 +490,7 @@ public actor OcaConnectionBroker {
     )
   }
 
-  private func _connect(_ connection: Ocp1Connection) async throws {
+  private func _connect(_ connection: OcaConnection) async throws {
     do {
       try await connection.connect()
     } catch Ocp1Error.alreadyConnected {
@@ -512,7 +512,7 @@ public actor OcaConnectionBroker {
 
     // the actor can be re-entered whilst suspended in openConnection()/connect()
     // below; concurrent callers must await the in-flight open rather than create
-    // (and connect) a second Ocp1Connection for the same device
+    // (and connect) a second OcaConnection for the same device
     if let pending = _pendingOpens[device] {
       let connection = try await pending.value
       if connect { try await _connect(connection) }
@@ -520,7 +520,7 @@ public actor OcaConnectionBroker {
     }
 
     let deviceInfo = try _getDeviceInfo(for: device)
-    let pending = Task { () -> Ocp1Connection in
+    let pending = Task { () -> OcaConnection in
       let connection = try await deviceInfo.openConnection(options: _connectionOptions)
       if connect { try await connection.connect() }
       do {
@@ -552,7 +552,7 @@ public actor OcaConnectionBroker {
   ///   - connection: The connection to use for this device
   public func register(
     device: DeviceIdentifier,
-    connection: Ocp1Connection
+    connection: OcaConnection
   ) {
     _cancelPendingOpen(for: device)
     _registerConnection(connection, for: device)
@@ -641,7 +641,7 @@ public actor OcaConnectionBroker {
   /// - Throws: Any error thrown by the closure
   public func withDeviceConnection<T>(
     _ device: DeviceIdentifier,
-    body: (_ connection: Ocp1Connection) async throws -> T
+    body: (_ connection: OcaConnection) async throws -> T
   ) async throws -> T {
     let connection = try _getRegisteredConnection(for: device)
     return try await body(connection.connection)
@@ -649,7 +649,7 @@ public actor OcaConnectionBroker {
 
   public func withDeviceConnection<T>(
     _ device: DeviceIdentifier,
-    body: (_ connection: Ocp1Connection) throws -> T
+    body: (_ connection: OcaConnection) throws -> T
   ) throws -> T {
     let connection = try _getRegisteredConnection(for: device)
     return try body(connection.connection)

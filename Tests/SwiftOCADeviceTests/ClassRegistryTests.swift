@@ -95,7 +95,7 @@ struct ClassRegistryTests {
       == SwiftOCADevice.OcaActuator.self)
   }
 
-  @Test @OcaConnection
+  @Test @OcaConnectionActor
   func controllerRegistryConstructs() {
     _ = OcaClassRegistry.shared
   }

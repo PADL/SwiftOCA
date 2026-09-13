@@ -19,7 +19,7 @@ import SwiftUI
 
 public struct OcaBonjourDeviceView: View {
   @State
-  var connection: Ocp1Connection? = nil
+  var connection: OcaConnection? = nil
   @State
   var isConnected = false
   @State
@@ -48,14 +48,14 @@ public struct OcaBonjourDeviceView: View {
 
         switch service.serviceType {
         case .tcp:
-          connection = try await Ocp1TCPConnection(
+          connection = try await OcaTCPConnection(
             deviceAddress: firstAddress,
-            options: Ocp1ConnectionOptions()
+            options: OcaConnectionOptions()
           )
         case .udp:
-          connection = try await Ocp1UDPConnection(
+          connection = try await OcaUDPConnection(
             deviceAddress: firstAddress,
-            options: Ocp1ConnectionOptions()
+            options: OcaConnectionOptions()
           )
         default:
           throw Ocp1Error.unknownServiceType
@@ -74,7 +74,7 @@ public struct OcaBonjourDeviceView: View {
       Task { @MainActor in
         if let connection {
           isConnected = false
-          Task { @OcaConnection in
+          Task { @OcaConnectionActor in
             try await connection.disconnect()
           }
           self.connection = nil

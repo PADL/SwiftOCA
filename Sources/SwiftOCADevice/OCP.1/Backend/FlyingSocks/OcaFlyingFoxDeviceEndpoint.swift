@@ -36,12 +36,15 @@ import Android
 import WinSDK
 #endif
 
+@available(*, deprecated, renamed: "OcaFlyingFoxDeviceEndpoint")
+public typealias Ocp1FlyingFoxDeviceEndpoint = OcaFlyingFoxDeviceEndpoint
+
 @OcaDevice
-public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
+public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
-  package typealias ControllerType = Ocp1FlyingFoxController
+  package typealias ControllerType = OcaFlyingFoxController
 
   public var controllers: [OcaController] {
     _controllers
@@ -58,20 +61,20 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   private(set) var httpServer: HTTPServer!
   private let address: sockaddr_storage
-  private var _controllers = [Ocp1FlyingFoxController]()
+  private var _controllers = [OcaFlyingFoxController]()
   #if canImport(dnssd)
   private var _endpointRegistrarTask: Task<(), Error>?
   #endif
 
   final class Handler: WSMessageHandler, @unchecked
   Sendable {
-    package weak var endpoint: Ocp1FlyingFoxDeviceEndpoint?
+    package weak var endpoint: OcaFlyingFoxDeviceEndpoint?
     /// the peer the WebSocket upgrade came from, for logging
     private let identifier: String
     package let controlProtocol: OcaControlProtocol
 
     init(
-      _ endpoint: Ocp1FlyingFoxDeviceEndpoint?,
+      _ endpoint: OcaFlyingFoxDeviceEndpoint?,
       controlProtocol: OcaControlProtocol,
       peer: HTTPRequest.Address?
     ) {
@@ -91,7 +94,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
       -> AsyncStream<WSMessage>
     {
       AsyncStream<WSMessage> { continuation in
-        let controller = Ocp1FlyingFoxController(
+        let controller = OcaFlyingFoxController(
           endpoint: endpoint,
           controlProtocol: controlProtocol,
           identifier: identifier,
@@ -118,7 +121,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     device: OcaDevice = OcaDevice.shared,
     controlProtocols: Set<OcaControlProtocol> = [.ocp1],
     paths: [OcaControlProtocol: String] = [:],
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingFoxDeviceEndpoint")
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaFlyingFoxDeviceEndpoint")
   ) async throws {
     var storage = sockaddr_storage()
     _ = withUnsafeMutableBytes(of: &storage) { dst in
@@ -142,7 +145,7 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     device: OcaDevice = OcaDevice.shared,
     controlProtocols: Set<OcaControlProtocol> = [.ocp1],
     paths: [OcaControlProtocol: String] = [:],
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingFoxDeviceEndpoint")
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaFlyingFoxDeviceEndpoint")
   ) async throws {
     guard !controlProtocols.isEmpty else { throw Ocp1Error.unsupportedControlProtocol }
     self.device = device
@@ -292,11 +295,11 @@ public final class Ocp1FlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     address.ss_family == sa_family_t(AF_LOCAL) ? address._presentationAddress : nil
   }
 
-  package func add(controller: Ocp1FlyingFoxController) async {
+  package func add(controller: OcaFlyingFoxController) async {
     _controllers.append(controller)
   }
 
-  package func remove(controller: Ocp1FlyingFoxController) async {
+  package func remove(controller: OcaFlyingFoxController) async {
     _controllers.removeAll(where: { $0.id == controller.id })
   }
 }

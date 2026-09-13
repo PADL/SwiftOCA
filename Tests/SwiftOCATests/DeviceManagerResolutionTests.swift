@@ -17,7 +17,7 @@
 @testable import SwiftOCA
 import Testing
 
-private final class MockConnection: Ocp1Connection {
+private final class MockConnection: OcaConnection {
   override nonisolated var connectionPrefix: String { "oca/mock" }
 }
 

@@ -560,7 +560,7 @@ Sendable {
 }
 
 public extension OcaBlock {
-  @OcaConnection
+  @OcaConnectionActor
   func resolveActionObjects() async throws -> [OcaRoot] {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
@@ -589,7 +589,7 @@ public extension OcaBlock {
     } catch Ocp1Error.status(.notImplemented) {}
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func resolveActionObjectsRecursive() async throws
     -> [OcaContainerObjectMember]
   {
@@ -627,7 +627,7 @@ public extension OcaBlock {
     return containerMembers
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func getRoleMap(separator: String = "/") async throws -> [String: OcaRoot] {
     let members = try await resolveActionObjectsRecursive()
 

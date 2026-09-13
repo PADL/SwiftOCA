@@ -27,7 +27,7 @@ import XCTest
 /// `connect()` is deliberately not used; the tests install a monitor directly,
 /// because what is under test is request bookkeeping rather than the connection
 /// handshake.
-private final class MockConnection: Ocp1Connection, @unchecked Sendable {
+private final class MockConnection: OcaConnection, @unchecked Sendable {
   /// how long `write` stalls before reporting success
   nonisolated(unsafe) var writeDelay: Duration = .zero
   /// set when `write` is entered, so a test can tell a stalled write from one
@@ -59,24 +59,24 @@ private final class MockConnection: Ocp1Connection, @unchecked Sendable {
   }
 }
 
-@OcaConnection
+@OcaConnectionActor
 private func makeConnection(
   responseTimeout: Duration = .milliseconds(200)
 ) -> MockConnection {
-  MockConnection(options: Ocp1ConnectionOptions(responseTimeout: responseTimeout))
+  MockConnection(options: OcaConnectionOptions(responseTimeout: responseTimeout))
 }
 
-@OcaConnection
-private func makeMonitor(_ connection: MockConnection) -> Ocp1Connection.Monitor {
-  Ocp1Connection.Monitor(connection, id: 1)
+@OcaConnectionActor
+private func makeMonitor(_ connection: MockConnection) -> OcaConnection.Monitor {
+  OcaConnection.Monitor(connection, id: 1)
 }
 
 /// Installs a monitor without going through `connect()`, which would need a
 /// live device on the other end.
-@OcaConnection
+@OcaConnectionActor
 @discardableResult
-private func installMonitor(on connection: MockConnection) -> Ocp1Connection.Monitor {
-  let monitor = Ocp1Connection.Monitor(connection, id: 1)
+private func installMonitor(on connection: MockConnection) -> OcaConnection.Monitor {
+  let monitor = OcaConnection.Monitor(connection, id: 1)
   connection.monitor = monitor
   return monitor
 }
@@ -88,7 +88,7 @@ private func makeResponse(handle: OcaUint32) -> Ocp1Response {
 /// Waits for a sender to actually suspend. Sleeping a fixed interval instead
 /// would let a slow scheduler silently turn these tests into hangs.
 private func waitUntilWaiting(
-  _ monitor: Ocp1Connection.Monitor,
+  _ monitor: OcaConnection.Monitor,
   handle: OcaUint32,
   file: StaticString = #filePath,
   line: UInt = #line
@@ -110,7 +110,7 @@ final class RequestContinuationTests: XCTestCase {
   // MARK: - request bookkeeping
 
   /// A response parsed before the sender suspends must be held, not dropped.
-  /// The monitor runs off `@OcaConnection`, so on a fast transport this is the
+  /// The monitor runs off `@OcaConnectionActor`, so on a fast transport this is the
   /// normal ordering, and dropping it stalled the caller until its timeout.
   func testResponseArrivingBeforeSenderSuspends() async throws {
     let connection = await makeConnection()

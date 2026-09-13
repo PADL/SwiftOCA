@@ -79,7 +79,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
 
   // MARK: - Basic Batching Tests
 
-  @OcaConnection
+  @OcaConnectionActor
   func testBasicMessageEnqueue() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -96,7 +96,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     XCTAssertEqual(currentCount, 1)
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func testMessageBatching() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -124,7 +124,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     XCTAssertEqual(sentCount, 0) // Not sent yet
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func testManualDequeue() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -145,7 +145,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     XCTAssertEqual(sentCount, 1)
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func testSizeBasedDequeue() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -188,7 +188,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     }
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func testDifferentMessageTypesForceDequeue() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -211,7 +211,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     XCTAssertEqual(currentCount, 1) // Second message still in batch
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func testKeepAliveMessageHandling() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -241,7 +241,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
 
   // MARK: - Bulk Enqueue Tests
 
-  @OcaConnection
+  @OcaConnectionActor
   func testBulkEnqueue() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -267,7 +267,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
 
   // MARK: - Periodic Dequeue Tests
 
-  @OcaConnection
+  @OcaConnectionActor
   func testPeriodicDequeue() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -297,7 +297,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   /// The timer must not deliver its own batch under cancellation. `Ocp1WriteQueue` drops a PDU
   /// whose task is already cancelled, so a batch sent that way never reaches the wire and the
   /// command behind it times out.
-  @OcaConnection
+  @OcaConnectionActor
   func testPeriodicDequeueSendsUncancelled() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -321,7 +321,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     XCTAssertEqual(sentCount, 1, "the periodic dequeue cancelled the task sending its own batch")
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func testZeroIntervalDisablesPeriodicDequeue() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -347,7 +347,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
 
   // MARK: - Edge Cases and Error Conditions
 
-  @OcaConnection
+  @OcaConnectionActor
   func testEmptyDequeue() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -364,7 +364,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     XCTAssertEqual(sentCount, 0)
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func testMultipleDequeues() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -386,7 +386,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     XCTAssertEqual(sentCount, 1)
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func testConcurrentAccess() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -412,7 +412,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     XCTAssertEqual(sentCount, 1)
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func testBatchSizeLimit() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -441,7 +441,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
 
   // MARK: - Actor Safety Tests
 
-  @OcaConnection
+  @OcaConnectionActor
   func testActorIsolation() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -465,7 +465,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     XCTAssertEqual(currentCount, 10)
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func testTaskCancellation() async throws {
     let handler = TestSendHandler()
     let batcher = Ocp1MessageBatcher(
@@ -497,7 +497,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
 
   // MARK: - Configuration Tests
 
-  @OcaConnection
+  @OcaConnectionActor
   func testBatchSizeConfiguration() async throws {
     let handler = TestSendHandler()
 
@@ -524,7 +524,7 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     XCTAssertEqual(largeCurrentSize, smallCurrentSize) // Both start empty
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func testIntervalConfiguration() async throws {
     let handler = TestSendHandler()
 
@@ -568,14 +568,14 @@ final class Ocp1MessageBatcherTests: XCTestCase {
 
   func testConnectionOptionsIntegration() throws {
     // Test that connection options properly configure batching
-    let options1 = try Ocp1ConnectionOptions(batchingOptions: .init(batchSize: 1000))
+    let options1 = try OcaConnectionOptions(batchingOptions: .init(batchSize: 1000))
     XCTAssertEqual(options1.batchingOptions?.batchSize, 1000)
 
-    let options2 = Ocp1ConnectionOptions(batchingOptions: nil)
+    let options2 = OcaConnectionOptions(batchingOptions: nil)
     XCTAssertNil(options2.batchingOptions)
 
     // Test that batch size is included in both initializers
-    let deprecatedOptions = try Ocp1ConnectionOptions(
+    let deprecatedOptions = try OcaConnectionOptions(
       automaticReconnect: true,
       batchingOptions: .init(batchSize: 500)
     )

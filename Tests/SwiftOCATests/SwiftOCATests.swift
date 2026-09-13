@@ -224,7 +224,7 @@ final class SwiftOCADeviceTests: XCTestCase {
       notificationType: .event,
       data: Ocp1Encoder().encode(propertyChangedEventData)
     )
-    let pdu = try Ocp1Connection.encodeOcp1MessagePdu([notification], type: .ocaNtf2)
+    let pdu = try OcaConnection.encodeOcp1MessagePdu([notification], type: .ocaNtf2)
 
     let referenceValue: [UInt8] = [
       0x3B, // SyncVal
@@ -1676,8 +1676,8 @@ final class UnsafeStringInitializerTests: XCTestCase {
       methodID: "2.6",
       parameters: OcaParameters(parameterCount: 1, parameterData: Data([0x01, 0x02]))
     )
-    let pdu: Data = try Ocp1Connection.encodeOcp1MessagePdu([command], type: .ocaCmdRrq)
-    let (messageType, messages) = try Ocp1Connection.decodeOcp1MessagePdu(from: pdu)
+    let pdu: Data = try OcaConnection.encodeOcp1MessagePdu([command], type: .ocaCmdRrq)
+    let (messageType, messages) = try OcaConnection.decodeOcp1MessagePdu(from: pdu)
     XCTAssertEqual(messageType, .ocaCmdRrq)
     XCTAssertEqual(messages.count, 1)
     let decodedCmd = try XCTUnwrap(messages[0] as? Ocp1Command)
@@ -1696,8 +1696,8 @@ final class UnsafeStringInitializerTests: XCTestCase {
       methodID: "3.5",
       parameters: OcaParameters(parameterCount: 1, parameterData: Data([0xFF]))
     )
-    let pdu: Data = try Ocp1Connection.encodeOcp1MessagePdu([cmd1, cmd2], type: .ocaCmd)
-    let (messageType, messages) = try Ocp1Connection.decodeOcp1MessagePdu(from: pdu)
+    let pdu: Data = try OcaConnection.encodeOcp1MessagePdu([cmd1, cmd2], type: .ocaCmd)
+    let (messageType, messages) = try OcaConnection.decodeOcp1MessagePdu(from: pdu)
     XCTAssertEqual(messageType, .ocaCmd)
     XCTAssertEqual(messages.count, 2)
 

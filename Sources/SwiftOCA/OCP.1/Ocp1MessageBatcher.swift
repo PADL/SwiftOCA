@@ -20,7 +20,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-@OcaConnection
+@OcaConnectionActor
 final class Ocp1MessageBatcher: Sendable {
   private typealias EncodedPDU = [UInt8]
   package typealias SendEncodedPDU = @Sendable (_: Data) async throws -> ()
@@ -164,9 +164,9 @@ final class Ocp1MessageBatcher: Sendable {
   }
 }
 
-extension Ocp1Connection {
+extension OcaConnection {
   private func _getEffectiveBatchingOptions(
-    _ batchingOptions: Ocp1ConnectionOptions
+    _ batchingOptions: OcaConnectionOptions
       .BatchingOptions
   ) -> (UInt32, Duration) {
     let batchSize = batchingOptions.batchSize ??
@@ -176,7 +176,7 @@ extension Ocp1Connection {
     return (batchSize, dequeueInterval)
   }
 
-  func _configureBatching(_ batchingOptions: Ocp1ConnectionOptions.BatchingOptions?) {
+  func _configureBatching(_ batchingOptions: OcaConnectionOptions.BatchingOptions?) {
     let batchSize: OcaUint32
     let dequeueInterval: Duration
 

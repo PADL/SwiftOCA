@@ -35,19 +35,33 @@ import Synchronization
 package let Ocp1MaximumDatagramPduSize = 1500
 
 #if canImport(IORing)
-public typealias Ocp1UDPConnection = Ocp1IORingDatagramConnection
-public typealias Ocp1TCPConnection = Ocp1IORingStreamConnection
+public typealias OcaUDPConnection = OcaIORingDatagramConnection
+@available(*, deprecated, renamed: "OcaUDPConnection")
+public typealias Ocp1UDPConnection = OcaUDPConnection
+public typealias OcaTCPConnection = OcaIORingStreamConnection
+@available(*, deprecated, renamed: "OcaTCPConnection")
+public typealias Ocp1TCPConnection = OcaTCPConnection
 #elseif canImport(FlyingSocks)
-public typealias Ocp1UDPConnection = Ocp1FlyingSocksDatagramConnection
-public typealias Ocp1TCPConnection = Ocp1FlyingSocksStreamConnection
+public typealias OcaUDPConnection = OcaFlyingSocksDatagramConnection
+@available(*, deprecated, renamed: "OcaUDPConnection")
+public typealias Ocp1UDPConnection = OcaUDPConnection
+public typealias OcaTCPConnection = OcaFlyingSocksStreamConnection
+@available(*, deprecated, renamed: "OcaTCPConnection")
+public typealias Ocp1TCPConnection = OcaTCPConnection
 #elseif canImport(CoreFoundation) && NonEmbeddedBuild
-public typealias Ocp1UDPConnection = Ocp1CFSocketUDPConnection
-public typealias Ocp1TCPConnection = Ocp1CFSocketTCPConnection
+public typealias OcaUDPConnection = OcaCFSocketUDPConnection
+@available(*, deprecated, renamed: "OcaUDPConnection")
+public typealias Ocp1UDPConnection = OcaUDPConnection
+public typealias OcaTCPConnection = OcaCFSocketTCPConnection
+@available(*, deprecated, renamed: "OcaTCPConnection")
+public typealias Ocp1TCPConnection = OcaTCPConnection
 #endif
 
 #if os(macOS) || os(iOS)
 // note: not available on Linux because some Foundation networking unavailable
-public typealias Ocp1WSConnection = Ocp1FlyingFoxConnection
+public typealias OcaWSConnection = OcaFlyingFoxConnection
+@available(*, deprecated, renamed: "OcaWSConnection")
+public typealias Ocp1WSConnection = OcaWSConnection
 #endif
 
 /// Event data arrives in the connection's `controlProtocol.parameterFormat`; decode it
@@ -92,14 +106,17 @@ public let OcaDatagramProxyConnectionPrefix = "oca/dg-proxy"
 public let OcaMachPortConnectionPrefix = "oca/mach"
 #endif
 
-public struct Ocp1ConnectionFlags: OptionSet, Sendable {
-  public static let automaticReconnect = Ocp1ConnectionFlags(rawValue: 1 << 0)
-  public static let refreshDeviceTreeOnConnection = Ocp1ConnectionFlags(rawValue: 1 << 1)
-  public static let retainObjectCacheAfterDisconnect = Ocp1ConnectionFlags(rawValue: 1 << 2)
-  public static let enableTracing = Ocp1ConnectionFlags(rawValue: 1 << 3)
-  public static let refreshSubscriptionsOnReconnection = Ocp1ConnectionFlags(rawValue: 1 << 4)
+@available(*, deprecated, renamed: "OcaConnectionFlags")
+public typealias Ocp1ConnectionFlags = OcaConnectionFlags
+
+public struct OcaConnectionFlags: OptionSet, Sendable {
+  public static let automaticReconnect = OcaConnectionFlags(rawValue: 1 << 0)
+  public static let refreshDeviceTreeOnConnection = OcaConnectionFlags(rawValue: 1 << 1)
+  public static let retainObjectCacheAfterDisconnect = OcaConnectionFlags(rawValue: 1 << 2)
+  public static let enableTracing = OcaConnectionFlags(rawValue: 1 << 3)
+  public static let refreshSubscriptionsOnReconnection = OcaConnectionFlags(rawValue: 1 << 4)
   /// Disable TLS certificate verification.
-  public static let disableCertificateVerification = Ocp1ConnectionFlags(rawValue: 1 << 5)
+  public static let disableCertificateVerification = OcaConnectionFlags(rawValue: 1 << 5)
 
   public typealias RawValue = UInt
 
@@ -110,7 +127,10 @@ public struct Ocp1ConnectionFlags: OptionSet, Sendable {
   }
 }
 
-public struct Ocp1ConnectionOptions: Sendable {
+@available(*, deprecated, renamed: "OcaConnectionOptions")
+public typealias Ocp1ConnectionOptions = OcaConnectionOptions
+
+public struct OcaConnectionOptions: Sendable {
   public struct BatchingOptions: Equatable, Sendable {
     let batchSize: UInt32?
     let batchThreshold: Duration?
@@ -118,7 +138,7 @@ public struct Ocp1ConnectionOptions: Sendable {
     // if batchSize / batchThrehsold are nil, sensible defaults will be used
     // based on the connection type
     public init(batchSize: UInt32? = nil, batchThreshold: Duration? = nil) throws {
-      if let batchSize, batchSize < Ocp1Connection.MinimumPduSize {
+      if let batchSize, batchSize < OcaConnection.MinimumPduSize {
         throw Ocp1Error.status(.parameterError)
       }
       if let batchThreshold, batchThreshold == .zero {
@@ -129,7 +149,7 @@ public struct Ocp1ConnectionOptions: Sendable {
     }
   }
 
-  public let flags: Ocp1ConnectionFlags
+  public let flags: OcaConnectionFlags
   public let connectionTimeout: Duration
   public let responseTimeout: Duration
   public let reconnectMaxTries: Int
@@ -145,7 +165,7 @@ public struct Ocp1ConnectionOptions: Sendable {
   public let heartbeatTime: Duration?
 
   public init(
-    flags: Ocp1ConnectionFlags = .refreshDeviceTreeOnConnection,
+    flags: OcaConnectionFlags = .refreshDeviceTreeOnConnection,
     connectionTimeout: Duration = .seconds(2),
     responseTimeout: Duration = .seconds(5),
     reconnectMaxTries: Int = 15,
@@ -168,7 +188,7 @@ public struct Ocp1ConnectionOptions: Sendable {
     self.heartbeatTime = heartbeatTime
   }
 
-  @available(*, deprecated, message: "use Ocp1ConnectionFlags initializer")
+  @available(*, deprecated, message: "use OcaConnectionFlags initializer")
   public init(
     automaticReconnect: Bool = false,
     connectionTimeout: Duration = .seconds(2),
@@ -179,7 +199,7 @@ public struct Ocp1ConnectionOptions: Sendable {
     reconnectExponentialBackoffThreshold: Range<Int> = 3..<8,
     batchingOptions: BatchingOptions? = nil
   ) {
-    var flags = Ocp1ConnectionFlags()
+    var flags = OcaConnectionFlags()
     if automaticReconnect { flags.insert(.automaticReconnect) }
     if refreshDeviceTreeOnConnection { flags.insert(.refreshDeviceTreeOnConnection) }
 
@@ -195,7 +215,7 @@ public struct Ocp1ConnectionOptions: Sendable {
   }
 
   func copy(
-    flags: Ocp1ConnectionFlags? = nil,
+    flags: OcaConnectionFlags? = nil,
     connectionTimeout: Duration? = nil,
     responseTimeout: Duration? = nil,
     reconnectMaxTries: Int? = nil,
@@ -222,7 +242,10 @@ public struct Ocp1ConnectionOptions: Sendable {
   }
 }
 
-public enum Ocp1ConnectionState: OcaUint8, Codable, Sendable {
+@available(*, deprecated, renamed: "OcaConnectionState")
+public typealias Ocp1ConnectionState = OcaConnectionState
+
+public enum OcaConnectionState: OcaUint8, Codable, Sendable {
   /// controller has not been connected, or was explicitly disconnected
   case notConnected
   /// controller is connecting
@@ -237,8 +260,11 @@ public enum Ocp1ConnectionState: OcaUint8, Codable, Sendable {
   case connectionFailed
 }
 
-public struct Ocp1ConnectionStatistics: Sendable, CustomStringConvertible {
-  public let connectionState: Ocp1ConnectionState
+@available(*, deprecated, renamed: "OcaConnectionStatistics")
+public typealias Ocp1ConnectionStatistics = OcaConnectionStatistics
+
+public struct OcaConnectionStatistics: Sendable, CustomStringConvertible {
+  public let connectionState: OcaConnectionState
   public let connectionID: Int
   public var isConnected: Bool { connectionState == .connected }
   public let requestCount: UInt64
@@ -265,15 +291,18 @@ public struct Ocp1ConnectionStatistics: Sendable, CustomStringConvertible {
   }
 }
 
-@OcaConnection
-open class Ocp1Connection: CustomStringConvertible {
+@available(*, deprecated, renamed: "OcaConnection")
+public typealias Ocp1Connection = OcaConnection
+
+@OcaConnectionActor
+open class OcaConnection: CustomStringConvertible {
   package nonisolated static let MinimumPduSize = 1 /* SyncVal */ + Ocp1Header.HeaderSize
 
-  public internal(set) var options: Ocp1ConnectionOptions
+  public internal(set) var options: OcaConnectionOptions
 
   /// The control protocol is fixed at initialization, so the one in `options` is
   /// ignored: construct a new connection to speak a different one.
-  public func set(options: Ocp1ConnectionOptions) async throws {
+  public func set(options: OcaConnectionOptions) async throws {
     let oldFlags = self.options.flags
     let oldBatchOptions = self.options.batchingOptions
     self.options = options.copy(controlProtocol: controlProtocol)
@@ -302,8 +331,8 @@ open class Ocp1Connection: CustomStringConvertible {
   /// the actor because parameter encoding happens wherever a command is built.
   public nonisolated let controlProtocol: OcaControlProtocol
 
-  let _connectionState = AsyncCurrentValueSubject<Ocp1ConnectionState>(.notConnected)
-  public let connectionState: AnyAsyncSequence<Ocp1ConnectionState>
+  let _connectionState = AsyncCurrentValueSubject<OcaConnectionState>(.notConnected)
+  public let connectionState: AnyAsyncSequence<OcaConnectionState>
 
   /// Object interning
   var objects = [OcaONo: OcaRoot]()
@@ -337,7 +366,7 @@ open class Ocp1Connection: CustomStringConvertible {
     objects[OcaSubscriptionManagerONo] as? OcaSubscriptionManager ?? _subscriptionManager
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   final class EventSubscriptions {
     var subscriptions = Set<SubscriptionCancellable>()
   }
@@ -352,12 +381,12 @@ open class Ocp1Connection: CustomStringConvertible {
 
   open nonisolated var connectionPrefix: String {
     fatalError(
-      "connectionPrefix must be implemented by a concrete subclass of Ocp1Connection"
+      "connectionPrefix must be implemented by a concrete subclass of OcaConnection"
     )
   }
 
-  public var statistics: Ocp1ConnectionStatistics {
-    Ocp1ConnectionStatistics(
+  public var statistics: OcaConnectionStatistics {
+    OcaConnectionStatistics(
       connectionState: currentConnectionState,
       connectionID: connectionID,
       requestCount: monitor?.requestCount ?? 0,
@@ -399,7 +428,7 @@ open class Ocp1Connection: CustomStringConvertible {
     }
   }
 
-  public init(options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()) {
+  public init(options: OcaConnectionOptions = OcaConnectionOptions()) {
     connectionState = _connectionState.eraseToAnyAsyncSequence()
     self.options = options
     controlProtocol = options.controlProtocol
@@ -430,11 +459,11 @@ open class Ocp1Connection: CustomStringConvertible {
   /// front (OCP.2). A message-oriented transport returns one whole message either way,
   /// ignoring `length`.
   open func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
-    fatalError("read must be implemented by a concrete subclass of Ocp1Connection")
+    fatalError("read must be implemented by a concrete subclass of OcaConnection")
   }
 
   open func write(_ data: Data) async throws -> Int {
-    fatalError("write must be implemented by a concrete subclass of Ocp1Connection")
+    fatalError("write must be implemented by a concrete subclass of OcaConnection")
   }
 
   /// Datagram transports must override this. Defaulting to `false` costs a stream subclass
@@ -465,13 +494,13 @@ open class Ocp1Connection: CustomStringConvertible {
   }
 }
 
-extension Ocp1Connection: Equatable {
-  public nonisolated static func == (lhs: Ocp1Connection, rhs: Ocp1Connection) -> Bool {
+extension OcaConnection: Equatable {
+  public nonisolated static func == (lhs: OcaConnection, rhs: OcaConnection) -> Bool {
     lhs.connectionPrefix == rhs.connectionPrefix
   }
 }
 
-extension Ocp1Connection: Hashable {
+extension OcaConnection: Hashable {
   public nonisolated func hash(into hasher: inout Hasher) {
     hasher.combine(connectionPrefix)
   }
@@ -523,19 +552,19 @@ package struct Ocp1DeviceAddressState: Sendable {
 /// single `Mutex`-protected ``Ocp1DeviceAddressState`` cell plus the per-candidate
 /// connect; this extension derives ``deviceAddresses``, tracks the candidate
 /// actually connected to, resolves an optional hostname, and drives first-reachable
-/// connect — so the address-handling lives here, not on the base `Ocp1Connection`.
+/// connect — so the address-handling lives here, not on the base `OcaConnection`.
 ///
 /// `package` for now: an internal mechanism shared by the package's socket
 /// backends, not yet public API.
-package protocol Ocp1MutableSocketAddressConnection: Ocp1Connection {
+package protocol Ocp1MutableSocketAddressConnection: OcaConnection {
   /// Single store for the candidate addresses, the connected candidate, and an
   /// optional hostname. A `Mutex` (not actor isolation) because the accessors are
-  /// read and written `nonisolated`, off the `@OcaConnection` actor.
+  /// read and written `nonisolated`, off the `@OcaConnectionActor` actor.
   nonisolated var _deviceAddressState: Mutex<Ocp1DeviceAddressState> { get }
 
   /// Establish the underlying transport to a single resolved candidate. Called
   /// by ``_connectFirstReachableDeviceAddress()`` for each address in turn;
-  /// implementations mutate connection state, so this is `@OcaConnection`
+  /// implementations mutate connection state, so this is `@OcaConnectionActor`
   /// isolated like ``connectDevice()`` itself.
   func _connectDevice(to deviceAddress: AnySocketAddress) async throws
 }
@@ -644,7 +673,7 @@ package extension Ocp1MutableSocketAddressConnection {
   /// (`_connectionTimeout`) is divided across the candidates, so a black-holed
   /// early address can't consume the whole budget before the next is tried. The
   /// real connect *is* the reachability test — there is no separate probe.
-  @OcaConnection
+  @OcaConnectionActor
   func _connectFirstReachableDeviceAddress() async throws {
     if let networkAddress = _deviceNetworkAddress {
       // Re-resolve off the actor on each attempt. Set directly (not via the

@@ -25,7 +25,7 @@ import Foundation
 /// The connection discovers the device via a bootstrap service name, performs
 /// a handshake to exchange dedicated send/receive ports, then exchanges OCP.1
 /// PDUs as Mach messages.
-public final class Ocp1MachPortConnection: Ocp1Connection {
+public final class Ocp1MachPortConnection: OcaConnection {
   private let serviceName: String
 
   /// send right to the device's per-controller receive port
@@ -37,7 +37,7 @@ public final class Ocp1MachPortConnection: Ocp1Connection {
 
   public init(
     serviceName: String,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) {
     self.serviceName = serviceName
     super.init(options: options)

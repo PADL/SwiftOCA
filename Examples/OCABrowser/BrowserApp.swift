@@ -72,7 +72,7 @@ private struct DeviceDetailView: View {
   let broker: OcaConnectionBroker
   let deviceIdentifier: OcaConnectionBroker.DeviceIdentifier
   @State
-  private var connection: Ocp1Connection? = nil
+  private var connection: OcaConnection? = nil
 
   var body: some View {
     Group {
@@ -110,7 +110,7 @@ struct SwiftOCABrowser: App {
         ProgressView()
           .task {
             broker = await OcaConnectionBroker(
-              connectionOptions: Ocp1ConnectionOptions(flags: [
+              connectionOptions: OcaConnectionOptions(flags: [
                 .automaticReconnect,
                 .refreshSubscriptionsOnReconnection,
                 .retainObjectCacheAfterDisconnect,

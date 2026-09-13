@@ -43,11 +43,11 @@ extension EnvironmentValues {
 }
 
 private struct ConnectionKey: EnvironmentKey {
-  static let defaultValue: Ocp1Connection? = nil
+  static let defaultValue: OcaConnection? = nil
 }
 
 extension EnvironmentValues {
-  var connection: Ocp1Connection? {
+  var connection: OcaConnection? {
     get { self[ConnectionKey.self] }
     set { self[ConnectionKey.self] = newValue }
   }

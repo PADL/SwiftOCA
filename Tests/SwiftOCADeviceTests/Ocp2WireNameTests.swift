@@ -202,7 +202,7 @@ final class Ocp2WireNameTests: XCTestCase {
     let endpoint = try await OcaLocalDeviceEndpoint(device: device, controlProtocol: .ocp2)
     let connection = await OcaLocalConnection(
       endpoint,
-      options: Ocp1ConnectionOptions(flags: [], controlProtocol: .ocp2)
+      options: OcaConnectionOptions(flags: [], controlProtocol: .ocp2)
     )
     try await connection.connect()
     defer { Task { try? await connection.disconnect() } }

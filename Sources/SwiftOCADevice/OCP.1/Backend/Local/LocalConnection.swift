@@ -23,12 +23,12 @@ import Foundation
 #endif
 import SwiftOCA
 
-public final class OcaLocalConnection: Ocp1Connection {
+public final class OcaLocalConnection: OcaConnection {
   let endpoint: OcaLocalDeviceEndpoint
 
   public init(
     _ endpoint: OcaLocalDeviceEndpoint,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) {
     self.endpoint = endpoint
     super.init(options: options)

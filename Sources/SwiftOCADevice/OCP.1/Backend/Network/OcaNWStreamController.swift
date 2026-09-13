@@ -16,6 +16,7 @@
 
 #if canImport(Network)
 
+import AsyncAlgorithms
 import AsyncExtensions
 #if canImport(FoundationEssentials)
 import FoundationEssentials
@@ -27,57 +28,57 @@ import Network
 import SwiftOCA
 import Synchronization
 
-/// Per-peer remote controller for Network.framework's UDP (plain or DTLS)
-/// path. NWListener demuxes datagrams to per-peer NWConnections for us;
-/// each `receiveMessage` yields one whole datagram for decode.
-package actor Ocp1NWDatagramController: Ocp1ControllerInternal,
-  Ocp1ControllerDatagramSemantics,
-  CustomStringConvertible
-{
+/// Remote controller via Network.framework; shared by plaintext TCP and TLS.
+package actor OcaNWStreamController: Ocp1ControllerInternal, CustomStringConvertible {
   package nonisolated let flags: OcaControllerFlags
   package nonisolated let connectionPrefix: String
   package nonisolated let identifier: String
-  /// Filled by the secure UDP endpoint after the DTLS handshake; left
-  /// `.anonymous` on plaintext UDP.
+  /// Filled by the secure endpoint on `.ready`; left `.anonymous` on plaintext.
   private let _peerIdentity = Mutex<OcaPeerIdentity>(.anonymous)
   package nonisolated var peerIdentity: OcaPeerIdentity {
     _peerIdentity.withLock { $0 }
   }
+
   package nonisolated func setPeerIdentity(_ identity: OcaPeerIdentity) {
     _peerIdentity.withLock { $0 = identity }
   }
 
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   package var keepAliveTask: Task<(), Error>?
+  /// NWConnection takes the whole content per send and orders them internally.
   package let writeQueue: Ocp1WriteQueue? = nil
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
-  package weak var endpoint: Ocp1NWDatagramDeviceEndpoint?
+  package weak var endpoint: OcaNWStreamDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
 
   private let connection: NWConnection
   private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
   private var connectionClosed = false
-  package private(set) var isOpen: Bool = false
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 
-  package var heartbeatTime = Duration.seconds(1) {
+  package var heartbeatTime = Duration.seconds(0) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
   }
 
-  init(endpoint: Ocp1NWDatagramDeviceEndpoint, connection: NWConnection) {
+  init(endpoint: OcaNWStreamDeviceEndpoint, connection: NWConnection) {
     self.endpoint = endpoint
     controlProtocol = endpoint.controlProtocol
     self.connection = connection
     flags = endpoint.controllerFlags
     connectionPrefix = endpoint.controllerConnectionPrefix
     identifier = Self.makeIdentifier(from: connection)
-    _messages = Self.makeMessagesStream(on: connection, controlProtocol: controlProtocol)
+    _messages = Self.makeMessagesStream(
+      on: connection,
+      timeout: endpoint.timeout,
+      controlProtocol: endpoint.controlProtocol,
+      maximumPduSize: endpoint.maximumPduSize
+    )
   }
 
   package func sendOcp1EncodedData(_ data: Data) async throws {
@@ -103,10 +104,6 @@ package actor Ocp1NWDatagramController: Ocp1ControllerInternal,
     keepAliveTask = nil
   }
 
-  package func didOpen() {
-    isOpen = true
-  }
-
   deinit {
     keepAliveTask?.cancel()
   }
@@ -116,55 +113,92 @@ package actor Ocp1NWDatagramController: Ocp1ControllerInternal,
   }
 }
 
-extension Ocp1NWDatagramController: Equatable {
+extension OcaNWStreamController: Equatable {
   package nonisolated static func == (
-    lhs: Ocp1NWDatagramController,
-    rhs: Ocp1NWDatagramController
+    lhs: OcaNWStreamController,
+    rhs: OcaNWStreamController
   ) -> Bool {
     lhs === rhs
   }
 }
 
-extension Ocp1NWDatagramController: Hashable {
+extension OcaNWStreamController: Hashable {
   package nonisolated func hash(into hasher: inout Hasher) {
     ObjectIdentifier(self).hash(into: &hasher)
   }
 }
 
-private extension Ocp1NWDatagramController {
+private extension OcaNWStreamController {
   static func makeIdentifier(from connection: NWConnection) -> String {
     switch connection.endpoint {
     case let .hostPort(host, port):
       "\(host):\(port.rawValue)"
+    case let .unix(path):
+      path
     default:
       String(describing: connection.endpoint)
     }
   }
 
-  /// One whole datagram per element; one datagram may carry multiple
-  /// concatenated OCP.1 PDUs, or one newline-terminated OCP.2 PDU.
   static func makeMessagesStream(
     on connection: NWConnection,
-    controlProtocol: OcaControlProtocol
+    timeout: Duration,
+    controlProtocol: OcaControlProtocol,
+    maximumPduSize: Int
   ) -> AsyncThrowingStream<Ocp1MessageList, Error> {
-    AsyncThrowingStream { () async throws -> Ocp1MessageList? in
-      let datagram = try await connection.receiveOneDatagram()
-      return try Ocp1MessageList(messagePduData: datagram, controlProtocol: controlProtocol)
+    let (stream, continuation) = AsyncThrowingStream.makeStream(
+      of: Ocp1MessageList.self,
+      throwing: Error.self
+    )
+    // one timer for every read on the connection, rather than a sleep per message that the
+    // runtime would keep for the whole timeout after the message arrived
+    let deadlines = DeadlineTimer()
+
+    let task = Task {
+      // one reader for the life of the connection, owned by this task: it buffers bytes
+      // between PDUs, so it can be neither recreated per PDU nor shared
+      let reader = controlProtocol.makeReader(isMessageOriented: false, maximumPduSize: maximumPduSize)
+
+      do {
+        repeat {
+          // a timeout finishes the stream, which cancels this task, rather than moving the
+          // read, and with it the reader, into a task of its own
+          let watchdog = deadlines.watchdog(for: timeout) {
+            continuation.finish(throwing: Ocp1Error.responseTimeout)
+          }
+          defer { watchdog?.cancel() }
+
+          let messages = try await OcaDevice.asyncReceiveMessages(
+            reader: reader,
+            controlProtocol: controlProtocol,
+            read: { count, awaitingAllRead in
+              try await connection.receive(count, awaitingAllRead: awaitingAllRead)
+            }
+          )
+          continuation.yield(messages)
+        } while true
+      } catch {
+        continuation.finish(throwing: error)
+      }
     }
+    continuation.onTermination = { _ in task.cancel() }
+
+    return stream
   }
 }
 
-private extension NWConnection {
-  /// Maps graceful peer shutdown (`isComplete && data == nil`) to
-  /// `.notConnected` so the stream terminates cleanly.
-  func receiveOneDatagram() async throws -> Data {
+extension NWConnection {
+  /// Exactly `count` bytes when `awaitingAllRead`, else between 1 and `count` as soon
+  /// as any arrive. Maps graceful peer-close to `.notConnected`.
+  fileprivate func receive(_ count: Int, awaitingAllRead: Bool) async throws -> Data {
     try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
-      receiveMessage { data, _, isComplete, error in
+      receive(
+        minimumIncompleteLength: awaitingAllRead ? count : 1,
+        maximumLength: count
+      ) { data, _, _, error in
         if let error {
           continuation.resume(throwing: error)
-        } else if isComplete, data == nil {
-          continuation.resume(throwing: Ocp1Error.notConnected)
-        } else if let data, !data.isEmpty {
+        } else if let data, awaitingAllRead ? data.count == count : !data.isEmpty {
           continuation.resume(returning: data)
         } else {
           continuation.resume(throwing: Ocp1Error.notConnected)

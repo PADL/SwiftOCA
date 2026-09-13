@@ -44,17 +44,17 @@ private func localhostAddress(port: UInt16) -> Data {
   return withUnsafeBytes(of: addr) { Data($0) }
 }
 
-private let ocp2Options = Ocp1ConnectionOptions(
+private let ocp2Options = OcaConnectionOptions(
   flags: .refreshDeviceTreeOnConnection,
   controlProtocol: .ocp2
 )
 
 // The platform's native socket backends: io_uring on Linux, FlyingSocks elsewhere.
 #if canImport(IORing)
-private typealias StreamDeviceEndpoint = Ocp1IORingStreamDeviceEndpoint
-private typealias DatagramDeviceEndpoint = Ocp1IORingDatagramDeviceEndpoint
-private typealias StreamConnection = Ocp1IORingStreamConnection
-private typealias DatagramConnection = Ocp1IORingDatagramConnection
+private typealias StreamDeviceEndpoint = OcaIORingStreamDeviceEndpoint
+private typealias DatagramDeviceEndpoint = OcaIORingDatagramDeviceEndpoint
+private typealias StreamConnection = OcaIORingStreamConnection
+private typealias DatagramConnection = OcaIORingDatagramConnection
 
 /// io_uring endpoints bind only once they run, so reserve a loopback port for them.
 private func unusedPort(_ type: SocketType) throws -> UInt16 {
@@ -92,10 +92,10 @@ private func startDatagramEndpoint(
   return (endpoint, Task { try await endpoint.run() }, port)
 }
 #else
-private typealias StreamDeviceEndpoint = Ocp1FlyingSocksStreamDeviceEndpoint
-private typealias DatagramDeviceEndpoint = Ocp1FlyingSocksDatagramDeviceEndpoint
-private typealias StreamConnection = Ocp1FlyingSocksStreamConnection
-private typealias DatagramConnection = Ocp1FlyingSocksDatagramConnection
+private typealias StreamDeviceEndpoint = OcaFlyingSocksStreamDeviceEndpoint
+private typealias DatagramDeviceEndpoint = OcaFlyingSocksDatagramDeviceEndpoint
+private typealias StreamConnection = OcaFlyingSocksStreamConnection
+private typealias DatagramConnection = OcaFlyingSocksDatagramConnection
 
 private func startStreamEndpoint(
   device: OcaDevice,
@@ -128,23 +128,23 @@ private func startDatagramEndpoint(
 }
 #endif
 
-@OcaConnection
+@OcaConnectionActor
 private func makeStreamConnection(
   port: UInt16,
-  options: Ocp1ConnectionOptions = ocp2Options
+  options: OcaConnectionOptions = ocp2Options
 ) throws -> StreamConnection {
   try StreamConnection(deviceAddress: localhostAddress(port: port), options: options)
 }
 
-@OcaConnection
-private func makeCFSocketTCPConnection(port: UInt16) throws -> Ocp1CFSocketTCPConnection {
-  try Ocp1CFSocketTCPConnection(deviceAddress: localhostAddress(port: port), options: ocp2Options)
+@OcaConnectionActor
+private func makeCFSocketTCPConnection(port: UInt16) throws -> OcaCFSocketTCPConnection {
+  try OcaCFSocketTCPConnection(deviceAddress: localhostAddress(port: port), options: ocp2Options)
 }
 
 #if canImport(Network)
-@OcaConnection
-private func makeNWTCPConnection(port: UInt16) throws -> Ocp1NWTCPConnection {
-  try Ocp1NWTCPConnection(deviceAddress: localhostAddress(port: port), options: ocp2Options)
+@OcaConnectionActor
+private func makeNWTCPConnection(port: UInt16) throws -> OcaNWTCPConnection {
+  try OcaNWTCPConnection(deviceAddress: localhostAddress(port: port), options: ocp2Options)
 }
 #endif
 
@@ -180,7 +180,7 @@ private struct TCPFixture {
 }
 
 /// Exercises a connected OCP.2 controller: property read, write, and a search.
-private func exerciseConnection(_ connection: Ocp1Connection, fixture: TCPFixture) async throws {
+private func exerciseConnection(_ connection: OcaConnection, fixture: TCPFixture) async throws {
   XCTAssertEqual(connection.controlProtocol, .ocp2)
   XCTAssertTrue(connection.connectionPrefix.hasPrefix(OcaJsonTcpConnectionPrefix))
   let deviceManagerONo = await connection.deviceManager.objectNumber
@@ -326,7 +326,7 @@ final class Ocp2TCPTests: XCTestCase {
     let fixture = try await TCPFixture()
     defer { fixture.tearDown() }
 
-    let options = Ocp1ConnectionOptions(
+    let options = OcaConnectionOptions(
       flags: .refreshDeviceTreeOnConnection,
       batchingOptions: try .init(batchSize: 4096, batchThreshold: .milliseconds(50)),
       controlProtocol: .ocp2
@@ -480,7 +480,7 @@ final class Ocp2TCPTests: XCTestCase {
 
     let connection = try await makeStreamConnection(
       port: fixture.port,
-      options: Ocp1ConnectionOptions(flags: [], connectionTimeout: .seconds(2), responseTimeout: .seconds(1))
+      options: OcaConnectionOptions(flags: [], connectionTimeout: .seconds(2), responseTimeout: .seconds(1))
     )
     try await connection.connect()
     do {
@@ -498,8 +498,8 @@ private func makeWSEndpoint(
   controlProtocols: Set<OcaControlProtocol> = [.ocp2],
   paths: [OcaControlProtocol: String] = [:],
   timeout: Duration = .seconds(5)
-) async throws -> (Ocp1FlyingFoxDeviceEndpoint, Task<(), Error>, UInt16) {
-  let endpoint = try await Ocp1FlyingFoxDeviceEndpoint(
+) async throws -> (OcaFlyingFoxDeviceEndpoint, Task<(), Error>, UInt16) {
+  let endpoint = try await OcaFlyingFoxDeviceEndpoint(
     address: localhostAddress(port: 0),
     timeout: timeout,
     device: device,
@@ -623,7 +623,7 @@ struct RawWebSocket {
 }
 
 final class Ocp2WebSocketTests: XCTestCase {
-  // Ocp1FlyingFoxConnection is built on URLSessionWebSocketTask, so it is Apple-only
+  // OcaFlyingFoxConnection is built on URLSessionWebSocketTask, so it is Apple-only
   #if os(macOS) || os(iOS)
   func testClientRoundTrip() async throws {
     let device = OcaDevice()
@@ -635,7 +635,7 @@ final class Ocp2WebSocketTests: XCTestCase {
     let (_, endpointTask, port) = try await makeWSEndpoint(device: device)
     defer { endpointTask.cancel() }
 
-    let connection = await Ocp1FlyingFoxConnection(host: "127.0.0.1", port: port, options: ocp2Options)
+    let connection = await OcaFlyingFoxConnection(host: "127.0.0.1", port: port, options: ocp2Options)
     try await connection.connect()
     XCTAssertEqual(connection.controlProtocol, .ocp2)
     XCTAssertTrue(connection.connectionPrefix.hasPrefix(OcaJsonWebSocketTcpConnectionPrefix))
@@ -662,8 +662,8 @@ final class Ocp2WebSocketTests: XCTestCase {
     )
     defer { endpointTask.cancel() }
 
-    let ocp1 = await Ocp1FlyingFoxConnection(host: "127.0.0.1", port: port)
-    let ocp2 = await Ocp1FlyingFoxConnection(host: "127.0.0.1", port: port, options: ocp2Options)
+    let ocp1 = await OcaFlyingFoxConnection(host: "127.0.0.1", port: port)
+    let ocp2 = await OcaFlyingFoxConnection(host: "127.0.0.1", port: port, options: ocp2Options)
     try await ocp1.connect()
     try await ocp2.connect()
     XCTAssertEqual(ocp1.controlProtocol, .ocp1)
@@ -910,7 +910,7 @@ final class Ocp2LargeHierarchyTests: XCTestCase {
 
   // the walk under test is the explicit one, not the tree refresh on connect; a
   // ten-thousand-member response takes seconds on a slow or sanitized build
-  private static let options = Ocp1ConnectionOptions(
+  private static let options = OcaConnectionOptions(
     flags: [],
     responseTimeout: .seconds(60),
     controlProtocol: .ocp2

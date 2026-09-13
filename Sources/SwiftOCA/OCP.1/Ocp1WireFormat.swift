@@ -50,12 +50,12 @@ package final class Ocp1PduReader: OcaPduReader {
       return try await nextStreamPdu(read: read)
     }
 
-    var messagePduData = try await read(Ocp1Connection.MinimumPduSize, true)
+    var messagePduData = try await read(OcaConnection.MinimumPduSize, true)
 
     guard messagePduData.count > 0 else {
       throw Ocp1Error.notConnected
     }
-    guard messagePduData.count >= Ocp1Connection.MinimumPduSize else {
+    guard messagePduData.count >= OcaConnection.MinimumPduSize else {
       throw Ocp1Error.pduTooShort
     }
 
@@ -72,8 +72,8 @@ package final class Ocp1PduReader: OcaPduReader {
   ) async throws -> Data {
     // read only what is not already buffered, so a PDU left over from an earlier
     // read, or a whole frame, needs no further call
-    if buffer.count - offset < Ocp1Connection.MinimumPduSize {
-      try await fill(Ocp1Connection.MinimumPduSize, read: read)
+    if buffer.count - offset < OcaConnection.MinimumPduSize {
+      try await fill(OcaConnection.MinimumPduSize, read: read)
     }
     let length = try pduLength(buffer, at: offset)
     if buffer.count - offset < length {
@@ -131,7 +131,7 @@ package final class Ocp1PduReader: OcaPduReader {
       throw Ocp1Error.invalidSyncValue
     }
     let pduSize: OcaUint32 = data.decodeInteger(index: offset + 3)
-    guard pduSize >= (Ocp1Connection.MinimumPduSize - 1) else { // doesn't include sync byte
+    guard pduSize >= (OcaConnection.MinimumPduSize - 1) else { // doesn't include sync byte
       throw Ocp1Error.invalidPduSize
     }
     // compared without converting, so a size too large for Int on a 32-bit platform is

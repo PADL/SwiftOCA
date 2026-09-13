@@ -28,30 +28,34 @@ import Network
 import SwiftOCA
 import Synchronization
 
-/// Base class for OCP.1 datagram device endpoints on Network.framework.
-/// NWListener demuxes inbound UDP datagrams to per-peer NWConnections;
-/// concrete subclasses supply the NWParameters (plain UDP, or DTLS via
-/// `NWProtocolTLS.Options`) and controller metadata.
+@available(*, deprecated, renamed: "OcaNWStreamDeviceEndpoint")
+public typealias Ocp1NWStreamDeviceEndpoint = OcaNWStreamDeviceEndpoint
+
+/// Base class for OCP.1 stream device endpoints on Network.framework.
+/// Concrete subclasses supply `NWParameters` (with TLS options when
+/// applicable) and controller-side metadata.
 @OcaDevice
-open class Ocp1NWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
+open class OcaNWStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
   OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
-  package typealias ControllerType = Ocp1NWDatagramController
+  package typealias ControllerType = OcaNWStreamController
 
-  open var controllers: [OcaController] { _controllers }
+  open var controllers: [OcaController] {
+    _controllers
+  }
 
   package let timeout: Duration
   package let device: OcaDevice
-  package let controlProtocol: OcaControlProtocol
   package nonisolated let logger: Logger
+  package let controlProtocol: OcaControlProtocol
   package nonisolated(unsafe) var enableMessageTracing = false
 
   private let _port: NWEndpoint.Port
   private let _boundPort = Mutex<UInt16>(0)
   private var listener: NWListener?
   private let queue: DispatchQueue
-  private var _controllers: [Ocp1NWDatagramController] = []
+  private var _controllers = [OcaNWStreamController]()
   private var _boundWaiters: [CheckedContinuation<UInt16, Error>] = []
   #if canImport(dnssd)
   private var _endpointRegistrarTask: Task<(), Error>?
@@ -59,7 +63,7 @@ open class Ocp1NWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   // MARK: - Subclass hooks
 
-  /// NWParameters for the listener; DTLS subclasses supply non-nil TLS
+  /// NWParameters for the listener; TLS subclasses supply non-nil TLS
   /// options. Async so subclasses can await device state when building.
   open func makeParameters() async -> NWParameters {
     fatalError("makeParameters() must be implemented by a concrete subclass")
@@ -77,6 +81,13 @@ open class Ocp1NWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
     fatalError("serviceType must be implemented by a concrete subclass")
   }
 
+  /// Shared TCP options factory so plaintext and TLS stay in sync.
+  package func makeTCPOptions() -> NWProtocolTCP.Options {
+    let options = NWProtocolTCP.Options()
+    options.noDelay = true
+    return options
+  }
+
   // MARK: - Lifecycle
 
   public init(
@@ -84,7 +95,7 @@ open class Ocp1NWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1NWDatagramDeviceEndpoint")
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaNWStreamDeviceEndpoint")
   ) async throws {
     guard let nwPort = NWEndpoint.Port(rawValue: port) else {
       throw Ocp1Error.status(.parameterError)
@@ -94,7 +105,8 @@ open class Ocp1NWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
     self.device = device
     self.controlProtocol = controlProtocol
     self.logger = logger
-    queue = DispatchQueue(label: "com.padl.SwiftOCADevice.NWListener.udp.\(port)")
+    queue = DispatchQueue(label: "com.padl.SwiftOCADevice.NWListener.\(port)")
+
     try await device.add(endpoint: self)
   }
 
@@ -121,6 +133,8 @@ open class Ocp1NWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
     if case let .success(port) = result {
       _boundPort.withLock { $0 = port }
       #if canImport(dnssd)
+      // `makeBonjourRegistrarTask` reads `port` synchronously, so we wait
+      // until the listener has resolved one before invoking it.
       if _endpointRegistrarTask == nil {
         _endpointRegistrarTask = makeBonjourRegistrarTask(for: device)
       }
@@ -202,7 +216,7 @@ open class Ocp1NWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   private func run(connection: NWConnection) async {
     let connectionLogger = logger
-    let controller = Ocp1NWDatagramController(endpoint: self, connection: connection)
+    let controller = OcaNWStreamController(endpoint: self, connection: connection)
     let endpointRef = self
     connection.stateUpdateHandler = { state in
       switch state {
@@ -220,16 +234,17 @@ open class Ocp1NWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
     await controller.handle(for: self)
   }
 
-  /// See `Ocp1NWStreamDeviceEndpoint.peerIdentity(for:)`.
+  /// Override point for secure subclasses to snapshot the peer identity
+  /// on `.ready`. Plaintext base returns `nil`. Runs on the connection's queue.
   open nonisolated func peerIdentity(for connection: NWConnection) -> OcaPeerIdentity? {
     nil
   }
 
-  package func add(controller: Ocp1NWDatagramController) async {
+  package func add(controller: OcaNWStreamController) async {
     _controllers.append(controller)
   }
 
-  package func remove(controller: Ocp1NWDatagramController) async {
+  package func remove(controller: OcaNWStreamController) async {
     _controllers.removeAll(where: { $0 === controller })
   }
 
@@ -241,19 +256,22 @@ open class Ocp1NWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 }
 
-/// Plaintext OCP.1 UDP device endpoint via Network.framework.
+@available(*, deprecated, renamed: "OcaNWTCPDeviceEndpoint")
+public typealias Ocp1NWTCPDeviceEndpoint = OcaNWTCPDeviceEndpoint
+
+/// Plaintext OCP.1 TCP device endpoint via Network.framework.
 @OcaDevice
-public final class Ocp1NWUDPDeviceEndpoint: Ocp1NWDatagramDeviceEndpoint {
+public final class OcaNWTCPDeviceEndpoint: OcaNWStreamDeviceEndpoint {
   override public func makeParameters() async -> NWParameters {
-    NWParameters(dtls: nil, udp: NWProtocolUDP.Options())
+    NWParameters(tls: nil, tcp: makeTCPOptions())
   }
 
   override public nonisolated var controllerConnectionPrefix: String {
-    controlProtocol.connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
+    controlProtocol.connectionPrefix(ocp1: OcaTcpConnectionPrefix, ocp2: OcaJsonTcpConnectionPrefix)
   }
 
   override public nonisolated var serviceType: OcaNetworkAdvertisingServiceType {
-    OcaNetworkAdvertisingServiceType.udp.withControlProtocol(controlProtocol)
+    OcaNetworkAdvertisingServiceType.tcp.withControlProtocol(controlProtocol)
   }
 }
 

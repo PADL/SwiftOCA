@@ -43,7 +43,7 @@ final class TLSFailClosedTests: XCTestCase {
 
   /// Cert-mode client init with a non-existent CA file must throw rather
   /// than silently fall back to "any cert from any CA passes."
-  @OcaConnection
+  @OcaConnectionActor
   func testClientWithMissingCAFileThrows() async throws {
     guard let (certPath, keyPath) = try generateSelfSignedCert() else {
       throw XCTSkip("openssl CLI not available")
@@ -58,7 +58,7 @@ final class TLSFailClosedTests: XCTestCase {
         port: 65535,
         credential: .certificateFile(certPath: certPath, keyPath: keyPath),
         trustRoots: .caFile(Self.nonexistentCAPath),
-        options: Ocp1ConnectionOptions()
+        options: OcaConnectionOptions()
       ),
       "init must throw when the configured CA file is unreadable"
     )

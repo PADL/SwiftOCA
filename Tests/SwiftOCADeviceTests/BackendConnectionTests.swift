@@ -54,9 +54,9 @@ private func localhostAddress(port: UInt16) -> Data {
 private func makeTCPEndpoint(
   device: OcaDevice,
   timeout: Duration = .seconds(5)
-) async throws -> (Ocp1FlyingSocksStreamDeviceEndpoint, Socket, UInt16) {
+) async throws -> (OcaFlyingSocksStreamDeviceEndpoint, Socket, UInt16) {
   let serverAddress = localhostAddress(port: 0)
-  let endpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(
+  let endpoint = try await OcaFlyingSocksStreamDeviceEndpoint(
     address: serverAddress,
     timeout: timeout,
     device: device
@@ -68,37 +68,37 @@ private func makeTCPEndpoint(
 
 // MARK: - connection factory helpers
 
-@OcaConnection
+@OcaConnectionActor
 private func makeCFSocketTCPConnection(
   port: UInt16
-) throws -> Ocp1CFSocketTCPConnection {
+) throws -> OcaCFSocketTCPConnection {
   let clientAddress = localhostAddress(port: port)
-  return try Ocp1CFSocketTCPConnection(
+  return try OcaCFSocketTCPConnection(
     deviceAddress: clientAddress,
-    options: Ocp1ConnectionOptions(flags: .refreshDeviceTreeOnConnection)
+    options: OcaConnectionOptions(flags: .refreshDeviceTreeOnConnection)
   )
 }
 
 #if canImport(Network)
-@OcaConnection
+@OcaConnectionActor
 private func makeNWTCPConnection(
   port: UInt16
-) throws -> Ocp1NWTCPConnection {
+) throws -> OcaNWTCPConnection {
   let clientAddress = localhostAddress(port: port)
-  return try Ocp1NWTCPConnection(
+  return try OcaNWTCPConnection(
     deviceAddress: clientAddress,
-    options: Ocp1ConnectionOptions(flags: .refreshDeviceTreeOnConnection)
+    options: OcaConnectionOptions(flags: .refreshDeviceTreeOnConnection)
   )
 }
 
-@OcaConnection
+@OcaConnectionActor
 private func makeNWUDPConnection(
   port: UInt16
-) throws -> Ocp1NWUDPConnection {
+) throws -> OcaNWUDPConnection {
   let clientAddress = localhostAddress(port: port)
-  return try Ocp1NWUDPConnection(
+  return try OcaNWUDPConnection(
     deviceAddress: clientAddress,
-    options: Ocp1ConnectionOptions(flags: .refreshDeviceTreeOnConnection)
+    options: OcaConnectionOptions(flags: .refreshDeviceTreeOnConnection)
   )
 }
 #endif
@@ -111,7 +111,7 @@ private func makeNWUDPConnection(
 final class FlyingSocksEndpointCancellationTests: XCTestCase {
   func testCancellingStreamEndpointRunRemovesIt() async throws {
     let device = OcaDevice()
-    let endpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(
+    let endpoint = try await OcaFlyingSocksStreamDeviceEndpoint(
       address: localhostAddress(port: 0),
       device: device
     )
@@ -120,7 +120,7 @@ final class FlyingSocksEndpointCancellationTests: XCTestCase {
 
   func testCancellingDatagramEndpointRunRemovesIt() async throws {
     let device = OcaDevice()
-    let endpoint = try await Ocp1FlyingSocksDatagramDeviceEndpoint(
+    let endpoint = try await OcaFlyingSocksDatagramDeviceEndpoint(
       address: localhostAddress(port: 0),
       device: device
     )
@@ -177,9 +177,9 @@ final class FlyingSocksControllerCloseTests: XCTestCase {
     let pool = await endpoint.pool
 
     let loopEnded = Flag()
-    weak var releasedController: Ocp1FlyingSocksStreamController?
+    weak var releasedController: OcaFlyingSocksStreamController?
     do {
-      let controller = try Ocp1FlyingSocksStreamController(
+      let controller = try OcaFlyingSocksStreamController(
         endpoint: endpoint,
         socket: AsyncSocket(socket: Socket(file: .init(rawValue: files[0])), pool: pool)
       )
@@ -442,7 +442,7 @@ extension NWConnectionTests {
   }
 }
 
-@OcaConnection
+@OcaConnectionActor
 private func makeNWSecureTCPConnection(
   port: UInt16,
   credential: Ocp1TLSCredential
@@ -451,7 +451,7 @@ private func makeNWSecureTCPConnection(
   return try Ocp1NWSecureTCPConnection(
     deviceAddress: clientAddress,
     credential: credential,
-    options: Ocp1ConnectionOptions(flags: .refreshDeviceTreeOnConnection)
+    options: OcaConnectionOptions(flags: .refreshDeviceTreeOnConnection)
   )
 }
 
@@ -460,11 +460,11 @@ private func makeNWSecureTCPConnection(
 final class NWStreamDeviceEndpointTests: XCTestCase {
   private func makeServer(
     timeout: Duration = .seconds(5)
-  ) async throws -> (Ocp1NWTCPDeviceEndpoint, UInt16, Task<Void, Error>) {
+  ) async throws -> (OcaNWTCPDeviceEndpoint, UInt16, Task<Void, Error>) {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
 
-    let endpoint = try await Ocp1NWTCPDeviceEndpoint(
+    let endpoint = try await OcaNWTCPDeviceEndpoint(
       port: 0,
       timeout: timeout,
       device: device
@@ -474,7 +474,7 @@ final class NWStreamDeviceEndpointTests: XCTestCase {
     return (endpoint, port, task)
   }
 
-  /// Test basic connect/disconnect against an Ocp1NWTCPDeviceEndpoint.
+  /// Test basic connect/disconnect against an OcaNWTCPDeviceEndpoint.
   func testNWTCPDeviceEndpointConnectDisconnect() async throws {
     let (endpoint, port, task) = try await makeServer()
     defer { task.cancel() }
@@ -492,7 +492,7 @@ final class NWStreamDeviceEndpointTests: XCTestCase {
     try await connection.disconnect()
   }
 
-  /// Test round-trip command against an Ocp1NWTCPDeviceEndpoint.
+  /// Test round-trip command against an OcaNWTCPDeviceEndpoint.
   func testNWTCPDeviceEndpointRoundTrip() async throws {
     let (endpoint, port, task) = try await makeServer()
     defer { task.cancel() }
@@ -511,7 +511,7 @@ final class NWStreamDeviceEndpointTests: XCTestCase {
     try await connection.disconnect()
   }
 
-  /// Test that an Ocp1NWTCPDeviceEndpoint releases the controller when a client disconnects.
+  /// Test that an OcaNWTCPDeviceEndpoint releases the controller when a client disconnects.
   func testNWTCPDeviceEndpointControllerCleanup() async throws {
     let (endpoint, port, task) = try await makeServer(timeout: .seconds(3))
     defer { task.cancel() }
@@ -538,11 +538,11 @@ final class NWStreamDeviceEndpointTests: XCTestCase {
 final class NWDatagramDeviceEndpointTests: XCTestCase {
   private func makeServer(
     timeout: Duration = .seconds(5)
-  ) async throws -> (Ocp1NWUDPDeviceEndpoint, UInt16, Task<Void, Error>) {
+  ) async throws -> (OcaNWUDPDeviceEndpoint, UInt16, Task<Void, Error>) {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
 
-    let endpoint = try await Ocp1NWUDPDeviceEndpoint(
+    let endpoint = try await OcaNWUDPDeviceEndpoint(
       port: 0,
       timeout: timeout,
       device: device

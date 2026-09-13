@@ -65,13 +65,13 @@ Sendable {
 }
 
 public extension OcaGroup {
-  @OcaConnection
+  @OcaConnectionActor
   func resolveMembers<T: OcaRoot>() async throws -> [T] {
     let groupController: OcaRoot? = try? await resolveGroupController()
     return try await resolveMembers(with: groupController)
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func resolveMembers<T: OcaRoot>(with groupController: OcaRoot?) async throws -> [T] {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
@@ -104,7 +104,7 @@ public extension OcaGroup {
     }
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func resolveGroupController<T: OcaRoot>() async throws -> T {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 

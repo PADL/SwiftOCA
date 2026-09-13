@@ -44,9 +44,9 @@ private func localhostAddress(port: UInt16) -> Data {
   return withUnsafeBytes(of: addr) { Data($0) }
 }
 
-/// `Ocp1NWSecureTCPConnection.init` is `@OcaConnection`-isolated; hop
+/// `Ocp1NWSecureTCPConnection.init` is `@OcaConnectionActor`-isolated; hop
 /// onto the actor to construct one from an XCTestCase method.
-@OcaConnection
+@OcaConnectionActor
 private func makePSKClientWithTrustRoots(
   port: UInt16,
   hostname: String,
@@ -63,7 +63,7 @@ private func makePSKClientWithTrustRoots(
   )
 }
 
-@OcaConnection
+@OcaConnectionActor
 private func makePSKClient(
   port: UInt16,
   identity: String,
@@ -75,7 +75,7 @@ private func makePSKClient(
   )
 }
 
-@OcaConnection
+@OcaConnectionActor
 private func makeMTLSClient(
   port: UInt16,
   hostname: String,
@@ -92,7 +92,7 @@ private func makeMTLSClient(
 
 private func localhostUDPAddress(port: UInt16) -> Data { localhostAddress(port: port) }
 
-@OcaConnection
+@OcaConnectionActor
 private func makePSKDTLSClient(
   port: UInt16,
   identity: String,
@@ -104,7 +104,7 @@ private func makePSKDTLSClient(
   )
 }
 
-@OcaConnection
+@OcaConnectionActor
 private func makePSKDTLSClientWithTrustRoots(
   port: UInt16,
   hostname: String,
@@ -121,7 +121,7 @@ private func makePSKDTLSClientWithTrustRoots(
   )
 }
 
-@OcaConnection
+@OcaConnectionActor
 private func makeMTLSDTLSClient(
   port: UInt16,
   hostname: String,

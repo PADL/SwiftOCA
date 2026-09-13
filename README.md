@@ -25,8 +25,8 @@ The WebSocket client (WS client) uses Apple's `URLSessionWebSocketTask` and is t
 ### Controller (SwiftOCA)
 
 * **Device discovery**: `OcaConnectionBroker` discovers AES70 devices via DNS-SD/Bonjour (using `NetServiceBrowser` on Apple platforms, or `libdns_sd` on Linux), with support for TCP, UDP, and WebSocket service types. Devices can also be registered manually for direct connection without DNS-SD.
-* **WebSocket transport**: `Ocp1FlyingFoxConnection` provides client-side WebSocket connectivity on Apple platforms using `URLSessionWebSocketTask`.
-* **OCP.2 (AES70-4)**: the JSON protocol is a per-connection option (`Ocp1ConnectionOptions(controlProtocol: .ocp2)`) over TCP, WebSocket and the local loopback; the broker discovers `_ocajson._tcp` and `_ocajsonws._tcp` services. See [Documentation/OCP2.md](Documentation/OCP2.md).
+* **WebSocket transport**: `OcaFlyingFoxConnection` provides client-side WebSocket connectivity on Apple platforms using `URLSessionWebSocketTask`.
+* **OCP.2 (AES70-4)**: the JSON protocol is a per-connection option (`OcaConnectionOptions(controlProtocol: .ocp2)`) over TCP, WebSocket and the local loopback; the broker discovers `_ocajson._tcp` and `_ocajsonws._tcp` services. See [Documentation/OCP2.md](Documentation/OCP2.md).
 * **Mach port transport**: `Ocp1MachPortConnection` provides fast local IPC between processes on macOS using Mach ports.
 * **Property observation**: `@OcaProperty` and `@OcaBoundedProperty` wrappers expose property changes as `AsyncSequence` streams, enabling reactive UI updates.
 * **JSON serialization**: read the full state of any remote object or block tree as a JSON-compatible dictionary via `jsonObject`.
@@ -70,16 +70,16 @@ A Flutter wrapper is available [here](https://github.com/PADL/FlutterSwiftOCA).
 A connection can be constructed from a hostname (or IP literal) and port. The name
 is resolved on each connect attempt — `getaddrinfo` for the socket backends, or
 natively by Network.framework (with Happy Eyeballs across the A/AAAA records) for
-`Ocp1NWConnection` — so a device whose address changes, or that is not yet
+`OcaNWConnection` — so a device whose address changes, or that is not yet
 reachable, is picked up automatically by the reconnection machinery:
 
 ```swift
 import SwiftOCA
 
-let connection = try await Ocp1TCPConnection(
+let connection = try await OcaTCPConnection(
   host: "mixer.local",
   port: 65000,
-  options: Ocp1ConnectionOptions(flags: [.automaticReconnect])
+  options: OcaConnectionOptions(flags: [.automaticReconnect])
 )
 try await connection.connect()
 ```
@@ -125,7 +125,7 @@ let gain = try await OcaGain(
   deviceDelegate: device
 )
 
-let endpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(address: listenAddress)
+let endpoint = try await OcaFlyingSocksStreamDeviceEndpoint(address: listenAddress)
 try await endpoint.run()
 ```
 
@@ -156,7 +156,7 @@ Use `OcaConnectionBroker` to discover devices on the network and connect automat
 import SwiftOCA
 
 let broker = await OcaConnectionBroker(
-  connectionOptions: Ocp1ConnectionOptions(flags: [
+  connectionOptions: OcaConnectionOptions(flags: [
     .automaticReconnect,
     .refreshSubscriptionsOnReconnection,
   ])

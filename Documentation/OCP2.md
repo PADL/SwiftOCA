@@ -15,18 +15,18 @@ available in non-embedded builds only (it uses Foundation's JSON).
 Controller:
 
 ```swift
-let options = Ocp1ConnectionOptions(controlProtocol: .ocp2)
-let connection = try Ocp1TCPConnection(deviceAddress: address, options: options)
+let options = OcaConnectionOptions(controlProtocol: .ocp2)
+let connection = try OcaTCPConnection(deviceAddress: address, options: options)
 // or
-let ws = Ocp1FlyingFoxConnection(host: "device.local", port: 50001, options: options)
+let ws = OcaFlyingFoxConnection(host: "device.local", port: 50001, options: options)
 ```
 
 Device:
 
 ```swift
-let tcp = try await Ocp1FlyingSocksStreamDeviceEndpoint(
+let tcp = try await OcaFlyingSocksStreamDeviceEndpoint(
   address: address, device: device, controlProtocol: .ocp2)
-let ws = try await Ocp1FlyingFoxDeviceEndpoint(
+let ws = try await OcaFlyingFoxDeviceEndpoint(
   address: address, device: device, controlProtocol: .ocp2, path: "/aes70")
 ```
 
@@ -107,7 +107,7 @@ and add `ocp2GetName:` overrides where exact spelling matters for a peer.
 
 ## API notes
 
-- `OcaControlProtocol`, `Ocp1ConnectionOptions.controlProtocol`,
+- `OcaControlProtocol`, `OcaConnectionOptions.controlProtocol`,
   `.maximumPduSize` and `.heartbeatTime` (overrides a transport's default
   keep-alive; WebSocket OCP.1 relies on ping/pong, so set one for OCP.2 if the
   device requires keep-alives).

@@ -38,7 +38,7 @@ private func dtlsLoopbackAddressData(port: UInt16) -> Data {
   return withUnsafeBytes(of: sin) { Data($0) }
 }
 
-@OcaConnection
+@OcaConnectionActor
 private func makeDTLSConnection(
   port: UInt16,
   credential: Ocp1TLSCredential
@@ -46,7 +46,7 @@ private func makeDTLSConnection(
   try Ocp1OpenSSLDTLSConnection(
     deviceAddress: dtlsLoopbackAddressData(port: port),
     credential: credential,
-    options: Ocp1ConnectionOptions(flags: .refreshDeviceTreeOnConnection)
+    options: OcaConnectionOptions(flags: .refreshDeviceTreeOnConnection)
   )
 }
 
@@ -134,7 +134,7 @@ final class OpenSSLDTLSConnectionTests: XCTestCase {
     let connection = try await Ocp1OpenSSLDTLSConnection(
       deviceAddress: dtlsLoopbackAddressData(port: port),
       credential: .preSharedKey(identity: Self.testIdentity, key: wrongKey),
-      options: Ocp1ConnectionOptions(
+      options: OcaConnectionOptions(
         flags: .refreshDeviceTreeOnConnection,
         connectionTimeout: .seconds(2)
       )
