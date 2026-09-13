@@ -151,7 +151,7 @@ public final class Ocp1OpenSSLStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   }
 
   override public func run() async throws {
-    logger.info("starting \(type(of: self)) on \(address._presentationAddress)")
+    logger.info("starting \(type(of: self)) (\(controlProtocol)) on \(address._presentationAddress)")
     if clientCertificateTrustRoots != nil {
       logger.info("\(type(of: self)) requires client certificates (mTLS)")
     }
