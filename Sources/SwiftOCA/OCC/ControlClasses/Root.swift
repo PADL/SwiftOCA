@@ -188,7 +188,11 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
   /// what AES70-2 calls that property (`ONo` is the model's name for object-number
   /// *parameters* and struct fields, not for this). A property the reflected table
   /// does not know falls back to its property ID.
-  func _jsonPropertyName(for propertyID: OcaPropertyID) -> String {
+  ///
+  /// Private API, so that `ocacli` can name the properties it dumps from the device's own
+  /// OCP.2 responses the same way.
+  @_spi(SwiftOCAPrivate)
+  public func _jsonPropertyName(for propertyID: OcaPropertyID) -> String {
     guard let name = propertyName(for: propertyID) else {
       return propertyID.description
     }
