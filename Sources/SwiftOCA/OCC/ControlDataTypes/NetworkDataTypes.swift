@@ -175,8 +175,27 @@ public struct Ocp1SystemInterfaceParameters: Codable, Sendable {
 
 public typealias OcaNetworkAddress = OcaBlob
 
-public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable, Equatable,
-  CustomStringConvertible
+/// Descriptor of a system interface used by a network (CM3, deprecated). Its format is data
+/// network type dependent.
+///
+/// AES70-2-2023 defines this as a typedef of `OcaBlob`, so each one is marshaled as a single
+/// blob. AES70-2-2018 defined it instead as a structure of two blobs, which SwiftOCA puts in
+/// the blob: see `Ocp1NetworkSystemInterfaceDescriptor`.
+public typealias OcaNetworkSystemInterfaceDescriptor = OcaBlob
+
+/// What SwiftOCA puts in an `OcaNetworkSystemInterfaceDescriptor`: the AES70-2-2018 structure,
+/// marshaled with OCP.1 rules. AES70-3-2018 clause 5.6.4 gives the content of its two blobs,
+/// an `Ocp1SystemInterfaceParameters` and an `Ocp1NetworkAddress`.
+///
+/// ```swift
+/// let descriptor = try Ocp1NetworkSystemInterfaceDescriptor(
+///   systemInterfaceParameters: parameters,
+///   myNetworkAddress: address
+/// ).blob
+/// let address = try descriptor.decode(Ocp1NetworkSystemInterfaceDescriptor.self).networkAddress
+/// ```
+public struct Ocp1NetworkSystemInterfaceDescriptor: Ocp1TypedBlobRepresentable, Sendable,
+  Equatable, CustomStringConvertible
 {
   public let systemInterfaceParameters: OcaBlob
   public let myNetworkAddress: OcaNetworkAddress
@@ -196,16 +215,24 @@ public struct OcaNetworkSystemInterfaceDescriptor: Codable, Sendable, Equatable,
     )
   }
 
+  public var parameters: Ocp1SystemInterfaceParameters {
+    get throws {
+      try Ocp1Decoder().decode(
+        Ocp1SystemInterfaceParameters.self,
+        from: [UInt8](systemInterfaceParameters)
+      )
+    }
+  }
+
+  public var networkAddress: Ocp1NetworkAddress {
+    get throws {
+      try Ocp1NetworkAddress(networkAddress: myNetworkAddress)
+    }
+  }
+
   public var description: String {
     do {
-      let parameters = try Ocp1Decoder()
-        .decode(
-          Ocp1SystemInterfaceParameters.self,
-          from: [UInt8](systemInterfaceParameters)
-        )
-      let networkAddress = try Ocp1Decoder()
-        .decode(Ocp1NetworkAddress.self, from: [UInt8](myNetworkAddress))
-      return "\(type(of: self))(systemInterfaceParameters: \(parameters), myNetworkAddress: \(networkAddress))"
+      return try "\(type(of: self))(systemInterfaceParameters: \(parameters), myNetworkAddress: \(networkAddress))"
     } catch {
       return "\(type(of: self))(systemInterfaceParameters: \(systemInterfaceParameters), myNetworkAddress: \(myNetworkAddress))"
     }
