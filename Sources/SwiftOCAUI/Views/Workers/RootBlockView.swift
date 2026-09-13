@@ -22,13 +22,13 @@ public struct OcaRootBlockView: View {
   @Environment(\.lastError)
   var lastError
   @State
-  var connection: Ocp1Connection
+  var connection: OcaConnection
   @State
   var oNoPath = NavigationPath()
   @State
   var object: OcaRoot? = nil
 
-  public init(_ connection: Ocp1Connection) {
+  public init(_ connection: OcaConnection) {
     _connection = State(wrappedValue: connection)
   }
 

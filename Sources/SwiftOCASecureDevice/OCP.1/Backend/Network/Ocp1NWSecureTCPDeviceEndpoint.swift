@@ -37,7 +37,7 @@ import SwiftOCA
 /// device's `OcaSecurityManager` at endpoint start (runtime
 /// `AddPreSharedKey` updates require a restart).
 @OcaDevice
-public final class Ocp1NWSecureTCPDeviceEndpoint: Ocp1NWStreamDeviceEndpoint {
+public final class Ocp1NWSecureTCPDeviceEndpoint: OcaNWStreamDeviceEndpoint {
   private let serverCredential: Ocp1TLSCredential?
   /// Non-nil enables mTLS — every client must present a cert that chains here.
   private let clientCertificateTrustRoots: Ocp1TLSTrustRoots?

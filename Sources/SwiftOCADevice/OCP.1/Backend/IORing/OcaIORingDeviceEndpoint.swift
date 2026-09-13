@@ -40,8 +40,11 @@ import SocketAddress
 import SwiftOCA
 import struct SystemPackage.Errno
 
+@available(*, deprecated, renamed: "OcaIORingDeviceEndpoint")
+public typealias Ocp1IORingDeviceEndpoint = OcaIORingDeviceEndpoint
+
 @OcaDevice
-open class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
+open class OcaIORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
   package nonisolated let address: any SocketAddress
@@ -66,7 +69,7 @@ open class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint"),
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaIORingDeviceEndpoint"),
     ring: IORing = .shared
   ) async throws {
     self.address = address
@@ -87,7 +90,7 @@ open class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint")
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaIORingDeviceEndpoint")
   ) async throws {
     let storage = try sockaddr_storage(bytes: Array(address))
     try await self.init(
@@ -104,7 +107,7 @@ open class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint")
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaIORingDeviceEndpoint")
   ) async throws {
     let storage = try sockaddr_un(
       family: sa_family_t(AF_LOCAL),
@@ -161,11 +164,14 @@ open class Ocp1IORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   }
 }
 
+@available(*, deprecated, renamed: "OcaIORingStreamDeviceEndpoint")
+public typealias Ocp1IORingStreamDeviceEndpoint = OcaIORingStreamDeviceEndpoint
+
 @OcaDevice
-public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
+public final class OcaIORingStreamDeviceEndpoint: OcaIORingDeviceEndpoint,
   OcaDeviceEndpointPrivate
 {
-  package typealias ControllerType = Ocp1IORingStreamController
+  package typealias ControllerType = OcaIORingStreamController
 
   var notificationSocket: Socket?
 
@@ -190,7 +196,7 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
             Task { [weak self] in
               guard let self else { return }
               let controller =
-                try await Ocp1IORingStreamController(
+                try await OcaIORingStreamController(
                   endpoint: self,
                   socket: client,
                   notificationSocket: notificationSocket
@@ -265,11 +271,14 @@ public final class Ocp1IORingStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
   }
 }
 
+@available(*, deprecated, renamed: "OcaIORingDatagramDeviceEndpoint")
+public typealias Ocp1IORingDatagramDeviceEndpoint = OcaIORingDatagramDeviceEndpoint
+
 @OcaDevice
-public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
+public class OcaIORingDatagramDeviceEndpoint: OcaIORingDeviceEndpoint,
   OcaDeviceEndpointPrivate
 {
-  package typealias ControllerType = Ocp1IORingDatagramController
+  package typealias ControllerType = OcaIORingDatagramController
 
   private let _bufferCount: Int?
   var _controllers = [AnySocketAddress: ControllerType]()
@@ -283,7 +292,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint"),
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaIORingDeviceEndpoint"),
     bufferCount: Int? = nil,
     ring: IORing = .shared
   ) async throws {
@@ -303,7 +312,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint"),
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaIORingDeviceEndpoint"),
     bufferCount: Int? = nil
   ) async throws {
     let storage = try sockaddr_storage(bytes: Array(address))
@@ -322,7 +331,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1IORingDeviceEndpoint"),
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaIORingDeviceEndpoint"),
     bufferCount: Int? = nil
   ) async throws {
     let storage = try sockaddr_un(
@@ -344,7 +353,7 @@ public class Ocp1IORingDatagramDeviceEndpoint: Ocp1IORingDeviceEndpoint,
 
     controller = _controllers[controllerAddress]
     if controller == nil {
-      controller = Ocp1IORingDatagramController(
+      controller = OcaIORingDatagramController(
         endpoint: self,
         peerAddress: controllerAddress
       )

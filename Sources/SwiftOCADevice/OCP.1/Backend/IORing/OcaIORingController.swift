@@ -38,7 +38,7 @@ import SwiftOCA
 import Synchronization
 import struct SystemPackage.Errno
 
-protocol Ocp1IORingControllerPrivate: Ocp1ControllerInternal,
+protocol OcaIORingControllerPrivate: Ocp1ControllerInternal,
   Ocp1ControllerInternalLightweightNotifyingInternal, Actor,
   Equatable, Hashable
 {
@@ -47,7 +47,7 @@ protocol Ocp1IORingControllerPrivate: Ocp1ControllerInternal,
   func sendOcp1EncodedMessage(_ message: Message) async throws
 }
 
-extension Ocp1IORingControllerPrivate {
+extension OcaIORingControllerPrivate {
   package func sendOcp1EncodedData(
     _ data: Data,
     to destinationAddress: OcaNetworkAddress
@@ -66,7 +66,7 @@ extension Ocp1IORingControllerPrivate {
   }
 }
 
-package actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStringConvertible {
+package actor OcaIORingStreamController: OcaIORingControllerPrivate, CustomStringConvertible {
   package nonisolated var flags: OcaControllerFlags {
     var flags: OcaControllerFlags = .supportsLocking
     if peerAddress.family == sa_family_t(AF_LOCAL) {
@@ -84,7 +84,7 @@ package actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStr
   package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
-  package weak var endpoint: Ocp1IORingStreamDeviceEndpoint?
+  package weak var endpoint: OcaIORingStreamDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
@@ -106,7 +106,7 @@ package actor Ocp1IORingStreamController: Ocp1IORingControllerPrivate, CustomStr
   }
 
   init(
-    endpoint: Ocp1IORingStreamDeviceEndpoint,
+    endpoint: OcaIORingStreamDeviceEndpoint,
     socket: Socket,
     notificationSocket: Socket
   ) async throws {
@@ -237,7 +237,7 @@ private extension Ocp1NetworkAddress {
   }
 }
 
-package actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate,
+package actor OcaIORingDatagramController: OcaIORingControllerPrivate,
   Ocp1ControllerDatagramSemantics
 {
   package nonisolated var flags: OcaControllerFlags {
@@ -256,7 +256,7 @@ package actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate,
   package var lastMessageSentTime = ContinuousClock.recentPast
 
   package private(set) var isOpen: Bool = false
-  package weak var endpoint: Ocp1IORingDatagramDeviceEndpoint?
+  package weak var endpoint: OcaIORingDatagramDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
@@ -264,7 +264,7 @@ package actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate,
   }
 
   init(
-    endpoint: Ocp1IORingDatagramDeviceEndpoint,
+    endpoint: OcaIORingDatagramDeviceEndpoint,
     peerAddress: AnySocketAddress
   ) {
     self.endpoint = endpoint
@@ -297,13 +297,13 @@ package actor Ocp1IORingDatagramController: Ocp1IORingControllerPrivate,
   }
 }
 
-extension Ocp1IORingControllerPrivate {
+extension OcaIORingControllerPrivate {
   package nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.peerAddress == rhs.peerAddress
   }
 }
 
-extension Ocp1IORingControllerPrivate {
+extension OcaIORingControllerPrivate {
   package nonisolated func hash(into hasher: inout Hasher) {
     peerAddress.hash(into: &hasher)
   }

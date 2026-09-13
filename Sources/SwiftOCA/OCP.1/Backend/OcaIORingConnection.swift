@@ -51,7 +51,10 @@ package extension Errno {
   }
 }
 
-public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
+@available(*, deprecated, renamed: "OcaIORingConnection")
+public typealias Ocp1IORingConnection = OcaIORingConnection
+
+public class OcaIORingConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
   fileprivate let _ring: IORing
   package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
   fileprivate var _socket: Socket?
@@ -65,7 +68,7 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableSocketAddressConne
 
   public convenience init(
     deviceAddress: Data,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    options: OcaConnectionOptions = OcaConnectionOptions(),
     ring: IORing = .shared
   ) throws {
     try self.init(
@@ -79,7 +82,7 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableSocketAddressConne
 
   public convenience init(
     deviceAddresses: [Data],
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    options: OcaConnectionOptions = OcaConnectionOptions(),
     ring: IORing = .shared
   ) throws {
     try self.init(
@@ -96,7 +99,7 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableSocketAddressConne
   public convenience init(
     host: String,
     port: UInt16,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    options: OcaConnectionOptions = OcaConnectionOptions(),
     ring: IORing = .shared
   ) throws {
     try self.init(
@@ -108,7 +111,7 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableSocketAddressConne
 
   public convenience init(
     path: String,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    options: OcaConnectionOptions = OcaConnectionOptions(),
     ring: IORing = .shared
   ) throws {
     try self.init(
@@ -123,7 +126,7 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableSocketAddressConne
 
   fileprivate init(
     addressState: Ocp1DeviceAddressState,
-    options: Ocp1ConnectionOptions,
+    options: OcaConnectionOptions,
     ring: IORing = .shared
   ) throws {
     _deviceAddressState = Mutex(addressState)
@@ -161,7 +164,10 @@ public class Ocp1IORingConnection: Ocp1Connection, Ocp1MutableSocketAddressConne
   }
 }
 
-public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
+@available(*, deprecated, renamed: "OcaIORingDatagramConnection")
+public typealias Ocp1IORingDatagramConnection = OcaIORingDatagramConnection
+
+public final class OcaIORingDatagramConnection: OcaIORingConnection {
   private var receiveBufferSize: Int!
 
   override public var heartbeatTime: Duration {
@@ -174,7 +180,7 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
 
   override fileprivate init(
     addressState: Ocp1DeviceAddressState,
-    options: Ocp1ConnectionOptions,
+    options: OcaConnectionOptions,
     ring: IORing
   ) throws {
     guard addressState.addresses.allSatisfy({ $0.family == AF_INET || $0.family == AF_INET6 })
@@ -221,7 +227,10 @@ public final class Ocp1IORingDatagramConnection: Ocp1IORingConnection {
   override public var isDatagram: Bool { true }
 }
 
-public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnection {
+@available(*, deprecated, renamed: "OcaIORingDomainSocketDatagramConnection")
+public typealias Ocp1IORingDomainSocketDatagramConnection = OcaIORingDomainSocketDatagramConnection
+
+public final class OcaIORingDomainSocketDatagramConnection: OcaIORingConnection {
   private var receiveBufferSize: Int!
   private var _boundAddress: (any SocketAddress)?
 
@@ -235,7 +244,7 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
 
   override fileprivate init(
     addressState: Ocp1DeviceAddressState,
-    options: Ocp1ConnectionOptions,
+    options: OcaConnectionOptions,
     ring: IORing
   ) throws {
     guard addressState.addresses.allSatisfy({ $0.family == AF_LOCAL })
@@ -309,7 +318,10 @@ public final class Ocp1IORingDomainSocketDatagramConnection: Ocp1IORingConnectio
   override public var isDatagram: Bool { true }
 }
 
-public final class Ocp1IORingStreamConnection: Ocp1IORingConnection {
+@available(*, deprecated, renamed: "OcaIORingStreamConnection")
+public typealias Ocp1IORingStreamConnection = OcaIORingStreamConnection
+
+public final class OcaIORingStreamConnection: OcaIORingConnection {
   override fileprivate var _type: Int32 {
     SOCK_STREAM
   }

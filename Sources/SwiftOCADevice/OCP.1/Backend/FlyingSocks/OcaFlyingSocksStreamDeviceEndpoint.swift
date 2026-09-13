@@ -1,5 +1,5 @@
 //
-//  Ocp1FlyingSocksStreamDeviceEndpoint.swift
+//  OcaFlyingSocksStreamDeviceEndpoint.swift
 //
 //  Copyright (c) 2022 Simon Whitty. All rights reserved.
 //  Portions Copyright (c) 2023-2024 PADL Software Pty Ltd. All rights reserved.
@@ -46,12 +46,15 @@ import Android
 import WinSDK
 #endif
 
+@available(*, deprecated, renamed: "OcaFlyingSocksStreamDeviceEndpoint")
+public typealias Ocp1FlyingSocksStreamDeviceEndpoint = OcaFlyingSocksStreamDeviceEndpoint
+
 @OcaDevice
-public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
+public final class OcaFlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
   OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
-  package typealias ControllerType = Ocp1FlyingSocksStreamController
+  package typealias ControllerType = OcaFlyingSocksStreamController
 
   public var controllers: [OcaController] {
     _controllers
@@ -66,7 +69,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
   package let controlProtocol: OcaControlProtocol
   package nonisolated(unsafe) var enableMessageTracing = false
 
-  private var _controllers = [Ocp1FlyingSocksStreamController]()
+  private var _controllers = [OcaFlyingSocksStreamController]()
   #if canImport(dnssd)
   private var _endpointRegistrarTask: Task<(), Error>?
   #endif
@@ -82,7 +85,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksStreamDeviceEndpoint")
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaFlyingSocksStreamDeviceEndpoint")
   ) async throws {
     let address = try FlyingSocks.AnySocketAddress(data: addressData)
     try await self.init(
@@ -99,7 +102,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksStreamDeviceEndpoint")
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaFlyingSocksStreamDeviceEndpoint")
   ) async throws {
     let address = sockaddr_un.unix(path: path).makeStorage()
     try await self.init(
@@ -116,7 +119,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksStreamDeviceEndpoint")
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaFlyingSocksStreamDeviceEndpoint")
   ) async throws {
     self.address = address
     self.timeout = timeout
@@ -232,7 +235,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
     try await withThrowingDiscardingTaskGroup { group in
       for try await socket in socket.sockets {
         group.addTask {
-          try await Ocp1FlyingSocksStreamController(endpoint: self, socket: socket)
+          try await OcaFlyingSocksStreamController(endpoint: self, socket: socket)
             .handle(for: self)
         }
       }
@@ -248,7 +251,7 @@ public final class Ocp1FlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate
     try await withThrowingDiscardingTaskGroup { group in
       for try await socket in socket.sockets {
         group.addTask {
-          try await Ocp1FlyingSocksStreamController(endpoint: self, socket: socket)
+          try await OcaFlyingSocksStreamController(endpoint: self, socket: socket)
             .handle(for: self)
         }
       }

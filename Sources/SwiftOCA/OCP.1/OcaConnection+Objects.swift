@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-public extension Ocp1Connection {
+public extension OcaConnection {
   private func resolve<T: OcaRoot>(
     classIdentification: OcaClassIdentification,
     objectNumber: OcaONo,

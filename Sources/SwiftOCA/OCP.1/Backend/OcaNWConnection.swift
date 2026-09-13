@@ -66,7 +66,10 @@ private extension SocketAddress {
   }
 }
 
-open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
+@available(*, deprecated, renamed: "OcaNWConnection")
+public typealias Ocp1NWConnection = OcaNWConnection
+
+open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
   package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
   package var _queue: DispatchQueue!
   package var _nwConnection: NWConnection!
@@ -92,7 +95,7 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
 
   package init(
     addressState: Ocp1DeviceAddressState,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     _deviceAddressState = Mutex(addressState)
     super.init(options: options)
@@ -119,7 +122,7 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
 
   public convenience init(
     deviceAddress: Data,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
       addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(bytes: Array(deviceAddress))]),
@@ -129,7 +132,7 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
 
   public convenience init(
     deviceAddresses: [Data],
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
       addressState: Ocp1DeviceAddressState(
@@ -145,7 +148,7 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
   public convenience init(
     host: String,
     port: UInt16,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
       addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
@@ -155,7 +158,7 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
 
   public convenience init(
     path: String,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
       addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(
@@ -341,7 +344,10 @@ open class Ocp1NWConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection 
   }
 }
 
-public final class Ocp1NWUDPConnection: Ocp1NWConnection {
+@available(*, deprecated, renamed: "OcaNWUDPConnection")
+public typealias Ocp1NWUDPConnection = OcaNWUDPConnection
+
+public final class OcaNWUDPConnection: OcaNWConnection {
   override public var heartbeatTime: Duration {
     .seconds(1)
   }
@@ -359,7 +365,10 @@ public final class Ocp1NWUDPConnection: Ocp1NWConnection {
   }
 }
 
-public final class Ocp1NWTCPConnection: Ocp1NWConnection {
+@available(*, deprecated, renamed: "OcaNWTCPConnection")
+public typealias Ocp1NWTCPConnection = OcaNWTCPConnection
+
+public final class OcaNWTCPConnection: OcaNWConnection {
   override public var connectionPrefix: String {
     let prefix = _connectionPrefix(ocp1: OcaTcpConnectionPrefix, ocp2: OcaJsonTcpConnectionPrefix)
     return "\(prefix)/\(presentationAddress)"

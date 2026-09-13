@@ -37,7 +37,7 @@ import SwiftOCA
 /// options over UDP. PSKs come from the device's `OcaSecurityManager` at
 /// endpoint start (runtime `AddPreSharedKey` updates require a restart).
 @OcaDevice
-public final class Ocp1NWSecureUDPDeviceEndpoint: Ocp1NWDatagramDeviceEndpoint {
+public final class Ocp1NWSecureUDPDeviceEndpoint: OcaNWDatagramDeviceEndpoint {
   private let serverCredential: Ocp1TLSCredential?
   /// Non-nil enables mTLS.
   private let clientCertificateTrustRoots: Ocp1TLSTrustRoots?

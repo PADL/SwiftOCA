@@ -21,16 +21,24 @@ import SwiftOCA
 // enough kernels to support io_uring
 
 #if os(macOS) || os(iOS) || os(Windows) || !NonEmbeddedBuild
-typealias Ocp1Controller = Ocp1FlyingSocksStreamController
-public typealias Ocp1DeviceEndpoint = Ocp1FlyingSocksStreamDeviceEndpoint
+typealias OcaTCPController = OcaFlyingSocksStreamController
+public typealias OcaTCPDeviceEndpoint = OcaFlyingSocksStreamDeviceEndpoint
+@available(*, deprecated, renamed: "OcaTCPDeviceEndpoint")
+public typealias Ocp1DeviceEndpoint = OcaTCPDeviceEndpoint
 #elseif os(Linux)
-typealias Ocp1Controller = Ocp1IORingStreamController
-public typealias Ocp1DeviceEndpoint = Ocp1IORingStreamDeviceEndpoint
+typealias OcaTCPController = OcaIORingStreamController
+public typealias OcaTCPDeviceEndpoint = OcaIORingStreamDeviceEndpoint
+@available(*, deprecated, renamed: "OcaTCPDeviceEndpoint")
+public typealias Ocp1DeviceEndpoint = OcaTCPDeviceEndpoint
 #elseif canImport(Android)
-typealias Ocp1Controller = Ocp1CFStreamController
-public typealias Ocp1DeviceEndpoint = Ocp1CFStreamDeviceEndpoint
+typealias OcaTCPController = Ocp1CFStreamController
+public typealias OcaTCPDeviceEndpoint = Ocp1CFStreamDeviceEndpoint
+@available(*, deprecated, renamed: "OcaTCPDeviceEndpoint")
+public typealias Ocp1DeviceEndpoint = OcaTCPDeviceEndpoint
 #endif
 
 #if canImport(FlyingFox) && NonEmbeddedBuild
-public typealias Ocp1WSDeviceEndpoint = Ocp1FlyingFoxDeviceEndpoint
+public typealias OcaWSDeviceEndpoint = OcaFlyingFoxDeviceEndpoint
+@available(*, deprecated, renamed: "OcaWSDeviceEndpoint")
+public typealias Ocp1WSDeviceEndpoint = OcaWSDeviceEndpoint
 #endif

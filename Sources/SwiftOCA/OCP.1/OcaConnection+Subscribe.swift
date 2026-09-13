@@ -22,12 +22,12 @@ import Foundation
 
 private let subscriber = OcaMethod(oNo: 1055, methodID: OcaMethodID("1.1"))
 
-public extension Ocp1Connection {
+public extension OcaConnection {
   /// a token that can be used by the client to unsubscribe
   final class SubscriptionCancellable: Hashable, Sendable, CustomStringConvertible {
     public static func == (
-      lhs: Ocp1Connection.SubscriptionCancellable,
-      rhs: Ocp1Connection.SubscriptionCancellable
+      lhs: OcaConnection.SubscriptionCancellable,
+      rhs: OcaConnection.SubscriptionCancellable
     ) -> Bool {
       if let lhsLabel = lhs.label, let rhsLabel = rhs.label {
         lhsLabel == rhsLabel && lhs.event == rhs.event

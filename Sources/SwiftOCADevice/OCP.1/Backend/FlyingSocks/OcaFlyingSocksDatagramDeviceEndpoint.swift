@@ -1,5 +1,5 @@
 //
-//  Ocp1FlyingSocksDatagramDeviceEndpoint.swift
+//  OcaFlyingSocksDatagramDeviceEndpoint.swift
 //
 //  Copyright (c) 2022 Simon Whitty. All rights reserved.
 //  Portions Copyright (c) 2023-2024 PADL Software Pty Ltd. All rights reserved.
@@ -44,12 +44,15 @@ import Glibc
 import Android
 #endif
 
+@available(*, deprecated, renamed: "OcaFlyingSocksDatagramDeviceEndpoint")
+public typealias Ocp1FlyingSocksDatagramDeviceEndpoint = OcaFlyingSocksDatagramDeviceEndpoint
+
 @OcaDevice
-public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
+public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
   OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
-  package typealias ControllerType = Ocp1FlyingSocksDatagramController
+  package typealias ControllerType = OcaFlyingSocksDatagramController
 
   var _controllers = Set<ControllerType>()
 
@@ -81,7 +84,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksDatagramDeviceEndpoint")
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaFlyingSocksDatagramDeviceEndpoint")
   ) async throws {
     let address = try FlyingSocks.AnySocketAddress(data: addressData)
     try await self.init(
@@ -98,7 +101,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
-    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.Ocp1FlyingSocksDatagramDeviceEndpoint")
+    logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaFlyingSocksDatagramDeviceEndpoint")
   ) async throws {
     self.address = address
     self.timeout = timeout
@@ -128,7 +131,7 @@ public final class Ocp1FlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPriva
 
     controller = _controllers.first(where: { $0.matchesPeer(address: controllerAddress) })
     if controller == nil {
-      controller = Ocp1FlyingSocksDatagramController(
+      controller = OcaFlyingSocksDatagramController(
         endpoint: self,
         peerAddress: controllerAddress,
         interfaceIndex: interfaceIndex,

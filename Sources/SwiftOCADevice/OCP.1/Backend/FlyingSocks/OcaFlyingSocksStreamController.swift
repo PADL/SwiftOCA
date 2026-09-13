@@ -33,7 +33,7 @@ import WinSDK
 #endif
 
 /// A remote controller
-package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConvertible {
+package actor OcaFlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConvertible {
   package nonisolated let flags: OcaControllerFlags
   package nonisolated let connectionPrefix: String
 
@@ -42,7 +42,7 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
   package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
-  package weak var endpoint: Ocp1FlyingSocksStreamDeviceEndpoint?
+  package weak var endpoint: OcaFlyingSocksStreamDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
 
   private let address: String
@@ -53,7 +53,7 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
     _messages.eraseToAnyAsyncSequence()
   }
 
-  init(endpoint: Ocp1FlyingSocksStreamDeviceEndpoint, socket: AsyncSocket) throws {
+  init(endpoint: OcaFlyingSocksStreamDeviceEndpoint, socket: AsyncSocket) throws {
     if case .unix = try? socket.socket.sockname() {
       connectionPrefix = endpoint.controlProtocol.connectionPrefix(
         ocp1: OcaLocalConnectionPrefix,
@@ -127,22 +127,22 @@ package actor Ocp1FlyingSocksStreamController: Ocp1ControllerInternal, CustomStr
   }
 }
 
-extension Ocp1FlyingSocksStreamController: Equatable {
+extension OcaFlyingSocksStreamController: Equatable {
   package nonisolated static func == (
-    lhs: Ocp1FlyingSocksStreamController,
-    rhs: Ocp1FlyingSocksStreamController
+    lhs: OcaFlyingSocksStreamController,
+    rhs: OcaFlyingSocksStreamController
   ) -> Bool {
     lhs.fileDescriptor == rhs.fileDescriptor
   }
 }
 
-extension Ocp1FlyingSocksStreamController: Hashable {
+extension OcaFlyingSocksStreamController: Hashable {
   package nonisolated func hash(into hasher: inout Hasher) {
     fileDescriptor.hash(into: &hasher)
   }
 }
 
-private extension Ocp1FlyingSocksStreamController {
+private extension OcaFlyingSocksStreamController {
   static func makeIdentifier(from socket: Socket) -> String {
     guard let peer = try? socket.remotePeer() else {
       return "unknown"

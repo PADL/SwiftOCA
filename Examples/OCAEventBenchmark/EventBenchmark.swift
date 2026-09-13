@@ -69,7 +69,7 @@ func decodeNotificationWithBuiltin(_ data: Data) throws -> Ocp1Notification1 {
 /// Exercises the whole top-level framing path — sync byte, header, per-message
 /// framing and message bodies — as a device or controller sees it off the wire.
 func decodeMessagePdu(_ pdu: Data) throws -> [Ocp1Message] {
-  try Ocp1Connection.decodeOcp1MessagePdu(from: pdu).1
+  try OcaConnection.decodeOcp1MessagePdu(from: pdu).1
 }
 
 func benchmark(tag: String, _ block: () throws -> ()) rethrows {
@@ -122,7 +122,7 @@ public enum EventBenchmark {
       guard n == aNotification else { throw Failure.ntf1((n, aNotification)) }
     }
 
-    let notificationPdu: Data = try Ocp1Connection.encodeOcp1MessagePdu(
+    let notificationPdu: Data = try OcaConnection.encodeOcp1MessagePdu(
       [aNotification],
       type: .ocaNtf1
     )
@@ -131,7 +131,7 @@ public enum EventBenchmark {
       guard m.count == 1 else { throw Failure.messageCount(m.count) }
     }
 
-    let batchedPdu: Data = try Ocp1Connection.encodeOcp1MessagePdu(
+    let batchedPdu: Data = try OcaConnection.encodeOcp1MessagePdu(
       Array(repeating: aNotification, count: 8),
       type: .ocaNtf1
     )
@@ -141,13 +141,13 @@ public enum EventBenchmark {
     }
 
     try benchmark(tag: "encodeMessagePdu(1 notification)") {
-      let d: Data = try Ocp1Connection.encodeOcp1MessagePdu([aNotification], type: .ocaNtf1)
+      let d: Data = try OcaConnection.encodeOcp1MessagePdu([aNotification], type: .ocaNtf1)
       guard d.count == notificationPdu.count else { throw Failure.data((d, notificationPdu)) }
     }
 
     let batch = [Ocp1Message](repeating: aNotification, count: 8)
     try benchmark(tag: "encodeMessagePdu(8 notifications)") {
-      let d: Data = try Ocp1Connection.encodeOcp1MessagePdu(batch, type: .ocaNtf1)
+      let d: Data = try OcaConnection.encodeOcp1MessagePdu(batch, type: .ocaNtf1)
       guard d.count == batchedPdu.count else { throw Failure.data((d, batchedPdu)) }
     }
 

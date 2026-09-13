@@ -104,17 +104,17 @@ public enum DeviceApp {
     await device.setEventDelegate(delegate)
 
     #if os(Linux) && NonEmbeddedBuild
-    let streamEndpoint = try await Ocp1IORingStreamDeviceEndpoint(address: listenAddress.data)
-    let datagramEndpoint = try await Ocp1IORingDatagramDeviceEndpoint(address: listenAddress.data)
-    let stream6Endpoint = try await Ocp1IORingStreamDeviceEndpoint(address: listen6Address.data)
-    let datagram6Endpoint = try await Ocp1IORingDatagramDeviceEndpoint(address: listen6Address.data)
+    let streamEndpoint = try await OcaIORingStreamDeviceEndpoint(address: listenAddress.data)
+    let datagramEndpoint = try await OcaIORingDatagramDeviceEndpoint(address: listenAddress.data)
+    let stream6Endpoint = try await OcaIORingStreamDeviceEndpoint(address: listen6Address.data)
+    let datagram6Endpoint = try await OcaIORingDatagramDeviceEndpoint(address: listen6Address.data)
     let domainSocketStreamEndpoint =
-      try? await Ocp1IORingStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
+      try? await OcaIORingStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
     let domainSocketDatagramEndpoint =
-      try? await Ocp1IORingDatagramDeviceEndpoint(path: "/tmp/oca-device-dg.sock")
+      try? await OcaIORingDatagramDeviceEndpoint(path: "/tmp/oca-device-dg.sock")
     #elseif canImport(FlyingSocks) && NonEmbeddedBuild
-    let streamEndpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(address: listenAddress.data)
-    let stream6Endpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(
+    let streamEndpoint = try await OcaFlyingSocksStreamDeviceEndpoint(address: listenAddress.data)
+    let stream6Endpoint = try await OcaFlyingSocksStreamDeviceEndpoint(
       address: listen6Address
         .data
     )
@@ -122,16 +122,16 @@ public enum DeviceApp {
     // FlyingSocks has no Winsock sendmsg, so datagram device endpoints (and the
     // Unix-domain demo socket path) are unavailable on Windows.
     let datagramEndpoint =
-      try await Ocp1FlyingSocksDatagramDeviceEndpoint(address: listenAddress.data)
-    let datagram6Endpoint = try await Ocp1FlyingSocksDatagramDeviceEndpoint(
+      try await OcaFlyingSocksDatagramDeviceEndpoint(address: listenAddress.data)
+    let datagram6Endpoint = try await OcaFlyingSocksDatagramDeviceEndpoint(
       address: listen6Address
         .data
     )
     let domainSocketStreamEndpoint =
-      try? await Ocp1FlyingSocksStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
+      try? await OcaFlyingSocksStreamDeviceEndpoint(path: "/tmp/oca-device.sock")
     #endif
     #else
-    let streamEndpoint = try await Ocp1DeviceEndpoint(address: listenAddress.data)
+    let streamEndpoint = try await OcaTCPDeviceEndpoint(address: listenAddress.data)
     #endif
 
     #if canImport(FlyingFox) && NonEmbeddedBuild
@@ -147,7 +147,7 @@ public enum DeviceApp {
     #endif
     // OCP.1 and OCP.2 share the WebSocket port: OCP.2 clients offer the AES70-OCP.2
     // subprotocol
-    let webSocketEndpoint = try await Ocp1WSDeviceEndpoint(
+    let webSocketEndpoint = try await OcaWSDeviceEndpoint(
       address: listenAddress.data,
       controlProtocols: [.ocp1, .ocp2]
     )
@@ -156,7 +156,7 @@ public enum DeviceApp {
     // OCP.2 (AES70-4, JSON) over TCP on its own port, port+3
     #if (os(Linux) || canImport(FlyingSocks)) && NonEmbeddedBuild
     listenAddress.sin_port = (port + 3).bigEndian
-    let jsonStreamEndpoint = try await Ocp1DeviceEndpoint(
+    let jsonStreamEndpoint = try await OcaTCPDeviceEndpoint(
       address: listenAddress.data,
       controlProtocol: .ocp2
     )

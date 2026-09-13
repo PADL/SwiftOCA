@@ -29,7 +29,7 @@ import SwiftOCA
 /// OCP.1 TLS-secured TCP connection via Apple's Network.framework. PSK uses
 /// TLS 1.3 external PSK + AEAD; the AES70-mandated TLS_DHE_PSK_WITH_AES_128_
 /// CBC_SHA is appended via raw IANA value (acceptance is best-effort).
-public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
+public final class Ocp1NWSecureTCPConnection: OcaNWConnection {
   private let credential: Ocp1TLSCredential
   /// Pre-loaded at init so a bad CA bundle fails construction rather than
   /// silently disabling cert verification.
@@ -252,7 +252,7 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
     revocation: Ocp1TLSRevocationOptions,
-    options: Ocp1ConnectionOptions
+    options: OcaConnectionOptions
   ) throws {
     try credential.validate()
     let verifyPeer = !options.flags.contains(.disableCertificateVerification)
@@ -283,7 +283,7 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
     sniHostname: String? = nil,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     let address = try AnySocketAddress(bytes: Array(deviceAddress))
     try self.init(
@@ -305,7 +305,7 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
     credential: Ocp1TLSCredential,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
       addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
@@ -320,7 +320,7 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
   public convenience init(
     path: String,
     credential: Ocp1TLSCredential,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     let address = try AnySocketAddress(
       family: sa_family_t(AF_LOCAL),
@@ -340,7 +340,7 @@ public final class Ocp1NWSecureTCPConnection: Ocp1NWConnection {
 /// OCP.1 DTLS-secured UDP connection via Apple's Network.framework. Mirrors
 /// `Ocp1NWSecureTCPConnection`; Network.framework reuses the TLS
 /// `sec_protocol_options_t` configuration for DTLS.
-public final class Ocp1NWSecureUDPConnection: Ocp1NWConnection {
+public final class Ocp1NWSecureUDPConnection: OcaNWConnection {
   private let credential: Ocp1TLSCredential
   private let serverHostname: String?
   private let trustRoots: Ocp1TLSTrustRoots?
@@ -394,7 +394,7 @@ public final class Ocp1NWSecureUDPConnection: Ocp1NWConnection {
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
     revocation: Ocp1TLSRevocationOptions,
-    options: Ocp1ConnectionOptions
+    options: OcaConnectionOptions
   ) throws {
     try credential.validate()
     let verifyPeer = !options.flags.contains(.disableCertificateVerification)
@@ -423,7 +423,7 @@ public final class Ocp1NWSecureUDPConnection: Ocp1NWConnection {
     sniHostname: String? = nil,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     let address = try AnySocketAddress(bytes: Array(deviceAddress))
     try self.init(
@@ -445,7 +445,7 @@ public final class Ocp1NWSecureUDPConnection: Ocp1NWConnection {
     credential: Ocp1TLSCredential,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
       addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),

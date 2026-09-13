@@ -42,9 +42,9 @@ private func makeWSEndpoint(
   device: OcaDevice,
   controlProtocols: Set<OcaControlProtocol> = [.ocp1],
   timeout: Duration = .seconds(5)
-) async throws -> (Ocp1FlyingFoxDeviceEndpoint, Task<(), Error>, UInt16) {
+) async throws -> (OcaFlyingFoxDeviceEndpoint, Task<(), Error>, UInt16) {
   let address = localhostAddress(port: 0)
-  let endpoint = try await Ocp1FlyingFoxDeviceEndpoint(
+  let endpoint = try await OcaFlyingFoxDeviceEndpoint(
     address: address,
     timeout: timeout,
     device: device,
@@ -69,11 +69,11 @@ private func makeWSEndpoint(
 }
 
 /// Create a WebSocket client connection to the given port
-@OcaConnection
+@OcaConnectionActor
 private func makeWSConnection(
   port: UInt16
-) -> Ocp1FlyingFoxConnection {
-  Ocp1FlyingFoxConnection(host: "127.0.0.1", port: port)
+) -> OcaFlyingFoxConnection {
+  OcaFlyingFoxConnection(host: "127.0.0.1", port: port)
 }
 
 // MARK: - tests
@@ -450,9 +450,9 @@ extension WebSocketConnectionTests {
     let offered = OfferedSubprotocols()
     let server = try HTTPServer(address: .inet(ip4: "127.0.0.1", port: 0), timeout: 5)
     await server.appendRoute("GET /") { request in
-      await offered.append(request.headers[Ocp1FlyingFoxDeviceEndpoint.webSocketProtocolHeader])
+      await offered.append(request.headers[OcaFlyingFoxDeviceEndpoint.webSocketProtocolHeader])
       return try await WebSocketHTTPHandler
-        .webSocket(Ocp1FlyingFoxDeviceEndpoint.Handler(endpoint, controlProtocol: .ocp1, peer: nil))
+        .webSocket(OcaFlyingFoxDeviceEndpoint.Handler(endpoint, controlProtocol: .ocp1, peer: nil))
         .handleRequest(request)
     }
     let serverTask = Task { try await server.run() }
@@ -484,7 +484,7 @@ extension WebSocketConnectionTests {
     defer { endpointTask.cancel() }
     let (injector, url) = await makeFrameInjector(endpoint, port: port, controlProtocol: .ocp1)
 
-    let connection = await Ocp1FlyingFoxConnection(url: url)
+    let connection = await OcaFlyingFoxConnection(url: url)
     try await connection.connect()
     injector.inject(WSFrame(fin: true, opcode: .text, mask: nil, payload: Data("hello".utf8)))
     let closeCode = await injector.firstCloseCode()
@@ -503,9 +503,9 @@ extension WebSocketConnectionTests {
     defer { endpointTask.cancel() }
     let (injector, url) = await makeFrameInjector(endpoint, port: port, controlProtocol: .ocp2)
 
-    let connection = await Ocp1FlyingFoxConnection(
+    let connection = await OcaFlyingFoxConnection(
       url: url,
-      options: Ocp1ConnectionOptions(controlProtocol: .ocp2)
+      options: OcaConnectionOptions(controlProtocol: .ocp2)
     )
     try await connection.connect()
     injector.inject(WSFrame(fin: true, opcode: .text, mask: nil, payload: Data()))
@@ -528,9 +528,9 @@ private final class FrameInjector: WSHandler, @unchecked Sendable {
   private let closeCodes: AsyncStream<UInt16>
   private let closeCodesIn: AsyncStream<UInt16>.Continuation
 
-  init(_ endpoint: Ocp1FlyingFoxDeviceEndpoint, controlProtocol: OcaControlProtocol) {
+  init(_ endpoint: OcaFlyingFoxDeviceEndpoint, controlProtocol: OcaControlProtocol) {
     handler = MessageFrameWSHandler(
-      handler: Ocp1FlyingFoxDeviceEndpoint.Handler(
+      handler: OcaFlyingFoxDeviceEndpoint.Handler(
         endpoint,
         controlProtocol: controlProtocol,
         peer: nil
@@ -596,7 +596,7 @@ private final class FrameInjector: WSHandler, @unchecked Sendable {
 /// do, but in a full test run one started after another's has left later WebSocket upgrades
 /// unanswered.
 private func makeFrameInjector(
-  _ endpoint: Ocp1FlyingFoxDeviceEndpoint,
+  _ endpoint: OcaFlyingFoxDeviceEndpoint,
   port: UInt16,
   controlProtocol: OcaControlProtocol
 ) async -> (FrameInjector, URL) {

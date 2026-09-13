@@ -19,7 +19,7 @@ open class OcaIdentificationSensor: OcaSensor, @unchecked Sendable {
 
   public static let identifyEventID = OcaEventID(defLevel: 4, eventIndex: 1)
 
-  @OcaConnection
+  @OcaConnectionActor
   public var identifyEvents: AsyncStream<()> {
     AsyncStream { continuation in
       Task { [weak connectionDelegate] in

@@ -31,7 +31,7 @@ import Glibc
 #endif
 
 /// A remote controller
-package actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
+package actor OcaFlyingSocksDatagramController: Ocp1ControllerInternal {
   package nonisolated var flags: OcaControllerFlags { .supportsLocking }
   package nonisolated var connectionPrefix: String {
     controlProtocol.connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
@@ -47,7 +47,7 @@ package actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   package var lastMessageSentTime = ContinuousClock.recentPast
 
   package private(set) var isOpen: Bool = false
-  package weak var endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint?
+  package weak var endpoint: OcaFlyingSocksDatagramDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
@@ -55,7 +55,7 @@ package actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   }
 
   init(
-    endpoint: Ocp1FlyingSocksDatagramDeviceEndpoint,
+    endpoint: OcaFlyingSocksDatagramDeviceEndpoint,
     peerAddress: any SocketAddress,
     interfaceIndex: UInt32?,
     localAddress: (any SocketAddress)?
@@ -107,16 +107,16 @@ package actor Ocp1FlyingSocksDatagramController: Ocp1ControllerInternal {
   }
 }
 
-extension Ocp1FlyingSocksDatagramController: Equatable {
+extension OcaFlyingSocksDatagramController: Equatable {
   package nonisolated static func == (
-    lhs: Ocp1FlyingSocksDatagramController,
-    rhs: Ocp1FlyingSocksDatagramController
+    lhs: OcaFlyingSocksDatagramController,
+    rhs: OcaFlyingSocksDatagramController
   ) -> Bool {
     lhs.matchesPeer(address: rhs.peerAddress)
   }
 }
 
-extension Ocp1FlyingSocksDatagramController: Hashable {
+extension OcaFlyingSocksDatagramController: Hashable {
   package nonisolated func hash(into hasher: inout Hasher) {
     var peerAddress = peerAddress.makeStorage()
     Data(bytes: &peerAddress, count: MemoryLayout<sockaddr_storage>.size).hash(into: &hasher)

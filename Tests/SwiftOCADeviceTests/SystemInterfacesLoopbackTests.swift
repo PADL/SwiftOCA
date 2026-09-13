@@ -43,7 +43,7 @@ final class SystemInterfacesLoopbackTests: XCTestCase {
     let endpointTask = Task { do { try await endpoint.run() } catch {} }
     let connection = await OcaLocalConnection(
       endpoint,
-      options: Ocp1ConnectionOptions(controlProtocol: controlProtocol)
+      options: OcaConnectionOptions(controlProtocol: controlProtocol)
     )
     defer {
       Task {

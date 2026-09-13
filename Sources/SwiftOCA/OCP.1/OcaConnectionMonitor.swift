@@ -23,16 +23,16 @@ import Synchronization
 
 // Connection monitor delivers responses keyed by request handle
 
-extension Ocp1Connection {
+extension OcaConnection {
   /// Monitor for matching requests and responses.
-  /// Deliberately not isolated to `@OcaConnection` so that the
+  /// Deliberately not isolated to `@OcaConnectionActor` so that the
   /// receiveMessages/keepAlive loops run on the default executor and
   /// are not starved by work on other connections sharing the global actor.
   final class Monitor: Sendable, CustomStringConvertible {
     typealias Continuation = UnsafeContinuation<Ocp1Response, Error>
 
     /// A request is claimed before its command is written, because this class
-    /// is not isolated to `@OcaConnection`: it decodes responses concurrently
+    /// is not isolated to `@OcaConnectionActor`: it decodes responses concurrently
     /// with the sender, so it can match one before the sender has suspended.
     /// Until then there is nowhere to deliver a result, so it is held in
     /// `completed` rather than dropped.
@@ -52,7 +52,7 @@ extension Ocp1Connection {
       var count = UInt64(0)
     }
 
-    private let _connection: Weak<Ocp1Connection>
+    private let _connection: Weak<OcaConnection>
     let _connectionID: Int
     private let _requests = Mutex<Requests>(Requests())
     private let _lastMessageReceivedTime = Mutex<ContinuousClock.Instant>(.now)
@@ -61,13 +61,13 @@ extension Ocp1Connection {
     /// `Task.sleep` per request that outlives the request by the whole timeout.
     let deadlines = DeadlineTimer()
 
-    init(_ connection: Ocp1Connection, id: Int) {
+    init(_ connection: OcaConnection, id: Int) {
       _connection = Weak(connection)
       _connectionID = id
       updateLastMessageReceivedTime()
     }
 
-    var connection: Ocp1Connection? {
+    var connection: OcaConnection? {
       _connection.object
     }
 
@@ -272,14 +272,14 @@ extension Ocp1Connection {
     }
 
     var description: String {
-      "Ocp1Connection.Monitor[\(_connectionID)]"
+      "OcaConnection.Monitor[\(_connectionID)]"
     }
   }
 }
 
-extension Ocp1Connection.Monitor {
+extension OcaConnection.Monitor {
   private func receiveMessagePdu(
-    _ connection: Ocp1Connection,
+    _ connection: OcaConnection,
     reader: any OcaPduReader,
     source: ReadSource
   ) async throws -> (OcaMessageType, [Ocp1Message]) {
@@ -305,13 +305,13 @@ extension Ocp1Connection.Monitor {
   struct ReadSource {
     let read: (Int, Bool) async throws -> Data
 
-    init(_ connection: Ocp1Connection) {
+    init(_ connection: OcaConnection) {
       read = connection.read(_:awaitingAllRead:)
     }
   }
 
   private func processMessage(
-    _ connection: Ocp1Connection,
+    _ connection: OcaConnection,
     _ message: Ocp1Message
   ) async throws {
     switch message {
@@ -338,7 +338,7 @@ extension Ocp1Connection.Monitor {
     }
   }
 
-  private func onDatagramConnectionOpen(_ connection: Ocp1Connection) async {
+  private func onDatagramConnectionOpen(_ connection: OcaConnection) async {
     let (isDatagram, isConnecting) = await (connection.isDatagram, connection.isConnecting)
     if isDatagram, isConnecting {
       await connection.onConnectionOpen()
@@ -346,7 +346,7 @@ extension Ocp1Connection.Monitor {
   }
 
   private func receiveMessage(
-    _ connection: Ocp1Connection,
+    _ connection: OcaConnection,
     reader: any OcaPduReader,
     source: ReadSource
   ) async throws {
@@ -373,7 +373,7 @@ extension Ocp1Connection.Monitor {
     }
   }
 
-  private func keepAlive(_ connection: Ocp1Connection) async throws {
+  private func keepAlive(_ connection: OcaConnection) async throws {
     let heartbeatTime = await connection.effectiveHeartbeatTime
     let keepAliveThreshold = heartbeatTime * 3
 
@@ -401,7 +401,7 @@ extension Ocp1Connection.Monitor {
   }
 
   @concurrent
-  func receiveMessages(_ connection: Ocp1Connection) async throws {
+  func receiveMessages(_ connection: OcaConnection) async throws {
     let heartbeatTime = await connection.effectiveHeartbeatTime
     let controlProtocol = connection.controlProtocol
     // `isMessageOriented` describes writes (whole PDUs per send, so the write queue

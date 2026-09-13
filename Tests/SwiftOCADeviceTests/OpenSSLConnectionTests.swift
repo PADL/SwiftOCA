@@ -42,19 +42,19 @@ private func loopbackAddressData(port: UInt16) -> Data {
 /// exercises SwiftOCA's own resolution and derives the SNI server name from
 /// the host. The self-signed test cert carries `IP:127.0.0.1` in its SAN, so
 /// PSK and verification-disabled handshakes don't depend on the SNI name.
-@OcaConnection
+@OcaConnectionActor
 private func makeOpenSSLHostConnection(
   port: UInt16,
   credential: Ocp1TLSCredential,
   trustRoots: Ocp1TLSTrustRoots? = nil,
-  flags: Ocp1ConnectionFlags = .refreshDeviceTreeOnConnection
+  flags: OcaConnectionFlags = .refreshDeviceTreeOnConnection
 ) throws -> Ocp1OpenSSLConnection {
   try Ocp1OpenSSLConnection(
     host: "127.0.0.1",
     port: port,
     credential: credential,
     trustRoots: trustRoots,
-    options: Ocp1ConnectionOptions(flags: flags)
+    options: OcaConnectionOptions(flags: flags)
   )
 }
 
@@ -62,20 +62,20 @@ private func makeOpenSSLHostConnection(
 /// name. Used by the certificate tests that assert behaviour for a specific
 /// (possibly mismatched) server name while still targeting the loopback IP —
 /// something the hostname path can't express.
-@OcaConnection
+@OcaConnectionActor
 private func makeOpenSSLConnection(
   port: UInt16,
   credential: Ocp1TLSCredential,
   sniHostname: String? = nil,
   trustRoots: Ocp1TLSTrustRoots? = nil,
-  flags: Ocp1ConnectionFlags = .refreshDeviceTreeOnConnection
+  flags: OcaConnectionFlags = .refreshDeviceTreeOnConnection
 ) throws -> Ocp1OpenSSLConnection {
   try Ocp1OpenSSLConnection(
     deviceAddress: loopbackAddressData(port: port),
     credential: credential,
     sniHostname: sniHostname,
     trustRoots: trustRoots,
-    options: Ocp1ConnectionOptions(flags: flags)
+    options: OcaConnectionOptions(flags: flags)
   )
 }
 
@@ -404,7 +404,7 @@ final class OpenSSLConnectionTests: XCTestCase {
 }
 
 private extension Ocp1OpenSSLConnection {
-  @OcaConnection
+  @OcaConnectionActor
   static func makeForHostname(
     port: UInt16,
     credential: Ocp1TLSCredential,
@@ -416,7 +416,7 @@ private extension Ocp1OpenSSLConnection {
       credential: credential,
       sniHostname: sniHostname,
       trustRoots: trustRoots,
-      options: Ocp1ConnectionOptions(flags: .refreshDeviceTreeOnConnection)
+      options: OcaConnectionOptions(flags: .refreshDeviceTreeOnConnection)
     )
   }
 }

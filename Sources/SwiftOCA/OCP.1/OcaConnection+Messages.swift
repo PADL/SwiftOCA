@@ -20,7 +20,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-extension Ocp1Connection {
+extension OcaConnection {
   private func sendMessage(
     _ message: some _Ocp1MessageCodable,
     type messageType: OcaMessageType

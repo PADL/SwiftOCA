@@ -80,7 +80,7 @@ let connection = try Ocp1TLSStreamConnection(
   credential: credential,
   hostname: "device.local",         // SNI + cert hostname verification
   trustRoots: .caFile("/etc/ssl/private-ca.pem"),
-  options: Ocp1ConnectionOptions(flags: [.automaticReconnect])
+  options: OcaConnectionOptions(flags: [.automaticReconnect])
 )
 
 try await connection.connect()
@@ -90,10 +90,10 @@ try await connection.connect()
 
 ### Disabling verification
 
-For development against a self-signed cert, set `disableCertificateVerification` on `Ocp1ConnectionFlags`:
+For development against a self-signed cert, set `disableCertificateVerification` on `OcaConnectionFlags`:
 
 ```swift
-let options = Ocp1ConnectionOptions(flags: [.disableCertificateVerification])
+let options = OcaConnectionOptions(flags: [.disableCertificateVerification])
 ```
 
 This bypasses chain validation _and_ hostname verification on both platforms. Do not ship this enabled — every connect logs a `.critical` audit line so a flag accidentally copied from an example surfaces loudly.
@@ -217,7 +217,7 @@ Operators wiring this up should:
 
 Three operator-visible signals fire at `info` / `warning` level so misconfigurations surface in logs instead of failing silently:
 
-- **`TLS certificate verification is disabled (insecure)`** — emitted *once per connect* on the client side when `Ocp1ConnectionOptions.flags` contains `.disableCertificateVerification`. This flag is intentionally dev-only.
+- **`TLS certificate verification is disabled (insecure)`** — emitted *once per connect* on the client side when `OcaConnectionOptions.flags` contains `.disableCertificateVerification`. This flag is intentionally dev-only.
 - **`<endpoint> requires client certificates (mTLS)`** — emitted at server startup (or, on Apple, at endpoint init) whenever `clientCertificateTrustRoots` is configured. Lets you confirm a server is enforcing mTLS without grepping a packet capture.
 - **`TLS handshake failed or timed out: ...`** — emitted at `warning` for any inbound stream handshake that fails the 10 s deadline or returns an OpenSSL error. The error string is the OpenSSL queue contents; if the queue is empty the string is `(no detail in OpenSSL error queue)` rather than blank.
 
@@ -258,7 +258,7 @@ Day-to-day callers don't need to interact with these directly — the standard `
 
 The protocols exist so the engine can be exercised end-to-end against an in-memory transport for testing — see `Tests/SwiftOCADeviceTests/PipeByteStream.swift` and `OpenSSLEnginePipeTests.swift`. PSK and certificate-mode handshakes (including mTLS coexistence with PSK) round-trip in ~80 ms per case over the in-memory pipe with no socket / port / accept-loop state shared between cases. The same pattern also leaves the door open for future alternative transports (e.g. FlyingSocks-backed TLS) without further engine changes.
 
-A future refactor (Phase 2) will lift this further by introducing `Ocp1ByteStreamListener` and dropping `Ocp1OpenSSLStreamDeviceEndpoint`'s `Ocp1IORingDeviceEndpoint` inheritance entirely, making the endpoint itself transport-pluggable. That is intentionally out of scope for the current branch.
+A future refactor (Phase 2) will lift this further by introducing `Ocp1ByteStreamListener` and dropping `Ocp1OpenSSLStreamDeviceEndpoint`'s `OcaIORingDeviceEndpoint` inheritance entirely, making the endpoint itself transport-pluggable. That is intentionally out of scope for the current branch.
 
 ## `ocacli` examples
 

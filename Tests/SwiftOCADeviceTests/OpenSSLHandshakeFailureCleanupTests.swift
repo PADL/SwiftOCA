@@ -67,7 +67,7 @@ final class OpenSSLHandshakeFailureCleanupTests: XCTestCase {
       host: "127.0.0.1",
       port: port,
       credential: .preSharedKey(identity: Self.serverIdentity, key: Self.wrongKey),
-      options: Ocp1ConnectionOptions()
+      options: OcaConnectionOptions()
     )
 
     // The handshake must reject our wrong key.

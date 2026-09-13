@@ -64,7 +64,7 @@ final class MalformedPduTests: XCTestCase {
     line: UInt = #line
   ) {
     XCTAssertThrowsError(
-      try Ocp1Connection.decodeOcp1MessagePdu(from: data),
+      try OcaConnection.decodeOcp1MessagePdu(from: data),
       message,
       file: file,
       line: line
@@ -210,10 +210,10 @@ final class MalformedPduTests: XCTestCase {
         parameters: OcaParameters(parameterCount: 1, parameterData: Data([0xFF, 0xFE]))
       ),
     ]
-    let wellFormed: Data = try Ocp1Connection.encodeOcp1MessagePdu(commands, type: .ocaCmd)
+    let wellFormed: Data = try OcaConnection.encodeOcp1MessagePdu(commands, type: .ocaCmd)
 
     // the intact PDU still decodes
-    let (type, messages) = try Ocp1Connection.decodeOcp1MessagePdu(from: wellFormed)
+    let (type, messages) = try OcaConnection.decodeOcp1MessagePdu(from: wellFormed)
     XCTAssertEqual(type, .ocaCmd)
     XCTAssertEqual(messages.count, 2)
 
@@ -234,7 +234,7 @@ final class MalformedPduTests: XCTestCase {
       methodID: "2.6",
       parameters: OcaParameters(parameterCount: 1, parameterData: Data([0x01, 0x02]))
     )
-    let wellFormed: Data = try Ocp1Connection.encodeOcp1MessagePdu([command], type: .ocaCmdRrq)
+    let wellFormed: Data = try OcaConnection.encodeOcp1MessagePdu([command], type: .ocaCmdRrq)
 
     var generator = SystemRandomNumberGenerator()
     for _ in 0..<20000 {
@@ -248,7 +248,7 @@ final class MalformedPduTests: XCTestCase {
         corrupted = Array(corrupted.prefix(Int.random(in: 0...corrupted.count, using: &generator)))
       }
       do {
-        _ = try Ocp1Connection.decodeOcp1MessagePdu(from: Data(corrupted))
+        _ = try OcaConnection.decodeOcp1MessagePdu(from: Data(corrupted))
       } catch is Ocp1Error {
         // expected for malformed input
       } catch {

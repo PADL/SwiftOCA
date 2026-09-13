@@ -410,7 +410,10 @@ Sendable, CustomStringConvertible, Hashable {
   }
 }
 
-public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
+@available(*, deprecated, renamed: "OcaCFSocketConnection")
+public typealias Ocp1CFSocketConnection = OcaCFSocketConnection
+
+public class OcaCFSocketConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
   package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
   fileprivate var _socket: _CFSocketWrapper?
   fileprivate var _type: Int32 {
@@ -419,7 +422,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableSocketAddressCon
 
   private init(
     deviceAddresses: [AnySocketAddress],
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     _deviceAddressState = Mutex(Ocp1DeviceAddressState(addresses: deviceAddresses))
     super.init(options: options)
@@ -427,7 +430,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableSocketAddressCon
 
   public convenience init(
     deviceAddress: Data,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     let deviceAddress = try AnySocketAddress(bytes: Array(deviceAddress))
     try self.init(deviceAddresses: [deviceAddress], options: options)
@@ -435,7 +438,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableSocketAddressCon
 
   public convenience init(
     deviceAddresses: [Data],
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
       deviceAddresses: deviceAddresses.compactMap { try? AnySocketAddress(bytes: Array($0)) },
@@ -445,7 +448,7 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableSocketAddressCon
 
   public convenience init(
     path: String,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     let deviceAddress = try AnySocketAddress(
       family: sa_family_t(AF_LOCAL),
@@ -484,7 +487,10 @@ public class Ocp1CFSocketConnection: Ocp1Connection, Ocp1MutableSocketAddressCon
   }
 }
 
-public final class Ocp1CFSocketUDPConnection: Ocp1CFSocketConnection {
+@available(*, deprecated, renamed: "OcaCFSocketUDPConnection")
+public typealias Ocp1CFSocketUDPConnection = OcaCFSocketUDPConnection
+
+public final class OcaCFSocketUDPConnection: OcaCFSocketConnection {
   override public var heartbeatTime: Duration {
     .seconds(1)
   }
@@ -516,7 +522,10 @@ public final class Ocp1CFSocketUDPConnection: Ocp1CFSocketConnection {
   }
 }
 
-public final class Ocp1CFSocketTCPConnection: Ocp1CFSocketConnection {
+@available(*, deprecated, renamed: "OcaCFSocketTCPConnection")
+public typealias Ocp1CFSocketTCPConnection = OcaCFSocketTCPConnection
+
+public final class OcaCFSocketTCPConnection: OcaCFSocketConnection {
   override fileprivate var _type: Int32 {
     SOCK_STREAM
   }

@@ -26,7 +26,7 @@ import Logging
 import SystemPackage
 
 private extension Ocp1Error {
-  var ocp1ConnectionState: Ocp1ConnectionState? {
+  var ocp1ConnectionState: OcaConnectionState? {
     switch self {
     case .notConnected:
       .notConnected
@@ -75,7 +75,7 @@ private extension Errno {
 }
 
 private extension Error {
-  var ocp1ConnectionState: Ocp1ConnectionState {
+  var ocp1ConnectionState: OcaConnectionState {
     (self as? Ocp1Error)?.ocp1ConnectionState ?? .connectionFailed
   }
 
@@ -90,7 +90,7 @@ private extension Error {
   }
 }
 
-private extension Ocp1ConnectionState {
+private extension OcaConnectionState {
   var error: Ocp1Error? {
     switch self {
     case .notConnected:
@@ -107,7 +107,7 @@ private extension Ocp1ConnectionState {
 
 // MARK: - monitor task management
 
-extension Ocp1Connection {
+extension OcaConnection {
   /// start receiveMessages/keepAlive monitor task
   private func _startMonitor() {
     connectionID &+= 1
@@ -138,7 +138,7 @@ extension Ocp1Connection {
 
 // MARK: - connection handling
 
-extension Ocp1Connection {
+extension OcaConnection {
   /// refresh the device tree if the .refreshDeviceTreeOnConnection flag is set
   private func _refreshDeviceTreeWithPolicy() async {
     if options.flags.contains(.refreshDeviceTreeOnConnection) {
@@ -177,7 +177,7 @@ extension Ocp1Connection {
   }
 
   /// wrapper to update the connection state, logging the old and new connection states
-  private func _updateConnectionState(_ connectionState: Ocp1ConnectionState) {
+  private func _updateConnectionState(_ connectionState: OcaConnectionState) {
     logger.trace("_updateConnectionState: \(currentConnectionState) => \(connectionState)")
     _connectionState.send(connectionState)
   }
@@ -302,7 +302,7 @@ extension Ocp1Connection {
     }
   }
 
-  public var currentConnectionState: Ocp1ConnectionState {
+  public var currentConnectionState: OcaConnectionState {
     _connectionState.value
   }
 
@@ -317,7 +317,7 @@ extension Ocp1Connection {
 
 // MARK: - disconnection handling
 
-extension Ocp1Connection {
+extension OcaConnection {
   private func _disconnectDevice(clearObjectCache: Bool) async throws {
     _stopMonitor()
 
@@ -353,7 +353,7 @@ extension Ocp1Connection {
 
 // MARK: - reconnection handling
 
-extension Ocp1Connection {
+extension OcaConnection {
   private var _automaticReconnect: Bool {
     options.flags.contains(.automaticReconnect)
   }

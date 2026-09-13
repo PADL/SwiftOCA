@@ -75,7 +75,7 @@ private struct OcaLeafBlockView: View {
 
 struct OcaBlockNavigationSplitView: OcaView {
   @Environment(\.connection)
-  var connection: Ocp1Connection!
+  var connection: OcaConnection!
   @Environment(\.lastError)
   var lastError
   @State

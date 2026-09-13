@@ -44,7 +44,7 @@ fileprivate extension Errno {
 
 /// OCP.1 TLS-secured TCP connection. The socket is owned on the Swift side;
 /// `Ocp1OpenSSLEngine` only sees the memory BIO pair we pump.
-public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
+public final class Ocp1OpenSSLConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
   private let _ring: IORing
   package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
   private let _socket: Mutex<Socket?> = .init(nil)
@@ -64,7 +64,7 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
     revocation: Ocp1TLSRevocationOptions,
-    options: Ocp1ConnectionOptions,
+    options: OcaConnectionOptions,
     ring: IORing
   ) throws {
     _deviceAddressState = Mutex(addressState)
@@ -93,7 +93,7 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
     sniHostname: String? = nil,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    options: OcaConnectionOptions = OcaConnectionOptions(),
     ring: IORing = .shared
   ) throws {
     try self.init(
@@ -115,7 +115,7 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
     sniHostname: String? = nil,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    options: OcaConnectionOptions = OcaConnectionOptions(),
     ring: IORing = .shared
   ) throws {
     try self.init(
@@ -139,7 +139,7 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
     credential: Ocp1TLSCredential,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    options: OcaConnectionOptions = OcaConnectionOptions(),
     ring: IORing = .shared
   ) throws {
     try self.init(
@@ -156,7 +156,7 @@ public final class Ocp1OpenSSLConnection: Ocp1Connection, Ocp1MutableSocketAddre
   public convenience init(
     path: String,
     credential: Ocp1TLSCredential,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    options: OcaConnectionOptions = OcaConnectionOptions(),
     ring: IORing = .shared
   ) throws {
     try self.init(

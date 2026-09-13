@@ -51,12 +51,12 @@ private actor EventCollector {
   }
 }
 
-private final class MockConnection: Ocp1Connection {
+private final class MockConnection: OcaConnection {
   override nonisolated var connectionPrefix: String { "oca/mock" }
 }
 
-@OcaConnection
-private func setConnectionState(_ connection: Ocp1Connection, _ state: Ocp1ConnectionState) {
+@OcaConnectionActor
+private func setConnectionState(_ connection: OcaConnection, _ state: OcaConnectionState) {
   connection._connectionState.send(state)
 }
 

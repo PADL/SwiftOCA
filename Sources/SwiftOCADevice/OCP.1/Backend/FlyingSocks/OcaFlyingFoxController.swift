@@ -27,7 +27,7 @@ import Foundation
 import SwiftOCA
 
 /// A remote WebSocket endpoint
-package actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
+package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
   package nonisolated var flags: OcaControllerFlags {
     .supportsLocking
   }
@@ -43,7 +43,7 @@ package actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConve
 
   private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
   private let outputStream: AsyncStream<WSMessage>.Continuation
-  package var endpoint: Ocp1FlyingFoxDeviceEndpoint?
+  package var endpoint: OcaFlyingFoxDeviceEndpoint?
   package nonisolated let identifier: String
   package let controlProtocol: OcaControlProtocol
 
@@ -57,7 +57,7 @@ package actor Ocp1FlyingFoxController: Ocp1ControllerInternal, CustomStringConve
   }
 
   init(
-    endpoint: Ocp1FlyingFoxDeviceEndpoint?,
+    endpoint: OcaFlyingFoxDeviceEndpoint?,
     controlProtocol: OcaControlProtocol,
     identifier: String,
     inputStream: AsyncStream<WSMessage>,

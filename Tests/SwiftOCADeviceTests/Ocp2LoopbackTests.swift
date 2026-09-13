@@ -81,7 +81,7 @@ final class Ocp2LoopbackTests: XCTestCase {
     let endpointTask = Task { do { try await endpoint.run() } catch {} }
     let connection = await OcaLocalConnection(
       endpoint,
-      options: Ocp1ConnectionOptions(controlProtocol: .ocp2)
+      options: OcaConnectionOptions(controlProtocol: .ocp2)
     )
     try await connection.connect()
     return Harness(device: device, endpoint: endpoint, connection: connection, endpointTask: endpointTask)
@@ -282,7 +282,7 @@ final class Ocp2JsonExportTests: XCTestCase {
     defer { endpointTask.cancel() }
     let connection = await OcaLocalConnection(
       endpoint,
-      options: Ocp1ConnectionOptions(controlProtocol: .ocp2)
+      options: OcaConnectionOptions(controlProtocol: .ocp2)
     )
     try await connection.connect()
     defer { Task { try? await connection.disconnect() } }

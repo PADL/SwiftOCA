@@ -45,7 +45,7 @@ fileprivate extension Errno {
 /// OCP.1 DTLS-secured UDP connection. Connected SOCK_DGRAM socket so each
 /// receive returns one peer datagram, which we deposit into the engine's
 /// rbio for SSL_read to drain one DTLS record at a time.
-public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
+public final class Ocp1OpenSSLDTLSConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
   private let _ring: IORing
   package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
   private let _socket: Mutex<Socket?> = .init(nil)
@@ -67,7 +67,7 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
     revocation: Ocp1TLSRevocationOptions,
-    options: Ocp1ConnectionOptions,
+    options: OcaConnectionOptions,
     ring: IORing
   ) throws {
     _deviceAddressState = Mutex(addressState)
@@ -97,7 +97,7 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
     sniHostname: String? = nil,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    options: OcaConnectionOptions = OcaConnectionOptions(),
     ring: IORing = .shared
   ) throws {
     try self.init(
@@ -119,7 +119,7 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
     sniHostname: String? = nil,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    options: OcaConnectionOptions = OcaConnectionOptions(),
     ring: IORing = .shared
   ) throws {
     try self.init(
@@ -143,7 +143,7 @@ public final class Ocp1OpenSSLDTLSConnection: Ocp1Connection, Ocp1MutableSocketA
     credential: Ocp1TLSCredential,
     trustRoots: Ocp1TLSTrustRoots? = nil,
     revocation: Ocp1TLSRevocationOptions = .disabled,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions(),
+    options: OcaConnectionOptions = OcaConnectionOptions(),
     ring: IORing = .shared
   ) throws {
     try self.init(

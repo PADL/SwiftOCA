@@ -27,12 +27,12 @@ import Foundation
 import SwiftOCA
 import SwiftOCADevice
 
-/// `Ocp1DeviceEndpoint` is the portable stream endpoint (FlyingSocks on Darwin,
+/// `OcaTCPDeviceEndpoint` is the portable stream endpoint (FlyingSocks on Darwin,
 /// IORing on Linux); there is no such alias for datagrams, so name one here.
 #if os(Linux)
-typealias BenchDatagramDeviceEndpoint = Ocp1IORingDatagramDeviceEndpoint
+typealias BenchDatagramDeviceEndpoint = OcaIORingDatagramDeviceEndpoint
 #else
-typealias BenchDatagramDeviceEndpoint = Ocp1FlyingSocksDatagramDeviceEndpoint
+typealias BenchDatagramDeviceEndpoint = OcaFlyingSocksDatagramDeviceEndpoint
 #endif
 
 /// OCP.1 (default) or OCP.2, selected with BENCH_PROTOCOL=ocp2. Both ends must agree,
@@ -136,37 +136,37 @@ func runCodecBenchmarks() throws {
     let aResponse = response(payload)
     let commands8 = [Ocp1Message](repeating: aCommand, count: 8)
     let responses8 = [Ocp1Message](repeating: aResponse, count: 8)
-    let commandPdu1 = try Ocp1Connection.encodeOcp1MessagePdu([aCommand], type: .ocaCmdRrq)
-    let commandPdu8 = try Ocp1Connection.encodeOcp1MessagePdu(commands8, type: .ocaCmdRrq)
-    let responsePdu1 = try Ocp1Connection.encodeOcp1MessagePdu([aResponse], type: .ocaRsp)
-    let responsePdu8 = try Ocp1Connection.encodeOcp1MessagePdu(responses8, type: .ocaRsp)
+    let commandPdu1 = try OcaConnection.encodeOcp1MessagePdu([aCommand], type: .ocaCmdRrq)
+    let commandPdu8 = try OcaConnection.encodeOcp1MessagePdu(commands8, type: .ocaCmdRrq)
+    let responsePdu1 = try OcaConnection.encodeOcp1MessagePdu([aResponse], type: .ocaRsp)
+    let responsePdu8 = try OcaConnection.encodeOcp1MessagePdu(responses8, type: .ocaRsp)
 
     bench("encodePdu.command.1.\(label)", iters: iters) {
-      let d: Data = try Ocp1Connection.encodeOcp1MessagePdu([aCommand], type: .ocaCmdRrq)
+      let d: Data = try OcaConnection.encodeOcp1MessagePdu([aCommand], type: .ocaCmdRrq)
       sink &+= UInt64(d.count)
     }
     bench("encodePdu.command.8.\(label)", iters: iters / 4) {
-      let d: Data = try Ocp1Connection.encodeOcp1MessagePdu(commands8, type: .ocaCmdRrq)
+      let d: Data = try OcaConnection.encodeOcp1MessagePdu(commands8, type: .ocaCmdRrq)
       sink &+= UInt64(d.count)
     }
     bench("decodePdu.command.1.\(label)", iters: iters) {
-      let m = try Ocp1Connection.decodeOcp1MessagePdu(from: commandPdu1).1
+      let m = try OcaConnection.decodeOcp1MessagePdu(from: commandPdu1).1
       sink &+= UInt64(m.count)
     }
     bench("decodePdu.command.8.\(label)", iters: iters / 4) {
-      let m = try Ocp1Connection.decodeOcp1MessagePdu(from: commandPdu8).1
+      let m = try OcaConnection.decodeOcp1MessagePdu(from: commandPdu8).1
       sink &+= UInt64(m.count)
     }
     bench("encodePdu.response.1.\(label)", iters: iters) {
-      let d: Data = try Ocp1Connection.encodeOcp1MessagePdu([aResponse], type: .ocaRsp)
+      let d: Data = try OcaConnection.encodeOcp1MessagePdu([aResponse], type: .ocaRsp)
       sink &+= UInt64(d.count)
     }
     bench("decodePdu.response.1.\(label)", iters: iters) {
-      let m = try Ocp1Connection.decodeOcp1MessagePdu(from: responsePdu1).1
+      let m = try OcaConnection.decodeOcp1MessagePdu(from: responsePdu1).1
       sink &+= UInt64(m.count)
     }
     bench("decodePdu.response.8.\(label)", iters: iters / 4) {
-      let m = try Ocp1Connection.decodeOcp1MessagePdu(from: responsePdu8).1
+      let m = try OcaConnection.decodeOcp1MessagePdu(from: responsePdu8).1
       sink &+= UInt64(m.count)
     }
   }
@@ -269,7 +269,7 @@ private let getLabel = Ocp1Command(
 
 /// Drives the same three exchanges over whichever transport is handed in, so the
 /// per-transport figures differ only in the transport.
-private func runRoundTrips(_ transport: String, _ connection: Ocp1Connection) async {
+private func runRoundTrips(_ transport: String, _ connection: OcaConnection) async {
   await benchAsync("roundtrip.\(transport).getDeviceName", iters: 2000) {
     let response = try await connection.sendCommandRrq(getDeviceName)
     sink &+= UInt64(response.statusCode.rawValue)
@@ -323,7 +323,7 @@ func withConnection(
   _ transport: String,
   _ device: OcaDevice,
   port: UInt16,
-  _ body: (Ocp1Connection) async throws -> ()
+  _ body: (OcaConnection) async throws -> ()
 ) async throws {
   switch transport {
   case "local":
@@ -332,14 +332,14 @@ func withConnection(
     defer { endpointTask.cancel() }
     let connection = await OcaLocalConnection(
       endpoint,
-      options: Ocp1ConnectionOptions(controlProtocol: benchProtocol)
+      options: OcaConnectionOptions(controlProtocol: benchProtocol)
     )
     try await connection.connect()
     try await body(connection)
     try await connection.disconnect()
   case "tcp":
     guard port != 0 else { throw BenchError.needsPort(transport) }
-    let endpoint = try await Ocp1DeviceEndpoint(
+    let endpoint = try await OcaTCPDeviceEndpoint(
       address: localhostAddress(port: port),
       timeout: .seconds(5),
       device: device,
@@ -348,9 +348,9 @@ func withConnection(
     let endpointTask = Task { do { try await endpoint.run() } catch {} }
     defer { endpointTask.cancel() }
     try await Task.sleep(for: .milliseconds(500))
-    let connection = try await Ocp1TCPConnection(
+    let connection = try await OcaTCPConnection(
       deviceAddress: localhostAddress(port: port),
-      options: Ocp1ConnectionOptions(controlProtocol: benchProtocol)
+      options: OcaConnectionOptions(controlProtocol: benchProtocol)
     )
     try await connection.connect()
     try await body(connection)
@@ -366,9 +366,9 @@ func withConnection(
     let endpointTask = Task { do { try await endpoint.run() } catch {} }
     defer { endpointTask.cancel() }
     try await Task.sleep(for: .milliseconds(500))
-    let connection = try await Ocp1UDPConnection(
+    let connection = try await OcaUDPConnection(
       deviceAddress: localhostAddress(port: port),
-      options: Ocp1ConnectionOptions(controlProtocol: benchProtocol)
+      options: OcaConnectionOptions(controlProtocol: benchProtocol)
     )
     try await connection.connect()
     try await body(connection)
@@ -429,7 +429,7 @@ func runProfileLoop(
 }
 
 private func profileLoop(
-  _ connection: Ocp1Connection,
+  _ connection: OcaConnection,
   transport: String,
   seconds: Double,
   slice: Double
@@ -518,7 +518,7 @@ func runNotificationBenchmark(
   defer { endpointTask.cancel() }
   let connection = await OcaLocalConnection(
     endpoint,
-    options: Ocp1ConnectionOptions(controlProtocol: benchProtocol)
+    options: OcaConnectionOptions(controlProtocol: benchProtocol)
   )
   try await connection.connect()
 

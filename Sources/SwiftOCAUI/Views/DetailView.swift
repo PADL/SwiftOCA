@@ -73,7 +73,7 @@ extension OcaIdentificationSensor: OcaViewRepresentable {
 }
 
 public struct OcaDetailView: OcaView {
-  let connection: Ocp1Connection?
+  let connection: OcaConnection?
   let objectIdentification: OcaObjectIdentification?
 
   @Environment(\.lastError)
@@ -82,7 +82,7 @@ public struct OcaDetailView: OcaView {
   var object: OcaRoot? = nil
 
   public init(
-    _ connection: Ocp1Connection,
+    _ connection: OcaConnection,
     objectIdentification: OcaObjectIdentification
   ) {
     self.connection = connection

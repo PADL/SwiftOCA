@@ -25,9 +25,9 @@ import Synchronization
 open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyPathRepresentable {
   typealias Root = OcaRoot
 
-  public internal(set) weak var connectionDelegate: Ocp1Connection?
+  public internal(set) weak var connectionDelegate: OcaConnection?
 
-  fileprivate var subscriptionCancellable: Ocp1Connection.SubscriptionCancellable?
+  fileprivate var subscriptionCancellable: OcaConnection.SubscriptionCancellable?
 
   /// 1.1
   open class var classID: OcaClassID {
@@ -255,7 +255,7 @@ public extension OcaRoot {
     )
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   var allPropertyKeyPaths: [String: AnyKeyPath] {
     get async {
       staticPropertyKeyPaths.merging(
@@ -265,7 +265,7 @@ public extension OcaRoot {
     }
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   private func onPropertyEvent(event: OcaEvent, eventData: OcaEncodedEventData) {
     // the property with this ID from the class's key paths, worked out once, rather than
     // reading every property of the object in turn, computed ones included, and casting
@@ -278,7 +278,7 @@ public extension OcaRoot {
     try? value.onEvent(self, event: event, eventData: eventData)
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func subscribe() async throws {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
     if let subscriptionCancellable, connectionDelegate.isSubscribed(subscriptionCancellable) {
@@ -303,7 +303,7 @@ public extension OcaRoot {
     }
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func unsubscribe() async throws {
     guard let subscriptionCancellable else { throw Ocp1Error.notSubscribedToEvent }
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
@@ -311,7 +311,7 @@ public extension OcaRoot {
     try await connectionDelegate.removeSubscription(subscriptionCancellable)
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   func refreshAll() async {
     for (_, keyPath) in await allPropertyKeyPaths {
       let property = (self[keyPath: keyPath] as! any OcaPropertyRepresentable)
@@ -319,7 +319,7 @@ public extension OcaRoot {
     }
   }
 
-  @OcaConnection
+  @OcaConnectionActor
   package func refreshAllSubscribed() async {
     for (_, keyPath) in await allPropertyKeyPaths {
       let property = (self[keyPath: keyPath] as! any OcaPropertySubjectRepresentable)
@@ -698,7 +698,7 @@ public extension OcaONo {
 }
 
 public extension OcaRoot {
-  @_spi(SwiftOCAPrivate) @OcaConnection
+  @_spi(SwiftOCAPrivate) @OcaConnectionActor
   func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws {
     for (_, keyPath) in allKeyPaths {
       if let property = self[keyPath: keyPath] as? (any OcaPropertyChangeEventNotifiable),

@@ -22,6 +22,9 @@ import FoundationEssentials
 import Foundation
 #endif
 
+@available(*, deprecated, renamed: "OcaFlyingFoxConnection")
+public typealias Ocp1FlyingFoxConnection = OcaFlyingFoxConnection
+
 /// A client-side OCP.1 or OCP.2 connection over WebSockets.
 ///
 /// WebSocket ping/pong frames handle connection liveness, so no keepalive
@@ -29,7 +32,7 @@ import Foundation
 /// the options override it. OCP.1 travels in binary frames with the `AES70-OCP.1`
 /// subprotocol (AES70-3 8.4.3.4), OCP.2 in text frames with the `AES70-OCP.2`
 /// subprotocol (AES70-4 10.4.3.4).
-public final class Ocp1FlyingFoxConnection: Ocp1Connection {
+public final class OcaFlyingFoxConnection: OcaConnection {
   private let url: URL
   private var webSocketTask: URLSessionWebSocketTask?
   private var session: URLSession?
@@ -39,7 +42,7 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
 
   public init(
     url: URL,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) {
     self.url = url
     super.init(options: options)
@@ -48,7 +51,7 @@ public final class Ocp1FlyingFoxConnection: Ocp1Connection {
   public convenience init(
     host: String,
     port: UInt16,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) {
     let url = URL(string: "ws://\(host):\(port)/")!
     self.init(url: url, options: options)

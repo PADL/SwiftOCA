@@ -25,13 +25,13 @@ private func uniqueServiceName(_ test: String) -> String {
   "com.padl.SwiftOCA.test.machport.\(ProcessInfo.processInfo.processIdentifier).\(test).\(UInt32.random(in: 0...UInt32.max))"
 }
 
-@OcaConnection
+@OcaConnectionActor
 private func makeMachPortConnection(
   serviceName: String
 ) -> Ocp1MachPortConnection {
   Ocp1MachPortConnection(
     serviceName: serviceName,
-    options: Ocp1ConnectionOptions(flags: .refreshDeviceTreeOnConnection)
+    options: OcaConnectionOptions(flags: .refreshDeviceTreeOnConnection)
   )
 }
 
@@ -252,7 +252,7 @@ final class MachPortConnectionTests: XCTestCase {
     listenAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
     let addressData = withUnsafeBytes(of: listenAddress) { Data($0) }
 
-    let tcpEndpoint = try await Ocp1FlyingSocksStreamDeviceEndpoint(
+    let tcpEndpoint = try await OcaFlyingSocksStreamDeviceEndpoint(
       address: addressData,
       device: device
     )
@@ -277,10 +277,10 @@ final class MachPortConnectionTests: XCTestCase {
     let clientAddrData = withUnsafeBytes(of: clientAddr) { Data($0) }
 
     let tcpConnection = try await {
-      @OcaConnection in
-      try Ocp1CFSocketTCPConnection(
+      @OcaConnectionActor in
+      try OcaCFSocketTCPConnection(
         deviceAddress: clientAddrData,
-        options: Ocp1ConnectionOptions(flags: .refreshDeviceTreeOnConnection)
+        options: OcaConnectionOptions(flags: .refreshDeviceTreeOnConnection)
       )
     }()
     try await tcpConnection.connect()

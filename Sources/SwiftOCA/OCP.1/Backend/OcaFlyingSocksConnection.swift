@@ -1,5 +1,5 @@
 //
-//  Ocp1FlyingSocksConnection.swift
+//  OcaFlyingSocksConnection.swift
 //
 //  Copyright (c) 2022 Simon Whitty. All rights reserved.
 //  Portions Copyright (c) 2023 PADL Software Pty Ltd. All rights reserved.
@@ -217,7 +217,10 @@ private actor AsyncSocketPoolMonitor {
   }
 }
 
-public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddressConnection {
+@available(*, deprecated, renamed: "OcaFlyingSocksConnection")
+public typealias Ocp1FlyingSocksConnection = OcaFlyingSocksConnection
+
+public class OcaFlyingSocksConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
   // The bare `AnySocketAddress` here is the PADL struct (selectively imported
   // above); `FlyingSocks.AnySocketAddress` stays fully qualified everywhere else.
   package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
@@ -225,7 +228,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddress
 
   package init(
     addressState: Ocp1DeviceAddressState,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     _deviceAddressState = Mutex(addressState)
     super.init(options: options)
@@ -233,7 +236,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddress
 
   public convenience init(
     deviceAddresses: [Data],
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     // Drop any candidate that won't parse rather than discarding the whole list.
     try self.init(
@@ -246,7 +249,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddress
 
   public convenience init(
     deviceAddress: Data,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(deviceAddresses: [deviceAddress], options: options)
   }
@@ -256,7 +259,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddress
   public convenience init(
     host: String,
     port: UInt16,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
       addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
@@ -328,7 +331,7 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddress
 
   public convenience init(
     path: String,
-    options: Ocp1ConnectionOptions = Ocp1ConnectionOptions()
+    options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
       deviceAddresses: [FlyingSocks.AnySocketAddress(sockaddr_un.unix(path: path)).data],
@@ -374,13 +377,16 @@ public class Ocp1FlyingSocksConnection: Ocp1Connection, Ocp1MutableSocketAddress
   }
 
   var socketType: SocketType {
-    fatalError("socketType must be implemented by a concrete subclass of Ocp1FlyingSocksConnection")
+    fatalError("socketType must be implemented by a concrete subclass of OcaFlyingSocksConnection")
   }
 
   func setSocketOptions(_ socket: Socket, family: sa_family_t) throws {}
 }
 
-public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
+@available(*, deprecated, renamed: "OcaFlyingSocksStreamConnection")
+public typealias Ocp1FlyingSocksStreamConnection = OcaFlyingSocksStreamConnection
+
+public final class OcaFlyingSocksStreamConnection: OcaFlyingSocksConnection {
   override public var connectionPrefix: String {
     let prefix = _connectionPrefix(ocp1: OcaTcpConnectionPrefix, ocp2: OcaJsonTcpConnectionPrefix)
     return "\(prefix)/\(_currentPresentationAddress)"
@@ -406,7 +412,10 @@ public final class Ocp1FlyingSocksStreamConnection: Ocp1FlyingSocksConnection {
   }
 }
 
-public final class Ocp1FlyingSocksDatagramConnection: Ocp1FlyingSocksConnection {
+@available(*, deprecated, renamed: "OcaFlyingSocksDatagramConnection")
+public typealias Ocp1FlyingSocksDatagramConnection = OcaFlyingSocksDatagramConnection
+
+public final class OcaFlyingSocksDatagramConnection: OcaFlyingSocksConnection {
   override public var connectionPrefix: String {
     let prefix = _connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
     return "\(prefix)/\(_currentPresentationAddress)"

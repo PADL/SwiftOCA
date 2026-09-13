@@ -43,7 +43,7 @@ import struct SystemPackage.Errno
 /// `device.securityManager` and the provider is held by reference, so
 /// runtime additions take effect on the next handshake.
 @OcaDevice
-public final class Ocp1OpenSSLStreamDeviceEndpoint: Ocp1IORingDeviceEndpoint,
+public final class Ocp1OpenSSLStreamDeviceEndpoint: OcaIORingDeviceEndpoint,
   OcaDeviceEndpointPrivate
 {
   package typealias ControllerType = Ocp1OpenSSLStreamController

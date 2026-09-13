@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-private let connectionOptions = Ocp1ConnectionOptions(flags: [
+private let connectionOptions = OcaConnectionOptions(flags: [
   .automaticReconnect,
 //  .enableTracing,
   .refreshSubscriptionsOnReconnection,
