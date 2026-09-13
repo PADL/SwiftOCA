@@ -167,6 +167,54 @@ final class DeadlineTimerTests: XCTestCase {
     XCTAssertEqual(timer.outstanding, 0)
   }
 
+  func testWatchdogFiresAtItsDeadline() async throws {
+    let timer = DeadlineTimer()
+    let fired = Flag()
+    let start = ContinuousClock.now
+    let watchdog = try XCTUnwrap(timer.watchdog(for: .milliseconds(50)) {
+      Task { await fired.set() }
+    })
+    await watchdog.value
+    let elapsed = ContinuousClock.now - start
+
+    try await waitUntilSet(fired)
+    XCTAssertGreaterThanOrEqual(elapsed, .milliseconds(50))
+    XCTAssertLessThan(elapsed, Self.slack)
+    XCTAssertEqual(timer.outstanding, 0)
+  }
+
+  /// What a stream controller does with each read that returns in time.
+  func testCancelledWatchdogDoesNotFire() async throws {
+    let timer = DeadlineTimer()
+    let fired = Flag()
+    let watchdog = try XCTUnwrap(timer.watchdog(for: .milliseconds(50)) {
+      Task { await fired.set() }
+    })
+    watchdog.cancel()
+    await watchdog.value
+
+    // past the deadline, so a watchdog that ignored its cancellation would have fired
+    try await Task.sleep(for: .milliseconds(100))
+    let isSet = await fired.isSet
+    XCTAssertFalse(isSet)
+    XCTAssertEqual(timer.outstanding, 0)
+  }
+
+  func testZeroDurationWatchdogMeansNoTimeout() {
+    let timer = DeadlineTimer()
+    XCTAssertNil(timer.watchdog(for: .zero) {})
+    XCTAssertEqual(timer.outstanding, 0)
+  }
+
+  private func waitUntilSet(_ flag: Flag) async throws {
+    let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+    while await !flag.isSet, ContinuousClock.now < deadline {
+      try await Task.sleep(for: .milliseconds(1))
+    }
+    let isSet = await flag.isSet
+    XCTAssertTrue(isSet, "onTimeout never called")
+  }
+
   /// What a busy connection does: each request's timeout is cancelled by its response.
   func testCancelledWaitsLeaveNothingBehind() async throws {
     let timer = DeadlineTimer()

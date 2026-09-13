@@ -79,6 +79,26 @@ package final class DeadlineTimer: Sendable {
     )
   }
 
+  /// Calls `onTimeout` unless the returned task is cancelled within `duration`; `nil`, and no
+  /// timeout, for a zero duration. Unlike `withThrowingTimeout`, which runs its operation in
+  /// a child task, the operation stays in the caller, so a loop can time out reads that use
+  /// state it must not share, cancelling the watchdog once each read returns.
+  package func watchdog(
+    for duration: Duration,
+    onTimeout: @escaping @Sendable () -> ()
+  ) -> Task<(), Never>? {
+    guard duration != .zero else { return nil }
+    let deadline = Instant.now.advanced(by: duration)
+    return Task {
+      do {
+        try await wait(until: deadline)
+      } catch {
+        return // cancelled: the read returned in time
+      }
+      onTimeout()
+    }
+  }
+
   /// Returns at `deadline`, or throws `CancellationError` as soon as the calling task is
   /// cancelled.
   func wait(until deadline: Instant) async throws {

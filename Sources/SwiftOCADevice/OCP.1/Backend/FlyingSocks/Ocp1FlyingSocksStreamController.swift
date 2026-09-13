@@ -172,23 +172,32 @@ private extension AsyncThrowingStream
   Failure == Error
 {
   static func decodingMessages(
-    from bytes: some AsyncBufferedSequence<UInt8>,
+    from bytes: some AsyncBufferedSequence<UInt8> & Sendable,
     timeout: Duration,
     controlProtocol: OcaControlProtocol,
     maximumPduSize: Int
   ) -> Self {
-    // one iterator and one reader for the life of the connection: the reader
-    // buffers bytes between PDUs, so neither can be recreated per PDU
-    nonisolated(unsafe) var iterator = bytes.makeAsyncIterator()
-    let reader = controlProtocol.makeReader(isMessageOriented: false, maximumPduSize: maximumPduSize)
+    let (stream, continuation) = makeStream(of: Ocp1MessageList.self, throwing: Error.self)
     // one timer for every read on the connection, rather than a sleep per message that the
     // runtime would keep for the whole timeout after the message arrived
     let deadlines = DeadlineTimer()
 
-    return AsyncThrowingStream<Ocp1MessageList, Error> {
+    let task = Task {
+      // one iterator and one reader for the life of the connection, owned by this task: the
+      // reader buffers bytes between PDUs, so neither can be recreated per PDU or shared
+      var iterator = bytes.makeAsyncIterator()
+      let reader = controlProtocol.makeReader(isMessageOriented: false, maximumPduSize: maximumPduSize)
+
       do {
-        return try await deadlines.withThrowingTimeout(of: timeout) {
-          try await OcaDevice.asyncReceiveMessages(
+        repeat {
+          // a timeout finishes the stream, which cancels this task, rather than moving the
+          // read, and with it the reader, into a task of its own
+          let watchdog = deadlines.watchdog(for: timeout) {
+            continuation.finish(throwing: Ocp1Error.responseTimeout)
+          }
+          defer { watchdog?.cancel() }
+
+          let messages = try await OcaDevice.asyncReceiveMessages(
             reader: reader,
             controlProtocol: controlProtocol,
             read: { count, awaitingAllRead in
@@ -208,15 +217,19 @@ private extension AsyncThrowingStream
               return buffer
             }
           )
-        }
+          continuation.yield(messages)
+        } while true
       } catch Ocp1Error.pduTooShort {
-        return nil
+        continuation.finish()
       } catch SocketError.disconnected {
-        throw Ocp1Error.notConnected
+        continuation.finish(throwing: Ocp1Error.notConnected)
       } catch {
-        throw error
+        continuation.finish(throwing: error)
       }
     }
+    continuation.onTermination = { _ in task.cancel() }
+
+    return stream
   }
 }
 

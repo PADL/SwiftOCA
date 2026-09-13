@@ -146,21 +146,44 @@ private extension Ocp1NWStreamController {
     controlProtocol: OcaControlProtocol,
     maximumPduSize: Int
   ) -> AsyncThrowingStream<Ocp1MessageList, Error> {
+    let (stream, continuation) = AsyncThrowingStream.makeStream(
+      of: Ocp1MessageList.self,
+      throwing: Error.self
+    )
     // one timer for every read on the connection, rather than a sleep per message that the
     // runtime would keep for the whole timeout after the message arrived
     let deadlines = DeadlineTimer()
-    let reader = controlProtocol.makeReader(isMessageOriented: false, maximumPduSize: maximumPduSize)
-    return AsyncThrowingStream { () async throws -> Ocp1MessageList? in
-      try await deadlines.withThrowingTimeout(of: timeout) {
-        try await OcaDevice.asyncReceiveMessages(
-          reader: reader,
-          controlProtocol: controlProtocol,
-          read: { count, awaitingAllRead in
-            try await connection.receive(count, awaitingAllRead: awaitingAllRead)
+
+    let task = Task {
+      // one reader for the life of the connection, owned by this task: it buffers bytes
+      // between PDUs, so it can be neither recreated per PDU nor shared
+      let reader = controlProtocol.makeReader(isMessageOriented: false, maximumPduSize: maximumPduSize)
+
+      do {
+        repeat {
+          // a timeout finishes the stream, which cancels this task, rather than moving the
+          // read, and with it the reader, into a task of its own
+          let watchdog = deadlines.watchdog(for: timeout) {
+            continuation.finish(throwing: Ocp1Error.responseTimeout)
           }
-        )
+          defer { watchdog?.cancel() }
+
+          let messages = try await OcaDevice.asyncReceiveMessages(
+            reader: reader,
+            controlProtocol: controlProtocol,
+            read: { count, awaitingAllRead in
+              try await connection.receive(count, awaitingAllRead: awaitingAllRead)
+            }
+          )
+          continuation.yield(messages)
+        } while true
+      } catch {
+        continuation.finish(throwing: error)
       }
     }
+    continuation.onTermination = { _ in task.cancel() }
+
+    return stream
   }
 }
 
