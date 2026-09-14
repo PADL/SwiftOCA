@@ -1129,6 +1129,16 @@ final class SwiftOCADeviceTests: XCTestCase {
     // are typically handled at a higher level
   }
 
+  /// An optional list is counted once: `Optional` reaches the list through its own
+  /// conformance, in both directions.
+  func testOptionalListEncoding() throws {
+    let value: [OcaUint16]? = [1, 2]
+
+    let encoded: [UInt8] = try Ocp1Encoder().encode(value)
+    XCTAssertEqual(encoded, [0x00, 0x02, 0x00, 0x01, 0x00, 0x02])
+    XCTAssertEqual(try Ocp1Decoder().decode([OcaUint16]?.self, from: encoded), value)
+  }
+
   func testRoundTripConsistency() throws {
     let testValues: [Any] = [
       OcaUint8(255),

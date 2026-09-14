@@ -30,28 +30,10 @@ extension Array: Ocp1ListRepresentable where Element: Codable {
   typealias Element = Element
 }
 
-struct Ocp1MapItem<Key: Hashable & Codable, Value: Codable>: Codable, Hashable {
-  static func == (lhs: Ocp1MapItem<Key, Value>, rhs: Ocp1MapItem<Key, Value>) -> Bool {
-    guard lhs.key == rhs.key else {
-      return false
-    }
-
-    return true
-  }
-
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(key)
-  }
-
-  var key: Key
-  var value: Value
-}
-
 protocol Ocp1MapRepresentable<Key, Value>: Collection, Codable {
   associatedtype Key: Codable & Hashable
   associatedtype Value: Codable
 
-  init(from: Ocp1DecoderImpl) throws
   #if NonEmbeddedBuild
   /// OCP.2 marshals a map as an array of `[key, value]` pairs.
   init(ocp2State: Ocp2DecodingState, json: Any, codingPath: [any CodingKey]) throws
@@ -60,17 +42,6 @@ protocol Ocp1MapRepresentable<Key, Value>: Collection, Codable {
 }
 
 extension Dictionary: Ocp1MapRepresentable where Key: Codable & Hashable, Value: Codable {
-  private init(mapItemSet: Set<Ocp1MapItem<Key, Value>>) {
-    self = Dictionary(uniqueKeysWithValues: mapItemSet.map {
-      ($0.key, $0.value)
-    })
-  }
-
-  init(from ocp1Decoder: Ocp1DecoderImpl) throws {
-    let mapItemSet = try Set<Ocp1MapItem<Key, Value>>(from: ocp1Decoder)
-    self.init(mapItemSet: mapItemSet)
-  }
-
   #if NonEmbeddedBuild
   init(ocp2State state: Ocp2DecodingState, json: Any, codingPath: [any CodingKey]) throws {
     guard let items = json as? [Any] else {
@@ -101,7 +72,7 @@ extension Dictionary: Ocp1MapRepresentable where Key: Codable & Hashable, Value:
 ///
 /// Handled in the coder dispatch alongside `Data`, maps and lists, so the bytes
 /// move in bulk instead of one container call each.
-protocol Ocp1BlobRepresentable {
+protocol Ocp1BlobRepresentable: _Ocp1CoderSpecial {
   /// width in bytes of the length tag preceding the payload
   static var lengthTagWidth: Int { get }
 
