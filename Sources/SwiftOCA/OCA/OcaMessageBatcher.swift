@@ -21,7 +21,7 @@ import Foundation
 #endif
 
 @OcaConnectionActor
-final class Ocp1MessageBatcher: Sendable {
+final class OcaMessageBatcher: Sendable {
   private typealias EncodedPDU = [UInt8]
   package typealias SendEncodedPDU = @Sendable (_: Data) async throws -> ()
 
@@ -39,7 +39,7 @@ final class Ocp1MessageBatcher: Sendable {
   package init(
     batchSize: OcaUint32,
     dequeueInterval: Duration = .zero,
-    controlProtocol: OcaControlProtocol = .ocp1,
+    controlProtocol: OcaControlProtocol,
     sendEncodedPdu: @escaping SendEncodedPDU
   ) {
     self.batchSize = batchSize
@@ -187,7 +187,7 @@ extension OcaConnection {
       dequeueInterval = .zero
     }
 
-    batcher = Ocp1MessageBatcher(
+    batcher = OcaMessageBatcher(
       batchSize: batchSize,
       dequeueInterval: dequeueInterval,
       controlProtocol: controlProtocol,
