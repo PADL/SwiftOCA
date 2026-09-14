@@ -131,8 +131,8 @@
 		D35592602B520DFC000F633B /* ControllerDefaultSubscribing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */; };
 		D35592622B520E21000F633B /* Logger+Ocp1ControllerInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592612B520E21000F633B /* Logger+Ocp1ControllerInternal.swift */; };
 		D35592642B520E48000F633B /* Ocp1ControllerInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35592632B520E48000F633B /* Ocp1ControllerInternal.swift */; };
-		D35BFC7C2E896E2F00183358 /* Ocp1MessageBatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35BFC7B2E896E2F00183358 /* Ocp1MessageBatcher.swift */; };
-		D35BFC7E2E89910600183358 /* Ocp1MessageBatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35BFC7D2E89910600183358 /* Ocp1MessageBatcherTests.swift */; };
+		D35BFC7C2E896E2F00183358 /* OcaMessageBatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35BFC7B2E896E2F00183358 /* OcaMessageBatcher.swift */; };
+		D35BFC7E2E89910600183358 /* OcaMessageBatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35BFC7D2E89910600183358 /* OcaMessageBatcherTests.swift */; };
 		D35C9DA02BF76E5100D680F2 /* SocketAddress in Frameworks */ = {isa = PBXBuildFile; productRef = D35C9D9F2BF76E5100D680F2 /* SocketAddress */; };
 		D3660FE92CEBE478005FCBEB /* OcaFlyingSocksStreamController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3660FE72CEBE478005FCBEB /* OcaFlyingSocksStreamController.swift */; };
 		D3660FEA2CEBE478005FCBEB /* OcaFlyingSocksStreamDeviceEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3660FE82CEBE478005FCBEB /* OcaFlyingSocksStreamDeviceEndpoint.swift */; };
@@ -560,8 +560,8 @@
 		D355925F2B520DFC000F633B /* ControllerDefaultSubscribing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerDefaultSubscribing.swift; sourceTree = "<group>"; };
 		D35592612B520E21000F633B /* Logger+Ocp1ControllerInternal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logger+Ocp1ControllerInternal.swift"; sourceTree = "<group>"; };
 		D35592632B520E48000F633B /* Ocp1ControllerInternal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1ControllerInternal.swift; sourceTree = "<group>"; };
-		D35BFC7B2E896E2F00183358 /* Ocp1MessageBatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1MessageBatcher.swift; sourceTree = "<group>"; };
-		D35BFC7D2E89910600183358 /* Ocp1MessageBatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ocp1MessageBatcherTests.swift; sourceTree = "<group>"; };
+		D35BFC7B2E896E2F00183358 /* OcaMessageBatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaMessageBatcher.swift; sourceTree = "<group>"; };
+		D35BFC7D2E89910600183358 /* OcaMessageBatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaMessageBatcherTests.swift; sourceTree = "<group>"; };
 		D3660FE52CEBE478005FCBEB /* OcaFlyingSocksDatagramController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaFlyingSocksDatagramController.swift; sourceTree = "<group>"; };
 		D3660FE62CEBE478005FCBEB /* OcaFlyingSocksDatagramDeviceEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaFlyingSocksDatagramDeviceEndpoint.swift; sourceTree = "<group>"; };
 		D3660FE72CEBE478005FCBEB /* OcaFlyingSocksStreamController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcaFlyingSocksStreamController.swift; sourceTree = "<group>"; };
@@ -1237,7 +1237,6 @@
 			children = (
 				D306440C2A781C280063DA65 /* Ocp1CoderAPI.swift */,
 				D37F7E192A6BC015005F035F /* Backend */,
-				D35BFC7B2E896E2F00183358 /* Ocp1MessageBatcher.swift */,
 				D3D8FA412B61D6040054FD3C /* ReflectionMirror */,
 				D3AFD3612B32A06700A72E9A /* Encoder */,
 				D3AFD36B2B32A06700A72E9A /* Decoder */,
@@ -1308,7 +1307,7 @@
 		D3B396DE2BBA4AEE0001B512 /* Tests/SwiftOCATests */ = {
 			isa = PBXGroup;
 			children = (
-				D35BFC7D2E89910600183358 /* Ocp1MessageBatcherTests.swift */,
+				D35BFC7D2E89910600183358 /* OcaMessageBatcherTests.swift */,
 				D3527EC72F00DA0100000086 /* LengthTaggedDataJSONTests.swift */,
 				D3B396DD2BBA4AEE0001B512 /* SwiftOCATests.swift */,
 			);
@@ -1692,6 +1691,7 @@
 				D3E6E1AB2A3ACA6C00BF7095 /* OcaConnection+Messages.swift */,
 				D3E6E1AC2A3ACA6C00BF7095 /* OcaConnection+Subscribe.swift */,
 				D3F0CA102FB6A1C000D1A001 /* Backend */,
+				D35BFC7B2E896E2F00183358 /* OcaMessageBatcher.swift */,
 			);
 			path = OCA;
 			sourceTree = "<group>";
@@ -2372,7 +2372,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D3B396DF2BBA4AEE0001B512 /* SwiftOCATests.swift in Sources */,
-				D35BFC7E2E89910600183358 /* Ocp1MessageBatcherTests.swift in Sources */,
+				D35BFC7E2E89910600183358 /* OcaMessageBatcherTests.swift in Sources */,
 				D3527EC72F00DA0100000087 /* LengthTaggedDataJSONTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2477,7 +2477,7 @@
 				D36851262EEA26A6000129F3 /* IdentificationActuator.swift in Sources */,
 				D3E6E1E32A3ACAA900BF7095 /* BaseDataTypes.swift in Sources */,
 				D3FAC8EA2B5CFBE7009E2775 /* TaskManager.swift in Sources */,
-				D35BFC7C2E896E2F00183358 /* Ocp1MessageBatcher.swift in Sources */,
+				D35BFC7C2E896E2F00183358 /* OcaMessageBatcher.swift in Sources */,
 				D3AFD37F2B32A06700A72E9A /* Ocp1Encoder.swift in Sources */,
 				D3C083292A7C700B0020AD57 /* MediaDataTypes.swift in Sources */,
 				D3FAC8E62B5CF926009E2775 /* LibraryManagerDataTypes.swift in Sources */,

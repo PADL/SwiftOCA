@@ -18,7 +18,7 @@ import BinaryParsing
 @testable @_spi(SwiftOCAPrivate) import SwiftOCA
 import XCTest
 
-final class Ocp1MessageBatcherTests: XCTestCase {
+final class OcaMessageBatcherTests: XCTestCase {
   // MARK: - Test Data Structures
 
   private struct MockMessage: Ocp1Message, _Ocp1MessageCodable {
@@ -82,9 +82,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testBasicMessageEnqueue() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -99,9 +100,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testMessageBatching() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -127,9 +129,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testManualDequeue() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -148,9 +151,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testSizeBasedDequeue() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 50, // Small enough to force dequeue with two messages
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -191,9 +195,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testDifferentMessageTypesForceDequeue() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -214,9 +219,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testKeepAliveMessageHandling() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -244,9 +250,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testBulkEnqueue() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -270,9 +277,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testPeriodicDequeue() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(50)
+      dequeueInterval: .milliseconds(50),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -300,9 +308,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testPeriodicDequeueSendsUncancelled() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(50)
+      dequeueInterval: .milliseconds(50),
+      controlProtocol: .ocp1
     ) { data in
       try Task.checkCancellation()
       try await handler.sendEncodedPDU(data)
@@ -324,9 +333,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testZeroIntervalDisablesPeriodicDequeue() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .zero
+      dequeueInterval: .zero,
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -350,9 +360,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testEmptyDequeue() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -367,9 +378,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testMultipleDequeues() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -389,9 +401,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testConcurrentAccess() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -415,9 +428,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testBatchSizeLimit() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 100,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -444,9 +458,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testActorIsolation() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -468,9 +483,10 @@ final class Ocp1MessageBatcherTests: XCTestCase {
   @OcaConnectionActor
   func testTaskCancellation() async throws {
     let handler = TestSendHandler()
-    let batcher = Ocp1MessageBatcher(
+    let batcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(1000) // Long interval
+      dequeueInterval: .milliseconds(1000), // Long interval
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -502,16 +518,18 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     let handler = TestSendHandler()
 
     // Test different batch sizes
-    let smallBatcher = Ocp1MessageBatcher(
+    let smallBatcher = OcaMessageBatcher(
       batchSize: 50,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
 
-    let largeBatcher = Ocp1MessageBatcher(
+    let largeBatcher = OcaMessageBatcher(
       batchSize: 2000,
-      dequeueInterval: .milliseconds(100)
+      dequeueInterval: .milliseconds(100),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
@@ -529,17 +547,19 @@ final class Ocp1MessageBatcherTests: XCTestCase {
     let handler = TestSendHandler()
 
     // Test zero interval (manual only)
-    let manualBatcher = Ocp1MessageBatcher(
+    let manualBatcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .zero
+      dequeueInterval: .zero,
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }
 
     // Test short interval
-    let autoBatcher = Ocp1MessageBatcher(
+    let autoBatcher = OcaMessageBatcher(
       batchSize: 1000,
-      dequeueInterval: .milliseconds(10)
+      dequeueInterval: .milliseconds(10),
+      controlProtocol: .ocp1
     ) { data in
       try await handler.sendEncodedPDU(data)
     }

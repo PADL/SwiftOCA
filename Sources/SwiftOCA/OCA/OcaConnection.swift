@@ -418,7 +418,7 @@ open class OcaConnection: CustomStringConvertible {
   /// an offset. Datagram transports write whole PDUs and bypass it.
   let writeQueue = Ocp1WriteQueue()
 
-  var batcher: Ocp1MessageBatcher!
+  var batcher: OcaMessageBatcher!
 
   private func _configureTracing() {
     if options.flags.contains(.enableTracing) {
