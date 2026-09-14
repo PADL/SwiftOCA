@@ -357,8 +357,19 @@ Sendable, CustomStringConvertible, Hashable {
     var nwritten = 0
 
     repeat {
-      nwritten += try _write(data[nwritten...])
-      await Task.yield()
+      do {
+        let count = try _write(data[nwritten...])
+        guard count > 0 else { throw Ocp1Error.notConnected }
+        nwritten += count
+      } catch let error as Errno
+        where error == .interrupted ||
+        error == .resourceTemporarilyUnavailable ||
+        error == .wouldBlock
+      {
+        // The socket is nonblocking. Preserve the partial PDU and retry instead
+        // of allowing the next queued PDU to be appended to its prefix.
+        try await Task.sleep(for: .milliseconds(1))
+      }
     } while nwritten < data.count
 
     return nwritten

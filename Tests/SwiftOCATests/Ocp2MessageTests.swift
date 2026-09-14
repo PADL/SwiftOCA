@@ -636,7 +636,7 @@ final class Ocp2MessageTests: XCTestCase {
     maximumPduSize: Int = 1024
   ) async throws -> [String] {
     let reader = OcaControlProtocol.ocp2.makeReader(
-      isMessageOriented: isMessageOriented,
+      preservesPduBoundaries: isMessageOriented,
       maximumPduSize: maximumPduSize
     )
     let feed = Feed(chunks.map { Data($0.utf8) })

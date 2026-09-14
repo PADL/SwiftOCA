@@ -408,17 +408,20 @@ extension OcaConnection.Monitor {
     // can be bypassed); a stream that takes whole PDUs on send may still deliver
     // coalesced or partial ones on receive. Only a datagram guarantees one PDU per
     // read, so that is what the reader is given.
-    let (isDatagram, maximumPduSize) = await (
+    let (isDatagram, configuredMaximumPduSize) = await (
       connection.isDatagram,
       connection.options.maximumPduSize
     )
+    let maximumPduSize = isDatagram
+      ? min(configuredMaximumPduSize, Ocp1MaximumDatagramPduSize)
+      : configuredMaximumPduSize
 
     do {
       try await withThrowingTaskGroup(of: Void.self) { group in
         group.addTask { [weak self] in
           // one reader per receive loop: it buffers bytes between PDUs
           let reader = controlProtocol.makeReader(
-            isMessageOriented: isDatagram,
+            preservesPduBoundaries: isDatagram,
             maximumPduSize: maximumPduSize
           )
           let source = ReadSource(connection)

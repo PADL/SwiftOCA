@@ -103,7 +103,10 @@ public class OcaIORingConnection: OcaConnection, Ocp1MutableSocketAddressConnect
     ring: IORing = .shared
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(
+        address: host,
+        port: port
+      )),
       options: options,
       ring: ring
     )
@@ -194,7 +197,7 @@ public final class OcaIORingDatagramConnection: OcaIORingConnection {
     try await super.connectDevice()
   }
 
-    override package func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
+  override package func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
     let socket = try Socket(
       ring: _ring,
       domain: deviceAddress.family,
@@ -208,7 +211,7 @@ public final class OcaIORingDatagramConnection: OcaIORingConnection {
 
   override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     try await withMappedError { socket in
-      try await Data(socket.receive(count: Ocp1MaximumDatagramPduSize))
+      try await Data(socket.receive(count: min(length, Ocp1MaximumDatagramPduSize)))
     }
   }
 
@@ -266,7 +269,7 @@ public final class OcaIORingDomainSocketDatagramConnection: OcaIORingConnection 
     try await super.connectDevice()
   }
 
-    override package func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
+  override package func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
     let boundAddress = try sockaddr_un.ephemeralDatagramDomainSocketName
     let ring = try IORing()
     let socket = try Socket(
@@ -311,7 +314,10 @@ public final class OcaIORingDomainSocketDatagramConnection: OcaIORingConnection 
   }
 
   override public var connectionPrefix: String {
-    let prefix = _connectionPrefix(ocp1: OcaLocalConnectionPrefix, ocp2: OcaJsonLocalConnectionPrefix)
+    let prefix = _connectionPrefix(
+      ocp1: OcaLocalConnectionPrefix,
+      ocp2: OcaJsonLocalConnectionPrefix
+    )
     return "\(prefix)/\(_currentPresentationAddress)"
   }
 
@@ -332,7 +338,7 @@ public final class OcaIORingStreamConnection: OcaIORingConnection {
     try await super.connectDevice()
   }
 
-    override package func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
+  override package func _connectDevice(to deviceAddress: AnySocketAddress) async throws {
     let socket = try Socket(
       ring: _ring,
       domain: deviceAddress.family,

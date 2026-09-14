@@ -36,9 +36,6 @@ public final class OcaFlyingFoxConnection: OcaConnection {
   private let url: URL
   private var webSocketTask: URLSessionWebSocketTask?
   private var session: URLSession?
-  private var receivedMessageContinuation: AsyncThrowingStream<Data, Error>.Continuation?
-  private var receivedMessageStream: AsyncThrowingStream<Data, Error>?
-  private var receiveTask: Task<(), Never>?
 
   public init(
     url: URL,
@@ -76,10 +73,6 @@ public final class OcaFlyingFoxConnection: OcaConnection {
     // close any existing resources before creating new ones (e.g. during reconnection retries)
     _cleanupConnection()
 
-    let (stream, continuation) = AsyncThrowingStream.makeStream(of: Data.self)
-    receivedMessageContinuation = continuation
-    receivedMessageStream = stream
-
     let session = URLSession(configuration: .default)
     self.session = session
     let task: URLSessionWebSocketTask = if let subprotocol = controlProtocol.webSocketSubprotocol {
@@ -87,52 +80,9 @@ public final class OcaFlyingFoxConnection: OcaConnection {
     } else {
       session.webSocketTask(with: url)
     }
-    task.maximumMessageSize = controlProtocol.webSocketUsesTextFrames
-      ? options.maximumPduSize
-      : Int(UInt16.max)
+    task.maximumMessageSize = options.maximumPduSize
     webSocketTask = task
     task.resume()
-
-    let usesTextFrames = controlProtocol.webSocketUsesTextFrames
-    receiveTask = Task { [weak self] in
-      while !Task.isCancelled {
-        guard let self else { return }
-        do {
-          let message = try await task.receive()
-          switch message {
-          case let .data(data):
-            guard !usesTextFrames else {
-              // AES70-4 10.4.3.4.4: OCP.2 travels in text frames only
-              task.cancel(with: .unsupportedData, reason: nil)
-              receivedMessageContinuation?.finish(throwing: Ocp1Error.notConnected)
-              return
-            }
-            // an empty binary frame adds nothing to the byte stream (AES70-3 8.4.3.4.4),
-            // and the reader would take it for EOF
-            if !data.isEmpty {
-              receivedMessageContinuation?.yield(data)
-            }
-          case let .string(string):
-            guard usesTextFrames else {
-              // AES70-3 8.4.3.4.4: a text frame on OCP.1 closes with 1011 (UNEXPECTED)
-              task.cancel(with: .internalServerError, reason: nil)
-              receivedMessageContinuation?.finish(throwing: Ocp1Error.notConnected)
-              return
-            }
-            // an empty text frame adds nothing to the byte stream (AES70-4 10.4.3.4.4),
-            // and the reader would take it for EOF
-            if !string.isEmpty {
-              receivedMessageContinuation?.yield(Data(string.utf8))
-            }
-          @unknown default:
-            break
-          }
-        } catch {
-          receivedMessageContinuation?.finish(throwing: Ocp1Error.notConnected)
-          return
-        }
-      }
-    }
 
     do {
       try await super.connectDevice()
@@ -143,13 +93,8 @@ public final class OcaFlyingFoxConnection: OcaConnection {
   }
 
   private func _cleanupConnection() {
-    receiveTask?.cancel()
-    receiveTask = nil
     webSocketTask?.cancel(with: .normalClosure, reason: nil)
     webSocketTask = nil
-    receivedMessageContinuation?.finish()
-    receivedMessageContinuation = nil
-    receivedMessageStream = nil
     session?.invalidateAndCancel()
     session = nil
   }
@@ -163,13 +108,41 @@ public final class OcaFlyingFoxConnection: OcaConnection {
   /// it does not use, as a frame may hold several PDUs or part of one (AES70-3 8.4.3.4.4,
   /// AES70-4 10.4.3.4.4).
   override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
-    guard let receivedMessageStream else {
+    guard let webSocketTask else {
       throw Ocp1Error.notConnected
     }
-    for try await data in receivedMessageStream {
-      return data
+    let usesTextFrames = controlProtocol.webSocketUsesTextFrames
+    while true {
+      let message: URLSessionWebSocketTask.Message
+      do {
+        message = try await withTaskCancellationHandler {
+          try await webSocketTask.receive()
+        } onCancel: {
+          // URLSessionWebSocketTask.receive() does not reliably observe Swift task
+          // cancellation. Closing the captured transport generation unblocks the
+          // monitor's task group so its reconnect path can run.
+          webSocketTask.cancel(with: .normalClosure, reason: nil)
+        }
+      } catch {
+        throw Ocp1Error.notConnected
+      }
+      switch message {
+      case let .data(data):
+        guard !usesTextFrames else {
+          webSocketTask.cancel(with: .unsupportedData, reason: nil)
+          throw Ocp1Error.invalidMessageType
+        }
+        if !data.isEmpty { return data }
+      case let .string(string):
+        guard usesTextFrames else {
+          webSocketTask.cancel(with: .internalServerError, reason: nil)
+          throw Ocp1Error.invalidMessageType
+        }
+        if !string.isEmpty { return Data(string.utf8) }
+      @unknown default:
+        continue
+      }
     }
-    throw Ocp1Error.notConnected
   }
 
   override public func write(_ data: Data) async throws -> Int {

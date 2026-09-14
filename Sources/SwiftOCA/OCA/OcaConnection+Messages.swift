@@ -76,12 +76,18 @@ extension OcaConnection {
   func sendMessagePduData(
     _ messagePduData: Data
   ) async throws {
+    let generation = connectionID
     if isMessageOriented {
+      guard generation == connectionID else { throw Ocp1Error.notConnected }
       guard try await write(messagePduData) == messagePduData.count else {
         throw Ocp1Error.pduSendingFailed
       }
     } else {
       try await writeQueue.serialised { [self] in
+        // This check deliberately happens after queue acquisition: a write can
+        // wait behind an old generation while reconnect installs a new transport.
+        let currentGeneration = await connectionID
+        guard generation == currentGeneration else { throw Ocp1Error.notConnected }
         guard try await write(messagePduData) == messagePduData.count else {
           throw Ocp1Error.pduSendingFailed
         }

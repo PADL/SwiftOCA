@@ -43,6 +43,7 @@ package actor OcaNWDatagramController: Ocp1ControllerInternal,
   package nonisolated var peerIdentity: OcaPeerIdentity {
     _peerIdentity.withLock { $0 }
   }
+
   package nonisolated func setPeerIdentity(_ identity: OcaPeerIdentity) {
     _peerIdentity.withLock { $0 = identity }
   }
@@ -77,11 +78,15 @@ package actor OcaNWDatagramController: Ocp1ControllerInternal,
     flags = endpoint.controllerFlags
     connectionPrefix = endpoint.controllerConnectionPrefix
     identifier = Self.makeIdentifier(from: connection)
-    _messages = Self.makeMessagesStream(on: connection, controlProtocol: controlProtocol)
+    _messages = Self.makeMessagesStream(
+      on: connection,
+      controlProtocol: controlProtocol,
+      maximumPduSize: endpoint.maximumPduSize
+    )
   }
 
   package func sendOcp1EncodedData(_ data: Data) async throws {
-    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<(), Error>) in
       connection.send(
         content: data,
         completion: .contentProcessed { error in
@@ -141,15 +146,16 @@ private extension OcaNWDatagramController {
     }
   }
 
-  /// One whole datagram per element; one datagram may carry multiple
-  /// concatenated OCP.1 PDUs, or one newline-terminated OCP.2 PDU.
+  /// One whole datagram per element and exactly one PDU per datagram.
   static func makeMessagesStream(
     on connection: NWConnection,
-    controlProtocol: OcaControlProtocol
+    controlProtocol: OcaControlProtocol,
+    maximumPduSize: Int
   ) -> AsyncThrowingStream<Ocp1MessageList, Error> {
-    AsyncThrowingStream { () async throws -> Ocp1MessageList? in
-      let datagram = try await connection.receiveOneDatagram()
-      return try Ocp1MessageList(messagePduData: datagram, controlProtocol: controlProtocol)
+    return AsyncThrowingStream { () async throws -> Ocp1MessageList? in
+      let pdu = try await connection.receiveOneDatagram()
+      try controlProtocol.validatePacketPdu(pdu, maximumPduSize: maximumPduSize)
+      return try Ocp1MessageList(messagePduData: pdu, controlProtocol: controlProtocol)
     }
   }
 }

@@ -25,6 +25,12 @@ import Logging
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+package let OcaMaximumConcurrentPdus = 32
+
+/// How far ahead `lastMessageReceivedTime` is set while expiry is suspended: longer than
+/// any handler could take, and small enough to add to an instant without overflow.
+private let OcaExpirySuspension = Duration.seconds(365 * 24 * 60 * 60)
+
 package struct Ocp1MessageList: Sendable {
   let responseRequired: Bool
   let messages: [Ocp1Message]
@@ -108,8 +114,6 @@ package extension Ocp1ControllerInternal {
     let controller = self as! Endpoint.ControllerType
     var response: Ocp1Response?
 
-    lastMessageReceivedTime = .now
-
     if let datagramController = self as? Ocp1ControllerDatagramSemantics {
       if message is Ocp1KeepAlive1 || message is Ocp1KeepAlive2 {
         await datagramController.didOpen()
@@ -151,6 +155,11 @@ package extension Ocp1ControllerInternal {
     for endpoint: some OcaDeviceEndpointPrivate,
     messageList: Ocp1MessageList
   ) async throws {
+    // Record transport activity before command execution: one slow command must
+    // not make a controller look stale while later keepalives are being received.
+    // The later of the two, so as not to end a suspension of expiry by the handler loop.
+    lastMessageReceivedTime = max(lastMessageReceivedTime, .now)
+
     for message in messageList.messages {
       endpoint.traceMessage(message, controller: self, direction: .rx)
     }
@@ -180,9 +189,22 @@ package extension Ocp1ControllerInternal {
     endpoint.logger.info("controller added", controller: controller)
     await endpoint.add(controller: controller)
 
-    await withDiscardingTaskGroup { group in
+    // Errors from `messages` are caught inside the group, so that when the connection
+    // ends the group waits for the commands still running rather than cancelling them.
+    await withTaskGroup(of: Void.self) { group in
+      var activePdus = 0
       do {
         for try await messageList in messages {
+          if activePdus == OcaMaximumConcurrentPdus {
+            // No PDU is read until a handler finishes, so keepalives from the
+            // controller wait unread: suspend expiry meanwhile, and restart it from
+            // when reading resumes.
+            lastMessageReceivedTime = .now + OcaExpirySuspension
+            _ = await group.next()
+            lastMessageReceivedTime = .now
+            activePdus -= 1
+          }
+          activePdus += 1
           group.addTask { [weak self, weak endpoint] in
             guard let self, let endpoint else { return }
             try? await handle(for: endpoint, messageList: messageList)
@@ -292,17 +314,26 @@ extension OcaDevice {
 
   /// OCP.1-only convenience for backends with an exact-length read: OCP.1 always
   /// awaits all of a read.
-  static func _receiveMessages(_ read: (Int) async throws -> Data) async throws -> Ocp1MessageList {
+  static func _receiveMessages(
+    maximumPduSize: Int,
+    read: (Int) async throws -> Data
+  ) async throws -> Ocp1MessageList {
     try await _receiveMessages(
-      reader: Ocp1PduReader(isMessageOriented: false, maximumPduSize: Int.max),
+      reader: Ocp1PduReader(
+        preservesPduBoundaries: false,
+        maximumPduSize: maximumPduSize
+      ),
       controlProtocol: .ocp1,
       read: { count, _ in try await read(count) }
     )
   }
 
   @concurrent
-  package static func receiveMessages(_ read: ReadCallback) async throws -> Ocp1MessageList {
-    try await _receiveMessages(read)
+  package static func receiveMessages(
+    maximumPduSize: Int,
+    _ read: ReadCallback
+  ) async throws -> Ocp1MessageList {
+    try await _receiveMessages(maximumPduSize: maximumPduSize, read: read)
   }
 
   static func asyncReceiveMessages(

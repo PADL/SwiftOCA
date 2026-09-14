@@ -140,7 +140,7 @@ public final class Ocp1MachPortConnection: OcaConnection {
             let envelope = try handle.receive()
             switch envelope.kind {
             case .data:
-              continuation.resume(returning: envelope.payload)
+              continuation.resume(returning: _trimmingAlignmentPadding(envelope.payload))
               return
             case .disconnect:
               continuation.resume(throwing: Ocp1Error.notConnected)
@@ -164,6 +164,32 @@ public final class Ocp1MachPortConnection: OcaConnection {
     try handle.sendData(data, to: serverPort)
     return data.count
   }
+}
+
+/// A data message's payload, less any alignment padding after its PDU.
+///
+/// A Mach message is padded to a multiple of 4 bytes and the receiver learns only the
+/// padded size, so an inline payload can end with up to 3 zero bytes that are not part of
+/// the PDU. Left in, they would fail the check that a packet holds exactly one PDU.
+private func _trimmingAlignmentPadding(_ payload: Data) -> Data {
+  guard payload.count >= OcaConnection.MinimumPduSize,
+        payload[payload.startIndex] == Ocp1SyncValue
+  else {
+    return payload
+  }
+  // `syncVal: OcaUint8` || `protocolVersion: OcaUint16` || `pduSize: OcaUint32`, where
+  // `pduSize` does not count the sync byte
+  let pduSize: OcaUint32 = payload.decodeInteger(index: 3)
+  guard let size = Int(exactly: pduSize), size < Int.max else {
+    return payload
+  }
+  let pduLength = size + 1
+  guard pduLength < payload.count, payload.count - pduLength < 4,
+        payload[(payload.startIndex + pduLength)...].allSatisfy({ $0 == 0 })
+  else {
+    return payload
+  }
+  return payload.prefix(pduLength)
 }
 
 private extension Duration {

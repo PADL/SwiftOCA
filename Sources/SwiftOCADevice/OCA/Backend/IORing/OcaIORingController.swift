@@ -91,8 +91,7 @@ package actor OcaIORingStreamController: OcaIORingControllerPrivate, CustomStrin
     _messages.eraseToAnyAsyncSequence()
   }
 
-  private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
-  private let _messagesContinuation: AsyncThrowingStream<Ocp1MessageList, Error>.Continuation
+  private let _messages = AsyncThrowingChannel<Ocp1MessageList, Error>()
   private let _socket: Mutex<Socket?>
   let notificationSocket: Socket
 
@@ -115,11 +114,6 @@ package actor OcaIORingStreamController: OcaIORingControllerPrivate, CustomStrin
     self.endpoint = endpoint
     controlProtocol = endpoint.controlProtocol
 
-    (_messages, _messagesContinuation) = AsyncThrowingStream.makeStream(
-      of: Ocp1MessageList.self,
-      throwing: Error.self
-    )
-
     peerAddress = try AnySocketAddress(socket.peerAddress)
     connectionPrefix = if peerAddress.family == AF_LOCAL {
       endpoint.controlProtocol.connectionPrefix(
@@ -137,7 +131,10 @@ package actor OcaIORingStreamController: OcaIORingControllerPrivate, CustomStrin
     let maximumPduSize = endpoint.maximumPduSize
     receiveMessageTask = Task { [weak self] in
       // one reader for the life of the connection: it buffers bytes between PDUs
-      let reader = controlProtocol.makeReader(isMessageOriented: false, maximumPduSize: maximumPduSize)
+      let reader = controlProtocol.makeReader(
+        preservesPduBoundaries: false,
+        maximumPduSize: maximumPduSize
+      )
       do {
         repeat {
           guard !Task.isCancelled, let socket = self?.socket else { break }
@@ -146,10 +143,11 @@ package actor OcaIORingStreamController: OcaIORingControllerPrivate, CustomStrin
             controlProtocol: controlProtocol,
             read: { try await Data(socket.read(count: $0, awaitingAllRead: $1)) }
           )
-          self?._messagesContinuation.yield(messages)
+          guard let self else { return }
+          await self._messages.send(messages)
         } while true
       } catch {
-        self?._messagesContinuation.finish(throwing: error)
+        self?._messages.fail(error)
       }
     }
   }
@@ -176,13 +174,13 @@ package actor OcaIORingStreamController: OcaIORingControllerPrivate, CustomStrin
       self.receiveMessageTask = nil
     }
 
-    _messagesContinuation.finish()
+    _messages.finish()
   }
 
   deinit {
     receiveMessageTask?.cancel()
     keepAliveTask?.cancel()
-    _messagesContinuation.finish()
+    _messages.finish()
   }
 
   package var heartbeatTime = Duration.seconds(0) {

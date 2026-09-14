@@ -27,9 +27,9 @@ import XCTest
 /// writer interleave its bytes with the first.
 private final class ChunkedWriteConnection: OcaConnection, @unchecked Sendable {
   nonisolated(unsafe) var datagram = false
-  nonisolated(unsafe) private(set) var chunks = [UInt8]()
-  nonisolated(unsafe) private(set) var maxInFlight = 0
-  nonisolated(unsafe) private(set) var didEnterWrite = false
+  private(set) nonisolated(unsafe) var chunks = [UInt8]()
+  private(set) nonisolated(unsafe) var maxInFlight = 0
+  private(set) nonisolated(unsafe) var didEnterWrite = false
   /// how long the first writer occupies the transport, to park a second one in the queue
   nonisolated(unsafe) var holdFirstWrite: Duration = .zero
   /// how long the first writer waits for a second to reach the transport, so that their
@@ -119,6 +119,11 @@ private func pendingWriters(on connection: OcaConnection) -> Int {
   connection.writeQueue.pending
 }
 
+@OcaConnectionActor
+private func advanceGeneration(on connection: OcaConnection) {
+  connection.connectionID &+= 1
+}
+
 private func pdu(_ tag: UInt8, count: Int = 8) -> Data {
   Data(repeating: tag, count: count)
 }
@@ -143,8 +148,8 @@ final class WriteSerialisationTests: XCTestCase {
     on connection: ChunkedWriteConnection,
     tags: [UInt8],
     pduSize: Int
-  ) async -> [Task<Void, Never>] {
-    var writers = [Task<Void, Never>]()
+  ) async -> [Task<(), Never>] {
+    var writers = [Task<(), Never>]()
     for (i, tag) in tags.enumerated() {
       writers.append(Task { try? await connection.sendMessagePduData(pdu(tag, count: pduSize)) })
       if i == 0 {
@@ -212,7 +217,9 @@ final class WriteSerialisationTests: XCTestCase {
 
     let tags: [UInt8] = [0xA0, 0xA1, 0xA2, 0xA3]
     let writers = await enqueueInOrder(on: connection, tags: tags, pduSize: 8)
-    for writer in writers { _ = await writer.value }
+    for writer in writers {
+      _ = await writer.value
+    }
 
     let expected = tags.flatMap { Array(repeating: $0, count: 8) }
     XCTAssertEqual(connection.chunks, expected, "PDUs were reordered or interleaved")
@@ -225,7 +232,9 @@ final class WriteSerialisationTests: XCTestCase {
 
     let tags = (0..<64).map { UInt8($0) }
     let writers = await enqueueInOrder(on: connection, tags: tags, pduSize: 2)
-    for writer in writers { _ = await writer.value }
+    for writer in writers {
+      _ = await writer.value
+    }
 
     let expected = tags.flatMap { [$0, $0] }
     XCTAssertEqual(connection.chunks, expected, "deep backlog reordered or interleaved")
@@ -267,4 +276,27 @@ final class WriteSerialisationTests: XCTestCase {
     XCTAssertEqual(connection.byteCount(0xAA), 8, "cancellation truncated an in-flight PDU")
   }
 
+  func testQueuedWriteFromPreviousGenerationIsDropped() async throws {
+    let connection = await makeConnection()
+    connection.holdFirstWrite = .milliseconds(500)
+
+    let first = Task { try await connection.sendMessagePduData(pdu(0xAA)) }
+    await waitUntil { connection.didEnterWrite }
+    let stale = Task { try await connection.sendMessagePduData(pdu(0xBB)) }
+    while await pendingWriters(on: connection) == 0 {
+      await Task.yield()
+    }
+
+    await advanceGeneration(on: connection)
+    _ = try await first.value
+    do {
+      try await stale.value
+      XCTFail("stale write unexpectedly reached the new transport generation")
+    } catch {
+      XCTAssertEqual(error as? Ocp1Error, .notConnected)
+    }
+
+    XCTAssertEqual(connection.byteCount(0xAA), 8)
+    XCTAssertEqual(connection.byteCount(0xBB), 0)
+  }
 }

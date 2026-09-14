@@ -27,21 +27,21 @@ package final class Ocp2PduReader: OcaPduReader {
   private static let carriageReturn = UInt8(ascii: "\r")
   private static let readChunk = 64 * 1024
 
-  private let isMessageOriented: Bool
+  private let preservesPduBoundaries: Bool
   private let maximumPduSize: Int
   private var buffer = [UInt8]()
   /// index up to which `buffer` is known to hold no newline
   private var scanned = 0
 
-  package init(isMessageOriented: Bool, maximumPduSize: Int) {
-    self.isMessageOriented = isMessageOriented
+  package init(preservesPduBoundaries: Bool, maximumPduSize: Int) {
+    self.preservesPduBoundaries = preservesPduBoundaries
     self.maximumPduSize = maximumPduSize
   }
 
   package func nextPdu(
     read: (_ count: Int, _ awaitingAllRead: Bool) async throws -> Data
   ) async throws -> Data {
-    if isMessageOriented {
+    if preservesPduBoundaries {
       // read past the cap (a PDU may be terminated, so allow for CR LF) rather
       // than up to it: a frame the transport would otherwise truncate to exactly
       // `maximumPduSize` is indistinguishable from one that fits, and would be

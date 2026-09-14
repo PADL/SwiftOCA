@@ -56,12 +56,11 @@ package actor Ocp1OpenSSLStreamController: Ocp1ControllerInternal, CustomStringC
   /// The receive task captures its own reference at init.
   private var _stream: (any Ocp1ByteStream)?
   private let engine: Ocp1OpenSSLEngine
-  private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
-  private let _messagesContinuation: AsyncThrowingStream<Ocp1MessageList, Error>.Continuation
+  private let _messages = AsyncThrowingChannel<Ocp1MessageList, Error>()
   private var receiveMessageTask: Task<(), Never>?
   /// Closes the connection if no message arrives within the endpoint's
   /// `firstMessageDeadline`; cancelled on the first inbound message.
-  private var firstMessageTask: Task<Void, Never>?
+  private var firstMessageTask: Task<(), Never>?
   private let createdAt: ContinuousClock.Instant = .now
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
@@ -89,42 +88,39 @@ package actor Ocp1OpenSSLStreamController: Ocp1ControllerInternal, CustomStringC
     identifier = (try? peerAddress.presentationAddress) ?? "unknown"
     peerIdentity = await engine.peerIdentity()
 
-    (_messages, _messagesContinuation) = AsyncThrowingStream.makeStream(
-      of: Ocp1MessageList.self,
-      throwing: Error.self
-    )
-
     // Capture refs so the receive task avoids re-entering the actor on
     // every read. `close()` cancels the task and closes the stream.
     let streamRef: any Ocp1ByteStream = stream
     let engineRef = engine
-    let continuationRef = _messagesContinuation
+    let messagesChannel = _messages
+    let maximumPduSize = endpoint.maximumPduSize
     receiveMessageTask = Task { [weak self] in
       do {
         repeat {
           guard !Task.isCancelled else { break }
-          let messages = try await OcaDevice.receiveMessages { count in
-            try await engineRef.read(
-              count,
-              awaitingAllRead: true,
-              read: { c in try await streamRef.read(count: c, awaitingAllRead: false) },
-              write: { d in try await streamRef.write(d) }
-            )
-          }
+          let messages = try await OcaDevice
+            .receiveMessages(maximumPduSize: maximumPduSize) { count in
+              try await engineRef.read(
+                count,
+                awaitingAllRead: true,
+                read: { c in try await streamRef.read(count: c, awaitingAllRead: false) },
+                write: { d in try await streamRef.write(d) }
+              )
+            }
           await self?.noteMessageReceived()
-          continuationRef.yield(messages)
+          await messagesChannel.send(messages)
         } while true
       } catch {
-        continuationRef.finish(throwing: error)
+        messagesChannel.fail(error)
       }
     }
 
     let deadline = endpoint.firstMessageDeadline
-    firstMessageTask = Task<Void, Never> { [weak self] in
+    firstMessageTask = Task<(), Never> { [weak self] in
       try? await Task.sleep(for: deadline)
       if Task.isCancelled { return }
       guard let self else { return }
-      await self.enforceFirstMessageDeadline()
+      await enforceFirstMessageDeadline()
     }
   }
 
@@ -139,7 +135,7 @@ package actor Ocp1OpenSSLStreamController: Ocp1ControllerInternal, CustomStringC
     if firstMessageTask == nil { return }
     firstMessageTask = nil
     if lastMessageReceivedTime > createdAt { return }
-    if let endpoint = await self.endpoint {
+    if let endpoint = await endpoint {
       endpoint.logger.warning(
         "TLS peer \(identifier) did not send a message within first-message deadline; closing"
       )
@@ -178,14 +174,14 @@ package actor Ocp1OpenSSLStreamController: Ocp1ControllerInternal, CustomStringC
       )
       await stream.close()
     }
-    _messagesContinuation.finish()
+    _messages.finish()
   }
 
   deinit {
     receiveMessageTask?.cancel()
     keepAliveTask?.cancel()
     firstMessageTask?.cancel()
-    _messagesContinuation.finish()
+    _messages.finish()
   }
 
   package nonisolated var description: String {

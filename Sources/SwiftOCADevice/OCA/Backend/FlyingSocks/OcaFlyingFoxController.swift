@@ -16,6 +16,7 @@
 
 #if canImport(FlyingFox)
 
+import AsyncAlgorithms
 import AsyncExtensions
 import FlyingFox
 import FlyingSocks
@@ -41,7 +42,8 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
 
   package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
-  private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
+  private let _messages: AsyncThrowingChannel<Ocp1MessageList, Error>
+  private var receiveMessageTask: Task<(), Never>?
   private let outputStream: AsyncStream<WSMessage>.Continuation
   package var endpoint: OcaFlyingFoxDeviceEndpoint?
   package nonisolated let identifier: String
@@ -74,58 +76,60 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
       ocp2: OcaJsonWebSocketTcpConnectionPrefix
     )
     let maximumPduSize = endpoint?.maximumPduSize ?? OcaControlProtocol.defaultMaximumPduSize
-    _messages = AsyncThrowingStream { continuation in
-      let task = Task { [inputStream] in
-        // consecutive frame payloads are a byte stream (AES70-3 8.4.3.4.4, AES70-4
-        // 10.4.3.4.4), so one stream reader spans frames: a frame may hold several
-        // PDUs, or part of one
-        let reader = controlProtocol.makeReader(
-          isMessageOriented: false,
-          maximumPduSize: maximumPduSize
-        )
-        nonisolated(unsafe) var frames = inputStream.makeAsyncIterator()
-        /// Each failure sends one close frame. AES70-3 8.4.3.4.4: on OCP.1 a text frame
-        /// closes with 1011 (UNEXPECTED), a malformed message with 1007 (BAD_DATA).
-        /// AES70-4 10.4.3.4.4: on OCP.2 a binary frame closes with 1003, a malformed
-        /// message with 1007, an over-long one with 1009.
-        func fail(_ code: WSCloseCode, _ error: Error) {
-          outputStream.yield(.close(code))
-          continuation.finish(throwing: error)
+    let messagesChannel = AsyncThrowingChannel<Ocp1MessageList, Error>()
+    _messages = messagesChannel
+    receiveMessageTask = Task { [inputStream] in
+      // consecutive frame payloads are a byte stream (AES70-3 8.4.3.4.4, AES70-4
+      // 10.4.3.4.4), so one stream reader spans frames: a frame may hold several
+      // PDUs, or part of one
+      let reader = controlProtocol.makeReader(
+        preservesPduBoundaries: false,
+        maximumPduSize: maximumPduSize
+      )
+      nonisolated(unsafe) var frames = inputStream.makeAsyncIterator()
+      /// Each failure sends one close frame. AES70-3 8.4.3.4.4: on OCP.1 a text frame
+      /// closes with 1011 (UNEXPECTED), a malformed message with 1007 (BAD_DATA).
+      /// AES70-4 10.4.3.4.4: on OCP.2 a binary frame closes with 1003, a malformed
+      /// message with 1007, an over-long one with 1009.
+      func fail(_ code: WSCloseCode, _ error: Error) {
+        outputStream.yield(.close(code))
+        messagesChannel.fail(error)
+      }
+      while true {
+        let pdu: Data
+        do {
+          // a whole frame per read, whatever is asked for; the reader keeps the rest
+          pdu = try await reader.nextPdu(read: { _, _ in
+            try await Self.nextFrame(&frames, text: usesTextFrames)
+          })
+        } catch Ocp1Error.notConnected {
+          messagesChannel.finish()
+          return
+        } catch Ocp1Error.invalidMessageType {
+          fail(usesTextFrames ? .unsupportedData : .unexpected, Ocp1Error.invalidMessageType)
+          return
+        } catch Ocp1Error.invalidPduSize {
+          // AES70-3 has no code for an over-long PDU, which cannot be framed: bad data
+          fail(usesTextFrames ? .messageTooBig : .invalidFramePayload, Ocp1Error.invalidPduSize)
+          return
+        } catch Ocp1Error.invalidSyncValue {
+          fail(.invalidFramePayload, Ocp1Error.invalidSyncValue)
+          return
+        } catch {
+          messagesChannel.fail(error)
+          return
         }
-        while true {
-          let pdu: Data
-          do {
-            // a whole frame per read, whatever is asked for; the reader keeps the rest
-            pdu = try await reader.nextPdu(read: { _, _ in
-              try await Self.nextFrame(&frames, text: usesTextFrames)
-            })
-          } catch Ocp1Error.notConnected {
-            continuation.finish()
-            return
-          } catch Ocp1Error.invalidMessageType {
-            fail(usesTextFrames ? .unsupportedData : .unexpected, Ocp1Error.invalidMessageType)
-            return
-          } catch Ocp1Error.invalidPduSize {
-            // AES70-3 has no code for an over-long PDU, which cannot be framed: bad data
-            fail(usesTextFrames ? .messageTooBig : .invalidFramePayload, Ocp1Error.invalidPduSize)
-            return
-          } catch Ocp1Error.invalidSyncValue {
-            fail(.invalidFramePayload, Ocp1Error.invalidSyncValue)
-            return
-          } catch {
-            continuation.finish(throwing: error)
-            return
-          }
-          do {
-            try continuation.yield(Ocp1MessageList(messagePduData: pdu, controlProtocol: controlProtocol))
-          } catch {
-            fail(.invalidFramePayload, error)
-            return
-          }
+        do {
+          let messageList = try Ocp1MessageList(
+            messagePduData: pdu,
+            controlProtocol: controlProtocol
+          )
+          await messagesChannel.send(messageList)
+        } catch {
+          fail(.invalidFramePayload, error)
+          return
         }
       }
-
-      continuation.onTermination = { @Sendable _ in task.cancel() }
     }
   }
 
@@ -170,6 +174,9 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
   }
 
   package func close() async {
+    receiveMessageTask?.cancel()
+    receiveMessageTask = nil
+    _messages.finish()
     outputStream.finish()
 
     keepAliveTask?.cancel()
@@ -177,7 +184,9 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
   }
 
   deinit {
+    receiveMessageTask?.cancel()
     keepAliveTask?.cancel()
+    _messages.finish()
     outputStream.finish()
   }
 

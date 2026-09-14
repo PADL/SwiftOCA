@@ -111,7 +111,7 @@ open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
   /// Post-ready `.failed` surfaces via the next read/write.
   fileprivate static func _installPostReadyStateHandler(
     _ connection: NWConnection,
-    onCancelled: @Sendable @escaping () async throws -> Void
+    onCancelled: @Sendable @escaping () async throws -> ()
   ) {
     connection.stateUpdateHandler = { state in
       if state == .cancelled {
@@ -125,7 +125,9 @@ open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(bytes: Array(deviceAddress))]),
+      addressState: Ocp1DeviceAddressState(
+        addresses: [AnySocketAddress(bytes: Array(deviceAddress))]
+      ),
       options: options
     )
   }
@@ -151,7 +153,10 @@ open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(
+        address: host,
+        port: port
+      )),
       options: options
     )
   }
@@ -199,7 +204,9 @@ open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
   }
 
   /// The host:port endpoint for native (NW-resolved) connections.
-  fileprivate nonisolated static func _nwEndpoint(for networkAddress: Ocp1NetworkAddress) -> NWEndpoint {
+  fileprivate nonisolated static func _nwEndpoint(for networkAddress: Ocp1NetworkAddress)
+    -> NWEndpoint
+  {
     NWEndpoint.hostPort(
       host: .name(networkAddress.address, nil),
       port: NWEndpoint.Port(integerLiteral: networkAddress.port)
@@ -213,24 +220,23 @@ open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
       // Wait for `.ready`/`.failed` before completing connect — without this
       // any TLS handshake error is invisible until the first read/write.
       try await withTaskCancellationHandler {
-        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<(), Error>) in
           // Guard against double-resume from transient state toggling.
           let resumed = Mutex(false)
           connection.stateUpdateHandler = { state in
-            let outcome: Result<Void, Error>?
-            switch state {
+            let outcome: Result<(), Error>? = switch state {
             case .ready:
-              outcome = .success(())
+              .success(())
             case let .failed(error):
-              outcome = .failure(error)
+              .failure(error)
             case let .waiting(error):
               // TLS auth failures surface as `.waiting` (NW retries forever);
               // treat as terminal during connect rather than hanging.
-              outcome = .failure(error)
+              .failure(error)
             case .cancelled:
-              outcome = .failure(Ocp1Error.notConnected)
+              .failure(Ocp1Error.notConnected)
             default:
-              outcome = nil
+              nil
             }
             guard let outcome else { return }
             let claimed = resumed.withLock { flag -> Bool in
@@ -265,20 +271,29 @@ open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
   }
 
   override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
-    // a stream hands over whatever is buffered, so a read bounded only by the datagram
-    // size takes the start of the next PDU as well; a datagram is returned whole
-    let maximumLength = isDatagram ? Ocp1MaximumDatagramPduSize : length
-    return try await withUnsafeThrowingContinuation { continuation in
-      _nwConnection.receive(
-        minimumIncompleteLength: awaitingAllRead ? length : 1,
-        maximumLength: maximumLength
-      ) { data, _, _, error in
-        if let error {
-          continuation.resume(throwing: error)
-        } else {
-          continuation.resume(returning: data ?? .init())
+    // Packet readers ask for one byte past their limit so truncation cannot turn
+    // an oversized datagram into an apparently valid prefix.
+    let maximumLength = isDatagram ? min(length, Ocp1MaximumDatagramPduSize) : length
+    let connection = _nwConnection!
+    return try await withTaskCancellationHandler {
+      try await withUnsafeThrowingContinuation { continuation in
+        connection.receive(
+          minimumIncompleteLength: awaitingAllRead ? length : 1,
+          maximumLength: maximumLength
+        ) { data, _, _, error in
+          if let error {
+            continuation.resume(throwing: error)
+          } else {
+            continuation.resume(returning: data ?? .init())
+          }
         }
       }
+    } onCancel: {
+      // A monitor task group waits for this read to finish after heartbeat or
+      // explicit cancellation. Cancelling the captured generation guarantees
+      // Network.framework invokes the receive completion and unblocks it.
+      connection.stateUpdateHandler = nil
+      connection.cancel()
     }
   }
 

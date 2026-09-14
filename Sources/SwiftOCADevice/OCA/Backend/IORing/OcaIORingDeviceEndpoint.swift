@@ -182,7 +182,8 @@ public final class OcaIORingStreamDeviceEndpoint: OcaIORingDeviceEndpoint,
   }
 
   override public func run() async throws {
-    logger.info("starting \(type(of: self)) (\(controlProtocol)) on \(address._presentationAddress)")
+    logger
+      .info("starting \(type(of: self)) (\(controlProtocol)) on \(address._presentationAddress)")
     try await super.run()
     let socket = try makeSocketAndListen()
     self.socket = socket
@@ -366,7 +367,8 @@ public class OcaIORingDatagramDeviceEndpoint: OcaIORingDeviceEndpoint,
   }
 
   override public func run() async throws {
-    logger.info("starting \(type(of: self)) (\(controlProtocol)) on \(address._presentationAddress)")
+    logger
+      .info("starting \(type(of: self)) (\(controlProtocol)) on \(address._presentationAddress)")
     try await super.run()
 
     let socket = try makeSocket()
@@ -378,7 +380,7 @@ public class OcaIORingDatagramDeviceEndpoint: OcaIORingDeviceEndpoint,
       receiveBufferSize = try? Int(socket.getIntegerOption(option: SO_RCVBUF))
     }
     if receiveBufferSize == nil {
-      receiveBufferSize = Ocp1MaximumDatagramPduSize
+      receiveBufferSize = min(maximumPduSize + 1, Ocp1MaximumDatagramPduSize)
     }
 
     repeat {

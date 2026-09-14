@@ -210,7 +210,7 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     repeat {
       do {
         for try await messagePdu in asyncSocket!
-          .messages(maxMessageLength: Ocp1MaximumDatagramPduSize)
+          .messages(maxMessageLength: min(maximumPduSize + 1, Ocp1MaximumDatagramPduSize))
         {
           let controller = try await controller(
             for: messagePdu.peerAddress,

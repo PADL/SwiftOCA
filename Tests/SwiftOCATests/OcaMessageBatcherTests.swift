@@ -601,4 +601,24 @@ final class OcaMessageBatcherTests: XCTestCase {
     )
     XCTAssertEqual(deprecatedOptions.batchingOptions?.batchSize, 500)
   }
+
+  @OcaConnectionActor
+  func testCancelPendingDiscardsTransportGeneration() async throws {
+    let handler = TestSendHandler()
+    let batcher = OcaMessageBatcher(
+      batchSize: 1000,
+      dequeueInterval: .milliseconds(50),
+      controlProtocol: .ocp1
+    ) { data in
+      try await handler.sendEncodedPDU(data)
+    }
+
+    try await batcher.enqueue(MockMessage(handle: 1, data: "stale"), type: .ocaCmd)
+    batcher.cancelPending()
+    try await Task.sleep(for: .milliseconds(100))
+
+    XCTAssertEqual(batcher.currentCount, 0)
+    let sentCount = await handler.sentCount
+    XCTAssertEqual(sentCount, 0)
+  }
 }

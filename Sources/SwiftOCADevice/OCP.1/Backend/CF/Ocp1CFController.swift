@@ -98,8 +98,7 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
     _messages.eraseToAnyAsyncSequence()
   }
 
-  private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
-  private let _messagesContinuation: AsyncThrowingStream<Ocp1MessageList, Error>.Continuation
+  private let _messages = AsyncThrowingChannel<Ocp1MessageList, Error>()
   private let _socket: Mutex<_CFSocketWrapper?>
   let notificationSocket: _CFSocketWrapper
 
@@ -122,11 +121,6 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
     self.notificationSocket = notificationSocket
     peerAddress = socket.peerAddress!
 
-    (_messages, _messagesContinuation) = AsyncThrowingStream.makeStream(
-      of: Ocp1MessageList.self,
-      throwing: Error.self
-    )
-
     connectionPrefix = if peerAddress.family == AF_LOCAL {
       endpoint.controlProtocol.connectionPrefix(
         ocp1: OcaLocalConnectionPrefix,
@@ -139,16 +133,20 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
       )
     }
 
+    let maximumPduSize = endpoint.maximumPduSize
     receiveMessageTask = Task { [weak self] in
       do {
         repeat {
           guard !Task.isCancelled, let socket = self?.socket else { break }
           let messages = try await OcaDevice
-            .receiveMessages { try await socket.read(count: $0) }
-          self?._messagesContinuation.yield(messages)
+            .receiveMessages(maximumPduSize: maximumPduSize) {
+              try await socket.read(count: $0)
+            }
+          guard let self else { return }
+          await self._messages.send(messages)
         } while true
       } catch {
-        self?._messagesContinuation.finish(throwing: error)
+        self?._messages.fail(error)
       }
     }
   }
@@ -174,13 +172,13 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
       self.receiveMessageTask = nil
     }
 
-    _messagesContinuation.finish()
+    _messages.finish()
   }
 
   deinit {
     receiveMessageTask?.cancel()
     keepAliveTask?.cancel()
-    _messagesContinuation.finish()
+    _messages.finish()
   }
 
   package var heartbeatTime = Duration.seconds(0) {
