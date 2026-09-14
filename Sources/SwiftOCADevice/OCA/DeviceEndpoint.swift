@@ -43,7 +43,7 @@ package protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
   /// The control protocol controllers on this endpoint speak. Defaults to OCP.1.
   nonisolated var controlProtocol: OcaControlProtocol { get }
 
-  /// Largest PDU accepted from a controller (enforced for OCP.2 framing). Override to
+  /// Largest PDU accepted from a controller. Override to
   /// narrow it: the default lets a peer buffer 16 MB before a PDU is framed.
   nonisolated var maximumPduSize: Int { get }
 
@@ -77,6 +77,7 @@ extension OcaDeviceEndpointPrivate {
   }
 
   package func handle(messagePduData: Data, from controller: ControllerType) async throws {
+    try controlProtocol.validatePacketPdu(messagePduData, maximumPduSize: maximumPduSize)
     let messageList = try await controller.decodeMessages(from: messagePduData)
     try await controller.handle(for: self, messageList: messageList)
   }

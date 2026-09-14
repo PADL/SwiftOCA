@@ -47,7 +47,7 @@ package actor OcaFlyingSocksStreamController: Ocp1ControllerInternal, CustomStri
 
   private let address: String
   private let socket: AsyncSocket
-  private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
+  private let _messages: AsyncThrowingChannel<Ocp1MessageList, Error>
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
@@ -76,7 +76,7 @@ package actor OcaFlyingSocksStreamController: Ocp1ControllerInternal, CustomStri
     self.endpoint = endpoint
     controlProtocol = endpoint.controlProtocol
     self.socket = socket
-    _messages = AsyncThrowingStream.decodingMessages(
+    _messages = AsyncThrowingChannel.decodingMessages(
       from: socket.bytes,
       timeout: endpoint.timeout,
       controlProtocol: endpoint.controlProtocol,
@@ -105,12 +105,14 @@ package actor OcaFlyingSocksStreamController: Ocp1ControllerInternal, CustomStri
     _ = shutdown(socket.socket.file.rawValue, Int32(SHUT_RDWR))
     #endif
 
+    _messages.finish()
     keepAliveTask?.cancel()
     keepAliveTask = nil
   }
 
   deinit {
     keepAliveTask?.cancel()
+    _messages.finish()
     try? socket.close()
   }
 
@@ -167,7 +169,7 @@ private extension OcaFlyingSocksStreamController {
   }
 }
 
-private extension AsyncThrowingStream
+private extension AsyncThrowingChannel
   where Element == Ocp1MessageList,
   Failure == Error
 {
@@ -177,59 +179,66 @@ private extension AsyncThrowingStream
     controlProtocol: OcaControlProtocol,
     maximumPduSize: Int
   ) -> Self {
-    let (stream, continuation) = makeStream(of: Ocp1MessageList.self, throwing: Error.self)
+    let channel = Self()
     // one timer for every read on the connection, rather than a sleep per message that the
     // runtime would keep for the whole timeout after the message arrived
     let deadlines = DeadlineTimer()
 
-    let task = Task {
+    Task {
       // one iterator and one reader for the life of the connection, owned by this task: the
       // reader buffers bytes between PDUs, so neither can be recreated per PDU or shared
       var iterator = bytes.makeAsyncIterator()
-      let reader = controlProtocol.makeReader(isMessageOriented: false, maximumPduSize: maximumPduSize)
+      let reader = controlProtocol.makeReader(
+        preservesPduBoundaries: false,
+        maximumPduSize: maximumPduSize
+      )
 
       do {
         repeat {
           // a timeout finishes the stream, which cancels this task, rather than moving the
           // read, and with it the reader, into a task of its own
           let watchdog = deadlines.watchdog(for: timeout) {
-            continuation.finish(throwing: Ocp1Error.responseTimeout)
+            channel.fail(Ocp1Error.responseTimeout)
           }
-          defer { watchdog?.cancel() }
+          let messages: Ocp1MessageList
+          do {
+            messages = try await OcaDevice.asyncReceiveMessages(
+              reader: reader,
+              controlProtocol: controlProtocol,
+              read: { count, awaitingAllRead in
+                var nremain = count
+                var buffer = Data()
+                buffer.reserveCapacity(count)
 
-          let messages = try await OcaDevice.asyncReceiveMessages(
-            reader: reader,
-            controlProtocol: controlProtocol,
-            read: { count, awaitingAllRead in
-              var nremain = count
-              var buffer = Data()
-              buffer.reserveCapacity(count)
+                repeat {
+                  let read = try await iterator.nextBuffer(suggested: nremain)
+                  guard let read, !read.isEmpty else {
+                    throw Ocp1Error.notConnected // EOF on zero bytes
+                  }
+                  buffer += read
+                  nremain -= read.count
+                } while awaitingAllRead && nremain > 0
 
-              repeat {
-                let read = try await iterator.nextBuffer(suggested: nremain)
-                guard let read, !read.isEmpty else {
-                  throw Ocp1Error.notConnected // EOF on zero bytes
-                }
-                buffer += read
-                nremain -= read.count
-              } while awaitingAllRead && nremain > 0
-
-              return buffer
-            }
-          )
-          continuation.yield(messages)
+                return buffer
+              }
+            )
+          } catch {
+            watchdog?.cancel()
+            throw error
+          }
+          watchdog?.cancel()
+          await channel.send(messages)
         } while true
       } catch Ocp1Error.pduTooShort {
-        continuation.finish()
+        channel.finish()
       } catch SocketError.disconnected {
-        continuation.finish(throwing: Ocp1Error.notConnected)
+        channel.fail(Ocp1Error.notConnected)
       } catch {
-        continuation.finish(throwing: error)
+        channel.fail(error)
       }
     }
-    continuation.onTermination = { _ in task.cancel() }
 
-    return stream
+    return channel
   }
 }
 

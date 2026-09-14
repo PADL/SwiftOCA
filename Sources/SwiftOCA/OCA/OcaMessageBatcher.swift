@@ -31,6 +31,7 @@ final class OcaMessageBatcher: Sendable {
   private let controlProtocol: OcaControlProtocol
 
   private var encodedPdus = [EncodedPDU]()
+  private var encodedMessagesSize = 0
   private var lastMessageType: OcaMessageType?
 
   private var periodicTask: Task<(), Error>?
@@ -53,8 +54,7 @@ final class OcaMessageBatcher: Sendable {
   }
 
   var currentSize: Int {
-    controlProtocol.pduOverhead(messageCount: encodedPdus.count + 1) +
-      encodedPdus.reduce(0) { $0 + $1.count }
+    controlProtocol.pduOverhead(messageCount: encodedPdus.count + 1) + encodedMessagesSize
   }
 
   private func canCombine(type messageType: OcaMessageType) -> Bool {
@@ -95,11 +95,13 @@ final class OcaMessageBatcher: Sendable {
       let pendingPdus = encodedPdus
       let pendingType = lastMessageType
       encodedPdus.removeAll()
+      encodedMessagesSize = 0
       lastMessageType = nil
       stopPeriodicDequeue()
 
       // Enqueue the new message before sending, so it's safe from reentrancy
       encodedPdus.append(encodedPdu)
+      encodedMessagesSize = encodedPdu.count
       lastMessageType = messageType
       startPeriodicDequeue()
 
@@ -109,6 +111,7 @@ final class OcaMessageBatcher: Sendable {
       }
     } else {
       encodedPdus.append(encodedPdu)
+      encodedMessagesSize += encodedPdu.count
       lastMessageType = messageType
 
       if encodedPdus.count == 1 {
@@ -143,7 +146,8 @@ final class OcaMessageBatcher: Sendable {
   /// clears only its own reference, and does so even when the batch turns out to be empty,
   /// otherwise `startPeriodicDequeue` would see a stale task and never arm another timer.
   func dequeue(timerGeneration: Int? = nil) async throws {
-    if let timerGeneration, timerGeneration == periodicGeneration {
+    if let timerGeneration {
+      guard timerGeneration == periodicGeneration else { return }
       periodicTask = nil
     }
 
@@ -151,12 +155,21 @@ final class OcaMessageBatcher: Sendable {
 
     let encodedPdus = encodedPdus
     self.encodedPdus.removeAll()
+    encodedMessagesSize = 0
     self.lastMessageType = nil
 
     if timerGeneration == nil {
       stopPeriodicDequeue()
     }
     try await send(encodedPdus: encodedPdus, type: lastMessageType)
+  }
+
+  /// Discards work belonging to a transport generation that is being torn down.
+  func cancelPending() {
+    stopPeriodicDequeue()
+    encodedPdus.removeAll(keepingCapacity: true)
+    encodedMessagesSize = 0
+    lastMessageType = nil
   }
 
   deinit {

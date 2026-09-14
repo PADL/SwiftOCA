@@ -91,6 +91,21 @@ package extension OcaControlProtocol {
     }
   }
 
+  /// Validates the boundary of one PDU delivered by a packet transport before
+  /// its contents are decoded. Packet data must never be joined to another packet.
+  func validatePacketPdu(_ data: Data, maximumPduSize: Int) throws {
+    switch self {
+    case .ocp1:
+      try Ocp1PduReader.validatePacket(data, maximumPduSize: maximumPduSize)
+    #if NonEmbeddedBuild
+    case .ocp2:
+      guard data.count <= maximumPduSize + 2 else {
+        throw Ocp1Error.invalidPduSize
+      }
+    #endif
+    }
+  }
+
   /// Batching support: encode one message; `assemblePdu` later combines any
   /// number of same-type encoded messages into one PDU. Generic, so a message
   /// reaches the encoder without being boxed; `internal` because
@@ -139,15 +154,22 @@ package extension OcaControlProtocol {
     }
   }
 
-  /// A reader for one receive loop. `isMessageOriented` transports deliver a whole
-  /// PDU per read.
-  func makeReader(isMessageOriented: Bool, maximumPduSize: Int) -> any OcaPduReader {
+  /// A reader for one receive loop. `preservesPduBoundaries` means every read
+  /// is exactly one transport packet containing one PDU; WebSocket messages are
+  /// deliberately a byte stream and therefore pass `false`.
+  func makeReader(preservesPduBoundaries: Bool, maximumPduSize: Int) -> any OcaPduReader {
     switch self {
     case .ocp1:
-      Ocp1PduReader(isMessageOriented: isMessageOriented, maximumPduSize: maximumPduSize)
+      Ocp1PduReader(
+        preservesPduBoundaries: preservesPduBoundaries,
+        maximumPduSize: maximumPduSize
+      )
     #if NonEmbeddedBuild
     case .ocp2:
-      Ocp2PduReader(isMessageOriented: isMessageOriented, maximumPduSize: maximumPduSize)
+      Ocp2PduReader(
+        preservesPduBoundaries: preservesPduBoundaries,
+        maximumPduSize: maximumPduSize
+      )
     #endif
     }
   }

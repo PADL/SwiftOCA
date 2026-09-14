@@ -319,6 +319,7 @@ extension OcaConnection {
 
 extension OcaConnection {
   private func _disconnectDevice(clearObjectCache: Bool) async throws {
+    batcher.cancelPending()
     _stopMonitor()
 
     try await disconnectDevice()
@@ -445,6 +446,14 @@ extension OcaConnection {
       .trace(
         "monitor task \(id) error: \(error) current connection state: \(currentConnectionState)"
       )
+
+    // A cancelled monitor may finish after its successor has connected. It must
+    // not tear down that newer transport generation. `-1` is the deliberate
+    // out-of-band notification used when the configured device address changes.
+    guard id == -1 || id == connectionID else {
+      logger.trace("ignoring obsolete monitor task \(id)")
+      return
+    }
 
     let reconnectDevice: Bool
 

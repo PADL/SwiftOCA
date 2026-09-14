@@ -99,6 +99,38 @@ final class WebSocketConnectionTests: XCTestCase {
     try await connection.disconnect()
   }
 
+  /// A heartbeat failure must cancel a receive from a peer that leaves the TCP
+  /// connection open but sends no frames, allowing the monitor to disconnect.
+  func testWSSilentPeerDoesNotStrandMonitor() async throws {
+    let server = try HTTPServer(address: .inet(ip4: "127.0.0.1", port: 0), timeout: 5)
+    let handler = SilentWSHandler()
+    await server.appendRoute(
+      "GET /",
+      to: WebSocketHTTPHandler(handler: handler)
+    )
+    let serverTask = Task { try await server.run() }
+    defer { serverTask.cancel() }
+    try await server.waitUntilListening(timeout: 5)
+    guard case let .ip4(_, port) = await server.listeningAddress else {
+      throw Ocp1Error.notConnected
+    }
+
+    let connection = await OcaFlyingFoxConnection(
+      host: "127.0.0.1",
+      port: port,
+      options: OcaConnectionOptions(flags: [], heartbeatTime: .milliseconds(50))
+    )
+    try await connection.connect()
+
+    let deadline = ContinuousClock.now + .seconds(2)
+    while await connection.isConnected, ContinuousClock.now < deadline {
+      try await Task.sleep(for: .milliseconds(10))
+    }
+    let isConnected = await connection.isConnected
+    XCTAssertFalse(isConnected, "a cancelled WebSocket receive stranded the monitor")
+    try? await connection.disconnect()
+  }
+
   /// Test reading and writing the device manager's device name over WebSocket.
   func testWSReadWriteDeviceName() async throws {
     let device = OcaDevice()
@@ -220,6 +252,35 @@ final class WebSocketConnectionTests: XCTestCase {
   }
 }
 
+/// Completes the WebSocket handshake and consumes client frames without ever
+/// producing one, modelling a peer whose TCP connection remains open but silent.
+private final class SilentWSHandler: WSHandler, @unchecked Sendable {
+  private let lock = NSLock()
+  private var inputTask: Task<(), Never>?
+  private var output: AsyncStream<WSFrame>.Continuation?
+
+  func makeFrames(for client: AsyncThrowingStream<WSFrame, any Error>) async throws
+    -> AsyncStream<WSFrame>
+  {
+    let (frames, output) = AsyncStream.makeStream(of: WSFrame.self)
+    let inputTask = Task {
+      do {
+        for try await _ in client {}
+      } catch {}
+    }
+    lock.withLock {
+      self.output = output
+      self.inputTask = inputTask
+    }
+    return frames
+  }
+
+  deinit {
+    inputTask?.cancel()
+    output?.finish()
+  }
+}
+
 #if NonEmbeddedBuild
 
 // MARK: - AES70-3 8.4.3.4
@@ -247,7 +308,7 @@ private extension RawWebSocket {
   /// controller too, until a response has arrived for each of `handles`.
   func ocp1Responses(for handles: Set<OcaUint32>) async throws -> [OcaUint32: Ocp1Response] {
     let reader = OcaControlProtocol.ocp1.makeReader(
-      isMessageOriented: false,
+      preservesPduBoundaries: false,
       maximumPduSize: OcaControlProtocol.defaultMaximumPduSize
     )
     var responses = [OcaUint32: Ocp1Response]()

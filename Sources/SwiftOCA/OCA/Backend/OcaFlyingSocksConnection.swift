@@ -262,7 +262,10 @@ public class OcaFlyingSocksConnection: OcaConnection, Ocp1MutableSocketAddressCo
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(
+        address: host,
+        port: port
+      )),
       options: options
     )
   }
@@ -431,7 +434,7 @@ public final class OcaFlyingSocksDatagramConnection: OcaFlyingSocksConnection {
 
   override public func read(_ length: Int, awaitingAllRead: Bool) async throws -> Data {
     try await withMappedError { socket in
-      try await Data(socket.read(atMost: Ocp1MaximumDatagramPduSize))
+      try await Data(socket.read(atMost: min(length, Ocp1MaximumDatagramPduSize)))
     }
   }
 }
