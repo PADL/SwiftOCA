@@ -85,7 +85,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(encodedParameters, [0x01, 0x00, 0x02])
 
     let command = Ocp1Command(
-      commandSize: 0,
+      commandSize: 20,
       handle: 100,
       targetONo: 5000,
       methodID: OcaMethodID("2.6"),
@@ -97,7 +97,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     let encodedCommand: [UInt8] = command.bytes
     XCTAssertEqual(
       encodedCommand,
-      [0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 19, 136, 0, 2, 0, 6, 1, 1, 0, 2]
+      [0, 0, 0, 20, 0, 0, 0, 100, 0, 0, 19, 136, 0, 2, 0, 6, 1, 1, 0, 2]
     )
 
     let decodedCommand = try Ocp1Command(bytes: Data(encodedCommand))
@@ -146,7 +146,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     )
 
     let command = Ocp1Command(
-      commandSize: 0,
+      commandSize: 41,
       handle: 101,
       targetONo: 5001,
       methodID: OcaMethodID("4.1"),
@@ -158,7 +158,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     let encodedCommand: [UInt8] = command.bytes
     XCTAssertEqual(
       encodedCommand,
-      [0, 0, 0, 0, 0, 0, 0, 101, 0, 0, 19, 137, 0, 4, 0, 1, 3, 255, 255, 255, 255, 255, 255,
+      [0, 0, 0, 41, 0, 0, 0, 101, 0, 0, 19, 137, 0, 4, 0, 1, 3, 255, 255, 255, 255, 255, 255,
        255, 156, 255, 255, 255, 255, 255, 255, 255, 56, 0, 0, 0, 0, 0, 0, 0, 0]
     )
 
@@ -722,7 +722,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     )
     let params = Ocp1NtfParams(parameterCount: 1, context: OcaBlob(), eventData: eventData)
     let aNotification = Ocp1Notification1(
-      notificationSize: 0,
+      notificationSize: 32,
       targetONo: 0x5678,
       methodID: "1.1",
       parameters: params
@@ -735,7 +735,7 @@ final class SwiftOCADeviceTests: XCTestCase {
         0x00,
         0x00,
         0x00,
-        0x00,
+        0x20,
         0x00,
         0x00,
         0x56,
@@ -774,7 +774,7 @@ final class SwiftOCADeviceTests: XCTestCase {
   func testBuiltinEncoderDecoderNtf2() throws {
     let eventParameters = Data([0x00, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01])
     let aNotification = Ocp1Notification2(
-      notificationSize: 0,
+      notificationSize: 22,
       event: OcaEvent(emitterONo: 0x1234, eventID: OcaEventID(defLevel: 1, eventIndex: 1)),
       notificationType: .event,
       data: eventParameters
@@ -783,7 +783,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     let encodedNotification = aNotification.bytes
     XCTAssertEqual(
       encodedNotification,
-      [0, 0, 0, 0, 0, 0, 18, 52, 0, 1, 0, 1, 0, 0, 4, 0, 1, 0, 0, 0, 0, 1]
+      [0, 0, 0, 22, 0, 0, 18, 52, 0, 1, 0, 1, 0, 0, 4, 0, 1, 0, 0, 0, 0, 1]
     )
 
     let decodedNotification = try Ocp1Notification2(bytes: Data(encodedNotification))
