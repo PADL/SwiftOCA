@@ -672,6 +672,17 @@ final class SwiftOCADeviceTests: XCTestCase {
       XCTAssertGreaterThan(keyPaths.count, 10)
     }
   }
+
+  func testKeyPathSkipsNoncopyableFields() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+
+    // OcaSecurityManager keeps its pre-shared keys in a Mutex; reading a ~Copyable
+    // field through a key path traps on Swift 6.4, so reflection must skip it
+    let securityManager = await device.securityManager!
+    XCTAssertNil(_allKeyPaths(value: securityManager)["_preSharedKeys"])
+    XCTAssertFalse(securityManager.allDevicePropertyKeyPathsUncached.isEmpty)
+  }
 }
 
 /// https://github.com/apple/swift-corelibs-xctest/issues/436

@@ -152,6 +152,28 @@ func _forEachField(
   return true
 }
 
+/// Whether values of `type` can be copied.
+///
+/// Reflection reports `~Copyable` fields (e.g. `Mutex`, `Atomic`) like any other,
+/// but reading one through a key path copies it via its value witnesses. From
+/// Swift 6.4 those witnesses trap (`__swift_cannot_copy_noncopyable_type`), so such
+/// fields must not be handed out as key paths. This tests the `IsNonCopyable` bit
+/// of the value witness table flags (swift/ABI/MetadataValues.h), which sits after
+/// the eight function witnesses and the `size` and `stride` fields.
+private func _isCopyable(_ type: Any.Type) -> Bool {
+  let isNonCopyable: UInt32 = 0x0080_0000
+  let metadata = unsafeBitCast(type, to: UnsafeRawPointer.self)
+  let valueWitnesses = metadata.load(
+    fromByteOffset: -MemoryLayout<UnsafeRawPointer>.size,
+    as: UnsafeRawPointer.self
+  )
+  let flags = valueWitnesses.load(
+    fromByteOffset: 8 * MemoryLayout<UnsafeRawPointer>.size + 2 * MemoryLayout<Int>.size,
+    as: UInt32.self
+  )
+  return flags & isNonCopyable == 0
+}
+
 /// Calls the given closure on every field of the specified type.
 ///
 /// If `body` returns `false` for any field, no additional fields are visited.
@@ -191,7 +213,7 @@ private func _forEachFieldWithKeyPath(
     default:
       false
     }
-    if !supportedType || !field.isStrong {
+    if !supportedType || !field.isStrong || !_isCopyable(childType) {
       if !ignoreUnknown { return false }
       continue
     }
