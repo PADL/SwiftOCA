@@ -597,9 +597,9 @@ final class OcaMessageBatcherTests: XCTestCase {
       try await handler.sendEncodedPDU(data)
     }
 
-    // Small batch should have limited capacity
+    // An empty batch has no PDU to send, whatever its capacity
     let smallCurrentSize = smallBatcher.currentSize
-    XCTAssertGreaterThan(smallCurrentSize, 0) // Has minimum PDU size
+    XCTAssertEqual(smallCurrentSize, 0)
 
     let largeCurrentSize = largeBatcher.currentSize
     XCTAssertEqual(largeCurrentSize, smallCurrentSize) // Both start empty
