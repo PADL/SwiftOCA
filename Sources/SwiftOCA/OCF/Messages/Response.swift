@@ -51,11 +51,18 @@ public struct Ocp1Response: _Ocp1MessageCodable, Sendable {
     )
   }
 
-  func encode(into bytes: inout [UInt8]) {
-    withUnsafeBytes(of: responseSize.bigEndian) { bytes += $0 }
-    withUnsafeBytes(of: handle.bigEndian) { bytes += $0 }
-    bytes.append(statusCode.rawValue)
-    bytes.append(parameters.parameterCount)
-    bytes.append(contentsOf: parameters.parameterData)
+  @_spi(SwiftOCAPrivate)
+  public var encodedSize: Int {
+    2 * MemoryLayout<OcaUint32>.size + 1 + 1 + parameters.parameterData.count
+  }
+
+  /// `responseSize` is written as the encoded size, whatever its stored value.
+  @_spi(SwiftOCAPrivate)
+  public func encode(into output: inout OutputRawSpan) {
+    output.append(bigEndian: OcaUint32(encodedSize))
+    output.append(bigEndian: handle)
+    output.append(statusCode.rawValue)
+    output.append(parameters.parameterCount)
+    output.append(contentsOf: parameters.parameterData)
   }
 }

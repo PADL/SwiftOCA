@@ -65,9 +65,11 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible, 
     eventIndex = try OcaUint16(parsingBigEndian: &input)
   }
 
-  func encode(into bytes: inout [UInt8]) {
-    withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
-    withUnsafeBytes(of: eventIndex.bigEndian) { bytes += $0 }
+  var encodedSize: Int { 4 }
+
+  func encode(into output: inout OutputRawSpan) {
+    output.append(bigEndian: defLevel)
+    output.append(bigEndian: eventIndex)
   }
 }
 
@@ -89,9 +91,11 @@ public struct OcaEvent: Codable, Hashable, Equatable, Sendable, CustomStringConv
     )
   }
 
-  func encode(into bytes: inout [UInt8]) {
-    withUnsafeBytes(of: emitterONo.bigEndian) { bytes += $0 }
-    eventID.encode(into: &bytes)
+  var encodedSize: Int { MemoryLayout<OcaONo>.size + eventID.encodedSize }
+
+  func encode(into output: inout OutputRawSpan) {
+    output.append(bigEndian: emitterONo)
+    eventID.encode(into: &output)
   }
 
   public var description: String {

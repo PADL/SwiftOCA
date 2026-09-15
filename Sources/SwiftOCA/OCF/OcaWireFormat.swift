@@ -60,6 +60,27 @@ public extension OcaControlProtocol {
   static let defaultMaximumPduSize = 16 * 1024 * 1024
 }
 
+/// A message ready to be appended to a PDU, its encoded size already known.
+enum OcaPreparedMessage<Message: _Ocp1MessageCodable> {
+  /// written in place when appended
+  case ocp1(Message, encodedSize: Int)
+  #if NonEmbeddedBuild
+  /// serialised up front, as a JSON message's size is only known once it is written
+  case ocp2([UInt8])
+  #endif
+
+  var encodedSize: Int {
+    switch self {
+    case let .ocp1(_, encodedSize):
+      encodedSize
+    #if NonEmbeddedBuild
+    case let .ocp2(bytes):
+      bytes.count
+    #endif
+    }
+  }
+}
+
 /// Framing, as a switch on the protocol rather than a witness table: the two
 /// framings are a closed set and hold no state (per-connection reader state lives
 /// in the `OcaPduReader` they vend), so an existential would buy nothing and cost a
@@ -106,50 +127,105 @@ package extension OcaControlProtocol {
     }
   }
 
-  /// Batching support: encode one message; `assemblePdu` later combines any
-  /// number of same-type encoded messages into one PDU. Generic, so a message
-  /// reaches the encoder without being boxed; `internal` because
-  /// `_Ocp1MessageCodable` is, and only the batcher (in this module) sends one
-  /// message at a time.
-  internal func encodeMessage(
-    _ message: some _Ocp1MessageCodable,
+  /// Batching support: a PDU is built in place, one message at a time. A message
+  /// is prepared first, so its size is known before the batcher decides which PDU
+  /// it joins; `beginPdu`, `appendMessage` and `finishPdu` then write it with no
+  /// intermediate buffer per message. Generic, so a message reaches the encoder
+  /// without being boxed; `internal` because `_Ocp1MessageCodable` is, and only
+  /// the batcher (in this module) sends one message at a time.
+  internal func prepareMessage<Message: _Ocp1MessageCodable>(
+    _ message: Message,
     type messageType: OcaMessageType
-  ) throws -> [UInt8] {
+  ) throws -> OcaPreparedMessage<Message> {
     switch self {
     case .ocp1:
-      var bytes = [UInt8]()
-      try message.encode(type: messageType, into: &bytes)
-      return bytes
+      let encodedSize = message.encodedSize
+      /// a message too large for any PDU would otherwise trap writing its size
+      guard OcaUint32(exactly: OcaConnection.MinimumPduSize - 1 + encodedSize) != nil else {
+        throw Ocp1Error.invalidPduSize
+      }
+      return .ocp1(message, encodedSize: encodedSize)
     #if NonEmbeddedBuild
     case .ocp2:
-      return try Ocp2Message.encodeMessage(message, type: messageType)
+      return try .ocp2(Ocp2Message.encodeMessage(message, type: messageType))
     #endif
     }
   }
 
-  func assemblePdu(
+  /// A PDU holding no messages yet, with room reserved for `capacity` bytes of them.
+  func beginPdu(type messageType: OcaMessageType, reservingCapacity capacity: Int = 0) throws -> Data {
+    switch self {
+    case .ocp1:
+      var pdu = Data(capacity: OcaConnection.MinimumPduSize + capacity)
+      /// `syncVal` and the header, written by `finishPdu` once the size and count are known
+      pdu.count = OcaConnection.MinimumPduSize
+      return pdu
+    #if NonEmbeddedBuild
+    case .ocp2:
+      let prefix = try Ocp2Message.pduPrefix(type: messageType)
+      var pdu = Data(capacity: prefix.count + capacity + 3)
+      pdu.append(contentsOf: prefix)
+      return pdu
+    #endif
+    }
+  }
+
+  /// Appends a prepared message to a PDU already holding `messageCount` messages.
+  internal func appendMessage(
+    _ message: OcaPreparedMessage<some _Ocp1MessageCodable>,
+    to pdu: inout Data,
+    messageCount: Int
+  ) {
+    switch message {
+    case let .ocp1(message, encodedSize):
+      pdu.appendOcp1(byteCount: encodedSize) { message.encode(into: &$0) }
+    #if NonEmbeddedBuild
+    case let .ocp2(bytes):
+      if messageCount > 0 {
+        pdu.append(UInt8(ascii: ","))
+      }
+      pdu.append(contentsOf: bytes)
+    #endif
+    }
+  }
+
+  /// Completes a PDU holding `messageCount` messages, ready to send.
+  func finishPdu(_ pdu: inout Data, type messageType: OcaMessageType, messageCount: Int) throws {
+    switch self {
+    case .ocp1:
+      let header = try OcaConnection.ocp1Header(
+        type: messageType,
+        messageCount: messageCount,
+        pduSize: pdu.count
+      )
+      pdu.withOcp1Output(at: 0, byteCount: OcaConnection.MinimumPduSize) { output in
+        output.append(Ocp1SyncValue)
+        header.encode(into: &output)
+      }
+    #if NonEmbeddedBuild
+    case .ocp2:
+      pdu.append(contentsOf: Ocp2Message.pduSuffix(type: messageType))
+    #endif
+    }
+  }
+
+  /// The size `pdu`, holding `messageCount` messages, will have once finished, with
+  /// a further message of `additionalMessageSize` bytes if one is given. For batch
+  /// size accounting.
+  func finishedPduSize(
+    _ pdu: Data,
+    messageCount: Int,
     type messageType: OcaMessageType,
-    encodedMessages: [[UInt8]]
-  ) throws -> [UInt8] {
+    adding additionalMessageSize: Int? = nil
+  ) -> Int {
+    let size = pdu.count + (additionalMessageSize ?? 0)
     switch self {
     case .ocp1:
-      try OcaConnection.encodeOcp1MessagePduData(type: messageType, encodedPdus: encodedMessages)
+      return size
     #if NonEmbeddedBuild
     case .ocp2:
-      try Ocp2Message.assemblePdu(type: messageType, encodedMessages: encodedMessages)
-    #endif
-    }
-  }
-
-  /// Bytes a PDU carrying `messageCount` messages adds beyond the messages
-  /// themselves, for batch size accounting.
-  func pduOverhead(messageCount: Int) -> Int {
-    switch self {
-    case .ocp1:
-      OcaConnection.MinimumPduSize
-    #if NonEmbeddedBuild
-    case .ocp2:
-      Ocp2Message.pduOverhead(messageCount: messageCount)
+      let separatorSize = additionalMessageSize != nil && messageCount > 0 ? 1 : 0
+      return size + separatorSize + Ocp2Message.pduSuffix(type: messageType).count
     #endif
     }
   }

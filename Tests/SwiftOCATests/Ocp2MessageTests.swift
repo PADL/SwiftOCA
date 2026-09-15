@@ -596,13 +596,21 @@ final class Ocp2MessageTests: XCTestCase {
       targetONo: 1,
       methodID: OcaMethodID("1.1")
     ) }
-    let encoded = try commands.map { try format.encodeMessage($0, type: .ocaCmdRrq) }
-    let pdu = try format.assemblePdu(type: .ocaCmdRrq, encodedMessages: encoded)
-    XCTAssertGreaterThanOrEqual(
-      format.pduOverhead(messageCount: 3) + encoded.reduce(0) { $0 + $1.count },
-      pdu.count
-    )
-    let (type, decoded) = try format.decodePdu(Data(pdu))
+    var pdu = try format.beginPdu(type: .ocaCmdRrq)
+    var predictedSize = 0
+    for (index, command) in commands.enumerated() {
+      let message = try format.prepareMessage(command, type: .ocaCmdRrq)
+      predictedSize = format.finishedPduSize(
+        pdu,
+        messageCount: index,
+        type: .ocaCmdRrq,
+        adding: message.encodedSize
+      )
+      format.appendMessage(message, to: &pdu, messageCount: index)
+    }
+    try format.finishPdu(&pdu, type: .ocaCmdRrq, messageCount: commands.count)
+    XCTAssertEqual(pdu.count, predictedSize)
+    let (type, decoded) = try format.decodePdu(pdu)
     XCTAssertEqual(type, .ocaCmdRrq)
     XCTAssertEqual(decoded.compactMap { ($0 as? Ocp1Command)?.handle }, [1, 2, 3])
   }

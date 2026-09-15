@@ -35,9 +35,9 @@ public struct Ocp1Header: Codable, Sendable, _Ocp1Codable {
   /// offset 7 (8 relative to start of PDU), absent for `ocaKeepAlive` messages
   public let messageCount: OcaUint16
 
-  init(pduType: OcaMessageType, messageCount: OcaUint16) {
+  init(pduType: OcaMessageType, messageCount: OcaUint16, pduSize: OcaUint32 = 0) {
     protocolVersion = Ocp1ProtocolVersion
-    pduSize = 0
+    self.pduSize = pduSize
     self.pduType = pduType
     self.messageCount = messageCount
   }
@@ -73,11 +73,13 @@ public struct Ocp1Header: Codable, Sendable, _Ocp1Codable {
     messageCount = try OcaUint16(parsingBigEndian: &input)
   }
 
-  func encode(into bytes: inout [UInt8]) {
-    withUnsafeBytes(of: protocolVersion.bigEndian) { bytes.append(contentsOf: $0) }
-    withUnsafeBytes(of: pduSize.bigEndian) { bytes.append(contentsOf: $0) }
-    bytes.append(pduType.rawValue)
-    withUnsafeBytes(of: messageCount.bigEndian) { bytes.append(contentsOf: $0) }
+  var encodedSize: Int { Self.HeaderSize }
+
+  func encode(into output: inout OutputRawSpan) {
+    output.append(bigEndian: protocolVersion)
+    output.append(bigEndian: pduSize)
+    output.append(pduType.rawValue)
+    output.append(bigEndian: messageCount)
   }
 }
 
@@ -90,6 +92,16 @@ public protocol Ocp1MessagePdu: Codable, Sendable {
 
 public protocol Ocp1Message: Codable, Sendable {
   var messageSize: OcaUint32 { get }
+
+  /// The hand-rolled OCP.1 encoding, as requirements here so that it is reached
+  /// from an `Ocp1Message` existential through the witness table: casting to
+  /// `_Ocp1MessageCodable` instead is a runtime conformance lookup, which costs
+  /// more than encoding the message.
+  @_spi(SwiftOCAPrivate)
+  var encodedSize: Int { get }
+
+  @_spi(SwiftOCAPrivate)
+  func encode(into output: inout OutputRawSpan)
 }
 
 protocol _Ocp1MessageCodable: Ocp1Message & _Ocp1Codable {}

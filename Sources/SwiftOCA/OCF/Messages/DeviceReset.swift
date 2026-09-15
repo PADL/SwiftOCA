@@ -24,6 +24,18 @@ import Foundation
 /// `OcaDeviceManager.SetResetKey`. OCP.2 only; carried as a `.ocaCmd` PDU in the
 /// message model. Neither side acts on it yet.
 public struct Ocp2DeviceReset: Ocp1Message, Sendable {
+  /// OCP.2 only: there is no OCP.1 encoding, and framing one as OCP.1 is a
+  /// programming error.
+  @_spi(SwiftOCAPrivate)
+  public var encodedSize: Int {
+    fatalError("Ocp2DeviceReset has no OCP.1 encoding")
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public func encode(into output: inout OutputRawSpan) {
+    fatalError("Ocp2DeviceReset has no OCP.1 encoding")
+  }
+
   public let resetKey: Data
 
   public var messageSize: OcaUint32 { OcaUint32(resetKey.count) }

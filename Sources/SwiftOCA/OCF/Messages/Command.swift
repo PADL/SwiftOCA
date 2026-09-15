@@ -161,12 +161,19 @@ public struct Ocp1Command: _Ocp1MessageCodable, Sendable {
     )
   }
 
-  func encode(into bytes: inout [UInt8]) {
-    withUnsafeBytes(of: commandSize.bigEndian) { bytes += $0 }
-    withUnsafeBytes(of: handle.bigEndian) { bytes += $0 }
-    withUnsafeBytes(of: targetONo.bigEndian) { bytes += $0 }
-    methodID.encode(into: &bytes)
-    bytes.append(parameters.parameterCount)
-    bytes.append(contentsOf: parameters.parameterData)
+  @_spi(SwiftOCAPrivate)
+  public var encodedSize: Int {
+    3 * MemoryLayout<OcaUint32>.size + methodID.encodedSize + 1 + parameters.parameterData.count
+  }
+
+  /// `commandSize` is written as the encoded size, whatever its stored value.
+  @_spi(SwiftOCAPrivate)
+  public func encode(into output: inout OutputRawSpan) {
+    output.append(bigEndian: OcaUint32(encodedSize))
+    output.append(bigEndian: handle)
+    output.append(bigEndian: targetONo)
+    methodID.encode(into: &output)
+    output.append(parameters.parameterCount)
+    output.append(contentsOf: parameters.parameterData)
   }
 }

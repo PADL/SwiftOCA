@@ -29,9 +29,7 @@ import WinSDK
 
 private extension _Ocp1Codable {
   var bytes: [UInt8] {
-    var bytes = [UInt8]()
-    encode(into: &bytes)
-    return bytes
+    [UInt8](encodedData)
   }
 }
 
@@ -829,8 +827,7 @@ final class SwiftOCADeviceTests: XCTestCase {
   func testOcaBlobRoundTrip() throws {
     let blob = OcaBlob([0xDE, 0xAD, 0xBE, 0xEF])
     let ocp1EncodedBlob: [UInt8] = try Ocp1Encoder().encode(blob)
-    var rawEncodedBlob = [UInt8]()
-    blob.encode(into: &rawEncodedBlob)
+    let rawEncodedBlob = blob.bytes
 
     XCTAssertEqual(ocp1EncodedBlob, rawEncodedBlob)
 
@@ -843,8 +840,7 @@ final class SwiftOCADeviceTests: XCTestCase {
   func testOcaLongBlobRoundTrip() throws {
     let blob = OcaLongBlob([0xDE, 0xAD, 0xBE, 0xEF])
     let ocp1EncodedBlob: [UInt8] = try Ocp1Encoder().encode(blob)
-    var rawEncodedBlob = [UInt8]()
-    blob.encode(into: &rawEncodedBlob)
+    let rawEncodedBlob = blob.bytes
 
     XCTAssertEqual(ocp1EncodedBlob, rawEncodedBlob)
 

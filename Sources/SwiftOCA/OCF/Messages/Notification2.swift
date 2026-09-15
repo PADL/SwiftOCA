@@ -180,10 +180,17 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
     #endif
   }
 
-  func encode(into bytes: inout [UInt8]) {
-    withUnsafeBytes(of: notificationSize.bigEndian) { bytes += $0 }
-    event.encode(into: &bytes)
-    bytes.append(notificationType.rawValue)
-    bytes.append(contentsOf: data)
+  @_spi(SwiftOCAPrivate)
+  public var encodedSize: Int {
+    MemoryLayout<OcaUint32>.size + event.encodedSize + 1 + data.count
+  }
+
+  /// `notificationSize` is written as the encoded size, whatever its stored value.
+  @_spi(SwiftOCAPrivate)
+  public func encode(into output: inout OutputRawSpan) {
+    output.append(bigEndian: OcaUint32(encodedSize))
+    event.encode(into: &output)
+    output.append(notificationType.rawValue)
+    output.append(contentsOf: data)
   }
 }
