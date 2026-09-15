@@ -62,10 +62,11 @@ public enum OcaSessionStatusDescription {
     switch sessionType {
     case MilanAdaptation.sessionType:
       guard let milan = try? blob.decode(MilanSessionStatusAdaptationData.self) else { return nil }
-      var text = "\(milan.substate)"
-      if milan.srpFailureCode != 0 { text += " srp=\(milan.srpFailureCode)" }
-      if milan.msrpAccumulatedLatency != 0 { text += " latency=\(milan.msrpAccumulatedLatency)ns" }
-      return text
+      // the substate is Undefined outside the Configured state, so it is not shown then
+      var parts = milan.substate == .undefined ? [] : ["\(milan.substate)"]
+      if milan.srpFailureCode != 0 { parts.append("srp=\(milan.srpFailureCode)") }
+      if milan.msrpAccumulatedLatency != 0 { parts.append("latency=\(milan.msrpAccumulatedLatency)ns") }
+      return parts.isEmpty ? nil : parts.joined(separator: " ")
     default:
       return nil
     }

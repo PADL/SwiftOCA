@@ -654,6 +654,12 @@ final class SwiftOCADeviceTests: XCTestCase {
     let remote = MilanMediaStreamEndpointIDExternal(entityID: 0x0001_F2FF_FEFE_D2A4, streamIndex: 1)
     XCTAssertEqual(remote.description, "0001f2fffefed2a4:1")
     XCTAssertEqual(MilanMediaStreamEndpointIDExternal(string: remote.description), remote)
+    func statusDescription(_ status: MilanSessionStatusAdaptationData) throws -> String? {
+      try OcaSessionStatusDescription.description(of: status.blob, sessionType: MilanAdaptation.sessionType)
+    }
+    XCTAssertNil(try statusDescription(MilanSessionStatusAdaptationData()))
+    XCTAssertEqual(try statusDescription(.init(substate: .sourceNotPresent)), "sourceNotPresent")
+    XCTAssertEqual(try statusDescription(.init(msrpAccumulatedLatency: 1000)), "latency=1000ns")
 
     XCTAssertEqual(MilanStreamFormat.supported.count, 18)
     let aaf = MilanStreamFormat.aaf(sampleRate: 48000, channelCount: 8, upTo: true)
