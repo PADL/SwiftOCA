@@ -1,0 +1,30 @@
+#[[
+This source file is part of the SwiftOCA open source project
+
+Copyright (c) 2024 PADL Software Pty Ltd and the SwiftOCA project authors
+Licensed under Apache License v2.0
+
+See https://github.com/PADL/SwiftOCA/blob/main/LICENSE.md for license information
+#]]
+
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
+find_dependency(SwiftSystem)
+find_dependency(SwiftAtomics)
+find_dependency(SocketAddress)
+find_dependency(AsyncExtensions)
+find_dependency(AsyncAlgorithms)
+find_dependency(Logging)
+find_dependency(AsyncQueue)
+find_dependency(AnyCodable)
+find_dependency(FlyingFox)
+find_dependency(IORingSwift)
+find_dependency(OpenSSL)
+
+include("${CMAKE_CURRENT_LIST_DIR}/SwiftOCATargets.cmake")
+
+check_required_components(SwiftOCA)
