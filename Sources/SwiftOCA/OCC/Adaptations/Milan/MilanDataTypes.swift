@@ -110,7 +110,8 @@ public struct MilanMediaStreamEndpointIDExternal: Ocp1TypedBlobRepresentable, Se
   }
 
   public var description: String {
-    "\(String(entityID, radix: 16)):\(streamIndex)"
+    let hex = String(entityID, radix: 16)
+    return "\(String(repeating: "0", count: 16 - hex.count))\(hex):\(streamIndex)"
   }
 }
 

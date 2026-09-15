@@ -651,6 +651,9 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(MilanAdaptation.sessionAgentClassID.parent, OcaClassID("1.2.20"))
     XCTAssertEqual(MilanAdaptation.inputEndpointID(streamIndex: 0), 1)
     XCTAssertEqual(MilanAdaptation.outputEndpointID(streamIndex: 0), 1001)
+    let remote = MilanMediaStreamEndpointIDExternal(entityID: 0x0001_F2FF_FEFE_D2A4, streamIndex: 1)
+    XCTAssertEqual(remote.description, "0001f2fffefed2a4:1")
+    XCTAssertEqual(MilanMediaStreamEndpointIDExternal(string: remote.description), remote)
 
     XCTAssertEqual(MilanStreamFormat.supported.count, 18)
     let aaf = MilanStreamFormat.aaf(sampleRate: 48000, channelCount: 8, upTo: true)
