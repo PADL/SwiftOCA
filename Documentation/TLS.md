@@ -283,6 +283,56 @@ ocacli -S --insecure device.local:65010
 
 `-S` / `--tls` enables TLS. The flag is currently mutually exclusive with `-U` (UDP). DTLS support in `ocacli` is not yet wired up; the underlying `Ocp1TLSDatagramConnection` is fully functional and can be driven from the library directly (see the DTLS section above).
 
+## SwiftNIO backend (opt-in)
+
+A third, opt-in backend built on **SwiftNIO + NIOSSL** is available behind the `SwiftNIOBackend` Swift package trait. It is **not** enabled by default and does **not** rebind the platform `Ocp1TLSStreamConnection` typealias — the Apple Network.framework and Linux OpenSSL backends remain the defaults. The intent is "ecosystem alignment": users who already run NIO pipelines (custom `EventLoopGroup`, middleware, observability, lifecycle managers) can plug the OCP.1 transport into that world.
+
+Enable in your `Package.swift`:
+
+```swift
+.package(
+  url: "https://github.com/PADL/SwiftOCA",
+  from: "...",
+  traits: ["NonEmbeddedBuild", "SwiftNIOBackend"]
+)
+```
+
+Or on the command line: `swift build --traits NonEmbeddedBuild,SwiftNIOBackend`.
+
+Concrete types (addressed by name, not by typealias):
+
+- Client: `Ocp1NIOSecureTCPConnection` (in `SwiftOCASecure`)
+- Server: `Ocp1NIOSecureTCPDeviceEndpoint` + `Ocp1NIOSecureTCPController` (in `SwiftOCASecureDevice`)
+
+### Scope and deliberate limitations
+
+| Capability | NIO backend | Notes |
+| --- | --- | --- |
+| TLS over TCP | ✅ | TLS 1.2+ via NIOSSL / BoringSSL |
+| Cert credentials (`.certificateFile`, `.certificatePEM`, `.pkcs12`) | ✅ | Same `Ocp1TLSCredential` cases as other backends |
+| mTLS via `clientCertificateTrustRoots` | ✅ | Server-side cert verification through NIOSSL |
+| Peer identity (cert subject + SHA-256 fingerprint) | ✅ | Snapshotted at handshake completion |
+| PSK (`.preSharedKey`, `.preSharedKeyProvider`) | ❌ | Throws `Ocp1Error.notImplemented` at construction. BoringSSL doesn't ship the AES70-2024 §11.2.4 mandated `TLS_DHE_PSK_WITH_AES_128_CBC_SHA`; we deliberately don't substitute TLS 1.3 external PSK. PSK callers stay on `Ocp1OpenSSLConnection` / `Ocp1NWSecureTCPConnection`. |
+| `.identity(SecIdentity)` (Apple) | ❌ | Throws `Ocp1Error.notImplemented`. NIOSSL doesn't consume `SecIdentity` directly; Apple callers wanting `SecIdentity` use `Ocp1NWSecureTCPConnection`. |
+| DTLS | ❌ | NIO has no DTLS stack — there is no NIO DTLS type at all (compile-time error rather than throwing stub). Use `Ocp1OpenSSLDTLSConnection` / `Ocp1NWSecureUDPConnection`. |
+| Revocation (`Ocp1TLSRevocationOptions`) | ❌ | Any non-empty flag set throws `Ocp1Error.notImplemented` so revocation expectations aren't silently dropped. |
+
+### EventLoopGroup injection
+
+Both client and server take an `eventLoopGroup:` parameter defaulting to `MultiThreadedEventLoopGroup.singleton`. Pass your own group to share with the rest of a Swift-on-Server stack:
+
+```swift
+let group = MultiThreadedEventLoopGroup(numberOfThreads: 2)
+let conn = try Ocp1NIOSecureTCPConnection(
+  deviceAddress: addr,
+  credential: .pkcs12(data: p12Bytes, password: "secret"),
+  hostname: "device.local",
+  eventLoopGroup: group
+)
+```
+
+The backend uses **NIOPosix** uniformly across platforms; NIOTransportServices is intentionally not used, because its TLS path delegates to Network.framework and would defeat the trait's "single code path" goal.
+
 ## Example device
 
 [`Examples/OCADevice/DeviceApp.swift`](../Examples/OCADevice/DeviceApp.swift) reads TLS configuration from environment variables for easy testing:
