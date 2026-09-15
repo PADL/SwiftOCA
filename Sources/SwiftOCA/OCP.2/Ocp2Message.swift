@@ -186,6 +186,33 @@ package enum Ocp2Message {
     }
   }
 
+  /// Whether the payload is one message object rather than an array of them.
+  private static func hasSingleMessage(type messageType: OcaMessageType, deviceReset: Bool) -> Bool {
+    messageType == .ocaKeepAlive || deviceReset
+  }
+
+  /// The envelope before the first message: `{"ProtocolVersion":1,"<key>":`, then
+  /// the `[` opening the message array unless the payload is a single message.
+  package static func pduPrefix(
+    type messageType: OcaMessageType,
+    deviceReset: Bool = false
+  ) throws -> [UInt8] {
+    let key = deviceReset ? Key.deviceReset : try payloadKey(for: messageType)
+    var prefix = Array("{\"\(Key.protocolVersion)\":\(protocolVersion),\"\(key)\":".utf8)
+    if !hasSingleMessage(type: messageType, deviceReset: deviceReset) {
+      prefix.append(UInt8(ascii: "["))
+    }
+    return prefix
+  }
+
+  /// The envelope after the last message, newline-terminated.
+  package static func pduSuffix(
+    type messageType: OcaMessageType,
+    deviceReset: Bool = false
+  ) -> [UInt8] {
+    Array((hasSingleMessage(type: messageType, deviceReset: deviceReset) ? "}\n" : "]}\n").utf8)
+  }
+
   /// One PDU from pre-serialised messages, newline-terminated. The messages are
   /// spliced as bytes so a batch need not re-parse what it already serialised; the
   /// envelope has no string content of its own.
@@ -194,22 +221,17 @@ package enum Ocp2Message {
     encodedMessages: [[UInt8]],
     deviceReset: Bool = false
   ) throws -> [UInt8] {
-    let key = deviceReset ? Key.deviceReset : try payloadKey(for: messageType)
-    var pdu = Array("{\"\(Key.protocolVersion)\":\(protocolVersion),\"\(key)\":".utf8)
-    if messageType == .ocaKeepAlive || deviceReset {
+    var pdu = try pduPrefix(type: messageType, deviceReset: deviceReset)
+    if hasSingleMessage(type: messageType, deviceReset: deviceReset) {
       guard encodedMessages.count == 1 else { throw Ocp1Error.invalidMessageType }
-      pdu += encodedMessages[0]
-    } else {
-      pdu.append(UInt8(ascii: "["))
-      for (index, message) in encodedMessages.enumerated() {
-        if index > 0 {
-          pdu.append(UInt8(ascii: ","))
-        }
-        pdu += message
-      }
-      pdu.append(UInt8(ascii: "]"))
     }
-    pdu += Array("}\n".utf8)
+    for (index, message) in encodedMessages.enumerated() {
+      if index > 0 {
+        pdu.append(UInt8(ascii: ","))
+      }
+      pdu += message
+    }
+    pdu += pduSuffix(type: messageType, deviceReset: deviceReset)
     return pdu
   }
 
@@ -224,12 +246,6 @@ package enum Ocp2Message {
       encodedMessages: encoded,
       deviceReset: deviceReset
     ))
-  }
-
-  /// Envelope bytes beyond the messages: `{"ProtocolVersion":1,"<key>":[` … `]}\n`
-  /// plus a comma between messages. Sized for the longest payload key.
-  package static func pduOverhead(messageCount: Int) -> Int {
-    30 + Key.notifications.count + max(messageCount - 1, 0)
   }
 
   // MARK: - decoding

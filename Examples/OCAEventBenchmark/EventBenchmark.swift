@@ -15,7 +15,7 @@
 //
 
 import Foundation
-import SwiftOCA
+@_spi(SwiftOCAPrivate) import SwiftOCA
 
 let Rounds = 1_000_000
 
@@ -56,10 +56,7 @@ func decodeNotificationWithCodable(_ data: Data) throws -> Ocp1Notification1 {
 }
 
 func encodeNotificationWithBuiltin(_ notification: Ocp1Notification1) throws -> Data {
-  var bytes = [UInt8]()
-  bytes.reserveCapacity(32)
-  notification.encode(into: &bytes)
-  return Data(bytes)
+  Data(ocp1ByteCount: notification.encodedSize) { notification.encode(into: &$0) }
 }
 
 func decodeNotificationWithBuiltin(_ data: Data) throws -> Ocp1Notification1 {

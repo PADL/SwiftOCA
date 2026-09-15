@@ -41,20 +41,19 @@ final class OcaMessageBatcherTests: XCTestCase {
       data = String(data: encodedData, encoding: .utf8) ?? ""
     }
 
-    func encode(into buffer: inout [UInt8]) {
-      let encodedData = data.data(using: .utf8) ?? Data()
-      buffer.append(UInt8(handle & 0xFF)) // Only use low byte to avoid overflow
-      buffer.append(UInt8(min(encodedData.count, 255))) // Limit to prevent overflow
-      let truncatedData = encodedData.prefix(255)
-      buffer.append(contentsOf: truncatedData)
+    private var truncatedData: Data {
+      Data(data.utf8.prefix(255)) // Limit to prevent overflow
     }
 
-    func encode(type messageType: OcaMessageType, into buffer: inout [UInt8]) throws {
-      let encodedData = data.data(using: .utf8) ?? Data()
-      buffer.append(UInt8(handle & 0xFF)) // Only use low byte to avoid overflow
-      buffer.append(UInt8(min(encodedData.count, 255))) // Limit to prevent overflow
-      let truncatedData = encodedData.prefix(255)
-      buffer.append(contentsOf: truncatedData)
+    var encodedSize: Int {
+      2 + truncatedData.count
+    }
+
+    func encode(into output: inout OutputRawSpan) {
+      let truncatedData = truncatedData
+      output.append(UInt8(handle & 0xFF)) // Only use low byte to avoid overflow
+      output.append(UInt8(truncatedData.count))
+      output.append(contentsOf: truncatedData)
     }
   }
 
@@ -75,6 +74,70 @@ final class OcaMessageBatcherTests: XCTestCase {
     var sentCount: Int {
       sentMessages.count
     }
+  }
+
+  // MARK: - Wire Format
+
+  /// A command PDU byte for byte, so that framing changes cannot drift from AES70-3.
+  func testOcp1CommandPduWireBytes() throws {
+    let command = Ocp1Command(
+      handle: 1,
+      targetONo: 0x1001,
+      methodID: OcaMethodID(defLevel: 3, methodIndex: 2),
+      parameters: OcaParameters(parameterCount: 1, parameterData: Data([0xAA, 0xBB]))
+    )
+    let pdu = try OcaControlProtocol.ocp1.encodePdu([command], type: .ocaCmdRrq)
+    XCTAssertEqual([UInt8](pdu), [
+      0x3B, // syncVal
+      0x00, 0x01, // protocolVersion
+      0x00, 0x00, 0x00, 0x1C, // pduSize
+      0x01, // pduType: ocaCmdRrq
+      0x00, 0x01, // messageCount
+      0x00, 0x00, 0x00, 0x13, // commandSize
+      0x00, 0x00, 0x00, 0x01, // handle
+      0x00, 0x00, 0x10, 0x01, // targetONo
+      0x00, 0x03, 0x00, 0x02, // methodID
+      0x01, // parameterCount
+      0xAA, 0xBB, // parameterData
+    ])
+  }
+
+  /// The batcher writes its PDU in place, one message at a time; the result must
+  /// match encoding the same messages as a whole PDU.
+  @OcaConnectionActor
+  func testOcp1BatchMatchesWholePduEncoding() async throws {
+    let handler = TestSendHandler()
+    let batcher = OcaMessageBatcher(
+      batchSize: 1000,
+      dequeueInterval: .seconds(60),
+      controlProtocol: .ocp1
+    ) { data in
+      try await handler.sendEncodedPDU(data)
+    }
+
+    let notifications = (0..<3).map { index in
+      Ocp1Notification2(
+        event: OcaEvent(
+          emitterONo: 0x1000 + OcaONo(index),
+          eventID: OcaEventID(defLevel: 1, eventIndex: 1)
+        ),
+        notificationType: .event,
+        data: Data(repeating: UInt8(index), count: index * 5 + 1)
+      )
+    }
+    for notification in notifications {
+      try await batcher.enqueue(notification, type: .ocaNtf2)
+    }
+    try await batcher.dequeue()
+
+    let sent = await handler.sentMessages
+    XCTAssertEqual(sent.count, 1)
+    let pdu = try XCTUnwrap(sent.first)
+    XCTAssertEqual(pdu, try OcaControlProtocol.ocp1.encodePdu(notifications, type: .ocaNtf2))
+
+    let (type, decoded) = try OcaControlProtocol.ocp1.decodePdu(pdu)
+    XCTAssertEqual(type, .ocaNtf2)
+    XCTAssertEqual(decoded.count, notifications.count)
   }
 
   // MARK: - Basic Batching Tests

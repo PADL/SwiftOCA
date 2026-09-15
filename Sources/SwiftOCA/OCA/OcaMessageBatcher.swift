@@ -22,7 +22,6 @@ import Foundation
 
 @OcaConnectionActor
 final class OcaMessageBatcher: Sendable {
-  private typealias EncodedPDU = [UInt8]
   package typealias SendEncodedPDU = @Sendable (_: Data) async throws -> ()
 
   private let batchSize: OcaUint32
@@ -30,8 +29,10 @@ final class OcaMessageBatcher: Sendable {
   private let sendEncodedPdu: SendEncodedPDU
   private let controlProtocol: OcaControlProtocol
 
-  private var encodedPdus = [EncodedPDU]()
-  private var encodedMessagesSize = 0
+  /// The batch, held as the PDU it will be sent as: messages are written straight
+  /// into it, and `finishPdu` completes it when it is taken to be sent.
+  private var pendingPdu = Data()
+  private var pendingCount = 0
   private var lastMessageType: OcaMessageType?
 
   private var periodicTask: Task<(), Error>?
@@ -50,11 +51,16 @@ final class OcaMessageBatcher: Sendable {
   }
 
   var currentCount: Int {
-    encodedPdus.count
+    pendingCount
   }
 
   var currentSize: Int {
-    controlProtocol.pduOverhead(messageCount: encodedPdus.count + 1) + encodedMessagesSize
+    guard let lastMessageType else { return 0 }
+    return controlProtocol.finishedPduSize(
+      pendingPdu,
+      messageCount: pendingCount,
+      type: lastMessageType
+    )
   }
 
   private func canCombine(type messageType: OcaMessageType) -> Bool {
@@ -63,59 +69,73 @@ final class OcaMessageBatcher: Sendable {
       currentCount < Int(OcaUint16.max)
   }
 
-  private func send(encodedPdus: [EncodedPDU], type messageType: OcaMessageType) async throws {
-    let encodedPdu = try controlProtocol.assemblePdu(
-      type: messageType,
-      encodedMessages: encodedPdus
-    )
+  /// Detaches the batch and finishes its PDU, leaving the batch empty. The batcher
+  /// holds the only reference to the PDU's storage, so finishing it does not copy.
+  private func takePendingPdu() throws -> Data? {
+    guard let lastMessageType, pendingCount > 0 else { return nil }
 
-    try await sendEncodedPdu(Data(encodedPdu))
+    var pdu = Data()
+    swap(&pdu, &pendingPdu)
+    let messageCount = pendingCount
+    pendingCount = 0
+    self.lastMessageType = nil
+
+    try controlProtocol.finishPdu(&pdu, type: lastMessageType, messageCount: messageCount)
+    return pdu
   }
 
   func enqueue(
     _ message: some _Ocp1MessageCodable,
     type messageType: OcaMessageType
   ) async throws {
-    let encodedPdu: EncodedPDU = try controlProtocol.encodeMessage(message, type: messageType)
+    let message = try controlProtocol.prepareMessage(message, type: messageType)
 
     // short-circuit, send immediately if batching is disabled
     guard dequeueInterval > .zero else {
-      try await send(encodedPdus: [encodedPdu], type: messageType)
+      var pdu = try controlProtocol.beginPdu(
+        type: messageType,
+        reservingCapacity: message.encodedSize
+      )
+      controlProtocol.appendMessage(message, to: &pdu, messageCount: 0)
+      try controlProtocol.finishPdu(&pdu, type: messageType, messageCount: 1)
+      try await sendEncodedPdu(pdu)
       return
     }
 
     let canCombine = canCombine(type: messageType) &&
-      currentSize + encodedPdu.count <= Int(batchSize)
+      controlProtocol.finishedPduSize(
+        pendingPdu,
+        messageCount: pendingCount,
+        type: messageType,
+        adding: message.encodedSize
+      ) <= Int(batchSize)
 
-    if !canCombine {
-      // Snapshot and clear the pending batch BEFORE the async send,
-      // then enqueue the new message. This prevents reentrancy issues
-      // where another enqueue() runs during the send's await and
-      // corrupts the batch.
-      let pendingPdus = encodedPdus
-      let pendingType = lastMessageType
-      encodedPdus.removeAll()
-      encodedMessagesSize = 0
-      lastMessageType = nil
+    if canCombine {
+      controlProtocol.appendMessage(message, to: &pendingPdu, messageCount: pendingCount)
+      pendingCount += 1
+    } else {
+      // Start the new batch before touching the pending one, so a message that
+      // cannot begin a PDU leaves the pending batch intact.
+      var pdu = try controlProtocol.beginPdu(
+        type: messageType,
+        reservingCapacity: message.encodedSize
+      )
+      controlProtocol.appendMessage(message, to: &pdu, messageCount: 0)
+
+      // Detach the pending batch BEFORE the async send, then install the new
+      // one. This prevents reentrancy issues where another enqueue() runs
+      // during the send's await and corrupts the batch.
+      let pendingPdu = try takePendingPdu()
       stopPeriodicDequeue()
 
-      // Enqueue the new message before sending, so it's safe from reentrancy
-      encodedPdus.append(encodedPdu)
-      encodedMessagesSize = encodedPdu.count
+      self.pendingPdu = pdu
+      pendingCount = 1
       lastMessageType = messageType
       startPeriodicDequeue()
 
       // Now send the old batch (this may await and release the actor)
-      if let pendingType, !pendingPdus.isEmpty {
-        try await send(encodedPdus: pendingPdus, type: pendingType)
-      }
-    } else {
-      encodedPdus.append(encodedPdu)
-      encodedMessagesSize += encodedPdu.count
-      lastMessageType = messageType
-
-      if encodedPdus.count == 1 {
-        startPeriodicDequeue()
+      if let pendingPdu {
+        try await sendEncodedPdu(pendingPdu)
       }
     }
   }
@@ -151,24 +171,19 @@ final class OcaMessageBatcher: Sendable {
       periodicTask = nil
     }
 
-    guard let lastMessageType, !encodedPdus.isEmpty else { return }
-
-    let encodedPdus = encodedPdus
-    self.encodedPdus.removeAll()
-    encodedMessagesSize = 0
-    self.lastMessageType = nil
+    guard let pdu = try takePendingPdu() else { return }
 
     if timerGeneration == nil {
       stopPeriodicDequeue()
     }
-    try await send(encodedPdus: encodedPdus, type: lastMessageType)
+    try await sendEncodedPdu(pdu)
   }
 
   /// Discards work belonging to a transport generation that is being torn down.
   func cancelPending() {
     stopPeriodicDequeue()
-    encodedPdus.removeAll(keepingCapacity: true)
-    encodedMessagesSize = 0
+    pendingPdu = Data()
+    pendingCount = 0
     lastMessageType = nil
   }
 

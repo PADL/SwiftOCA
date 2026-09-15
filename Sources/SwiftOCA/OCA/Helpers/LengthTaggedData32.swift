@@ -110,8 +110,10 @@ extension LengthTaggedData32: _Ocp1Codable {
     wrappedValue = try Data(parsing: &input, byteCount: count)
   }
 
-  func encode(into bytes: inout [UInt8]) {
-    Swift.withUnsafeBytes(of: UInt32(wrappedValue.count).bigEndian) { bytes += $0 }
-    wrappedValue.withUnsafeBytes { bytes += $0 }
+  var encodedSize: Int { MemoryLayout<UInt32>.size + wrappedValue.count }
+
+  func encode(into output: inout OutputRawSpan) {
+    output.append(bigEndian: UInt32(wrappedValue.count))
+    output.append(contentsOf: wrappedValue)
   }
 }

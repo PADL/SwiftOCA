@@ -34,8 +34,12 @@ public struct Ocp1KeepAlive1: _Ocp1MessageCodable, Sendable {
     try self.init(heartBeatTime: OcaUint16(parsingBigEndian: &input))
   }
 
-  func encode(into bytes: inout [UInt8]) {
-    withUnsafeBytes(of: heartBeatTime.bigEndian) { bytes += $0 }
+  @_spi(SwiftOCAPrivate)
+  public var encodedSize: Int { MemoryLayout.size(ofValue: heartBeatTime) }
+
+  @_spi(SwiftOCAPrivate)
+  public func encode(into output: inout OutputRawSpan) {
+    output.append(bigEndian: heartBeatTime)
   }
 }
 
@@ -52,8 +56,12 @@ public struct Ocp1KeepAlive2: _Ocp1MessageCodable, Sendable {
     try self.init(heartBeatTime: OcaUint32(parsingBigEndian: &input))
   }
 
-  func encode(into bytes: inout [UInt8]) {
-    withUnsafeBytes(of: heartBeatTime.bigEndian) { bytes += $0 }
+  @_spi(SwiftOCAPrivate)
+  public var encodedSize: Int { MemoryLayout.size(ofValue: heartBeatTime) }
+
+  @_spi(SwiftOCAPrivate)
+  public func encode(into output: inout OutputRawSpan) {
+    output.append(bigEndian: heartBeatTime)
   }
 }
 

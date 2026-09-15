@@ -57,11 +57,11 @@ open class OcaLevelSensor: OcaSensor {
       changeType: .currentChanged
     )
 
-    var bytes = [UInt8]()
-    bytes.reserveCapacity(9)
-    parameters.encode(into: &bytes)
+    let encodedParameters = Data(ocp1ByteCount: parameters.encodedSize) {
+      parameters.encode(into: &$0)
+    }
 
-    try await deviceDelegate.notifySubscribers(event, parameters: Data(bytes), value: parameters)
+    try await deviceDelegate.notifySubscribers(event, parameters: encodedParameters, value: parameters)
   }
 
   // for API compatibility, but prefer to use update(reading:) to set value

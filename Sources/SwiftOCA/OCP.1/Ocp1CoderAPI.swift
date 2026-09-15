@@ -166,7 +166,80 @@ extension _Ocp1Decodable {
 }
 
 protocol _Ocp1Encodable {
-  func encode(into bytes: inout [UInt8])
+  /// The exact number of bytes `encode(into:)` writes, known without encoding, so
+  /// that a PDU can be allocated once and written in a single pass.
+  var encodedSize: Int { get }
+
+  func encode(into output: inout OutputRawSpan)
 }
 
 protocol _Ocp1Codable: _Ocp1Decodable & _Ocp1Encodable {}
+
+extension _Ocp1Encodable {
+  /// Encodes to a standalone buffer, for call sites outside a PDU.
+  var encodedData: Data {
+    Data(ocp1ByteCount: encodedSize) { encode(into: &$0) }
+  }
+}
+
+/// Only big-endian integers and bytes are written by hand-rolled encoders; the
+/// span bounds-checks every append against the size the encoder declared.
+extension OutputRawSpan {
+  @inlinable
+  mutating func append<T: FixedWidthInteger & BitwiseCopyable>(bigEndian value: T) {
+    append(value.bigEndian, as: T.self)
+  }
+
+  @inlinable
+  mutating func append(contentsOf data: Data) {
+    withUnsafeMutableBytes { buffer, initializedCount in
+      data.withUnsafeBytes { source in
+        precondition(source.count <= buffer.count - initializedCount)
+        UnsafeMutableRawBufferPointer(
+          rebasing: buffer[initializedCount..<(initializedCount + source.count)]
+        ).copyMemory(from: source)
+        initializedCount += source.count
+      }
+    }
+  }
+}
+
+extension Data {
+  /// `byteCount` bytes, all written in place by `body`.
+  @inlinable
+  package init(
+    ocp1ByteCount byteCount: Int,
+    _ body: (inout OutputRawSpan) throws -> ()
+  ) rethrows {
+    self.init(count: byteCount)
+    try withOcp1Output(at: 0, byteCount: byteCount, body)
+  }
+
+  /// Grows by `byteCount` bytes, all written in place by `body`.
+  @inlinable
+  package mutating func appendOcp1(
+    byteCount: Int,
+    _ body: (inout OutputRawSpan) throws -> ()
+  ) rethrows {
+    let offset = count
+    count += byteCount
+    try withOcp1Output(at: offset, byteCount: byteCount, body)
+  }
+
+  /// Has `body` overwrite exactly the `byteCount` bytes at `offset`; writing fewer
+  /// or more is a size calculation that disagrees with its encoder, and traps.
+  @inlinable
+  package mutating func withOcp1Output(
+    at offset: Int,
+    byteCount: Int,
+    _ body: (inout OutputRawSpan) throws -> ()
+  ) rethrows {
+    try withUnsafeMutableBytes { bytes in
+      let region = bytes[offset..<(offset + byteCount)]
+      var output = OutputRawSpan(buffer: region, initializedCount: 0)
+      try body(&output)
+      let written = output.finalize(for: region)
+      precondition(written == byteCount, "encoded \(written) bytes, expected \(byteCount)")
+    }
+  }
+}

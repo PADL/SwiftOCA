@@ -21,79 +21,40 @@ import FoundationEssentials
 import Foundation
 #endif
 
-private func _writeMessageSize(_ size: Int, to bytes: inout [UInt8], at index: Int) {
-  precondition(bytes.count >= index + 4)
-  let size = OcaUint32(size)
-  bytes[index + 0] = UInt8((size >> 24) & 0xFF)
-  bytes[index + 1] = UInt8((size >> 16) & 0xFF)
-  bytes[index + 2] = UInt8((size >> 8) & 0xFF)
-  bytes[index + 3] = UInt8(size & 0xFF)
-}
-
-extension _Ocp1MessageCodable {
-  func encode(type messageType: OcaMessageType, into messageData: inout [UInt8]) throws {
-    let offset = messageData.count
-
-    encode(into: &messageData)
-
-    if messageType != .ocaKeepAlive {
-      /// replace `commandSize: OcaUint32` with actual command size
-      _writeMessageSize(messageData.count - offset, to: &messageData, at: offset)
-    }
-  }
-}
-
 package extension OcaConnection {
-  nonisolated static func encodeOcp1MessagePduData(
+  /// The header for a PDU of `pduSize` bytes, `syncVal` included, throwing if the
+  /// size or message count cannot be represented on the wire.
+  nonisolated static func ocp1Header(
     type messageType: OcaMessageType,
-    encodedPdus: [[UInt8]]
-  ) throws -> [UInt8] {
-    var messagePduData = [UInt8]()
-    let estimatedSize = Self.MinimumPduSize + encodedPdus.reduce(0) { $0 + $1.count }
-    messagePduData.reserveCapacity(estimatedSize)
-    messagePduData.append(Ocp1SyncValue)
-    Ocp1Header(pduType: messageType, messageCount: OcaUint16(encodedPdus.count))
-      .encode(into: &messagePduData)
-
-    encodedPdus.forEach { messagePduData.append(contentsOf: $0) }
-    /// MinimumPduSize == 7
-    /// 0 `syncVal: OcaUint8`
-    /// 1 `protocolVersion: OcaUint16`
-    /// 3 `pduSize: OcaUint32` (size of PDU not including syncVal)
-    _writeMessageSize(messagePduData.count - 1, to: &messagePduData, at: 3)
-
-    return messagePduData
-  }
-
-  private nonisolated static func encodeOcp1MessagePdu(
-    _ messages: [Ocp1Message],
-    type messageType: OcaMessageType
-  ) throws -> [UInt8] {
-    var messagePduData = [UInt8]()
-    let estimatedSize = 16 + (messages.count * 32) // header + estimated per-message
-    messagePduData.reserveCapacity(estimatedSize)
-    messagePduData.append(Ocp1SyncValue)
-    Ocp1Header(pduType: messageType, messageCount: OcaUint16(messages.count))
-      .encode(into: &messagePduData)
-
-    try messages.forEach {
-      try ($0 as! _Ocp1MessageCodable).encode(type: messageType, into: &messagePduData)
+    messageCount: Int,
+    pduSize: Int
+  ) throws -> Ocp1Header {
+    /// the header's `pduSize` counts every byte after `syncVal`
+    guard let headerPduSize = OcaUint32(exactly: pduSize - 1),
+          let messageCount = OcaUint16(exactly: messageCount)
+    else {
+      throw Ocp1Error.invalidPduSize
     }
-    /// MinimumPduSize == 7
-    /// 0 `syncVal: OcaUint8`
-    /// 1 `protocolVersion: OcaUint16`
-    /// 3 `pduSize: OcaUint32` (size of PDU not including syncVal)
-    _writeMessageSize(messagePduData.count - 1, to: &messagePduData, at: 3)
-
-    return messagePduData
+    return Ocp1Header(pduType: messageType, messageCount: messageCount, pduSize: headerPduSize)
   }
 
+  /// Encodes a whole PDU in a single pass. Every message knows its encoded size
+  /// up front, so the PDU is allocated once at its exact size and each size field
+  /// is written in place rather than patched afterwards.
   nonisolated static func encodeOcp1MessagePdu(
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType
   ) throws -> Data {
-    let bytes: [UInt8] = try encodeOcp1MessagePdu(messages, type: messageType)
-    return Data(bytes)
+    let pduSize = MinimumPduSize + messages.reduce(0) { $0 + $1.encodedSize }
+    let header = try ocp1Header(type: messageType, messageCount: messages.count, pduSize: pduSize)
+
+    return Data(ocp1ByteCount: pduSize) { output in
+      output.append(Ocp1SyncValue)
+      header.encode(into: &output)
+      for message in messages {
+        message.encode(into: &output)
+      }
+    }
   }
 
   /// Decodes a complete OCP.1 PDU into its constituent messages.

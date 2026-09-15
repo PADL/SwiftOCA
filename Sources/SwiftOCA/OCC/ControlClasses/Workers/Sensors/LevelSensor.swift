@@ -34,10 +34,15 @@ Sendable {
 
 extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Encodable {
   @_spi(SwiftOCAPrivate) @inlinable
-  public func encode(into bytes: inout [UInt8]) {
-    propertyID.encode(into: &bytes)
-    withUnsafeBytes(of: propertyValue.bitPattern.bigEndian) { bytes.append(contentsOf: $0) }
-    bytes.append(changeType.rawValue)
+  public var encodedSize: Int {
+    propertyID.encodedSize + MemoryLayout<OcaUint32>.size + 1
+  }
+
+  @_spi(SwiftOCAPrivate) @inlinable
+  public func encode(into output: inout OutputRawSpan) {
+    propertyID.encode(into: &output)
+    output.append(bigEndian: propertyValue.bitPattern)
+    output.append(changeType.rawValue)
   }
 }
 

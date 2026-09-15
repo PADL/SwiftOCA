@@ -184,9 +184,13 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
 
   /// SPI visibility for SwiftOCADevice and FlutterSwiftOCA
   @_spi(SwiftOCAPrivate)
-  public func encode(into bytes: inout [UInt8]) {
-    withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
-    withUnsafeBytes(of: propertyIndex.bigEndian) { bytes += $0 }
+  public var encodedSize: Int { 4 }
+
+  /// SPI visibility for SwiftOCADevice and FlutterSwiftOCA
+  @_spi(SwiftOCAPrivate)
+  public func encode(into output: inout OutputRawSpan) {
+    output.append(bigEndian: defLevel)
+    output.append(bigEndian: propertyIndex)
   }
 }
 
@@ -437,9 +441,11 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
     methodIndex = try OcaUint16(parsingBigEndian: &input)
   }
 
-  func encode(into bytes: inout [UInt8]) {
-    withUnsafeBytes(of: defLevel.bigEndian) { bytes += $0 }
-    withUnsafeBytes(of: methodIndex.bigEndian) { bytes += $0 }
+  var encodedSize: Int { 4 }
+
+  func encode(into output: inout OutputRawSpan) {
+    output.append(bigEndian: defLevel)
+    output.append(bigEndian: methodIndex)
   }
 
   public var description: String {

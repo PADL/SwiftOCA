@@ -35,9 +35,11 @@ public struct Ocp1EventData: Codable, Sendable, _Ocp1Codable {
     eventParameters = Data(parsingRemainingBytes: &input)
   }
 
-  func encode(into bytes: inout [UInt8]) {
-    event.encode(into: &bytes)
-    bytes.append(contentsOf: eventParameters)
+  var encodedSize: Int { event.encodedSize + eventParameters.count }
+
+  func encode(into output: inout OutputRawSpan) {
+    event.encode(into: &output)
+    output.append(contentsOf: eventParameters)
   }
 }
 
@@ -58,10 +60,12 @@ public struct Ocp1NtfParams: Codable, Sendable, _Ocp1Codable {
     eventData = try Ocp1EventData(parsing: &input)
   }
 
-  func encode(into bytes: inout [UInt8]) {
-    bytes.append(parameterCount)
-    context.encode(into: &bytes)
-    eventData.encode(into: &bytes)
+  var encodedSize: Int { 1 + context.encodedSize + eventData.encodedSize }
+
+  func encode(into output: inout OutputRawSpan) {
+    output.append(parameterCount)
+    context.encode(into: &output)
+    eventData.encode(into: &output)
   }
 }
 
@@ -98,10 +102,17 @@ public struct Ocp1Notification1: _Ocp1MessageCodable, Sendable {
     parameters = try Ocp1NtfParams(parsing: &input)
   }
 
-  package func encode(into bytes: inout [UInt8]) {
-    withUnsafeBytes(of: notificationSize.bigEndian) { bytes += $0 }
-    withUnsafeBytes(of: targetONo.bigEndian) { bytes += $0 }
-    methodID.encode(into: &bytes)
-    parameters.encode(into: &bytes)
+  @_spi(SwiftOCAPrivate)
+  public var encodedSize: Int {
+    2 * MemoryLayout<OcaUint32>.size + methodID.encodedSize + parameters.encodedSize
+  }
+
+  /// `notificationSize` is written as the encoded size, whatever its stored value.
+  @_spi(SwiftOCAPrivate)
+  public func encode(into output: inout OutputRawSpan) {
+    output.append(bigEndian: OcaUint32(encodedSize))
+    output.append(bigEndian: targetONo)
+    methodID.encode(into: &output)
+    parameters.encode(into: &output)
   }
 }
