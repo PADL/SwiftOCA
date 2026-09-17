@@ -17,7 +17,7 @@
 import SwiftOCA
 
 /// AES70-21 (draft) Aes67OcaMediaTransportApplication: adds presentation time offset
-/// negotiation and SDP tunnelling to CM4. Method IDs 4.3-4.7 are provisional.
+/// negotiation and endpoint configuration from SDP to CM4.
 open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
   public typealias Aes67Parameters = SwiftOCA.Aes67OcaMediaTransportApplication
 
@@ -25,8 +25,8 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("4.1"),
-    getMethodID: OcaMethodID("4.6"),
-    setMethodID: OcaMethodID("4.7")
+    getMethodID: OcaMethodID("4.3"),
+    setMethodID: OcaMethodID("4.4")
   )
   public var streamSourceRegistryONo = OcaInvalidONo
 
@@ -65,18 +65,14 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func submitSDP(_ id: OcaMediaStreamEndpointID, sdp: OcaSDPString) async throws {
+  /// Optional (AES70-21 §10.2.4). A nonzero stream ID selects the stream of a multistream
+  /// SDP by UDP port; on success the endpoint's ActiveSDP is the given SDP.
+  open func configureEndpointFromSDP(
+    _ id: OcaMediaStreamEndpointID,
+    sdpString: OcaSDPString,
+    streamID: OcaUint16
+  ) async throws {
     throw Ocp1Error.status(.notImplemented)
-  }
-
-  /// Default: the SubmittedSDP field of the endpoint's adaptation data.
-  open func getSubmittedSDP(_ id: OcaMediaStreamEndpointID) async throws -> OcaSDPString {
-    try endpoint(id).adaptationData.decode(Aes67EndpointAdaptationData.self).submittedSDP
-  }
-
-  /// Default: the ActiveSDP field of the endpoint's adaptation data.
-  open func getActiveSDP(_ id: OcaMediaStreamEndpointID) async throws -> OcaSDPString {
-    try endpoint(id).adaptationData.decode(Aes67EndpointAdaptationData.self).activeSDP
   }
 
   override open func handleCommand(
@@ -98,19 +94,15 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
         parameters.endpointID,
         streamMode: parameters.streamMode
       ))
-    case OcaMethodID("4.3"):
-      let parameters: Aes67Parameters.SubmitSDPParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await submitSDP(parameters.endpointID, sdp: parameters.sdp)
-      return Ocp1Response()
-    case OcaMethodID("4.4"):
-      let id: OcaMediaStreamEndpointID = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try await controller.encodeResponse(getSubmittedSDP(id))
     case OcaMethodID("4.5"):
-      let id: OcaMediaStreamEndpointID = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try await controller.encodeResponse(getActiveSDP(id))
+      let parameters: Aes67Parameters.ConfigureEndpointFromSDPParameters = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      try await configureEndpointFromSDP(
+        parameters.endpointID,
+        sdpString: parameters.sdpString,
+        streamID: parameters.streamID
+      )
+      return Ocp1Response()
     default:
       return try await super.handleCommand(command, from: controller)
     }
@@ -118,7 +110,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
 }
 
 /// AES70-21 (draft) Aes67OcaMediaTransportSessionAgent: SIP parameter records per session.
-/// Method IDs 4.1-4.4 are provisional.
+/// The draft's 03m01-03m04 collide with the parent's methods, so 4.1-4.4 are used.
 open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
   public typealias Aes67Parameters = SwiftOCA.Aes67OcaMediaTransportSessionAgent
 
@@ -211,20 +203,48 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
   }
 }
 
-/// AES70-21 (draft) Aes67StreamSourceListAgent: the Stream Source Registry.
-open class Aes67StreamSourceListAgent: OcaAgent {
-  override open class var classID: OcaClassID { Aes67Adaptation.streamSourceListAgentClassID }
+/// AES70-21 (draft) Aes67StreamEndpointRegistry: the Stream Source Registry. The draft
+/// gives no signatures for the entry methods, so only the registry and its events are here.
+open class Aes67StreamEndpointRegistry: OcaAgent {
+  public typealias Aes67Parameters = SwiftOCA.Aes67StreamEndpointRegistry
+
+  override open class var classID: OcaClassID { Aes67Adaptation.streamEndpointRegistryClassID }
+
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.1")
+  )
+  public var registry = [Aes67StreamEndpointDescriptor]()
+
+  /// Raises RegistryChanged for an entry already reflected in `registry`.
+  public func notifyRegistryChanged(
+    _ changeType: OcaPropertyChangeType,
+    entry: Aes67StreamEndpointDescriptor
+  ) async throws {
+    try await deviceDelegate?.notifySubscribers(
+      OcaEvent(emitterONo: objectNumber, eventID: Aes67Parameters.registryChangedEventID),
+      eventData: Aes67RegistryChangedEventData(changeType: changeType, entry: entry)
+    )
+  }
+
+  /// Raises RegistryRebuilt with the current `registry`.
+  public func notifyRegistryRebuilt() async throws {
+    try await deviceDelegate?.notifySubscribers(
+      OcaEvent(emitterONo: objectNumber, eventID: Aes67Parameters.registryRebuiltEventID),
+      eventData: Aes67RegistryRebuiltEventData(registry: registry)
+    )
+  }
+}
+
+/// AES70-21 (draft) Aes67SDPAgent: an SDP string handed to the device, whose processing
+/// is device-defined.
+open class Aes67SDPAgent: OcaAgent {
+  override open class var classID: OcaClassID { Aes67Adaptation.sdpAgentClassID }
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
     getMethodID: OcaMethodID("3.1"),
     setMethodID: OcaMethodID("3.2")
   )
-  public var purpose: OcaString = Aes67Adaptation.streamSourceRegistryPurpose
-
-  @OcaDeviceProperty(
-    propertyID: OcaPropertyID("3.2"),
-    getMethodID: OcaMethodID("3.3")
-  )
-  public var streamSources = [Aes67StreamSourceDescriptor]()
+  public var sdpString: OcaSDPString = ""
 }

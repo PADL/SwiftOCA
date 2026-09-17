@@ -15,7 +15,6 @@
 //
 
 /// Controller proxy for AES70-21's Aes67OcaMediaTransportApplication (1.7.1.A.2100).
-/// The SDP and registry method IDs are "TBD" in the draft; 4.3-4.7 are provisional.
 open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unchecked Sendable {
   override open class var classID: OcaClassID { Aes67Adaptation.mediaTransportApplicationClassID }
 
@@ -52,21 +51,24 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
     }
   }
 
-  public struct SubmitSDPParameters: OcaParametersReflectable {
+  public struct ConfigureEndpointFromSDPParameters: OcaParametersReflectable {
     public let endpointID: OcaMediaStreamEndpointID
-    public let sdp: OcaSDPString
+    public let sdpString: OcaSDPString
+    /// UDP port of the stream within a multistream SDP; zero for a single stream.
+    public let streamID: OcaUint16
 
-    public init(endpointID: OcaMediaStreamEndpointID, sdp: OcaSDPString) {
+    public init(endpointID: OcaMediaStreamEndpointID, sdpString: OcaSDPString, streamID: OcaUint16) {
       self.endpointID = endpointID
-      self.sdp = sdp
+      self.sdpString = sdpString
+      self.streamID = streamID
     }
   }
 
-  /// ONo of the Aes67StreamSourceListAgent, or zero when there is no registry.
+  /// ONo of the Aes67StreamEndpointRegistry, or zero when there is no registry.
   @OcaProperty(
     propertyID: OcaPropertyID("4.1"),
-    getMethodID: OcaMethodID("4.6"),
-    setMethodID: OcaMethodID("4.7")
+    getMethodID: OcaMethodID("4.3"),
+    setMethodID: OcaMethodID("4.4")
   )
   public var streamSourceRegistryONo: OcaProperty<OcaONo>.PropertyValue
 
@@ -90,24 +92,26 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
     )
   }
 
-  public func submitSDP(_ endpointID: OcaMediaStreamEndpointID, sdp: OcaSDPString) async throws {
+  /// Optional in AES70-21 §10.2.4; sets the endpoint's AdaptationData.ActiveSDP.
+  public func configureEndpointFromSDP(
+    _ endpointID: OcaMediaStreamEndpointID,
+    sdpString: OcaSDPString,
+    streamID: OcaUint16 = 0
+  ) async throws {
     try await sendCommandRrq(
-      methodID: OcaMethodID("4.3"),
-      parameters: SubmitSDPParameters(endpointID: endpointID, sdp: sdp)
+      methodID: OcaMethodID("4.5"),
+      parameters: ConfigureEndpointFromSDPParameters(
+        endpointID: endpointID,
+        sdpString: sdpString,
+        streamID: streamID
+      )
     )
-  }
-
-  public func getSubmittedSDP(_ endpointID: OcaMediaStreamEndpointID) async throws -> OcaSDPString {
-    try await sendCommandRrq(methodID: OcaMethodID("4.4"), parameters: endpointID)
-  }
-
-  public func getActiveSDP(_ endpointID: OcaMediaStreamEndpointID) async throws -> OcaSDPString {
-    try await sendCommandRrq(methodID: OcaMethodID("4.5"), parameters: endpointID)
   }
 }
 
 /// Controller proxy for AES70-21's Aes67OcaMediaTransportSessionAgent (1.2.20.A.2101),
-/// which adds SIP parameter access. Method IDs 4.1-4.4 are provisional.
+/// which adds SIP parameter access. The draft numbers these 03m01-03m04, which collide
+/// with the parent's methods, so 4.1-4.4 are used.
 open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { Aes67Adaptation.mediaTransportSessionAgentClassID }
 
@@ -181,21 +185,30 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @u
   }
 }
 
-/// Controller proxy for AES70-21's Aes67StreamSourceListAgent (1.2.A.2102), the Stream
-/// Source Registry.
-open class Aes67StreamSourceListAgent: OcaAgent, @unchecked Sendable {
-  override open class var classID: OcaClassID { Aes67Adaptation.streamSourceListAgentClassID }
+/// Controller proxy for AES70-21's Aes67StreamEndpointRegistry (1.2.A.2102), the Stream
+/// Source Registry. The draft gives no signatures for the entry methods (03m02-03m06).
+open class Aes67StreamEndpointRegistry: OcaAgent, @unchecked Sendable {
+  override open class var classID: OcaClassID { Aes67Adaptation.streamEndpointRegistryClassID }
+
+  public static let registryChangedEventID = OcaEventID(defLevel: 3, eventIndex: 1)
+  public static let registryRebuiltEventID = OcaEventID(defLevel: 3, eventIndex: 2)
+
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.1")
+  )
+  public var registry: OcaListProperty<Aes67StreamEndpointDescriptor>.PropertyValue
+}
+
+/// Controller proxy for AES70-21's Aes67SDPAgent (1.2.A.2103), which passes an SDP string
+/// to the device for device-defined processing.
+open class Aes67SDPAgent: OcaAgent, @unchecked Sendable {
+  override open class var classID: OcaClassID { Aes67Adaptation.sdpAgentClassID }
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
     getMethodID: OcaMethodID("3.1"),
     setMethodID: OcaMethodID("3.2")
   )
-  public var purpose: OcaProperty<OcaString>.PropertyValue
-
-  @OcaProperty(
-    propertyID: OcaPropertyID("3.2"),
-    getMethodID: OcaMethodID("3.3")
-  )
-  public var streamSources: OcaListProperty<Aes67StreamSourceDescriptor>.PropertyValue
+  public var sdpString: OcaProperty<OcaSDPString>.PropertyValue
 }

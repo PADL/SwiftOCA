@@ -77,8 +77,10 @@ struct ClassRegistryTests {
       == SwiftOCADevice.MilanOcaMediaTransportSessionAgent.self)
     #expect(try registry.match(classID: Aes67Adaptation.mediaTransportApplicationClassID)
       == SwiftOCADevice.Aes67OcaMediaTransportApplication.self)
-    #expect(try registry.match(classID: Aes67Adaptation.streamSourceListAgentClassID)
-      == SwiftOCADevice.Aes67StreamSourceListAgent.self)
+    #expect(try registry.match(classID: Aes67Adaptation.streamEndpointRegistryClassID)
+      == SwiftOCADevice.Aes67StreamEndpointRegistry.self)
+    #expect(try registry.match(classID: Aes67Adaptation.sdpAgentClassID)
+      == SwiftOCADevice.Aes67SDPAgent.self)
     #expect(try registry.match(classID: DanteAdaptation.mediaTransportApplicationClassID)
       == SwiftOCADevice.DanteOcaMediaTransportApplication.self)
     // an unknown AES-authority subclass falls back to the core class

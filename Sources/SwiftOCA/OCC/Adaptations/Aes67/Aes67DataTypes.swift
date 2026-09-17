@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Datatypes defined by AES70-21 (draft): Tables 7, 8, 9 and 19.
+// Datatypes defined by AES70-21 (draft 2026-09-16): Tables 7, 8, 17, 18, 19, 20 and 21.
 
 /// Aes67StreamTransmissionCapabilities (OcaBitSet16)
 public struct Aes67StreamTransmissionCapabilities: OptionSet, Codable, Sendable, Hashable {
@@ -74,7 +74,7 @@ public struct Aes67EndpointAdaptationData: Ocp1TypedBlobRepresentable, Sendable,
   public var transmissionCapabilities: Aes67StreamTransmissionCapabilities
   public var presentationTimeOffset: OcaTimeInterval
   public var mediaInfo: OcaString
-  public var submittedSDP: OcaSDPString
+  /// Set by ConfigureEndpointFromSDP.
   public var activeSDP: OcaSDPString
 
   public init(
@@ -87,7 +87,6 @@ public struct Aes67EndpointAdaptationData: Ocp1TypedBlobRepresentable, Sendable,
     transmissionCapabilities: Aes67StreamTransmissionCapabilities = [],
     presentationTimeOffset: OcaTimeInterval = 0,
     mediaInfo: OcaString = "",
-    submittedSDP: OcaSDPString = "",
     activeSDP: OcaSDPString = ""
   ) {
     self.ipParameters = ipParameters
@@ -99,7 +98,6 @@ public struct Aes67EndpointAdaptationData: Ocp1TypedBlobRepresentable, Sendable,
     self.transmissionCapabilities = transmissionCapabilities
     self.presentationTimeOffset = presentationTimeOffset
     self.mediaInfo = mediaInfo
-    self.submittedSDP = submittedSDP
     self.activeSDP = activeSDP
   }
 }
@@ -113,14 +111,28 @@ public enum Aes67RemoteControlType {
   public static let none: OcaString = "NONE"
 }
 
-/// Element of Aes67StreamSourceListAgent.StreamSources.
-public struct Aes67StreamSourceDescriptor: Codable, Sendable, Equatable {
+/// Element of Aes67StreamEndpointDescriptor.Addresses. The draft types IPAddress as a
+/// variant of IPv4 and IPv6 but the registry only records IPv4, so it is the IPv4 string.
+public struct Aes67StreamTransportAddress: Codable, Sendable, Equatable {
+  public var ipAddress: OcaIP4Address
+  public var port: OcaUint16
+
+  public init(ipAddress: OcaIP4Address, port: OcaUint16) {
+    self.ipAddress = ipAddress
+    self.port = port
+  }
+}
+
+/// Element of Aes67StreamEndpointRegistry.Registry.
+public struct Aes67StreamEndpointDescriptor: Codable, Sendable, Equatable {
   public var idExternal: OcaBlob
+  public var addresses: [Aes67StreamTransportAddress]
   public var direction: OcaIODirection
   public var alignmentLevel: OcaDBFS
   public var streamMode: OcaMediaStreamMode
   public var securityType: OcaSecurityType
   public var streamCastMode: OcaMediaStreamCastMode
+  /// An Aes67EndpointAdaptationData.
   public var adaptationData: OcaAdaptationData
   public var sdpString: OcaSDPString
   public var sipString: OcaString
@@ -129,6 +141,7 @@ public struct Aes67StreamSourceDescriptor: Codable, Sendable, Equatable {
 
   public init(
     idExternal: OcaBlob,
+    addresses: [Aes67StreamTransportAddress],
     direction: OcaIODirection,
     alignmentLevel: OcaDBFS = .nan,
     streamMode: OcaMediaStreamMode,
@@ -141,6 +154,7 @@ public struct Aes67StreamSourceDescriptor: Codable, Sendable, Equatable {
     timestamp: OcaTime
   ) {
     self.idExternal = idExternal
+    self.addresses = addresses
     self.direction = direction
     self.alignmentLevel = alignmentLevel
     self.streamMode = streamMode
@@ -155,6 +169,7 @@ public struct Aes67StreamSourceDescriptor: Codable, Sendable, Equatable {
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.idExternal == rhs.idExternal &&
+      lhs.addresses == rhs.addresses &&
       lhs.direction == rhs.direction &&
       lhs.alignmentLevel.bitPattern == rhs.alignmentLevel.bitPattern &&
       lhs.streamMode == rhs.streamMode &&
@@ -165,6 +180,26 @@ public struct Aes67StreamSourceDescriptor: Codable, Sendable, Equatable {
       lhs.sipString == rhs.sipString &&
       lhs.infoSource == rhs.infoSource &&
       lhs.timestamp == rhs.timestamp
+  }
+}
+
+/// Parameters of Aes67StreamEndpointRegistry's RegistryChanged event.
+public struct Aes67RegistryChangedEventData: Codable, Sendable, Equatable {
+  public let changeType: OcaPropertyChangeType
+  public let entry: Aes67StreamEndpointDescriptor
+
+  public init(changeType: OcaPropertyChangeType, entry: Aes67StreamEndpointDescriptor) {
+    self.changeType = changeType
+    self.entry = entry
+  }
+}
+
+/// Parameters of Aes67StreamEndpointRegistry's RegistryRebuilt event.
+public struct Aes67RegistryRebuiltEventData: Codable, Sendable, Equatable {
+  public let registry: [Aes67StreamEndpointDescriptor]
+
+  public init(registry: [Aes67StreamEndpointDescriptor]) {
+    self.registry = registry
   }
 }
 

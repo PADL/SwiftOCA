@@ -696,6 +696,27 @@ final class SwiftOCADeviceTests: XCTestCase {
       [0x00, 0x09]
     )
     XCTAssertEqual(Aes67Adaptation.mediaTransportApplicationClassID.parent, OcaClassID("1.7.1"))
+    XCTAssertEqual(Aes67Adaptation.sdpAgentClassID.fields.last, 2103)
+    let entry = Aes67StreamEndpointDescriptor(
+      idExternal: OcaBlob(Array("stream".utf8)),
+      addresses: [Aes67StreamTransportAddress(ipAddress: "239.1.2.3", port: 5004)],
+      direction: .output,
+      streamMode: OcaMediaStreamMode(
+        frameFormat: .rtp,
+        encodingType: "audio/L24",
+        samplingRate: 48000,
+        channelCount: 8,
+        packetTime: 1e-3
+      ),
+      streamCastMode: .multicast,
+      adaptationData: try aes67.blob,
+      timestamp: OcaTime(seconds: 1, nanoseconds: 0)
+    )
+    let event = Aes67RegistryChangedEventData(changeType: .itemAdded, entry: entry)
+    XCTAssertEqual(
+      try Ocp1Decoder().decode(Aes67RegistryChangedEventData.self, from: Ocp1Encoder().encode(event) as Data),
+      event
+    )
 
     let dante = DanteChannelEndpointAdaptationData(
       remoteAddress: DanteChannelAddress(device: "console", channel: "01"),

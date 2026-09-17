@@ -99,7 +99,8 @@ public class OcaClassRegistry {
     try register(OcaMediaTransportSessionAgent.self)
     try register(MilanOcaMediaTransportSessionAgent.self)
     try register(Aes67OcaMediaTransportSessionAgent.self)
-    try register(Aes67StreamSourceListAgent.self)
+    try register(Aes67StreamEndpointRegistry.self)
+    try register(Aes67SDPAgent.self)
     try register(OcaPowerSupply.self)
 
     // managers
