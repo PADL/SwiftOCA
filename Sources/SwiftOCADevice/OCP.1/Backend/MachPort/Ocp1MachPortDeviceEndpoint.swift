@@ -78,12 +78,17 @@ public final class Ocp1MachPortDeviceEndpoint: OcaDeviceEndpointPrivate, CustomS
 
     logger.info("started \(type(of: self)) on \(serviceName)")
 
+    // Destroying the receive right also drops the bootstrap registration, and
+    // returns the accept thread from its blocking receive.
+    defer {
+      handle.destroy()
+      listenerHandle = nil
+    }
+
     do {
       try await listenForControllers(on: handle)
     } catch {
       logger.critical("server error for \(serviceName): \(error)")
-      handle.destroy()
-      listenerHandle = nil
       throw error
     }
 
@@ -92,6 +97,8 @@ public final class Ocp1MachPortDeviceEndpoint: OcaDeviceEndpointPrivate, CustomS
 
   private func listenForControllers(on listenerHandle: Ocp1MachPortHandle) async throws {
     let acceptStream = AsyncThrowingStream<Ocp1MachPortEnvelope, Error> { continuation in
+      // once nobody consumes accepted connections, unblock the accept thread
+      continuation.onTermination = { @Sendable _ in listenerHandle.destroy() }
       DispatchQueue(
         label: "com.padl.SwiftOCADevice.machAccept"
       ).async {
