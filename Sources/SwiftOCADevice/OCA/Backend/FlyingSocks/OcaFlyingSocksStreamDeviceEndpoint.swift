@@ -2,7 +2,7 @@
 //  OcaFlyingSocksStreamDeviceEndpoint.swift
 //
 //  Copyright (c) 2022 Simon Whitty. All rights reserved.
-//  Portions Copyright (c) 2023-2024 PADL Software Pty Ltd. All rights reserved.
+//  Portions Copyright (c) 2023-2026 PADL Software Pty Ltd. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
