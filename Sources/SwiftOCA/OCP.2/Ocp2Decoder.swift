@@ -128,6 +128,12 @@ final class Ocp2DecodingState {
     if type == OcaOrganizationID.self {
       return try OcaOrganizationID(Ocp2JSON.string(from: json)) as! T
     }
+    // a typed blob is base64 when a string and its content otherwise
+    if !(json is String),
+       let typedType = erasedCast(type, to: (any Ocp2TypedBlobRepresentable.Type).self)
+    {
+      return try typedType.ocp2DecodeContent(state: self, json: json, codingPath: codingPath) as! T
+    }
     if let blobType = erasedCast(type, to: (any Ocp1BlobRepresentable.Type).self) {
       return try blobType.init(blobData: Ocp2JSON.data(from: json)) as! T
     }

@@ -571,6 +571,34 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(try list.blob.decode([OcaUint16].self), list)
   }
 
+  func testTypedBlobMarshalsAsTheBlobItReplaces() throws {
+    let counterSetID = OcaMediaStreamEndpointCounterSetID(ownerONo: 0x0A00_0002, endpointID: 1001)
+    let typed = try OcaTypedBlob(counterSetID)
+    let encoded = try Ocp1Encoder().encode(counterSetID.blob) as Data
+
+    XCTAssertEqual(try Ocp1Encoder().encode(typed) as Data, encoded)
+    XCTAssertEqual(
+      try Ocp1Decoder().decode(OcaTypedBlob<OcaMediaStreamEndpointCounterSetID>.self, from: encoded),
+      typed
+    )
+    XCTAssertEqual(try typed.content, counterSetID)
+    XCTAssertEqual(try counterSetID.typedBlob, typed)
+    XCTAssertEqual(typed.blob, try counterSetID.blob)
+    XCTAssertTrue(OcaTypedBlob<OcaMediaStreamEndpointCounterSetID>().isEmpty)
+
+    // the bytes survive a value that does not decode as the content type
+    let junk = OcaTypedBlob<OcaMediaStreamEndpointCounterSetID>(OcaBlob([0x01]))
+    XCTAssertThrowsError(try junk.content)
+    XCTAssertEqual(
+      try Ocp1Decoder().decode(
+        OcaTypedBlob<OcaMediaStreamEndpointCounterSetID>.self,
+        from: Ocp1Encoder().encode(junk) as Data
+      ),
+      junk
+    )
+    XCTAssertEqual(junk.description, "01")
+  }
+
   func testCounterSetHelpers() {
     var counterSet = OcaCounterSet(counter: [
       OcaCounter(id: 1, value: 5, initialValue: 0, role: "LINK_UP", notifiers: []),
@@ -709,9 +737,10 @@ final class SwiftOCADeviceTests: XCTestCase {
         packetTime: 1e-3
       ),
       streamCastMode: .multicast,
-      adaptationData: try aes67.blob,
+      adaptationData: try aes67.typedBlob,
       timestamp: OcaTime(seconds: 1, nanoseconds: 0)
     )
+    XCTAssertEqual(try entry.adaptationData.content, aes67)
     let event = Aes67RegistryChangedEventData(changeType: .itemAdded, entry: entry)
     XCTAssertEqual(
       try Ocp1Decoder().decode(Aes67RegistryChangedEventData.self, from: Ocp1Encoder().encode(event) as Data),

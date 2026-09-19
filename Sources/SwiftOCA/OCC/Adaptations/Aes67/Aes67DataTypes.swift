@@ -132,8 +132,7 @@ public struct Aes67StreamEndpointDescriptor: Codable, Sendable, Equatable {
   public var streamMode: OcaMediaStreamMode
   public var securityType: OcaSecurityType
   public var streamCastMode: OcaMediaStreamCastMode
-  /// An Aes67EndpointAdaptationData.
-  public var adaptationData: OcaAdaptationData
+  public var adaptationData: OcaTypedBlob<Aes67EndpointAdaptationData>
   public var sdpString: OcaSDPString
   public var sipString: OcaString
   public var infoSource: OcaBlob
@@ -147,7 +146,7 @@ public struct Aes67StreamEndpointDescriptor: Codable, Sendable, Equatable {
     streamMode: OcaMediaStreamMode,
     securityType: OcaSecurityType = .none,
     streamCastMode: OcaMediaStreamCastMode,
-    adaptationData: OcaAdaptationData = OcaBlob(),
+    adaptationData: OcaTypedBlob<Aes67EndpointAdaptationData> = OcaTypedBlob(),
     sdpString: OcaSDPString = "",
     sipString: OcaString = "",
     infoSource: OcaBlob = OcaBlob(),

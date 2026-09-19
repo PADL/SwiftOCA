@@ -23,6 +23,11 @@ import Foundation
 public struct Ocp2Encoder {
   public var userInfo: [CodingUserInfoKey: Any] = [:]
 
+  /// Emit each `OcaTypedBlob` as its content rather than as the base64 of its OCP.1
+  /// bytes. Off by default: AES70-4 gives every blob the base64 form, and a peer that
+  /// does not know the content type cannot read anything else.
+  public var structuredTypedBlobs = false
+
   public init() {}
 
   /// Encodes a method's parameters as the OCP.2 `Parameters` object.
@@ -39,7 +44,7 @@ public struct Ocp2Encoder {
       return [:]
     }
 
-    let state = Ocp2EncodingState(userInfo: userInfo)
+    let state = Ocp2EncodingState(userInfo: userInfo, structuredTypedBlobs: structuredTypedBlobs)
 
     if type(of: value) is OcaParametersReflectable.Type {
       let fieldNames = Ocp2Naming.fieldNames(of: type(of: value))
@@ -68,7 +73,7 @@ public struct Ocp2Encoder {
 
   /// Encodes a free-standing value (a property value, event data, a struct field).
   public func encodeValue(_ value: some Encodable) throws -> Any {
-    let state = Ocp2EncodingState(userInfo: userInfo)
+    let state = Ocp2EncodingState(userInfo: userInfo, structuredTypedBlobs: structuredTypedBlobs)
     return try state.encode(value, codingPath: []).json()
   }
 }
@@ -149,9 +154,11 @@ final class Ocp2EncodingNode {
 
 final class Ocp2EncodingState {
   let userInfo: [CodingUserInfoKey: Any]
+  let structuredTypedBlobs: Bool
 
-  init(userInfo: [CodingUserInfoKey: Any]) {
+  init(userInfo: [CodingUserInfoKey: Any], structuredTypedBlobs: Bool = false) {
     self.userInfo = userInfo
+    self.structuredTypedBlobs = structuredTypedBlobs
   }
 
   /// Encodes `value` into a fresh node, handling the types whose OCP.2 form is not
@@ -197,6 +204,8 @@ final class Ocp2EncodingState {
       node.value = organization.description
     case let data as Data:
       node.value = Ocp2JSON.base64(data)
+    case let typed as any Ocp2TypedBlobRepresentable where structuredTypedBlobs:
+      return try typed.ocp2EncodeContent(state: self, codingPath: codingPath)
     case let blob as any Ocp1BlobRepresentable:
       node.value = Ocp2JSON.base64(blob.blobData)
     case let map as any Ocp1MapRepresentable:

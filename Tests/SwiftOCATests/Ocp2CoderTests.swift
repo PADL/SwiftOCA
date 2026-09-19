@@ -216,6 +216,62 @@ final class Ocp2CoderTests: XCTestCase {
     XCTAssertEqual(try Ocp2Decoder().decodeValue(OcaLongBlob.self, from: "AQID").wrappedValue, Data([1, 2, 3]))
   }
 
+  func testTypedBlobsAreBase64UnlessStructured() throws {
+    let counterSetID = OcaMediaStreamEndpointCounterSetID(ownerONo: 0x0A00_0002, endpointID: 1001)
+    let typed = try OcaTypedBlob(counterSetID)
+    let base64 = try counterSetID.blob.wrappedValue.base64EncodedString()
+
+    XCTAssertEqual(try Ocp2Encoder().encodeValue(typed) as? String, base64)
+
+    var structured = Ocp2Encoder()
+    structured.structuredTypedBlobs = true
+    let content = try XCTUnwrap(structured.encodeValue(typed) as? [String: Any])
+    XCTAssertEqual(content["OwnerONo"] as? Int, 0x0A00_0002)
+    XCTAssertEqual(content["CounterSetsPropertyID"] as? [Int], [3, 12])
+    XCTAssertEqual(content["EndpointID"] as? Int, 1001)
+
+    // either form decodes
+    typealias Typed = OcaTypedBlob<OcaMediaStreamEndpointCounterSetID>
+    XCTAssertEqual(try Ocp2Decoder().decodeValue(Typed.self, from: base64), typed)
+    XCTAssertEqual(try Ocp2Decoder().decodeValue(Typed.self, from: content), typed)
+    XCTAssertEqual(
+      try Ocp2Decoder().decodeValue(Typed.self, from: json("""
+      { "ownerONo": 167772162, "counterSetsPropertyID": [3, 12], "endpointID": 1001 }
+      """)),
+      typed
+    )
+
+    // a typed blob field inside a record follows the same rule
+    let entry = try Aes67StreamEndpointDescriptor(
+      idExternal: OcaBlob(Array("stream".utf8)),
+      addresses: [],
+      direction: .output,
+      streamMode: OcaMediaStreamMode(
+        frameFormat: .rtp,
+        encodingType: "audio/L24",
+        samplingRate: 48000,
+        channelCount: 8,
+        packetTime: 1e-3
+      ),
+      streamCastMode: .multicast,
+      adaptationData: Aes67EndpointAdaptationData(payloadType: 96).typedBlob,
+      timestamp: OcaTime(seconds: 1, nanoseconds: 0)
+    )
+    let plain = try XCTUnwrap(Ocp2Encoder().encodeValue(entry) as? [String: Any])
+    XCTAssertTrue(plain["AdaptationData"] is String)
+    let rich = try XCTUnwrap(structured.encodeValue(entry) as? [String: Any])
+    let adaptationData = try XCTUnwrap(rich["AdaptationData"] as? [String: Any])
+    XCTAssertEqual(adaptationData["PayloadType"] as? Int, 96)
+    XCTAssertEqual(
+      try Ocp2Decoder().decodeValue(Aes67StreamEndpointDescriptor.self, from: plain),
+      entry
+    )
+    XCTAssertEqual(
+      try Ocp2Decoder().decodeValue(Aes67StreamEndpointDescriptor.self, from: rich),
+      entry
+    )
+  }
+
   func testMapsAreArraysOfPairs() throws {
     let map: OcaMap<OcaUint16, OcaString> = [1: "left", 2: "right"]
     let encoded = try XCTUnwrap(try Ocp2Encoder().encodeValue(map) as? [[Any]])
