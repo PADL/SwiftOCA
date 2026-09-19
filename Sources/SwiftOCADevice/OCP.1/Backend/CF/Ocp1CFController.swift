@@ -135,11 +135,13 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
 
     let maximumPduSize = endpoint.maximumPduSize
     receiveMessageTask = Task { [weak self] in
+      // one reader for the life of the connection: it buffers bytes between PDUs
+      let reader = Ocp1PduReader(preservesPduBoundaries: false, maximumPduSize: maximumPduSize)
       do {
         repeat {
           guard !Task.isCancelled, let socket = self?.socket else { break }
           let messages = try await OcaDevice
-            .receiveMessages(maximumPduSize: maximumPduSize) {
+            .receiveMessages(reader: reader) {
               try await socket.read(count: $0)
             }
           guard let self else { return }

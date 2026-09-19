@@ -315,27 +315,17 @@ extension OcaDevice {
   }
 
   /// OCP.1-only convenience for backends with an exact-length read: OCP.1 always
-  /// awaits all of a read.
-  static func _receiveMessages(
-    maximumPduSize: Int,
-    read: (Int) async throws -> Data
+  /// awaits all of a read. `reader` is made once per connection, by its receive task.
+  @concurrent
+  package static func receiveMessages(
+    reader: Ocp1PduReader,
+    _ read: ReadCallback
   ) async throws -> Ocp1MessageList {
     try await _receiveMessages(
-      reader: Ocp1PduReader(
-        preservesPduBoundaries: false,
-        maximumPduSize: maximumPduSize
-      ),
+      reader: reader,
       controlProtocol: .ocp1,
       read: { count, _ in try await read(count) }
     )
-  }
-
-  @concurrent
-  package static func receiveMessages(
-    maximumPduSize: Int,
-    _ read: ReadCallback
-  ) async throws -> Ocp1MessageList {
-    try await _receiveMessages(maximumPduSize: maximumPduSize, read: read)
   }
 
   static func asyncReceiveMessages(
