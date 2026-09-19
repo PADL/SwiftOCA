@@ -408,12 +408,13 @@ extension OcaConnection.Monitor {
     // can be bypassed); a stream that takes whole PDUs on send may still deliver
     // coalesced or partial ones on receive. Only a datagram guarantees one PDU per
     // read, so that is what the reader is given.
-    let (isDatagram, configuredMaximumPduSize) = await (
+    let (isDatagram, maximumDatagramPduSize, configuredMaximumPduSize) = await (
       connection.isDatagram,
+      connection.maximumDatagramPduSize,
       connection.options.maximumPduSize
     )
     let maximumPduSize = isDatagram
-      ? min(configuredMaximumPduSize, Ocp1MaximumDatagramPduSize)
+      ? min(configuredMaximumPduSize, maximumDatagramPduSize)
       : configuredMaximumPduSize
 
     do {
