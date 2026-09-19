@@ -120,15 +120,18 @@ final class Ocp1PduReaderTests: XCTestCase {
     }
   }
 
-  func testEmptyPacketIsMalformedRatherThanEndOfStream() async {
+  func testEmptyPacketIsIgnoredRatherThanEndOfStream() async throws {
+    let expected = pdu(bodySize: 3)
+    let feed = Feed([Data(), Data(), expected])
     let reader = OcaControlProtocol.ocp1.makeReader(
       preservesPduBoundaries: true,
       maximumPduSize: 1024
     )
 
-    await assertError(.pduTooShort) {
-      _ = try await reader.nextPdu { _, _ in Data() }
-    }
+    let actual = try await reader.nextPdu { _, _ in await feed.read() }
+    let readCount = await feed.readCount
+    XCTAssertEqual(actual, expected)
+    XCTAssertEqual(readCount, 3)
   }
 
   func testMaximumPduSizeIncludesSyncByte() async throws {
