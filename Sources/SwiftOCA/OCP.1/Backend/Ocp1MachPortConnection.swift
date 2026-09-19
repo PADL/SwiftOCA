@@ -20,6 +20,8 @@
 import Darwin.Mach
 import Foundation
 
+package let Ocp1MaximumMachPortPduSize = 1024 * 1024
+
 /// OCP.1 connection using Mach ports for fast local IPC between processes.
 ///
 /// The connection discovers the device via a bootstrap service name, performs
@@ -53,6 +55,12 @@ public final class Ocp1MachPortConnection: OcaConnection {
 
   override public var isDatagram: Bool {
     true
+  }
+
+  /// payloads too large to send inline go out of line, so no MTU applies: bounded only so
+  /// that a peer cannot have us accept an arbitrarily large PDU
+  override public var maximumDatagramPduSize: Int {
+    Ocp1MaximumMachPortPduSize
   }
 
   private func _cleanupConnection() {

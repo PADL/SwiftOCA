@@ -472,6 +472,12 @@ open class OcaConnection: CustomStringConvertible {
     false
   }
 
+  /// The largest PDU a datagram transport carries: a network MTU, unless the transport
+  /// overrides this because it is not bound by one.
+  open var maximumDatagramPduSize: Int {
+    Ocp1MaximumDatagramPduSize
+  }
+
   /// `true` when `write` delivers a whole PDU, so it can bypass the write queue. Datagram
   /// transports are message-oriented; so is any stream whose `write` cannot split a PDU.
   open var isMessageOriented: Bool {
