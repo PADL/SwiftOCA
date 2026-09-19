@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-#if os(macOS) || os(iOS) || os(Windows) || !NonEmbeddedBuild || canImport(FlyingFox)
-
 import SystemPackage
 #if canImport(Darwin)
 import Darwin
@@ -44,5 +42,3 @@ package func unlinkSocketFile(at path: String) throws {
     throw Errno(rawValue: errno)
   }
 }
-
-#endif

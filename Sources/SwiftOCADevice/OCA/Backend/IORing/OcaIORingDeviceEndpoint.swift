@@ -144,9 +144,7 @@ open class OcaIORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 
   private nonisolated func unlinkDomainSocket() throws {
     if let presentationAddress = try? address.presentationAddress {
-      if unlink(presentationAddress) < 0 {
-        throw Errno(rawValue: errno)
-      }
+      try unlinkSocketFile(at: presentationAddress)
     }
   }
 
