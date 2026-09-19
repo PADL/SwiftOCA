@@ -109,8 +109,8 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
   }
 }
 
-/// AES70-21 (draft) Aes67OcaMediaTransportSessionAgent: SIP parameter records per session.
-/// The draft's 03m01-03m04 collide with the parent's methods, so 4.1-4.4 are used.
+/// AES70-21 (draft) Aes67OcaMediaTransportSessionAgent: SIP parameter records per session
+/// (04m01-04m04).
 open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
   public typealias Aes67Parameters = SwiftOCA.Aes67OcaMediaTransportSessionAgent
 
@@ -203,8 +203,8 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
   }
 }
 
-/// AES70-21 (draft) Aes67StreamEndpointRegistry: the Stream Source Registry. The draft
-/// gives no signatures for the entry methods, so only the registry and its events are here.
+/// AES70-21 (draft) Aes67StreamEndpointRegistry: the Stream Source Registry, keyed by
+/// IDExternal. Entries are stored here; AddRegistryEntriesFromSDP is left to subclasses.
 open class Aes67StreamEndpointRegistry: OcaAgent {
   public typealias Aes67Parameters = SwiftOCA.Aes67StreamEndpointRegistry
 
@@ -215,6 +215,73 @@ open class Aes67StreamEndpointRegistry: OcaAgent {
     getMethodID: OcaMethodID("3.1")
   )
   public var registry = [Aes67StreamEndpointDescriptor]()
+
+  public func registryIndex(idExternal: OcaBlob) throws -> Int {
+    guard let index = registry.firstIndex(where: { $0.idExternal == idExternal }) else {
+      throw Ocp1Error.status(.parameterOutOfRange)
+    }
+    return index
+  }
+
+  open func getRegistryEntry(idExternal: OcaBlob) async throws -> Aes67StreamEndpointDescriptor {
+    try registry[registryIndex(idExternal: idExternal)]
+  }
+
+  open func addRegistryEntry(_ entry: Aes67StreamEndpointDescriptor) async throws {
+    guard !registry.contains(where: { $0.idExternal == entry.idExternal }) else {
+      throw Ocp1Error.status(.invalidRequest)
+    }
+    registry.append(entry)
+    try await notifyRegistryChanged(.itemAdded, entry: entry)
+  }
+
+  open func setRegistryEntry(_ entry: Aes67StreamEndpointDescriptor) async throws {
+    try registry[registryIndex(idExternal: entry.idExternal)] = entry
+    try await notifyRegistryChanged(.itemChanged, entry: entry)
+  }
+
+  open func deleteRegistryEntry(idExternal: OcaBlob) async throws {
+    let entry = try registry.remove(at: registryIndex(idExternal: idExternal))
+    try await notifyRegistryChanged(.itemDeleted, entry: entry)
+  }
+
+  open func addRegistryEntriesFromSDP(_ sdpString: OcaSDPString) async throws {
+    throw Ocp1Error.status(.notImplemented)
+  }
+
+  override open func handleCommand(
+    _ command: Ocp1Command,
+    from controller: any OcaController
+  ) async throws -> Ocp1Response {
+    switch command.methodID {
+    case OcaMethodID("3.2"):
+      let idExternal: OcaBlob = try decodeCommand(command)
+      try await ensureReadable(by: controller, command: command)
+      return try await controller.encodeResponse(getRegistryEntry(idExternal: idExternal))
+    case OcaMethodID("3.3"):
+      let entry: Aes67StreamEndpointDescriptor = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      try await addRegistryEntry(entry)
+      return Ocp1Response()
+    case OcaMethodID("3.4"):
+      let entry: Aes67StreamEndpointDescriptor = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      try await setRegistryEntry(entry)
+      return Ocp1Response()
+    case OcaMethodID("3.5"):
+      let idExternal: OcaBlob = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      try await deleteRegistryEntry(idExternal: idExternal)
+      return Ocp1Response()
+    case OcaMethodID("3.6"):
+      let sdpString: OcaSDPString = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
+      try await addRegistryEntriesFromSDP(sdpString)
+      return Ocp1Response()
+    default:
+      return try await super.handleCommand(command, from: controller)
+    }
+  }
 
   /// Raises RegistryChanged for an entry already reflected in `registry`.
   public func notifyRegistryChanged(

@@ -110,8 +110,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
 }
 
 /// Controller proxy for AES70-21's Aes67OcaMediaTransportSessionAgent (1.2.20.A.2101),
-/// which adds SIP parameter access. The draft numbers these 03m01-03m04, which collide
-/// with the parent's methods, so 4.1-4.4 are used.
+/// which adds SIP parameter access to each session's AdaptationData (04m01-04m04).
 open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { Aes67Adaptation.mediaTransportSessionAgentClassID }
 
@@ -186,7 +185,7 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @u
 }
 
 /// Controller proxy for AES70-21's Aes67StreamEndpointRegistry (1.2.A.2102), the Stream
-/// Source Registry. The draft gives no signatures for the entry methods (03m02-03m06).
+/// Source Registry. Entries are keyed by IDExternal (§10.3.2).
 open class Aes67StreamEndpointRegistry: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { Aes67Adaptation.streamEndpointRegistryClassID }
 
@@ -198,6 +197,27 @@ open class Aes67StreamEndpointRegistry: OcaAgent, @unchecked Sendable {
     getMethodID: OcaMethodID("3.1")
   )
   public var registry: OcaListProperty<Aes67StreamEndpointDescriptor>.PropertyValue
+
+  public func getRegistryEntry(idExternal: OcaBlob) async throws -> Aes67StreamEndpointDescriptor {
+    try await sendCommandRrq(methodID: OcaMethodID("3.2"), parameters: idExternal)
+  }
+
+  public func addRegistryEntry(_ entry: Aes67StreamEndpointDescriptor) async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("3.3"), parameters: entry)
+  }
+
+  public func setRegistryEntry(_ entry: Aes67StreamEndpointDescriptor) async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: entry)
+  }
+
+  public func deleteRegistryEntry(idExternal: OcaBlob) async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: idExternal)
+  }
+
+  /// Optional in AES70-21 §10.3.3: the device builds entries from the SDP.
+  public func addRegistryEntriesFromSDP(_ sdpString: OcaSDPString) async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("3.6"), parameters: sdpString)
+  }
 }
 
 /// Controller proxy for AES70-21's Aes67SDPAgent (1.2.A.2103), which passes an SDP string

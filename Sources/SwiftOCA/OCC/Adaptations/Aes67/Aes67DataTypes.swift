@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Datatypes defined by AES70-21 (draft 2026-09-16): Tables 7, 8, 17, 18, 19, 20 and 21.
+// Datatypes defined by AES70-21 (draft 2026-09-19): Tables 7, 8, 9 and 18 to 21.
 
 /// Aes67StreamTransmissionCapabilities (OcaBitSet16)
 public struct Aes67StreamTransmissionCapabilities: OptionSet, Codable, Sendable, Hashable {
@@ -111,13 +111,44 @@ public enum Aes67RemoteControlType {
   public static let none: OcaString = "NONE"
 }
 
-/// Element of Aes67StreamEndpointDescriptor.Addresses. The draft types IPAddress as a
-/// variant of IPv4 and IPv6 but the registry only records IPv4, so it is the IPv4 string.
+/// Element of Aes67StreamEndpointDescriptor.Addresses.
 public struct Aes67StreamTransportAddress: Codable, Sendable, Equatable {
-  public var ipAddress: OcaIP4Address
+  /// OcaVariant<OcaIP4Address, OcaIP6Address>. AES70-3 has no OCP.1 marshalling rule for
+  /// OcaVariant; provisionally, an OcaUint8 index of the alternative precedes the value.
+  public enum IPAddress: Codable, Sendable, Hashable {
+    case ip4(OcaIP4Address)
+    case ip6(OcaIP6Address)
+
+    public init(from decoder: Decoder) throws {
+      var container = try decoder.unkeyedContainer()
+      switch try container.decode(OcaUint8.self) {
+      case 0: self = try .ip4(container.decode(OcaIP4Address.self))
+      case 1: self = try .ip6(container.decode(OcaIP6Address.self))
+      case let index:
+        throw DecodingError.dataCorrupted(DecodingError.Context(
+          codingPath: decoder.codingPath,
+          debugDescription: "OcaVariant alternative \(index) is not an IP address"
+        ))
+      }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+      var container = encoder.unkeyedContainer()
+      switch self {
+      case let .ip4(address):
+        try container.encode(0 as OcaUint8)
+        try container.encode(address)
+      case let .ip6(address):
+        try container.encode(1 as OcaUint8)
+        try container.encode(address)
+      }
+    }
+  }
+
+  public var ipAddress: IPAddress
   public var port: OcaUint16
 
-  public init(ipAddress: OcaIP4Address, port: OcaUint16) {
+  public init(ipAddress: IPAddress, port: OcaUint16) {
     self.ipAddress = ipAddress
     self.port = port
   }

@@ -727,7 +727,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(Aes67Adaptation.sdpAgentClassID.fields.last, 2103)
     let entry = Aes67StreamEndpointDescriptor(
       idExternal: OcaBlob(Array("stream".utf8)),
-      addresses: [Aes67StreamTransportAddress(ipAddress: "239.1.2.3", port: 5004)],
+      addresses: [Aes67StreamTransportAddress(ipAddress: .ip4("239.1.2.3"), port: 5004)],
       direction: .output,
       streamMode: OcaMediaStreamMode(
         frameFormat: .rtp,
@@ -741,6 +741,26 @@ final class SwiftOCADeviceTests: XCTestCase {
       timestamp: OcaTime(seconds: 1, nanoseconds: 0)
     )
     XCTAssertEqual(try entry.adaptationData.content, aes67)
+    // OcaVariant<OcaIP4Address, OcaIP6Address>: the alternative's index, then the string
+    XCTAssertEqual(
+      try Ocp1Encoder().encode(entry.addresses[0]) as [UInt8],
+      [0x00, 0x00, 0x09] + Array("239.1.2.3".utf8) + [0x13, 0x8C]
+    )
+    XCTAssertEqual(
+      try Ocp1Encoder().encode(Aes67StreamTransportAddress.IPAddress.ip6("fe80::1")) as [UInt8],
+      [0x01, 0x00, 0x07] + Array("fe80::1".utf8)
+    )
+    XCTAssertEqual(
+      try Ocp1Decoder().decode(
+        Aes67StreamTransportAddress.self,
+        from: Ocp1Encoder().encode(entry.addresses[0]) as Data
+      ),
+      entry.addresses[0]
+    )
+    XCTAssertThrowsError(try Ocp1Decoder().decode(
+      Aes67StreamTransportAddress.IPAddress.self,
+      from: Data([0x02, 0x00, 0x00])
+    ))
     let event = Aes67RegistryChangedEventData(changeType: .itemAdded, entry: entry)
     XCTAssertEqual(
       try Ocp1Decoder().decode(Aes67RegistryChangedEventData.self, from: Ocp1Encoder().encode(event) as Data),
