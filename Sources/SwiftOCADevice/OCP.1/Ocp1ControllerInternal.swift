@@ -199,6 +199,8 @@ package extension Ocp1ControllerInternal {
             // No PDU is read until a handler finishes, so keepalives from the
             // controller wait unread: suspend expiry meanwhile, and restart it from
             // when reading resumes.
+            // A peer that goes away meanwhile is only noticed once a handler finishes,
+            // which is also when the group below would let the controller be removed.
             lastMessageReceivedTime = .now + OcaExpirySuspension
             _ = await group.next()
             lastMessageReceivedTime = .now
