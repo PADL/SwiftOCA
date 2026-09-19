@@ -95,11 +95,13 @@ package actor Ocp1OpenSSLStreamController: Ocp1ControllerInternal, CustomStringC
     let messagesChannel = _messages
     let maximumPduSize = endpoint.maximumPduSize
     receiveMessageTask = Task { [weak self] in
+      // one reader for the life of the connection: it buffers bytes between PDUs
+      let reader = Ocp1PduReader(preservesPduBoundaries: false, maximumPduSize: maximumPduSize)
       do {
         repeat {
           guard !Task.isCancelled else { break }
           let messages = try await OcaDevice
-            .receiveMessages(maximumPduSize: maximumPduSize) { count in
+            .receiveMessages(reader: reader) { count in
               try await engineRef.read(
                 count,
                 awaitingAllRead: true,
