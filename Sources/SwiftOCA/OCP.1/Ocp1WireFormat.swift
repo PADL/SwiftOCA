@@ -51,7 +51,12 @@ package final class Ocp1PduReader: OcaPduReader {
     }
 
     let readLimit = maximumPduSize == Int.max ? Int.max : maximumPduSize + 1
-    let messagePduData = try await read(readLimit, false)
+    var messagePduData: Data
+    repeat {
+      // a datagram transport has no end of stream for an empty packet to mean: ignore it
+      try Task.checkCancellation()
+      messagePduData = try await read(readLimit, false)
+    } while messagePduData.isEmpty
 
     guard messagePduData.count >= OcaConnection.MinimumPduSize else {
       throw Ocp1Error.pduTooShort
