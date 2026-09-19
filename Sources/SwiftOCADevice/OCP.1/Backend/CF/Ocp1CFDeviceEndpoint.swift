@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024 PADL Software Pty Ltd
+// Copyright (c) 2024-2026 PADL Software Pty Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -119,9 +119,7 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
 
   private nonisolated func unlinkDomainSocket() throws {
     if let presentationAddress = try? address.presentationAddress {
-      if unlink(presentationAddress) < 0 {
-        throw Errno(rawValue: errno)
-      }
+      try unlinkSocketFile(at: presentationAddress)
     }
   }
 
