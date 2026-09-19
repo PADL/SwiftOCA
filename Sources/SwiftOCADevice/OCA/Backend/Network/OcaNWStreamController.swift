@@ -163,8 +163,9 @@ private extension OcaNWStreamController {
 
       do {
         repeat {
-          // a timeout finishes the stream, which cancels this task, rather than moving the
-          // read, and with it the reader, into a task of its own
+          // a timeout fails the stream from a watchdog, rather than moving the read, and
+          // with it the reader, into a task of its own
+          let deadline = ContinuousClock.now + timeout
           let watchdog = deadlines.watchdog(for: timeout) {
             channel.fail(Ocp1Error.responseTimeout)
           }
@@ -182,6 +183,11 @@ private extension OcaNWStreamController {
             throw error
           }
           watchdog?.cancel()
+          // the stream has failed if the watchdog fired, and nothing else ends this task
+          // until the socket is closed: stop reading, rather than drop what arrives
+          if watchdog != nil, ContinuousClock.now >= deadline {
+            throw Ocp1Error.responseTimeout
+          }
           await channel.send(messages)
         } while true
       } catch {
