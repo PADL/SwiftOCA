@@ -187,7 +187,10 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
         // offered on a second Sec-WebSocket-Protocol line is not seen
         let offered = request.headers[Self.webSocketProtocolHeader]?
           .split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) } ?? []
-        let controlProtocol = Self.controlProtocol(offering: offered, among: sharing)
+        guard let controlProtocol = Self.controlProtocol(offering: offered, among: sharing)
+        else {
+          return HTTPResponse(statusCode: .badRequest)
+        }
         // one handler per upgrade, so the controller knows its peer
         var response = try await WebSocketHTTPHandler
           .webSocket(Handler(self, controlProtocol: controlProtocol, peer: request.remoteAddress))
@@ -254,15 +257,21 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   /// The protocol a WebSocket upgrade on a shared path speaks: the first the client
   /// offered, in its order of preference, else OCP.1, else the first served. AES70-3
   /// 8.4.3.4.2 has a controller offer `AES70-OCP.1`, but controllers that predate it
-  /// offer no subprotocol.
+  /// offer no subprotocol. `nil` if the client named only control protocols that the
+  /// path does not serve: upgrading would have it speak one the device does not expect.
   nonisolated static func controlProtocol(
     offering offered: [String],
     among sharing: [OcaControlProtocol]
-  ) -> OcaControlProtocol {
+  ) -> OcaControlProtocol? {
     let sharing = OcaControlProtocol.allCases.filter(sharing.contains)
-    return offered.lazy.compactMap { subprotocol in
+    if let controlProtocol = offered.lazy.compactMap({ subprotocol in
       sharing.first { $0.webSocketSubprotocol == subprotocol }
-    }.first ?? (sharing.contains(.ocp1) ? .ocp1 : sharing[0])
+    }).first {
+      return controlProtocol
+    }
+    let known = OcaControlProtocol.allCases.compactMap(\.webSocketSubprotocol)
+    guard !offered.contains(where: known.contains) else { return nil }
+    return sharing.contains(.ocp1) ? .ocp1 : sharing[0]
   }
 
   /// The first protocol's service; `advertisedServices` has one per protocol.
