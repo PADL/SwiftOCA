@@ -815,8 +815,14 @@ final class Ocp2WebSocketTests: XCTestCase {
     try await assertOcp2RoundTrip(ocp2)
     await ocp2.close()
 
-    // "/" serves only OCP.1, so an OCP.2 offer there is not taken up
-    let ocp1 = try await RawWebSocket(port: port, path: "/")
+    // "/" serves only OCP.1, so an upgrade offering only OCP.2 there is refused
+    do {
+      _ = try await RawWebSocket(port: port, path: "/")
+      XCTFail("an OCP.2 offer was upgraded on a path serving only OCP.1")
+    } catch Ocp1Error.notConnected {}
+
+    // offering nothing there still gets OCP.1, as a controller predating the subprotocol does
+    let ocp1 = try await RawWebSocket(port: port, path: "/", protocols: [])
     XCTAssertNil(ocp1.negotiatedProtocol)
     await ocp1.close()
   }

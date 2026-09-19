@@ -386,6 +386,20 @@ extension WebSocketConnectionTests {
     await webSocket.close()
   }
 
+  /// A client that names only control protocols the path does not serve is refused, rather
+  /// than upgraded to a protocol it did not ask for; one naming none, or none we know, is not.
+  func testWSSubprotocolNegotiation() {
+    typealias Endpoint = OcaFlyingFoxDeviceEndpoint
+    XCTAssertNil(Endpoint.controlProtocol(offering: ["AES70-OCP.1"], among: [.ocp2]))
+    XCTAssertNil(Endpoint.controlProtocol(offering: ["AES70-OCP.2"], among: [.ocp1]))
+    XCTAssertEqual(Endpoint.controlProtocol(offering: [], among: [.ocp2]), .ocp2)
+    XCTAssertEqual(Endpoint.controlProtocol(offering: ["chat"], among: [.ocp1, .ocp2]), .ocp1)
+    XCTAssertEqual(
+      Endpoint.controlProtocol(offering: ["AES70-OCP.2", "AES70-OCP.1"], among: [.ocp1]),
+      .ocp1
+    )
+  }
+
   /// On a path serving both, the subprotocol picks the protocol, in the client's order of
   /// preference when it offers both.
   func testWSSubprotocolSelectsProtocol() async throws {
