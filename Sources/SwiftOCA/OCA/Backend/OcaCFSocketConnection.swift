@@ -368,7 +368,13 @@ Sendable, CustomStringConvertible, Hashable {
       {
         // The socket is nonblocking. Preserve the partial PDU and retry instead
         // of allowing the next queued PDU to be appended to its prefix.
-        try await Task.sleep(for: .milliseconds(1))
+        do {
+          try await Task.sleep(for: .milliseconds(1))
+        } catch {
+          // cancelled part way through a PDU: nothing valid can follow its prefix
+          if nwritten > 0 { close() }
+          throw error
+        }
       }
     } while nwritten < data.count
 
