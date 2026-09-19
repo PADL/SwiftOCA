@@ -78,7 +78,7 @@ extension OcaConnection {
   ) async throws {
     let generation = connectionID
     if isMessageOriented {
-      guard generation == connectionID else { throw Ocp1Error.notConnected }
+      // nothing suspends before the write, so the generation cannot have changed
       guard try await write(messagePduData) == messagePduData.count else {
         throw Ocp1Error.pduSendingFailed
       }
