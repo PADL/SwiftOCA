@@ -189,7 +189,12 @@ private actor AsyncSocketPoolMonitor {
         try await pool.run()
       } catch is CancellationError {
       } catch {
-        Self.logger.warning("socket pool event loop failed: \(error), rebuilding pool")
+        // A cancelled run() can throw the interrupted wait's error (EBADF from
+        // kevent) rather than CancellationError; remove the isCancelled check
+        // once swhitty/FlyingFox#242 is merged and the pin includes it.
+        if !Task.isCancelled {
+          Self.logger.warning("socket pool event loop failed: \(error), rebuilding pool")
+        }
       }
       await self?._rebuild(ifCurrent: generation)
     }
