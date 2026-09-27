@@ -68,12 +68,12 @@ private func setConnectionState(_ connection: OcaConnection, _ state: OcaConnect
 struct ConnectionBrokerExpiryTests {
   static let modelGUID = try! OcaModelGUID("0AE91B02010100")
 
-  fileprivate static func mockInfo(name: String) -> MockServiceInfo {
+  fileprivate static func mockInfo(name: String, serialNumber: String = "TEST01") -> MockServiceInfo {
     MockServiceInfo(name: name, txtRecords: [
       "txtvers": "1",
       "protovers": "4",
       "modelGUID": "0AE91B02010100",
-      "serialNumber": "TEST01",
+      "serialNumber": serialNumber,
     ])
   }
 
@@ -136,6 +136,47 @@ struct ConnectionBrokerExpiryTests {
 
     #expect(await collector.removals(of: deviceIdentifier) == 0)
     #expect(await broker.registeredDevices == [deviceIdentifier])
+  }
+
+  /// A reset forgets every discovered device; those the fresh browsers find again stay,
+  /// keeping their connection, and the rest expire.
+  @Test
+  func resetBrowsingKeepsRediscoveredDevicesAndExpiresTheRest() async throws {
+    let (broker, collector, pump) = await Self.makeBroker()
+    defer { pump.cancel() }
+    let kept = OcaConnectionBroker.DeviceIdentifier(
+      serviceType: .tcp,
+      modelGUID: Self.modelGUID,
+      serialNumber: "TEST01",
+      name: "Kept"
+    )
+    let gone = OcaConnectionBroker.DeviceIdentifier(
+      serviceType: .tcp,
+      modelGUID: Self.modelGUID,
+      serialNumber: "TEST02",
+      name: "Gone"
+    )
+
+    try await broker._onBrowseResult(.added(Self.mockInfo(name: "Kept")))
+    try await broker._onBrowseResult(.added(Self.mockInfo(name: "Gone", serialNumber: "TEST02")))
+    let connection = await MockConnection()
+    await setConnectionState(connection, .connected)
+    await broker.register(device: kept, connection: connection)
+
+    await broker.resetBrowsing()
+    #expect(await broker.registeredDevices.isEmpty)
+    // the fresh browser reports the device that is still advertised
+    try await broker._onBrowseResult(.added(Self.mockInfo(name: "Kept")))
+    try await Task.sleep(for: .milliseconds(400))
+
+    #expect(await broker.registeredDevices == [kept])
+    #expect(await collector.removals(of: kept) == 0)
+    #expect(await collector.removals(of: gone) == 1)
+    // rediscovered with its connection in place, so updated rather than added again
+    let keptEvents = await collector.events.filter { $0.deviceIdentifier == kept }.map(\.eventType)
+    #expect(keptEvents.filter { $0 == .deviceUpdated }.count == 1)
+    #expect(keptEvents.filter { $0 == .deviceAdded }.count == 1)
+    #expect(try await broker.withDeviceConnection(kept) { $0 } === connection)
   }
 }
 

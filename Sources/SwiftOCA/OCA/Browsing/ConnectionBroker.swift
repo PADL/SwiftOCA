@@ -723,6 +723,23 @@ public actor OcaConnectionBroker {
       }
     }
   }
+
+  /// Rebuilds the broker's view of the network from scratch: forgets every discovered
+  /// device and restarts the DNS-SD browsers.
+  ///
+  /// Devices still advertised are rediscovered by the fresh browsers, keeping any live
+  /// connection, and are reported as `.deviceUpdated` (or `.deviceAdded` if they had no
+  /// connection). A device that is not rediscovered expires as if its advertisement had
+  /// been withdrawn: `.deviceRemoved` follows after the expiry timeout, once its connection
+  /// is no longer alive. Registered connections without service info are untouched.
+  public func resetBrowsing() {
+    let discovered = Array(_devices.keys)
+    _devices.removeAll()
+    for deviceIdentifier in discovered {
+      _scheduleDeviceExpiry(for: deviceIdentifier)
+    }
+    refreshBrowsing()
+  }
 }
 
 extension OcaConnectionBroker.DeviceIdentifier {
