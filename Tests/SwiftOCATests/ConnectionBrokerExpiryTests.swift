@@ -68,7 +68,10 @@ private func setConnectionState(_ connection: OcaConnection, _ state: OcaConnect
 struct ConnectionBrokerExpiryTests {
   static let modelGUID = try! OcaModelGUID("0AE91B02010100")
 
-  fileprivate static func mockInfo(name: String, serialNumber: String = "TEST01") -> MockServiceInfo {
+  fileprivate static func mockInfo(
+    name: String,
+    serialNumber: String = "TEST01"
+  ) -> MockServiceInfo {
     MockServiceInfo(name: name, txtRecords: [
       "txtvers": "1",
       "protovers": "4",
@@ -163,6 +166,9 @@ struct ConnectionBrokerExpiryTests {
     await setConnectionState(connection, .connected)
     await broker.register(device: kept, connection: connection)
 
+    // let the pump deliver the registration's events before the reset's are counted
+    try await Task.sleep(for: .milliseconds(50))
+    let eventsBeforeReset = await collector.events.count
     await broker.resetBrowsing()
     #expect(await broker.registeredDevices.isEmpty)
     // the fresh browser reports the device that is still advertised
@@ -173,9 +179,12 @@ struct ConnectionBrokerExpiryTests {
     #expect(await collector.removals(of: kept) == 0)
     #expect(await collector.removals(of: gone) == 1)
     // rediscovered with its connection in place, so updated rather than added again
-    let keptEvents = await collector.events.filter { $0.deviceIdentifier == kept }.map(\.eventType)
-    #expect(keptEvents.filter { $0 == .deviceUpdated }.count == 1)
-    #expect(keptEvents.filter { $0 == .deviceAdded }.count == 1)
+    let eventsAfterReset = await collector.events.dropFirst(eventsBeforeReset)
+    let keptEvents: [OcaConnectionBroker.EventType] = eventsAfterReset
+      .filter { $0.deviceIdentifier == kept }
+      .map(\.eventType)
+    let discoveryEvents = keptEvents.filter { $0 == .deviceAdded || $0 == .deviceUpdated }
+    #expect(discoveryEvents == [.deviceUpdated])
     #expect(try await broker.withDeviceConnection(kept) { $0 } === connection)
   }
 }
