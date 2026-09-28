@@ -124,6 +124,16 @@ open class OcaDeviceManager: OcaManager {
   )
   public var managers = OcaList<OcaManagerDescriptor>()
 
+  func add(managerDescriptor: OcaManagerDescriptor) {
+    guard !managers.contains(where: { $0.objectNumber == managerDescriptor.objectNumber })
+    else { return }
+    managers.append(managerDescriptor)
+  }
+
+  func removeManagerDescriptor(objectNumber: OcaONo) {
+    managers.removeAll(where: { $0.objectNumber == objectNumber })
+  }
+
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.14"),
     getMethodID: OcaMethodID("3.20"),
