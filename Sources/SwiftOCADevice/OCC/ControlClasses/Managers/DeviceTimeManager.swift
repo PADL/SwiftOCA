@@ -98,7 +98,7 @@ open class OcaDeviceTimeManager: OcaManager {
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
       objectNumber: OcaDeviceTimeManagerONo,
-      role: "Device Time Manager",
+      role: "DeviceTimeManager",
       deviceDelegate: deviceDelegate,
       addToRootBlock: true
     )

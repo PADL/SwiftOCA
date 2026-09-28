@@ -30,7 +30,7 @@ open class OcaControlNetwork: OcaApplicationNetwork {
     deviceDelegate: OcaDevice? = nil
   ) async throws {
     try await self.init(
-      role: "Control Network",
+      role: "ControlNetwork",
       deviceDelegate: deviceDelegate,
       addToRootBlock: true
     )

@@ -142,7 +142,7 @@ public class OcaLockManager: OcaManager {
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
       objectNumber: OcaLockManagerONo,
-      role: "Lock Manager",
+      role: "LockManager",
       deviceDelegate: deviceDelegate,
       addToRootBlock: true
     )

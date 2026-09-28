@@ -23,7 +23,7 @@ open class OcaDiagnosticManager: OcaManager {
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
       objectNumber: OcaDiagnosticManagerONo,
-      role: "Diagnostic Manager",
+      role: "DiagnosticManager",
       deviceDelegate: deviceDelegate,
       addToRootBlock: true
     )

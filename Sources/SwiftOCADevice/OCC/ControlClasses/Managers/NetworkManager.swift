@@ -50,7 +50,7 @@ open class OcaNetworkManager: OcaManager {
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
       objectNumber: OcaNetworkManagerONo,
-      role: "Network Manager",
+      role: "NetworkManager",
       deviceDelegate: deviceDelegate,
       addToRootBlock: true
     )

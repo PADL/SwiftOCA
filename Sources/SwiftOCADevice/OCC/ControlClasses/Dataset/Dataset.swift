@@ -86,7 +86,7 @@ Sendable {
     try await super.init(
       objectNumber: objectNumber,
       lockable: lockable,
-      role: role ?? "Dataset \(name)",
+      role: role ?? "Dataset@\(name)",
       deviceDelegate: deviceDelegate,
       addToRootBlock: addToRootBlock
     )

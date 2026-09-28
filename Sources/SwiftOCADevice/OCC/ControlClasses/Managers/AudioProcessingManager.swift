@@ -23,7 +23,7 @@ open class OcaAudioProcessingManager: OcaManager {
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
       objectNumber: OcaAudioProcessingManagerONo,
-      role: "Audio Processing Manager",
+      role: "AudioProcessingManager",
       deviceDelegate: deviceDelegate,
       addToRootBlock: true
     )

@@ -81,7 +81,7 @@ open class OcaFirmwareManager: OcaManager {
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
       objectNumber: OcaFirmwareManagerONo,
-      role: "Firmware Manager",
+      role: "FirmwareManager",
       deviceDelegate: deviceDelegate,
       addToRootBlock: true
     )

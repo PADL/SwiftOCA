@@ -86,7 +86,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     ) async throws {
       try await super.init(
         lockable: matrix.lockable,
-        role: "\(matrix.role) Proxy",
+        role: "\(matrix.role)Proxy",
         deviceDelegate: matrix.deviceDelegate,
         addToRootBlock: false
       )
