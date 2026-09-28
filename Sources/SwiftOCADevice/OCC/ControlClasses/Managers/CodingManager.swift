@@ -37,7 +37,7 @@ open class OcaCodingManager: OcaManager {
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
       objectNumber: OcaCodingManagerONo,
-      role: "Coding Manager",
+      role: "CodingManager",
       deviceDelegate: deviceDelegate,
       addToRootBlock: true
     )

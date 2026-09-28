@@ -223,7 +223,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
       readOnly: false,
       lastModificationTime: dirEntry.lastModificationTime,
       objectNumber: dirEntry.oNo,
-      role: "File Dataset \(dirEntry)",
+      role: "FileDataset@\(dirEntry)",
       deviceDelegate: deviceDelegate
     )
   }

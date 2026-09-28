@@ -285,7 +285,7 @@ open class _OcaGroupControllerGroup<Member: OcaRoot>: OcaGroup<Member> {
     init(_ group: _OcaGroupControllerGroup) async throws {
       try await super.init(
         lockable: group.lockable,
-        role: "\(group.role) Group Controller",
+        role: "\(group.role)GroupController",
         deviceDelegate: group.deviceDelegate,
         addToRootBlock: false
       )

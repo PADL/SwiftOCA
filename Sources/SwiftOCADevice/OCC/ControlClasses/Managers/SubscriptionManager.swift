@@ -383,7 +383,7 @@ public class OcaSubscriptionManager: OcaManager {
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
       objectNumber: OcaSubscriptionManagerONo,
-      role: "Subscription Manager",
+      role: "SubscriptionManager",
       deviceDelegate: deviceDelegate,
       addToRootBlock: true
     )

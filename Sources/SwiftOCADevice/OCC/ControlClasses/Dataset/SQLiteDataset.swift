@@ -94,7 +94,7 @@ final class OcaSQLiteDataset: OcaDataset, @unchecked Sendable {
       type: mimeType,
       readOnly: false,
       objectNumber: datasetONo,
-      role: "SQLite Dataset \(name)",
+      role: "SQLiteDataset@\(name)",
       deviceDelegate: deviceDelegate
     )
   }

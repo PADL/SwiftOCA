@@ -175,7 +175,7 @@ open class OcaSecurityManager: OcaManager {
   ) async throws {
     try await self.init(
       objectNumber: OcaSecurityManagerONo,
-      role: "Security Manager",
+      role: "SecurityManager",
       deviceDelegate: deviceDelegate,
       addToRootBlock: true
     )

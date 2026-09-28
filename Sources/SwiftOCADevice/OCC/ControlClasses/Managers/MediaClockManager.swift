@@ -37,7 +37,7 @@ open class OcaMediaClockManager: OcaManager {
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
       objectNumber: OcaMediaClockManagerONo,
-      role: "Media Clock Manager",
+      role: "MediaClockManager",
       deviceDelegate: deviceDelegate,
       addToRootBlock: true
     )
