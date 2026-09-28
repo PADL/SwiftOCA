@@ -171,6 +171,10 @@ public actor OcaDevice {
     } else {
       self.deviceManager = try await OcaDeviceManager(deviceDelegate: self)
     }
+    // managers registered before the device manager existed missed being listed
+    for object in objects.values.sorted(by: { $0.objectNumber < $1.objectNumber }) {
+      await _addManagerDescriptor(for: object)
+    }
   }
 
   public func add(endpoint: OcaDeviceEndpoint) async throws {
@@ -215,16 +219,18 @@ public actor OcaDevice {
       precondition(object.objectNumber != OcaRootBlockONo)
       try await rootBlock.add(actionObject: object)
     }
-    if object is OcaManager, let deviceManager, deviceManager != object {
-      let classIdentification = await object.objectIdentification.classIdentification
-      let managerDescriptor = OcaManagerDescriptor(
-        objectNumber: object.objectNumber,
-        name: object.description,
-        classID: classIdentification.classID,
-        classVersion: classIdentification.classVersion
-      )
-      Task { @OcaDevice in deviceManager.managers.append(managerDescriptor) }
-    }
+    await _addManagerDescriptor(for: object)
+  }
+
+  private func _addManagerDescriptor(for object: OcaRoot) async {
+    guard object is OcaManager, let deviceManager, deviceManager != object else { return }
+    let classIdentification = await object.objectIdentification.classIdentification
+    await deviceManager.add(managerDescriptor: OcaManagerDescriptor(
+      objectNumber: object.objectNumber,
+      name: object.role,
+      classID: classIdentification.classID,
+      classVersion: classIdentification.classVersion
+    ))
   }
 
   public func deregister(objectNumber: OcaONo) async throws {
@@ -246,9 +252,7 @@ public actor OcaDevice {
       "this object was not registered with this device"
     )
     if object is OcaManager, let deviceManager, deviceManager != object {
-      Task { @OcaDevice in
-        deviceManager.managers.removeAll(where: { $0.objectNumber == object.objectNumber })
-      }
+      await deviceManager.removeManagerDescriptor(objectNumber: object.objectNumber)
     }
     if let object = object as? OcaOwnable,
        let owner = await objects[object.owner] as? OcaBlock
