@@ -30,6 +30,17 @@ enum OcaSQLiteDatasetSchema {
   static let colData = "data"
 }
 
+/// Runs `body`, reporting a database that has reached its size cap (SQLITE_FULL,
+/// raised once max_page_count is reached) as `arrayOrDataTooBig`.
+func withDatasetSizeCap<T>(_ body: () throws -> T) throws -> T {
+  let SQLITE_FULL: Int32 = 13
+  do {
+    return try body()
+  } catch let SQLite.Result.error(_, code, _) where code == SQLITE_FULL {
+    throw Ocp1Error.arrayOrDataTooBig
+  }
+}
+
 final class SendableConnectionBox: @unchecked Sendable {
   let connection: Connection
 
@@ -136,7 +147,9 @@ final class OcaSQLiteDataset: OcaDataset, @unchecked Sendable {
     let colData = SQLite.Expression<String?>(OcaSQLiteDatasetSchema.colData)
 
     let json = String(data: data, encoding: .utf8)
-    try db.run(datasets.filter(colDatasetONo == Int64(objectNumber)).update(colData <- json))
+    try withDatasetSizeCap {
+      try db.run(datasets.filter(colDatasetONo == Int64(objectNumber)).update(colData <- json))
+    }
   }
 
   override func openRead(

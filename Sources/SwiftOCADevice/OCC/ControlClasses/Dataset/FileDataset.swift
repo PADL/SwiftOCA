@@ -57,6 +57,15 @@ extension OcaMimeType {
   }
 }
 
+/// Bytes used by the dataset files in `basePath`, not counting the file at `excluding`.
+func fileDatasetUsage(at basePath: URL, excluding: URL? = nil) throws -> OcaUint64 {
+  let excludedPath = excluding?.standardizedFileURL.path()
+  return try FileManager.default
+    .contentsOfDirectory(at: basePath, includingPropertiesForKeys: [.fileSizeKey])
+    .filter { $0.standardizedFileURL.path() != excludedPath }
+    .reduce(0) { $0 + OcaUint64(try $1.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) }
+}
+
 struct OcaFileDatasetDirEntry: Hashable, CustomStringConvertible {
   static func == (lhs: OcaFileDatasetDirEntry, rhs: OcaFileDatasetDirEntry) -> Bool {
     try! lhs.absolutePath == rhs.absolutePath
@@ -181,6 +190,8 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
   #endif
 
   let basePath: URL
+  /// largest the dataset files in `basePath` may grow to together, in bytes; nil for no limit
+  let maxTotalSize: OcaUint64?
 
   private init(
     basePath: URL,
@@ -190,12 +201,14 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     readOnly: OcaBoolean,
     lastModificationTime: OcaTime = .now,
     maxSize: OcaUint64 = .max,
+    maxTotalSize: OcaUint64? = nil,
     objectNumber: OcaONo,
     lockable: OcaBoolean = true,
     role: OcaString,
     deviceDelegate: OcaDevice? = nil
   ) async throws {
     self.basePath = basePath
+    self.maxTotalSize = maxTotalSize
     try await super.init(
       owner: owner,
       name: name,
@@ -214,6 +227,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
   convenience init(
     dirEntry: OcaFileDatasetDirEntry,
     maxSize: OcaUint64 = .max,
+    maxTotalSize: OcaUint64? = nil,
     deviceDelegate: OcaDevice? = nil
   ) async throws {
     try await self.init(
@@ -224,6 +238,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
       readOnly: false,
       lastModificationTime: dirEntry.lastModificationTime,
       maxSize: maxSize,
+      maxTotalSize: maxTotalSize,
       objectNumber: dirEntry.oNo,
       role: "FileDataset@\(dirEntry)",
       deviceDelegate: deviceDelegate
@@ -344,6 +359,14 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     let fileHandle: IOSessionHandle = try resolveIOSessionHandle(handle, controller: controller)
     guard position + OcaUint64(part.count) <= maxSize else {
       throw Ocp1Error.arrayOrDataTooBig
+    }
+    if let maxTotalSize {
+      let url = try dirEntry.url
+      let ownSize = OcaUint64(try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0)
+      let newSize = max(ownSize, position + OcaUint64(part.count))
+      guard try fileDatasetUsage(at: basePath, excluding: url) + newSize <= maxTotalSize else {
+        throw Ocp1Error.arrayOrDataTooBig
+      }
     }
     do {
       #if canImport(IORing)
