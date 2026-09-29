@@ -116,6 +116,11 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     let mimeType: OcaMimeType
   }
 
+  /// the columns extractRowInfo reads, so enumerating datasets doesn't load their contents
+  private var rowInfoColumns: [any Expressible] {
+    [colDatasetONo, colTargetONo, colName, colMimeType]
+  }
+
   private func extractRowInfo(_ row: Row) -> DatasetRowInfo {
     DatasetRowInfo(
       datasetONo: OcaONo(row[colDatasetONo]),
@@ -146,9 +151,10 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
 
   public func getDatasetObjects(targetONo: OcaONo?) async throws -> [OcaDataset] {
     let query: Table = if let targetONo {
-      datasets.filter(colTargetONo == Int64(targetONo) || colTargetONo == nil)
+      datasets.select(rowInfoColumns)
+        .filter(colTargetONo == Int64(targetONo) || colTargetONo == nil)
     } else {
-      datasets
+      datasets.select(rowInfoColumns)
     }
 
     let rows = try Array(db.prepare(query)).map(extractRowInfo)
@@ -163,7 +169,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     targetONo: OcaONo?,
     datasetONo: OcaONo
   ) async throws -> OcaDataset {
-    var query = datasets.filter(colDatasetONo == Int64(datasetONo))
+    var query = datasets.select(rowInfoColumns).filter(colDatasetONo == Int64(datasetONo))
     if let targetONo {
       precondition(targetONo != OcaInvalidONo)
       query = query.filter(colTargetONo == Int64(targetONo) || colTargetONo == nil)
@@ -181,7 +187,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     name: OcaString,
     nameComparisonType: OcaStringComparisonType
   ) async throws -> [OcaDataset] {
-    var query = datasets.select(*)
+    var query = datasets.select(rowInfoColumns)
 
     if let targetONo {
       query = query.filter(colTargetONo == Int64(targetONo) || colTargetONo == nil)
