@@ -534,6 +534,42 @@ final class SQLiteDatasetStorageProviderTests: XCTestCase {
     }
     try await dataset.close(handle: handle, controller: nil)
   }
+
+  func testMaxTotalSize() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    _ = try await OcaLocalDeviceEndpoint(device: device)
+
+    let provider = try OcaSQLiteDatasetStorageProvider(
+      path: dbPath,
+      maxTotalSize: 64 * 1024,
+      deviceDelegate: device
+    )
+    await device.setDatasetStorageProvider(provider)
+
+    // 8 KiB datasets fit until the database reaches its page cap, then are rejected
+    var constructed = 0
+    do {
+      for i in 0..<100 {
+        _ = try await provider.construct(
+          classID: SwiftOCADevice.OcaDataset.classID,
+          targetONo: OcaRootBlockONo,
+          datasetONo: nil,
+          name: "dataset_\(i)",
+          type: OcaParamDatasetMimeType,
+          maxSize: .max,
+          initialContents: .init(repeating: 0x20, count: 8 * 1024),
+          controller: nil
+        )
+        constructed += 1
+      }
+      XCTFail("expected arrayOrDataTooBig")
+    } catch let error as Ocp1Error {
+      XCTAssertEqual(error, .arrayOrDataTooBig)
+    }
+    XCTAssertGreaterThan(constructed, 0)
+    XCTAssertLessThan(constructed, 8)
+  }
 }
 
 #endif

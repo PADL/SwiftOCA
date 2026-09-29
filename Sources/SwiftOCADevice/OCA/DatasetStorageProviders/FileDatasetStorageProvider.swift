@@ -25,6 +25,8 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
   let validBlockONos: Set<OcaONo>
   /// largest dataset, in bytes, that controllers may store; nil for no limit
   let maxDatasetSize: OcaUint64?
+  /// largest the dataset files in `basePath` may grow to together, in bytes; nil for no limit
+  let maxTotalSize: OcaUint64?
   weak var deviceDelegate: OcaDevice?
 
   private nonisolated var fileManager: FileManager {
@@ -52,12 +54,14 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     validDatasetONos: ClosedRange<OcaONo> = 0x10000...0x1FFFF,
     validBlockONos: Set<OcaONo> = [OcaRootBlockONo],
     maxDatasetSize: OcaUint64? = nil,
+    maxTotalSize: OcaUint64? = nil,
     deviceDelegate: OcaDevice?
   ) throws {
     self.basePath = basePath
     self.validDatasetONos = validDatasetONos
     self.validBlockONos = validBlockONos
     self.maxDatasetSize = maxDatasetSize
+    self.maxTotalSize = maxTotalSize
     self.deviceDelegate = deviceDelegate
 
     if !fileManager.fileExists(atPath: basePath.path()) {
@@ -80,6 +84,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
       return try await OcaFileDataset(
         dirEntry: dirEntry,
         maxSize: maxDatasetSize ?? .max,
+        maxTotalSize: maxTotalSize,
         deviceDelegate: deviceDelegate
       )
     }
@@ -163,6 +168,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     guard OcaUint64(initialContents.count) <= maxDatasetSize ?? .max else {
       throw Ocp1Error.arrayOrDataTooBig
     }
+    try checkTotalSize(adding: OcaUint64(initialContents.count))
 
     let oNo = try datasetONo ?? allocateONo(targetONo: targetONo)
     let dirEntry = try OcaFileDatasetDirEntry(
@@ -175,6 +181,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     let dataset = try await OcaFileDataset(
       dirEntry: dirEntry,
       maxSize: maxDatasetSize ?? .max,
+      maxTotalSize: maxTotalSize,
       deviceDelegate: deviceDelegate
     )
 
@@ -211,9 +218,18 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
       name: newName,
       mimeType: oldDirEntry.mimeType
     )
+    let oldSize = try oldDirEntry.url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+    try checkTotalSize(adding: OcaUint64(oldSize))
     // FIXME: need to rewrite target object number
     try fileManager.copyItem(at: oldDirEntry.url, to: newDirEntry.url)
     return newONo
+  }
+
+  private func checkTotalSize(adding size: OcaUint64) throws {
+    guard let maxTotalSize else { return }
+    guard try fileDatasetUsage(at: basePath) + size <= maxTotalSize else {
+      throw Ocp1Error.arrayOrDataTooBig
+    }
   }
 
   public func delete(targetONo: OcaONo?, datasetONo: OcaONo) async throws {

@@ -26,6 +26,8 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
   let validBlockONos: Set<OcaONo>
   /// largest dataset, in bytes, that controllers may store; nil for no limit
   let maxDatasetSize: OcaUint64?
+  /// largest the database may grow to, in bytes; nil for no limit
+  let maxTotalSize: OcaUint64?
   weak var deviceDelegate: OcaDevice?
 
   private var db: Connection { _db.connection }
@@ -42,6 +44,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     validDatasetONos: ClosedRange<OcaONo> = 0x10000...0x1FFFF,
     validBlockONos: Set<OcaONo> = [OcaRootBlockONo],
     maxDatasetSize: OcaUint64? = nil,
+    maxTotalSize: OcaUint64? = nil,
     deviceDelegate: OcaDevice?
   ) throws {
     let db = try Connection(path)
@@ -60,10 +63,18 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     // Wait rather than fail immediately if an external tool (e.g. the sqlite3
     // CLI) briefly holds a lock.
     try db.run("PRAGMA busy_timeout = 5000")
+    if let maxTotalSize {
+      // max_page_count applies to this connection only, so it is set on every open. SQLite
+      // won't set it below the database's current page count, so an existing database larger
+      // than the cap keeps its size but cannot grow.
+      let pageSize = try db.scalar("PRAGMA page_size") as! Int64
+      _ = try db.scalar("PRAGMA max_page_count = \(max(1, Int64(clamping: maxTotalSize) / pageSize))")
+    }
     _db = SendableConnectionBox(db)
     self.validDatasetONos = validDatasetONos
     self.validBlockONos = validBlockONos
     self.maxDatasetSize = maxDatasetSize
+    self.maxTotalSize = maxTotalSize
     self.deviceDelegate = deviceDelegate
 
     let datasets = Table(OcaSQLiteDatasetSchema.tableName)
@@ -208,13 +219,15 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     let oNo = try datasetONo ?? allocateONo()
     let json = String(data: Data(initialContents), encoding: .utf8)
 
-    try db.run(datasets.insert(
-      colDatasetONo <- Int64(oNo),
-      colTargetONo <- Int64(targetONo),
-      colName <- name,
-      colMimeType <- type,
-      colData <- json
-    ))
+    try withDatasetSizeCap {
+      try db.run(datasets.insert(
+        colDatasetONo <- Int64(oNo),
+        colTargetONo <- Int64(targetONo),
+        colName <- name,
+        colMimeType <- type,
+        colData <- json
+      ))
+    }
 
     let dataset = try await OcaSQLiteDataset(
       db: _db,
@@ -268,13 +281,15 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
       }
     }
 
-    try db.run(datasets.insert(
-      colDatasetONo <- Int64(newONo),
-      colTargetONo <- Int64(newTargetONo),
-      colName <- newName,
-      colMimeType <- oldRow[colMimeType],
-      colData <- newData
-    ))
+    try withDatasetSizeCap {
+      try db.run(datasets.insert(
+        colDatasetONo <- Int64(newONo),
+        colTargetONo <- Int64(newTargetONo),
+        colName <- newName,
+        colMimeType <- oldRow[colMimeType],
+        colData <- newData
+      ))
+    }
 
     return newONo
   }
