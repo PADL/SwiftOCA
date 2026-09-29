@@ -23,6 +23,8 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
   let basePath: URL
   let validDatasetONos: ClosedRange<OcaONo>
   let validBlockONos: Set<OcaONo>
+  /// largest dataset, in bytes, that controllers may store; nil for no limit
+  let maxDatasetSize: OcaUint64?
   weak var deviceDelegate: OcaDevice?
 
   private nonisolated var fileManager: FileManager {
@@ -49,11 +51,13 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     basePath: URL,
     validDatasetONos: ClosedRange<OcaONo> = 0x10000...0x1FFFF,
     validBlockONos: Set<OcaONo> = [OcaRootBlockONo],
+    maxDatasetSize: OcaUint64? = nil,
     deviceDelegate: OcaDevice?
   ) throws {
     self.basePath = basePath
     self.validDatasetONos = validDatasetONos
     self.validBlockONos = validBlockONos
+    self.maxDatasetSize = maxDatasetSize
     self.deviceDelegate = deviceDelegate
 
     if !fileManager.fileExists(atPath: basePath.path()) {
@@ -73,7 +77,11 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
       }
       return existingFileDataset
     } else {
-      return try await OcaFileDataset(dirEntry: dirEntry, deviceDelegate: deviceDelegate)
+      return try await OcaFileDataset(
+        dirEntry: dirEntry,
+        maxSize: maxDatasetSize ?? .max,
+        deviceDelegate: deviceDelegate
+      )
     }
   }
 
@@ -151,6 +159,10 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     guard classID.isSubclass(of: OcaDataset.classID) else {
       throw Ocp1Error.unknownDataset
     }
+    // checked before the dataset file is created, so a rejected dataset leaves nothing behind
+    guard OcaUint64(initialContents.count) <= maxDatasetSize ?? .max else {
+      throw Ocp1Error.arrayOrDataTooBig
+    }
 
     let oNo = try datasetONo ?? allocateONo(targetONo: targetONo)
     let dirEntry = try OcaFileDatasetDirEntry(
@@ -160,7 +172,11 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
       name: name,
       mimeType: type
     )
-    let dataset = try await OcaFileDataset(dirEntry: dirEntry, deviceDelegate: deviceDelegate)
+    let dataset = try await OcaFileDataset(
+      dirEntry: dirEntry,
+      maxSize: maxDatasetSize ?? .max,
+      deviceDelegate: deviceDelegate
+    )
 
     let (_, handle) = try await dataset.openWrite(lockState: .noLock, controller: controller)
     try await dataset.write(
