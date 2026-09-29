@@ -474,6 +474,64 @@ final class FileDatasetStorageProviderTests: XCTestCase {
     try await connection.disconnect()
     endpointTask.cancel()
   }
+
+  func testMaxDatasetSize() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    _ = try await OcaLocalDeviceEndpoint(device: device)
+
+    let provider = try OcaFileDatasetStorageProvider(
+      basePath: basePath,
+      maxDatasetSize: 16,
+      deviceDelegate: device
+    )
+    await device.setDatasetStorageProvider(provider)
+
+    func construct(_ name: String, size: Int) async throws -> OcaONo {
+      try await provider.construct(
+        classID: SwiftOCADevice.OcaDataset.classID,
+        targetONo: OcaRootBlockONo,
+        datasetONo: nil,
+        name: name,
+        type: OcaParamDatasetMimeType,
+        maxSize: .max,
+        initialContents: .init(repeating: 0x20, count: size),
+        controller: nil
+      )
+    }
+
+    // initial contents over the limit are rejected without creating a dataset
+    do {
+      _ = try await construct("too_big", size: 17)
+      XCTFail("expected arrayOrDataTooBig")
+    } catch let error as Ocp1Error {
+      XCTAssertEqual(error, .arrayOrDataTooBig)
+    }
+    let afterReject = try await provider.getDatasetObjects(targetONo: nil)
+    XCTAssertTrue(afterReject.isEmpty)
+
+    // at the limit is accepted, and the dataset reports the limit as its maxSize
+    let oNo = try await construct("fits", size: 16)
+    let dataset = try await provider.resolve(targetONo: OcaRootBlockONo, datasetONo: oNo)
+    let maxSize = await Task { @OcaDevice in dataset.maxSize }.value
+    XCTAssertEqual(maxSize, 16)
+
+    // writes past the limit are rejected
+    let (writeMaxSize, handle) = try await dataset.openWrite(lockState: .noLock, controller: nil)
+    XCTAssertEqual(writeMaxSize, 16)
+    do {
+      try await dataset.write(
+        handle: handle,
+        position: 8,
+        part: .init(repeating: 0x20, count: 9),
+        controller: nil
+      )
+      XCTFail("expected arrayOrDataTooBig")
+    } catch let error as Ocp1Error {
+      XCTAssertEqual(error, .arrayOrDataTooBig)
+    }
+    try await dataset.close(handle: handle, controller: nil)
+  }
 }
 
 #endif

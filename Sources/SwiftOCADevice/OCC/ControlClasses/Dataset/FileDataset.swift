@@ -213,6 +213,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
 
   convenience init(
     dirEntry: OcaFileDatasetDirEntry,
+    maxSize: OcaUint64 = .max,
     deviceDelegate: OcaDevice? = nil
   ) async throws {
     try await self.init(
@@ -222,6 +223,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
       type: dirEntry.mimeType,
       readOnly: false,
       lastModificationTime: dirEntry.lastModificationTime,
+      maxSize: maxSize,
       objectNumber: dirEntry.oNo,
       role: "FileDataset@\(dirEntry)",
       deviceDelegate: deviceDelegate

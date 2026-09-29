@@ -24,6 +24,8 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
   private let _db: SendableConnectionBox
   let validDatasetONos: ClosedRange<OcaONo>
   let validBlockONos: Set<OcaONo>
+  /// largest dataset, in bytes, that controllers may store; nil for no limit
+  let maxDatasetSize: OcaUint64?
   weak var deviceDelegate: OcaDevice?
 
   private var db: Connection { _db.connection }
@@ -39,6 +41,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     path: String,
     validDatasetONos: ClosedRange<OcaONo> = 0x10000...0x1FFFF,
     validBlockONos: Set<OcaONo> = [OcaRootBlockONo],
+    maxDatasetSize: OcaUint64? = nil,
     deviceDelegate: OcaDevice?
   ) throws {
     let db = try Connection(path)
@@ -60,6 +63,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     _db = SendableConnectionBox(db)
     self.validDatasetONos = validDatasetONos
     self.validBlockONos = validBlockONos
+    self.maxDatasetSize = maxDatasetSize
     self.deviceDelegate = deviceDelegate
 
     let datasets = Table(OcaSQLiteDatasetSchema.tableName)
@@ -124,6 +128,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
       targetONo: info.targetONo,
       name: info.name,
       mimeType: info.mimeType,
+      maxSize: maxDatasetSize ?? .max,
       deviceDelegate: deviceDelegate
     )
   }
@@ -196,6 +201,9 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     guard classID.isSubclass(of: OcaDataset.classID) else {
       throw Ocp1Error.unknownDataset
     }
+    guard OcaUint64(initialContents.count) <= maxDatasetSize ?? .max else {
+      throw Ocp1Error.arrayOrDataTooBig
+    }
 
     let oNo = try datasetONo ?? allocateONo()
     let json = String(data: Data(initialContents), encoding: .utf8)
@@ -214,6 +222,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
       targetONo: targetONo,
       name: name,
       mimeType: type,
+      maxSize: maxDatasetSize ?? .max,
       deviceDelegate: deviceDelegate
     )
 

@@ -85,6 +85,7 @@ final class OcaSQLiteDataset: OcaDataset, @unchecked Sendable {
     targetONo: OcaONo,
     name: OcaString,
     mimeType: OcaMimeType,
+    maxSize: OcaUint64 = .max,
     deviceDelegate: OcaDevice? = nil
   ) async throws {
     try await self.init(
@@ -93,6 +94,7 @@ final class OcaSQLiteDataset: OcaDataset, @unchecked Sendable {
       name: name,
       type: mimeType,
       readOnly: false,
+      maxSize: maxSize,
       objectNumber: datasetONo,
       role: "SQLiteDataset@\(name)",
       deviceDelegate: deviceDelegate
