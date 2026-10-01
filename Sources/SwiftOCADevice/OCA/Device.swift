@@ -202,6 +202,23 @@ public actor OcaDevice {
     }
   }
 
+  /// Lets go of what the device holds for a controller whose connection has gone: its
+  /// locks, released by the time this returns, and its dataset I/O sessions; the event
+  /// delegate is told. An endpoint outside this package calls it when a controller leaves.
+  public func expire(controller: OcaController) async {
+    Task { await eventDelegate?.onControllerExpiry(controller) }
+    #if NonEmbeddedBuild
+    Task {
+      for dataset in objects.values.compactMap({
+        $0 as? OcaDataset
+      }) {
+        await dataset.expireIOSessionHandles(controller: controller)
+      }
+    }
+    #endif
+    await unlockAll(controller: controller)
+  }
+
   public func register(object: some OcaRoot, addToRootBlock: Bool = true) async throws {
     precondition(
       object.objectNumber != OcaInvalidONo,
