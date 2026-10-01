@@ -82,6 +82,9 @@ public struct OcaBoundedDeviceProperty<
     Ocp2Naming.boundedWireNames(getName(propertyName: propertyName))
   }
 
+  /// the value alone: its bounds are the wrapper's, not something a controller sets
+  var controlValueType: any (Codable & Sendable).Type { Value.self }
+
   #if NonEmbeddedBuild
   func getJsonValue() throws -> any Sendable {
     // a gain's range is commonly bounded by -inf dB, which JSON cannot encode

@@ -1,0 +1,112 @@
+//
+// Copyright (c) 2026 PADL Software Pty Ltd
+//
+// Licensed under the Apache License, Version 2.0 (the License);
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+@_spi(SwiftOCAPrivate)
+import SwiftOCA
+
+/// What a device property declares about itself, for a bridge that presents an object's
+/// properties through another control protocol and so has to describe them first.
+@_spi(SwiftOCAPrivate)
+public struct OcaDevicePropertyDescription: Sendable {
+  /// The Swift name of the property.
+  public let name: String
+  public let propertyID: OcaPropertyID
+  public let getMethodID: OcaMethodID?
+  public let setMethodID: OcaMethodID?
+  /// The type a controller reads and writes: the value alone, without the bounds a
+  /// bounded property keeps beside it.
+  public let valueType: any (Codable & Sendable).Type
+  /// The OCP.2 names of the getter's response parameters. A bounded property has three,
+  /// its value first; a vector has none, as its fields name themselves.
+  public let ocp2GetNames: [String]
+  /// The OCP.2 name of the setter's parameter.
+  public let ocp2SetName: String
+
+  /// Whether the property was declared with a setter method. A class can still accept
+  /// or refuse a set in its `handleCommand`, whatever this says.
+  public var isSettable: Bool { setMethodID != nil }
+}
+
+/// A class in an object's lineage with the device properties that class defines.
+@_spi(SwiftOCAPrivate)
+public struct OcaDeviceClassDescription: Sendable {
+  /// The Swift class nearest the root that has this class ID.
+  public let type: OcaRoot.Type
+  public let classID: OcaClassID
+  public let classVersion: OcaClassVersionNumber
+  /// In property ID order.
+  public let properties: [OcaDevicePropertyDescription]
+}
+
+@_spi(SwiftOCAPrivate)
+public extension OcaRoot {
+  /// Every device property of this object, inherited ones included, in property ID
+  /// order. The descriptions are of the class, not of this instance's values.
+  var devicePropertyDescriptions: [OcaDevicePropertyDescription] {
+    allDevicePropertyKeyPaths.compactMap { name, keyPath in
+      (self[keyPath: keyPath] as? any OcaDevicePropertyRepresentable)?.description(named: name)
+    }.sorted { $0.propertyID < $1.propertyID }
+  }
+
+  /// This object's lineage from `OcaRoot` to its own class, each class with the
+  /// properties it defines: those whose property ID is at the class's definition level.
+  var deviceClassDescriptions: [OcaDeviceClassDescription] {
+    var lineage = [OcaRoot.Type]()
+    var next: AnyClass? = type(of: self)
+    while let current = next as? OcaRoot.Type {
+      // a Swift subclass that keeps its parent's class ID is the same OCA class
+      if lineage.last?.classID == current.classID {
+        lineage.removeLast()
+      }
+      lineage.append(current)
+      next = _getSuperclass(current)
+    }
+
+    // a class's definition level is its depth in the lineage, OcaRoot being 1
+    let properties = devicePropertyDescriptions
+    return lineage.reversed().enumerated().map { depth, type in
+      OcaDeviceClassDescription(
+        type: type,
+        classID: type.classID,
+        classVersion: type.classVersion,
+        properties: properties.filter { $0.propertyID.defLevel == depth + 1 }
+      )
+    }
+  }
+}
+
+@_spi(SwiftOCAPrivate)
+public extension Ocp2Encoder {
+  /// The OCP.2 name the encoder gives a field of a composite datatype, from the name
+  /// of its Swift property or coding key.
+  static func fieldName(_ swiftName: String) -> String {
+    Ocp2Naming.wireName(swiftName)
+  }
+}
+
+private extension OcaDevicePropertyRepresentable {
+  func description(named name: String) -> OcaDevicePropertyDescription {
+    OcaDevicePropertyDescription(
+      name: name,
+      propertyID: propertyID,
+      getMethodID: getMethodID,
+      setMethodID: setMethodID,
+      valueType: controlValueType,
+      ocp2GetNames: responseNames(propertyName: name),
+      ocp2SetName: setName(propertyName: name)
+    )
+  }
+}

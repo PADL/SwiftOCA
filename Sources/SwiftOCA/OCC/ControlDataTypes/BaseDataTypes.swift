@@ -123,8 +123,8 @@ public enum OcaStatus: OcaUint8, Codable, Sendable, CaseIterable {
 public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
   CustomStringConvertible, ExpressibleByStringLiteral, _Ocp1Codable
 {
-  let defLevel: OcaUint16
-  let propertyIndex: OcaUint16
+  public let defLevel: OcaUint16
+  public let propertyIndex: OcaUint16
 
   public init(defLevel: OcaUint16, propertyIndex: OcaUint16) {
     self.defLevel = defLevel
