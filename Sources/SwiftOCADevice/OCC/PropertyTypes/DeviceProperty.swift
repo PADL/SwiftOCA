@@ -49,7 +49,7 @@ protocol OcaDevicePropertyRepresentable: Sendable {
 
   /// The type a controller reads and writes, which a wrapper that keeps more than the
   /// value (a bounded property's range) reports without the rest.
-  var controlValueType: any (Codable & Sendable).Type { get }
+  var valueType: any (Codable & Sendable).Type { get }
 
   /// setters take an object so that subscribers can be notified
 
@@ -86,7 +86,7 @@ extension OcaDevicePropertyRepresentable {
     [getName(propertyName: propertyName)]
   }
 
-  var controlValueType: any (Codable & Sendable).Type { Value.self }
+  var valueType: any (Codable & Sendable).Type { Value.self }
 
   var async: AnyAsyncSequence<Value> {
     subject.eraseToAnyAsyncSequence()
