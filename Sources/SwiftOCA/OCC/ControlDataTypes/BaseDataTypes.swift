@@ -336,19 +336,24 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible,
     OcaUint16(fields.count)
   }
 
+  /// The class's definition level: how many classes are in its lineage, itself included.
+  /// The marker and authority that introduce a proprietary class are not classes.
   public var defLevel: OcaUint16 {
     guard isValid else {
       return 0
     }
 
-    for field in fields {
-      if field == Self.ProprietaryClassField {
-        precondition(fieldCount >= 5)
-        return fieldCount - 5
+    var level: OcaUint16 = 0
+    var index = 0
+    while index < fields.count {
+      if fields[index] == Self.ProprietaryClassField, index + 2 < fields.count {
+        index += 3
+      } else {
+        level += 1
+        index += 1
       }
     }
-
-    return fieldCount
+    return level
   }
 
   public var description: String {

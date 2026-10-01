@@ -69,6 +69,7 @@ public extension OcaRoot {
 
   /// This object's lineage from `OcaRoot` to its own class, each class with the
   /// properties it defines: those whose property ID is at the class's definition level.
+  /// It is the lineage of the Swift classes, so an OCA class they skip is not in it.
   var deviceClassDescriptions: [OcaDeviceClassDescription] {
     var lineage = [OcaRoot.Type]()
     var next: AnyClass? = type(of: self)
@@ -81,14 +82,16 @@ public extension OcaRoot {
       next = _getSuperclass(current)
     }
 
-    // a class's definition level is its depth in the lineage, OcaRoot being 1
+    // by the level of the class ID, not by depth: the Swift classes can skip an OCA
+    // class that defines nothing, as OcaBooleanActuator skips OcaBasicActuator
     let properties = devicePropertyDescriptions
-    return lineage.reversed().enumerated().map { depth, type in
-      OcaDeviceClassDescription(
+    return lineage.reversed().map { type in
+      let level = type.classID.defLevel
+      return OcaDeviceClassDescription(
         type: type,
         classID: type.classID,
         classVersion: type.classVersion,
-        properties: properties.filter { $0.propertyID.defLevel == depth + 1 }
+        properties: properties.filter { $0.propertyID.defLevel == level }
       )
     }
   }

@@ -140,6 +140,35 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
     XCTAssertNil(enabled.componentType)
   }
 
+  @OcaDevice
+  func testAClassTheSwiftHierarchySkipsDoesNotMoveItsSubclassesProperties() async throws {
+    // OcaBooleanActuator is 1.1.1.1.1, but its Swift superclass is OcaActuator
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let actuator = try await SwiftOCADevice.OcaBooleanActuator(
+      role: "Switch", deviceDelegate: device, addToRootBlock: true
+    )
+    let classes = actuator.deviceClassDescriptions
+    XCTAssertEqual(classes.map(\.classID), ["1", "1.1", "1.1.1", "1.1.1.1.1"])
+    XCTAssertEqual(classes.last?.properties.map(\.propertyID), [OcaPropertyID("5.1")])
+    XCTAssertEqual(
+      classes.flatMap(\.properties).map(\.propertyID),
+      actuator.devicePropertyDescriptions.map(\.propertyID)
+    )
+  }
+
+  func testAClassIDsDefinitionLevelCountsItsClasses() {
+    XCTAssertEqual(OcaClassID("1").defLevel, 1)
+    XCTAssertEqual(OcaClassID("1.1.1.5").defLevel, 4)
+    let authority = OcaClassID.OcaAllianceCompanyID
+    let proprietary = OcaClassID(parent: "1.1.1.5", authority: authority, 1)
+    // the marker and the authority are not classes
+    XCTAssertEqual(proprietary.fieldCount, 8)
+    XCTAssertEqual(proprietary.defLevel, 5)
+    XCTAssertEqual(OcaClassID(parent: proprietary, 2).defLevel, 6)
+    XCTAssertEqual(proprietary.parent?.defLevel, 4)
+  }
+
   func testFieldNamesFollowTheEncoder() throws {
     XCTAssertEqual(Ocp2Encoder.fieldName("sourcePort"), "SourcePort")
     let encoded = try XCTUnwrap(Ocp2Encoder().encodeValue(OcaPortID(mode: .input, index: 1))
