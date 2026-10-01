@@ -234,7 +234,7 @@ public final class Ocp1OpenSSLDTLSDeviceEndpoint: OcaIORingDeviceEndpoint,
     guard let socket else {
       throw Ocp1Error.notConnected
     }
-    try await socket.sendMessage(Message(address: peer, buffer: [UInt8](data)))
+    try await socket.sendMessage(Message(address: peer, buffer: data.byteArray))
   }
 
   /// Spawn a Task that hands one datagram to its controller (serialised

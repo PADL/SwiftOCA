@@ -268,7 +268,7 @@ public final class Ocp1OpenSSLConnection: OcaConnection, Ocp1MutableSocketAddres
       try await Data(socket.read(count: count, awaitingAllRead: false))
     }
     let write: @Sendable (Data) async throws -> Void = { data in
-      _ = try await socket.write(Array(data), count: data.count, awaitingAllWritten: true)
+      _ = try await socket.write(data.byteArray, count: data.count, awaitingAllWritten: true)
     }
     return (read, write)
   }

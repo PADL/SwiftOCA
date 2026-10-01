@@ -65,7 +65,7 @@ package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1Contr
   }
 
   package func sendOcp1EncodedData(_ data: Data) async throws {
-    endpoint?.outputStream.yield((peerID, [UInt8](data)))
+    endpoint?.outputStream.yield((peerID, data.byteArray))
   }
 
   package nonisolated var identifier: String {

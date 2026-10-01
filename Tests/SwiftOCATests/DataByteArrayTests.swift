@@ -14,33 +14,26 @@
 // limitations under the License.
 //
 
-#if canImport(COpenSSL) && canImport(IORing)
-
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
 import Foundation
 #endif
-import IORing
-internal import IORingUtils
+@testable import SwiftOCA
+import XCTest
 
-/// `Ocp1ByteStream` adapter for an `IORing.Socket`. The fd closes when the
-/// wrapping struct is released, so `close()` is a no-op.
-struct IORingByteStream: Ocp1ByteStream {
-  let socket: Socket
-
-  @concurrent
-  func read(count: Int, awaitingAllRead: Bool) async throws -> Data {
-    try await Data(socket.read(count: count, awaitingAllRead: awaitingAllRead))
+final class DataByteArrayTests: XCTestCase {
+  func testTheArrayHoldsTheBytesOfTheData() {
+    // 14 bytes and fewer are stored inline, more on the heap
+    for count in [0, 1, 14, 15, 64, 1500] {
+      let bytes = (0..<count).map { UInt8(truncatingIfNeeded: $0 &* 7) }
+      XCTAssertEqual(Data(bytes).byteArray, bytes)
+    }
   }
 
-  @concurrent
-  func write(_ data: Data) async throws {
-    _ = try await socket.write(data.byteArray, count: data.count, awaitingAllWritten: true)
+  func testASliceGivesOnlyItsOwnBytes() {
+    let data = Data((0..<100).map { UInt8($0) })
+    XCTAssertEqual(data[10..<30].byteArray, Array(10..<30))
+    XCTAssertEqual(data[100...].byteArray, [])
   }
-
-  @concurrent
-  func close() async {}
 }
-
-#endif

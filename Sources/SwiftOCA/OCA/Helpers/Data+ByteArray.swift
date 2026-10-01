@@ -14,33 +14,17 @@
 // limitations under the License.
 //
 
-#if canImport(COpenSSL) && canImport(IORing)
-
 #if canImport(FoundationEssentials)
 import FoundationEssentials
 #else
 import Foundation
 #endif
-import IORing
-internal import IORingUtils
 
-/// `Ocp1ByteStream` adapter for an `IORing.Socket`. The fd closes when the
-/// wrapping struct is released, so `close()` is a no-op.
-struct IORingByteStream: Ocp1ByteStream {
-  let socket: Socket
-
-  @concurrent
-  func read(count: Int, awaitingAllRead: Bool) async throws -> Data {
-    try await Data(socket.read(count: count, awaitingAllRead: awaitingAllRead))
+package extension Data {
+  /// The bytes as an array, for a socket API that takes one. `[UInt8](data)` copies
+  /// them and then makes an iterator it discards, which costs more than the copy:
+  /// every PDU sent over io_uring comes through here.
+  var byteArray: [UInt8] {
+    withUnsafeBytes { [UInt8]($0) }
   }
-
-  @concurrent
-  func write(_ data: Data) async throws {
-    _ = try await socket.write(data.byteArray, count: data.count, awaitingAllWritten: true)
-  }
-
-  @concurrent
-  func close() async {}
 }
-
-#endif

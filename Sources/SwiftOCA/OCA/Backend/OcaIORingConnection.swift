@@ -217,7 +217,7 @@ public final class OcaIORingDatagramConnection: OcaIORingConnection {
 
   override public func write(_ data: Data) async throws -> Int {
     try await withMappedError { socket in
-      try await socket.send(Array(data))
+      try await socket.send(data.byteArray)
       return data.count
     }
   }
@@ -303,7 +303,7 @@ public final class OcaIORingDomainSocketDatagramConnection: OcaIORingConnection 
 
   override public func write(_ data: Data) async throws -> Int {
     try await withMappedError { socket in
-      try await socket.send(Array(data))
+      try await socket.send(data.byteArray)
       return data.count
     }
   }
@@ -360,7 +360,7 @@ public final class OcaIORingStreamConnection: OcaIORingConnection {
 
   override public func write(_ data: Data) async throws -> Int {
     try await withMappedError { socket in
-      try await socket.write(Array(data), count: data.count, awaitingAllWritten: true)
+      try await socket.write(data.byteArray, count: data.count, awaitingAllWritten: true)
     }
   }
 

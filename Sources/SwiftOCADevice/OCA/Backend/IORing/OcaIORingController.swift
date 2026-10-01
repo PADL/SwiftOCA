@@ -62,7 +62,7 @@ extension OcaIORingControllerPrivate {
         presentationAddress: networkAddress.presentationAddress
       )
     }
-    try await sendOcp1EncodedMessage(Message(address: peerAddress, buffer: [UInt8](data)))
+    try await sendOcp1EncodedMessage(Message(address: peerAddress, buffer: data.byteArray))
   }
 }
 
@@ -192,7 +192,7 @@ package actor OcaIORingStreamController: OcaIORingControllerPrivate, CustomStrin
   package func sendOcp1EncodedData(_ data: Data) async throws {
     guard let socket else { throw Errno.badFileDescriptor }
     _ = try await socket.write(
-      [UInt8](data),
+      data.byteArray,
       count: data.count,
       awaitingAllWritten: true
     )
@@ -277,7 +277,7 @@ package actor OcaIORingDatagramController: OcaIORingControllerPrivate,
   }
 
   package func sendOcp1EncodedData(_ data: Data) async throws {
-    try await sendOcp1EncodedMessage(Message(address: peerAddress, buffer: [UInt8](data)))
+    try await sendOcp1EncodedMessage(Message(address: peerAddress, buffer: data.byteArray))
   }
 
   func sendOcp1EncodedMessage(_ messagePdu: Message) async throws {

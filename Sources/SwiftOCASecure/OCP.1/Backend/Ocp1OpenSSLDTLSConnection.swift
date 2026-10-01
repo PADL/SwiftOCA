@@ -263,7 +263,7 @@ public final class Ocp1OpenSSLDTLSConnection: OcaConnection, Ocp1MutableSocketAd
       ))
     }
     let write: @Sendable (Data) async throws -> Void = { data in
-      try await socket.send(Array(data))
+      try await socket.send(data.byteArray)
     }
     return (read, write)
   }
