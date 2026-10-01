@@ -122,6 +122,25 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
     XCTAssertEqual(classes[3].properties.map(\.name), ["gain"])
   }
 
+  /// OcaBooleanActuator is 1.1.1.1.1, and its Swift class derives from OcaActuator
+  /// (1.1.1) with no class for the basic actuator (1.1.1.1) between them.
+  @OcaDevice
+  func testAPropertyBelongsToItsClassWhereTheLineageSkipsAClassTheIDNames() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let actuator = try await SwiftOCADevice.OcaBooleanActuator(
+      role: "Toggle", deviceDelegate: device, addToRootBlock: true
+    )
+    let classes = actuator.deviceClassDescriptions
+    XCTAssertEqual(classes.map(\.classID), ["1", "1.1", "1.1.1", "1.1.1.1.1"])
+    XCTAssertEqual(classes.last?.properties.map(\.name), ["setting"])
+    XCTAssertEqual(classes.last?.properties.map(\.propertyID), ["5.1"])
+    XCTAssertEqual(
+      classes.flatMap(\.properties).map(\.propertyID),
+      actuator.devicePropertyDescriptions.map(\.propertyID)
+    )
+  }
+
   @OcaDevice
   func testAVectorPropertyIsDescribedWithBothOfItsPropertyIDs() async throws {
     let device = OcaDevice()
