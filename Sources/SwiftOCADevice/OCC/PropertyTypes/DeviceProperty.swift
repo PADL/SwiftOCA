@@ -47,6 +47,10 @@ protocol OcaDevicePropertyRepresentable: Sendable {
   /// OCP.2 names for the getter's response parameters, given the property's Swift name
   func responseNames(propertyName: String) -> [String]
 
+  /// The type a controller reads and writes, which a wrapper that keeps more than the
+  /// value (a bounded property's range) reports without the rest.
+  var controlValueType: any (Codable & Sendable).Type { get }
+
   /// setters take an object so that subscribers can be notified
 
   func set(object: OcaRoot, command: Ocp1Command) async throws
@@ -81,6 +85,8 @@ extension OcaDevicePropertyRepresentable {
   func responseNames(propertyName: String) -> [String] {
     [getName(propertyName: propertyName)]
   }
+
+  var controlValueType: any (Codable & Sendable).Type { Value.self }
 
   var async: AnyAsyncSequence<Value> {
     subject.eraseToAnyAsyncSequence()
