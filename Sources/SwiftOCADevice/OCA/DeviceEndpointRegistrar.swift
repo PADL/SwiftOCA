@@ -16,6 +16,7 @@
 
 #if canImport(dnssd)
 
+@_spi(SwiftOCAPrivate)
 import SwiftOCA
 #if canImport(Darwin)
 import Darwin
@@ -132,7 +133,11 @@ package func runBonjourEndpointRegistrar(
   logger.trace("ending DNS endpoint registration task")
 }
 
-fileprivate actor DNSServiceRegistration {
+/// A service registered with DNS-SD for as long as the registration exists or until it
+/// is deregistered. The service type is the caller's, so this serves registrations other
+/// than OCA's own.
+@_spi(SwiftOCAPrivate)
+public actor DNSServiceRegistration {
   private nonisolated(unsafe) var sdRef: DNSServiceRef!
   private(set) var flags: DNSServiceFlags = 0
   private(set) var name: String?
@@ -152,8 +157,11 @@ fileprivate actor DNSServiceRegistration {
     lastError = error
   }
 
-  init(
-    flags: DNSServiceFlags = 0,
+  /// Registers the service. A nil `name` is the host's name, a nil `domain` the default
+  /// domains and a nil `host` this host. `txtRecord` is encoded by
+  /// `DNSServiceTXTRecord.encode`, in the order given.
+  public init(
+    flags: UInt32 = 0,
     interfaceIndex: UInt32 = UInt32(kDNSServiceInterfaceIndexAny),
     name: String? = nil,
     regType: String,
@@ -166,11 +174,7 @@ fileprivate actor DNSServiceRegistration {
     self.name = name
     self.domain = domain
 
-    let txtRecordBuffer: [UInt8] = txtRecord.flatMap { key, value in
-      // FIXME: escape
-      let keyValue = "\(key)=\(value)".utf8
-      return [UInt8(keyValue.count)] + keyValue
-    }
+    let txtRecordBuffer = DNSServiceTXTRecord.encode(txtRecord)
 
     nonisolated(unsafe) var sdRef: DNSServiceRef!
 
@@ -198,7 +202,33 @@ fileprivate actor DNSServiceRegistration {
     self.sdRef = sdRef
   }
 
-  func deregister() {
+  /// Replaces the TXT record of the registered service, which stays registered. Throws
+  /// `DNSServiceError.badReference` once the service has been deregistered.
+  public func update(txtRecord: [(String, String)]) throws {
+    guard let sdRef else { throw DNSServiceError.badReference }
+
+    var txtRecordBuffer = DNSServiceTXTRecord.encode(txtRecord)
+    // RFC 6763 section 6.1: a record with no entries is a single zero byte
+    if txtRecordBuffer.isEmpty { txtRecordBuffer = [0] }
+
+    let error = txtRecordBuffer.withUnsafeBufferPointer { txtRecordBufferPointer in
+      // a nil record is the service's primary TXT record; a zero TTL is the default one
+      DNSServiceUpdateRecord(
+        sdRef,
+        nil,
+        0,
+        UInt16(txtRecordBufferPointer.count),
+        txtRecordBufferPointer.baseAddress,
+        0
+      )
+    }
+
+    guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else {
+      throw DNSServiceError(rawValue: error) ?? DNSServiceError.unknown
+    }
+  }
+
+  public func deregister() {
     if let sdRef {
       DNSServiceRefDeallocate(sdRef)
       self.sdRef = nil
