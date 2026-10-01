@@ -338,12 +338,14 @@ private final class _DNSServiceBrowseContext: @unchecked Sendable {
 }
 
 /// Starts browsing and returns the source that processes its results once resumed.
-/// Cancelling the source ends the browse and then calls `onCancel`. The caller owns the
-/// retained `context`, which must outlive the source.
+/// Cancelling the source ends the browse and then calls `onCancel`. `onFailure` is
+/// called if the connection to the responder fails, as it does when the responder is
+/// restarted. The caller owns the retained `context`, which must outlive the source.
 private func _makeDNSServiceBrowseSource(
   regType: String,
   domain: String?,
   context: UnsafeMutableRawPointer,
+  onFailure: (@Sendable () -> ())? = nil,
   onCancel: (@Sendable () -> ())? = nil
 ) -> DispatchSourceRead? {
   var sdRef: DNSServiceRef?
@@ -365,7 +367,11 @@ private func _makeDNSServiceBrowseSource(
     queue: DispatchQueue(label: "com.padl.SwiftOCA.DNSServiceBrowse")
   )
 
-  source.setEventHandler { DNSServiceProcessResult(sdRef) }
+  source.setEventHandler {
+    if DNSServiceProcessResult(sdRef) != DNSServiceErrorType(kDNSServiceErr_NoError) {
+      onFailure?()
+    }
+  }
   source.setCancelHandler {
     DNSServiceRefDeallocate(sdRef)
     onCancel?()
@@ -401,7 +407,8 @@ public struct DNSServiceResolution: Sendable, Hashable {
 @_spi(SwiftOCAPrivate)
 public enum DNSServiceDiscovery {
   /// Browses for instances of `regType` (such as `_http._tcp`) until the stream's
-  /// consumer stops iterating. A nil `domain` is the default browse domains.
+  /// consumer stops iterating. A nil `domain` is the default browse domains. The stream
+  /// ends by itself if the connection to the responder fails; browse again to recover.
   public static func browse(
     regType: String,
     domain: String? = nil
@@ -416,6 +423,7 @@ public enum DNSServiceDiscovery {
       regType: regType,
       domain: domain,
       context: context.toOpaque(),
+      onFailure: { continuation.finish() },
       onCancel: { context.release() }
     ) else {
       context.release()
