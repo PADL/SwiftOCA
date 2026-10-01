@@ -37,7 +37,6 @@ package actor OcaFlyingSocksDatagramController: Ocp1ControllerInternal {
     controlProtocol.connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
   }
 
-  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: any SocketAddress
   let interfaceIndex: UInt32?
   let localAddress: (any SocketAddress)?

@@ -26,9 +26,8 @@ import XCTest
 
 /// A controller of an endpoint that is not one of this package's, so nothing but the
 /// device's public API tells the device that it has gone.
-private actor ForeignController: OcaControllerDefaultSubscribing {
+private actor ForeignController: OcaController {
   nonisolated let flags: OcaControllerFlags = [.supportsLocking]
-  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
   func sendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {}
 }

@@ -212,9 +212,13 @@ final class Ocp2LoopbackTests: XCTestCase {
     // the device holds an EV2 subscription for this OCP.2 controller
     let controllers = await harness.endpoint.controllers
     let controller = try XCTUnwrap(controllers.first as? OcaLocalController)
-    let subscriptions = await controller.subscriptions[0x0001_0020] ?? []
-    XCTAssertEqual(subscriptions.count, 1)
-    XCTAssertEqual(subscriptions.first?.version, .ev2)
+    let manager = await harness.device.subscriptionManager
+    let subscriptionManager = try XCTUnwrap(manager)
+    let subscribers = await subscriptionManager.subscribers(to: 0x0001_0020)
+    XCTAssertEqual(subscribers.count, 1)
+    XCTAssertTrue(subscribers.first?.controller === controller)
+    XCTAssertEqual(subscribers.first?.subscriptions.count, 1)
+    XCTAssertEqual(subscribers.first?.subscriptions.first?.version, .ev2)
 
     await { @OcaDevice in deviceBlock.label = "changed" }()
     let observed = await wait {
@@ -224,7 +228,7 @@ final class Ocp2LoopbackTests: XCTestCase {
     XCTAssertTrue(observed, "property did not observe the device change over OCP.2")
 
     try await clientBlock.unsubscribe()
-    let unsubscribed = await wait { await controller.subscriptions[0x0001_0020]?.isEmpty ?? true }
+    let unsubscribed = await wait { await subscriptionManager.subscribers(to: 0x0001_0020).isEmpty }
     XCTAssertTrue(unsubscribed)
   }
 

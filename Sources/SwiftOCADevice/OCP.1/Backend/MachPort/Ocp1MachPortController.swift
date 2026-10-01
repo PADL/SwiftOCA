@@ -40,7 +40,6 @@ package actor Ocp1MachPortController: Ocp1ControllerInternal {
 
   package weak var endpoint: Ocp1MachPortDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
-  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
   /// our dedicated receive port for this controller session
   private let receiveHandle: Ocp1MachPortHandle

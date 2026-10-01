@@ -43,7 +43,6 @@ package actor OcaNWStreamController: Ocp1ControllerInternal, CustomStringConvert
     _peerIdentity.withLock { $0 = identity }
   }
 
-  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   package var keepAliveTask: Task<(), Error>?
   /// NWConnection takes the whole content per send and orders them internally.
   package let writeQueue: Ocp1WriteQueue? = nil

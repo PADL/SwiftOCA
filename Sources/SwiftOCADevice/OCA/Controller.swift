@@ -42,20 +42,6 @@ public protocol OcaController: Actor {
   /// endpoint that accepted it — so it is `nonisolated` and needs no synchronisation.
   nonisolated var controlProtocol: OcaControlProtocol { get }
 
-  func addSubscription(
-    _ subscription: OcaSubscriptionManagerSubscription
-  ) async throws
-
-  func removeSubscription(
-    _ subscription: OcaSubscriptionManagerSubscription
-  ) async throws
-
-  func removeSubscription(
-    _ event: OcaEvent,
-    property: OcaPropertyID?,
-    subscriber: OcaMethod
-  ) async throws
-
   func sendMessages(
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType

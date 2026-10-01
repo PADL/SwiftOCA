@@ -45,7 +45,6 @@ package actor Ocp1OpenSSLStreamController: Ocp1ControllerInternal, CustomStringC
   /// Snapshotted at handshake completion, immutable thereafter.
   package nonisolated let peerIdentity: OcaPeerIdentity
 
-  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   package var keepAliveTask: Task<(), Error>?
   package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast

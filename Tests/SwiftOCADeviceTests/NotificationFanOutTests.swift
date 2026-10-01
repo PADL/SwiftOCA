@@ -25,9 +25,8 @@ import XCTest
 
 /// Stands in for a controller whose socket is slow. `sendMessages` is an `OcaController`
 /// requirement, so the fan-out reaches this rather than a real transport.
-private actor SlowController: OcaControllerDefaultSubscribing {
+private actor SlowController: OcaController {
   nonisolated let flags: OcaControllerFlags = []
-  var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
   private let delay: Duration
   private(set) var sendCount = 0
@@ -81,25 +80,20 @@ final class NotificationFanOutTests: XCTestCase {
 
     let event = makeEvent()
     let controllers = (0..<controllerCount).map { _ in SlowController(delay: delay) }
+    let manager = await device.subscriptionManager
+    let subscriptionManager = try XCTUnwrap(manager)
     for controller in controllers {
-      try await controller.addSubscription(subscription(for: event))
+      try await subscriptionManager.addSubscription(subscription(for: event), for: controller)
     }
     let endpoint = MockEndpoint(controllers: controllers)
     try await device.add(endpoint: endpoint)
 
-    let subCount = await controllers[0].subscriptions.count
-    XCTAssertEqual(subCount, 1, "subscription was not registered on the controller")
+    let subCount = await subscriptionManager.subscribers(to: Self.emitter).count
+    XCTAssertEqual(subCount, controllerCount, "subscriptions were not registered")
     let epCount = await device.endpoints.count
     XCTAssertEqual(epCount, 1, "endpoint was not registered on the device")
-    let smState = await device.subscriptionManager?.state
+    let smState = await subscriptionManager.state
     XCTAssertEqual(smState, .normal, "subscription manager not in normal state")
-
-    // Guards the measurement below: proves a subscribed controller is reached at all.
-    let probe = SlowController(delay: .zero)
-    try await probe.addSubscription(subscription(for: event))
-    try await probe.notifySubscribers(event, parameters: Data())
-    let probeCount = await probe.sendCount
-    XCTAssertEqual(probeCount, 1, "controller-side notifySubscribers did not send")
 
     let started = ContinuousClock.now
     try await device.notifySubscribers(event, parameters: Data())

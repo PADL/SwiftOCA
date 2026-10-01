@@ -25,11 +25,9 @@ import Logging
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
-public protocol OcaControllerDefaultSubscribing: OcaController {
-  var subscriptions: [OcaONo: Set<OcaSubscriptionManagerSubscription>] { get set }
-}
-
-public protocol OcaControllerLightweightNotifying: OcaControllerDefaultSubscribing {
+/// A controller that can be sent a notification somewhere other than down its own
+/// connection, which a subscription asking for lightweight delivery needs.
+public protocol OcaControllerLightweightNotifying: OcaController {
   func sendMessage(
     _ message: Ocp1Message,
     type messageType: OcaMessageType,
@@ -37,114 +35,14 @@ public protocol OcaControllerLightweightNotifying: OcaControllerDefaultSubscribi
   ) async throws
 }
 
-public extension OcaControllerDefaultSubscribing {
-  /// subscriptions are stored keyed by the emitter object number (the object that emits the
-  /// event)
-  /// each object has a set of subscriptions, note that EV1 and EV2 subscriptions are independent,
-  /// i.e. a controller could subscribe to some events with EV1 and others with EV2 (although this
-  /// would certainly be unusual). Hence when looking for a matching subscription, we compare the
-  /// event ID, the property (in the case it is a property changed event), the subscriber, and the
-  /// version.
-  private func findSubscriptions(
+extension OcaController {
+  /// Sends the event for each of `subscriptions` it matches: those the subscription
+  /// manager holds for this controller to the event's emitter.
+  func notify(
     _ event: OcaEvent,
-    property: OcaPropertyID? = nil,
-    subscriber: OcaMethod? = nil,
-    version: OcaSubscriptionManagerSubscription.EventVersion
-  ) -> [OcaSubscriptionManagerSubscription] {
-    precondition(property == nil || event.eventID == OcaPropertyChangedEventID)
-    guard let subscriptions = subscriptions[event.emitterONo] else {
-      return []
-    }
-    return subscriptions.filter { subscription in
-      subscription.event == event &&
-        (subscriber == nil ? true : subscription.subscriber == subscriber) &&
-        subscription.property == property &&
-        subscription.version == version
-    }
-  }
-
-  private func hasSubscription(
-    _ event: OcaEvent,
-    property: OcaPropertyID? = nil,
-    subscriber: OcaMethod? = nil,
-    version: OcaSubscriptionManagerSubscription.EventVersion
-  ) -> Bool {
-    findSubscriptions(
-      event,
-      property: property,
-      subscriber: subscriber,
-      version: version
-    ).count > 0
-  }
-
-  /// Whether any subscription exists for events from `emitterONo`; lets the device decide
-  /// whether an event is worth encoding before it calls `notifySubscribers`.
-  func isSubscribed(toEventsFrom emitterONo: OcaONo) -> Bool {
-    !(subscriptions[emitterONo]?.isEmpty ?? true)
-  }
-
-  private func hasSubscription(
-    _ subscription: OcaSubscriptionManagerSubscription
-  ) -> Bool {
-    hasSubscription(
-      subscription.event,
-      subscriber: subscription.subscriber,
-      version: subscription.version
-    )
-  }
-
-  func addSubscription(
-    _ subscription: OcaSubscriptionManagerSubscription
+    parameters eventParameters: OcaEventParameters,
+    subscriptions: Set<OcaSubscriptionManagerSubscription>
   ) async throws {
-    guard !hasSubscription(subscription) else {
-      throw Ocp1Error.alreadySubscribedToEvent(subscription.event)
-    }
-    guard self is OcaControllerLightweightNotifying ||
-      subscription.notificationDeliveryMode == .normal
-    else {
-      // only controllers implementing OcaControllerLightweightNotifying support
-      // lightweight/fast notifications
-      throw Ocp1Error.status(.parameterError)
-    }
-    if let index = subscriptions.index(forKey: subscription.event.emitterONo) {
-      subscriptions.values[index].insert(subscription)
-    } else {
-      subscriptions[subscription.event.emitterONo] = [subscription]
-    }
-  }
-
-  func removeSubscription(
-    _ subscription: OcaSubscriptionManagerSubscription
-  ) async throws {
-    subscriptions[subscription.event.emitterONo]?.remove(subscription)
-  }
-
-  func removeSubscription(
-    _ event: OcaEvent,
-    property: OcaPropertyID?,
-    subscriber: OcaMethod
-  ) async throws {
-    for subscription in findSubscriptions(event, subscriber: subscriber, version: .ev1) {
-      subscriptions[event.emitterONo]?.remove(subscription)
-    }
-  }
-
-  /// OCP.1-encoded parameters
-  func notifySubscribers(
-    _ event: OcaEvent,
-    parameters: Data
-  ) async throws {
-    try await notifySubscribers(event, parameters: OcaEventParameters(parameters, event: event))
-  }
-
-  func notifySubscribers(
-    _ event: OcaEvent,
-    parameters eventParameters: OcaEventParameters
-  ) async throws {
-    guard let subscriptions = subscriptions[event.emitterONo] else {
-      return
-    }
-
     let property = eventParameters.propertyID
     let format = controlProtocol.parameterFormat
     // encoded once, for the first subscription that is delivered
