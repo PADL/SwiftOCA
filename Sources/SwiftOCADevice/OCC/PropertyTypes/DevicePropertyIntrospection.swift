@@ -104,7 +104,7 @@ private extension OcaDevicePropertyRepresentable {
       propertyID: propertyID,
       getMethodID: getMethodID,
       setMethodID: setMethodID,
-      valueType: controlValueType,
+      valueType: valueType,
       ocp2GetNames: responseNames(propertyName: name),
       ocp2SetName: setName(propertyName: name)
     )

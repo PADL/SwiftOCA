@@ -83,7 +83,7 @@ public struct OcaBoundedDeviceProperty<
   }
 
   /// the value alone: its bounds are the wrapper's, not something a controller sets
-  var controlValueType: any (Codable & Sendable).Type { Value.self }
+  var valueType: any (Codable & Sendable).Type { Value.self }
 
   #if NonEmbeddedBuild
   func getJsonValue() throws -> any Sendable {
