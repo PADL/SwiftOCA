@@ -84,7 +84,6 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
 
   package nonisolated let connectionPrefix: String
 
-  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
   var receiveMessageTask: Task<(), Never>?
   package var keepAliveTask: Task<(), Error>?
@@ -234,7 +233,6 @@ package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerD
     controlProtocol.connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
   }
 
-  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
   package var keepAliveTask: Task<(), Error>?
   package let writeQueue: Ocp1WriteQueue? = nil

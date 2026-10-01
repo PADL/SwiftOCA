@@ -115,8 +115,8 @@ and add `ocp2GetName:` overrides where exact spelling matters for a peer.
   serialised OCP.2 `Parameters` object; `OcaParameters(ocp2ParameterData:)`
   builds the latter.
 - `OcaEventParameters.encoded(as:)` encodes event data for either protocol;
-  `OcaControllerDefaultSubscribing.notifySubscribers(_:parameters:)` takes it
-  so each controller is notified in its own protocol. EV1 subscriptions are
+  the device hands it to each subscribed controller, which is notified in its
+  own protocol. EV1 subscriptions are
   refused with `NotImplemented` on OCP.2 connections; the controller uses
   `AddSubscription2` there.
 - `encodeResponse` moved from `OcaRoot` to `OcaController`, which knows the protocol

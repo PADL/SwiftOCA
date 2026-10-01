@@ -191,6 +191,10 @@ public actor OcaDevice {
       throw Ocp1Error.endpointNotRegistered
     }
     endpoints.removeAll { $0 === endpoint }
+    // its controllers are no longer the device's to notify
+    for controller in await endpoint.controllers {
+      await subscriptionManager?.removeSubscriptions(of: controller)
+    }
   }
 
   public func unlockAll(controller: OcaController) async {
@@ -203,9 +207,11 @@ public actor OcaDevice {
   }
 
   /// Lets go of what the device holds for a controller whose connection has gone: its
-  /// locks, released by the time this returns, and its dataset I/O sessions; the event
-  /// delegate is told. An endpoint outside this package calls it when a controller leaves.
+  /// subscriptions, its locks, both released by the time this returns, and its dataset
+  /// I/O sessions; the event delegate is told. An endpoint outside this package calls it
+  /// when a controller leaves.
   public func expire(controller: OcaController) async {
+    await subscriptionManager?.removeSubscriptions(of: controller)
     Task { await eventDelegate?.onControllerExpiry(controller) }
     #if NonEmbeddedBuild
     Task {
@@ -386,32 +392,27 @@ public actor OcaDevice {
       await subscriptionManager
         .enqueueObjectChangedWhilstNotificationsDisabled(event.emitterONo)
     case .normal:
-      let subscribers = await _subscribers(to: event)
+      let subscribers = await subscriptionManager.subscribers(to: event.emitterONo)
       guard !subscribers.isEmpty else { return }
       let logger = logger
       await withDiscardingTaskGroup { group in
         for subscriber in subscribers {
           group.addTask {
             do {
-              try await subscriber.notifySubscribers(event, parameters: parameters)
+              try await subscriber.controller.notify(
+                event,
+                parameters: parameters,
+                subscriptions: subscriber.subscriptions
+              )
             } catch Ocp1Error.notConnected {
               // a controller on its way out
             } catch {
-              logger.warning("failed to notify \(subscriber) of \(event): \(error)")
+              logger.warning("failed to notify \(subscriber.controller) of \(event): \(error)")
             }
           }
         }
       }
     }
-  }
-
-  /// Controllers holding at least one subscription to the event's emitter.
-  private func _subscribers(to event: OcaEvent) async -> [any OcaControllerDefaultSubscribing] {
-    await endpoints
-      .asyncMap { await $0.controllers }
-      .flatMap { $0 }
-      .map { $0 as! any OcaControllerDefaultSubscribing }
-      .asyncCompactMap { await $0.isSubscribed(toEventsFrom: event.emitterONo) ? $0 : nil }
   }
 
   public func setEventDelegate(_ eventDelegate: OcaDeviceEventDelegate) {

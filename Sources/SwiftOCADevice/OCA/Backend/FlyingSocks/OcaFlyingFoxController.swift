@@ -40,7 +40,6 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
   private nonisolated let _connectionPrefix: String
   private nonisolated let _usesTextFrames: Bool
 
-  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
   private let _messages: AsyncThrowingChannel<Ocp1MessageList, Error>
   private var receiveMessageTask: Task<(), Never>?

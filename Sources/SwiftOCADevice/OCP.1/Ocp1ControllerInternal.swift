@@ -58,7 +58,7 @@ package struct Ocp1MessageList: Sendable {
 // OcaControllerPrivate should eventually be merged into OcaController once we are ready to
 // support out-of-tree endpoints
 
-package protocol Ocp1ControllerInternal: OcaControllerDefaultSubscribing, Actor {
+package protocol Ocp1ControllerInternal: OcaController {
   associatedtype Endpoint: OcaDeviceEndpointPrivate
 
   nonisolated var connectionPrefix: String { get }

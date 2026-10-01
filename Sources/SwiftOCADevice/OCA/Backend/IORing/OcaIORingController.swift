@@ -77,7 +77,6 @@ package actor OcaIORingStreamController: OcaIORingControllerPrivate, CustomStrin
 
   package nonisolated let connectionPrefix: String
 
-  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
   var receiveMessageTask: Task<(), Never>?
   package var keepAliveTask: Task<(), Error>?
@@ -246,7 +245,6 @@ package actor OcaIORingDatagramController: OcaIORingControllerPrivate,
     controlProtocol.connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
   }
 
-  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   let peerAddress: AnySocketAddress
   package var keepAliveTask: Task<(), Error>?
   package let writeQueue: Ocp1WriteQueue? = nil

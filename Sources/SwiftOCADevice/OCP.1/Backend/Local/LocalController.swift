@@ -35,7 +35,6 @@ package actor OcaLocalController: Ocp1ControllerInternal {
 
   package weak var endpoint: OcaLocalDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
-  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
 
   init(endpoint: OcaLocalDeviceEndpoint) async {
     self.endpoint = endpoint

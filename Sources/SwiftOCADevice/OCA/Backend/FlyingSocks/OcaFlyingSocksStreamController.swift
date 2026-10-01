@@ -37,7 +37,6 @@ package actor OcaFlyingSocksStreamController: Ocp1ControllerInternal, CustomStri
   package nonisolated let flags: OcaControllerFlags
   package nonisolated let connectionPrefix: String
 
-  package var subscriptions = [OcaONo: Set<OcaSubscriptionManagerSubscription>]()
   package var keepAliveTask: Task<(), Error>?
   package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
