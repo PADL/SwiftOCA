@@ -51,6 +51,10 @@ protocol OcaDevicePropertyRepresentable: Sendable {
   /// value (a bounded property's range) reports without the rest.
   var valueType: any (Codable & Sendable).Type { get }
 
+  /// For a vector property, which is two OCA properties read and written together: the
+  /// ID of its y component and the type of each component. Nil for any other property.
+  var vectorComponents: (yPropertyID: OcaPropertyID, type: any (Codable & Sendable).Type)? { get }
+
   /// setters take an object so that subscribers can be notified
 
   func set(object: OcaRoot, command: Ocp1Command) async throws
@@ -87,6 +91,8 @@ extension OcaDevicePropertyRepresentable {
   }
 
   var valueType: any (Codable & Sendable).Type { Value.self }
+
+  var vectorComponents: (yPropertyID: OcaPropertyID, type: any (Codable & Sendable).Type)? { nil }
 
   var async: AnyAsyncSequence<Value> {
     subject.eraseToAnyAsyncSequence()

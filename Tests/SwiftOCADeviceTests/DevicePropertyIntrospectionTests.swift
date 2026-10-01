@@ -36,6 +36,20 @@ private final class _TrimmedGain: SwiftOCADevice.OcaGain {
   var trim: OcaDB = 0
 }
 
+/// A class with a vector property: two property IDs behind one getter.
+private final class _Positioned: SwiftOCADevice.OcaWorker {
+  override class var classID: OcaClassID {
+    OcaClassID(parent: super.classID, authority: OcaClassID.OcaAllianceCompanyID, 2)
+  }
+
+  @OcaVectorDeviceProperty(
+    xPropertyID: OcaPropertyID("3.1"),
+    yPropertyID: OcaPropertyID("3.2"),
+    getMethodID: OcaMethodID("3.1")
+  )
+  var position = OcaVector2D<OcaUint16>(x: 0, y: 0)
+}
+
 final class DevicePropertyIntrospectionTests: XCTestCase {
   @OcaDevice
   private func makeGain<T: SwiftOCADevice.OcaGain>(_ type: T.Type = T.self) async throws -> T {
@@ -106,6 +120,24 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
     XCTAssertEqual(classes.last?.classID, _TrimmedGain.classID)
     XCTAssertEqual(classes.last?.properties.map(\.name), ["trim"])
     XCTAssertEqual(classes[3].properties.map(\.name), ["gain"])
+  }
+
+  @OcaDevice
+  func testAVectorPropertyIsDescribedWithBothOfItsPropertyIDs() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let object = try await _Positioned(role: "Positioned", deviceDelegate: device, addToRootBlock: true)
+    let property = try XCTUnwrap(object.devicePropertyDescriptions.first { $0.name == "position" })
+    XCTAssertEqual(property.propertyID, OcaPropertyID("3.1"))
+    XCTAssertEqual(property.yPropertyID, OcaPropertyID("3.2"))
+    XCTAssertTrue(property.valueType == OcaVector2D<OcaUint16>.self)
+    XCTAssertTrue(property.componentType == OcaUint16.self)
+    XCTAssertFalse(property.isSettable)
+
+    // any other property is one OCA property and has no components
+    let enabled = try XCTUnwrap(object.devicePropertyDescriptions.first { $0.name == "enabled" })
+    XCTAssertNil(enabled.yPropertyID)
+    XCTAssertNil(enabled.componentType)
   }
 
   func testFieldNamesFollowTheEncoder() throws {

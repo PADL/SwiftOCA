@@ -74,6 +74,10 @@ public struct OcaVectorDeviceProperty<
 
   public var ocp2GetName: String? { storage.ocp2GetName }
 
+  var vectorComponents: (yPropertyID: OcaPropertyID, type: any (Codable & Sendable).Type)? {
+    (yPropertyID, Value.self)
+  }
+
   /// A vector's getter returns one record with two fields, so it supplies no explicit
   /// names: the encoder derives `X` and `Y` from the record. A single name would be
   /// assigned to the first field and the second derived, which matches neither the

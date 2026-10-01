@@ -27,8 +27,14 @@ public struct OcaDevicePropertyDescription: Sendable {
   public let getMethodID: OcaMethodID?
   public let setMethodID: OcaMethodID?
   /// The type a controller reads and writes: the value alone, without the bounds a
-  /// bounded property keeps beside it.
+  /// bounded property keeps beside it. For a vector property it is the pair.
   public let valueType: any (Codable & Sendable).Type
+  /// A vector property is two OCA properties read and written together: `propertyID`
+  /// is its x component and this is its y. Nil for any other property.
+  public let yPropertyID: OcaPropertyID?
+  /// The type of each component of a vector property, which is what its change events
+  /// carry, one for each of the two property IDs. Nil for any other property.
+  public let componentType: (any (Codable & Sendable).Type)?
   /// The OCP.2 names of the getter's response parameters. A bounded property has three,
   /// its value first; a vector has none, as its fields name themselves.
   public let ocp2GetNames: [String]
@@ -105,6 +111,8 @@ private extension OcaDevicePropertyRepresentable {
       getMethodID: getMethodID,
       setMethodID: setMethodID,
       valueType: valueType,
+      yPropertyID: vectorComponents?.yPropertyID,
+      componentType: vectorComponents?.type,
       ocp2GetNames: responseNames(propertyName: name),
       ocp2SetName: setName(propertyName: name)
     )
