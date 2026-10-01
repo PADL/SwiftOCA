@@ -49,18 +49,6 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
     var txtRecords: [String: String] = [:]
   }
 
-  // Context objects for passing to C callbacks
-  final class ResolveContext: @unchecked Sendable {
-    let channel: AsyncStream<ResolutionInfo>.Continuation
-    let serviceInfo: _DNSServiceInfo
-    var source: DispatchSourceRead?
-
-    init(channel: AsyncStream<ResolutionInfo>.Continuation, serviceInfo: _DNSServiceInfo) {
-      self.channel = channel
-      self.serviceInfo = serviceInfo
-    }
-  }
-
   // resolved name and addresses, set (semi-)atomically after resolve() called
   // they are indexed by interface address, which may be sparse (hence a dictionary)
   let _resolutionInfo: Mutex<[Int: ResolutionInfo]> = .init([:])
@@ -148,47 +136,23 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
     try await _resolveAddresses(interfaceIndex: UInt32(_currentResolutionInfo.0))
   }
 
-  private func _resolveService(interfaceIndex: UInt32) -> AsyncStream<ResolutionInfo> {
-    AsyncStream { continuation in
-      var sdRef: DNSServiceRef?
-
-      let resolveContext = ResolveContext(channel: continuation, serviceInfo: self)
-      let context = Unmanaged.passRetained(resolveContext).toOpaque()
-
-      let error = DNSServiceResolve(
-        &sdRef,
-        0, // flags
-        interfaceIndex,
-        name,
-        serviceType.rawValue,
-        domain,
-        DNSServiceResolveBlock_Thunk,
-        context
-      )
-
-      guard error == DNSServiceErrorType(kDNSServiceErr_NoError), let sdRef else {
-        Unmanaged<ResolveContext>.fromOpaque(context).release()
-        continuation.finish()
-        return
+  private func _resolveService(interfaceIndex: UInt32) -> AsyncStream<DNSServiceResolution> {
+    _resolveDNSService(
+      name: name,
+      regType: serviceType.rawValue,
+      domain: domain,
+      interfaceIndex: interfaceIndex
+    ) { [self] resolution in
+      // Store result in the service's resolution info dictionary using the interface index
+      // from callback
+      _resolutionInfo.withLock {
+        $0[Int(resolution.interfaceIndex)] = ResolutionInfo(
+          hostname: resolution.hostname,
+          port: resolution.port,
+          addresses: [],
+          txtRecords: resolution.txtRecords
+        )
       }
-
-      let source = DispatchSource.makeReadSource(
-        fileDescriptor: DNSServiceRefSockFD(sdRef),
-        queue: DispatchQueue(label: "com.padl.SwiftOCA.DNSServiceResolve")
-      )
-
-      source.setEventHandler { DNSServiceProcessResult(sdRef) }
-      source.setCancelHandler {
-        DNSServiceRefDeallocate(sdRef)
-        Unmanaged<ResolveContext>.fromOpaque(context).release()
-      }
-
-      continuation.onTermination = { _ in
-        source.cancel()
-      }
-
-      resolveContext.source = source
-      source.resume()
     }
   }
 
@@ -260,35 +224,70 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
   }
 }
 
-// Helper function to parse DNS-SD TXT records
-private func parseTxtRecords(txtLen: UInt16, txtRecord: UnsafePointer<UInt8>?) -> [String: String] {
-  var txtRecords: [String: String] = [:]
+// Context object for passing to the resolve callback
+private final class _DNSServiceResolveContext: @unchecked Sendable {
+  let channel: AsyncStream<DNSServiceResolution>.Continuation
+  /// Called from the callback, before the resolution is sent through the channel.
+  let onResult: (@Sendable (DNSServiceResolution) -> ())?
+  var source: DispatchSourceRead?
 
-  guard txtLen > 0, let txtRecord else { return txtRecords }
-
-  var offset = 0
-  while offset < txtLen {
-    let recordLength = Int(txtRecord[offset])
-    offset += 1
-
-    guard offset + recordLength <= txtLen else { break }
-
-    let recordData = Data(bytes: txtRecord.advanced(by: offset), count: recordLength)
-    offset += recordLength
-
-    if let record = String(data: recordData, encoding: .utf8) {
-      let components = record.split(
-        separator: "=",
-        maxSplits: 1,
-        omittingEmptySubsequences: false
-      )
-      let key = String(components[0])
-      let value = components.count > 1 ? String(components[1]) : ""
-      txtRecords[key] = value
-    }
+  init(
+    channel: AsyncStream<DNSServiceResolution>.Continuation,
+    onResult: (@Sendable (DNSServiceResolution) -> ())?
+  ) {
+    self.channel = channel
+    self.onResult = onResult
   }
+}
 
-  return txtRecords
+private func _resolveDNSService(
+  name: String,
+  regType: String,
+  domain: String,
+  interfaceIndex: UInt32,
+  onResult: (@Sendable (DNSServiceResolution) -> ())? = nil
+) -> AsyncStream<DNSServiceResolution> {
+  AsyncStream { continuation in
+    var sdRef: DNSServiceRef?
+
+    let resolveContext = _DNSServiceResolveContext(channel: continuation, onResult: onResult)
+    let context = Unmanaged.passRetained(resolveContext).toOpaque()
+
+    let error = DNSServiceResolve(
+      &sdRef,
+      0, // flags
+      interfaceIndex,
+      name,
+      regType,
+      domain,
+      DNSServiceResolveBlock_Thunk,
+      context
+    )
+
+    guard error == DNSServiceErrorType(kDNSServiceErr_NoError), let sdRef else {
+      Unmanaged<_DNSServiceResolveContext>.fromOpaque(context).release()
+      continuation.finish()
+      return
+    }
+
+    let source = DispatchSource.makeReadSource(
+      fileDescriptor: DNSServiceRefSockFD(sdRef),
+      queue: DispatchQueue(label: "com.padl.SwiftOCA.DNSServiceResolve")
+    )
+
+    source.setEventHandler { DNSServiceProcessResult(sdRef) }
+    source.setCancelHandler {
+      DNSServiceRefDeallocate(sdRef)
+      Unmanaged<_DNSServiceResolveContext>.fromOpaque(context).release()
+    }
+
+    continuation.onTermination = { _ in
+      source.cancel()
+    }
+
+    resolveContext.source = source
+    source.resume()
+  }
 }
 
 // C callback thunks
@@ -307,7 +306,7 @@ private func DNSServiceResolveBlock_Thunk(
 ) {
   guard let context else { return }
 
-  let resolveContext = Unmanaged<_DNSServiceInfo.ResolveContext>.fromOpaque(context)
+  let resolveContext = Unmanaged<_DNSServiceResolveContext>.fromOpaque(context)
     .takeUnretainedValue()
 
   guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else {
@@ -320,25 +319,292 @@ private func DNSServiceResolveBlock_Thunk(
     return
   }
 
-  let hostname = String(cString: hosttarget)
-  let hostPort = UInt16(bigEndian: port)
-  let txtRecords = parseTxtRecords(txtLen: txtLen, txtRecord: txtRecord)
-
-  let resolutionInfo = _DNSServiceInfo.ResolutionInfo(
-    hostname: hostname,
-    port: hostPort,
-    addresses: [],
-    txtRecords: txtRecords
+  let resolution = DNSServiceResolution(
+    interfaceIndex: interfaceIndex,
+    hostname: String(cString: hosttarget),
+    port: UInt16(bigEndian: port),
+    txtRecords: DNSServiceTXTRecord.decode(UnsafeBufferPointer(start: txtRecord, count: Int(txtLen)))
   )
 
-  // Store result in the service's resolution info dictionary using the interface index from
-  // callback
-  resolveContext.serviceInfo._resolutionInfo.withLock {
-    $0[Int(interfaceIndex)] = resolutionInfo
-  }
+  resolveContext.onResult?(resolution)
 
   // Send result through the channel
-  resolveContext.channel.yield(resolutionInfo)
+  resolveContext.channel.yield(resolution)
+}
+
+// Context object for passing to the browse callback
+private final class _DNSServiceBrowseContext: @unchecked Sendable {
+  var handler: (@Sendable (DNSServiceBrowseResult) -> ())?
+}
+
+/// Starts browsing and returns the source that processes its results once resumed.
+/// Cancelling the source ends the browse and then calls `onCancel`. The caller owns the
+/// retained `context`, which must outlive the source.
+private func _makeDNSServiceBrowseSource(
+  regType: String,
+  domain: String?,
+  context: UnsafeMutableRawPointer,
+  onCancel: (@Sendable () -> ())? = nil
+) -> DispatchSourceRead? {
+  var sdRef: DNSServiceRef?
+
+  let error = DNSServiceBrowse(
+    &sdRef,
+    0, // flags
+    UInt32(kDNSServiceInterfaceIndexAny),
+    regType,
+    domain, // domain (nil means .local)
+    DNSServiceBrowseBlock_Thunk,
+    context
+  )
+
+  guard error == DNSServiceErrorType(kDNSServiceErr_NoError), let sdRef else { return nil }
+
+  let source = DispatchSource.makeReadSource(
+    fileDescriptor: DNSServiceRefSockFD(sdRef),
+    queue: DispatchQueue(label: "com.padl.SwiftOCA.DNSServiceBrowse")
+  )
+
+  source.setEventHandler { DNSServiceProcessResult(sdRef) }
+  source.setCancelHandler {
+    DNSServiceRefDeallocate(sdRef)
+    onCancel?()
+  }
+
+  return source
+}
+
+/// A service instance that a browse found, or that it had found and has now lost.
+@_spi(SwiftOCAPrivate)
+public struct DNSServiceBrowseResult: Sendable, Hashable {
+  /// False when the service has gone away.
+  public let isAdded: Bool
+  public let name: String
+  public let regType: String
+  public let domain: String
+  public let interfaceIndex: UInt32
+}
+
+/// Where a service instance can be reached, and its TXT record.
+@_spi(SwiftOCAPrivate)
+public struct DNSServiceResolution: Sendable, Hashable {
+  /// The interface the answer arrived on; a service may answer on several.
+  public let interfaceIndex: UInt32
+  public let hostname: String
+  /// In host byte order.
+  public let port: UInt16
+  public let txtRecords: [String: String]
+}
+
+/// DNS-SD browsing and resolution for any service type, on the dns_sd calls the OCA
+/// browser below is built from.
+@_spi(SwiftOCAPrivate)
+public enum DNSServiceDiscovery {
+  /// Browses for instances of `regType` (such as `_http._tcp`) until the stream's
+  /// consumer stops iterating. A nil `domain` is the default browse domains.
+  public static func browse(
+    regType: String,
+    domain: String? = nil
+  ) throws -> AsyncStream<DNSServiceBrowseResult> {
+    let (stream, continuation) = AsyncStream<DNSServiceBrowseResult>.makeStream()
+
+    let browseContext = _DNSServiceBrowseContext()
+    browseContext.handler = { continuation.yield($0) }
+    let context = Unmanaged.passRetained(browseContext)
+
+    guard let source = _makeDNSServiceBrowseSource(
+      regType: regType,
+      domain: domain,
+      context: context.toOpaque(),
+      onCancel: { context.release() }
+    ) else {
+      context.release()
+      throw Ocp1Error.serviceBrowsingUnavailable
+    }
+
+    continuation.onTermination = { _ in source.cancel() }
+    source.resume()
+
+    return stream
+  }
+
+  /// Resolves an instance a browse found, yielding an answer per interface until the
+  /// consumer stops iterating. The stream ends without an answer if resolution fails.
+  public static func resolve(
+    name: String,
+    regType: String,
+    domain: String,
+    interfaceIndex: UInt32 = UInt32(kDNSServiceInterfaceIndexAny)
+  ) -> AsyncStream<DNSServiceResolution> {
+    _resolveDNSService(name: name, regType: regType, domain: domain, interfaceIndex: interfaceIndex)
+  }
+
+  /// The addresses of `hostname` as numeric host strings, IPv4 first. They come from
+  /// DNSServiceGetAddrInfo where the dns_sd library has it, so that a `.local` name needs
+  /// no resolver plug-in, and from the system resolver where it does not or finds none.
+  public static func addresses(
+    of hostname: String,
+    interfaceIndex: UInt32 = UInt32(kDNSServiceInterfaceIndexAny),
+    timeout: Duration = .seconds(3)
+  ) async -> [String] {
+    var addresses = [String]()
+    if let stream = _getDNSServiceAddrInfo(hostname: hostname, interfaceIndex: interfaceIndex) {
+      let deadline = Task {
+        try await Task.sleep(for: timeout)
+        stream.continuation.finish()
+      }
+      for await address in stream.stream where !addresses.contains(address) {
+        addresses.append(address)
+      }
+      deadline.cancel()
+    }
+    if addresses.isEmpty {
+      addresses = _systemAddresses(of: hostname)
+    }
+    // a stable partition: IPv6 presentation addresses are the ones with a colon
+    return addresses.filter { !$0.contains(":") } + addresses.filter { $0.contains(":") }
+  }
+}
+
+// MARK: - address resolution
+
+// DNSServiceGetAddrInfo and its reply, declared here because a dns_sd library may lack
+// them (Avahi's does), in which case neither its header nor a direct call would build.
+typealias _DNSServiceGetAddrInfoReply = @convention(c) (
+  DNSServiceRef?,
+  DNSServiceFlags,
+  UInt32,
+  DNSServiceErrorType,
+  UnsafePointer<CChar>?,
+  UnsafePointer<sockaddr>?,
+  UInt32,
+  UnsafeMutableRawPointer?
+) -> ()
+
+private typealias _DNSServiceGetAddrInfo = @convention(c) (
+  UnsafeMutablePointer<DNSServiceRef?>?,
+  DNSServiceFlags,
+  UInt32,
+  UInt32,
+  UnsafePointer<CChar>?,
+  _DNSServiceGetAddrInfoReply?,
+  UnsafeMutableRawPointer?
+) -> DNSServiceErrorType
+
+/// The library's DNSServiceGetAddrInfo, nil where it has none.
+private let _dnsServiceGetAddrInfo: _DNSServiceGetAddrInfo? = {
+  #if canImport(Darwin)
+  let defaultHandle = UnsafeMutableRawPointer(bitPattern: -2) // RTLD_DEFAULT
+  #else
+  let defaultHandle: UnsafeMutableRawPointer? = nil // RTLD_DEFAULT
+  #endif
+  guard let symbol = dlsym(defaultHandle, "DNSServiceGetAddrInfo") else { return nil }
+  return unsafeBitCast(symbol, to: _DNSServiceGetAddrInfo.self)
+}()
+
+final class _DNSServiceAddrInfoContext: @unchecked Sendable {
+  let channel: AsyncStream<String>.Continuation
+
+  init(channel: AsyncStream<String>.Continuation) {
+    self.channel = channel
+  }
+}
+
+/// Starts DNSServiceGetAddrInfo for both address families; nil where the library has no
+/// such call or refuses it. The stream ends with the first complete set of answers.
+private func _getDNSServiceAddrInfo(
+  hostname: String,
+  interfaceIndex: UInt32
+) -> (stream: AsyncStream<String>, continuation: AsyncStream<String>.Continuation)? {
+  guard let getAddrInfo = _dnsServiceGetAddrInfo else { return nil }
+
+  let (stream, continuation) = AsyncStream<String>.makeStream()
+  let context = Unmanaged.passRetained(_DNSServiceAddrInfoContext(channel: continuation))
+
+  var sdRef: DNSServiceRef?
+  // a zero protocol asks for the address families the host can route
+  let error = getAddrInfo(
+    &sdRef,
+    0,
+    interfaceIndex,
+    0,
+    hostname,
+    DNSServiceGetAddrInfoBlock_Thunk,
+    context.toOpaque()
+  )
+
+  guard error == DNSServiceErrorType(kDNSServiceErr_NoError), let sdRef else {
+    context.release()
+    return nil
+  }
+
+  let source = DispatchSource.makeReadSource(
+    fileDescriptor: DNSServiceRefSockFD(sdRef),
+    queue: DispatchQueue(label: "com.padl.SwiftOCA.DNSServiceGetAddrInfo")
+  )
+
+  source.setEventHandler { DNSServiceProcessResult(sdRef) }
+  source.setCancelHandler {
+    DNSServiceRefDeallocate(sdRef)
+    context.release()
+  }
+
+  continuation.onTermination = { _ in source.cancel() }
+  source.resume()
+
+  return (stream, continuation)
+}
+
+let DNSServiceGetAddrInfoBlock_Thunk: _DNSServiceGetAddrInfoReply = {
+  _, flags, _, error, _, address, _, context in
+  guard let context else { return }
+
+  let addrInfoContext = Unmanaged<_DNSServiceAddrInfoContext>.fromOpaque(context)
+    .takeUnretainedValue()
+
+  // an error here is one address family having no record; the other may yet answer
+  guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else { return }
+
+  if (flags & DNSServiceFlags(kDNSServiceFlagsAdd)) != 0, let address,
+     let host = _numericHost(address)
+  {
+    addrInfoContext.channel.yield(host)
+  }
+
+  if (flags & DNSServiceFlags(kDNSServiceFlagsMoreComing)) == 0 {
+    addrInfoContext.channel.finish()
+  }
+}
+
+func _numericHost(_ address: UnsafePointer<sockaddr>) -> String? {
+  let length: Int
+  switch Int32(address.pointee.sa_family) {
+  case AF_INET: length = MemoryLayout<sockaddr_in>.size
+  case AF_INET6: length = MemoryLayout<sockaddr_in6>.size
+  default: return nil
+  }
+  var host = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+  guard getnameinfo(address, socklen_t(length), &host, socklen_t(host.count), nil, 0, NI_NUMERICHOST) == 0
+  else { return nil }
+  return String(decoding: host.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
+}
+
+private func _systemAddresses(of hostname: String) -> [String] {
+  var hints = addrinfo()
+  hints.ai_family = AF_UNSPEC
+  hints.ai_socktype = SOCK_STREAM
+
+  var result: UnsafeMutablePointer<addrinfo>?
+  defer { if let result { freeaddrinfo(result) } }
+  guard getaddrinfo(hostname, nil, &hints, &result) == 0, let result else { return [] }
+
+  var addresses = [String]()
+  for info in sequence(first: result, next: { $0.pointee.ai_next }) {
+    guard let address = info.pointee.ai_addr, let host = _numericHost(address),
+          !addresses.contains(host) else { continue }
+    addresses.append(host)
+  }
+  return addresses
 }
 
 /// A DNS-SD browser implementation using dns_sd.h
@@ -351,14 +617,6 @@ public final class OcaDNSServiceBrowser: OcaNetworkAdvertisingServiceBrowser, @u
 
   public let browseResults: AsyncStream<OcaNetworkAdvertisingServiceBrowserResult>
 
-  final class BrowseContext: @unchecked Sendable {
-    var browser: OcaDNSServiceBrowser?
-
-    init(browser: OcaDNSServiceBrowser?) {
-      self.browser = browser
-    }
-  }
-
   public init(serviceType: OcaNetworkAdvertisingServiceType) throws {
     _serviceType = serviceType
 
@@ -366,38 +624,35 @@ public final class OcaDNSServiceBrowser: OcaNetworkAdvertisingServiceBrowser, @u
     browseResults = stream
     _browseResultsContinuation = continuation
 
-    var sdRef: DNSServiceRef?
-
-    let browseContext = BrowseContext(browser: nil)
+    let browseContext = _DNSServiceBrowseContext()
     let context = Unmanaged.passRetained(browseContext).toOpaque()
 
-    let error = DNSServiceBrowse(
-      &sdRef,
-      0, // flags
-      UInt32(kDNSServiceInterfaceIndexAny),
-      serviceType.rawValue,
-      nil, // domain (nil means .local)
-      DNSServiceBrowseBlock_Thunk,
-      context
-    )
-
-    guard error == DNSServiceErrorType(kDNSServiceErr_NoError), let sdRef else {
-      Unmanaged<BrowseContext>.fromOpaque(context).release()
+    guard let source = _makeDNSServiceBrowseSource(
+      regType: serviceType.rawValue,
+      domain: nil,
+      context: context
+    ) else {
+      Unmanaged<_DNSServiceBrowseContext>.fromOpaque(context).release()
       throw Ocp1Error.serviceBrowsingUnavailable
     }
-
-    let source = DispatchSource.makeReadSource(
-      fileDescriptor: DNSServiceRefSockFD(sdRef),
-      queue: DispatchQueue(label: "com.padl.SwiftOCA.DNSServiceBrowse")
-    )
-
-    source.setEventHandler { DNSServiceProcessResult(sdRef) }
-    source.setCancelHandler { DNSServiceRefDeallocate(sdRef) }
 
     _browseSource = source
 
     // Update context with self after initialization
-    browseContext.browser = self
+    browseContext.handler = { [self] result in
+      // a service type this browser does not know is not one of ours
+      guard let serviceType = OcaNetworkAdvertisingServiceType(rawValue: result.regType) else {
+        return
+      }
+
+      _handleServiceChange(
+        isAdd: result.isAdded,
+        name: result.name,
+        serviceType: serviceType,
+        domain: result.domain,
+        interfaceIndex: result.interfaceIndex
+      )
+    }
   }
 
   public func start() async throws {
@@ -460,7 +715,7 @@ private func DNSServiceBrowseBlock_Thunk(
 ) {
   guard let context, let serviceName, let regtype, let replyDomain else { return }
 
-  let browseContext = Unmanaged<OcaDNSServiceBrowser.BrowseContext>.fromOpaque(context)
+  let browseContext = Unmanaged<_DNSServiceBrowseContext>.fromOpaque(context)
     .takeUnretainedValue()
 
   guard error == DNSServiceErrorType(kDNSServiceErr_NoError) else {
@@ -468,23 +723,15 @@ private func DNSServiceBrowseBlock_Thunk(
     return
   }
 
-  guard let browser = browseContext.browser else { return }
+  guard let handler = browseContext.handler else { return }
 
-  let name = String(cString: serviceName)
-  let serviceTypeString = String(cString: regtype)
-  let domain = String(cString: replyDomain)
-
-  guard let serviceType = OcaNetworkAdvertisingServiceType(rawValue: serviceTypeString) else {
-    return
-  }
-
-  browser._handleServiceChange(
-    isAdd: (flags & DNSServiceFlags(kDNSServiceFlagsAdd)) != 0,
-    name: name,
-    serviceType: serviceType,
-    domain: domain,
+  handler(DNSServiceBrowseResult(
+    isAdded: (flags & DNSServiceFlags(kDNSServiceFlagsAdd)) != 0,
+    name: String(cString: serviceName),
+    regType: String(cString: regtype),
+    domain: String(cString: replyDomain),
     interfaceIndex: interfaceIndex
-  )
+  ))
 }
 
 #endif
