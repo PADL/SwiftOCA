@@ -35,14 +35,21 @@ public protocol OcaControllerLightweightNotifying: OcaController {
   ) async throws
 }
 
+/// A notification built for a controller, ready to be sent to it.
+private struct OcaNotificationMessage: Sendable {
+  let message: any Ocp1Message
+  let type: OcaMessageType
+  /// Where a lightweight notification is to go; nil for the controller's own connection.
+  let destination: OcaNetworkAddress?
+}
+
 extension OcaController {
-  /// Sends the event for each of `subscriptions` it matches: those the subscription
-  /// manager holds for this controller to the event's emitter.
-  func notify(
-    _ event: OcaEvent,
+  /// One notification for each of `subscriptions` that the event matches.
+  fileprivate nonisolated func notifications(
+    of event: OcaEvent,
     parameters eventParameters: OcaEventParameters,
     subscriptions: Set<OcaSubscriptionManagerSubscription>
-  ) async throws {
+  ) throws -> [OcaNotificationMessage] {
     let property = eventParameters.propertyID
     let format = controlProtocol.parameterFormat
     // encoded once, for the first subscription that is delivered
@@ -54,6 +61,7 @@ extension OcaController {
       return eventData
     }
 
+    var notifications = [OcaNotificationMessage]()
     for subscription in subscriptions {
       // subscriptions are kept per emitter, so an emitter's other events must not be
       // delivered to a controller that subscribed to only one of them
@@ -63,6 +71,8 @@ extension OcaController {
       guard subscription.property == nil || property == subscription.property else {
         continue
       }
+      let destination = subscription.notificationDeliveryMode == .lightweight
+        ? subscription.destinationInformation : nil
 
       switch subscription.version {
       case .ev1:
@@ -84,32 +94,120 @@ extension OcaController {
           methodID: subscription.subscriber!.methodID,
           parameters: ntfParams
         )
-
-        if subscription.notificationDeliveryMode == .lightweight {
-          try await (self as! OcaControllerLightweightNotifying)
-            .sendMessage(
-              notification,
-              type: .ocaNtf1,
-              to: subscription.destinationInformation
-            )
-        } else {
-          try await sendMessage(notification, type: .ocaNtf1)
-        }
+        notifications.append(.init(message: notification, type: .ocaNtf1, destination: destination))
       case .ev2:
         let notification = Ocp1Notification2(
           event: subscription.event,
           notificationType: .event,
           eventData: try parameters()
         )
-        if subscription.notificationDeliveryMode == .lightweight {
-          try await (self as! OcaControllerLightweightNotifying)
-            .sendMessage(
-              notification,
-              type: .ocaNtf2,
-              to: subscription.destinationInformation
-            )
-        } else {
-          try await sendMessage(notification, type: .ocaNtf2)
+        notifications.append(.init(message: notification, type: .ocaNtf2, destination: destination))
+      }
+    }
+    return notifications
+  }
+
+  /// Sends the event for each of `subscriptions` it matches, each in a PDU of its own.
+  func notify(
+    _ event: OcaEvent,
+    parameters eventParameters: OcaEventParameters,
+    subscriptions: Set<OcaSubscriptionManagerSubscription>
+  ) async throws {
+    let notifications = try notifications(
+      of: event,
+      parameters: eventParameters,
+      subscriptions: subscriptions
+    )
+    for notification in notifications {
+      if let destination = notification.destination {
+        try await (self as! OcaControllerLightweightNotifying)
+          .sendMessage(notification.message, type: notification.type, to: destination)
+      } else {
+        try await sendMessage(notification.message, type: notification.type)
+      }
+    }
+  }
+}
+
+/// Notifications pending for a device's controllers while a scope is open: see
+/// `OcaDevice.withCoalescedNotifications`. Part of the device's own state.
+struct OcaPendingNotifications: Sendable {
+  /// What a controller is due: runs of messages of one type, in the order raised.
+  private struct Pending: Sendable {
+    weak var controller: (any OcaController)?
+    var runs = [(type: OcaMessageType, messages: [any Ocp1Message])]()
+
+    mutating func append(_ notification: OcaNotificationMessage) {
+      // a PDU holds messages of one type, and can count no more than this many
+      if let last = runs.indices.last, runs[last].type == notification.type,
+         runs[last].messages.count < Int(OcaUint16.max)
+      {
+        runs[last].messages.append(notification.message)
+      } else {
+        runs.append((notification.type, [notification.message]))
+      }
+    }
+  }
+
+  private var pending = [Pending]()
+
+  var isEmpty: Bool { pending.isEmpty }
+
+  private mutating func index(of controller: any OcaController) -> Int {
+    if let index = pending.firstIndex(where: { $0.controller === controller }) { return index }
+    pending.append(Pending(controller: controller))
+    return pending.endIndex - 1
+  }
+
+  /// Adds the event's notifications for the controller. Lightweight ones are not added:
+  /// true is returned if there are any, for the caller to send.
+  mutating func push(
+    _ event: OcaEvent,
+    parameters: OcaEventParameters,
+    subscriptions: Set<OcaSubscriptionManagerSubscription>,
+    for controller: any OcaController
+  ) throws -> Bool {
+    var lightweight = false
+    let notifications = try controller.notifications(
+      of: event,
+      parameters: parameters,
+      subscriptions: subscriptions
+    )
+    var index: Int?
+    for notification in notifications {
+      if notification.destination == nil {
+        if index == nil { index = self.index(of: controller) }
+        pending[index!].append(notification)
+      } else {
+        lightweight = true
+      }
+    }
+    return lightweight
+  }
+
+  /// Removes and returns what is pending.
+  mutating func pop() -> OcaPendingNotifications {
+    defer { pending = [] }
+    return self
+  }
+
+  /// Sends each controller that is still there what is pending for it.
+  func send(logger: Logger) async {
+    guard !pending.isEmpty else { return }
+    await withDiscardingTaskGroup { group in
+      for entry in pending {
+        guard let controller = entry.controller else { continue }
+        let runs = entry.runs
+        group.addTask {
+          do {
+            for run in runs {
+              try await controller.sendMessages(run.messages, type: run.type)
+            }
+          } catch Ocp1Error.notConnected {
+            // a controller on its way out
+          } catch {
+            logger.warning("failed to notify \(controller): \(error)")
+          }
         }
       }
     }

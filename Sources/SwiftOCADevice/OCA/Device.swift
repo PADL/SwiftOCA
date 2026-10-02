@@ -134,6 +134,11 @@ public actor OcaDevice {
   var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
   var endpoints = [OcaDeviceEndpoint]()
   var logger = Logger(label: "com.padl.SwiftOCADevice")
+  /// open `withCoalescedNotifications` scopes, and the notifications pending while any is
+  /// open or while those of an earlier one are still being sent
+  private var coalescingScopes = 0
+  private var isSendingPendingNotifications = false
+  private var pendingNotifications = OcaPendingNotifications()
 
   weak var eventDelegate: OcaDeviceEventDelegate?
   #if NonEmbeddedBuild
@@ -370,6 +375,40 @@ public actor OcaDevice {
     try await _notifySubscribers(event, parameters: OcaEventParameters(Data(), event: event))
   }
 
+  /// Holds the notifications this device raises while `body` runs, and sends them when it
+  /// returns: each controller gets its own in order, in as few PDUs as possible. Keep
+  /// `body` short, as notifications raised by other tasks meanwhile are held too.
+  public func withCoalescedNotifications<T>(
+    isolation: isolated (any Actor)? = #isolation,
+    _ body: () async throws -> T
+  ) async rethrows -> T {
+    await beginCoalescingNotifications()
+    let result: T
+    do {
+      result = try await body()
+    } catch {
+      await endCoalescingNotifications()
+      throw error
+    }
+    await endCoalescingNotifications()
+    return result
+  }
+
+  private func beginCoalescingNotifications() {
+    coalescingScopes += 1
+  }
+
+  private func endCoalescingNotifications() async {
+    coalescingScopes -= 1
+    // one sender at a time: what is raised while it sends stays pending and follows in order
+    guard !isSendingPendingNotifications else { return }
+    isSendingPendingNotifications = true
+    while !pendingNotifications.isEmpty {
+      await pendingNotifications.pop().send(logger: logger)
+    }
+    isSendingPendingNotifications = false
+  }
+
   /// Parameters are only encoded for a recipient that asks for them: the event delegate on
   /// demand, and controllers only if one is subscribed to the emitter. Most property changes
   /// have neither, e.g. every structural change made while a device builds its object tree.
@@ -392,9 +431,31 @@ public actor OcaDevice {
       await subscriptionManager
         .enqueueObjectChangedWhilstNotificationsDisabled(event.emitterONo)
     case .normal:
-      let subscribers = await subscriptionManager.subscribers(to: event.emitterONo)
+      var subscribers = await subscriptionManager.subscribers(to: event.emitterONo)
       guard !subscribers.isEmpty else { return }
       let logger = logger
+      if coalescingScopes > 0 || isSendingPendingNotifications {
+        // pending until the scope ends; only lightweight notifications are sent now
+        subscribers = subscribers.compactMap { subscriber in
+          do {
+            guard try pendingNotifications.push(
+              event,
+              parameters: parameters,
+              subscriptions: subscriber.subscriptions,
+              for: subscriber.controller
+            ) else { return nil }
+            return .init(
+              controller: subscriber.controller,
+              subscriptions: subscriber.subscriptions
+                .filter { $0.notificationDeliveryMode == .lightweight }
+            )
+          } catch {
+            logger.warning("failed to notify \(subscriber.controller) of \(event): \(error)")
+            return nil
+          }
+        }
+        guard !subscribers.isEmpty else { return }
+      }
       await withDiscardingTaskGroup { group in
         for subscriber in subscribers {
           group.addTask {
