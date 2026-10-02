@@ -291,8 +291,8 @@ public actor OcaConnectionBroker {
       #endif
       browserMonitor = Task { @Sendable [weak broker, browser] in
         try await browser.start()
-        for try await result in browser.browseResults {
-          try? await broker?._onBrowseResult(result)
+        await OcaConnectionBroker._forEachBrowseResult(in: browser.browseResults) { [weak broker] in
+          try? await broker?._onBrowseResult($0)
         }
       }
     }
@@ -438,6 +438,22 @@ public actor OcaConnectionBroker {
       _eventsContinuation.yield(Event(eventType: .deviceRemoved, deviceIdentifier: deviceIdentifier))
     }
     return true
+  }
+
+  /// Hands each browse result to `body` in a task of its own, so that a service slow to
+  /// resolve does not hold up the others. The results for one service keep their order.
+  static func _forEachBrowseResult(
+    in results: AsyncStream<OcaNetworkAdvertisingServiceBrowserResult>,
+    _ body: @escaping @Sendable (OcaNetworkAdvertisingServiceBrowserResult) async -> ()
+  ) async {
+    var last = [String: Task<(), Never>]()
+    for await result in results {
+      let id = result.info.id
+      last[id] = Task { [previous = last[id]] in
+        await previous?.value
+        await body(result)
+      }
+    }
   }
 
   func _onBrowseResult(_ result: OcaNetworkAdvertisingServiceBrowserResult) async throws {
