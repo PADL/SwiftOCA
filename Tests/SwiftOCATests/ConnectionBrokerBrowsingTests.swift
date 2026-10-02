@@ -17,7 +17,9 @@
 #if canImport(Darwin) || canImport(dnssd)
 
 import Foundation
+import Logging
 @testable import SwiftOCA
+import Synchronization
 import Testing
 
 private struct MockServiceInfo: OcaNetworkAdvertisingServiceInfo {
@@ -40,6 +42,37 @@ private extension OcaNetworkAdvertisingServiceBrowserResult {
     case let .added(info): "added \(info.name)"
     case let .removed(info): "removed \(info.name)"
     }
+  }
+}
+
+private final class RecordedMessages: Sendable {
+  private let messages = Mutex([String]())
+
+  var all: [String] { messages.withLock { $0 } }
+
+  func append(_ message: String) { messages.withLock { $0.append(message) } }
+}
+
+private struct RecordingLogHandler: LogHandler {
+  let recorded: RecordedMessages
+  var metadata = Logger.Metadata()
+  var logLevel = Logger.Level.trace
+
+  subscript(metadataKey key: String) -> Logger.Metadata.Value? {
+    get { metadata[key] }
+    set { metadata[key] = newValue }
+  }
+
+  func log(
+    level: Logger.Level,
+    message: Logger.Message,
+    metadata: Logger.Metadata?,
+    source: String,
+    file: String,
+    function: String,
+    line: UInt
+  ) {
+    recorded.append("\(level) \(message)")
   }
 }
 
@@ -102,6 +135,23 @@ struct ConnectionBrokerBrowsingTests {
 
     #expect(order == ["added Device", "removed Device", "added Device"])
   }
+
+  #if !canImport(Darwin)
+  /// With no service type to browse for, as with no responder to ask, a dns_sd browser
+  /// cannot start. This trapped; now it is logged, and tried again on a refresh.
+  @Test
+  func aBrowserThatCannotStartIsLoggedAndTriedAgain() async {
+    let recorded = RecordedMessages()
+    let logger = Logger(label: "test") { _ in RecordingLogHandler(recorded: recorded) }
+    let failure = "warning cannot browse for : serviceBrowsingUnavailable"
+
+    let broker = await OcaConnectionBroker(serviceTypes: [.none], logger: logger)
+    #expect(recorded.all == [failure])
+
+    await broker.refreshBrowsing()
+    #expect(recorded.all == [failure, failure])
+  }
+  #endif
 }
 
 #endif
