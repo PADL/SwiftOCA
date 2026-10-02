@@ -100,6 +100,42 @@ package extension OcaControlProtocol {
     }
   }
 
+  /// Encodes the messages, in order, into PDUs of at most `maximumSize`: as few as
+  /// possible for OCP.1. A message larger than that still gets a PDU of its own.
+  func encodePdus(
+    _ messages: [Ocp1Message],
+    type messageType: OcaMessageType,
+    maximumSize: Int
+  ) throws -> [Data] {
+    switch self {
+    case .ocp1:
+      // a message's size is known before it is encoded: fill each PDU, and encode it once
+      var pdus = [Data]()
+      var first = messages.startIndex
+      var size = OcaConnection.MinimumPduSize
+      for (index, message) in messages.enumerated() {
+        let messageSize = message.encodedSize
+        if index > first, size + messageSize > maximumSize {
+          try pdus.append(encodePdu(Array(messages[first..<index]), type: messageType))
+          first = index
+          size = OcaConnection.MinimumPduSize
+        }
+        size += messageSize
+      }
+      try pdus.append(encodePdu(Array(messages[first...]), type: messageType))
+      return pdus
+    #if NonEmbeddedBuild
+    case .ocp2:
+      // a JSON PDU's size is only known once it is written: halve until each part fits
+      let pdu = try encodePdu(messages, type: messageType)
+      guard pdu.count > maximumSize, messages.count > 1 else { return [pdu] }
+      let half = messages.count / 2
+      return try encodePdus(Array(messages[..<half]), type: messageType, maximumSize: maximumSize)
+        + encodePdus(Array(messages[half...]), type: messageType, maximumSize: maximumSize)
+    #endif
+    }
+  }
+
   /// Decode a whole PDU into its message type and messages.
   func decodePdu(_ data: Data) throws -> (OcaMessageType, [Ocp1Message]) {
     switch self {
