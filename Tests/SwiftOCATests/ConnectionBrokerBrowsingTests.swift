@@ -31,9 +31,11 @@ private struct MockServiceInfo: OcaNetworkAdvertisingServiceInfo {
   var hostname: String { "mock.local." }
   var port: UInt16 { 65000 }
   var addresses: [Data] { [] }
-  var txtRecords: [String: String] { [:] }
+  var txtRecords: [String: String] { ["modelGUID": "0AE91B02010100", "serialNumber": "TEST01"] }
 
-  func resolve() async throws {}
+  func resolve() async throws {
+    Issue.record("the broker resolved \(name) itself")
+  }
 }
 
 private extension OcaNetworkAdvertisingServiceBrowserResult {
@@ -134,6 +136,22 @@ struct ConnectionBrokerBrowsingTests {
     }
 
     #expect(order == ["added Device", "removed Device", "added Device"])
+  }
+
+  /// A service is resolved before the broker is asked to add it, as the broker would
+  /// otherwise be kept alive for as long as a service took to answer.
+  @Test
+  func theBrokerDoesNotResolveAServiceItself() async throws {
+    let broker = await OcaConnectionBroker(serviceTypes: [])
+    try await broker._onBrowseResult(.added(MockServiceInfo(name: "Device")))
+
+    let device = try OcaConnectionBroker.DeviceIdentifier(
+      serviceType: .tcp,
+      modelGUID: OcaModelGUID("0AE91B02010100"),
+      serialNumber: "TEST01",
+      name: "Device"
+    )
+    #expect(try await broker.serviceInfo(for: device).name == "Device")
   }
 
   #if !canImport(Darwin)
