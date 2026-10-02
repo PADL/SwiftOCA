@@ -132,19 +132,19 @@ extension OcaController {
 /// Notifications pending for a device's controllers while a scope is open: see
 /// `OcaDevice.withCoalescedNotifications`. Part of the device's own state.
 struct OcaPendingNotifications: Sendable {
-  /// What a controller is due: runs of messages of one type, in the order raised.
+  /// What a controller is due: batches of messages of one type, in the order raised.
   private struct Pending: Sendable {
     weak var controller: (any OcaController)?
-    var runs = [(type: OcaMessageType, messages: [any Ocp1Message])]()
+    var batches = [(type: OcaMessageType, messages: [any Ocp1Message])]()
 
     mutating func append(_ notification: OcaNotificationMessage) {
       // a PDU holds messages of one type, and can count no more than this many
-      if let last = runs.indices.last, runs[last].type == notification.type,
-         runs[last].messages.count < Int(OcaUint16.max)
+      if let last = batches.indices.last, batches[last].type == notification.type,
+         batches[last].messages.count < Int(OcaUint16.max)
       {
-        runs[last].messages.append(notification.message)
+        batches[last].messages.append(notification.message)
       } else {
-        runs.append((notification.type, [notification.message]))
+        batches.append((notification.type, [notification.message]))
       }
     }
   }
@@ -197,11 +197,11 @@ struct OcaPendingNotifications: Sendable {
     await withDiscardingTaskGroup { group in
       for entry in pending {
         guard let controller = entry.controller else { continue }
-        let runs = entry.runs
+        let batches = entry.batches
         group.addTask {
           do {
-            for run in runs {
-              try await controller.sendMessages(run.messages, type: run.type)
+            for batch in batches {
+              try await controller.sendMessages(batch.messages, type: batch.type)
             }
           } catch Ocp1Error.notConnected {
             // a controller on its way out
