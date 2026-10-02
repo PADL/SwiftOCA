@@ -111,24 +111,24 @@ private final class _DNSServiceInfo: OcaNetworkAdvertisingServiceInfo, @unchecke
     }
   }
 
+  /// Long enough for a query to be sent again twice; Avahi gives up after as long.
+  private static let _resolveTimeout = Duration.seconds(5)
+
   func resolve() async throws {
-    // do nothing if already resolved
-    guard _resolutionInfo.criticalValue.isEmpty else { return }
+    // do nothing if already resolved, which a service without addresses is not
+    guard (try? addresses) == nil else { return }
 
     // Use kDNSServiceInterfaceIndexAny to resolve on all interfaces
     // The callbacks will tell us which interfaces have results
     let stream = _resolveService(interfaceIndex: UInt32(kDNSServiceInterfaceIndexAny))
 
-    // Collect at least one result from the stream
-    var hasResults = false
-    for await _ in stream {
-      hasResults = true
-      // Results are already stored in _resolutionInfo by the callback
-      // We can break after getting the first result since they're all for the same service
-      break
+    // One result is enough, as they are all for the same service, and the callback has
+    // stored it in _resolutionInfo. mDNSResponder never gives up on a resolve by itself.
+    let resolution = try? await withThrowingTimeout(of: Self._resolveTimeout, clock: .continuous) {
+      await stream.first { _ in true }
     }
 
-    guard hasResults else {
+    guard resolution != nil else {
       throw Ocp1Error.serviceResolutionFailed
     }
 
