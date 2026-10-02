@@ -20,6 +20,7 @@ import AsyncAlgorithms
 import AsyncExtensions
 import Dispatch
 import Foundation
+import Logging
 import SocketAddress
 #if os(Android)
 // sa_family_t and AF_UNSPEC come from Bionic, which Foundation does not
@@ -290,7 +291,12 @@ public actor OcaConnectionBroker {
       throw Ocp1Error.serviceBrowsingUnavailable
       #endif
       browserMonitor = Task { @Sendable [weak broker, browser] in
-        try await browser.start()
+        do {
+          try await browser.start()
+        } catch {
+          broker?._logger.warning("cannot browse for \(serviceType.rawValue): \(error)")
+          throw error
+        }
         await OcaConnectionBroker._forEachBrowseResult(in: browser.browseResults) { [weak broker] in
           try? await broker?._onBrowseResult($0)
         }
@@ -323,7 +329,9 @@ public actor OcaConnectionBroker {
   /// - Returns: An async sequence of `Event` instances
   public let events: AsyncStream<Event>
 
-  private var _browsers: [OcaNetworkAdvertisingServiceType: BrowserMonitor]!
+  private let _logger: Logger
+  private let _serviceTypes: Set<OcaNetworkAdvertisingServiceType>
+  private var _browsers = [OcaNetworkAdvertisingServiceType: BrowserMonitor]()
   private var _devices = [DeviceIdentifier: DeviceInfo]()
   private var _connections = [DeviceIdentifier: DeviceConnection]()
   private var _pendingOpens = [DeviceIdentifier: Task<OcaConnection, Error>]()
@@ -470,14 +478,19 @@ public actor OcaConnectionBroker {
   /// The broker immediately starts discovering OCA devices on the network via DNS Service Discovery
   /// for both TCP and UDP service types. Device discovery runs continuously in the background.
   ///
+  /// A service type that cannot be browsed for, as when the DNS-SD responder is not
+  /// running, is logged to `logger` and left out; `refreshBrowsing()` tries it again.
+  ///
   /// - Parameter connectionOptions: Configuration options for connections created by this broker.
   ///   Defaults to standard options if not specified.
   public init(
     connectionOptions: OcaConnectionOptions = .init(),
     serviceTypes: Set<OcaNetworkAdvertisingServiceType>? = nil,
     deviceModels: [OcaModelGUID]? = nil,
-    deviceExpiryTimeout: Duration = .seconds(10)
+    deviceExpiryTimeout: Duration = .seconds(10),
+    logger: Logger = Logger(label: "com.padl.SwiftOCA")
   ) async {
+    _logger = logger
     _connectionOptions = connectionOptions
     _deviceModels = deviceModels
     _deviceExpiryTimeout = deviceExpiryTimeout
@@ -487,11 +500,8 @@ public actor OcaConnectionBroker {
     events = stream
     _eventsContinuation = continuation
 
-    var browsers = [OcaNetworkAdvertisingServiceType: BrowserMonitor]()
-    for serviceType in serviceTypes ?? Self._defaultServiceTypes {
-      browsers[serviceType] = try! BrowserMonitor(serviceType: serviceType, broker: self)
-    }
-    _browsers = browsers
+    _serviceTypes = serviceTypes ?? Self._defaultServiceTypes
+    refreshBrowsing()
   }
 
   deinit {
@@ -732,10 +742,14 @@ public actor OcaConnectionBroker {
   /// Stale `_devices` entries for services that are no longer advertised
   /// are not cleared by this call; they linger until the underlying DNS-SD
   /// browser sees them go away or the caller deregisters them explicitly.
+  ///
+  /// A service type whose browser cannot start keeps the browser it had, if any.
   public func refreshBrowsing() {
-    for serviceType in Array(_browsers.keys) {
-      if let newMonitor = try? BrowserMonitor(serviceType: serviceType, broker: self) {
-        _browsers[serviceType] = newMonitor
+    for serviceType in _serviceTypes {
+      do {
+        _browsers[serviceType] = try BrowserMonitor(serviceType: serviceType, broker: self)
+      } catch {
+        _logger.warning("cannot browse for \(serviceType.rawValue): \(error)")
       }
     }
   }
