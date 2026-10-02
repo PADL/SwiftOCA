@@ -298,6 +298,11 @@ public actor OcaConnectionBroker {
           throw error
         }
         await OcaConnectionBroker._forEachBrowseResult(in: browser.browseResults) { [weak broker] in
+          // resolved before the broker is asked, so that a service slow to answer does not
+          // keep the broker alive
+          if case let .added(serviceInfo) = $0 {
+            guard (try? await serviceInfo.resolve()) != nil else { return }
+          }
           try? await broker?._onBrowseResult($0)
         }
       }
@@ -368,7 +373,7 @@ public actor OcaConnectionBroker {
   private func _onBrowserDeviceAdded(
     _ serviceInfo: any OcaNetworkAdvertisingServiceInfo
   ) async throws {
-    let deviceIdentifier = try await DeviceIdentifier(serviceInfo: serviceInfo)
+    let deviceIdentifier = try DeviceIdentifier(serviceInfo: serviceInfo)
 
     // Filter by device model if specified
     if let deviceModels = _deviceModels,
@@ -773,9 +778,8 @@ public actor OcaConnectionBroker {
 }
 
 extension OcaConnectionBroker.DeviceIdentifier {
-  init(serviceInfo: any OcaNetworkAdvertisingServiceInfo) async throws {
-    try await serviceInfo.resolve()
-
+  /// From the TXT record of a service that has been resolved.
+  init(serviceInfo: any OcaNetworkAdvertisingServiceInfo) throws {
     let txtRecord = try serviceInfo.txtRecords
 
     guard let modelGUID = txtRecord["modelGUID"],
