@@ -236,6 +236,7 @@ package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerD
   let peerAddress: AnySocketAddress
   package var keepAliveTask: Task<(), Error>?
   package let writeQueue: Ocp1WriteQueue? = nil
+  package nonisolated let maximumSendPduSize: Int? = Ocp1MaximumDatagramSendPduSize
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
 

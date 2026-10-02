@@ -87,6 +87,9 @@ package protocol Ocp1ControllerInternal: OcaController {
   /// write from an offset, which is what lets two concurrent writers interleave.
   var writeQueue: Ocp1WriteQueue? { get }
 
+  /// The largest PDU a packet transport can send; `nil` (the default) for a stream.
+  nonisolated var maximumSendPduSize: Int? { get }
+
   /// Reach this only through `sendMessages`, which serialises on `writeQueue`. Stream
   /// backends resume writes from an offset, so two callers here at once interleave their
   /// PDUs on the wire.
@@ -104,6 +107,14 @@ package protocol Ocp1ControllerDatagramSemantics: Actor {
 
   func didOpen()
 }
+
+package extension Ocp1ControllerInternal {
+  nonisolated var maximumSendPduSize: Int? { nil }
+}
+
+/// The largest PDU a UDP controller sends: what one Ethernet frame carries over IPv6, so
+/// that a PDU of several messages is not fragmented.
+package let Ocp1MaximumDatagramSendPduSize = Ocp1MaximumDatagramPduSize - 48
 
 package extension Ocp1ControllerInternal {
   /// handle a single message
@@ -289,13 +300,21 @@ package extension Ocp1ControllerInternal {
   ) async throws {
     lastMessageSentTime = .now
 
-    let data = try controlProtocol.encodePdu(messages, type: messageType)
-    if let writeQueue {
-      try await writeQueue.serialised { [self] in
+    // on a packet transport, several messages may need more than one PDU
+    let pdus = if messages.count > 1, let maximumSendPduSize {
+      try controlProtocol
+        .encodePdus(messages, type: messageType, maximumSize: maximumSendPduSize)
+    } else {
+      try [controlProtocol.encodePdu(messages, type: messageType)]
+    }
+    for data in pdus {
+      if let writeQueue {
+        try await writeQueue.serialised { [self] in
+          try await sendOcp1EncodedData(data)
+        }
+      } else {
         try await sendOcp1EncodedData(data)
       }
-    } else {
-      try await sendOcp1EncodedData(data)
     }
   }
 }

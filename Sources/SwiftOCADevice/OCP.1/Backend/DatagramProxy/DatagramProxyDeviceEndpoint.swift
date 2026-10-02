@@ -42,6 +42,8 @@ public class DatagramProxyDeviceEndpoint<
   package typealias ControllerType = DatagramProxyController<T>
 
   package let timeout: Duration
+  /// The largest PDU the proxied transport can carry.
+  package let maximumSendPduSize: Int
   package let device: OcaDevice
   package let logger = Logger(label: "com.padl.SwiftOCADevice.DatagramProxyDeviceEndpoint")
   package nonisolated(unsafe) var enableMessageTracing = false
@@ -52,11 +54,13 @@ public class DatagramProxyDeviceEndpoint<
 
   public init(
     timeout: Duration = OcaDevice.DefaultTimeout,
+    maximumSendPduSize: Int? = nil,
     inputStream: AsyncStream<PeerMessagePDU>,
     outputStream: AsyncStream<PeerMessagePDU>.Continuation,
     device: OcaDevice = OcaDevice.shared
   ) async throws {
     self.timeout = timeout
+    self.maximumSendPduSize = maximumSendPduSize ?? Ocp1MaximumDatagramSendPduSize
     self.device = device
     self.inputStream = inputStream
     self.outputStream = outputStream

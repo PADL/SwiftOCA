@@ -32,6 +32,7 @@ package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1Contr
   let peerID: T
   package var keepAliveTask: Task<(), Error>?
   package let writeQueue: Ocp1WriteQueue? = nil
+  package nonisolated let maximumSendPduSize: Int?
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
 
@@ -47,6 +48,7 @@ package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1Contr
     self.peerID = peerID
     self.endpoint = endpoint
     controlProtocol = endpoint.controlProtocol
+    maximumSendPduSize = endpoint.maximumSendPduSize
     heartbeatTime = endpoint.timeout
   }
 

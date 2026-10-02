@@ -50,6 +50,7 @@ package actor OcaNWDatagramController: Ocp1ControllerInternal,
 
   package var keepAliveTask: Task<(), Error>?
   package let writeQueue: Ocp1WriteQueue? = nil
+  package nonisolated let maximumSendPduSize: Int? = Ocp1MaximumDatagramSendPduSize
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: OcaNWDatagramDeviceEndpoint?

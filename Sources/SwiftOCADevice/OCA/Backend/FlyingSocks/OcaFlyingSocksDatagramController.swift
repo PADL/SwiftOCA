@@ -42,6 +42,7 @@ package actor OcaFlyingSocksDatagramController: Ocp1ControllerInternal {
   let localAddress: (any SocketAddress)?
   package var keepAliveTask: Task<(), Error>?
   package let writeQueue: Ocp1WriteQueue? = nil
+  package nonisolated let maximumSendPduSize: Int? = Ocp1MaximumDatagramSendPduSize
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
 
