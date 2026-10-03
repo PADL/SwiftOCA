@@ -205,8 +205,12 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     throw Ocp1Error.status(.notImplemented)
   }
 
-  /// Returns the given descriptor with its IDInternal set to the allocated endpoint ID.
-  open func add(endpoint: OcaMediaStreamEndpoint) async throws -> OcaMediaStreamEndpoint {
+  /// Returns the given descriptor with its IDInternal set to the allocated endpoint ID,
+  /// having stored it with `initialStatus` as its state.
+  open func add(
+    endpoint: OcaMediaStreamEndpoint,
+    initialStatus: OcaMediaStreamEndpointState
+  ) async throws -> OcaMediaStreamEndpoint {
     throw Ocp1Error.status(.notImplemented)
   }
 
@@ -365,9 +369,12 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
       try await ensureReadable(by: controller, command: command)
       return try controller.encodeResponse(endpointStatus(id), name: "Status")
     case OcaMethodID("3.25"):
-      let endpoint: OcaMediaStreamEndpoint = try decodeCommand(command)
+      let parameters: Parameters.AddEndpointParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      return try await controller.encodeResponse(add(endpoint: endpoint), name: "Endpoint")
+      return try await controller.encodeResponse(
+        add(endpoint: parameters.endpoint, initialStatus: parameters.initialStatus),
+        name: "Endpoint"
+      )
     case OcaMethodID("3.26"):
       let id: OcaMediaStreamEndpointID = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)

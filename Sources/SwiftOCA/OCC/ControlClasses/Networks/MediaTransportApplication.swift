@@ -49,6 +49,18 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
 
   // The field names are the model's parameter names: OCP.2 derives the wire names from them.
 
+  /// AddEndpoint carries the descriptor, returned with its ID filled in, and the state the
+  /// new endpoint starts in.
+  public struct AddEndpointParameters: OcaParametersReflectable {
+    public var endpoint: OcaMediaStreamEndpoint
+    public let initialStatus: OcaMediaStreamEndpointState
+
+    public init(endpoint: OcaMediaStreamEndpoint, initialStatus: OcaMediaStreamEndpointState) {
+      self.endpoint = endpoint
+      self.initialStatus = initialStatus
+    }
+  }
+
   public struct ApplyEndpointCommandParameters: OcaParametersReflectable {
     public let endpointID: OcaMediaStreamEndpointID
     public let command: OcaMediaStreamEndpointCommand
@@ -327,11 +339,14 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
 
   /// Returns the given descriptor with its IDInternal set to the ID the device allocated.
   @discardableResult
-  public func add(endpoint: OcaMediaStreamEndpoint) async throws -> OcaMediaStreamEndpoint {
+  public func add(
+    endpoint: OcaMediaStreamEndpoint,
+    initialStatus: OcaMediaStreamEndpointState
+  ) async throws -> OcaMediaStreamEndpoint {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.25"),
-      parameters: endpoint,
-      parameterNames: ["Endpoint"]
+      parameters: AddEndpointParameters(endpoint: endpoint, initialStatus: initialStatus),
+      responseNames: ["Endpoint"]
     )
   }
 
