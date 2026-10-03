@@ -207,39 +207,37 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
 
   // OcaRoot's own methods make no lock check: a controller must be able to identify an
   // object, and find out who holds its lock, while another controller holds it.
-  @OcaDeviceMethod(
-    "1.1", name: "GetClassIdentification", access: .none, resultNames: ["ClassIdentification"]
-  )
+  @OcaDeviceMethod(SwiftOCA.OcaRoot.getClassIdentification, access: .none)
   func getClassIdentification(from controller: any OcaController) -> OcaClassIdentification {
     objectIdentification.classIdentification
   }
 
-  @OcaDeviceMethod("1.2", name: "GetLockable", access: .none, resultNames: ["Lockable"])
+  @OcaDeviceMethod(SwiftOCA.OcaRoot.getLockable, access: .none)
   func getLockable(from controller: any OcaController) -> OcaBoolean {
     lockable
   }
 
-  @OcaDeviceMethod("1.3", name: "SetLockNoReadWrite", access: .none)
+  @OcaDeviceMethod(SwiftOCA.OcaRoot.setLockNoReadWrite, access: .none)
   func setLockNoReadWrite(from controller: any OcaController) async throws {
     try await lockNoReadWrite(controller: controller)
   }
 
-  @OcaDeviceMethod("1.4", name: "Unlock", access: .none)
+  @OcaDeviceMethod(SwiftOCA.OcaRoot.unlock, access: .none)
   func unlock(from controller: any OcaController) async throws {
     try await unlock(controller: controller)
   }
 
-  @OcaDeviceMethod("1.5", name: "GetRole", access: .none, resultNames: ["Role"])
+  @OcaDeviceMethod(SwiftOCA.OcaRoot.getRole, access: .none)
   func getRole(from controller: any OcaController) -> OcaString {
     role
   }
 
-  @OcaDeviceMethod("1.6", name: "SetLockNoWrite", access: .none)
+  @OcaDeviceMethod(SwiftOCA.OcaRoot.setLockNoWrite, access: .none)
   func setLockNoWrite(from controller: any OcaController) async throws {
     try await lockNoWrite(controller: controller)
   }
 
-  @OcaDeviceMethod("1.7", name: "GetLockState", access: .none, resultNames: ["State"])
+  @OcaDeviceMethod(SwiftOCA.OcaRoot.getLockState, access: .none)
   func getLockState(from controller: any OcaController) -> OcaLockState {
     lockState.lockState
   }

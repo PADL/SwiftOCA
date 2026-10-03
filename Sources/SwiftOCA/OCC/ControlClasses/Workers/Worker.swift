@@ -69,38 +69,42 @@ Sendable {
   )
   public var portClockMap: OcaMapProperty<OcaPortID, OcaPortClockMapEntry>.PropertyValue
 
-  /// 2.3
-  public func add(
-    port label: OcaString,
-    mode: OcaPortMode
-  ) async throws -> OcaPortID {
-    struct AddPortParameters: OcaParametersReflectable {
-      let name: OcaString
-      let mode: OcaPortMode
+  public struct AddPortParameters: OcaParametersReflectable {
+    public let name: OcaString
+    public let mode: OcaPortMode
+
+    public init(name: OcaString, mode: OcaPortMode) {
+      self.name = name
+      self.mode = mode
     }
-    let params = AddPortParameters(name: label, mode: mode)
-    return try await sendCommandRrq(
-      methodID: OcaMethodID("2.3"),
-      parameters: params
-    )
   }
 
-  /// 2.4
+  public static let addPort = OcaMethodDescription<AddPortParameters, OcaPortID>(
+    "2.3",
+    name: "AddPort",
+    resultNames: ["ID"]
+  )
+
+  public func add(port label: OcaString, mode: OcaPortMode) async throws -> OcaPortID {
+    try await invoke(Self.addPort, .init(name: label, mode: mode))
+  }
+
+  public static let deletePort =
+    OcaMethodDescription<OcaPortID, Void>("2.4", name: "DeletePort", parameterNames: ["ID"])
+
   public func delete(portID id: OcaPortID) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.4"),
-      parameters: id,
-      parameterNames: ["ID"]
-    )
+    try await invoke(Self.deletePort, id)
   }
 
-  /// 2.6
+  public static let getPortName = OcaMethodDescription<OcaPortID, OcaString>(
+    "2.6",
+    name: "GetPortName",
+    parameterNames: ["PortID"],
+    resultNames: ["Name"]
+  )
+
   public func get(portID: OcaPortID) async throws -> OcaString {
-    let params = OcaGetPortNameParameters(portID: portID)
-    return try await sendCommandRrq(
-      methodID: OcaMethodID("2.6"),
-      parameters: params
-    )
+    try await invoke(Self.getPortName, portID)
   }
 
   /// OcaWorker.SetPortName names its port `ID`, where the other port-bearing
@@ -129,10 +133,7 @@ Sendable {
     OcaMethodDescription<Void, OcaGetPathParameters>("2.13", name: "GetPath")
 
   public var path: (OcaNamePath, OcaONoPath) {
-    get async throws {
-      let path = try await invoke(Self.getPath)
-      return (path.rolePath, path.oNoPath)
-    }
+    get async throws { try await getPath(Self.getPath) }
   }
 
   public static let getPortClockMapEntry = OcaMethodDescription<OcaPortID, OcaPortClockMapEntry>(

@@ -68,7 +68,7 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
   )
   public var portClockMap: OcaMap<OcaPortID, OcaPortClockMapEntry> = [:]
 
-  @OcaDeviceMethod("2.6", name: "GetPortName", access: .read, resultNames: ["Name"])
+  @OcaDeviceMethod(SwiftOCA.OcaWorker.getPortName, access: .read)
   func getPortName(_ portID: OcaPortID, from controller: any OcaController) throws -> OcaString {
     try portName(of: portID)
   }

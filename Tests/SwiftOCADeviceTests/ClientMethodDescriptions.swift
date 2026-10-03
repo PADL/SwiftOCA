@@ -23,12 +23,36 @@ enum ClientMethodDescriptions {
   typealias Entry = (name: String, description: OcaAnyMethodDescription)
 
   static let all: [(type: OcaRoot.Type, descriptors: [Entry])] = [
+    (OcaAgent.self, [
+      ("getPath", OcaAgent.getPath.erased),
+    ]),
+    (OcaApplicationNetwork.self, [
+      ("getPath", OcaApplicationNetwork.getPath.erased),
+    ]),
     (OcaMediaTransportSessionAgent.self, [
       ("getSession", OcaMediaTransportSessionAgent.getSession.erased),
       ("addSession", OcaMediaTransportSessionAgent.addSession.erased),
       ("deleteSession", OcaMediaTransportSessionAgent.deleteSession.erased),
     ]),
+    (OcaNetworkApplication.self, [
+      ("getPath", OcaNetworkApplication.getPath.erased),
+    ]),
+    (OcaNetworkInterface.self, [
+      ("getPath", OcaNetworkInterface.getPath.erased),
+    ]),
+    (OcaRoot.self, [
+      ("getLockable", OcaRoot.getLockable.erased),
+      ("getRole", OcaRoot.getRole.erased),
+      ("getLockState", OcaRoot.getLockState.erased),
+      ("getClassIdentification", OcaRoot.getClassIdentification.erased),
+      ("setLockNoReadWrite", OcaRoot.setLockNoReadWrite.erased),
+      ("unlock", OcaRoot.unlock.erased),
+      ("setLockNoWrite", OcaRoot.setLockNoWrite.erased),
+    ]),
     (OcaWorker.self, [
+      ("addPort", OcaWorker.addPort.erased),
+      ("deletePort", OcaWorker.deletePort.erased),
+      ("getPortName", OcaWorker.getPortName.erased),
       ("setPortName", OcaWorker.setPortName.erased),
       ("getPath", OcaWorker.getPath.erased),
       ("getPortClockMapEntry", OcaWorker.getPortClockMapEntry.erased),

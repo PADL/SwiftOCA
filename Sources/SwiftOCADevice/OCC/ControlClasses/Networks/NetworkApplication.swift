@@ -82,7 +82,7 @@ open class OcaNetworkApplication: OcaRoot, OcaOwnable, OcaLabelRepresentable,
     resetCounterSet()
   }
 
-  @OcaDeviceMethod("2.4", name: "GetPath", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.getPath, access: .read)
   func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
     await path
   }

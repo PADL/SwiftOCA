@@ -78,7 +78,7 @@ open class OcaApplicationNetwork: OcaRoot, OcaOwnable, OcaLabelRepresentable {
     try await control(command)
   }
 
-  @OcaDeviceMethod("2.11", name: "GetPath", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaApplicationNetwork.getPath, access: .read)
   func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
     await path
   }

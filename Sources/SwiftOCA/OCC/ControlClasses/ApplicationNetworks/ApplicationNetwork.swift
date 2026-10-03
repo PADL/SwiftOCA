@@ -75,10 +75,10 @@ Sendable {
     )
   }
 
+  public static let getPath = OcaMethodDescription<Void, OcaGetPathParameters>("2.11", name: "GetPath")
+
   public var path: (OcaNamePath, OcaONoPath) {
-    get async throws {
-      try await getPath(methodID: OcaMethodID("2.11"))
-    }
+    get async throws { try await getPath(Self.getPath) }
   }
 }
 
