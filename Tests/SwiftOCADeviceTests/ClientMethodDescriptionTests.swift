@@ -37,12 +37,11 @@ final class ClientMethodDescriptionTests: XCTestCase {
   }
 
   /// Every entry of every device class's `deviceMethods` is a client descriptor: the same
-  /// ID, name, parameter and result names and types. Entries for methods the client has
-  /// no descriptor for are listed, and allowed only where named below.
+  /// ID, name, parameter and result names and types, except the methods named below.
   @OcaDevice
   func testEveryDeviceMethodIsAClientDescriptor() async throws {
-    // methods the device answers and the client cannot send
-    let deviceOnly: Set<String> = []
+    // SetResetKey's key is a 16-tuple, which no descriptor type stands for
+    let deviceOnly: Set<String> = ["OcaDeviceManager.3.14"]
     let client = Dictionary(
       uniqueKeysWithValues: ClientMethodDescriptions.all.map { (Self.className($0.type), $0.descriptors) }
     )
@@ -81,8 +80,7 @@ final class ClientMethodDescriptionTests: XCTestCase {
     for entry in missing.sorted() {
       print("  \(entry)")
     }
-    // asserted once every device site takes a descriptor
-    _ = missing
+    XCTAssertEqual(missing, [], "device methods without a client descriptor")
   }
 
   /// The type's name without its generic arguments, the same on both sides.
