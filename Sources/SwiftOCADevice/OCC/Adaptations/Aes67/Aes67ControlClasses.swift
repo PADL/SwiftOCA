@@ -77,7 +77,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
   }
 
 
-  @OcaDeviceMethod("4.1", name: "GetEndpointDelayConstraints", access: .read)
+  @OcaDeviceMethod(Aes67Parameters.getEndpointDelayConstraints, access: .read)
   func getEndpointDelayConstraints(
     _ parameters: Aes67Parameters.EndpointStreamModeParameters,
     from controller: any OcaController
@@ -85,7 +85,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
     try await getEndpointDelayConstraints(parameters.endpointID, streamMode: parameters.streamMode)
   }
 
-  @OcaDeviceMethod("4.2", name: "GetPresentationTimeOffsetConstraints", access: .read)
+  @OcaDeviceMethod(Aes67Parameters.getPresentationTimeOffsetConstraints, access: .read)
   func getPresentationTimeOffsetConstraints(
     _ parameters: Aes67Parameters.EndpointStreamModeParameters,
     from controller: any OcaController
@@ -93,7 +93,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
     try await getPresentationTimeOffsetConstraints(parameters.endpointID, streamMode: parameters.streamMode)
   }
 
-  @OcaDeviceMethod("4.5", name: "ConfigureEndpointFromSDP", access: .write)
+  @OcaDeviceMethod(Aes67Parameters.configureEndpointFromSDP, access: .write)
   func configureEndpointFromSDP(
     _ parameters: Aes67Parameters.ConfigureEndpointFromSDPParameters,
     from controller: any OcaController
@@ -166,14 +166,14 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
   }
 
 
-  @OcaDeviceMethod("4.1", name: "GetSIPParameterRecord", access: .read, parameterNames: ["SessionID"])
+  @OcaDeviceMethod(Aes67Parameters.getSIPParameterRecord, access: .read)
   func getSIPParameterRecord(_ id: OcaMediaTransportSessionID, from controller: any OcaController) async throws
     -> OcaParameterRecord
   {
     try await getSIPParameterRecord(session: id)
   }
 
-  @OcaDeviceMethod("4.2", name: "SetSIPParameterRecord", access: .write)
+  @OcaDeviceMethod(Aes67Parameters.setSIPParameterRecord, access: .write)
   func setSIPParameterRecord(
     _ parameters: Aes67Parameters.SIPParameterRecordParameters,
     from controller: any OcaController
@@ -181,7 +181,7 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
     try await setSIPParameterRecord(session: parameters.sessionID, parameters.parameterRecord)
   }
 
-  @OcaDeviceMethod("4.3", name: "GetSIPParameter", access: .read)
+  @OcaDeviceMethod(Aes67Parameters.getSIPParameter, access: .read)
   func getSIPParameter(
     _ parameters: Aes67Parameters.SIPParameterKeyParameters,
     from controller: any OcaController
@@ -189,7 +189,7 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
     try await getSIPParameter(session: parameters.sessionID, key: parameters.key)
   }
 
-  @OcaDeviceMethod("4.4", name: "SetSIPParameter", access: .write)
+  @OcaDeviceMethod(Aes67Parameters.setSIPParameter, access: .write)
   func setSIPParameter(
     _ parameters: Aes67Parameters.SIPParameterParameters,
     from controller: any OcaController
@@ -246,29 +246,29 @@ open class Aes67StreamEndpointRegistry: OcaAgent {
   }
 
 
-  @OcaDeviceMethod("3.2", name: "GetRegistryEntry", access: .read, parameterNames: ["IDExternal"])
+  @OcaDeviceMethod(Aes67Parameters.getRegistryEntry, access: .read)
   func getRegistryEntry(_ idExternal: OcaBlob, from controller: any OcaController) async throws
     -> Aes67StreamEndpointDescriptor
   {
     try await getRegistryEntry(idExternal: idExternal)
   }
 
-  @OcaDeviceMethod("3.3", name: "AddRegistryEntry", access: .write)
+  @OcaDeviceMethod(Aes67Parameters.addRegistryEntry, access: .write)
   func addRegistryEntry(_ entry: Aes67StreamEndpointDescriptor, from controller: any OcaController) async throws {
     try await addRegistryEntry(entry)
   }
 
-  @OcaDeviceMethod("3.4", name: "SetRegistryEntry", access: .write)
+  @OcaDeviceMethod(Aes67Parameters.setRegistryEntry, access: .write)
   func setRegistryEntry(_ entry: Aes67StreamEndpointDescriptor, from controller: any OcaController) async throws {
     try await setRegistryEntry(entry)
   }
 
-  @OcaDeviceMethod("3.5", name: "DeleteRegistryEntry", access: .write, parameterNames: ["IDExternal"])
+  @OcaDeviceMethod(Aes67Parameters.deleteRegistryEntry, access: .write)
   func deleteRegistryEntry(_ idExternal: OcaBlob, from controller: any OcaController) async throws {
     try await deleteRegistryEntry(idExternal: idExternal)
   }
 
-  @OcaDeviceMethod("3.6", name: "AddRegistryEntriesFromSDP", access: .write)
+  @OcaDeviceMethod(Aes67Parameters.addRegistryEntriesFromSDP, access: .write)
   func addRegistryEntriesFromSDP(_ sdpString: OcaSDPString, from controller: any OcaController) async throws {
     try await addRegistryEntriesFromSDP(sdpString)
   }
