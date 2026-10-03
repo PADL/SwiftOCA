@@ -115,7 +115,9 @@ final class ClientMethodDescriptionTests: XCTestCase {
       pattern: #"^\s*(?:@\w+\s+)*(?:open |public |final |private |fileprivate |package )*(?:class|extension|struct|enum|actor) ([\w.]+)"#
     )
     // the initialiser may start on the next line
-    let descriptor = try NSRegularExpression(pattern: #"^\s*(?:public )?static let (\w+)\s*=\s*(.*)$"#)
+    let descriptor = try NSRegularExpression(
+      pattern: #"^\s*(?:@\w+(?:\([^)]*\))?\s+)*(?:public )?static let (\w+)\s*=\s*(.*)$"#
+    )
     for file in files {
       var stack = [(depth: Int, name: String)]()
       var depth = 0

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import SwiftOCA
+@_spi(SwiftOCAPrivate) import SwiftOCA
 
 /// Every `OcaMethodDescription` a client class declares, by class, for the naming oracle
 /// and the device sweep. Written from the sources; `ClientMethodDescriptionTests`
@@ -29,10 +29,41 @@ enum ClientMethodDescriptions {
     (OcaApplicationNetwork.self, [
       ("getPath", OcaApplicationNetwork.getPath.erased),
     ]),
+    (OcaCounterNotifier.self, [
+      ("getLastUpdate", OcaCounterNotifier.getLastUpdate.erased),
+    ]),
+    (OcaCounterSetAgent.self, [
+      ("getCounter", OcaCounterSetAgent.getCounter.erased),
+      ("attachCounterNotifier", OcaCounterSetAgent.attachCounterNotifier.erased),
+      ("detachCounterNotifier", OcaCounterSetAgent.detachCounterNotifier.erased),
+      ("resetCounterSet", OcaCounterSetAgent.resetCounterSet.erased),
+      ("resetCounter", OcaCounterSetAgent.resetCounter.erased),
+    ]),
+    (OcaGroup.self, [
+      ("getMembers", OcaGroup.getMembers.erased),
+      ("setMembers", OcaGroup.setMembers.erased),
+      ("getGroupController", OcaGroup.getGroupController.erased),
+      ("addMember", OcaGroup.addMember.erased),
+      ("deleteMember", OcaGroup.deleteMember.erased),
+    ]),
+    (OcaMediaClock3.self, [
+      ("getCurrentRate", OcaMediaClock3.getCurrentRate.erased),
+      ("setCurrentRate", OcaMediaClock3.setCurrentRate.erased),
+    ]),
     (OcaMediaTransportSessionAgent.self, [
       ("getSession", OcaMediaTransportSessionAgent.getSession.erased),
       ("addSession", OcaMediaTransportSessionAgent.addSession.erased),
+      ("configureSession", OcaMediaTransportSessionAgent.configureSession.erased),
       ("deleteSession", OcaMediaTransportSessionAgent.deleteSession.erased),
+      ("resetSession", OcaMediaTransportSessionAgent.resetSession.erased),
+      ("setStreamingEnabled", OcaMediaTransportSessionAgent.setStreamingEnabled.erased),
+      ("startStreaming", OcaMediaTransportSessionAgent.startStreaming.erased),
+      ("stopStreaming", OcaMediaTransportSessionAgent.stopStreaming.erased),
+      ("getSessionStatus", OcaMediaTransportSessionAgent.getSessionStatus.erased),
+      ("addConnection", OcaMediaTransportSessionAgent.addConnection.erased),
+      ("configureConnection", OcaMediaTransportSessionAgent.configureConnection.erased),
+      ("deleteConnection", OcaMediaTransportSessionAgent.deleteConnection.erased),
+      ("deleteConnections", OcaMediaTransportSessionAgent.deleteConnections.erased),
     ]),
     (OcaNetworkApplication.self, [
       ("getPath", OcaNetworkApplication.getPath.erased),
@@ -48,6 +79,9 @@ enum ClientMethodDescriptions {
       ("setLockNoReadWrite", OcaRoot.setLockNoReadWrite.erased),
       ("unlock", OcaRoot.unlock.erased),
       ("setLockNoWrite", OcaRoot.setLockNoWrite.erased),
+    ]),
+    (OcaTimeSource.self, [
+      ("reset", OcaTimeSource.reset.erased),
     ]),
     (OcaWorker.self, [
       ("addPort", OcaWorker.addPort.erased),

@@ -94,7 +94,7 @@ open class OcaTimeSource: OcaAgent {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod("3.11", name: "Reset", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaTimeSource.reset, access: .write)
   func reset(from controller: any OcaController) async throws {
     try await reset()
   }

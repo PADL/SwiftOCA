@@ -53,12 +53,12 @@ open class OcaCounterSetAgent: OcaAgent {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod("3.3", name: "GetCounter", access: .read, parameterNames: ["ID"], resultNames: ["OcaCounter"])
+  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.getCounter, access: .read)
   func getCounter(_ id: OcaID16, from controller: any OcaController) async throws -> OcaCounter {
     try await get(counter: id)
   }
 
-  @OcaDeviceMethod("3.4", name: "AttachCounterNotifier", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.attachCounterNotifier, access: .write)
   func attachCounterNotifier(
     _ parameters: SwiftOCA.OcaCounterSetAgent.CounterNotifierParameters,
     from controller: any OcaController
@@ -66,7 +66,7 @@ open class OcaCounterSetAgent: OcaAgent {
     try await attach(counter: parameters.id, to: parameters.oNo)
   }
 
-  @OcaDeviceMethod("3.5", name: "DetachCounterNotifier", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.detachCounterNotifier, access: .write)
   func detachCounterNotifier(
     _ parameters: SwiftOCA.OcaCounterSetAgent.CounterNotifierParameters,
     from controller: any OcaController
@@ -74,12 +74,12 @@ open class OcaCounterSetAgent: OcaAgent {
     try await detach(counter: parameters.id, from: parameters.oNo)
   }
 
-  @OcaDeviceMethod("3.6", name: "ResetCounterSet", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.resetCounterSet, access: .write)
   func resetCounterSet(from controller: any OcaController) async throws {
     try await reset()
   }
 
-  @OcaDeviceMethod("3.7", name: "ResetCounter", access: .write, parameterNames: ["ID"])
+  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.resetCounter, access: .write)
   func resetCounter(_ id: OcaID16, from controller: any OcaController) async throws {
     try await reset(counter: id)
   }

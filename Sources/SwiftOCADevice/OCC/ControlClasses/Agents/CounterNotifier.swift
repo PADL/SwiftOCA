@@ -32,7 +32,7 @@ open class OcaCounterNotifier: OcaAgent {
   }
 
   // the model does not name the result
-  @OcaDeviceMethod("3.1", name: "GetLastUpdate", access: .read, resultNames: ["LastUpdate"])
+  @OcaDeviceMethod(SwiftOCA.OcaCounterNotifier.getLastUpdate, access: .read)
   func getLastUpdate(from controller: any OcaController) async throws -> OcaList<OcaCounterUpdate> {
     try await getLastUpdate()
   }
