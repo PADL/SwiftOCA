@@ -1011,6 +1011,34 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(classID.parent, OcaClassID("1.1.2.2"))
   }
 
+  func testOcaClassIDDefLevelAndParent() {
+    XCTAssertEqual(OcaClassID("1").defLevel, 1)
+    XCTAssertNil(OcaClassID("1").parent)
+
+    let gain = OcaClassID("1.1.1.5")
+    XCTAssertEqual(gain.defLevel, 4)
+    XCTAssertEqual(gain.parent, OcaClassID("1.1.1"))
+
+    // the authority fields add no level: a proprietary class is a direct child of the
+    // standard class it extends
+    let proprietary = OcaClassID(parent: gain, authority: OcaClassID.OcaAllianceCompanyID, 1)
+    XCTAssertEqual(proprietary.fieldCount, 8)
+    XCTAssertEqual(proprietary.defLevel, 5)
+    XCTAssertEqual(proprietary.parent, gain)
+
+    let deeper = OcaClassID(parent: OcaClassID(parent: proprietary, 2), 3)
+    XCTAssertEqual(String(describing: deeper), "1.1.1.5.65535.250.12009.1.2.3")
+    XCTAssertEqual(deeper.defLevel, 7)
+    XCTAssertEqual(deeper.parent?.parent, proprietary)
+    XCTAssertEqual(deeper.parent?.parent?.parent, gain)
+
+    // AES70-21 defines the SDP agent's properties at level 3, under OcaAgent
+    XCTAssertEqual(Aes67Adaptation.sdpAgentClassID.defLevel, 3)
+    XCTAssertEqual(Aes67Adaptation.sdpAgentClassID.parent?.defLevel, 2)
+
+    XCTAssertEqual(OcaClassID("2.1").defLevel, 0)
+  }
+
   func testOcaPortIDEncoding() throws {
     let portID = OcaPortID(mode: .output, index: 5)
     let encodedData: [UInt8] = try Ocp1Encoder().encode(portID)
