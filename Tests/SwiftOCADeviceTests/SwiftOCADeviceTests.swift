@@ -724,3 +724,61 @@ extension XCTestCase {
     }
   }
 }
+
+// MARK: - handleCommand arms
+
+private actor ArmTestController: OcaController {
+  nonisolated let flags: OcaControllerFlags = [.supportsLocking]
+
+  func sendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {}
+}
+
+/// Commands sent straight to an object's `handleCommand`, as the device would.
+final class HandleCommandArmTests: XCTestCase {
+  private func command(
+    _ methodID: OcaMethodID,
+    _ parameters: some Encodable = SwiftOCA.OcaRoot.Placeholder(),
+    on object: SwiftOCADevice.OcaRoot
+  ) throws -> Ocp1Command {
+    try Ocp1Command(
+      handle: 1,
+      targetONo: object.objectNumber,
+      methodID: methodID,
+      parameters: OcaParameters(
+        parameterCount: _ocp1ParameterCount(type: type(of: parameters)),
+        parameterData: Ocp1Encoder().encode(parameters)
+      )
+    )
+  }
+
+  @OcaDevice
+  private func makeDevice() async throws -> OcaDevice {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    return device
+  }
+
+  @OcaDevice
+  func testSignalPathsAreAddedAndDeletedByCommand() async throws {
+    let device = try await makeDevice()
+    let block = try await SwiftOCADevice.OcaBlock<SwiftOCADevice.OcaRoot>(
+      deviceDelegate: device, addToRootBlock: false
+    )
+    let controller = ArmTestController()
+    let port = OcaPort(owner: block.objectNumber, id: OcaPortID(mode: .input, index: 1), name: "In")
+    let path = OcaSignalPath(sourcePort: port, sinkPort: port)
+
+    let added = try await block.handleCommand(try command("3.7", path, on: block), from: controller)
+    let index = try Ocp1Decoder().decode(OcaUint16.self, from: added.parameters.parameterData)
+    XCTAssertEqual(index, 1)
+    XCTAssertEqual(block.signalPaths[1], path)
+
+    _ = try await block.handleCommand(try command("3.8", index, on: block), from: controller)
+    XCTAssertTrue(block.signalPaths.isEmpty)
+    do {
+      _ = try await block.handleCommand(try command("3.8", index, on: block), from: controller)
+      XCTFail("deleted a signal path that was gone")
+    } catch Ocp1Error.status(.parameterOutOfRange) {}
+  }
+}
+
