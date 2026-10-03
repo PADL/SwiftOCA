@@ -36,13 +36,14 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
+  /// GetMaxEndpointCounts returns the output count first, in the model's order.
   public struct MaxEndpointCounts: OcaParametersReflectable, Equatable {
-    public let maxInputEndpoints: OcaUint16
-    public let maxOutputEndpoints: OcaUint16
+    public let maxOutputCount: OcaUint16
+    public let maxInputCount: OcaUint16
 
-    public init(maxInputEndpoints: OcaUint16, maxOutputEndpoints: OcaUint16) {
-      self.maxInputEndpoints = maxInputEndpoints
-      self.maxOutputEndpoints = maxOutputEndpoints
+    public init(maxOutputCount: OcaUint16, maxInputCount: OcaUint16) {
+      self.maxOutputCount = maxOutputCount
+      self.maxInputCount = maxInputCount
     }
   }
 

@@ -171,6 +171,15 @@ final class Ocp2WireNameTests: XCTestCase {
     XCTAssertEqual(result.map { $0["ONo"] as? Int }, [Int(Self.dynamicsONo)])
   }
 
+  func testRecordResponseIsNamedByField() async throws {
+    let fixture = try await makeFixture()
+    defer { fixture.tearDown() }
+
+    // OcaMediaTransportApplication 3.11 GetMaxEndpointCounts → MaxOutputCount, MaxInputCount
+    let parameters = try await Self.responseParameters(fixture, targetONo: Self.applicationONo, methodID: "3,11")
+    XCTAssertEqual(Set(parameters.keys), ["MaxOutputCount", "MaxInputCount"])
+  }
+
   func testVectorGetterIsNamedByField() async throws {
     let fixture = try await makeFixture()
     defer { fixture.tearDown() }
