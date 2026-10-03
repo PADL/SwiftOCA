@@ -219,8 +219,8 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     lockable
   }
 
-  @OcaDeviceMethod("1.3", name: "LockTotal", access: .none)
-  func lockTotal(from controller: any OcaController) async throws {
+  @OcaDeviceMethod("1.3", name: "SetLockNoReadWrite", access: .none)
+  func setLockNoReadWrite(from controller: any OcaController) async throws {
     try await lockNoReadWrite(controller: controller)
   }
 
@@ -234,8 +234,8 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     role
   }
 
-  @OcaDeviceMethod("1.6", name: "LockReadonly", access: .none)
-  func lockReadonly(from controller: any OcaController) async throws {
+  @OcaDeviceMethod("1.6", name: "SetLockNoWrite", access: .none)
+  func setLockNoWrite(from controller: any OcaController) async throws {
     try await lockNoWrite(controller: controller)
   }
 
@@ -253,10 +253,10 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     [
       _ocaDeviceMethod_getClassIdentification,
       _ocaDeviceMethod_getLockable,
-      _ocaDeviceMethod_lockTotal,
+      _ocaDeviceMethod_setLockNoReadWrite,
       _ocaDeviceMethod_unlock,
       _ocaDeviceMethod_getRole,
-      _ocaDeviceMethod_lockReadonly,
+      _ocaDeviceMethod_setLockNoWrite,
       _ocaDeviceMethod_getLockState,
     ]
   }
