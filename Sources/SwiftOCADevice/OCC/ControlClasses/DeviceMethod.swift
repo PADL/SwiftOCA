@@ -23,10 +23,11 @@ import Synchronization
 /// controller as one more argument (`from controller: any OcaController`); its result,
 /// if any, is the response. Several parameters become one OCP.1 parameter record, which
 /// the macro declares beside the method. `access` is the lock check made before the
-/// method runs. `parameterNames` and `resultNames` give the OCP.2 names where the model
-/// spells them differently from the Swift names.
+/// method runs: `.read` for a getter, `.write` for a mutator, `.none` for a method that
+/// checks for itself. `parameterNames` and `resultNames` give the OCP.2 names where the
+/// model spells them differently from the Swift names.
 ///
-///     @OcaDeviceMethod("2.7", name: "SetPortName")
+///     @OcaDeviceMethod("2.7", name: "SetPortName", access: .write)
 ///     func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) async throws
 ///
 /// The class lists its methods with `@OcaDeviceMethods`, and `OcaRoot.handleCommand`
@@ -119,7 +120,7 @@ public struct OcaDeviceMethodDescription: Sendable {
   public init<Object: OcaRoot, Parameters: Decodable, Result: Encodable>(
     _ methodID: OcaMethodID,
     name: String,
-    access: OcaDeviceMethodAccess = .write,
+    access: OcaDeviceMethodAccess,
     parameters: Parameters.Type,
     parameterNames: [String],
     resultNames: [String]? = nil,
@@ -144,7 +145,7 @@ public struct OcaDeviceMethodDescription: Sendable {
   public init<Object: OcaRoot, Parameters: Decodable>(
     _ methodID: OcaMethodID,
     name: String,
-    access: OcaDeviceMethodAccess = .write,
+    access: OcaDeviceMethodAccess,
     parameters: Parameters.Type,
     parameterNames: [String],
     _ body: @escaping @OcaDevice @Sendable (Object, Parameters, any OcaController) async throws
@@ -168,7 +169,7 @@ public struct OcaDeviceMethodDescription: Sendable {
   public init<Object: OcaRoot, Result: Encodable>(
     _ methodID: OcaMethodID,
     name: String,
-    access: OcaDeviceMethodAccess = .write,
+    access: OcaDeviceMethodAccess,
     resultNames: [String]? = nil,
     _ body: @escaping @OcaDevice @Sendable (Object, any OcaController) async throws -> Result
   ) {
@@ -189,7 +190,7 @@ public struct OcaDeviceMethodDescription: Sendable {
   public init<Object: OcaRoot>(
     _ methodID: OcaMethodID,
     name: String,
-    access: OcaDeviceMethodAccess = .write,
+    access: OcaDeviceMethodAccess,
     _ body: @escaping @OcaDevice @Sendable (Object, any OcaController) async throws -> Void
   ) {
     self.init(methodID, name: name, parameters: [], results: []) { object, command, controller in

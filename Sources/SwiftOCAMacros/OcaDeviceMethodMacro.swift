@@ -49,9 +49,10 @@ public struct OcaDeviceMethodMacro: PeerMacro {
       }
       closureParameters = "object: Self, command: Ocp1Command, controller: any OcaController"
     } else {
-      if let access = attribute.argument("access") {
-        arguments.append("access: \(access.trimmedDescription)")
+      guard let access = attribute.argument("access") else {
+        throw MacroExpansionErrorMessage("@OcaDeviceMethod needs access: .read, .write or .none")
       }
+      arguments.append("access: \(access.trimmedDescription)")
       var parameterList = "object: Self"
       if let parametersType = method.parametersType {
         if method.parameters.count > 1 {

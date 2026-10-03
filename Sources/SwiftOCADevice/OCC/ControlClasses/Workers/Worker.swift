@@ -75,7 +75,7 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
 
   /// The model names the port `ID` here, where the other port-bearing classes say
   /// `PortID`.
-  @OcaDeviceMethod("2.7", name: "SetPortName", parameterNames: ["ID", "Name"])
+  @OcaDeviceMethod("2.7", name: "SetPortName", access: .write, parameterNames: ["ID", "Name"])
   func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) throws {
     try setName(name, ofPort: id)
   }

@@ -30,7 +30,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
       """
       @OcaDeviceMethods
       open class OcaWorker: OcaRoot {
-        @OcaDeviceMethod("2.7", name: "SetPortName", parameterNames: ["ID", "Name"])
+        @OcaDeviceMethod("2.7", name: "SetPortName", access: .write, parameterNames: ["ID", "Name"])
         func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) throws {
           try setName(name, ofPort: id)
         }
@@ -51,6 +51,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
           OcaDeviceMethodDescription(
             OcaMethodID("2.7"),
             name: "SetPortName",
+            access: .write,
             parameters: _SetPortNameParameters.self,
             parameterNames: ["ID", "Name"]
           ) { (object: Self, parameters: _SetPortNameParameters, controller: any OcaController) -> Void in
@@ -154,7 +155,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
   func testAMethodWithoutAControllerIsRefused() {
     assertMacroExpansion(
       """
-      @OcaDeviceMethod("2.6", name: "GetPortName")
+      @OcaDeviceMethod("2.6", name: "GetPortName", access: .read)
       func getPortName(_ portID: OcaPortID) throws -> OcaString { "" }
       """,
       expandedSource: """
