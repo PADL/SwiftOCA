@@ -251,6 +251,8 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible,
   static let ProprietaryClassFieldMask = OcaUint16(0x8000)
   static let ProprietaryTestClassFieldMask = OcaUint16(0xFF00)
   static let ProprietaryClassField = OcaUint16(0xFFFF)
+  /// A proprietary class's authority: 0xFFFF then its organisation ID in two fields.
+  private static let AuthorityFieldCount = 3
   public static let OcaAllianceCompanyID = OcaOrganizationID((0xFA, 0x2E, 0xE9))
   public static let AESCompanyID = OcaOrganizationID((0x00, 0x0B, 0x5E))
 
@@ -318,8 +320,10 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible,
     }
 
     var parentFieldCount = fields.count - 1
-    if parentFieldCount >= 4, fields[parentFieldCount - 3] == Self.ProprietaryClassField {
-      parentFieldCount = parentFieldCount - 3
+    if parentFieldCount > Self.AuthorityFieldCount,
+       fields[parentFieldCount - Self.AuthorityFieldCount] == Self.ProprietaryClassField
+    {
+      parentFieldCount -= Self.AuthorityFieldCount
     }
 
     let parent = OcaClassID(Array(fields.prefix(parentFieldCount)))
@@ -336,19 +340,19 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible,
     OcaUint16(fields.count)
   }
 
+  /// The class's level in the class tree, OcaRoot being 1. A proprietary class is a
+  /// direct child of the standard class it extends: its authority fields add no level
+  /// (AES70-21 defines Aes67SDPAgent, 1.2.A.2103, with its properties at level 3).
   public var defLevel: OcaUint16 {
     guard isValid else {
       return 0
     }
 
-    for field in fields {
-      if field == Self.ProprietaryClassField {
-        precondition(fieldCount >= 5)
-        return fieldCount - 5
-      }
+    guard fields.contains(Self.ProprietaryClassField) else {
+      return fieldCount
     }
 
-    return fieldCount
+    return fieldCount - OcaUint16(Self.AuthorityFieldCount)
   }
 
   public var description: String {
