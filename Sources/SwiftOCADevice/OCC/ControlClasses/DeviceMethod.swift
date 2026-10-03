@@ -20,14 +20,17 @@ import SwiftOCA
 /// Declares a method of a device class to be the OCA method `methodID`, named `name`
 /// in the model. The method's own parameters are the OCA parameters, in order, with the
 /// controller as one more argument (`from controller: any OcaController`); its result,
-/// if any, is the response. Several parameters become one OCP.1 parameter record, which
-/// the macro declares beside the method. `access` is the lock check made before the
-/// method runs: `.read` for a getter, `.write` for a mutator, `.none` for a method that
-/// checks for itself. `parameterNames` and `resultNames` give the OCP.2 names where the
-/// model spells them differently from the Swift names.
+/// if any, is the response. `access` is the lock check made before the method runs:
+/// `.read` for a getter, `.write` for a mutator, `.none` for one that checks for itself.
 ///
-///     @OcaDeviceMethod("2.7", name: "SetPortName", access: .write)
-///     func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) async throws
+///     @OcaDeviceMethod("2.6", name: "GetPortName", access: .read, resultNames: ["Name"])
+///     func getPortName(_ portID: OcaPortID, from controller: any OcaController) throws -> OcaString
+///
+/// Where SwiftOCA already has a parameters struct for the method (`OcaGetPathParameters`,
+/// `OcaWorker.SetPortNameParameters`, ...) the method takes it as its one parameter, so the
+/// client and the device share the type; only where none exists does the macro declare a
+/// record for several parameters, beside the method. `parameterNames` and `resultNames`
+/// give the OCP.2 names where the model spells them differently from the Swift names.
 ///
 /// The class lists its methods with `@OcaDeviceMethods`, and `OcaRoot.handleCommand`
 /// dispatches to them once a subclass's own `handleCommand` has declined the command, so
@@ -36,7 +39,7 @@ import SwiftOCA
 public macro OcaDeviceMethod(
   _ methodID: String,
   name: String,
-  access: OcaDeviceMethodAccess = .write,
+  access: OcaDeviceMethodAccess,
   parameterNames: [String]? = nil,
   resultNames: [String]? = nil
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")
@@ -116,17 +119,20 @@ public struct OcaDeviceMethodDescription: Sendable {
 
   // MARK: typed methods
 
+  /// `argumentNames` are the Swift names of the method's parameters, which name a single
+  /// value on OCP.2 unless `parameterNames` does; a record's fields name themselves.
   public init<Object: OcaRoot, Parameters: Decodable & Sendable, Result: Encodable & Sendable>(
     _ methodID: OcaMethodID,
     name: String,
     access: OcaDeviceMethodAccess,
     parameters: Parameters.Type,
-    parameterNames: [String],
+    argumentNames: [String],
+    parameterNames: [String]? = nil,
     resultNames: [String]? = nil,
     _ body: @escaping @OcaDevice @Sendable (Object, Parameters, any OcaController) async throws
       -> Result
   ) {
-    let names = parameterNames.map(Ocp2Naming.wireName)
+    let names = Self.names(of: Parameters.self, argumentNames, parameterNames)
     self.init(
       methodID,
       name: name,
@@ -146,11 +152,12 @@ public struct OcaDeviceMethodDescription: Sendable {
     name: String,
     access: OcaDeviceMethodAccess,
     parameters: Parameters.Type,
-    parameterNames: [String],
+    argumentNames: [String],
+    parameterNames: [String]? = nil,
     _ body: @escaping @OcaDevice @Sendable (Object, Parameters, any OcaController) async throws
       -> Void
   ) {
-    let names = parameterNames.map(Ocp2Naming.wireName)
+    let names = Self.names(of: Parameters.self, argumentNames, parameterNames)
     self.init(
       methodID,
       name: name,
@@ -221,6 +228,19 @@ public struct OcaDeviceMethodDescription: Sendable {
     ) { object, command, controller in
       try await body(try object.cast(to: Object.self), command, controller)
     }
+  }
+
+  /// The OCP.2 names a record's fields answer to: explicit names, else none, as a record
+  /// names its own fields; a single value is named by the method's argument.
+  private static func names(
+    of type: Any.Type,
+    _ argumentNames: [String],
+    _ parameterNames: [String]?
+  ) -> [String]? {
+    if let parameterNames {
+      return parameterNames
+    }
+    return type is OcaParametersReflectable.Type ? nil : argumentNames.map(Ocp2Naming.wireName)
   }
 
   /// A parameter record describes one parameter per field, named by `names` then by its

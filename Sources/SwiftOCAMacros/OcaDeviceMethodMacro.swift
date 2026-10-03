@@ -59,9 +59,11 @@ public struct OcaDeviceMethodMacro: PeerMacro {
           declarations.append(method.parameterRecord)
         }
         arguments.append("parameters: \(parametersType).self")
-        let names = attribute.argument("parameterNames")?.trimmedDescription
-          ?? "[\(method.parameters.map { "\"\($0.name)\"" }.joined(separator: ", "))]"
-        arguments.append("parameterNames: \(names)")
+        let names = method.parameters.map { "\"\($0.name)\"" }.joined(separator: ", ")
+        arguments.append("argumentNames: [\(names)]")
+        if let parameterNames = attribute.argument("parameterNames") {
+          arguments.append("parameterNames: \(parameterNames.trimmedDescription)")
+        }
         parameterList += ", parameters: \(parametersType)"
       }
       if let resultNames = attribute.argument("resultNames") {

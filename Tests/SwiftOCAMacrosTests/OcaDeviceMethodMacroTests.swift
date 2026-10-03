@@ -53,6 +53,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
             name: "SetPortName",
             access: .write,
             parameters: _ocaDeviceMethodParameters_setPortName.self,
+            argumentNames: ["id", "name"],
             parameterNames: ["ID", "Name"]
           ) { (object: Self, parameters: _ocaDeviceMethodParameters_setPortName, controller: any OcaController) -> Void in
             try object.setPortName(parameters.id, parameters.name, from: controller)
@@ -87,7 +88,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
           name: "GetPortName",
           access: .read,
           parameters: OcaPortID.self,
-          parameterNames: ["portID"],
+          argumentNames: ["portID"],
           resultNames: ["Name"]
         ) { (object: Self, parameters: OcaPortID, controller: any OcaController) -> OcaString in
           try await object.getPortName(parameters, from: controller)
