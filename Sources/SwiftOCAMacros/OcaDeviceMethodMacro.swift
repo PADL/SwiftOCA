@@ -39,6 +39,7 @@ public struct OcaDeviceMethodMacro: PeerMacro {
     var arguments = ["OcaMethodID(\"\(attribute.methodID)\")"]
     arguments.append("name: \(attribute.argument("name")?.trimmedDescription ?? "\"\"")")
     var declarations = [DeclSyntax]()
+    var body = [String]()
     let closureParameters: String
 
     if method.isRaw {
@@ -47,16 +48,17 @@ public struct OcaDeviceMethodMacro: PeerMacro {
           arguments.append("\(label): \(value.trimmedDescription)")
         }
       }
-      closureParameters = "object: Self, command: Ocp1Command, controller: any OcaController"
+      closureParameters = "object, command, controller"
+      body.append(method.call)
     } else {
       guard let access = attribute.argument("access") else {
         throw MacroExpansionErrorMessage("@OcaDeviceMethod needs access: .read, .write or .none")
       }
       arguments.append("access: \(access.trimmedDescription)")
-      var parameterList = "object: Self"
       if let parametersType = method.parametersType {
         if method.parameters.count > 1 {
           declarations.append(method.parameterRecord)
+          body.append("let parameters = parameters as! \(parametersType)")
         }
         arguments.append("parameters: \(parametersType).self")
         let names = method.parameters.map { "\"\($0.name)\"" }.joined(separator: ", ")
@@ -64,12 +66,20 @@ public struct OcaDeviceMethodMacro: PeerMacro {
         if let parameterNames = attribute.argument("parameterNames") {
           arguments.append("parameterNames: \(parameterNames.trimmedDescription)")
         }
-        parameterList += ", parameters: \(parametersType)"
       }
-      if let resultNames = attribute.argument("resultNames") {
-        arguments.append("resultNames: \(resultNames.trimmedDescription)")
+      if let resultType = method.resultType {
+        arguments.append("result: \(resultType).self")
+        if let resultNames = attribute.argument("resultNames") {
+          arguments.append("resultNames: \(resultNames.trimmedDescription)")
+        }
       }
-      closureParameters = parameterList + ", controller: any OcaController"
+      closureParameters = method.parametersType == nil
+        ? "object, _, controller"
+        : "object, parameters, controller"
+      body.append(method.call)
+      if method.resultType == nil {
+        body.append("return nil")
+      }
     }
 
     declarations.append(
@@ -77,8 +87,8 @@ public struct OcaDeviceMethodMacro: PeerMacro {
       static var \(raw: method.descriptorName): OcaDeviceMethodDescription {
         OcaDeviceMethodDescription(
           \(raw: arguments.joined(separator: ",\n    "))
-        ) { (\(raw: closureParameters)) -> \(raw: method.closureResultType) in
-          \(raw: method.call)
+        ) { \(raw: closureParameters) in
+          \(raw: body.joined(separator: "\n    "))
         }
       }
       """
@@ -203,8 +213,10 @@ private struct DeviceMethod {
     arguments = all.enumerated().map { offset, parameter in
       let value = if offset == controller {
         "controller"
+      } else if isRaw {
+        "command"
       } else if parameters.count == 1 {
-        isRaw ? "command" : "parameters"
+        "parameters as! \(parameter.type)"
       } else {
         "parameters.\(parameter.name)"
       }
@@ -237,11 +249,11 @@ private struct DeviceMethod {
     """
   }
 
-  var closureResultType: String {
-    function.signature.returnClause?.type.trimmedDescription ?? "Void"
+  var resultType: String? {
+    function.signature.returnClause?.type.trimmedDescription
   }
 
   var call: String {
-    "\(callPrefix)object.\(function.name.text)(\(arguments.joined(separator: ", ")))"
+    "\(callPrefix)(object as! Self).\(function.name.text)(\(arguments.joined(separator: ", ")))"
   }
 }

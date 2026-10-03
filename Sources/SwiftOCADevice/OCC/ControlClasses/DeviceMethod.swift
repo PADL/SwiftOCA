@@ -117,10 +117,76 @@ public struct OcaDeviceMethodDescription: Sendable {
     self.handle = handle
   }
 
-  // MARK: typed methods
+  /// What `@OcaDeviceMethod` writes for a typed method: cast the object, cast the
+  /// decoded parameters (`()` when there are none) and call; the result, or nil for none.
+  /// Decoding, the lock check and encoding are done once here, not per method.
+  public typealias Body = @OcaDevice @Sendable (
+    OcaRoot,
+    Any,
+    any OcaController
+  ) async throws -> (any Encodable)?
+
+  /// Likewise for a raw method, which does the decoding, checking and encoding itself.
+  public typealias RawBody = @OcaDevice @Sendable (
+    OcaRoot,
+    Ocp1Command,
+    any OcaController
+  ) async throws -> Ocp1Response
 
   /// `argumentNames` are the Swift names of the method's parameters, which name a single
   /// value on OCP.2 unless `parameterNames` does; a record's fields name themselves.
+  public init(
+    _ methodID: OcaMethodID,
+    name: String,
+    access: OcaDeviceMethodAccess,
+    parameters: (any (Decodable & Sendable).Type)? = nil,
+    argumentNames: [String] = [],
+    parameterNames: [String]? = nil,
+    result: (any (Encodable & Sendable).Type)? = nil,
+    resultNames: [String]? = nil,
+    _ body: @escaping Body
+  ) {
+    let names = parameters.flatMap { Self.names(of: $0, argumentNames, parameterNames) }
+    self.init(
+      methodID,
+      name: name,
+      parameters: parameters.map { Self.describe($0, names: names, of: name) } ?? [],
+      results: result.map { Self.describe($0, names: resultNames, of: name) } ?? []
+    ) { object, command, controller in
+      let decoded: Any = if let parameters {
+        try parameters._decodeDeviceCommand(command, names: names)
+      } else {
+        try object.decodeNullCommand(command)
+      }
+      try await object.ensureAccess(access, by: controller, command: command)
+      guard let result = try await body(object, decoded, controller) else {
+        return Ocp1Response()
+      }
+      return try result._encodeDeviceResponse(for: controller, names: resultNames)
+    }
+  }
+
+  public init(
+    _ methodID: OcaMethodID,
+    name: String,
+    parameters: (any (Decodable & Sendable).Type)? = nil,
+    parameterNames: [String]? = nil,
+    result: (any (Encodable & Sendable).Type)? = nil,
+    resultNames: [String]? = nil,
+    _ body: @escaping RawBody
+  ) {
+    self.init(
+      methodID,
+      name: name,
+      parameters: parameters.map { Self.describe($0, names: parameterNames, of: name) } ?? [],
+      results: result.map { Self.describe($0, names: resultNames, of: name) } ?? []
+    ) { object, command, controller in
+      try await body(object, command, controller)
+    }
+  }
+
+  // MARK: typed conveniences, for a descriptor written by hand
+
   public init<Object: OcaRoot, Parameters: Decodable & Sendable, Result: Encodable & Sendable>(
     _ methodID: OcaMethodID,
     name: String,
@@ -132,18 +198,17 @@ public struct OcaDeviceMethodDescription: Sendable {
     _ body: @escaping @OcaDevice @Sendable (Object, Parameters, any OcaController) async throws
       -> Result
   ) {
-    let names = Self.names(of: Parameters.self, argumentNames, parameterNames)
     self.init(
       methodID,
       name: name,
-      parameters: Self.describe(Parameters.self, names: names, of: name),
-      results: Self.describe(Result.self, names: resultNames, of: name)
-    ) { object, command, controller in
-      let object = try object.cast(to: Object.self)
-      let parameters: Parameters = try Object.decodeCommand(command, names: names)
-      try await object.ensureAccess(access, by: controller, command: command)
-      let result = try await body(object, parameters, controller)
-      return try controller.encodeResponse(result, names: resultNames)
+      access: access,
+      parameters: parameters,
+      argumentNames: argumentNames,
+      parameterNames: parameterNames,
+      result: Result.self,
+      resultNames: resultNames
+    ) { object, parameters, controller in
+      try await body(object as! Object, parameters as! Parameters, controller)
     }
   }
 
@@ -157,18 +222,16 @@ public struct OcaDeviceMethodDescription: Sendable {
     _ body: @escaping @OcaDevice @Sendable (Object, Parameters, any OcaController) async throws
       -> Void
   ) {
-    let names = Self.names(of: Parameters.self, argumentNames, parameterNames)
     self.init(
       methodID,
       name: name,
-      parameters: Self.describe(Parameters.self, names: names, of: name),
-      results: []
-    ) { object, command, controller in
-      let object = try object.cast(to: Object.self)
-      let parameters: Parameters = try Object.decodeCommand(command, names: names)
-      try await object.ensureAccess(access, by: controller, command: command)
-      try await body(object, parameters, controller)
-      return Ocp1Response()
+      access: access,
+      parameters: parameters,
+      argumentNames: argumentNames,
+      parameterNames: parameterNames
+    ) { object, parameters, controller in
+      try await body(object as! Object, parameters as! Parameters, controller)
+      return nil
     }
   }
 
@@ -182,14 +245,11 @@ public struct OcaDeviceMethodDescription: Sendable {
     self.init(
       methodID,
       name: name,
-      parameters: [],
-      results: Self.describe(Result.self, names: resultNames, of: name)
-    ) { object, command, controller in
-      let object = try object.cast(to: Object.self)
-      try object.decodeNullCommand(command)
-      try await object.ensureAccess(access, by: controller, command: command)
-      let result = try await body(object, controller)
-      return try controller.encodeResponse(result, names: resultNames)
+      access: access,
+      result: Result.self,
+      resultNames: resultNames
+    ) { object, _, controller in
+      try await body(object as! Object, controller)
     }
   }
 
@@ -199,34 +259,9 @@ public struct OcaDeviceMethodDescription: Sendable {
     access: OcaDeviceMethodAccess,
     _ body: @escaping @OcaDevice @Sendable (Object, any OcaController) async throws -> Void
   ) {
-    self.init(methodID, name: name, parameters: [], results: []) { object, command, controller in
-      let object = try object.cast(to: Object.self)
-      try object.decodeNullCommand(command)
-      try await object.ensureAccess(access, by: controller, command: command)
-      try await body(object, controller)
-      return Ocp1Response()
-    }
-  }
-
-  // MARK: raw methods
-
-  public init<Object: OcaRoot>(
-    _ methodID: OcaMethodID,
-    name: String,
-    parameters: (any (Decodable & Sendable).Type)? = nil,
-    parameterNames: [String]? = nil,
-    result: (any (Encodable & Sendable).Type)? = nil,
-    resultNames: [String]? = nil,
-    _ body: @escaping @OcaDevice @Sendable (Object, Ocp1Command, any OcaController) async throws
-      -> Ocp1Response
-  ) {
-    self.init(
-      methodID,
-      name: name,
-      parameters: parameters.map { Self.describe($0, names: parameterNames, of: name) } ?? [],
-      results: result.map { Self.describe($0, names: resultNames, of: name) } ?? []
-    ) { object, command, controller in
-      try await body(try object.cast(to: Object.self), command, controller)
+    self.init(methodID, name: name, access: access) { object, _, controller in
+      try await body(object as! Object, controller)
+      return nil
     }
   }
 
@@ -274,14 +309,27 @@ private func erasedCast<U>(_ type: Any.Type, to _: U.Type) -> U? {
   type as? U
 }
 
-private extension OcaRoot {
-  nonisolated func cast<Object: OcaRoot>(to _: Object.Type) throws -> Object {
-    guard let object = self as? Object else {
-      throw Ocp1Error.status(.processingFailed)
-    }
-    return object
+/// Opened through the existential, so there is one decoder and one encoder for every
+/// method rather than one specialised per parameter and result type.
+private extension Decodable {
+  @inline(never)
+  static func _decodeDeviceCommand(_ command: Ocp1Command, names: [String]?) throws -> Any {
+    let parameters: Self = try OcaRoot.decodeCommand(command, names: names)
+    return parameters
   }
+}
 
+private extension Encodable {
+  @inline(never)
+  func _encodeDeviceResponse(
+    for controller: any OcaController,
+    names: [String]?
+  ) throws -> Ocp1Response {
+    try controller.encodeResponse(self, names: names)
+  }
+}
+
+private extension OcaRoot {
   func ensureAccess(
     _ access: OcaDeviceMethodAccess,
     by controller: any OcaController,

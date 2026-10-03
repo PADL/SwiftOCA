@@ -55,8 +55,10 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
             parameters: _ocaDeviceMethodParameters_setPortName.self,
             argumentNames: ["id", "name"],
             parameterNames: ["ID", "Name"]
-          ) { (object: Self, parameters: _ocaDeviceMethodParameters_setPortName, controller: any OcaController) -> Void in
-            try object.setPortName(parameters.id, parameters.name, from: controller)
+          ) { object, parameters, controller in
+            let parameters = parameters as! _ocaDeviceMethodParameters_setPortName
+            try (object as! Self).setPortName(parameters.id, parameters.name, from: controller)
+            return nil
           }
         }
 
@@ -89,9 +91,10 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
           access: .read,
           parameters: OcaPortID.self,
           argumentNames: ["portID"],
+          result: OcaString.self,
           resultNames: ["Name"]
-        ) { (object: Self, parameters: OcaPortID, controller: any OcaController) -> OcaString in
-          try await object.getPortName(parameters, from: controller)
+        ) { object, parameters, controller in
+          try await (object as! Self).getPortName(parameters as! OcaPortID, from: controller)
         }
       }
       """,
@@ -116,9 +119,10 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
         OcaDeviceMethodDescription(
           OcaMethodID("2.13"),
           name: "GetPath",
-          access: .read
-        ) { (object: Self, controller: any OcaController) -> OcaGetPathParameters in
-          await object.getPath(from: controller)
+          access: .read,
+          result: OcaGetPathParameters.self
+        ) { object, _, controller in
+          await (object as! Self).getPath(from: controller)
         }
       }
       """,
@@ -144,8 +148,8 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
           OcaMethodID("3.27"),
           name: "ApplyPatch",
           parameters: OcaApplyPatchParameters.self
-        ) { (object: Self, command: Ocp1Command, controller: any OcaController) -> Ocp1Response in
-          try await object.applyPatch(command, from: controller)
+        ) { object, command, controller in
+          try await (object as! Self).applyPatch(command, from: controller)
         }
       }
       """,
