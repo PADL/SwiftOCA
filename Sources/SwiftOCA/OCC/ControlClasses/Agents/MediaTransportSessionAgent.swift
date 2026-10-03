@@ -31,6 +31,36 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
     }
   }
 
+  /// ConfigureSession takes the session's identity, label and adaptation data; its
+  /// connections and streaming switch have methods of their own.
+  public struct ConfigureSessionParameters: OcaParametersReflectable {
+    public let idInternal: OcaMediaTransportSessionID
+    public let idExternal: OcaBlob
+    public let userLabel: OcaString
+    public let adaptationData: OcaAdaptationData
+
+    public init(
+      idInternal: OcaMediaTransportSessionID,
+      idExternal: OcaBlob,
+      userLabel: OcaString,
+      adaptationData: OcaAdaptationData
+    ) {
+      self.idInternal = idInternal
+      self.idExternal = idExternal
+      self.userLabel = userLabel
+      self.adaptationData = adaptationData
+    }
+
+    public init(_ session: OcaMediaTransportSession) {
+      self.init(
+        idInternal: session.idInternal,
+        idExternal: session.idExternal,
+        userLabel: session.userLabel,
+        adaptationData: session.adaptationData
+      )
+    }
+  }
+
   public struct AddConnectionParameters: OcaParametersReflectable {
     public let sessionID: OcaMediaTransportSessionID
     public let connection: OcaMediaTransportSessionConnection
@@ -130,8 +160,13 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
     )
   }
 
+  /// Sends the session's IDs, label and adaptation data, which is all ConfigureSession
+  /// takes.
   public func configure(session: OcaMediaTransportSession) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: session)
+    try await sendCommandRrq(
+      methodID: OcaMethodID("3.5"),
+      parameters: ConfigureSessionParameters(session)
+    )
   }
 
   public func delete(session id: OcaMediaTransportSessionID) async throws {
