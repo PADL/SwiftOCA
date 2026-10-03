@@ -59,7 +59,7 @@ public class OcaLockManager: OcaManager {
   }
 
   // the lock manager's own methods are not subject to its locks
-  @OcaDeviceMethod("3.1", name: "LockWait", access: .none)
+  @OcaDeviceMethod(SwiftOCA.OcaLockManager.lockWait, access: .none)
   private func lockWait(
     _ parameters: SwiftOCA.OcaLockManager.LockWaitParameters,
     from controller: any OcaController
@@ -72,7 +72,7 @@ public class OcaLockManager: OcaManager {
     )
   }
 
-  @OcaDeviceMethod("3.2", name: "AbortWaits", access: .none, parameterNames: ["ONo"])
+  @OcaDeviceMethod(SwiftOCA.OcaLockManager.abortWaits, access: .none)
   private func abortWaits(_ oNo: OcaONo, from controller: any OcaController) async throws {
     try await abortWaits(controller: controller, oNo: oNo)
   }
