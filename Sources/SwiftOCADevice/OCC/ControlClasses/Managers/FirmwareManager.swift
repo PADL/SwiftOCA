@@ -37,17 +37,17 @@ open class OcaFirmwareManager: OcaManager {
     )
   }
 
-  @OcaDeviceMethod("3.2", name: "StartUpdateProcess", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.startUpdateProcess, access: .write)
   func startUpdateProcess(from controller: any OcaController) async throws {
     try await startUpdateProcess(controller: controller)
   }
 
-  @OcaDeviceMethod("3.3", name: "BeginActiveImageUpdate", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.beginActiveImageUpdate, access: .write)
   func beginActiveImageUpdate(_ component: OcaComponent, from controller: any OcaController) async throws {
     try await beginActiveImageUpdate(component: component, controller: controller)
   }
 
-  @OcaDeviceMethod("3.4", name: "AddImageData", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.addImageData, access: .write)
   func addImageData(
     _ parameters: SwiftOCA.OcaFirmwareManager.AddImageDataParameters,
     from controller: any OcaController
@@ -55,17 +55,17 @@ open class OcaFirmwareManager: OcaManager {
     try await addImageData(id: parameters.id, parameters.imageData, controller: controller)
   }
 
-  @OcaDeviceMethod("3.5", name: "VerifyImage", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.verifyImage, access: .write)
   func verifyImage(_ verifyData: OcaBlob, from controller: any OcaController) async throws {
     try await verifyImage(verifyData, controller: controller)
   }
 
-  @OcaDeviceMethod("3.6", name: "EndActiveImageUpdate", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.endActiveImageUpdate, access: .write)
   func endActiveImageUpdate(from controller: any OcaController) async throws {
     try await endActiveImageUpdate(controller: controller)
   }
 
-  @OcaDeviceMethod("3.7", name: "BeginPassiveComponentUpdate", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.beginPassiveComponentUpdate, access: .write)
   func beginPassiveComponentUpdate(
     _ parameters: SwiftOCA.OcaFirmwareManager.BeginPassiveComponentUpdateParameters,
     from controller: any OcaController
@@ -78,7 +78,7 @@ open class OcaFirmwareManager: OcaManager {
     )
   }
 
-  @OcaDeviceMethod("3.8", name: "EndUpdateProcess", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.endUpdateProcess, access: .write)
   func endUpdateProcess(from controller: any OcaController) async throws {
     try await endUpdateProcess(controller: controller)
   }

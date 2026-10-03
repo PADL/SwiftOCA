@@ -133,17 +133,17 @@ open class OcaSecurityManager: OcaManager {
     throw Ocp1Error.status(.permissionDenied)
   }
 
-  @OcaDeviceMethod("3.1", name: "EnableControlSecurity", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.enableControlSecurity, access: .write)
   func enableControlSecurity(from controller: any OcaController) {
     secureControlData = true
   }
 
-  @OcaDeviceMethod("3.2", name: "DisableControlSecurity", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.disableControlSecurity, access: .write)
   func disableControlSecurity(from controller: any OcaController) {
     secureControlData = false
   }
 
-  @OcaDeviceMethod("3.3", name: "ChangePreSharedKey", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.changePreSharedKey, access: .write)
   func changePreSharedKey(
     _ parameters: SwiftOCA.OcaSecurityManager.ChangePreSharedKeyParameters,
     from controller: any OcaController
@@ -151,7 +151,7 @@ open class OcaSecurityManager: OcaManager {
     try _add(identity: parameters.identity, key: Data(parameters.newKey), mustExist: true)
   }
 
-  @OcaDeviceMethod("3.4", name: "AddPreSharedKey", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.addPreSharedKey, access: .write)
   func addPreSharedKey(
     _ parameters: SwiftOCA.OcaSecurityManager.AddPreSharedKeyParameters,
     from controller: any OcaController
@@ -159,7 +159,7 @@ open class OcaSecurityManager: OcaManager {
     try _add(identity: parameters.identity, key: Data(parameters.key), mustExist: false)
   }
 
-  @OcaDeviceMethod("3.5", name: "DeletePreSharedKey", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.deletePreSharedKey, access: .write)
   func deletePreSharedKey(_ identity: OcaString, from controller: any OcaController) throws {
     try _delete(identity: identity)
   }
