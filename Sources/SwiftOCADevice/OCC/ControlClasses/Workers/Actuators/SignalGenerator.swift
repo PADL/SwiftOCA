@@ -111,17 +111,17 @@ open class OcaSignalGenerator: OcaActuator {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod("4.16", name: "Start", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.start, access: .write)
   func start(from controller: any OcaController) async throws {
     try await start()
   }
 
-  @OcaDeviceMethod("4.17", name: "Stop", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.stop, access: .write)
   func stop(from controller: any OcaController) async throws {
     try await stop()
   }
 
-  @OcaDeviceMethod("4.18", name: "SetMultiple", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.setMultiple, access: .write)
   func setMultiple(
     _ parameters: SwiftOCA.OcaSignalGenerator.SetMultipleParameters,
     from controller: any OcaController

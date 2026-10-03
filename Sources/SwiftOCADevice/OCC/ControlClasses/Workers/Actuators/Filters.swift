@@ -71,7 +71,7 @@ open class OcaFilterClassical: OcaActuator {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod("4.11", name: "SetMultiple", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFilterClassical.setMultiple, access: .write)
   func setMultiple(
     _ parameters: SwiftOCA.OcaFilterClassical.SetMultipleParameters,
     from controller: any OcaController
@@ -150,7 +150,7 @@ open class OcaFilterParametric: OcaActuator {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod("4.11", name: "SetMultiple", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFilterParametric.setMultiple, access: .write)
   func setMultiple(
     _ parameters: SwiftOCA.OcaFilterParametric.SetMultipleParameters,
     from controller: any OcaController
@@ -214,12 +214,12 @@ open class OcaFilterPolynomial: OcaActuator {
     self.b = b
   }
 
-  @OcaDeviceMethod("4.1", name: "GetCoefficients", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaFilterPolynomial.getCoefficients, access: .read)
   func getCoefficients(from controller: any OcaController) -> SwiftOCA.OcaFilterPolynomial.CoefficientsParameters {
     .init(a: a, b: b)
   }
 
-  @OcaDeviceMethod("4.2", name: "SetCoefficients", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFilterPolynomial.setCoefficients, access: .write)
   func setCoefficients(
     _ parameters: SwiftOCA.OcaFilterPolynomial.CoefficientsParameters,
     from controller: any OcaController
@@ -303,7 +303,7 @@ open class OcaFilterArbitraryCurve: OcaActuator {
 
   /// SetTransferFunction carries the curve's three lists as separate parameters,
   /// which the property wrapper's own setter would reject.
-  @OcaDeviceMethod("4.2", name: "SetTransferFunction", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFilterArbitraryCurve.setTransferFunction, access: .write)
   func setTransferFunction(
     _ parameters: SwiftOCA.OcaFilterArbitraryCurve.SetTransferFunctionParameters,
     from controller: any OcaController

@@ -38,7 +38,7 @@ open class OcaPowerSensor: OcaSensor {
   )
   public var powerFactor: OcaFloat32 = 1
 
-  @OcaDeviceMethod("4.1", name: "GetReading", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaPowerSensor.getReading, access: .read)
   func getReading(from controller: any OcaController) -> SwiftOCA.OcaPowerSensor.GetReadingParameters {
     .init(
       power: power.value,

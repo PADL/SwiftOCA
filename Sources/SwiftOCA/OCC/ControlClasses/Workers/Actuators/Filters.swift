@@ -80,6 +80,9 @@ open class OcaFilterClassical: OcaActuator, @unchecked Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let setMultiple =
+    OcaMethodDescription<SetMultipleParameters, Void>("4.11", name: "SetMultiple")
+
   /// atomically sets the filter parameters selected by `mask`
   public func setMultiple(
     mask: OcaParameterMask,
@@ -89,9 +92,9 @@ open class OcaFilterClassical: OcaActuator, @unchecked Sendable {
     order: OcaUint16,
     parameter: OcaFloat32
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.11"),
-      parameters: SetMultipleParameters(
+    try await invoke(
+      Self.setMultiple,
+      .init(
         mask: mask,
         frequency: frequency,
         passband: passband,
@@ -178,6 +181,9 @@ open class OcaFilterParametric: OcaActuator, @unchecked Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let setMultiple =
+    OcaMethodDescription<SetMultipleParameters, Void>("4.11", name: "SetMultiple")
+
   /// atomically sets the filter parameters selected by `mask`
   public func setMultiple(
     mask: OcaParameterMask,
@@ -187,9 +193,9 @@ open class OcaFilterParametric: OcaActuator, @unchecked Sendable {
     inBandGain: OcaDB,
     shapeParameter: OcaFloat32
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.11"),
-      parameters: SetMultipleParameters(
+    try await invoke(
+      Self.setMultiple,
+      .init(
         mask: mask,
         frequency: frequency,
         shape: shape,
@@ -246,19 +252,21 @@ open class OcaFilterPolynomial: OcaActuator, @unchecked Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let getCoefficients =
+    OcaMethodDescription<Void, CoefficientsParameters>("4.1", name: "GetCoefficients")
+
   public func getCoefficients() async throws
     -> (a: OcaList<OcaFloat32>, b: OcaList<OcaFloat32>)
   {
-    let parameters: CoefficientsParameters =
-      try await sendCommandRrq(methodID: OcaMethodID("4.1"))
+    let parameters = try await invoke(Self.getCoefficients)
     return (parameters.a, parameters.b)
   }
 
+  @_spi(SwiftOCAPrivate) public static let setCoefficients =
+    OcaMethodDescription<CoefficientsParameters, Void>("4.2", name: "SetCoefficients")
+
   public func setCoefficients(a: OcaList<OcaFloat32>, b: OcaList<OcaFloat32>) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.2"),
-      parameters: CoefficientsParameters(a: a, b: b)
-    )
+    try await invoke(Self.setCoefficients, .init(a: a, b: b))
   }
 }
 
@@ -320,6 +328,10 @@ open class OcaFilterArbitraryCurve: OcaActuator, @unchecked Sendable {
     setValueTransformer: { OcaFilterArbitraryCurve.SetTransferFunctionParameters($1) }
   )
   public var transferFunction: OcaProperty<OcaTransferFunction>.PropertyValue
+
+  // the property's setter, as the device declares it
+  public static let setTransferFunction =
+    OcaMethodDescription<SetTransferFunctionParameters, Void>("4.2", name: "SetTransferFunction")
 
   /// the sampling rate inside the filter, which need not be the device sampling rate
   @OcaBoundedProperty(

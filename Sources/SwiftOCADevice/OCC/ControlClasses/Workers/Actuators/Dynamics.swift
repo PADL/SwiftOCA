@@ -167,7 +167,7 @@ open class OcaDynamics: OcaActuator {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod("4.27", name: "SetMultiple", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDynamics.setMultiple, access: .write)
   func setMultiple(
     _ parameters: SwiftOCA.OcaDynamics.SetMultipleParameters,
     from controller: any OcaController
@@ -240,7 +240,7 @@ open class OcaDynamicsDetector: OcaActuator {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod("4.9", name: "SetMultiple", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDynamicsDetector.setMultiple, access: .write)
   func setMultiple(
     _ parameters: SwiftOCA.OcaDynamicsDetector.SetMultipleParameters,
     from controller: any OcaController
@@ -362,17 +362,17 @@ open class OcaDynamicsCurve: OcaActuator {
     )
   }
 
-  @OcaDeviceMethod("4.5", name: "GetSlopes", access: .read, resultNames: ["Slopes", "MinSlope", "MaxSlope"])
+  @OcaDeviceMethod(SwiftOCA.OcaDynamicsCurve.getSlopes, access: .read)
   func getSlopes(from controller: any OcaController) -> SwiftOCA.OcaDynamicsCurve.GetFloat32ListParameters {
     _float32ListParameters(slopes, in: slopeRange)
   }
 
-  @OcaDeviceMethod("4.7", name: "GetKneeParameters", access: .read, resultNames: ["Parameters", "MinParameter", "MaxParameter"])
+  @OcaDeviceMethod(SwiftOCA.OcaDynamicsCurve.getKneeParameters, access: .read)
   func getKneeParameters(from controller: any OcaController) -> SwiftOCA.OcaDynamicsCurve.GetFloat32ListParameters {
     _float32ListParameters(kneeParameters, in: kneeParameterRange)
   }
 
-  @OcaDeviceMethod("4.13", name: "SetMultiple", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDynamicsCurve.setMultiple, access: .write)
   func setMultiple(
     _ parameters: SwiftOCA.OcaDynamicsCurve.SetMultipleParameters,
     from controller: any OcaController
@@ -388,7 +388,7 @@ open class OcaDynamicsCurve: OcaActuator {
     )
   }
 
-  @OcaDeviceMethod("4.14", name: "GetThresholds", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaDynamicsCurve.getThresholds, access: .read)
   func getThresholds(from controller: any OcaController) -> SwiftOCA.OcaDynamicsCurve.GetThresholdsParameters {
     .init(
       thresholds: thresholds,

@@ -61,7 +61,7 @@ open class OcaDelayExtended: OcaDelay {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod("5.3", name: "GetDelayValueConverted", access: .read, parameterNames: ["UoM"], resultNames: ["Value"])
+  @OcaDeviceMethod(SwiftOCA.OcaDelayExtended.getDelayValueConverted, access: .read)
   func getDelayValueConverted(_ unitOfMeasure: OcaDelayUnit, from controller: any OcaController) async throws
     -> OcaDelayValue
   {

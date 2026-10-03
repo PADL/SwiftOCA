@@ -30,6 +30,13 @@ Sendable {
     getMethodID: OcaMethodID("4.1")
   )
   public var reading: OcaBoundedProperty<OcaDB>.PropertyValue
+
+  // the property's getter, as the device declares it: the reading and its bounds
+  public static let getReading = OcaMethodDescription<Void, OcaBoundedPropertyValue<OcaDB>>(
+    "4.1",
+    name: "GetReading",
+    resultNames: ["Reading", "MinReading", "MaxReading"]
+  )
 }
 
 extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Encodable {

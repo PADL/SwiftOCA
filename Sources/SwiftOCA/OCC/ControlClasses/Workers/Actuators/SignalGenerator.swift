@@ -82,12 +82,16 @@ open class OcaSignalGenerator: OcaActuator, @unchecked Sendable {
   )
   public var generating: OcaProperty<OcaBoolean>.PropertyValue
 
+  public static let start = OcaMethodDescription<Void, Void>("4.16", name: "Start")
+
   public func start() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("4.16"))
+    try await invoke(Self.start)
   }
 
+  public static let stop = OcaMethodDescription<Void, Void>("4.17", name: "Stop")
+
   public func stop() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("4.17"))
+    try await invoke(Self.stop)
   }
 
   @_spi(SwiftOCAPrivate)
@@ -122,6 +126,9 @@ open class OcaSignalGenerator: OcaActuator, @unchecked Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let setMultiple =
+    OcaMethodDescription<SetMultipleParameters, Void>("4.18", name: "SetMultiple")
+
   /// atomically sets the generation parameters selected by `mask`
   public func setMultiple(
     mask: OcaParameterMask,
@@ -133,9 +140,9 @@ open class OcaSignalGenerator: OcaActuator, @unchecked Sendable {
     sweepTime: OcaTimeInterval,
     sweepRepeat: OcaBoolean
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.18"),
-      parameters: SetMultipleParameters(
+    try await invoke(
+      Self.setMultiple,
+      .init(
         mask: mask,
         frequency1: frequency1,
         frequency2: frequency2,
