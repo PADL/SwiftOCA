@@ -147,13 +147,39 @@ public actor OcaConnectionBroker {
   /// Makes the connection for a discovered device, for example to choose a transport
   /// backend other than the platform default. It is given the device's service info, its
   /// addresses in the broker's preference order, and the connection options with the
-  /// service type's protocol applied. Returning nil uses the default for the service type.
+  /// service type's protocol applied. ``makeDefaultConnection(for:serviceInfo:addresses:options:)``
+  /// is the default, and a factory can call it for the devices it doesn't handle.
   public typealias ConnectionFactory = @Sendable (
     _ device: DeviceIdentifier,
     _ serviceInfo: AnyOcaNetworkAdvertisingServiceInfo,
     _ addresses: [Data],
     _ options: OcaConnectionOptions
-  ) async throws -> OcaConnection?
+  ) async throws -> OcaConnection
+
+  /// The platform's default connection for a device's service type: the TCP or UDP
+  /// backend for the platform, or a WebSocket to the advertised path.
+  public static func makeDefaultConnection(
+    for device: DeviceIdentifier,
+    serviceInfo: AnyOcaNetworkAdvertisingServiceInfo,
+    addresses: [Data],
+    options: OcaConnectionOptions
+  ) async throws -> OcaConnection {
+    switch device.serviceType.transport {
+    case .tcp:
+      return try await OcaTCPConnection(deviceAddresses: addresses, options: options)
+    case .udp:
+      return try await OcaUDPConnection(deviceAddresses: addresses, options: options)
+    #if os(macOS) || os(iOS)
+    case .tcpWebSocket:
+      let path = ((try? serviceInfo.txtRecords["path"]) ?? nil).flatMap { $0.isEmpty ? nil : $0 }
+        .map { $0.hasPrefix("/") ? $0 : "/" + $0 } ?? "/"
+      let url = try URL(string: "ws://\(serviceInfo.hostname):\(serviceInfo.port)\(path)")!
+      return await OcaFlyingFoxConnection(url: url, options: options)
+    #endif
+    default:
+      throw Ocp1Error.unknownServiceType
+    }
+  }
 
   struct DeviceInfo: Sendable, Hashable {
     let deviceIdentifier: DeviceIdentifier
@@ -217,50 +243,17 @@ public actor OcaConnectionBroker {
     }
 
     /// The WebSocket path from the `path` TXT record (AES70-4 Table 5), `/` by default.
-    var webSocketPath: String {
-      let path = (try? serviceInfo.txtRecords["path"]) ?? nil
-      guard let path, !path.isEmpty else { return "/" }
-      return path.hasPrefix("/") ? path : "/" + path
-    }
-
     func openConnection(
       options: OcaConnectionOptions,
-      factory: ConnectionFactory?
+      factory: ConnectionFactory
     ) async throws -> OcaConnection {
-      let connection: OcaConnection
       // the service type decides the protocol; the caller's options decide the rest
-      let options = options.copy(controlProtocol: serviceType.controlProtocol)
-
-      if let factory,
-         let connection = try await factory(deviceIdentifier, serviceInfo, addresses, options)
-      {
-        return connection
-      }
-
-      switch serviceType.transport {
-      case .tcp:
-        connection = try await OcaTCPConnection(
-          deviceAddresses: addresses,
-          options: options
-        )
-      case .udp:
-        connection = try await OcaUDPConnection(
-          deviceAddresses: addresses,
-          options: options
-        )
-      #if os(macOS) || os(iOS)
-      case .tcpWebSocket:
-        let wsURL = try URL(string: "ws://\(host):\(port)\(webSocketPath)")!
-        connection = await OcaFlyingFoxConnection(
-          url: wsURL,
-          options: options
-        )
-      #endif
-      default:
-        throw Ocp1Error.unknownServiceType
-      }
-
-      return connection
+      try await factory(
+        deviceIdentifier,
+        serviceInfo,
+        addresses,
+        options.copy(controlProtocol: serviceType.controlProtocol)
+      )
     }
   }
 
@@ -362,7 +355,7 @@ public actor OcaConnectionBroker {
   private var _pendingOpens = [DeviceIdentifier: Task<OcaConnection, Error>]()
   private var _deviceExpiryTasks = [DeviceIdentifier: Task<Void, Error>]()
   private let _connectionOptions: OcaConnectionOptions
-  private let _connectionFactory: ConnectionFactory?
+  private let _connectionFactory: ConnectionFactory
   private let _deviceExpiryTimeout: Duration
   private let _eventsContinuation: AsyncStream<Event>.Continuation
   private let _deviceModels: [OcaModelGUID]?
@@ -509,14 +502,21 @@ public actor OcaConnectionBroker {
   ///
   /// - Parameter connectionOptions: Configuration options for connections created by this broker.
   ///   Defaults to standard options if not specified.
-  /// - Parameter connectionFactory: Makes each device's connection; nil, or a factory that
-  ///   returns nil, uses the platform default for the service type.
+  /// - Parameter connectionFactory: Makes each device's connection. Defaults to
+  ///   ``makeDefaultConnection(for:serviceInfo:addresses:options:)``.
   public init(
     connectionOptions: OcaConnectionOptions = .init(),
     serviceTypes: Set<OcaNetworkAdvertisingServiceType>? = nil,
     deviceModels: [OcaModelGUID]? = nil,
     deviceExpiryTimeout: Duration = .seconds(10),
-    connectionFactory: ConnectionFactory? = nil,
+    connectionFactory: @escaping ConnectionFactory = { device, serviceInfo, addresses, options in
+      try await makeDefaultConnection(
+        for: device,
+        serviceInfo: serviceInfo,
+        addresses: addresses,
+        options: options
+      )
+    },
     logger: Logger = Logger(label: "com.padl.SwiftOCA")
   ) async {
     _logger = logger

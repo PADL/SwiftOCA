@@ -192,10 +192,17 @@ struct ConnectionBrokerServiceInfoTests {
   }
 
   @Test
-  func connectionFactoryReturningNilUsesTheDefault() async throws {
+  func connectionFactoryCanFallBackToTheDefault() async throws {
     let broker = await OcaConnectionBroker(
       serviceTypes: [],
-      connectionFactory: { _, _, _, _ in nil }
+      connectionFactory: { device, serviceInfo, addresses, options in
+        try await OcaConnectionBroker.makeDefaultConnection(
+          for: device,
+          serviceInfo: serviceInfo,
+          addresses: addresses,
+          options: options
+        )
+      }
     )
     try await broker._onBrowseResult(.added(MockTCPServiceInfo(name: "MockTCPDevice")))
     try await broker.open(device: Self.tcpDeviceIdentifier)
