@@ -133,7 +133,7 @@ final class MediaTransportApplicationTests: XCTestCase {
     let outputStatus = try await client.getEndpointStatus(1001)
     XCTAssertEqual(outputStatus.state, .running)
     let counts = try await client.getMaxEndpointCounts()
-    XCTAssertEqual(counts, .init(maxInputEndpoints: 2, maxOutputEndpoints: 1))
+    XCTAssertEqual(counts, .init(maxOutputCount: 1, maxInputCount: 2))
     let portName = try await client.getPortName(OcaPortID(mode: .output, index: 1))
     XCTAssertEqual(portName, "Ch 1")
 

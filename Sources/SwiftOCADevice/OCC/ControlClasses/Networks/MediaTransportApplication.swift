@@ -345,10 +345,9 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
       try await ensureReadable(by: controller, command: command)
       return try controller.encodeResponse(
         Parameters.MaxEndpointCounts(
-          maxInputEndpoints: maxInputEndpoints,
-          maxOutputEndpoints: maxOutputEndpoints
-        ),
-        names: ["MaxInputCount", "MaxOutputCount"]
+          maxOutputCount: maxOutputEndpoints,
+          maxInputCount: maxInputEndpoints
+        )
       )
     case OcaMethodID("3.17"):
       let id: OcaID16 = try decodeCommand(command)
