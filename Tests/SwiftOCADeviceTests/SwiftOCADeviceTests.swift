@@ -845,4 +845,18 @@ final class HandleCommandArmTests: XCTestCase {
       XCTFail("added an unknown member")
     } catch Ocp1Error.invalidObject(unknown) {}
   }
+
+  @OcaDevice
+  func testGetClassIdentificationRefusesParameters() async throws {
+    let device = try await makeDevice()
+    let object = try await SwiftOCADevice.OcaWorker(deviceDelegate: device, addToRootBlock: false)
+    let controller = ArmTestController()
+
+    let response = try await object.handleCommand(try command("1.1", on: object), from: controller)
+    XCTAssertEqual(response.parameters.parameterCount, 1)
+    do {
+      _ = try await object.handleCommand(try command("1.1", OcaUint8(1), on: object), from: controller)
+      XCTFail("answered GetClassIdentification with a parameter")
+    } catch Ocp1Error.status(.parameterOutOfRange) {}
+  }
 }
