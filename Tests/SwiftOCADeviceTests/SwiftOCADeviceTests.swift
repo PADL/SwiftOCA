@@ -733,6 +733,18 @@ private actor ArmTestController: OcaController {
   func sendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {}
 }
 
+/// A block that can find datasets below it, which the base class cannot.
+private final class _SearchableBlock: SwiftOCADevice.OcaBlock<SwiftOCADevice.OcaRoot> {
+  override func findDatasetsRecursive(
+    name: OcaString,
+    nameComparisonType: OcaStringComparisonType,
+    type: OcaMimeType,
+    typeComparisonType: OcaStringComparisonType
+  ) async throws -> [SwiftOCADevice.OcaDataset] {
+    []
+  }
+}
+
 /// Commands sent straight to an object's `handleCommand`, as the device would.
 final class HandleCommandArmTests: XCTestCase {
   private func command(
@@ -780,5 +792,23 @@ final class HandleCommandArmTests: XCTestCase {
       XCTFail("deleted a signal path that was gone")
     } catch Ocp1Error.status(.parameterOutOfRange) {}
   }
-}
 
+  @OcaDevice
+  func testFindDatasetsRecursiveIsAnswered() async throws {
+    let device = try await makeDevice()
+    let block = try await _SearchableBlock(deviceDelegate: device, addToRootBlock: false)
+    let parameters = SwiftOCA.OcaBlock.FindDatasetsParameters(
+      name: "", nameComparisonType: .contains, type: "application/octet-stream",
+      typeComparisonType: .exact
+    )
+    let response = try await block.handleCommand(
+      try command("3.32", parameters, on: block),
+      from: ArmTestController()
+    )
+    let found = try Ocp1Decoder().decode(
+      [OcaDatasetSearchResult].self,
+      from: response.parameters.parameterData
+    )
+    XCTAssertTrue(found.isEmpty)
+  }
+}
