@@ -248,6 +248,45 @@ final class Ocp2WireNameTests: XCTestCase {
     XCTAssertEqual(differing.methodID, [3, 18])
     XCTAssertEqual(Set(differing.parameters.keys), ["Text"])
   }
+
+  /// A shared parameter record is named by its fields, so the fields are spelled as the
+  /// model spells the parameters.
+  func testClientNamesRecordParametersAfterTheModel() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let endpoint = try await OcaLocalDeviceEndpoint(device: device, controlProtocol: .ocp2)
+    let connection = await OcaLocalConnection(
+      endpoint,
+      options: OcaConnectionOptions(flags: [], controlProtocol: .ocp2)
+    )
+    try await connection.connect()
+    defer { Task { try? await connection.disconnect() } }
+
+    let application: SwiftOCA.OcaMediaTransportApplication = try await connection.resolve(
+      object: OcaObjectIdentification(
+        oNo: Self.applicationONo,
+        classIdentification: SwiftOCA.OcaMediaTransportApplication.classIdentification
+      )
+    )
+
+    // OcaMediaTransportApplication 3.28 SetEndpointUserLabel(EndpointID, Label)
+    let setLabel = Task {
+      try? await application.setEndpoint(1, userLabel: "Mic 1")
+    }
+    let label = try await Self.nextCommand(from: endpoint)
+    setLabel.cancel()
+    XCTAssertEqual(label.methodID, [3, 28])
+    XCTAssertEqual(Set(label.parameters.keys), ["EndpointID", "Label"])
+
+    // OcaMediaTransportApplication 3.37 AttachEndpointCounterNotifier(EndpointID, CounterID, NotifierONo)
+    let attach = Task {
+      try? await application.attachEndpointCounterNotifier(endpointID: 1, counterID: 1, oNo: 4096)
+    }
+    let notifier = try await Self.nextCommand(from: endpoint)
+    attach.cancel()
+    XCTAssertEqual(notifier.methodID, [3, 37])
+    XCTAssertEqual(Set(notifier.parameters.keys), ["EndpointID", "CounterID", "NotifierONo"])
+  }
 }
 
 #endif

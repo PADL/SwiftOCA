@@ -377,29 +377,29 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     case OcaMethodID("3.27"):
       let parameters: Parameters.ApplyEndpointCommandParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await applyEndpointCommand(parameters.id, command: parameters.command)
+      try await applyEndpointCommand(parameters.endpointID, command: parameters.command)
       return Ocp1Response()
     case OcaMethodID("3.28"):
       let parameters: Parameters.SetEndpointUserLabelParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await setEndpoint(parameters.id, userLabel: parameters.userLabel)
+      try await setEndpoint(parameters.endpointID, userLabel: parameters.label)
       return Ocp1Response()
     case OcaMethodID("3.29"):
       let parameters: Parameters.SetEndpointMediaStreamModeParameters =
         try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await setEndpoint(parameters.id, mediaStreamMode: parameters.mediaStreamMode)
+      try await setEndpoint(parameters.endpointID, mediaStreamMode: parameters.streamMode)
       return Ocp1Response()
     case OcaMethodID("3.30"):
       let parameters: Parameters.SetEndpointChannelMapParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await setEndpoint(parameters.id, channelMap: parameters.channelMap)
+      try await setEndpoint(parameters.endpointID, channelMap: parameters.channelMap)
       return Ocp1Response()
     case OcaMethodID("3.31"):
       let parameters: Parameters.SetEndpointAlignmentLevelParameters =
         try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await setEndpoint(parameters.id, alignmentLevel: parameters.alignmentLevel)
+      try await setEndpoint(parameters.endpointID, alignmentLevel: parameters.level)
       return Ocp1Response()
     case OcaMethodID("3.32"):
       let id: OcaMediaStreamEndpointID = try decodeCommand(command)
@@ -409,7 +409,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
       let parameters: Parameters.SetEndpointAdaptationDataParameters =
         try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await setEndpoint(parameters.id, adaptationData: parameters.adaptationData)
+      try await setEndpoint(parameters.endpointID, adaptationData: parameters.data)
       return Ocp1Response()
     case OcaMethodID("3.35"):
       let id: OcaMediaStreamEndpointID = try decodeCommand(command)
@@ -430,7 +430,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
       try await attachEndpointCounterNotifier(
         endpointID: parameters.endpointID,
         counterID: parameters.counterID,
-        to: parameters.oNo
+        to: parameters.notifierONo
       )
       return Ocp1Response()
     case OcaMethodID("3.38"):
@@ -439,7 +439,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
       try await detachEndpointCounterNotifier(
         endpointID: parameters.endpointID,
         counterID: parameters.counterID,
-        from: parameters.oNo
+        from: parameters.notifierONo
       )
       return Ocp1Response()
     case OcaMethodID("3.39"):
