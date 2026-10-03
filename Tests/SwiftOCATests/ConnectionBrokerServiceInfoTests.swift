@@ -58,6 +58,31 @@ private struct MockWebSocketServiceInfo: OcaNetworkAdvertisingServiceInfo {
   func resolve() async throws {}
 }
 
+private struct MockTCPServiceInfo: OcaNetworkAdvertisingServiceInfo {
+  let name: String
+
+  var service: OcaNetworkAdvertisingService { .mDNS_DNSSD }
+  var serviceType: OcaNetworkAdvertisingServiceType { .tcp }
+  var domain: String { "local." }
+  var hostname: String { "mock.local." }
+  var port: UInt16 { 65000 }
+  var addresses: [Data] {
+    get throws { try [socketAddress(sockaddr_in.family, "127.0.0.1")] }
+  }
+
+  var txtRecords: [String: String] {
+    ["txtvers": "1", "protovers": "4", "modelGUID": "0AE91B02010100", "serialNumber": "TEST03"]
+  }
+
+  func resolve() async throws {}
+}
+
+private actor FactoryCalls {
+  var addresses = [[Data]]()
+
+  func append(_ addresses: [Data]) { self.addresses.append(addresses) }
+}
+
 private actor RemovalCollector {
   var removed = [OcaConnectionBroker.DeviceIdentifier]()
 
@@ -137,6 +162,46 @@ struct ConnectionBrokerServiceInfoTests {
     await #expect(throws: Ocp1Error.endpointNotRegistered) {
       try await broker.deviceAddresses(for: Self.deviceIdentifier)
     }
+  }
+
+  static let tcpDeviceIdentifier = OcaConnectionBroker.DeviceIdentifier(
+    serviceType: .tcp,
+    modelGUID: try! OcaModelGUID("0AE91B02010100"),
+    serialNumber: "TEST03",
+    name: "MockTCPDevice"
+  )
+
+  @Test
+  func connectionFactoryMakesTheConnection() async throws {
+    let calls = FactoryCalls()
+    let made = try await OcaTCPConnection(deviceAddresses: [], options: .init())
+    let broker = await OcaConnectionBroker(
+      serviceTypes: [],
+      connectionFactory: { device, _, addresses, _ in
+        #expect(device == Self.tcpDeviceIdentifier)
+        await calls.append(addresses)
+        return made
+      }
+    )
+    try await broker._onBrowseResult(.added(MockTCPServiceInfo(name: "MockTCPDevice")))
+    try await broker.open(device: Self.tcpDeviceIdentifier)
+
+    let connection = try await broker.withDeviceConnection(Self.tcpDeviceIdentifier) { $0 }
+    #expect(connection === made)
+    #expect(await calls.addresses == [[try socketAddress(sockaddr_in.family, "127.0.0.1")]])
+  }
+
+  @Test
+  func connectionFactoryReturningNilUsesTheDefault() async throws {
+    let broker = await OcaConnectionBroker(
+      serviceTypes: [],
+      connectionFactory: { _, _, _, _ in nil }
+    )
+    try await broker._onBrowseResult(.added(MockTCPServiceInfo(name: "MockTCPDevice")))
+    try await broker.open(device: Self.tcpDeviceIdentifier)
+
+    let connection = try await broker.withDeviceConnection(Self.tcpDeviceIdentifier) { $0 }
+    #expect(connection is OcaTCPConnection)
   }
 }
 

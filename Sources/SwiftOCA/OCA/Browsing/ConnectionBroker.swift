@@ -144,6 +144,17 @@ public actor OcaConnectionBroker {
     public let deviceIdentifier: DeviceIdentifier
   }
 
+  /// Makes the connection for a discovered device, for example to choose a transport
+  /// backend other than the platform default. It is given the device's service info, its
+  /// addresses in the broker's preference order, and the connection options with the
+  /// service type's protocol applied. Returning nil uses the default for the service type.
+  public typealias ConnectionFactory = @Sendable (
+    _ device: DeviceIdentifier,
+    _ serviceInfo: AnyOcaNetworkAdvertisingServiceInfo,
+    _ addresses: [Data],
+    _ options: OcaConnectionOptions
+  ) async throws -> OcaConnection?
+
   struct DeviceInfo: Sendable, Hashable {
     let deviceIdentifier: DeviceIdentifier
     let serviceInfo: AnyOcaNetworkAdvertisingServiceInfo
@@ -212,10 +223,19 @@ public actor OcaConnectionBroker {
       return path.hasPrefix("/") ? path : "/" + path
     }
 
-    func openConnection(options: OcaConnectionOptions) async throws -> OcaConnection {
+    func openConnection(
+      options: OcaConnectionOptions,
+      factory: ConnectionFactory?
+    ) async throws -> OcaConnection {
       let connection: OcaConnection
       // the service type decides the protocol; the caller's options decide the rest
       let options = options.copy(controlProtocol: serviceType.controlProtocol)
+
+      if let factory,
+         let connection = try await factory(deviceIdentifier, serviceInfo, addresses, options)
+      {
+        return connection
+      }
 
       switch serviceType.transport {
       case .tcp:
@@ -342,6 +362,7 @@ public actor OcaConnectionBroker {
   private var _pendingOpens = [DeviceIdentifier: Task<OcaConnection, Error>]()
   private var _deviceExpiryTasks = [DeviceIdentifier: Task<Void, Error>]()
   private let _connectionOptions: OcaConnectionOptions
+  private let _connectionFactory: ConnectionFactory?
   private let _deviceExpiryTimeout: Duration
   private let _eventsContinuation: AsyncStream<Event>.Continuation
   private let _deviceModels: [OcaModelGUID]?
@@ -488,15 +509,19 @@ public actor OcaConnectionBroker {
   ///
   /// - Parameter connectionOptions: Configuration options for connections created by this broker.
   ///   Defaults to standard options if not specified.
+  /// - Parameter connectionFactory: Makes each device's connection; nil, or a factory that
+  ///   returns nil, uses the platform default for the service type.
   public init(
     connectionOptions: OcaConnectionOptions = .init(),
     serviceTypes: Set<OcaNetworkAdvertisingServiceType>? = nil,
     deviceModels: [OcaModelGUID]? = nil,
     deviceExpiryTimeout: Duration = .seconds(10),
+    connectionFactory: ConnectionFactory? = nil,
     logger: Logger = Logger(label: "com.padl.SwiftOCA")
   ) async {
     _logger = logger
     _connectionOptions = connectionOptions
+    _connectionFactory = connectionFactory
     _deviceModels = deviceModels
     _deviceExpiryTimeout = deviceExpiryTimeout
 
@@ -552,7 +577,10 @@ public actor OcaConnectionBroker {
 
     let deviceInfo = try _getDeviceInfo(for: device)
     let pending = Task { () -> OcaConnection in
-      let connection = try await deviceInfo.openConnection(options: _connectionOptions)
+      let connection = try await deviceInfo.openConnection(
+        options: _connectionOptions,
+        factory: _connectionFactory
+      )
       if connect { try await connection.connect() }
       do {
         // the device may have been deregistered whilst we were suspended
