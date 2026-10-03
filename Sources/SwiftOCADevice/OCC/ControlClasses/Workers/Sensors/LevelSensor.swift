@@ -23,6 +23,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
+@OcaDeviceMethods
 open class OcaLevelSensor: OcaSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.2") }
 
@@ -30,19 +31,9 @@ open class OcaLevelSensor: OcaSensor {
   private var _value: OcaDB = -144.0
   private var _range: ClosedRange<OcaDB> = -144.0...0.0
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.1"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let value = OcaBoundedPropertyValue<OcaDB>(value: _value, in: _range)
-      return try controller.encodeResponse(value, names: Ocp2Naming.boundedWireNames("Reading"))
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod("4.1", name: "GetReading", access: .read, resultNames: ["Reading", "MinReading", "MaxReading"])
+  func getReading(from controller: any OcaController) -> OcaBoundedPropertyValue<OcaDB> {
+    OcaBoundedPropertyValue<OcaDB>(value: _value, in: _range)
   }
 
   private func _valueDidChange(_ newValue: OcaDB) async throws {

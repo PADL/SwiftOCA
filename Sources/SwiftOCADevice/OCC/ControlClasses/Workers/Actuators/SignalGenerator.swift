@@ -17,6 +17,7 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaSignalGenerator: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.17") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -110,38 +111,30 @@ open class OcaSignalGenerator: OcaActuator {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.16"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await start()
-      return Ocp1Response()
-    case OcaMethodID("4.17"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await stop()
-      return Ocp1Response()
-    case OcaMethodID("4.18"):
-      let parameters: SwiftOCA.OcaSignalGenerator.SetMultipleParameters =
-        try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setMultiple(
-        mask: parameters.mask,
-        frequency1: parameters.frequency1,
-        frequency2: parameters.frequency2,
-        level: parameters.level,
-        waveform: parameters.waveform,
-        sweepType: parameters.sweepType,
-        sweepTime: parameters.sweepTime,
-        sweepRepeat: parameters.sweepRepeat
-      )
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod("4.16", name: "Start", access: .write)
+  func start(from controller: any OcaController) async throws {
+    try await start()
+  }
+
+  @OcaDeviceMethod("4.17", name: "Stop", access: .write)
+  func stop(from controller: any OcaController) async throws {
+    try await stop()
+  }
+
+  @OcaDeviceMethod("4.18", name: "SetMultiple", access: .write)
+  func setMultiple(
+    _ parameters: SwiftOCA.OcaSignalGenerator.SetMultipleParameters,
+    from controller: any OcaController
+  ) async throws {
+    try await setMultiple(
+      mask: parameters.mask,
+      frequency1: parameters.frequency1,
+      frequency2: parameters.frequency2,
+      level: parameters.level,
+      waveform: parameters.waveform,
+      sweepType: parameters.sweepType,
+      sweepTime: parameters.sweepTime,
+      sweepRepeat: parameters.sweepRepeat
+    )
   }
 }

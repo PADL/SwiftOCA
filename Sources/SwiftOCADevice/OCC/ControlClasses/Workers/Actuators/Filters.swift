@@ -17,6 +17,7 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaFilterClassical: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.9") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -70,30 +71,23 @@ open class OcaFilterClassical: OcaActuator {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.11"):
-      let parameters: SwiftOCA.OcaFilterClassical.SetMultipleParameters =
-        try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setMultiple(
-        mask: parameters.mask,
-        frequency: parameters.frequency,
-        passband: parameters.passband,
-        shape: parameters.shape,
-        order: parameters.order,
-        parameter: parameters.parameter
-      )
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod("4.11", name: "SetMultiple", access: .write)
+  func setMultiple(
+    _ parameters: SwiftOCA.OcaFilterClassical.SetMultipleParameters,
+    from controller: any OcaController
+  ) async throws {
+    try await setMultiple(
+      mask: parameters.mask,
+      frequency: parameters.frequency,
+      passband: parameters.passband,
+      shape: parameters.shape,
+      order: parameters.order,
+      parameter: parameters.parameter
+    )
   }
 }
 
+@OcaDeviceMethods
 open class OcaFilterParametric: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.10") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -156,30 +150,23 @@ open class OcaFilterParametric: OcaActuator {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.11"):
-      let parameters: SwiftOCA.OcaFilterParametric.SetMultipleParameters =
-        try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setMultiple(
-        mask: parameters.mask,
-        frequency: parameters.frequency,
-        shape: parameters.shape,
-        widthParameter: parameters.widthParameter,
-        inBandGain: parameters.inBandGain,
-        shapeParameter: parameters.shapeParameter
-      )
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod("4.11", name: "SetMultiple", access: .write)
+  func setMultiple(
+    _ parameters: SwiftOCA.OcaFilterParametric.SetMultipleParameters,
+    from controller: any OcaController
+  ) async throws {
+    try await setMultiple(
+      mask: parameters.mask,
+      frequency: parameters.frequency,
+      shape: parameters.shape,
+      widthParameter: parameters.widthParameter,
+      inBandGain: parameters.inBandGain,
+      shapeParameter: parameters.shapeParameter
+    )
   }
 }
 
+@OcaDeviceMethods
 open class OcaFilterPolynomial: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.11") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -227,25 +214,17 @@ open class OcaFilterPolynomial: OcaActuator {
     self.b = b
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.1"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let parameters = SwiftOCA.OcaFilterPolynomial.CoefficientsParameters(a: a, b: b)
-      return try controller.encodeResponse(parameters)
-    case OcaMethodID("4.2"):
-      let parameters: SwiftOCA.OcaFilterPolynomial.CoefficientsParameters =
-        try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await set(a: parameters.a, b: parameters.b)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod("4.1", name: "GetCoefficients", access: .read)
+  func getCoefficients(from controller: any OcaController) -> SwiftOCA.OcaFilterPolynomial.CoefficientsParameters {
+    .init(a: a, b: b)
+  }
+
+  @OcaDeviceMethod("4.2", name: "SetCoefficients", access: .write)
+  func setCoefficients(
+    _ parameters: SwiftOCA.OcaFilterPolynomial.CoefficientsParameters,
+    from controller: any OcaController
+  ) async throws {
+    try await set(a: parameters.a, b: parameters.b)
   }
 }
 
@@ -281,6 +260,7 @@ open class OcaFilterFIR: OcaActuator {
   )
 }
 
+@OcaDeviceMethods
 open class OcaFilterArbitraryCurve: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.13") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -323,19 +303,11 @@ open class OcaFilterArbitraryCurve: OcaActuator {
 
   /// SetTransferFunction carries the curve's three lists as separate parameters,
   /// which the property wrapper's own setter would reject.
-  override open func handleCommand(
-    _ command: Ocp1Command,
+  @OcaDeviceMethod("4.2", name: "SetTransferFunction", access: .write)
+  func setTransferFunction(
+    _ parameters: SwiftOCA.OcaFilterArbitraryCurve.SetTransferFunctionParameters,
     from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.2"):
-      let parameters: SwiftOCA.OcaFilterArbitraryCurve
-        .SetTransferFunctionParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      transferFunction = parameters.transferFunction
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  ) {
+    transferFunction = parameters.transferFunction
   }
 }
