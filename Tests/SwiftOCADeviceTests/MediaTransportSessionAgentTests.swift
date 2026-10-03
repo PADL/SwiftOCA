@@ -54,6 +54,10 @@ private final class TestSessionAgent: SwiftOCADevice.OcaMediaTransportSessionAge
     return connection
   }
 
+  override func configure(session: OcaMediaTransportSession) async throws {
+    try update(session: session)
+  }
+
   override func configureConnection(
     sessionID: OcaMediaTransportSessionID,
     connectionID: OcaMediaTransportSessionConnectionID,
@@ -126,6 +130,21 @@ final class MediaTransportSessionAgentTests: XCTestCase {
     try await client.set(session: 1, streamingEnabled: true)
     let streaming = try await client.getSession(1)
     XCTAssertTrue(streaming.streamingEnabled)
+
+    // ConfigureSession carries the IDs, label and adaptation data; the stored connections
+    // and streaming switch are kept whatever the client's copy says
+    var relabelled = streaming
+    relabelled.userLabel = "Relabelled"
+    relabelled.streamingEnabled = false
+    relabelled.connections = []
+    try await client.configure(session: relabelled)
+    let configured = try await client.getSession(1)
+    XCTAssertEqual(configured.userLabel, "Relabelled")
+    XCTAssertTrue(configured.streamingEnabled)
+    XCTAssertEqual(configured.connections.count, 1)
+    await XCTAssertThrowsStatus(.parameterOutOfRange) {
+      try await client.configure(session: OcaMediaTransportSession(idInternal: 9))
+    }
 
     // AddSession and AddConnection return the whole descriptor carrying the allocated ID
     let added = try await client.add(session: OcaMediaTransportSession(idInternal: 0))

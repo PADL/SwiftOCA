@@ -115,6 +115,8 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     throw Ocp1Error.status(.notImplemented)
   }
 
+  /// Called with the stored session carrying the IDs, label and adaptation data from the
+  /// command; connections and the streaming switch are the stored ones.
   open func configure(session: OcaMediaTransportSession) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
@@ -183,8 +185,12 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
       try await ensureWritable(by: controller, command: command)
       return try await controller.encodeResponse(add(session: session), name: "Session")
     case OcaMethodID("3.5"):
-      let session: OcaMediaTransportSession = try decodeCommand(command)
+      let parameters: Parameters.ConfigureSessionParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
+      var session = try session(parameters.idInternal)
+      session.idExternal = parameters.idExternal
+      session.userLabel = parameters.userLabel
+      session.adaptationData = parameters.adaptationData
       try await configure(session: session)
       return Ocp1Response()
     case OcaMethodID("3.6"):
