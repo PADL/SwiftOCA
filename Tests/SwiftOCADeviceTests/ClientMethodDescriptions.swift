@@ -23,6 +23,31 @@ enum ClientMethodDescriptions {
   typealias Entry = (name: String, description: OcaAnyMethodDescription)
 
   static let all: [(type: OcaRoot.Type, descriptors: [Entry])] = [
+    (Aes67OcaMediaTransportApplication.self, [
+      ("getEndpointDelayConstraints", Aes67OcaMediaTransportApplication.getEndpointDelayConstraints.erased),
+      ("getPresentationTimeOffsetConstraints", Aes67OcaMediaTransportApplication.getPresentationTimeOffsetConstraints.erased),
+      ("configureEndpointFromSDP", Aes67OcaMediaTransportApplication.configureEndpointFromSDP.erased),
+    ]),
+    (Aes67OcaMediaTransportSessionAgent.self, [
+      ("getSIPParameterRecord", Aes67OcaMediaTransportSessionAgent.getSIPParameterRecord.erased),
+      ("setSIPParameterRecord", Aes67OcaMediaTransportSessionAgent.setSIPParameterRecord.erased),
+      ("getSIPParameter", Aes67OcaMediaTransportSessionAgent.getSIPParameter.erased),
+      ("setSIPParameter", Aes67OcaMediaTransportSessionAgent.setSIPParameter.erased),
+    ]),
+    (Aes67StreamEndpointRegistry.self, [
+      ("getRegistryEntry", Aes67StreamEndpointRegistry.getRegistryEntry.erased),
+      ("addRegistryEntry", Aes67StreamEndpointRegistry.addRegistryEntry.erased),
+      ("setRegistryEntry", Aes67StreamEndpointRegistry.setRegistryEntry.erased),
+      ("deleteRegistryEntry", Aes67StreamEndpointRegistry.deleteRegistryEntry.erased),
+      ("addRegistryEntriesFromSDP", Aes67StreamEndpointRegistry.addRegistryEntriesFromSDP.erased),
+    ]),
+    (DanteOcaMediaTransportApplication.self, [
+      ("getChannelEndpoint", DanteOcaMediaTransportApplication.getChannelEndpoint.erased),
+      ("setChannelEndpoint", DanteOcaMediaTransportApplication.setChannelEndpoint.erased),
+      ("clearChannelEndpoint", DanteOcaMediaTransportApplication.clearChannelEndpoint.erased),
+      ("addChannelEndpoint", DanteOcaMediaTransportApplication.addChannelEndpoint.erased),
+      ("deleteChannelEndpoint", DanteOcaMediaTransportApplication.deleteChannelEndpoint.erased),
+    ]),
     (OcaAgent.self, [
       ("getPath", OcaAgent.getPath.erased),
     ]),
