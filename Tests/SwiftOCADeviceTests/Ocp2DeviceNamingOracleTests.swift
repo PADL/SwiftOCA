@@ -152,22 +152,10 @@ final class Ocp2DeviceNamingOracleTests: XCTestCase {
     var deviations = Set<String>()
     var checked = Set<String>()
 
-    // a class's definition level is its depth by parentage, which a proprietary ID's
-    // defLevel does not give
-    func level(_ classID: OcaClassID) -> Int {
-      var level = 1
-      var classID = classID
-      while let parent = classID.parent {
-        level += 1
-        classID = parent
-      }
-      return level
-    }
-
     for (identification, type) in OcaDeviceClassRegistry.shared.registeredClasses {
       for method in type.deviceMethods {
         var definingClass = identification.classID
-        while level(definingClass) > Int(method.methodID.defLevel), let parent = definingClass.parent {
+        while definingClass.defLevel > method.methodID.defLevel, let parent = definingClass.parent {
           definingClass = parent
         }
         let key = "\(definingClass)/\(method.methodID)"
