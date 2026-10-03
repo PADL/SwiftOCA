@@ -34,6 +34,24 @@ extension OcaPortsRepresentable {
   }
 
   @OcaDevice
+  func portName(of portID: OcaPortID) throws -> OcaString {
+    guard let portName = ports.first(where: { $0.id == portID })?.name else {
+      throw Ocp1Error.status(.parameterOutOfRange)
+    }
+    return portName
+  }
+
+  @OcaDevice
+  func setName(_ name: OcaString, ofPort portID: OcaPortID) throws {
+    guard let index = ports.firstIndex(where: { $0.id == portID }) else {
+      throw Ocp1Error.status(.parameterOutOfRange)
+    }
+    let port = ports[index]
+    let newPort = OcaPort(owner: port.owner, id: port.id, name: name)
+    ports.replaceSubrange(index...index, with: [newPort])
+  }
+
+  @OcaDevice
   func handleGetPortName(
     _ command: Ocp1Command,
     from controller: OcaController
@@ -41,10 +59,7 @@ extension OcaPortsRepresentable {
     // because portID is a struct, but we only want a single
     let params: OcaGetPortNameParameters = try decodeCommand(command)
     try await ensureReadable(by: controller, command: command)
-    guard let portName = ports.first(where: { $0.id == params.portID })?.name else {
-      throw Ocp1Error.status(.parameterOutOfRange)
-    }
-    return portName
+    return try portName(of: params.portID)
   }
 
   /// The record differs per class (OcaWorker names the port `ID`, the others
@@ -57,12 +72,7 @@ extension OcaPortsRepresentable {
     name: OcaString
   ) async throws {
     try await ensureWritable(by: controller, command: command)
-    guard let index = ports.firstIndex(where: { $0.id == portID }) else {
-      throw Ocp1Error.status(.parameterOutOfRange)
-    }
-    let port = ports[index]
-    let newPort = OcaPort(owner: port.owner, id: port.id, name: name)
-    ports.replaceSubrange(index...index, with: [newPort])
+    try setName(name, ofPort: portID)
   }
 }
 

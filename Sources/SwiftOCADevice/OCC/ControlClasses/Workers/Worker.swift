@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMapRepresentable,
   OcaLabelRepresentable
 {
@@ -67,19 +68,28 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
   )
   public var portClockMap: OcaMap<OcaPortID, OcaPortClockMapEntry> = [:]
 
+  @OcaDeviceMethod("2.6", name: "GetPortName", access: .read, resultNames: ["Name"])
+  func getPortName(_ portID: OcaPortID, from controller: any OcaController) throws -> OcaString {
+    try portName(of: portID)
+  }
+
+  /// The model names the port `ID` here, where the other port-bearing classes say
+  /// `PortID`.
+  @OcaDeviceMethod("2.7", name: "SetPortName", parameterNames: ["ID", "Name"])
+  func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) throws {
+    try setName(name, ofPort: id)
+  }
+
+  @OcaDeviceMethod("2.13", name: "GetPath", access: .read)
+  func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
+    await path
+  }
+
   override open func handleCommand(
     _ command: Ocp1Command,
     from controller: OcaController
   ) async throws -> Ocp1Response {
     switch command.methodID {
-    case OcaMethodID("2.6"):
-      return try await controller.encodeResponse(handleGetPortName(command, from: controller), name: "Name")
-    case OcaMethodID("2.7"):
-      let params: SwiftOCA.OcaWorker.SetPortNameParameters = try decodeCommand(command)
-      try await handleSetPortName(command, from: controller, portID: params.id, name: params.name)
-      return Ocp1Response()
-    case OcaMethodID("2.13"):
-      return try await controller.encodeResponse(path)
     case OcaMethodID("2.16"):
       let portClockMapEntry = try await handleGetPortClockMapEntry(command, from: controller)
       return try controller.encodeResponse(portClockMapEntry, name: "Entry")
