@@ -55,6 +55,9 @@ public struct OcaDeviceClassDescription: Sendable {
   public let classVersion: OcaClassVersionNumber
   /// In property ID order.
   public let properties: [OcaDevicePropertyDescription]
+  /// The methods the class declares with `@OcaDeviceMethod`, in method ID order. Property
+  /// accessors are described by the properties, and hand-written arms not at all.
+  public let methods: [OcaDeviceMethodDescription]
 }
 
 @_spi(SwiftOCAPrivate)
@@ -67,8 +70,16 @@ public extension OcaRoot {
     }.sorted { $0.propertyID < $1.propertyID }
   }
 
+  /// Every method of this object declared with `@OcaDeviceMethod`, inherited ones
+  /// included, in method ID order.
+  var deviceMethodDescriptions: [OcaDeviceMethodDescription] {
+    Self.deviceMethods.sorted {
+      ($0.methodID.defLevel, $0.methodID.methodIndex) < ($1.methodID.defLevel, $1.methodID.methodIndex)
+    }
+  }
+
   /// This object's lineage from `OcaRoot` to its own class, each class with the
-  /// properties it defines: those whose property ID is at the class's definition level.
+  /// properties and methods it defines: those whose ID is at the class's definition level.
   var deviceClassDescriptions: [OcaDeviceClassDescription] {
     var lineage = [OcaRoot.Type]()
     var next: AnyClass? = type(of: self)
@@ -84,12 +95,15 @@ public extension OcaRoot {
     // a class's definition level is its class ID's, not its depth in the lineage, where
     // the Swift classes skip a class the ID names
     let properties = devicePropertyDescriptions
+    let methods = deviceMethodDescriptions
     return lineage.reversed().map { type in
-      OcaDeviceClassDescription(
+      let level = type.classID.defLevel
+      return OcaDeviceClassDescription(
         type: type,
         classID: type.classID,
         classVersion: type.classVersion,
-        properties: properties.filter { $0.propertyID.defLevel == type.classID.defLevel }
+        properties: properties.filter { $0.propertyID.defLevel == level },
+        methods: methods.filter { $0.methodID.defLevel == level }
       )
     }
   }

@@ -102,6 +102,12 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   /// Properties that reflect live device state and are never persisted in datasets.
   open class var transientPropertyIDs: Set<OcaPropertyID> { [] }
 
+  /// The methods this class answers from a table rather than a `handleCommand` arm,
+  /// its parent's first. `@OcaDeviceMethods` writes it from the class's
+  /// `@OcaDeviceMethod` methods; `handleCommand` consults it for a command no
+  /// subclass arm took, and a bridge reads it to present the methods.
+  open class var deviceMethods: [OcaDeviceMethodDescription] { [] }
+
   var lockState: LockState {
     get {
       lockStateSubject.value
@@ -240,6 +246,9 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
       try decodeNullCommand(command)
       return try controller.encodeResponse(lockState.lockState, name: "State")
     default:
+      if let method = Self.deviceMethod(for: command.methodID) {
+        return try await method.handle(self, command, controller)
+      }
       return try await handlePropertyAccessor(command, from: controller)
     }
     return Ocp1Response()
