@@ -189,7 +189,7 @@ public class OcaSubscriptionManager: OcaManager {
     }
   }
 
-  @OcaDeviceMethod("3.1", name: "AddSubscription", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.addSubscription, access: .read)
   private func addSubscription(
     _ subscription: SwiftOCA.OcaSubscriptionManager.AddSubscriptionParameters,
     from controller: any OcaController
@@ -197,7 +197,7 @@ public class OcaSubscriptionManager: OcaManager {
     try addSubscription(.subscription(subscription), for: controller)
   }
 
-  @OcaDeviceMethod("3.2", name: "RemoveSubscription", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.removeSubscription, access: .read)
   private func removeSubscription(
     _ subscription: SwiftOCA.OcaSubscriptionManager.RemoveSubscriptionParameters,
     from controller: any OcaController
@@ -205,7 +205,7 @@ public class OcaSubscriptionManager: OcaManager {
     removeSubscription(subscription.event, subscriber: subscription.subscriber, for: controller)
   }
 
-  @OcaDeviceMethod("3.5", name: "AddPropertyChangeSubscription", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.addPropertyChangeSubscription, access: .read)
   private func addPropertyChangeSubscription(
     _ subscription: SwiftOCA.OcaSubscriptionManager.AddPropertyChangeSubscriptionParameters,
     from controller: any OcaController
@@ -213,7 +213,7 @@ public class OcaSubscriptionManager: OcaManager {
     try addSubscription(.propertyChangeSubscription(subscription), for: controller)
   }
 
-  @OcaDeviceMethod("3.6", name: "RemovePropertyChangeSubscription", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.removePropertyChangeSubscription, access: .read)
   private func removePropertyChangeSubscription(
     _ subscription: SwiftOCA.OcaSubscriptionManager.RemovePropertyChangeSubscriptionParameters,
     from controller: any OcaController
@@ -225,7 +225,7 @@ public class OcaSubscriptionManager: OcaManager {
     )
   }
 
-  @OcaDeviceMethod("3.3", name: "DisableNotifications", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.disableNotifications, access: .write)
   private func disableNotifications(from controller: any OcaController) async throws {
     state = .eventsDisabled
     let event = OcaEvent(
@@ -235,7 +235,7 @@ public class OcaSubscriptionManager: OcaManager {
     try await deviceDelegate?.notifySubscribers(event)
   }
 
-  @OcaDeviceMethod("3.8", name: "AddSubscription2", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.addSubscription2, access: .read)
   private func addSubscription2(
     _ subscription: SwiftOCA.OcaSubscriptionManager.AddSubscription2Parameters,
     from controller: any OcaController
@@ -243,7 +243,7 @@ public class OcaSubscriptionManager: OcaManager {
     try addSubscription(.subscription2(subscription), for: controller)
   }
 
-  @OcaDeviceMethod("3.9", name: "RemoveSubscription2", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.removeSubscription2, access: .read)
   private func removeSubscription2(
     _ subscription: SwiftOCA.OcaSubscriptionManager.RemoveSubscription2Parameters,
     from controller: any OcaController
@@ -251,7 +251,7 @@ public class OcaSubscriptionManager: OcaManager {
     removeSubscription(.subscription2(subscription), for: controller)
   }
 
-  @OcaDeviceMethod("3.10", name: "AddPropertyChangeSubscription2", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.addPropertyChangeSubscription2, access: .read)
   private func addPropertyChangeSubscription2(
     _ subscription: SwiftOCA.OcaSubscriptionManager.AddPropertyChangeSubscription2Parameters,
     from controller: any OcaController
@@ -259,7 +259,7 @@ public class OcaSubscriptionManager: OcaManager {
     try addSubscription(.propertyChangeSubscription2(subscription), for: controller)
   }
 
-  @OcaDeviceMethod("3.11", name: "RemovePropertyChangeSubscription2", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.removePropertyChangeSubscription2, access: .read)
   private func removePropertyChangeSubscription2(
     _ subscription: SwiftOCA.OcaSubscriptionManager.RemovePropertyChangeSubscription2Parameters,
     from controller: any OcaController
@@ -268,7 +268,7 @@ public class OcaSubscriptionManager: OcaManager {
   }
 
   // the model does not name the result
-  @OcaDeviceMethod("3.12", name: "AddSubscription2List", access: .read, resultNames: ["Statuses"])
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.addSubscription2List, access: .read)
   private func addSubscription2List(
     _ subscription: SwiftOCA.OcaSubscriptionManager.AddSubscription2ListParameters,
     from controller: any OcaController
@@ -297,7 +297,7 @@ public class OcaSubscriptionManager: OcaManager {
     }
   }
 
-  @OcaDeviceMethod("3.13", name: "RemoveSubscription2List", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.removeSubscription2List, access: .read)
   private func removeSubscription2List(
     _ subscription: SwiftOCA.OcaSubscriptionManager.RemoveSubscription2ListParameters,
     from controller: any OcaController
@@ -313,7 +313,7 @@ public class OcaSubscriptionManager: OcaManager {
   }
 
   // the model does not name the result
-  @OcaDeviceMethod("3.14", name: "AddPropertyChangeSubscription2List", access: .read, resultNames: ["Statuses"])
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.addPropertyChangeSubscription2List, access: .read)
   private func addPropertyChangeSubscription2List(
     _ subscription: SwiftOCA.OcaSubscriptionManager.AddPropertyChangeSubscription2ListParameters,
     from controller: any OcaController
@@ -352,7 +352,7 @@ public class OcaSubscriptionManager: OcaManager {
     return returnedStatuses
   }
 
-  @OcaDeviceMethod("3.15", name: "RemovePropertyChangeSubscription2List", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.removePropertyChangeSubscription2List, access: .read)
   private func removePropertyChangeSubscription2List(
     _ subscription: SwiftOCA.OcaSubscriptionManager.RemovePropertyChangeSubscription2ListParameters,
     from controller: any OcaController
@@ -377,7 +377,7 @@ public class OcaSubscriptionManager: OcaManager {
     objectsChangedWhilstNotificationsDisabled.insert(emitterONo)
   }
 
-  @OcaDeviceMethod("3.4", name: "ReEnableNotifications", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.reenableNotifications, access: .write)
   private func reenableNotifications(from controller: any OcaController) async throws {
     let event = OcaEvent(
       emitterONo: objectNumber,
@@ -399,7 +399,7 @@ public class OcaSubscriptionManager: OcaManager {
   ]
 
   /// The payload of an EV1 subscriber context this device supports, in bytes.
-  @OcaDeviceMethod("3.7", name: "GetMaximumSubscriberContextLength", access: .read, resultNames: ["Max"])
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.getMaximumSubscriberContextLength, access: .read)
   private func getMaximumSubscriberContextLength(from controller: any OcaController) -> OcaUint16 {
     4
   }
