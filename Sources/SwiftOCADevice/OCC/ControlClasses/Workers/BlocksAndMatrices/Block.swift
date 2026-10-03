@@ -752,10 +752,10 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
           )
         }
       return try controller.encodeResponse(datasetObjects, name: "Objects")
-    case OcaMethodID("3.31"):
+    case OcaMethodID("3.31"), OcaMethodID("3.32"):
       let params: SwiftOCA.OcaBlock.FindDatasetsParameters = try decodeCommand(command)
       try await ensureReadable(by: controller, command: command)
-      let datasets: [OcaDataset] = if command.methodID == "3.31" {
+      let datasets: [OcaDataset] = if command.methodID == OcaMethodID("3.31") {
         try await findDatasets(
           name: params.name,
           nameComparisonType: params.nameComparisonType,
@@ -778,7 +778,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         return OcaDatasetSearchResult(object: blockMember, name: dataset.name, type: dataset.type)
       }
       return try controller.encodeResponse(searchResults, name: "Datasets")
-      // 3.32 FindDatasetsRecursive
     #endif
     default:
       return try await super.handleCommand(command, from: controller)
