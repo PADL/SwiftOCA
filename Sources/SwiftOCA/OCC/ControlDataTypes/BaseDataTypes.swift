@@ -291,7 +291,7 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible,
   }
 
   public init(parent: OcaClassID, _ string: String) {
-    self.init(parent.fields, parent: OcaClassID(string))
+    self.init(OcaClassID(string).fields, parent: parent)
   }
 
   public init(parent: OcaClassID, _ integer: OcaUint16) {
