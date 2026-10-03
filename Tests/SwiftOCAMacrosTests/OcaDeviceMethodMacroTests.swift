@@ -42,25 +42,25 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
           try setName(name, ofPort: id)
         }
 
-        struct _SetPortNameParameters: OcaParametersReflectable, Sendable {
+        struct _ocaDeviceMethodParameters_setPortName: OcaParametersReflectable, Sendable {
           let id: OcaPortID
           let name: OcaString
         }
 
-        static var _ocaDeviceMethod_2_7: OcaDeviceMethodDescription {
+        static var _ocaDeviceMethod_setPortName: OcaDeviceMethodDescription {
           OcaDeviceMethodDescription(
             OcaMethodID("2.7"),
             name: "SetPortName",
             access: .write,
-            parameters: _SetPortNameParameters.self,
+            parameters: _ocaDeviceMethodParameters_setPortName.self,
             parameterNames: ["ID", "Name"]
-          ) { (object: Self, parameters: _SetPortNameParameters, controller: any OcaController) -> Void in
+          ) { (object: Self, parameters: _ocaDeviceMethodParameters_setPortName, controller: any OcaController) -> Void in
             try object.setPortName(parameters.id, parameters.name, from: controller)
           }
         }
 
           override open class var deviceMethods: [OcaDeviceMethodDescription] {
-            super.deviceMethods + [_ocaDeviceMethod_2_7]
+            super.deviceMethods + [_ocaDeviceMethod_setPortName]
           }
       }
       """,
@@ -81,7 +81,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
         try portName(of: portID)
       }
 
-      static var _ocaDeviceMethod_2_6: OcaDeviceMethodDescription {
+      static var _ocaDeviceMethod_getPortName: OcaDeviceMethodDescription {
         OcaDeviceMethodDescription(
           OcaMethodID("2.6"),
           name: "GetPortName",
@@ -111,7 +111,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
         await path
       }
 
-      static var _ocaDeviceMethod_2_13: OcaDeviceMethodDescription {
+      static var _ocaDeviceMethod_getPath: OcaDeviceMethodDescription {
         OcaDeviceMethodDescription(
           OcaMethodID("2.13"),
           name: "GetPath",
@@ -138,7 +138,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
         Ocp1Response()
       }
 
-      static var _ocaDeviceMethod_3_27: OcaDeviceMethodDescription {
+      static var _ocaDeviceMethod_applyPatch: OcaDeviceMethodDescription {
         OcaDeviceMethodDescription(
           OcaMethodID("3.27"),
           name: "ApplyPatch",

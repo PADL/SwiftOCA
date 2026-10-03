@@ -72,7 +72,7 @@ public struct OcaDeviceMethodMacro: PeerMacro {
 
     declarations.append(
       """
-      static var \(raw: attribute.descriptorName): OcaDeviceMethodDescription {
+      static var \(raw: method.descriptorName): OcaDeviceMethodDescription {
         OcaDeviceMethodDescription(
           \(raw: arguments.joined(separator: ",\n    "))
         ) { (\(raw: closureParameters)) -> \(raw: method.closureResultType) in
@@ -98,11 +98,18 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
       throw MacroExpansionErrorMessage("@OcaDeviceMethods can only be applied to a class")
     }
     let descriptors = classDecl.memberBlock.members.compactMap { member -> String? in
-      guard let function = member.decl.as(FunctionDeclSyntax.self) else { return nil }
-      return OcaDeviceMethodAttribute.on(function)?.descriptorName
+      guard let function = member.decl.as(FunctionDeclSyntax.self),
+            OcaDeviceMethodAttribute.on(function) != nil
+      else {
+        return nil
+      }
+      return DeviceMethod.descriptorName(of: function)
     }
     guard !descriptors.isEmpty else {
       throw MacroExpansionErrorMessage("@OcaDeviceMethods needs at least one @OcaDeviceMethod method")
+    }
+    guard Set(descriptors).count == descriptors.count else {
+      throw MacroExpansionErrorMessage("@OcaDeviceMethod methods need distinct names")
     }
     let access = classDecl.modifiers.lazy
       .map(\.name.text)
@@ -142,11 +149,6 @@ struct OcaDeviceMethodAttribute {
       return Self(attribute)
     }
     return nil
-  }
-
-  /// `"2.7"` becomes `_ocaDeviceMethod_2_7`, by which the table names the descriptor.
-  var descriptorName: String {
-    "_ocaDeviceMethod_" + methodID.split(separator: ".").joined(separator: "_")
   }
 
   func argument(_ label: String) -> ExprSyntax? {
@@ -208,13 +210,19 @@ private struct DeviceMethod {
     }
   }
 
+  /// The descriptor the table lists, named after the method as the peer name rule requires.
+  static func descriptorName(of function: FunctionDeclSyntax) -> String {
+    "_ocaDeviceMethod_" + function.name.text
+  }
+
+  var descriptorName: String { Self.descriptorName(of: function) }
+
   /// The record decoded for several parameters, else the one parameter's type.
   var parametersType: String? {
     switch parameters.count {
     case 0: nil
     case 1: parameters[0].type
-    default: "_" + function.name.text.prefix(1).uppercased() + function.name.text.dropFirst() +
-      "Parameters"
+    default: "_ocaDeviceMethodParameters_" + function.name.text
     }
   }
 

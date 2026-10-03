@@ -32,7 +32,7 @@ import SwiftOCA
 /// The class lists its methods with `@OcaDeviceMethods`, and `OcaRoot.handleCommand`
 /// dispatches to them once a subclass's own `handleCommand` has declined the command, so
 /// a hand-written arm, or a NotImplemented override, still takes precedence.
-@attached(peer, names: arbitrary)
+@attached(peer, names: prefixed(_ocaDeviceMethod_), prefixed(_ocaDeviceMethodParameters_))
 public macro OcaDeviceMethod(
   _ methodID: String,
   name: String,
@@ -47,7 +47,7 @@ public macro OcaDeviceMethod(
 ///
 ///     @OcaDeviceMethod("3.27", name: "ApplyPatch", parameters: OcaApplyPatchParameters.self)
 ///     func applyPatch(_ command: Ocp1Command, from controller: any OcaController) async throws -> Ocp1Response
-@attached(peer, names: arbitrary)
+@attached(peer, names: prefixed(_ocaDeviceMethod_))
 public macro OcaDeviceMethod(
   _ methodID: String,
   name: String,
