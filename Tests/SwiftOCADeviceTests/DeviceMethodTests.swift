@@ -127,7 +127,7 @@ final class DeviceMethodTests: XCTestCase {
     let methods = worker.deviceMethodDescriptions
     XCTAssertEqual(
       methods.map(\.methodID),
-      ["1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "2.6", "2.7", "2.13"]
+      ["1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "2.6", "2.7", "2.13", "2.16", "2.17", "2.18"]
     )
 
     let setPortName = try XCTUnwrap(methods.first { $0.name == "SetPortName" })
@@ -147,7 +147,10 @@ final class DeviceMethodTests: XCTestCase {
 
     // listed with the class that defines them, beside its properties
     let classes = worker.deviceClassDescriptions
-    XCTAssertEqual(classes.last?.methods.map(\.name), ["GetPortName", "SetPortName", "GetPath"])
+    XCTAssertEqual(
+      classes.last?.methods.prefix(3).map(\.name),
+      ["GetPortName", "SetPortName", "GetPath"]
+    )
     XCTAssertEqual(classes.first?.methods.first?.name, "GetClassIdentification")
   }
 }
