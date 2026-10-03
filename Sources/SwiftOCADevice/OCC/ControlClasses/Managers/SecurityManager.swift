@@ -22,6 +22,7 @@ import Foundation
 import SwiftOCA
 import Synchronization
 
+@OcaDeviceMethods
 open class OcaSecurityManager: OcaManager {
   override open class var classID: OcaClassID {
     OcaClassID("1.3.2")
@@ -132,41 +133,35 @@ open class OcaSecurityManager: OcaManager {
     throw Ocp1Error.status(.permissionDenied)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
+  @OcaDeviceMethod("3.1", name: "EnableControlSecurity", access: .write)
+  func enableControlSecurity(from controller: any OcaController) {
+    secureControlData = true
+  }
+
+  @OcaDeviceMethod("3.2", name: "DisableControlSecurity", access: .write)
+  func disableControlSecurity(from controller: any OcaController) {
+    secureControlData = false
+  }
+
+  @OcaDeviceMethod("3.3", name: "ChangePreSharedKey", access: .write)
+  func changePreSharedKey(
+    _ parameters: SwiftOCA.OcaSecurityManager.ChangePreSharedKeyParameters,
     from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.1"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      secureControlData = true
-      return Ocp1Response()
-    case OcaMethodID("3.2"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      secureControlData = false
-      return Ocp1Response()
-    case OcaMethodID("3.3"):
-      let params: SwiftOCA.OcaSecurityManager
-        .ChangePreSharedKeyParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try _add(identity: params.identity, key: Data(params.newKey), mustExist: true)
-      return Ocp1Response()
-    case OcaMethodID("3.4"):
-      let params: SwiftOCA.OcaSecurityManager
-        .AddPreSharedKeyParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try _add(identity: params.identity, key: Data(params.key), mustExist: false)
-      return Ocp1Response()
-    case OcaMethodID("3.5"):
-      let identity: OcaString = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try _delete(identity: identity)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  ) throws {
+    try _add(identity: parameters.identity, key: Data(parameters.newKey), mustExist: true)
+  }
+
+  @OcaDeviceMethod("3.4", name: "AddPreSharedKey", access: .write)
+  func addPreSharedKey(
+    _ parameters: SwiftOCA.OcaSecurityManager.AddPreSharedKeyParameters,
+    from controller: any OcaController
+  ) throws {
+    try _add(identity: parameters.identity, key: Data(parameters.key), mustExist: false)
+  }
+
+  @OcaDeviceMethod("3.5", name: "DeletePreSharedKey", access: .write)
+  func deletePreSharedKey(_ identity: OcaString, from controller: any OcaController) throws {
+    try _delete(identity: identity)
   }
 
   public convenience init(

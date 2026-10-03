@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaDiagnosticManager: OcaManager {
   override open class var classID: OcaClassID { OcaClassID("1.3.13") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -29,23 +30,12 @@ open class OcaDiagnosticManager: OcaManager {
     )
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.1"):
-      let oNo: OcaONo = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      guard let object = await deviceDelegate?.resolve(objectNumber: oNo) else {
-        throw Ocp1Error.status(.badONo)
-      }
-      return try controller.encodeResponse(
-        String(describing: object.lockState),
-        name: "StatusDescription" // name not in AES70-2023 model
-      )
-    default:
-      return try await super.handleCommand(command, from: controller)
+  // not in the AES70-2023 model, which does not name the result
+  @OcaDeviceMethod("3.1", name: "GetLockStatus", access: .read, parameterNames: ["ONo"], resultNames: ["StatusDescription"])
+  func getLockStatus(_ oNo: OcaONo, from controller: any OcaController) async throws -> OcaString {
+    guard let object = await deviceDelegate?.resolve(objectNumber: oNo) else {
+      throw Ocp1Error.status(.badONo)
     }
+    return String(describing: object.lockState)
   }
 }

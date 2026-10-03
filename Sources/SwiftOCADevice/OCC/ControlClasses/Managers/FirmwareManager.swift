@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaFirmwareManager: OcaManager {
   override open class var classID: OcaClassID { OcaClassID("1.3.3") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -26,57 +27,6 @@ open class OcaFirmwareManager: OcaManager {
   )
   public var componentVersions = [OcaVersion]()
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.2"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await startUpdateProcess(controller: controller)
-      return Ocp1Response()
-    case OcaMethodID("3.3"):
-      let component: OcaComponent = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await beginActiveImageUpdate(component: component, controller: controller)
-      return Ocp1Response()
-    case OcaMethodID("3.4"):
-      let parameters: SwiftOCA.OcaFirmwareManager
-        .AddImageDataParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await addImageData(id: parameters.id, parameters.imageData, controller: controller)
-      return Ocp1Response()
-    case OcaMethodID("3.5"):
-      let verifyData: OcaBlob = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await verifyImage(verifyData, controller: controller)
-      return Ocp1Response()
-    case OcaMethodID("3.6"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await endActiveImageUpdate(controller: controller)
-      return Ocp1Response()
-    case OcaMethodID("3.7"):
-      let parameters: SwiftOCA.OcaFirmwareManager
-        .BeginPassiveComponentUpdateParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await beginPassiveComponentUpdate(
-        component: parameters.component,
-        serverAddress: parameters.serverAddress,
-        updateFileName: parameters.updateFileName,
-        controller: controller
-      )
-      return Ocp1Response()
-    case OcaMethodID("3.8"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await endUpdateProcess(controller: controller)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
-  }
 
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
@@ -85,6 +35,52 @@ open class OcaFirmwareManager: OcaManager {
       deviceDelegate: deviceDelegate,
       addToRootBlock: true
     )
+  }
+
+  @OcaDeviceMethod("3.2", name: "StartUpdateProcess", access: .write)
+  func startUpdateProcess(from controller: any OcaController) async throws {
+    try await startUpdateProcess(controller: controller)
+  }
+
+  @OcaDeviceMethod("3.3", name: "BeginActiveImageUpdate", access: .write)
+  func beginActiveImageUpdate(_ component: OcaComponent, from controller: any OcaController) async throws {
+    try await beginActiveImageUpdate(component: component, controller: controller)
+  }
+
+  @OcaDeviceMethod("3.4", name: "AddImageData", access: .write)
+  func addImageData(
+    _ parameters: SwiftOCA.OcaFirmwareManager.AddImageDataParameters,
+    from controller: any OcaController
+  ) async throws {
+    try await addImageData(id: parameters.id, parameters.imageData, controller: controller)
+  }
+
+  @OcaDeviceMethod("3.5", name: "VerifyImage", access: .write)
+  func verifyImage(_ verifyData: OcaBlob, from controller: any OcaController) async throws {
+    try await verifyImage(verifyData, controller: controller)
+  }
+
+  @OcaDeviceMethod("3.6", name: "EndActiveImageUpdate", access: .write)
+  func endActiveImageUpdate(from controller: any OcaController) async throws {
+    try await endActiveImageUpdate(controller: controller)
+  }
+
+  @OcaDeviceMethod("3.7", name: "BeginPassiveComponentUpdate", access: .write)
+  func beginPassiveComponentUpdate(
+    _ parameters: SwiftOCA.OcaFirmwareManager.BeginPassiveComponentUpdateParameters,
+    from controller: any OcaController
+  ) async throws {
+    try await beginPassiveComponentUpdate(
+      component: parameters.component,
+      serverAddress: parameters.serverAddress,
+      updateFileName: parameters.updateFileName,
+      controller: controller
+    )
+  }
+
+  @OcaDeviceMethod("3.8", name: "EndUpdateProcess", access: .write)
+  func endUpdateProcess(from controller: any OcaController) async throws {
+    try await endUpdateProcess(controller: controller)
   }
 
   open func startUpdateProcess(controller: OcaController) async throws {

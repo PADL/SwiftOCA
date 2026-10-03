@@ -109,13 +109,37 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
     guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
       throw MacroExpansionErrorMessage("@OcaDeviceMethods can only be applied to a class")
     }
-    let descriptors = classDecl.memberBlock.members.compactMap { member -> String? in
-      guard let function = member.decl.as(FunctionDeclSyntax.self),
-            OcaDeviceMethodAttribute.on(function) != nil
-      else {
-        return nil
+    // the table's statements, with a method under `#if` listed under the same condition
+    var statements = [String]()
+    var descriptors = [String]()
+    func names(in members: MemberBlockItemListSyntax) -> [String] {
+      members.compactMap { member in
+        guard let function = member.decl.as(FunctionDeclSyntax.self),
+              OcaDeviceMethodAttribute.on(function) != nil
+        else {
+          return nil
+        }
+        return DeviceMethod.descriptorName(of: function)
       }
-      return DeviceMethod.descriptorName(of: function)
+    }
+    func append(_ names: [String]) {
+      guard !names.isEmpty else { return }
+      statements.append("methods += [\(names.joined(separator: ", "))]")
+      descriptors += names
+    }
+    append(names(in: classDecl.memberBlock.members))
+    for member in classDecl.memberBlock.members {
+      guard let block = member.decl.as(IfConfigDeclSyntax.self) else { continue }
+      let clauses = block.clauses.map { clause in
+        (clause, clause.elements?.as(MemberBlockItemListSyntax.self).map(names(in:)) ?? [])
+      }
+      guard clauses.contains(where: { !$0.1.isEmpty }) else { continue }
+      for (clause, names) in clauses {
+        let condition = clause.condition.map { " " + $0.trimmedDescription } ?? ""
+        statements.append("\(clause.poundKeyword.text)\(condition)")
+        append(names)
+      }
+      statements.append("#endif")
     }
     guard !descriptors.isEmpty else {
       throw MacroExpansionErrorMessage("@OcaDeviceMethods needs at least one @OcaDeviceMethod method")
@@ -131,7 +155,9 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
     return [
       """
       override \(raw: access)class var deviceMethods: [OcaDeviceMethodDescription] {
-        super.deviceMethods + [\(raw: descriptors.joined(separator: ", "))]
+        var methods = super.deviceMethods
+        \(raw: statements.joined(separator: "\n  "))
+        return methods
       }
       """,
     ]

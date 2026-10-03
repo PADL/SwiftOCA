@@ -63,7 +63,55 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
         }
 
           override open class var deviceMethods: [OcaDeviceMethodDescription] {
-            super.deviceMethods + [_ocaDeviceMethod_setPortName]
+            var methods = super.deviceMethods
+            methods += [_ocaDeviceMethod_setPortName]
+            return methods
+          }
+      }
+      """,
+      macros: macros
+    )
+  }
+
+  /// The test support does not expand a peer inside `#if`; the compiler does.
+  func testAMethodUnderAConditionIsListedUnderIt() {
+    assertMacroExpansion(
+      """
+      @OcaDeviceMethods
+      final class Manager: OcaManager {
+        @OcaDeviceMethod("3.16", name: "ClearResetCause", access: .write)
+        func clearResetCause(from controller: any OcaController) {}
+        #if NonEmbeddedBuild
+        @OcaDeviceMethod("3.27", name: "ApplyPatch", access: .write)
+        func applyPatch(_ oNo: OcaONo, from controller: any OcaController) async throws {}
+        #endif
+      }
+      """,
+      expandedSource: """
+      final class Manager: OcaManager {
+        func clearResetCause(from controller: any OcaController) {}
+
+        static var _ocaDeviceMethod_clearResetCause: OcaDeviceMethodDescription {
+          OcaDeviceMethodDescription(
+            OcaMethodID("3.16"),
+            name: "ClearResetCause",
+            access: .write
+          ) { object, _, controller in
+            (object as! Self).clearResetCause(from: controller)
+            return nil
+          }
+        }
+        #if NonEmbeddedBuild
+        func applyPatch(_ oNo: OcaONo, from controller: any OcaController) async throws {}
+        #endif
+
+          override class var deviceMethods: [OcaDeviceMethodDescription] {
+            var methods = super.deviceMethods
+            methods += [_ocaDeviceMethod_clearResetCause]
+            #if NonEmbeddedBuild
+            methods += [_ocaDeviceMethod_applyPatch]
+            #endif
+            return methods
           }
       }
       """,
