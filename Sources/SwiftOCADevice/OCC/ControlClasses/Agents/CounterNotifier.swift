@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaCounterNotifier: OcaAgent {
   override open class var classID: OcaClassID { OcaClassID("1.2.18") }
 
@@ -30,20 +31,9 @@ open class OcaCounterNotifier: OcaAgent {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.1"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      return try await controller.encodeResponse(
-        getLastUpdate(),
-        name: "LastUpdate" // name not in AES70-2023 model
-      )
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  // the model does not name the result
+  @OcaDeviceMethod("3.1", name: "GetLastUpdate", access: .read, resultNames: ["LastUpdate"])
+  func getLastUpdate(from controller: any OcaController) async throws -> OcaList<OcaCounterUpdate> {
+    try await getLastUpdate()
   }
 }
