@@ -72,14 +72,15 @@ final class Ocp2NamingOracleTests: XCTestCase {
       else { continue }
       for op in matches("<ownedOperation xmi:id=\"([^\"]+)\" name=\"([^\"]+)\"[^>]*>(.*?)</ownedOperation>", in: cls[2], options: [.dotMatchesLineSeparators]) {
         guard let methodID = methodIDs[op[0]] else { continue }
-        let params = matches("<ownedParameter [^>]*name=\"([^\"]+)\" direction=\"(in|out|return)\"", in: op[2])
+        // an inout parameter is sent with the command and returned in the response
+        let params = matches("<ownedParameter [^>]*name=\"([^\"]+)\" direction=\"(in|out|inout|return)\"", in: op[2])
         methods.append(Method(
           classID: classID,
           className: cls[1],
           methodID: methodID,
           name: op[1],
-          inputs: params.filter { $0[1] == "in" }.map { $0[0] },
-          outputs: params.filter { $0[1] == "out" }.map { $0[0] }
+          inputs: params.filter { $0[1] == "in" || $0[1] == "inout" }.map { $0[0] },
+          outputs: params.filter { $0[1] == "out" || $0[1] == "inout" }.map { $0[0] }
         ))
       }
     }
