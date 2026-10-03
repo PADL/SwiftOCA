@@ -313,7 +313,10 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     case OcaMethodID("3.1"):
       let parameters: Parameters.AddPortParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      return try await controller.encodeResponse(add(port: parameters.name, mode: parameters.mode))
+      return try await controller.encodeResponse(
+        add(port: parameters.name, mode: parameters.mode),
+        name: "ID"
+      )
     case OcaMethodID("3.2"):
       let portID: OcaPortID = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)

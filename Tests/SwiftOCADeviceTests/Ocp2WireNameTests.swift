@@ -21,6 +21,13 @@ import Foundation
 @testable @_spi(SwiftOCAPrivate) import SwiftOCADevice
 @preconcurrency import XCTest
 
+/// An application that lets a port be added, which the base class does not.
+private final class _PortAddingApplication: SwiftOCADevice.OcaMediaTransportApplication {
+  override func add(port label: OcaString, mode: OcaPortMode) async throws -> OcaPortID {
+    OcaPortID(mode: mode, index: 7)
+  }
+}
+
 /// AES70-4 names a command's and a response's parameters after the model (AES70-2A), and
 /// a strict peer matches them by name. These pin the exact keys on the wire, one test per
 /// shape a name can take, without needing the model file (see the naming oracles).
@@ -60,6 +67,7 @@ final class Ocp2WireNameTests: XCTestCase {
       deviceDelegate: device
     )
     application.ports = [OcaPort(owner: applicationONo, id: portID, name: "In 1")]
+    _ = try await _PortAddingApplication(objectNumber: applicationONo + 3, deviceDelegate: device)
   }
 
   private func makeFixture() async throws -> Fixture {
@@ -128,6 +136,20 @@ final class Ocp2WireNameTests: XCTestCase {
     )
     XCTAssertEqual(Set(parameters.keys), ["Name"])
     XCTAssertEqual(parameters["Name"] as? String, "In 1")
+  }
+
+  func testAddPortResponseIsNamedID() async throws {
+    let fixture = try await makeFixture()
+    defer { fixture.tearDown() }
+
+    // OcaMediaTransportApplication 3.1 AddPort(Name, Mode) → ID
+    let parameters = try await Self.responseParameters(
+      fixture,
+      targetONo: Self.applicationONo + 3,
+      methodID: "3,1",
+      parameters: "{\"Name\":\"Aux\",\"Mode\":1}"
+    )
+    XCTAssertEqual(Set(parameters.keys), ["ID"])
   }
 
   func testSetterParameterIsNamedSeparatelyFromTheGetter() async throws {
