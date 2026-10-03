@@ -200,7 +200,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     case OcaMethodID("3.8"):
       let parameters: Parameters.SetStreamingEnabledParameters = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await set(session: parameters.sessionID, streamingEnabled: parameters.enabled)
+      try await set(session: parameters.id, streamingEnabled: parameters.active)
       return Ocp1Response()
     case OcaMethodID("3.9"):
       let id: OcaMediaTransportSessionID = try decodeCommand(command)

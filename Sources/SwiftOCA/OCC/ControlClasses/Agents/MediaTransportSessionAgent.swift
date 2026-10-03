@@ -20,13 +20,14 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
 
   // MARK: - Parameter structures shared with SwiftOCADevice
 
+  /// The model names SetStreamingEnabled's parameters ID and Active.
   public struct SetStreamingEnabledParameters: OcaParametersReflectable {
-    public let sessionID: OcaMediaTransportSessionID
-    public let enabled: OcaBoolean
+    public let id: OcaMediaTransportSessionID
+    public let active: OcaBoolean
 
-    public init(sessionID: OcaMediaTransportSessionID, enabled: OcaBoolean) {
-      self.sessionID = sessionID
-      self.enabled = enabled
+    public init(id: OcaMediaTransportSessionID, active: OcaBoolean) {
+      self.id = id
+      self.active = active
     }
   }
 
@@ -144,7 +145,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
   public func set(session id: OcaMediaTransportSessionID, streamingEnabled: OcaBoolean) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.8"),
-      parameters: SetStreamingEnabledParameters(sessionID: id, enabled: streamingEnabled)
+      parameters: SetStreamingEnabledParameters(id: id, active: streamingEnabled)
     )
   }
 
