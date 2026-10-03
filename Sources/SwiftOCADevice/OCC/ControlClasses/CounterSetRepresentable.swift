@@ -61,9 +61,8 @@ public extension OcaCounterSetRepresentable {
     }
   }
 
-  /// Resets one counter, or all counters when `id` is zero.
   @OcaDevice
-  func resetCounters(id: OcaID16 = 0) {
-    counterSet.reset(counter: id == 0 ? nil : id)
+  func resetCounterSet() {
+    counterSet.reset(counter: nil)
   }
 }

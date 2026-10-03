@@ -126,8 +126,8 @@ open class OcaNetworkInterface: OcaRoot, OcaOwnable, OcaLabelRepresentable,
     try detach(counterNotifier: oNo, from: id)
   }
 
-  open func resetCounters(_ id: OcaID16) async throws {
-    resetCounters(id: id)
+  open func resetCounters() async throws {
+    resetCounterSet()
   }
 
   open func apply(command: OcaNetworkInterfaceCommand) async throws {
@@ -157,9 +157,9 @@ open class OcaNetworkInterface: OcaRoot, OcaOwnable, OcaLabelRepresentable,
       try await detach(counter: parameters.id, from: parameters.oNo)
       return Ocp1Response()
     case OcaMethodID("2.24"):
-      let id: OcaID16 = try decodeCommand(command)
+      try decodeNullCommand(command)
       try await ensureWritable(by: controller, command: command)
-      try await resetCounters(id)
+      try await resetCounters()
       return Ocp1Response()
     case OcaMethodID("2.25"):
       let networkInterfaceCommand: OcaNetworkInterfaceCommand = try decodeCommand(command)
