@@ -46,63 +46,68 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
+  // The field names are the model's parameter names: OCP.2 derives the wire names from them.
+
   public struct ApplyEndpointCommandParameters: OcaParametersReflectable {
-    public let id: OcaMediaStreamEndpointID
+    public let endpointID: OcaMediaStreamEndpointID
     public let command: OcaMediaStreamEndpointCommand
 
-    public init(id: OcaMediaStreamEndpointID, command: OcaMediaStreamEndpointCommand) {
-      self.id = id
+    public init(endpointID: OcaMediaStreamEndpointID, command: OcaMediaStreamEndpointCommand) {
+      self.endpointID = endpointID
       self.command = command
     }
   }
 
   public struct SetEndpointUserLabelParameters: OcaParametersReflectable {
-    public let id: OcaMediaStreamEndpointID
-    public let userLabel: OcaString
+    public let endpointID: OcaMediaStreamEndpointID
+    public let label: OcaString
 
-    public init(id: OcaMediaStreamEndpointID, userLabel: OcaString) {
-      self.id = id
-      self.userLabel = userLabel
+    public init(endpointID: OcaMediaStreamEndpointID, label: OcaString) {
+      self.endpointID = endpointID
+      self.label = label
     }
   }
 
   public struct SetEndpointMediaStreamModeParameters: OcaParametersReflectable {
-    public let id: OcaMediaStreamEndpointID
-    public let mediaStreamMode: OcaMediaStreamMode
+    public let endpointID: OcaMediaStreamEndpointID
+    public let streamMode: OcaMediaStreamMode
 
-    public init(id: OcaMediaStreamEndpointID, mediaStreamMode: OcaMediaStreamMode) {
-      self.id = id
-      self.mediaStreamMode = mediaStreamMode
+    public init(endpointID: OcaMediaStreamEndpointID, streamMode: OcaMediaStreamMode) {
+      self.endpointID = endpointID
+      self.streamMode = streamMode
     }
   }
 
   public struct SetEndpointChannelMapParameters: OcaParametersReflectable {
-    public let id: OcaMediaStreamEndpointID
+    public let endpointID: OcaMediaStreamEndpointID
     public let channelMap: OcaMultiMap<OcaUint16, OcaPortID>
 
-    public init(id: OcaMediaStreamEndpointID, channelMap: OcaMultiMap<OcaUint16, OcaPortID>) {
-      self.id = id
+    public init(
+      endpointID: OcaMediaStreamEndpointID,
+      channelMap: OcaMultiMap<OcaUint16, OcaPortID>
+    ) {
+      self.endpointID = endpointID
       self.channelMap = channelMap
     }
   }
 
   public struct SetEndpointAlignmentLevelParameters: OcaParametersReflectable {
-    public let id: OcaMediaStreamEndpointID
-    public let alignmentLevel: OcaDBFS
+    public let endpointID: OcaMediaStreamEndpointID
+    public let level: OcaDBFS
 
-    public init(id: OcaMediaStreamEndpointID, alignmentLevel: OcaDBFS) {
-      self.id = id
-      self.alignmentLevel = alignmentLevel
+    public init(endpointID: OcaMediaStreamEndpointID, level: OcaDBFS) {
+      self.endpointID = endpointID
+      self.level = level
     }
   }
 
   public struct SetEndpointAdaptationDataParameters: OcaParametersReflectable {
-    public let id: OcaMediaStreamEndpointID
-    public let adaptationData: OcaAdaptationData
+    public let endpointID: OcaMediaStreamEndpointID
+    public let data: OcaAdaptationData
 
-    public init(id: OcaMediaStreamEndpointID, adaptationData: OcaAdaptationData) {
-      self.id = id
-      self.adaptationData = adaptationData
+    public init(endpointID: OcaMediaStreamEndpointID, data: OcaAdaptationData) {
+      self.endpointID = endpointID
+      self.data = data
     }
   }
 
@@ -129,12 +134,12 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   public struct EndpointCounterNotifierParameters: OcaParametersReflectable {
     public let endpointID: OcaMediaStreamEndpointID
     public let counterID: OcaID16
-    public let oNo: OcaONo
+    public let notifierONo: OcaONo
 
-    public init(endpointID: OcaMediaStreamEndpointID, counterID: OcaID16, oNo: OcaONo) {
+    public init(endpointID: OcaMediaStreamEndpointID, counterID: OcaID16, notifierONo: OcaONo) {
       self.endpointID = endpointID
       self.counterID = counterID
-      self.oNo = oNo
+      self.notifierONo = notifierONo
     }
   }
 
@@ -339,14 +344,14 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   ) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.27"),
-      parameters: ApplyEndpointCommandParameters(id: id, command: command)
+      parameters: ApplyEndpointCommandParameters(endpointID: id, command: command)
     )
   }
 
   public func setEndpoint(_ id: OcaMediaStreamEndpointID, userLabel: OcaString) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.28"),
-      parameters: SetEndpointUserLabelParameters(id: id, userLabel: userLabel)
+      parameters: SetEndpointUserLabelParameters(endpointID: id, label: userLabel)
     )
   }
 
@@ -356,7 +361,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   ) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.29"),
-      parameters: SetEndpointMediaStreamModeParameters(id: id, mediaStreamMode: mediaStreamMode)
+      parameters: SetEndpointMediaStreamModeParameters(endpointID: id, streamMode: mediaStreamMode)
     )
   }
 
@@ -366,7 +371,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   ) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.30"),
-      parameters: SetEndpointChannelMapParameters(id: id, channelMap: channelMap)
+      parameters: SetEndpointChannelMapParameters(endpointID: id, channelMap: channelMap)
     )
   }
 
@@ -376,7 +381,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   ) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.31"),
-      parameters: SetEndpointAlignmentLevelParameters(id: id, alignmentLevel: alignmentLevel)
+      parameters: SetEndpointAlignmentLevelParameters(endpointID: id, level: alignmentLevel)
     )
   }
 
@@ -392,7 +397,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   ) async throws {
     try await sendCommandRrq(
       methodID: OcaMethodID("3.33"),
-      parameters: SetEndpointAdaptationDataParameters(id: id, adaptationData: adaptationData)
+      parameters: SetEndpointAdaptationDataParameters(endpointID: id, data: adaptationData)
     )
   }
 
@@ -433,7 +438,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
       parameters: EndpointCounterNotifierParameters(
         endpointID: endpointID,
         counterID: counterID,
-        oNo: oNo
+        notifierONo: oNo
       )
     )
   }
@@ -448,7 +453,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
       parameters: EndpointCounterNotifierParameters(
         endpointID: endpointID,
         counterID: counterID,
-        oNo: oNo
+        notifierONo: oNo
       )
     )
   }
