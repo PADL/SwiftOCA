@@ -639,15 +639,13 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         try await getActionObjectsRecursive(from: controller)
       return try controller.encodeResponse(actionObjects, name: "Objects")
     case OcaMethodID("3.7"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
       let path: OcaSignalPath = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
       let index = try await add(signalPath: path)
       return try controller.encodeResponse(index, name: "Index")
     case OcaMethodID("3.8"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
       let index: OcaUint16 = try decodeCommand(command)
+      try await ensureWritable(by: controller, command: command)
       try await delete(signalPathAt: index)
     case OcaMethodID("3.10"):
       try decodeNullCommand(command)
