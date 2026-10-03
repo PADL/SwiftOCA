@@ -87,6 +87,15 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
     try? await notifySubscribers(actionObjects: members, changeType: .itemDeleted)
   }
 
+  /// The member an object number names; resolved once the lock check has passed, so a
+  /// locked group answers Locked whatever it is sent.
+  private func member(_ objectNumber: OcaONo) async throws -> Member {
+    guard let member = await deviceDelegate?.resolve(objectNumber: objectNumber) as? Member else {
+      throw Ocp1Error.invalidObject(objectNumber)
+    }
+    return member
+  }
+
   override open func handleCommand(
     _ command: Ocp1Command,
     from controller: any OcaController
@@ -101,34 +110,21 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
       )
     case OcaMethodID("3.2"): // SetMembers
       let memberONos: [OcaONo] = try decodeCommand(command)
-      let members = try await memberONos.asyncMap { @Sendable memberONo in
-        guard let member = await deviceDelegate?
-          .resolve(objectNumber: memberONo) as? Member
-        else {
-          throw Ocp1Error.invalidObject(memberONo)
-        }
-        return member
-      }
       try await ensureWritable(by: controller, command: command)
+      let members = try await memberONos.asyncMap { @Sendable memberONo in
+        try await self.member(memberONo)
+      }
       try await set(members: members, controller: controller)
       return Ocp1Response()
     case OcaMethodID("3.3"): // AddMember
       let memberONo: OcaONo = try decodeCommand(command)
-      guard let member = await deviceDelegate?.resolve(objectNumber: memberONo) as? Member
-      else {
-        throw Ocp1Error.invalidObject(memberONo)
-      }
       try await ensureWritable(by: controller, command: command)
-      try await add(member: member, controller: controller)
+      try await add(member: member(memberONo), controller: controller)
       return Ocp1Response()
     case OcaMethodID("3.4"): // DeleteMember
       let memberONo: OcaONo = try decodeCommand(command)
-      guard let member = await deviceDelegate?.resolve(objectNumber: memberONo) as? Member
-      else {
-        throw Ocp1Error.invalidObject(memberONo)
-      }
       try await ensureWritable(by: controller, command: command)
-      try await delete(member: member, controller: controller)
+      try await delete(member: member(memberONo), controller: controller)
       return Ocp1Response()
     case OcaMethodID("3.5"): // GroupControllerONo
       try decodeNullCommand(command)

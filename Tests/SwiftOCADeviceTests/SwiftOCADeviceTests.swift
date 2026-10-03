@@ -811,4 +811,38 @@ final class HandleCommandArmTests: XCTestCase {
     )
     XCTAssertTrue(found.isEmpty)
   }
+
+  @OcaDevice
+  func testALockedGroupAnswersLockedBeforeLookingUpAMember() async throws {
+    let device = try await makeDevice()
+    let group = try await SwiftOCADevice.OcaGroup<SwiftOCADevice.OcaRoot>(
+      deviceDelegate: device, addToRootBlock: false
+    )
+    let holder = ArmTestController()
+    try await group.lockNoReadWrite(controller: holder)
+    let unknown: OcaONo = 0x7FFF_FFF0
+
+    for methodID in [OcaMethodID("3.3"), OcaMethodID("3.4")] {
+      do {
+        _ = try await group.handleCommand(
+          try command(methodID, unknown, on: group),
+          from: ArmTestController()
+        )
+        XCTFail("\(methodID) answered on a locked group")
+      } catch Ocp1Error.status(.locked) {}
+    }
+    do {
+      _ = try await group.handleCommand(
+        try command(OcaMethodID("3.2"), [unknown], on: group),
+        from: ArmTestController()
+      )
+      XCTFail("SetMembers answered on a locked group")
+    } catch Ocp1Error.status(.locked) {}
+
+    // the holder is past the lock, and learns the member is unknown
+    do {
+      _ = try await group.handleCommand(try command(OcaMethodID("3.3"), unknown, on: group), from: holder)
+      XCTFail("added an unknown member")
+    } catch Ocp1Error.invalidObject(unknown) {}
+  }
 }
