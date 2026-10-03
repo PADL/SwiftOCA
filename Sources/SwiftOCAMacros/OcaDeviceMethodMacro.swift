@@ -18,8 +18,8 @@ import SwiftSyntax
 import SwiftSyntaxMacros
 
 /// `@OcaDeviceMethod` on a method of a device class. Expands to a descriptor the
-/// class's `deviceMethods` table lists, and to a parameter record when the method
-/// takes more than one OCA parameter.
+/// class's `deviceMethods` table lists, and, in the form that spells the description
+/// itself, to a parameter record when the method takes more than one OCA parameter.
 public struct OcaDeviceMethodMacro: PeerMacro {
   public static func expansion(
     of node: AttributeSyntax,
@@ -31,18 +31,48 @@ public struct OcaDeviceMethodMacro: PeerMacro {
     }
     guard let attribute = OcaDeviceMethodAttribute(node) else {
       throw MacroExpansionErrorMessage(
-        "@OcaDeviceMethod needs its method ID as a string literal, such as \"2.7\""
+        "@OcaDeviceMethod needs the client's descriptor, or its method ID as a string literal"
       )
     }
     let method = try DeviceMethod(function)
 
-    var arguments = ["OcaMethodID(\"\(attribute.methodID)\")"]
-    arguments.append("name: \(attribute.argument("name")?.trimmedDescription ?? "\"\"")")
+    var arguments = [String]()
     var declarations = [DeclSyntax]()
     var body = [String]()
     let closureParameters: String
 
-    if method.isRaw {
+    if let descriptor = attribute.descriptor {
+      // the shared form: the description comes from SwiftOCA, only the dispatch is here
+      for label in ["name", "parameters", "parameterNames", "result", "resultNames"]
+        where attribute.argument(label) != nil
+      {
+        throw MacroExpansionErrorMessage("the descriptor gives the method its \(label)")
+      }
+      arguments.append(descriptor.trimmedDescription)
+      if method.isRaw {
+        closureParameters = "object, command, controller"
+      } else {
+        guard let access = attribute.argument("access") else {
+          throw MacroExpansionErrorMessage("@OcaDeviceMethod needs access: .read, .write or .none")
+        }
+        guard method.parameters.count <= 1 else {
+          throw MacroExpansionErrorMessage(
+            "a method declared by its descriptor takes the descriptor's Parameters as one argument"
+          )
+        }
+        arguments.append("access: \(access.trimmedDescription)")
+        arguments.append("parameters: \(method.parametersType ?? "Void").self")
+        arguments.append("result: \(method.resultType ?? "Void").self")
+        closureParameters = method.parametersType == nil
+          ? "object, _, controller"
+          : "object, parameters, controller"
+      }
+      body.append(method.call)
+      if !method.isRaw, method.resultType == nil {
+        body.append("return nil")
+      }
+    } else if method.isRaw {
+      arguments += attribute.identity
       for label in ["parameters", "parameterNames", "result", "resultNames"] {
         if let value = attribute.argument(label) {
           arguments.append("\(label): \(value.trimmedDescription)")
@@ -51,6 +81,7 @@ public struct OcaDeviceMethodMacro: PeerMacro {
       closureParameters = "object, command, controller"
       body.append(method.call)
     } else {
+      arguments += attribute.identity
       guard let access = attribute.argument("access") else {
         throw MacroExpansionErrorMessage("@OcaDeviceMethod needs access: .read, .write or .none")
       }
@@ -164,19 +195,21 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
   }
 }
 
-/// The `@OcaDeviceMethod` attribute as written, read by both macros.
+/// The `@OcaDeviceMethod` attribute as written, read by both macros: the client's
+/// descriptor, or the method ID with the description's parts as further arguments.
 struct OcaDeviceMethodAttribute {
-  let methodID: String
+  let methodID: String?
+  let descriptor: ExprSyntax?
   private let arguments: LabeledExprListSyntax
 
   init?(_ attribute: AttributeSyntax) {
     guard case let .argumentList(arguments) = attribute.arguments,
-          let first = arguments.first, first.label == nil,
-          let methodID = first.expression.as(StringLiteralExprSyntax.self)?.representedLiteralValue
+          let first = arguments.first, first.label == nil
     else {
       return nil
     }
-    self.methodID = methodID
+    methodID = first.expression.as(StringLiteralExprSyntax.self)?.representedLiteralValue
+    descriptor = methodID == nil ? first.expression : nil
     self.arguments = arguments
   }
 
@@ -191,6 +224,14 @@ struct OcaDeviceMethodAttribute {
 
   func argument(_ label: String) -> ExprSyntax? {
     arguments.first { $0.label?.text == label }?.expression
+  }
+
+  /// The ID and name arguments of the form that spells them.
+  var identity: [String] {
+    [
+      "OcaMethodID(\"\(methodID!)\")",
+      "name: \(argument("name")?.trimmedDescription ?? "\"\"")",
+    ]
   }
 }
 

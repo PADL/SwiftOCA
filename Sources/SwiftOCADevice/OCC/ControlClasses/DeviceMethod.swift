@@ -17,11 +17,38 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
-/// Declares a method of a device class to be the OCA method `methodID`, named `name`
-/// in the model. The method's own parameters are the OCA parameters, in order, with the
-/// controller as one more argument (`from controller: any OcaController`); its result,
-/// if any, is the response. `access` is the lock check made before the method runs:
-/// `.read` for a getter, `.write` for a mutator, `.none` for one that checks for itself.
+/// Declares a method of a device class to be the OCA method the client declares as
+/// `method` (an `OcaMethodDescription`), so its ID, name and OCP.2 names are stated once,
+/// in SwiftOCA. The method takes the description's `Parameters` as its one argument, if
+/// any, with the controller as one more (`from controller: any OcaController`), and
+/// returns its `Result`; the compiler checks both. `access` is the lock check made before
+/// the method runs: `.read` for a getter, `.write` for a mutator, `.none` for one that
+/// checks for itself.
+///
+///     @OcaDeviceMethod(SwiftOCA.OcaWorker.setPortName, access: .write)
+///     func setPortName(_ parameters: SwiftOCA.OcaWorker.SetPortNameParameters,
+///                      from controller: any OcaController) throws
+///
+/// The class lists its methods with `@OcaDeviceMethods`, and `OcaRoot.handleCommand`
+/// dispatches to them once a subclass's own `handleCommand` has declined the command, so
+/// a hand-written arm, or a NotImplemented override, still takes precedence.
+@attached(peer, names: prefixed(_ocaDeviceMethod_))
+public macro OcaDeviceMethod<Parameters, Result>(
+  _ method: OcaMethodDescription<Parameters, Result>,
+  access: OcaDeviceMethodAccess
+) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")
+
+/// The raw form, for a method that takes the `Ocp1Command` itself and returns the
+/// `Ocp1Response`: it decodes, checks access and encodes for itself, as a `handleCommand`
+/// arm does.
+@attached(peer, names: prefixed(_ocaDeviceMethod_))
+public macro OcaDeviceMethod<Parameters, Result>(
+  _ method: OcaMethodDescription<Parameters, Result>
+) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")
+
+/// The form for a method the client has no descriptor for yet: the OCA method `methodID`,
+/// named `name` in the model. The method's own parameters are the OCA parameters, in
+/// order, with the controller as one more argument; its result, if any, is the response.
 ///
 ///     @OcaDeviceMethod("2.6", name: "GetPortName", access: .read, resultNames: ["Name"])
 ///     func getPortName(_ portID: OcaPortID, from controller: any OcaController) throws -> OcaString
@@ -31,10 +58,6 @@ import SwiftOCA
 /// client and the device share the type; only where none exists does the macro declare a
 /// record for several parameters, beside the method. `parameterNames` and `resultNames`
 /// give the OCP.2 names where the model spells them differently from the Swift names.
-///
-/// The class lists its methods with `@OcaDeviceMethods`, and `OcaRoot.handleCommand`
-/// dispatches to them once a subclass's own `handleCommand` has declined the command, so
-/// a hand-written arm, or a NotImplemented override, still takes precedence.
 @attached(peer, names: prefixed(_ocaDeviceMethod_), prefixed(_ocaDeviceMethodParameters_))
 public macro OcaDeviceMethod(
   _ methodID: String,
@@ -44,9 +67,8 @@ public macro OcaDeviceMethod(
   resultNames: [String]? = nil
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")
 
-/// The raw form, for a method that takes the `Ocp1Command` itself and returns the
-/// `Ocp1Response`: it decodes, checks access and encodes for itself, as a `handleCommand`
-/// arm does. `parameters` and `result` describe it for introspection only.
+/// The raw form with the description's parts given here. `parameters` and `result`
+/// describe it for introspection only.
 ///
 ///     @OcaDeviceMethod("3.27", name: "ApplyPatch", parameters: OcaApplyPatchParameters.self)
 ///     func applyPatch(_ command: Ocp1Command, from controller: any OcaController) async throws -> Ocp1Response
@@ -54,9 +76,9 @@ public macro OcaDeviceMethod(
 public macro OcaDeviceMethod(
   _ methodID: String,
   name: String,
-  parameters: (any (Decodable & Sendable).Type)? = nil,
+  parameters: (any (Codable & Sendable).Type)? = nil,
   parameterNames: [String]? = nil,
-  result: (any (Encodable & Sendable).Type)? = nil,
+  result: (any (Codable & Sendable).Type)? = nil,
   resultNames: [String]? = nil
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")
 
@@ -77,14 +99,8 @@ public enum OcaDeviceMethodAccess: Sendable {
   case none
 }
 
-/// One parameter, or one result, of a device method.
-public struct OcaDeviceMethodParameterDescription: Sendable {
-  /// The OCP.2 name.
-  public let name: String
-  public let type: any (Codable & Sendable).Type
-}
-
-/// What a device class declares about one of its methods, and how to call it. Built by
+/// What a device class declares about one of its methods, and how to call it: the
+/// method's description, shared with the client, and the dispatch. Built by
 /// `@OcaDeviceMethod`; a class can also build its own and list it in `deviceMethods`.
 public struct OcaDeviceMethodDescription: Sendable {
   public typealias Handler = @OcaDevice @Sendable (
@@ -93,29 +109,15 @@ public struct OcaDeviceMethodDescription: Sendable {
     any OcaController
   ) async throws -> Ocp1Response
 
-  public let methodID: OcaMethodID
-  /// The model's name of the method.
-  public let name: String
-  /// The parameters a record's fields, else the one parameter. Empty for a raw method
-  /// that does not describe itself.
-  public let parameters: [OcaDeviceMethodParameterDescription]
-  /// Likewise for the response.
-  public let results: [OcaDeviceMethodParameterDescription]
+  /// The method as the model declares it. Empty of parameters for a raw method that
+  /// does not describe itself.
+  public let method: OcaAnyMethodDescription
   let handle: Handler
 
-  private init(
-    _ methodID: OcaMethodID,
-    name: String,
-    parameters: [OcaDeviceMethodParameterDescription],
-    results: [OcaDeviceMethodParameterDescription],
-    handle: @escaping Handler
-  ) {
-    self.methodID = methodID
-    self.name = name
-    self.parameters = parameters
-    self.results = results
-    self.handle = handle
-  }
+  public var methodID: OcaMethodID { method.methodID }
+  public var name: String { method.name }
+  public var parameters: [OcaMethodParameterDescription] { method.parameters }
+  public var results: [OcaMethodParameterDescription] { method.results }
 
   /// What `@OcaDeviceMethod` writes for a typed method: cast the object, cast the
   /// decoded parameters (`()` when there are none) and call; the result, or nil for none.
@@ -133,28 +135,96 @@ public struct OcaDeviceMethodDescription: Sendable {
     any OcaController
   ) async throws -> Ocp1Response
 
-  /// `argumentNames` are the Swift names of the method's parameters, which name a single
-  /// value on OCP.2 unless `parameterNames` does; a record's fields name themselves.
+  /// The typed form, from the shared description. `parameters` and `result` are the
+  /// method's own types, so the compiler checks them against the description's.
+  public init<Parameters, Result>(
+    _ method: OcaMethodDescription<Parameters, Result>,
+    access: OcaDeviceMethodAccess,
+    parameters _: Parameters.Type,
+    result _: Result.Type,
+    _ body: @escaping Body
+  ) {
+    self.init(method.erased, access: access, body)
+  }
+
+  /// The raw form, from the shared description.
+  public init<Parameters, Result>(
+    _ method: OcaMethodDescription<Parameters, Result>,
+    _ body: @escaping RawBody
+  ) {
+    self.init(method.erased, body)
+  }
+
+  /// The typed form with the description's parts given here, for a method the client
+  /// has no descriptor for. `argumentNames` are the Swift names of the method's
+  /// parameters, which name a single value on OCP.2 unless `parameterNames` does; a
+  /// record's fields name themselves.
   public init(
     _ methodID: OcaMethodID,
     name: String,
     access: OcaDeviceMethodAccess,
-    parameters: (any (Decodable & Sendable).Type)? = nil,
+    parameters: (any (Codable & Sendable).Type)? = nil,
     argumentNames: [String] = [],
     parameterNames: [String]? = nil,
-    result: (any (Encodable & Sendable).Type)? = nil,
+    result: (any (Codable & Sendable).Type)? = nil,
     resultNames: [String]? = nil,
     _ body: @escaping Body
   ) {
-    let names = parameters.flatMap { Self.names(of: $0, argumentNames, parameterNames) }
     self.init(
-      methodID,
-      name: name,
-      parameters: parameters.map { Self.describe($0, names: names, of: name) } ?? [],
-      results: result.map { Self.describe($0, names: resultNames, of: name) } ?? []
-    ) { object, command, controller in
-      let decoded: Any = if let parameters {
-        try parameters._decodeDeviceCommand(command, names: names)
+      OcaAnyMethodDescription(
+        methodID: methodID,
+        name: name,
+        parametersType: parameters,
+        resultType: result,
+        parameterNames: parameters.flatMap { Self.names(of: $0, argumentNames, parameterNames) },
+        resultNames: resultNames
+      ),
+      access: access,
+      body
+    )
+  }
+
+  public init(
+    _ methodID: OcaMethodID,
+    name: String,
+    parameters: (any (Codable & Sendable).Type)? = nil,
+    parameterNames: [String]? = nil,
+    result: (any (Codable & Sendable).Type)? = nil,
+    resultNames: [String]? = nil,
+    _ body: @escaping RawBody
+  ) {
+    self.init(
+      OcaAnyMethodDescription(
+        methodID: methodID,
+        name: name,
+        parametersType: parameters,
+        resultType: result,
+        parameterNames: parameterNames,
+        resultNames: resultNames
+      ),
+      body
+    )
+  }
+
+  // out of line, so a site is a call and not a copy of the closure's construction
+  @inline(never)
+  private init(_ method: OcaAnyMethodDescription, _ body: @escaping RawBody) {
+    self.method = method
+    handle = { object, command, controller in
+      try await body(object, command, controller)
+    }
+  }
+
+  @inline(never)
+  private init(
+    _ method: OcaAnyMethodDescription,
+    access: OcaDeviceMethodAccess,
+    _ body: @escaping Body
+  ) {
+    self.method = method
+    handle = { object, command, controller in
+      let decoded: Any = if let parameters = method.parametersType {
+        try parameters._decodeDeviceCommand(command, names: method.parameterNames)
       } else {
         try object.decodeNullCommand(command)
       }
@@ -162,32 +232,13 @@ public struct OcaDeviceMethodDescription: Sendable {
       guard let result = try await body(object, decoded, controller) else {
         return Ocp1Response()
       }
-      return try result._encodeDeviceResponse(for: controller, names: resultNames)
-    }
-  }
-
-  public init(
-    _ methodID: OcaMethodID,
-    name: String,
-    parameters: (any (Decodable & Sendable).Type)? = nil,
-    parameterNames: [String]? = nil,
-    result: (any (Encodable & Sendable).Type)? = nil,
-    resultNames: [String]? = nil,
-    _ body: @escaping RawBody
-  ) {
-    self.init(
-      methodID,
-      name: name,
-      parameters: parameters.map { Self.describe($0, names: parameterNames, of: name) } ?? [],
-      results: result.map { Self.describe($0, names: resultNames, of: name) } ?? []
-    ) { object, command, controller in
-      try await body(object, command, controller)
+      return try result._encodeDeviceResponse(for: controller, names: method.resultNames)
     }
   }
 
   // MARK: typed conveniences, for a descriptor written by hand
 
-  public init<Object: OcaRoot, Parameters: Decodable & Sendable, Result: Encodable & Sendable>(
+  public init<Object: OcaRoot, Parameters: Codable & Sendable, Result: Codable & Sendable>(
     _ methodID: OcaMethodID,
     name: String,
     access: OcaDeviceMethodAccess,
@@ -212,7 +263,7 @@ public struct OcaDeviceMethodDescription: Sendable {
     }
   }
 
-  public init<Object: OcaRoot, Parameters: Decodable & Sendable>(
+  public init<Object: OcaRoot, Parameters: Codable & Sendable>(
     _ methodID: OcaMethodID,
     name: String,
     access: OcaDeviceMethodAccess,
@@ -235,7 +286,7 @@ public struct OcaDeviceMethodDescription: Sendable {
     }
   }
 
-  public init<Object: OcaRoot, Result: Encodable & Sendable>(
+  public init<Object: OcaRoot, Result: Codable & Sendable>(
     _ methodID: OcaMethodID,
     name: String,
     access: OcaDeviceMethodAccess,
@@ -277,36 +328,6 @@ public struct OcaDeviceMethodDescription: Sendable {
     }
     return type is OcaParametersReflectable.Type ? nil : argumentNames.map(Ocp2Naming.wireName)
   }
-
-  /// A parameter record describes one parameter per field, named by `names` then by its
-  /// fields; any other type is the one parameter, named by `names` or left unnamed.
-  private static func describe(
-    _ type: Any.Type,
-    names: [String]?,
-    of method: String
-  ) -> [OcaDeviceMethodParameterDescription] {
-    let fields: [(name: String, type: Any.Type)] = if type is OcaParametersReflectable.Type {
-      Ocp2Naming.fields(of: type)
-    } else {
-      [(Ocp2Naming.unnamedParameter, type)]
-    }
-    let names = Ocp2Naming.parameterNames(explicit: names, fieldNames: fields.map(\.name))
-    return zip(names, fields).map { name, field in
-      guard let type = erasedCast(field.type, to: DescribedType.self) else {
-        preconditionFailure("\(method)'s \(name) is a \(field.type), which is not Codable & Sendable")
-      }
-      return OcaDeviceMethodParameterDescription(name: name, type: type)
-    }
-  }
-}
-
-private typealias DescribedType = any (Codable & Sendable).Type
-
-/// Kept out of line: the optimiser miscompiles this cast on a specialised metatype
-/// (Swift 6.3.3, -O, aarch64).
-@inline(never)
-private func erasedCast<U>(_ type: Any.Type, to _: U.Type) -> U? {
-  type as? U
 }
 
 /// Opened through the existential, so there is one decoder and one encoder for every
