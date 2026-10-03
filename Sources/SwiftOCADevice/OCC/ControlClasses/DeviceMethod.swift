@@ -16,7 +16,6 @@
 
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
-import Synchronization
 
 /// Declares a method of a device class to be the OCA method `methodID`, named `name`
 /// in the model. The method's own parameters are the OCA parameters, in order, with the
@@ -279,27 +278,19 @@ private extension OcaRoot {
   }
 }
 
+/// Each class's table by method ID, built once per class. A subclass's entry for an ID
+/// replaces its parent's, as the subclass's come later in `deviceMethods`.
+@OcaDevice
+private var deviceMethodTables = [ObjectIdentifier: [OcaMethodID: OcaDeviceMethodDescription]]()
+
 extension OcaRoot {
-  /// This class's table by method ID, built once per class. A subclass's entry for an
-  /// ID replaces its parent's, as the subclass's come later in `deviceMethods`.
   class func deviceMethod(for methodID: OcaMethodID) -> OcaDeviceMethodDescription? {
-    OcaDeviceMethodTableCache.shared.table(for: self)[methodID]
-  }
-}
-
-private final class OcaDeviceMethodTableCache: Sendable {
-  static let shared = OcaDeviceMethodTableCache()
-
-  private let tables = Mutex([ObjectIdentifier: [OcaMethodID: OcaDeviceMethodDescription]]())
-
-  @OcaDevice
-  func table(for type: OcaRoot.Type) -> [OcaMethodID: OcaDeviceMethodDescription] {
-    let key = ObjectIdentifier(type)
-    if let table = tables.withLock({ $0[key] }) {
-      return table
+    let key = ObjectIdentifier(self)
+    if let table = deviceMethodTables[key] {
+      return table[methodID]
     }
-    let table = Dictionary(type.deviceMethods.map { ($0.methodID, $0) }) { _, last in last }
-    tables.withLock { $0[key] = table }
-    return table
+    let table = Dictionary(deviceMethods.map { ($0.methodID, $0) }) { _, last in last }
+    deviceMethodTables[key] = table
+    return table[methodID]
   }
 }
