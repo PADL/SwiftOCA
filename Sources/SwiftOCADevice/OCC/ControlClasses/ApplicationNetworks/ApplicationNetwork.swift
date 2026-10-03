@@ -73,7 +73,7 @@ open class OcaApplicationNetwork: OcaRoot, OcaOwnable, OcaLabelRepresentable {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod("2.10", name: "Control", access: .write, parameterNames: ["Command"])
+  @OcaDeviceMethod(SwiftOCA.OcaApplicationNetwork.control, access: .write)
   func control(_ command: OcaApplicationNetworkCommand, from controller: any OcaController) async throws {
     try await control(command)
   }

@@ -87,22 +87,22 @@ open class OcaNetworkApplication: OcaRoot, OcaOwnable, OcaLabelRepresentable,
     await path
   }
 
-  @OcaDeviceMethod("2.11", name: "GetCounter", access: .read, parameterNames: ["CounterID"], resultNames: ["Counter"])
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.getCounter, access: .read)
   func getCounter(_ id: OcaID16, from controller: any OcaController) throws -> OcaCounter {
     try counter(id: id)
   }
 
-  @OcaDeviceMethod("2.12", name: "AttachCounterNotifier", access: .write, parameterNames: ["CounterID", "ONo"])
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.attachCounterNotifier, access: .write)
   func attachCounterNotifier(_ parameters: OcaCounterNotifierParameters, from controller: any OcaController) async throws {
     try await attach(counter: parameters.id, to: parameters.oNo)
   }
 
-  @OcaDeviceMethod("2.13", name: "DetachCounterNotifier", access: .write, parameterNames: ["CounterID", "ONo"])
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.detachCounterNotifier, access: .write)
   func detachCounterNotifier(_ parameters: OcaCounterNotifierParameters, from controller: any OcaController) async throws {
     try await detach(counter: parameters.id, from: parameters.oNo)
   }
 
-  @OcaDeviceMethod("2.14", name: "ResetCounters", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.resetCounters, access: .write)
   func resetCounters(from controller: any OcaController) async throws {
     try await resetCounters()
   }
