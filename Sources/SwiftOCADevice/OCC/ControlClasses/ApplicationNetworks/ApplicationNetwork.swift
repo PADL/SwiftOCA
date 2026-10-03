@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaApplicationNetwork: OcaRoot, OcaOwnable, OcaLabelRepresentable {
   override open class var classID: OcaClassID {
     OcaClassID("1.4")
@@ -72,20 +73,13 @@ open class OcaApplicationNetwork: OcaRoot, OcaOwnable, OcaLabelRepresentable {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("2.10"):
-      let params: OcaApplicationNetworkCommand = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await control(params)
-      return Ocp1Response()
-    case OcaMethodID("2.11"):
-      return try await controller.encodeResponse(path)
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod("2.10", name: "Control", access: .write, parameterNames: ["Command"])
+  func control(_ command: OcaApplicationNetworkCommand, from controller: any OcaController) async throws {
+    try await control(command)
+  }
+
+  @OcaDeviceMethod("2.11", name: "GetPath", access: .read)
+  func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
+    await path
   }
 }

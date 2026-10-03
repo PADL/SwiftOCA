@@ -88,22 +88,23 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
     await path
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("2.16"):
-      let portClockMapEntry = try await handleGetPortClockMapEntry(command, from: controller)
-      return try controller.encodeResponse(portClockMapEntry, name: "Entry")
-    case OcaMethodID("2.17"):
-      try await handleSetPortClockMapEntry(command, from: controller)
-      return Ocp1Response()
-    case OcaMethodID("2.18"):
-      try await handleDeletePortClockMapEntry(command, from: controller)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod("2.16", name: "GetPortClockMapEntry", access: .read, parameterNames: ["ID"], resultNames: ["Entry"])
+  func getPortClockMapEntry(_ portID: OcaPortID, from controller: any OcaController) throws
+    -> OcaPortClockMapEntry
+  {
+    try portClockMapEntry(for: portID)
+  }
+
+  @OcaDeviceMethod("2.17", name: "SetPortClockMapEntry", access: .write)
+  func setPortClockMapEntry(
+    _ parameters: OcaSetPortClockMapEntryParameters,
+    from controller: any OcaController
+  ) {
+    setPortClockMapEntry(parameters)
+  }
+
+  @OcaDeviceMethod("2.18", name: "DeletePortClockMapEntry", access: .write, parameterNames: ["ID"])
+  func deletePortClockMapEntry(_ portID: OcaPortID, from controller: any OcaController) {
+    deletePortClockMapEntry(for: portID)
   }
 }

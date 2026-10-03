@@ -19,6 +19,7 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaDataset: OcaRoot, @unchecked
 Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.5") }
@@ -241,64 +242,53 @@ Sendable {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("2.1"):
-      let lockState: OcaLockState = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let (datasetSize, handle) = try await openRead(lockState: lockState, controller: controller)
-      let response = SwiftOCA.OcaDataset.OpenReadParameters(
-        datasetSize: datasetSize,
-        handle: handle
-      )
-      return try controller.encodeResponse(response)
-    case OcaMethodID("2.2"):
-      let lockState: OcaLockState = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      let (maxPartSize, handle) = try await openWrite(lockState: lockState, controller: controller)
-      let response = SwiftOCA.OcaDataset.OpenWriteParameters(
-        maxPartSize: maxPartSize,
-        handle: handle
-      )
-      return try controller.encodeResponse(response)
-    case OcaMethodID("2.3"):
-      let handle: OcaIOSessionHandle = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await close(handle: handle, controller: controller)
-    case OcaMethodID("2.4"):
-      let params: SwiftOCA.OcaDataset.ReadParameters = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let (endOfData, part) = try await read(
-        handle: params.handle,
-        position: params.position,
-        partSize: params.partSize,
-        controller: controller
-      )
-      return try controller.encodeResponse(SwiftOCA.OcaDataset.ReadResultParameters(
-        endOfData: endOfData,
-        part: part
-      ))
-    case OcaMethodID("2.5"):
-      let params: SwiftOCA.OcaDataset.WriteParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await write(
-        handle: params.handle,
-        position: params.position,
-        part: params.part,
-        controller: controller
-      )
-    case OcaMethodID("2.6"):
-      let handle: OcaIOSessionHandle = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await clear(handle: handle, controller: controller)
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod("2.1", name: "OpenRead", access: .read, parameterNames: ["RequestedLockState"])
+  func openRead(_ lockState: OcaLockState, from controller: any OcaController) async throws
+    -> SwiftOCA.OcaDataset.OpenReadParameters
+  {
+    let (datasetSize, handle) = try await openRead(lockState: lockState, controller: controller)
+    return .init(datasetSize: datasetSize, handle: handle)
+  }
 
-    return Ocp1Response()
+  @OcaDeviceMethod("2.2", name: "OpenWrite", access: .write, parameterNames: ["RequestedLockState"])
+  func openWrite(_ lockState: OcaLockState, from controller: any OcaController) async throws
+    -> SwiftOCA.OcaDataset.OpenWriteParameters
+  {
+    let (maxPartSize, handle) = try await openWrite(lockState: lockState, controller: controller)
+    return .init(maxPartSize: maxPartSize, handle: handle)
+  }
+
+  @OcaDeviceMethod("2.3", name: "Close", access: .write)
+  func close(_ handle: OcaIOSessionHandle, from controller: any OcaController) async throws {
+    try await close(handle: handle, controller: controller)
+  }
+
+  @OcaDeviceMethod("2.4", name: "Read", access: .read)
+  func read(_ parameters: SwiftOCA.OcaDataset.ReadParameters, from controller: any OcaController) async throws
+    -> SwiftOCA.OcaDataset.ReadResultParameters
+  {
+    let (endOfData, part) = try await read(
+      handle: parameters.handle,
+      position: parameters.position,
+      partSize: parameters.partSize,
+      controller: controller
+    )
+    return .init(endOfData: endOfData, part: part)
+  }
+
+  @OcaDeviceMethod("2.5", name: "Write", access: .write)
+  func write(_ parameters: SwiftOCA.OcaDataset.WriteParameters, from controller: any OcaController) async throws {
+    try await write(
+      handle: parameters.handle,
+      position: parameters.position,
+      part: parameters.part,
+      controller: controller
+    )
+  }
+
+  @OcaDeviceMethod("2.6", name: "Clear", access: .write)
+  func clear(_ handle: OcaIOSessionHandle, from controller: any OcaController) async throws {
+    try await clear(handle: handle, controller: controller)
   }
 }
 
