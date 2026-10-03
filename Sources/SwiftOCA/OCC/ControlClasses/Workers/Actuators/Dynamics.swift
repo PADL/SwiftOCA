@@ -434,13 +434,14 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
     return (parameters.values, parameters.minValues, parameters.maxValues)
   }
 
+  /// The model names the lists Slope and KneeParameter, singular.
   @_spi(SwiftOCAPrivate)
   public struct SetMultipleParameters: OcaParametersReflectable {
     public let mask: OcaParameterMask
     public let nSegments: OcaUint8
     public let thresholds: OcaList<OcaDBr>
-    public let slopes: OcaList<OcaFloat32>
-    public let kneeParameters: OcaList<OcaFloat32>
+    public let slope: OcaList<OcaFloat32>
+    public let kneeParameter: OcaList<OcaFloat32>
     public let dynamicGainFloor: OcaDB
     public let dynamicGainCeiling: OcaDB
 
@@ -448,16 +449,16 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
       mask: OcaParameterMask,
       nSegments: OcaUint8,
       thresholds: OcaList<OcaDBr>,
-      slopes: OcaList<OcaFloat32>,
-      kneeParameters: OcaList<OcaFloat32>,
+      slope: OcaList<OcaFloat32>,
+      kneeParameter: OcaList<OcaFloat32>,
       dynamicGainFloor: OcaDB,
       dynamicGainCeiling: OcaDB
     ) {
       self.mask = mask
       self.nSegments = nSegments
       self.thresholds = thresholds
-      self.slopes = slopes
-      self.kneeParameters = kneeParameters
+      self.slope = slope
+      self.kneeParameter = kneeParameter
       self.dynamicGainFloor = dynamicGainFloor
       self.dynamicGainCeiling = dynamicGainCeiling
     }
@@ -479,20 +480,11 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
         mask: mask,
         nSegments: nSegments,
         thresholds: thresholds,
-        slopes: slopes,
-        kneeParameters: kneeParameters,
+        slope: slopes,
+        kneeParameter: kneeParameters,
         dynamicGainFloor: dynamicGainFloor,
         dynamicGainCeiling: dynamicGainCeiling
-      ),
-      parameterNames: [
-        "Mask",
-        "NSegments",
-        "Thresholds",
-        "Slope",
-        "KneeParameter",
-        "DynamicGainFloor",
-        "DynamicGainCeiling",
-      ]
+      )
     )
   }
 }
