@@ -211,6 +211,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   ) async throws -> Ocp1Response {
     switch command.methodID {
     case OcaMethodID("1.1"):
+      try decodeNullCommand(command)
       struct GetClassIdentificationParameters: OcaParametersReflectable {
         let classIdentification: OcaClassIdentification
       }
