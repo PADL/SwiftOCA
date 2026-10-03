@@ -23,7 +23,7 @@ import Foundation
 private final class _RelabelledGain: SwiftOCADevice.OcaGain {}
 
 /// A proprietary subclass, which defines a property at the level below its parent's.
-private final class _TrimmedGain: SwiftOCADevice.OcaGain {
+private class _TrimmedGain: SwiftOCADevice.OcaGain {
   override class var classID: OcaClassID {
     OcaClassID(parent: super.classID, authority: OcaClassID.OcaAllianceCompanyID, 1)
   }
@@ -34,6 +34,14 @@ private final class _TrimmedGain: SwiftOCADevice.OcaGain {
     setMethodID: OcaMethodID("5.2")
   )
   var trim: OcaDB = 0
+}
+
+/// A second proprietary level, with no authority fields of its own.
+private final class _OffsetTrimmedGain: _TrimmedGain {
+  override class var classID: OcaClassID { OcaClassID(parent: super.classID, 1) }
+
+  @OcaDeviceProperty(propertyID: OcaPropertyID("6.1"), getMethodID: OcaMethodID("6.1"))
+  var offset: OcaDB = 0
 }
 
 /// A class with a vector property: two property IDs behind one getter.
@@ -119,6 +127,20 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
     XCTAssertEqual(classes.count, 5)
     XCTAssertEqual(classes.last?.classID, _TrimmedGain.classID)
     XCTAssertEqual(classes.last?.properties.map(\.name), ["trim"])
+    XCTAssertEqual(classes[3].properties.map(\.name), ["gain"])
+  }
+
+  @OcaDevice
+  func testASecondProprietaryLevelDefinesPropertiesBelowTheFirst() async throws {
+    let gain: _OffsetTrimmedGain = try await makeGain()
+    let classes = gain.deviceClassDescriptions
+    XCTAssertEqual(classes.count, 6)
+    XCTAssertEqual(
+      Array(classes.map(\.classID).suffix(3)),
+      ["1.1.1.5", _TrimmedGain.classID, _OffsetTrimmedGain.classID]
+    )
+    XCTAssertEqual(classes.last?.properties.map(\.name), ["offset"])
+    XCTAssertEqual(classes[4].properties.map(\.name), ["trim"])
     XCTAssertEqual(classes[3].properties.map(\.name), ["gain"])
   }
 

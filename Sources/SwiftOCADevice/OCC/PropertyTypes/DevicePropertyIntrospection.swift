@@ -81,29 +81,17 @@ public extension OcaRoot {
       next = _getSuperclass(current)
     }
 
-    // a class's definition level is its depth by its class ID, OcaRoot being 1; that is
-    // not its depth in the lineage where the Swift classes skip a class the ID names
+    // a class's definition level is its class ID's, not its depth in the lineage, where
+    // the Swift classes skip a class the ID names
     let properties = devicePropertyDescriptions
     return lineage.reversed().map { type in
       OcaDeviceClassDescription(
         type: type,
         classID: type.classID,
         classVersion: type.classVersion,
-        properties: properties.filter { $0.propertyID.defLevel == type.classID.definitionLevel }
+        properties: properties.filter { $0.propertyID.defLevel == type.classID.defLevel }
       )
     }
-  }
-}
-
-private extension OcaClassID {
-  var definitionLevel: OcaUint16 {
-    var level: OcaUint16 = 1
-    var classID = self
-    while let parent = classID.parent {
-      level += 1
-      classID = parent
-    }
-    return level
   }
 }
 
