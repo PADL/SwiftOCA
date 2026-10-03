@@ -286,6 +286,48 @@ final class Ocp2WireNameTests: XCTestCase {
     attach.cancel()
     XCTAssertEqual(notifier.methodID, [3, 37])
     XCTAssertEqual(Set(notifier.parameters.keys), ["EndpointID", "CounterID", "NotifierONo"])
+
+    // OcaMediaTransportSessionAgent 3.8 SetStreamingEnabled(ID, Active); a derived name
+    // differs from the model in case alone, which a peer folds on receipt
+    let agent: SwiftOCA.OcaMediaTransportSessionAgent = try await connection.resolve(
+      object: OcaObjectIdentification(
+        oNo: Self.applicationONo + 1,
+        classIdentification: SwiftOCA.OcaMediaTransportSessionAgent.classIdentification
+      )
+    )
+    let setStreaming = Task {
+      try? await agent.set(session: 1, streamingEnabled: true)
+    }
+    let streaming = try await Self.nextCommand(from: endpoint)
+    setStreaming.cancel()
+    XCTAssertEqual(streaming.methodID, [3, 8])
+    XCTAssertEqual(Set(streaming.parameters.keys.map { $0.uppercased() }), ["ID", "ACTIVE"])
+
+    // OcaDynamicsCurve 4.13 SetMultiple(..., Slope, KneeParameter, ...)
+    let curve: SwiftOCA.OcaDynamicsCurve = try await connection.resolve(
+      object: OcaObjectIdentification(
+        oNo: Self.applicationONo + 2,
+        classIdentification: SwiftOCA.OcaDynamicsCurve.classIdentification
+      )
+    )
+    let setMultiple = Task {
+      try? await curve.setMultiple(
+        mask: 0,
+        nSegments: 1,
+        thresholds: [0],
+        slopes: [1],
+        kneeParameters: [0],
+        dynamicGainFloor: -20,
+        dynamicGainCeiling: 0
+      )
+    }
+    let multiple = try await Self.nextCommand(from: endpoint)
+    setMultiple.cancel()
+    XCTAssertEqual(multiple.methodID, [4, 13])
+    XCTAssertEqual(
+      Set(multiple.parameters.keys),
+      ["Mask", "NSegments", "Thresholds", "Slope", "KneeParameter", "DynamicGainFloor", "DynamicGainCeiling"]
+    )
   }
 }
 

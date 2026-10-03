@@ -401,8 +401,8 @@ open class OcaDynamicsCurve: OcaActuator {
         mask: parameters.mask,
         nSegments: parameters.nSegments,
         thresholds: parameters.thresholds,
-        slopes: parameters.slopes,
-        kneeParameters: parameters.kneeParameters,
+        slopes: parameters.slope,
+        kneeParameters: parameters.kneeParameter,
         dynamicGainFloor: parameters.dynamicGainFloor,
         dynamicGainCeiling: parameters.dynamicGainCeiling
       )
