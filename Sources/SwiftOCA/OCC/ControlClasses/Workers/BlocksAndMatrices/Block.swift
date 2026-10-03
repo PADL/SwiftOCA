@@ -339,18 +339,15 @@ Sendable {
     }
   }
 
-  /// The search results decode by `resultFlags`, passed to the decoder as user info,
-  /// which `invoke` has no argument for; so these four send by the descriptor's parts.
+  /// The search results decode by `resultFlags`, which the decoder reads as user info.
   private func search<Parameters: Encodable>(
     _ method: OcaMethodDescription<Parameters, [OcaObjectSearchResult]>,
     _ parameters: Parameters,
     resultFlags: OcaActionObjectSearchResultFlags
   ) async throws -> [OcaObjectSearchResult] {
-    let searchResults: [OcaObjectSearchResult] = try await sendCommandRrq(
-      methodID: method.methodID,
-      parameters: parameters,
-      parameterNames: method.erased.parameterNames,
-      responseNames: method.erased.resultNames,
+    let searchResults = try await invoke(
+      method,
+      parameters,
       userInfo: [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
     )
     try validate(searchResults, against: resultFlags)

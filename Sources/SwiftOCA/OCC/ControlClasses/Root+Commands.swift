@@ -193,29 +193,32 @@ public extension OcaRoot {
 
 public extension OcaRoot {
   /// Sends `method` with `parameters` and decodes its result. The descriptor supplies
-  /// the ID and the OCP.2 names, so a method's body is this one call.
+  /// the ID and the OCP.2 names, so a method's body is this one call; `userInfo` reaches
+  /// the coders, for a result that decodes by what was asked for.
   final func invoke<Parameters: Encodable, Result: Decodable>(
     _ method: OcaMethodDescription<Parameters, Result>,
-    _ parameters: Parameters
+    _ parameters: Parameters,
+    userInfo: [CodingUserInfoKey: Any]? = nil
   ) async throws -> Result {
-    try await _invoke(method.erased, parameters, Result.self) as! Result
+    try await _invoke(method.erased, parameters, Result.self, userInfo) as! Result
   }
 
   final func invoke<Parameters: Encodable>(
     _ method: OcaMethodDescription<Parameters, Void>,
     _ parameters: Parameters
   ) async throws {
-    _ = try await _invoke(method.erased, parameters, nil)
+    _ = try await _invoke(method.erased, parameters, nil, nil)
   }
 
   final func invoke<Result: Decodable>(
-    _ method: OcaMethodDescription<Void, Result>
+    _ method: OcaMethodDescription<Void, Result>,
+    userInfo: [CodingUserInfoKey: Any]? = nil
   ) async throws -> Result {
-    try await _invoke(method.erased, nil, Result.self) as! Result
+    try await _invoke(method.erased, nil, Result.self, userInfo) as! Result
   }
 
   final func invoke(_ method: OcaMethodDescription<Void, Void>) async throws {
-    _ = try await _invoke(method.erased, nil, nil)
+    _ = try await _invoke(method.erased, nil, nil, nil)
   }
 }
 
@@ -226,10 +229,11 @@ private extension OcaRoot {
   func _invoke(
     _ method: OcaAnyMethodDescription,
     _ parameters: (any Encodable)?,
-    _ result: (any Decodable.Type)?
+    _ result: (any Decodable.Type)?,
+    _ userInfo: [CodingUserInfoKey: Any]?
   ) async throws -> Any? {
     let encoded = try parameters.map {
-      try encodeParameters($0, parameterNames: method.parameterNames)
+      try encodeParameters($0, parameterNames: method.parameterNames, userInfo: userInfo)
     } ?? OcaParameters()
     let response = try await sendCommandRrq(
       methodID: method.methodID,
@@ -237,7 +241,12 @@ private extension OcaRoot {
       responseParameterCount: result.map { _ocp1ParameterCount(type: $0) } ?? 0
     )
     guard let result else { return nil }
-    return try result._decodeResponse(self, from: response, names: method.resultNames)
+    return try result._decodeResponse(
+      self,
+      from: response,
+      names: method.resultNames,
+      userInfo: userInfo
+    )
   }
 }
 
@@ -245,9 +254,15 @@ private extension Decodable {
   static func _decodeResponse(
     _ object: OcaRoot,
     from parameters: OcaParameters,
-    names: [String]?
+    names: [String]?,
+    userInfo: [CodingUserInfoKey: Any]?
   ) throws -> Any {
-    let value: Self = try object.decodeResponse(Self.self, from: parameters, parameterNames: names)
+    let value: Self = try object.decodeResponse(
+      Self.self,
+      from: parameters,
+      parameterNames: names,
+      userInfo: userInfo
+    )
     return value
   }
 }
