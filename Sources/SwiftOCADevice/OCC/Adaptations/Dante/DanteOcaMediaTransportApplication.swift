@@ -18,6 +18,7 @@ import SwiftOCA
 
 /// AES70-23 (draft) DanteOcaMediaTransportApplication: channel-based routing on top of
 /// CM4. Method IDs 4.1-4.8 are provisional.
+@OcaDeviceMethods
 open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication {
   public typealias DanteParameters = SwiftOCA.DanteOcaMediaTransportApplication
   public typealias ChannelEndpointMap = DanteParameters.ChannelEndpointMap
@@ -96,6 +97,39 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication {
     throw Ocp1Error.status(.notImplemented)
   }
 
+
+  @OcaDeviceMethod("4.3", name: "GetChannelEndpoint", access: .read, parameterNames: ["ID"])
+  func getChannelEndpoint(_ id: OcaID16, from controller: any OcaController) throws -> OcaChannelEndpoint {
+    try channelEndpoint(id)
+  }
+
+  @OcaDeviceMethod("4.4", name: "SetChannelEndpoint", access: .write)
+  func setChannelEndpoint(
+    _ parameters: DanteParameters.SetChannelEndpointParameters,
+    from controller: any OcaController
+  ) async throws {
+    try await setChannelEndpoint(parameters.id, parameters.channelEndpoint)
+  }
+
+  @OcaDeviceMethod("4.5", name: "ClearChannelEndpoint", access: .write, parameterNames: ["ID"])
+  func clearChannelEndpoint(_ id: OcaID16, from controller: any OcaController) async throws {
+    try await clearChannelEndpoint(id)
+  }
+
+  @OcaDeviceMethod("4.6", name: "AddChannelEndpoint", access: .write, resultNames: ["ID"])
+  func addChannelEndpoint(_ channelEndpoint: OcaChannelEndpoint, from controller: any OcaController) async throws
+    -> OcaID16
+  {
+    try await add(channelEndpoint: channelEndpoint)
+  }
+
+  @OcaDeviceMethod("4.7", name: "DeleteChannelEndpoint", access: .write, parameterNames: ["ID"])
+  func deleteChannelEndpoint(_ id: OcaID16, from controller: any OcaController) async throws {
+    try await delete(channelEndpoint: id)
+  }
+
+  /// SetChannelEndpoints (4.2) stays an arm: it is the setter of a property, applied
+  /// one endpoint at a time.
   override open func handleCommand(
     _ command: Ocp1Command,
     from controller: OcaController
@@ -107,29 +141,6 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication {
       for (id, channelEndpoint) in endpoints {
         try await setChannelEndpoint(id, channelEndpoint)
       }
-      return Ocp1Response()
-    case OcaMethodID("4.3"):
-      let id: OcaID16 = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(channelEndpoint(id))
-    case OcaMethodID("4.4"):
-      let parameters: DanteParameters.SetChannelEndpointParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setChannelEndpoint(parameters.id, parameters.channelEndpoint)
-      return Ocp1Response()
-    case OcaMethodID("4.5"):
-      let id: OcaID16 = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await clearChannelEndpoint(id)
-      return Ocp1Response()
-    case OcaMethodID("4.6"):
-      let channelEndpoint: OcaChannelEndpoint = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      return try await controller.encodeResponse(add(channelEndpoint: channelEndpoint))
-    case OcaMethodID("4.7"):
-      let id: OcaID16 = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await delete(channelEndpoint: id)
       return Ocp1Response()
     default:
       return try await super.handleCommand(command, from: controller)
