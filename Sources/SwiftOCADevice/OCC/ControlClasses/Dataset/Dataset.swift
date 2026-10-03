@@ -242,7 +242,7 @@ Sendable {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod("2.1", name: "OpenRead", access: .read, parameterNames: ["RequestedLockState"])
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.openRead, access: .read)
   func openRead(_ lockState: OcaLockState, from controller: any OcaController) async throws
     -> SwiftOCA.OcaDataset.OpenReadParameters
   {
@@ -250,7 +250,7 @@ Sendable {
     return .init(datasetSize: datasetSize, handle: handle)
   }
 
-  @OcaDeviceMethod("2.2", name: "OpenWrite", access: .write, parameterNames: ["RequestedLockState"])
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.openWrite, access: .write)
   func openWrite(_ lockState: OcaLockState, from controller: any OcaController) async throws
     -> SwiftOCA.OcaDataset.OpenWriteParameters
   {
@@ -258,12 +258,12 @@ Sendable {
     return .init(maxPartSize: maxPartSize, handle: handle)
   }
 
-  @OcaDeviceMethod("2.3", name: "Close", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.close, access: .write)
   func close(_ handle: OcaIOSessionHandle, from controller: any OcaController) async throws {
     try await close(handle: handle, controller: controller)
   }
 
-  @OcaDeviceMethod("2.4", name: "Read", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.read, access: .read)
   func read(_ parameters: SwiftOCA.OcaDataset.ReadParameters, from controller: any OcaController) async throws
     -> SwiftOCA.OcaDataset.ReadResultParameters
   {
@@ -276,7 +276,7 @@ Sendable {
     return .init(endOfData: endOfData, part: part)
   }
 
-  @OcaDeviceMethod("2.5", name: "Write", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.write, access: .write)
   func write(_ parameters: SwiftOCA.OcaDataset.WriteParameters, from controller: any OcaController) async throws {
     try await write(
       handle: parameters.handle,
@@ -286,7 +286,7 @@ Sendable {
     )
   }
 
-  @OcaDeviceMethod("2.6", name: "Clear", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.clear, access: .write)
   func clear(_ handle: OcaIOSessionHandle, from controller: any OcaController) async throws {
     try await clear(handle: handle, controller: controller)
   }

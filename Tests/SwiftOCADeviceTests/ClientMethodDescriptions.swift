@@ -55,6 +55,33 @@ enum ClientMethodDescriptions {
       ("control", OcaApplicationNetwork.control.erased),
       ("getPath", OcaApplicationNetwork.getPath.erased),
     ]),
+    (OcaBlock.self, [
+      ("getActionObjects", OcaBlock.getActionObjects.erased),
+      ("getDatasetObjects", OcaBlock.getDatasetObjects.erased),
+      ("constructActionObject", OcaBlock.constructActionObject.erased),
+      ("constructBlockUsingFactory", OcaBlock.constructBlockUsingFactory.erased),
+      ("deleteMember", OcaBlock.deleteMember.erased),
+      ("getActionObjectsRecursive", OcaBlock.getActionObjectsRecursive.erased),
+      ("addSignalPath", OcaBlock.addSignalPath.erased),
+      ("deleteSignalPath", OcaBlock.deleteSignalPath.erased),
+      ("getSignalPathsRecursive", OcaBlock.getSignalPathsRecursive.erased),
+      ("applyParamSet", OcaBlock.applyParamSet.erased),
+      ("getCurrentParamSetData", OcaBlock.getCurrentParamSetData.erased),
+      ("storeCurrentParamSetData", OcaBlock.storeCurrentParamSetData.erased),
+      ("findActionObjectsByRole", OcaBlock.findActionObjectsByRole.erased),
+      ("findActionObjectsByRoleRecursive", OcaBlock.findActionObjectsByRoleRecursive.erased),
+      ("findActionObjectsByLabelRecursive", OcaBlock.findActionObjectsByLabelRecursive.erased),
+      ("findActionObjectsByRolePath", OcaBlock.findActionObjectsByRolePath.erased),
+      ("applyParamDataset", OcaBlock.applyParamDataset.erased),
+      ("storeCurrentParameterData", OcaBlock.storeCurrentParameterData.erased),
+      ("fetchCurrentParameterData", OcaBlock.fetchCurrentParameterData.erased),
+      ("applyParameterData", OcaBlock.applyParameterData.erased),
+      ("constructDataset", OcaBlock.constructDataset.erased),
+      ("duplicateDataset", OcaBlock.duplicateDataset.erased),
+      ("getDatasetObjectsRecursive", OcaBlock.getDatasetObjectsRecursive.erased),
+      ("findDatasets", OcaBlock.findDatasets.erased),
+      ("findDatasetsRecursive", OcaBlock.findDatasetsRecursive.erased),
+    ]),
     (OcaCounterNotifier.self, [
       ("getLastUpdate", OcaCounterNotifier.getLastUpdate.erased),
     ]),
@@ -64,6 +91,18 @@ enum ClientMethodDescriptions {
       ("detachCounterNotifier", OcaCounterSetAgent.detachCounterNotifier.erased),
       ("resetCounterSet", OcaCounterSetAgent.resetCounterSet.erased),
       ("resetCounter", OcaCounterSetAgent.resetCounter.erased),
+    ]),
+    (OcaDataset.self, [
+      ("openRead", OcaDataset.openRead.erased),
+      ("openWrite", OcaDataset.openWrite.erased),
+      ("close", OcaDataset.close.erased),
+      ("read", OcaDataset.read.erased),
+      ("write", OcaDataset.write.erased),
+      ("clear", OcaDataset.clear.erased),
+      ("getDatasetSizes", OcaDataset.getDatasetSizes.erased),
+    ]),
+    (OcaDelayExtended.self, [
+      ("getDelayValueConverted", OcaDelayExtended.getDelayValueConverted.erased),
     ]),
     (OcaDeviceManager.self, [
       ("clearResetCause", OcaDeviceManager.clearResetCause.erased),
@@ -81,6 +120,31 @@ enum ClientMethodDescriptions {
     (OcaDiagnosticManager.self, [
       ("getLockStatus", OcaDiagnosticManager.getLockStatus.erased),
     ]),
+    (OcaDynamics.self, [
+      ("setMultiple", OcaDynamics.setMultiple.erased),
+    ]),
+    (OcaDynamicsCurve.self, [
+      ("getThresholds", OcaDynamicsCurve.getThresholds.erased),
+      ("getSlopes", OcaDynamicsCurve.getSlopes.erased),
+      ("getKneeParameters", OcaDynamicsCurve.getKneeParameters.erased),
+      ("setMultiple", OcaDynamicsCurve.setMultiple.erased),
+    ]),
+    (OcaDynamicsDetector.self, [
+      ("setMultiple", OcaDynamicsDetector.setMultiple.erased),
+    ]),
+    (OcaFilterArbitraryCurve.self, [
+      ("setTransferFunction", OcaFilterArbitraryCurve.setTransferFunction.erased),
+    ]),
+    (OcaFilterClassical.self, [
+      ("setMultiple", OcaFilterClassical.setMultiple.erased),
+    ]),
+    (OcaFilterParametric.self, [
+      ("setMultiple", OcaFilterParametric.setMultiple.erased),
+    ]),
+    (OcaFilterPolynomial.self, [
+      ("getCoefficients", OcaFilterPolynomial.getCoefficients.erased),
+      ("setCoefficients", OcaFilterPolynomial.setCoefficients.erased),
+    ]),
     (OcaFirmwareManager.self, [
       ("startUpdateProcess", OcaFirmwareManager.startUpdateProcess.erased),
       ("beginActiveImageUpdate", OcaFirmwareManager.beginActiveImageUpdate.erased),
@@ -97,9 +161,25 @@ enum ClientMethodDescriptions {
       ("addMember", OcaGroup.addMember.erased),
       ("deleteMember", OcaGroup.deleteMember.erased),
     ]),
+    (OcaLevelSensor.self, [
+      ("getReading", OcaLevelSensor.getReading.erased),
+    ]),
     (OcaLockManager.self, [
       ("lockWait", OcaLockManager.lockWait.erased),
       ("abortWaits", OcaLockManager.abortWaits.erased),
+    ]),
+    (OcaLog.self, [
+      ("addLogRecord", OcaLog.addLogRecord.erased),
+    ]),
+    (OcaMatrix.self, [
+      ("setCurrentXY", OcaMatrix.setCurrentXY.erased),
+      ("getSize", OcaMatrix.getSize.erased),
+      ("getMembers", OcaMatrix.getMembers.erased),
+      ("getProxy", OcaMatrix.getProxy.erased),
+      ("getMember", OcaMatrix.getMember.erased),
+      ("setMember", OcaMatrix.setMember.erased),
+      ("setCurrentXYLock", OcaMatrix.setCurrentXYLock.erased),
+      ("unlockCurrent", OcaMatrix.unlockCurrent.erased),
     ]),
     (OcaMediaClock3.self, [
       ("getCurrentRate", OcaMediaClock3.getCurrentRate.erased),
@@ -185,6 +265,9 @@ enum ClientMethodDescriptions {
     (OcaPowerManager.self, [
       ("exchangePowerSupply", OcaPowerManager.exchangePowerSupply.erased),
     ]),
+    (OcaPowerSensor.self, [
+      ("getReading", OcaPowerSensor.getReading.erased),
+    ]),
     (OcaRoot.self, [
       ("getLockable", OcaRoot.getLockable.erased),
       ("getRole", OcaRoot.getRole.erased),
@@ -200,6 +283,11 @@ enum ClientMethodDescriptions {
       ("changePreSharedKey", OcaSecurityManager.changePreSharedKey.erased),
       ("addPreSharedKey", OcaSecurityManager.addPreSharedKey.erased),
       ("deletePreSharedKey", OcaSecurityManager.deletePreSharedKey.erased),
+    ]),
+    (OcaSignalGenerator.self, [
+      ("start", OcaSignalGenerator.start.erased),
+      ("stop", OcaSignalGenerator.stop.erased),
+      ("setMultiple", OcaSignalGenerator.setMultiple.erased),
     ]),
     (OcaSubscriptionManager.self, [
       ("addSubscription", OcaSubscriptionManager.addSubscription.erased),
