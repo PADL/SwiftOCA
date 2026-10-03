@@ -102,12 +102,6 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   /// Properties that reflect live device state and are never persisted in datasets.
   open class var transientPropertyIDs: Set<OcaPropertyID> { [] }
 
-  /// The methods this class answers from a table rather than a `handleCommand` arm,
-  /// its parent's first. `@OcaDeviceMethods` writes it from the class's
-  /// `@OcaDeviceMethod` methods; `handleCommand` consults it for a command no
-  /// subclass arm took, and a bridge reads it to present the methods.
-  open class var deviceMethods: [OcaDeviceMethodDescription] { [] }
-
   var lockState: LockState {
     get {
       lockStateSubject.value
@@ -211,47 +205,72 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     }
   }
 
+  // OcaRoot's own methods make no lock check: a controller must be able to identify an
+  // object, and find out who holds its lock, while another controller holds it.
+  @OcaDeviceMethod(
+    "1.1", name: "GetClassIdentification", access: .none, resultNames: ["ClassIdentification"]
+  )
+  func getClassIdentification(from controller: any OcaController) -> OcaClassIdentification {
+    objectIdentification.classIdentification
+  }
+
+  @OcaDeviceMethod("1.2", name: "GetLockable", access: .none, resultNames: ["Lockable"])
+  func getLockable(from controller: any OcaController) -> OcaBoolean {
+    lockable
+  }
+
+  @OcaDeviceMethod("1.3", name: "LockTotal", access: .none)
+  func lockTotal(from controller: any OcaController) async throws {
+    try await lockNoReadWrite(controller: controller)
+  }
+
+  @OcaDeviceMethod("1.4", name: "Unlock", access: .none)
+  func unlock(from controller: any OcaController) async throws {
+    try await unlock(controller: controller)
+  }
+
+  @OcaDeviceMethod("1.5", name: "GetRole", access: .none, resultNames: ["Role"])
+  func getRole(from controller: any OcaController) -> OcaString {
+    role
+  }
+
+  @OcaDeviceMethod("1.6", name: "LockReadonly", access: .none)
+  func lockReadonly(from controller: any OcaController) async throws {
+    try await lockNoWrite(controller: controller)
+  }
+
+  @OcaDeviceMethod("1.7", name: "GetLockState", access: .none, resultNames: ["State"])
+  func getLockState(from controller: any OcaController) -> OcaLockState {
+    lockState.lockState
+  }
+
+  /// The methods this class answers from a table rather than a `handleCommand` arm,
+  /// its parent's first. `@OcaDeviceMethods` writes it from the class's
+  /// `@OcaDeviceMethod` methods; here by hand, as there is no parent to extend.
+  /// `handleCommand` consults it for a command no subclass arm took, and a bridge reads
+  /// it to present the methods.
+  open class var deviceMethods: [OcaDeviceMethodDescription] {
+    [
+      _ocaDeviceMethod_getClassIdentification,
+      _ocaDeviceMethod_getLockable,
+      _ocaDeviceMethod_lockTotal,
+      _ocaDeviceMethod_unlock,
+      _ocaDeviceMethod_getRole,
+      _ocaDeviceMethod_lockReadonly,
+      _ocaDeviceMethod_getLockState,
+    ]
+  }
+
+  /// A subclass's own arms run first; what they decline comes here, to the table and
+  /// then to the property accessors.
   open func handleCommand(
     _ command: Ocp1Command,
     from controller: any OcaController
   ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("1.1"):
-      try decodeNullCommand(command)
-      struct GetClassIdentificationParameters: OcaParametersReflectable {
-        let classIdentification: OcaClassIdentification
-      }
-      let response =
-        GetClassIdentificationParameters(
-          classIdentification: objectIdentification
-            .classIdentification
-        )
-      return try controller.encodeResponse(response)
-    case OcaMethodID("1.2"):
-      try decodeNullCommand(command)
-      return try controller.encodeResponse(lockable, name: "Lockable")
-    case OcaMethodID("1.3"):
-      try decodeNullCommand(command)
-      try await lockNoReadWrite(controller: controller)
-    case OcaMethodID("1.4"):
-      try decodeNullCommand(command)
-      try await unlock(controller: controller)
-    case OcaMethodID("1.5"):
-      try decodeNullCommand(command)
-      return try controller.encodeResponse(role, name: "Role")
-    case OcaMethodID("1.6"):
-      try decodeNullCommand(command)
-      try await lockNoWrite(controller: controller)
-    case OcaMethodID("1.7"):
-      try decodeNullCommand(command)
-      return try controller.encodeResponse(lockState.lockState, name: "State")
-    default:
-      if let method = Self.deviceMethod(for: command.methodID) {
-        return try await method.handle(self, command, controller)
-      }
-      return try await handlePropertyAccessor(command, from: controller)
+    if let method = Self.deviceMethod(for: command.methodID) {
+      return try await method.handle(self, command, controller)
     }
-    return Ocp1Response()
+    return try await handlePropertyAccessor(command, from: controller)
   }
 
   public var isContainer: Bool {
