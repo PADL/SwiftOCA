@@ -192,6 +192,67 @@ public extension OcaRoot {
 }
 
 public extension OcaRoot {
+  /// Sends `method` with `parameters` and decodes its result. The descriptor supplies
+  /// the ID and the OCP.2 names, so a method's body is this one call.
+  final func invoke<Parameters: Encodable, Result: Decodable>(
+    _ method: OcaMethodDescription<Parameters, Result>,
+    _ parameters: Parameters
+  ) async throws -> Result {
+    try await _invoke(method.erased, parameters, Result.self) as! Result
+  }
+
+  final func invoke<Parameters: Encodable>(
+    _ method: OcaMethodDescription<Parameters, Void>,
+    _ parameters: Parameters
+  ) async throws {
+    _ = try await _invoke(method.erased, parameters, nil)
+  }
+
+  final func invoke<Result: Decodable>(
+    _ method: OcaMethodDescription<Void, Result>
+  ) async throws -> Result {
+    try await _invoke(method.erased, nil, Result.self) as! Result
+  }
+
+  final func invoke(_ method: OcaMethodDescription<Void, Void>) async throws {
+    _ = try await _invoke(method.erased, nil, nil)
+  }
+}
+
+private extension OcaRoot {
+  /// One encoder and one decoder for every method, opened through the existentials,
+  /// rather than a specialisation of each in every method's body.
+  @inline(never)
+  func _invoke(
+    _ method: OcaAnyMethodDescription,
+    _ parameters: (any Encodable)?,
+    _ result: (any Decodable.Type)?
+  ) async throws -> Any? {
+    let encoded = try parameters.map {
+      try encodeParameters($0, parameterNames: method.parameterNames)
+    } ?? OcaParameters()
+    let response = try await sendCommandRrq(
+      methodID: method.methodID,
+      parameters: encoded,
+      responseParameterCount: result.map { _ocp1ParameterCount(type: $0) } ?? 0
+    )
+    guard let result else { return nil }
+    return try result._decodeResponse(self, from: response, names: method.resultNames)
+  }
+}
+
+private extension Decodable {
+  static func _decodeResponse(
+    _ object: OcaRoot,
+    from parameters: OcaParameters,
+    names: [String]?
+  ) throws -> Any {
+    let value: Self = try object.decodeResponse(Self.self, from: parameters, parameterNames: names)
+    return value
+  }
+}
+
+public extension OcaRoot {
   /// Send pre-encoded parameters; they must be in the connection's format.
   final func sendCommandRrq(
     methodID: OcaMethodID,
