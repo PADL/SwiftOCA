@@ -94,9 +94,9 @@ Sendable {
     )
   }
 
-  /// Resets one counter, or all counters when `id` is zero.
-  public func resetCounters(id: OcaID16 = 0) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("2.14"), parameters: id)
+  /// Resets every counter in the counterset.
+  public func resetCounters() async throws {
+    try await sendCommandRrq(methodID: OcaMethodID("2.14"))
   }
 }
 
