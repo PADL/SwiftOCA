@@ -1018,6 +1018,8 @@ final class SwiftOCADeviceTests: XCTestCase {
     let gain = OcaClassID("1.1.1.5")
     XCTAssertEqual(gain.defLevel, 4)
     XCTAssertEqual(gain.parent, OcaClassID("1.1.1"))
+    XCTAssertEqual(OcaClassID(parent: OcaClassID("1.1.1"), "5"), gain)
+    XCTAssertEqual(OcaClassID(parent: OcaClassID("1.1"), "1.5"), gain)
 
     // the authority fields add no level: a proprietary class is a direct child of the
     // standard class it extends
