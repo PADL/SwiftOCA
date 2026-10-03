@@ -24,6 +24,7 @@ import SwiftOCA
 
 private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF
 
+@OcaDeviceMethods
 open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   override open class var classID: OcaClassID {
     OcaClassID("1.1.5")
@@ -319,9 +320,10 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
   /// SetCurrentXY's work, shared with SetCurrentXYLock: validate and set the current
   /// area, then lock the matrix and its proxy until the next proxy call.
-  private func setCurrentXY(_ command: Ocp1Command, from controller: any OcaController) async throws {
-    let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
-    try await ensureWritable(by: controller, command: command)
+  private func setCurrentXY(
+    _ coordinates: OcaVector2D<OcaMatrixCoordinate>,
+    controller: any OcaController
+  ) throws {
     let members = members
     guard coordinates.x < members.nX || coordinates.x == OcaMatrixWildcardCoordinate,
           coordinates.y < members.nY || coordinates.y == OcaMatrixWildcardCoordinate
@@ -381,82 +383,71 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     var maxYSize: T
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.3"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let size = OcaVector2D<OcaMatrixCoordinate>(
-        x: OcaMatrixCoordinate(members.nX),
-        y: OcaMatrixCoordinate(members.nY)
-      )
-      // the grid is allocated at construction and SetSize (3.4) is not implemented,
-      // so each axis's bounds are its current extent
-      let matrixSize = MatrixSize<OcaMatrixCoordinate>(
-        xSize: size.x,
-        ySize: size.y,
-        minXSize: size.x,
-        maxXSize: size.x,
-        minYSize: size.y,
-        maxYSize: size.y
-      )
-      return try controller.encodeResponse(matrixSize)
-    case OcaMethodID("3.5"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(memberObjectNumbers, name: "Members")
-    case OcaMethodID("3.7"):
-      let coordinates: OcaVector2D<OcaMatrixCoordinate> = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let objectNumber = members[Int(coordinates.x), Int(coordinates.y)]?
-        .objectNumber ?? OcaInvalidONo
-      return try controller.encodeResponse(objectNumber, name: "MemberONo")
-    case OcaMethodID("3.8"):
-      let parameters: SwiftOCA.OcaMatrix.SetMemberParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      guard parameters.x < members.nX, parameters.y < members.nY else {
-        throw Ocp1Error.status(.parameterOutOfRange)
-      }
-      if parameters.memberONo == OcaInvalidONo {
-        throw Ocp1Error.status(.badONo)
-      }
-      let object = await deviceDelegate?.objects[parameters.memberONo] as? Member
-      guard let object else {
-        throw Ocp1Error.status(.badONo)
-      }
-      try await set(member: object, at: OcaVector2D(x: parameters.x, y: parameters.y))
-    case OcaMethodID("3.9"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(proxy.objectNumber, name: "ONo")
-    case OcaMethodID("3.2"):
-      // SetCurrentXY locks the matrix and its proxy, but not the members (AES70-2)
-      try await setCurrentXY(command, from: controller)
-    case OcaMethodID("3.15"):
-      // SetCurrentXYLock also locks every member of the new current area, failing
-      // without locking any of them if one cannot be locked (AES70-2)
-      try await setCurrentXY(command, from: controller)
-      let members = currentMembers
-      for member in members {
-        try Self.ensureLockable(member, by: controller)
-      }
-      for member in members {
-        try await member.lockNoReadWrite(controller: controller)
-      }
-    case OcaMethodID("3.16"):
-      // UnlockCurrent must not fail on a member that is already unlocked (AES70-2)
-      try decodeNullCommand(command)
-      for member in currentMembers {
-        if case .unlocked = member.lockState { continue }
-        try await member.unlock(controller: controller)
-      }
-    default:
-      return try await super.handleCommand(command, from: controller)
+  @OcaDeviceMethod("3.3", name: "GetSize", access: .read)
+  func getSize(from controller: any OcaController) -> MatrixSize<OcaMatrixCoordinate> {
+    // the grid is allocated at construction and SetSize (3.4) is not implemented,
+    // so each axis's bounds are its current extent
+    let x = OcaMatrixCoordinate(members.nX)
+    let y = OcaMatrixCoordinate(members.nY)
+    return MatrixSize(xSize: x, ySize: y, minXSize: x, maxXSize: x, minYSize: y, maxYSize: y)
+  }
+
+  @OcaDeviceMethod("3.5", name: "GetMembers", access: .read, resultNames: ["Members"])
+  func getMembers(from controller: any OcaController) -> OcaArray2D<OcaONo> {
+    memberObjectNumbers
+  }
+
+  @OcaDeviceMethod("3.7", name: "GetMember", access: .read, resultNames: ["MemberONo"])
+  func getMember(_ coordinates: OcaVector2D<OcaMatrixCoordinate>, from controller: any OcaController) -> OcaONo {
+    members[Int(coordinates.x), Int(coordinates.y)]?.objectNumber ?? OcaInvalidONo
+  }
+
+  @OcaDeviceMethod("3.8", name: "SetMember", access: .write)
+  func setMember(_ parameters: SwiftOCA.OcaMatrix.SetMemberParameters, from controller: any OcaController) async throws {
+    guard parameters.x < members.nX, parameters.y < members.nY else {
+      throw Ocp1Error.status(.parameterOutOfRange)
     }
-    return Ocp1Response()
+    if parameters.memberONo == OcaInvalidONo {
+      throw Ocp1Error.status(.badONo)
+    }
+    guard let object = await deviceDelegate?.objects[parameters.memberONo] as? Member else {
+      throw Ocp1Error.status(.badONo)
+    }
+    try await set(member: object, at: OcaVector2D(x: parameters.x, y: parameters.y))
+  }
+
+  @OcaDeviceMethod("3.9", name: "GetProxy", access: .read, resultNames: ["ONo"])
+  func getProxy(from controller: any OcaController) -> OcaONo {
+    proxy.objectNumber
+  }
+
+  /// SetCurrentXY locks the matrix and its proxy, but not the members (AES70-2).
+  @OcaDeviceMethod("3.2", name: "SetCurrentXY", access: .write)
+  func setCurrentXY(_ coordinates: OcaVector2D<OcaMatrixCoordinate>, from controller: any OcaController) throws {
+    try setCurrentXY(coordinates, controller: controller)
+  }
+
+  /// SetCurrentXYLock also locks every member of the new current area, failing
+  /// without locking any of them if one cannot be locked (AES70-2).
+  @OcaDeviceMethod("3.15", name: "SetCurrentXYLock", access: .write)
+  func setCurrentXYLock(_ coordinates: OcaVector2D<OcaMatrixCoordinate>, from controller: any OcaController) async throws {
+    try setCurrentXY(coordinates, controller: controller)
+    let members = currentMembers
+    for member in members {
+      try Self.ensureLockable(member, by: controller)
+    }
+    for member in members {
+      try await member.lockNoReadWrite(controller: controller)
+    }
+  }
+
+  /// UnlockCurrent must not fail on a member that is already unlocked (AES70-2).
+  @OcaDeviceMethod("3.16", name: "UnlockCurrent", access: .none)
+  func unlockCurrent(from controller: any OcaController) async throws {
+    for member in currentMembers {
+      if case .unlocked = member.lockState { continue }
+      try await member.unlock(controller: controller)
+    }
   }
 
   override public var isContainer: Bool {
