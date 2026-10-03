@@ -172,14 +172,14 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
 
   // MARK: - Command dispatch
 
-  @OcaDeviceMethod("3.3", name: "GetSession", access: .read, parameterNames: ["ID"], resultNames: ["Session"])
+  @OcaDeviceMethod(Parameters.getSession, access: .read)
   func getSession(_ id: OcaMediaTransportSessionID, from controller: any OcaController) throws
     -> OcaMediaTransportSession
   {
     try session(id)
   }
 
-  @OcaDeviceMethod("3.4", name: "AddSession", access: .write, resultNames: ["Session"])
+  @OcaDeviceMethod(Parameters.addSession, access: .write)
   func addSession(_ session: OcaMediaTransportSession, from controller: any OcaController) async throws
     -> OcaMediaTransportSession
   {
@@ -198,7 +198,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     try await configure(session: session)
   }
 
-  @OcaDeviceMethod("3.6", name: "DeleteSession", access: .write, parameterNames: ["ID"])
+  @OcaDeviceMethod(Parameters.deleteSession, access: .write)
   func deleteSession(_ id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
     try await delete(session: id)
   }

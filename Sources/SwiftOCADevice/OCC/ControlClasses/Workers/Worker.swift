@@ -73,9 +73,7 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
     try portName(of: portID)
   }
 
-  /// The model names the port `ID` here, where the other port-bearing classes say
-  /// `PortID`.
-  @OcaDeviceMethod("2.7", name: "SetPortName", access: .write, parameterNames: ["ID", "Name"])
+  @OcaDeviceMethod(SwiftOCA.OcaWorker.setPortName, access: .write)
   func setPortName(
     _ parameters: SwiftOCA.OcaWorker.SetPortNameParameters,
     from controller: any OcaController
@@ -83,19 +81,19 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
     try setName(parameters.name, ofPort: parameters.id)
   }
 
-  @OcaDeviceMethod("2.13", name: "GetPath", access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaWorker.getPath, access: .read)
   func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
     await path
   }
 
-  @OcaDeviceMethod("2.16", name: "GetPortClockMapEntry", access: .read, parameterNames: ["ID"], resultNames: ["Entry"])
+  @OcaDeviceMethod(SwiftOCA.OcaWorker.getPortClockMapEntry, access: .read)
   func getPortClockMapEntry(_ portID: OcaPortID, from controller: any OcaController) throws
     -> OcaPortClockMapEntry
   {
     try portClockMapEntry(for: portID)
   }
 
-  @OcaDeviceMethod("2.17", name: "SetPortClockMapEntry", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaWorker.setPortClockMapEntry, access: .write)
   func setPortClockMapEntry(
     _ parameters: OcaSetPortClockMapEntryParameters,
     from controller: any OcaController
@@ -103,7 +101,7 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
     setPortClockMapEntry(parameters)
   }
 
-  @OcaDeviceMethod("2.18", name: "DeletePortClockMapEntry", access: .write, parameterNames: ["ID"])
+  @OcaDeviceMethod(SwiftOCA.OcaWorker.deletePortClockMapEntry, access: .write)
   func deletePortClockMapEntry(_ portID: OcaPortID, from controller: any OcaController) {
     deletePortClockMapEntry(for: portID)
   }

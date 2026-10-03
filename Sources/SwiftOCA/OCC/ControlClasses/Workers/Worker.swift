@@ -115,45 +115,55 @@ Sendable {
     }
   }
 
-  /// 2.7
-  public func set(portID: OcaPortID, name: OcaString) async throws {
-    let params = SetPortNameParameters(id: portID, name: name)
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.7"),
-      parameters: params
-    )
+  public static let setPortName = OcaMethodDescription<SetPortNameParameters, Void>(
+    "2.7",
+    name: "SetPortName",
+    parameterNames: ["ID", "Name"]
+  )
+
+  public func set(portID id: OcaPortID, name: OcaString) async throws {
+    try await invoke(Self.setPortName, .init(id: id, name: name))
   }
+
+  public static let getPath =
+    OcaMethodDescription<Void, OcaGetPathParameters>("2.13", name: "GetPath")
 
   public var path: (OcaNamePath, OcaONoPath) {
     get async throws {
-      try await getPath(methodID: OcaMethodID("2.13"))
+      let path = try await invoke(Self.getPath)
+      return (path.rolePath, path.oNoPath)
     }
   }
 
+  public static let getPortClockMapEntry = OcaMethodDescription<OcaPortID, OcaPortClockMapEntry>(
+    "2.16",
+    name: "GetPortClockMapEntry",
+    parameterNames: ["ID"],
+    resultNames: ["Entry"]
+  )
+
   public func get(portID: OcaPortID) async throws -> OcaPortClockMapEntry {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.16"),
-      parameters: portID,
-      parameterNames: ["ID"]
-    )
+    try await invoke(Self.getPortClockMapEntry, portID)
   }
 
-  public func set(portID: OcaPortID, portClockMapEntry: OcaPortClockMapEntry) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.17"),
-      parameters: OcaSetPortClockMapEntryParameters(
-        portID: portID,
-        entry: portClockMapEntry
-      )
+  public static let setPortClockMapEntry =
+    OcaMethodDescription<OcaSetPortClockMapEntryParameters, Void>(
+      "2.17",
+      name: "SetPortClockMapEntry"
     )
+
+  public func set(portID: OcaPortID, portClockMapEntry entry: OcaPortClockMapEntry) async throws {
+    try await invoke(Self.setPortClockMapEntry, .init(portID: portID, entry: entry))
   }
+
+  public static let deletePortClockMapEntry = OcaMethodDescription<OcaPortID, Void>(
+    "2.18",
+    name: "DeletePortClockMapEntry",
+    parameterNames: ["ID"]
+  )
 
   public func deletePortClockMapEntry(portID: OcaPortID) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.18"),
-      parameters: portID,
-      parameterNames: ["ID"]
-    )
+    try await invoke(Self.deletePortClockMapEntry, portID)
   }
 }
 
