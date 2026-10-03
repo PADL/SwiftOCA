@@ -42,7 +42,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
           try setName(name, ofPort: id)
         }
 
-        struct _SetPortNameParameters: OcaParametersReflectable {
+        struct _SetPortNameParameters: OcaParametersReflectable, Sendable {
           let id: OcaPortID
           let name: OcaString
         }

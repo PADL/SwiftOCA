@@ -221,7 +221,7 @@ private struct DeviceMethod {
   var parameterRecord: DeclSyntax {
     let fields = parameters.map { "let \($0.name): \($0.type)" }
     return """
-    struct \(raw: parametersType!): OcaParametersReflectable {
+    struct \(raw: parametersType!): OcaParametersReflectable, Sendable {
       \(raw: fields.joined(separator: "\n  "))
     }
     """

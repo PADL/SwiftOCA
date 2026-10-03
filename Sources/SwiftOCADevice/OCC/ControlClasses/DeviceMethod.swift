@@ -117,7 +117,7 @@ public struct OcaDeviceMethodDescription: Sendable {
 
   // MARK: typed methods
 
-  public init<Object: OcaRoot, Parameters: Decodable, Result: Encodable>(
+  public init<Object: OcaRoot, Parameters: Decodable & Sendable, Result: Encodable & Sendable>(
     _ methodID: OcaMethodID,
     name: String,
     access: OcaDeviceMethodAccess,
@@ -131,8 +131,8 @@ public struct OcaDeviceMethodDescription: Sendable {
     self.init(
       methodID,
       name: name,
-      parameters: Self.describe(Parameters.self, names: names),
-      results: Self.describe(Result.self, names: resultNames)
+      parameters: Self.describe(Parameters.self, names: names, of: name),
+      results: Self.describe(Result.self, names: resultNames, of: name)
     ) { object, command, controller in
       let object = try object.cast(to: Object.self)
       let parameters: Parameters = try Object.decodeCommand(command, names: names)
@@ -142,7 +142,7 @@ public struct OcaDeviceMethodDescription: Sendable {
     }
   }
 
-  public init<Object: OcaRoot, Parameters: Decodable>(
+  public init<Object: OcaRoot, Parameters: Decodable & Sendable>(
     _ methodID: OcaMethodID,
     name: String,
     access: OcaDeviceMethodAccess,
@@ -155,7 +155,7 @@ public struct OcaDeviceMethodDescription: Sendable {
     self.init(
       methodID,
       name: name,
-      parameters: Self.describe(Parameters.self, names: names),
+      parameters: Self.describe(Parameters.self, names: names, of: name),
       results: []
     ) { object, command, controller in
       let object = try object.cast(to: Object.self)
@@ -166,7 +166,7 @@ public struct OcaDeviceMethodDescription: Sendable {
     }
   }
 
-  public init<Object: OcaRoot, Result: Encodable>(
+  public init<Object: OcaRoot, Result: Encodable & Sendable>(
     _ methodID: OcaMethodID,
     name: String,
     access: OcaDeviceMethodAccess,
@@ -177,7 +177,7 @@ public struct OcaDeviceMethodDescription: Sendable {
       methodID,
       name: name,
       parameters: [],
-      results: Self.describe(Result.self, names: resultNames)
+      results: Self.describe(Result.self, names: resultNames, of: name)
     ) { object, command, controller in
       let object = try object.cast(to: Object.self)
       try object.decodeNullCommand(command)
@@ -217,8 +217,8 @@ public struct OcaDeviceMethodDescription: Sendable {
     self.init(
       methodID,
       name: name,
-      parameters: parameters.map { Self.describe($0, names: parameterNames) } ?? [],
-      results: result.map { Self.describe($0, names: resultNames) } ?? []
+      parameters: parameters.map { Self.describe($0, names: parameterNames, of: name) } ?? [],
+      results: result.map { Self.describe($0, names: resultNames, of: name) } ?? []
     ) { object, command, controller in
       try await body(try object.cast(to: Object.self), command, controller)
     }
@@ -228,7 +228,8 @@ public struct OcaDeviceMethodDescription: Sendable {
   /// fields; any other type is the one parameter, named by `names` or left unnamed.
   private static func describe(
     _ type: Any.Type,
-    names: [String]?
+    names: [String]?,
+    of method: String
   ) -> [OcaDeviceMethodParameterDescription] {
     let fields: [(name: String, type: Any.Type)] = if type is OcaParametersReflectable.Type {
       Ocp2Naming.fields(of: type)
@@ -236,9 +237,9 @@ public struct OcaDeviceMethodDescription: Sendable {
       [(Ocp2Naming.unnamedParameter, type)]
     }
     let names = Ocp2Naming.parameterNames(explicit: names, fieldNames: fields.map(\.name))
-    return zip(names, fields).compactMap { name, field in
+    return zip(names, fields).map { name, field in
       guard let type = erasedCast(field.type, to: DescribedType.self) else {
-        return nil
+        preconditionFailure("\(method)'s \(name) is a \(field.type), which is not Codable & Sendable")
       }
       return OcaDeviceMethodParameterDescription(name: name, type: type)
     }
