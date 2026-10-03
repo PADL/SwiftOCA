@@ -258,7 +258,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     return actionObjects
   }
 
-  @OcaDeviceMethod("3.6", name: "GetActionObjectsRecursive", access: .read, resultNames: ["Objects"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.getActionObjectsRecursive, access: .read)
   func getActionObjectsRecursive(from controller: any OcaController) async throws
     -> OcaList<OcaBlockMember>
   {
@@ -270,7 +270,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
   }
 
-  @OcaDeviceMethod("3.10", name: "GetSignalPathsRecursive", access: .read, resultNames: ["SignalPaths"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.getSignalPathsRecursive, access: .read)
   func getSignalPathsRecursive(from controller: any OcaController) async throws
     -> OcaMap<OcaUint16, OcaSignalPath>
   {
@@ -622,22 +622,22 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   }
   #endif
 
-  @OcaDeviceMethod("3.5", name: "GetActionObjects", access: .read, resultNames: ["Objects"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.getActionObjects, access: .read)
   func getActionObjects(from controller: any OcaController) -> [OcaObjectIdentification] {
     actionObjects.map(\.objectIdentification)
   }
 
-  @OcaDeviceMethod("3.7", name: "AddSignalPath", access: .write, resultNames: ["Index"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.addSignalPath, access: .write)
   func addSignalPath(_ path: OcaSignalPath, from controller: any OcaController) async throws -> OcaUint16 {
     try await add(signalPath: path)
   }
 
-  @OcaDeviceMethod("3.8", name: "DeleteSignalPath", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.deleteSignalPath, access: .write)
   func deleteSignalPath(_ index: OcaUint16, from controller: any OcaController) async throws {
     try await delete(signalPathAt: index)
   }
 
-  @OcaDeviceMethod("3.17", name: "FindActionObjectsByRole", access: .read, resultNames: ["Result"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.findActionObjectsByRole, access: .read)
   func findActionObjectsByRole(
     _ parameters: SwiftOCA.OcaBlock.FindActionObjectsByRoleParameters,
     from controller: any OcaController
@@ -650,7 +650,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     )
   }
 
-  @OcaDeviceMethod("3.18", name: "FindActionObjectsByRoleRecursive", access: .read, resultNames: ["Result"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.findActionObjectsByRoleRecursive, access: .read)
   func findActionObjectsByRoleRecursive(
     _ parameters: SwiftOCA.OcaBlock.FindActionObjectsByRoleParameters,
     from controller: any OcaController
@@ -663,7 +663,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     )
   }
 
-  @OcaDeviceMethod("3.19", name: "FindActionObjectsByLabelRecursive", access: .read, resultNames: ["Result"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.findActionObjectsByLabelRecursive, access: .read)
   func findActionObjectsByLabelRecursive(
     _ parameters: SwiftOCA.OcaBlock.FindActionObjectsByRoleParameters,
     from controller: any OcaController
@@ -676,7 +676,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     )
   }
 
-  @OcaDeviceMethod("3.20", name: "FindActionObjectsByRolePath", access: .read, resultNames: ["Result"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.findActionObjectsByRolePath, access: .read)
   func findActionObjectsByRolePath(
     _ parameters: SwiftOCA.OcaBlock.FindActionObjectsByPathParameters,
     from controller: any OcaController
@@ -685,27 +685,27 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   }
 
   #if NonEmbeddedBuild
-  @OcaDeviceMethod("3.23", name: "ApplyParamDataset", access: .write, parameterNames: ["ONo"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.applyParamDataset, access: .write)
   func applyParamDataset(_ oNo: OcaONo, from controller: any OcaController) async throws {
     try await apply(paramDataset: oNo, controller: controller)
   }
 
-  @OcaDeviceMethod("3.24", name: "StoreCurrentParameterData", access: .write, parameterNames: ["ONo"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.storeCurrentParameterData, access: .write)
   func storeCurrentParameterData(_ oNo: OcaONo, from controller: any OcaController) async throws {
     try await store(currentParameterData: oNo, controller: controller)
   }
 
-  @OcaDeviceMethod("3.25", name: "FetchCurrentParameterData", access: .read, resultNames: ["Data"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.fetchCurrentParameterData, access: .read)
   func fetchCurrentParameterData(from controller: any OcaController) async throws -> OcaLongBlob {
     try await fetchCurrentParameterData()
   }
 
-  @OcaDeviceMethod("3.26", name: "ApplyParameterData", access: .write, parameterNames: ["Data"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.applyParameterData, access: .write)
   func applyParameterData(_ data: OcaLongBlob, from controller: any OcaController) async throws {
     try await apply(parameterData: data, controller: controller)
   }
 
-  @OcaDeviceMethod("3.27", name: "ConstructDataset", access: .write, resultNames: ["ObjectNumber"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.constructDataset, access: .write)
   func constructDataset(
     _ parameters: SwiftOCA.OcaBlock.ConstructDataSetParameters,
     from controller: any OcaController
@@ -720,7 +720,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     )
   }
 
-  @OcaDeviceMethod("3.28", name: "DuplicateDataset", access: .write, resultNames: ["NewONo"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.duplicateDataset, access: .write)
   func duplicateDataset(
     _ parameters: SwiftOCA.OcaBlock.DuplicateDataSetParameters,
     from controller: any OcaController
@@ -734,12 +734,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     )
   }
 
-  @OcaDeviceMethod("3.29", name: "GetDatasetObjects", access: .read, resultNames: ["Objects"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.getDatasetObjects, access: .read)
   func getDatasetObjects(from controller: any OcaController) async throws -> [OcaObjectIdentification] {
     try await datasetObjects.map(\.objectIdentification)
   }
 
-  @OcaDeviceMethod("3.30", name: "GetDatasetObjectsRecursive", access: .read, resultNames: ["Objects"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.getDatasetObjectsRecursive, access: .read)
   func getDatasetObjectMembersRecursive(from controller: any OcaController) async throws
     -> [OcaBlockMember]
   {
@@ -751,7 +751,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
   }
 
-  @OcaDeviceMethod("3.31", name: "FindDatasets", access: .read, resultNames: ["Datasets"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.findDatasets, access: .read)
   func findDatasets(
     _ parameters: SwiftOCA.OcaBlock.FindDatasetsParameters,
     from controller: any OcaController
@@ -764,7 +764,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     ))
   }
 
-  @OcaDeviceMethod("3.32", name: "FindDatasetsRecursive", access: .read, resultNames: ["Datasets"])
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.findDatasetsRecursive, access: .read)
   func findDatasetsRecursive(
     _ parameters: SwiftOCA.OcaBlock.FindDatasetsParameters,
     from controller: any OcaController

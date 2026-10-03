@@ -371,38 +371,29 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   )
   public var portsPerColumn: OcaUint8 = 0
 
-  /// GetSize's six output parameters, spelled as AES70-2 names them; the client
-  /// decodes the same shape as `OcaBoundedVector2D`. A record, so each parameter is
-  /// counted and named. The size is derived from the grid, so no property holds it.
-  struct MatrixSize<T: Codable & Sendable>: OcaParametersReflectable {
-    var xSize: T
-    var ySize: T
-    var minXSize: T
-    var maxXSize: T
-    var minYSize: T
-    var maxYSize: T
-  }
-
-  @OcaDeviceMethod("3.3", name: "GetSize", access: .read)
-  func getSize(from controller: any OcaController) -> MatrixSize<OcaMatrixCoordinate> {
+  /// The size is derived from the grid, so no property holds it.
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.getSize, access: .read)
+  func getSize(from controller: any OcaController)
+    -> SwiftOCA.OcaMatrix.MatrixSize<OcaMatrixCoordinate>
+  {
     // the grid is allocated at construction and SetSize (3.4) is not implemented,
     // so each axis's bounds are its current extent
     let x = OcaMatrixCoordinate(members.nX)
     let y = OcaMatrixCoordinate(members.nY)
-    return MatrixSize(xSize: x, ySize: y, minXSize: x, maxXSize: x, minYSize: y, maxYSize: y)
+    return .init(xSize: x, ySize: y, minXSize: x, maxXSize: x, minYSize: y, maxYSize: y)
   }
 
-  @OcaDeviceMethod("3.5", name: "GetMembers", access: .read, resultNames: ["Members"])
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.getMembers, access: .read)
   func getMembers(from controller: any OcaController) -> OcaArray2D<OcaONo> {
     memberObjectNumbers
   }
 
-  @OcaDeviceMethod("3.7", name: "GetMember", access: .read, resultNames: ["MemberONo"])
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.getMember, access: .read)
   func getMember(_ coordinates: OcaVector2D<OcaMatrixCoordinate>, from controller: any OcaController) -> OcaONo {
     members[Int(coordinates.x), Int(coordinates.y)]?.objectNumber ?? OcaInvalidONo
   }
 
-  @OcaDeviceMethod("3.8", name: "SetMember", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.setMember, access: .write)
   func setMember(_ parameters: SwiftOCA.OcaMatrix.SetMemberParameters, from controller: any OcaController) async throws {
     guard parameters.x < members.nX, parameters.y < members.nY else {
       throw Ocp1Error.status(.parameterOutOfRange)
@@ -416,20 +407,20 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     try await set(member: object, at: OcaVector2D(x: parameters.x, y: parameters.y))
   }
 
-  @OcaDeviceMethod("3.9", name: "GetProxy", access: .read, resultNames: ["ONo"])
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.getProxy, access: .read)
   func getProxy(from controller: any OcaController) -> OcaONo {
     proxy.objectNumber
   }
 
   /// SetCurrentXY locks the matrix and its proxy, but not the members (AES70-2).
-  @OcaDeviceMethod("3.2", name: "SetCurrentXY", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.setCurrentXY, access: .write)
   func setCurrentXY(_ coordinates: OcaVector2D<OcaMatrixCoordinate>, from controller: any OcaController) throws {
     try setCurrentXY(coordinates, controller: controller)
   }
 
   /// SetCurrentXYLock also locks every member of the new current area, failing
   /// without locking any of them if one cannot be locked (AES70-2).
-  @OcaDeviceMethod("3.15", name: "SetCurrentXYLock", access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.setCurrentXYLock, access: .write)
   func setCurrentXYLock(_ coordinates: OcaVector2D<OcaMatrixCoordinate>, from controller: any OcaController) async throws {
     try setCurrentXY(coordinates, controller: controller)
     let members = currentMembers
@@ -442,7 +433,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   }
 
   /// UnlockCurrent must not fail on a member that is already unlocked (AES70-2).
-  @OcaDeviceMethod("3.16", name: "UnlockCurrent", access: .none)
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.unlockCurrent, access: .none)
   func unlockCurrent(from controller: any OcaController) async throws {
     for member in currentMembers {
       if case .unlocked = member.lockState { continue }

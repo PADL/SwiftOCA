@@ -34,6 +34,10 @@ Sendable {
   )
   public var currentXY: OcaVectorProperty<OcaMatrixCoordinate>.PropertyValue
 
+  // the property's setter, as the device declares it; GetCurrentXY is answered by the property
+  public static let setCurrentXY =
+    OcaMethodDescription<OcaVector2D<OcaMatrixCoordinate>, Void>("3.2", name: "SetCurrentXY")
+
   /// GetSize returns the size with each axis's bounds; SetSize takes the size alone.
   @OcaBoundedVectorProperty(
     xPropertyID: OcaPropertyID("3.3"),
@@ -43,12 +47,42 @@ Sendable {
   )
   public var size: OcaBoundedVectorProperty<OcaMatrixCoordinate>.PropertyValue
 
+  /// GetSize's six output parameters, spelled as AES70-2 names them; the client's
+  /// `size` decodes the same shape as `OcaBoundedVector2D`.
+  @_spi(SwiftOCAPrivate)
+  public struct MatrixSize<T: Codable & Sendable>: OcaParametersReflectable {
+    public var xSize: T
+    public var ySize: T
+    public var minXSize: T
+    public var maxXSize: T
+    public var minYSize: T
+    public var maxYSize: T
+
+    public init(xSize: T, ySize: T, minXSize: T, maxXSize: T, minYSize: T, maxYSize: T) {
+      self.xSize = xSize
+      self.ySize = ySize
+      self.minXSize = minXSize
+      self.maxXSize = maxXSize
+      self.minYSize = minYSize
+      self.maxYSize = maxYSize
+    }
+  }
+
+  @_spi(SwiftOCAPrivate) public static let getSize =
+    OcaMethodDescription<Void, MatrixSize<OcaMatrixCoordinate>>("3.3", name: "GetSize")
+
   @OcaProperty(
     propertyID: OcaPropertyID("3.5"),
     getMethodID: OcaMethodID("3.5"),
     setMethodID: OcaMethodID("3.6")
   )
   public var members: OcaProperty<OcaArray2D<OcaONo>>.PropertyValue
+
+  public static let getMembers = OcaMethodDescription<Void, OcaArray2D<OcaONo>>(
+    "3.5",
+    name: "GetMembers",
+    resultNames: ["Members"]
+  )
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.6"),
@@ -58,6 +92,9 @@ Sendable {
     ocp2SetName: "ONo"
   )
   public var proxy: OcaProperty<OcaONo>.PropertyValue
+
+  public static let getProxy =
+    OcaMethodDescription<Void, OcaONo>("3.9", name: "GetProxy", resultNames: ["ONo"])
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.7"),
@@ -77,9 +114,14 @@ Sendable {
   )
   public var portsPerColumn: OcaProperty<OcaUint8>.PropertyValue
 
+  public static let getMember = OcaMethodDescription<OcaVector2D<OcaMatrixCoordinate>, OcaONo>(
+    "3.7",
+    name: "GetMember",
+    resultNames: ["MemberONo"]
+  )
+
   func get(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate) async throws -> OcaONo {
-    let xy = OcaVector2D(x: x, y: y)
-    return try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameters: xy)
+    try await invoke(Self.getMember, .init(x: x, y: y))
   }
 
   public struct SetMemberParameters: OcaParametersReflectable {
@@ -88,20 +130,24 @@ Sendable {
     public let memberONo: OcaONo
   }
 
+  public static let setMember =
+    OcaMethodDescription<SetMemberParameters, Void>("3.8", name: "SetMember")
+
   func set(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate, memberONo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.8"),
-      parameters: SetMemberParameters(x: x, y: y, memberONo: memberONo)
-    )
+    try await invoke(Self.setMember, .init(x: x, y: y, memberONo: memberONo))
   }
+
+  public static let setCurrentXYLock =
+    OcaMethodDescription<OcaVector2D<OcaMatrixCoordinate>, Void>("3.15", name: "SetCurrentXYLock")
 
   func lockCurrent(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate) async throws {
-    let xy = OcaVector2D(x: x, y: y)
-    try await sendCommandRrq(methodID: OcaMethodID("3.15"), parameters: xy)
+    try await invoke(Self.setCurrentXYLock, .init(x: x, y: y))
   }
 
+  public static let unlockCurrent = OcaMethodDescription<Void, Void>("3.16", name: "UnlockCurrent")
+
   func unlockCurrent() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.16"))
+    try await invoke(Self.unlockCurrent)
   }
 
   // FIXME: is this really a container? the AES70 spec doesn't seem to thing so
