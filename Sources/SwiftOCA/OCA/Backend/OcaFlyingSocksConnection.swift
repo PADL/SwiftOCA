@@ -172,53 +172,100 @@ private actor AsyncSocketPoolMonitor {
 
   private static let logger = Logger(label: "com.padl.SwiftOCA")
 
-  private var pool: any AsyncSocketPool = SocketPool.make()
+  private typealias Pool = (generation: Int, pool: any AsyncSocketPool, prepared: Task<(), Error>)
+
+  // shared by every connection, so never stopped on behalf of any one of them
+  private var current: Pool?
   private var generation = 0
-  private var task: Task<(), Error>?
 
   func get() async throws -> any AsyncSocketPool {
-    guard task == nil else { return pool }
-    let pool = pool, generation = generation
-    try await pool.prepare()
-    task = Task { [weak self] in
-      // SocketPool.run() is not restartable: one kqueue/epoll error (e.g. a
-      // peer's socket closed mid-poll) permanently kills the pool and with it
-      // every connection in the process. Build a fresh pool so reconnecting
-      // connections can recover.
-      do {
-        try await pool.run()
-      } catch is CancellationError {
-      } catch {
-        // A cancelled run() can throw the interrupted wait's error (EBADF from
-        // kevent) rather than CancellationError; remove the isCancelled check
-        // once swhitty/FlyingFox#242 is merged and the pin includes it.
-        if !Task.isCancelled {
-          Self.logger.warning("socket pool event loop failed: \(error), rebuilding pool")
-        }
-      }
-      await self?._rebuild(ifCurrent: generation)
-    }
-    return pool
+    let current = current ?? _start()
+    try await current.prepared.value
+    return current.pool
   }
 
-  private func _rebuild(ifCurrent staleGeneration: Int) {
-    guard staleGeneration == generation else { return }
+  // installs the pool before suspending, so concurrent callers share one prepare() and run()
+  private func _start() -> Pool {
     generation += 1
-    task = nil
-    pool = SocketPool.make()
+    let generation = generation
+    let pool: any AsyncSocketPool = SocketPool.make()
+    let prepared = Task { try await pool.prepare() }
+    let current = (generation: generation, pool: pool, prepared: prepared)
+    self.current = current
+    Task { [weak self] in
+      // SocketPool.run() is not restartable: one kqueue/epoll error (e.g. a
+      // peer's socket closed mid-poll) permanently kills the pool. Build a
+      // fresh one so reconnecting connections can recover.
+      do {
+        try await prepared.value
+        try await pool.run()
+      } catch {
+        Self.logger.warning("socket pool event loop failed: \(error), rebuilding pool")
+      }
+      await self?._discard(generation)
+    }
+    return current
   }
 
-  func stop() {
-    if let task {
-      task.cancel()
-      self.task = nil
+  private func _discard(_ staleGeneration: Int) {
+    if current?.generation == staleGeneration {
+      current = nil
+    }
+  }
+}
+
+/// One connection's view of the shared pool. FlyingSocks keeps its own record of the
+/// events registered per fd, which closing the fd does not clear: a later socket given
+/// the same fd is then never registered and hangs. So a connection drains its waits,
+/// letting the pool deregister their events, before closing its socket. Remove once
+/// swhitty/FlyingFox#244 is merged and the pin includes it.
+private final class ConnectionSocketPool: AsyncSocketPool {
+  private struct State {
+    var isDrained = false
+    var nextID = 0
+    var waits = [Int: Task<(), Error>]()
+  }
+
+  private let shared: any AsyncSocketPool
+  private let state = Mutex(State())
+
+  init(shared: any AsyncSocketPool) {
+    self.shared = shared
+  }
+
+  func prepare() async throws {}
+
+  func run() async throws {}
+
+  func suspendSocket(_ socket: Socket, untilReadyFor events: Socket.Events) async throws {
+    let shared = shared
+    let wait = Task { try await shared.suspendSocket(socket, untilReadyFor: events) }
+    let id = state.withLock { state -> Int? in
+      guard !state.isDrained else { return nil }
+      state.nextID += 1
+      state.waits[state.nextID] = wait
+      return state.nextID
+    }
+    guard let id else {
+      wait.cancel()
+      _ = try? await wait.value
+      throw Ocp1Error.notConnected
+    }
+    defer { _ = state.withLock { $0.waits.removeValue(forKey: id) } }
+    try await withTaskCancellationHandler {
+      try await wait.value
+    } onCancel: {
+      wait.cancel()
     }
   }
 
-  deinit {
-    if let task {
-      task.cancel()
+  func drain() async {
+    let waits = state.withLock { state in
+      state.isDrained = true
+      return Array(state.waits.values)
     }
+    for wait in waits { wait.cancel() }
+    for wait in waits { _ = try? await wait.value }
   }
 }
 
@@ -230,6 +277,7 @@ public class OcaFlyingSocksConnection: OcaConnection, Ocp1MutableSocketAddressCo
   // above); `FlyingSocks.AnySocketAddress` stays fully qualified everywhere else.
   package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
   fileprivate var _asyncSocket: AsyncSocket?
+  private var _socketPool: ConnectionSocketPool?
 
   package init(
     addressState: Ocp1DeviceAddressState,
@@ -292,20 +340,21 @@ public class OcaFlyingSocksConnection: OcaConnection, Ocp1MutableSocketAddressCo
     return FlyingSocks.AnySocketAddress(addr).data
   }
 
-  private func _cleanupConnection() {
-    if let _asyncSocket {
-      try? _asyncSocket.close()
-      self._asyncSocket = nil
-    }
+  private func _cleanupConnection() async {
+    let asyncSocket = _asyncSocket, socketPool = _socketPool
+    _asyncSocket = nil
+    _socketPool = nil
+    await socketPool?.drain()
+    try? asyncSocket?.close()
   }
 
   override public func connectDevice() async throws {
-    _cleanupConnection()
+    await _cleanupConnection()
     do {
       try await _connectFirstReachableDeviceAddress()
       try await super.connectDevice()
     } catch {
-      _cleanupConnection()
+      await _cleanupConnection()
       throw error
     }
   }
@@ -319,12 +368,16 @@ public class OcaFlyingSocksConnection: OcaConnection, Ocp1MutableSocketAddressCo
       // connect suspends on the pool and stays cancellable — a blocked syscall
       // would let one black-holed candidate eat the whole connect budget.
       // also connect UDP sockets to ensure we do not receive unsolicited replies
-      let asyncSocket = try await AsyncSocket(
-        socket: socket,
-        pool: AsyncSocketPoolMonitor.shared.get()
-      )
-      try await asyncSocket.connect(to: fsAddress)
+      let socketPool = try await ConnectionSocketPool(shared: AsyncSocketPoolMonitor.shared.get())
+      let asyncSocket = try AsyncSocket(socket: socket, pool: socketPool)
+      do {
+        try await asyncSocket.connect(to: fsAddress)
+      } catch {
+        await socketPool.drain()
+        throw error
+      }
       _asyncSocket = asyncSocket
+      _socketPool = socketPool
     } catch {
       try? socket.close()
       throw error
@@ -332,8 +385,7 @@ public class OcaFlyingSocksConnection: OcaConnection, Ocp1MutableSocketAddressCo
   }
 
   override public func disconnectDevice() async throws {
-    await AsyncSocketPoolMonitor.shared.stop()
-    _cleanupConnection()
+    await _cleanupConnection()
     try await super.disconnectDevice()
   }
 
