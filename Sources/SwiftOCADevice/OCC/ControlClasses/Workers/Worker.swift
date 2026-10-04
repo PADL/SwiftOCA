@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMapRepresentable,
   OcaLabelRepresentable
 {
@@ -67,30 +68,39 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
   )
   public var portClockMap: OcaMap<OcaPortID, OcaPortClockMapEntry> = [:]
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("2.6"):
-      return try await controller.encodeResponse(handleGetPortName(command, from: controller), name: "Name")
-    case OcaMethodID("2.7"):
-      let params: SwiftOCA.OcaWorker.SetPortNameParameters = try decodeCommand(command)
-      try await handleSetPortName(command, from: controller, portID: params.id, name: params.name)
-      return Ocp1Response()
-    case OcaMethodID("2.13"):
-      return try await controller.encodeResponse(path)
-    case OcaMethodID("2.16"):
-      let portClockMapEntry = try await handleGetPortClockMapEntry(command, from: controller)
-      return try controller.encodeResponse(portClockMapEntry, name: "Entry")
-    case OcaMethodID("2.17"):
-      try await handleSetPortClockMapEntry(command, from: controller)
-      return Ocp1Response()
-    case OcaMethodID("2.18"):
-      try await handleDeletePortClockMapEntry(command, from: controller)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod(SwiftOCA.OcaWorker.getPortName)
+  func getPortName(_ portID: OcaPortID, from controller: any OcaController) throws -> OcaString {
+    try portName(of: portID)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaWorker.setPortName)
+  func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) throws {
+    try setName(name, ofPort: id)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaWorker.getPath)
+  func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
+    await path
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaWorker.getPortClockMapEntry)
+  func getPortClockMapEntry(_ portID: OcaPortID, from controller: any OcaController) throws
+    -> OcaPortClockMapEntry
+  {
+    try portClockMapEntry(for: portID)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaWorker.setPortClockMapEntry)
+  func setPortClockMapEntry(
+    _ portID: OcaPortID,
+    _ entry: OcaPortClockMapEntry,
+    from controller: any OcaController
+  ) {
+    portClockMap[portID] = entry
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaWorker.deletePortClockMapEntry)
+  func deletePortClockMapEntry(_ portID: OcaPortID, from controller: any OcaController) {
+    deletePortClockMapEntry(for: portID)
   }
 }

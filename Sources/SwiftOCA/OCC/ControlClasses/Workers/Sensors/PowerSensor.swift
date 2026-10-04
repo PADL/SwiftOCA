@@ -50,11 +50,13 @@ open class OcaPowerSensor: OcaSensor, @unchecked Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let getReading =
+    OcaMethodDescriptor<Void, GetReadingParameters>("4.1", name: "GetReading")
+
   public func getReading() async throws
     -> (power: OcaBoundedPropertyValue<OcaFloat32>, powerFactor: OcaFloat32)
   {
-    let parameters: GetReadingParameters =
-      try await sendCommandRrq(methodID: OcaMethodID("4.1"))
+    let parameters = try await invoke(Self.getReading)
     return (
       OcaBoundedPropertyValue(
         value: parameters.power,

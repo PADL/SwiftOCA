@@ -36,6 +36,9 @@ enum ClientMethodDescriptors {
       ("resetCounterSet", OcaCounterSetAgent.resetCounterSet.erased),
       ("resetCounter", OcaCounterSetAgent.resetCounter.erased),
     ]),
+    (OcaDelayExtended.self, [
+      ("getDelayValueConverted", OcaDelayExtended.getDelayValueConverted.erased),
+    ]),
     (OcaDeviceManager.self, [
       ("clearResetCause", OcaDeviceManager.clearResetCause.erased),
       ("setDeviceName", OcaDeviceManager.setDeviceName.erased),
@@ -52,6 +55,31 @@ enum ClientMethodDescriptors {
     (OcaDiagnosticManager.self, [
       ("getLockStatus", OcaDiagnosticManager.getLockStatus.erased),
     ]),
+    (OcaDynamics.self, [
+      ("setMultiple", OcaDynamics.setMultiple.erased),
+    ]),
+    (OcaDynamicsCurve.self, [
+      ("getThresholds", OcaDynamicsCurve.getThresholds.erased),
+      ("getSlopes", OcaDynamicsCurve.getSlopes.erased),
+      ("getKneeParameters", OcaDynamicsCurve.getKneeParameters.erased),
+      ("setMultiple", OcaDynamicsCurve.setMultiple.erased),
+    ]),
+    (OcaDynamicsDetector.self, [
+      ("setMultiple", OcaDynamicsDetector.setMultiple.erased),
+    ]),
+    (OcaFilterArbitraryCurve.self, [
+      ("setTransferFunction", OcaFilterArbitraryCurve.setTransferFunction.erased),
+    ]),
+    (OcaFilterClassical.self, [
+      ("setMultiple", OcaFilterClassical.setMultiple.erased),
+    ]),
+    (OcaFilterParametric.self, [
+      ("setMultiple", OcaFilterParametric.setMultiple.erased),
+    ]),
+    (OcaFilterPolynomial.self, [
+      ("getCoefficients", OcaFilterPolynomial.getCoefficients.erased),
+      ("setCoefficients", OcaFilterPolynomial.setCoefficients.erased),
+    ]),
     (OcaFirmwareManager.self, [
       ("startUpdateProcess", OcaFirmwareManager.startUpdateProcess.erased),
       ("beginActiveImageUpdate", OcaFirmwareManager.beginActiveImageUpdate.erased),
@@ -67,6 +95,9 @@ enum ClientMethodDescriptors {
       ("getGroupController", OcaGroup.getGroupController.erased),
       ("addMember", OcaGroup.addMember.erased),
       ("deleteMember", OcaGroup.deleteMember.erased),
+    ]),
+    (OcaLevelSensor.self, [
+      ("getReading", OcaLevelSensor.getReading.erased),
     ]),
     (OcaLockManager.self, [
       ("lockWait", OcaLockManager.lockWait.erased),
@@ -94,6 +125,9 @@ enum ClientMethodDescriptors {
     (OcaPowerManager.self, [
       ("exchangePowerSupply", OcaPowerManager.exchangePowerSupply.erased),
     ]),
+    (OcaPowerSensor.self, [
+      ("getReading", OcaPowerSensor.getReading.erased),
+    ]),
     (OcaRoot.self, [
       ("getLockable", OcaRoot.getLockable.erased),
       ("getRole", OcaRoot.getRole.erased),
@@ -109,6 +143,11 @@ enum ClientMethodDescriptors {
       ("changePreSharedKey", OcaSecurityManager.changePreSharedKey.erased),
       ("addPreSharedKey", OcaSecurityManager.addPreSharedKey.erased),
       ("deletePreSharedKey", OcaSecurityManager.deletePreSharedKey.erased),
+    ]),
+    (OcaSignalGenerator.self, [
+      ("start", OcaSignalGenerator.start.erased),
+      ("stop", OcaSignalGenerator.stop.erased),
+      ("setMultiple", OcaSignalGenerator.setMultiple.erased),
     ]),
     (OcaSubscriptionManager.self, [
       ("addSubscription", OcaSubscriptionManager.addSubscription.erased),
@@ -129,6 +168,16 @@ enum ClientMethodDescriptors {
     ]),
     (OcaTimeSource.self, [
       ("reset", OcaTimeSource.reset.erased),
+    ]),
+    (OcaWorker.self, [
+      ("addPort", OcaWorker.addPort.erased),
+      ("deletePort", OcaWorker.deletePort.erased),
+      ("getPortName", OcaWorker.getPortName.erased),
+      ("setPortName", OcaWorker.setPortName.erased),
+      ("getPath", OcaWorker.getPath.erased),
+      ("getPortClockMapEntry", OcaWorker.getPortClockMapEntry.erased),
+      ("setPortClockMapEntry", OcaWorker.setPortClockMapEntry.erased),
+      ("deletePortClockMapEntry", OcaWorker.deletePortClockMapEntry.erased),
     ]),
   ]
 }

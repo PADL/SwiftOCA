@@ -182,6 +182,9 @@ open class OcaDynamics: OcaActuator, @unchecked Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let setMultiple =
+    OcaMethodDescriptor<SetMultipleParameters, Void>("4.27", name: "SetMultiple")
+
   /// atomically sets the dynamics parameters selected by `mask`
   public func setMultiple(
     mask: OcaParameterMask,
@@ -197,9 +200,9 @@ open class OcaDynamics: OcaActuator, @unchecked Sendable {
     kneeParameter: OcaFloat32,
     slope: OcaFloat32
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.27"),
-      parameters: SetMultipleParameters(
+    try await invoke(
+      Self.setMultiple,
+      .init(
         mask: mask,
         function: function,
         threshold: threshold,
@@ -278,6 +281,9 @@ open class OcaDynamicsDetector: OcaActuator, @unchecked Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let setMultiple =
+    OcaMethodDescriptor<SetMultipleParameters, Void>("4.9", name: "SetMultiple")
+
   /// atomically sets the detector parameters selected by `mask`
   public func setMultiple(
     mask: OcaParameterMask,
@@ -286,9 +292,9 @@ open class OcaDynamicsDetector: OcaActuator, @unchecked Sendable {
     releaseTime: OcaTimeInterval,
     holdTime: OcaTimeInterval
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.9"),
-      parameters: SetMultipleParameters(
+    try await invoke(
+      Self.setMultiple,
+      .init(
         mask: mask,
         law: law,
         attackTime: attackTime,
@@ -396,13 +402,22 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let getThresholds =
+    OcaMethodDescriptor<Void, GetThresholdsParameters>("4.14", name: "GetThresholds")
+
   public func getThresholds() async throws
     -> (thresholds: OcaList<OcaDBr>, minThreshold: OcaDBz, maxThreshold: OcaDBz)
   {
-    let parameters: GetThresholdsParameters =
-      try await sendCommandRrq(methodID: OcaMethodID("4.14"))
+    let parameters = try await invoke(Self.getThresholds)
     return (parameters.thresholds, parameters.minThreshold, parameters.maxThreshold)
   }
+
+  @_spi(SwiftOCAPrivate) public static let getSlopes =
+    OcaMethodDescriptor<Void, GetFloat32ListParameters>(
+      "4.5",
+      name: "GetSlopes",
+      resultNames: ["Slopes", "MinSlope", "MaxSlope"]
+    )
 
   public func getSlopes() async throws
     -> (
@@ -411,13 +426,16 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
       maxSlopes: OcaList<OcaFloat32>
     )
   {
-    let parameters: GetFloat32ListParameters =
-      try await sendCommandRrq(
-        methodID: OcaMethodID("4.5"),
-        responseNames: ["Slopes", "MinSlope", "MaxSlope"]
-      )
+    let parameters = try await invoke(Self.getSlopes)
     return (parameters.values, parameters.minValues, parameters.maxValues)
   }
+
+  @_spi(SwiftOCAPrivate) public static let getKneeParameters =
+    OcaMethodDescriptor<Void, GetFloat32ListParameters>(
+      "4.7",
+      name: "GetKneeParameters",
+      resultNames: ["Parameters", "MinParameter", "MaxParameter"]
+    )
 
   public func getKneeParameters() async throws
     -> (
@@ -426,11 +444,7 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
       maxKneeParameters: OcaList<OcaFloat32>
     )
   {
-    let parameters: GetFloat32ListParameters =
-      try await sendCommandRrq(
-        methodID: OcaMethodID("4.7"),
-        responseNames: ["Parameters", "MinParameter", "MaxParameter"]
-      )
+    let parameters = try await invoke(Self.getKneeParameters)
     return (parameters.values, parameters.minValues, parameters.maxValues)
   }
 
@@ -464,6 +478,9 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let setMultiple =
+    OcaMethodDescriptor<SetMultipleParameters, Void>("4.13", name: "SetMultiple")
+
   /// atomically sets the curve parameters selected by `mask`
   public func setMultiple(
     mask: OcaParameterMask,
@@ -474,9 +491,9 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
     dynamicGainFloor: OcaDB,
     dynamicGainCeiling: OcaDB
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.13"),
-      parameters: SetMultipleParameters(
+    try await invoke(
+      Self.setMultiple,
+      .init(
         mask: mask,
         nSegments: nSegments,
         thresholds: thresholds,
