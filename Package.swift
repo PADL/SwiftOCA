@@ -110,7 +110,7 @@ PlatformTargetDependencies += [
 ]
 
 #if os(Linux)
-PlatformPackageDependencies += [.package(url: "https://github.com/PADL/IORingSwift", from: "2.0.0")]
+PlatformPackageDependencies += [.package(url: "https://github.com/PADL/IORingSwift", from: "2.1.3")]
 OCADevicePlatformDependencies += [.product(name: "IORing", package: "IORingSwift")]
 
 PlatformTargetDependencies += [
@@ -219,7 +219,7 @@ let CommonPackageDependencies: [Package.Dependency] = [
   .package(url: "https://github.com/apple/swift-system", from: "1.6.4"),
   .package(url: "https://github.com/apple/swift-atomics", from: "1.2.0"),
   .package(url: "https://github.com/PADL/SocketAddress", from: "0.5.1"),
-  .package(url: "https://github.com/lhoward/AsyncExtensions", from: "0.10.0"),
+  .package(url: "https://github.com/sideeffect-io/AsyncExtensions", from: "0.7.0"),
   .package(url: "https://github.com/Flight-School/AnyCodable", from: "0.6.7"),
   .package(url: "https://github.com/1024jp/GzipSwift", from: "6.1.0"),
   .package(url: "https://github.com/stephencelis/SQLite.swift.git", from: "0.16.0"),
