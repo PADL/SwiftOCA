@@ -194,6 +194,50 @@ final class Ocp2DeviceNamingOracleTests: XCTestCase {
     }
   }
 
+  /// Every `OcaMethodDescriptor` a client class declares, judged as the device tables
+  /// are: the name for the ID, the parameter names in order, the result names. Here
+  /// rather than in SwiftOCATests because the sweep beside it needs the device module.
+  func testMethodDescriptorsAgainstModel() throws {
+    guard let path = ProcessInfo.processInfo.environment["AES70_2_XMI"] else {
+      throw XCTSkip("set AES70_2_XMI to the AES70-2 XMI file to run the naming oracle")
+    }
+    let model = try Self.loadModel(from: URL(fileURLWithPath: path))
+    XCTAssertFalse(model.isEmpty, "no methods found in \(path)")
+    let byClassAndMethod = Dictionary(
+      model.map { ("\($0.classID)/\($0.methodID)", $0) },
+      uniquingKeysWith: { first, _ in first }
+    )
+
+    var deviations = Set<String>()
+    var checked = 0
+    for (type, descriptors) in ClientMethodDescriptors.all {
+      let classID = type.classIdentification.classID
+      for (name, method) in descriptors {
+        let key = "\(classID)/\(method.methodID)"
+        guard let expected = byClassAndMethod[key] else {
+          deviations.insert("\(type).\(name) \(method.methodID): not in the model as \(key)")
+          continue
+        }
+        checked += 1
+        if expected.name != method.name {
+          deviations.insert("\(expected.className) \(method.methodID): named \(method.name), model says \(expected.name)")
+        }
+        let parameters = method.parameters.map(\.name)
+        if !Self.namesMatch(parameters, expected.inputs) {
+          deviations.insert("\(expected.className) \(method.methodID) \(expected.name): takes \(parameters), model says \(expected.inputs)")
+        }
+        let results = method.results.map(\.name)
+        if !Self.namesMatch(results, expected.outputs) {
+          deviations.insert("\(expected.className) \(method.methodID) \(expected.name): returns \(results), model says \(expected.outputs)")
+        }
+      }
+    }
+    print("Ocp2 client naming oracle: checked \(checked) method descriptors, \(deviations.count) deviations")
+    for deviation in deviations.sorted() {
+      print("  \(deviation)")
+    }
+  }
+
   func testDeviceAccessorNamesAgainstModel() async throws {
     guard let path = ProcessInfo.processInfo.environment["AES70_2_XMI"] else {
       throw XCTSkip("set AES70_2_XMI to the AES70-2 XMI file to run the naming oracle")

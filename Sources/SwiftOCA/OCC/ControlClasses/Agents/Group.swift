@@ -26,12 +26,24 @@ Sendable {
   )
   public var members: OcaListProperty<OcaONo>.PropertyValue
 
+  // the property's accessors, as the device declares them; OcaGroup is not in the 2023 model
+  public static let getMembers =
+    OcaMethodDescriptor<Void, [OcaONo]>("3.1", name: "GetMembers", resultNames: ["Members"])
+  public static let setMembers =
+    OcaMethodDescriptor<[OcaONo], Void>("3.2", name: "SetMembers", parameterNames: ["Members"])
+
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.5"),
     setMethodID: OcaMethodID("3.6")
   )
   public var groupController: OcaProperty<OcaONo>.PropertyValue
+
+  public static let getGroupController = OcaMethodDescriptor<Void, OcaONo>(
+    "3.5",
+    name: "GetGroupController",
+    resultNames: ["GroupController"]
+  )
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.3"),
@@ -47,20 +59,18 @@ Sendable {
   )
   public var saturationMode: OcaProperty<OcaString?>.PropertyValue
 
+  public static let addMember =
+    OcaMethodDescriptor<OcaONo, Void>("3.3", name: "AddMember", parameterNames: ["Member"])
+
   public func add(member objectNumber: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.3"),
-      parameters: objectNumber,
-      parameterNames: ["Member"] // name not in AES70-2023 model
-    )
+    try await invoke(Self.addMember, objectNumber)
   }
 
+  public static let deleteMember =
+    OcaMethodDescriptor<OcaONo, Void>("3.4", name: "DeleteMember", parameterNames: ["Member"])
+
   public func delete(member objectNumber: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.4"),
-      parameters: objectNumber,
-      parameterNames: ["Member"] // name not in AES70-2023 model
-    )
+    try await invoke(Self.deleteMember, objectNumber)
   }
 }
 

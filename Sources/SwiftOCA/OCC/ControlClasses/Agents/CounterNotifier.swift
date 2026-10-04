@@ -30,7 +30,13 @@ open class OcaCounterNotifier: OcaAgent, @unchecked Sendable {
   )
   public var filterParameters: OcaProperty<OcaCounterNotifierFilterParameters>.PropertyValue
 
+  public static let getLastUpdate = OcaMethodDescriptor<Void, OcaList<OcaCounterUpdate>>(
+    "3.1",
+    name: "GetLastUpdate",
+    resultNames: ["LastUpdate"]
+  )
+
   public func getLastUpdate() async throws -> OcaList<OcaCounterUpdate> {
-    try await sendCommandRrq(methodID: OcaMethodID("3.1"))
+    try await invoke(Self.getLastUpdate)
   }
 }
