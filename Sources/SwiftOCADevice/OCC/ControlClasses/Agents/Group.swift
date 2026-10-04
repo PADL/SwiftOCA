@@ -367,7 +367,7 @@ extension OcaGroup {
     }
 
     if !exceptions.isEmpty {
-      let format = await controller.controlProtocol.parameterFormat
+      let format = controller.controlProtocol.parameterFormat
       let notification = Ocp1Notification2(
         event: OcaEvent(
           emitterONo: group.objectNumber,
