@@ -112,6 +112,37 @@ final class DeviceMethodTests: XCTestCase {
   }
 
   @OcaDevice
+  func testAMissingParameterIsOutOfRangeNotADeviceError() async throws {
+    let worker: SwiftOCADevice.OcaWorker = try await makeWorker()
+    let get = Ocp1Command(
+      handle: 1,
+      targetONo: worker.objectNumber,
+      methodID: OcaMethodID("2.6"),
+      parameters: OcaParameters(parameterCount: 0, parameterData: Data())
+    )
+    do {
+      _ = try await worker.handleCommand(get, from: TestController())
+      XCTFail("decoded a GetPortName with no parameter")
+    } catch Ocp1Error.status(.parameterOutOfRange) {}
+  }
+
+  @OcaDevice
+  func testATruncatedParameterIsBadFormat() async throws {
+    let worker: SwiftOCADevice.OcaWorker = try await makeWorker()
+    // one parameter, but one byte of an OcaPortID
+    let get = Ocp1Command(
+      handle: 1,
+      targetONo: worker.objectNumber,
+      methodID: OcaMethodID("2.6"),
+      parameters: OcaParameters(parameterCount: 1, parameterData: Data([0x01]))
+    )
+    do {
+      _ = try await worker.handleCommand(get, from: TestController())
+      XCTFail("decoded a truncated GetPortName")
+    } catch Ocp1Error.status(.badFormat) {}
+  }
+
+  @OcaDevice
   func testASubclassArmTakesPrecedence() async throws {
     let worker: _ArmedWorker = try await makeWorker()
     let path = try command(OcaMethodID("2.13"), SwiftOCA.OcaRoot.Placeholder(), on: worker)

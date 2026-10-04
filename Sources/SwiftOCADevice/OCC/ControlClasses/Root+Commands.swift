@@ -45,13 +45,21 @@ public extension OcaRoot {
   ) throws -> U {
     switch command.parameters.format {
     case .ocp1:
+      // the count first: decoding too few bytes would otherwise fail as a DecodingError,
+      // which the device answers as DeviceError
       let responseParameterCount = _ocp1ParameterCount(type: U.self)
-      let response = try Ocp1Decoder().decode(U.self, from: command.parameters.parameterData)
       if command.parameters.parameterCount != responseParameterCount {
         _logUnexpectedParameterCount(command, expected: responseParameterCount)
         throw Ocp1Error.status(.parameterOutOfRange)
       }
-      return response
+      do {
+        return try Ocp1Decoder().decode(U.self, from: command.parameters.parameterData)
+      } catch let Ocp1Error.status(status) {
+        throw Ocp1Error.status(status)
+      } catch {
+        // truncated or malformed parameters (pduTooShort, a DecodingError, ...)
+        throw Ocp1Error.status(.badFormat)
+      }
     case .ocp2:
       #if NonEmbeddedBuild
       do {
