@@ -286,7 +286,7 @@ extension OcaDeviceManager {
       else {
         continue
       }
-      try await block.apply(paramDataset: datasetParam, controller: nil)
+      try await block.applyParamDataset(oNo: datasetParam, from: nil)
     }
   }
 

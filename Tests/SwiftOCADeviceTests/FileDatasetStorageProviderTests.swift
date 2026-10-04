@@ -230,7 +230,7 @@ final class FileDatasetStorageProviderTests: XCTestCase {
     )
     XCTAssertTrue(complete)
     XCTAssertEqual(Data(blob), jsonData)
-    try await dataset.close(handle: readHandle, controller: nil)
+    try await dataset.close(handle: readHandle, from: nil)
 
     let newJsonString = "{\"updated\":true}"
     let newJsonData = Data(newJsonString.utf8)
@@ -240,9 +240,9 @@ final class FileDatasetStorageProviderTests: XCTestCase {
       handle: writeHandle,
       position: 0,
       part: .init(newJsonData),
-      controller: nil
+      from: nil
     )
-    try await dataset.close(handle: writeHandle, controller: nil)
+    try await dataset.close(handle: writeHandle, from: nil)
 
     let (size2, readHandle2) = try await dataset.openRead(lockState: .noLock, controller: nil)
     XCTAssertEqual(size2, OcaUint64(newJsonData.count))
@@ -254,7 +254,7 @@ final class FileDatasetStorageProviderTests: XCTestCase {
     )
     XCTAssertTrue(complete2)
     XCTAssertEqual(Data(blob2), newJsonData)
-    try await dataset.close(handle: readHandle2, controller: nil)
+    try await dataset.close(handle: readHandle2, from: nil)
   }
 
   func testDelete() async throws {
@@ -338,7 +338,7 @@ final class FileDatasetStorageProviderTests: XCTestCase {
       partSize: size,
       controller: nil
     )
-    try await newDataset.close(handle: handle, controller: nil)
+    try await newDataset.close(handle: handle, from: nil)
     XCTAssertEqual(Data(blob), jsonData)
   }
 
@@ -429,9 +429,9 @@ final class FileDatasetStorageProviderTests: XCTestCase {
       maxSize: 1024,
       initialContents: .init()
     )
-    try await connection.rootBlock.store(currentParameterData: testDataset)
+    try await connection.rootBlock.storeCurrentParameterData(oNo: testDataset)
     try await device.deregister(objectNumber: testDataset)
-    try await connection.rootBlock.apply(paramDataset: testDataset)
+    try await connection.rootBlock.applyParamDataset(oNo: testDataset)
 
     try await connection.disconnect()
     endpointTask.cancel()
@@ -459,7 +459,7 @@ final class FileDatasetStorageProviderTests: XCTestCase {
       maxSize: 1024,
       initialContents: .init()
     )
-    try await connection.rootBlock.store(currentParameterData: paramDataset)
+    try await connection.rootBlock.storeCurrentParameterData(oNo: paramDataset)
 
     let deviceManager = await device.deviceManager!
     let patchONo = try await deviceManager.storePatch(
@@ -524,13 +524,13 @@ final class FileDatasetStorageProviderTests: XCTestCase {
         handle: handle,
         position: 8,
         part: .init(repeating: 0x20, count: 9),
-        controller: nil
+        from: nil
       )
       XCTFail("expected arrayOrDataTooBig")
     } catch let error as Ocp1Error {
       XCTAssertEqual(error, .arrayOrDataTooBig)
     }
-    try await dataset.close(handle: handle, controller: nil)
+    try await dataset.close(handle: handle, from: nil)
   }
 
   func testMaxTotalSize() async throws {
@@ -577,20 +577,20 @@ final class FileDatasetStorageProviderTests: XCTestCase {
       handle: handle,
       position: 0,
       part: .init(repeating: 0x20, count: 32),
-      controller: nil
+      from: nil
     )
     do {
       try await dataset.write(
         handle: handle,
         position: 32,
         part: .init(repeating: 0x20, count: 1),
-        controller: nil
+        from: nil
       )
       XCTFail("expected arrayOrDataTooBig")
     } catch let error as Ocp1Error {
       XCTAssertEqual(error, .arrayOrDataTooBig)
     }
-    try await dataset.close(handle: handle, controller: nil)
+    try await dataset.close(handle: handle, from: nil)
   }
 }
 

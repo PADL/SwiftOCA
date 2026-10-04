@@ -158,7 +158,7 @@ final class MatrixTests: XCTestCase {
     let h = try await makeHarness()
     defer { Task { await h.tearDown() } }
 
-    let oNo = try await h.matrix.get(x: 2, y: 1)
+    let oNo = try await h.matrix.getMember(x: 2, y: 1)
     XCTAssertEqual(oNo, h.actuators[2][1].objectNumber)
   }
 
@@ -230,7 +230,7 @@ final class MatrixTests: XCTestCase {
     let h = try await makeHarness()
     defer { Task { await h.tearDown() } }
 
-    try await h.matrix.lockCurrent(x: Self.wildcard, y: 0)
+    try await h.matrix.setCurrentXYLock(x: Self.wildcard, y: 0)
     for x in 0..<Int(Self.columns) {
       let row0 = await isLocked(h.actuators[x][0])
       let row1 = await isLocked(h.actuators[x][1])

@@ -190,9 +190,9 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
       handle: handle,
       position: 0,
       part: initialContents,
-      controller: controller
+      from: controller
     )
-    try await dataset.close(handle: handle, controller: controller)
+    try await dataset.close(handle: handle, from: controller)
 
     return oNo
   }

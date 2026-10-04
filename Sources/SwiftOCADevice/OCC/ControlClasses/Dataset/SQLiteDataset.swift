@@ -173,7 +173,7 @@ final class OcaSQLiteDataset: OcaDataset, @unchecked Sendable {
     return (maxSize, handle)
   }
 
-  override func close(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
+  override func close(handle: OcaIOSessionHandle, from controller: OcaController?) async throws {
     let session: IOSessionData = try resolveIOSessionHandle(handle, controller: controller)
     if session.isWrite {
       try storeData(session.buffer)
@@ -203,7 +203,7 @@ final class OcaSQLiteDataset: OcaDataset, @unchecked Sendable {
     handle: OcaIOSessionHandle,
     position: OcaUint64,
     part: OcaLongBlob,
-    controller: OcaController?
+    from controller: OcaController?
   ) async throws {
     let session: IOSessionData = try resolveIOSessionHandle(handle, controller: controller)
     guard position + OcaUint64(part.count) <= maxSize else {
@@ -221,7 +221,7 @@ final class OcaSQLiteDataset: OcaDataset, @unchecked Sendable {
     }
   }
 
-  override func clear(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
+  override func clear(handle: OcaIOSessionHandle, from controller: OcaController?) async throws {
     let session: IOSessionData = try resolveIOSessionHandle(handle, controller: controller)
     session.buffer = Data()
   }

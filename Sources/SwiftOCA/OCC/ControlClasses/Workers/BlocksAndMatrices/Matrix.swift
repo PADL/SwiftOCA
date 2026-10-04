@@ -22,6 +22,7 @@ import Foundation
 
 public typealias OcaMatrixCoordinate = OcaUint16
 
+@OcaMethods
 open class OcaMatrix: OcaWorker, @unchecked
 Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.5") }
@@ -34,6 +35,10 @@ Sendable {
   )
   public var currentXY: OcaVectorProperty<OcaMatrixCoordinate>.PropertyValue
 
+  // the property's setter, as the device declares it; GetCurrentXY is answered by the property
+  @OcaMethod("3.2", name: "SetCurrentXY", parameters: OcaVector2D<OcaMatrixCoordinate>.self)
+  public func setCurrentXY(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate) async throws
+
   /// GetSize returns the size with each axis's bounds; SetSize takes the size alone.
   @OcaBoundedVectorProperty(
     xPropertyID: OcaPropertyID("3.3"),
@@ -43,12 +48,38 @@ Sendable {
   )
   public var size: OcaBoundedVectorProperty<OcaMatrixCoordinate>.PropertyValue
 
+  /// GetSize's six output parameters, spelled as AES70-2 names them; the client's
+  /// `size` decodes the same shape as `OcaBoundedVector2D`.
+  public struct MatrixSize<T: Codable & Sendable>: OcaParametersReflectable {
+    public var xSize: T
+    public var ySize: T
+    public var minXSize: T
+    public var maxXSize: T
+    public var minYSize: T
+    public var maxYSize: T
+
+    public init(xSize: T, ySize: T, minXSize: T, maxXSize: T, minYSize: T, maxYSize: T) {
+      self.xSize = xSize
+      self.ySize = ySize
+      self.minXSize = minXSize
+      self.maxXSize = maxXSize
+      self.minYSize = minYSize
+      self.maxYSize = maxYSize
+    }
+  }
+
+  @OcaMethod("3.3", name: "GetSize")
+  public func getSize() async throws -> MatrixSize<OcaMatrixCoordinate>
+
   @OcaProperty(
     propertyID: OcaPropertyID("3.5"),
     getMethodID: OcaMethodID("3.5"),
     setMethodID: OcaMethodID("3.6")
   )
   public var members: OcaProperty<OcaArray2D<OcaONo>>.PropertyValue
+
+  @OcaMethod("3.5", name: "GetMembers", resultNames: ["Members"])
+  public func getMembers() async throws -> OcaArray2D<OcaONo>
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.6"),
@@ -58,6 +89,9 @@ Sendable {
     ocp2SetName: "ONo"
   )
   public var proxy: OcaProperty<OcaONo>.PropertyValue
+
+  @OcaMethod("3.9", name: "GetProxy", resultNames: ["ONo"])
+  public func getProxy() async throws -> OcaONo
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.7"),
@@ -77,10 +111,13 @@ Sendable {
   )
   public var portsPerColumn: OcaProperty<OcaUint8>.PropertyValue
 
-  func get(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate) async throws -> OcaONo {
-    let xy = OcaVector2D(x: x, y: y)
-    return try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameters: xy)
-  }
+  @OcaMethod(
+    "3.7",
+    name: "GetMember",
+    parameters: OcaVector2D<OcaMatrixCoordinate>.self,
+    resultNames: ["MemberONo"]
+  )
+  public func getMember(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate) async throws -> OcaONo
 
   public struct SetMemberParameters: OcaParametersReflectable {
     public let x: OcaMatrixCoordinate
@@ -88,21 +125,18 @@ Sendable {
     public let memberONo: OcaONo
   }
 
-  func set(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate, memberONo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.8"),
-      parameters: SetMemberParameters(x: x, y: y, memberONo: memberONo)
-    )
-  }
+  @OcaMethod("3.8", name: "SetMember", parameters: SetMemberParameters.self)
+  public func setMember(
+    x: OcaMatrixCoordinate,
+    y: OcaMatrixCoordinate,
+    memberONo: OcaONo
+  ) async throws
 
-  func lockCurrent(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate) async throws {
-    let xy = OcaVector2D(x: x, y: y)
-    try await sendCommandRrq(methodID: OcaMethodID("3.15"), parameters: xy)
-  }
+  @OcaMethod("3.15", name: "SetCurrentXYLock", parameters: OcaVector2D<OcaMatrixCoordinate>.self)
+  public func setCurrentXYLock(x: OcaMatrixCoordinate, y: OcaMatrixCoordinate) async throws
 
-  func unlockCurrent() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.16"))
-  }
+  @OcaMethod("3.16", name: "UnlockCurrent")
+  public func unlockCurrent() async throws
 
   // FIXME: is this really a container? the AES70 spec doesn't seem to thing so
   override public var isContainer: Bool {

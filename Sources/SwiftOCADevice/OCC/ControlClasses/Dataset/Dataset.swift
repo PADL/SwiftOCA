@@ -19,6 +19,7 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaDataset: OcaRoot, @unchecked
 Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.5") }
@@ -171,7 +172,7 @@ Sendable {
 
   func expireIOSessionHandles(controller: OcaController) async {
     for handle in _ioSessions.filter({ $1.controllerID == controller.id }) {
-      try? await close(handle: handle.key, controller: controller)
+      try? await close(handle: handle.key, from: controller)
       _ioSessions[handle.key] = nil
     }
   }
@@ -211,7 +212,8 @@ Sendable {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func close(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.Methods.close)
+  open func close(handle: OcaIOSessionHandle, from controller: OcaController?) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
@@ -224,16 +226,18 @@ Sendable {
     throw Ocp1Error.status(.notImplemented)
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.Methods.write)
   open func write(
     handle: OcaIOSessionHandle,
     position: OcaUint64,
     part: OcaLongBlob,
-    controller: OcaController?
+    from controller: OcaController?
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func clear(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.Methods.clear)
+  open func clear(handle: OcaIOSessionHandle, from controller: OcaController?) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
@@ -241,64 +245,42 @@ Sendable {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("2.1"):
-      let lockState: OcaLockState = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let (datasetSize, handle) = try await openRead(lockState: lockState, controller: controller)
-      let response = SwiftOCA.OcaDataset.OpenReadParameters(
-        datasetSize: datasetSize,
-        handle: handle
-      )
-      return try controller.encodeResponse(response)
-    case OcaMethodID("2.2"):
-      let lockState: OcaLockState = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      let (maxPartSize, handle) = try await openWrite(lockState: lockState, controller: controller)
-      let response = SwiftOCA.OcaDataset.OpenWriteParameters(
-        maxPartSize: maxPartSize,
-        handle: handle
-      )
-      return try controller.encodeResponse(response)
-    case OcaMethodID("2.3"):
-      let handle: OcaIOSessionHandle = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await close(handle: handle, controller: controller)
-    case OcaMethodID("2.4"):
-      let params: SwiftOCA.OcaDataset.ReadParameters = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let (endOfData, part) = try await read(
-        handle: params.handle,
-        position: params.position,
-        partSize: params.partSize,
-        controller: controller
-      )
-      return try controller.encodeResponse(SwiftOCA.OcaDataset.ReadResultParameters(
-        endOfData: endOfData,
-        part: part
-      ))
-    case OcaMethodID("2.5"):
-      let params: SwiftOCA.OcaDataset.WriteParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await write(
-        handle: params.handle,
-        position: params.position,
-        part: params.part,
-        controller: controller
-      )
-    case OcaMethodID("2.6"):
-      let handle: OcaIOSessionHandle = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await clear(handle: handle, controller: controller)
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.Methods.openRead, access: .read)
+  func openRead(requestedLockState: OcaLockState, from controller: any OcaController) async throws
+    -> SwiftOCA.OcaDataset.OpenReadParameters
+  {
+    let (datasetSize, handle) = try await openRead(
+      lockState: requestedLockState,
+      controller: controller
+    )
+    return .init(datasetSize: datasetSize, handle: handle)
+  }
 
-    return Ocp1Response()
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.Methods.openWrite)
+  func openWrite(requestedLockState: OcaLockState, from controller: any OcaController) async throws
+    -> SwiftOCA.OcaDataset.OpenWriteParameters
+  {
+    let (maxPartSize, handle) = try await openWrite(
+      lockState: requestedLockState,
+      controller: controller
+    )
+    return .init(maxPartSize: maxPartSize, handle: handle)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.Methods.read, access: .read)
+  func read(
+    handle: OcaIOSessionHandle,
+    position: OcaUint64,
+    partSize: OcaUint64,
+    from controller: any OcaController
+  ) async throws -> SwiftOCA.OcaDataset.ReadResultParameters {
+    let (endOfData, part) = try await read(
+      handle: handle,
+      position: position,
+      partSize: partSize,
+      controller: controller
+    )
+    return .init(endOfData: endOfData, part: part)
   }
 }
 
@@ -326,8 +308,8 @@ extension OcaDataset {
     guard owner == object.objectNumber else {
       throw Ocp1Error.datasetTargetMismatch
     }
-    try await object.apply(parameterData: blob, controller: controller)
-    try await close(handle: handle, controller: controller)
+    try await object.applyParameterData(data: blob, from: controller)
+    try await close(handle: handle, from: controller)
   }
 
   func storeParameters(object: OcaBlock<some OcaRoot>, controller: OcaController?) async throws {
@@ -339,8 +321,8 @@ extension OcaDataset {
     let compress = self is OcaCompressibleDataset
     let blob: OcaLongBlob = try await object.serializeParameterDataset(compress: compress)
     let (_, handle) = try await openWrite(lockState: .noLock, controller: controller)
-    try await write(handle: handle, position: 0, part: blob, controller: controller)
-    try await close(handle: handle, controller: controller)
+    try await write(handle: handle, position: 0, part: blob, from: controller)
+    try await close(handle: handle, from: controller)
     #else
     throw Ocp1Error.status(.notImplemented)
     #endif
@@ -378,7 +360,7 @@ extension OcaDataset {
       throw Ocp1Error.datasetTargetMismatch
     }
     try await deviceManager.deserializePatchDataset(blob, filter: filter)
-    try await close(handle: handle, controller: controller)
+    try await close(handle: handle, from: controller)
   }
 
   func storePatch(
@@ -394,8 +376,8 @@ extension OcaDataset {
     let blob: OcaLongBlob = try await deviceManager
       .serializePatchDataset(paramDatasetONos: paramDatasetONos, compress: compress)
     let (_, handle) = try await openWrite(lockState: .noLock, controller: controller)
-    try await write(handle: handle, position: 0, part: blob, controller: controller)
-    try await close(handle: handle, controller: controller)
+    try await write(handle: handle, position: 0, part: blob, from: controller)
+    try await close(handle: handle, from: controller)
   }
 }
 #endif

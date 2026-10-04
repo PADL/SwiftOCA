@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaLog: OcaDataset, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.5.1") }
   override open class var classVersion: OcaClassVersionNumber { 1 }
@@ -32,13 +33,8 @@ open class OcaLog: OcaDataset, @unchecked Sendable {
   )
   public var severityThreshold: OcaProperty<OcaLogSeverityLevel>.PropertyValue
 
-  public func add(logRecord entry: OcaLogRecord) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.1"),
-      parameters: entry,
-      parameterNames: ["Entry"]
-    )
-  }
+  @OcaMethod("3.1", name: "AddLogRecord", parameterNames: ["Entry"])
+  public func addLogRecord(entry: OcaLogRecord) async throws
 
   // 3.4 OpenRetrievalSession
   // 3.5 CloseRetrievalSession
