@@ -87,17 +87,20 @@ open class OcaSignalGenerator: OcaActuator {
   public var generating: OcaBoolean = false
 
   /// signal generation is device specific; the default implementation is unimplemented
-  open func start() async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.start, access: .write)
+  open func start(from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
   /// signal generation is device specific; the default implementation is unimplemented
-  open func stop() async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.stop, access: .write)
+  open func stop(from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
   /// atomic multiple-parameter assignment is device specific; the default implementation
   /// is unimplemented
+  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.setMultiple, access: .write)
   open func setMultiple(
     mask: OcaParameterMask,
     frequency1: OcaFrequency,
@@ -106,35 +109,9 @@ open class OcaSignalGenerator: OcaActuator {
     waveform: OcaWaveformType,
     sweepType: OcaSweepType,
     sweepTime: OcaTimeInterval,
-    sweepRepeat: OcaBoolean
-  ) async throws {
-    throw Ocp1Error.status(.notImplemented)
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.start, access: .write)
-  func start(from controller: any OcaController) async throws {
-    try await start()
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.stop, access: .write)
-  func stop(from controller: any OcaController) async throws {
-    try await stop()
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.setMultiple, access: .write)
-  func setMultiple(
-    _ parameters: SwiftOCA.OcaSignalGenerator.SetMultipleParameters,
+    sweepRepeat: OcaBoolean,
     from controller: any OcaController
   ) async throws {
-    try await setMultiple(
-      mask: parameters.mask,
-      frequency1: parameters.frequency1,
-      frequency2: parameters.frequency2,
-      level: parameters.level,
-      waveform: parameters.waveform,
-      sweepType: parameters.sweepType,
-      sweepTime: parameters.sweepTime,
-      sweepRepeat: parameters.sweepRepeat
-    )
+    throw Ocp1Error.status(.notImplemented)
   }
 }

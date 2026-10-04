@@ -60,30 +60,17 @@ open class OcaFilterClassical: OcaActuator {
 
   /// atomic multiple-parameter assignment is device specific; the default implementation
   /// is unimplemented
+  @OcaDeviceMethod(SwiftOCA.OcaFilterClassical.setMultiple, access: .write)
   open func setMultiple(
     mask: OcaParameterMask,
     frequency: OcaFrequency,
     passband: OcaFilterPassband,
     shape: OcaClassicalFilterShape,
     order: OcaUint16,
-    parameter: OcaFloat32
-  ) async throws {
-    throw Ocp1Error.status(.notImplemented)
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaFilterClassical.setMultiple, access: .write)
-  func setMultiple(
-    _ parameters: SwiftOCA.OcaFilterClassical.SetMultipleParameters,
+    parameter: OcaFloat32,
     from controller: any OcaController
   ) async throws {
-    try await setMultiple(
-      mask: parameters.mask,
-      frequency: parameters.frequency,
-      passband: parameters.passband,
-      shape: parameters.shape,
-      order: parameters.order,
-      parameter: parameters.parameter
-    )
+    throw Ocp1Error.status(.notImplemented)
   }
 }
 
@@ -139,30 +126,17 @@ open class OcaFilterParametric: OcaActuator {
 
   /// atomic multiple-parameter assignment is device specific; the default implementation
   /// is unimplemented
+  @OcaDeviceMethod(SwiftOCA.OcaFilterParametric.setMultiple, access: .write)
   open func setMultiple(
     mask: OcaParameterMask,
     frequency: OcaFrequency,
     shape: OcaParametricEQShape,
     widthParameter: OcaFloat32,
     inBandGain: OcaDB,
-    shapeParameter: OcaFloat32
-  ) async throws {
-    throw Ocp1Error.status(.notImplemented)
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaFilterParametric.setMultiple, access: .write)
-  func setMultiple(
-    _ parameters: SwiftOCA.OcaFilterParametric.SetMultipleParameters,
+    shapeParameter: OcaFloat32,
     from controller: any OcaController
   ) async throws {
-    try await setMultiple(
-      mask: parameters.mask,
-      frequency: parameters.frequency,
-      shape: parameters.shape,
-      widthParameter: parameters.widthParameter,
-      inBandGain: parameters.inBandGain,
-      shapeParameter: parameters.shapeParameter
-    )
+    throw Ocp1Error.status(.notImplemented)
   }
 }
 
@@ -206,7 +180,8 @@ open class OcaFilterPolynomial: OcaActuator {
   )
   public var maxOrder: OcaUint8 = 0
 
-  open func set(a: OcaList<OcaFloat32>, b: OcaList<OcaFloat32>) async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaFilterPolynomial.setCoefficients, access: .write)
+  open func set(a: OcaList<OcaFloat32>, b: OcaList<OcaFloat32>, from controller: any OcaController) async throws {
     guard a.count <= Int(maxOrder), b.count <= Int(maxOrder) else {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
@@ -217,14 +192,6 @@ open class OcaFilterPolynomial: OcaActuator {
   @OcaDeviceMethod(SwiftOCA.OcaFilterPolynomial.getCoefficients, access: .read)
   func getCoefficients(from controller: any OcaController) -> SwiftOCA.OcaFilterPolynomial.CoefficientsParameters {
     .init(a: a, b: b)
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaFilterPolynomial.setCoefficients, access: .write)
-  func setCoefficients(
-    _ parameters: SwiftOCA.OcaFilterPolynomial.CoefficientsParameters,
-    from controller: any OcaController
-  ) async throws {
-    try await set(a: parameters.a, b: parameters.b)
   }
 }
 

@@ -55,16 +55,10 @@ open class OcaDelayExtended: OcaDelay {
   )
 
   /// unit conversion is device specific; the default implementation is unimplemented
-  open func getDelayValue(convertedTo unitOfMeasure: OcaDelayUnit) async throws
+  @OcaDeviceMethod(SwiftOCA.OcaDelayExtended.getDelayValueConverted, access: .read)
+  open func getDelayValue(convertedTo unitOfMeasure: OcaDelayUnit, from controller: any OcaController) async throws
     -> OcaDelayValue
   {
     throw Ocp1Error.status(.notImplemented)
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaDelayExtended.getDelayValueConverted, access: .read)
-  func getDelayValueConverted(_ unitOfMeasure: OcaDelayUnit, from controller: any OcaController) async throws
-    -> OcaDelayValue
-  {
-    try await getDelayValue(convertedTo: unitOfMeasure)
   }
 }

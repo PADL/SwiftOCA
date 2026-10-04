@@ -150,6 +150,7 @@ open class OcaDynamics: OcaActuator {
 
   /// atomic multiple-parameter assignment is device specific; the default implementation
   /// is unimplemented
+  @OcaDeviceMethod(SwiftOCA.OcaDynamics.setMultiple, access: .write)
   open func setMultiple(
     mask: OcaParameterMask,
     function: OcaDynamicsFunction,
@@ -162,30 +163,10 @@ open class OcaDynamics: OcaActuator {
     dynamicGainCeiling: OcaDB,
     dynamicGainFloor: OcaDB,
     kneeParameter: OcaFloat32,
-    slope: OcaFloat32
-  ) async throws {
-    throw Ocp1Error.status(.notImplemented)
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaDynamics.setMultiple, access: .write)
-  func setMultiple(
-    _ parameters: SwiftOCA.OcaDynamics.SetMultipleParameters,
+    slope: OcaFloat32,
     from controller: any OcaController
   ) async throws {
-    try await setMultiple(
-      mask: parameters.mask,
-      function: parameters.function,
-      threshold: parameters.threshold,
-      thresholdPresentationUnits: parameters.thresholdPresentationUnits,
-      detectorLaw: parameters.detectorLaw,
-      attackTime: parameters.attackTime,
-      releaseTime: parameters.releaseTime,
-      holdTime: parameters.holdTime,
-      dynamicGainCeiling: parameters.dynamicGainCeiling,
-      dynamicGainFloor: parameters.dynamicGainFloor,
-      kneeParameter: parameters.kneeParameter,
-      slope: parameters.slope
-    )
+    throw Ocp1Error.status(.notImplemented)
   }
 }
 
@@ -230,28 +211,16 @@ open class OcaDynamicsDetector: OcaActuator {
 
   /// atomic multiple-parameter assignment is device specific; the default implementation
   /// is unimplemented
+  @OcaDeviceMethod(SwiftOCA.OcaDynamicsDetector.setMultiple, access: .write)
   open func setMultiple(
     mask: OcaParameterMask,
     law: OcaLevelDetectionLaw,
     attackTime: OcaTimeInterval,
     releaseTime: OcaTimeInterval,
-    holdTime: OcaTimeInterval
-  ) async throws {
-    throw Ocp1Error.status(.notImplemented)
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaDynamicsDetector.setMultiple, access: .write)
-  func setMultiple(
-    _ parameters: SwiftOCA.OcaDynamicsDetector.SetMultipleParameters,
+    holdTime: OcaTimeInterval,
     from controller: any OcaController
   ) async throws {
-    try await setMultiple(
-      mask: parameters.mask,
-      law: parameters.law,
-      attackTime: parameters.attackTime,
-      releaseTime: parameters.releaseTime,
-      holdTime: parameters.holdTime
-    )
+    throw Ocp1Error.status(.notImplemented)
   }
 }
 
@@ -339,14 +308,16 @@ open class OcaDynamicsCurve: OcaActuator {
 
   /// atomic multiple-parameter assignment is device specific; the default implementation
   /// is unimplemented
+  @OcaDeviceMethod(SwiftOCA.OcaDynamicsCurve.setMultiple, access: .write)
   open func setMultiple(
     mask: OcaParameterMask,
     nSegments: OcaUint8,
     thresholds: OcaList<OcaDBr>,
-    slopes: OcaList<OcaFloat32>,
-    kneeParameters: OcaList<OcaFloat32>,
+    slopes slope: OcaList<OcaFloat32>,
+    kneeParameters kneeParameter: OcaList<OcaFloat32>,
     dynamicGainFloor: OcaDB,
-    dynamicGainCeiling: OcaDB
+    dynamicGainCeiling: OcaDB,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
@@ -370,22 +341,6 @@ open class OcaDynamicsCurve: OcaActuator {
   @OcaDeviceMethod(SwiftOCA.OcaDynamicsCurve.getKneeParameters, access: .read)
   func getKneeParameters(from controller: any OcaController) -> SwiftOCA.OcaDynamicsCurve.GetFloat32ListParameters {
     _float32ListParameters(kneeParameters, in: kneeParameterRange)
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaDynamicsCurve.setMultiple, access: .write)
-  func setMultiple(
-    _ parameters: SwiftOCA.OcaDynamicsCurve.SetMultipleParameters,
-    from controller: any OcaController
-  ) async throws {
-    try await setMultiple(
-      mask: parameters.mask,
-      nSegments: parameters.nSegments,
-      thresholds: parameters.thresholds,
-      slopes: parameters.slope,
-      kneeParameters: parameters.kneeParameter,
-      dynamicGainFloor: parameters.dynamicGainFloor,
-      dynamicGainCeiling: parameters.dynamicGainCeiling
-    )
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaDynamicsCurve.getThresholds, access: .read)

@@ -74,11 +74,8 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaWorker.setPortName, access: .write)
-  func setPortName(
-    _ parameters: SwiftOCA.OcaWorker.SetPortNameParameters,
-    from controller: any OcaController
-  ) throws {
-    try setName(parameters.name, ofPort: parameters.id)
+  func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) throws {
+    try setName(name, ofPort: id)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaWorker.getPath, access: .read)
@@ -95,10 +92,11 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
 
   @OcaDeviceMethod(SwiftOCA.OcaWorker.setPortClockMapEntry, access: .write)
   func setPortClockMapEntry(
-    _ parameters: OcaSetPortClockMapEntryParameters,
+    _ portID: OcaPortID,
+    _ entry: OcaPortClockMapEntry,
     from controller: any OcaController
   ) {
-    setPortClockMapEntry(parameters)
+    portClockMap[portID] = entry
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaWorker.deletePortClockMapEntry, access: .write)
