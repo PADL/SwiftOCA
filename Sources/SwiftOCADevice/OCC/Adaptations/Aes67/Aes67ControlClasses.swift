@@ -18,6 +18,7 @@ import SwiftOCA
 
 /// AES70-21 (draft) Aes67OcaMediaTransportApplication: adds presentation time offset
 /// negotiation and endpoint configuration from SDP to CM4.
+@OcaDeviceMethods
 open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
   public typealias Aes67Parameters = SwiftOCA.Aes67OcaMediaTransportApplication
 
@@ -51,66 +52,41 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
     throw DecodingError.objectNotDecodable(decoder)
   }
 
+  @OcaDeviceMethod(Aes67Parameters.Methods.getEndpointDelayConstraints)
   open func getEndpointDelayConstraints(
-    _ id: OcaMediaStreamEndpointID,
-    streamMode: OcaMediaStreamMode
+    endpointID: OcaMediaStreamEndpointID,
+    streamMode: OcaMediaStreamMode,
+    from controller: any OcaController
   ) async throws -> Aes67Parameters.EndpointDelayConstraints {
     throw Ocp1Error.status(.notImplemented)
   }
 
+  @OcaDeviceMethod(Aes67Parameters.Methods.getPresentationTimeOffsetConstraints)
   open func getPresentationTimeOffsetConstraints(
-    _ id: OcaMediaStreamEndpointID,
-    streamMode: OcaMediaStreamMode
+    endpointID: OcaMediaStreamEndpointID,
+    streamMode: OcaMediaStreamMode,
+    from controller: any OcaController
   ) async throws -> Aes67Parameters.PresentationTimeOffsetConstraints {
     throw Ocp1Error.status(.notImplemented)
   }
 
   /// Optional (AES70-21 §10.2.4). A nonzero stream ID selects the stream of a multistream
   /// SDP by UDP port; on success the endpoint's ActiveSDP is the given SDP.
+  @OcaDeviceMethod(Aes67Parameters.Methods.configureEndpointFromSDP)
   open func configureEndpointFromSDP(
-    _ id: OcaMediaStreamEndpointID,
+    endpointID: OcaMediaStreamEndpointID,
     sdpString: OcaSDPString,
-    streamID: OcaUint16
+    streamID: OcaUint16,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.1"):
-      let parameters: Aes67Parameters.EndpointStreamModeParameters = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try await controller.encodeResponse(getEndpointDelayConstraints(
-        parameters.endpointID,
-        streamMode: parameters.streamMode
-      ))
-    case OcaMethodID("4.2"):
-      let parameters: Aes67Parameters.EndpointStreamModeParameters = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try await controller.encodeResponse(getPresentationTimeOffsetConstraints(
-        parameters.endpointID,
-        streamMode: parameters.streamMode
-      ))
-    case OcaMethodID("4.5"):
-      let parameters: Aes67Parameters.ConfigureEndpointFromSDPParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await configureEndpointFromSDP(
-        parameters.endpointID,
-        sdpString: parameters.sdpString,
-        streamID: parameters.streamID
-      )
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
-  }
 }
 
 /// AES70-21 (draft) Aes67OcaMediaTransportSessionAgent: SIP parameter records per session
 /// (04m01-04m04).
+@OcaDeviceMethods
 open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
   public typealias Aes67Parameters = SwiftOCA.Aes67OcaMediaTransportSessionAgent
 
@@ -138,73 +114,48 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
   }
 
   /// Default: the session's adaptation data, which AES70-21 defines as the SIP record.
+  @OcaDeviceMethod(Aes67Parameters.Methods.getSIPParameterRecord)
   open func getSIPParameterRecord(
-    session id: OcaMediaTransportSessionID
+    sessionID: OcaMediaTransportSessionID,
+    from controller: any OcaController
   ) async throws -> OcaParameterRecord {
-    let adaptationData = try session(id).adaptationData
+    let adaptationData = try session(sessionID).adaptationData
     return String(decoding: adaptationData, as: UTF8.self)
   }
 
+  @OcaDeviceMethod(Aes67Parameters.Methods.setSIPParameterRecord)
   open func setSIPParameterRecord(
-    session id: OcaMediaTransportSessionID,
-    _ parameterRecord: OcaParameterRecord
+    sessionID: OcaMediaTransportSessionID,
+    rec: OcaParameterRecord,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
+  @OcaDeviceMethod(Aes67Parameters.Methods.getSIPParameter)
   open func getSIPParameter(
-    session id: OcaMediaTransportSessionID,
-    key: OcaString
+    sessionID: OcaMediaTransportSessionID,
+    parameterKey: OcaString,
+    from controller: any OcaController
   ) async throws -> OcaJsonValue {
     throw Ocp1Error.status(.notImplemented)
   }
 
+  @OcaDeviceMethod(Aes67Parameters.Methods.setSIPParameter)
   open func setSIPParameter(
-    session id: OcaMediaTransportSessionID,
-    key: OcaString,
-    value: OcaJsonValue
+    sessionID: OcaMediaTransportSessionID,
+    parameterKey: OcaString,
+    parameterValue: OcaJsonValue,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.1"):
-      let id: OcaMediaTransportSessionID = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try await controller.encodeResponse(getSIPParameterRecord(session: id))
-    case OcaMethodID("4.2"):
-      let parameters: Aes67Parameters.SIPParameterRecordParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setSIPParameterRecord(session: parameters.sessionID, parameters.parameterRecord)
-      return Ocp1Response()
-    case OcaMethodID("4.3"):
-      let parameters: Aes67Parameters.SIPParameterKeyParameters = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try await controller.encodeResponse(getSIPParameter(
-        session: parameters.sessionID,
-        key: parameters.key
-      ))
-    case OcaMethodID("4.4"):
-      let parameters: Aes67Parameters.SIPParameterParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setSIPParameter(
-        session: parameters.sessionID,
-        key: parameters.key,
-        value: parameters.value
-      )
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
-  }
 }
 
 /// AES70-21 (draft) Aes67StreamEndpointRegistry: the Stream Source Registry, keyed by
 /// IDExternal. Entries are stored here; AddRegistryEntriesFromSDP is left to subclasses.
+@OcaDeviceMethods
 open class Aes67StreamEndpointRegistry: OcaAgent {
   public typealias Aes67Parameters = SwiftOCA.Aes67StreamEndpointRegistry
 
@@ -223,11 +174,13 @@ open class Aes67StreamEndpointRegistry: OcaAgent {
     return index
   }
 
-  open func getRegistryEntry(idExternal: OcaBlob) async throws -> Aes67StreamEndpointDescriptor {
+  @OcaDeviceMethod(Aes67Parameters.Methods.getRegistryEntry)
+  open func getRegistryEntry(idExternal: OcaBlob, from controller: any OcaController) async throws -> Aes67StreamEndpointDescriptor {
     try registry[registryIndex(idExternal: idExternal)]
   }
 
-  open func addRegistryEntry(_ entry: Aes67StreamEndpointDescriptor) async throws {
+  @OcaDeviceMethod(Aes67Parameters.Methods.addRegistryEntry)
+  open func addRegistryEntry(entry: Aes67StreamEndpointDescriptor, from controller: any OcaController) async throws {
     guard !registry.contains(where: { $0.idExternal == entry.idExternal }) else {
       throw Ocp1Error.status(.invalidRequest)
     }
@@ -235,52 +188,21 @@ open class Aes67StreamEndpointRegistry: OcaAgent {
     try await notifyRegistryChanged(.itemAdded, entry: entry)
   }
 
-  open func setRegistryEntry(_ entry: Aes67StreamEndpointDescriptor) async throws {
+  @OcaDeviceMethod(Aes67Parameters.Methods.setRegistryEntry)
+  open func setRegistryEntry(entry: Aes67StreamEndpointDescriptor, from controller: any OcaController) async throws {
     try registry[registryIndex(idExternal: entry.idExternal)] = entry
     try await notifyRegistryChanged(.itemChanged, entry: entry)
   }
 
-  open func deleteRegistryEntry(idExternal: OcaBlob) async throws {
+  @OcaDeviceMethod(Aes67Parameters.Methods.deleteRegistryEntry)
+  open func deleteRegistryEntry(idExternal: OcaBlob, from controller: any OcaController) async throws {
     let entry = try registry.remove(at: registryIndex(idExternal: idExternal))
     try await notifyRegistryChanged(.itemDeleted, entry: entry)
   }
 
-  open func addRegistryEntriesFromSDP(_ sdpString: OcaSDPString) async throws {
+  @OcaDeviceMethod(Aes67Parameters.Methods.addRegistryEntriesFromSDP)
+  open func addRegistryEntriesFromSDP(sdpString: OcaSDPString, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
-  }
-
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.2"):
-      let idExternal: OcaBlob = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try await controller.encodeResponse(getRegistryEntry(idExternal: idExternal))
-    case OcaMethodID("3.3"):
-      let entry: Aes67StreamEndpointDescriptor = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await addRegistryEntry(entry)
-      return Ocp1Response()
-    case OcaMethodID("3.4"):
-      let entry: Aes67StreamEndpointDescriptor = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setRegistryEntry(entry)
-      return Ocp1Response()
-    case OcaMethodID("3.5"):
-      let idExternal: OcaBlob = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await deleteRegistryEntry(idExternal: idExternal)
-      return Ocp1Response()
-    case OcaMethodID("3.6"):
-      let sdpString: OcaSDPString = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await addRegistryEntriesFromSDP(sdpString)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
   }
 
   /// Raises RegistryChanged for an entry already reflected in `registry`.
