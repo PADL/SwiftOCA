@@ -318,8 +318,9 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     }
   }
 
-  /// SetCurrentXY's work, shared with SetCurrentXYLock: validate and set the current
-  /// area, then lock the matrix and its proxy until the next proxy call.
+  /// SetCurrentXY locks the matrix and its proxy, but not the members (AES70-2);
+  /// SetCurrentXYLock shares it.
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.setCurrentXY, access: .write)
   private func setCurrentXY(
     _ coordinates: OcaVector2D<OcaMatrixCoordinate>,
     controller: any OcaController
@@ -394,28 +395,27 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaMatrix.setMember, access: .write)
-  func setMember(_ parameters: SwiftOCA.OcaMatrix.SetMemberParameters, from controller: any OcaController) async throws {
-    guard parameters.x < members.nX, parameters.y < members.nY else {
+  func setMember(
+    x: OcaMatrixCoordinate,
+    y: OcaMatrixCoordinate,
+    memberONo: OcaONo,
+    from controller: any OcaController
+  ) async throws {
+    guard x < members.nX, y < members.nY else {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
-    if parameters.memberONo == OcaInvalidONo {
+    if memberONo == OcaInvalidONo {
       throw Ocp1Error.status(.badONo)
     }
-    guard let object = await deviceDelegate?.objects[parameters.memberONo] as? Member else {
+    guard let object = await deviceDelegate?.objects[memberONo] as? Member else {
       throw Ocp1Error.status(.badONo)
     }
-    try await set(member: object, at: OcaVector2D(x: parameters.x, y: parameters.y))
+    try await set(member: object, at: OcaVector2D(x: x, y: y))
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaMatrix.getProxy, access: .read)
   func getProxy(from controller: any OcaController) -> OcaONo {
     proxy.objectNumber
-  }
-
-  /// SetCurrentXY locks the matrix and its proxy, but not the members (AES70-2).
-  @OcaDeviceMethod(SwiftOCA.OcaMatrix.setCurrentXY, access: .write)
-  func setCurrentXY(_ coordinates: OcaVector2D<OcaMatrixCoordinate>, from controller: any OcaController) throws {
-    try setCurrentXY(coordinates, controller: controller)
   }
 
   /// SetCurrentXYLock also locks every member of the new current area, failing
