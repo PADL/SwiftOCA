@@ -23,7 +23,11 @@ import Foundation
 
 /// An application that lets a port be added, which the base class does not.
 private final class _PortAddingApplication: SwiftOCADevice.OcaMediaTransportApplication {
-  override func add(port label: OcaString, mode: OcaPortMode) async throws -> OcaPortID {
+  override func addPort(
+    name: OcaString,
+    mode: OcaPortMode,
+    from controller: any OcaController
+  ) async throws -> OcaPortID {
     OcaPortID(mode: mode, index: 7)
   }
 }
@@ -262,7 +266,7 @@ final class Ocp2WireNameTests: XCTestCase {
 
     // OcaMediaTransportApplication 3.22 GetEndpoint(ID): a scalar once sent as "Value"
     let getEndpoint = Task {
-      _ = try? await application.getEndpoint(1)
+      _ = try? await application.getEndpoint(id: 1)
     }
     let scalar = try await Self.nextCommand(from: endpoint)
     getEndpoint.cancel()
@@ -302,7 +306,7 @@ final class Ocp2WireNameTests: XCTestCase {
 
     // OcaMediaTransportApplication 3.28 SetEndpointUserLabel(EndpointID, Label)
     let setLabel = Task {
-      try? await application.setEndpoint(1, userLabel: "Mic 1")
+      try? await application.setEndpointUserLabel(endpointID: 1, label: "Mic 1")
     }
     let label = try await Self.nextCommand(from: endpoint)
     setLabel.cancel()
@@ -311,7 +315,7 @@ final class Ocp2WireNameTests: XCTestCase {
 
     // OcaMediaTransportApplication 3.37 AttachEndpointCounterNotifier(EndpointID, CounterID, NotifierONo)
     let attach = Task {
-      try? await application.attachEndpointCounterNotifier(endpointID: 1, counterID: 1, oNo: 4096)
+      try? await application.attachEndpointCounterNotifier(endpointID: 1, counterID: 1, notifierONo: 4096)
     }
     let notifier = try await Self.nextCommand(from: endpoint)
     attach.cancel()

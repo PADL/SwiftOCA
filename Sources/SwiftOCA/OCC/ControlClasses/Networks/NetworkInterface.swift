@@ -125,40 +125,31 @@ Sendable {
   )
   public var counterSet: OcaProperty<OcaCounterSet>.PropertyValue
 
-  public func get(counter id: OcaID16) async throws -> OcaCounter {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.21"),
-      parameters: id,
-      parameterNames: ["CounterID"]
-    )
-  }
+  @OcaMethod("2.21", name: "GetCounter", parameterNames: ["CounterID"], resultNames: ["Counter"])
+  public func getCounter(counterID: OcaID16) async throws -> OcaCounter
 
-  public func attach(counter id: OcaID16, to oNo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.22"),
-      parameters: OcaCounterNotifierParameters(id: id, oNo: oNo)
-    )
-  }
+  @OcaMethod(
+    "2.22",
+    name: "AttachCounterNotifier",
+    parameters: OcaCounterIDNotifierParameters.self,
+    parameterNames: ["CounterID", "ONo"]
+  )
+  public func attachCounterNotifier(counterID: OcaID16, oNo: OcaONo) async throws
 
-  public func detach(counter id: OcaID16, from oNo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.23"),
-      parameters: OcaCounterNotifierParameters(id: id, oNo: oNo)
-    )
-  }
+  @OcaMethod(
+    "2.23",
+    name: "DetachCounterNotifier",
+    parameters: OcaCounterIDNotifierParameters.self,
+    parameterNames: ["CounterID", "ONo"]
+  )
+  public func detachCounterNotifier(counterID: OcaID16, oNo: OcaONo) async throws
 
   /// Resets every counter in the counterset.
-  public func resetCounters() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("2.24"))
-  }
+  @OcaMethod("2.24", name: "ResetCounters")
+  public func resetCounters() async throws
 
-  public func apply(command: OcaNetworkInterfaceCommand) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.25"),
-      parameters: command,
-      parameterNames: ["Command"]
-    )
-  }
+  @OcaMethod("2.25", name: "ApplyCommand", parameterNames: ["Command"])
+  public func applyCommand(command: OcaNetworkInterfaceCommand) async throws
 }
 
 extension OcaNetworkInterface {

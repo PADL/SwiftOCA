@@ -62,9 +62,10 @@ func XCTAssertThrowsStatus(
 private final class TestMediaTransportApplication: SwiftOCADevice.OcaMediaTransportApplication {
   var appliedCommands = [(OcaMediaStreamEndpointID, OcaMediaStreamEndpointCommand)]()
 
-  override func add(
+  override func addEndpoint(
     endpoint: OcaMediaStreamEndpoint,
-    initialStatus: OcaMediaStreamEndpointState
+    initialStatus: OcaMediaStreamEndpointState,
+    from controller: any OcaController
   ) async throws -> OcaMediaStreamEndpoint {
     var endpoint = endpoint
     endpoint.idInternal = (endpoints.map(\.idInternal).max() ?? 0) + 1
@@ -73,11 +74,12 @@ private final class TestMediaTransportApplication: SwiftOCADevice.OcaMediaTransp
   }
 
   override func applyEndpointCommand(
-    _ id: OcaMediaStreamEndpointID,
-    command: OcaMediaStreamEndpointCommand
+    endpointID: OcaMediaStreamEndpointID,
+    command: OcaMediaStreamEndpointCommand,
+    from controller: any OcaController
   ) async throws {
-    _ = try endpoint(id)
-    appliedCommands.append((id, command))
+    _ = try endpoint(endpointID)
+    appliedCommands.append((endpointID, command))
   }
 }
 
@@ -131,19 +133,19 @@ final class MediaTransportApplicationTests: XCTestCase {
 
     let endpoints = try await client.$endpoints._getValue(client, flags: [])
     XCTAssertEqual(endpoints, application.endpoints)
-    let output = try await client.getEndpoint(1001)
+    let output = try await client.getEndpoint(id: 1001)
     XCTAssertEqual(output.direction, .output)
-    let outputStatus = try await client.getEndpointStatus(1001)
+    let outputStatus = try await client.getEndpointStatus(id: 1001)
     XCTAssertEqual(outputStatus.state, .running)
     let counts = try await client.getMaxEndpointCounts()
     XCTAssertEqual(counts, .init(maxOutputCount: 1, maxInputCount: 2))
-    let portName = try await client.getPortName(OcaPortID(mode: .output, index: 1))
+    let portName = try await client.getPortName(portID: OcaPortID(mode: .output, index: 1))
     XCTAssertEqual(portName, "Ch 1")
 
-    try await client.setEndpoint(1, userLabel: "Renamed")
+    try await client.setEndpointUserLabel(endpointID: 1, label: "Renamed")
     XCTAssertEqual(try application.endpoint(1).userLabel, "Renamed")
 
-    await XCTAssertThrowsStatus(.parameterOutOfRange) { try await client.getEndpoint(7) }
+    await XCTAssertThrowsStatus(.parameterOutOfRange) { try await client.getEndpoint(id: 7) }
   }
 
   @OcaDevice
@@ -154,13 +156,13 @@ final class MediaTransportApplicationTests: XCTestCase {
     let client: SwiftOCA.OcaMediaTransportApplication =
       try await harness.resolve(Self.applicationONo)
 
-    try await client.applyEndpointCommand(1, command: .start)
+    try await client.applyEndpointCommand(endpointID: 1, command: .start)
     XCTAssertEqual(application.appliedCommands.count, 1)
     XCTAssertEqual(application.appliedCommands.first?.0, 1)
     XCTAssertEqual(application.appliedCommands.first?.1, .start)
 
     // AddEndpoint returns the whole descriptor carrying the allocated ID
-    let added = try await client.add(
+    let added = try await client.addEndpoint(
       endpoint: OcaMediaStreamEndpoint(idInternal: 0, direction: .input, userLabel: "Added"),
       initialStatus: .ready
     )
@@ -169,16 +171,16 @@ final class MediaTransportApplicationTests: XCTestCase {
     XCTAssertEqual(try application.endpoint(1002).direction, .input)
     XCTAssertEqual(try application.endpointStatus(1002).state, .ready)
     await XCTAssertThrowsStatus(.notImplemented) {
-      try await client.setEndpoint(1, alignmentLevel: -18.0)
+      try await client.setEndpointAlignmentLevel(endpointID: 1, level: -18.0)
     }
 
-    let counter = try await client.getEndpointCounter(1, counterID: 1)
+    let counter = try await client.getEndpointCounter(endpointID: 1, counterID: 1)
     XCTAssertEqual(counter.value, 3)
-    try await client.attachEndpointCounterNotifier(endpointID: 1, counterID: 1, oNo: 4096)
-    let attached = try await client.getEndpointCounterSet(1)
+    try await client.attachEndpointCounterNotifier(endpointID: 1, counterID: 1, notifierONo: 4096)
+    let attached = try await client.getEndpointCounterSet(endpointID: 1)
     XCTAssertEqual(attached.counter(id: 1)?.notifiers, [4096])
-    try await client.detachEndpointCounterNotifier(endpointID: 1, counterID: 1, oNo: 4096)
-    let detached = try await client.getEndpointCounterSet(1)
+    try await client.detachEndpointCounterNotifier(endpointID: 1, counterID: 1, notifierONo: 4096)
+    let detached = try await client.getEndpointCounterSet(endpointID: 1)
     XCTAssertEqual(detached.counter(id: 1)?.notifiers, [])
     let counterSetID = try detached.id.decode(OcaMediaStreamEndpointCounterSetID.self)
     XCTAssertEqual(counterSetID.ownerONo, Self.applicationONo)
@@ -203,14 +205,14 @@ final class MediaTransportApplicationTests: XCTestCase {
     let client: SwiftOCA.OcaNetworkInterface = try await harness.resolve(interfaceONo)
 
     try interface.increment(counter: OcaNetworkInterfaceCounterID.linkDown)
-    let linkDown = try await client.get(counter: 2)
+    let linkDown = try await client.getCounter(counterID: 2)
     XCTAssertEqual(linkDown.value, 1)
-    try await client.attach(counter: 1, to: 4096)
+    try await client.attachCounterNotifier(counterID: 1, oNo: 4096)
     XCTAssertEqual(interface.counterSet.counter(id: 1)?.notifiers, [4096])
     try await client.resetCounters()
-    let reset = try await client.get(counter: 2)
+    let reset = try await client.getCounter(counterID: 2)
     XCTAssertEqual(reset.value, 0)
-    await XCTAssertThrowsStatus(.notImplemented) { try await client.apply(command: .restart) }
+    await XCTAssertThrowsStatus(.notImplemented) { try await client.applyCommand(command: .restart) }
   }
 }
 

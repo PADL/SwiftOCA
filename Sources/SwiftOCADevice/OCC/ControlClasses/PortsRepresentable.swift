@@ -51,30 +51,6 @@ extension OcaPortsRepresentable {
     ports.replaceSubrange(index...index, with: [newPort])
   }
 
-
-  @OcaDevice
-  func handleGetPortName(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> OcaString {
-    // because portID is a struct, but we only want a single
-    let params: OcaGetPortNameParameters = try decodeCommand(command)
-    try await ensureReadable(by: controller, command: command)
-    return try portName(of: params.portID)
-  }
-
-  /// The record differs per class (OcaWorker names the port `ID`, the others
-  /// `PortID`), so the caller decodes it.
-  @OcaDevice
-  func handleSetPortName(
-    _ command: Ocp1Command,
-    from controller: OcaController,
-    portID: OcaPortID,
-    name: OcaString
-  ) async throws {
-    try await ensureWritable(by: controller, command: command)
-    try setName(name, ofPort: portID)
-  }
 }
 
 public extension SwiftOCADevice.OcaBlock where ActionObject: OcaPortsRepresentable {
@@ -150,35 +126,5 @@ extension OcaPortClockMapRepresentable {
   @OcaDevice
   func deletePortClockMapEntry(for portID: OcaPortID) {
     portClockMap.removeValue(forKey: portID)
-  }
-
-  @OcaDevice
-  func handleSetPortClockMapEntry(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws {
-    let parameters: OcaSetPortClockMapEntryParameters = try decodeCommand(command)
-    try await ensureWritable(by: controller, command: command)
-    setPortClockMapEntry(parameters)
-  }
-
-  @OcaDevice
-  func handleDeletePortClockMapEntry(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws {
-    let portID: OcaPortID = try decodeCommand(command)
-    try await ensureWritable(by: controller, command: command)
-    deletePortClockMapEntry(for: portID)
-  }
-
-  @OcaDevice
-  func handleGetPortClockMapEntry(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> OcaPortClockMapEntry {
-    let portID: OcaPortID = try decodeCommand(command)
-    try await ensureReadable(by: controller, command: command)
-    return try portClockMapEntry(for: portID)
   }
 }
