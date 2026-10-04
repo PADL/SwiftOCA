@@ -17,6 +17,7 @@
 /// Controller proxy for AES70-23's DanteOcaMediaTransportApplication (1.7.1.A.2300), which
 /// adds channel-based routing to CM4. The draft's method IDs are provisional (4.1-4.8 in
 /// table order); its ChannelEndpoints property is modelled as the map its accessors use.
+@OcaMethods
 open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication, @unchecked Sendable {
   override open class var classID: OcaClassID { DanteAdaptation.mediaTransportApplicationClassID }
 
@@ -47,31 +48,30 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication, @unc
   public var channelEndpointOperatingStates: OcaMapProperty<OcaID16, OcaAdaptationData>
     .PropertyValue
 
-  public func getChannelEndpoint(_ id: OcaID16) async throws -> OcaChannelEndpoint {
-    try await sendCommandRrq(methodID: OcaMethodID("4.3"), parameters: id)
-  }
+  @OcaMethod("4.3", name: "GetChannelEndpoint", parameterNames: ["ID"])
+  public func getChannelEndpoint(id: OcaID16) async throws -> OcaChannelEndpoint
 
-  public func setChannelEndpoint(_ id: OcaID16, _ channelEndpoint: OcaChannelEndpoint) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.4"),
-      parameters: SetChannelEndpointParameters(id: id, channelEndpoint: channelEndpoint)
-    )
-  }
+  @OcaMethod(
+    "4.4",
+    name: "SetChannelEndpoint",
+    parameters: SetChannelEndpointParameters.self,
+    parameterNames: ["ID", "ChannelEndpoint"]
+  )
+  public func setChannelEndpoint(id: OcaID16, channelEndpoint: OcaChannelEndpoint) async throws
 
   /// Stops any media flow on the channel endpoint and clears its configuration.
-  public func clearChannelEndpoint(_ id: OcaID16) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("4.5"), parameters: id)
-  }
+  @OcaMethod("4.5", name: "ClearChannelEndpoint", parameterNames: ["ID"])
+  public func clearChannelEndpoint(id: OcaID16) async throws
 
   /// Installs a Dante subscription (AES70-23 §9.2.3): SetChannelEndpoint with the
   /// transmit channel as the receive channel endpoint's RemoteAddress.
   public func subscribe(channelEndpoint id: OcaID16, to address: DanteChannelAddress) async throws {
-    var endpoint = try await getChannelEndpoint(id)
+    var endpoint = try await getChannelEndpoint(id: id)
     var data = (try? endpoint.adaptationData.decode(DanteChannelEndpointAdaptationData.self))
       ?? DanteChannelEndpointAdaptationData(mediaProtocol: .atp)
     data.remoteAddress = address
     endpoint.adaptationData = try data.blob
-    try await setChannelEndpoint(id, endpoint)
+    try await setChannelEndpoint(id: id, channelEndpoint: endpoint)
   }
 
   /// `address` is "<channel>@<device>".
@@ -82,11 +82,14 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication, @unc
     try await subscribe(channelEndpoint: id, to: address)
   }
 
-  public func add(channelEndpoint: OcaChannelEndpoint) async throws -> OcaID16 {
-    try await sendCommandRrq(methodID: OcaMethodID("4.6"), parameters: channelEndpoint)
-  }
+  @OcaMethod(
+    "4.6",
+    name: "AddChannelEndpoint",
+    parameterNames: ["ChannelEndpoint"],
+    resultNames: ["ID"]
+  )
+  public func addChannelEndpoint(channelEndpoint: OcaChannelEndpoint) async throws -> OcaID16
 
-  public func delete(channelEndpoint id: OcaID16) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("4.7"), parameters: id)
-  }
+  @OcaMethod("4.7", name: "DeleteChannelEndpoint", parameterNames: ["ID"])
+  public func deleteChannelEndpoint(id: OcaID16) async throws
 }

@@ -23,6 +23,31 @@ enum ClientMethodDescriptors {
   typealias Entry = (name: String, descriptor: OcaAnyMethodDescriptor)
 
   static let all: [(type: OcaRoot.Type, descriptors: [Entry])] = [
+    (Aes67OcaMediaTransportApplication.self, [
+      ("getEndpointDelayConstraints", Aes67OcaMediaTransportApplication.Methods.getEndpointDelayConstraints.erased),
+      ("getPresentationTimeOffsetConstraints", Aes67OcaMediaTransportApplication.Methods.getPresentationTimeOffsetConstraints.erased),
+      ("configureEndpointFromSDP", Aes67OcaMediaTransportApplication.Methods.configureEndpointFromSDP.erased),
+    ]),
+    (Aes67OcaMediaTransportSessionAgent.self, [
+      ("getSIPParameterRecord", Aes67OcaMediaTransportSessionAgent.Methods.getSIPParameterRecord.erased),
+      ("setSIPParameterRecord", Aes67OcaMediaTransportSessionAgent.Methods.setSIPParameterRecord.erased),
+      ("getSIPParameter", Aes67OcaMediaTransportSessionAgent.Methods.getSIPParameter.erased),
+      ("setSIPParameter", Aes67OcaMediaTransportSessionAgent.Methods.setSIPParameter.erased),
+    ]),
+    (Aes67StreamEndpointRegistry.self, [
+      ("getRegistryEntry", Aes67StreamEndpointRegistry.Methods.getRegistryEntry.erased),
+      ("addRegistryEntry", Aes67StreamEndpointRegistry.Methods.addRegistryEntry.erased),
+      ("setRegistryEntry", Aes67StreamEndpointRegistry.Methods.setRegistryEntry.erased),
+      ("deleteRegistryEntry", Aes67StreamEndpointRegistry.Methods.deleteRegistryEntry.erased),
+      ("addRegistryEntriesFromSDP", Aes67StreamEndpointRegistry.Methods.addRegistryEntriesFromSDP.erased),
+    ]),
+    (DanteOcaMediaTransportApplication.self, [
+      ("getChannelEndpoint", DanteOcaMediaTransportApplication.Methods.getChannelEndpoint.erased),
+      ("setChannelEndpoint", DanteOcaMediaTransportApplication.Methods.setChannelEndpoint.erased),
+      ("clearChannelEndpoint", DanteOcaMediaTransportApplication.Methods.clearChannelEndpoint.erased),
+      ("addChannelEndpoint", DanteOcaMediaTransportApplication.Methods.addChannelEndpoint.erased),
+      ("deleteChannelEndpoint", DanteOcaMediaTransportApplication.Methods.deleteChannelEndpoint.erased),
+    ]),
     (OcaAgent.self, [
       ("getPath", OcaAgent.Methods.getPath.erased),
     ]),

@@ -56,13 +56,13 @@ final class Aes67StreamEndpointRegistryTests: XCTestCase {
     let stageLeft = try await client.getRegistryEntry(idExternal: OcaBlob(Array("stage left".utf8)))
     XCTAssertEqual(stageLeft.addresses.first?.port, 5004)
 
-    try await client.addRegistryEntry(Self.entry("stage right", port: 5006))
+    try await client.addRegistryEntry(entry: Self.entry("stage right", port: 5006))
     XCTAssertEqual(registry.registry.count, 2)
     await XCTAssertThrowsStatus(.invalidRequest) {
-      try await client.addRegistryEntry(Self.entry("stage right", port: 5008))
+      try await client.addRegistryEntry(entry: Self.entry("stage right", port: 5008))
     }
 
-    try await client.setRegistryEntry(Self.entry("stage right", port: 5010))
+    try await client.setRegistryEntry(entry: Self.entry("stage right", port: 5010))
     let stageRight = try await client
       .getRegistryEntry(idExternal: OcaBlob(Array("stage right".utf8)))
     XCTAssertEqual(stageRight.addresses.first?.port, 5010)
@@ -73,10 +73,10 @@ final class Aes67StreamEndpointRegistryTests: XCTestCase {
       try await client.getRegistryEntry(idExternal: OcaBlob(Array("stage left".utf8)))
     }
     await XCTAssertThrowsStatus(.parameterOutOfRange) {
-      try await client.setRegistryEntry(Self.entry("stage left", port: 5004))
+      try await client.setRegistryEntry(entry: Self.entry("stage left", port: 5004))
     }
     await XCTAssertThrowsStatus(.notImplemented) {
-      try await client.addRegistryEntriesFromSDP("v=0\r\n")
+      try await client.addRegistryEntriesFromSDP(sdpString: "v=0\r\n")
     }
   }
 }
