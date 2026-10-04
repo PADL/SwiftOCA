@@ -31,7 +31,9 @@ enum OcaSQLiteDatasetSchema {
 }
 
 /// Runs `body`, reporting a database that has reached its size cap (SQLITE_FULL,
-/// raised once max_page_count is reached) as `arrayOrDataTooBig`.
+/// raised once max_page_count is reached) as `arrayOrDataTooBig`. The result is
+/// `body`'s own, usually a row count or rowid from `Connection.run`.
+@discardableResult
 func withDatasetSizeCap<T>(_ body: () throws -> T) throws -> T {
   let SQLITE_FULL: Int32 = 13
   do {
