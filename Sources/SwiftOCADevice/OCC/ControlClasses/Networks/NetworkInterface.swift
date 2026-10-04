@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaNetworkInterface: OcaRoot, OcaOwnable, OcaLabelRepresentable,
   OcaCounterSetRepresentable
 {
@@ -118,56 +119,41 @@ open class OcaNetworkInterface: OcaRoot, OcaOwnable, OcaLabelRepresentable,
   )
   public var counterSet = OcaCounterSet()
 
-  open func attach(counter id: OcaID16, to oNo: OcaONo) async throws {
-    try attach(counterNotifier: oNo, to: id)
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkInterface.Methods.attachCounterNotifier)
+  open func attachCounterNotifier(
+    counterID: OcaID16,
+    oNo: OcaONo,
+    from controller: any OcaController
+  ) async throws {
+    try attach(counterNotifier: oNo, to: counterID)
   }
 
-  open func detach(counter id: OcaID16, from oNo: OcaONo) async throws {
-    try detach(counterNotifier: oNo, from: id)
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkInterface.Methods.detachCounterNotifier)
+  open func detachCounterNotifier(
+    counterID: OcaID16,
+    oNo: OcaONo,
+    from controller: any OcaController
+  ) async throws {
+    try detach(counterNotifier: oNo, from: counterID)
   }
 
-  open func resetCounters() async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkInterface.Methods.resetCounters)
+  open func resetCounters(from controller: any OcaController) async throws {
     resetCounterSet()
   }
 
-  open func apply(command: OcaNetworkInterfaceCommand) async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkInterface.Methods.applyCommand)
+  open func applyCommand(command: OcaNetworkInterfaceCommand, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("2.4"):
-      try decodeNullCommand(command)
-      return try await controller.encodeResponse(path)
-    case OcaMethodID("2.21"):
-      let id: OcaID16 = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(counter(id: id), name: "Counter")
-    case OcaMethodID("2.22"):
-      let parameters: OcaCounterNotifierParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await attach(counter: parameters.id, to: parameters.oNo)
-      return Ocp1Response()
-    case OcaMethodID("2.23"):
-      let parameters: OcaCounterNotifierParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await detach(counter: parameters.id, from: parameters.oNo)
-      return Ocp1Response()
-    case OcaMethodID("2.24"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await resetCounters()
-      return Ocp1Response()
-    case OcaMethodID("2.25"):
-      let networkInterfaceCommand: OcaNetworkInterfaceCommand = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await apply(command: networkInterfaceCommand)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkInterface.Methods.getPath)
+  func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
+    await path
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkInterface.Methods.getCounter)
+  func getCounter(counterID: OcaID16, from controller: any OcaController) throws -> OcaCounter {
+    try counter(id: counterID)
   }
 }

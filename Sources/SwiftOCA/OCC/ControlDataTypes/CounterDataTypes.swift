@@ -89,6 +89,18 @@ public struct OcaCounterNotifierParameters: OcaParametersReflectable {
   }
 }
 
+/// AttachCounterNotifier's and DetachCounterNotifier's parameters where the model names
+/// the counter CounterID (OcaNetworkApplication, OcaNetworkInterface).
+public struct OcaCounterIDNotifierParameters: OcaParametersReflectable {
+  public let counterID: OcaID16
+  public let oNo: OcaONo
+
+  public init(counterID: OcaID16, oNo: OcaONo) {
+    self.counterID = counterID
+    self.oNo = oNo
+  }
+}
+
 public extension OcaCounterSet {
   func counter(id: OcaID16) -> OcaCounter? {
     counter.first { $0.id == id }

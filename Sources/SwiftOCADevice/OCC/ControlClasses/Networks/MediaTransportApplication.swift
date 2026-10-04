@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresentable,
   OcaPortClockMapRepresentable
 {
@@ -197,68 +198,93 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
 
   // MARK: - Overridable behaviour
 
-  open func add(port label: OcaString, mode: OcaPortMode) async throws -> OcaPortID {
+  @OcaDeviceMethod(Parameters.Methods.addPort)
+  open func addPort(name: OcaString, mode: OcaPortMode, from controller: any OcaController) async throws -> OcaPortID {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func delete(port id: OcaPortID) async throws {
+  @OcaDeviceMethod(Parameters.Methods.deletePort)
+  open func deletePort(id: OcaPortID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
   /// Returns the given descriptor with its IDInternal set to the allocated endpoint ID,
   /// having stored it with `initialStatus` as its state.
-  open func add(
+  @OcaDeviceMethod(Parameters.Methods.addEndpoint)
+  open func addEndpoint(
     endpoint: OcaMediaStreamEndpoint,
-    initialStatus: OcaMediaStreamEndpointState
+    initialStatus: OcaMediaStreamEndpointState,
+    from controller: any OcaController
   ) async throws -> OcaMediaStreamEndpoint {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func delete(endpoint id: OcaMediaStreamEndpointID) async throws {
+  @OcaDeviceMethod(Parameters.Methods.deleteEndpoint)
+  open func deleteEndpoint(id: OcaMediaStreamEndpointID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
+  @OcaDeviceMethod(Parameters.Methods.applyEndpointCommand)
   open func applyEndpointCommand(
-    _ id: OcaMediaStreamEndpointID,
-    command: OcaMediaStreamEndpointCommand
+    endpointID: OcaMediaStreamEndpointID,
+    command: OcaMediaStreamEndpointCommand,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func setEndpoint(_ id: OcaMediaStreamEndpointID, userLabel: OcaString) async throws {
-    var endpoint = try endpoint(id)
-    endpoint.userLabel = userLabel
+  @OcaDeviceMethod(Parameters.Methods.setEndpointUserLabel)
+  open func setEndpointUserLabel(
+    endpointID: OcaMediaStreamEndpointID,
+    label: OcaString,
+    from controller: any OcaController
+  ) async throws {
+    var endpoint = try endpoint(endpointID)
+    endpoint.userLabel = label
     try update(endpoint: endpoint)
   }
 
-  open func setEndpoint(
-    _ id: OcaMediaStreamEndpointID,
-    mediaStreamMode: OcaMediaStreamMode
+  @OcaDeviceMethod(Parameters.Methods.setEndpointMediaStreamMode)
+  open func setEndpointMediaStreamMode(
+    endpointID: OcaMediaStreamEndpointID,
+    streamMode: OcaMediaStreamMode,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func setEndpoint(
-    _ id: OcaMediaStreamEndpointID,
-    channelMap: OcaMultiMap<OcaUint16, OcaPortID>
+  @OcaDeviceMethod(Parameters.Methods.setEndpointChannelMap)
+  open func setEndpointChannelMap(
+    endpointID: OcaMediaStreamEndpointID,
+    channelMap: OcaMultiMap<OcaUint16, OcaPortID>,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func setEndpoint(_ id: OcaMediaStreamEndpointID, alignmentLevel: OcaDBFS) async throws {
+  @OcaDeviceMethod(Parameters.Methods.setEndpointAlignmentLevel)
+  open func setEndpointAlignmentLevel(
+    endpointID: OcaMediaStreamEndpointID,
+    level: OcaDBFS,
+    from controller: any OcaController
+  ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func setEndpoint(
-    _ id: OcaMediaStreamEndpointID,
-    adaptationData: OcaAdaptationData
+  @OcaDeviceMethod(Parameters.Methods.setEndpointAdaptationData)
+  open func setEndpointAdaptationData(
+    endpointID: OcaMediaStreamEndpointID,
+    data: OcaAdaptationData,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
   /// Default: the time source of the OcaMediaClock3 referenced by the endpoint's ClockONo.
+  @OcaDeviceMethod(Parameters.Methods.getEndpointTimeSource)
   open func getEndpointTimeSource(
-    _ id: OcaMediaStreamEndpointID
+    id: OcaMediaStreamEndpointID,
+    from controller: any OcaController
   ) async throws -> Parameters.EndpointTimeSource {
     let endpoint = try endpoint(id)
     guard let clock = await deviceDelegate?.objects[endpoint.clockONo] as? OcaMediaClock3,
@@ -272,192 +298,121 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     )
   }
 
+  @OcaDeviceMethod(Parameters.Methods.attachEndpointCounterNotifier)
   open func attachEndpointCounterNotifier(
     endpointID: OcaMediaStreamEndpointID,
     counterID: OcaID16,
-    to oNo: OcaONo
+    notifierONo: OcaONo,
+    from controller: any OcaController
   ) async throws {
     var counterSet = try endpointCounterSet(endpointID)
-    guard counterSet.attach(notifier: oNo, to: counterID) else {
+    guard counterSet.attach(notifier: notifierONo, to: counterID) else {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
     update(endpointID: endpointID, counterSet: counterSet)
   }
 
+  @OcaDeviceMethod(Parameters.Methods.detachEndpointCounterNotifier)
   open func detachEndpointCounterNotifier(
     endpointID: OcaMediaStreamEndpointID,
     counterID: OcaID16,
-    from oNo: OcaONo
+    notifierONo: OcaONo,
+    from controller: any OcaController
   ) async throws {
     var counterSet = try endpointCounterSet(endpointID)
-    guard counterSet.detach(notifier: oNo, from: counterID) else {
+    guard counterSet.detach(notifier: notifierONo, from: counterID) else {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
     update(endpointID: endpointID, counterSet: counterSet)
   }
 
+  @OcaDeviceMethod(Parameters.Methods.resetEndpointCounterSet)
   open func resetEndpointCounterSet(
-    _ id: OcaMediaStreamEndpointID,
-    counterID: OcaID16
+    endpointID: OcaMediaStreamEndpointID,
+    counterID: OcaID16,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
   // MARK: - Command dispatch
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.1"):
-      let parameters: Parameters.AddPortParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      return try await controller.encodeResponse(
-        add(port: parameters.name, mode: parameters.mode),
-        name: "ID"
-      )
-    case OcaMethodID("3.2"):
-      let portID: OcaPortID = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await delete(port: portID)
-      return Ocp1Response()
-    case OcaMethodID("3.4"):
-      return try await controller.encodeResponse(
-        handleGetPortName(command, from: controller),
-        name: "Name"
-      )
-    case OcaMethodID("3.5"):
-      let params: OcaSetPortNameParameters = try decodeCommand(command)
-      try await handleSetPortName(
-        command,
-        from: controller,
-        portID: params.portID,
-        name: params.name
-      )
-      return Ocp1Response()
-    case OcaMethodID("3.8"):
-      try await handleSetPortClockMapEntry(command, from: controller)
-      return Ocp1Response()
-    case OcaMethodID("3.9"):
-      try await handleDeletePortClockMapEntry(command, from: controller)
-      return Ocp1Response()
-    case OcaMethodID("3.10"):
-      return try await controller.encodeResponse(
-        handleGetPortClockMapEntry(command, from: controller),
-        name: "Entry"
-      )
-    case OcaMethodID("3.11"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(
-        Parameters.MaxEndpointCounts(
-          maxOutputCount: maxOutputEndpoints,
-          maxInputCount: maxInputEndpoints
-        )
-      )
-    case OcaMethodID("3.17"):
-      let id: OcaID16 = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      guard let capability = mediaStreamModeCapabilities.first(where: { $0.id == id }) else {
-        throw Ocp1Error.status(.parameterOutOfRange)
-      }
-      return try controller.encodeResponse(capability, name: "Capability")
-    case OcaMethodID("3.22"):
-      let id: OcaMediaStreamEndpointID = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(endpoint(id), name: "Endpoint")
-    case OcaMethodID("3.24"):
-      let id: OcaMediaStreamEndpointID = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(endpointStatus(id), name: "Status")
-    case OcaMethodID("3.25"):
-      let parameters: Parameters.AddEndpointParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      return try await controller.encodeResponse(
-        add(endpoint: parameters.endpoint, initialStatus: parameters.initialStatus),
-        name: "Endpoint"
-      )
-    case OcaMethodID("3.26"):
-      let id: OcaMediaStreamEndpointID = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await delete(endpoint: id)
-      return Ocp1Response()
-    case OcaMethodID("3.27"):
-      let parameters: Parameters.ApplyEndpointCommandParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await applyEndpointCommand(parameters.endpointID, command: parameters.command)
-      return Ocp1Response()
-    case OcaMethodID("3.28"):
-      let parameters: Parameters.SetEndpointUserLabelParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setEndpoint(parameters.endpointID, userLabel: parameters.label)
-      return Ocp1Response()
-    case OcaMethodID("3.29"):
-      let parameters: Parameters.SetEndpointMediaStreamModeParameters =
-        try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setEndpoint(parameters.endpointID, mediaStreamMode: parameters.streamMode)
-      return Ocp1Response()
-    case OcaMethodID("3.30"):
-      let parameters: Parameters.SetEndpointChannelMapParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setEndpoint(parameters.endpointID, channelMap: parameters.channelMap)
-      return Ocp1Response()
-    case OcaMethodID("3.31"):
-      let parameters: Parameters.SetEndpointAlignmentLevelParameters =
-        try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setEndpoint(parameters.endpointID, alignmentLevel: parameters.level)
-      return Ocp1Response()
-    case OcaMethodID("3.32"):
-      let id: OcaMediaStreamEndpointID = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try await controller.encodeResponse(getEndpointTimeSource(id))
-    case OcaMethodID("3.33"):
-      let parameters: Parameters.SetEndpointAdaptationDataParameters =
-        try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setEndpoint(parameters.endpointID, adaptationData: parameters.data)
-      return Ocp1Response()
-    case OcaMethodID("3.35"):
-      let id: OcaMediaStreamEndpointID = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(endpointCounterSet(id), name: "CounterSet")
-    case OcaMethodID("3.36"):
-      let parameters: Parameters.EndpointCounterParameters = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      guard let counter = try endpointCounterSet(parameters.endpointID)
-        .counter(id: parameters.counterID)
-      else {
-        throw Ocp1Error.status(.parameterOutOfRange)
-      }
-      return try controller.encodeResponse(counter, name: "Counter")
-    case OcaMethodID("3.37"):
-      let parameters: Parameters.EndpointCounterNotifierParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await attachEndpointCounterNotifier(
-        endpointID: parameters.endpointID,
-        counterID: parameters.counterID,
-        to: parameters.notifierONo
-      )
-      return Ocp1Response()
-    case OcaMethodID("3.38"):
-      let parameters: Parameters.EndpointCounterNotifierParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await detachEndpointCounterNotifier(
-        endpointID: parameters.endpointID,
-        counterID: parameters.counterID,
-        from: parameters.notifierONo
-      )
-      return Ocp1Response()
-    case OcaMethodID("3.39"):
-      let parameters: Parameters.EndpointCounterParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await resetEndpointCounterSet(parameters.endpointID, counterID: parameters.counterID)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
+  @OcaDeviceMethod(Parameters.Methods.getPortName)
+  func getPortName(portID: OcaPortID, from controller: any OcaController) throws -> OcaString {
+    try portName(of: portID)
+  }
+
+  @OcaDeviceMethod(Parameters.Methods.setPortName)
+  func setPortName(portID: OcaPortID, name: OcaString, from controller: any OcaController) throws {
+    try setName(name, ofPort: portID)
+  }
+
+  @OcaDeviceMethod(Parameters.Methods.setPortClockMapEntry)
+  func setPortClockMapEntry(
+    id: OcaPortID,
+    entry: OcaPortClockMapEntry,
+    from controller: any OcaController
+  ) {
+    portClockMap[id] = entry
+  }
+
+  @OcaDeviceMethod(Parameters.Methods.deletePortClockMapEntry)
+  func deletePortClockMapEntry(id: OcaPortID, from controller: any OcaController) {
+    deletePortClockMapEntry(for: id)
+  }
+
+  @OcaDeviceMethod(Parameters.Methods.getPortClockMapEntry)
+  func getPortClockMapEntry(id: OcaPortID, from controller: any OcaController) throws
+    -> OcaPortClockMapEntry
+  {
+    try portClockMapEntry(for: id)
+  }
+
+  @OcaDeviceMethod(Parameters.Methods.getMaxEndpointCounts)
+  func getMaxEndpointCounts(from controller: any OcaController) -> Parameters.MaxEndpointCounts {
+    .init(maxOutputCount: maxOutputEndpoints, maxInputCount: maxInputEndpoints)
+  }
+
+  @OcaDeviceMethod(Parameters.Methods.getMediaStreamModeCapability)
+  func getMediaStreamModeCapability(capabilityID: OcaID16, from controller: any OcaController) throws
+    -> OcaMediaStreamModeCapability
+  {
+    guard let capability = mediaStreamModeCapabilities.first(where: { $0.id == capabilityID }) else {
+      throw Ocp1Error.status(.parameterOutOfRange)
     }
+    return capability
+  }
+
+  @OcaDeviceMethod(Parameters.Methods.getEndpoint)
+  func getEndpoint(id: OcaMediaStreamEndpointID, from controller: any OcaController) throws
+    -> OcaMediaStreamEndpoint
+  {
+    try endpoint(id)
+  }
+
+  @OcaDeviceMethod(Parameters.Methods.getEndpointStatus)
+  func getEndpointStatus(id: OcaMediaStreamEndpointID, from controller: any OcaController) throws
+    -> OcaMediaStreamEndpointStatus
+  {
+    try endpointStatus(id)
+  }
+
+  @OcaDeviceMethod(Parameters.Methods.getEndpointCounterSet)
+  func getEndpointCounterSet(endpointID: OcaMediaStreamEndpointID, from controller: any OcaController) throws
+    -> OcaCounterSet
+  {
+    try endpointCounterSet(endpointID)
+  }
+
+  @OcaDeviceMethod(Parameters.Methods.getEndpointCounter)
+  func getEndpointCounter(
+    endpointID: OcaMediaStreamEndpointID,
+    counterID: OcaID16,
+    from controller: any OcaController
+  ) throws -> OcaCounter {
+    guard let counter = try endpointCounterSet(endpointID).counter(id: counterID) else {
+      throw Ocp1Error.status(.parameterOutOfRange)
+    }
+    return counter
   }
 }

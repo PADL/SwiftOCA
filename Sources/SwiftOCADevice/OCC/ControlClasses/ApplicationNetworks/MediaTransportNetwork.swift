@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentable {
   override open class var classID: OcaClassID {
     OcaClassID("1.4.2")
@@ -76,29 +77,37 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
   )
   public var alignmentGain = OcaBoundedPropertyValue<OcaDB>(value: 0.0, in: -0.0...0.0)
 
-  open func getSourceConnectors() async throws -> [OcaMediaSourceConnector] {
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.getSourceConnectors)
+  open func getSourceConnectors(from controller: any OcaController) async throws -> [OcaMediaSourceConnector] {
     []
   }
 
-  open func getSourceConnector(_ id: OcaMediaConnectorID) async throws
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.getSourceConnector)
+  open func getSourceConnector(id: OcaMediaConnectorID, from controller: any OcaController) async throws
     -> OcaMediaSourceConnector
   {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func getSinkConnectors() async throws -> [OcaMediaSinkConnector] {
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.getSinkConnectors)
+  open func getSinkConnectors(from controller: any OcaController) async throws -> [OcaMediaSinkConnector] {
     []
   }
 
-  open func getSinkConnector(_ id: OcaMediaConnectorID) async throws -> OcaMediaSinkConnector {
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.getSinkConnector)
+  open func getSinkConnector(id: OcaMediaConnectorID, from controller: any OcaController) async throws
+    -> OcaMediaSinkConnector
+  {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func getConnectorsStatuses() async throws -> [OcaMediaConnectorStatus] {
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.getConnectorsStatuses)
+  open func getConnectorsStatuses(from controller: any OcaController) async throws -> [OcaMediaConnectorStatus] {
     []
   }
 
-  open func getConnectorStatus(_ id: OcaMediaConnectorID) async throws
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.getConnectorStatus)
+  open func getConnectorStatus(connectorID: OcaMediaConnectorID, from controller: any OcaController) async throws
     -> OcaMediaConnectorStatus
   {
     throw Ocp1Error.status(.notImplemented)
@@ -118,154 +127,103 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     throw Ocp1Error.status(.notImplemented)
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.controlConnector, access: .write)
   open func controlConnector(
-    _ id: OcaMediaConnectorID,
-    command: OcaMediaConnectorCommand
+    connectorID: OcaMediaConnectorID,
+    command: OcaMediaConnectorCommand,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func setSourceConnector(
-    _ id: OcaMediaConnectorID,
-    pinMap: [OcaUint16: OcaPortID]
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.setSourceConnectorPinMap)
+  open func setSourceConnectorPinMap(
+    connectorID: OcaMediaConnectorID,
+    channelPinMap: [OcaUint16: OcaPortID],
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func setSinkConnector(
-    _ id: OcaMediaConnectorID,
-    pinMap: [OcaUint16: [OcaPortID]]
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.setSinkConnectorPinMap)
+  open func setSinkConnectorPinMap(
+    connectorID: OcaMediaConnectorID,
+    channelPinMap: [OcaUint16: [OcaPortID]],
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func setConnector(_ id: OcaMediaConnectorID, connection: OcaMediaConnection) async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.setConnectorConnection)
+  open func setConnectorConnection(
+    connectorID: OcaMediaConnectorID,
+    connection: OcaMediaConnection,
+    from controller: any OcaController
+  ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func setConnector(_ id: OcaMediaConnectorID, coding: OcaMediaCoding) async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.setConnectorCoding)
+  open func setConnectorCoding(
+    connectorID: OcaMediaConnectorID,
+    coding: OcaMediaCoding,
+    from controller: any OcaController
+  ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func setConnector(_ id: OcaMediaConnectorID, alignmentLevel: OcaDBFS) async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.setConnectorAlignmentLevel)
+  open func setConnectorAlignmentLevel(
+    connectorID: OcaMediaConnectorID,
+    level: OcaDBFS,
+    from controller: any OcaController
+  ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func setConnector(_ id: OcaMediaConnectorID, alignmentGain: OcaDB) async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.setConnectorAlignmentGain)
+  open func setConnectorAlignmentGain(
+    connectorID: OcaMediaConnectorID,
+    gain: OcaDB,
+    from controller: any OcaController
+  ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func deleteConnector(_ id: OcaMediaConnectorID) async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.deleteConnector)
+  open func deleteConnector(id: OcaMediaConnectorID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.3"):
-      return try await controller.encodeResponse(handleGetPortName(command, from: controller), name: "Name")
-    case OcaMethodID("3.4"):
-      let params: OcaSetPortNameParameters = try decodeCommand(command)
-      try await handleSetPortName(
-        command,
-        from: controller,
-        portID: params.portID,
-        name: params.name
-      )
-      return Ocp1Response()
-    case OcaMethodID("3.9"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let sourceConnectors = try await getSourceConnectors()
-      return try controller.encodeResponse(sourceConnectors, name: "Connectors")
-    case OcaMethodID("3.10"):
-      let id: OcaMediaConnectorID = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let sourceConnector = try await getSourceConnector(id)
-      return try controller.encodeResponse(sourceConnector, name: "Connector")
-    case OcaMethodID("3.11"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let sinkConnectors = try await getSinkConnectors()
-      return try controller.encodeResponse(sinkConnectors, name: "Connectors")
-    case OcaMethodID("3.12"):
-      let id: OcaMediaConnectorID = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let sinkConnector = try await getSinkConnector(id)
-      return try controller.encodeResponse(sinkConnector, name: "Connector")
-    case OcaMethodID("3.13"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let connectorStatuses = try await getConnectorsStatuses()
-      return try controller.encodeResponse(connectorStatuses, name: "Statuses")
-    case OcaMethodID("3.14"):
-      let id: OcaMediaConnectorID = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let connectorStatus = try await getConnectorStatus(id)
-      return try controller.encodeResponse(connectorStatus, name: "Status")
-    case OcaMethodID("3.15"):
-      var params: SwiftOCA.OcaMediaTransportNetwork
-        .AddSourceConnectorParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await addSource(connector: &params.connector, initialStatus: params.initialStatus)
-      return try controller.encodeResponse(params.connector, name: "Connector")
-    case OcaMethodID("3.16"):
-      var params: SwiftOCA.OcaMediaTransportNetwork
-        .AddSinkConnectorParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await addSink(initialStatus: params.initialStatus, connector: &params.connector)
-      return try controller.encodeResponse(params.connector, name: "Connector")
-    case OcaMethodID("3.17"):
-      let params: SwiftOCA.OcaMediaTransportNetwork
-        .ControlConnectorParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await controlConnector(params.connectorID, command: params.command)
-      return Ocp1Response()
-    case OcaMethodID("3.18"):
-      let params: SwiftOCA.OcaMediaTransportNetwork
-        .SetSourceConnectorPinMapParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setSourceConnector(params.connectorID, pinMap: params.channelPinMap)
-      return Ocp1Response()
-    case OcaMethodID("3.19"):
-      let params: SwiftOCA.OcaMediaTransportNetwork
-        .SetSinkConnectorPinMapParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setSinkConnector(params.connectorID, pinMap: params.channelPinMap)
-      return Ocp1Response()
-    case OcaMethodID("3.20"):
-      let params: SwiftOCA.OcaMediaTransportNetwork
-        .SetConnectorConnectionParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setConnector(params.connectorID, connection: params.connection)
-      return Ocp1Response()
-    case OcaMethodID("3.21"):
-      let params: SwiftOCA.OcaMediaTransportNetwork
-        .SetConnectorCodingParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setConnector(params.connectorID, coding: params.coding)
-      return Ocp1Response()
-    case OcaMethodID("3.22"):
-      let params: SwiftOCA.OcaMediaTransportNetwork
-        .SetConnectorAlignmentLevelParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setConnector(params.connectorID, alignmentLevel: params.level)
-      return Ocp1Response()
-    case OcaMethodID("3.23"):
-      let params: SwiftOCA.OcaMediaTransportNetwork
-        .SetConnectorAlignmentGainParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setConnector(params.connectorID, alignmentGain: params.gain)
-      return Ocp1Response()
-    case OcaMethodID("3.24"):
-      let id: OcaMediaConnectorID = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await deleteConnector(id)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.getPortName)
+  func getPortName(portID: OcaPortID, from controller: any OcaController) throws -> OcaString {
+    try portName(of: portID)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.setPortName)
+  func setPortName(portID: OcaPortID, name: OcaString, from controller: any OcaController) throws {
+    try setName(name, ofPort: portID)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.addSourceConnector)
+  func addSourceConnector(
+    connector: OcaMediaSourceConnector,
+    initialStatus: OcaMediaConnectorState,
+    from controller: any OcaController
+  ) async throws -> OcaMediaSourceConnector {
+    var connector = connector
+    try await addSource(connector: &connector, initialStatus: initialStatus)
+    return connector
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.addSinkConnector)
+  func addSinkConnector(
+    initialStatus: OcaMediaConnectorState,
+    connector: OcaMediaSinkConnector,
+    from controller: any OcaController
+  ) async throws -> OcaMediaSinkConnector {
+    var connector = connector
+    try await addSink(initialStatus: initialStatus, connector: &connector)
+    return connector
   }
 }
