@@ -214,7 +214,7 @@ open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
   }
 
   private func _connectDevice(to endpoint: NWEndpoint) async throws {
-    _nwConnection = try NWConnection(to: endpoint, using: parameters)
+    _nwConnection = NWConnection(to: endpoint, using: parameters)
     let connection = _nwConnection!
     do {
       // Wait for `.ready`/`.failed` before completing connect — without this
