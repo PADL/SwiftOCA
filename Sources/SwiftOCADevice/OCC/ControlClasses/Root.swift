@@ -559,11 +559,10 @@ extension OcaRoot {
     return AsyncMergeSequence(changes).eraseToAnyAsyncSequence()
   }
 
-  // nonisolated(unsafe) is required because this is called from deinit (which
-  // cannot be async). This is safe in practice because it only reads immutable
-  // property wrapper metadata (propertyID, methodIDs) set at init time, and the
-  // key paths are offset-based so they don't go through actor isolation.
-  nonisolated(unsafe) var allDevicePropertyKeyPathsUncached: [String: AnyKeyPath] {
+  // nonisolated because this is called from deinit, which cannot be async. Safe
+  // because it only reads immutable property wrapper metadata set at init time,
+  // and the key paths are offset-based so they don't go through actor isolation.
+  nonisolated var allDevicePropertyKeyPathsUncached: [String: AnyKeyPath] {
     _allKeyPaths(value: self).reduce(into: [:]) {
       if $1.key.hasPrefix("_") {
         $0[String($1.key.dropFirst())] = $1.value
