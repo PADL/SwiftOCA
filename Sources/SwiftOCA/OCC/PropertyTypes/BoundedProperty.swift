@@ -67,6 +67,31 @@ public extension OcaBoundedPropertyValue where Value: BinaryFloatingPoint {
   }
 }
 
+/// A list of values, each with its own bounds, as a getter that returns all three
+/// lists gives them.
+public struct OcaBoundedPropertyListValue<Value: Codable & Comparable & Sendable>:
+  OcaParametersReflectable, Codable, Equatable, Sendable
+{
+  public let values: OcaList<Value>
+  public let minValues: OcaList<Value>
+  public let maxValues: OcaList<Value>
+
+  public init(values: OcaList<Value>, minValues: OcaList<Value>, maxValues: OcaList<Value>) {
+    self.values = values
+    self.minValues = minValues
+    self.maxValues = maxValues
+  }
+
+  /// Every value bounded by the same range.
+  public init(values: OcaList<Value>, in range: ClosedRange<Value>) {
+    self.init(
+      values: values,
+      minValues: OcaList(repeating: range.lowerBound, count: values.count),
+      maxValues: OcaList(repeating: range.upperBound, count: values.count)
+    )
+  }
+}
+
 @propertyWrapper
 public struct OcaBoundedProperty<
   Value: Codable & Comparable &

@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaPowerSensor: OcaSensor, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.11") }
   override open class var classVersion: OcaClassVersionNumber { 1 }
@@ -30,7 +31,6 @@ open class OcaPowerSensor: OcaSensor, @unchecked Sendable {
   )
   public var powerFactor: OcaProperty<OcaFloat32>.PropertyValue
 
-  @_spi(SwiftOCAPrivate)
   public struct GetReadingParameters: OcaParametersReflectable {
     public let power: OcaFloat32
     public let powerFactor: OcaFloat32
@@ -50,17 +50,6 @@ open class OcaPowerSensor: OcaSensor, @unchecked Sendable {
     }
   }
 
-  public func getReading() async throws
-    -> (power: OcaBoundedPropertyValue<OcaFloat32>, powerFactor: OcaFloat32)
-  {
-    let parameters: GetReadingParameters =
-      try await sendCommandRrq(methodID: OcaMethodID("4.1"))
-    return (
-      OcaBoundedPropertyValue(
-        value: parameters.power,
-        in: parameters.minPower...parameters.maxPower
-      ),
-      parameters.powerFactor
-    )
-  }
+  @OcaMethod("4.1", name: "GetReading")
+  public func getReading() async throws -> GetReadingParameters
 }

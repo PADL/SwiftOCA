@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaDynamics: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.14") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -138,7 +139,6 @@ open class OcaDynamics: OcaActuator, @unchecked Sendable {
   )
   public var slope: OcaBoundedProperty<OcaFloat32>.PropertyValue
 
-  @_spi(SwiftOCAPrivate)
   public struct SetMultipleParameters: OcaParametersReflectable {
     public let mask: OcaParameterMask
     public let function: OcaDynamicsFunction
@@ -183,6 +183,7 @@ open class OcaDynamics: OcaActuator, @unchecked Sendable {
   }
 
   /// atomically sets the dynamics parameters selected by `mask`
+  @OcaMethod("4.27", name: "SetMultiple", parameters: SetMultipleParameters.self)
   public func setMultiple(
     mask: OcaParameterMask,
     function: OcaDynamicsFunction,
@@ -196,27 +197,10 @@ open class OcaDynamics: OcaActuator, @unchecked Sendable {
     dynamicGainFloor: OcaDB,
     kneeParameter: OcaFloat32,
     slope: OcaFloat32
-  ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.27"),
-      parameters: SetMultipleParameters(
-        mask: mask,
-        function: function,
-        threshold: threshold,
-        thresholdPresentationUnits: thresholdPresentationUnits,
-        detectorLaw: detectorLaw,
-        attackTime: attackTime,
-        releaseTime: releaseTime,
-        holdTime: holdTime,
-        dynamicGainCeiling: dynamicGainCeiling,
-        dynamicGainFloor: dynamicGainFloor,
-        kneeParameter: kneeParameter,
-        slope: slope
-      )
-    )
-  }
+  ) async throws
 }
 
+@OcaMethods
 open class OcaDynamicsDetector: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.15") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -255,7 +239,6 @@ open class OcaDynamicsDetector: OcaActuator, @unchecked Sendable {
   )
   public var holdTime: OcaBoundedProperty<OcaTimeInterval>.PropertyValue
 
-  @_spi(SwiftOCAPrivate)
   public struct SetMultipleParameters: OcaParametersReflectable {
     public let mask: OcaParameterMask
     public let law: OcaLevelDetectionLaw
@@ -279,26 +262,17 @@ open class OcaDynamicsDetector: OcaActuator, @unchecked Sendable {
   }
 
   /// atomically sets the detector parameters selected by `mask`
+  @OcaMethod("4.9", name: "SetMultiple", parameters: SetMultipleParameters.self)
   public func setMultiple(
     mask: OcaParameterMask,
     law: OcaLevelDetectionLaw,
     attackTime: OcaTimeInterval,
     releaseTime: OcaTimeInterval,
     holdTime: OcaTimeInterval
-  ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.9"),
-      parameters: SetMultipleParameters(
-        mask: mask,
-        law: law,
-        attackTime: attackTime,
-        releaseTime: releaseTime,
-        holdTime: holdTime
-      )
-    )
-  }
+  ) async throws
 }
 
+@OcaMethods
 open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.16") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -362,7 +336,6 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
   )
   public var dynamicGainCeiling: OcaBoundedProperty<OcaDB>.PropertyValue
 
-  @_spi(SwiftOCAPrivate)
   public struct GetThresholdsParameters: OcaParametersReflectable {
     public let thresholds: OcaList<OcaDBr>
     public let minThreshold: OcaDBz
@@ -379,63 +352,20 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
     }
   }
 
-  @_spi(SwiftOCAPrivate)
-  public struct GetFloat32ListParameters: OcaParametersReflectable {
-    public let values: OcaList<OcaFloat32>
-    public let minValues: OcaList<OcaFloat32>
-    public let maxValues: OcaList<OcaFloat32>
+  @OcaMethod("4.14", name: "GetThresholds")
+  public func getThresholds() async throws -> GetThresholdsParameters
 
-    public init(
-      values: OcaList<OcaFloat32>,
-      minValues: OcaList<OcaFloat32>,
-      maxValues: OcaList<OcaFloat32>
-    ) {
-      self.values = values
-      self.minValues = minValues
-      self.maxValues = maxValues
-    }
-  }
+  @OcaMethod("4.5", name: "GetSlopes", resultNames: ["Slopes", "MinSlope", "MaxSlope"])
+  public func getSlopes() async throws -> OcaBoundedPropertyListValue<OcaFloat32>
 
-  public func getThresholds() async throws
-    -> (thresholds: OcaList<OcaDBr>, minThreshold: OcaDBz, maxThreshold: OcaDBz)
-  {
-    let parameters: GetThresholdsParameters =
-      try await sendCommandRrq(methodID: OcaMethodID("4.14"))
-    return (parameters.thresholds, parameters.minThreshold, parameters.maxThreshold)
-  }
-
-  public func getSlopes() async throws
-    -> (
-      slopes: OcaList<OcaFloat32>,
-      minSlopes: OcaList<OcaFloat32>,
-      maxSlopes: OcaList<OcaFloat32>
-    )
-  {
-    let parameters: GetFloat32ListParameters =
-      try await sendCommandRrq(
-        methodID: OcaMethodID("4.5"),
-        responseNames: ["Slopes", "MinSlope", "MaxSlope"]
-      )
-    return (parameters.values, parameters.minValues, parameters.maxValues)
-  }
-
-  public func getKneeParameters() async throws
-    -> (
-      kneeParameters: OcaList<OcaFloat32>,
-      minKneeParameters: OcaList<OcaFloat32>,
-      maxKneeParameters: OcaList<OcaFloat32>
-    )
-  {
-    let parameters: GetFloat32ListParameters =
-      try await sendCommandRrq(
-        methodID: OcaMethodID("4.7"),
-        responseNames: ["Parameters", "MinParameter", "MaxParameter"]
-      )
-    return (parameters.values, parameters.minValues, parameters.maxValues)
-  }
+  @OcaMethod(
+    "4.7",
+    name: "GetKneeParameters",
+    resultNames: ["Parameters", "MinParameter", "MaxParameter"]
+  )
+  public func getKneeParameters() async throws -> OcaBoundedPropertyListValue<OcaFloat32>
 
   /// The model names the lists Slope and KneeParameter, singular.
-  @_spi(SwiftOCAPrivate)
   public struct SetMultipleParameters: OcaParametersReflectable {
     public let mask: OcaParameterMask
     public let nSegments: OcaUint8
@@ -465,26 +395,14 @@ open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
   }
 
   /// atomically sets the curve parameters selected by `mask`
+  @OcaMethod("4.13", name: "SetMultiple", parameters: SetMultipleParameters.self)
   public func setMultiple(
     mask: OcaParameterMask,
     nSegments: OcaUint8,
     thresholds: OcaList<OcaDBr>,
-    slopes: OcaList<OcaFloat32>,
-    kneeParameters: OcaList<OcaFloat32>,
+    slope: OcaList<OcaFloat32>,
+    kneeParameter: OcaList<OcaFloat32>,
     dynamicGainFloor: OcaDB,
     dynamicGainCeiling: OcaDB
-  ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.13"),
-      parameters: SetMultipleParameters(
-        mask: mask,
-        nSegments: nSegments,
-        thresholds: thresholds,
-        slope: slopes,
-        kneeParameter: kneeParameters,
-        dynamicGainFloor: dynamicGainFloor,
-        dynamicGainCeiling: dynamicGainCeiling
-      )
-    )
-  }
+  ) async throws
 }

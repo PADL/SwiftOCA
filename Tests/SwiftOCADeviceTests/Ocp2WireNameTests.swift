@@ -346,8 +346,8 @@ final class Ocp2WireNameTests: XCTestCase {
         mask: 0,
         nSegments: 1,
         thresholds: [0],
-        slopes: [1],
-        kneeParameters: [0],
+        slope: [1],
+        kneeParameter: [0],
         dynamicGainFloor: -20,
         dynamicGainCeiling: 0
       )

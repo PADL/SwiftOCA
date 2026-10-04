@@ -17,6 +17,7 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaDynamics: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.14") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -149,6 +150,7 @@ open class OcaDynamics: OcaActuator {
 
   /// atomic multiple-parameter assignment is device specific; the default implementation
   /// is unimplemented
+  @OcaDeviceMethod(SwiftOCA.OcaDynamics.Methods.setMultiple)
   open func setMultiple(
     mask: OcaParameterMask,
     function: OcaDynamicsFunction,
@@ -161,40 +163,14 @@ open class OcaDynamics: OcaActuator {
     dynamicGainCeiling: OcaDB,
     dynamicGainFloor: OcaDB,
     kneeParameter: OcaFloat32,
-    slope: OcaFloat32
+    slope: OcaFloat32,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
-
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.27"):
-      let parameters: SwiftOCA.OcaDynamics.SetMultipleParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setMultiple(
-        mask: parameters.mask,
-        function: parameters.function,
-        threshold: parameters.threshold,
-        thresholdPresentationUnits: parameters.thresholdPresentationUnits,
-        detectorLaw: parameters.detectorLaw,
-        attackTime: parameters.attackTime,
-        releaseTime: parameters.releaseTime,
-        holdTime: parameters.holdTime,
-        dynamicGainCeiling: parameters.dynamicGainCeiling,
-        dynamicGainFloor: parameters.dynamicGainFloor,
-        kneeParameter: parameters.kneeParameter,
-        slope: parameters.slope
-      )
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
-  }
 }
 
+@OcaDeviceMethods
 open class OcaDynamicsDetector: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.15") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -235,39 +211,20 @@ open class OcaDynamicsDetector: OcaActuator {
 
   /// atomic multiple-parameter assignment is device specific; the default implementation
   /// is unimplemented
+  @OcaDeviceMethod(SwiftOCA.OcaDynamicsDetector.Methods.setMultiple)
   open func setMultiple(
     mask: OcaParameterMask,
     law: OcaLevelDetectionLaw,
     attackTime: OcaTimeInterval,
     releaseTime: OcaTimeInterval,
-    holdTime: OcaTimeInterval
+    holdTime: OcaTimeInterval,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
-
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.9"):
-      let parameters: SwiftOCA.OcaDynamicsDetector.SetMultipleParameters =
-        try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setMultiple(
-        mask: parameters.mask,
-        law: parameters.law,
-        attackTime: parameters.attackTime,
-        releaseTime: parameters.releaseTime,
-        holdTime: parameters.holdTime
-      )
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
-  }
 }
 
+@OcaDeviceMethods
 open class OcaDynamicsCurve: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.16") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -351,73 +308,37 @@ open class OcaDynamicsCurve: OcaActuator {
 
   /// atomic multiple-parameter assignment is device specific; the default implementation
   /// is unimplemented
+  @OcaDeviceMethod(SwiftOCA.OcaDynamicsCurve.Methods.setMultiple)
   open func setMultiple(
     mask: OcaParameterMask,
     nSegments: OcaUint8,
     thresholds: OcaList<OcaDBr>,
-    slopes: OcaList<OcaFloat32>,
-    kneeParameters: OcaList<OcaFloat32>,
+    slope: OcaList<OcaFloat32>,
+    kneeParameter: OcaList<OcaFloat32>,
     dynamicGainFloor: OcaDB,
-    dynamicGainCeiling: OcaDB
+    dynamicGainCeiling: OcaDB,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  private func _float32ListParameters(
-    _ values: OcaList<OcaFloat32>,
-    in range: ClosedRange<OcaFloat32>
-  ) -> SwiftOCA.OcaDynamicsCurve.GetFloat32ListParameters {
-    SwiftOCA.OcaDynamicsCurve.GetFloat32ListParameters(
-      values: values,
-      minValues: OcaList(repeating: range.lowerBound, count: values.count),
-      maxValues: OcaList(repeating: range.upperBound, count: values.count)
-    )
+
+  @OcaDeviceMethod(SwiftOCA.OcaDynamicsCurve.Methods.getSlopes)
+  func getSlopes(from controller: any OcaController) -> OcaBoundedPropertyListValue<OcaFloat32> {
+    .init(values: slopes, in: slopeRange)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.5"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(
-        _float32ListParameters(slopes, in: slopeRange),
-        names: ["Slopes", "MinSlope", "MaxSlope"]
-      )
-    case OcaMethodID("4.7"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(
-        _float32ListParameters(kneeParameters, in: kneeParameterRange),
-        names: ["Parameters", "MinParameter", "MaxParameter"]
-      )
-    case OcaMethodID("4.13"):
-      let parameters: SwiftOCA.OcaDynamicsCurve.SetMultipleParameters =
-        try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setMultiple(
-        mask: parameters.mask,
-        nSegments: parameters.nSegments,
-        thresholds: parameters.thresholds,
-        slopes: parameters.slope,
-        kneeParameters: parameters.kneeParameter,
-        dynamicGainFloor: parameters.dynamicGainFloor,
-        dynamicGainCeiling: parameters.dynamicGainCeiling
-      )
-      return Ocp1Response()
-    case OcaMethodID("4.14"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let parameters = SwiftOCA.OcaDynamicsCurve.GetThresholdsParameters(
-        thresholds: thresholds,
-        minThreshold: thresholdRange.lowerBound,
-        maxThreshold: thresholdRange.upperBound
-      )
-      return try controller.encodeResponse(parameters)
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod(SwiftOCA.OcaDynamicsCurve.Methods.getKneeParameters)
+  func getKneeParameters(from controller: any OcaController) -> OcaBoundedPropertyListValue<OcaFloat32> {
+    .init(values: kneeParameters, in: kneeParameterRange)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaDynamicsCurve.Methods.getThresholds)
+  func getThresholds(from controller: any OcaController) -> SwiftOCA.OcaDynamicsCurve.GetThresholdsParameters {
+    .init(
+      thresholds: thresholds,
+      minThreshold: thresholdRange.lowerBound,
+      maxThreshold: thresholdRange.upperBound
+    )
   }
 }

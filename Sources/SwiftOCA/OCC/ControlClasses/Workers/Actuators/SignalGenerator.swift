@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaSignalGenerator: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.17") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -82,15 +83,12 @@ open class OcaSignalGenerator: OcaActuator, @unchecked Sendable {
   )
   public var generating: OcaProperty<OcaBoolean>.PropertyValue
 
-  public func start() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("4.16"))
-  }
+  @OcaMethod("4.16", name: "Start")
+  public func start() async throws
 
-  public func stop() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("4.17"))
-  }
+  @OcaMethod("4.17", name: "Stop")
+  public func stop() async throws
 
-  @_spi(SwiftOCAPrivate)
   public struct SetMultipleParameters: OcaParametersReflectable {
     public let mask: OcaParameterMask
     public let frequency1: OcaFrequency
@@ -123,6 +121,7 @@ open class OcaSignalGenerator: OcaActuator, @unchecked Sendable {
   }
 
   /// atomically sets the generation parameters selected by `mask`
+  @OcaMethod("4.18", name: "SetMultiple", parameters: SetMultipleParameters.self)
   public func setMultiple(
     mask: OcaParameterMask,
     frequency1: OcaFrequency,
@@ -132,19 +131,5 @@ open class OcaSignalGenerator: OcaActuator, @unchecked Sendable {
     sweepType: OcaSweepType,
     sweepTime: OcaTimeInterval,
     sweepRepeat: OcaBoolean
-  ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.18"),
-      parameters: SetMultipleParameters(
-        mask: mask,
-        frequency1: frequency1,
-        frequency2: frequency2,
-        level: level,
-        waveform: waveform,
-        sweepType: sweepType,
-        sweepTime: sweepTime,
-        sweepRepeat: sweepRepeat
-      )
-    )
-  }
+  ) async throws
 }

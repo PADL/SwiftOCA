@@ -33,6 +33,7 @@ open class OcaDelay: OcaActuator {
   public var delayTime = OcaBoundedPropertyValue<OcaTimeInterval>(value: 0, in: 0...1)
 }
 
+@OcaDeviceMethods
 open class OcaDelayExtended: OcaDelay {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.7.1") }
 
@@ -54,23 +55,10 @@ open class OcaDelayExtended: OcaDelay {
   )
 
   /// unit conversion is device specific; the default implementation is unimplemented
-  open func getDelayValue(convertedTo unitOfMeasure: OcaDelayUnit) async throws
+  @OcaDeviceMethod(SwiftOCA.OcaDelayExtended.Methods.getDelayValueConverted)
+  open func getDelayValueConverted(uoM: OcaDelayUnit, from controller: any OcaController) async throws
     -> OcaDelayValue
   {
     throw Ocp1Error.status(.notImplemented)
-  }
-
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("5.3"):
-      let unitOfMeasure: OcaDelayUnit = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try await controller.encodeResponse(getDelayValue(convertedTo: unitOfMeasure), name: "Value")
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
   }
 }
