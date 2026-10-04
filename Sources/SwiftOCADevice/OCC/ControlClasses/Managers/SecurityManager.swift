@@ -144,19 +144,13 @@ open class OcaSecurityManager: OcaManager {
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.changePreSharedKey, access: .write)
-  func changePreSharedKey(
-    _ parameters: SwiftOCA.OcaSecurityManager.ChangePreSharedKeyParameters,
-    from controller: any OcaController
-  ) throws {
-    try _add(identity: parameters.identity, key: Data(parameters.newKey), mustExist: true)
+  func changePreSharedKey(identity: OcaString, newKey: OcaBlob, from controller: any OcaController) throws {
+    try _add(identity: identity, key: Data(newKey), mustExist: true)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.addPreSharedKey, access: .write)
-  func addPreSharedKey(
-    _ parameters: SwiftOCA.OcaSecurityManager.AddPreSharedKeyParameters,
-    from controller: any OcaController
-  ) throws {
-    try _add(identity: parameters.identity, key: Data(parameters.key), mustExist: false)
+  func addPreSharedKey(identity: OcaString, key: OcaBlob, from controller: any OcaController) throws {
+    try _add(identity: identity, key: Data(key), mustExist: false)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.deletePreSharedKey, access: .write)
