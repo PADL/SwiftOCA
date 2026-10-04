@@ -33,7 +33,7 @@ open class MilanOcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @u
   public func milanStatus(
     for sessionID: OcaMediaTransportSessionID
   ) async throws -> (OcaMediaTransportSessionState, MilanSessionStatusAdaptationData) {
-    let status = try await getSessionStatus(sessionID)
+    let status = try await getSessionStatus(id: sessionID)
     let adaptationData = status.adaptationData.isEmpty
       ? MilanSessionStatusAdaptationData()
       : try status.adaptationData.decode(MilanSessionStatusAdaptationData.self)

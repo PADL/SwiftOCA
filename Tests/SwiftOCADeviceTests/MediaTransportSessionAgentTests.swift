@@ -35,16 +35,20 @@ private final class TestSessionAgent: SwiftOCADevice.OcaMediaTransportSessionAge
     }
   }
 
-  override func add(session: OcaMediaTransportSession) async throws -> OcaMediaTransportSession {
+  override func addSession(
+    session: OcaMediaTransportSession,
+    from controller: any OcaController
+  ) async throws -> OcaMediaTransportSession {
     var session = session
     session.idInternal = (sessions.map(\.idInternal).max() ?? 0) + 1
     insert(session: session, status: OcaMediaTransportSessionStatus(state: .unconfigured))
     return session
   }
 
-  override func add(
+  override func addConnection(
+    sessionID: OcaMediaTransportSessionID,
     connection: OcaMediaTransportSessionConnection,
-    to sessionID: OcaMediaTransportSessionID
+    from controller: any OcaController
   ) async throws -> OcaMediaTransportSessionConnection {
     var session = try session(sessionID)
     var connection = connection
@@ -62,20 +66,22 @@ private final class TestSessionAgent: SwiftOCADevice.OcaMediaTransportSessionAge
     sessionID: OcaMediaTransportSessionID,
     connectionID: OcaMediaTransportSessionConnectionID,
     localEndpointID: OcaMediaStreamEndpointID,
-    remoteEndpointID: OcaBlob
+    remoteEndpointID: OcaBlob,
+    from controller: any OcaController
   ) async throws {
     _ = try session(sessionID)
     configured.append((sessionID, localEndpointID, remoteEndpointID))
   }
 
-  override func set(
-    session id: OcaMediaTransportSessionID,
-    streamingEnabled: OcaBoolean
+  override func setStreamingEnabled(
+    id: OcaMediaTransportSessionID,
+    active: OcaBoolean,
+    from controller: any OcaController
   ) async throws {
     var session = try session(id)
-    session.streamingEnabled = streamingEnabled
+    session.streamingEnabled = active
     try update(session: session)
-    self.streamingEnabled[id] = streamingEnabled
+    streamingEnabled[id] = active
   }
 }
 
@@ -117,9 +123,9 @@ final class MediaTransportSessionAgentTests: XCTestCase {
     XCTAssertEqual(sessionType, "OcaTest")
     let sessions = try await client.$sessions._getValue(client, flags: [])
     XCTAssertEqual(sessions, agent.sessions)
-    let session = try await client.getSession(1)
+    let session = try await client.getSession(id: 1)
     XCTAssertEqual(session.connections.count, 1)
-    let status = try await client.getSessionStatus(1)
+    let status = try await client.getSessionStatus(id: 1)
     XCTAssertEqual(status.state, .unconfigured)
 
     let remote = OcaBlob([0x00, 0x0B, 0x5E, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00])
@@ -127,8 +133,8 @@ final class MediaTransportSessionAgentTests: XCTestCase {
     XCTAssertEqual(agent.configured.count, 1)
     XCTAssertEqual(agent.configured.first?.2, remote)
 
-    try await client.set(session: 1, streamingEnabled: true)
-    let streaming = try await client.getSession(1)
+    try await client.setStreamingEnabled(id: 1, active: true)
+    let streaming = try await client.getSession(id: 1)
     XCTAssertTrue(streaming.streamingEnabled)
 
     // ConfigureSession carries the IDs, label and adaptation data; the stored connections
@@ -137,28 +143,39 @@ final class MediaTransportSessionAgentTests: XCTestCase {
     relabelled.userLabel = "Relabelled"
     relabelled.streamingEnabled = false
     relabelled.connections = []
-    try await client.configure(session: relabelled)
-    let configured = try await client.getSession(1)
+    try await client.configureSession(
+      idInternal: relabelled.idInternal,
+      idExternal: relabelled.idExternal,
+      userLabel: relabelled.userLabel,
+      adaptationData: relabelled.adaptationData
+    )
+    let configured = try await client.getSession(id: 1)
     XCTAssertEqual(configured.userLabel, "Relabelled")
     XCTAssertTrue(configured.streamingEnabled)
     XCTAssertEqual(configured.connections.count, 1)
+    let unknown = OcaMediaTransportSession(idInternal: 9)
     await XCTAssertThrowsStatus(.parameterOutOfRange) {
-      try await client.configure(session: OcaMediaTransportSession(idInternal: 9))
+      try await client.configureSession(
+        idInternal: unknown.idInternal,
+        idExternal: unknown.idExternal,
+        userLabel: unknown.userLabel,
+        adaptationData: unknown.adaptationData
+      )
     }
 
     // AddSession and AddConnection return the whole descriptor carrying the allocated ID
-    let added = try await client.add(session: OcaMediaTransportSession(idInternal: 0))
+    let added = try await client.addSession(session: OcaMediaTransportSession(idInternal: 0))
     XCTAssertEqual(added.idInternal, 2)
-    let connection = try await client.add(
-      connection: OcaMediaTransportSessionConnection(id: 0, localEndpointID: 5, remoteEndpointID: OcaBlob()),
-      to: 2
+    let connection = try await client.addConnection(
+      sessionID: 2,
+      connection: OcaMediaTransportSessionConnection(id: 0, localEndpointID: 5, remoteEndpointID: OcaBlob())
     )
     XCTAssertEqual(connection.id, 1)
     XCTAssertEqual(connection.localEndpointID, 5)
 
-    await XCTAssertThrowsStatus(.notImplemented) { try await client.startStreaming(session: 1) }
-    await XCTAssertThrowsStatus(.notImplemented) { try await client.reset(session: 1) }
-    await XCTAssertThrowsStatus(.parameterOutOfRange) { try await client.getSession(9) }
+    await XCTAssertThrowsStatus(.notImplemented) { try await client.startStreaming(id: 1) }
+    await XCTAssertThrowsStatus(.notImplemented) { try await client.resetSession(id: 1) }
+    await XCTAssertThrowsStatus(.parameterOutOfRange) { try await client.getSession(id: 9) }
   }
 
   @OcaDevice
@@ -185,14 +202,14 @@ final class MediaTransportSessionAgentTests: XCTestCase {
     let (state, milanStatus) = try await client.milanStatus(for: 1)
     XCTAssertEqual(state, .configured)
     XCTAssertEqual(milanStatus.substate, .sourceNotPresent)
-    let session = try await client.getSession(1)
+    let session = try await client.getSession(id: 1)
     XCTAssertEqual(
       try session.connections.first?.remoteEndpointID.decode(MilanMediaStreamEndpointIDExternal.self),
       .unbound
     )
-    await XCTAssertThrowsStatus(.notImplemented) { try await client.startStreaming(session: 1) }
+    await XCTAssertThrowsStatus(.notImplemented) { try await client.startStreaming(id: 1) }
     await XCTAssertThrowsStatus(.notImplemented) {
-      try await client.add(session: OcaMediaTransportSession(idInternal: 2))
+      try await client.addSession(session: OcaMediaTransportSession(idInternal: 2))
     }
     // ConfigureConnection is left to the transport-specific subclass
     await XCTAssertThrowsStatus(.notImplemented) {

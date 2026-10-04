@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaAgent: OcaRoot, OcaOwnable, OcaLabelRepresentable {
   override open class var classID: OcaClassID {
     OcaClassID("1.2")
@@ -34,16 +35,8 @@ open class OcaAgent: OcaRoot, OcaOwnable, OcaLabelRepresentable {
   )
   public var owner = OcaInvalidONo
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("2.4"):
-      try decodeNullCommand(command)
-      return try await controller.encodeResponse(path)
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod(SwiftOCA.OcaAgent.Methods.getPath)
+  func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
+    await path
   }
 }

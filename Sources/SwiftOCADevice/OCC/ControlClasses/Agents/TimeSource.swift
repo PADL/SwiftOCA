@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaTimeSource: OcaAgent {
   override open class var classID: OcaClassID { OcaClassID("1.2.16") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -89,22 +90,9 @@ open class OcaTimeSource: OcaAgent {
   )
   public var parameters: OcaSDPString = ""
 
-  open func reset() async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaTimeSource.Methods.reset)
+  open func reset(from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.11"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await reset()
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
-  }
 }

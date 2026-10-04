@@ -24,6 +24,7 @@ import SwiftOCA
 
 public let OcaGroupExceptionEventID = OcaEventID(defLevel: 3, eventIndex: 1)
 
+@OcaDeviceMethods
 open class OcaGroup<Member: OcaRoot>: OcaAgent {
   override open class var classID: OcaClassID { OcaClassID("1.2.22") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -87,6 +88,35 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
     try? await notifySubscribers(actionObjects: members, changeType: .itemDeleted)
   }
 
+  // the model does not name GetMembers' or GetGroupController's result
+  @OcaDeviceMethod(SwiftOCA.OcaGroup.Methods.getMembers)
+  func getMembers(from controller: any OcaController) -> [OcaONo] {
+    members.map(\.objectNumber)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaGroup.Methods.setMembers)
+  func setMembers(members: [OcaONo], from controller: any OcaController) async throws {
+    let resolved = try await members.asyncMap { @Sendable memberONo in
+      try await self.member(memberONo)
+    }
+    try await set(members: resolved, controller: controller)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaGroup.Methods.addMember)
+  func addMember(member: OcaONo, from controller: any OcaController) async throws {
+    try await add(member: self.member(member), controller: controller)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaGroup.Methods.deleteMember)
+  func deleteMember(member: OcaONo, from controller: any OcaController) async throws {
+    try await delete(member: self.member(member), controller: controller)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaGroup.Methods.getGroupController)
+  func getGroupController(from controller: any OcaController) -> OcaONo {
+    groupController
+  }
+
   /// The member an object number names; resolved once the lock check has passed, so a
   /// locked group answers Locked whatever it is sent.
   private func member(_ objectNumber: OcaONo) async throws -> Member {
@@ -94,48 +124,6 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
       throw Ocp1Error.invalidObject(objectNumber)
     }
     return member
-  }
-
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.1"): // GetMembers
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(
-        members.map(\.objectNumber),
-        name: "Members" // name not in AES70-2023 model
-      )
-    case OcaMethodID("3.2"): // SetMembers
-      let memberONos: [OcaONo] = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      let members = try await memberONos.asyncMap { @Sendable memberONo in
-        try await self.member(memberONo)
-      }
-      try await set(members: members, controller: controller)
-      return Ocp1Response()
-    case OcaMethodID("3.3"): // AddMember
-      let memberONo: OcaONo = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await add(member: member(memberONo), controller: controller)
-      return Ocp1Response()
-    case OcaMethodID("3.4"): // DeleteMember
-      let memberONo: OcaONo = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await delete(member: member(memberONo), controller: controller)
-      return Ocp1Response()
-    case OcaMethodID("3.5"): // GroupControllerONo
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(
-        groupController,
-        name: "GroupController" // name not in AES70-2023 model
-      )
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
   }
 }
 

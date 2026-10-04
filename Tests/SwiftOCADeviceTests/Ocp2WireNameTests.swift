@@ -327,7 +327,7 @@ final class Ocp2WireNameTests: XCTestCase {
       )
     )
     let setStreaming = Task {
-      try? await agent.set(session: 1, streamingEnabled: true)
+      try? await agent.setStreamingEnabled(id: 1, active: true)
     }
     let streaming = try await Self.nextCommand(from: endpoint)
     setStreaming.cancel()

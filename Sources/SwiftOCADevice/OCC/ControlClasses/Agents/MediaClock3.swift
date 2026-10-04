@@ -17,6 +17,7 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaMediaClock3: OcaAgent {
   override open class var classID: OcaClassID { OcaClassID("1.2.15") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -57,32 +58,25 @@ open class OcaMediaClock3: OcaAgent {
     timeSourceONo = timeSource.objectNumber
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
+  @OcaDeviceMethod(SwiftOCA.OcaMediaClock3.Methods.getCurrentRate)
+  func getCurrentRate(from controller: any OcaController)
+    -> SwiftOCA.OcaMediaClock3.GetCurrentRateParameters
+  {
+    .init(rate: currentRate, timeSourceONo: timeSourceONo)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaMediaClock3.Methods.setCurrentRate)
+  func setCurrentRate(
+    rate: OcaMediaClockRate,
+    timeSourceONo: OcaONo,
     from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.3"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let params = SwiftOCA.OcaMediaClock3.GetCurrentRateParameters(
-        rate: currentRate,
-        timeSourceONo: timeSourceONo
-      )
-      return try controller.encodeResponse(params)
-    case OcaMethodID("3.4"):
-      let params: SwiftOCA.OcaMediaClock3.SetCurrentRateParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      guard let deviceDelegate,
-            let timeSource: OcaTimeSource = await deviceDelegate
-            .resolve(objectNumber: params.timeSourceONo) as? OcaTimeSource
-      else {
-        throw Ocp1Error.status(.badONo)
-      }
-      try await set(currentRate: params.rate, timeSource: timeSource)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
+  ) async throws {
+    guard let deviceDelegate,
+          let timeSource = await deviceDelegate
+          .resolve(objectNumber: timeSourceONo) as? OcaTimeSource
+    else {
+      throw Ocp1Error.status(.badONo)
     }
+    try await set(currentRate: rate, timeSource: timeSource)
   }
 }

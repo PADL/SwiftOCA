@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaMediaTransportSessionAgent: OcaAgent {
   public typealias Parameters = SwiftOCA.OcaMediaTransportSessionAgent
 
@@ -111,7 +112,11 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
   // MARK: - Overridable behaviour
 
   /// Returns the given descriptor with its IDInternal set to the allocated session ID.
-  open func add(session: OcaMediaTransportSession) async throws -> OcaMediaTransportSession {
+  @OcaDeviceMethod(Parameters.Methods.addSession)
+  open func addSession(
+    session: OcaMediaTransportSession,
+    from controller: any OcaController
+  ) async throws -> OcaMediaTransportSession {
     throw Ocp1Error.status(.notImplemented)
   }
 
@@ -121,137 +126,100 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func delete(session id: OcaMediaTransportSessionID) async throws {
+  @OcaDeviceMethod(Parameters.Methods.deleteSession)
+  open func deleteSession(id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func reset(session id: OcaMediaTransportSessionID) async throws {
+  @OcaDeviceMethod(Parameters.Methods.resetSession)
+  open func resetSession(id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func set(session id: OcaMediaTransportSessionID, streamingEnabled: OcaBoolean) async throws {
+  @OcaDeviceMethod(Parameters.Methods.setStreamingEnabled)
+  open func setStreamingEnabled(
+    id: OcaMediaTransportSessionID,
+    active: OcaBoolean,
+    from controller: any OcaController
+  ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func startStreaming(session id: OcaMediaTransportSessionID) async throws {
+  @OcaDeviceMethod(Parameters.Methods.startStreaming)
+  open func startStreaming(id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func stopStreaming(session id: OcaMediaTransportSessionID) async throws {
+  @OcaDeviceMethod(Parameters.Methods.stopStreaming)
+  open func stopStreaming(id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
   /// Returns the given descriptor with its ID set to the allocated connection ID.
-  open func add(
+  @OcaDeviceMethod(Parameters.Methods.addConnection)
+  open func addConnection(
+    sessionID: OcaMediaTransportSessionID,
     connection: OcaMediaTransportSessionConnection,
-    to sessionID: OcaMediaTransportSessionID
+    from controller: any OcaController
   ) async throws -> OcaMediaTransportSessionConnection {
     throw Ocp1Error.status(.notImplemented)
   }
 
+  @OcaDeviceMethod(Parameters.Methods.configureConnection)
   open func configureConnection(
     sessionID: OcaMediaTransportSessionID,
     connectionID: OcaMediaTransportSessionConnectionID,
     localEndpointID: OcaMediaStreamEndpointID,
-    remoteEndpointID: OcaBlob
+    remoteEndpointID: OcaBlob,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func delete(
-    connection id: OcaMediaTransportSessionConnectionID,
-    from sessionID: OcaMediaTransportSessionID
+  @OcaDeviceMethod(Parameters.Methods.deleteConnection)
+  open func deleteConnection(
+    sessionID: OcaMediaTransportSessionID,
+    connectionID: OcaMediaTransportSessionConnectionID,
+    from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  open func deleteConnections(session id: OcaMediaTransportSessionID) async throws {
+  @OcaDeviceMethod(Parameters.Methods.deleteConnections)
+  open func deleteConnections(sessionID: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
   // MARK: - Command dispatch
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.3"):
-      let id: OcaMediaTransportSessionID = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      return try controller.encodeResponse(session(id), name: "Session")
-    case OcaMethodID("3.4"):
-      let session: OcaMediaTransportSession = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      return try await controller.encodeResponse(add(session: session), name: "Session")
-    case OcaMethodID("3.5"):
-      let parameters: Parameters.ConfigureSessionParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      var session = try session(parameters.idInternal)
-      session.idExternal = parameters.idExternal
-      session.userLabel = parameters.userLabel
-      session.adaptationData = parameters.adaptationData
-      try await configure(session: session)
-      return Ocp1Response()
-    case OcaMethodID("3.6"):
-      let id: OcaMediaTransportSessionID = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await delete(session: id)
-      return Ocp1Response()
-    case OcaMethodID("3.7"):
-      let id: OcaMediaTransportSessionID = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await reset(session: id)
-      return Ocp1Response()
-    case OcaMethodID("3.8"):
-      let parameters: Parameters.SetStreamingEnabledParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await set(session: parameters.id, streamingEnabled: parameters.active)
-      return Ocp1Response()
-    case OcaMethodID("3.9"):
-      let id: OcaMediaTransportSessionID = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await startStreaming(session: id)
-      return Ocp1Response()
-    case OcaMethodID("3.10"):
-      let id: OcaMediaTransportSessionID = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await stopStreaming(session: id)
-      return Ocp1Response()
-    case OcaMethodID("3.12"):
-      let id: OcaMediaTransportSessionID = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      // the model names GetSessionStatus's output Session, like GetSession's
-      return try controller.encodeResponse(sessionStatus(id), name: "Session")
-    case OcaMethodID("3.13"):
-      let parameters: Parameters.AddConnectionParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      return try await controller.encodeResponse(
-        add(connection: parameters.connection, to: parameters.sessionID),
-        name: "Connection"
-      )
-    case OcaMethodID("3.14"):
-      let parameters: Parameters.ConfigureConnectionParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await configureConnection(
-        sessionID: parameters.sessionID,
-        connectionID: parameters.connectionID,
-        localEndpointID: parameters.localEndpointID,
-        remoteEndpointID: parameters.remoteEndpointID
-      )
-      return Ocp1Response()
-    case OcaMethodID("3.15"):
-      let parameters: Parameters.SessionConnectionParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await delete(connection: parameters.connectionID, from: parameters.sessionID)
-      return Ocp1Response()
-    case OcaMethodID("3.16"):
-      let id: OcaMediaTransportSessionID = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await deleteConnections(session: id)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod(Parameters.Methods.getSession)
+  func getSession(id: OcaMediaTransportSessionID, from controller: any OcaController) throws
+    -> OcaMediaTransportSession
+  {
+    try session(id)
   }
+
+  @OcaDeviceMethod(Parameters.Methods.configureSession)
+  func configureSession(
+    idInternal: OcaMediaTransportSessionID,
+    idExternal: OcaBlob,
+    userLabel: OcaString,
+    adaptationData: OcaAdaptationData,
+    from controller: any OcaController
+  ) async throws {
+    var session = try session(idInternal)
+    session.idExternal = idExternal
+    session.userLabel = userLabel
+    session.adaptationData = adaptationData
+    try await configure(session: session)
+  }
+
+  // the model names GetSessionStatus's output Session, like GetSession's
+  @OcaDeviceMethod(Parameters.Methods.getSessionStatus)
+  func getSessionStatus(id: OcaMediaTransportSessionID, from controller: any OcaController) throws
+    -> OcaMediaTransportSessionStatus
+  {
+    try sessionStatus(id)
+  }
+
 }

@@ -72,7 +72,7 @@ final class ControllerExpiryTests: XCTestCase {
     let leaving = ForeignController()
     let staying = ForeignController()
 
-    try await object.lockNoReadWrite(controller: leaving)
+    try await object.setLockNoReadWrite(from: leaving)
     let handle = try await dataset.allocateIOSessionHandle(with: "session", controller: leaving)
     let kept = try await dataset.allocateIOSessionHandle(with: "session", controller: staying)
     let lockedOut = await object.isReadLocked(by: staying)

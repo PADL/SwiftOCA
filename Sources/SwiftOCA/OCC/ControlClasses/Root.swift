@@ -22,6 +22,7 @@ import Foundation
 #endif
 import Synchronization
 
+@OcaMethods
 open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyPathRepresentable {
   typealias Root = OcaRoot
 
@@ -74,11 +75,18 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
   )
   public var lockable: OcaProperty<OcaBoolean>.PropertyValue
 
+  // the property's getter, as the device declares it
+  @OcaMethod("1.2", name: "GetLockable", resultNames: ["Lockable"])
+  public func getLockable() async throws -> OcaBoolean
+
   @OcaProperty(
     propertyID: OcaPropertyID("1.5"),
     getMethodID: OcaMethodID("1.5")
   )
   public var role: OcaProperty<OcaString>.PropertyValue
+
+  @OcaMethod("1.5", name: "GetRole", resultNames: ["Role"])
+  public func getRole() async throws -> OcaString
 
   @_spi(SwiftOCAPrivate)
   public func _set(role: OcaString) {
@@ -91,6 +99,9 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
     ocp2GetName: "State"
   )
   public var lockState: OcaProperty<OcaLockState>.PropertyValue
+
+  @OcaMethod("1.7", name: "GetLockState", resultNames: ["State"])
+  public func getLockState() async throws -> OcaLockState
 
   public required init(objectNumber: OcaONo) {
     self.objectNumber = objectNumber
@@ -106,31 +117,27 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
     }
   }
 
-  public func getClassIdentification() async throws -> OcaClassIdentification {
-    try await sendCommandRrq(methodID: OcaMethodID("1.1"))
-  }
+  @OcaMethod("1.1", name: "GetClassIdentification", resultNames: ["ClassIdentification"])
+  public func getClassIdentification() async throws -> OcaClassIdentification
 
   @available(*, deprecated, renamed: "setLockNoReadWrite")
   public func lockTotal() async throws {
     try await setLockNoReadWrite()
   }
 
-  public func setLockNoReadWrite() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("1.3"))
-  }
+  @OcaMethod("1.3", name: "SetLockNoReadWrite")
+  public func setLockNoReadWrite() async throws
 
-  public func unlock() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("1.4"))
-  }
+  @OcaMethod("1.4", name: "Unlock")
+  public func unlock() async throws
 
   @available(*, deprecated, renamed: "setLockNoWrite")
   public func lockReadOnly() async throws {
     try await setLockNoWrite()
   }
 
-  public func setLockNoWrite() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("1.6"))
-  }
+  @OcaMethod("1.6", name: "SetLockNoWrite")
+  public func setLockNoWrite() async throws
 
   public var isContainer: Bool {
     false
@@ -529,14 +536,6 @@ public struct OcaGetPathParameters: OcaParametersReflectable {
   }
 }
 
-extension OcaRoot {
-  func getPath(methodID: OcaMethodID) async throws -> (OcaNamePath, OcaONoPath) {
-    let responseParams: OcaGetPathParameters
-    responseParams = try await sendCommandRrq(methodID: methodID)
-    return (responseParams.rolePath, responseParams.oNoPath)
-  }
-}
-
 public struct OcaGetPortNameParameters: OcaParametersReflectable {
   public let portID: OcaPortID
 
@@ -558,7 +557,7 @@ public struct OcaSetPortNameParameters: OcaParametersReflectable {
 public protocol OcaOwnable: OcaRoot {
   var owner: OcaProperty<OcaONo>.PropertyValue { get set }
 
-  var path: (OcaNamePath, OcaONoPath) { get async throws }
+  func getPath() async throws -> OcaGetPathParameters
 
   @_spi(SwiftOCAPrivate)
   func _getOwner(flags: OcaPropertyResolutionFlags) async throws -> OcaONo
@@ -567,7 +566,7 @@ public protocol OcaOwnable: OcaRoot {
 public extension OcaOwnable {
   var objectNumberPath: OcaONoPath {
     get async throws {
-      try await path.1
+      try await getPath().oNoPath
     }
   }
 
@@ -579,7 +578,7 @@ public extension OcaOwnable {
 
   var rolePath: OcaNamePath {
     get async throws {
-      try await path.0
+      try await getPath().rolePath
     }
   }
 
@@ -670,7 +669,7 @@ public extension OcaRoot {
     } else if let localRolePath = try await getRolePathFallback(flags: flags) {
       return localRolePath
     } else if let self = self as? OcaOwnable {
-      return try await self.path.0
+      return try await self.getPath().rolePath
     } else {
       throw Ocp1Error.objectClassMismatch
     }

@@ -207,7 +207,7 @@ public actor OcaDevice {
       await lockManager.remove(controller: controller)
     }
     for object in objects.values {
-      try? await object.unlock(controller: controller)
+      try? await object.unlock(from: controller)
     }
   }
 

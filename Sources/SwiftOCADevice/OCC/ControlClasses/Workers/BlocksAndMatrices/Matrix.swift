@@ -332,7 +332,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     try lockSelfAndProxy(controller: controller)
   }
 
-  /// Whether `lockNoReadWrite` would succeed for `member`, checked up front so that
+  /// Whether `setLockNoReadWrite` would succeed for `member`, checked up front so that
   /// SetCurrentXYLock can fail before locking anything.
   private static func ensureLockable(_ member: Member, by controller: any OcaController) throws {
     guard controller.flags.contains(.supportsLocking) else {
@@ -444,14 +444,14 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
         try Self.ensureLockable(member, by: controller)
       }
       for member in members {
-        try await member.lockNoReadWrite(controller: controller)
+        try await member.setLockNoReadWrite(from: controller)
       }
     case OcaMethodID("3.16"):
       // UnlockCurrent must not fail on a member that is already unlocked (AES70-2)
       try decodeNullCommand(command)
       for member in currentMembers {
         if case .unlocked = member.lockState { continue }
-        try await member.unlock(controller: controller)
+        try await member.unlock(from: controller)
       }
     default:
       return try await super.handleCommand(command, from: controller)

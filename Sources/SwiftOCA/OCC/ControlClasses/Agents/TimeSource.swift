@@ -73,6 +73,7 @@ public struct OcaTimeDeliveryParameters_StreamEndpoint: Codable, Sendable {
   public let endpointID: OcaMediaStreamEndpointID
 }
 
+@OcaMethods
 open class OcaTimeSource: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.16") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -146,7 +147,6 @@ open class OcaTimeSource: OcaAgent, @unchecked Sendable {
   )
   public var parameters: OcaProperty<OcaSDPString>.PropertyValue
 
-  public func reset() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.11"))
-  }
+  @OcaMethod("3.11", name: "Reset")
+  public func reset() async throws
 }
