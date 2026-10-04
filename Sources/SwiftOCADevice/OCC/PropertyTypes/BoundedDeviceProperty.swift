@@ -101,6 +101,7 @@ public struct OcaBoundedDeviceProperty<
     object: OcaRoot,
     _ newValue: OcaBoundedPropertyValue<Value>
   ) async {
+    guard newValue != storage.subject.value else { return }
     storage.subject.send(newValue)
     try? await notifySubscribers(object: object, newValue.value)
   }
@@ -226,6 +227,7 @@ public struct OcaBoundedDeviceProperty<
     // straight after the set sees it; only the notification needs the Task.
     set {
       let property = object[keyPath: storageKeyPath]
+      guard newValue != property.storage.subject.value else { return }
       property.storage.subject.send(newValue)
 
       Task {
