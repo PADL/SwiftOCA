@@ -23,7 +23,11 @@ import Foundation
 
 /// An application that lets a port be added, which the base class does not.
 private final class _PortAddingApplication: SwiftOCADevice.OcaMediaTransportApplication {
-  override func add(port label: OcaString, mode: OcaPortMode) async throws -> OcaPortID {
+  override func add(
+    port label: OcaString,
+    mode: OcaPortMode,
+    from controller: any OcaController
+  ) async throws -> OcaPortID {
     OcaPortID(mode: mode, index: 7)
   }
 }

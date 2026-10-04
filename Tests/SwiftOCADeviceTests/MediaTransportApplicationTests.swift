@@ -64,7 +64,8 @@ private final class TestMediaTransportApplication: SwiftOCADevice.OcaMediaTransp
 
   override func add(
     endpoint: OcaMediaStreamEndpoint,
-    initialStatus: OcaMediaStreamEndpointState
+    initialStatus: OcaMediaStreamEndpointState,
+    from controller: any OcaController
   ) async throws -> OcaMediaStreamEndpoint {
     var endpoint = endpoint
     endpoint.idInternal = (endpoints.map(\.idInternal).max() ?? 0) + 1
@@ -74,7 +75,8 @@ private final class TestMediaTransportApplication: SwiftOCADevice.OcaMediaTransp
 
   override func applyEndpointCommand(
     _ id: OcaMediaStreamEndpointID,
-    command: OcaMediaStreamEndpointCommand
+    command: OcaMediaStreamEndpointCommand,
+    from controller: any OcaController
   ) async throws {
     _ = try endpoint(id)
     appliedCommands.append((id, command))

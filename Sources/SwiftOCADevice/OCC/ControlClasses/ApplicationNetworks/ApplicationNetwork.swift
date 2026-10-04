@@ -69,13 +69,9 @@ open class OcaApplicationNetwork: OcaRoot, OcaOwnable, OcaLabelRepresentable {
   )
   public var errorCode: OcaUint16 = 0
 
-  open func control(_ command: OcaApplicationNetworkCommand) async throws {
-    throw Ocp1Error.status(.notImplemented)
-  }
-
   @OcaDeviceMethod(SwiftOCA.OcaApplicationNetwork.control, access: .write)
-  func control(_ command: OcaApplicationNetworkCommand, from controller: any OcaController) async throws {
-    try await control(command)
+  open func control(_ command: OcaApplicationNetworkCommand, from controller: any OcaController) async throws {
+    throw Ocp1Error.status(.notImplemented)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaApplicationNetwork.getPath, access: .read)
