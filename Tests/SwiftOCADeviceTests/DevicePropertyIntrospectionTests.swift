@@ -69,7 +69,7 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
   @OcaDevice
   func testDescribesDeclaredProperties() async throws {
     let gain: SwiftOCADevice.OcaGain = try await makeGain()
-    let properties = gain.devicePropertyDescriptions
+    let properties = gain.devicePropertyDescriptors
     XCTAssertEqual(properties.map(\.propertyID), properties.map(\.propertyID).sorted())
 
     let enabled = try XCTUnwrap(properties.first { $0.name == "enabled" })
@@ -91,7 +91,7 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
   @OcaDevice
   func testABoundedPropertyIsDescribedByItsValue() async throws {
     let gain: SwiftOCADevice.OcaGain = try await makeGain()
-    let property = try XCTUnwrap(gain.devicePropertyDescriptions.first { $0.name == "gain" })
+    let property = try XCTUnwrap(gain.devicePropertyDescriptors.first { $0.name == "gain" })
     XCTAssertEqual(property.propertyID, OcaPropertyID("4.1"))
     XCTAssertTrue(property.valueType == OcaDB.self)
     XCTAssertEqual(property.ocp2GetNames, ["Gain", "MinGain", "MaxGain"])
@@ -101,21 +101,21 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
   @OcaDevice
   func testPropertiesAreGroupedByTheClassThatDefinesThem() async throws {
     let gain: SwiftOCADevice.OcaGain = try await makeGain()
-    let classes = gain.deviceClassDescriptions
+    let classes = gain.deviceClassDescriptors
     XCTAssertEqual(classes.map(\.classID), ["1", "1.1", "1.1.1", "1.1.1.5"])
     XCTAssertTrue(classes.last?.type == SwiftOCADevice.OcaGain.self)
     XCTAssertEqual(classes.last?.properties.map(\.name), ["gain"])
     XCTAssertTrue(classes[1].properties.contains { $0.name == "enabled" })
     XCTAssertEqual(
       classes.flatMap(\.properties).map(\.propertyID),
-      gain.devicePropertyDescriptions.map(\.propertyID)
+      gain.devicePropertyDescriptors.map(\.propertyID)
     )
   }
 
   @OcaDevice
   func testASwiftSubclassWithItsParentsClassIDIsTheSameClass() async throws {
     let gain: _RelabelledGain = try await makeGain()
-    let classes = gain.deviceClassDescriptions
+    let classes = gain.deviceClassDescriptors
     XCTAssertEqual(classes.map(\.classID), ["1", "1.1", "1.1.1", "1.1.1.5"])
     XCTAssertTrue(classes.last?.type == SwiftOCADevice.OcaGain.self)
   }
@@ -123,7 +123,7 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
   @OcaDevice
   func testAProprietarySubclassDefinesPropertiesAtItsOwnLevel() async throws {
     let gain: _TrimmedGain = try await makeGain()
-    let classes = gain.deviceClassDescriptions
+    let classes = gain.deviceClassDescriptors
     XCTAssertEqual(classes.count, 5)
     XCTAssertEqual(classes.last?.classID, _TrimmedGain.classID)
     XCTAssertEqual(classes.last?.properties.map(\.name), ["trim"])
@@ -133,7 +133,7 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
   @OcaDevice
   func testASecondProprietaryLevelDefinesPropertiesBelowTheFirst() async throws {
     let gain: _OffsetTrimmedGain = try await makeGain()
-    let classes = gain.deviceClassDescriptions
+    let classes = gain.deviceClassDescriptors
     XCTAssertEqual(classes.count, 6)
     XCTAssertEqual(
       Array(classes.map(\.classID).suffix(3)),
@@ -153,13 +153,13 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
     let actuator = try await SwiftOCADevice.OcaBooleanActuator(
       role: "Toggle", deviceDelegate: device, addToRootBlock: true
     )
-    let classes = actuator.deviceClassDescriptions
+    let classes = actuator.deviceClassDescriptors
     XCTAssertEqual(classes.map(\.classID), ["1", "1.1", "1.1.1", "1.1.1.1.1"])
     XCTAssertEqual(classes.last?.properties.map(\.name), ["setting"])
     XCTAssertEqual(classes.last?.properties.map(\.propertyID), ["5.1"])
     XCTAssertEqual(
       classes.flatMap(\.properties).map(\.propertyID),
-      actuator.devicePropertyDescriptions.map(\.propertyID)
+      actuator.devicePropertyDescriptors.map(\.propertyID)
     )
   }
 
@@ -168,7 +168,7 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
     let object = try await _Positioned(role: "Positioned", deviceDelegate: device, addToRootBlock: true)
-    let property = try XCTUnwrap(object.devicePropertyDescriptions.first { $0.name == "position" })
+    let property = try XCTUnwrap(object.devicePropertyDescriptors.first { $0.name == "position" })
     XCTAssertEqual(property.propertyID, OcaPropertyID("3.1"))
     XCTAssertEqual(property.yPropertyID, OcaPropertyID("3.2"))
     XCTAssertTrue(property.valueType == OcaVector2D<OcaUint16>.self)
@@ -176,7 +176,7 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
     XCTAssertFalse(property.isSettable)
 
     // any other property is one OCA property and has no components
-    let enabled = try XCTUnwrap(object.devicePropertyDescriptions.first { $0.name == "enabled" })
+    let enabled = try XCTUnwrap(object.devicePropertyDescriptors.first { $0.name == "enabled" })
     XCTAssertNil(enabled.yPropertyID)
     XCTAssertNil(enabled.componentType)
   }

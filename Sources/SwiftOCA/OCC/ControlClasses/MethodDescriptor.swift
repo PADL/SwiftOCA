@@ -14,9 +14,49 @@
 // limitations under the License.
 //
 
+/// Declares a client method to be the OCA method `methodID`, named `name` in the model,
+/// and writes its body, which sends the arguments and returns the decoded result:
+///
+///     @OcaMethod("2.7", name: "SetPortName", parameters: SetPortNameParameters.self)
+///     public func setPortName(id: OcaPortID, name: OcaString) async throws
+///
+/// The method is `async throws` and has no body. Its descriptor is `Methods.setPortName`,
+/// declared by `@OcaMethods` on the class, which a device class names to answer it. The
+/// descriptor takes no parameters, the one parameter, or a record of several: the
+/// `parameters` type where one is shared, else one synthesised from the argument names,
+/// as `Methods.SetPortNameParameters`. The body builds it by the arguments' internal
+/// names. `parameterNames` and `resultNames` give the OCP.2 names of a single value, or
+/// where the model names a record's fields differently.
+@attached(body)
+public macro OcaMethod(
+  _ methodID: String,
+  name: String,
+  parameters: (any (Codable & Sendable).Type)? = nil,
+  parameterNames: [String]? = nil,
+  resultNames: [String]? = nil
+) = #externalMacro(module: "SwiftOCAMacros", type: "OcaMethodMacro")
+
+/// Declares a client method whose body is written by hand to be the OCA method
+/// `methodID`: its descriptor is `Methods.<method name>` as for `@OcaMethod`, with
+/// `parameters` and `result` giving the types where the signature does not.
+@attached(peer)
+public macro OcaMethodDescriptor(
+  _ methodID: String,
+  name: String,
+  parameters: (any (Codable & Sendable).Type)? = nil,
+  parameterNames: [String]? = nil,
+  result: (any (Codable & Sendable).Type)? = nil,
+  resultNames: [String]? = nil
+) = #externalMacro(module: "SwiftOCAMacros", type: "OcaMethodDescriptorMacro")
+
+/// Gives a client class its `Methods` namespace: the descriptor of each `@OcaMethod` and
+/// `@OcaMethodDescriptor` method in the class body, named as the method is.
+@attached(member, names: named(Methods))
+public macro OcaMethods() = #externalMacro(module: "SwiftOCAMacros", type: "OcaMethodsMacro")
+
 /// A method of a control class as the model declares it: its ID, its name, and the
-/// types of its parameters and result. Declared once, for the client method that sends
-/// it and the device class that answers it.
+/// types of its parameters and result. Declared once, by `@OcaMethod` on the client
+/// method that sends it, and taken by the device class that answers it.
 ///
 /// `Parameters` is the one OCA parameter, or a record of several; `Result` likewise
 /// for the response; `Void` for none. A record's fields name themselves on OCP.2;
