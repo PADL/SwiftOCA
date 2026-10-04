@@ -201,8 +201,8 @@ private func exerciseConnection(_ connection: OcaConnection, fixture: TCPFixture
   let deviceValue = await { @OcaDevice in fixture.gain.gain.value }()
   XCTAssertEqual(deviceValue, -3.5)
 
-  let results = try await connection.rootBlock.find(
-    actionObjectsByRole: "Master Gain",
+  let results = try await connection.rootBlock.findActionObjectsByRole(
+    searchName: "Master Gain",
     nameComparisonType: .exact,
     resultFlags: [.oNo, .role]
   )

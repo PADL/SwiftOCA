@@ -176,8 +176,8 @@ final class Ocp2LoopbackTests: XCTestCase {
       addToRootBlock: true
     )
 
-    let results = try await harness.connection.rootBlock.find(
-      actionObjectsByRole: "Master Gain",
+    let results = try await harness.connection.rootBlock.findActionObjectsByRole(
+      searchName: "Master Gain",
       nameComparisonType: .exact,
       resultFlags: [.oNo, .classIdentification, .role]
     )

@@ -309,7 +309,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     return (maxSize, handle)
   }
 
-  override func close(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
+  override func close(handle: OcaIOSessionHandle, from controller: OcaController?) async throws {
     let fileHandle: IOSessionHandle = try resolveIOSessionHandle(handle, controller: controller)
     try fileHandle.close()
     try releaseIOSessionHandle(handle, controller: controller)
@@ -354,7 +354,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     handle: OcaIOSessionHandle,
     position: OcaUint64,
     part: OcaLongBlob,
-    controller: OcaController?
+    from controller: OcaController?
   ) async throws {
     let fileHandle: IOSessionHandle = try resolveIOSessionHandle(handle, controller: controller)
     guard position + OcaUint64(part.count) <= maxSize else {
@@ -386,7 +386,7 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
     }
   }
 
-  override func clear(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
+  override func clear(handle: OcaIOSessionHandle, from controller: OcaController?) async throws {
     let fileHandle: IOSessionHandle = try resolveIOSessionHandle(handle, controller: controller)
     do {
       #if canImport(IORing)
