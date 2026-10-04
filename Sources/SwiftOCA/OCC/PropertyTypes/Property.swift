@@ -259,7 +259,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
           _send(object, .initial)
         } catch {
           _send(object, .failure(error))
-          await object.connectionDelegate?.logger.trace(
+          object.connectionDelegate?.logger.trace(
             "set property handler for \(object) property \(propertyID) received error from device: \(error)"
           )
         }
@@ -381,7 +381,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
       if flags.contains(.cacheErrors) {
         _send(object, .failure(error))
       }
-      await object.connectionDelegate?.logger
+      object.connectionDelegate?.logger
         .trace(
           "get property handler for \(object) property \(propertyID) received error from device: \(error)"
         )
