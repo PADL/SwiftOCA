@@ -21,10 +21,12 @@ import Foundation
 /// case-insensitively, a single-parameter object is accepted whatever its member is
 /// called, enumerations may be spelled by name or number, and an integer may arrive
 /// as a string.
-/// Casts a metatype to a protocol existential out of line, on the erased type: the
+/// Casts a metatype to a protocol existential on the erased type. Below Swift 6.4 the
 /// optimiser folds the same cast on a specialised conforming metatype into an
-/// existential with the wrong conformances and asserts (Swift 6.3.3, -O).
+/// existential with the wrong conformances and asserts (-O), so it stays out of line.
+#if compiler(<6.4)
 @inline(never)
+#endif
 private func erasedCast<U>(_ type: Any.Type, to _: U.Type) -> U? {
   type as? U
 }

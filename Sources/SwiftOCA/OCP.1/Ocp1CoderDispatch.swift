@@ -46,15 +46,19 @@ extension _Ocp1CoderSpecial {
   }
 }
 
-// Both casts are made out of line, on the erased metatype: see `erasedCast` in
-// Ocp2Decoder.swift for the optimiser bug this avoids.
+// Both casts are made on the erased metatype and, below Swift 6.4, out of line: see
+// `erasedCast` in Ocp2Decoder.swift for the optimiser bug this avoids.
 
+#if compiler(<6.4)
 @inline(never)
+#endif
 func _ocp1CoderSpecialType(_ type: Any.Type) -> (any _Ocp1CoderSpecial.Type)? {
   type as? any _Ocp1CoderSpecial.Type
 }
 
+#if compiler(<6.4)
 @inline(never)
+#endif
 func _ocp1IsLongList(_ type: Any.Type) -> Bool {
   type is any Ocp1LongList.Type
 }
