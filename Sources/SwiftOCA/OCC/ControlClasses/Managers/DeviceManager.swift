@@ -27,6 +27,7 @@ public enum OcaResetCause: OcaUint8, Sendable, Codable, CaseIterable {
   case externalRequest = 3
 }
 
+@OcaMethods
 open class OcaDeviceManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.1") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -213,7 +214,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
     }
   }
 
-  // 3.14
+  // 3.14; no descriptor, as the key is a tuple no description can name the type of
   public func setResetKey(key: ResetKey, address: OcaNetworkAddress) async throws {
     let parameters = SetResetKeyParameters(key: key, address: address)
     try await sendCommandRrq(methodID: OcaMethodID("3.14"), parameters: parameters)
@@ -225,10 +226,8 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
   )
   public var resetCause: OcaProperty<OcaResetCause>.PropertyValue
 
-  // 3.16
-  public func clearResetCause() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.16"))
-  }
+  @OcaMethod("3.16", name: "ClearResetCause")
+  public func clearResetCause() async throws
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.12"),
@@ -291,19 +290,9 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
     self.init(objectNumber: OcaDeviceManagerONo)
   }
 
-  public func set(deviceName: String) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.5"),
-      parameters: deviceName,
-      parameterNames: ["Name"]
-    )
-  }
+  @OcaMethod("3.5", name: "SetDeviceName", parameterNames: ["Name"])
+  public func setDeviceName(name: OcaString) async throws
 
-  public func applyPatch(datasetONo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.27"),
-      parameters: datasetONo,
-      parameterNames: ["ONo"]
-    )
-  }
+  @OcaMethod("3.27", name: "ApplyPatch", parameterNames: ["ONo"])
+  public func applyPatch(oNo: OcaONo) async throws
 }

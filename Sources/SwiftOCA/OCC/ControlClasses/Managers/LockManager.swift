@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaLockManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.14") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -24,22 +25,15 @@ open class OcaLockManager: OcaManager, @unchecked Sendable {
     public let timeout: OcaTimeInterval
   }
 
+  @OcaMethod("3.1", name: "LockWait", parameters: LockWaitParameters.self)
   public func lockWait(
     target: OcaONo,
     type: OcaLockState,
     timeout: OcaTimeInterval
-  ) async throws {
-    let params = LockWaitParameters(target: target, type: type, timeout: timeout)
-    try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameters: params)
-  }
+  ) async throws
 
-  public func abortWaits(oNo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.2"),
-      parameters: oNo,
-      parameterNames: ["ONo"]
-    )
-  }
+  @OcaMethod("3.2", name: "AbortWaits", parameterNames: ["ONo"])
+  public func abortWaits(oNo: OcaONo) async throws
 
   public convenience init() {
     self.init(objectNumber: OcaLockManagerONo)

@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaPowerManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.5") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -52,18 +53,12 @@ open class OcaPowerManager: OcaManager, @unchecked Sendable {
     }
   }
 
+  @OcaMethod("3.5", name: "ExchangePowerSupply", parameters: ExchangePowerSupplyParameters.self)
   public func exchangePowerSupply(
     oldPsu: OcaONo,
     newPsu: OcaONo,
     powerOffOld: OcaBoolean
-  ) async throws {
-    let parameters = ExchangePowerSupplyParameters(
-      oldPsu: oldPsu,
-      newPsu: newPsu,
-      powerOffOld: powerOffOld
-    )
-    try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: parameters)
-  }
+  ) async throws
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.4"),

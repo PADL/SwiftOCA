@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaSecurityManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID {
     OcaClassID("1.3.2")
@@ -33,13 +34,11 @@ open class OcaSecurityManager: OcaManager, @unchecked Sendable {
     self.init(objectNumber: OcaSecurityManagerONo)
   }
 
-  public func enableControlSecurity() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.1"))
-  }
+  @OcaMethod("3.1", name: "EnableControlSecurity")
+  public func enableControlSecurity() async throws
 
-  public func disableControlSecurity() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.2"))
-  }
+  @OcaMethod("3.2", name: "DisableControlSecurity")
+  public func disableControlSecurity() async throws
 
   public struct AddPreSharedKeyParameters: OcaParametersReflectable {
     public let identity: OcaString
@@ -61,21 +60,12 @@ open class OcaSecurityManager: OcaManager, @unchecked Sendable {
     }
   }
 
-  public func changePreSharedKey(identity: OcaString, key: OcaBlob) async throws {
-    let parameters = ChangePreSharedKeyParameters(identity: identity, newKey: key)
-    try await sendCommandRrq(methodID: OcaMethodID("3.3"), parameters: parameters)
-  }
+  @OcaMethod("3.3", name: "ChangePreSharedKey", parameters: ChangePreSharedKeyParameters.self)
+  public func changePreSharedKey(identity: OcaString, newKey: OcaBlob) async throws
 
-  public func addPreSharedKey(identity: OcaString, key: OcaBlob) async throws {
-    let parameters = AddPreSharedKeyParameters(identity: identity, key: key)
-    try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: parameters)
-  }
+  @OcaMethod("3.4", name: "AddPreSharedKey", parameters: AddPreSharedKeyParameters.self)
+  public func addPreSharedKey(identity: OcaString, key: OcaBlob) async throws
 
-  public func deletePreSharedKey(identity: OcaString) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.5"),
-      parameters: identity,
-      parameterNames: ["Identity"]
-    )
-  }
+  @OcaMethod("3.5", name: "DeletePreSharedKey", parameterNames: ["Identity"])
+  public func deletePreSharedKey(identity: OcaString) async throws
 }

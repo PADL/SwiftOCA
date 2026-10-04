@@ -75,7 +75,7 @@ final class Ocp2SynchronizeStateTests: XCTestCase {
     try await subscriptionManager.disableNotifications()
     // a change made while notifications are off is what SynchronizeState reports
     await { @OcaDevice in block.label = "changed" }()
-    try await subscriptionManager.reenableNotifications()
+    try await subscriptionManager.reEnableNotifications()
 
     let format = controlProtocol.parameterFormat
     let changedONo = block.objectNumber

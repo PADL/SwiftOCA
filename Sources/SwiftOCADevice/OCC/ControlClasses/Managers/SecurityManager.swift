@@ -22,6 +22,7 @@ import Foundation
 import SwiftOCA
 import Synchronization
 
+@OcaDeviceMethods
 open class OcaSecurityManager: OcaManager {
   override open class var classID: OcaClassID {
     OcaClassID("1.3.2")
@@ -132,41 +133,29 @@ open class OcaSecurityManager: OcaManager {
     throw Ocp1Error.status(.permissionDenied)
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.1"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      secureControlData = true
-      return Ocp1Response()
-    case OcaMethodID("3.2"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      secureControlData = false
-      return Ocp1Response()
-    case OcaMethodID("3.3"):
-      let params: SwiftOCA.OcaSecurityManager
-        .ChangePreSharedKeyParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try _add(identity: params.identity, key: Data(params.newKey), mustExist: true)
-      return Ocp1Response()
-    case OcaMethodID("3.4"):
-      let params: SwiftOCA.OcaSecurityManager
-        .AddPreSharedKeyParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try _add(identity: params.identity, key: Data(params.key), mustExist: false)
-      return Ocp1Response()
-    case OcaMethodID("3.5"):
-      let identity: OcaString = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try _delete(identity: identity)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.Methods.enableControlSecurity, access: .write)
+  func enableControlSecurity(from controller: any OcaController) {
+    secureControlData = true
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.Methods.disableControlSecurity, access: .write)
+  func disableControlSecurity(from controller: any OcaController) {
+    secureControlData = false
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.Methods.changePreSharedKey, access: .write)
+  func changePreSharedKey(identity: OcaString, newKey: OcaBlob, from controller: any OcaController) throws {
+    try _add(identity: identity, key: Data(newKey), mustExist: true)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.Methods.addPreSharedKey)
+  func addPreSharedKey(identity: OcaString, key: OcaBlob, from controller: any OcaController) throws {
+    try _add(identity: identity, key: Data(key), mustExist: false)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaSecurityManager.Methods.deletePreSharedKey)
+  func deletePreSharedKey(identity: OcaString, from controller: any OcaController) throws {
+    try _delete(identity: identity)
   }
 
   public convenience init(
