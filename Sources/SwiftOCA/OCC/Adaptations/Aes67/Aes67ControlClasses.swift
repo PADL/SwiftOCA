@@ -57,7 +57,11 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
     /// UDP port of the stream within a multistream SDP; zero for a single stream.
     public let streamID: OcaUint16
 
-    public init(endpointID: OcaMediaStreamEndpointID, sdpString: OcaSDPString, streamID: OcaUint16) {
+    public init(
+      endpointID: OcaMediaStreamEndpointID,
+      sdpString: OcaSDPString,
+      streamID: OcaUint16
+    ) {
       self.endpointID = endpointID
       self.sdpString = sdpString
       self.streamID = streamID
@@ -72,25 +76,45 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
   )
   public var streamSourceRegistryONo: OcaProperty<OcaONo>.PropertyValue
 
+  public static let getEndpointDelayConstraints =
+    OcaMethodDescriptor<EndpointStreamModeParameters, EndpointDelayConstraints>(
+      "4.1",
+      name: "GetEndpointDelayConstraints"
+    )
+
   public func getEndpointDelayConstraints(
     _ endpointID: OcaMediaStreamEndpointID,
     streamMode: OcaMediaStreamMode
   ) async throws -> EndpointDelayConstraints {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.1"),
-      parameters: EndpointStreamModeParameters(endpointID: endpointID, streamMode: streamMode)
+    try await invoke(
+      Self.getEndpointDelayConstraints,
+      .init(endpointID: endpointID, streamMode: streamMode)
     )
   }
+
+  public static let getPresentationTimeOffsetConstraints =
+    OcaMethodDescriptor<EndpointStreamModeParameters, PresentationTimeOffsetConstraints>(
+      "4.2",
+      name: "GetPresentationTimeOffsetConstraints"
+    )
 
   public func getPresentationTimeOffsetConstraints(
     _ endpointID: OcaMediaStreamEndpointID,
     streamMode: OcaMediaStreamMode
   ) async throws -> PresentationTimeOffsetConstraints {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.2"),
-      parameters: EndpointStreamModeParameters(endpointID: endpointID, streamMode: streamMode)
+    try await invoke(
+      Self.getPresentationTimeOffsetConstraints,
+      .init(endpointID: endpointID, streamMode: streamMode)
     )
   }
+
+  // the draft spells the SDP string's name in capitals
+  public static let configureEndpointFromSDP =
+    OcaMethodDescriptor<ConfigureEndpointFromSDPParameters, Void>(
+      "4.5",
+      name: "ConfigureEndpointFromSDP",
+      parameterNames: ["EndpointID", "SDPString", "StreamID"]
+    )
 
   /// Optional in AES70-21 §10.2.4; sets the endpoint's AdaptationData.ActiveSDP.
   public func configureEndpointFromSDP(
@@ -98,13 +122,9 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
     sdpString: OcaSDPString,
     streamID: OcaUint16 = 0
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.5"),
-      parameters: ConfigureEndpointFromSDPParameters(
-        endpointID: endpointID,
-        sdpString: sdpString,
-        streamID: streamID
-      )
+    try await invoke(
+      Self.configureEndpointFromSDP,
+      .init(endpointID: endpointID, sdpString: sdpString, streamID: streamID)
     )
   }
 }
@@ -146,41 +166,64 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @u
     }
   }
 
+  // named as the draft's pseudocode names them (§10.4.1): Rec, ParameterKey, ParameterValue
+  public static let getSIPParameterRecord =
+    OcaMethodDescriptor<OcaMediaTransportSessionID, OcaParameterRecord>(
+      "4.1",
+      name: "GetSIPParameterRecord",
+      parameterNames: ["SessionID"],
+      resultNames: ["Rec"]
+    )
+
   public func getSIPParameterRecord(
     session id: OcaMediaTransportSessionID
   ) async throws -> OcaParameterRecord {
-    try await sendCommandRrq(methodID: OcaMethodID("4.1"), parameters: id)
+    try await invoke(Self.getSIPParameterRecord, id)
   }
+
+  public static let setSIPParameterRecord =
+    OcaMethodDescriptor<SIPParameterRecordParameters, Void>(
+      "4.2",
+      name: "SetSIPParameterRecord",
+      parameterNames: ["SessionID", "Rec"]
+    )
 
   public func setSIPParameterRecord(
     session id: OcaMediaTransportSessionID,
     _ parameterRecord: OcaParameterRecord
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.2"),
-      parameters: SIPParameterRecordParameters(sessionID: id, parameterRecord: parameterRecord)
+    try await invoke(
+      Self.setSIPParameterRecord,
+      .init(sessionID: id, parameterRecord: parameterRecord)
     )
   }
+
+  public static let getSIPParameter = OcaMethodDescriptor<SIPParameterKeyParameters, OcaJsonValue>(
+    "4.3",
+    name: "GetSIPParameter",
+    parameterNames: ["SessionID", "ParameterKey"],
+    resultNames: ["ParameterValue"]
+  )
 
   public func getSIPParameter(
     session id: OcaMediaTransportSessionID,
     key: OcaString
   ) async throws -> OcaJsonValue {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.3"),
-      parameters: SIPParameterKeyParameters(sessionID: id, key: key)
-    )
+    try await invoke(Self.getSIPParameter, .init(sessionID: id, key: key))
   }
+
+  public static let setSIPParameter = OcaMethodDescriptor<SIPParameterParameters, Void>(
+    "4.4",
+    name: "SetSIPParameter",
+    parameterNames: ["SessionID", "ParameterKey", "ParameterValue"]
+  )
 
   public func setSIPParameter(
     session id: OcaMediaTransportSessionID,
     key: OcaString,
     value: OcaJsonValue
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.4"),
-      parameters: SIPParameterParameters(sessionID: id, key: key, value: value)
-    )
+    try await invoke(Self.setSIPParameter, .init(sessionID: id, key: key, value: value))
   }
 }
 
@@ -198,25 +241,56 @@ open class Aes67StreamEndpointRegistry: OcaAgent, @unchecked Sendable {
   )
   public var registry: OcaListProperty<Aes67StreamEndpointDescriptor>.PropertyValue
 
+  public static let getRegistryEntry = OcaMethodDescriptor<OcaBlob, Aes67StreamEndpointDescriptor>(
+    "3.2",
+    name: "GetRegistryEntry",
+    parameterNames: ["IDExternal"],
+    resultNames: ["Entry"]
+  )
+
   public func getRegistryEntry(idExternal: OcaBlob) async throws -> Aes67StreamEndpointDescriptor {
-    try await sendCommandRrq(methodID: OcaMethodID("3.2"), parameters: idExternal)
+    try await invoke(Self.getRegistryEntry, idExternal)
   }
+
+  public static let addRegistryEntry = OcaMethodDescriptor<Aes67StreamEndpointDescriptor, Void>(
+    "3.3",
+    name: "AddRegistryEntry",
+    parameterNames: ["Entry"]
+  )
 
   public func addRegistryEntry(_ entry: Aes67StreamEndpointDescriptor) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.3"), parameters: entry)
+    try await invoke(Self.addRegistryEntry, entry)
   }
+
+  public static let setRegistryEntry = OcaMethodDescriptor<Aes67StreamEndpointDescriptor, Void>(
+    "3.4",
+    name: "SetRegistryEntry",
+    parameterNames: ["Entry"]
+  )
 
   public func setRegistryEntry(_ entry: Aes67StreamEndpointDescriptor) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: entry)
+    try await invoke(Self.setRegistryEntry, entry)
   }
 
+  public static let deleteRegistryEntry = OcaMethodDescriptor<OcaBlob, Void>(
+    "3.5",
+    name: "DeleteRegistryEntry",
+    parameterNames: ["IDExternal"]
+  )
+
   public func deleteRegistryEntry(idExternal: OcaBlob) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: idExternal)
+    try await invoke(Self.deleteRegistryEntry, idExternal)
   }
+
+  public static let addRegistryEntriesFromSDP = OcaMethodDescriptor<OcaSDPString, Void>(
+    "3.6",
+    name: "AddRegistryEntriesFromSDP",
+    parameterNames: ["SDPString"]
+  )
 
   /// Optional in AES70-21 §10.3.3: the device builds entries from the SDP.
   public func addRegistryEntriesFromSDP(_ sdpString: OcaSDPString) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.6"), parameters: sdpString)
+    try await invoke(Self.addRegistryEntriesFromSDP, sdpString)
   }
 }
 
