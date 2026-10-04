@@ -31,6 +31,7 @@ open class OcaDelay: OcaActuator, @unchecked Sendable {
   public var delayTime: OcaBoundedProperty<OcaTimeInterval>.PropertyValue
 }
 
+@OcaMethods
 open class OcaDelayExtended: OcaDelay, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.7.1") }
 
@@ -45,13 +46,6 @@ open class OcaDelayExtended: OcaDelay, @unchecked Sendable {
   )
   public var delayValue: OcaBoundedProperty<OcaDelayValue>.PropertyValue
 
-  public func getDelayValue(convertedTo unitOfMeasure: OcaDelayUnit) async throws
-    -> OcaDelayValue
-  {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("5.3"),
-      parameters: unitOfMeasure,
-      parameterNames: ["UoM"]
-    )
-  }
+  @OcaMethod("5.3", name: "GetDelayValueConverted", parameterNames: ["UoM"], resultNames: ["Value"])
+  public func getDelayValueConverted(uoM: OcaDelayUnit) async throws -> OcaDelayValue
 }

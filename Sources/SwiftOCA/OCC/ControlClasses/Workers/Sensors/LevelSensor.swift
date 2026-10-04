@@ -21,6 +21,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
+@OcaMethods
 open class OcaLevelSensor: OcaSensor, @unchecked
 Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.2") }
@@ -30,6 +31,10 @@ Sendable {
     getMethodID: OcaMethodID("4.1")
   )
   public var reading: OcaBoundedProperty<OcaDB>.PropertyValue
+
+  // the property's getter, as the device declares it: the reading and its bounds
+  @OcaMethod("4.1", name: "GetReading", resultNames: ["Reading", "MinReading", "MaxReading"])
+  public func getReading() async throws -> OcaBoundedPropertyValue<OcaDB>
 }
 
 extension OcaPropertyChangedEventData<OcaDB>: _Ocp1Encodable {
