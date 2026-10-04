@@ -53,7 +53,7 @@ public final class Ocp1NWSecureTCPConnection: OcaNWConnection {
     // SNI without rewriting the NWEndpoint; the transport destination stays
     // at `_deviceAddress` for parity with the OpenSSL backend.
     if let serverHostname {
-      serverHostname.withCString { _ = sec_protocol_options_set_tls_server_name(sec, $0) }
+      serverHostname.withCString { sec_protocol_options_set_tls_server_name(sec, $0) }
     }
     // Gate the permissive verify block to cert credentials: in PSK mode
     // it would only fire on a cert-downgrade attempt, and we'd rather fail
@@ -367,7 +367,7 @@ public final class Ocp1NWSecureUDPConnection: OcaNWConnection {
     Ocp1TLSCredential.enforceMinimumTLSProtocol(sec)
     try? credential.apply(to: sec)
     if let serverHostname {
-      serverHostname.withCString { _ = sec_protocol_options_set_tls_server_name(sec, $0) }
+      serverHostname.withCString { sec_protocol_options_set_tls_server_name(sec, $0) }
     }
     if options.flags.contains(.disableCertificateVerification),
        Ocp1NWSecureTCPConnection.credentialIsCert(credential)
@@ -544,10 +544,13 @@ extension Ocp1TLSCredential {
     identity: String,
     keyBytes: UnsafeRawBufferPointer
   ) {
-    // Hand Network.framework a `bytesNoCopy` DispatchData over an owned
-    // heap buffer with a zero-on-release deallocator so the PSK bytes
-    // are wiped when NW drops its retained reference, not just freed.
-    let keyBuf = UnsafeMutableRawBufferPointer.allocate(byteCount: keyBytes.count, alignment: 1)
+    // Hand Network.framework a `bytesNoCopy` DispatchData over an owned heap buffer
+    // with a zero-on-release deallocator, so the PSK bytes are wiped when NW drops
+    // its reference. The deallocator is @Sendable, hence nonisolated(unsafe).
+    nonisolated(unsafe) let keyBuf = UnsafeMutableRawBufferPointer.allocate(
+      byteCount: keyBytes.count,
+      alignment: 1
+    )
     if let dst = keyBuf.baseAddress, let src = keyBytes.baseAddress {
       dst.copyMemory(from: src, byteCount: keyBytes.count)
     }
