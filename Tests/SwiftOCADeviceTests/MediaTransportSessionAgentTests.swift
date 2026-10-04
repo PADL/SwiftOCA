@@ -35,7 +35,10 @@ private final class TestSessionAgent: SwiftOCADevice.OcaMediaTransportSessionAge
     }
   }
 
-  override func add(session: OcaMediaTransportSession) async throws -> OcaMediaTransportSession {
+  override func add(
+    session: OcaMediaTransportSession,
+    from controller: any OcaController
+  ) async throws -> OcaMediaTransportSession {
     var session = session
     session.idInternal = (sessions.map(\.idInternal).max() ?? 0) + 1
     insert(session: session, status: OcaMediaTransportSessionStatus(state: .unconfigured))
@@ -44,7 +47,8 @@ private final class TestSessionAgent: SwiftOCADevice.OcaMediaTransportSessionAge
 
   override func add(
     connection: OcaMediaTransportSessionConnection,
-    to sessionID: OcaMediaTransportSessionID
+    to sessionID: OcaMediaTransportSessionID,
+    from controller: any OcaController
   ) async throws -> OcaMediaTransportSessionConnection {
     var session = try session(sessionID)
     var connection = connection
@@ -62,7 +66,8 @@ private final class TestSessionAgent: SwiftOCADevice.OcaMediaTransportSessionAge
     sessionID: OcaMediaTransportSessionID,
     connectionID: OcaMediaTransportSessionConnectionID,
     localEndpointID: OcaMediaStreamEndpointID,
-    remoteEndpointID: OcaBlob
+    remoteEndpointID: OcaBlob,
+    from controller: any OcaController
   ) async throws {
     _ = try session(sessionID)
     configured.append((sessionID, localEndpointID, remoteEndpointID))
@@ -70,7 +75,8 @@ private final class TestSessionAgent: SwiftOCADevice.OcaMediaTransportSessionAge
 
   override func set(
     session id: OcaMediaTransportSessionID,
-    streamingEnabled: OcaBoolean
+    streamingEnabled: OcaBoolean,
+    from controller: any OcaController
   ) async throws {
     var session = try session(id)
     session.streamingEnabled = streamingEnabled

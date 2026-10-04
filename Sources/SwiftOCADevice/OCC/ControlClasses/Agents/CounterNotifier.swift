@@ -27,13 +27,8 @@ open class OcaCounterNotifier: OcaAgent {
   )
   public var filterParameters: OcaCounterNotifierFilterParameters?
 
-  open func getLastUpdate() async throws -> OcaList<OcaCounterUpdate> {
-    throw Ocp1Error.status(.notImplemented)
-  }
-
-  // the model does not name the result
   @OcaDeviceMethod(SwiftOCA.OcaCounterNotifier.getLastUpdate, access: .read)
-  func getLastUpdate(from controller: any OcaController) async throws -> OcaList<OcaCounterUpdate> {
-    try await getLastUpdate()
+  open func getLastUpdate(from controller: any OcaController) async throws -> OcaList<OcaCounterUpdate> {
+    throw Ocp1Error.status(.notImplemented)
   }
 }

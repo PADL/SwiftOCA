@@ -19,17 +19,21 @@
 @testable @_spi(SwiftOCAPrivate) import SwiftOCADevice
 @preconcurrency import XCTest
 
-/// An agent that keeps the sessions AddSession and DeleteSession bring it.
+/// An agent that keeps the sessions AddSession and DeleteSession bring it: the hooks
+/// `@OcaDeviceMethod` is on are `open`, and the table reaches these overrides.
 @OcaDevice
 private final class SessionStore: SwiftOCADevice.OcaMediaTransportSessionAgent {
-  override func add(session: OcaMediaTransportSession) async throws -> OcaMediaTransportSession {
+  override func add(
+    session: OcaMediaTransportSession,
+    from controller: any OcaController
+  ) async throws -> OcaMediaTransportSession {
     var session = session
     session.idInternal = (sessions.map(\.idInternal).max() ?? 0) + 1
     insert(session: session, status: OcaMediaTransportSessionStatus(state: .unconfigured))
     return session
   }
 
-  override func delete(session id: OcaMediaTransportSessionID) async throws {
+  override func delete(session id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
     _ = try session(id)
     remove(sessionID: id)
   }
