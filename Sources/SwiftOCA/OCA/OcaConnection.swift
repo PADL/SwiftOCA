@@ -188,9 +188,11 @@ public struct OcaConnectionOptions: Sendable {
     self.heartbeatTime = heartbeatTime
   }
 
+  // No default on the first parameter, or a bare `OcaConnectionOptions()` would
+  // resolve here (fewer defaulted parameters win) instead of the flags initializer.
   @available(*, deprecated, message: "use OcaConnectionFlags initializer")
   public init(
-    automaticReconnect: Bool = false,
+    automaticReconnect: Bool,
     connectionTimeout: Duration = .seconds(2),
     responseTimeout: Duration = .seconds(2),
     refreshDeviceTreeOnConnection: Bool = true,
