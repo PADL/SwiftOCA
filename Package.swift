@@ -425,6 +425,8 @@ let CommonTargets: [Target] = [
         condition: .when(platforms: [.macOS, .iOS, .linux], traits: ["NonEmbeddedBuild"])
       ),
     ],
+    // the golden device method statuses, read and rewritten by path from the test source
+    resources: [.copy("Resources")],
     swiftSettings: [
       .unsafeFlags(ASANSwiftFlags),
     ],
