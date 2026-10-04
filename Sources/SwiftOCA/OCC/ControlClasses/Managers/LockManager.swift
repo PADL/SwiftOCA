@@ -24,21 +24,22 @@ open class OcaLockManager: OcaManager, @unchecked Sendable {
     public let timeout: OcaTimeInterval
   }
 
+  public static let lockWait =
+    OcaMethodDescriptor<LockWaitParameters, Void>("3.1", name: "LockWait")
+
   public func lockWait(
     target: OcaONo,
     type: OcaLockState,
     timeout: OcaTimeInterval
   ) async throws {
-    let params = LockWaitParameters(target: target, type: type, timeout: timeout)
-    try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameters: params)
+    try await invoke(Self.lockWait, .init(target: target, type: type, timeout: timeout))
   }
 
+  public static let abortWaits =
+    OcaMethodDescriptor<OcaONo, Void>("3.2", name: "AbortWaits", parameterNames: ["ONo"])
+
   public func abortWaits(oNo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.2"),
-      parameters: oNo,
-      parameterNames: ["ONo"]
-    )
+    try await invoke(Self.abortWaits, oNo)
   }
 
   public convenience init() {

@@ -59,6 +59,11 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
     }
   }
 
+  public static let addSubscription = OcaMethodDescriptor<AddSubscriptionParameters, Void>(
+    "3.1",
+    name: "AddSubscription"
+  )
+
   func addSubscription(
     event: OcaEvent,
     subscriber: OcaMethod,
@@ -66,28 +71,43 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
     notificationDeliveryMode: OcaNotificationDeliveryMode,
     destinationInformation: OcaNetworkAddress
   ) async throws {
-    let params = AddSubscriptionParameters(
+    try await invoke(Self.addSubscription, .init(
       event: event,
       subscriber: subscriber,
       subscriberContext: subscriberContext,
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
-    )
-    try await sendCommandRrq(methodID: OcaMethodID("3.1"), parameters: params)
+    ))
   }
+
+  public static let removeSubscription = OcaMethodDescriptor<RemoveSubscriptionParameters, Void>(
+    "3.2",
+    name: "RemoveSubscription"
+  )
 
   func removeSubscription(event: OcaEvent, subscriber: OcaMethod) async throws {
-    let params = RemoveSubscriptionParameters(event: event, subscriber: subscriber)
-    try await sendCommandRrq(methodID: OcaMethodID("3.2"), parameters: params)
+    try await invoke(Self.removeSubscription, .init(event: event, subscriber: subscriber))
   }
+
+  public static let disableNotifications =
+    OcaMethodDescriptor<Void, Void>("3.3", name: "DisableNotifications")
 
   func disableNotifications() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.3"))
+    try await invoke(Self.disableNotifications)
   }
 
+  public static let reenableNotifications =
+    OcaMethodDescriptor<Void, Void>("3.4", name: "ReEnableNotifications")
+
   func reenableNotifications() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.4"))
+    try await invoke(Self.reenableNotifications)
   }
+
+  public static let addPropertyChangeSubscription =
+    OcaMethodDescriptor<AddPropertyChangeSubscriptionParameters, Void>(
+      "3.5",
+      name: "AddPropertyChangeSubscription"
+    )
 
   func addPropertyChangeSubscription(
     emitter: OcaONo,
@@ -97,32 +117,42 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
     notificationDeliveryMode: OcaNotificationDeliveryMode,
     destinationInformation: OcaNetworkAddress
   ) async throws {
-    let params = AddPropertyChangeSubscriptionParameters(
+    try await invoke(Self.addPropertyChangeSubscription, .init(
       emitter: emitter,
       property: property,
       subscriber: subscriber,
       subscriberContext: subscriberContext,
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
-    )
-    try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: params)
+    ))
   }
+
+  public static let removePropertyChangeSubscription =
+    OcaMethodDescriptor<RemovePropertyChangeSubscriptionParameters, Void>(
+      "3.6",
+      name: "RemovePropertyChangeSubscription"
+    )
 
   func removePropertyChangeSubscription(
     emitter: OcaONo,
     property: OcaPropertyID,
     subscriber: OcaMethod
   ) async throws {
-    let params = RemovePropertyChangeSubscriptionParameters(
+    try await invoke(Self.removePropertyChangeSubscription, .init(
       emitter: emitter,
       property: property,
       subscriber: subscriber
-    )
-    try await sendCommandRrq(methodID: OcaMethodID("3.6"), parameters: params)
+    ))
   }
 
+  public static let getMaximumSubscriberContextLength = OcaMethodDescriptor<Void, OcaUint16>(
+    "3.7",
+    name: "GetMaximumSubscriberContextLength",
+    resultNames: ["Max"]
+  )
+
   func getMaximumSubscriberContextLength() async throws -> OcaUint16 {
-    try await sendCommandRrq(methodID: OcaMethodID("3.7"))
+    try await invoke(Self.getMaximumSubscriberContextLength)
   }
 
   public typealias AddSubscription2Parameters = OcaSubscription2
@@ -130,31 +160,45 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
   public typealias AddPropertyChangeSubscription2Parameters = OcaPropertyChangeSubscription2
   public typealias RemovePropertyChangeSubscription2Parameters = OcaPropertyChangeSubscription2
 
+  public static let addSubscription2 = OcaMethodDescriptor<AddSubscription2Parameters, Void>(
+    "3.8",
+    name: "AddSubscription2"
+  )
+
   func addSubscription2(
     event: OcaEvent,
     notificationDeliveryMode: OcaNotificationDeliveryMode,
     destinationInformation: OcaNetworkAddress
   ) async throws {
-    let params = AddSubscription2Parameters(
+    try await invoke(Self.addSubscription2, .init(
       event: event,
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
-    )
-    try await sendCommandRrq(methodID: OcaMethodID("3.8"), parameters: params)
+    ))
   }
+
+  public static let removeSubscription2 = OcaMethodDescriptor<RemoveSubscription2Parameters, Void>(
+    "3.9",
+    name: "RemoveSubscription2"
+  )
 
   func removeSubscription2(
     event: OcaEvent,
     notificationDeliveryMode: OcaNotificationDeliveryMode,
     destinationInformation: OcaNetworkAddress
   ) async throws {
-    let params = RemoveSubscription2Parameters(
+    try await invoke(Self.removeSubscription2, .init(
       event: event,
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
-    )
-    try await sendCommandRrq(methodID: OcaMethodID("3.9"), parameters: params)
+    ))
   }
+
+  public static let addPropertyChangeSubscription2 =
+    OcaMethodDescriptor<AddPropertyChangeSubscription2Parameters, Void>(
+      "3.10",
+      name: "AddPropertyChangeSubscription2"
+    )
 
   func addPropertyChangeSubscription2(
     emitter: OcaONo,
@@ -162,14 +206,19 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
     notificationDeliveryMode: OcaNotificationDeliveryMode,
     destinationInformation: OcaNetworkAddress
   ) async throws {
-    let params = AddPropertyChangeSubscription2Parameters(
+    try await invoke(Self.addPropertyChangeSubscription2, .init(
       emitter: emitter,
       property: property,
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
-    )
-    try await sendCommandRrq(methodID: OcaMethodID("3.10"), parameters: params)
+    ))
   }
+
+  public static let removePropertyChangeSubscription2 =
+    OcaMethodDescriptor<RemovePropertyChangeSubscription2Parameters, Void>(
+      "3.11",
+      name: "RemovePropertyChangeSubscription2"
+    )
 
   func removePropertyChangeSubscription2(
     emitter: OcaONo,
@@ -177,13 +226,12 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
     notificationDeliveryMode: OcaNotificationDeliveryMode,
     destinationInformation: OcaNetworkAddress
   ) async throws {
-    let params = RemovePropertyChangeSubscription2Parameters(
+    try await invoke(Self.removePropertyChangeSubscription2, .init(
       emitter: emitter,
       property: property,
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
-    )
-    try await sendCommandRrq(methodID: OcaMethodID("3.11"), parameters: params)
+    ))
   }
 
   public typealias AddSubscription2ListParameters = OcaSubscription2List
@@ -192,31 +240,49 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
   public typealias RemovePropertyChangeSubscription2ListParameters =
     OcaPropertyChangeSubscription2List
 
+  public static let addSubscription2List =
+    OcaMethodDescriptor<AddSubscription2ListParameters, [OcaStatus]>(
+      "3.12",
+      name: "AddSubscription2List",
+      resultNames: ["Statuses"]
+    )
+
   func addSubscription2List(
     events: [OcaEvent],
     notificationDeliveryMode: OcaNotificationDeliveryMode,
     destinationInformation: OcaNetworkAddress
   ) async throws -> [OcaStatus] {
-    let params = AddSubscription2ListParameters(
+    try await invoke(Self.addSubscription2List, .init(
       events: events,
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
-    )
-    return try await sendCommandRrq(methodID: OcaMethodID("3.12"), parameters: params)
+    ))
   }
+
+  public static let removeSubscription2List =
+    OcaMethodDescriptor<RemoveSubscription2ListParameters, Void>(
+      "3.13",
+      name: "RemoveSubscription2List"
+    )
 
   func removeSubscription2List(
     events: [OcaEvent],
     notificationDeliveryMode: OcaNotificationDeliveryMode,
     destinationInformation: OcaNetworkAddress
   ) async throws {
-    let params = RemoveSubscription2ListParameters(
+    try await invoke(Self.removeSubscription2List, .init(
       events: events,
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
-    )
-    try await sendCommandRrq(methodID: OcaMethodID("3.13"), parameters: params)
+    ))
   }
+
+  public static let addPropertyChangeSubscription2List =
+    OcaMethodDescriptor<AddPropertyChangeSubscription2ListParameters, [OcaStatus]>(
+      "3.14",
+      name: "AddPropertyChangeSubscription2List",
+      resultNames: ["Statuses"]
+    )
 
   func addPropertyChangeSubscription2List(
     emitters: [OcaONo],
@@ -224,14 +290,19 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
     notificationDeliveryMode: OcaNotificationDeliveryMode,
     destinationInformation: OcaNetworkAddress
   ) async throws -> [OcaStatus] {
-    let params = AddPropertyChangeSubscription2ListParameters(
+    try await invoke(Self.addPropertyChangeSubscription2List, .init(
       emitters: emitters,
       properties: properties,
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
-    )
-    return try await sendCommandRrq(methodID: OcaMethodID("3.14"), parameters: params)
+    ))
   }
+
+  public static let removePropertyChangeSubscription2List =
+    OcaMethodDescriptor<RemovePropertyChangeSubscription2ListParameters, Void>(
+      "3.15",
+      name: "RemovePropertyChangeSubscription2List"
+    )
 
   func removePropertyChangeSubscription2List(
     emitters: [OcaONo],
@@ -239,12 +310,11 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
     notificationDeliveryMode: OcaNotificationDeliveryMode,
     destinationInformation: OcaNetworkAddress
   ) async throws {
-    let params = RemovePropertyChangeSubscription2ListParameters(
+    try await invoke(Self.removePropertyChangeSubscription2List, .init(
       emitters: emitters,
       properties: properties,
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
-    )
-    try await sendCommandRrq(methodID: OcaMethodID("3.15"), parameters: params)
+    ))
   }
 }

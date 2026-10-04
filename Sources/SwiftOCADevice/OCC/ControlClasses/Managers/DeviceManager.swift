@@ -21,6 +21,7 @@ import Foundation
 #endif
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaDeviceManager: OcaManager {
   override open class var classID: OcaClassID { OcaClassID("1.3.1") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -188,6 +189,30 @@ open class OcaDeviceManager: OcaManager {
   }
   #endif
 
+  /// Raw: the key is a 16-tuple in `SetResetKeyParameters`, which no `Codable` type
+  /// stands for, so the parameters cannot be described.
+  @OcaDeviceMethod("3.14", name: "SetResetKey")
+  func setResetKey(_ command: Ocp1Command, from controller: any OcaController) async throws
+    -> Ocp1Response
+  {
+    let parameters: SwiftOCA.OcaDeviceManager.SetResetKeyParameters = try decodeCommand(command)
+    try await ensureWritable(by: controller, command: command)
+    try await setResetKey(key: Data(parameters.keyBytes), address: parameters.address)
+    return Ocp1Response()
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaDeviceManager.clearResetCause)
+  func clearResetCause(from controller: any OcaController) {
+    resetCause = .powerOn
+  }
+
+  #if NonEmbeddedBuild
+  @OcaDeviceMethod(SwiftOCA.OcaDeviceManager.applyPatch)
+  func applyPatch(_ datasetONo: OcaONo, from controller: any OcaController) async throws {
+    try await applyPatch(datasetONo: datasetONo, controller: controller)
+  }
+  #endif
+
   open func setResetKey(
     key: Data,
     address: OcaNetworkAddress
@@ -223,32 +248,6 @@ open class OcaDeviceManager: OcaManager {
     )
   }
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.14"):
-      let parameters: SwiftOCA.OcaDeviceManager.SetResetKeyParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await setResetKey(key: Data(parameters.keyBytes), address: parameters.address)
-      return Ocp1Response()
-    case OcaMethodID("3.16"):
-      try decodeNullCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      resetCause = .powerOn
-      return Ocp1Response()
-    #if NonEmbeddedBuild
-    case OcaMethodID("3.27"):
-      let oNo: OcaONo = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await applyPatch(datasetONo: oNo, controller: controller)
-      return Ocp1Response()
-    #endif
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
-  }
 }
 
 private func getPlatformUUID() -> String {

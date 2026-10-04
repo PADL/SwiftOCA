@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 public class OcaLockManager: OcaManager {
   override open class var classID: OcaClassID { OcaClassID("1.3.14") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -57,6 +58,8 @@ public class OcaLockManager: OcaManager {
     }
   }
 
+  // the lock manager's own methods are not subject to its locks
+  @OcaDeviceMethod(SwiftOCA.OcaLockManager.lockWait, access: .unchecked)
   private func lockWait(
     controller: OcaController,
     target: OcaONo,
@@ -105,6 +108,7 @@ public class OcaLockManager: OcaManager {
     lockWaiters.removeValue(forKey: lockWaiterID)
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaLockManager.abortWaits, access: .unchecked)
   private func abortWaits(controller: OcaController, oNo target: OcaONo) async throws {
     let lockWaiterID = LockWaiterID(controller: controller.id, target: target)
 
@@ -114,29 +118,6 @@ public class OcaLockManager: OcaManager {
 
     lockWaiter.didAbort()
     lockWaiters.removeValue(forKey: lockWaiterID)
-  }
-
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("3.1"):
-      let params: SwiftOCA.OcaLockManager.LockWaitParameters = try decodeCommand(command)
-      try await lockWait(
-        controller: controller,
-        target: params.target,
-        type: params.type,
-        timeout: params.timeout
-      )
-      return Ocp1Response()
-    case OcaMethodID("3.2"):
-      let oNo: OcaONo = try decodeCommand(command)
-      try await abortWaits(controller: controller, oNo: oNo)
-      return Ocp1Response()
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
   }
 
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {

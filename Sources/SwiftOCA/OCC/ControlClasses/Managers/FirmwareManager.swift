@@ -28,16 +28,21 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
     self.init(objectNumber: OcaFirmwareManagerONo)
   }
 
+  public static let startUpdateProcess =
+    OcaMethodDescriptor<Void, Void>("3.2", name: "StartUpdateProcess")
+
   public func startUpdateProcess() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.2"))
+    try await invoke(Self.startUpdateProcess)
   }
 
+  public static let beginActiveImageUpdate = OcaMethodDescriptor<OcaComponent, Void>(
+    "3.3",
+    name: "BeginActiveImageUpdate",
+    parameterNames: ["Component"]
+  )
+
   public func beginActiveImageUpdate(component: OcaComponent) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.3"),
-      parameters: component,
-      parameterNames: ["Component"]
-    )
+    try await invoke(Self.beginActiveImageUpdate, component)
   }
 
   public struct AddImageDataParameters: OcaParametersReflectable {
@@ -50,6 +55,10 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
     }
   }
 
+  public static let addImageData =
+    OcaMethodDescriptor<AddImageDataParameters, Void>("3.4", name: "AddImageData")
+
+  /// Without `sync` the command is sent and no response awaited, which `invoke` does not do.
   public func addImageData(
     id: OcaUint32,
     _ imageData: OcaBlob,
@@ -58,22 +67,31 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
     let parameters = AddImageDataParameters(id: id, imageData: imageData)
 
     if sync {
-      try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: parameters)
+      try await invoke(Self.addImageData, parameters)
     } else {
-      try await sendCommand(methodID: OcaMethodID("3.4"), parameters: parameters)
+      try await sendCommand(
+        methodID: Self.addImageData.methodID,
+        parameters: parameters,
+        parameterNames: Self.addImageData.erased.parameterNames
+      )
     }
   }
 
+  public static let verifyImage = OcaMethodDescriptor<OcaBlob, Void>(
+    "3.5",
+    name: "VerifyImage",
+    parameterNames: ["VerifyData"]
+  )
+
   public func verifyImage(_ verifyData: OcaBlob) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.5"),
-      parameters: verifyData,
-      parameterNames: ["VerifyData"]
-    )
+    try await invoke(Self.verifyImage, verifyData)
   }
 
+  public static let endActiveImageUpdate =
+    OcaMethodDescriptor<Void, Void>("3.6", name: "EndActiveImageUpdate")
+
   public func endActiveImageUpdate() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.6"))
+    try await invoke(Self.endActiveImageUpdate)
   }
 
   public struct BeginPassiveComponentUpdateParameters: OcaParametersReflectable {
@@ -92,20 +110,27 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
     }
   }
 
+  public static let beginPassiveComponentUpdate =
+    OcaMethodDescriptor<BeginPassiveComponentUpdateParameters, Void>(
+      "3.7",
+      name: "BeginPassiveComponentUpdate"
+    )
+
   public func beginPassiveComponentUpdate(
     component: OcaComponent,
     serverAddress: OcaNetworkAddress,
     updateFileName: OcaString
   ) async throws {
-    let parameters = BeginPassiveComponentUpdateParameters(
-      component: component,
-      serverAddress: serverAddress,
-      updateFileName: updateFileName
+    try await invoke(
+      Self.beginPassiveComponentUpdate,
+      .init(component: component, serverAddress: serverAddress, updateFileName: updateFileName)
     )
-    try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameters: parameters)
   }
 
+  public static let endUpdateProcess =
+    OcaMethodDescriptor<Void, Void>("3.8", name: "EndUpdateProcess")
+
   public func endUpdateProcess() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.8"))
+    try await invoke(Self.endUpdateProcess)
   }
 }

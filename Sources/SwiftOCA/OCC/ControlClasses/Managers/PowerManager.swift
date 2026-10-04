@@ -52,17 +52,18 @@ open class OcaPowerManager: OcaManager, @unchecked Sendable {
     }
   }
 
+  public static let exchangePowerSupply =
+    OcaMethodDescriptor<ExchangePowerSupplyParameters, Void>("3.5", name: "ExchangePowerSupply")
+
   public func exchangePowerSupply(
     oldPsu: OcaONo,
     newPsu: OcaONo,
     powerOffOld: OcaBoolean
   ) async throws {
-    let parameters = ExchangePowerSupplyParameters(
-      oldPsu: oldPsu,
-      newPsu: newPsu,
-      powerOffOld: powerOffOld
+    try await invoke(
+      Self.exchangePowerSupply,
+      .init(oldPsu: oldPsu, newPsu: newPsu, powerOffOld: powerOffOld)
     )
-    try await sendCommandRrq(methodID: OcaMethodID("3.5"), parameters: parameters)
   }
 
   @OcaProperty(
