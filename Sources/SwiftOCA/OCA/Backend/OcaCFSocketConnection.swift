@@ -20,7 +20,13 @@ import AsyncAlgorithms
 import AsyncExtensions
 
 #if swift(>=6.0)
+// Foundation re-exports CoreFoundation on Darwin; elsewhere the package-level
+// CFSocket declarations below need a package-level import of it.
+#if canImport(Darwin)
+@preconcurrency internal import CoreFoundation
+#else
 @preconcurrency package import CoreFoundation
+#endif
 #else
 @preconcurrency
 @_implementationOnly import CoreFoundation
