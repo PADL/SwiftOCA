@@ -42,7 +42,7 @@ private struct OcaPropertyErrorView: View {
 
 public struct OcaPropertyView<Value: Sendable, Resolved: View>: View {
   let object: OcaRoot
-  nonisolated(unsafe) let property: any OcaPropertyRepresentable
+  let property: any OcaPropertyRepresentable
   let content: (Value) -> Resolved
 
   @State
@@ -93,7 +93,7 @@ public struct OcaPropertyView<Value: Sendable, Resolved: View>: View {
 
 public struct OcaWritablePropertyView<Value: Sendable, Resolved: View>: View {
   let object: OcaRoot
-  nonisolated(unsafe) let property: any OcaPropertySubjectRepresentable
+  let property: any OcaPropertySubjectRepresentable
   let content: (Binding<Value>) -> Resolved
 
   @State
@@ -161,7 +161,7 @@ public struct OcaWritablePropertyView<Value: Sendable, Resolved: View>: View {
 
 public struct OcaWritableTextPropertyView: View {
   let object: OcaRoot
-  nonisolated(unsafe) let property: any OcaPropertySubjectRepresentable
+  let property: any OcaPropertySubjectRepresentable
   let prompt: String
 
   @State
