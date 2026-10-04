@@ -19,15 +19,22 @@ import SwiftOCA
 
 /// Declares a method of a device class to be the OCA method the client declares as
 /// `method` (an `OcaMethodDescription`), so its ID, name and OCP.2 names are stated once,
-/// in SwiftOCA. The method takes the description's `Parameters` as its one argument, if
-/// any, with the controller as one more (`from controller: any OcaController`), and
-/// returns its `Result`; the compiler checks both. `access` is the lock check made before
-/// the method runs: `.read` for a getter, `.write` for a mutator, `.none` for one that
-/// checks for itself.
+/// in SwiftOCA. Put it on the method that does the work. That method takes the OCA
+/// parameters as its own arguments, named as the description's `Parameters` record names
+/// its fields, with the controller as one more (`from controller: any OcaController`),
+/// and returns the description's `Result`:
 ///
 ///     @OcaDeviceMethod(SwiftOCA.OcaWorker.setPortName, access: .write)
-///     func setPortName(_ parameters: SwiftOCA.OcaWorker.SetPortNameParameters,
-///                      from controller: any OcaController) throws
+///     open func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) throws
+///
+/// The expansion reads `parameters.id` and `parameters.name` off the record, so an
+/// argument whose name or type is not a field of it is a compile error there. A method
+/// may instead take the record itself as its one argument, or the one parameter of a
+/// description that has one; the compiler then checks that type against the description's.
+/// The result is checked either way. `access` is the lock check made before the method
+/// runs: `.read` for a getter, `.write` for a mutator, `.none` for one that checks for
+/// itself. The call goes through the object, so a subclass's override of an `open` method
+/// is what answers.
 ///
 /// The class lists its methods with `@OcaDeviceMethods`, and `OcaRoot.handleCommand`
 /// dispatches to them once a subclass's own `handleCommand` has declined the command, so
@@ -141,6 +148,17 @@ public struct OcaDeviceMethodDescription: Sendable {
     _ method: OcaMethodDescription<Parameters, Result>,
     access: OcaDeviceMethodAccess,
     parameters _: Parameters.Type,
+    result _: Result.Type,
+    _ body: @escaping Body
+  ) {
+    self.init(method.erased, access: access, body)
+  }
+
+  /// The typed form taking the description's parameters as separate arguments: the
+  /// expansion's field accesses are the check on them, the result is checked here.
+  public init<Parameters, Result>(
+    _ method: OcaMethodDescription<Parameters, Result>,
+    access: OcaDeviceMethodAccess,
     result _: Result.Type,
     _ body: @escaping Body
   ) {

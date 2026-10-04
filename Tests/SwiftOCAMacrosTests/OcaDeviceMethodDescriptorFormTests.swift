@@ -25,7 +25,36 @@ private let macros: [String: any Macro.Type] = [
 
 /// `@OcaDeviceMethod` taking the client's descriptor.
 final class OcaDeviceMethodDescriptorFormTests: XCTestCase {
-  func testADeviceMethodTakesTheDescriptor() {
+  func testADeviceMethodTakesTheDescriptorsParametersAsArguments() {
+    assertMacroExpansion(
+      """
+      @OcaDeviceMethod(SwiftOCA.OcaWorker.setPortName, access: .write)
+      open func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) throws {
+        try setName(name, ofPort: id)
+      }
+      """,
+      expandedSource: """
+      open func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) throws {
+        try setName(name, ofPort: id)
+      }
+
+      static func _ocaDeviceMethod_setPortName(_: (OcaPortID, OcaString).Type) -> OcaDeviceMethodDescription {
+        OcaDeviceMethodDescription(
+          SwiftOCA.OcaWorker.setPortName,
+          access: .write,
+          result: Void.self
+        ) { object, parameters, controller in
+          let parameters = SwiftOCA.OcaWorker.setPortName.parameters(parameters)
+          try (object as! Self).setPortName(parameters.id, parameters.name, from: controller)
+          return nil
+        }
+      }
+      """,
+      macros: macros
+    )
+  }
+
+  func testADeviceMethodMayTakeTheRecord() {
     assertMacroExpansion(
       """
       @OcaDeviceMethod(SwiftOCA.OcaWorker.setPortName, access: .write)
@@ -38,7 +67,7 @@ final class OcaDeviceMethodDescriptorFormTests: XCTestCase {
         try setName(parameters.name, ofPort: parameters.id)
       }
 
-      static var _ocaDeviceMethod_setPortName: OcaDeviceMethodDescription {
+      static func _ocaDeviceMethod_setPortName(_: SwiftOCA.OcaWorker.SetPortNameParameters.Type) -> OcaDeviceMethodDescription {
         OcaDeviceMethodDescription(
           SwiftOCA.OcaWorker.setPortName,
           access: .write,
@@ -67,7 +96,7 @@ final class OcaDeviceMethodDescriptorFormTests: XCTestCase {
         await path
       }
 
-      static var _ocaDeviceMethod_getPath: OcaDeviceMethodDescription {
+      static func _ocaDeviceMethod_getPath(_: Void.Type) -> OcaDeviceMethodDescription {
         OcaDeviceMethodDescription(
           SwiftOCA.OcaWorker.getPath,
           access: .read,
@@ -82,7 +111,35 @@ final class OcaDeviceMethodDescriptorFormTests: XCTestCase {
     )
   }
 
-  func testTheDescriptorFormRefusesNamesAndSeveralParameters() {
+  /// Two hooks sharing a Swift name get two descriptors, told apart by their arguments.
+  func testOverloadedHooksGetDistinctDescriptors() {
+    assertMacroExpansion(
+      """
+      @OcaDeviceMethod(Parameters.setEndpointUserLabel, access: .write)
+      open func setEndpoint(_ endpointID: OcaMediaStreamEndpointID, userLabel label: OcaString, from controller: any OcaController) async throws {
+      }
+      """,
+      expandedSource: """
+      open func setEndpoint(_ endpointID: OcaMediaStreamEndpointID, userLabel label: OcaString, from controller: any OcaController) async throws {
+      }
+
+      static func _ocaDeviceMethod_setEndpoint(_: (OcaMediaStreamEndpointID, userLabel: OcaString).Type) -> OcaDeviceMethodDescription {
+        OcaDeviceMethodDescription(
+          Parameters.setEndpointUserLabel,
+          access: .write,
+          result: Void.self
+        ) { object, parameters, controller in
+          let parameters = Parameters.setEndpointUserLabel.parameters(parameters)
+          try await (object as! Self).setEndpoint(parameters.endpointID, userLabel: parameters.label, from: controller)
+          return nil
+        }
+      }
+      """,
+      macros: macros
+    )
+  }
+
+  func testTheDescriptorFormRefusesNames() {
     assertMacroExpansion(
       """
       @OcaDeviceMethod(SwiftOCA.OcaWorker.setPortName, access: .write, parameterNames: ["ID", "Name"])
@@ -95,25 +152,6 @@ final class OcaDeviceMethodDescriptorFormTests: XCTestCase {
       """,
       diagnostics: [
         DiagnosticSpec(message: "the descriptor gives the method its parameterNames", line: 1, column: 1),
-      ],
-      macros: macros
-    )
-    assertMacroExpansion(
-      """
-      @OcaDeviceMethod(SwiftOCA.OcaWorker.setPortName, access: .write)
-      func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) throws {
-      }
-      """,
-      expandedSource: """
-      func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) throws {
-      }
-      """,
-      diagnostics: [
-        DiagnosticSpec(
-          message: "a method declared by its descriptor takes the descriptor's Parameters as one argument",
-          line: 1,
-          column: 1
-        ),
       ],
       macros: macros
     )

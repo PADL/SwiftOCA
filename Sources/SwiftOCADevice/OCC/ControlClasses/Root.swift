@@ -217,24 +217,9 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     lockable
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaRoot.setLockNoReadWrite, access: .none)
-  func setLockNoReadWrite(from controller: any OcaController) async throws {
-    try await lockNoReadWrite(controller: controller)
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaRoot.unlock, access: .none)
-  func unlock(from controller: any OcaController) async throws {
-    try await unlock(controller: controller)
-  }
-
   @OcaDeviceMethod(SwiftOCA.OcaRoot.getRole, access: .none)
   func getRole(from controller: any OcaController) -> OcaString {
     role
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaRoot.setLockNoWrite, access: .none)
-  func setLockNoWrite(from controller: any OcaController) async throws {
-    try await lockNoWrite(controller: controller)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaRoot.getLockState, access: .none)
@@ -249,13 +234,13 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   /// it to present the methods.
   open class var deviceMethods: [OcaDeviceMethodDescription] {
     [
-      _ocaDeviceMethod_getClassIdentification,
-      _ocaDeviceMethod_getLockable,
-      _ocaDeviceMethod_setLockNoReadWrite,
-      _ocaDeviceMethod_unlock,
-      _ocaDeviceMethod_getRole,
-      _ocaDeviceMethod_setLockNoWrite,
-      _ocaDeviceMethod_getLockState,
+      _ocaDeviceMethod_getClassIdentification(Void.self),
+      _ocaDeviceMethod_getLockable(Void.self),
+      _ocaDeviceMethod_lockNoReadWrite(Void.self),
+      _ocaDeviceMethod_unlock(Void.self),
+      _ocaDeviceMethod_getRole(Void.self),
+      _ocaDeviceMethod_lockNoWrite(Void.self),
+      _ocaDeviceMethod_getLockState(Void.self),
     ]
   }
 
@@ -333,6 +318,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     }
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaRoot.setLockNoWrite, access: .none)
   func lockNoWrite(controller: any OcaController) async throws {
     guard controller.flags.contains(.supportsLocking) else {
       throw Ocp1Error.status(.permissionDenied)
@@ -356,6 +342,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     }
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaRoot.setLockNoReadWrite, access: .none)
   func lockNoReadWrite(controller: any OcaController) async throws {
     guard controller.flags.contains(.supportsLocking) else {
       throw Ocp1Error.status(.permissionDenied)
@@ -378,6 +365,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     }
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaRoot.unlock, access: .none)
   func unlock(controller: any OcaController) async throws {
     guard controller.flags.contains(.supportsLocking) else {
       throw Ocp1Error.status(.permissionDenied)

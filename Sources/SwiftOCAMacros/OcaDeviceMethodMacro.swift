@@ -55,19 +55,20 @@ public struct OcaDeviceMethodMacro: PeerMacro {
         guard let access = attribute.argument("access") else {
           throw MacroExpansionErrorMessage("@OcaDeviceMethod needs access: .read, .write or .none")
         }
-        guard method.parameters.count <= 1 else {
-          throw MacroExpansionErrorMessage(
-            "a method declared by its descriptor takes the descriptor's Parameters as one argument"
-          )
-        }
         arguments.append("access: \(access.trimmedDescription)")
-        arguments.append("parameters: \(method.parametersType ?? "Void").self")
+        if method.parameters.count > 1 {
+          // the descriptor's Parameters, taken apart by the method's argument names
+          body.append("let parameters = \(descriptor.trimmedDescription).parameters(parameters)")
+        } else {
+          arguments.append("parameters: \(method.parametersType ?? "Void").self")
+        }
         arguments.append("result: \(method.resultType ?? "Void").self")
         closureParameters = method.parametersType == nil
           ? "object, _, controller"
           : "object, parameters, controller"
       }
-      body.append(method.call)
+      // a closure of more than one statement returns explicitly
+      body.append((method.resultType != nil && !body.isEmpty ? "return " : "") + method.call)
       if !method.isRaw, method.resultType == nil {
         body.append("return nil")
       }
@@ -107,7 +108,7 @@ public struct OcaDeviceMethodMacro: PeerMacro {
       closureParameters = method.parametersType == nil
         ? "object, _, controller"
         : "object, parameters, controller"
-      body.append(method.call)
+      body.append((method.resultType != nil && !body.isEmpty ? "return " : "") + method.call)
       if method.resultType == nil {
         body.append("return nil")
       }
@@ -115,7 +116,7 @@ public struct OcaDeviceMethodMacro: PeerMacro {
 
     declarations.append(
       """
-      static var \(raw: method.descriptorName): OcaDeviceMethodDescription {
+      static func \(raw: method.descriptorName)(_: \(raw: method.selectorType).Type) -> OcaDeviceMethodDescription {
         OcaDeviceMethodDescription(
           \(raw: arguments.joined(separator: ",\n    "))
         ) { \(raw: closureParameters) in
@@ -146,11 +147,12 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
     func names(in members: MemberBlockItemListSyntax) -> [String] {
       members.compactMap { member in
         guard let function = member.decl.as(FunctionDeclSyntax.self),
-              OcaDeviceMethodAttribute.on(function) != nil
+              OcaDeviceMethodAttribute.on(function) != nil,
+              let method = try? DeviceMethod(function)
         else {
           return nil
         }
-        return DeviceMethod.descriptorName(of: function)
+        return "\(method.descriptorName)(\(method.selectorType).self)"
       }
     }
     func append(_ names: [String]) {
@@ -259,8 +261,10 @@ private struct DeviceMethod {
         type: parameter.type.trimmedDescription
       )
     }
+    // an optional controller is a hook that is also called from within the device
     guard let controller = all.firstIndex(where: {
-      ["any OcaController", "OcaController", "(any OcaController)"].contains($0.type)
+      ["any OcaController", "OcaController", "(any OcaController)", "OcaController?", "(any OcaController)?"]
+        .contains($0.type)
     }) else {
       throw MacroExpansionErrorMessage(
         "an @OcaDeviceMethod method takes the controller, as `from controller: any OcaController`"
@@ -291,12 +295,21 @@ private struct DeviceMethod {
     }
   }
 
-  /// The descriptor the table lists, named after the method as the peer name rule requires.
-  static func descriptorName(of function: FunctionDeclSyntax) -> String {
-    "_ocaDeviceMethod_" + function.name.text
-  }
+  /// The descriptor the table lists, named after the method as the peer name rule
+  /// requires, and overloaded on `selectorType` so that a class can answer two methods
+  /// with overloads of one Swift name (`setEndpoint(_:userLabel:)`, `setEndpoint(_:channelMap:)`).
+  var descriptorName: String { "_ocaDeviceMethod_" + function.name.text }
 
-  var descriptorName: String { Self.descriptorName(of: function) }
+  /// The method's OCA parameters as a labelled tuple type: `Void` for none, the one type
+  /// for one, else `(label: Type, ...)`.
+  var selectorType: String {
+    switch parameters.count {
+    case 0: "Void"
+    case 1: parameters[0].type
+    default: "(" + parameters.map { ($0.label.map { "\($0): " } ?? "") + $0.type }
+      .joined(separator: ", ") + ")"
+    }
+  }
 
   /// The record decoded for several parameters, else the one parameter's type.
   var parametersType: String? {

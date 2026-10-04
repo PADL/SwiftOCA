@@ -31,6 +31,13 @@ public struct OcaMethodDescription<Parameters, Result>: Sendable {
   public var methodID: OcaMethodID { erased.methodID }
   public var name: String { erased.name }
 
+  /// The decoded parameters as their own type, for a device method that takes the
+  /// record's fields as separate arguments.
+  @inline(__always)
+  public func parameters(_ decoded: Any) -> Parameters {
+    decoded as! Parameters
+  }
+
   private init(
     _ methodID: OcaMethodID,
     name: String,

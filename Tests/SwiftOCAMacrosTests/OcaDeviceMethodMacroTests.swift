@@ -47,7 +47,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
           let name: OcaString
         }
 
-        static var _ocaDeviceMethod_setPortName: OcaDeviceMethodDescription {
+        static func _ocaDeviceMethod_setPortName(_: (OcaPortID, OcaString).Type) -> OcaDeviceMethodDescription {
           OcaDeviceMethodDescription(
             OcaMethodID("2.7"),
             name: "SetPortName",
@@ -64,7 +64,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
 
           override open class var deviceMethods: [OcaDeviceMethodDescription] {
             var methods = super.deviceMethods
-            methods += [_ocaDeviceMethod_setPortName]
+            methods += [_ocaDeviceMethod_setPortName((OcaPortID, OcaString).self)]
             return methods
           }
       }
@@ -91,7 +91,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
       final class Manager: OcaManager {
         func clearResetCause(from controller: any OcaController) {}
 
-        static var _ocaDeviceMethod_clearResetCause: OcaDeviceMethodDescription {
+        static func _ocaDeviceMethod_clearResetCause(_: Void.Type) -> OcaDeviceMethodDescription {
           OcaDeviceMethodDescription(
             OcaMethodID("3.16"),
             name: "ClearResetCause",
@@ -107,9 +107,9 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
 
           override class var deviceMethods: [OcaDeviceMethodDescription] {
             var methods = super.deviceMethods
-            methods += [_ocaDeviceMethod_clearResetCause]
+            methods += [_ocaDeviceMethod_clearResetCause(Void.self)]
             #if NonEmbeddedBuild
-            methods += [_ocaDeviceMethod_applyPatch]
+            methods += [_ocaDeviceMethod_applyPatch(OcaONo.self)]
             #endif
             return methods
           }
@@ -132,7 +132,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
         try portName(of: portID)
       }
 
-      static var _ocaDeviceMethod_getPortName: OcaDeviceMethodDescription {
+      static func _ocaDeviceMethod_getPortName(_: OcaPortID.Type) -> OcaDeviceMethodDescription {
         OcaDeviceMethodDescription(
           OcaMethodID("2.6"),
           name: "GetPortName",
@@ -163,7 +163,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
         await path
       }
 
-      static var _ocaDeviceMethod_getPath: OcaDeviceMethodDescription {
+      static func _ocaDeviceMethod_getPath(_: Void.Type) -> OcaDeviceMethodDescription {
         OcaDeviceMethodDescription(
           OcaMethodID("2.13"),
           name: "GetPath",
@@ -191,7 +191,7 @@ final class OcaDeviceMethodMacroTests: XCTestCase {
         Ocp1Response()
       }
 
-      static var _ocaDeviceMethod_applyPatch: OcaDeviceMethodDescription {
+      static func _ocaDeviceMethod_applyPatch(_: Ocp1Command.Type) -> OcaDeviceMethodDescription {
         OcaDeviceMethodDescription(
           OcaMethodID("3.27"),
           name: "ApplyPatch",
