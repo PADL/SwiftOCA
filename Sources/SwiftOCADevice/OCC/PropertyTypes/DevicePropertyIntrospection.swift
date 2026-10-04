@@ -20,7 +20,7 @@ import SwiftOCA
 /// What a device property declares about itself, for a bridge that presents an object's
 /// properties through another control protocol and so has to describe them first.
 @_spi(SwiftOCAPrivate)
-public struct OcaDevicePropertyDescription: Sendable {
+public struct OcaDevicePropertyDescriptor: Sendable {
   /// The Swift name of the property.
   public let name: String
   public let propertyID: OcaPropertyID
@@ -48,28 +48,39 @@ public struct OcaDevicePropertyDescription: Sendable {
 
 /// A class in an object's lineage with the device properties that class defines.
 @_spi(SwiftOCAPrivate)
-public struct OcaDeviceClassDescription: Sendable {
+public struct OcaDeviceClassDescriptor: Sendable {
   /// The Swift class nearest the root that has this class ID.
   public let type: OcaRoot.Type
   public let classID: OcaClassID
   public let classVersion: OcaClassVersionNumber
   /// In property ID order.
-  public let properties: [OcaDevicePropertyDescription]
+  public let properties: [OcaDevicePropertyDescriptor]
+  /// The methods the class declares with `@OcaDeviceMethod`, in method ID order. Property
+  /// accessors are described by the properties, and hand-written arms not at all.
+  public let methods: [OcaDeviceMethodDescriptor]
 }
 
 @_spi(SwiftOCAPrivate)
 public extension OcaRoot {
   /// Every device property of this object, inherited ones included, in property ID
-  /// order. The descriptions are of the class, not of this instance's values.
-  var devicePropertyDescriptions: [OcaDevicePropertyDescription] {
+  /// order. The descriptors are of the class, not of this instance's values.
+  var devicePropertyDescriptors: [OcaDevicePropertyDescriptor] {
     allDevicePropertyKeyPaths.compactMap { name, keyPath in
       (self[keyPath: keyPath] as? any OcaDevicePropertyRepresentable)?.description(named: name)
     }.sorted { $0.propertyID < $1.propertyID }
   }
 
+  /// Every method of this object declared with `@OcaDeviceMethod`, inherited ones
+  /// included, in method ID order.
+  var deviceMethodDescriptors: [OcaDeviceMethodDescriptor] {
+    Self.deviceMethods.sorted {
+      ($0.methodID.defLevel, $0.methodID.methodIndex) < ($1.methodID.defLevel, $1.methodID.methodIndex)
+    }
+  }
+
   /// This object's lineage from `OcaRoot` to its own class, each class with the
-  /// properties it defines: those whose property ID is at the class's definition level.
-  var deviceClassDescriptions: [OcaDeviceClassDescription] {
+  /// properties and methods it defines: those whose ID is at the class's definition level.
+  var deviceClassDescriptors: [OcaDeviceClassDescriptor] {
     var lineage = [OcaRoot.Type]()
     var next: AnyClass? = type(of: self)
     while let current = next as? OcaRoot.Type {
@@ -83,13 +94,16 @@ public extension OcaRoot {
 
     // a class's definition level is its class ID's, not its depth in the lineage, where
     // the Swift classes skip a class the ID names
-    let properties = devicePropertyDescriptions
+    let properties = devicePropertyDescriptors
+    let methods = deviceMethodDescriptors
     return lineage.reversed().map { type in
-      OcaDeviceClassDescription(
+      let level = type.classID.defLevel
+      return OcaDeviceClassDescriptor(
         type: type,
         classID: type.classID,
         classVersion: type.classVersion,
-        properties: properties.filter { $0.propertyID.defLevel == type.classID.defLevel }
+        properties: properties.filter { $0.propertyID.defLevel == level },
+        methods: methods.filter { $0.methodID.defLevel == level }
       )
     }
   }
@@ -105,8 +119,8 @@ public extension Ocp2Encoder {
 }
 
 private extension OcaDevicePropertyRepresentable {
-  func description(named name: String) -> OcaDevicePropertyDescription {
-    OcaDevicePropertyDescription(
+  func description(named name: String) -> OcaDevicePropertyDescriptor {
+    OcaDevicePropertyDescriptor(
       name: name,
       propertyID: propertyID,
       getMethodID: getMethodID,
