@@ -20,7 +20,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-public struct OcaModelDescription: Codable, Sendable, CustomStringConvertible {
+public struct OcaModelDescription: Codable, Equatable, Sendable, CustomStringConvertible {
   public let manufacturer: OcaString
   public let name: OcaString
   public let version: OcaString

@@ -40,7 +40,7 @@ public struct OcaDeviceState: OptionSet, Codable, Sendable, CustomStringConverti
   }
 }
 
-public struct OcaManufacturer: Codable, Sendable {
+public struct OcaManufacturer: Codable, Equatable, Sendable {
   public let name: OcaString
   public let organizationID: OcaOrganizationID
   public let website: OcaString
@@ -64,7 +64,7 @@ public struct OcaManufacturer: Codable, Sendable {
 
 public typealias OcaUUID = OcaString
 
-public struct OcaProduct: Codable, Sendable {
+public struct OcaProduct: Codable, Equatable, Sendable {
   public let name: OcaString
   public let modelID: OcaString
   public let revisionLevel: OcaString
@@ -97,7 +97,7 @@ public enum OcaDeviceGenericState: OcaUint8, Codable, Sendable, CaseIterable {
   case expansionBase = 128
 }
 
-public struct OcaDeviceOperationalState: Codable, Sendable {
+public struct OcaDeviceOperationalState: Codable, Equatable, Sendable {
   public let generic: OcaDeviceGenericState
   public let details: OcaBlob
 

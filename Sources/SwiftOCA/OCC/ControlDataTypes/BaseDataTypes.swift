@@ -233,7 +233,7 @@ public struct OcaSignalPath: Codable, Sendable, Equatable {
   }
 }
 
-public struct OcaLibVolIdentifier: Codable, Sendable {
+public struct OcaLibVolIdentifier: Codable, Equatable, Sendable {
   public let library: OcaONo
   public let id: OcaLibVolID
 

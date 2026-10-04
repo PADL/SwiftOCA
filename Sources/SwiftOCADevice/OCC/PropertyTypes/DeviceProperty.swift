@@ -119,8 +119,8 @@ private protocol AsyncCurrentValueSubjectNilRepresentable {
 }
 
 @propertyWrapper
-public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRepresentable,
-  Sendable
+public struct OcaDeviceProperty<Value: Codable & Equatable & Sendable>:
+  OcaDevicePropertyRepresentable, Sendable
 {
   let subject: AsyncCurrentValueSubject<Value>
 
@@ -187,6 +187,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
   }
 
   private func setAndNotifySubscribers(object: OcaRoot, _ newValue: Value) async {
+    guard newValue != subject.value else { return }
     subject.send(newValue)
     try? await notifySubscribers(object: object, newValue)
   }
@@ -258,7 +259,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
   func set(object: OcaRoot, jsonValue: Any, device: OcaDevice) async throws {
     if jsonValue is NSNull {
       if let subject = subject as? AsyncCurrentValueSubjectNilRepresentable {
-        subject.sendNil()
+        if !isNil(self.subject.value) { subject.sendNil() }
       } else {
         throw Ocp1Error.status(.badFormat)
       }
@@ -363,6 +364,7 @@ public struct OcaDeviceProperty<Value: Codable & Sendable>: OcaDevicePropertyRep
     // order under rapid successive sets.
     set {
       let property = object[keyPath: storageKeyPath]
+      guard newValue != property.subject.value else { return }
       property.subject.send(newValue)
 
       Task {

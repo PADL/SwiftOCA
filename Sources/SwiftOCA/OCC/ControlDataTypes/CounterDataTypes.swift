@@ -60,7 +60,7 @@ public struct OcaCounterUpdate: Codable, Sendable {
   }
 }
 
-public struct OcaCounterNotifierFilterParameters: Codable, Sendable {
+public struct OcaCounterNotifierFilterParameters: Codable, Equatable, Sendable {
   public let threshold: OcaUint64
   public let `operator`: OcaRelationalOperator
   public let period: OcaTimeInterval

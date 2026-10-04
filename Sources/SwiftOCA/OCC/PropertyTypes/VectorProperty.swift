@@ -22,7 +22,7 @@ import Foundation
 #endif
 
 public struct OcaVector2D<T: Codable & Sendable & FixedWidthInteger>: OcaParametersReflectable,
-  Codable, Sendable
+  Codable, Equatable, Sendable
 {
   public var x, y: T
 
