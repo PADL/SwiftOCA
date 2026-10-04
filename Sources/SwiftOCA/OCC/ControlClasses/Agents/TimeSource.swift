@@ -146,7 +146,9 @@ open class OcaTimeSource: OcaAgent, @unchecked Sendable {
   )
   public var parameters: OcaProperty<OcaSDPString>.PropertyValue
 
+  public static let reset = OcaMethodDescription<Void, Void>("3.11", name: "Reset")
+
   public func reset() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.11"))
+    try await invoke(Self.reset)
   }
 }

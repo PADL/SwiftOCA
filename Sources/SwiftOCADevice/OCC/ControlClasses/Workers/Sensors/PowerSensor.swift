@@ -17,6 +17,7 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaPowerSensor: OcaSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.11") }
   override open class var classVersion: OcaClassVersionNumber { 1 }
@@ -37,23 +38,13 @@ open class OcaPowerSensor: OcaSensor {
   )
   public var powerFactor: OcaFloat32 = 1
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.1"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let parameters = SwiftOCA.OcaPowerSensor.GetReadingParameters(
-        power: power.value,
-        powerFactor: powerFactor,
-        minPower: power.minValue,
-        maxPower: power.maxValue
-      )
-      return try controller.encodeResponse(parameters)
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
+  @OcaDeviceMethod(SwiftOCA.OcaPowerSensor.getReading)
+  func getReading(from controller: any OcaController) -> SwiftOCA.OcaPowerSensor.GetReadingParameters {
+    .init(
+      power: power.value,
+      powerFactor: powerFactor,
+      minPower: power.minValue,
+      maxPower: power.maxValue
+    )
   }
 }

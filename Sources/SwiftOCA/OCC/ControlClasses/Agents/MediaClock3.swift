@@ -62,11 +62,16 @@ open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
 
   @_spi(SwiftOCAPrivate) public typealias SetCurrentRateParameters = GetCurrentRateParameters
 
+  @_spi(SwiftOCAPrivate) public static let getCurrentRate =
+    OcaMethodDescription<Void, GetCurrentRateParameters>("3.3", name: "GetCurrentRate")
+
   public func getCurrentRate() async throws -> (OcaMediaClockRate, OcaONo) {
-    let parameters: GetCurrentRateParameters =
-      try await sendCommandRrq(methodID: OcaMethodID("3.3"))
+    let parameters = try await invoke(Self.getCurrentRate)
     return (parameters.rate, parameters.timeSourceONo)
   }
+
+  @_spi(SwiftOCAPrivate) public static let setCurrentRate =
+    OcaMethodDescription<SetCurrentRateParameters, Void>("3.4", name: "SetCurrentRate")
 
   public func set(currentRate: OcaMediaClockRate, timeSourceONo: OcaONo? = nil) async throws {
     let _timeSourceONo: OcaONo
@@ -75,7 +80,6 @@ open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
     } else {
       (_, _timeSourceONo) = try await getCurrentRate()
     }
-    let parameters = SetCurrentRateParameters(rate: currentRate, timeSourceONo: _timeSourceONo)
-    try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: parameters)
+    try await invoke(Self.setCurrentRate, .init(rate: currentRate, timeSourceONo: _timeSourceONo))
   }
 }

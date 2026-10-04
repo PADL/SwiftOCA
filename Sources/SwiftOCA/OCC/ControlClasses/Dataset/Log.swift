@@ -32,12 +32,11 @@ open class OcaLog: OcaDataset, @unchecked Sendable {
   )
   public var severityThreshold: OcaProperty<OcaLogSeverityLevel>.PropertyValue
 
+  public static let addLogRecord =
+    OcaMethodDescription<OcaLogRecord, Void>("3.1", name: "AddLogRecord", parameterNames: ["Entry"])
+
   public func add(logRecord entry: OcaLogRecord) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.1"),
-      parameters: entry,
-      parameterNames: ["Entry"]
-    )
+    try await invoke(Self.addLogRecord, entry)
   }
 
   // 3.4 OpenRetrievalSession

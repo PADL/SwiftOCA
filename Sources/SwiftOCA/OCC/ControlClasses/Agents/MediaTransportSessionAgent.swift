@@ -144,61 +144,115 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
 
   // MARK: - Sessions
 
+  public static let getSession =
+    OcaMethodDescription<OcaMediaTransportSessionID, OcaMediaTransportSession>(
+      "3.3",
+      name: "GetSession",
+      parameterNames: ["ID"],
+      resultNames: ["Session"]
+    )
+
   public func getSession(_ id: OcaMediaTransportSessionID) async throws
     -> OcaMediaTransportSession
   {
-    try await sendCommandRrq(methodID: OcaMethodID("3.3"), parameters: id, parameterNames: ["ID"])
+    try await invoke(Self.getSession, id)
   }
+
+  public static let addSession =
+    OcaMethodDescription<OcaMediaTransportSession, OcaMediaTransportSession>(
+      "3.4",
+      name: "AddSession",
+      parameterNames: ["Session"],
+      resultNames: ["Session"]
+    )
 
   /// Returns the given descriptor with its IDInternal set to the ID the device allocated.
   @discardableResult
   public func add(session: OcaMediaTransportSession) async throws -> OcaMediaTransportSession {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.4"),
-      parameters: session,
-      parameterNames: ["Session"]
-    )
+    try await invoke(Self.addSession, session)
   }
+
+  public static let configureSession =
+    OcaMethodDescription<ConfigureSessionParameters, Void>("3.5", name: "ConfigureSession")
 
   /// Sends the session's IDs, label and adaptation data, which is all ConfigureSession
   /// takes.
   public func configure(session: OcaMediaTransportSession) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.5"),
-      parameters: ConfigureSessionParameters(session)
-    )
+    try await invoke(Self.configureSession, .init(session))
   }
+
+  public static let deleteSession = OcaMethodDescription<OcaMediaTransportSessionID, Void>(
+    "3.6",
+    name: "DeleteSession",
+    parameterNames: ["ID"]
+  )
 
   public func delete(session id: OcaMediaTransportSessionID) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.6"), parameters: id, parameterNames: ["ID"])
+    try await invoke(Self.deleteSession, id)
   }
+
+  public static let resetSession = OcaMethodDescription<OcaMediaTransportSessionID, Void>(
+    "3.7",
+    name: "ResetSession",
+    parameterNames: ["ID"]
+  )
 
   public func reset(session id: OcaMediaTransportSessionID) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameters: id, parameterNames: ["ID"])
+    try await invoke(Self.resetSession, id)
   }
+
+  public static let setStreamingEnabled = OcaMethodDescription<SetStreamingEnabledParameters, Void>(
+    "3.8",
+    name: "SetStreamingEnabled",
+    parameterNames: ["ID", "Active"]
+  )
 
   public func set(session id: OcaMediaTransportSessionID, streamingEnabled: OcaBoolean) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.8"),
-      parameters: SetStreamingEnabledParameters(id: id, active: streamingEnabled)
-    )
+    try await invoke(Self.setStreamingEnabled, .init(id: id, active: streamingEnabled))
   }
+
+  public static let startStreaming = OcaMethodDescription<OcaMediaTransportSessionID, Void>(
+    "3.9",
+    name: "StartStreaming",
+    parameterNames: ["ID"]
+  )
 
   public func startStreaming(session id: OcaMediaTransportSessionID) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.9"), parameters: id, parameterNames: ["ID"])
+    try await invoke(Self.startStreaming, id)
   }
 
+  public static let stopStreaming = OcaMethodDescription<OcaMediaTransportSessionID, Void>(
+    "3.10",
+    name: "StopStreaming",
+    parameterNames: ["ID"]
+  )
+
   public func stopStreaming(session id: OcaMediaTransportSessionID) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.10"), parameters: id, parameterNames: ["ID"])
+    try await invoke(Self.stopStreaming, id)
   }
+
+  public static let getSessionStatus =
+    OcaMethodDescription<OcaMediaTransportSessionID, OcaMediaTransportSessionStatus>(
+      "3.12",
+      name: "GetSessionStatus",
+      parameterNames: ["ID"],
+      resultNames: ["Session"]
+    )
 
   public func getSessionStatus(_ id: OcaMediaTransportSessionID) async throws
     -> OcaMediaTransportSessionStatus
   {
-    try await sendCommandRrq(methodID: OcaMethodID("3.12"), parameters: id, parameterNames: ["ID"])
+    try await invoke(Self.getSessionStatus, id)
   }
 
   // MARK: - Connections
+
+  public static let addConnection =
+    OcaMethodDescription<AddConnectionParameters, OcaMediaTransportSessionConnection>(
+      "3.13",
+      name: "AddConnection",
+      resultNames: ["Connection"]
+    )
 
   /// Returns the given descriptor with its ID set to the ID the device allocated.
   @discardableResult
@@ -206,11 +260,11 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
     connection: OcaMediaTransportSessionConnection,
     to sessionID: OcaMediaTransportSessionID
   ) async throws -> OcaMediaTransportSessionConnection {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.13"),
-      parameters: AddConnectionParameters(sessionID: sessionID, connection: connection)
-    )
+    try await invoke(Self.addConnection, .init(sessionID: sessionID, connection: connection))
   }
+
+  public static let configureConnection =
+    OcaMethodDescription<ConfigureConnectionParameters, Void>("3.14", name: "ConfigureConnection")
 
   public func configureConnection(
     sessionID: OcaMediaTransportSessionID,
@@ -218,9 +272,9 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
     localEndpointID: OcaMediaStreamEndpointID,
     remoteEndpointID: OcaBlob
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.14"),
-      parameters: ConfigureConnectionParameters(
+    try await invoke(
+      Self.configureConnection,
+      .init(
         sessionID: sessionID,
         connectionID: connectionID,
         localEndpointID: localEndpointID,
@@ -229,21 +283,23 @@ open class OcaMediaTransportSessionAgent: OcaAgent, @unchecked Sendable {
     )
   }
 
+  public static let deleteConnection =
+    OcaMethodDescription<SessionConnectionParameters, Void>("3.15", name: "DeleteConnection")
+
   public func delete(
     connection id: OcaMediaTransportSessionConnectionID,
     from sessionID: OcaMediaTransportSessionID
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.15"),
-      parameters: SessionConnectionParameters(sessionID: sessionID, connectionID: id)
-    )
+    try await invoke(Self.deleteConnection, .init(sessionID: sessionID, connectionID: id))
   }
 
+  public static let deleteConnections = OcaMethodDescription<OcaMediaTransportSessionID, Void>(
+    "3.16",
+    name: "DeleteConnections",
+    parameterNames: ["SessionID"]
+  )
+
   public func deleteConnections(session id: OcaMediaTransportSessionID) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.16"),
-      parameters: id,
-      parameterNames: ["SessionID"]
-    )
+    try await invoke(Self.deleteConnections, id)
   }
 }

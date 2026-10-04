@@ -22,11 +22,15 @@ open class OcaDiagnosticManager: OcaManager, @unchecked Sendable {
     self.init(objectNumber: OcaDiagnosticManagerONo)
   }
 
+  // not in the AES70-2023 model
+  public static let getLockStatus = OcaMethodDescription<OcaONo, OcaString>(
+    "3.1",
+    name: "GetLockStatus",
+    parameterNames: ["ONo"],
+    resultNames: ["StatusDescription"]
+  )
+
   public func getLockStatus(_ oNo: OcaONo) async throws -> OcaString {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.1"),
-      parameters: oNo,
-      parameterNames: ["ONo"] // name not in AES70-2023 model
-    )
+    try await invoke(Self.getLockStatus, oNo)
   }
 }

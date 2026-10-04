@@ -18,18 +18,24 @@ open class OcaDeviceTimeManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.10") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 
+  public static let getDeviceTimeNTP = OcaMethodDescription<Void, OcaTimeNTP>(
+    "3.1",
+    name: "GetDeviceTimeNTP",
+    resultNames: ["DeviceTime"]
+  )
+
   public var deviceTimeNTP: OcaTimeNTP {
-    get async throws {
-      try await sendCommandRrq(methodID: OcaMethodID("3.1"))
-    }
+    get async throws { try await invoke(Self.getDeviceTimeNTP) }
   }
 
+  public static let setDeviceTimeNTP = OcaMethodDescription<OcaTimeNTP, Void>(
+    "3.2",
+    name: "SetDeviceTimeNTP",
+    parameterNames: ["DeviceTime"]
+  )
+
   public func set(deviceTimeNTP time: OcaTimeNTP) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.2"),
-      parameters: time,
-      parameterNames: ["DeviceTime"]
-    )
+    try await invoke(Self.setDeviceTimeNTP, time)
   }
 
   @OcaProperty(
@@ -48,18 +54,34 @@ open class OcaDeviceTimeManager: OcaManager, @unchecked Sendable {
   )
   public var currentDeviceTimeSource: OcaProperty<OcaONo>.PropertyValue
 
+  // the property's accessors, as the device declares them
+  public static let getCurrentDeviceTimeSource = OcaMethodDescription<Void, OcaONo>(
+    "3.4",
+    name: "GetCurrentDeviceTimeSource",
+    resultNames: ["TimeSourceONo"]
+  )
+  public static let setCurrentDeviceTimeSource = OcaMethodDescription<OcaONo, Void>(
+    "3.5",
+    name: "SetCurrentDeviceTimeSource",
+    parameterNames: ["TimeSourceONo"]
+  )
+
+  // the model names 3.6 and 3.7 GetDeviceTime and GetDeviceTimePTP both; the device says the first
+  public static let getDeviceTime =
+    OcaMethodDescription<Void, OcaTime>("3.6", name: "GetDeviceTime", resultNames: ["DeviceTime"])
+
   public var deviceTimePTP: OcaTime {
-    get async throws {
-      try await sendCommandRrq(methodID: OcaMethodID("3.6"))
-    }
+    get async throws { try await invoke(Self.getDeviceTime) }
   }
 
+  public static let setDeviceTime = OcaMethodDescription<OcaTime, Void>(
+    "3.7",
+    name: "SetDeviceTime",
+    parameterNames: ["DeviceTime"]
+  )
+
   public func set(deviceTimePTP time: OcaTime) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.7"),
-      parameters: time,
-      parameterNames: ["DeviceTime"]
-    )
+    try await invoke(Self.setDeviceTime, time)
   }
 
   public convenience init() {

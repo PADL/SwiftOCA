@@ -74,11 +74,18 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
   )
   public var lockable: OcaProperty<OcaBoolean>.PropertyValue
 
+  // the property's getter, as the device declares it
+  public static let getLockable =
+    OcaMethodDescription<Void, OcaBoolean>("1.2", name: "GetLockable", resultNames: ["Lockable"])
+
   @OcaProperty(
     propertyID: OcaPropertyID("1.5"),
     getMethodID: OcaMethodID("1.5")
   )
   public var role: OcaProperty<OcaString>.PropertyValue
+
+  public static let getRole =
+    OcaMethodDescription<Void, OcaString>("1.5", name: "GetRole", resultNames: ["Role"])
 
   @_spi(SwiftOCAPrivate)
   public func _set(role: OcaString) {
@@ -91,6 +98,9 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
     ocp2GetName: "State"
   )
   public var lockState: OcaProperty<OcaLockState>.PropertyValue
+
+  public static let getLockState =
+    OcaMethodDescription<Void, OcaLockState>("1.7", name: "GetLockState", resultNames: ["State"])
 
   public required init(objectNumber: OcaONo) {
     self.objectNumber = objectNumber
@@ -106,8 +116,14 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
     }
   }
 
+  public static let getClassIdentification = OcaMethodDescription<Void, OcaClassIdentification>(
+    "1.1",
+    name: "GetClassIdentification",
+    resultNames: ["ClassIdentification"]
+  )
+
   public func getClassIdentification() async throws -> OcaClassIdentification {
-    try await sendCommandRrq(methodID: OcaMethodID("1.1"))
+    try await invoke(Self.getClassIdentification)
   }
 
   @available(*, deprecated, renamed: "setLockNoReadWrite")
@@ -115,12 +131,17 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
     try await setLockNoReadWrite()
   }
 
+  public static let setLockNoReadWrite =
+    OcaMethodDescription<Void, Void>("1.3", name: "SetLockNoReadWrite")
+
   public func setLockNoReadWrite() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("1.3"))
+    try await invoke(Self.setLockNoReadWrite)
   }
 
+  public static let unlock = OcaMethodDescription<Void, Void>("1.4", name: "Unlock")
+
   public func unlock() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("1.4"))
+    try await invoke(Self.unlock)
   }
 
   @available(*, deprecated, renamed: "setLockNoWrite")
@@ -128,8 +149,10 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
     try await setLockNoWrite()
   }
 
+  public static let setLockNoWrite = OcaMethodDescription<Void, Void>("1.6", name: "SetLockNoWrite")
+
   public func setLockNoWrite() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("1.6"))
+    try await invoke(Self.setLockNoWrite)
   }
 
   public var isContainer: Bool {
@@ -530,10 +553,12 @@ public struct OcaGetPathParameters: OcaParametersReflectable {
 }
 
 extension OcaRoot {
-  func getPath(methodID: OcaMethodID) async throws -> (OcaNamePath, OcaONoPath) {
-    let responseParams: OcaGetPathParameters
-    responseParams = try await sendCommandRrq(methodID: methodID)
-    return (responseParams.rolePath, responseParams.oNoPath)
+  /// A class's GetPath, as the tuple the `path` properties return.
+  func getPath(_ method: OcaMethodDescription<Void, OcaGetPathParameters>) async throws
+    -> (OcaNamePath, OcaONoPath)
+  {
+    let path = try await invoke(method)
+    return (path.rolePath, path.oNoPath)
   }
 }
 

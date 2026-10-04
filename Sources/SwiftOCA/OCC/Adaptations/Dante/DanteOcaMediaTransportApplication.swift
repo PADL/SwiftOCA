@@ -47,20 +47,35 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication, @unc
   public var channelEndpointOperatingStates: OcaMapProperty<OcaID16, OcaAdaptationData>
     .PropertyValue
 
+  public static let getChannelEndpoint = OcaMethodDescription<OcaID16, OcaChannelEndpoint>(
+    "4.3",
+    name: "GetChannelEndpoint",
+    parameterNames: ["ID"]
+  )
+
   public func getChannelEndpoint(_ id: OcaID16) async throws -> OcaChannelEndpoint {
-    try await sendCommandRrq(methodID: OcaMethodID("4.3"), parameters: id)
+    try await invoke(Self.getChannelEndpoint, id)
   }
 
+  public static let setChannelEndpoint = OcaMethodDescription<SetChannelEndpointParameters, Void>(
+    "4.4",
+    name: "SetChannelEndpoint",
+    parameterNames: ["ID", "ChannelEndpoint"]
+  )
+
   public func setChannelEndpoint(_ id: OcaID16, _ channelEndpoint: OcaChannelEndpoint) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("4.4"),
-      parameters: SetChannelEndpointParameters(id: id, channelEndpoint: channelEndpoint)
-    )
+    try await invoke(Self.setChannelEndpoint, .init(id: id, channelEndpoint: channelEndpoint))
   }
+
+  public static let clearChannelEndpoint = OcaMethodDescription<OcaID16, Void>(
+    "4.5",
+    name: "ClearChannelEndpoint",
+    parameterNames: ["ID"]
+  )
 
   /// Stops any media flow on the channel endpoint and clears its configuration.
   public func clearChannelEndpoint(_ id: OcaID16) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("4.5"), parameters: id)
+    try await invoke(Self.clearChannelEndpoint, id)
   }
 
   /// Installs a Dante subscription (AES70-23 §9.2.3): SetChannelEndpoint with the
@@ -82,11 +97,24 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication, @unc
     try await subscribe(channelEndpoint: id, to: address)
   }
 
+  public static let addChannelEndpoint = OcaMethodDescription<OcaChannelEndpoint, OcaID16>(
+    "4.6",
+    name: "AddChannelEndpoint",
+    parameterNames: ["ChannelEndpoint"],
+    resultNames: ["ID"]
+  )
+
   public func add(channelEndpoint: OcaChannelEndpoint) async throws -> OcaID16 {
-    try await sendCommandRrq(methodID: OcaMethodID("4.6"), parameters: channelEndpoint)
+    try await invoke(Self.addChannelEndpoint, channelEndpoint)
   }
 
+  public static let deleteChannelEndpoint = OcaMethodDescription<OcaID16, Void>(
+    "4.7",
+    name: "DeleteChannelEndpoint",
+    parameterNames: ["ID"]
+  )
+
   public func delete(channelEndpoint id: OcaID16) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("4.7"), parameters: id)
+    try await invoke(Self.deleteChannelEndpoint, id)
   }
 }

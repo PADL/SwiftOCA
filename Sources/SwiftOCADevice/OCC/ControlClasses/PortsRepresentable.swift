@@ -34,29 +34,15 @@ extension OcaPortsRepresentable {
   }
 
   @OcaDevice
-  func handleGetPortName(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> OcaString {
-    // because portID is a struct, but we only want a single
-    let params: OcaGetPortNameParameters = try decodeCommand(command)
-    try await ensureReadable(by: controller, command: command)
-    guard let portName = ports.first(where: { $0.id == params.portID })?.name else {
+  func portName(of portID: OcaPortID) throws -> OcaString {
+    guard let portName = ports.first(where: { $0.id == portID })?.name else {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
     return portName
   }
 
-  /// The record differs per class (OcaWorker names the port `ID`, the others
-  /// `PortID`), so the caller decodes it.
   @OcaDevice
-  func handleSetPortName(
-    _ command: Ocp1Command,
-    from controller: OcaController,
-    portID: OcaPortID,
-    name: OcaString
-  ) async throws {
-    try await ensureWritable(by: controller, command: command)
+  func setName(_ name: OcaString, ofPort portID: OcaPortID) throws {
     guard let index = ports.firstIndex(where: { $0.id == portID }) else {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
@@ -64,6 +50,7 @@ extension OcaPortsRepresentable {
     let newPort = OcaPort(owner: port.owner, id: port.id, name: name)
     ports.replaceSubrange(index...index, with: [newPort])
   }
+
 }
 
 public extension SwiftOCADevice.OcaBlock where ActionObject: OcaPortsRepresentable {
@@ -123,33 +110,21 @@ public protocol OcaPortClockMapRepresentable: OcaRoot {
 }
 
 extension OcaPortClockMapRepresentable {
-  func handleSetPortClockMapEntry(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws {
-    let parameters: OcaSetPortClockMapEntryParameters = try decodeCommand(command)
-    try await ensureWritable(by: controller, command: command)
-    portClockMap[parameters.portID] = parameters.entry
-  }
-
-  func handleDeletePortClockMapEntry(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws {
-    let portID: OcaPortID = try decodeCommand(command)
-    try await ensureWritable(by: controller, command: command)
-    portClockMap.removeValue(forKey: portID)
-  }
-
-  func handleGetPortClockMapEntry(
-    _ command: Ocp1Command,
-    from controller: OcaController
-  ) async throws -> OcaPortClockMapEntry {
-    let portID: OcaPortID = try decodeCommand(command)
-    try await ensureReadable(by: controller, command: command)
+  @OcaDevice
+  func portClockMapEntry(for portID: OcaPortID) throws -> OcaPortClockMapEntry {
     guard let portClockMapEntry = portClockMap[portID] else {
       throw Ocp1Error.status(.invalidRequest)
     }
     return portClockMapEntry
+  }
+
+  @OcaDevice
+  func setPortClockMapEntry(_ parameters: OcaSetPortClockMapEntryParameters) {
+    portClockMap[parameters.portID] = parameters.entry
+  }
+
+  @OcaDevice
+  func deletePortClockMapEntry(for portID: OcaPortID) {
+    portClockMap.removeValue(forKey: portID)
   }
 }

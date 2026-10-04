@@ -33,12 +33,18 @@ open class OcaSecurityManager: OcaManager, @unchecked Sendable {
     self.init(objectNumber: OcaSecurityManagerONo)
   }
 
+  public static let enableControlSecurity =
+    OcaMethodDescription<Void, Void>("3.1", name: "EnableControlSecurity")
+
   public func enableControlSecurity() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.1"))
+    try await invoke(Self.enableControlSecurity)
   }
 
+  public static let disableControlSecurity =
+    OcaMethodDescription<Void, Void>("3.2", name: "DisableControlSecurity")
+
   public func disableControlSecurity() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.2"))
+    try await invoke(Self.disableControlSecurity)
   }
 
   public struct AddPreSharedKeyParameters: OcaParametersReflectable {
@@ -61,21 +67,27 @@ open class OcaSecurityManager: OcaManager, @unchecked Sendable {
     }
   }
 
+  public static let changePreSharedKey =
+    OcaMethodDescription<ChangePreSharedKeyParameters, Void>("3.3", name: "ChangePreSharedKey")
+
   public func changePreSharedKey(identity: OcaString, key: OcaBlob) async throws {
-    let parameters = ChangePreSharedKeyParameters(identity: identity, newKey: key)
-    try await sendCommandRrq(methodID: OcaMethodID("3.3"), parameters: parameters)
+    try await invoke(Self.changePreSharedKey, .init(identity: identity, newKey: key))
   }
+
+  public static let addPreSharedKey =
+    OcaMethodDescription<AddPreSharedKeyParameters, Void>("3.4", name: "AddPreSharedKey")
 
   public func addPreSharedKey(identity: OcaString, key: OcaBlob) async throws {
-    let parameters = AddPreSharedKeyParameters(identity: identity, key: key)
-    try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: parameters)
+    try await invoke(Self.addPreSharedKey, .init(identity: identity, key: key))
   }
 
+  public static let deletePreSharedKey = OcaMethodDescription<OcaString, Void>(
+    "3.5",
+    name: "DeletePreSharedKey",
+    parameterNames: ["Identity"]
+  )
+
   public func deletePreSharedKey(identity: OcaString) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.5"),
-      parameters: identity,
-      parameterNames: ["Identity"]
-    )
+    try await invoke(Self.deletePreSharedKey, identity)
   }
 }

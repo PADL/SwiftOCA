@@ -67,18 +67,20 @@ Sendable {
   )
   public var errorCode: OcaProperty<OcaUint16>.PropertyValue
 
+  public static let control = OcaMethodDescription<OcaApplicationNetworkCommand, Void>(
+    "2.10",
+    name: "Control",
+    parameterNames: ["Command"]
+  )
+
   public func control(_ command: OcaApplicationNetworkCommand) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.10"),
-      parameters: command,
-      parameterNames: ["Command"]
-    )
+    try await invoke(Self.control, command)
   }
 
+  public static let getPath = OcaMethodDescription<Void, OcaGetPathParameters>("2.11", name: "GetPath")
+
   public var path: (OcaNamePath, OcaONoPath) {
-    get async throws {
-      try await getPath(methodID: OcaMethodID("2.11"))
-    }
+    get async throws { try await getPath(Self.getPath) }
   }
 }
 

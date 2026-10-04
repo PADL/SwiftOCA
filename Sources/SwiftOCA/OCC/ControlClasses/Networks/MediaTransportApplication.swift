@@ -158,19 +158,18 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
 
   // MARK: - Ports
 
+  public static let addPort =
+    OcaMethodDescription<AddPortParameters, OcaPortID>("3.1", name: "AddPort", resultNames: ["ID"])
+
   public func add(port label: OcaString, mode: OcaPortMode) async throws -> OcaPortID {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.1"),
-      parameters: AddPortParameters(name: label, mode: mode)
-    )
+    try await invoke(Self.addPort, .init(name: label, mode: mode))
   }
 
+  public static let deletePort =
+    OcaMethodDescription<OcaPortID, Void>("3.2", name: "DeletePort", parameterNames: ["ID"])
+
   public func delete(port id: OcaPortID) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.2"),
-      parameters: id,
-      parameterNames: ["ID"]
-    )
+    try await invoke(Self.deletePort, id)
   }
 
   @OcaProperty(
@@ -180,18 +179,21 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   )
   public var ports: OcaListProperty<OcaPort>.PropertyValue
 
+  public static let getPortName = OcaMethodDescription<OcaGetPortNameParameters, OcaString>(
+    "3.4",
+    name: "GetPortName",
+    resultNames: ["Name"]
+  )
+
   public func getPortName(_ portID: OcaPortID) async throws -> OcaString {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.4"),
-      parameters: OcaGetPortNameParameters(portID: portID)
-    )
+    try await invoke(Self.getPortName, .init(portID: portID))
   }
 
+  public static let setPortName =
+    OcaMethodDescription<OcaSetPortNameParameters, Void>("3.5", name: "SetPortName")
+
   public func setPortName(_ portID: OcaPortID, name: OcaString) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.5"),
-      parameters: OcaSetPortNameParameters(portID: portID, name: name)
-    )
+    try await invoke(Self.setPortName, .init(portID: portID, name: name))
   }
 
   @OcaProperty(
@@ -215,27 +217,37 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     }
   }
 
-  public func set(portID: OcaPortID, portClockMapEntry: OcaPortClockMapEntry) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.8"),
-      parameters: SetPortClockMapEntryParameters(id: portID, entry: portClockMapEntry)
+  // the device takes OcaWorker's record for this one, so the descriptor names its port
+  public static let setPortClockMapEntry =
+    OcaMethodDescription<OcaSetPortClockMapEntryParameters, Void>(
+      "3.8",
+      name: "SetPortClockMapEntry",
+      parameterNames: ["ID", "Entry"]
     )
+
+  public func set(portID: OcaPortID, portClockMapEntry: OcaPortClockMapEntry) async throws {
+    try await invoke(Self.setPortClockMapEntry, .init(portID: portID, entry: portClockMapEntry))
   }
+
+  public static let deletePortClockMapEntry = OcaMethodDescription<OcaPortID, Void>(
+    "3.9",
+    name: "DeletePortClockMapEntry",
+    parameterNames: ["ID"]
+  )
 
   public func deletePortClockMapEntry(portID: OcaPortID) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.9"),
-      parameters: portID,
-      parameterNames: ["ID"]
-    )
+    try await invoke(Self.deletePortClockMapEntry, portID)
   }
 
+  public static let getPortClockMapEntry = OcaMethodDescription<OcaPortID, OcaPortClockMapEntry>(
+    "3.10",
+    name: "GetPortClockMapEntry",
+    parameterNames: ["ID"],
+    resultNames: ["Entry"]
+  )
+
   public func get(portID: OcaPortID) async throws -> OcaPortClockMapEntry {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.10"),
-      parameters: portID,
-      parameterNames: ["ID"]
-    )
+    try await invoke(Self.getPortClockMapEntry, portID)
   }
 
   // MARK: - Limits
@@ -250,8 +262,11 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   )
   public var maxOutputEndpoints: OcaProperty<OcaUint16>.PropertyValue
 
+  public static let getMaxEndpointCounts =
+    OcaMethodDescription<Void, MaxEndpointCounts>("3.11", name: "GetMaxEndpointCounts")
+
   public func getMaxEndpointCounts() async throws -> MaxEndpointCounts {
-    try await sendCommandRrq(methodID: OcaMethodID("3.11"))
+    try await invoke(Self.getMaxEndpointCounts)
   }
 
   @OcaProperty(
@@ -280,14 +295,18 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   public var mediaStreamModeCapabilities: OcaListProperty<OcaMediaStreamModeCapability>
     .PropertyValue
 
+  public static let getMediaStreamModeCapability =
+    OcaMethodDescription<OcaID16, OcaMediaStreamModeCapability>(
+      "3.17",
+      name: "GetMediaStreamModeCapability",
+      parameterNames: ["CapabilityID"],
+      resultNames: ["Capability"]
+    )
+
   public func getMediaStreamModeCapability(
     id: OcaID16
   ) async throws -> OcaMediaStreamModeCapability {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.17"),
-      parameters: id,
-      parameterNames: ["CapabilityID"]
-    )
+    try await invoke(Self.getMediaStreamModeCapability, id)
   }
 
   @OcaProperty(
@@ -317,8 +336,16 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   )
   public var endpoints: OcaListProperty<OcaMediaStreamEndpoint>.PropertyValue
 
+  public static let getEndpoint =
+    OcaMethodDescription<OcaMediaStreamEndpointID, OcaMediaStreamEndpoint>(
+      "3.22",
+      name: "GetEndpoint",
+      parameterNames: ["ID"],
+      resultNames: ["Endpoint"]
+    )
+
   public func getEndpoint(_ id: OcaMediaStreamEndpointID) async throws -> OcaMediaStreamEndpoint {
-    try await sendCommandRrq(methodID: OcaMethodID("3.22"), parameters: id, parameterNames: ["ID"])
+    try await invoke(Self.getEndpoint, id)
   }
 
   @OcaProperty(
@@ -331,11 +358,26 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     OcaMediaStreamEndpointStatus
   >.PropertyValue
 
+  public static let getEndpointStatus =
+    OcaMethodDescription<OcaMediaStreamEndpointID, OcaMediaStreamEndpointStatus>(
+      "3.24",
+      name: "GetEndpointStatus",
+      parameterNames: ["ID"],
+      resultNames: ["Status"]
+    )
+
   public func getEndpointStatus(
     _ id: OcaMediaStreamEndpointID
   ) async throws -> OcaMediaStreamEndpointStatus {
-    try await sendCommandRrq(methodID: OcaMethodID("3.24"), parameters: id, parameterNames: ["ID"])
+    try await invoke(Self.getEndpointStatus, id)
   }
+
+  public static let addEndpoint =
+    OcaMethodDescription<AddEndpointParameters, OcaMediaStreamEndpoint>(
+      "3.25",
+      name: "AddEndpoint",
+      resultNames: ["Endpoint"]
+    )
 
   /// Returns the given descriptor with its IDInternal set to the ID the device allocated.
   @discardableResult
@@ -343,78 +385,102 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     endpoint: OcaMediaStreamEndpoint,
     initialStatus: OcaMediaStreamEndpointState
   ) async throws -> OcaMediaStreamEndpoint {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.25"),
-      parameters: AddEndpointParameters(endpoint: endpoint, initialStatus: initialStatus),
-      responseNames: ["Endpoint"]
-    )
+    try await invoke(Self.addEndpoint, .init(endpoint: endpoint, initialStatus: initialStatus))
   }
 
+  public static let deleteEndpoint = OcaMethodDescription<OcaMediaStreamEndpointID, Void>(
+    "3.26",
+    name: "DeleteEndpoint",
+    parameterNames: ["ID"]
+  )
+
   public func delete(endpoint id: OcaMediaStreamEndpointID) async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.26"), parameters: id, parameterNames: ["ID"])
+    try await invoke(Self.deleteEndpoint, id)
   }
+
+  public static let applyEndpointCommand =
+    OcaMethodDescription<ApplyEndpointCommandParameters, Void>("3.27", name: "ApplyEndpointCommand")
 
   public func applyEndpointCommand(
     _ id: OcaMediaStreamEndpointID,
     command: OcaMediaStreamEndpointCommand
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.27"),
-      parameters: ApplyEndpointCommandParameters(endpointID: id, command: command)
-    )
+    try await invoke(Self.applyEndpointCommand, .init(endpointID: id, command: command))
   }
 
+  public static let setEndpointUserLabel =
+    OcaMethodDescription<SetEndpointUserLabelParameters, Void>("3.28", name: "SetEndpointUserLabel")
+
   public func setEndpoint(_ id: OcaMediaStreamEndpointID, userLabel: OcaString) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.28"),
-      parameters: SetEndpointUserLabelParameters(endpointID: id, label: userLabel)
-    )
+    try await invoke(Self.setEndpointUserLabel, .init(endpointID: id, label: userLabel))
   }
+
+  public static let setEndpointMediaStreamMode =
+    OcaMethodDescription<SetEndpointMediaStreamModeParameters, Void>(
+      "3.29",
+      name: "SetEndpointMediaStreamMode"
+    )
 
   public func setEndpoint(
     _ id: OcaMediaStreamEndpointID,
     mediaStreamMode: OcaMediaStreamMode
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.29"),
-      parameters: SetEndpointMediaStreamModeParameters(endpointID: id, streamMode: mediaStreamMode)
+    try await invoke(
+      Self.setEndpointMediaStreamMode,
+      .init(endpointID: id, streamMode: mediaStreamMode)
     )
   }
+
+  public static let setEndpointChannelMap =
+    OcaMethodDescription<SetEndpointChannelMapParameters, Void>(
+      "3.30",
+      name: "SetEndpointChannelMap"
+    )
 
   public func setEndpoint(
     _ id: OcaMediaStreamEndpointID,
     channelMap: OcaMultiMap<OcaUint16, OcaPortID>
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.30"),
-      parameters: SetEndpointChannelMapParameters(endpointID: id, channelMap: channelMap)
-    )
+    try await invoke(Self.setEndpointChannelMap, .init(endpointID: id, channelMap: channelMap))
   }
+
+  public static let setEndpointAlignmentLevel =
+    OcaMethodDescription<SetEndpointAlignmentLevelParameters, Void>(
+      "3.31",
+      name: "SetEndpointAlignmentLevel"
+    )
 
   public func setEndpoint(
     _ id: OcaMediaStreamEndpointID,
     alignmentLevel: OcaDBFS
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.31"),
-      parameters: SetEndpointAlignmentLevelParameters(endpointID: id, level: alignmentLevel)
-    )
+    try await invoke(Self.setEndpointAlignmentLevel, .init(endpointID: id, level: alignmentLevel))
   }
+
+  public static let getEndpointTimeSource =
+    OcaMethodDescription<OcaMediaStreamEndpointID, EndpointTimeSource>(
+      "3.32",
+      name: "GetEndpointTimeSource",
+      parameterNames: ["ID"]
+    )
 
   public func getEndpointTimeSource(
     _ id: OcaMediaStreamEndpointID
   ) async throws -> EndpointTimeSource {
-    try await sendCommandRrq(methodID: OcaMethodID("3.32"), parameters: id, parameterNames: ["ID"])
+    try await invoke(Self.getEndpointTimeSource, id)
   }
+
+  public static let setEndpointAdaptationData =
+    OcaMethodDescription<SetEndpointAdaptationDataParameters, Void>(
+      "3.33",
+      name: "SetEndpointAdaptationData"
+    )
 
   public func setEndpoint(
     _ id: OcaMediaStreamEndpointID,
     adaptationData: OcaAdaptationData
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.33"),
-      parameters: SetEndpointAdaptationDataParameters(endpointID: id, data: adaptationData)
-    )
+    try await invoke(Self.setEndpointAdaptationData, .init(endpointID: id, data: adaptationData))
   }
 
   // MARK: - Endpoint counters
@@ -426,63 +492,75 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
   )
   public var endpointCounterSets: OcaMapProperty<OcaID16, OcaCounterSet>.PropertyValue
 
-  public func getEndpointCounterSet(_ id: OcaMediaStreamEndpointID) async throws -> OcaCounterSet {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.35"),
-      parameters: id,
-      parameterNames: ["EndpointID"]
+  public static let getEndpointCounterSet =
+    OcaMethodDescription<OcaMediaStreamEndpointID, OcaCounterSet>(
+      "3.35",
+      name: "GetEndpointCounterSet",
+      parameterNames: ["EndpointID"],
+      resultNames: ["CounterSet"]
     )
+
+  public func getEndpointCounterSet(_ id: OcaMediaStreamEndpointID) async throws -> OcaCounterSet {
+    try await invoke(Self.getEndpointCounterSet, id)
   }
+
+  public static let getEndpointCounter =
+    OcaMethodDescription<EndpointCounterParameters, OcaCounter>(
+      "3.36",
+      name: "GetEndpointCounter",
+      resultNames: ["Counter"]
+    )
 
   public func getEndpointCounter(
     _ id: OcaMediaStreamEndpointID,
     counterID: OcaID16
   ) async throws -> OcaCounter {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.36"),
-      parameters: EndpointCounterParameters(endpointID: id, counterID: counterID)
-    )
+    try await invoke(Self.getEndpointCounter, .init(endpointID: id, counterID: counterID))
   }
+
+  public static let attachEndpointCounterNotifier =
+    OcaMethodDescription<EndpointCounterNotifierParameters, Void>(
+      "3.37",
+      name: "AttachEndpointCounterNotifier"
+    )
 
   public func attachEndpointCounterNotifier(
     endpointID: OcaMediaStreamEndpointID,
     counterID: OcaID16,
     oNo: OcaONo
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.37"),
-      parameters: EndpointCounterNotifierParameters(
-        endpointID: endpointID,
-        counterID: counterID,
-        notifierONo: oNo
-      )
+    try await invoke(
+      Self.attachEndpointCounterNotifier,
+      .init(endpointID: endpointID, counterID: counterID, notifierONo: oNo)
     )
   }
+
+  public static let detachEndpointCounterNotifier =
+    OcaMethodDescription<EndpointCounterNotifierParameters, Void>(
+      "3.38",
+      name: "DetachEndpointCounterNotifier"
+    )
 
   public func detachEndpointCounterNotifier(
     endpointID: OcaMediaStreamEndpointID,
     counterID: OcaID16,
     oNo: OcaONo
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.38"),
-      parameters: EndpointCounterNotifierParameters(
-        endpointID: endpointID,
-        counterID: counterID,
-        notifierONo: oNo
-      )
+    try await invoke(
+      Self.detachEndpointCounterNotifier,
+      .init(endpointID: endpointID, counterID: counterID, notifierONo: oNo)
     )
   }
+
+  public static let resetEndpointCounterSet =
+    OcaMethodDescription<EndpointCounterParameters, Void>("3.39", name: "ResetEndpointCounterSet")
 
   /// Resets one counter, or the whole counterset when `counterID` is zero.
   public func resetEndpointCounterSet(
     _ id: OcaMediaStreamEndpointID,
     counterID: OcaID16 = 0
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.39"),
-      parameters: EndpointCounterParameters(endpointID: id, counterID: counterID)
-    )
+    try await invoke(Self.resetEndpointCounterSet, .init(endpointID: id, counterID: counterID))
   }
 
   // MARK: - Session control agents

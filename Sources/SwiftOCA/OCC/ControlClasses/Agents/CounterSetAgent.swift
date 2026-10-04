@@ -30,41 +30,49 @@ open class OcaCounterSetAgent: OcaAgent, @unchecked Sendable {
   )
   public var counterSet: OcaProperty<OcaCounterSet>.PropertyValue
 
+  public static let getCounter = OcaMethodDescription<OcaID16, OcaCounter>(
+    "3.3",
+    name: "GetCounter",
+    parameterNames: ["ID"],
+    resultNames: ["OcaCounter"]
+  )
+
   public func get(counter id: OcaID16) async throws -> OcaCounter {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.3"),
-      parameters: id,
-      parameterNames: ["ID"]
-    )
+    try await invoke(Self.getCounter, id)
   }
 
   public typealias CounterNotifierParameters = OcaCounterNotifierParameters
 
+  public static let attachCounterNotifier = OcaMethodDescription<CounterNotifierParameters, Void>(
+    "3.4",
+    name: "AttachCounterNotifier",
+    parameterNames: ["ID", "ONo"]
+  )
+
   public func attach(counter id: OcaID16, to oNo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.4"),
-      parameters: CounterNotifierParameters(id: id, oNo: oNo)
-    )
+    try await invoke(Self.attachCounterNotifier, .init(id: id, oNo: oNo))
   }
+
+  public static let detachCounterNotifier = OcaMethodDescription<CounterNotifierParameters, Void>(
+    "3.5",
+    name: "DetachCounterNotifier",
+    parameterNames: ["ID", "ONo"]
+  )
 
   public func detach(counter id: OcaID16, from oNo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.5"),
-      parameters: CounterNotifierParameters(id: id, oNo: oNo)
-    )
+    try await invoke(Self.detachCounterNotifier, .init(id: id, oNo: oNo))
   }
+
+  public static let resetCounterSet = OcaMethodDescription<Void, Void>("3.6", name: "ResetCounterSet")
 
   public func reset() async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.6")
-    )
+    try await invoke(Self.resetCounterSet)
   }
 
+  public static let resetCounter =
+    OcaMethodDescription<OcaID16, Void>("3.7", name: "ResetCounter", parameterNames: ["ID"])
+
   public func reset(counter id: OcaID16) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.7"),
-      parameters: id,
-      parameterNames: ["ID"]
-    )
+    try await invoke(Self.resetCounter, id)
   }
 }

@@ -1,0 +1,323 @@
+//
+// Copyright (c) 2026 PADL Software Pty Ltd
+//
+// Licensed under the Apache License, Version 2.0 (the License);
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+@_spi(SwiftOCAPrivate) import SwiftOCA
+
+/// Every `OcaMethodDescription` a client class declares, by class, for the naming oracle
+/// and the device sweep. Written from the sources; `ClientMethodDescriptionTests`
+/// checks it against them, so a descriptor missing here fails.
+enum ClientMethodDescriptions {
+  typealias Entry = (name: String, description: OcaAnyMethodDescription)
+
+  static let all: [(type: OcaRoot.Type, descriptors: [Entry])] = [
+    (Aes67OcaMediaTransportApplication.self, [
+      ("getEndpointDelayConstraints", Aes67OcaMediaTransportApplication.getEndpointDelayConstraints.erased),
+      ("getPresentationTimeOffsetConstraints", Aes67OcaMediaTransportApplication.getPresentationTimeOffsetConstraints.erased),
+      ("configureEndpointFromSDP", Aes67OcaMediaTransportApplication.configureEndpointFromSDP.erased),
+    ]),
+    (Aes67OcaMediaTransportSessionAgent.self, [
+      ("getSIPParameterRecord", Aes67OcaMediaTransportSessionAgent.getSIPParameterRecord.erased),
+      ("setSIPParameterRecord", Aes67OcaMediaTransportSessionAgent.setSIPParameterRecord.erased),
+      ("getSIPParameter", Aes67OcaMediaTransportSessionAgent.getSIPParameter.erased),
+      ("setSIPParameter", Aes67OcaMediaTransportSessionAgent.setSIPParameter.erased),
+    ]),
+    (Aes67StreamEndpointRegistry.self, [
+      ("getRegistryEntry", Aes67StreamEndpointRegistry.getRegistryEntry.erased),
+      ("addRegistryEntry", Aes67StreamEndpointRegistry.addRegistryEntry.erased),
+      ("setRegistryEntry", Aes67StreamEndpointRegistry.setRegistryEntry.erased),
+      ("deleteRegistryEntry", Aes67StreamEndpointRegistry.deleteRegistryEntry.erased),
+      ("addRegistryEntriesFromSDP", Aes67StreamEndpointRegistry.addRegistryEntriesFromSDP.erased),
+    ]),
+    (DanteOcaMediaTransportApplication.self, [
+      ("getChannelEndpoint", DanteOcaMediaTransportApplication.getChannelEndpoint.erased),
+      ("setChannelEndpoint", DanteOcaMediaTransportApplication.setChannelEndpoint.erased),
+      ("clearChannelEndpoint", DanteOcaMediaTransportApplication.clearChannelEndpoint.erased),
+      ("addChannelEndpoint", DanteOcaMediaTransportApplication.addChannelEndpoint.erased),
+      ("deleteChannelEndpoint", DanteOcaMediaTransportApplication.deleteChannelEndpoint.erased),
+    ]),
+    (OcaAgent.self, [
+      ("getPath", OcaAgent.getPath.erased),
+    ]),
+    (OcaApplicationNetwork.self, [
+      ("control", OcaApplicationNetwork.control.erased),
+      ("getPath", OcaApplicationNetwork.getPath.erased),
+    ]),
+    (OcaBlock.self, [
+      ("getActionObjects", OcaBlock.getActionObjects.erased),
+      ("getDatasetObjects", OcaBlock.getDatasetObjects.erased),
+      ("constructActionObject", OcaBlock.constructActionObject.erased),
+      ("constructBlockUsingFactory", OcaBlock.constructBlockUsingFactory.erased),
+      ("deleteMember", OcaBlock.deleteMember.erased),
+      ("getActionObjectsRecursive", OcaBlock.getActionObjectsRecursive.erased),
+      ("addSignalPath", OcaBlock.addSignalPath.erased),
+      ("deleteSignalPath", OcaBlock.deleteSignalPath.erased),
+      ("getSignalPathsRecursive", OcaBlock.getSignalPathsRecursive.erased),
+      ("applyParamSet", OcaBlock.applyParamSet.erased),
+      ("getCurrentParamSetData", OcaBlock.getCurrentParamSetData.erased),
+      ("storeCurrentParamSetData", OcaBlock.storeCurrentParamSetData.erased),
+      ("findActionObjectsByRole", OcaBlock.findActionObjectsByRole.erased),
+      ("findActionObjectsByRoleRecursive", OcaBlock.findActionObjectsByRoleRecursive.erased),
+      ("findActionObjectsByLabelRecursive", OcaBlock.findActionObjectsByLabelRecursive.erased),
+      ("findActionObjectsByRolePath", OcaBlock.findActionObjectsByRolePath.erased),
+      ("applyParamDataset", OcaBlock.applyParamDataset.erased),
+      ("storeCurrentParameterData", OcaBlock.storeCurrentParameterData.erased),
+      ("fetchCurrentParameterData", OcaBlock.fetchCurrentParameterData.erased),
+      ("applyParameterData", OcaBlock.applyParameterData.erased),
+      ("constructDataset", OcaBlock.constructDataset.erased),
+      ("duplicateDataset", OcaBlock.duplicateDataset.erased),
+      ("getDatasetObjectsRecursive", OcaBlock.getDatasetObjectsRecursive.erased),
+      ("findDatasets", OcaBlock.findDatasets.erased),
+      ("findDatasetsRecursive", OcaBlock.findDatasetsRecursive.erased),
+    ]),
+    (OcaCounterNotifier.self, [
+      ("getLastUpdate", OcaCounterNotifier.getLastUpdate.erased),
+    ]),
+    (OcaCounterSetAgent.self, [
+      ("getCounter", OcaCounterSetAgent.getCounter.erased),
+      ("attachCounterNotifier", OcaCounterSetAgent.attachCounterNotifier.erased),
+      ("detachCounterNotifier", OcaCounterSetAgent.detachCounterNotifier.erased),
+      ("resetCounterSet", OcaCounterSetAgent.resetCounterSet.erased),
+      ("resetCounter", OcaCounterSetAgent.resetCounter.erased),
+    ]),
+    (OcaDataset.self, [
+      ("openRead", OcaDataset.openRead.erased),
+      ("openWrite", OcaDataset.openWrite.erased),
+      ("close", OcaDataset.close.erased),
+      ("read", OcaDataset.read.erased),
+      ("write", OcaDataset.write.erased),
+      ("clear", OcaDataset.clear.erased),
+      ("getDatasetSizes", OcaDataset.getDatasetSizes.erased),
+    ]),
+    (OcaDelayExtended.self, [
+      ("getDelayValueConverted", OcaDelayExtended.getDelayValueConverted.erased),
+    ]),
+    (OcaDeviceManager.self, [
+      ("clearResetCause", OcaDeviceManager.clearResetCause.erased),
+      ("setDeviceName", OcaDeviceManager.setDeviceName.erased),
+      ("applyPatch", OcaDeviceManager.applyPatch.erased),
+    ]),
+    (OcaDeviceTimeManager.self, [
+      ("getDeviceTimeNTP", OcaDeviceTimeManager.getDeviceTimeNTP.erased),
+      ("setDeviceTimeNTP", OcaDeviceTimeManager.setDeviceTimeNTP.erased),
+      ("getCurrentDeviceTimeSource", OcaDeviceTimeManager.getCurrentDeviceTimeSource.erased),
+      ("setCurrentDeviceTimeSource", OcaDeviceTimeManager.setCurrentDeviceTimeSource.erased),
+      ("getDeviceTime", OcaDeviceTimeManager.getDeviceTime.erased),
+      ("setDeviceTime", OcaDeviceTimeManager.setDeviceTime.erased),
+    ]),
+    (OcaDiagnosticManager.self, [
+      ("getLockStatus", OcaDiagnosticManager.getLockStatus.erased),
+    ]),
+    (OcaDynamics.self, [
+      ("setMultiple", OcaDynamics.setMultiple.erased),
+    ]),
+    (OcaDynamicsCurve.self, [
+      ("getThresholds", OcaDynamicsCurve.getThresholds.erased),
+      ("getSlopes", OcaDynamicsCurve.getSlopes.erased),
+      ("getKneeParameters", OcaDynamicsCurve.getKneeParameters.erased),
+      ("setMultiple", OcaDynamicsCurve.setMultiple.erased),
+    ]),
+    (OcaDynamicsDetector.self, [
+      ("setMultiple", OcaDynamicsDetector.setMultiple.erased),
+    ]),
+    (OcaFilterArbitraryCurve.self, [
+      ("setTransferFunction", OcaFilterArbitraryCurve.setTransferFunction.erased),
+    ]),
+    (OcaFilterClassical.self, [
+      ("setMultiple", OcaFilterClassical.setMultiple.erased),
+    ]),
+    (OcaFilterParametric.self, [
+      ("setMultiple", OcaFilterParametric.setMultiple.erased),
+    ]),
+    (OcaFilterPolynomial.self, [
+      ("getCoefficients", OcaFilterPolynomial.getCoefficients.erased),
+      ("setCoefficients", OcaFilterPolynomial.setCoefficients.erased),
+    ]),
+    (OcaFirmwareManager.self, [
+      ("startUpdateProcess", OcaFirmwareManager.startUpdateProcess.erased),
+      ("beginActiveImageUpdate", OcaFirmwareManager.beginActiveImageUpdate.erased),
+      ("addImageData", OcaFirmwareManager.addImageData.erased),
+      ("verifyImage", OcaFirmwareManager.verifyImage.erased),
+      ("endActiveImageUpdate", OcaFirmwareManager.endActiveImageUpdate.erased),
+      ("beginPassiveComponentUpdate", OcaFirmwareManager.beginPassiveComponentUpdate.erased),
+      ("endUpdateProcess", OcaFirmwareManager.endUpdateProcess.erased),
+    ]),
+    (OcaGroup.self, [
+      ("getMembers", OcaGroup.getMembers.erased),
+      ("setMembers", OcaGroup.setMembers.erased),
+      ("getGroupController", OcaGroup.getGroupController.erased),
+      ("addMember", OcaGroup.addMember.erased),
+      ("deleteMember", OcaGroup.deleteMember.erased),
+    ]),
+    (OcaLevelSensor.self, [
+      ("getReading", OcaLevelSensor.getReading.erased),
+    ]),
+    (OcaLockManager.self, [
+      ("lockWait", OcaLockManager.lockWait.erased),
+      ("abortWaits", OcaLockManager.abortWaits.erased),
+    ]),
+    (OcaLog.self, [
+      ("addLogRecord", OcaLog.addLogRecord.erased),
+    ]),
+    (OcaMatrix.self, [
+      ("setCurrentXY", OcaMatrix.setCurrentXY.erased),
+      ("getSize", OcaMatrix.getSize.erased),
+      ("getMembers", OcaMatrix.getMembers.erased),
+      ("getProxy", OcaMatrix.getProxy.erased),
+      ("getMember", OcaMatrix.getMember.erased),
+      ("setMember", OcaMatrix.setMember.erased),
+      ("setCurrentXYLock", OcaMatrix.setCurrentXYLock.erased),
+      ("unlockCurrent", OcaMatrix.unlockCurrent.erased),
+    ]),
+    (OcaMediaClock3.self, [
+      ("getCurrentRate", OcaMediaClock3.getCurrentRate.erased),
+      ("setCurrentRate", OcaMediaClock3.setCurrentRate.erased),
+    ]),
+    (OcaMediaTransportApplication.self, [
+      ("addPort", OcaMediaTransportApplication.addPort.erased),
+      ("deletePort", OcaMediaTransportApplication.deletePort.erased),
+      ("getPortName", OcaMediaTransportApplication.getPortName.erased),
+      ("setPortName", OcaMediaTransportApplication.setPortName.erased),
+      ("setPortClockMapEntry", OcaMediaTransportApplication.setPortClockMapEntry.erased),
+      ("deletePortClockMapEntry", OcaMediaTransportApplication.deletePortClockMapEntry.erased),
+      ("getPortClockMapEntry", OcaMediaTransportApplication.getPortClockMapEntry.erased),
+      ("getMaxEndpointCounts", OcaMediaTransportApplication.getMaxEndpointCounts.erased),
+      ("getMediaStreamModeCapability", OcaMediaTransportApplication.getMediaStreamModeCapability.erased),
+      ("getEndpoint", OcaMediaTransportApplication.getEndpoint.erased),
+      ("getEndpointStatus", OcaMediaTransportApplication.getEndpointStatus.erased),
+      ("addEndpoint", OcaMediaTransportApplication.addEndpoint.erased),
+      ("deleteEndpoint", OcaMediaTransportApplication.deleteEndpoint.erased),
+      ("applyEndpointCommand", OcaMediaTransportApplication.applyEndpointCommand.erased),
+      ("setEndpointUserLabel", OcaMediaTransportApplication.setEndpointUserLabel.erased),
+      ("setEndpointMediaStreamMode", OcaMediaTransportApplication.setEndpointMediaStreamMode.erased),
+      ("setEndpointChannelMap", OcaMediaTransportApplication.setEndpointChannelMap.erased),
+      ("setEndpointAlignmentLevel", OcaMediaTransportApplication.setEndpointAlignmentLevel.erased),
+      ("getEndpointTimeSource", OcaMediaTransportApplication.getEndpointTimeSource.erased),
+      ("setEndpointAdaptationData", OcaMediaTransportApplication.setEndpointAdaptationData.erased),
+      ("getEndpointCounterSet", OcaMediaTransportApplication.getEndpointCounterSet.erased),
+      ("getEndpointCounter", OcaMediaTransportApplication.getEndpointCounter.erased),
+      ("attachEndpointCounterNotifier", OcaMediaTransportApplication.attachEndpointCounterNotifier.erased),
+      ("detachEndpointCounterNotifier", OcaMediaTransportApplication.detachEndpointCounterNotifier.erased),
+      ("resetEndpointCounterSet", OcaMediaTransportApplication.resetEndpointCounterSet.erased),
+    ]),
+    (OcaMediaTransportNetwork.self, [
+      ("getPortName", OcaMediaTransportNetwork.getPortName.erased),
+      ("setPortName", OcaMediaTransportNetwork.setPortName.erased),
+      ("getSourceConnectors", OcaMediaTransportNetwork.getSourceConnectors.erased),
+      ("getSourceConnector", OcaMediaTransportNetwork.getSourceConnector.erased),
+      ("getSinkConnectors", OcaMediaTransportNetwork.getSinkConnectors.erased),
+      ("getSinkConnector", OcaMediaTransportNetwork.getSinkConnector.erased),
+      ("getConnectorsStatuses", OcaMediaTransportNetwork.getConnectorsStatuses.erased),
+      ("getConnectorStatus", OcaMediaTransportNetwork.getConnectorStatus.erased),
+      ("addSourceConnector", OcaMediaTransportNetwork.addSourceConnector.erased),
+      ("addSinkConnector", OcaMediaTransportNetwork.addSinkConnector.erased),
+      ("controlConnector", OcaMediaTransportNetwork.controlConnector.erased),
+      ("setSourceConnectorPinMap", OcaMediaTransportNetwork.setSourceConnectorPinMap.erased),
+      ("setSinkConnectorPinMap", OcaMediaTransportNetwork.setSinkConnectorPinMap.erased),
+      ("setConnectorConnection", OcaMediaTransportNetwork.setConnectorConnection.erased),
+      ("setConnectorCoding", OcaMediaTransportNetwork.setConnectorCoding.erased),
+      ("setConnectorAlignmentLevel", OcaMediaTransportNetwork.setConnectorAlignmentLevel.erased),
+      ("setConnectorAlignmentGain", OcaMediaTransportNetwork.setConnectorAlignmentGain.erased),
+      ("deleteConnector", OcaMediaTransportNetwork.deleteConnector.erased),
+    ]),
+    (OcaMediaTransportSessionAgent.self, [
+      ("getSession", OcaMediaTransportSessionAgent.getSession.erased),
+      ("addSession", OcaMediaTransportSessionAgent.addSession.erased),
+      ("configureSession", OcaMediaTransportSessionAgent.configureSession.erased),
+      ("deleteSession", OcaMediaTransportSessionAgent.deleteSession.erased),
+      ("resetSession", OcaMediaTransportSessionAgent.resetSession.erased),
+      ("setStreamingEnabled", OcaMediaTransportSessionAgent.setStreamingEnabled.erased),
+      ("startStreaming", OcaMediaTransportSessionAgent.startStreaming.erased),
+      ("stopStreaming", OcaMediaTransportSessionAgent.stopStreaming.erased),
+      ("getSessionStatus", OcaMediaTransportSessionAgent.getSessionStatus.erased),
+      ("addConnection", OcaMediaTransportSessionAgent.addConnection.erased),
+      ("configureConnection", OcaMediaTransportSessionAgent.configureConnection.erased),
+      ("deleteConnection", OcaMediaTransportSessionAgent.deleteConnection.erased),
+      ("deleteConnections", OcaMediaTransportSessionAgent.deleteConnections.erased),
+    ]),
+    (OcaNetworkApplication.self, [
+      ("getPath", OcaNetworkApplication.getPath.erased),
+      ("getCounter", OcaNetworkApplication.getCounter.erased),
+      ("attachCounterNotifier", OcaNetworkApplication.attachCounterNotifier.erased),
+      ("detachCounterNotifier", OcaNetworkApplication.detachCounterNotifier.erased),
+      ("resetCounters", OcaNetworkApplication.resetCounters.erased),
+    ]),
+    (OcaNetworkInterface.self, [
+      ("getPath", OcaNetworkInterface.getPath.erased),
+      ("getCounter", OcaNetworkInterface.getCounter.erased),
+      ("attachCounterNotifier", OcaNetworkInterface.attachCounterNotifier.erased),
+      ("detachCounterNotifier", OcaNetworkInterface.detachCounterNotifier.erased),
+      ("resetCounters", OcaNetworkInterface.resetCounters.erased),
+      ("applyCommand", OcaNetworkInterface.applyCommand.erased),
+    ]),
+    (OcaPowerManager.self, [
+      ("exchangePowerSupply", OcaPowerManager.exchangePowerSupply.erased),
+    ]),
+    (OcaPowerSensor.self, [
+      ("getReading", OcaPowerSensor.getReading.erased),
+    ]),
+    (OcaRoot.self, [
+      ("getLockable", OcaRoot.getLockable.erased),
+      ("getRole", OcaRoot.getRole.erased),
+      ("getLockState", OcaRoot.getLockState.erased),
+      ("getClassIdentification", OcaRoot.getClassIdentification.erased),
+      ("setLockNoReadWrite", OcaRoot.setLockNoReadWrite.erased),
+      ("unlock", OcaRoot.unlock.erased),
+      ("setLockNoWrite", OcaRoot.setLockNoWrite.erased),
+    ]),
+    (OcaSecurityManager.self, [
+      ("enableControlSecurity", OcaSecurityManager.enableControlSecurity.erased),
+      ("disableControlSecurity", OcaSecurityManager.disableControlSecurity.erased),
+      ("changePreSharedKey", OcaSecurityManager.changePreSharedKey.erased),
+      ("addPreSharedKey", OcaSecurityManager.addPreSharedKey.erased),
+      ("deletePreSharedKey", OcaSecurityManager.deletePreSharedKey.erased),
+    ]),
+    (OcaSignalGenerator.self, [
+      ("start", OcaSignalGenerator.start.erased),
+      ("stop", OcaSignalGenerator.stop.erased),
+      ("setMultiple", OcaSignalGenerator.setMultiple.erased),
+    ]),
+    (OcaSubscriptionManager.self, [
+      ("addSubscription", OcaSubscriptionManager.addSubscription.erased),
+      ("removeSubscription", OcaSubscriptionManager.removeSubscription.erased),
+      ("disableNotifications", OcaSubscriptionManager.disableNotifications.erased),
+      ("reenableNotifications", OcaSubscriptionManager.reenableNotifications.erased),
+      ("addPropertyChangeSubscription", OcaSubscriptionManager.addPropertyChangeSubscription.erased),
+      ("removePropertyChangeSubscription", OcaSubscriptionManager.removePropertyChangeSubscription.erased),
+      ("getMaximumSubscriberContextLength", OcaSubscriptionManager.getMaximumSubscriberContextLength.erased),
+      ("addSubscription2", OcaSubscriptionManager.addSubscription2.erased),
+      ("removeSubscription2", OcaSubscriptionManager.removeSubscription2.erased),
+      ("addPropertyChangeSubscription2", OcaSubscriptionManager.addPropertyChangeSubscription2.erased),
+      ("removePropertyChangeSubscription2", OcaSubscriptionManager.removePropertyChangeSubscription2.erased),
+      ("addSubscription2List", OcaSubscriptionManager.addSubscription2List.erased),
+      ("removeSubscription2List", OcaSubscriptionManager.removeSubscription2List.erased),
+      ("addPropertyChangeSubscription2List", OcaSubscriptionManager.addPropertyChangeSubscription2List.erased),
+      ("removePropertyChangeSubscription2List", OcaSubscriptionManager.removePropertyChangeSubscription2List.erased),
+    ]),
+    (OcaTimeSource.self, [
+      ("reset", OcaTimeSource.reset.erased),
+    ]),
+    (OcaWorker.self, [
+      ("addPort", OcaWorker.addPort.erased),
+      ("deletePort", OcaWorker.deletePort.erased),
+      ("getPortName", OcaWorker.getPortName.erased),
+      ("setPortName", OcaWorker.setPortName.erased),
+      ("getPath", OcaWorker.getPath.erased),
+      ("getPortClockMapEntry", OcaWorker.getPortClockMapEntry.erased),
+      ("setPortClockMapEntry", OcaWorker.setPortClockMapEntry.erased),
+      ("deletePortClockMapEntry", OcaWorker.deletePortClockMapEntry.erased),
+    ]),
+  ]
+}

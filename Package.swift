@@ -1,6 +1,7 @@
 // swift-tools-version:6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
+import CompilerPluginSupport
 import Foundation
 import PackageDescription
 
@@ -223,6 +224,8 @@ let CommonPackageDependencies: [Package.Dependency] = [
   .package(url: "https://github.com/Flight-School/AnyCodable", from: "0.6.7"),
   .package(url: "https://github.com/1024jp/GzipSwift", from: "6.1.0"),
   .package(url: "https://github.com/stephencelis/SQLite.swift.git", from: "0.16.0"),
+  // 602 is what swift-binary-parsing pins; the range lets a newer graph take a newer one
+  .package(url: "https://github.com/swiftlang/swift-syntax.git", "602.0.0"..<"605.0.0"),
 ]
 
 let CommonProducts: [Product] = [
@@ -289,10 +292,20 @@ let CommonTargets: [Target] = [
       .enableExperimentalFeature("StrictConcurrency"),
     ]
   ),
+  // the compiler plugin behind @OcaDeviceMethod; built for the build host
+  .macro(
+    name: "SwiftOCAMacros",
+    dependencies: [
+      .product(name: "SwiftSyntax", package: "swift-syntax"),
+      .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+      .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+    ]
+  ),
   .target(
     name: "SwiftOCADevice",
     dependencies: [
       "SwiftOCA",
+      "SwiftOCAMacros",
       .product(name: "Logging", package: "swift-log"),
       .product(
         name: "Gzip",
@@ -385,6 +398,13 @@ let CommonTargets: [Target] = [
     linkerSettings: [] + ASANLinkerSettings
   ),
   .testTarget(
+    name: "SwiftOCAMacrosTests",
+    dependencies: [
+      "SwiftOCAMacros",
+      .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+    ]
+  ),
+  .testTarget(
     name: "SwiftOCADeviceTests",
     dependencies: [
       .target(name: "SwiftOCADevice"),
@@ -404,6 +424,8 @@ let CommonTargets: [Target] = [
         condition: .when(platforms: [.macOS, .iOS, .linux], traits: ["NonEmbeddedBuild"])
       ),
     ],
+    // the golden device method statuses, read and rewritten by path from the test source
+    resources: [.copy("Resources")],
     swiftSettings: [
       .unsafeFlags(ASANSwiftFlags),
     ],

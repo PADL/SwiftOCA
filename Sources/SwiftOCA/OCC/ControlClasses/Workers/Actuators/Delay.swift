@@ -45,13 +45,16 @@ open class OcaDelayExtended: OcaDelay, @unchecked Sendable {
   )
   public var delayValue: OcaBoundedProperty<OcaDelayValue>.PropertyValue
 
+  public static let getDelayValueConverted = OcaMethodDescription<OcaDelayUnit, OcaDelayValue>(
+    "5.3",
+    name: "GetDelayValueConverted",
+    parameterNames: ["UoM"],
+    resultNames: ["Value"]
+  )
+
   public func getDelayValue(convertedTo unitOfMeasure: OcaDelayUnit) async throws
     -> OcaDelayValue
   {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("5.3"),
-      parameters: unitOfMeasure,
-      parameterNames: ["UoM"]
-    )
+    try await invoke(Self.getDelayValueConverted, unitOfMeasure)
   }
 }

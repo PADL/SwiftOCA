@@ -36,20 +36,21 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
   )
   public var ports: OcaListProperty<OcaPort>.PropertyValue
 
+  public static let getPortName = OcaMethodDescription<OcaGetPortNameParameters, OcaString>(
+    "3.3",
+    name: "GetPortName",
+    resultNames: ["Name"]
+  )
+
   public func get(portID: OcaPortID) async throws -> OcaString {
-    let params = OcaGetPortNameParameters(portID: portID)
-    return try await sendCommandRrq(
-      methodID: OcaMethodID("3.3"),
-      parameters: params
-    )
+    try await invoke(Self.getPortName, .init(portID: portID))
   }
 
+  public static let setPortName =
+    OcaMethodDescription<OcaSetPortNameParameters, Void>("3.4", name: "SetPortName")
+
   public func set(portID: OcaPortID, name: OcaString) async throws {
-    let params = OcaSetPortNameParameters(portID: portID, name: name)
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.4"),
-      parameters: params
-    )
+    try await invoke(Self.setPortName, .init(portID: portID, name: name))
   }
 
   @OcaProperty(
@@ -90,44 +91,74 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
   )
   public var alignmentGain: OcaBoundedProperty<OcaDB>.PropertyValue
 
+  public static let getSourceConnectors = OcaMethodDescription<Void, [OcaMediaSourceConnector]>(
+    "3.9",
+    name: "GetSourceConnectors",
+    resultNames: ["Connectors"]
+  )
+
   public func getSourceConnectors() async throws -> [OcaMediaSourceConnector] {
-    try await sendCommandRrq(methodID: OcaMethodID("3.9"))
+    try await invoke(Self.getSourceConnectors)
   }
+
+  public static let getSourceConnector =
+    OcaMethodDescription<OcaMediaConnectorID, OcaMediaSourceConnector>(
+      "3.10",
+      name: "GetSourceConnector",
+      parameterNames: ["ID"],
+      resultNames: ["Connector"]
+    )
 
   public func getSourceConnector(_ id: OcaMediaConnectorID) async throws
     -> OcaMediaSourceConnector
   {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.10"),
-      parameters: id,
-      parameterNames: ["ID"]
-    )
+    try await invoke(Self.getSourceConnector, id)
   }
+
+  public static let getSinkConnectors = OcaMethodDescription<Void, [OcaMediaSinkConnector]>(
+    "3.11",
+    name: "GetSinkConnectors",
+    resultNames: ["Connectors"]
+  )
 
   public func getSinkConnectors() async throws -> [OcaMediaSinkConnector] {
-    try await sendCommandRrq(methodID: OcaMethodID("3.11"))
+    try await invoke(Self.getSinkConnectors)
   }
+
+  public static let getSinkConnector =
+    OcaMethodDescription<OcaMediaConnectorID, OcaMediaSinkConnector>(
+      "3.12",
+      name: "GetSinkConnector",
+      parameterNames: ["ID"],
+      resultNames: ["Connector"]
+    )
 
   public func getSinkConnector(_ id: OcaMediaConnectorID) async throws -> OcaMediaSinkConnector {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.12"),
-      parameters: id,
-      parameterNames: ["ID"]
-    )
+    try await invoke(Self.getSinkConnector, id)
   }
 
+  public static let getConnectorsStatuses = OcaMethodDescription<Void, [OcaMediaConnectorStatus]>(
+    "3.13",
+    name: "GetConnectorsStatuses",
+    resultNames: ["Statuses"]
+  )
+
   public func getConnectorsStatuses() async throws -> [OcaMediaConnectorStatus] {
-    try await sendCommandRrq(methodID: OcaMethodID("3.13"))
+    try await invoke(Self.getConnectorsStatuses)
   }
+
+  public static let getConnectorStatus =
+    OcaMethodDescription<OcaMediaConnectorID, OcaMediaConnectorStatus>(
+      "3.14",
+      name: "GetConnectorStatus",
+      parameterNames: ["ConnectorID"],
+      resultNames: ["Status"]
+    )
 
   public func getConnectorStatus(_ id: OcaMediaConnectorID) async throws
     -> OcaMediaConnectorStatus
   {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.14"),
-      parameters: id,
-      parameterNames: ["ConnectorID"]
-    )
+    try await invoke(Self.getConnectorStatus, id)
   }
 
   public struct AddSourceConnectorParameters: OcaParametersReflectable {
@@ -135,15 +166,21 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     public let initialStatus: OcaMediaConnectorState
   }
 
+  public static let addSourceConnector =
+    OcaMethodDescription<AddSourceConnectorParameters, OcaMediaSourceConnector>(
+      "3.15",
+      name: "AddSourceConnector",
+      resultNames: ["Connector"]
+    )
+
   public func addSource(
     connector: inout OcaMediaSourceConnector,
     initialStatus: OcaMediaConnectorState
   ) async throws {
-    let parameters = AddSourceConnectorParameters(
-      connector: connector,
-      initialStatus: initialStatus
+    connector = try await invoke(
+      Self.addSourceConnector,
+      .init(connector: connector, initialStatus: initialStatus)
     )
-    connector = try await sendCommandRrq(methodID: OcaMethodID("3.15"), parameters: parameters)
   }
 
   public struct AddSinkConnectorParameters: OcaParametersReflectable {
@@ -151,15 +188,21 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     public var connector: OcaMediaSinkConnector
   }
 
+  public static let addSinkConnector =
+    OcaMethodDescription<AddSinkConnectorParameters, OcaMediaSinkConnector>(
+      "3.16",
+      name: "AddSinkConnector",
+      resultNames: ["Connector"]
+    )
+
   public func addSink(
     initialStatus: OcaMediaConnectorState,
     connector: inout OcaMediaSinkConnector
   ) async throws {
-    let parameters = AddSinkConnectorParameters(
-      initialStatus: initialStatus,
-      connector: connector
+    connector = try await invoke(
+      Self.addSinkConnector,
+      .init(initialStatus: initialStatus, connector: connector)
     )
-    connector = try await sendCommandRrq(methodID: OcaMethodID("3.16"), parameters: parameters)
   }
 
   public struct ControlConnectorParameters: OcaParametersReflectable {
@@ -167,12 +210,14 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     public let command: OcaMediaConnectorCommand
   }
 
+  public static let controlConnector =
+    OcaMethodDescription<ControlConnectorParameters, Void>("3.17", name: "ControlConnector")
+
   public func controlConnector(
     _ id: OcaMediaConnectorID,
     command: OcaMediaConnectorCommand
   ) async throws {
-    let parameters = ControlConnectorParameters(connectorID: id, command: command)
-    try await sendCommandRrq(methodID: OcaMethodID("3.17"), parameters: parameters)
+    try await invoke(Self.controlConnector, .init(connectorID: id, command: command))
   }
 
   public struct SetSourceConnectorPinMapParameters: OcaParametersReflectable {
@@ -180,12 +225,17 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     public let channelPinMap: [OcaUint16: OcaPortID]
   }
 
+  public static let setSourceConnectorPinMap =
+    OcaMethodDescription<SetSourceConnectorPinMapParameters, Void>(
+      "3.18",
+      name: "SetSourceConnectorPinMap"
+    )
+
   public func setSourceConnector(
     _ id: OcaMediaConnectorID,
     pinMap: [OcaUint16: OcaPortID]
   ) async throws {
-    let parameters = SetSourceConnectorPinMapParameters(connectorID: id, channelPinMap: pinMap)
-    try await sendCommandRrq(methodID: OcaMethodID("3.18"), parameters: parameters)
+    try await invoke(Self.setSourceConnectorPinMap, .init(connectorID: id, channelPinMap: pinMap))
   }
 
   public struct SetSinkConnectorPinMapParameters: OcaParametersReflectable {
@@ -193,12 +243,17 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     public let channelPinMap: [OcaUint16: [OcaPortID]]
   }
 
+  public static let setSinkConnectorPinMap =
+    OcaMethodDescription<SetSinkConnectorPinMapParameters, Void>(
+      "3.19",
+      name: "SetSinkConnectorPinMap"
+    )
+
   public func setSinkConnector(
     _ id: OcaMediaConnectorID,
     pinMap: [OcaUint16: [OcaPortID]]
   ) async throws {
-    let parameters = SetSinkConnectorPinMapParameters(connectorID: id, channelPinMap: pinMap)
-    try await sendCommandRrq(methodID: OcaMethodID("3.19"), parameters: parameters)
+    try await invoke(Self.setSinkConnectorPinMap, .init(connectorID: id, channelPinMap: pinMap))
   }
 
   public struct SetConnectorConnectionParameters: OcaParametersReflectable {
@@ -206,12 +261,17 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     public let connection: OcaMediaConnection
   }
 
+  public static let setConnectorConnection =
+    OcaMethodDescription<SetConnectorConnectionParameters, Void>(
+      "3.20",
+      name: "SetConnectorConnection"
+    )
+
   public func setConnector(
     _ id: OcaMediaConnectorID,
     connection: OcaMediaConnection
   ) async throws {
-    let parameters = SetConnectorConnectionParameters(connectorID: id, connection: connection)
-    try await sendCommandRrq(methodID: OcaMethodID("3.20"), parameters: parameters)
+    try await invoke(Self.setConnectorConnection, .init(connectorID: id, connection: connection))
   }
 
   public struct SetConnectorCodingParameters: OcaParametersReflectable {
@@ -219,9 +279,11 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     public let coding: OcaMediaCoding
   }
 
+  public static let setConnectorCoding =
+    OcaMethodDescription<SetConnectorCodingParameters, Void>("3.21", name: "SetConnectorCoding")
+
   public func setConnector(_ id: OcaMediaConnectorID, coding: OcaMediaCoding) async throws {
-    let parameters = SetConnectorCodingParameters(connectorID: id, coding: coding)
-    try await sendCommandRrq(methodID: OcaMethodID("3.21"), parameters: parameters)
+    try await invoke(Self.setConnectorCoding, .init(connectorID: id, coding: coding))
   }
 
   public struct SetConnectorAlignmentLevelParameters: OcaParametersReflectable {
@@ -229,9 +291,14 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     public let level: OcaDBFS
   }
 
+  public static let setConnectorAlignmentLevel =
+    OcaMethodDescription<SetConnectorAlignmentLevelParameters, Void>(
+      "3.22",
+      name: "SetConnectorAlignmentLevel"
+    )
+
   public func setConnector(_ id: OcaMediaConnectorID, alignmentLevel: OcaDBFS) async throws {
-    let parameters = SetConnectorAlignmentLevelParameters(connectorID: id, level: alignmentLevel)
-    try await sendCommandRrq(methodID: OcaMethodID("3.22"), parameters: parameters)
+    try await invoke(Self.setConnectorAlignmentLevel, .init(connectorID: id, level: alignmentLevel))
   }
 
   public struct SetConnectorAlignmentGainParameters: OcaParametersReflectable {
@@ -239,16 +306,23 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
     public let gain: OcaDB
   }
 
+  public static let setConnectorAlignmentGain =
+    OcaMethodDescription<SetConnectorAlignmentGainParameters, Void>(
+      "3.23",
+      name: "SetConnectorAlignmentGain"
+    )
+
   public func setConnector(_ id: OcaMediaConnectorID, alignmentGain: OcaDB) async throws {
-    let parameters = SetConnectorAlignmentGainParameters(connectorID: id, gain: alignmentGain)
-    try await sendCommandRrq(methodID: OcaMethodID("3.23"), parameters: parameters)
+    try await invoke(Self.setConnectorAlignmentGain, .init(connectorID: id, gain: alignmentGain))
   }
 
+  public static let deleteConnector = OcaMethodDescription<OcaMediaConnectorID, Void>(
+    "3.24",
+    name: "DeleteConnector",
+    parameterNames: ["ID"]
+  )
+
   public func deleteConnector(_ id: OcaMediaConnectorID) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.24"),
-      parameters: id,
-      parameterNames: ["ID"]
-    )
+    try await invoke(Self.deleteConnector, id)
   }
 }

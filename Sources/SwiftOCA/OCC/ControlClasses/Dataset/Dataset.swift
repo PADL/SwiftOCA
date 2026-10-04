@@ -69,12 +69,15 @@ Sendable {
     }
   }
 
-  public func openRead(lockState: OcaLockState) async throws -> (OcaUint64, OcaIOSessionHandle) {
-    let result: OpenReadParameters = try await sendCommandRrq(
-      methodID: OcaMethodID("2.1"),
-      parameters: lockState,
+  @_spi(SwiftOCAPrivate) public static let openRead =
+    OcaMethodDescription<OcaLockState, OpenReadParameters>(
+      "2.1",
+      name: "OpenRead",
       parameterNames: ["RequestedLockState"]
     )
+
+  public func openRead(lockState: OcaLockState) async throws -> (OcaUint64, OcaIOSessionHandle) {
+    let result = try await invoke(Self.openRead, lockState)
     return (result.datasetSize, result.handle)
   }
 
@@ -89,21 +92,23 @@ Sendable {
     }
   }
 
-  public func openWrite(lockState: OcaLockState) async throws -> (OcaUint64, OcaIOSessionHandle) {
-    let result: OpenWriteParameters = try await sendCommandRrq(
-      methodID: OcaMethodID("2.2"),
-      parameters: lockState,
+  @_spi(SwiftOCAPrivate) public static let openWrite =
+    OcaMethodDescription<OcaLockState, OpenWriteParameters>(
+      "2.2",
+      name: "OpenWrite",
       parameterNames: ["RequestedLockState"]
     )
+
+  public func openWrite(lockState: OcaLockState) async throws -> (OcaUint64, OcaIOSessionHandle) {
+    let result = try await invoke(Self.openWrite, lockState)
     return (result.maxPartSize, result.handle)
   }
 
+  public static let close =
+    OcaMethodDescription<OcaIOSessionHandle, Void>("2.3", name: "Close", parameterNames: ["Handle"])
+
   public func close(handle: OcaIOSessionHandle) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.3"),
-      parameters: handle,
-      parameterNames: ["Handle"]
-    )
+    try await invoke(Self.close, handle)
   }
 
   @_spi(SwiftOCAPrivate)
@@ -130,14 +135,17 @@ Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let read =
+    OcaMethodDescription<ReadParameters, ReadResultParameters>("2.4", name: "Read")
+
   public func read(
     handle: OcaIOSessionHandle,
     position: OcaUint64,
     partSize: OcaUint64
   ) async throws -> (OcaBoolean, OcaLongBlob) {
-    let result: ReadResultParameters = try await sendCommandRrq(
-      methodID: OcaMethodID("2.4"),
-      parameters: ReadParameters(handle: handle, position: position, partSize: partSize)
+    let result = try await invoke(
+      Self.read,
+      .init(handle: handle, position: position, partSize: partSize)
     )
     return (result.endOfData, result.part)
   }
@@ -149,23 +157,22 @@ Sendable {
     public let part: OcaLongBlob
   }
 
+  @_spi(SwiftOCAPrivate) public static let write =
+    OcaMethodDescription<WriteParameters, Void>("2.5", name: "Write")
+
   public func write(
     handle: OcaIOSessionHandle,
     position: OcaUint64,
     part: OcaLongBlob
   ) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.5"),
-      parameters: WriteParameters(handle: handle, position: position, part: part)
-    )
+    try await invoke(Self.write, .init(handle: handle, position: position, part: part))
   }
 
+  public static let clear =
+    OcaMethodDescription<OcaIOSessionHandle, Void>("2.6", name: "Clear", parameterNames: ["Handle"])
+
   public func clear(handle: OcaIOSessionHandle) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.6"),
-      parameters: handle,
-      parameterNames: ["Handle"]
-    )
+    try await invoke(Self.clear, handle)
   }
 
   @_spi(SwiftOCAPrivate)
@@ -174,8 +181,11 @@ Sendable {
     public let maxSize: OcaUint64
   }
 
+  @_spi(SwiftOCAPrivate) public static let getDatasetSizes =
+    OcaMethodDescription<Void, GetDataSetSizesParameters>("2.15", name: "GetDatasetSizes")
+
   public func getDataSetSizes() async throws -> (OcaUint64, OcaUint64) {
-    let result: GetDataSetSizesParameters = try await sendCommandRrq(methodID: OcaMethodID("2.15"))
+    let result = try await invoke(Self.getDatasetSizes)
     return (result.currentSize, result.maxSize)
   }
 }

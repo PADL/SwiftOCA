@@ -31,10 +31,10 @@ Sendable {
   )
   public var owner: OcaProperty<OcaONo>.PropertyValue
 
+  public static let getPath = OcaMethodDescription<Void, OcaGetPathParameters>("2.4", name: "GetPath")
+
   public var path: (OcaNamePath, OcaONoPath) {
-    get async throws {
-      try await getPath(methodID: OcaMethodID("2.4"))
-    }
+    get async throws { try await getPath(Self.getPath) }
   }
 }
 
