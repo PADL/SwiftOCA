@@ -77,9 +77,24 @@ package enum Ocp2Naming {
     return names
   }
 
+  /// Stored properties of `type` with their types, in declaration order; uncached, for
+  /// callers that build a table once.
+  package static func fields(of type: Any.Type) -> [(name: String, type: Any.Type)] {
+    var fields = [(name: String, type: Any.Type)]()
+    _forEachField(of: type) { name, _, fieldType, _ in
+      var s = String(cString: name)
+      while s.hasPrefix("_") {
+        s = String(s.dropFirst())
+      }
+      fields.append((s, fieldType))
+      return true
+    }
+    return fields
+  }
+
   /// The parameter names a top-level parameter object uses: explicit names first,
   /// then names derived from the type's fields.
-  static func parameterNames(
+  package static func parameterNames(
     explicit: [String]?,
     fieldNames: [String]
   ) -> [String] {

@@ -104,7 +104,7 @@ package extension Decoder {
 }
 
 public protocol Ocp1LongList {}
-public protocol OcaParametersReflectable: Codable {}
+public protocol OcaParametersReflectable: Codable, Sendable {}
 
 private let _parameterCountCache = Mutex<[ObjectIdentifier: OcaUint8]>([:])
 
