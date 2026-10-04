@@ -38,8 +38,10 @@ public extension OcaRoot {
     }
   }
 
+  /// `names` are the OCP.2 parameter names, where the type's field names are not them.
   nonisolated static func decodeCommand<U: Decodable>(
-    _ command: Ocp1Command
+    _ command: Ocp1Command,
+    names: [String]? = nil
   ) throws -> U {
     switch command.parameters.format {
     case .ocp1:
@@ -53,7 +55,11 @@ public extension OcaRoot {
     case .ocp2:
       #if NonEmbeddedBuild
       do {
-        return try Ocp2Decoder().decodeParameters(U.self, from: command.parameters.ocp2Parameters)
+        return try Ocp2Decoder().decodeParameters(
+          U.self,
+          from: command.parameters.ocp2Parameters,
+          parameterNames: names
+        )
       } catch let error as Ocp1Error {
         throw error
       } catch {
