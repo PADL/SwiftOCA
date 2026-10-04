@@ -32,10 +32,10 @@ Sendable {
   )
   public var owner: OcaProperty<OcaONo>.PropertyValue
 
+  public static let getPath = OcaMethodDescriptor<Void, OcaGetPathParameters>("2.4", name: "GetPath")
+
   public var path: (OcaNamePath, OcaONoPath) {
-    get async throws {
-      try await getPath(methodID: OcaMethodID("2.4"))
-    }
+    get async throws { try await getPath(Self.getPath) }
   }
 
   @OcaProperty(
@@ -72,31 +72,45 @@ Sendable {
   )
   public var counterSet: OcaProperty<OcaCounterSet>.PropertyValue
 
+  public static let getCounter = OcaMethodDescriptor<OcaID16, OcaCounter>(
+    "2.11",
+    name: "GetCounter",
+    parameterNames: ["CounterID"],
+    resultNames: ["Counter"]
+  )
+
   public func get(counter id: OcaID16) async throws -> OcaCounter {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.11"),
-      parameters: id,
-      parameterNames: ["CounterID"]
-    )
+    try await invoke(Self.getCounter, id)
   }
+
+  // the model names the record's `id` CounterID here
+  public static let attachCounterNotifier =
+    OcaMethodDescriptor<OcaCounterNotifierParameters, Void>(
+      "2.12",
+      name: "AttachCounterNotifier",
+      parameterNames: ["CounterID", "ONo"]
+    )
 
   public func attach(counter id: OcaID16, to oNo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.12"),
-      parameters: OcaCounterNotifierParameters(id: id, oNo: oNo)
-    )
+    try await invoke(Self.attachCounterNotifier, .init(id: id, oNo: oNo))
   }
 
-  public func detach(counter id: OcaID16, from oNo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("2.13"),
-      parameters: OcaCounterNotifierParameters(id: id, oNo: oNo)
+  public static let detachCounterNotifier =
+    OcaMethodDescriptor<OcaCounterNotifierParameters, Void>(
+      "2.13",
+      name: "DetachCounterNotifier",
+      parameterNames: ["CounterID", "ONo"]
     )
+
+  public func detach(counter id: OcaID16, from oNo: OcaONo) async throws {
+    try await invoke(Self.detachCounterNotifier, .init(id: id, oNo: oNo))
   }
+
+  public static let resetCounters = OcaMethodDescriptor<Void, Void>("2.14", name: "ResetCounters")
 
   /// Resets every counter in the counterset.
   public func resetCounters() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("2.14"))
+    try await invoke(Self.resetCounters)
   }
 }
 

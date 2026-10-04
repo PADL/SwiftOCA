@@ -560,12 +560,6 @@ extension OcaRoot {
     let path = try await invoke(method)
     return (path.rolePath, path.oNoPath)
   }
-
-  func getPath(methodID: OcaMethodID) async throws -> (OcaNamePath, OcaONoPath) {
-    let responseParams: OcaGetPathParameters
-    responseParams = try await sendCommandRrq(methodID: methodID)
-    return (responseParams.rolePath, responseParams.oNoPath)
-  }
 }
 
 public struct OcaGetPortNameParameters: OcaParametersReflectable {
