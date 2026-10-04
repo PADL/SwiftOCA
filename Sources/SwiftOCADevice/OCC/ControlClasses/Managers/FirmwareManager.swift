@@ -36,12 +36,12 @@ open class OcaFirmwareManager: OcaManager {
     )
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.startUpdateProcess, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.startUpdateProcess)
   open func startUpdateProcess(controller: OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.beginActiveImageUpdate, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.beginActiveImageUpdate)
   open func beginActiveImageUpdate(
     component: OcaComponent,
     controller: OcaController
@@ -49,7 +49,7 @@ open class OcaFirmwareManager: OcaManager {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.addImageData, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.addImageData)
   open func addImageData(
     id: OcaUint32,
     _ imageData: OcaBlob,
@@ -63,12 +63,12 @@ open class OcaFirmwareManager: OcaManager {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.endActiveImageUpdate, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.endActiveImageUpdate)
   open func endActiveImageUpdate(controller: OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.beginPassiveComponentUpdate, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.beginPassiveComponentUpdate)
   open func beginPassiveComponentUpdate(
     component: OcaComponent,
     serverAddress: OcaNetworkAddress,
@@ -78,7 +78,7 @@ open class OcaFirmwareManager: OcaManager {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.endUpdateProcess, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFirmwareManager.endUpdateProcess)
   open func endUpdateProcess(controller: OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }

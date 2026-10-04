@@ -320,7 +320,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
 
   /// SetCurrentXY locks the matrix and its proxy, but not the members (AES70-2);
   /// SetCurrentXYLock shares it.
-  @OcaDeviceMethod(SwiftOCA.OcaMatrix.setCurrentXY, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.setCurrentXY)
   private func setCurrentXY(
     _ coordinates: OcaVector2D<OcaMatrixCoordinate>,
     controller: any OcaController
@@ -373,7 +373,7 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   public var portsPerColumn: OcaUint8 = 0
 
   /// The size is derived from the grid, so no property holds it.
-  @OcaDeviceMethod(SwiftOCA.OcaMatrix.getSize, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.getSize)
   func getSize(from controller: any OcaController)
     -> SwiftOCA.OcaMatrix.MatrixSize<OcaMatrixCoordinate>
   {
@@ -384,17 +384,17 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     return .init(xSize: x, ySize: y, minXSize: x, maxXSize: x, minYSize: y, maxYSize: y)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMatrix.getMembers, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.getMembers)
   func getMembers(from controller: any OcaController) -> OcaArray2D<OcaONo> {
     memberObjectNumbers
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMatrix.getMember, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.getMember)
   func getMember(_ coordinates: OcaVector2D<OcaMatrixCoordinate>, from controller: any OcaController) -> OcaONo {
     members[Int(coordinates.x), Int(coordinates.y)]?.objectNumber ?? OcaInvalidONo
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMatrix.setMember, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.setMember)
   func setMember(
     x: OcaMatrixCoordinate,
     y: OcaMatrixCoordinate,
@@ -413,14 +413,14 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
     try await set(member: object, at: OcaVector2D(x: x, y: y))
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMatrix.getProxy, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.getProxy)
   func getProxy(from controller: any OcaController) -> OcaONo {
     proxy.objectNumber
   }
 
   /// SetCurrentXYLock also locks every member of the new current area, failing
   /// without locking any of them if one cannot be locked (AES70-2).
-  @OcaDeviceMethod(SwiftOCA.OcaMatrix.setCurrentXYLock, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMatrix.setCurrentXYLock)
   func setCurrentXYLock(_ coordinates: OcaVector2D<OcaMatrixCoordinate>, from controller: any OcaController) async throws {
     try setCurrentXY(coordinates, controller: controller)
     let members = currentMembers

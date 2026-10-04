@@ -74,7 +74,7 @@ open class OcaApplicationNetwork: OcaRoot, OcaOwnable, OcaLabelRepresentable {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaApplicationNetwork.getPath, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaApplicationNetwork.getPath)
   func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
     await path
   }

@@ -112,7 +112,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
   // MARK: - Overridable behaviour
 
   /// Returns the given descriptor with its IDInternal set to the allocated session ID.
-  @OcaDeviceMethod(Parameters.addSession, access: .write)
+  @OcaDeviceMethod(Parameters.addSession)
   open func add(
     session: OcaMediaTransportSession,
     from controller: any OcaController
@@ -126,17 +126,17 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.deleteSession, access: .write)
+  @OcaDeviceMethod(Parameters.deleteSession)
   open func delete(session id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.resetSession, access: .write)
+  @OcaDeviceMethod(Parameters.resetSession)
   open func reset(session id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.setStreamingEnabled, access: .write)
+  @OcaDeviceMethod(Parameters.setStreamingEnabled)
   open func set(
     session id: OcaMediaTransportSessionID,
     streamingEnabled active: OcaBoolean,
@@ -145,18 +145,18 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.startStreaming, access: .write)
+  @OcaDeviceMethod(Parameters.startStreaming)
   open func startStreaming(session id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.stopStreaming, access: .write)
+  @OcaDeviceMethod(Parameters.stopStreaming)
   open func stopStreaming(session id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
   /// Returns the given descriptor with its ID set to the allocated connection ID.
-  @OcaDeviceMethod(Parameters.addConnection, access: .write)
+  @OcaDeviceMethod(Parameters.addConnection)
   open func add(
     connection: OcaMediaTransportSessionConnection,
     to sessionID: OcaMediaTransportSessionID,
@@ -165,7 +165,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.configureConnection, access: .write)
+  @OcaDeviceMethod(Parameters.configureConnection)
   open func configureConnection(
     sessionID: OcaMediaTransportSessionID,
     connectionID: OcaMediaTransportSessionConnectionID,
@@ -176,7 +176,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.deleteConnection, access: .write)
+  @OcaDeviceMethod(Parameters.deleteConnection)
   open func delete(
     connection connectionID: OcaMediaTransportSessionConnectionID,
     from sessionID: OcaMediaTransportSessionID,
@@ -185,21 +185,21 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.deleteConnections, access: .write)
+  @OcaDeviceMethod(Parameters.deleteConnections)
   open func deleteConnections(session id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
   // MARK: - Command dispatch
 
-  @OcaDeviceMethod(Parameters.getSession, access: .read)
+  @OcaDeviceMethod(Parameters.getSession)
   func getSession(_ id: OcaMediaTransportSessionID, from controller: any OcaController) throws
     -> OcaMediaTransportSession
   {
     try session(id)
   }
 
-  @OcaDeviceMethod(Parameters.configureSession, access: .write)
+  @OcaDeviceMethod(Parameters.configureSession)
   func configureSession(
     _ parameters: Parameters.ConfigureSessionParameters,
     from controller: any OcaController
@@ -212,7 +212,7 @@ open class OcaMediaTransportSessionAgent: OcaAgent {
   }
 
   // the model names GetSessionStatus's output Session, like GetSession's
-  @OcaDeviceMethod(Parameters.getSessionStatus, access: .read)
+  @OcaDeviceMethod(Parameters.getSessionStatus)
   func getSessionStatus(_ id: OcaMediaTransportSessionID, from controller: any OcaController) throws
     -> OcaMediaTransportSessionStatus
   {

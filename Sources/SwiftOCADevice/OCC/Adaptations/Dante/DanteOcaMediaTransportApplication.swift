@@ -81,7 +81,7 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication {
     channelEndpointOperatingStates[id] = blob
   }
 
-  @OcaDeviceMethod(DanteParameters.setChannelEndpoint, access: .write)
+  @OcaDeviceMethod(DanteParameters.setChannelEndpoint)
   open func setChannelEndpoint(
     _ id: OcaID16,
     _ channelEndpoint: OcaChannelEndpoint,
@@ -90,22 +90,22 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(DanteParameters.clearChannelEndpoint, access: .write)
+  @OcaDeviceMethod(DanteParameters.clearChannelEndpoint)
   open func clearChannelEndpoint(_ id: OcaID16, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(DanteParameters.addChannelEndpoint, access: .write)
+  @OcaDeviceMethod(DanteParameters.addChannelEndpoint)
   open func add(channelEndpoint: OcaChannelEndpoint, from controller: any OcaController) async throws -> OcaID16 {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(DanteParameters.deleteChannelEndpoint, access: .write)
+  @OcaDeviceMethod(DanteParameters.deleteChannelEndpoint)
   open func delete(channelEndpoint id: OcaID16, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(DanteParameters.getChannelEndpoint, access: .read)
+  @OcaDeviceMethod(DanteParameters.getChannelEndpoint)
   func getChannelEndpoint(_ id: OcaID16, from controller: any OcaController) throws -> OcaChannelEndpoint {
     try channelEndpoint(id)
   }

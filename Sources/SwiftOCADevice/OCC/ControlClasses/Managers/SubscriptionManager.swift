@@ -399,7 +399,7 @@ public class OcaSubscriptionManager: OcaManager {
   ]
 
   /// The payload of an EV1 subscriber context this device supports, in bytes.
-  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.getMaximumSubscriberContextLength, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.getMaximumSubscriberContextLength)
   private func getMaximumSubscriberContextLength(from controller: any OcaController) -> OcaUint16 {
     4
   }

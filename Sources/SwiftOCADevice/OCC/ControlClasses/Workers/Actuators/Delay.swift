@@ -55,7 +55,7 @@ open class OcaDelayExtended: OcaDelay {
   )
 
   /// unit conversion is device specific; the default implementation is unimplemented
-  @OcaDeviceMethod(SwiftOCA.OcaDelayExtended.getDelayValueConverted, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaDelayExtended.getDelayValueConverted)
   open func getDelayValue(convertedTo unitOfMeasure: OcaDelayUnit, from controller: any OcaController) async throws
     -> OcaDelayValue
   {

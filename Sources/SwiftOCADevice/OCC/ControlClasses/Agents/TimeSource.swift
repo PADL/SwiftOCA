@@ -90,7 +90,7 @@ open class OcaTimeSource: OcaAgent {
   )
   public var parameters: OcaSDPString = ""
 
-  @OcaDeviceMethod(SwiftOCA.OcaTimeSource.reset, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaTimeSource.reset)
   open func reset(from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }

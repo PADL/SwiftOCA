@@ -27,12 +27,12 @@ open class OcaDeviceTimeManager: OcaManager {
     }
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaDeviceTimeManager.getDeviceTimeNTP, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaDeviceTimeManager.getDeviceTimeNTP)
   func getDeviceTimeNTP(from controller: any OcaController) async throws -> OcaTimeNTP {
     try await deviceTimeNTP
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaDeviceTimeManager.getCurrentDeviceTimeSource, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaDeviceTimeManager.getCurrentDeviceTimeSource)
   func getCurrentDeviceTimeSource(from controller: any OcaController) throws -> OcaONo {
     guard let currentDeviceTimeSource else {
       throw Ocp1Error.status(.invalidRequest)
@@ -40,7 +40,7 @@ open class OcaDeviceTimeManager: OcaManager {
     return currentDeviceTimeSource.objectNumber
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaDeviceTimeManager.setCurrentDeviceTimeSource, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDeviceTimeManager.setCurrentDeviceTimeSource)
   func setCurrentDeviceTimeSource(_ timeSourceONo: OcaONo, from controller: any OcaController) throws {
     guard let timeSource = timeSources.first(where: { $0.objectNumber == timeSourceONo }) else {
       throw Ocp1Error.status(.badONo)
@@ -48,12 +48,12 @@ open class OcaDeviceTimeManager: OcaManager {
     currentDeviceTimeSource = timeSource
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaDeviceTimeManager.getDeviceTime, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaDeviceTimeManager.getDeviceTime)
   func getDeviceTimePTP(from controller: any OcaController) async throws -> OcaTime {
     try await deviceTimePTP
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaDeviceTimeManager.setDeviceTimeNTP, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDeviceTimeManager.setDeviceTimeNTP)
   open func set(deviceTimeNTP time: OcaTimeNTP, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
@@ -74,7 +74,7 @@ open class OcaDeviceTimeManager: OcaManager {
     }
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaDeviceTimeManager.setDeviceTime, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDeviceTimeManager.setDeviceTime)
   open func set(deviceTimePTP time: OcaTime, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }

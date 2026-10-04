@@ -60,7 +60,7 @@ open class OcaFilterClassical: OcaActuator {
 
   /// atomic multiple-parameter assignment is device specific; the default implementation
   /// is unimplemented
-  @OcaDeviceMethod(SwiftOCA.OcaFilterClassical.setMultiple, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFilterClassical.setMultiple)
   open func setMultiple(
     mask: OcaParameterMask,
     frequency: OcaFrequency,
@@ -126,7 +126,7 @@ open class OcaFilterParametric: OcaActuator {
 
   /// atomic multiple-parameter assignment is device specific; the default implementation
   /// is unimplemented
-  @OcaDeviceMethod(SwiftOCA.OcaFilterParametric.setMultiple, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFilterParametric.setMultiple)
   open func setMultiple(
     mask: OcaParameterMask,
     frequency: OcaFrequency,
@@ -180,7 +180,7 @@ open class OcaFilterPolynomial: OcaActuator {
   )
   public var maxOrder: OcaUint8 = 0
 
-  @OcaDeviceMethod(SwiftOCA.OcaFilterPolynomial.setCoefficients, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFilterPolynomial.setCoefficients)
   open func set(a: OcaList<OcaFloat32>, b: OcaList<OcaFloat32>, from controller: any OcaController) async throws {
     guard a.count <= Int(maxOrder), b.count <= Int(maxOrder) else {
       throw Ocp1Error.status(.parameterOutOfRange)
@@ -189,7 +189,7 @@ open class OcaFilterPolynomial: OcaActuator {
     self.b = b
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaFilterPolynomial.getCoefficients, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaFilterPolynomial.getCoefficients)
   func getCoefficients(from controller: any OcaController) -> SwiftOCA.OcaFilterPolynomial.CoefficientsParameters {
     .init(a: a, b: b)
   }
@@ -270,7 +270,7 @@ open class OcaFilterArbitraryCurve: OcaActuator {
 
   /// SetTransferFunction carries the curve's three lists as separate parameters,
   /// which the property wrapper's own setter would reject.
-  @OcaDeviceMethod(SwiftOCA.OcaFilterArbitraryCurve.setTransferFunction, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaFilterArbitraryCurve.setTransferFunction)
   func setTransferFunction(
     _ parameters: SwiftOCA.OcaFilterArbitraryCurve.SetTransferFunctionParameters,
     from controller: any OcaController

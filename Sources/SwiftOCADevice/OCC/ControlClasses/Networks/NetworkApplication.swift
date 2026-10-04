@@ -70,27 +70,27 @@ open class OcaNetworkApplication: OcaRoot, OcaOwnable, OcaLabelRepresentable,
   )
   public var counterSet = OcaCounterSet()
 
-  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.attachCounterNotifier, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.attachCounterNotifier)
   open func attach(counter id: OcaID16, to oNo: OcaONo, from controller: any OcaController) async throws {
     try attach(counterNotifier: oNo, to: id)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.detachCounterNotifier, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.detachCounterNotifier)
   open func detach(counter id: OcaID16, from oNo: OcaONo, controller: any OcaController) async throws {
     try detach(counterNotifier: oNo, from: id)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.resetCounters, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.resetCounters)
   open func resetCounters(from controller: any OcaController) async throws {
     resetCounterSet()
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.getPath, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.getPath)
   func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
     await path
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.getCounter, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.getCounter)
   func getCounter(_ id: OcaID16, from controller: any OcaController) throws -> OcaCounter {
     try counter(id: id)
   }

@@ -139,6 +139,106 @@ final class OcaDeviceMethodDescriptorFormTests: XCTestCase {
     )
   }
 
+  func testAccessFollowsTheMethodsNameUnlessStated() {
+    // a getter reads
+    assertMacroExpansion(
+      """
+      @OcaDeviceMethod(SwiftOCA.OcaWorker.getPath)
+      func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
+        await path
+      }
+      """,
+      expandedSource: """
+      func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
+        await path
+      }
+
+      static func _ocaDeviceMethod_getPath(_: Void.Type) -> OcaDeviceMethodDescription {
+        OcaDeviceMethodDescription(
+          SwiftOCA.OcaWorker.getPath,
+          access: .read,
+          parameters: Void.self,
+          result: OcaGetPathParameters.self
+        ) { object, _, controller in
+          await (object as! Self).getPath(from: controller)
+        }
+      }
+      """,
+      macros: macros
+    )
+    // a mutator writes
+    assertMacroExpansion(
+      """
+      @OcaDeviceMethod(Parameters.deleteSession)
+      open func delete(session id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
+      }
+      """,
+      expandedSource: """
+      open func delete(session id: OcaMediaTransportSessionID, from controller: any OcaController) async throws {
+      }
+
+      static func _ocaDeviceMethod_delete(_: OcaMediaTransportSessionID.Type) -> OcaDeviceMethodDescription {
+        OcaDeviceMethodDescription(
+          Parameters.deleteSession,
+          access: .write,
+          parameters: OcaMediaTransportSessionID.self,
+          result: Void.self
+        ) { object, parameters, controller in
+          try await (object as! Self).delete(session: parameters as! OcaMediaTransportSessionID, from: controller)
+          return nil
+        }
+      }
+      """,
+      macros: macros
+    )
+    // stated, it overrides the name
+    assertMacroExpansion(
+      """
+      @OcaDeviceMethod(SwiftOCA.OcaRoot.getLockState, access: .none)
+      func getLockState(from controller: any OcaController) -> OcaLockState {
+        lockState.lockState
+      }
+      """,
+      expandedSource: """
+      func getLockState(from controller: any OcaController) -> OcaLockState {
+        lockState.lockState
+      }
+
+      static func _ocaDeviceMethod_getLockState(_: Void.Type) -> OcaDeviceMethodDescription {
+        OcaDeviceMethodDescription(
+          SwiftOCA.OcaRoot.getLockState,
+          access: .none,
+          parameters: Void.self,
+          result: OcaLockState.self
+        ) { object, _, controller in
+          (object as! Self).getLockState(from: controller)
+        }
+      }
+      """,
+      macros: macros
+    )
+    // a name that says neither must state it
+    assertMacroExpansion(
+      """
+      @OcaDeviceMethod(SwiftOCA.OcaLockManager.lockWait)
+      private func lockWait(controller: OcaController, target: OcaONo, type: OcaLockState, timeout: OcaTimeInterval) async throws {
+      }
+      """,
+      expandedSource: """
+      private func lockWait(controller: OcaController, target: OcaONo, type: OcaLockState, timeout: OcaTimeInterval) async throws {
+      }
+      """,
+      diagnostics: [
+        DiagnosticSpec(
+          message: "@OcaDeviceMethod cannot tell whether 'lockWait' reads or writes; state access: .read, .write or .none",
+          line: 1,
+          column: 1
+        ),
+      ],
+      macros: macros
+    )
+  }
+
   func testTheDescriptorFormRefusesNames() {
     assertMacroExpansion(
       """

@@ -87,20 +87,20 @@ open class OcaSignalGenerator: OcaActuator {
   public var generating: OcaBoolean = false
 
   /// signal generation is device specific; the default implementation is unimplemented
-  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.start, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.start)
   open func start(from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
   /// signal generation is device specific; the default implementation is unimplemented
-  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.stop, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.stop)
   open func stop(from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
   /// atomic multiple-parameter assignment is device specific; the default implementation
   /// is unimplemented
-  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.setMultiple, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaSignalGenerator.setMultiple)
   open func setMultiple(
     mask: OcaParameterMask,
     frequency1: OcaFrequency,

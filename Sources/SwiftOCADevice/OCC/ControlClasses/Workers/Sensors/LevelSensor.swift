@@ -31,7 +31,7 @@ open class OcaLevelSensor: OcaSensor {
   private var _value: OcaDB = -144.0
   private var _range: ClosedRange<OcaDB> = -144.0...0.0
 
-  @OcaDeviceMethod(SwiftOCA.OcaLevelSensor.getReading, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaLevelSensor.getReading)
   func getReading(from controller: any OcaController) -> OcaBoundedPropertyValue<OcaDB> {
     OcaBoundedPropertyValue<OcaDB>(value: _value, in: _range)
   }

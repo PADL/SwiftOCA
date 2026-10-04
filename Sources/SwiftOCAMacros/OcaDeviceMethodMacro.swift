@@ -52,10 +52,7 @@ public struct OcaDeviceMethodMacro: PeerMacro {
       if method.isRaw {
         closureParameters = "object, command, controller"
       } else {
-        guard let access = attribute.argument("access") else {
-          throw MacroExpansionErrorMessage("@OcaDeviceMethod needs access: .read, .write or .none")
-        }
-        arguments.append("access: \(access.trimmedDescription)")
+        arguments.append("access: \(try method.access(attribute))")
         if method.parameters.count > 1 {
           // the descriptor's Parameters, taken apart by the method's argument names
           body.append("let parameters = \(descriptor.trimmedDescription).parameters(parameters)")
@@ -83,10 +80,7 @@ public struct OcaDeviceMethodMacro: PeerMacro {
       body.append(method.call)
     } else {
       arguments += attribute.identity
-      guard let access = attribute.argument("access") else {
-        throw MacroExpansionErrorMessage("@OcaDeviceMethod needs access: .read, .write or .none")
-      }
-      arguments.append("access: \(access.trimmedDescription)")
+      arguments.append("access: \(try method.access(attribute))")
       if let parametersType = method.parametersType {
         if method.parameters.count > 1 {
           declarations.append(method.parameterRecord)
@@ -331,6 +325,32 @@ private struct DeviceMethod {
 
   var resultType: String? {
     function.signature.returnClause?.type.trimmedDescription
+  }
+
+  private static let readPrefixes = ["get", "find", "is", "has"]
+  private static let writePrefixes = [
+    "set", "add", "delete", "remove", "clear", "reset", "apply", "construct", "duplicate",
+    "link", "unlink", "attach", "detach", "configure", "start", "stop", "begin", "end", "abort",
+    "read", "write", "open", "close",
+  ]
+
+  /// The lock check: as written, else inferred from the method's name, whose first word
+  /// says whether it reads or writes; a name that says neither must state it.
+  func access(_ attribute: OcaDeviceMethodAttribute) throws -> String {
+    if let access = attribute.argument("access") {
+      return access.trimmedDescription
+    }
+    let name = function.name.text
+    func starts(with prefix: String) -> Bool {
+      guard name.hasPrefix(prefix) else { return false }
+      let rest = name.dropFirst(prefix.count)
+      return rest.isEmpty || rest.first!.isUppercase
+    }
+    if Self.readPrefixes.contains(where: starts(with:)) { return ".read" }
+    if Self.writePrefixes.contains(where: starts(with:)) { return ".write" }
+    throw MacroExpansionErrorMessage(
+      "@OcaDeviceMethod cannot tell whether '\(name)' reads or writes; state access: .read, .write or .none"
+    )
   }
 
   var call: String {

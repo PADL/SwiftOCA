@@ -212,7 +212,7 @@ Sendable {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaDataset.close, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.close)
   open func close(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
@@ -226,7 +226,7 @@ Sendable {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaDataset.write, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.write)
   open func write(
     handle: OcaIOSessionHandle,
     position: OcaUint64,
@@ -236,7 +236,7 @@ Sendable {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaDataset.clear, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.clear)
   open func clear(handle: OcaIOSessionHandle, controller: OcaController?) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
@@ -253,7 +253,7 @@ Sendable {
     return .init(datasetSize: datasetSize, handle: handle)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaDataset.openWrite, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.openWrite)
   func openWrite(_ lockState: OcaLockState, from controller: any OcaController) async throws
     -> SwiftOCA.OcaDataset.OpenWriteParameters
   {

@@ -201,13 +201,13 @@ open class OcaDeviceManager: OcaManager {
     return Ocp1Response()
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaDeviceManager.clearResetCause, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDeviceManager.clearResetCause)
   func clearResetCause(from controller: any OcaController) {
     resetCause = .powerOn
   }
 
   #if NonEmbeddedBuild
-  @OcaDeviceMethod(SwiftOCA.OcaDeviceManager.applyPatch, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaDeviceManager.applyPatch)
   func applyPatch(_ datasetONo: OcaONo, from controller: any OcaController) async throws {
     try await applyPatch(datasetONo: datasetONo, controller: controller)
   }

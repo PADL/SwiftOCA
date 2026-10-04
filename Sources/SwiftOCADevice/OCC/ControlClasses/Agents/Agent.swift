@@ -35,7 +35,7 @@ open class OcaAgent: OcaRoot, OcaOwnable, OcaLabelRepresentable {
   )
   public var owner = OcaInvalidONo
 
-  @OcaDeviceMethod(SwiftOCA.OcaAgent.getPath, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaAgent.getPath)
   func getPath(from controller: any OcaController) async -> OcaGetPathParameters {
     await path
   }

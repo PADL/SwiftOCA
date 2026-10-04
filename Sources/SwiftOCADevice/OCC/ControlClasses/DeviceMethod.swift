@@ -33,8 +33,12 @@ import SwiftOCA
 /// description that has one; the compiler then checks that type against the description's.
 /// The result is checked either way. `access` is the lock check made before the method
 /// runs: `.read` for a getter, `.write` for a mutator, `.none` for one that checks for
-/// itself. The call goes through the object, so a subclass's override of an `open` method
-/// is what answers.
+/// itself. Left out, it follows the method's name: `get`, `find`, `is` and `has` read;
+/// `set`, `add`, `delete`, `remove`, `clear`, `reset`, `apply`, `construct`, `duplicate`,
+/// `link`, `unlink`, `attach`, `detach`, `configure`, `start`, `stop`, `begin`, `end`,
+/// `abort`, `read`, `write`, `open` and `close` write; any other first word is a compile
+/// error until `access` is stated. The call goes through the object, so a subclass's
+/// override of an `open` method is what answers.
 ///
 /// The class lists its methods with `@OcaDeviceMethods`, and `OcaRoot.handleCommand`
 /// dispatches to them once a subclass's own `handleCommand` has declined the command, so
@@ -42,7 +46,7 @@ import SwiftOCA
 @attached(peer, names: prefixed(_ocaDeviceMethod_))
 public macro OcaDeviceMethod<Parameters, Result>(
   _ method: OcaMethodDescription<Parameters, Result>,
-  access: OcaDeviceMethodAccess
+  access: OcaDeviceMethodAccess? = nil
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")
 
 /// The raw form, for a method that takes the `Ocp1Command` itself and returns the
@@ -69,7 +73,7 @@ public macro OcaDeviceMethod<Parameters, Result>(
 public macro OcaDeviceMethod(
   _ methodID: String,
   name: String,
-  access: OcaDeviceMethodAccess,
+  access: OcaDeviceMethodAccess? = nil,
   parameterNames: [String]? = nil,
   resultNames: [String]? = nil
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")

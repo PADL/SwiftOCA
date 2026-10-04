@@ -198,19 +198,19 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
 
   // MARK: - Overridable behaviour
 
-  @OcaDeviceMethod(Parameters.addPort, access: .write)
+  @OcaDeviceMethod(Parameters.addPort)
   open func add(port name: OcaString, mode: OcaPortMode, from controller: any OcaController) async throws -> OcaPortID {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.deletePort, access: .write)
+  @OcaDeviceMethod(Parameters.deletePort)
   open func delete(port id: OcaPortID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
   /// Returns the given descriptor with its IDInternal set to the allocated endpoint ID,
   /// having stored it with `initialStatus` as its state.
-  @OcaDeviceMethod(Parameters.addEndpoint, access: .write)
+  @OcaDeviceMethod(Parameters.addEndpoint)
   open func add(
     endpoint: OcaMediaStreamEndpoint,
     initialStatus: OcaMediaStreamEndpointState,
@@ -219,12 +219,12 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.deleteEndpoint, access: .write)
+  @OcaDeviceMethod(Parameters.deleteEndpoint)
   open func delete(endpoint id: OcaMediaStreamEndpointID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.applyEndpointCommand, access: .write)
+  @OcaDeviceMethod(Parameters.applyEndpointCommand)
   open func applyEndpointCommand(
     _ endpointID: OcaMediaStreamEndpointID,
     command: OcaMediaStreamEndpointCommand,
@@ -233,7 +233,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.setEndpointUserLabel, access: .write)
+  @OcaDeviceMethod(Parameters.setEndpointUserLabel)
   open func setEndpoint(
     _ endpointID: OcaMediaStreamEndpointID,
     userLabel label: OcaString,
@@ -244,7 +244,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     try update(endpoint: endpoint)
   }
 
-  @OcaDeviceMethod(Parameters.setEndpointMediaStreamMode, access: .write)
+  @OcaDeviceMethod(Parameters.setEndpointMediaStreamMode)
   open func setEndpoint(
     _ endpointID: OcaMediaStreamEndpointID,
     mediaStreamMode streamMode: OcaMediaStreamMode,
@@ -253,7 +253,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.setEndpointChannelMap, access: .write)
+  @OcaDeviceMethod(Parameters.setEndpointChannelMap)
   open func setEndpoint(
     _ endpointID: OcaMediaStreamEndpointID,
     channelMap: OcaMultiMap<OcaUint16, OcaPortID>,
@@ -262,7 +262,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.setEndpointAlignmentLevel, access: .write)
+  @OcaDeviceMethod(Parameters.setEndpointAlignmentLevel)
   open func setEndpoint(
     _ endpointID: OcaMediaStreamEndpointID,
     alignmentLevel level: OcaDBFS,
@@ -271,7 +271,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(Parameters.setEndpointAdaptationData, access: .write)
+  @OcaDeviceMethod(Parameters.setEndpointAdaptationData)
   open func setEndpoint(
     _ endpointID: OcaMediaStreamEndpointID,
     adaptationData data: OcaAdaptationData,
@@ -281,7 +281,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
   }
 
   /// Default: the time source of the OcaMediaClock3 referenced by the endpoint's ClockONo.
-  @OcaDeviceMethod(Parameters.getEndpointTimeSource, access: .read)
+  @OcaDeviceMethod(Parameters.getEndpointTimeSource)
   open func getEndpointTimeSource(
     _ id: OcaMediaStreamEndpointID,
     from controller: any OcaController
@@ -298,7 +298,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     )
   }
 
-  @OcaDeviceMethod(Parameters.attachEndpointCounterNotifier, access: .write)
+  @OcaDeviceMethod(Parameters.attachEndpointCounterNotifier)
   open func attachEndpointCounterNotifier(
     endpointID: OcaMediaStreamEndpointID,
     counterID: OcaID16,
@@ -312,7 +312,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     update(endpointID: endpointID, counterSet: counterSet)
   }
 
-  @OcaDeviceMethod(Parameters.detachEndpointCounterNotifier, access: .write)
+  @OcaDeviceMethod(Parameters.detachEndpointCounterNotifier)
   open func detachEndpointCounterNotifier(
     endpointID: OcaMediaStreamEndpointID,
     counterID: OcaID16,
@@ -326,7 +326,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     update(endpointID: endpointID, counterSet: counterSet)
   }
 
-  @OcaDeviceMethod(Parameters.resetEndpointCounterSet, access: .write)
+  @OcaDeviceMethod(Parameters.resetEndpointCounterSet)
   open func resetEndpointCounterSet(
     _ endpointID: OcaMediaStreamEndpointID,
     counterID: OcaID16,
@@ -337,17 +337,17 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
 
   // MARK: - Command dispatch
 
-  @OcaDeviceMethod(Parameters.getPortName, access: .read)
+  @OcaDeviceMethod(Parameters.getPortName)
   func getPortName(_ parameters: OcaGetPortNameParameters, from controller: any OcaController) throws -> OcaString {
     try portName(of: parameters.portID)
   }
 
-  @OcaDeviceMethod(Parameters.setPortName, access: .write)
+  @OcaDeviceMethod(Parameters.setPortName)
   func setPortName(_ portID: OcaPortID, _ name: OcaString, from controller: any OcaController) throws {
     try setName(name, ofPort: portID)
   }
 
-  @OcaDeviceMethod(Parameters.setPortClockMapEntry, access: .write)
+  @OcaDeviceMethod(Parameters.setPortClockMapEntry)
   func setPortClockMapEntry(
     _ portID: OcaPortID,
     _ entry: OcaPortClockMapEntry,
@@ -356,24 +356,24 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     portClockMap[portID] = entry
   }
 
-  @OcaDeviceMethod(Parameters.deletePortClockMapEntry, access: .write)
+  @OcaDeviceMethod(Parameters.deletePortClockMapEntry)
   func deletePortClockMapEntry(_ portID: OcaPortID, from controller: any OcaController) {
     deletePortClockMapEntry(for: portID)
   }
 
-  @OcaDeviceMethod(Parameters.getPortClockMapEntry, access: .read)
+  @OcaDeviceMethod(Parameters.getPortClockMapEntry)
   func getPortClockMapEntry(_ portID: OcaPortID, from controller: any OcaController) throws
     -> OcaPortClockMapEntry
   {
     try portClockMapEntry(for: portID)
   }
 
-  @OcaDeviceMethod(Parameters.getMaxEndpointCounts, access: .read)
+  @OcaDeviceMethod(Parameters.getMaxEndpointCounts)
   func getMaxEndpointCounts(from controller: any OcaController) -> Parameters.MaxEndpointCounts {
     .init(maxOutputCount: maxOutputEndpoints, maxInputCount: maxInputEndpoints)
   }
 
-  @OcaDeviceMethod(Parameters.getMediaStreamModeCapability, access: .read)
+  @OcaDeviceMethod(Parameters.getMediaStreamModeCapability)
   func getMediaStreamModeCapability(_ id: OcaID16, from controller: any OcaController) throws
     -> OcaMediaStreamModeCapability
   {
@@ -383,28 +383,28 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     return capability
   }
 
-  @OcaDeviceMethod(Parameters.getEndpoint, access: .read)
+  @OcaDeviceMethod(Parameters.getEndpoint)
   func getEndpoint(_ id: OcaMediaStreamEndpointID, from controller: any OcaController) throws
     -> OcaMediaStreamEndpoint
   {
     try endpoint(id)
   }
 
-  @OcaDeviceMethod(Parameters.getEndpointStatus, access: .read)
+  @OcaDeviceMethod(Parameters.getEndpointStatus)
   func getEndpointStatus(_ id: OcaMediaStreamEndpointID, from controller: any OcaController) throws
     -> OcaMediaStreamEndpointStatus
   {
     try endpointStatus(id)
   }
 
-  @OcaDeviceMethod(Parameters.getEndpointCounterSet, access: .read)
+  @OcaDeviceMethod(Parameters.getEndpointCounterSet)
   func getEndpointCounterSet(_ id: OcaMediaStreamEndpointID, from controller: any OcaController) throws
     -> OcaCounterSet
   {
     try endpointCounterSet(id)
   }
 
-  @OcaDeviceMethod(Parameters.getEndpointCounter, access: .read)
+  @OcaDeviceMethod(Parameters.getEndpointCounter)
   func getEndpointCounter(
     _ parameters: Parameters.EndpointCounterParameters,
     from controller: any OcaController

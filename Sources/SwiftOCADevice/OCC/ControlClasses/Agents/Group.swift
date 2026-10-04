@@ -89,12 +89,12 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
   }
 
   // the model does not name GetMembers' or GetGroupController's result
-  @OcaDeviceMethod(SwiftOCA.OcaGroup.getMembers, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaGroup.getMembers)
   func getMembers(from controller: any OcaController) -> [OcaONo] {
     members.map(\.objectNumber)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaGroup.setMembers, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaGroup.setMembers)
   func setMembers(_ memberONos: [OcaONo], from controller: any OcaController) async throws {
     let members = try await memberONos.asyncMap { @Sendable memberONo in
       try await self.member(memberONo)
@@ -102,17 +102,17 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
     try await set(members: members, controller: controller)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaGroup.addMember, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaGroup.addMember)
   func addMember(_ memberONo: OcaONo, from controller: any OcaController) async throws {
     try await add(member: member(memberONo), controller: controller)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaGroup.deleteMember, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaGroup.deleteMember)
   func deleteMember(_ memberONo: OcaONo, from controller: any OcaController) async throws {
     try await delete(member: member(memberONo), controller: controller)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaGroup.getGroupController, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaGroup.getGroupController)
   func getGroupController(from controller: any OcaController) -> OcaONo {
     groupController
   }

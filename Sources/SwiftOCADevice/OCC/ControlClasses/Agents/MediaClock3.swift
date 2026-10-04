@@ -58,14 +58,14 @@ open class OcaMediaClock3: OcaAgent {
     timeSourceONo = timeSource.objectNumber
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaClock3.getCurrentRate, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaClock3.getCurrentRate)
   func getCurrentRate(from controller: any OcaController)
     -> SwiftOCA.OcaMediaClock3.GetCurrentRateParameters
   {
     .init(rate: currentRate, timeSourceONo: timeSourceONo)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaClock3.setCurrentRate, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaClock3.setCurrentRate)
   func setCurrentRate(
     _ parameters: SwiftOCA.OcaMediaClock3.SetCurrentRateParameters,
     from controller: any OcaController

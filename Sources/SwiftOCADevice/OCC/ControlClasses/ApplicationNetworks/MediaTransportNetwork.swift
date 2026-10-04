@@ -77,36 +77,36 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
   )
   public var alignmentGain = OcaBoundedPropertyValue<OcaDB>(value: 0.0, in: -0.0...0.0)
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getSourceConnectors, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getSourceConnectors)
   open func getSourceConnectors(from controller: any OcaController) async throws -> [OcaMediaSourceConnector] {
     []
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getSourceConnector, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getSourceConnector)
   open func getSourceConnector(_ id: OcaMediaConnectorID, from controller: any OcaController) async throws
     -> OcaMediaSourceConnector
   {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getSinkConnectors, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getSinkConnectors)
   open func getSinkConnectors(from controller: any OcaController) async throws -> [OcaMediaSinkConnector] {
     []
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getSinkConnector, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getSinkConnector)
   open func getSinkConnector(_ id: OcaMediaConnectorID, from controller: any OcaController) async throws
     -> OcaMediaSinkConnector
   {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getConnectorsStatuses, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getConnectorsStatuses)
   open func getConnectorsStatuses(from controller: any OcaController) async throws -> [OcaMediaConnectorStatus] {
     []
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getConnectorStatus, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getConnectorStatus)
   open func getConnectorStatus(_ id: OcaMediaConnectorID, from controller: any OcaController) async throws
     -> OcaMediaConnectorStatus
   {
@@ -136,7 +136,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setSourceConnectorPinMap, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setSourceConnectorPinMap)
   open func setSourceConnector(
     _ connectorID: OcaMediaConnectorID,
     pinMap channelPinMap: [OcaUint16: OcaPortID],
@@ -145,7 +145,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setSinkConnectorPinMap, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setSinkConnectorPinMap)
   open func setSinkConnector(
     _ connectorID: OcaMediaConnectorID,
     pinMap channelPinMap: [OcaUint16: [OcaPortID]],
@@ -154,7 +154,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setConnectorConnection, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setConnectorConnection)
   open func setConnector(
     _ connectorID: OcaMediaConnectorID,
     connection: OcaMediaConnection,
@@ -163,7 +163,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setConnectorCoding, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setConnectorCoding)
   open func setConnector(
     _ connectorID: OcaMediaConnectorID,
     coding: OcaMediaCoding,
@@ -172,7 +172,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setConnectorAlignmentLevel, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setConnectorAlignmentLevel)
   open func setConnector(
     _ connectorID: OcaMediaConnectorID,
     alignmentLevel level: OcaDBFS,
@@ -181,7 +181,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setConnectorAlignmentGain, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setConnectorAlignmentGain)
   open func setConnector(
     _ connectorID: OcaMediaConnectorID,
     alignmentGain gain: OcaDB,
@@ -190,22 +190,22 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.deleteConnector, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.deleteConnector)
   open func deleteConnector(_ id: OcaMediaConnectorID, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getPortName, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.getPortName)
   func getPortName(_ parameters: OcaGetPortNameParameters, from controller: any OcaController) throws -> OcaString {
     try portName(of: parameters.portID)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setPortName, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.setPortName)
   func setPortName(_ portID: OcaPortID, _ name: OcaString, from controller: any OcaController) throws {
     try setName(name, ofPort: portID)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.addSourceConnector, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.addSourceConnector)
   func addSourceConnector(
     _ parameters: SwiftOCA.OcaMediaTransportNetwork.AddSourceConnectorParameters,
     from controller: any OcaController
@@ -215,7 +215,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
     return connector
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.addSinkConnector, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.addSinkConnector)
   func addSinkConnector(
     _ parameters: SwiftOCA.OcaMediaTransportNetwork.AddSinkConnectorParameters,
     from controller: any OcaController

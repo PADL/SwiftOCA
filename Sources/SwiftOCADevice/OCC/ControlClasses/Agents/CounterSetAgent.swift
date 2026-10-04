@@ -33,27 +33,27 @@ open class OcaCounterSetAgent: OcaAgent {
   )
   public var counterSet: OcaCounterSet?
 
-  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.getCounter, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.getCounter)
   open func get(counter id: OcaID16, from controller: any OcaController) async throws -> OcaCounter {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.attachCounterNotifier, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.attachCounterNotifier)
   open func attach(counter id: OcaID16, to oNo: OcaONo, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.detachCounterNotifier, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.detachCounterNotifier)
   open func detach(counter id: OcaID16, from oNo: OcaONo, controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.resetCounterSet, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.resetCounterSet)
   open func reset(from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.resetCounter, access: .write)
+  @OcaDeviceMethod(SwiftOCA.OcaCounterSetAgent.resetCounter)
   open func reset(counter id: OcaID16, from controller: any OcaController) async throws {
     throw Ocp1Error.status(.notImplemented)
   }

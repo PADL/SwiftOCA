@@ -31,7 +31,7 @@ open class OcaDiagnosticManager: OcaManager {
   }
 
   // not in the AES70-2023 model, which does not name the result
-  @OcaDeviceMethod(SwiftOCA.OcaDiagnosticManager.getLockStatus, access: .read)
+  @OcaDeviceMethod(SwiftOCA.OcaDiagnosticManager.getLockStatus)
   func getLockStatus(_ oNo: OcaONo, from controller: any OcaController) async throws -> OcaString {
     guard let object = await deviceDelegate?.resolve(objectNumber: oNo) else {
       throw Ocp1Error.status(.badONo)
