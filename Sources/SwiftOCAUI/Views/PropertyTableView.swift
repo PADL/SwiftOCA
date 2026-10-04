@@ -53,9 +53,9 @@ private struct PropertyValueView: View {
       if let currentValue {
         switch currentValue {
         case let .success(value):
-          Text("\(value)")
+          Text(String(describing: value))
         case let .failure(error):
-          Text("Error: \(error)").foregroundStyle(.tertiary)
+          Text(verbatim: "Error: \(error)").foregroundStyle(.tertiary)
         }
       } else {
         ProgressView()
