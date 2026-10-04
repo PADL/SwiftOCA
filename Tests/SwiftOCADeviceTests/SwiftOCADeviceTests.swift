@@ -819,7 +819,7 @@ final class HandleCommandArmTests: XCTestCase {
       deviceDelegate: device, addToRootBlock: false
     )
     let holder = ArmTestController()
-    try await group.lockNoReadWrite(controller: holder)
+    try await group.setLockNoReadWrite(from: holder)
     let unknown: OcaONo = 0x7FFF_FFF0
 
     for methodID in [OcaMethodID("3.3"), OcaMethodID("3.4")] {

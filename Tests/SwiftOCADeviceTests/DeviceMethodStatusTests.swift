@@ -138,8 +138,8 @@ final class DeviceMethodStatusTests: XCTestCase {
     do {
       switch probe.lock {
       case .noLock: break
-      case .lockNoWrite: try await object.lockNoWrite(controller: holder)
-      case .lockNoReadWrite: try await object.lockNoReadWrite(controller: holder)
+      case .lockNoWrite: try await object.setLockNoWrite(from: holder)
+      case .lockNoReadWrite: try await object.setLockNoReadWrite(from: holder)
       }
     } catch {
       return "lockFailed:\(error)"

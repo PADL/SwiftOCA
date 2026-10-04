@@ -22,5 +22,69 @@
 enum ClientMethodDescriptors {
   typealias Entry = (name: String, descriptor: OcaAnyMethodDescriptor)
 
-  static let all: [(type: OcaRoot.Type, descriptors: [Entry])] = []
+  static let all: [(type: OcaRoot.Type, descriptors: [Entry])] = [
+    (OcaAgent.self, [
+      ("getPath", OcaAgent.Methods.getPath.erased),
+    ]),
+    (OcaApplicationNetwork.self, [
+      ("getPath", OcaApplicationNetwork.Methods.getPath.erased),
+    ]),
+    (OcaCounterNotifier.self, [
+      ("getLastUpdate", OcaCounterNotifier.Methods.getLastUpdate.erased),
+    ]),
+    (OcaCounterSetAgent.self, [
+      ("getCounter", OcaCounterSetAgent.Methods.getCounter.erased),
+      ("attachCounterNotifier", OcaCounterSetAgent.Methods.attachCounterNotifier.erased),
+      ("detachCounterNotifier", OcaCounterSetAgent.Methods.detachCounterNotifier.erased),
+      ("resetCounterSet", OcaCounterSetAgent.Methods.resetCounterSet.erased),
+      ("resetCounter", OcaCounterSetAgent.Methods.resetCounter.erased),
+    ]),
+    (OcaGroup.self, [
+      ("getMembers", OcaGroup.Methods.getMembers.erased),
+      ("setMembers", OcaGroup.Methods.setMembers.erased),
+      ("getGroupController", OcaGroup.Methods.getGroupController.erased),
+      ("addMember", OcaGroup.Methods.addMember.erased),
+      ("deleteMember", OcaGroup.Methods.deleteMember.erased),
+    ]),
+    (OcaMediaClock3.self, [
+      ("getCurrentRate", OcaMediaClock3.Methods.getCurrentRate.erased),
+      ("setCurrentRate", OcaMediaClock3.Methods.setCurrentRate.erased),
+    ]),
+    (OcaMediaTransportSessionAgent.self, [
+      ("getSession", OcaMediaTransportSessionAgent.Methods.getSession.erased),
+      ("addSession", OcaMediaTransportSessionAgent.Methods.addSession.erased),
+      ("configureSession", OcaMediaTransportSessionAgent.Methods.configureSession.erased),
+      ("deleteSession", OcaMediaTransportSessionAgent.Methods.deleteSession.erased),
+      ("resetSession", OcaMediaTransportSessionAgent.Methods.resetSession.erased),
+      ("setStreamingEnabled", OcaMediaTransportSessionAgent.Methods.setStreamingEnabled.erased),
+      ("startStreaming", OcaMediaTransportSessionAgent.Methods.startStreaming.erased),
+      ("stopStreaming", OcaMediaTransportSessionAgent.Methods.stopStreaming.erased),
+      ("getSessionStatus", OcaMediaTransportSessionAgent.Methods.getSessionStatus.erased),
+      ("addConnection", OcaMediaTransportSessionAgent.Methods.addConnection.erased),
+      ("configureConnection", OcaMediaTransportSessionAgent.Methods.configureConnection.erased),
+      ("deleteConnection", OcaMediaTransportSessionAgent.Methods.deleteConnection.erased),
+      ("deleteConnections", OcaMediaTransportSessionAgent.Methods.deleteConnections.erased),
+    ]),
+    (OcaNetworkApplication.self, [
+      ("getPath", OcaNetworkApplication.Methods.getPath.erased),
+    ]),
+    (OcaNetworkInterface.self, [
+      ("getPath", OcaNetworkInterface.Methods.getPath.erased),
+    ]),
+    (OcaRoot.self, [
+      ("getLockable", OcaRoot.Methods.getLockable.erased),
+      ("getRole", OcaRoot.Methods.getRole.erased),
+      ("getLockState", OcaRoot.Methods.getLockState.erased),
+      ("getClassIdentification", OcaRoot.Methods.getClassIdentification.erased),
+      ("setLockNoReadWrite", OcaRoot.Methods.setLockNoReadWrite.erased),
+      ("unlock", OcaRoot.Methods.unlock.erased),
+      ("setLockNoWrite", OcaRoot.Methods.setLockNoWrite.erased),
+    ]),
+    (OcaTimeSource.self, [
+      ("reset", OcaTimeSource.Methods.reset.erased),
+    ]),
+    (OcaWorker.self, [
+      ("getPath", OcaWorker.Methods.getPath.erased),
+    ]),
+  ]
 }

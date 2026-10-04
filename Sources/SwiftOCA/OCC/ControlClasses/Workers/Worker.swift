@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaWorker: OcaRoot, OcaOwnablePrivate, @unchecked
 Sendable {
   override open class var classID: OcaClassID {
@@ -124,11 +125,8 @@ Sendable {
     )
   }
 
-  public var path: (OcaNamePath, OcaONoPath) {
-    get async throws {
-      try await getPath(methodID: OcaMethodID("2.13"))
-    }
-  }
+  @OcaMethod("2.13", name: "GetPath")
+  public func getPath() async throws -> OcaGetPathParameters
 
   public func get(portID: OcaPortID) async throws -> OcaPortClockMapEntry {
     try await sendCommandRrq(

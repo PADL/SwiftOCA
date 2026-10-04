@@ -20,6 +20,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
+@OcaMethods
 open class OcaCounterNotifier: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.18") }
 
@@ -30,7 +31,6 @@ open class OcaCounterNotifier: OcaAgent, @unchecked Sendable {
   )
   public var filterParameters: OcaProperty<OcaCounterNotifierFilterParameters>.PropertyValue
 
-  public func getLastUpdate() async throws -> OcaList<OcaCounterUpdate> {
-    try await sendCommandRrq(methodID: OcaMethodID("3.1"))
-  }
+  @OcaMethod("3.1", name: "GetLastUpdate", resultNames: ["LastUpdate"])
+  public func getLastUpdate() async throws -> OcaList<OcaCounterUpdate>
 }

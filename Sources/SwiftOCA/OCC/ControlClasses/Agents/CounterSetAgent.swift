@@ -20,6 +20,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
+@OcaMethods
 open class OcaCounterSetAgent: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.19") }
 
@@ -30,41 +31,30 @@ open class OcaCounterSetAgent: OcaAgent, @unchecked Sendable {
   )
   public var counterSet: OcaProperty<OcaCounterSet>.PropertyValue
 
-  public func get(counter id: OcaID16) async throws -> OcaCounter {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.3"),
-      parameters: id,
-      parameterNames: ["ID"]
-    )
-  }
+  @OcaMethod("3.3", name: "GetCounter", parameterNames: ["ID"], resultNames: ["OcaCounter"])
+  public func getCounter(id: OcaID16) async throws -> OcaCounter
 
   public typealias CounterNotifierParameters = OcaCounterNotifierParameters
 
-  public func attach(counter id: OcaID16, to oNo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.4"),
-      parameters: CounterNotifierParameters(id: id, oNo: oNo)
-    )
-  }
+  @OcaMethod(
+    "3.4",
+    name: "AttachCounterNotifier",
+    parameters: CounterNotifierParameters.self,
+    parameterNames: ["ID", "ONo"]
+  )
+  public func attachCounterNotifier(id: OcaID16, oNo: OcaONo) async throws
 
-  public func detach(counter id: OcaID16, from oNo: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.5"),
-      parameters: CounterNotifierParameters(id: id, oNo: oNo)
-    )
-  }
+  @OcaMethod(
+    "3.5",
+    name: "DetachCounterNotifier",
+    parameters: CounterNotifierParameters.self,
+    parameterNames: ["ID", "ONo"]
+  )
+  public func detachCounterNotifier(id: OcaID16, oNo: OcaONo) async throws
 
-  public func reset() async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.6")
-    )
-  }
+  @OcaMethod("3.6", name: "ResetCounterSet")
+  public func resetCounterSet() async throws
 
-  public func reset(counter id: OcaID16) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.7"),
-      parameters: id,
-      parameterNames: ["ID"]
-    )
-  }
+  @OcaMethod("3.7", name: "ResetCounter", parameterNames: ["ID"])
+  public func resetCounter(id: OcaID16) async throws
 }

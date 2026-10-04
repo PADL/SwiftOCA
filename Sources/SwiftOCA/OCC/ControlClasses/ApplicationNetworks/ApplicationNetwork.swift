@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaApplicationNetwork: OcaRoot, OcaOwnablePrivate, @unchecked
 Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.4") }
@@ -75,11 +76,8 @@ Sendable {
     )
   }
 
-  public var path: (OcaNamePath, OcaONoPath) {
-    get async throws {
-      try await getPath(methodID: OcaMethodID("2.11"))
-    }
-  }
+  @OcaMethod("2.11", name: "GetPath")
+  public func getPath() async throws -> OcaGetPathParameters
 }
 
 extension OcaApplicationNetwork {

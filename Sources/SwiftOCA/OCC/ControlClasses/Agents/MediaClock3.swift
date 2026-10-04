@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.15") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -49,7 +50,6 @@ open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
   )
   public var supportedRates: OcaMultiMapProperty<OcaONo, OcaMediaClockRate>.PropertyValue
 
-  @_spi(SwiftOCAPrivate)
   public struct GetCurrentRateParameters: OcaParametersReflectable {
     public let rate: OcaMediaClockRate
     public let timeSourceONo: OcaONo
@@ -60,22 +60,11 @@ open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
     }
   }
 
-  @_spi(SwiftOCAPrivate) public typealias SetCurrentRateParameters = GetCurrentRateParameters
+  public typealias SetCurrentRateParameters = GetCurrentRateParameters
 
-  public func getCurrentRate() async throws -> (OcaMediaClockRate, OcaONo) {
-    let parameters: GetCurrentRateParameters =
-      try await sendCommandRrq(methodID: OcaMethodID("3.3"))
-    return (parameters.rate, parameters.timeSourceONo)
-  }
+  @OcaMethod("3.3", name: "GetCurrentRate")
+  public func getCurrentRate() async throws -> GetCurrentRateParameters
 
-  public func set(currentRate: OcaMediaClockRate, timeSourceONo: OcaONo? = nil) async throws {
-    let _timeSourceONo: OcaONo
-    if let timeSourceONo {
-      _timeSourceONo = timeSourceONo
-    } else {
-      (_, _timeSourceONo) = try await getCurrentRate()
-    }
-    let parameters = SetCurrentRateParameters(rate: currentRate, timeSourceONo: _timeSourceONo)
-    try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: parameters)
-  }
+  @OcaMethod("3.4", name: "SetCurrentRate", parameters: SetCurrentRateParameters.self)
+  public func setCurrentRate(rate: OcaMediaClockRate, timeSourceONo: OcaONo) async throws
 }
