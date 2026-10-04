@@ -14,23 +14,16 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaDeviceTimeManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.10") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 
-  public var deviceTimeNTP: OcaTimeNTP {
-    get async throws {
-      try await sendCommandRrq(methodID: OcaMethodID("3.1"))
-    }
-  }
+  @OcaMethod("3.1", name: "GetDeviceTimeNTP", resultNames: ["DeviceTime"])
+  public func getDeviceTimeNTP() async throws -> OcaTimeNTP
 
-  public func set(deviceTimeNTP time: OcaTimeNTP) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.2"),
-      parameters: time,
-      parameterNames: ["DeviceTime"]
-    )
-  }
+  @OcaMethod("3.2", name: "SetDeviceTimeNTP", parameterNames: ["DeviceTime"])
+  public func setDeviceTimeNTP(deviceTime: OcaTimeNTP) async throws
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
@@ -48,19 +41,19 @@ open class OcaDeviceTimeManager: OcaManager, @unchecked Sendable {
   )
   public var currentDeviceTimeSource: OcaProperty<OcaONo>.PropertyValue
 
-  public var deviceTimePTP: OcaTime {
-    get async throws {
-      try await sendCommandRrq(methodID: OcaMethodID("3.6"))
-    }
-  }
+  // the property's accessors, as the device declares them
+  @OcaMethod("3.4", name: "GetCurrentDeviceTimeSource", resultNames: ["TimeSourceONo"])
+  public func getCurrentDeviceTimeSource() async throws -> OcaONo
 
-  public func set(deviceTimePTP time: OcaTime) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.7"),
-      parameters: time,
-      parameterNames: ["DeviceTime"]
-    )
-  }
+  @OcaMethod("3.5", name: "SetCurrentDeviceTimeSource", parameterNames: ["TimeSourceONo"])
+  public func setCurrentDeviceTimeSource(timeSourceONo: OcaONo) async throws
+
+  // the model names 3.6 and 3.7 GetDeviceTime and GetDeviceTimePTP both; the device says the first
+  @OcaMethod("3.6", name: "GetDeviceTime", resultNames: ["DeviceTime"])
+  public func getDeviceTime() async throws -> OcaTime
+
+  @OcaMethod("3.7", name: "SetDeviceTime", parameterNames: ["DeviceTime"])
+  public func setDeviceTime(deviceTime: OcaTime) async throws
 
   public convenience init() {
     self.init(objectNumber: OcaDeviceTimeManagerONo)

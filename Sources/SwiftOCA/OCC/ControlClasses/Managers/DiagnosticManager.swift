@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaDiagnosticManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.13") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -22,11 +23,12 @@ open class OcaDiagnosticManager: OcaManager, @unchecked Sendable {
     self.init(objectNumber: OcaDiagnosticManagerONo)
   }
 
-  public func getLockStatus(_ oNo: OcaONo) async throws -> OcaString {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.1"),
-      parameters: oNo,
-      parameterNames: ["ONo"] // name not in AES70-2023 model
-    )
-  }
+  // not in the AES70-2023 model
+  @OcaMethod(
+    "3.1",
+    name: "GetLockStatus",
+    parameterNames: ["ONo"],
+    resultNames: ["StatusDescription"]
+  )
+  public func getLockStatus(oNo: OcaONo) async throws -> OcaString
 }

@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.3") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -28,17 +29,11 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
     self.init(objectNumber: OcaFirmwareManagerONo)
   }
 
-  public func startUpdateProcess() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.2"))
-  }
+  @OcaMethod("3.2", name: "StartUpdateProcess")
+  public func startUpdateProcess() async throws
 
-  public func beginActiveImageUpdate(component: OcaComponent) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.3"),
-      parameters: component,
-      parameterNames: ["Component"]
-    )
-  }
+  @OcaMethod("3.3", name: "BeginActiveImageUpdate", parameterNames: ["Component"])
+  public func beginActiveImageUpdate(component: OcaComponent) async throws
 
   public struct AddImageDataParameters: OcaParametersReflectable {
     public let id: OcaUint32
@@ -50,31 +45,24 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
     }
   }
 
-  public func addImageData(
-    id: OcaUint32,
-    _ imageData: OcaBlob,
-    sync: Bool = true
-  ) async throws {
-    let parameters = AddImageDataParameters(id: id, imageData: imageData)
+  @OcaMethod("3.4", name: "AddImageData", parameters: AddImageDataParameters.self)
+  public func addImageData(id: OcaUint32, imageData: OcaBlob) async throws
 
-    if sync {
-      try await sendCommandRrq(methodID: OcaMethodID("3.4"), parameters: parameters)
-    } else {
-      try await sendCommand(methodID: OcaMethodID("3.4"), parameters: parameters)
-    }
-  }
-
-  public func verifyImage(_ verifyData: OcaBlob) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.5"),
-      parameters: verifyData,
-      parameterNames: ["VerifyData"]
+  /// With `sync` false the chunk is sent without waiting for the response, so that an
+  /// upload can pipeline its chunks.
+  public func addImageData(id: OcaUint32, imageData: OcaBlob, sync: Bool) async throws {
+    guard !sync else { return try await addImageData(id: id, imageData: imageData) }
+    try await sendCommand(
+      methodID: Methods.addImageData.methodID,
+      parameters: AddImageDataParameters(id: id, imageData: imageData)
     )
   }
 
-  public func endActiveImageUpdate() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.6"))
-  }
+  @OcaMethod("3.5", name: "VerifyImage", parameterNames: ["VerifyData"])
+  public func verifyImage(verifyData: OcaBlob) async throws
+
+  @OcaMethod("3.6", name: "EndActiveImageUpdate")
+  public func endActiveImageUpdate() async throws
 
   public struct BeginPassiveComponentUpdateParameters: OcaParametersReflectable {
     public let component: OcaComponent
@@ -92,20 +80,17 @@ open class OcaFirmwareManager: OcaManager, @unchecked Sendable {
     }
   }
 
+  @OcaMethod(
+    "3.7",
+    name: "BeginPassiveComponentUpdate",
+    parameters: BeginPassiveComponentUpdateParameters.self
+  )
   public func beginPassiveComponentUpdate(
     component: OcaComponent,
     serverAddress: OcaNetworkAddress,
     updateFileName: OcaString
-  ) async throws {
-    let parameters = BeginPassiveComponentUpdateParameters(
-      component: component,
-      serverAddress: serverAddress,
-      updateFileName: updateFileName
-    )
-    try await sendCommandRrq(methodID: OcaMethodID("3.7"), parameters: parameters)
-  }
+  ) async throws
 
-  public func endUpdateProcess() async throws {
-    try await sendCommandRrq(methodID: OcaMethodID("3.8"))
-  }
+  @OcaMethod("3.8", name: "EndUpdateProcess")
+  public func endUpdateProcess() async throws
 }
