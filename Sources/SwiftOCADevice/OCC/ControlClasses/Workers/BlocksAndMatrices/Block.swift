@@ -33,6 +33,7 @@ public protocol OcaBlockContainer: OcaRoot {
   #endif
 }
 
+@OcaDeviceMethods
 open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   override open class var classID: OcaClassID {
     OcaClassID("1.1.3")
@@ -257,6 +258,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     return actionObjects
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.getActionObjectsRecursive)
   func getActionObjectsRecursive(from controller: any OcaController) async throws
     -> OcaList<OcaBlockMember>
   {
@@ -268,17 +270,20 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.getSignalPathsRecursive)
   func getSignalPathsRecursive(from controller: any OcaController) async throws
     -> OcaMap<OcaUint16, OcaSignalPath>
   {
     throw Ocp1Error.status(.notImplemented)
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.findActionObjectsByRole)
   func find(
     actionObjectsByRole searchName: OcaString,
     nameComparisonType: OcaStringComparisonType,
     searchClassID: OcaClassID,
-    resultFlags: OcaActionObjectSearchResultFlags
+    resultFlags: OcaActionObjectSearchResultFlags,
+    from controller: any OcaController
   ) async throws -> [OcaObjectSearchResult] {
     await actionObjects.filter { member in
       member.compare(
@@ -292,11 +297,13 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }.collect()
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.findActionObjectsByRoleRecursive)
   func findRecursive(
     actionObjectsByRole searchName: OcaString,
     nameComparisonType: OcaStringComparisonType,
     searchClassID: OcaClassID,
-    resultFlags: OcaActionObjectSearchResultFlags
+    resultFlags: OcaActionObjectSearchResultFlags,
+    from controller: any OcaController
   ) async throws -> [OcaObjectSearchResult] {
     await filterRecursive { member, _ in
       member.compare(
@@ -310,9 +317,11 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }.collect()
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.findActionObjectsByRolePath)
   public func find(
     actionObjectsByRolePath searchPath: OcaNamePath,
-    resultFlags: OcaActionObjectSearchResultFlags
+    resultFlags: OcaActionObjectSearchResultFlags,
+    from controller: any OcaController
   ) async throws -> [OcaObjectSearchResult] {
     let selfRolePath = await rolePath
     return await filterRecursive(maxDepth: searchPath.count) { member, _ in
@@ -322,11 +331,13 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }.collect()
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.findActionObjectsByLabelRecursive)
   func findRecursive(
     actionObjectsByLabel searchName: OcaString,
     nameComparisonType: OcaStringComparisonType,
     searchClassID: OcaClassID,
-    resultFlags: OcaActionObjectSearchResultFlags
+    resultFlags: OcaActionObjectSearchResultFlags,
+    from controller: any OcaController
   ) async throws -> [OcaObjectSearchResult] {
     await filterRecursive { member, _ in
       if let agent = member as? OcaAgent {
@@ -454,6 +465,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     return datasetObject
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.applyParamDataset)
   open func apply(paramDataset: OcaONo, controller: OcaController?) async throws {
     guard let provider = await deviceDelegate?.datasetStorageProvider else {
       throw Ocp1Error.noDatasetStorageProvider
@@ -470,6 +482,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.storeCurrentParameterData, access: .write)
   open func store(
     currentParameterData paramDataset: OcaONo,
     controller: OcaController?
@@ -489,7 +502,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
   }
 
-  open func fetchCurrentParameterData() async throws -> OcaLongBlob {
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.fetchCurrentParameterData, access: .read)
+  open func fetchCurrentParameterData(from controller: any OcaController) async throws -> OcaLongBlob {
     do {
       return try await serializeParameterDataset(compress: true)
     } catch {
@@ -498,6 +512,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.applyParameterData)
   open func apply(parameterData: OcaLongBlob, controller: OcaController?) async throws {
     try await deserializeParameterDataset(from: parameterData)
   }
@@ -619,171 +634,104 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   }
   #endif
 
-  override open func handleCommand(
-    _ command: Ocp1Command,
-    from controller: any OcaController
-  ) async throws -> Ocp1Response {
-    switch command.methodID {
-    // 3.2 ConstructActionObject
-    // 3.3 ConstructBlockUsingFactory
-    // 3.4 DeleteMember
-    case OcaMethodID("3.5"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let actionObjects = actionObjects.map(\.objectIdentification)
-      return try controller.encodeResponse(actionObjects, name: "Objects")
-    case OcaMethodID("3.6"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let actionObjects: [OcaBlockMember] =
-        try await getActionObjectsRecursive(from: controller)
-      return try controller.encodeResponse(actionObjects, name: "Objects")
-    case OcaMethodID("3.7"):
-      let path: OcaSignalPath = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      let index = try await add(signalPath: path)
-      return try controller.encodeResponse(index, name: "Index")
-    case OcaMethodID("3.8"):
-      let index: OcaUint16 = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await delete(signalPathAt: index)
-    case OcaMethodID("3.10"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let signalPaths: [OcaUint16: OcaSignalPath] =
-        try await getSignalPathsRecursive(from: controller)
-      return try controller.encodeResponse(signalPaths, name: "SignalPaths")
-    case OcaMethodID("3.17"):
-      let params: SwiftOCA.OcaBlock
-        .FindActionObjectsByRoleParameters = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let searchResult = try await find(
-        actionObjectsByRole: params.searchName,
-        nameComparisonType: params.nameComparisonType,
-        searchClassID: params.searchClassID,
-        resultFlags: params.resultFlags
-      )
-      return try controller.encodeResponse(searchResult, name: "Result")
-    case OcaMethodID("3.18"):
-      let params: SwiftOCA.OcaBlock
-        .FindActionObjectsByRoleParameters = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let searchResult = try await findRecursive(
-        actionObjectsByRole: params.searchName,
-        nameComparisonType: params.nameComparisonType,
-        searchClassID: params.searchClassID,
-        resultFlags: params.resultFlags
-      )
-      return try controller.encodeResponse(searchResult, name: "Result")
-    case OcaMethodID("3.19"):
-      let params: SwiftOCA.OcaBlock
-        .FindActionObjectsByRoleParameters = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let searchResult = try await findRecursive(
-        actionObjectsByLabel: params.searchName,
-        nameComparisonType: params.nameComparisonType,
-        searchClassID: params.searchClassID,
-        resultFlags: params.resultFlags
-      )
-      return try controller.encodeResponse(searchResult, name: "Result")
-    case OcaMethodID("3.20"):
-      let params: SwiftOCA.OcaBlock
-        .FindActionObjectsByPathParameters = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let searchResult = try await find(
-        actionObjectsByRolePath: params.searchPath,
-        resultFlags: params.resultFlags
-      )
-      return try controller.encodeResponse(searchResult, name: "Result")
-    #if NonEmbeddedBuild
-    case OcaMethodID("3.23"):
-      let params: OcaONo = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await apply(paramDataset: params, controller: controller)
-    case OcaMethodID("3.24"):
-      let params: OcaONo = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await store(currentParameterData: params, controller: controller)
-    case OcaMethodID("3.25"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let paramData = try await fetchCurrentParameterData()
-      return try controller.encodeResponse(paramData, name: "Data")
-    case OcaMethodID("3.26"):
-      let paramData: OcaLongBlob = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      try await apply(parameterData: paramData, controller: controller)
-    case OcaMethodID("3.27"):
-      let params: SwiftOCA.OcaBlock.ConstructDataSetParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      let oNo = try await constructDataset(
-        classID: params.classID,
-        name: params.name,
-        type: params.type,
-        maxSize: params.maxSize,
-        initialContents: params.initialContents,
-        controller: controller
-      )
-      return try controller.encodeResponse(oNo, name: "ObjectNumber")
-    case OcaMethodID("3.28"):
-      let params: SwiftOCA.OcaBlock.DuplicateDataSetParameters = try decodeCommand(command)
-      try await ensureWritable(by: controller, command: command)
-      let oNo = try await duplicateDataset(
-        oldONo: params.oldONo,
-        targetBlockONo: params.targetBlockONo,
-        newName: params.newName,
-        newMaxSize: params.newMaxSize,
-        controller: controller
-      )
-      return try controller.encodeResponse(oNo, name: "NewONo")
-    case OcaMethodID("3.29"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let datasetObjecst = try await datasetObjects.map(\.objectIdentification)
-      return try controller.encodeResponse(datasetObjecst, name: "Objects")
-    case OcaMethodID("3.30"):
-      try decodeNullCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let datasetObjects: [OcaBlockMember] =
-        try await getDatasetObjectsRecursive(from: controller).map { dataset in
-          OcaBlockMember(
-            memberObjectIdentification: dataset.objectIdentification,
-            containerObjectNumber: dataset.owner
-          )
-        }
-      return try controller.encodeResponse(datasetObjects, name: "Objects")
-    case OcaMethodID("3.31"), OcaMethodID("3.32"):
-      let params: SwiftOCA.OcaBlock.FindDatasetsParameters = try decodeCommand(command)
-      try await ensureReadable(by: controller, command: command)
-      let datasets: [OcaDataset] = if command.methodID == OcaMethodID("3.31") {
-        try await findDatasets(
-          name: params.name,
-          nameComparisonType: params.nameComparisonType,
-          type: params.type,
-          typeComparisonType: params.typeComparisonType
-        )
-      } else {
-        try await findDatasetsRecursive(
-          name: params.name,
-          nameComparisonType: params.nameComparisonType,
-          type: params.type,
-          typeComparisonType: params.typeComparisonType
-        )
-      }
-      let searchResults = datasets.map { dataset in
-        let blockMember = OcaBlockMember(
-          memberObjectIdentification: dataset.objectIdentification,
-          containerObjectNumber: self.objectNumber
-        )
-        return OcaDatasetSearchResult(object: blockMember, name: dataset.name, type: dataset.type)
-      }
-      return try controller.encodeResponse(searchResults, name: "Datasets")
-    #endif
-    default:
-      return try await super.handleCommand(command, from: controller)
-    }
-    return Ocp1Response()
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.getActionObjects)
+  func getActionObjects(from controller: any OcaController) -> [OcaObjectIdentification] {
+    actionObjects.map(\.objectIdentification)
   }
+
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.addSignalPath)
+  func addSignalPath(_ path: OcaSignalPath, from controller: any OcaController) async throws -> OcaUint16 {
+    try await add(signalPath: path)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.deleteSignalPath)
+  func deleteSignalPath(_ index: OcaUint16, from controller: any OcaController) async throws {
+    try await delete(signalPathAt: index)
+  }
+
+  #if NonEmbeddedBuild
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.constructDataset)
+  func constructDataset(
+    _ parameters: SwiftOCA.OcaBlock.ConstructDataSetParameters,
+    from controller: any OcaController
+  ) async throws -> OcaONo {
+    try await constructDataset(
+      classID: parameters.classID,
+      name: parameters.name,
+      type: parameters.type,
+      maxSize: parameters.maxSize,
+      initialContents: parameters.initialContents,
+      controller: controller
+    )
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.duplicateDataset)
+  func duplicateDataset(
+    _ parameters: SwiftOCA.OcaBlock.DuplicateDataSetParameters,
+    from controller: any OcaController
+  ) async throws -> OcaONo {
+    try await duplicateDataset(
+      oldONo: parameters.oldONo,
+      targetBlockONo: parameters.targetBlockONo,
+      newName: parameters.newName,
+      newMaxSize: parameters.newMaxSize,
+      controller: controller
+    )
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.getDatasetObjects)
+  func getDatasetObjects(from controller: any OcaController) async throws -> [OcaObjectIdentification] {
+    try await datasetObjects.map(\.objectIdentification)
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.getDatasetObjectsRecursive)
+  func getDatasetObjectMembersRecursive(from controller: any OcaController) async throws
+    -> [OcaBlockMember]
+  {
+    try await getDatasetObjectsRecursive(from: controller).map { dataset in
+      OcaBlockMember(
+        memberObjectIdentification: dataset.objectIdentification,
+        containerObjectNumber: dataset.owner
+      )
+    }
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.findDatasets)
+  func findDatasets(
+    _ parameters: SwiftOCA.OcaBlock.FindDatasetsParameters,
+    from controller: any OcaController
+  ) async throws -> [OcaDatasetSearchResult] {
+    try await datasetSearchResults(findDatasets(
+      name: parameters.name,
+      nameComparisonType: parameters.nameComparisonType,
+      type: parameters.type,
+      typeComparisonType: parameters.typeComparisonType
+    ))
+  }
+
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.findDatasetsRecursive)
+  func findDatasetsRecursive(
+    _ parameters: SwiftOCA.OcaBlock.FindDatasetsParameters,
+    from controller: any OcaController
+  ) async throws -> [OcaDatasetSearchResult] {
+    try await datasetSearchResults(findDatasetsRecursive(
+      name: parameters.name,
+      nameComparisonType: parameters.nameComparisonType,
+      type: parameters.type,
+      typeComparisonType: parameters.typeComparisonType
+    ))
+  }
+
+  private func datasetSearchResults(_ datasets: [OcaDataset]) -> [OcaDatasetSearchResult] {
+    datasets.map { dataset in
+      let blockMember = OcaBlockMember(
+        memberObjectIdentification: dataset.objectIdentification,
+        containerObjectNumber: objectNumber
+      )
+      return OcaDatasetSearchResult(object: blockMember, name: dataset.name, type: dataset.type)
+    }
+  }
+  #endif
 
   override public var isContainer: Bool {
     true

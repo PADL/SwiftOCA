@@ -76,6 +76,13 @@ Sendable {
   )
   public var actionObjects: OcaListProperty<OcaObjectIdentification>.PropertyValue
 
+  // the property's getter, as the device declares it
+  public static let getActionObjects = OcaMethodDescriptor<Void, [OcaObjectIdentification]>(
+    "3.5",
+    name: "GetActionObjects",
+    resultNames: ["Objects"]
+  )
+
   @OcaProperty(
     propertyID: OcaPropertyID("3.3"),
     getMethodID: OcaMethodID("3.9"),
@@ -109,6 +116,12 @@ Sendable {
   )
   public var datasetObjects: OcaProperty<[OcaObjectIdentification]>.PropertyValue
 
+  public static let getDatasetObjects = OcaMethodDescriptor<Void, [OcaObjectIdentification]>(
+    "3.29",
+    name: "GetDatasetObjects",
+    resultNames: ["Objects"]
+  )
+
   @OcaProperty(
     propertyID: OcaPropertyID("3.8"),
     getMethodID: OcaMethodID("3.21")
@@ -132,39 +145,52 @@ Sendable {
     }
   }
 
-  // 3.2
+  public static let constructActionObject =
+    OcaMethodDescriptor<ConstructActionObjectParameters, OcaONo>(
+      "3.2",
+      name: "ConstructActionObject",
+      resultNames: ["ObjectNumber"]
+    )
+
   public func constructActionObject(
     classID: OcaClassID,
     constructionParameters: [OcaConstructionParameter]
   ) async throws -> OcaONo {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.2"),
-      parameters: ConstructActionObjectParameters(
-        classID: classID,
-        constructionParameters: constructionParameters
-      ),
-      parameterNames: ["ClassID", "ConstructionParameters"]
+    try await invoke(
+      Self.constructActionObject,
+      .init(classID: classID, constructionParameters: constructionParameters)
     )
   }
+
+  public static let constructBlockUsingFactory = OcaMethodDescriptor<OcaONo, OcaONo>(
+    "3.3",
+    name: "ConstructBlockUsingFactory",
+    parameterNames: ["FactoryONo"],
+    resultNames: ["ObjectNumber"]
+  )
 
   public func constructActionObject(factory factoryONo: OcaONo) async throws -> OcaONo {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.3"),
-      parameters: factoryONo,
-      parameterNames: ["FactoryONo"]
-    )
+    try await invoke(Self.constructBlockUsingFactory, factoryONo)
   }
+
+  public static let deleteMember = OcaMethodDescriptor<OcaONo, Void>(
+    "3.4",
+    name: "DeleteMember",
+    parameterNames: ["ObjectNumber"]
+  )
 
   public func delete(actionObject objectNumber: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.4"),
-      parameters: objectNumber,
-      parameterNames: ["ObjectNumber"]
-    )
+    try await invoke(Self.deleteMember, objectNumber)
   }
 
+  public static let getActionObjectsRecursive = OcaMethodDescriptor<Void, OcaList<OcaBlockMember>>(
+    "3.6",
+    name: "GetActionObjectsRecursive",
+    resultNames: ["Objects"]
+  )
+
   public func getActionObjectsRecursive() async throws -> OcaList<OcaBlockMember> {
-    try await sendCommandRrq(methodID: OcaMethodID("3.6"))
+    try await invoke(Self.getActionObjectsRecursive)
   }
 
   private func _getActionObjectsRecursiveFallback(
@@ -207,44 +233,67 @@ Sendable {
     })
   }
 
+  public static let addSignalPath = OcaMethodDescriptor<OcaSignalPath, OcaUint16>(
+    "3.7",
+    name: "AddSignalPath",
+    parameterNames: ["Path"],
+    resultNames: ["Index"]
+  )
+
   public func add(signalPath path: OcaSignalPath) async throws -> OcaUint16 {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.7"),
-      parameters: path,
-      parameterNames: ["Path"]
-    )
+    try await invoke(Self.addSignalPath, path)
   }
+
+  public static let deleteSignalPath = OcaMethodDescriptor<OcaUint16, Void>(
+    "3.8",
+    name: "DeleteSignalPath",
+    parameterNames: ["Index"]
+  )
 
   public func delete(signalPath index: OcaUint16) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.8"),
-      parameters: index,
-      parameterNames: ["Index"]
-    )
+    try await invoke(Self.deleteSignalPath, index)
   }
+
+  public static let getSignalPathsRecursive =
+    OcaMethodDescriptor<Void, OcaMap<OcaUint16, OcaSignalPath>>(
+      "3.10",
+      name: "GetSignalPathsRecursive",
+      resultNames: ["SignalPaths"]
+    )
 
   public func getActionObjectsRecursive() async throws -> OcaMap<OcaUint16, OcaSignalPath> {
-    try await sendCommandRrq(methodID: OcaMethodID("3.10"))
+    try await invoke(Self.getSignalPathsRecursive)
   }
+
+  // 3.12 to 3.14 are the 2018 model's param sets; the device does not answer them
+  public static let applyParamSet = OcaMethodDescriptor<OcaLibVolIdentifier, Void>(
+    "3.12",
+    name: "ApplyParamSet",
+    parameterNames: ["Identifier"]
+  )
 
   public func apply(paramSet identifier: OcaLibVolIdentifier) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.12"),
-      parameters: identifier,
-      parameterNames: ["Identifier"]
-    )
+    try await invoke(Self.applyParamSet, identifier)
   }
+
+  public static let getCurrentParamSetData = OcaMethodDescriptor<Void, OcaLibVolData_ParamSet>(
+    "3.13",
+    name: "GetCurrentParamSetData",
+    resultNames: ["Data"]
+  )
 
   public func get() async throws -> OcaLibVolData_ParamSet {
-    try await sendCommandRrq(methodID: OcaMethodID("3.13"))
+    try await invoke(Self.getCurrentParamSetData)
   }
 
+  public static let storeCurrentParamSetData = OcaMethodDescriptor<OcaLibVolIdentifier, Void>(
+    "3.14",
+    name: "StoreCurrentParamSetData",
+    parameterNames: ["Identifier"]
+  )
+
   public func store(currentParamSet identifier: OcaLibVolIdentifier) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.14"),
-      parameters: identifier,
-      parameterNames: ["Identifier"]
-    )
+    try await invoke(Self.storeCurrentParamSetData, identifier)
   }
 
   private func validate(
@@ -290,27 +339,52 @@ Sendable {
     }
   }
 
+  /// The search results decode by `resultFlags`, which the decoder reads as user info.
+  private func search<Parameters: Encodable>(
+    _ method: OcaMethodDescriptor<Parameters, [OcaObjectSearchResult]>,
+    _ parameters: Parameters,
+    resultFlags: OcaActionObjectSearchResultFlags
+  ) async throws -> [OcaObjectSearchResult] {
+    let searchResults = try await invoke(
+      method,
+      parameters,
+      userInfo: [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
+    )
+    try validate(searchResults, against: resultFlags)
+    return searchResults
+  }
+
+  public static let findActionObjectsByRole =
+    OcaMethodDescriptor<FindActionObjectsByRoleParameters, [OcaObjectSearchResult]>(
+      "3.17",
+      name: "FindActionObjectsByRole",
+      resultNames: ["Result"]
+    )
+
   public func find(
     actionObjectsByRole searchName: OcaString,
     nameComparisonType: OcaStringComparisonType,
     searchClassID: OcaClassID? = nil,
     resultFlags: OcaActionObjectSearchResultFlags
   ) async throws -> OcaList<OcaObjectSearchResult> {
-    let params = FindActionObjectsByRoleParameters(
-      searchName: searchName,
-      nameComparisonType: nameComparisonType,
-      searchClassID: searchClassID,
+    try await search(
+      Self.findActionObjectsByRole,
+      .init(
+        searchName: searchName,
+        nameComparisonType: nameComparisonType,
+        searchClassID: searchClassID,
+        resultFlags: resultFlags
+      ),
       resultFlags: resultFlags
     )
-    let userInfo = [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
-    let searchResults: [OcaObjectSearchResult] = try await sendCommandRrq(
-      methodID: OcaMethodID("3.17"),
-      parameters: params,
-      userInfo: userInfo
-    )
-    try validate(searchResults, against: resultFlags)
-    return searchResults
   }
+
+  public static let findActionObjectsByRoleRecursive =
+    OcaMethodDescriptor<FindActionObjectsByRoleParameters, [OcaObjectSearchResult]>(
+      "3.18",
+      name: "FindActionObjectsByRoleRecursive",
+      resultNames: ["Result"]
+    )
 
   public func findRecursive(
     actionObjectsByRole searchName: OcaString,
@@ -318,20 +392,16 @@ Sendable {
     searchClassID: OcaClassID? = nil,
     resultFlags: OcaActionObjectSearchResultFlags
   ) async throws -> OcaList<OcaObjectSearchResult> {
-    let params = FindActionObjectsByRoleParameters(
-      searchName: searchName,
-      nameComparisonType: nameComparisonType,
-      searchClassID: searchClassID,
+    try await search(
+      Self.findActionObjectsByRoleRecursive,
+      .init(
+        searchName: searchName,
+        nameComparisonType: nameComparisonType,
+        searchClassID: searchClassID,
+        resultFlags: resultFlags
+      ),
       resultFlags: resultFlags
     )
-    let userInfo = [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
-    let searchResults: [OcaObjectSearchResult] = try await sendCommandRrq(
-      methodID: OcaMethodID("3.18"),
-      parameters: params,
-      userInfo: userInfo
-    )
-    try validate(searchResults, against: resultFlags)
-    return searchResults
   }
 
   public struct FindActionObjectsByPathParameters: OcaParametersReflectable {
@@ -344,72 +414,84 @@ Sendable {
     }
   }
 
+  public static let findActionObjectsByLabelRecursive =
+    OcaMethodDescriptor<FindActionObjectsByRoleParameters, [OcaObjectSearchResult]>(
+      "3.19",
+      name: "FindActionObjectsByLabelRecursive",
+      resultNames: ["Result"]
+    )
+
   public func findRecursive(
     actionObjectsByLabel searchName: OcaString,
     nameComparisonType: OcaStringComparisonType,
     searchClassID: OcaClassID? = nil,
     resultFlags: OcaActionObjectSearchResultFlags
   ) async throws -> OcaList<OcaObjectSearchResult> {
-    let params = FindActionObjectsByRoleParameters(
-      searchName: searchName,
-      nameComparisonType: nameComparisonType,
-      searchClassID: searchClassID,
+    try await search(
+      Self.findActionObjectsByLabelRecursive,
+      .init(
+        searchName: searchName,
+        nameComparisonType: nameComparisonType,
+        searchClassID: searchClassID,
+        resultFlags: resultFlags
+      ),
       resultFlags: resultFlags
     )
-    let userInfo = [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
-    let searchResults: [OcaObjectSearchResult] = try await sendCommandRrq(
-      methodID: OcaMethodID("3.19"),
-      parameters: params,
-      userInfo: userInfo
-    )
-    try validate(searchResults, against: resultFlags)
-    return searchResults
   }
+
+  public static let findActionObjectsByRolePath =
+    OcaMethodDescriptor<FindActionObjectsByPathParameters, [OcaObjectSearchResult]>(
+      "3.20",
+      name: "FindActionObjectsByRolePath",
+      resultNames: ["Result"]
+    )
 
   public func find(
     actionObjectsByPath searchPath: OcaNamePath,
     resultFlags: OcaActionObjectSearchResultFlags
   ) async throws -> OcaList<OcaObjectSearchResult> {
-    let params = FindActionObjectsByPathParameters(
-      searchPath: searchPath,
+    try await search(
+      Self.findActionObjectsByRolePath,
+      .init(searchPath: searchPath, resultFlags: resultFlags),
       resultFlags: resultFlags
     )
-    let userInfo = [OcaObjectSearchResult.FlagsUserInfoKey: resultFlags]
-    let searchResults: [OcaObjectSearchResult] = try await sendCommandRrq(
-      methodID: OcaMethodID("3.20"),
-      parameters: params,
-      userInfo: userInfo
-    )
-    try validate(searchResults, against: resultFlags)
-    return searchResults
   }
+
+  public static let applyParamDataset =
+    OcaMethodDescriptor<OcaONo, Void>("3.23", name: "ApplyParamDataset", parameterNames: ["ONo"])
 
   public func apply(paramDataset: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.23"),
-      parameters: paramDataset,
-      parameterNames: ["ONo"]
-    )
+    try await invoke(Self.applyParamDataset, paramDataset)
   }
+
+  public static let storeCurrentParameterData = OcaMethodDescriptor<OcaONo, Void>(
+    "3.24",
+    name: "StoreCurrentParameterData",
+    parameterNames: ["ONo"]
+  )
 
   public func store(currentParameterData: OcaONo) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.24"),
-      parameters: currentParameterData,
-      parameterNames: ["ONo"]
-    )
+    try await invoke(Self.storeCurrentParameterData, currentParameterData)
   }
+
+  public static let fetchCurrentParameterData = OcaMethodDescriptor<Void, OcaLongBlob>(
+    "3.25",
+    name: "FetchCurrentParameterData",
+    resultNames: ["Data"]
+  )
 
   public func fetchCurrentParameterData() async throws -> OcaLongBlob {
-    try await sendCommandRrq(methodID: OcaMethodID("3.25"))
+    try await invoke(Self.fetchCurrentParameterData)
   }
 
+  public static let applyParameterData = OcaMethodDescriptor<OcaLongBlob, Void>(
+    "3.26",
+    name: "ApplyParameterData",
+    parameterNames: ["Data"]
+  )
+
   public func apply(parameterData: OcaLongBlob) async throws {
-    try await sendCommandRrq(
-      methodID: OcaMethodID("3.26"),
-      parameters: parameterData,
-      parameterNames: ["Data"]
-    )
+    try await invoke(Self.applyParameterData, parameterData)
   }
 
   @_spi(SwiftOCAPrivate)
@@ -435,6 +517,13 @@ Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let constructDataset =
+    OcaMethodDescriptor<ConstructDataSetParameters, OcaONo>(
+      "3.27",
+      name: "ConstructDataset",
+      resultNames: ["ObjectNumber"]
+    )
+
   public func constructDataset(
     classID: OcaClassID,
     name: OcaString,
@@ -442,14 +531,16 @@ Sendable {
     maxSize: OcaUint64,
     initialContents: OcaLongBlob
   ) async throws -> OcaONo {
-    let params = ConstructDataSetParameters(
-      classID: classID,
-      name: name,
-      type: type,
-      maxSize: maxSize,
-      initialContents: initialContents
+    try await invoke(
+      Self.constructDataset,
+      .init(
+        classID: classID,
+        name: name,
+        type: type,
+        maxSize: maxSize,
+        initialContents: initialContents
+      )
     )
-    return try await sendCommandRrq(methodID: OcaMethodID("3.27"), parameters: params)
   }
 
   @_spi(SwiftOCAPrivate)
@@ -467,23 +558,39 @@ Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let duplicateDataset =
+    OcaMethodDescriptor<DuplicateDataSetParameters, OcaONo>(
+      "3.28",
+      name: "DuplicateDataset",
+      resultNames: ["NewONo"]
+    )
+
   public func duplicateDataset(
     oldONo: OcaONo,
     targetBlockONo: OcaONo,
     newName: OcaString,
     newMaxSize: OcaUint64
   ) async throws -> OcaONo {
-    let params = DuplicateDataSetParameters(
-      oldONo: oldONo,
-      targetBlockONo: targetBlockONo,
-      newName: newName,
-      newMaxSize: newMaxSize
+    try await invoke(
+      Self.duplicateDataset,
+      .init(
+        oldONo: oldONo,
+        targetBlockONo: targetBlockONo,
+        newName: newName,
+        newMaxSize: newMaxSize
+      )
     )
-    return try await sendCommandRrq(methodID: OcaMethodID("3.28"), parameters: params)
   }
 
+  public static let getDatasetObjectsRecursive =
+    OcaMethodDescriptor<Void, OcaList<OcaBlockMember>>(
+      "3.30",
+      name: "GetDatasetObjectsRecursive",
+      resultNames: ["Objects"]
+    )
+
   public func getDatasetObjectsRecursive() async throws -> OcaList<OcaBlockMember> {
-    try await sendCommandRrq(methodID: OcaMethodID("3.30"))
+    try await invoke(Self.getDatasetObjectsRecursive)
   }
 
   @_spi(SwiftOCAPrivate)
@@ -506,6 +613,13 @@ Sendable {
     }
   }
 
+  @_spi(SwiftOCAPrivate) public static let findDatasets =
+    OcaMethodDescriptor<FindDatasetsParameters, [OcaDatasetSearchResult]>(
+      "3.31",
+      name: "FindDatasets",
+      resultNames: ["Datasets"]
+    )
+
   public func findDatasets(
     name: OcaString,
     nameComparisonType: OcaStringComparisonType,
@@ -514,14 +628,23 @@ Sendable {
   ) async throws
     -> [OcaDatasetSearchResult]
   {
-    let params = FindDatasetsParameters(
-      name: name,
-      nameComparisonType: nameComparisonType,
-      type: type,
-      typeComparisonType: typeComparisonType
+    try await invoke(
+      Self.findDatasets,
+      .init(
+        name: name,
+        nameComparisonType: nameComparisonType,
+        type: type,
+        typeComparisonType: typeComparisonType
+      )
     )
-    return try await sendCommandRrq(methodID: OcaMethodID("3.31"), parameters: params)
   }
+
+  @_spi(SwiftOCAPrivate) public static let findDatasetsRecursive =
+    OcaMethodDescriptor<FindDatasetsParameters, [OcaDatasetSearchResult]>(
+      "3.32",
+      name: "FindDatasetsRecursive",
+      resultNames: ["Datasets"]
+    )
 
   public func findDatasetsRecursive(
     name: OcaString,
@@ -531,13 +654,15 @@ Sendable {
   ) async throws
     -> [OcaDatasetSearchResult]
   {
-    let params = FindDatasetsParameters(
-      name: name,
-      nameComparisonType: nameComparisonType,
-      type: type,
-      typeComparisonType: typeComparisonType
+    try await invoke(
+      Self.findDatasetsRecursive,
+      .init(
+        name: name,
+        nameComparisonType: nameComparisonType,
+        type: type,
+        typeComparisonType: typeComparisonType
+      )
     )
-    return try await sendCommandRrq(methodID: OcaMethodID("3.32"), parameters: params)
   }
 
   override public var isContainer: Bool {
