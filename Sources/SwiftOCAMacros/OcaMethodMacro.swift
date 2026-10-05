@@ -240,12 +240,14 @@ private struct ClientMethod {
         let fields = parameters.map { "\(access)let \($0.name): \($0.type)" }
         let arguments = parameters.map { "\($0.name): \($0.type)" }
         let assignments = parameters.map { "self.\($0.name) = \($0.name)" }
-        declarations.append(
-          (["\(access)struct \(recordName): OcaParametersReflectable {"]
-            + fields.map { "  " + $0 } + [""]
-            + ["  \(access)init(\(arguments.joined(separator: ", "))) {"]
-            + assignments.map { "    " + $0 } + ["  }", "}"]).joined(separator: "\n")
-        )
+        // built in steps, as one expression is too slow for Swift 6.3 to type-check
+        var lines = ["\(access)struct \(recordName): OcaParametersReflectable {"]
+        lines += fields.map { "  " + $0 }
+        lines.append("")
+        lines.append("  \(access)init(\(arguments.joined(separator: ", "))) {")
+        lines += assignments.map { "    " + $0 }
+        lines += ["  }", "}"]
+        declarations.append(lines.joined(separator: "\n"))
       }
     }
     let resultType = attribute.resultType ?? self.resultType ?? "Void"
