@@ -48,10 +48,11 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   public private(set) var actionObjects = [ActionObject]()
 
   #if NonEmbeddedBuild
+  /// Empty on a device without dataset storage, which holds no datasets.
   public var datasetObjects: [OcaDataset] {
     get async throws {
       guard let provider = await deviceDelegate?.datasetStorageProvider else {
-        throw Ocp1Error.noDatasetStorageProvider
+        return []
       }
       return try await provider.getDatasetObjects(targetONo: objectNumber)
     }
@@ -612,7 +613,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     switch type {
     case OcaParamDatasetMimeType:
       guard let provider = await deviceDelegate?.datasetStorageProvider else {
-        throw Ocp1Error.noDatasetStorageProvider
+        return []
       }
       return try await provider.find(
         targetONo: objectNumber,

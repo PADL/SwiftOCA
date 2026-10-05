@@ -143,6 +143,36 @@ final class DeviceMethodTests: XCTestCase {
   }
 
   @OcaDevice
+  func testABlockWithoutDatasetStorageHasNoDatasets() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let block = try await SwiftOCADevice.OcaBlock<SwiftOCADevice.OcaRoot>(
+      role: "Block",
+      deviceDelegate: device
+    )
+    let controller = TestController()
+
+    for methodID in [OcaMethodID("3.29"), OcaMethodID("3.30")] {
+      let get = Ocp1Command(
+        handle: 1,
+        targetONo: block.objectNumber,
+        methodID: methodID,
+        parameters: OcaParameters()
+      )
+      let response = try await block.handleCommand(get, from: controller)
+      XCTAssertEqual(response.statusCode, .ok)
+      XCTAssertEqual(response.parameters.parameterCount, 1)
+      let count = try Ocp1Decoder().decode(OcaUint16.self, from: response.parameters.parameterData)
+      XCTAssertEqual(count, 0)
+    }
+
+    // what needs storage to do anything is not implemented, and not a device error
+    let apply = try command(OcaMethodID("3.23"), OcaONo(0x1000_0000), on: block)
+    let response = await device.handleCommand(apply, from: controller)
+    XCTAssertEqual(response.statusCode, .notImplemented)
+  }
+
+  @OcaDevice
   func testASubclassArmTakesPrecedence() async throws {
     let worker: _ArmedWorker = try await makeWorker()
     let path = try command(OcaMethodID("2.13"), SwiftOCA.OcaRoot.Placeholder(), on: worker)

@@ -321,6 +321,9 @@ public actor OcaDevice {
       return .init(responseSize: 0, handle: command.handle, statusCode: .processingFailed)
     } catch Ocp1Error.invalidObject {
       return .init(responseSize: 0, handle: command.handle, statusCode: .badONo)
+    } catch Ocp1Error.noDatasetStorageProvider {
+      // constructing, storing or applying a dataset on a device that cannot hold one
+      return .init(responseSize: 0, handle: command.handle, statusCode: .notImplemented)
     } catch {
       if let object {
         logger
