@@ -23,7 +23,8 @@ import Foundation
 /// Event data as a notification carries it: OCP.1 bytes, or the OCP.2 JSON value as
 /// parsed from or encoded for the wire, `nil` when there is none. The value is passed
 /// through unserialised, so only a recipient wanting bytes pays for them.
-package enum OcaEncodedEventData: Sendable {
+@_spi(SwiftOCAPrivate)
+public enum OcaEncodedEventData: Sendable {
   case ocp1(Data)
   #if NonEmbeddedBuild
   case ocp2((any Sendable)?)
@@ -109,7 +110,8 @@ public enum OcaEventDataCoding {
     try propertyID(from: OcaEncodedEventData(data, format: format))
   }
 
-  package static func propertyID(from eventData: OcaEncodedEventData) throws -> OcaPropertyID {
+  @_spi(SwiftOCAPrivate)
+  public static func propertyID(from eventData: OcaEncodedEventData) throws -> OcaPropertyID {
     switch eventData {
     case let .ocp1(data):
       return try OcaPropertyID(bytes: data)

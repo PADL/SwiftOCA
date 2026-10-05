@@ -51,7 +51,7 @@ public struct Ocp1Notification2ExceptionData: Equatable, Codable, Sendable, Erro
 
 public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
   let notificationSize: OcaUint32
-  let event: OcaEvent
+  public let event: OcaEvent
   let notificationType: Ocp1Notification2Type
   /// OCP.1 event data (`.event`) or an OCP.1-encoded `Ocp1Notification2ExceptionData`
   /// (`.exception`). Exception data is always OCP.1-encoded, whatever the framing,
@@ -78,7 +78,8 @@ public struct Ocp1Notification2: _Ocp1MessageCodable, Sendable {
   }
 
   /// The event data as it was received or encoded.
-  package var eventData: OcaEncodedEventData {
+  @_spi(SwiftOCAPrivate)
+  public var eventData: OcaEncodedEventData {
     #if NonEmbeddedBuild
     switch dataFormat {
     case .ocp1: .ocp1(_data)

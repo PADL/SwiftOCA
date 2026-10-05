@@ -16,7 +16,7 @@
 
 #if NonEmbeddedBuild
 import Foundation
-@testable import SwiftOCA
+@testable @_spi(SwiftOCAPrivate) import SwiftOCA
 import XCTest
 
 /// AES70-4 clause 6 framing, exercised with the standard's own example PDUs.
