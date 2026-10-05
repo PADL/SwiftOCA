@@ -46,10 +46,17 @@ public protocol OcaController: Actor {
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType
   ) async throws
+
+  /// Whether an event the controller's subscriptions match is to be encoded and sent
+  /// to it. A controller in the device's own process may instead act on the event here,
+  /// its parameters not yet encoded, and return false. Called on the notifying task.
+  nonisolated func isNotifiable(event: OcaEvent, parameters: OcaEventParameters) -> Bool
 }
 
 public extension OcaController {
   nonisolated var peerIdentity: OcaPeerIdentity { .anonymous }
+
+  nonisolated func isNotifiable(event: OcaEvent, parameters: OcaEventParameters) -> Bool { true }
 
   nonisolated var controlProtocol: OcaControlProtocol { .ocp1 }
 

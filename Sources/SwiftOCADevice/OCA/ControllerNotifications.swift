@@ -61,16 +61,17 @@ extension OcaController {
       return eventData
     }
 
+    // subscriptions are kept per emitter, so an emitter's other events must not be
+    // delivered to a controller that subscribed to only one of them
+    let matching = subscriptions.lazy.filter {
+      $0.event.eventID == event.eventID && ($0.property == nil || $0.property == property)
+    }
+    guard !matching.isEmpty, isNotifiable(event: event, parameters: eventParameters) else {
+      return []
+    }
+
     var notifications = [OcaNotificationMessage]()
-    for subscription in subscriptions {
-      // subscriptions are kept per emitter, so an emitter's other events must not be
-      // delivered to a controller that subscribed to only one of them
-      guard subscription.event.eventID == event.eventID else {
-        continue
-      }
-      guard subscription.property == nil || property == subscription.property else {
-        continue
-      }
+    for subscription in matching {
       let destination = subscription.notificationDeliveryMode == .lightweight
         ? subscription.destinationInformation : nil
 
