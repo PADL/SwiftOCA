@@ -68,3 +68,12 @@ open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
   @OcaMethod("3.4", name: "SetCurrentRate", parameters: SetCurrentRateParameters.self)
   public func setCurrentRate(rate: OcaMediaClockRate, timeSourceONo: OcaONo) async throws
 }
+
+public extension OcaMediaClock3 {
+  /// Sets the rate and keeps the current time source, which is read first; the
+  /// two commands are not atomic.
+  func setCurrentRate(rate: OcaMediaClockRate) async throws {
+    let timeSourceONo = try await getCurrentRate().timeSourceONo
+    try await setCurrentRate(rate: rate, timeSourceONo: timeSourceONo)
+  }
+}
