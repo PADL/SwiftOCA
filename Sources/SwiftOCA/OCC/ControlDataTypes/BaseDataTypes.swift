@@ -246,7 +246,9 @@ public struct OcaLibVolIdentifier: Codable, Equatable, Sendable {
 public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible,
   ExpressibleByStringLiteral
 {
-  let fields: [OcaUint16]
+  /// The class ID's fields, as AES70-1 encodes them: a proprietary class's authority
+  /// is 0xFFFF followed by its organisation ID in two fields.
+  public let fields: [OcaUint16]
 
   static let ProprietaryClassFieldMask = OcaUint16(0x8000)
   static let ProprietaryTestClassFieldMask = OcaUint16(0xFF00)
