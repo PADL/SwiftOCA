@@ -192,10 +192,8 @@ public struct OcaDeviceProperty<Value: Codable & Equatable & Sendable>:
     try? await notifySubscribers(object: object, newValue)
   }
 
-  /// Whether the value is an optional with nothing in it. (Casting it to `Value?` would
-  /// wrap it, and the wrapping is never empty.)
   private func isNil(_ value: Value) -> Bool {
-    (value as? any _OcaOptional)?.isNone ?? false
+    _isNone(value)
   }
 
   func getResponse(for controller: any OcaController, names: [String]?) async throws
@@ -384,12 +382,4 @@ extension OcaDevicePropertyRepresentable {
     )
     try await remoteObject.forward(event: event, eventData: eventData)
   }
-}
-
-private protocol _OcaOptional {
-  var isNone: Bool { get }
-}
-
-extension Optional: _OcaOptional {
-  var isNone: Bool { self == nil }
 }

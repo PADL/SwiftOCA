@@ -516,17 +516,6 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
     self
   }
 
-  private func isNil(_ value: Value) -> Bool {
-    if let value = value as? ExpressibleByNilLiteral,
-       let value = value as? Value?,
-       case .none = value
-    {
-      true
-    } else {
-      false
-    }
-  }
-
   #if NonEmbeddedBuild
   /// The property as OCP.2 JSON: its wire name and its AES70-4 marshaled value.
   public func getJsonValue(
