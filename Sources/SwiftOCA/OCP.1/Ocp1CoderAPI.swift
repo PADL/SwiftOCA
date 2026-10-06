@@ -243,3 +243,17 @@ extension Data {
     }
   }
 }
+
+/// Whether a value is an optional with nothing in it. Casting it to its own type made
+/// optional would wrap it, and the wrapping is never empty, so the optional is asked.
+package func _isNone(_ value: some Any) -> Bool {
+  (value as? any _OcaOptional)?.isNone ?? false
+}
+
+private protocol _OcaOptional {
+  var isNone: Bool { get }
+}
+
+extension Optional: _OcaOptional {
+  fileprivate var isNone: Bool { self == nil }
+}
