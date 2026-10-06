@@ -24,6 +24,9 @@ import Foundation
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+/// What tells a bounded property apart, for introspection.
+protocol _OcaBoundedDevicePropertyRepresentable {}
+
 @propertyWrapper
 public struct OcaBoundedDeviceProperty<
   Value: Codable &
@@ -236,3 +239,5 @@ public struct OcaBoundedDeviceProperty<
     }
   }
 }
+
+extension OcaBoundedDeviceProperty: _OcaBoundedDevicePropertyRepresentable {}

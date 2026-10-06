@@ -35,6 +35,22 @@ public struct OcaDevicePropertyDescriptor: Sendable {
   /// The type of each component of a vector property, which is what its change events
   /// carry, one for each of the two property IDs. Nil for any other property.
   public let componentType: (any (Codable & Sendable).Type)?
+  /// What a property is to every class that has one, where it is one of those AES70
+  /// gives several classes under different IDs.
+  public enum Role: Sendable, Equatable {
+    /// The object's label (OcaWorker's, OcaAgent's, OcaNetworkApplication's and others).
+    case label
+    /// The block that contains the object (`OcaOwnable`).
+    case owner
+  }
+
+  public let role: Role?
+  /// For a vector property, the names of its two components: the property's name without
+  /// its `XY`, with `X` and `Y` after it. Nil for any other property.
+  public let componentNames: (x: String, y: String)?
+  /// Whether the property keeps a range beside its value (`OcaBoundedDeviceProperty`),
+  /// which its getter answers with after the value.
+  public let isBounded: Bool
   /// The OCP.2 names of the getter's response parameters. A bounded property has three,
   /// its value first; a vector has none, as its fields name themselves.
   public let ocp2GetNames: [String]
@@ -125,6 +141,15 @@ public extension Ocp2Encoder {
 }
 
 private extension OcaDevicePropertyRepresentable {
+  /// The classes that have a label or an owner all call it by the same Swift name.
+  static func role(named name: String, valueType: Any.Type) -> OcaDevicePropertyDescriptor.Role? {
+    switch name {
+    case "label" where valueType == OcaString.self: .label
+    case "owner" where valueType == OcaONo.self: .owner
+    default: nil
+    }
+  }
+
   func description(named name: String) -> OcaDevicePropertyDescriptor {
     OcaDevicePropertyDescriptor(
       name: name,
@@ -134,6 +159,12 @@ private extension OcaDevicePropertyRepresentable {
       valueType: valueType,
       yPropertyID: vectorComponents?.yPropertyID,
       componentType: vectorComponents?.type,
+      role: Self.role(named: name, valueType: valueType),
+      componentNames: vectorComponents.map { _ in
+        let stem = name.hasSuffix("XY") ? String(name.dropLast(2)) : name
+        return (stem + "X", stem + "Y")
+      },
+      isBounded: self is any _OcaBoundedDevicePropertyRepresentable,
       ocp2GetNames: responseNames(propertyName: name),
       ocp2SetName: setName(propertyName: name)
     )
