@@ -733,6 +733,13 @@ private actor ArmTestController: OcaController {
   func sendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {}
 }
 
+private actor Ocp2ArmTestController: OcaController {
+  nonisolated let flags: OcaControllerFlags = []
+  nonisolated var controlProtocol: OcaControlProtocol { .ocp2 }
+
+  func sendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {}
+}
+
 /// A block that can find datasets below it, which the base class cannot.
 private final class _SearchableBlock: SwiftOCADevice.OcaBlock<SwiftOCADevice.OcaRoot> {
   override func findDatasetsRecursive(
@@ -858,5 +865,27 @@ final class HandleCommandArmTests: XCTestCase {
       _ = try await object.handleCommand(try command("1.1", OcaUint8(1), on: object), from: controller)
       XCTFail("answered GetClassIdentification with a parameter")
     } catch Ocp1Error.status(.parameterOutOfRange) {}
+  }
+
+  /// OCP.1 cannot encode a property that has no value; OCP.2 answers with null.
+  @OcaDevice
+  func testAPropertyWithNoValueIsNullOverOcp2() async throws {
+    let device = try await makeDevice()
+    let agent = try await SwiftOCADevice.OcaCounterSetAgent(deviceDelegate: device, addToRootBlock: false)
+    XCTAssertNil(agent.counterSet)
+    do {
+      _ = try await agent.handleCommand(try command("3.1", on: agent), from: ArmTestController())
+      XCTFail("encoded no value over OCP.1")
+    } catch Ocp1Error.status(.parameterOutOfRange) {}
+
+    let get = Ocp1Command(
+      handle: 1, targetONo: agent.objectNumber, methodID: OcaMethodID("3.1"),
+      parameters: OcaParameters(ocp2Parameters: [:])
+    )
+    let response = try await agent.handleCommand(get, from: Ocp2ArmTestController())
+    XCTAssertEqual(response.statusCode, .ok)
+    let values = try XCTUnwrap(response.parameters.ocp2Parameters)
+    XCTAssertEqual(values.count, 1)
+    XCTAssertTrue(values.values.allSatisfy { $0 is NSNull }, "\(values)")
   }
 }
