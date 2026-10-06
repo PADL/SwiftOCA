@@ -132,6 +132,8 @@ public actor OcaDevice {
 
   /// Every object registered with the device, by object number.
   public internal(set) var objects = [OcaONo: OcaRoot]()
+  /// The handle of the last command `send` made.
+  private var inProcessHandle: OcaUint32 = 0
   var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
   var endpoints = [OcaDeviceEndpoint]()
   var logger = Logger(label: "com.padl.SwiftOCADevice")
@@ -289,6 +291,26 @@ public actor OcaDevice {
       try await owner.delete(actionObject: object)
     }
     objects[object.objectNumber] = nil
+  }
+
+  /// Sends an object one of its methods with OCP.2 parameters, as `controller` would over
+  /// OCP.2, for a bridge to another control protocol: the device decodes the parameters
+  /// and makes its access and lock checks as for any controller's command.
+  public func send(
+    _ methodID: OcaMethodID,
+    to objectNumber: OcaONo,
+    ocp2Parameters parameters: [String: Any] = [:],
+    from controller: any OcaController
+  ) async -> (status: OcaStatus, parameters: [String: any Sendable]?) {
+    inProcessHandle &+= 1
+    let command = Ocp1Command(
+      handle: inProcessHandle,
+      targetONo: objectNumber,
+      methodID: methodID,
+      parameters: OcaParameters(ocp2Parameters: parameters)
+    )
+    let response = await handleCommand(command, from: controller)
+    return (response.statusCode, response.parameters.ocp2Parameters)
   }
 
   public func handleCommand(
