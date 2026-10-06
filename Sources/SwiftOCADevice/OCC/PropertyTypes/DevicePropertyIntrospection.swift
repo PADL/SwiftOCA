@@ -116,6 +116,12 @@ public extension Ocp2Encoder {
   static func fieldName(_ swiftName: String) -> String {
     Ocp2Naming.wireName(swiftName)
   }
+
+  /// The stored properties of a composite datatype and their types, in declaration
+  /// order, read from its metadata: its fields, where its coding is synthesised.
+  static func fields(of type: Any.Type) -> [(name: String, type: Any.Type)] {
+    Ocp2Naming.fields(of: type)
+  }
 }
 
 private extension OcaDevicePropertyRepresentable {
