@@ -192,22 +192,18 @@ public struct OcaDeviceProperty<Value: Codable & Equatable & Sendable>:
     try? await notifySubscribers(object: object, newValue)
   }
 
+  /// Whether the value is an optional with nothing in it. (Casting it to `Value?` would
+  /// wrap it, and the wrapping is never empty.)
   private func isNil(_ value: Value) -> Bool {
-    if let value = value as? ExpressibleByNilLiteral,
-       let value = value as? Value?,
-       case .none = value
-    {
-      true
-    } else {
-      false
-    }
+    (value as? any _OcaOptional)?.isNone ?? false
   }
 
   func getResponse(for controller: any OcaController, names: [String]?) async throws
     -> Ocp1Response
   {
     let value: Value = get()
-    if isNil(value) {
+    // OCP.1 has no encoding for no value; OCP.2 has null
+    if isNil(value), controller.controlProtocol == .ocp1 {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
     return try controller.encodeResponse(value, names: names)
@@ -388,4 +384,12 @@ extension OcaDevicePropertyRepresentable {
     )
     try await remoteObject.forward(event: event, eventData: eventData)
   }
+}
+
+private protocol _OcaOptional {
+  var isNone: Bool { get }
+}
+
+extension Optional: _OcaOptional {
+  var isNone: Bool { self == nil }
 }
