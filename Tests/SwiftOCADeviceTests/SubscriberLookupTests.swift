@@ -127,6 +127,24 @@ final class SubscriberLookupTests: XCTestCase {
     try await manager.addSubscription(subscription(to: event(7003)), for: CountingController())
   }
 
+  func testASubscriberContextLongerThanTheDeviceKeepsIsRefused() async throws {
+    let (_, manager) = try await makeDevice()
+    func subscription(_ event: OcaEvent, contextLength: Int) -> OcaSubscriptionManagerSubscription {
+      var context = OcaBlob()
+      context.append(contentsOf: [UInt8](repeating: 0xAA, count: contextLength))
+      return .subscription(OcaSubscription(
+        event: event, subscriber: OcaMethod(oNo: 1, methodID: OcaMethodID("1.1")), subscriberContext: context,
+        notificationDeliveryMode: .normal, destinationInformation: OcaNetworkAddress()
+      ))
+    }
+    let maximum = Int(SwiftOCADevice.OcaSubscriptionManager.maximumSubscriberContextLength)
+    try await manager.addSubscription(subscription(event(7005), contextLength: maximum), for: CountingController())
+    do {
+      try await manager.addSubscription(subscription(event(7006), contextLength: maximum + 1), for: CountingController())
+      XCTFail("a subscriber context longer than the maximum was accepted")
+    } catch Ocp1Error.status(.parameterOutOfRange) {}
+  }
+
   func testAControllerThatCannotBeSentLightweightNotificationsIsRefusedThem() async throws {
     let (_, manager) = try await makeDevice()
     let lightweight = OcaSubscriptionManagerSubscription.subscription2(OcaSubscription2(

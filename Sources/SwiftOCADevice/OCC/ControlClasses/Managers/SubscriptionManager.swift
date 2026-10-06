@@ -132,6 +132,9 @@ public class OcaSubscriptionManager: OcaManager {
     ).isEmpty else {
       throw Ocp1Error.alreadySubscribedToEvent(subscription.event)
     }
+    guard subscription.subscriberContext.count <= Int(Self.maximumSubscriberContextLength) else {
+      throw Ocp1Error.status(.parameterOutOfRange)
+    }
     guard controller is OcaControllerLightweightNotifying ||
       subscription.notificationDeliveryMode == .normal
     else {
@@ -485,10 +488,12 @@ public class OcaSubscriptionManager: OcaManager {
     OcaMethodID("3.1"), OcaMethodID("3.2"), OcaMethodID("3.5"), OcaMethodID("3.6"),
   ]
 
-  /// The payload of an EV1 subscriber context this device supports, in bytes.
+  /// The longest EV1 subscriber context this device keeps, in bytes.
+  public nonisolated static let maximumSubscriberContextLength: OcaUint16 = 4
+
   @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.Methods.getMaximumSubscriberContextLength)
   private func getMaximumSubscriberContextLength(from controller: any OcaController) -> OcaUint16 {
-    4
+    Self.maximumSubscriberContextLength
   }
 
   override open func handleCommand(
