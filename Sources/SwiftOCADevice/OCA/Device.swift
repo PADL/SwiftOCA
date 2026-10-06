@@ -130,7 +130,8 @@ public actor OcaDevice {
   public private(set) var deviceManager: OcaDeviceManager!
   public private(set) var securityManager: OcaSecurityManager!
 
-  var objects = [OcaONo: OcaRoot]()
+  /// Every object registered with the device, by object number.
+  public internal(set) var objects = [OcaONo: OcaRoot]()
   var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
   var endpoints = [OcaDeviceEndpoint]()
   var logger = Logger(label: "com.padl.SwiftOCADevice")
