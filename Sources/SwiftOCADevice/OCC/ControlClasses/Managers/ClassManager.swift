@@ -141,48 +141,14 @@ public final class OcaClassManager: OcaManager {
   /// anything else by its own name. A typealias such as `OcaDB` is not known at run
   /// time, so it is named for the type it stands for.
   fileprivate nonisolated static func _ocaTypeName(for type: Any.Type) -> String {
-    if let type = type as? any OcaTypeNamed.Type { return type.ocaTypeName }
-    return switch type {
-    case is Bool.Type: "OcaBoolean"
-    case is Int8.Type: "OcaInt8"
-    case is Int16.Type: "OcaInt16"
-    case is Int32.Type: "OcaInt32"
-    case is Int64.Type: "OcaInt64"
-    case is UInt8.Type: "OcaUint8"
-    case is UInt16.Type: "OcaUint16"
-    case is UInt32.Type: "OcaUint32"
-    case is UInt64.Type: "OcaUint64"
-    case is Float.Type: "OcaFloat32"
-    case is Double.Type: "OcaFloat64"
-    case is String.Type: "OcaString"
-    case is LengthTaggedData16.Type: "OcaBlob"
-    case is LengthTaggedData32.Type: "OcaLongBlob"
-    default: String(describing: type)
+    switch OcaDatatypeKind(of: type) {
+    case let .base(name), let .blob(name): name
+    case let .optional(wrapped): _ocaTypeName(for: wrapped)
+    case let .list(element): "OcaList<\(_ocaTypeName(for: element))>"
+    case let .map(key, value): "OcaMap<\(_ocaTypeName(for: key)), \(_ocaTypeName(for: value))>"
+    // a bounded property's value is of its type, with the bounds beside it
+    case let .bounded(value): _ocaTypeName(for: value)
+    case .enumeration, .rawValue, .structure, .other: String(describing: type)
     }
   }
-}
-
-/// A generic type whose AES70 name is made from its parameters' AES70 names.
-private protocol OcaTypeNamed {
-  static var ocaTypeName: String { get }
-}
-
-extension Array: OcaTypeNamed {
-  fileprivate static var ocaTypeName: String { "OcaList<\(OcaClassManager._ocaTypeName(for: Element.self))>" }
-}
-
-extension Dictionary: OcaTypeNamed {
-  fileprivate static var ocaTypeName: String {
-    "OcaMap<\(OcaClassManager._ocaTypeName(for: Key.self)), \(OcaClassManager._ocaTypeName(for: Value.self))>"
-  }
-}
-
-// AES70 has no optional type: a value that may be absent is of the type it holds
-extension Optional: OcaTypeNamed {
-  fileprivate static var ocaTypeName: String { OcaClassManager._ocaTypeName(for: Wrapped.self) }
-}
-
-// a bounded property's value is of its type, with the bounds beside it
-extension OcaBoundedPropertyValue: OcaTypeNamed {
-  fileprivate static var ocaTypeName: String { OcaClassManager._ocaTypeName(for: Value.self) }
 }
