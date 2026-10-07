@@ -84,8 +84,16 @@ public extension OcaRoot {
   /// Every device property of this object, inherited ones included, in property ID
   /// order. The descriptors are of the class, not of this instance's values.
   var devicePropertyDescriptors: [OcaDevicePropertyDescriptor] {
-    allDevicePropertyKeyPaths.compactMap { name, keyPath in
-      (self[keyPath: keyPath] as? any OcaDevicePropertyRepresentable)?.description(named: name)
+    // which of the class's properties are its label and its owner, as the class says
+    let label = (self as? any OcaLabelRepresentable).map { type(of: $0).labelPropertyID }
+    let owner = (self as? any OcaOwnable).map { type(of: $0).ownerPropertyID }
+    return allDevicePropertyKeyPaths.compactMap { name, keyPath in
+      guard let property = self[keyPath: keyPath] as? any OcaDevicePropertyRepresentable else { return nil }
+      var flags: OcaDevicePropertyDescriptor.Flags = []
+      if property is any _OcaBoundedDevicePropertyRepresentable { flags.insert(.bounded) }
+      if property.propertyID == label { flags.insert(.label) }
+      if property.propertyID == owner { flags.insert(.owner) }
+      return property.description(named: name, flags: flags)
     }.sorted { $0.propertyID < $1.propertyID }
   }
 
@@ -144,16 +152,7 @@ public extension Ocp2Encoder {
 }
 
 private extension OcaDevicePropertyRepresentable {
-  /// The classes that have a label or an owner all call it by the same Swift name.
-  func flags(named name: String) -> OcaDevicePropertyDescriptor.Flags {
-    var flags: OcaDevicePropertyDescriptor.Flags = []
-    if self is any _OcaBoundedDevicePropertyRepresentable { flags.insert(.bounded) }
-    if name == "label", valueType == OcaString.self { flags.insert(.label) }
-    if name == "owner", valueType == OcaONo.self { flags.insert(.owner) }
-    return flags
-  }
-
-  func description(named name: String) -> OcaDevicePropertyDescriptor {
+  func description(named name: String, flags: OcaDevicePropertyDescriptor.Flags) -> OcaDevicePropertyDescriptor {
     OcaDevicePropertyDescriptor(
       name: name,
       propertyID: propertyID,
@@ -162,7 +161,7 @@ private extension OcaDevicePropertyRepresentable {
       valueType: valueType,
       yPropertyID: vectorComponents?.yPropertyID,
       componentType: vectorComponents?.type,
-      flags: flags(named: name),
+      flags: flags,
       componentNames: vectorComponents.map { _ in
         let stem = name.hasSuffix("XY") ? String(name.dropLast(2)) : name
         return (stem + "X", stem + "Y")

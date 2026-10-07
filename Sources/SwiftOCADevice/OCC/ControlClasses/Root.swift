@@ -660,6 +660,9 @@ private final class OcaDevicePropertyKeyPathCache: Sendable {
 @OcaDevice
 public protocol OcaOwnable: OcaRoot {
   var owner: OcaONo { get set }
+  /// The ID of the property that holds the owner, which differs between classes.
+  @_spi(SwiftOCAPrivate)
+  nonisolated static var ownerPropertyID: OcaPropertyID { get }
 }
 
 public extension OcaOwnable {
@@ -671,6 +674,8 @@ public extension OcaOwnable {
 @OcaDevice
 protocol OcaLabelRepresentable: OcaRoot {
   var label: OcaString { get set }
+  /// The ID of the property that holds the label, which differs between classes.
+  nonisolated static var labelPropertyID: OcaPropertyID { get }
 }
 
 /// protocol for forwarding an event

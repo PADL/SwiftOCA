@@ -52,6 +52,11 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
   )
   public var owner: OcaONo = OcaInvalidONo
 
+  @_spi(SwiftOCAPrivate)
+  public nonisolated static var labelPropertyID: OcaPropertyID { OcaPropertyID("2.3") }
+  @_spi(SwiftOCAPrivate)
+  public nonisolated static var ownerPropertyID: OcaPropertyID { OcaPropertyID("2.4") }
+
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.5"),
     getMethodID: OcaMethodID("2.11"),
