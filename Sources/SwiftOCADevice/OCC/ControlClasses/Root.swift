@@ -234,9 +234,6 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   /// `@OcaDeviceMethod` methods; here by hand, as there is no parent to extend.
   /// `handleCommand` consults it for a command no subclass arm took, and a bridge reads
   /// it to present the methods.
-  /// The storage of each device property this class declares, by the property's name,
-  /// its parent's first. `@OcaDeviceClass` writes it from the class's device property
-  /// declarations; `OcaRoot` declares none.
   open class var devicePropertyKeyPaths: [String: AnyKeyPath] { [:] }
 
   /// The AES70 name of each device property's type as this class declares it, by the
@@ -585,9 +582,6 @@ extension OcaRoot {
   }
 }
 
-/// Each class's device property key paths and accessor methods, worked out once from its
-/// `devicePropertyKeyPaths` and shared by every instance of the class. An entry is built
-/// on the device's actor, where the table is; deinit reads the one built at initialisation.
 private final class OcaDevicePropertyKeyPathCache: Sendable {
   fileprivate static let shared = OcaDevicePropertyKeyPathCache()
 
@@ -632,8 +626,6 @@ private final class OcaDevicePropertyKeyPathCache: Sendable {
       return cacheEntry
     }
 
-    // built outside the lock; two tasks building the same class's entry at once build the
-    // same thing, and the first stored is kept
     let cacheEntry = CacheEntry(object: object)
     return _cache.withLock { cache in
       if let existing = cache[key] {
@@ -649,8 +641,6 @@ private final class OcaDevicePropertyKeyPathCache: Sendable {
     cacheEntry(for: object).keyPaths
   }
 
-  /// The key paths of the object's class, which its initialisation looked up: for deinit,
-  /// which is not isolated.
   fileprivate func cachedKeyPaths(for object: some OcaRoot) -> [String: AnyKeyPath] {
     _cache.withLock { $0[object._metaTypeObjectIdentifier] }?.keyPaths ?? [:]
   }
