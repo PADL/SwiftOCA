@@ -41,7 +41,6 @@ public typealias OcaFloat64 = Float64
 public typealias OcaDB = OcaFloat32
 public typealias OcaString = String
 
-public typealias OcaONo = OcaUint32
 public typealias OcaSessionID = OcaUint16
 
 public typealias OcaClassVersionNumber = OcaUint16

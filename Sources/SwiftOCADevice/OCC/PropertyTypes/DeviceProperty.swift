@@ -268,7 +268,7 @@ public struct OcaDeviceProperty<Value: Codable & Equatable & Sendable>:
         throw Ocp1Error.status(.badFormat)
       }
       await setAndNotifySubscribers(object: object, objects)
-    } else if subject.value is [OcaRoot], let objectNumbers = jsonValue as? [OcaONo] {
+    } else if subject.value is [OcaRoot], let objectNumbers = (jsonValue as? [OcaUint32])?.map(OcaONo.init(rawValue:)) {
       // resolve an array of object numbers to objects (only when property holds OcaRoot references)
       var objects = [OcaRoot]()
       for oNo in objectNumbers {
@@ -280,7 +280,7 @@ public struct OcaDeviceProperty<Value: Codable & Equatable & Sendable>:
         throw Ocp1Error.status(.badFormat)
       }
       await setAndNotifySubscribers(object: object, objects)
-    } else if subject.value is OcaRoot, let objectNumber = jsonValue as? OcaONo {
+    } else if subject.value is OcaRoot, let objectNumber = (jsonValue as? OcaUint32).map(OcaONo.init(rawValue:)) {
       // resolve a single object number to an object (only when property holds an OcaRoot reference)
       guard let resolved = await device.objects[objectNumber] as? Value else {
         throw Ocp1Error.status(.badFormat)

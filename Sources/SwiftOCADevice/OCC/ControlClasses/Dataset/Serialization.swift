@@ -35,7 +35,7 @@ private let datasetParamDatasetsJSONKey = "_paramDatasets"
 private let OcaJsonDatasetVersion: OcaUint32 = 1
 
 func _getObjectNumberFromJsonObject(jsonObject: [String: Sendable]) throws -> OcaONo {
-  guard let objectNumber = jsonObject[objectNumberJSONKey] as? OcaONo,
+  guard let objectNumber = (jsonObject[objectNumberJSONKey] as? OcaUint32).map(OcaONo.init(rawValue:)),
         objectNumber != OcaInvalidONo
   else {
     throw Ocp1Error.status(.badONo)
@@ -219,7 +219,7 @@ extension OcaDeviceManager {
     root[datasetVersionJSONKey] = OcaJsonDatasetVersion
     root[datasetDeviceModelJSONKey] = modelGUID.jsonObject
     root[datasetMimeTypeJSONKey] = OcaPatchDatasetMimeType
-    root[datasetParamDatasetsJSONKey] = Array(paramDatasetONos)
+    root[datasetParamDatasetsJSONKey] = paramDatasetONos.map(\.rawValue)
 
     return root
   }
@@ -276,7 +276,7 @@ extension OcaDeviceManager {
       throw Ocp1Error.invalidDatasetFormat
     }
 
-    let datasetParams = (jsonObject[datasetParamDatasetsJSONKey] as? [OcaONo]) ?? []
+    let datasetParams = (jsonObject[datasetParamDatasetsJSONKey] as? [OcaUint32])?.map(OcaONo.init(rawValue:)) ?? []
     for datasetParam in datasetParams {
       let dataset = try await storageProvider.resolve(
         targetONo: nil,

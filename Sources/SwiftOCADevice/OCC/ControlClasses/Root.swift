@@ -417,7 +417,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
       return [:]
     }
 
-    dict[objectNumberJSONKey] = objectNumber
+    dict[objectNumberJSONKey] = objectNumber.rawValue
     dict[classIDJSONKey] = Self.classID.description
     for (_, propertyKeyPath) in allDevicePropertyKeyPaths {
       let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
@@ -484,7 +484,7 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
         throw Ocp1Error.globalTypeMismatch
       }
     } else {
-      guard let oNo = jsonObject[objectNumberJSONKey] as? OcaONo else {
+      guard let oNo = (jsonObject[objectNumberJSONKey] as? OcaUint32).map(OcaONo.init(rawValue:)) else {
         logger.warning("bad or missing object number when deserializing")
         throw Ocp1Error.status(.badFormat)
       }
