@@ -80,11 +80,10 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
     XCTAssertTrue(enabled.valueType == Bool.self)
     XCTAssertEqual(enabled.ocp2GetNames, ["Enabled"])
     XCTAssertEqual(enabled.ocp2SetName, "Enabled")
-    XCTAssertFalse(enabled.isBounded)
-    XCTAssertNil(enabled.role)
+    XCTAssertEqual(enabled.flags, [])
     XCTAssertNil(enabled.componentNames)
-    XCTAssertEqual(properties.first { $0.name == "label" }?.role, .label)
-    XCTAssertEqual(properties.first { $0.name == "owner" }?.role, .owner)
+    XCTAssertEqual(properties.first { $0.name == "label" }?.flags, .label)
+    XCTAssertEqual(properties.first { $0.name == "owner" }?.flags, .owner)
 
     // the model's own spelling where the declaration gives one
     let ports = try XCTUnwrap(properties.first { $0.name == "ports" })
@@ -101,7 +100,7 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
     XCTAssertTrue(property.valueType == OcaDB.self)
     XCTAssertEqual(property.ocp2GetNames, ["Gain", "MinGain", "MaxGain"])
     XCTAssertEqual(property.ocp2SetName, "Gain")
-    XCTAssertTrue(property.isBounded)
+    XCTAssertEqual(property.flags, .bounded)
   }
 
   @OcaDevice

@@ -35,22 +35,25 @@ public struct OcaDevicePropertyDescriptor: Sendable {
   /// The type of each component of a vector property, which is what its change events
   /// carry, one for each of the two property IDs. Nil for any other property.
   public let componentType: (any (Codable & Sendable).Type)?
-  /// What a property is to every class that has one, where it is one of those AES70
-  /// gives several classes under different IDs.
-  public enum Role: Sendable, Equatable {
-    /// The object's label (OcaWorker's, OcaAgent's, OcaNetworkApplication's and others).
-    case label
-    /// The block that contains the object (`OcaOwnable`).
-    case owner
+  /// What else is known of a property.
+  public struct Flags: OptionSet, Sendable {
+    public let rawValue: UInt8
+    public init(rawValue: UInt8) { self.rawValue = rawValue }
+
+    /// It keeps a range beside its value (`OcaBoundedDeviceProperty`), which its getter
+    /// answers with after the value.
+    public static let bounded = Flags(rawValue: 1 << 0)
+    /// It is the object's label, which AES70 gives several classes under different IDs
+    /// (OcaWorker's, OcaAgent's, OcaNetworkApplication's and others).
+    public static let label = Flags(rawValue: 1 << 1)
+    /// It is the block that contains the object (`OcaOwnable`).
+    public static let owner = Flags(rawValue: 1 << 2)
   }
 
-  public let role: Role?
+  public let flags: Flags
   /// For a vector property, the names of its two components: the property's name without
   /// its `XY`, with `X` and `Y` after it. Nil for any other property.
   public let componentNames: (x: String, y: String)?
-  /// Whether the property keeps a range beside its value (`OcaBoundedDeviceProperty`),
-  /// which its getter answers with after the value.
-  public let isBounded: Bool
   /// The OCP.2 names of the getter's response parameters. A bounded property has three,
   /// its value first; a vector has none, as its fields name themselves.
   public let ocp2GetNames: [String]
@@ -142,12 +145,12 @@ public extension Ocp2Encoder {
 
 private extension OcaDevicePropertyRepresentable {
   /// The classes that have a label or an owner all call it by the same Swift name.
-  static func role(named name: String, valueType: Any.Type) -> OcaDevicePropertyDescriptor.Role? {
-    switch name {
-    case "label" where valueType == OcaString.self: .label
-    case "owner" where valueType == OcaONo.self: .owner
-    default: nil
-    }
+  func flags(named name: String) -> OcaDevicePropertyDescriptor.Flags {
+    var flags: OcaDevicePropertyDescriptor.Flags = []
+    if self is any _OcaBoundedDevicePropertyRepresentable { flags.insert(.bounded) }
+    if name == "label", valueType == OcaString.self { flags.insert(.label) }
+    if name == "owner", valueType == OcaONo.self { flags.insert(.owner) }
+    return flags
   }
 
   func description(named name: String) -> OcaDevicePropertyDescriptor {
@@ -159,12 +162,11 @@ private extension OcaDevicePropertyRepresentable {
       valueType: valueType,
       yPropertyID: vectorComponents?.yPropertyID,
       componentType: vectorComponents?.type,
-      role: Self.role(named: name, valueType: valueType),
+      flags: flags(named: name),
       componentNames: vectorComponents.map { _ in
         let stem = name.hasSuffix("XY") ? String(name.dropLast(2)) : name
         return (stem + "X", stem + "Y")
       },
-      isBounded: self is any _OcaBoundedDevicePropertyRepresentable,
       ocp2GetNames: responseNames(propertyName: name),
       ocp2SetName: setName(propertyName: name)
     )
