@@ -62,6 +62,8 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(gain.name, "OcaGain")
     let property = try XCTUnwrap(gain.properties.first { $0.propertyID == OcaPropertyID(defLevel: 4, propertyIndex: 1) })
     XCTAssertEqual(property.name, "gain")
+    // AES70's names for types, a bounded property's being its value's
+    XCTAssertEqual(property.typeName, "OcaFloat32")
     XCTAssertFalse(property.isReadOnly)
     // its own elements only: nothing of OcaRoot's or OcaWorker's
     XCTAssertTrue(gain.properties.allSatisfy { $0.propertyID.defLevel == 4 })
@@ -71,6 +73,7 @@ final class ClassManagerTests: XCTestCase {
     )
     let label = try XCTUnwrap(inherited.properties.first { $0.name == "label" })
     XCTAssertEqual(label.propertyID.defLevel, 2)
+    XCTAssertEqual(label.typeName, "OcaString")
     XCTAssertFalse(label.isReadOnly)
     XCTAssertGreaterThan(inherited.properties.count, gain.properties.count)
   }
@@ -87,6 +90,11 @@ final class ClassManagerTests: XCTestCase {
     let own = try XCTUnwrap(classes.first { $0.classID == SwiftOCA.OcaClassManager.classID })
     let method = try XCTUnwrap(own.methods.first { $0.name == "GetControlClass" })
     XCTAssertEqual(method.parameters.map(\.name), ["ClassID", "IncludeInherited"])
+    XCTAssertEqual(method.parameters.map(\.typeName), ["OcaClassID", "OcaBoolean"])
+    let list = try XCTUnwrap(own.methods.first { $0.name == "GetControlClasses" })
+    XCTAssertEqual(list.resultTypeName, "OcaList<OcaClassDescriptor>")
+    // a generic class by its own name
+    XCTAssertTrue(classes.contains { $0.name == "OcaBlock" })
     XCTAssertEqual(ids.count, classes.count, "each class once")
   }
 
