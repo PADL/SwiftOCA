@@ -172,9 +172,9 @@ public struct OcaONo: RawRepresentable, FixedWidthInteger, UnsignedInteger, Hash
   public static func &<<= (lhs: inout OcaONo, rhs: OcaONo) { lhs.rawValue &<<= rhs.rawValue }
 }
 
-/// Formats as a `UInt32` does, so that `String(format:)` takes an object number.
-extension OcaONo: CVarArg {
-  @inlinable public var _cVarArgEncoding: [Int] { rawValue._cVarArgEncoding }
+public extension OcaONo {
+  /// The object number in hexadecimal, as `0x1000`, as object numbers are often written.
+  var hexDescription: String { "0x" + String(rawValue, radix: 16) }
 }
 
 #if canImport(Foundation)

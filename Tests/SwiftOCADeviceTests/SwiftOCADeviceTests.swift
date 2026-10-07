@@ -538,7 +538,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(referring["5.1"] as? [OcaUint32], [4096, 4097])
     // and is read back from one, and formatted, as the number it is
     XCTAssertEqual(OcaONo(truncating: NSNumber(value: 4096)), 4096)
-    XCTAssertEqual(String(format: "0x%x", OcaONo(4096)), "0x1000")
+    XCTAssertEqual(OcaONo(4096).hexDescription, "0x1000")
   }
 
   /// Test that the deserialization filter can ignore properties
