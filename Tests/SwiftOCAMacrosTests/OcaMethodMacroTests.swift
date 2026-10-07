@@ -56,9 +56,9 @@ private let macros: [String: any Macro.Type] = [
           /// The descriptors of the class's methods, each under the method's name.
           public enum Methods {
             public static let getPath =
-              OcaMethodDescriptor<Void, OcaGetPathParameters>("2.13", name: "GetPath")
+              OcaMethodDescriptor<Void, OcaGetPathParameters>("2.13", name: "GetPath", resultTypeNames: ["OcaGetPathParameters"])
             public static let deletePort =
-              OcaMethodDescriptor<OcaPortID, Void>("2.4", name: "DeletePort", parameterNames: ["ID"])
+              OcaMethodDescriptor<OcaPortID, Void>("2.4", name: "DeletePort", parameterNames: ["ID"], parameterTypeNames: ["OcaPortID"])
             public static let setPortName =
               OcaMethodDescriptor<SetPortNameParameters, Void>("2.7", name: "SetPortName", parameterNames: ["ID", "Name"])
           }
@@ -95,7 +95,7 @@ private let macros: [String: any Macro.Type] = [
               }
             }
             public static let setRoute =
-              OcaMethodDescriptor<SetRouteParameters, OcaUint16>("3.1", name: "SetRoute", resultNames: ["Previous"])
+              OcaMethodDescriptor<SetRouteParameters, OcaUint16>("3.1", name: "SetRoute", resultNames: ["Previous"], parameterTypeNames: ["OcaUint16", "OcaUint16"], resultTypeNames: ["OcaUint16"])
           }
       }
       """,
@@ -133,7 +133,7 @@ private let macros: [String: any Macro.Type] = [
             static let setTransferFunction =
               OcaMethodDescriptor<SetTransferFunctionParameters, Void>("4.2", name: "SetTransferFunction")
             static let find =
-              OcaMethodDescriptor<OcaString, [OcaObjectSearchResult]>("3.17", name: "Find")
+              OcaMethodDescriptor<OcaString, [OcaObjectSearchResult]>("3.17", name: "Find", parameterTypeNames: ["OcaString"])
           }
       }
       """,
@@ -171,7 +171,7 @@ private let macros: [String: any Macro.Type] = [
               OcaMethodDescriptor<Void, Void>("3.1", name: "Reset")
             #if NonEmbeddedBuild
             public static let applyPatch =
-              OcaMethodDescriptor<OcaONo, Void>("3.2", name: "ApplyPatch", parameterNames: ["ONo"])
+              OcaMethodDescriptor<OcaONo, Void>("3.2", name: "ApplyPatch", parameterNames: ["ONo"], parameterTypeNames: ["OcaONo"])
             #endif
           }
       }
