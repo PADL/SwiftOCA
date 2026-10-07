@@ -76,12 +76,13 @@ public final class OcaClassManager: OcaManager {
     OcaClassDescriptor(
       classID: oca.classID,
       classVersion: oca.classVersion,
-      name: name(of: oca.type),
+      // a generic class, such as OcaBlock<OcaRoot>, by the class's own name
+      name: String(String(describing: oca.type).prefix { $0 != "<" }),
       properties: classes.flatMap(\.properties).map { property in
         OcaClassPropertyDescriptor(
           propertyID: property.propertyID,
           name: property.name,
-          typeName: name(of: property.valueType),
+          typeName: aes70Name(of: property.valueType),
           isReadOnly: !property.isSettable
         )
       },
@@ -91,7 +92,7 @@ public final class OcaClassManager: OcaManager {
           methodID: method.methodID,
           name: method.name,
           parameters: parameters(of: method),
-          resultTypeName: method.resultType.map(name(of:)) ?? ""
+          resultTypeName: method.resultType.map(aes70Name(of:)) ?? ""
         )
       }
     )
@@ -105,14 +106,59 @@ public final class OcaClassManager: OcaManager {
       return fields.enumerated().map { index, field in
         let name = method.parameterNames.flatMap { index < $0.count ? $0[index] : nil }
           ?? Ocp2Encoder.fieldName(field.name)
-        return OcaClassParameterDescriptor(name: name, typeName: Self.name(of: field.type))
+        return OcaClassParameterDescriptor(name: name, typeName: aes70Name(of: field.type))
       }
     }
-    return [OcaClassParameterDescriptor(name: method.parameterNames?.first ?? "Value", typeName: name(of: type))]
+    return [OcaClassParameterDescriptor(name: method.parameterNames?.first ?? "Value", typeName: aes70Name(of: type))]
   }
 
-  /// A Swift type's name, as a controller would recognise it.
-  private static func name(of type: Any.Type) -> String {
-    String(describing: type)
+}
+
+/// The AES70 name of a type: the base types and collections as AES70-2 names them,
+/// anything else by its own name. A typealias such as `OcaDB` is not known at run
+/// time, so it is named for the type it stands for.
+private func aes70Name(of type: Any.Type) -> String {
+  if let type = type as? any OcaTypeNamed.Type { return type.ocaTypeName }
+  return switch type {
+  case is Bool.Type: "OcaBoolean"
+  case is Int8.Type: "OcaInt8"
+  case is Int16.Type: "OcaInt16"
+  case is Int32.Type: "OcaInt32"
+  case is Int64.Type: "OcaInt64"
+  case is UInt8.Type: "OcaUint8"
+  case is UInt16.Type: "OcaUint16"
+  case is UInt32.Type: "OcaUint32"
+  case is UInt64.Type: "OcaUint64"
+  case is Float.Type: "OcaFloat32"
+  case is Double.Type: "OcaFloat64"
+  case is String.Type: "OcaString"
+  case is LengthTaggedData16.Type: "OcaBlob"
+  case is LengthTaggedData32.Type: "OcaLongBlob"
+  default: String(describing: type)
   }
+}
+
+/// A generic type whose AES70 name is made from its parameters' AES70 names.
+private protocol OcaTypeNamed {
+  static var ocaTypeName: String { get }
+}
+
+extension Array: OcaTypeNamed {
+  fileprivate static var ocaTypeName: String { "OcaList<\(aes70Name(of: Element.self))>" }
+}
+
+extension Dictionary: OcaTypeNamed {
+  fileprivate static var ocaTypeName: String {
+    "OcaMap<\(aes70Name(of: Key.self)), \(aes70Name(of: Value.self))>"
+  }
+}
+
+// AES70 has no optional type: a value that may be absent is of the type it holds
+extension Optional: OcaTypeNamed {
+  fileprivate static var ocaTypeName: String { aes70Name(of: Wrapped.self) }
+}
+
+// a bounded property's value is of its type, with the bounds beside it
+extension OcaBoundedPropertyValue: OcaTypeNamed {
+  fileprivate static var ocaTypeName: String { aes70Name(of: Value.self) }
 }
