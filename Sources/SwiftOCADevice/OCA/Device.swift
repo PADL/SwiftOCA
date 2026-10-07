@@ -129,6 +129,7 @@ public actor OcaDevice {
   public private(set) var subscriptionManager: OcaSubscriptionManager!
   public private(set) var deviceManager: OcaDeviceManager!
   public private(set) var securityManager: OcaSecurityManager!
+  public private(set) var classManager: OcaClassManager!
 
   /// Every object registered with the device, by object number.
   public internal(set) var objects = [OcaONo: OcaRoot]()
@@ -181,6 +182,7 @@ public actor OcaDevice {
     for object in objects.values.sorted(by: { $0.objectNumber < $1.objectNumber }) {
       await _addManagerDescriptor(for: object)
     }
+    classManager = try await OcaClassManager(deviceDelegate: self)
   }
 
   public func add(endpoint: OcaDeviceEndpoint) async throws {
