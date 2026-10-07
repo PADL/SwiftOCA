@@ -17,7 +17,7 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaDynamics: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.14") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -170,7 +170,7 @@ open class OcaDynamics: OcaActuator {
   }
 }
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaDynamicsDetector: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.15") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -224,7 +224,7 @@ open class OcaDynamicsDetector: OcaActuator {
   }
 }
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaDynamicsCurve: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.16") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

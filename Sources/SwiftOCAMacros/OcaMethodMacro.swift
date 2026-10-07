@@ -79,12 +79,12 @@ public struct OcaMethodDescriptorMacro: PeerMacro {
   }
 }
 
-/// `@OcaMethods` on a client class: its `Methods` namespace, holding the descriptor of
+/// `@OcaClass` on a client class: its `Methods` namespace, holding the descriptor of
 /// each `@OcaMethod` and `@OcaMethodDescriptor` method in the class body under the
 /// method's own name, and the parameter record of any that needs one synthesised; and its
 /// `propertyKeyPaths` table, giving the storage of each property declared in the class
 /// body, by its name, after its parent's.
-public struct OcaMethodsMacro: MemberMacro {
+public struct OcaClassMacro: MemberMacro {
   public static func expansion(
     of node: AttributeSyntax,
     providingMembersOf declaration: some DeclGroupSyntax,
@@ -92,7 +92,7 @@ public struct OcaMethodsMacro: MemberMacro {
     in context: some MacroExpansionContext
   ) throws -> [DeclSyntax] {
     guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
-      throw MacroExpansionErrorMessage("@OcaMethods can only be applied to a class")
+      throw MacroExpansionErrorMessage("@OcaClass can only be applied to a class")
     }
     let access = classDecl.modifiers.lazy
       .map(\.name.text)
@@ -135,7 +135,7 @@ public struct OcaMethodsMacro: MemberMacro {
       MemberTable.propertyKeyPaths(in: $0, of: className, wrappers: propertyWrappers)
     }
     guard !names.isEmpty || !properties.entries.isEmpty else {
-      throw MacroExpansionErrorMessage("@OcaMethods needs at least one @OcaMethod method or property")
+      throw MacroExpansionErrorMessage("@OcaClass needs at least one @OcaMethod method or property")
     }
     if let duplicate = Dictionary(grouping: names) { $0 }.first(where: { $0.value.count > 1 }) {
       throw MacroExpansionErrorMessage(

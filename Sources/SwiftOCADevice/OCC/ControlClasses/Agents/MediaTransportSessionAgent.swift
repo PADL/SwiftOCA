@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaMediaTransportSessionAgent: OcaAgent {
   public typealias Parameters = SwiftOCA.OcaMediaTransportSessionAgent
 

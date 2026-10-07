@@ -22,7 +22,7 @@ public enum OcaSensorReadingState: OcaUint8, Codable, Sendable, CaseIterable {
   case error = 4
 }
 
-@OcaMethods
+@OcaClass
 open class OcaSensor: OcaWorker, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.2") }
 

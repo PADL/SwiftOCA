@@ -22,7 +22,7 @@ import Foundation
 #endif
 import Synchronization
 
-@OcaMethods
+@OcaClass
 open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyPathRepresentable {
   typealias Root = OcaRoot
 

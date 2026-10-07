@@ -24,7 +24,7 @@ import SwiftOCA
 
 public let OcaGroupExceptionEventID = OcaEventID(defLevel: 3, eventIndex: 1)
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaGroup<Member: OcaRoot>: OcaAgent {
   override open class var classID: OcaClassID { OcaClassID("1.2.22") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

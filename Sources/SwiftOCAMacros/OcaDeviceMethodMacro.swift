@@ -123,11 +123,11 @@ public struct OcaDeviceMethodMacro: PeerMacro {
   }
 }
 
-/// `@OcaDeviceMethods` on a device class: its `deviceMethods` table, listing the
+/// `@OcaDeviceClass` on a device class: its `deviceMethods` table, listing the
 /// descriptor of every `@OcaDeviceMethod` method in the class body after its parent's,
 /// and its `devicePropertyKeyPaths` table, giving the storage of every device property
 /// declared in the class body, by its name, after its parent's.
-public struct OcaDeviceMethodsMacro: MemberMacro {
+public struct OcaDeviceClassMacro: MemberMacro {
   /// The device property wrappers, by the names a property is declared with.
   static let propertyWrappers: Set<String> = [
     "OcaDeviceProperty", "OcaBoundedDeviceProperty", "OcaVectorDeviceProperty",
@@ -140,7 +140,7 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
     in context: some MacroExpansionContext
   ) throws -> [DeclSyntax] {
     guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
-      throw MacroExpansionErrorMessage("@OcaDeviceMethods can only be applied to a class")
+      throw MacroExpansionErrorMessage("@OcaDeviceClass can only be applied to a class")
     }
     let className = classDecl.name.text
     func methods(in members: MemberBlockItemListSyntax) -> [String] {
@@ -168,7 +168,7 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
 
     guard !methodTable.entries.isEmpty || !propertyTable.entries.isEmpty else {
       throw MacroExpansionErrorMessage(
-        "@OcaDeviceMethods needs at least one @OcaDeviceMethod method or device property"
+        "@OcaDeviceClass needs at least one @OcaDeviceMethod method or device property"
       )
     }
     var members = [DeclSyntax]()

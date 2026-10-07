@@ -59,7 +59,7 @@ public struct OcaConstructionParameter: Codable, Sendable {
   }
 }
 
-@OcaMethods
+@OcaClass
 open class OcaBlock: OcaWorker, @unchecked
 Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.3") }

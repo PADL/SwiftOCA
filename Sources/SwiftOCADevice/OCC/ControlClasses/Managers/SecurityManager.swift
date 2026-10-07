@@ -22,7 +22,7 @@ import Foundation
 import SwiftOCA
 import Synchronization
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaSecurityManager: OcaManager {
   override open class var classID: OcaClassID {
     OcaClassID("1.3.2")

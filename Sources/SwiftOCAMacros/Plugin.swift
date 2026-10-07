@@ -22,8 +22,8 @@ struct SwiftOCAMacrosPlugin: CompilerPlugin {
   let providingMacros: [any Macro.Type] = [
     OcaMethodMacro.self,
     OcaMethodDescriptorMacro.self,
-    OcaMethodsMacro.self,
+    OcaClassMacro.self,
     OcaDeviceMethodMacro.self,
-    OcaDeviceMethodsMacro.self,
+    OcaDeviceClassMacro.self,
   ]
 }

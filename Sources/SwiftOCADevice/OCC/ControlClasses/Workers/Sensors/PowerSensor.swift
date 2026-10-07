@@ -17,7 +17,7 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaPowerSensor: OcaSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.11") }
   override open class var classVersion: OcaClassVersionNumber { 1 }

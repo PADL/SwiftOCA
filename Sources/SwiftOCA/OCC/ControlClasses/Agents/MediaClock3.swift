@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-@OcaMethods
+@OcaClass
 open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.15") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

@@ -22,7 +22,7 @@ import Foundation
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaCounterSetAgent: OcaAgent {
   override open class var classID: OcaClassID { OcaClassID("1.2.19") }
 

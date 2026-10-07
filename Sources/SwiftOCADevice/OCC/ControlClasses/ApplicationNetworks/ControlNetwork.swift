@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaControlNetwork: OcaApplicationNetwork {
   override open class var classID: OcaClassID { OcaClassID("1.4.1") }
   override open class var classVersion: OcaClassVersionNumber { 1 }

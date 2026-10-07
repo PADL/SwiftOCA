@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresentable,
   OcaPortClockMapRepresentable
 {

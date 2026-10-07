@@ -33,7 +33,7 @@ public protocol OcaBlockContainer: OcaRoot {
   #endif
 }
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   override open class var classID: OcaClassID {
     OcaClassID("1.1.3")

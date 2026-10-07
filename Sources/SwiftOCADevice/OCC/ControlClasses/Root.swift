@@ -230,12 +230,12 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   }
 
   /// The methods this class answers from a table rather than a `handleCommand` arm,
-  /// its parent's first. `@OcaDeviceMethods` writes it from the class's
+  /// its parent's first. `@OcaDeviceClass` writes it from the class's
   /// `@OcaDeviceMethod` methods; here by hand, as there is no parent to extend.
   /// `handleCommand` consults it for a command no subclass arm took, and a bridge reads
   /// it to present the methods.
   /// The storage of each device property this class declares, by the property's name,
-  /// its parent's first. `@OcaDeviceMethods` writes it from the class's device property
+  /// its parent's first. `@OcaDeviceClass` writes it from the class's device property
   /// declarations; `OcaRoot` declares none.
   open class var devicePropertyKeyPaths: [String: AnyKeyPath] { [:] }
 

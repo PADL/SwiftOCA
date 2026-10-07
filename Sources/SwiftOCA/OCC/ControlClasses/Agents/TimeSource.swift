@@ -73,7 +73,7 @@ public struct OcaTimeDeliveryParameters_StreamEndpoint: Codable, Sendable {
   public let endpointID: OcaMediaStreamEndpointID
 }
 
-@OcaMethods
+@OcaClass
 open class OcaTimeSource: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.16") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

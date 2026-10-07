@@ -23,7 +23,7 @@ import Foundation
 private final class _RelabelledGain: SwiftOCADevice.OcaGain {}
 
 /// A proprietary subclass, which defines a property at the level below its parent's.
-@OcaDeviceMethods
+@OcaDeviceClass
 private class _TrimmedGain: SwiftOCADevice.OcaGain {
   override class var classID: OcaClassID {
     OcaClassID(parent: super.classID, authority: OcaClassID.OcaAllianceCompanyID, 1)
@@ -38,7 +38,7 @@ private class _TrimmedGain: SwiftOCADevice.OcaGain {
 }
 
 /// A second proprietary level, with no authority fields of its own.
-@OcaDeviceMethods
+@OcaDeviceClass
 private final class _OffsetTrimmedGain: _TrimmedGain {
   override class var classID: OcaClassID { OcaClassID(parent: super.classID, 1) }
 
@@ -47,7 +47,7 @@ private final class _OffsetTrimmedGain: _TrimmedGain {
 }
 
 /// A class with a vector property: two property IDs behind one getter.
-@OcaDeviceMethods
+@OcaDeviceClass
 private final class _Positioned: SwiftOCADevice.OcaWorker {
   override class var classID: OcaClassID {
     OcaClassID(parent: super.classID, authority: OcaClassID.OcaAllianceCompanyID, 2)

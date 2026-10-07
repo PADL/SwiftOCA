@@ -20,7 +20,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-@OcaMethods
+@OcaClass
 open class OcaCounterNotifier: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.18") }
 

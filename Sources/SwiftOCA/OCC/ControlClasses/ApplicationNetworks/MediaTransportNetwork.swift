@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-@OcaMethods
+@OcaClass
 open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable {
   override open class var classID: OcaClassID {
     OcaClassID("1.4.2")

@@ -18,7 +18,7 @@ import SwiftOCA
 
 /// The device's class manager (see `SwiftOCA.OcaClassManager`). It describes the classes
 /// of the device's objects to a controller from what the device knows of them.
-@OcaDeviceMethods
+@OcaDeviceClass
 public final class OcaClassManager: OcaManager {
   override public class var classID: OcaClassID { SwiftOCA.OcaClassManager.classID }
 

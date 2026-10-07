@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-@OcaMethods
+@OcaClass
 open class OcaDelay: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.7") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -32,7 +32,7 @@ open class OcaDelay: OcaActuator, @unchecked Sendable {
   public var delayTime: OcaBoundedProperty<OcaTimeInterval>.PropertyValue
 }
 
-@OcaMethods
+@OcaClass
 open class OcaDelayExtended: OcaDelay, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.7.1") }
 

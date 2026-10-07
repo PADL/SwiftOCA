@@ -21,7 +21,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-@OcaMethods
+@OcaClass
 open class OcaLevelSensor: OcaSensor, @unchecked
 Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.2") }

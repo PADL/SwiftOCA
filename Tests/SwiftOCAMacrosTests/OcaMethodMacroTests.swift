@@ -22,14 +22,14 @@ import Testing
 private let macros: [String: any Macro.Type] = [
   "OcaMethod": OcaMethodMacro.self,
   "OcaMethodDescriptor": OcaMethodDescriptorMacro.self,
-  "OcaMethods": OcaMethodsMacro.self,
+  "OcaClass": OcaClassMacro.self,
 ]
 
 @Suite struct OcaMethodMacroTests {
   @Test func bodiesInvokeTheDescriptor() {
     assertMacroExpansion(
       """
-      @OcaMethods
+      @OcaClass
       open class OcaWorker: OcaRoot {
         @OcaMethod("2.13", name: "GetPath")
         public func getPath() async throws -> OcaGetPathParameters
@@ -71,7 +71,7 @@ private let macros: [String: any Macro.Type] = [
   @Test func severalParametersWithoutARecordGetOne() {
     assertMacroExpansion(
       """
-      @OcaMethods
+      @OcaClass
       public class Vendor: OcaAgent {
         @OcaMethod("3.1", name: "SetRoute", resultNames: ["Previous"])
         public func setRoute(input: OcaUint16, output: OcaUint16) async throws -> OcaUint16
@@ -106,7 +106,7 @@ private let macros: [String: any Macro.Type] = [
   @Test func aHandWrittenBodyDeclaresItsDescriptor() {
     assertMacroExpansion(
       """
-      @OcaMethods
+      @OcaClass
       final class Filter: OcaActuator {
         @OcaMethodDescriptor("4.2", name: "SetTransferFunction", parameters: SetTransferFunctionParameters.self)
         func setTransferFunction(frequency: [OcaFrequency]) async throws {
@@ -144,7 +144,7 @@ private let macros: [String: any Macro.Type] = [
   @Test func aMethodUnderAConditionIsDeclaredUnderIt() {
     assertMacroExpansion(
       """
-      @OcaMethods
+      @OcaClass
       open class Manager: OcaManager {
         @OcaMethod("3.1", name: "Reset")
         public func reset() async throws
@@ -263,7 +263,7 @@ private let macros: [String: any Macro.Type] = [
   @Test func refusesTwoMethodsOfOneName() {
     assertMacroExpansion(
       """
-      @OcaMethods
+      @OcaClass
       class Worker: OcaRoot {
         @OcaMethod("2.6", name: "GetPortName")
         func get(portID: OcaPortID) async throws -> OcaString
@@ -295,14 +295,14 @@ private let macros: [String: any Macro.Type] = [
   @Test func refusesAnythingButAClass() {
     assertMacroExpansion(
       """
-      @OcaMethods
+      @OcaClass
       struct Worker {}
       """,
       expandedSource: """
       struct Worker {}
       """,
       diagnostics: [
-        DiagnosticSpec(message: "@OcaMethods can only be applied to a class", line: 1, column: 1),
+        DiagnosticSpec(message: "@OcaClass can only be applied to a class", line: 1, column: 1),
       ],
       macros: macros
     )

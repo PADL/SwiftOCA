@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaNetworkInterface: OcaRoot, OcaOwnable, OcaLabelRepresentable,
   OcaCounterSetRepresentable
 {

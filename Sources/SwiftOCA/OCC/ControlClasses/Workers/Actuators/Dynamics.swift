@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-@OcaMethods
+@OcaClass
 open class OcaDynamics: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.14") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -200,7 +200,7 @@ open class OcaDynamics: OcaActuator, @unchecked Sendable {
   ) async throws
 }
 
-@OcaMethods
+@OcaClass
 open class OcaDynamicsDetector: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.15") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -272,7 +272,7 @@ open class OcaDynamicsDetector: OcaActuator, @unchecked Sendable {
   ) async throws
 }
 
-@OcaMethods
+@OcaClass
 open class OcaDynamicsCurve: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.16") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

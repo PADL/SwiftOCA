@@ -18,7 +18,7 @@ open class OcaBasicActuator: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.1") }
 }
 
-@OcaMethods
+@OcaClass
 open class OcaGenericBasicActuator<T: Codable & Comparable & Numeric & Sendable>: OcaBasicActuator,
   @unchecked Sendable
 {
@@ -30,7 +30,7 @@ open class OcaGenericBasicActuator<T: Codable & Comparable & Numeric & Sendable>
   public var setting: OcaBoundedProperty<T>.PropertyValue
 }
 
-@OcaMethods
+@OcaClass
 open class OcaBooleanActuator: OcaBasicActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.1.1") }
 
@@ -82,7 +82,7 @@ open class OcaFloat64Actuator: OcaGenericBasicActuator<OcaFloat64>, @unchecked S
   override open class var classID: OcaClassID { OcaClassID("1.1.1.1.11") }
 }
 
-@OcaMethods
+@OcaClass
 open class OcaStringActuator: OcaBasicActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.1.12") }
   @OcaProperty(

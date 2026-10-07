@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-@OcaMethods
+@OcaClass
 open class OcaMediaRecorderPlayer: OcaDatasetWorker, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.7.1") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

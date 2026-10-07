@@ -18,7 +18,7 @@ import SwiftOCA
 
 /// AES70-21 (draft) Aes67OcaMediaTransportApplication: adds presentation time offset
 /// negotiation and endpoint configuration from SDP to CM4.
-@OcaDeviceMethods
+@OcaDeviceClass
 open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
   public typealias Aes67Parameters = SwiftOCA.Aes67OcaMediaTransportApplication
 
@@ -86,7 +86,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
 
 /// AES70-21 (draft) Aes67OcaMediaTransportSessionAgent: SIP parameter records per session
 /// (04m01-04m04).
-@OcaDeviceMethods
+@OcaDeviceClass
 open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
   public typealias Aes67Parameters = SwiftOCA.Aes67OcaMediaTransportSessionAgent
 
@@ -155,7 +155,7 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
 
 /// AES70-21 (draft) Aes67StreamEndpointRegistry: the Stream Source Registry, keyed by
 /// IDExternal. Entries are stored here; AddRegistryEntriesFromSDP is left to subclasses.
-@OcaDeviceMethods
+@OcaDeviceClass
 open class Aes67StreamEndpointRegistry: OcaAgent {
   public typealias Aes67Parameters = SwiftOCA.Aes67StreamEndpointRegistry
 
@@ -227,7 +227,7 @@ open class Aes67StreamEndpointRegistry: OcaAgent {
 
 /// AES70-21 (draft) Aes67SDPAgent: an SDP string handed to the device, whose processing
 /// is device-defined.
-@OcaDeviceMethods
+@OcaDeviceClass
 open class Aes67SDPAgent: OcaAgent {
   override open class var classID: OcaClassID { Aes67Adaptation.sdpAgentClassID }
 

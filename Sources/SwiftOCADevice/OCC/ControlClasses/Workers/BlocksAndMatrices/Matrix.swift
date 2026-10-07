@@ -24,7 +24,7 @@ import SwiftOCA
 
 private let OcaMatrixWildcardCoordinate: OcaUint16 = 0xFFFF
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   override open class var classID: OcaClassID {
     OcaClassID("1.1.5")

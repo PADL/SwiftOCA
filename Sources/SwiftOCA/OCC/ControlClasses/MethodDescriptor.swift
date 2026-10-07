@@ -21,7 +21,7 @@
 ///     public func setPortName(id: OcaPortID, name: OcaString) async throws
 ///
 /// The method is `async throws` and has no body. Its descriptor is `Methods.setPortName`,
-/// declared by `@OcaMethods` on the class, which a device class names to answer it. The
+/// declared by `@OcaClass` on the class, which a device class names to answer it. The
 /// descriptor takes no parameters, the one parameter, or a record of several: the
 /// `parameters` type where one is shared, else one synthesised from the argument names,
 /// as `Methods.SetPortNameParameters`. The body builds it by the arguments' internal
@@ -54,7 +54,7 @@ public macro OcaMethodDescriptor(
 /// `propertyKeyPaths` table: its parent's, then the storage of each property declared in
 /// the class body. A class that declares a property must have it.
 @attached(member, names: named(Methods), named(propertyKeyPaths))
-public macro OcaMethods() = #externalMacro(module: "SwiftOCAMacros", type: "OcaMethodsMacro")
+public macro OcaClass() = #externalMacro(module: "SwiftOCAMacros", type: "OcaClassMacro")
 
 /// A method of a control class as the model declares it: its ID, its name, and the
 /// types of its parameters and result. Declared once, by `@OcaMethod` on the client
