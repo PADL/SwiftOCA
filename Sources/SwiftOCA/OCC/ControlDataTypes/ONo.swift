@@ -69,7 +69,7 @@ public struct OcaONo: RawRepresentable, FixedWidthInteger, UnsignedInteger, Hash
   }
 
   /// Decimal, as `description` writes it, or hexadecimal after `0x`, either of them
-  /// between angle brackets as `oNoString` writes it.
+  /// optionally between angle brackets, as `oNoString` writes it.
   public init?(_ description: String) {
     var digits = Substring(description)
     if digits.hasPrefix("<"), digits.hasSuffix(">") { digits = digits.dropFirst().dropLast() }
@@ -95,10 +95,8 @@ public struct OcaONo: RawRepresentable, FixedWidthInteger, UnsignedInteger, Hash
   @inlinable public var leadingZeroBitCount: Int { rawValue.leadingZeroBitCount }
   @inlinable public var byteSwapped: OcaONo { OcaONo(rawValue.byteSwapped) }
   @inlinable public var description: String { rawValue.description }
-  /// The object number in hexadecimal, as `0x1000`, as object numbers are often written.
-  public var hexDescription: String { "0x" + String(rawValue, radix: 16) }
-  /// The object number in eight hexadecimal digits between angle brackets, as `<0x00001000>`.
-  public var oNoString: String { "<0x\(hexString(width: 8))>" }
+  /// The object number in hexadecimal between angle brackets, as `<0x1000>`.
+  public var oNoString: String { "<0x\(String(rawValue, radix: 16))>" }
   @inlinable public func hash(into hasher: inout Hasher) { rawValue.hash(into: &hasher) }
 
   @inlinable

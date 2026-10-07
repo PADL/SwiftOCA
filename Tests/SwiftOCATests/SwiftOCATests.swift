@@ -85,7 +85,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(OcaONo("0XFFF"), 4095)
     XCTAssertEqual(OcaONo("<4095>"), 4095)
     XCTAssertEqual(OcaONo("<0x00000fff>"), 4095)
-    XCTAssertEqual(OcaONo(OcaONo(4095).hexDescription), 4095)
+    XCTAssertEqual(OcaONo(4095).oNoString, "<0xfff>")
     XCTAssertEqual(OcaONo(OcaONo(4095).oNoString), 4095)
     XCTAssertNil(OcaONo("0x"))
     XCTAssertNil(OcaONo("fff"))
