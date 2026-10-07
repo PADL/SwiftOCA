@@ -176,11 +176,6 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
     }
     let methodTable = table(of: classDecl, methods)
     let propertyTable = table(of: classDecl, properties)
-    guard !methodTable.entries.isEmpty || !propertyTable.entries.isEmpty else {
-      throw MacroExpansionErrorMessage(
-        "@OcaDeviceMethods needs at least one @OcaDeviceMethod method or device property"
-      )
-    }
     guard Set(methodTable.entries).count == methodTable.entries.count else {
       throw MacroExpansionErrorMessage("@OcaDeviceMethod methods need distinct names")
     }
@@ -189,6 +184,11 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
       .first { ["open", "public", "package"].contains($0) }
       .map { $0 + " " } ?? ""
 
+    guard !methodTable.entries.isEmpty || !propertyTable.entries.isEmpty else {
+      throw MacroExpansionErrorMessage(
+        "@OcaDeviceMethods needs at least one @OcaDeviceMethod method or device property"
+      )
+    }
     var members = [DeclSyntax]()
     if !methodTable.entries.isEmpty {
       members.append(

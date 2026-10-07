@@ -647,25 +647,6 @@ final class SwiftOCADeviceTests: XCTestCase {
   }
   #endif
 
-  func testKeyPathUncached() async throws {
-    let device = OcaDevice()
-    try await device.initializeDefaultObjects()
-    _ = try await OcaLocalDeviceEndpoint(device: device)
-
-    let testBlock = try await SwiftOCADevice
-      .OcaBlock<MyBooleanActuator>(
-        objectNumber: testBlockONo,
-        deviceDelegate: device,
-        addToRootBlock: true
-      )
-    measure {
-      for _ in 0..<10000 {
-        let keyPaths = testBlock.allDevicePropertyKeyPathsUncached
-        XCTAssertGreaterThan(keyPaths.count, 10)
-      }
-    }
-  }
-
   func testKeyPathCached() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
@@ -681,17 +662,6 @@ final class SwiftOCADeviceTests: XCTestCase {
       let keyPaths = await testBlock.allDevicePropertyKeyPaths
       XCTAssertGreaterThan(keyPaths.count, 10)
     }
-  }
-
-  func testKeyPathSkipsNoncopyableFields() async throws {
-    let device = OcaDevice()
-    try await device.initializeDefaultObjects()
-
-    // OcaSecurityManager keeps its pre-shared keys in a Mutex; reading a ~Copyable
-    // field through a key path traps on Swift 6.4, so reflection must skip it
-    let securityManager = await device.securityManager!
-    XCTAssertNil(_allKeyPaths(value: securityManager)["_preSharedKeys"])
-    XCTAssertFalse(securityManager.allDevicePropertyKeyPathsUncached.isEmpty)
   }
 }
 

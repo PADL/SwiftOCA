@@ -579,19 +579,6 @@ extension OcaRoot {
     }
     return AsyncMergeSequence(changes).eraseToAnyAsyncSequence()
   }
-
-  // nonisolated because this is called from deinit, which cannot be async. Safe
-  // because it only reads immutable property wrapper metadata set at init time,
-  // and the key paths are offset-based so they don't go through actor isolation.
-  nonisolated var allDevicePropertyKeyPathsUncached: [String: AnyKeyPath] {
-    _allKeyPaths(value: self).reduce(into: [:]) {
-      if $1.key.hasPrefix("_") {
-        $0[String($1.key.dropFirst())] = $1.value
-      }
-    }.filter {
-      self[keyPath: $0.value] is any OcaDevicePropertyRepresentable
-    }
-  }
 }
 
 /// Each class's device property key paths and accessor methods, worked out once from its
@@ -628,11 +615,6 @@ private final class OcaDevicePropertyKeyPathCache: Sendable {
     @OcaDevice
     fileprivate init(object: some OcaRoot) {
       let keyPaths = type(of: object).devicePropertyKeyPaths
-      #if DEBUG
-      // every property reflection finds is one a class's @OcaDeviceMethods listed
-      let missing = Set(object.allDevicePropertyKeyPathsUncached.keys).subtracting(keyPaths.keys)
-      assert(missing.isEmpty, "\(type(of: object)) does not list \(missing.sorted()): add @OcaDeviceMethods to the class declaring them")
-      #endif
       self.init(keyPaths: keyPaths, object: object)
     }
   }
