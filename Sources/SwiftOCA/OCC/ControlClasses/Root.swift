@@ -618,6 +618,23 @@ public extension OcaRoot {
     try await $role._getValue(self, flags: [.cacheValue, .returnCachedValue])
   }
 
+  /// Returns whether the root block lists this object as an action object. An object without
+  /// an owner, such as a manager, which cannot have one, is in the block tree only if it does.
+  private func isRootBlockMember(flags: OcaPropertyResolutionFlags) async -> Bool {
+    guard let rootBlock = await connectionDelegate?.rootBlock,
+          let actionObjects = try? await rootBlock.$actionObjects._getValue(
+            rootBlock,
+            flags: flags
+          )
+    else {
+      return false
+    }
+    return actionObjects.contains { $0.oNo == objectNumber }
+  }
+
+  /// Returns the role path found by following owners through objects already resolved, or nil
+  /// if it cannot be found that way. An object without an owner ends the path only if the root
+  /// block lists it; otherwise it is not in the block tree, and the path is not known here.
   private func getRolePathFallback(flags: OcaPropertyResolutionFlags = .defaultFlags) async throws
     -> OcaNamePath?
   {
@@ -627,26 +644,34 @@ public extension OcaRoot {
 
     var path = [String]()
     var currentObject = self
+    var visited = Set<OcaONo>()
 
     repeat {
-      guard let role = try? await currentObject._getRole() else {
+      // an owner that leads back to an object already visited is not a path
+      guard visited.insert(currentObject.objectNumber).inserted,
+            let role = try? await currentObject._getRole()
+      else {
         return nil
-      }
-
-      guard let ownableObject = currentObject as? OcaOwnable else {
-        return nil
-      }
-
-      if ownableObject.objectNumber == OcaRootBlockONo {
-        break
-      }
-
-      let ownerONo = await (try? ownableObject._getOwner(flags: flags)) ?? OcaInvalidONo
-      guard ownerONo != OcaInvalidONo else {
-        break // we are at the root
       }
 
       path.insert(role, at: 0)
+
+      // an owner that cannot be read is not known, which is not the same as not having one
+      let ownerONo: OcaONo
+      if let ownableObject = currentObject as? OcaOwnable {
+        guard let owner = try? await ownableObject._getOwner(flags: flags) else { return nil }
+        ownerONo = owner
+      } else {
+        ownerONo = OcaInvalidONo
+      }
+
+      if ownerONo == OcaRootBlockONo {
+        break
+      }
+
+      guard ownerONo != OcaInvalidONo else {
+        return await currentObject.isRootBlockMember(flags: flags) ? path : nil
+      }
 
       guard let cachedObject = await connectionDelegate?.resolve(cachedObject: ownerONo)
       else {
