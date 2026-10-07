@@ -227,6 +227,7 @@ open class Aes67StreamEndpointRegistry: OcaAgent {
 
 /// AES70-21 (draft) Aes67SDPAgent: an SDP string handed to the device, whose processing
 /// is device-defined.
+@OcaDeviceMethods
 open class Aes67SDPAgent: OcaAgent {
   override open class var classID: OcaClassID { Aes67Adaptation.sdpAgentClassID }
 

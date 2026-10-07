@@ -199,6 +199,7 @@ open class OcaFilterPolynomial: OcaActuator {
   }
 }
 
+@OcaDeviceMethods
 open class OcaFilterFIR: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.12") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

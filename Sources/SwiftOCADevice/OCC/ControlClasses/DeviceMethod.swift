@@ -94,8 +94,9 @@ public macro OcaDeviceMethod(
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")
 
 /// Gives a device class its `deviceMethods` table: its parent's, then one entry for each
-/// `@OcaDeviceMethod` method declared in the class body.
-@attached(member, names: named(deviceMethods))
+/// `@OcaDeviceMethod` method declared in the class body; and its `devicePropertyKeyPaths`
+/// table: its parent's, then the storage of each device property declared in the class body.
+@attached(member, names: named(deviceMethods), named(devicePropertyKeyPaths))
 public macro OcaDeviceMethods() = #externalMacro(
   module: "SwiftOCAMacros",
   type: "OcaDeviceMethodsMacro"

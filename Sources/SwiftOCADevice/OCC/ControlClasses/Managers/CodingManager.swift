@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaCodingManager: OcaManager {
   override open class var classID: OcaClassID { OcaClassID("1.3.12") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

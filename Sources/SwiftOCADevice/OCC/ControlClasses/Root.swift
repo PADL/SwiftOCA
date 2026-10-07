@@ -140,13 +140,15 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
     self.lockable = lockable
     self.role = role ?? String(self.objectNumber)
     self.deviceDelegate = deviceDelegate
+    // the class's key paths, for deinit, which cannot reach the isolated table itself
+    _ = allDevicePropertyKeyPaths
     if let deviceDelegate {
       try await deviceDelegate.register(object: self, addToRootBlock: addToRootBlock)
     }
   }
 
   deinit {
-    for (_, propertyKeyPath) in allDevicePropertyKeyPathsUncached {
+    for (_, propertyKeyPath) in OcaDevicePropertyKeyPathCache.shared.cachedKeyPaths(for: self) {
       let property = self[keyPath: propertyKeyPath] as! (any OcaDevicePropertyRepresentable)
       property.finish()
     }
@@ -232,6 +234,11 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   /// `@OcaDeviceMethod` methods; here by hand, as there is no parent to extend.
   /// `handleCommand` consults it for a command no subclass arm took, and a bridge reads
   /// it to present the methods.
+  /// The storage of each device property this class declares, by the property's name,
+  /// its parent's first. `@OcaDeviceMethods` writes it from the class's device property
+  /// declarations; `OcaRoot` declares none.
+  open class var devicePropertyKeyPaths: [String: AnyKeyPath] { [:] }
+
   open class var deviceMethods: [OcaDeviceMethodDescriptor] {
     [
       _ocaDeviceMethod_getClassIdentification(Void.self),
@@ -587,10 +594,9 @@ extension OcaRoot {
   }
 }
 
-/// Each class's device property key paths and accessor methods, worked out once and shared
-/// by every instance of the class. Synchronous, and safe to use from any thread: building
-/// an entry reads only the property wrappers' metadata, which is set at initialisation
-/// (see `allDevicePropertyKeyPathsUncached`).
+/// Each class's device property key paths and accessor methods, worked out once from its
+/// `devicePropertyKeyPaths` and shared by every instance of the class. An entry is built
+/// on the device's actor, where the table is; deinit reads the one built at initialisation.
 private final class OcaDevicePropertyKeyPathCache: Sendable {
   fileprivate static let shared = OcaDevicePropertyKeyPathCache()
 
@@ -619,22 +625,29 @@ private final class OcaDevicePropertyKeyPathCache: Sendable {
       }
     }
 
+    @OcaDevice
     fileprivate init(object: some OcaRoot) {
-      let keyPaths = object.allDevicePropertyKeyPathsUncached
+      let keyPaths = type(of: object).devicePropertyKeyPaths
+      #if DEBUG
+      // every property reflection finds is one a class's @OcaDeviceMethods listed
+      let missing = Set(object.allDevicePropertyKeyPathsUncached.keys).subtracting(keyPaths.keys)
+      assert(missing.isEmpty, "\(type(of: object)) does not list \(missing.sorted()): add @OcaDeviceMethods to the class declaring them")
+      #endif
       self.init(keyPaths: keyPaths, object: object)
     }
   }
 
   private let _cache = Mutex([ObjectIdentifier: CacheEntry]())
 
+  @OcaDevice
   private func cacheEntry(for object: some OcaRoot) -> CacheEntry {
     let key = object._metaTypeObjectIdentifier
     if let cacheEntry = _cache.withLock({ $0[key] }) {
       return cacheEntry
     }
 
-    // built outside the lock, as it reflects over the object; two threads building the
-    // same class's entry at once build the same thing, and the first stored is kept
+    // built outside the lock; two tasks building the same class's entry at once build the
+    // same thing, and the first stored is kept
     let cacheEntry = CacheEntry(object: object)
     return _cache.withLock { cache in
       if let existing = cache[key] {
@@ -645,10 +658,18 @@ private final class OcaDevicePropertyKeyPathCache: Sendable {
     }
   }
 
+  @OcaDevice
   fileprivate func keyPaths(for object: some OcaRoot) -> [String: AnyKeyPath] {
     cacheEntry(for: object).keyPaths
   }
 
+  /// The key paths of the object's class, which its initialisation looked up: for deinit,
+  /// which is not isolated.
+  fileprivate func cachedKeyPaths(for object: some OcaRoot) -> [String: AnyKeyPath] {
+    _cache.withLock { $0[object._metaTypeObjectIdentifier] }?.keyPaths ?? [:]
+  }
+
+  @OcaDevice
   fileprivate func lookupMethod(
     _ methodID: OcaMethodID,
     for object: some OcaRoot

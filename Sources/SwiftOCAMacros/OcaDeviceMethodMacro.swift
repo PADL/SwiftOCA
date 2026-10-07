@@ -124,8 +124,15 @@ public struct OcaDeviceMethodMacro: PeerMacro {
 }
 
 /// `@OcaDeviceMethods` on a device class: its `deviceMethods` table, listing the
-/// descriptor of every `@OcaDeviceMethod` method in the class body after its parent's.
+/// descriptor of every `@OcaDeviceMethod` method in the class body after its parent's,
+/// and its `devicePropertyKeyPaths` table, giving the storage of every device property
+/// declared in the class body, by its name, after its parent's.
 public struct OcaDeviceMethodsMacro: MemberMacro {
+  /// The device property wrappers, by the names a property is declared with.
+  static let propertyWrappers: Set<String> = [
+    "OcaDeviceProperty", "OcaBoundedDeviceProperty", "OcaVectorDeviceProperty",
+  ]
+
   public static func expansion(
     of node: AttributeSyntax,
     providingMembersOf declaration: some DeclGroupSyntax,
@@ -135,10 +142,8 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
     guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
       throw MacroExpansionErrorMessage("@OcaDeviceMethods can only be applied to a class")
     }
-    // the table's statements, with a method under `#if` listed under the same condition
-    var statements = [String]()
-    var descriptors = [String]()
-    func names(in members: MemberBlockItemListSyntax) -> [String] {
+    let className = classDecl.name.text
+    func methods(in members: MemberBlockItemListSyntax) -> [String] {
       members.compactMap { member in
         guard let function = member.decl.as(FunctionDeclSyntax.self),
               OcaDeviceMethodAttribute.on(function) != nil,
@@ -149,29 +154,34 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
         return "\(method.descriptorName)(\(method.selectorType).self)"
       }
     }
-    func append(_ names: [String]) {
-      guard !names.isEmpty else { return }
-      statements.append("methods += [\(names.joined(separator: ", "))]")
-      descriptors += names
-    }
-    append(names(in: classDecl.memberBlock.members))
-    for member in classDecl.memberBlock.members {
-      guard let block = member.decl.as(IfConfigDeclSyntax.self) else { continue }
-      let clauses = block.clauses.map { clause in
-        (clause, clause.elements?.as(MemberBlockItemListSyntax.self).map(names(in:)) ?? [])
+    func properties(in members: MemberBlockItemListSyntax) -> [String] {
+      members.flatMap { member -> [String] in
+        guard let variable = member.decl.as(VariableDeclSyntax.self),
+              variable.attributes.contains(where: { attribute in
+                guard case let .attribute(attribute) = attribute else { return false }
+                return attribute.attributeName.trimmedDescription.split(separator: ".").last
+                  .map { propertyWrappers.contains(String($0)) } ?? false
+              })
+        else {
+          return []
+        }
+        return variable.bindings.compactMap { binding in
+          binding.pattern.as(IdentifierPatternSyntax.self).map { pattern in
+            // a keyword spelled with backticks names a property without them
+            let name = pattern.identifier.text.filter { $0 != "`" }
+            return "\"\(name)\": \\\(className)._\(name)"
+          }
+        }
       }
-      guard clauses.contains(where: { !$0.1.isEmpty }) else { continue }
-      for (clause, names) in clauses {
-        let condition = clause.condition.map { " " + $0.trimmedDescription } ?? ""
-        statements.append("\(clause.poundKeyword.text)\(condition)")
-        append(names)
-      }
-      statements.append("#endif")
     }
-    guard !descriptors.isEmpty else {
-      throw MacroExpansionErrorMessage("@OcaDeviceMethods needs at least one @OcaDeviceMethod method")
+    let methodTable = table(of: classDecl, methods)
+    let propertyTable = table(of: classDecl, properties)
+    guard !methodTable.entries.isEmpty || !propertyTable.entries.isEmpty else {
+      throw MacroExpansionErrorMessage(
+        "@OcaDeviceMethods needs at least one @OcaDeviceMethod method or device property"
+      )
     }
-    guard Set(descriptors).count == descriptors.count else {
+    guard Set(methodTable.entries).count == methodTable.entries.count else {
       throw MacroExpansionErrorMessage("@OcaDeviceMethod methods need distinct names")
     }
     let access = classDecl.modifiers.lazy
@@ -179,15 +189,70 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
       .first { ["open", "public", "package"].contains($0) }
       .map { $0 + " " } ?? ""
 
-    return [
-      """
-      override \(raw: access)class var deviceMethods: [OcaDeviceMethodDescriptor] {
-        var methods = super.deviceMethods
-        \(raw: statements.joined(separator: "\n  "))
-        return methods
+    var members = [DeclSyntax]()
+    if !methodTable.entries.isEmpty {
+      members.append(
+        """
+        override \(raw: access)class var deviceMethods: [OcaDeviceMethodDescriptor] {
+          var methods = super.deviceMethods
+          \(raw: methodTable.statements(appending: { "methods += [\($0)]" }))
+          return methods
+        }
+        """
+      )
+    }
+    if !propertyTable.entries.isEmpty {
+      members.append(
+        """
+        override \(raw: access)class var devicePropertyKeyPaths: [String: AnyKeyPath] {
+          var keyPaths = super.devicePropertyKeyPaths
+          \(raw: propertyTable.statements(appending: { "keyPaths.merge([\($0)]) { _, new in new }" }))
+          return keyPaths
+        }
+        """
+      )
+    }
+    return members
+  }
+
+  /// The entries a class body gives, each `#if` block's under its own conditions.
+  private struct Table {
+    var groups = [(directive: String?, entries: [String])]()
+
+    var entries: [String] { groups.flatMap(\.entries) }
+
+    func statements(appending: (String) -> String) -> String {
+      groups.map { group in
+        if let directive = group.directive { return directive }
+        return appending(group.entries.joined(separator: ", "))
+      }.joined(separator: "\n  ")
+    }
+  }
+
+  private static func table(
+    of classDecl: ClassDeclSyntax,
+    _ entries: (MemberBlockItemListSyntax) -> [String]
+  ) -> Table {
+    var table = Table()
+    func append(_ names: [String]) {
+      guard !names.isEmpty else { return }
+      table.groups.append((nil, names))
+    }
+    append(entries(classDecl.memberBlock.members))
+    for member in classDecl.memberBlock.members {
+      guard let block = member.decl.as(IfConfigDeclSyntax.self) else { continue }
+      let clauses = block.clauses.map { clause in
+        (clause, clause.elements?.as(MemberBlockItemListSyntax.self).map(entries) ?? [])
       }
-      """,
-    ]
+      guard clauses.contains(where: { !$0.1.isEmpty }) else { continue }
+      for (clause, names) in clauses {
+        let condition = clause.condition.map { " " + $0.trimmedDescription } ?? ""
+        table.groups.append(("\(clause.poundKeyword.text)\(condition)", []))
+        append(names)
+      }
+      table.groups.append(("#endif", []))
+    }
+    return table
   }
 }
 

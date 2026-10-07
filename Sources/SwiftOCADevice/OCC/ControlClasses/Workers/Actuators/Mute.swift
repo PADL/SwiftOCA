@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaMute: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.2") }
 

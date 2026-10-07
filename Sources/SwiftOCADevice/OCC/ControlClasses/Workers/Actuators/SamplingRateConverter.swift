@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceMethods
 open class OcaSamplingRateConverter: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.23") }
   override open class var classVersion: OcaClassVersionNumber { 1 }
