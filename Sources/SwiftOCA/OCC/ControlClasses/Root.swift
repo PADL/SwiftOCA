@@ -22,7 +22,7 @@ import Foundation
 #endif
 import Synchronization
 
-@OcaMethods
+@OcaClass
 open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyPathRepresentable {
   typealias Root = OcaRoot
 
@@ -108,8 +108,8 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
   }
 
   deinit {
-    // Only finish @OcaProperty-backed properties (discovered via reflection),
-    // not computed StaticProperty instances which are ephemeral.
+    // only the declared properties, not the computed StaticProperty instances, which
+    // are made afresh each time
     for (_, keyPath) in allKeyPathsUncached {
       if let value = self[keyPath: keyPath] as? (any OcaPropertySubjectRepresentable) {
         value.finish()
@@ -239,12 +239,9 @@ extension _OcaObjectKeyPathRepresentable where Self: OcaRoot {
     OcaPropertyKeyPathCache.shared.keyPaths(for: self)
   }
 
+  /// The storage of each property the object's classes declare, by the property's name.
   var allKeyPathsUncached: [String: AnyKeyPath] {
-    _allKeyPaths(value: self).reduce(into: [:]) {
-      if $1.key.hasPrefix("_") {
-        $0[String($1.key.dropFirst())] = $1.value
-      }
-    }
+    type(of: self).propertyKeyPaths
   }
 }
 

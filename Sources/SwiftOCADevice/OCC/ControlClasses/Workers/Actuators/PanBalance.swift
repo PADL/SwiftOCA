@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceClass
 open class OcaPanBalance: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.6") }
 

@@ -18,7 +18,7 @@ import SwiftOCA
 
 /// AES70-23 (draft) DanteOcaMediaTransportApplication: channel-based routing on top of
 /// CM4. Method IDs 4.1-4.8 are provisional.
-@OcaDeviceMethods
+@OcaDeviceClass
 open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication {
   public typealias DanteParameters = SwiftOCA.DanteOcaMediaTransportApplication
   public typealias ChannelEndpointMap = DanteParameters.ChannelEndpointMap

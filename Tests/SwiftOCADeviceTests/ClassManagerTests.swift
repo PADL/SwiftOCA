@@ -18,6 +18,17 @@
 @testable import SwiftOCADevice
 import XCTest
 
+/// A gain whose value's generic argument is inferred, not written.
+@OcaDeviceClass
+private final class InferredGain: SwiftOCADevice.OcaActuator {
+  @OcaBoundedDeviceProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  var gain = OcaBoundedPropertyValue(value: OcaDB(0), in: -144...20)
+}
+
 /// The class manager seen by a controller, over a connection of its own to a device
 /// with a gain on it.
 final class ClassManagerTests: XCTestCase {
@@ -36,6 +47,8 @@ final class ClassManagerTests: XCTestCase {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
     _ = try await SwiftOCADevice.OcaGain(role: "Gain", deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaFloat32Actuator(role: "Float", deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaLevelSensor(role: "Level", deviceDelegate: device)
     let made = await device.classManager
     XCTAssertNotNil(made, "the device makes its class manager with its other managers")
     let endpoint = try await OcaLocalDeviceEndpoint(device: device)
@@ -62,8 +75,8 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(gain.name, "OcaGain")
     let property = try XCTUnwrap(gain.properties.first { $0.propertyID == OcaPropertyID(defLevel: 4, propertyIndex: 1) })
     XCTAssertEqual(property.name, "gain")
-    // AES70's names for types, a bounded property's being its value's
-    XCTAssertEqual(property.typeName, "OcaFloat32")
+    // the type as declared, a typealias kept, a bounded property's being its value's
+    XCTAssertEqual(property.typeName, "OcaDB")
     XCTAssertFalse(property.isReadOnly)
     // its own elements only: nothing of OcaRoot's or OcaWorker's
     XCTAssertTrue(gain.properties.allSatisfy { $0.propertyID.defLevel == 4 })
@@ -76,6 +89,44 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(label.typeName, "OcaString")
     XCTAssertFalse(label.isReadOnly)
     XCTAssertGreaterThan(inherited.properties.count, gain.properties.count)
+  }
+
+  func testATypeIsNamedAsDeclaredOnlyWhereThatIsAnAES70Name() async throws {
+    let h = try await makeHarness()
+    defer { Task { await h.tearDown() } }
+
+    // declared with the generic class's parameter: named for the type it is at run time
+    let float = try await h.classManager.getControlClass(
+      classID: SwiftOCADevice.OcaFloat32Actuator.classID, includeInherited: true
+    )
+    let setting = try XCTUnwrap(float.properties.first { $0.name == "setting" })
+    XCTAssertEqual(setting.typeName, "OcaFloat32")
+    let declared = await SwiftOCADevice.OcaFloat32Actuator.devicePropertyTypeNames
+    XCTAssertNil(declared["setting"])
+
+    // a method's result as its signature writes it
+    let level = try await h.classManager.getControlClass(
+      classID: SwiftOCADevice.OcaLevelSensor.classID, includeInherited: false
+    )
+    let getReading = try XCTUnwrap(level.methods.first { $0.name == "GetReading" })
+    XCTAssertEqual(getReading.resultTypeName, "OcaDB")
+  }
+
+  @OcaDevice
+  func testATypeWhoseArgumentsAreInferredIsNamedByTheRunTime() async {
+    // the source says only OcaBoundedPropertyValue, so the run time names it
+    XCTAssertNil(InferredGain.devicePropertyTypeNames["gain"])
+  }
+
+  func testARecordsFieldsAreNamedOnlyFromSeveralWrittenParameters() {
+    XCTAssertEqual(
+      OcaAnyMethodDescriptor.declaredNames(["OcaDB", "OcaBoolean"], fieldCount: 2, isRecord: true),
+      ["OcaDB", "OcaBoolean"]
+    )
+    // one name for a record is the record's own, not its one field's
+    XCTAssertNil(OcaAnyMethodDescriptor.declaredNames(["OcaFooParameters"], fieldCount: 1, isRecord: true))
+    XCTAssertEqual(OcaAnyMethodDescriptor.declaredNames(["OcaDB"], fieldCount: 1, isRecord: false), ["OcaDB"])
+    XCTAssertNil(OcaAnyMethodDescriptor.declaredNames(["OcaDB"], fieldCount: 2, isRecord: true))
   }
 
   func testEveryClassOfTheDevicesObjectsIsListed() async throws {

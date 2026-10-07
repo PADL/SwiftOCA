@@ -17,7 +17,7 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaFilterClassical: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.9") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -74,7 +74,7 @@ open class OcaFilterClassical: OcaActuator {
   }
 }
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaFilterParametric: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.10") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -140,7 +140,7 @@ open class OcaFilterParametric: OcaActuator {
   }
 }
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaFilterPolynomial: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.11") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -199,6 +199,7 @@ open class OcaFilterPolynomial: OcaActuator {
   }
 }
 
+@OcaDeviceClass
 open class OcaFilterFIR: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.12") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -231,7 +232,7 @@ open class OcaFilterFIR: OcaActuator {
   )
 }
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaFilterArbitraryCurve: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.13") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

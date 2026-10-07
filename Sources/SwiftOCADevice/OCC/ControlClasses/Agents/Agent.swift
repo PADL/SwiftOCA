@@ -16,7 +16,7 @@
 
 import SwiftOCA
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaAgent: OcaRoot, OcaOwnable, OcaLabelRepresentable {
   override open class var classID: OcaClassID {
     OcaClassID("1.2")

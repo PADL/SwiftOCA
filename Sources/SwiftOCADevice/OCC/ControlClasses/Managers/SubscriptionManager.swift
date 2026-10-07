@@ -21,7 +21,7 @@ import Foundation
 #endif
 import SwiftOCA
 
-@OcaDeviceMethods
+@OcaDeviceClass
 public class OcaSubscriptionManager: OcaManager {
   override open class var classID: OcaClassID { OcaClassID("1.3.4") }
   override open class var classVersion: OcaClassVersionNumber { 2 }

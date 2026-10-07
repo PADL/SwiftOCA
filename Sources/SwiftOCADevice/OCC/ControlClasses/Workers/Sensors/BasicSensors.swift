@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceClass
 open class OcaGenericBasicSensor<T: Codable & Comparable & Sendable>: OcaSensor {
   @OcaBoundedDeviceProperty
   public var reading: OcaBoundedPropertyValue<T>
@@ -61,6 +62,7 @@ open class OcaBasicSensor: OcaSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.1") }
 }
 
+@OcaDeviceClass
 open class OcaBooleanSensor: OcaSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.1.1") }
 
@@ -155,6 +157,7 @@ open class OcaFloat64Sensor: OcaGenericBasicSensor<OcaFloat64> {
 
 /// AES70-2 gives the string sensor a plain reading (5.1) and a maximum length
 /// of its own (5.2, 5.3), not the generic basic sensor's bounded reading.
+@OcaDeviceClass
 open class OcaStringSensor: OcaBasicSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.1.12") }
 

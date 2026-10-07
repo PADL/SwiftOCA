@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceClass
 open class OcaPowerSupply: OcaAgent {
   override open class var classID: OcaClassID { OcaClassID("1.2.7") }
 

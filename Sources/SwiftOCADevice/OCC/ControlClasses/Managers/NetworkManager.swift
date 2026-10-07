@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceClass
 open class OcaNetworkManager: OcaManager {
   override open class var classID: OcaClassID { OcaClassID("1.3.6") }
 

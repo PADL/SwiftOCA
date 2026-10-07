@@ -15,7 +15,7 @@
 //
 
 /// Controller proxy for AES70-21's Aes67OcaMediaTransportApplication (1.7.1.A.2100).
-@OcaMethods
+@OcaClass
 open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unchecked Sendable {
   override open class var classID: OcaClassID { Aes67Adaptation.mediaTransportApplicationClassID }
 
@@ -114,7 +114,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
 
 /// Controller proxy for AES70-21's Aes67OcaMediaTransportSessionAgent (1.2.20.A.2101),
 /// which adds SIP parameter access to each session's AdaptationData (04m01-04m04).
-@OcaMethods
+@OcaClass
 open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { Aes67Adaptation.mediaTransportSessionAgentClassID }
 
@@ -203,7 +203,7 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @u
 
 /// Controller proxy for AES70-21's Aes67StreamEndpointRegistry (1.2.A.2102), the Stream
 /// Source Registry. Entries are keyed by IDExternal (§10.3.2).
-@OcaMethods
+@OcaClass
 open class Aes67StreamEndpointRegistry: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { Aes67Adaptation.streamEndpointRegistryClassID }
 
@@ -240,6 +240,7 @@ open class Aes67StreamEndpointRegistry: OcaAgent, @unchecked Sendable {
 
 /// Controller proxy for AES70-21's Aes67SDPAgent (1.2.A.2103), which passes an SDP string
 /// to the device for device-defined processing.
+@OcaClass
 open class Aes67SDPAgent: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { Aes67Adaptation.sdpAgentClassID }
 

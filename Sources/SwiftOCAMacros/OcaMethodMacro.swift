@@ -79,10 +79,12 @@ public struct OcaMethodDescriptorMacro: PeerMacro {
   }
 }
 
-/// `@OcaMethods` on a client class: its `Methods` namespace, holding the descriptor of
+/// `@OcaClass` on a client class: its `Methods` namespace, holding the descriptor of
 /// each `@OcaMethod` and `@OcaMethodDescriptor` method in the class body under the
-/// method's own name, and the parameter record of any that needs one synthesised.
-public struct OcaMethodsMacro: MemberMacro {
+/// method's own name, and the parameter record of any that needs one synthesised; and its
+/// `propertyKeyPaths` table, giving the storage of each property declared in the class
+/// body, by its name, after its parent's.
+public struct OcaClassMacro: MemberMacro {
   public static func expansion(
     of node: AttributeSyntax,
     providingMembersOf declaration: some DeclGroupSyntax,
@@ -90,13 +92,14 @@ public struct OcaMethodsMacro: MemberMacro {
     in context: some MacroExpansionContext
   ) throws -> [DeclSyntax] {
     guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
-      throw MacroExpansionErrorMessage("@OcaMethods can only be applied to a class")
+      throw MacroExpansionErrorMessage("@OcaClass can only be applied to a class")
     }
     let access = classDecl.modifiers.lazy
       .map(\.name.text)
       .first { ["open", "public", "package"].contains($0) }
       .map { ($0 == "open" ? "public" : $0) + " " } ?? ""
 
+    let generics = Set(classDecl.genericParameterClause?.parameters.map(\.name.text) ?? [])
     var lines = [String]()
     var names = [String]()
     func declarations(in members: MemberBlockItemListSyntax) throws -> [String] {
@@ -108,7 +111,7 @@ public struct OcaMethodsMacro: MemberMacro {
         }
         let method = try ClientMethod(function)
         names.append(method.name)
-        return method.descriptor(attribute, access: access)
+        return method.descriptor(attribute, access: access, generics: generics)
       }
     }
     lines += try declarations(in: classDecl.memberBlock.members)
@@ -128,8 +131,12 @@ public struct OcaMethodsMacro: MemberMacro {
       }
       lines.append("#endif")
     }
-    guard !names.isEmpty else {
-      throw MacroExpansionErrorMessage("@OcaMethods needs at least one @OcaMethod method")
+    let className = classDecl.name.text
+    let properties = MemberTable(classDecl) {
+      MemberTable.propertyKeyPaths(in: $0, of: className, wrappers: propertyWrappers)
+    }
+    guard !names.isEmpty || !properties.entries.isEmpty else {
+      throw MacroExpansionErrorMessage("@OcaClass needs at least one @OcaMethod method or property")
     }
     if let duplicate = Dictionary(grouping: names) { $0 }.first(where: { $0.value.count > 1 }) {
       throw MacroExpansionErrorMessage(
@@ -138,12 +145,68 @@ public struct OcaMethodsMacro: MemberMacro {
     }
     let body = lines.flatMap { $0.split(separator: "\n", omittingEmptySubsequences: false) }
       .map { $0.isEmpty ? "" : "  " + $0 }
-    let namespace = [
-      "/// The descriptors of the class's methods, each under the method's name.",
-      "\(access)enum Methods {",
-    ] + body + ["}"]
-    return [DeclSyntax(stringLiteral: namespace.joined(separator: "\n"))]
+    var members = [DeclSyntax]()
+    if !names.isEmpty {
+      let namespace = [
+        "/// The descriptors of the class's methods, each under the method's name.",
+        "\(access)enum Methods {",
+      ] + body + ["}"]
+      members.append(DeclSyntax(stringLiteral: namespace.joined(separator: "\n")))
+    }
+    if !properties.entries.isEmpty {
+      let classAccess = classDecl.modifiers.lazy
+        .map(\.name.text)
+        .first { ["open", "public", "package"].contains($0) }
+        .map { $0 + " " } ?? ""
+      // OcaRoot has no parent to extend, which a class body does not say
+      let isRoot = className == "OcaRoot"
+      let statements = properties.statements(appending: { "keyPaths.merge([\($0)]) { _, new in new }" })
+      if let actor = globalActor(of: classDecl), !isRoot {
+        // Swift forms a key path to an actor's storage only on that actor; forming one
+        // reads nothing, so the table is made there and the closure called from anywhere
+        members.append(
+          """
+          override nonisolated \(raw: classAccess)class var propertyKeyPaths: [String: AnyKeyPath] {
+            let isolated: @\(raw: actor) () -> [String: AnyKeyPath] = {
+              var keyPaths = [String: AnyKeyPath]()
+              \(raw: statements)
+              return keyPaths
+            }
+            let keyPaths = unsafeBitCast(isolated, to: (() -> [String: AnyKeyPath]).self)()
+            return super.propertyKeyPaths.merging(keyPaths) { _, new in new }
+          }
+          """
+        )
+      } else {
+        members.append(
+          """
+          \(raw: isRoot ? "" : "override ")\(raw: classAccess)class var propertyKeyPaths: [String: AnyKeyPath] {
+            var keyPaths\(raw: isRoot ? ": [String: AnyKeyPath] = [:]" : " = super.propertyKeyPaths")
+            \(raw: statements)
+            return keyPaths
+          }
+          """
+        )
+      }
+    }
+    return members
   }
+
+  /// The global actor a class is isolated to, by the attribute naming it: one whose name
+  /// ends in `Actor`, such as `@MainActor`, as a macro cannot tell a global actor otherwise.
+  private static func globalActor(of classDecl: ClassDeclSyntax) -> String? {
+    classDecl.attributes.lazy.compactMap { element -> String? in
+      guard case let .attribute(attribute) = element else { return nil }
+      let name = attribute.attributeName.trimmedDescription
+      return name.hasSuffix("Actor") ? name : nil
+    }.first
+  }
+
+  /// The client property wrappers, by the names a property is declared with.
+  static let propertyWrappers: Set<String> = [
+    "OcaProperty", "OcaBoundedProperty", "OcaVectorProperty", "OcaBoundedVectorProperty",
+    "OcaListProperty", "OcaList2DProperty", "OcaMapProperty", "OcaMultiMapProperty",
+  ]
 }
 
 /// The `@OcaMethod` or `@OcaMethodDescriptor` attribute as written.
@@ -199,11 +262,13 @@ private struct ClientMethod {
   struct Parameter {
     let name: String
     let type: String
+    let syntax: TypeSyntax
   }
 
   let name: String
   let parameters: [Parameter]
   let resultType: String?
+  let resultSyntax: TypeSyntax?
 
   init(_ function: FunctionDeclSyntax) throws {
     name = function.name.text
@@ -213,10 +278,23 @@ private struct ClientMethod {
       }
       return Parameter(
         name: (parameter.secondName ?? parameter.firstName).text,
-        type: parameter.type.trimmedDescription
+        type: parameter.type.trimmedDescription,
+        syntax: parameter.type
       )
     }
-    resultType = function.signature.returnClause?.type.trimmedDescription
+    resultSyntax = function.signature.returnClause?.type
+    resultType = resultSyntax?.trimmedDescription
+  }
+
+  /// The AES70 names of `types` as written, none if one is a tuple or is written with the
+  /// class's generic parameters, which only the run time knows.
+  private static func typeNames(_ types: [TypeSyntax], generics: Set<String>) -> [String]? {
+    guard !types.isEmpty,
+          types.allSatisfy({ !$0.is(TupleTypeSyntax.self) && !MemberTable.mentions($0, any: generics) })
+    else {
+      return nil
+    }
+    return types.map(MemberTable.aes70Name(of:))
   }
 
   /// The record synthesised for a method of several parameters given no record.
@@ -224,7 +302,7 @@ private struct ClientMethod {
     name.prefix(1).uppercased() + name.dropFirst() + "Parameters"
   }
 
-  func descriptor(_ attribute: OcaMethodAttribute, access: String) -> [String] {
+  func descriptor(_ attribute: OcaMethodAttribute, access: String, generics: Set<String>) -> [String] {
     var declarations = [String]()
     let parametersType: String
     if let type = attribute.parametersType {
@@ -257,6 +335,16 @@ private struct ClientMethod {
     }
     if let resultNames = attribute.resultNames {
       arguments.append("resultNames: \(resultNames.trimmedDescription)")
+    }
+    // the types as the signature writes them, where it gives them
+    let quoted = { (names: [String]) in "[" + names.map { "\"\($0)\"" }.joined(separator: ", ") + "]" }
+    if attribute.parametersType == nil, let names = Self.typeNames(parameters.map(\.syntax), generics: generics) {
+      arguments.append("parameterTypeNames: \(quoted(names))")
+    }
+    if attribute.resultType == nil, let result = resultSyntax,
+       let names = Self.typeNames([result], generics: generics)
+    {
+      arguments.append("resultTypeNames: \(quoted(names))")
     }
     let type = "OcaMethodDescriptor<\(parametersType), \(resultType)>"
     declarations.append(

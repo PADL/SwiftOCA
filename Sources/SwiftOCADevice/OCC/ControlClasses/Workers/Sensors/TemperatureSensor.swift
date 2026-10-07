@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceClass
 open class OcaTemperatureSensor: OcaSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.5") }
 

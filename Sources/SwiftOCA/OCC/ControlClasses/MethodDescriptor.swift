@@ -21,7 +21,7 @@
 ///     public func setPortName(id: OcaPortID, name: OcaString) async throws
 ///
 /// The method is `async throws` and has no body. Its descriptor is `Methods.setPortName`,
-/// declared by `@OcaMethods` on the class, which a device class names to answer it. The
+/// declared by `@OcaClass` on the class, which a device class names to answer it. The
 /// descriptor takes no parameters, the one parameter, or a record of several: the
 /// `parameters` type where one is shared, else one synthesised from the argument names,
 /// as `Methods.SetPortNameParameters`. The body builds it by the arguments' internal
@@ -50,9 +50,11 @@ public macro OcaMethodDescriptor(
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaMethodDescriptorMacro")
 
 /// Gives a client class its `Methods` namespace: the descriptor of each `@OcaMethod` and
-/// `@OcaMethodDescriptor` method in the class body, named as the method is.
-@attached(member, names: named(Methods))
-public macro OcaMethods() = #externalMacro(module: "SwiftOCAMacros", type: "OcaMethodsMacro")
+/// `@OcaMethodDescriptor` method in the class body, named as the method is; and its
+/// `propertyKeyPaths` table: its parent's, then the storage of each property declared in
+/// the class body. A class that declares a property must have it.
+@attached(member, names: named(Methods), named(propertyKeyPaths))
+public macro OcaClass() = #externalMacro(module: "SwiftOCAMacros", type: "OcaClassMacro")
 
 /// A method of a control class as the model declares it: its ID, its name, and the
 /// types of its parameters and result. Declared once, by `@OcaMethod` on the client
@@ -80,8 +82,10 @@ public struct OcaMethodDescriptor<Parameters, Result>: Sendable {
     name: String,
     parameters: (any (Codable & Sendable).Type)?,
     parameterNames: [String]?,
+    parameterTypeNames: [String]?,
     result: (any (Codable & Sendable).Type)?,
-    resultNames: [String]?
+    resultNames: [String]?,
+    resultTypeNames: [String]?
   ) {
     erased = OcaAnyMethodDescriptor(
       methodID: methodID,
@@ -89,7 +93,9 @@ public struct OcaMethodDescriptor<Parameters, Result>: Sendable {
       parametersType: parameters,
       resultType: result,
       parameterNames: parameterNames,
-      resultNames: resultNames
+      resultNames: resultNames,
+      parameterTypeNames: parameterTypeNames,
+      resultTypeNames: resultTypeNames
     )
   }
 }
@@ -101,41 +107,59 @@ public extension OcaMethodDescriptor where Parameters: Codable & Sendable,
     _ methodID: OcaMethodID,
     name: String,
     parameterNames: [String]? = nil,
-    resultNames: [String]? = nil
+    resultNames: [String]? = nil,
+    parameterTypeNames: [String]? = nil,
+    resultTypeNames: [String]? = nil
   ) {
     self.init(
       methodID,
       name: name,
       parameters: Parameters.self,
       parameterNames: parameterNames,
+      parameterTypeNames: parameterTypeNames,
       result: Result.self,
-      resultNames: resultNames
+      resultNames: resultNames,
+      resultTypeNames: resultTypeNames
     )
   }
 }
 
 public extension OcaMethodDescriptor where Parameters: Codable & Sendable, Result == Void {
-  init(_ methodID: OcaMethodID, name: String, parameterNames: [String]? = nil) {
+  init(
+    _ methodID: OcaMethodID,
+    name: String,
+    parameterNames: [String]? = nil,
+    parameterTypeNames: [String]? = nil
+  ) {
     self.init(
       methodID,
       name: name,
       parameters: Parameters.self,
       parameterNames: parameterNames,
+      parameterTypeNames: parameterTypeNames,
       result: nil,
-      resultNames: nil
+      resultNames: nil,
+      resultTypeNames: nil
     )
   }
 }
 
 public extension OcaMethodDescriptor where Parameters == Void, Result: Codable & Sendable {
-  init(_ methodID: OcaMethodID, name: String, resultNames: [String]? = nil) {
+  init(
+    _ methodID: OcaMethodID,
+    name: String,
+    resultNames: [String]? = nil,
+    resultTypeNames: [String]? = nil
+  ) {
     self.init(
       methodID,
       name: name,
       parameters: nil,
       parameterNames: nil,
+      parameterTypeNames: nil,
       result: Result.self,
-      resultNames: resultNames
+      resultNames: resultNames,
+      resultTypeNames: resultTypeNames
     )
   }
 }
@@ -147,8 +171,10 @@ public extension OcaMethodDescriptor where Parameters == Void, Result == Void {
       name: name,
       parameters: nil,
       parameterNames: nil,
+      parameterTypeNames: nil,
       result: nil,
-      resultNames: nil
+      resultNames: nil,
+      resultTypeNames: nil
     )
   }
 }
@@ -157,6 +183,9 @@ public extension OcaMethodDescriptor where Parameters == Void, Result == Void {
 public struct OcaParameterDescriptor: Sendable {
   public let name: String
   public let type: any (Codable & Sendable).Type
+  /// The type as the method's signature writes it, named as AES70 names it, where the
+  /// signature says it: `OcaDB` rather than the `Float` it stands for.
+  public let typeName: String?
 }
 
 /// `OcaMethodDescriptor` with its types erased.
@@ -174,6 +203,10 @@ public struct OcaAnyMethodDescriptor: Sendable {
   /// only for a raw device method declared without them, which a bridge must not
   /// present as taking nothing.
   public let isDescribed: Bool
+  /// The AES70 names of the parameters' and results' types as the signature writes them,
+  /// one for each, where `@OcaClass` could read them from it.
+  public let parameterTypeNames: [String]?
+  public let resultTypeNames: [String]?
 
   public init(
     methodID: OcaMethodID,
@@ -182,7 +215,9 @@ public struct OcaAnyMethodDescriptor: Sendable {
     resultType: (any (Codable & Sendable).Type)?,
     parameterNames: [String]?,
     resultNames: [String]?,
-    isDescribed: Bool = true
+    isDescribed: Bool = true,
+    parameterTypeNames: [String]? = nil,
+    resultTypeNames: [String]? = nil
   ) {
     self.methodID = methodID
     self.name = name
@@ -191,33 +226,49 @@ public struct OcaAnyMethodDescriptor: Sendable {
     self.parameterNames = parameterNames
     self.resultNames = resultNames
     self.isDescribed = isDescribed
+    self.parameterTypeNames = parameterTypeNames
+    self.resultTypeNames = resultTypeNames
   }
 
   /// The parameters as OCP.2 sees them: one per field of a record, else the one value.
   public var parameters: [OcaParameterDescriptor] {
-    parametersType.map { describe($0, names: parameterNames) } ?? []
+    parametersType.map { describe($0, names: parameterNames, typeNames: parameterTypeNames) } ?? []
   }
 
   /// Likewise for the response.
   public var results: [OcaParameterDescriptor] {
-    resultType.map { describe($0, names: resultNames) } ?? []
+    resultType.map { describe($0, names: resultNames, typeNames: resultTypeNames) } ?? []
   }
 
-  private func describe(_ type: Any.Type, names: [String]?) -> [OcaParameterDescriptor] {
+  private func describe(
+    _ type: Any.Type,
+    names: [String]?,
+    typeNames: [String]?
+  ) -> [OcaParameterDescriptor] {
     let fields: [(name: String, type: Any.Type)] = if type is OcaParametersReflectable.Type {
       Ocp2Naming.fields(of: type)
     } else {
       [(Ocp2Naming.unnamedParameter, type)]
     }
     let names = Ocp2Naming.parameterNames(explicit: names, fieldNames: fields.map(\.name))
-    return zip(names, fields).map { name, field in
+    let typeNames = Self.declaredNames(typeNames, fieldCount: fields.count, isRecord: type is OcaParametersReflectable.Type)
+    return zip(names, fields).enumerated().map { index, element in
+      let (name, field) = element
       guard let type = erasedCast(field.type, to: DescribedType.self) else {
         preconditionFailure(
           "\(self.name)'s \(name) is a \(field.type), which is not Codable & Sendable"
         )
       }
-      return OcaParameterDescriptor(name: name, type: type)
+      return OcaParameterDescriptor(name: name, type: type, typeName: typeNames?[index])
     }
+  }
+}
+
+@_spi(SwiftOCAPrivate)
+public extension OcaAnyMethodDescriptor {
+  static func declaredNames(_ names: [String]?, fieldCount: Int, isRecord: Bool) -> [String]? {
+    guard let names, names.count == fieldCount, !isRecord || names.count > 1 else { return nil }
+    return names
   }
 }
 

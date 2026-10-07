@@ -18,7 +18,7 @@ import SwiftOCA
 
 /// The device's class manager (see `SwiftOCA.OcaClassManager`). It describes the classes
 /// of the device's objects to a controller from what the device knows of them.
-@OcaDeviceMethods
+@OcaDeviceClass
 public final class OcaClassManager: OcaManager {
   override public class var classID: OcaClassID { SwiftOCA.OcaClassManager.classID }
 
@@ -82,7 +82,7 @@ public final class OcaClassManager: OcaManager {
         OcaClassPropertyDescriptor(
           propertyID: property.propertyID,
           name: property.name,
-          typeName: Self._ocaTypeName(for: property.valueType),
+          typeName: Self.typeName(declared: property.typeName, of: property.valueType),
           isReadOnly: !property.isSettable
         )
       },
@@ -92,7 +92,10 @@ public final class OcaClassManager: OcaManager {
           methodID: method.methodID,
           name: method.name,
           parameters: parameters(of: method),
-          resultTypeName: method.resultType.map(Self._ocaTypeName(for:)) ?? ""
+          resultTypeName: method.resultType.map { type in
+            let declared = method.resultTypeNames?.count == 1 ? method.resultTypeNames?.first : nil
+            return Self.typeName(declared: declared, of: type)
+          } ?? ""
         )
       }
     )
@@ -103,13 +106,35 @@ public final class OcaClassManager: OcaManager {
     guard let type = method.parametersType else { return [] }
     if type is any OcaParametersReflectable.Type {
       let fields = Ocp2Encoder.fields(of: type)
+      let declared = OcaAnyMethodDescriptor.declaredNames(
+        method.parameterTypeNames, fieldCount: fields.count, isRecord: true
+      )
       return fields.enumerated().map { index, field in
         let name = method.parameterNames.flatMap { index < $0.count ? $0[index] : nil }
           ?? Ocp2Encoder.fieldName(field.name)
-        return OcaClassParameterDescriptor(name: name, typeName: Self._ocaTypeName(for: field.type))
+        return OcaClassParameterDescriptor(
+          name: name,
+          typeName: Self.typeName(declared: declared?[index], of: field.type)
+        )
       }
     }
-    return [OcaClassParameterDescriptor(name: method.parameterNames?.first ?? "Value", typeName: Self._ocaTypeName(for: type))]
+    let declared = method.parameterTypeNames?.count == 1 ? method.parameterTypeNames?.first : nil
+    return [OcaClassParameterDescriptor(
+      name: method.parameterNames?.first ?? "Value",
+      typeName: Self.typeName(declared: declared, of: type)
+    )]
+  }
+
+  /// A type by the name it is declared with where that is an AES70 one, such
+  /// as `OcaDB`, and by its run-time type's otherwise: a Swift typealias means nothing to a
+  /// controller, and a list or map is better named for its elements.
+  private nonisolated static func typeName(declared: String?, of type: Any.Type) -> String {
+    let name = _ocaTypeName(for: type)
+    guard let declared, declared.hasPrefix("Oca"), !name.hasPrefix("OcaList<"), !name.hasPrefix("OcaMap<")
+    else {
+      return name
+    }
+    return declared
   }
 
   /// The AES70 name of a type: the base types and collections as AES70-2 names them,

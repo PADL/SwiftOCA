@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaClass
 open class OcaPowerSupply: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.7") }
 

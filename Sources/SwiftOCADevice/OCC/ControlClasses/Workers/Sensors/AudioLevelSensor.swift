@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceClass
 open class OcaAudioLevelSensor: OcaLevelSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.2.1") }
 

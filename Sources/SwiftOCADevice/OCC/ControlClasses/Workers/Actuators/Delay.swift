@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceClass
 open class OcaDelay: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.7") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -33,7 +34,7 @@ open class OcaDelay: OcaActuator {
   public var delayTime = OcaBoundedPropertyValue<OcaTimeInterval>(value: 0, in: 0...1)
 }
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaDelayExtended: OcaDelay {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.7.1") }
 

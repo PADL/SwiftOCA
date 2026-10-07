@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceClass
 open class OcaStateSensor: OcaSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.12") }
   override open class var classVersion: OcaClassVersionNumber { 1 }

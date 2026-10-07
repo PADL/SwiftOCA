@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-@OcaMethods
+@OcaClass
 open class OcaFilterClassical: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.9") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -92,7 +92,7 @@ open class OcaFilterClassical: OcaActuator, @unchecked Sendable {
   ) async throws
 }
 
-@OcaMethods
+@OcaClass
 open class OcaFilterParametric: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.10") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -179,7 +179,7 @@ open class OcaFilterParametric: OcaActuator, @unchecked Sendable {
   ) async throws
 }
 
-@OcaMethods
+@OcaClass
 open class OcaFilterPolynomial: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.11") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -231,6 +231,7 @@ open class OcaFilterPolynomial: OcaActuator, @unchecked Sendable {
   public func setCoefficients(a: OcaList<OcaFloat32>, b: OcaList<OcaFloat32>) async throws
 }
 
+@OcaClass
 open class OcaFilterFIR: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.12") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
@@ -260,7 +261,7 @@ open class OcaFilterFIR: OcaActuator, @unchecked Sendable {
   public var sampleRate: OcaBoundedProperty<OcaFrequency>.PropertyValue
 }
 
-@OcaMethods
+@OcaClass
 open class OcaFilterArbitraryCurve: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.13") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

@@ -108,7 +108,7 @@ final class Ocp2DeviceNamingOracleTests: XCTestCase {
         deviceDelegate: nil,
         addToRootBlock: false
       )
-      for (swiftName, keyPath) in object.allDevicePropertyKeyPathsUncached {
+      for (swiftName, keyPath) in Swift.type(of: object).devicePropertyKeyPaths {
         guard let property = object[keyPath: keyPath] as? any OcaDevicePropertyRepresentable
         else { continue }
         let propertyID = property.propertyID

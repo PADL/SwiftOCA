@@ -16,7 +16,7 @@
 
 /// A class manager, which AES70 does not define: it describes the classes of the
 /// device's objects. It is PADL's, at the last object number AES70 reserves.
-@OcaMethods
+@OcaClass
 open class OcaClassManager: OcaManager, @unchecked Sendable {
   /// The organisation whose class this is, until it has a standard home.
   public static let authority = OcaOrganizationID((0x0A, 0xE9, 0x1B))

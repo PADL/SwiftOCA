@@ -23,7 +23,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaLevelSensor: OcaSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.2") }
 

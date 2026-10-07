@@ -21,14 +21,14 @@ import Testing
 
 private let macros: [String: any Macro.Type] = [
   "OcaDeviceMethod": OcaDeviceMethodMacro.self,
-  "OcaDeviceMethods": OcaDeviceMethodsMacro.self,
+  "OcaDeviceClass": OcaDeviceClassMacro.self,
 ]
 
 @Suite struct OcaDeviceMethodMacroTests {
   @Test func severalParametersBecomeARecord() {
     assertMacroExpansion(
       """
-      @OcaDeviceMethods
+      @OcaDeviceClass
       open class OcaWorker: OcaRoot {
         @OcaDeviceMethod("2.7", name: "SetPortName", access: .write, parameterNames: ["ID", "Name"])
         func setPortName(_ id: OcaPortID, _ name: OcaString, from controller: any OcaController) throws {
@@ -77,7 +77,7 @@ private let macros: [String: any Macro.Type] = [
   @Test func aMethodUnderAConditionIsListedUnderIt() {
     assertMacroExpansion(
       """
-      @OcaDeviceMethods
+      @OcaDeviceClass
       final class Manager: OcaManager {
         @OcaDeviceMethod("3.16", name: "ClearResetCause", access: .write)
         func clearResetCause(from controller: any OcaController) {}

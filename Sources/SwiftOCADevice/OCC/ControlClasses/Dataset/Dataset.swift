@@ -19,7 +19,7 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaDataset: OcaRoot, @unchecked
 Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.5") }

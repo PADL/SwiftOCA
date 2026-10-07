@@ -16,6 +16,7 @@
 
 import SwiftOCA
 
+@OcaDeviceClass
 open class OcaGenericBasicActuator<T: Codable & Comparable & Numeric & Sendable>: OcaActuator {
   @OcaBoundedDeviceProperty(
     wrappedValue: OcaBoundedPropertyValue<T>(value: 0, in: 0...1),
@@ -30,6 +31,7 @@ open class OcaBasicActuator: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.1") }
 }
 
+@OcaDeviceClass
 open class OcaBooleanActuator: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.1.1") }
 
@@ -81,6 +83,7 @@ open class OcaFloat64Actuator: OcaGenericBasicActuator<OcaFloat64> {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.1.11") }
 }
 
+@OcaDeviceClass
 open class OcaStringActuator: OcaActuator {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.1.12") }
 

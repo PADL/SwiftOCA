@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaClass
 open class OcaStateSensor: OcaSensor, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.12") }
   override open class var classVersion: OcaClassVersionNumber { 1 }

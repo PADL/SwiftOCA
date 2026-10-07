@@ -17,7 +17,7 @@
 /// Controller proxy for AES70-23's DanteOcaMediaTransportApplication (1.7.1.A.2300), which
 /// adds channel-based routing to CM4. The draft's method IDs are provisional (4.1-4.8 in
 /// table order); its ChannelEndpoints property is modelled as the map its accessors use.
-@OcaMethods
+@OcaClass
 open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication, @unchecked Sendable {
   override open class var classID: OcaClassID { DanteAdaptation.mediaTransportApplicationClassID }
 

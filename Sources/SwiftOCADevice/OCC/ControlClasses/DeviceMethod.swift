@@ -40,7 +40,7 @@ import SwiftOCA
 /// error until `access` is stated. The call goes through the object, so a subclass's
 /// override of an `open` method is what answers.
 ///
-/// The class lists its methods with `@OcaDeviceMethods`, and `OcaRoot.handleCommand`
+/// The class lists its methods with `@OcaDeviceClass`, and `OcaRoot.handleCommand`
 /// dispatches to them once a subclass's own `handleCommand` has declined the command, so
 /// a hand-written arm, or a NotImplemented override, still takes precedence.
 @attached(peer, names: prefixed(_ocaDeviceMethod_))
@@ -94,11 +94,13 @@ public macro OcaDeviceMethod(
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")
 
 /// Gives a device class its `deviceMethods` table: its parent's, then one entry for each
-/// `@OcaDeviceMethod` method declared in the class body.
-@attached(member, names: named(deviceMethods))
-public macro OcaDeviceMethods() = #externalMacro(
+/// `@OcaDeviceMethod` method declared in the class body; and its `devicePropertyKeyPaths`
+/// table: its parent's, then the storage of each device property declared in the class body.
+/// A class that declares a device property must have it, or the property is not served.
+@attached(member, names: named(deviceMethods), named(devicePropertyKeyPaths), named(devicePropertyTypeNames))
+public macro OcaDeviceClass() = #externalMacro(
   module: "SwiftOCAMacros",
-  type: "OcaDeviceMethodsMacro"
+  type: "OcaDeviceClassMacro"
 )
 
 /// The lock check made before a method runs, with the command, so that a class's

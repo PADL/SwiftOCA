@@ -17,7 +17,7 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
-@OcaDeviceMethods
+@OcaDeviceClass
 open class OcaMediaClock3: OcaAgent {
   override open class var classID: OcaClassID { OcaClassID("1.2.15") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

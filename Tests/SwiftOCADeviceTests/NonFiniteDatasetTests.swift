@@ -19,6 +19,7 @@ import Foundation
 @testable import SwiftOCADevice
 import XCTest
 
+@OcaDeviceClass
 private final class FloatWorker: SwiftOCADevice.OcaWorker {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("5.1"),
