@@ -24,13 +24,12 @@ public final class OcaClassManager: OcaManager {
 
   public nonisolated static let objectNumber = SwiftOCA.OcaClassManager.objectNumber
 
-  /// The device's class manager, made the first time it is asked for.
-  public static func shared(on device: OcaDevice) async throws -> OcaClassManager {
-    if let existing: OcaClassManager = await device.resolve(objectNumber: objectNumber) {
-      return existing
-    }
-    return try await OcaClassManager(
-      objectNumber: objectNumber, role: "ClassManager", deviceDelegate: device, addToRootBlock: false
+  public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
+    try await self.init(
+      objectNumber: Self.objectNumber,
+      role: "ClassManager",
+      deviceDelegate: deviceDelegate,
+      addToRootBlock: false
     )
   }
 
