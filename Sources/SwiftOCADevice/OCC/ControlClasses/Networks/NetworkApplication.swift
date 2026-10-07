@@ -39,6 +39,11 @@ open class OcaNetworkApplication: OcaRoot, OcaOwnable, OcaLabelRepresentable,
   )
   public var owner = OcaInvalidONo
 
+  @_spi(SwiftOCAPrivate)
+  public nonisolated static var labelPropertyID: OcaPropertyID { OcaPropertyID("2.1") }
+  @_spi(SwiftOCAPrivate)
+  public nonisolated static var ownerPropertyID: OcaPropertyID { OcaPropertyID("2.2") }
+
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.3"),
     getMethodID: OcaMethodID("2.5"),
