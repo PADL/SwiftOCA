@@ -53,12 +53,15 @@ package func _jsonDecoder() -> JSONDecoder {
 
 /// A non-finite number in a hand-built JSON container bypasses JSONEncoder;
 /// replace it (recursing through containers) with its .convertFromString
-/// spelling.
+/// spelling, and an object number with its raw value.
 package func _jsonNonFiniteSafe(_ value: any Sendable) -> any Sendable {
   switch value {
   case let float as any BinaryFloatingPoint where !float.isFinite:
     if float.isNaN { return _jsonNaN }
     return float.sign == .minus ? _jsonNegativeInfinity : _jsonPositiveInfinity
+  case let objectNumber as OcaONo:
+    // a struct does not bridge to NSNumber, so JSONSerialization takes its raw value
+    return objectNumber.rawValue
   case let array as [any Sendable]:
     return array.map { _jsonNonFiniteSafe($0) }
   case let dictionary as [String: any Sendable]:

@@ -14,6 +14,10 @@
 // limitations under the License.
 //
 
+#if canImport(Foundation)
+import Foundation
+#endif
+
 /// An object number. A distinct type so object numbers can be found in values at
 /// run time; it codes exactly as a `UInt32`.
 @frozen
@@ -167,3 +171,15 @@ public struct OcaONo: RawRepresentable, FixedWidthInteger, UnsignedInteger, Hash
   @inlinable
   public static func &<<= (lhs: inout OcaONo, rhs: OcaONo) { lhs.rawValue &<<= rhs.rawValue }
 }
+
+/// Formats as a `UInt32` does, so that `String(format:)` takes an object number.
+extension OcaONo: CVarArg {
+  @inlinable public var _cVarArgEncoding: [Int] { rawValue._cVarArgEncoding }
+}
+
+#if canImport(Foundation)
+public extension OcaONo {
+  /// The object number a number from a JSON container holds, as `UInt32(truncating:)`.
+  init(truncating number: NSNumber) { self.init(rawValue: number.uint32Value) }
+}
+#endif

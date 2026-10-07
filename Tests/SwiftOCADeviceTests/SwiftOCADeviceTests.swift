@@ -529,6 +529,16 @@ final class SwiftOCADeviceTests: XCTestCase {
       return .ok
     })
     XCTAssertEqual(json["5.1"] as? Bool, false)
+
+    // an object number put in by a filter comes out as a number JSON can hold
+    let referring = try await actuator.serialize(filter: { _, propertyID, _ in
+      propertyID == OcaPropertyID("5.1") ? .replace([OcaONo(4096), OcaONo(4097)]) : .ok
+    })
+    XCTAssertTrue(JSONSerialization.isValidJSONObject(referring))
+    XCTAssertEqual(referring["5.1"] as? [OcaUint32], [4096, 4097])
+    // and is read back from one, and formatted, as the number it is
+    XCTAssertEqual(OcaONo(truncating: NSNumber(value: 4096)), 4096)
+    XCTAssertEqual(String(format: "0x%x", OcaONo(4096)), "0x1000")
   }
 
   /// Test that the deserialization filter can ignore properties
