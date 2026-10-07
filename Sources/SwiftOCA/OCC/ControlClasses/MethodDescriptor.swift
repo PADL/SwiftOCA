@@ -50,8 +50,10 @@ public macro OcaMethodDescriptor(
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaMethodDescriptorMacro")
 
 /// Gives a client class its `Methods` namespace: the descriptor of each `@OcaMethod` and
-/// `@OcaMethodDescriptor` method in the class body, named as the method is.
-@attached(member, names: named(Methods))
+/// `@OcaMethodDescriptor` method in the class body, named as the method is; and its
+/// `propertyKeyPaths` table: its parent's, then the storage of each property declared in
+/// the class body. A class that declares a property must have it.
+@attached(member, names: named(Methods), named(propertyKeyPaths))
 public macro OcaMethods() = #externalMacro(module: "SwiftOCAMacros", type: "OcaMethodsMacro")
 
 /// A method of a control class as the model declares it: its ID, its name, and the

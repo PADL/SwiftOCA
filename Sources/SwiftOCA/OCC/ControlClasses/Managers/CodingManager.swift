@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaCodingManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.12") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

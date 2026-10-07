@@ -19,6 +19,7 @@ public enum OcaMuteState: OcaUint8, Codable, Sendable, CaseIterable {
   case unmuted = 2
 }
 
+@OcaMethods
 open class OcaMute: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.2") }
 

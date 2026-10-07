@@ -154,28 +154,10 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
         return "\(method.descriptorName)(\(method.selectorType).self)"
       }
     }
-    func properties(in members: MemberBlockItemListSyntax) -> [String] {
-      members.flatMap { member -> [String] in
-        guard let variable = member.decl.as(VariableDeclSyntax.self),
-              variable.attributes.contains(where: { attribute in
-                guard case let .attribute(attribute) = attribute else { return false }
-                return attribute.attributeName.trimmedDescription.split(separator: ".").last
-                  .map { propertyWrappers.contains(String($0)) } ?? false
-              })
-        else {
-          return []
-        }
-        return variable.bindings.compactMap { binding in
-          binding.pattern.as(IdentifierPatternSyntax.self).map { pattern in
-            // a keyword spelled with backticks names a property without them
-            let name = pattern.identifier.text.filter { $0 != "`" }
-            return "\"\(name)\": \\\(className)._\(name)"
-          }
-        }
-      }
+    let methodTable = MemberTable(classDecl, methods)
+    let propertyTable = MemberTable(classDecl) {
+      MemberTable.propertyKeyPaths(in: $0, of: className, wrappers: propertyWrappers)
     }
-    let methodTable = table(of: classDecl, methods)
-    let propertyTable = table(of: classDecl, properties)
     guard Set(methodTable.entries).count == methodTable.entries.count else {
       throw MacroExpansionErrorMessage("@OcaDeviceMethod methods need distinct names")
     }
@@ -213,46 +195,6 @@ public struct OcaDeviceMethodsMacro: MemberMacro {
       )
     }
     return members
-  }
-
-  /// The entries a class body gives, each `#if` block's under its own conditions.
-  private struct Table {
-    var groups = [(directive: String?, entries: [String])]()
-
-    var entries: [String] { groups.flatMap(\.entries) }
-
-    func statements(appending: (String) -> String) -> String {
-      groups.map { group in
-        if let directive = group.directive { return directive }
-        return appending(group.entries.joined(separator: ", "))
-      }.joined(separator: "\n  ")
-    }
-  }
-
-  private static func table(
-    of classDecl: ClassDeclSyntax,
-    _ entries: (MemberBlockItemListSyntax) -> [String]
-  ) -> Table {
-    var table = Table()
-    func append(_ names: [String]) {
-      guard !names.isEmpty else { return }
-      table.groups.append((nil, names))
-    }
-    append(entries(classDecl.memberBlock.members))
-    for member in classDecl.memberBlock.members {
-      guard let block = member.decl.as(IfConfigDeclSyntax.self) else { continue }
-      let clauses = block.clauses.map { clause in
-        (clause, clause.elements?.as(MemberBlockItemListSyntax.self).map(entries) ?? [])
-      }
-      guard clauses.contains(where: { !$0.1.isEmpty }) else { continue }
-      for (clause, names) in clauses {
-        let condition = clause.condition.map { " " + $0.trimmedDescription } ?? ""
-        table.groups.append(("\(clause.poundKeyword.text)\(condition)", []))
-        append(names)
-      }
-      table.groups.append(("#endif", []))
-    }
-    return table
   }
 }
 

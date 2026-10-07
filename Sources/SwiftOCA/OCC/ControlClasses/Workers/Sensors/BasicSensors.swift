@@ -18,6 +18,7 @@ open class OcaBasicSensor: OcaSensor, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.1") }
 }
 
+@OcaMethods
 open class OcaGenericBasicSensor<T: Codable & Comparable & Sendable>: OcaBasicSensor,
   @unchecked Sendable
 {
@@ -28,6 +29,7 @@ open class OcaGenericBasicSensor<T: Codable & Comparable & Sendable>: OcaBasicSe
   public var reading: OcaBoundedProperty<T>.PropertyValue
 }
 
+@OcaMethods
 open class OcaBooleanSensor: OcaBasicSensor, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.1.1") }
 
@@ -80,6 +82,7 @@ open class OcaFloat64Sensor: OcaGenericBasicSensor<OcaFloat64>, @unchecked Senda
 
 /// AES70-2 gives the string sensor a plain reading (5.1) and a maximum length
 /// of its own (5.2, 5.3), not the generic basic sensor's bounded reading.
+@OcaMethods
 open class OcaStringSensor: OcaBasicSensor, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.1.12") }
 

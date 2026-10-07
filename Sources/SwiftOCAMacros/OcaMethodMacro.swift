@@ -81,7 +81,9 @@ public struct OcaMethodDescriptorMacro: PeerMacro {
 
 /// `@OcaMethods` on a client class: its `Methods` namespace, holding the descriptor of
 /// each `@OcaMethod` and `@OcaMethodDescriptor` method in the class body under the
-/// method's own name, and the parameter record of any that needs one synthesised.
+/// method's own name, and the parameter record of any that needs one synthesised; and its
+/// `propertyKeyPaths` table, giving the storage of each property declared in the class
+/// body, by its name, after its parent's.
 public struct OcaMethodsMacro: MemberMacro {
   public static func expansion(
     of node: AttributeSyntax,
@@ -128,8 +130,12 @@ public struct OcaMethodsMacro: MemberMacro {
       }
       lines.append("#endif")
     }
-    guard !names.isEmpty else {
-      throw MacroExpansionErrorMessage("@OcaMethods needs at least one @OcaMethod method")
+    let className = classDecl.name.text
+    let properties = MemberTable(classDecl) {
+      MemberTable.propertyKeyPaths(in: $0, of: className, wrappers: propertyWrappers)
+    }
+    guard !names.isEmpty || !properties.entries.isEmpty else {
+      throw MacroExpansionErrorMessage("@OcaMethods needs at least one @OcaMethod method or property")
     }
     if let duplicate = Dictionary(grouping: names) { $0 }.first(where: { $0.value.count > 1 }) {
       throw MacroExpansionErrorMessage(
@@ -138,12 +144,40 @@ public struct OcaMethodsMacro: MemberMacro {
     }
     let body = lines.flatMap { $0.split(separator: "\n", omittingEmptySubsequences: false) }
       .map { $0.isEmpty ? "" : "  " + $0 }
-    let namespace = [
-      "/// The descriptors of the class's methods, each under the method's name.",
-      "\(access)enum Methods {",
-    ] + body + ["}"]
-    return [DeclSyntax(stringLiteral: namespace.joined(separator: "\n"))]
+    var members = [DeclSyntax]()
+    if !names.isEmpty {
+      let namespace = [
+        "/// The descriptors of the class's methods, each under the method's name.",
+        "\(access)enum Methods {",
+      ] + body + ["}"]
+      members.append(DeclSyntax(stringLiteral: namespace.joined(separator: "\n")))
+    }
+    if !properties.entries.isEmpty {
+      let classAccess = classDecl.modifiers.lazy
+        .map(\.name.text)
+        .first { ["open", "public", "package"].contains($0) }
+        .map { $0 + " " } ?? ""
+      // OcaRoot has no parent to extend, which a class body does not say
+      let isRoot = className == "OcaRoot"
+      let statements = properties.statements(appending: { "keyPaths.merge([\($0)]) { _, new in new }" })
+      members.append(
+        """
+        \(raw: isRoot ? "" : "override ")\(raw: classAccess)class var propertyKeyPaths: [String: AnyKeyPath] {
+          var keyPaths\(raw: isRoot ? ": [String: AnyKeyPath] = [:]" : " = super.propertyKeyPaths")
+          \(raw: statements)
+          return keyPaths
+        }
+        """
+      )
+    }
+    return members
   }
+
+  /// The client property wrappers, by the names a property is declared with.
+  static let propertyWrappers: Set<String> = [
+    "OcaProperty", "OcaBoundedProperty", "OcaVectorProperty", "OcaBoundedVectorProperty",
+    "OcaListProperty", "OcaList2DProperty", "OcaMapProperty", "OcaMultiMapProperty",
+  ]
 }
 
 /// The `@OcaMethod` or `@OcaMethodDescriptor` attribute as written.

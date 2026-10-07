@@ -240,6 +240,7 @@ open class Aes67StreamEndpointRegistry: OcaAgent, @unchecked Sendable {
 
 /// Controller proxy for AES70-21's Aes67SDPAgent (1.2.A.2103), which passes an SDP string
 /// to the device for device-defined processing.
+@OcaMethods
 open class Aes67SDPAgent: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { Aes67Adaptation.sdpAgentClassID }
 

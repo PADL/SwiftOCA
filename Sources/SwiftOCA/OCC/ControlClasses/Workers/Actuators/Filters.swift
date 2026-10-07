@@ -231,6 +231,7 @@ open class OcaFilterPolynomial: OcaActuator, @unchecked Sendable {
   public func setCoefficients(a: OcaList<OcaFloat32>, b: OcaList<OcaFloat32>) async throws
 }
 
+@OcaMethods
 open class OcaFilterFIR: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.12") }
   override open class var classVersion: OcaClassVersionNumber { 3 }

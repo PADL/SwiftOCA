@@ -19,6 +19,7 @@ public enum OcaPolarityState: OcaUint8, Codable, Sendable, CaseIterable {
   case inverted = 2
 }
 
+@OcaMethods
 open class OcaPolarity: OcaActuator, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.3") }
 

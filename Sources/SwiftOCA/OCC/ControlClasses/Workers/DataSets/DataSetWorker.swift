@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+@OcaMethods
 open class OcaDatasetWorker: OcaWorker, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.1.7") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
