@@ -189,6 +189,8 @@ final class Ocp2EncodingState {
       node.value = Int(uint)
     case let uint as UInt32:
       node.value = Int(uint)
+    case let oNo as OcaONo:
+      node.value = Int(oNo.rawValue)
     case let uint as UInt64:
       node.value = uint
     // identifier datatypes have array or string forms (AES70-4 8.11.1)

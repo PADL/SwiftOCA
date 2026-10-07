@@ -281,7 +281,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
         throw Ocp1Error.invalidDatasetFormat
       }
       if jsonObject[objectNumberJSONKey] != nil {
-        jsonObject[objectNumberJSONKey] = newTargetONo
+        jsonObject[objectNumberJSONKey] = newTargetONo.rawValue
         let updatedData = try JSONSerialization.data(withJSONObject: jsonObject)
         newData = String(data: updatedData, encoding: .utf8)
       }

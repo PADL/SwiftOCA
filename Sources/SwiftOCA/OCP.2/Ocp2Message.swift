@@ -99,7 +99,7 @@ package enum Ocp2Message {
       }
       var object: [String: Any] = [
         Key.handle: command.handle,
-        Key.targetONo: command.targetONo,
+        Key.targetONo: command.targetONo.rawValue,
         Key.methodID: _ocp2ElementID(command.methodID.defLevel, command.methodID.methodIndex),
       ]
       if let parameters = try parametersObject(command.parameters) {
@@ -147,7 +147,7 @@ package enum Ocp2Message {
 
   private static func eventIdentificationObject(_ event: OcaEvent) -> [String: Any] {
     [
-      Key.emitterONo: event.emitterONo,
+      Key.emitterONo: event.emitterONo.rawValue,
       Key.eventID: _ocp2ElementID(event.eventID.defLevel, event.eventID.eventIndex),
     ]
   }
