@@ -300,9 +300,10 @@ public actor OcaDevice {
     ocp2Parameters parameters: [String: Any] = [:],
     from controller: any OcaController
   ) async -> (status: OcaStatus, parameters: [String: any Sendable]?) {
-    // a handle only names the response on the wire, which this one never goes on
+    // a handle only names the response on the wire, which this one never goes on; the
+    // largest is one no controller's count reaches
     let command = Ocp1Command(
-      handle: 0,
+      handle: .max,
       targetONo: objectNumber,
       methodID: methodID,
       parameters: OcaParameters(ocp2Parameters: parameters)

@@ -907,5 +907,13 @@ final class HandleCommandArmTests: XCTestCase {
     XCTAssertEqual(worker.label, "Rear")
     let missing = await device.send(OcaMethodID("2.8"), to: 0x7FFF_FFF0, from: controller)
     XCTAssertEqual(missing.status, .badONo)
+
+    // each is answered with its own response, however many are outstanding
+    let other = try await SwiftOCADevice.OcaWorker(deviceDelegate: device, addToRootBlock: false)
+    other.label = "Side"
+    async let rear = device.send(OcaMethodID("2.8"), to: worker.objectNumber, from: controller)
+    async let side = device.send(OcaMethodID("2.8"), to: other.objectNumber, from: controller)
+    let labels = await [rear, side].map { $0.parameters?.values.first as? String }
+    XCTAssertEqual(labels, ["Rear", "Side"])
   }
 }
