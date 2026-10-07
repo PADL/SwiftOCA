@@ -24,10 +24,10 @@ open class OcaSecurityManager: OcaManager, @unchecked Sendable {
     3
   }
 
-  @OcaProperty(
-    propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.1")
-  )
+  /// Whether control data is secured. It has no getter: 3.1 is EnableControlSecurity, and
+  /// AES70 is not known to define one; a controller learns of it from its change events.
+  /// (To be checked against the AES70-2 model.)
+  @OcaProperty(propertyID: OcaPropertyID("3.1"))
   public var secureControlData: OcaProperty<OcaBoolean>.PropertyValue
 
   public convenience init() {
