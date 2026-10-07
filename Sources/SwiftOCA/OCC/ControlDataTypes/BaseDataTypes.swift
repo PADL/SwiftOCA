@@ -130,10 +130,10 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
     self.propertyIndex = propertyIndex
   }
 
+  /// The dotted form, `3.1`, or AES70's with the element's letter, `3p1` or `03p01`.
   public init(_ string: OcaString) {
-    let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
-    defLevel = s[0]
-    propertyIndex = s[1]
+    let (defLevel, propertyIndex) = Self.fields(of: string)!
+    self.init(defLevel: defLevel, propertyIndex: propertyIndex)
   }
 
   public init(stringLiteral value: String) {
@@ -141,18 +141,16 @@ public struct OcaPropertyID: Codable, Hashable, Equatable, Comparable, Sendable,
   }
 
   public init(unsafeString string: OcaString) throws {
-    let s = string.split(separator: ".", maxSplits: 1)
-    guard s.count == 2 else {
+    guard let (defLevel, propertyIndex) = Self.fields(of: string) else {
       throw Ocp1Error.status(.parameterError)
     }
-
-    guard let defLevel = OcaUint16(s[0]),
-          let propertyIndex = OcaUint16(s[1])
-    else {
-      throw Ocp1Error.status(.parameterError)
-    }
-
     self.init(defLevel: defLevel, propertyIndex: propertyIndex)
+  }
+
+  private static func fields(of string: OcaString) -> (OcaUint16, OcaUint16)? {
+    let s = string.split(maxSplits: 1, omittingEmptySubsequences: false) { $0 == "." || $0 == "p" }
+    guard s.count == 2, let defLevel = OcaUint16(s[0]), let index = OcaUint16(s[1]) else { return nil }
+    return (defLevel, index)
   }
 
   public var description: String {
@@ -416,25 +414,23 @@ public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
     self.methodIndex = methodIndex
   }
 
+  /// The dotted form, `3.1`, or AES70's with the element's letter, `3m1` or `03m01`.
   public init(_ string: OcaString) {
-    let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
-    defLevel = s[0]
-    methodIndex = s[1]
+    let (defLevel, methodIndex) = Self.fields(of: string)!
+    self.init(defLevel: defLevel, methodIndex: methodIndex)
   }
 
   public init(unsafeString string: OcaString) throws {
-    let s = string.split(separator: ".", maxSplits: 1)
-    guard s.count == 2 else {
+    guard let (defLevel, methodIndex) = Self.fields(of: string) else {
       throw Ocp1Error.status(.parameterError)
     }
-
-    guard let defLevel = OcaUint16(s[0]),
-          let methodIndex = OcaUint16(s[1])
-    else {
-      throw Ocp1Error.status(.parameterError)
-    }
-
     self.init(defLevel: defLevel, methodIndex: methodIndex)
+  }
+
+  private static func fields(of string: OcaString) -> (OcaUint16, OcaUint16)? {
+    let s = string.split(maxSplits: 1, omittingEmptySubsequences: false) { $0 == "." || $0 == "m" }
+    guard s.count == 2, let defLevel = OcaUint16(s[0]), let index = OcaUint16(s[1]) else { return nil }
+    return (defLevel, index)
   }
 
   public init(stringLiteral value: String) {

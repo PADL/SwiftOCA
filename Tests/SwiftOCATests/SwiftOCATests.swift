@@ -1450,6 +1450,25 @@ final class SocketAddressHelperTests: XCTestCase {
 }
 
 final class UnsafeStringInitializerTests: XCTestCase {
+  // MARK: - AES70's lettered form
+
+  func testElementIDsInAES70sLetteredForm() throws {
+    XCTAssertEqual(OcaPropertyID("4p1"), OcaPropertyID(defLevel: 4, propertyIndex: 1))
+    XCTAssertEqual(try OcaPropertyID(unsafeString: "04p01"), OcaPropertyID(defLevel: 4, propertyIndex: 1))
+    XCTAssertEqual(OcaMethodID("3m2"), OcaMethodID(defLevel: 3, methodIndex: 2))
+    XCTAssertEqual(try OcaMethodID(unsafeString: "03m02"), OcaMethodID(defLevel: 3, methodIndex: 2))
+    XCTAssertEqual(OcaEventID("1e1"), OcaEventID(defLevel: 1, eventIndex: 1))
+    XCTAssertEqual(try OcaEventID(unsafeString: "01e01"), OcaEventID(defLevel: 1, eventIndex: 1))
+    // the dotted form stays the one they are written in
+    XCTAssertEqual(OcaPropertyID("4p1").description, "4.1")
+    // each takes only its own letter
+    XCTAssertThrowsError(try OcaPropertyID(unsafeString: "4m1"))
+    XCTAssertThrowsError(try OcaMethodID(unsafeString: "4p1"))
+    XCTAssertThrowsError(try OcaEventID(unsafeString: "4p1"))
+    XCTAssertThrowsError(try OcaPropertyID(unsafeString: "4p"))
+    XCTAssertThrowsError(try OcaPropertyID(unsafeString: "p1"))
+  }
+
   // MARK: - OcaPropertyID unsafeString tests
 
   func testOcaPropertyIDUnsafeStringValid() throws {

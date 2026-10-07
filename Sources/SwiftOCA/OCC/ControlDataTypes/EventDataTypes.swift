@@ -30,10 +30,10 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible, 
   public let defLevel: OcaUint16
   public let eventIndex: OcaUint16
 
+  /// The dotted form, `3.1`, or AES70's with the element's letter, `3e1` or `03e01`.
   public init(_ string: OcaString) {
-    let s = string.split(separator: ".", maxSplits: 1).map { OcaUint16($0)! }
-    defLevel = s[0]
-    eventIndex = s[1]
+    let (defLevel, eventIndex) = Self.fields(of: string)!
+    self.init(defLevel: defLevel, eventIndex: eventIndex)
   }
 
   public init(defLevel: OcaUint16, eventIndex: OcaUint16) {
@@ -42,18 +42,16 @@ public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible, 
   }
 
   public init(unsafeString string: OcaString) throws {
-    let s = string.split(separator: ".", maxSplits: 1)
-    guard s.count == 2 else {
+    guard let (defLevel, eventIndex) = Self.fields(of: string) else {
       throw Ocp1Error.status(.parameterError)
     }
-
-    guard let defLevel = OcaUint16(s[0]),
-          let eventIndex = OcaUint16(s[1])
-    else {
-      throw Ocp1Error.status(.parameterError)
-    }
-
     self.init(defLevel: defLevel, eventIndex: eventIndex)
+  }
+
+  private static func fields(of string: OcaString) -> (OcaUint16, OcaUint16)? {
+    let s = string.split(maxSplits: 1, omittingEmptySubsequences: false) { $0 == "." || $0 == "e" }
+    guard s.count == 2, let defLevel = OcaUint16(s[0]), let index = OcaUint16(s[1]) else { return nil }
+    return (defLevel, index)
   }
 
   public var description: String {
