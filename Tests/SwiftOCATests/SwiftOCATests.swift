@@ -79,6 +79,20 @@ extension OcaMediaSinkConnector: Equatable {
 }
 
 final class SwiftOCADeviceTests: XCTestCase {
+  func testObjectNumberFromString() {
+    XCTAssertEqual(OcaONo("4095"), 4095)
+    XCTAssertEqual(OcaONo("0xfff"), 4095)
+    XCTAssertEqual(OcaONo("0XFFF"), 4095)
+    XCTAssertEqual(OcaONo(OcaONo(4095).hexDescription), 4095)
+    XCTAssertNil(OcaONo("0x"))
+    XCTAssertNil(OcaONo("fff"))
+    XCTAssertNil(OcaONo("<4095>"))
+    XCTAssertNil(OcaONo("0x100000000"))
+    XCTAssertEqual(OcaONo(oNoString: "<4095>"), 4095)
+    XCTAssertEqual(OcaONo(oNoString: OcaONo(4095).oNoString), 4095)
+    XCTAssertNil(OcaONo(oNoString: "4095"))
+  }
+
   func testSingleFieldOcp1Encoding() throws {
     let parameters = OcaGetPortNameParameters(portID: OcaPortID(mode: .input, index: 2))
     let encodedParameters: [UInt8] = try Ocp1Encoder().encode(parameters)

@@ -68,9 +68,11 @@ public struct OcaONo: RawRepresentable, FixedWidthInteger, UnsignedInteger, Hash
     rawValue = value
   }
 
+  /// Decimal, as `description` writes it, or hexadecimal after `0x`.
   @inlinable
   public init?(_ description: String) {
-    guard let value = UInt32(description) else { return nil }
+    let hex = description.hasPrefix("0x") || description.hasPrefix("0X")
+    guard let value = hex ? UInt32(description.dropFirst(2), radix: 16) : UInt32(description) else { return nil }
     rawValue = value
   }
 
