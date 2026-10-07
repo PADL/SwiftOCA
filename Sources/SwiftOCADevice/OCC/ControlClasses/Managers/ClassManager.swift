@@ -92,7 +92,11 @@ public final class OcaClassManager: OcaManager {
           methodID: method.methodID,
           name: method.name,
           parameters: parameters(of: method),
-          resultTypeName: method.resultType.map(Self._ocaTypeName(for:)) ?? ""
+          resultTypeName: method.resultType.map { type in
+            // a record's fields are described by the record, which is named for itself
+            let declared = method.resultTypeNames?.count == 1 ? method.resultTypeNames?.first : nil
+            return Self.typeName(declared: declared, of: type)
+          } ?? ""
         )
       }
     )
@@ -103,19 +107,25 @@ public final class OcaClassManager: OcaManager {
     guard let type = method.parametersType else { return [] }
     if type is any OcaParametersReflectable.Type {
       let fields = Ocp2Encoder.fields(of: type)
+      // the types the signature writes, where there is one for each field
+      let declared = method.parameterTypeNames?.count == fields.count ? method.parameterTypeNames : nil
       return fields.enumerated().map { index, field in
         let name = method.parameterNames.flatMap { index < $0.count ? $0[index] : nil }
           ?? Ocp2Encoder.fieldName(field.name)
-        return OcaClassParameterDescriptor(name: name, typeName: Self._ocaTypeName(for: field.type))
+        return OcaClassParameterDescriptor(
+          name: name,
+          typeName: Self.typeName(declared: declared?[index], of: field.type)
+        )
       }
     }
-    return [OcaClassParameterDescriptor(name: method.parameterNames?.first ?? "Value", typeName: Self._ocaTypeName(for: type))]
+    let declared = method.parameterTypeNames?.count == 1 ? method.parameterTypeNames?.first : nil
+    return [OcaClassParameterDescriptor(
+      name: method.parameterNames?.first ?? "Value",
+      typeName: Self.typeName(declared: declared, of: type)
+    )]
   }
 
-  /// The AES70 name of a type: the base types and collections as AES70-2 names them,
-  /// anything else by its own name. A typealias such as `OcaDB` is not known at run
-  /// time, so it is named for the type it stands for.
-  /// A property's type by the name it is declared with where that is an AES70 one, such
+  /// A type by the name it is declared with where that is an AES70 one, such
   /// as `OcaDB`, and by its run-time type's otherwise: a Swift typealias means nothing to a
   /// controller, and a list or map is better named for its elements.
   private nonisolated static func typeName(declared: String?, of type: Any.Type) -> String {
@@ -127,6 +137,9 @@ public final class OcaClassManager: OcaManager {
     return declared
   }
 
+  /// The AES70 name of a type: the base types and collections as AES70-2 names them,
+  /// anything else by its own name. A typealias such as `OcaDB` is not known at run
+  /// time, so it is named for the type it stands for.
   fileprivate nonisolated static func _ocaTypeName(for type: Any.Type) -> String {
     if let type = type as? any OcaTypeNamed.Type { return type.ocaTypeName }
     return switch type {

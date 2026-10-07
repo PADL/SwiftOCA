@@ -99,6 +99,7 @@ public struct OcaClassMacro: MemberMacro {
       .first { ["open", "public", "package"].contains($0) }
       .map { ($0 == "open" ? "public" : $0) + " " } ?? ""
 
+    let generics = Set(classDecl.genericParameterClause?.parameters.map(\.name.text) ?? [])
     var lines = [String]()
     var names = [String]()
     func declarations(in members: MemberBlockItemListSyntax) throws -> [String] {
@@ -110,7 +111,7 @@ public struct OcaClassMacro: MemberMacro {
         }
         let method = try ClientMethod(function)
         names.append(method.name)
-        return method.descriptor(attribute, access: access)
+        return method.descriptor(attribute, access: access, generics: generics)
       }
     }
     lines += try declarations(in: classDecl.memberBlock.members)
@@ -261,11 +262,13 @@ private struct ClientMethod {
   struct Parameter {
     let name: String
     let type: String
+    let syntax: TypeSyntax
   }
 
   let name: String
   let parameters: [Parameter]
   let resultType: String?
+  let resultSyntax: TypeSyntax?
 
   init(_ function: FunctionDeclSyntax) throws {
     name = function.name.text
@@ -275,10 +278,23 @@ private struct ClientMethod {
       }
       return Parameter(
         name: (parameter.secondName ?? parameter.firstName).text,
-        type: parameter.type.trimmedDescription
+        type: parameter.type.trimmedDescription,
+        syntax: parameter.type
       )
     }
-    resultType = function.signature.returnClause?.type.trimmedDescription
+    resultSyntax = function.signature.returnClause?.type
+    resultType = resultSyntax?.trimmedDescription
+  }
+
+  /// The AES70 names of `types` as written, none if one is a tuple or is written with the
+  /// class's generic parameters, which only the run time knows.
+  private static func typeNames(_ types: [TypeSyntax], generics: Set<String>) -> [String]? {
+    guard !types.isEmpty,
+          types.allSatisfy({ !$0.is(TupleTypeSyntax.self) && !MemberTable.mentions($0, any: generics) })
+    else {
+      return nil
+    }
+    return types.map(MemberTable.aes70Name(of:))
   }
 
   /// The record synthesised for a method of several parameters given no record.
@@ -286,7 +302,7 @@ private struct ClientMethod {
     name.prefix(1).uppercased() + name.dropFirst() + "Parameters"
   }
 
-  func descriptor(_ attribute: OcaMethodAttribute, access: String) -> [String] {
+  func descriptor(_ attribute: OcaMethodAttribute, access: String, generics: Set<String>) -> [String] {
     var declarations = [String]()
     let parametersType: String
     if let type = attribute.parametersType {
@@ -319,6 +335,16 @@ private struct ClientMethod {
     }
     if let resultNames = attribute.resultNames {
       arguments.append("resultNames: \(resultNames.trimmedDescription)")
+    }
+    // the types as the signature writes them, where it gives them
+    let quoted = { (names: [String]) in "[" + names.map { "\"\($0)\"" }.joined(separator: ", ") + "]" }
+    if attribute.parametersType == nil, let names = Self.typeNames(parameters.map(\.syntax), generics: generics) {
+      arguments.append("parameterTypeNames: \(quoted(names))")
+    }
+    if attribute.resultType == nil, let result = resultSyntax,
+       let names = Self.typeNames([result], generics: generics)
+    {
+      arguments.append("resultTypeNames: \(quoted(names))")
     }
     let type = "OcaMethodDescriptor<\(parametersType), \(resultType)>"
     declarations.append(

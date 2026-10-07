@@ -37,6 +37,7 @@ final class ClassManagerTests: XCTestCase {
     try await device.initializeDefaultObjects()
     _ = try await SwiftOCADevice.OcaGain(role: "Gain", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaFloat32Actuator(role: "Float", deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaLevelSensor(role: "Level", deviceDelegate: device)
     let made = await device.classManager
     XCTAssertNotNil(made, "the device makes its class manager with its other managers")
     let endpoint = try await OcaLocalDeviceEndpoint(device: device)
@@ -91,6 +92,13 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(setting.typeName, "OcaFloat32")
     let declared = await SwiftOCADevice.OcaFloat32Actuator.devicePropertyTypeNames
     XCTAssertNil(declared["setting"])
+
+    // a method's result as its signature writes it
+    let level = try await h.classManager.getControlClass(
+      classID: SwiftOCADevice.OcaLevelSensor.classID, includeInherited: false
+    )
+    let getReading = try XCTUnwrap(level.methods.first { $0.name == "GetReading" })
+    XCTAssertEqual(getReading.resultTypeName, "OcaDB")
   }
 
   func testEveryClassOfTheDevicesObjectsIsListed() async throws {

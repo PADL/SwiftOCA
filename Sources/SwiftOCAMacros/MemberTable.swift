@@ -63,9 +63,7 @@ struct MemberTable {
     // a type written with the class's generic parameters is known only at run time
     let generics = Set(classDecl.genericParameterClause?.parameters.map(\.name.text) ?? [])
     return wrappedProperties(in: members, wrappers: wrappers).compactMap { name, binding in
-      guard let type = declaredType(of: binding),
-            type.tokens(viewMode: .sourceAccurate).allSatisfy({ !generics.contains($0.text) })
-      else {
+      guard let type = declaredType(of: binding), !mentions(type, any: generics) else {
         return nil
       }
       return "\"\(name)\": \"\(aes70Name(of: type))\""
@@ -85,6 +83,11 @@ struct MemberTable {
     let type = TypeSyntax(stringLiteral: call.calledExpression.trimmedDescription)
     // a lower-case callee is a function, not a type
     return type.trimmedDescription.first?.isUppercase == true ? type : nil
+  }
+
+  /// Whether `type` is written with any of `names`, such as a class's generic parameters.
+  static func mentions(_ type: TypeSyntax, any names: Set<String>) -> Bool {
+    type.tokens(viewMode: .sourceAccurate).contains { names.contains($0.text) }
   }
 
   /// A type as written, named as AES70 names it: a typealias such as `OcaDB` as it is,

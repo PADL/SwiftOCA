@@ -38,6 +38,12 @@ final class PropertyTableTests: XCTestCase {
     XCTAssertTrue(names.isSuperset(of: ["gain", "enabled", "label", "role", "lockable"]))
   }
 
+  func testAMethodsTypesAreNamedAsItsSignatureWritesThem() {
+    let getReading = SwiftOCA.OcaLevelSensor.Methods.getReading.erased
+    XCTAssertEqual(getReading.resultTypeNames, ["OcaDB"])
+    XCTAssertNil(getReading.parameterTypeNames)
+  }
+
   @OcaConnectionActor
   func testAnIsolatedClassListsItsProperties() async {
     let object = IsolatedGain(objectNumber: 0x1000)
