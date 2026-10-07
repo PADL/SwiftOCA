@@ -82,6 +82,10 @@ enum ClientMethodDescriptors {
       ("findDatasets", OcaBlock.Methods.findDatasets.erased),
       ("findDatasetsRecursive", OcaBlock.Methods.findDatasetsRecursive.erased),
     ]),
+    (OcaClassManager.self, [
+      ("getControlClass", OcaClassManager.Methods.getControlClass.erased),
+      ("getControlClasses", OcaClassManager.Methods.getControlClasses.erased),
+    ]),
     (OcaCounterNotifier.self, [
       ("getLastUpdate", OcaCounterNotifier.Methods.getLastUpdate.erased),
     ]),
