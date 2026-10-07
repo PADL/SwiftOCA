@@ -676,21 +676,6 @@ public extension OcaRoot {
   }
 }
 
-public extension OcaONo {
-  var oNoString: String {
-    "<0x\(hexString(width: 8))>"
-  }
-
-  init?(oNoString: String) {
-    guard oNoString.hasPrefix("<"), oNoString.hasSuffix(">"),
-          let oNo = OcaONo(String(oNoString.dropFirst().dropLast()))
-    else {
-      return nil
-    }
-    self = oNo
-  }
-}
-
 public extension OcaRoot {
   @_spi(SwiftOCAPrivate) @OcaConnectionActor
   func forward(event: OcaEvent, eventData: OcaAnyPropertyChangedEventData) async throws {
