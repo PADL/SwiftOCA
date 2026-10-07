@@ -251,8 +251,7 @@ public struct OcaAnyMethodDescriptor: Sendable {
       [(Ocp2Naming.unnamedParameter, type)]
     }
     let names = Ocp2Naming.parameterNames(explicit: names, fieldNames: fields.map(\.name))
-    // the written names only where there is one for each
-    let typeNames = typeNames?.count == fields.count ? typeNames : nil
+    let typeNames = Self.declaredNames(typeNames, fieldCount: fields.count, isRecord: type is OcaParametersReflectable.Type)
     return zip(names, fields).enumerated().map { index, element in
       let (name, field) = element
       guard let type = erasedCast(field.type, to: DescribedType.self) else {
@@ -262,6 +261,17 @@ public struct OcaAnyMethodDescriptor: Sendable {
       }
       return OcaParameterDescriptor(name: name, type: type, typeName: typeNames?[index])
     }
+  }
+}
+
+@_spi(SwiftOCAPrivate)
+public extension OcaAnyMethodDescriptor {
+  /// The names a signature writes for a record's fields or a single value, where there is
+  /// one for each: a record named by one name is a parameter of its own type, whose
+  /// fields the signature does not write, however many it has.
+  static func declaredNames(_ names: [String]?, fieldCount: Int, isRecord: Bool) -> [String]? {
+    guard let names, names.count == fieldCount, !isRecord || names.count > 1 else { return nil }
+    return names
   }
 }
 

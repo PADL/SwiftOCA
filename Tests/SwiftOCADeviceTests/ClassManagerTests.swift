@@ -18,6 +18,17 @@
 @testable import SwiftOCADevice
 import XCTest
 
+/// A gain whose value's generic argument is inferred, not written.
+@OcaDeviceClass
+private final class InferredGain: SwiftOCADevice.OcaActuator {
+  @OcaBoundedDeviceProperty(
+    propertyID: OcaPropertyID("4.1"),
+    getMethodID: OcaMethodID("4.1"),
+    setMethodID: OcaMethodID("4.2")
+  )
+  var gain = OcaBoundedPropertyValue(value: OcaDB(0), in: -144...20)
+}
+
 /// The class manager seen by a controller, over a connection of its own to a device
 /// with a gain on it.
 final class ClassManagerTests: XCTestCase {
@@ -99,6 +110,23 @@ final class ClassManagerTests: XCTestCase {
     )
     let getReading = try XCTUnwrap(level.methods.first { $0.name == "GetReading" })
     XCTAssertEqual(getReading.resultTypeName, "OcaDB")
+  }
+
+  @OcaDevice
+  func testATypeWhoseArgumentsAreInferredIsNamedByTheRunTime() async {
+    // the source says only OcaBoundedPropertyValue, so the run time names it
+    XCTAssertNil(InferredGain.devicePropertyTypeNames["gain"])
+  }
+
+  func testARecordsFieldsAreNamedOnlyFromSeveralWrittenParameters() {
+    XCTAssertEqual(
+      OcaAnyMethodDescriptor.declaredNames(["OcaDB", "OcaBoolean"], fieldCount: 2, isRecord: true),
+      ["OcaDB", "OcaBoolean"]
+    )
+    // one name for a record is the record's own, not its one field's
+    XCTAssertNil(OcaAnyMethodDescriptor.declaredNames(["OcaFooParameters"], fieldCount: 1, isRecord: true))
+    XCTAssertEqual(OcaAnyMethodDescriptor.declaredNames(["OcaDB"], fieldCount: 1, isRecord: false), ["OcaDB"])
+    XCTAssertNil(OcaAnyMethodDescriptor.declaredNames(["OcaDB"], fieldCount: 2, isRecord: true))
   }
 
   func testEveryClassOfTheDevicesObjectsIsListed() async throws {

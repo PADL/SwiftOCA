@@ -71,12 +71,13 @@ struct MemberTable {
   }
 
   /// The type a binding is declared with, or, with none written, the one its initial
-  /// value is made with (`OcaBoundedPropertyValue<OcaDB>(...)`).
+  /// value is made with where its generic arguments are written out
+  /// (`OcaBoundedPropertyValue<OcaDB>(...)`): inferred ones are not in the source, and a
+  /// type without any is named as well by the run time.
   private static func declaredType(of binding: PatternBindingSyntax) -> TypeSyntax? {
     if let annotation = binding.typeAnnotation { return annotation.type }
     guard let call = binding.initializer?.value.as(FunctionCallExprSyntax.self),
           call.calledExpression.is(GenericSpecializationExprSyntax.self)
-          || call.calledExpression.is(DeclReferenceExprSyntax.self)
     else {
       return nil
     }

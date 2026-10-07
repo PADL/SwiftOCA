@@ -107,8 +107,9 @@ public final class OcaClassManager: OcaManager {
     guard let type = method.parametersType else { return [] }
     if type is any OcaParametersReflectable.Type {
       let fields = Ocp2Encoder.fields(of: type)
-      // the types the signature writes, where there is one for each field
-      let declared = method.parameterTypeNames?.count == fields.count ? method.parameterTypeNames : nil
+      let declared = OcaAnyMethodDescriptor.declaredNames(
+        method.parameterTypeNames, fieldCount: fields.count, isRecord: true
+      )
       return fields.enumerated().map { index, field in
         let name = method.parameterNames.flatMap { index < $0.count ? $0[index] : nil }
           ?? Ocp2Encoder.fieldName(field.name)
