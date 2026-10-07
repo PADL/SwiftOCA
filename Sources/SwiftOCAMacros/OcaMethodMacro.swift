@@ -160,17 +160,45 @@ public struct OcaClassMacro: MemberMacro {
       // OcaRoot has no parent to extend, which a class body does not say
       let isRoot = className == "OcaRoot"
       let statements = properties.statements(appending: { "keyPaths.merge([\($0)]) { _, new in new }" })
-      members.append(
-        """
-        \(raw: isRoot ? "" : "override ")\(raw: classAccess)class var propertyKeyPaths: [String: AnyKeyPath] {
-          var keyPaths\(raw: isRoot ? ": [String: AnyKeyPath] = [:]" : " = super.propertyKeyPaths")
-          \(raw: statements)
-          return keyPaths
-        }
-        """
-      )
+      if let actor = globalActor(of: classDecl), !isRoot {
+        // Swift forms a key path to an actor's storage only on that actor; forming one
+        // reads nothing, so the table is made there and the closure called from anywhere
+        members.append(
+          """
+          override nonisolated \(raw: classAccess)class var propertyKeyPaths: [String: AnyKeyPath] {
+            let isolated: @\(raw: actor) () -> [String: AnyKeyPath] = {
+              var keyPaths = [String: AnyKeyPath]()
+              \(raw: statements)
+              return keyPaths
+            }
+            let keyPaths = unsafeBitCast(isolated, to: (() -> [String: AnyKeyPath]).self)()
+            return super.propertyKeyPaths.merging(keyPaths) { _, new in new }
+          }
+          """
+        )
+      } else {
+        members.append(
+          """
+          \(raw: isRoot ? "" : "override ")\(raw: classAccess)class var propertyKeyPaths: [String: AnyKeyPath] {
+            var keyPaths\(raw: isRoot ? ": [String: AnyKeyPath] = [:]" : " = super.propertyKeyPaths")
+            \(raw: statements)
+            return keyPaths
+          }
+          """
+        )
+      }
     }
     return members
+  }
+
+  /// The global actor a class is isolated to, by the attribute naming it: one whose name
+  /// ends in `Actor`, such as `@MainActor`, as a macro cannot tell a global actor otherwise.
+  private static func globalActor(of classDecl: ClassDeclSyntax) -> String? {
+    classDecl.attributes.lazy.compactMap { element -> String? in
+      guard case let .attribute(attribute) = element else { return nil }
+      let name = attribute.attributeName.trimmedDescription
+      return name.hasSuffix("Actor") ? name : nil
+    }.first
   }
 
   /// The client property wrappers, by the names a property is declared with.
