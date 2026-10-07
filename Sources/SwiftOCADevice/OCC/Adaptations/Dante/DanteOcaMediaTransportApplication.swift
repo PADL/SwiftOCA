@@ -119,8 +119,8 @@ open class DanteOcaMediaTransportApplication: OcaMediaTransportApplication {
     _ command: Ocp1Command,
     from controller: OcaController
   ) async throws -> Ocp1Response {
-    switch command.methodID {
-    case OcaMethodID("4.2"):
+    switch (command.methodID.defLevel, command.methodID.methodIndex) {
+    case (4, 2):
       let endpoints: ChannelEndpointMap = try decodeCommand(command)
       try await ensureWritable(by: controller, command: command)
       for (id, channelEndpoint) in endpoints {

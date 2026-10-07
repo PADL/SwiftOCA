@@ -181,7 +181,7 @@ open class OcaDeviceManager: OcaManager {
   var datasetFilter: OcaRoot.SerializationFilterFunction? = { object, propertyID, _ in
     precondition(object.objectNumber == OcaDeviceManagerONo)
 
-    return propertyID == OcaPropertyID("3.4") ? .ok : .ignore // deviceName
+    return (propertyID.defLevel, propertyID.propertyIndex) == (3, 4) ? .ok : .ignore // deviceName
   }
 
   public func set(datasetFilter: OcaRoot.SerializationFilterFunction?) {
