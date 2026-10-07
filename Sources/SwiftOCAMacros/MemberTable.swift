@@ -57,10 +57,18 @@ struct MemberTable {
   /// as a dictionary entry from its name to that type's AES70 name.
   static func propertyTypeNames(
     in members: MemberBlockItemListSyntax,
+    of classDecl: ClassDeclSyntax,
     wrappers: Set<String>
   ) -> [String] {
-    wrappedProperties(in: members, wrappers: wrappers).compactMap { name, binding in
-      declaredType(of: binding).map { "\"\(name)\": \"\(aes70Name(of: $0))\"" }
+    // a type written with the class's generic parameters is known only at run time
+    let generics = Set(classDecl.genericParameterClause?.parameters.map(\.name.text) ?? [])
+    return wrappedProperties(in: members, wrappers: wrappers).compactMap { name, binding in
+      guard let type = declaredType(of: binding),
+            type.tokens(viewMode: .sourceAccurate).allSatisfy({ !generics.contains($0.text) })
+      else {
+        return nil
+      }
+      return "\"\(name)\": \"\(aes70Name(of: type))\""
     }
   }
 

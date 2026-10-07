@@ -82,7 +82,7 @@ public final class OcaClassManager: OcaManager {
         OcaClassPropertyDescriptor(
           propertyID: property.propertyID,
           name: property.name,
-          typeName: property.typeName ?? Self._ocaTypeName(for: property.valueType),
+          typeName: Self.typeName(declared: property.typeName, of: property.valueType),
           isReadOnly: !property.isSettable
         )
       },
@@ -115,6 +115,18 @@ public final class OcaClassManager: OcaManager {
   /// The AES70 name of a type: the base types and collections as AES70-2 names them,
   /// anything else by its own name. A typealias such as `OcaDB` is not known at run
   /// time, so it is named for the type it stands for.
+  /// A property's type by the name it is declared with where that is an AES70 one, such
+  /// as `OcaDB`, and by its run-time type's otherwise: a Swift typealias means nothing to a
+  /// controller, and a list or map is better named for its elements.
+  private nonisolated static func typeName(declared: String?, of type: Any.Type) -> String {
+    let name = _ocaTypeName(for: type)
+    guard let declared, declared.hasPrefix("Oca"), !name.hasPrefix("OcaList<"), !name.hasPrefix("OcaMap<")
+    else {
+      return name
+    }
+    return declared
+  }
+
   fileprivate nonisolated static func _ocaTypeName(for type: Any.Type) -> String {
     if let type = type as? any OcaTypeNamed.Type { return type.ocaTypeName }
     return switch type {

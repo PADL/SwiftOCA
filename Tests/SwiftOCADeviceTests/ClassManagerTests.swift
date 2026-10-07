@@ -36,6 +36,7 @@ final class ClassManagerTests: XCTestCase {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
     _ = try await SwiftOCADevice.OcaGain(role: "Gain", deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaFloat32Actuator(role: "Float", deviceDelegate: device)
     let made = await device.classManager
     XCTAssertNotNil(made, "the device makes its class manager with its other managers")
     let endpoint = try await OcaLocalDeviceEndpoint(device: device)
@@ -76,6 +77,20 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(label.typeName, "OcaString")
     XCTAssertFalse(label.isReadOnly)
     XCTAssertGreaterThan(inherited.properties.count, gain.properties.count)
+  }
+
+  func testATypeIsNamedAsDeclaredOnlyWhereThatIsAnAES70Name() async throws {
+    let h = try await makeHarness()
+    defer { Task { await h.tearDown() } }
+
+    // declared with the generic class's parameter: named for the type it is at run time
+    let float = try await h.classManager.getControlClass(
+      classID: SwiftOCADevice.OcaFloat32Actuator.classID, includeInherited: true
+    )
+    let setting = try XCTUnwrap(float.properties.first { $0.name == "setting" })
+    XCTAssertEqual(setting.typeName, "OcaFloat32")
+    let declared = await SwiftOCADevice.OcaFloat32Actuator.devicePropertyTypeNames
+    XCTAssertNil(declared["setting"])
   }
 
   func testEveryClassOfTheDevicesObjectsIsListed() async throws {

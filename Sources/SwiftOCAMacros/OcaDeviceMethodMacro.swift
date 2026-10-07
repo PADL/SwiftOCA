@@ -184,7 +184,7 @@ public struct OcaDeviceClassMacro: MemberMacro {
       )
     }
     let typeNames = MemberTable(classDecl) {
-      MemberTable.propertyTypeNames(in: $0, wrappers: propertyWrappers)
+      MemberTable.propertyTypeNames(in: $0, of: classDecl, wrappers: propertyWrappers)
     }
     if !typeNames.entries.isEmpty {
       members.append(
