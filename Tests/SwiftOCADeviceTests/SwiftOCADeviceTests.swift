@@ -888,4 +888,32 @@ final class HandleCommandArmTests: XCTestCase {
     XCTAssertEqual(values.count, 1)
     XCTAssertTrue(values.values.allSatisfy { $0 is NSNull }, "\(values)")
   }
+
+  /// A bridge sends a method as its own controller would over OCP.2.
+  @OcaDevice
+  func testAMethodIsSentAsTheControllerWould() async throws {
+    let device = try await makeDevice()
+    let worker = try await SwiftOCADevice.OcaWorker(deviceDelegate: device, addToRootBlock: false)
+    worker.label = "Front"
+    let controller = Ocp2ArmTestController()
+    let read = await device.send(OcaMethodID("2.8"), to: worker.objectNumber, from: controller)
+    XCTAssertEqual(read.status, .ok)
+    XCTAssertEqual(read.parameters?.values.first as? String, "Front")
+
+    let written = await device.send(
+      OcaMethodID("2.9"), to: worker.objectNumber, ocp2Parameters: ["Label": "Rear"], from: controller
+    )
+    XCTAssertEqual(written.status, .ok)
+    XCTAssertEqual(worker.label, "Rear")
+    let missing = await device.send(OcaMethodID("2.8"), to: 0x7FFF_FFF0, from: controller)
+    XCTAssertEqual(missing.status, .badONo)
+
+    // each is answered with its own response, however many are outstanding
+    let other = try await SwiftOCADevice.OcaWorker(deviceDelegate: device, addToRootBlock: false)
+    other.label = "Side"
+    async let rear = device.send(OcaMethodID("2.8"), to: worker.objectNumber, from: controller)
+    async let side = device.send(OcaMethodID("2.8"), to: other.objectNumber, from: controller)
+    let labels = await [rear, side].map { $0.parameters?.values.first as? String }
+    XCTAssertEqual(labels, ["Rear", "Side"])
+  }
 }

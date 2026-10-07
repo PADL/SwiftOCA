@@ -291,6 +291,27 @@ public actor OcaDevice {
     objects[object.objectNumber] = nil
   }
 
+  /// Sends an object one of its methods with OCP.2 parameters, as `controller` would over
+  /// OCP.2, for a bridge to another control protocol: the device decodes the parameters
+  /// and makes its access and lock checks as for any controller's command.
+  public func send(
+    _ methodID: OcaMethodID,
+    to objectNumber: OcaONo,
+    ocp2Parameters parameters: [String: Any] = [:],
+    from controller: any OcaController
+  ) async -> (status: OcaStatus, parameters: [String: any Sendable]?) {
+    // a handle only names the response on the wire, which this one never goes on; the
+    // largest is one no controller's count reaches
+    let command = Ocp1Command(
+      handle: .max,
+      targetONo: objectNumber,
+      methodID: methodID,
+      parameters: OcaParameters(ocp2Parameters: parameters)
+    )
+    let response = await handleCommand(command, from: controller)
+    return (response.statusCode, response.parameters.ocp2Parameters)
+  }
+
   public func handleCommand(
     _ command: Ocp1Command,
     from controller: any OcaController
