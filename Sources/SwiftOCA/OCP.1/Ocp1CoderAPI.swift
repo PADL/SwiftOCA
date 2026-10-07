@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+// the standard library's own field walk, which Mirror is built on
+@_spi(Reflection) import Swift
 import BinaryParsing
 #if canImport(FoundationEssentials)
 import FoundationEssentials

@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+// the standard library's own field walk, which Mirror is built on
+@_spi(Reflection) import Swift
 import Synchronization
 
 /// OCP.2 names parameters and fields by the AES70-2A model names. SwiftOCA derives
