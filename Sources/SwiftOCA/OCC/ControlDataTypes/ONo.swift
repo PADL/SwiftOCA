@@ -68,9 +68,13 @@ public struct OcaONo: RawRepresentable, FixedWidthInteger, UnsignedInteger, Hash
     rawValue = value
   }
 
-  @inlinable
+  /// Decimal, as `description` writes it, or hexadecimal after `0x`, either of them
+  /// optionally between angle brackets, as `oNoString` writes it.
   public init?(_ description: String) {
-    guard let value = UInt32(description) else { return nil }
+    var digits = Substring(description)
+    if digits.hasPrefix("<"), digits.hasSuffix(">") { digits = digits.dropFirst().dropLast() }
+    let hex = digits.hasPrefix("0x") || digits.hasPrefix("0X")
+    guard let value = hex ? UInt32(digits.dropFirst(2), radix: 16) : UInt32(digits) else { return nil }
     rawValue = value
   }
 
@@ -91,6 +95,8 @@ public struct OcaONo: RawRepresentable, FixedWidthInteger, UnsignedInteger, Hash
   @inlinable public var leadingZeroBitCount: Int { rawValue.leadingZeroBitCount }
   @inlinable public var byteSwapped: OcaONo { OcaONo(rawValue.byteSwapped) }
   @inlinable public var description: String { rawValue.description }
+  /// The object number in hexadecimal between angle brackets, as `<0x1000>`.
+  public var oNoString: String { "<0x\(String(rawValue, radix: 16))>" }
   @inlinable public func hash(into hasher: inout Hasher) { rawValue.hash(into: &hasher) }
 
   @inlinable
@@ -170,11 +176,6 @@ public struct OcaONo: RawRepresentable, FixedWidthInteger, UnsignedInteger, Hash
   public static func &>>= (lhs: inout OcaONo, rhs: OcaONo) { lhs.rawValue &>>= rhs.rawValue }
   @inlinable
   public static func &<<= (lhs: inout OcaONo, rhs: OcaONo) { lhs.rawValue &<<= rhs.rawValue }
-}
-
-public extension OcaONo {
-  /// The object number in hexadecimal, as `0x1000`, as object numbers are often written.
-  var hexDescription: String { "0x" + String(rawValue, radix: 16) }
 }
 
 #if canImport(Foundation)
