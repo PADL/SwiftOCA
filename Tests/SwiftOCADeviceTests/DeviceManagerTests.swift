@@ -46,23 +46,29 @@ final class DeviceManagerTests: XCTestCase {
   }
 
   /// Managers constructed before the device manager (subscription, security) are listed
-  /// too, by role, and later managers come and go with registration.
+  /// too, by role, then the class manager, and later managers come and go with registration.
   func testManagersListsEveryRegisteredManager() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
     let deviceManager = await device.deviceManager!
 
     var managers = await deviceManager.managers
-    XCTAssertEqual(managers.map(\.objectNumber), [OcaSecurityManagerONo, OcaSubscriptionManagerONo])
-    XCTAssertEqual(managers.map(\.name), ["SecurityManager", "SubscriptionManager"])
+    let classManager = SwiftOCA.OcaClassManager.objectNumber
+    XCTAssertEqual(managers.map(\.objectNumber), [OcaSecurityManagerONo, OcaSubscriptionManagerONo, classManager])
+    XCTAssertEqual(managers.map(\.name), ["SecurityManager", "SubscriptionManager", "ClassManager"])
 
     let firmwareManager = try await SwiftOCADevice.OcaFirmwareManager(deviceDelegate: device)
     managers = await deviceManager.managers
     XCTAssertEqual(managers.map(\.objectNumber), [
       OcaSecurityManagerONo,
       OcaSubscriptionManagerONo,
+      classManager,
       OcaFirmwareManagerONo,
     ])
+
+    // the device's managers are the device manager and those it lists
+    let objects = await device.managers.map(\.objectNumber)
+    XCTAssertEqual(objects, [OcaDeviceManagerONo] + managers.map(\.objectNumber))
 
     try await device.deregister(object: firmwareManager)
     managers = await deviceManager.managers

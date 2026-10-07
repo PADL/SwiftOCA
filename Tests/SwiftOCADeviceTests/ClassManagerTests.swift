@@ -36,7 +36,8 @@ final class ClassManagerTests: XCTestCase {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
     _ = try await SwiftOCADevice.OcaGain(role: "Gain", deviceDelegate: device)
-    _ = try await SwiftOCADevice.OcaClassManager.shared(on: device)
+    let made = await device.classManager
+    XCTAssertNotNil(made, "the device makes its class manager with its other managers")
     let endpoint = try await OcaLocalDeviceEndpoint(device: device)
     let endpointTask = Task { do { try await endpoint.run() } catch {} }
     let connection = await OcaLocalConnection(endpoint)

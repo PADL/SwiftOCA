@@ -129,6 +129,17 @@ public actor OcaDevice {
   public private(set) var subscriptionManager: OcaSubscriptionManager!
   public private(set) var deviceManager: OcaDeviceManager!
   public private(set) var securityManager: OcaSecurityManager!
+  public private(set) var classManager: OcaClassManager!
+
+  /// Every manager of the device: the device manager, then those its `Managers` lists.
+  public var managers: [OcaManager] {
+    get async {
+      guard let deviceManager else { return [] }
+      return await [deviceManager] + deviceManager.managers.compactMap { descriptor in
+        descriptor.objectNumber == deviceManager.objectNumber ? nil : objects[descriptor.objectNumber] as? OcaManager
+      }
+    }
+  }
 
   /// Every object registered with the device, by object number.
   public internal(set) var objects = [OcaONo: OcaRoot]()
@@ -181,6 +192,7 @@ public actor OcaDevice {
     for object in objects.values.sorted(by: { $0.objectNumber < $1.objectNumber }) {
       await _addManagerDescriptor(for: object)
     }
+    classManager = try await OcaClassManager(deviceDelegate: self)
   }
 
   public func add(endpoint: OcaDeviceEndpoint) async throws {
