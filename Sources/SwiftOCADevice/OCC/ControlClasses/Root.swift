@@ -239,6 +239,10 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   /// declarations; `OcaRoot` declares none.
   open class var devicePropertyKeyPaths: [String: AnyKeyPath] { [:] }
 
+  /// The AES70 name of each device property's type as this class declares it, by the
+  /// property's name, its parent's first: `OcaDB` rather than the `Float` it stands for.
+  open class var devicePropertyTypeNames: [String: String] { [:] }
+
   open class var deviceMethods: [OcaDeviceMethodDescriptor] {
     [
       _ocaDeviceMethod_getClassIdentification(Void.self),

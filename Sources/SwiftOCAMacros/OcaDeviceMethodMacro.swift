@@ -183,6 +183,20 @@ public struct OcaDeviceClassMacro: MemberMacro {
         """
       )
     }
+    let typeNames = MemberTable(classDecl) {
+      MemberTable.propertyTypeNames(in: $0, wrappers: propertyWrappers)
+    }
+    if !typeNames.entries.isEmpty {
+      members.append(
+        """
+        override \(raw: access)class var devicePropertyTypeNames: [String: String] {
+          var typeNames = super.devicePropertyTypeNames
+          \(raw: typeNames.statements(appending: { "typeNames.merge([\($0)]) { _, new in new }" }))
+          return typeNames
+        }
+        """
+      )
+    }
     if !propertyTable.entries.isEmpty {
       members.append(
         """

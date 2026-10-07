@@ -29,6 +29,9 @@ public struct OcaDevicePropertyDescriptor: Sendable {
   /// The type a controller reads and writes: the value alone, without the bounds a
   /// bounded property keeps beside it. For a vector property it is the pair.
   public let valueType: any (Codable & Sendable).Type
+  /// The AES70 name of the type the property is declared with, which keeps a typealias
+  /// such as `OcaDB` that `valueType` cannot.
+  public let typeName: String?
   /// A vector property is two OCA properties read and written together: `propertyID`
   /// is its x component and this is its y. Nil for any other property.
   public let yPropertyID: OcaPropertyID?
@@ -87,13 +90,14 @@ public extension OcaRoot {
     // which of the class's properties are its label and its owner, as the class says
     let label = (self as? any OcaLabelRepresentable).map { type(of: $0).labelPropertyID }
     let owner = (self as? any OcaOwnable).map { type(of: $0).ownerPropertyID }
+    let typeNames = type(of: self).devicePropertyTypeNames
     return allDevicePropertyKeyPaths.compactMap { name, keyPath in
       guard let property = self[keyPath: keyPath] as? any OcaDevicePropertyRepresentable else { return nil }
       var flags: OcaDevicePropertyDescriptor.Flags = []
       if property is any _OcaBoundedDevicePropertyRepresentable { flags.insert(.bounded) }
       if property.propertyID == label { flags.insert(.label) }
       if property.propertyID == owner { flags.insert(.owner) }
-      return property.description(named: name, flags: flags)
+      return property.description(named: name, typeName: typeNames[name], flags: flags)
     }.sorted { $0.propertyID < $1.propertyID }
   }
 
@@ -152,13 +156,18 @@ public extension Ocp2Encoder {
 }
 
 private extension OcaDevicePropertyRepresentable {
-  func description(named name: String, flags: OcaDevicePropertyDescriptor.Flags) -> OcaDevicePropertyDescriptor {
+  func description(
+    named name: String,
+    typeName: String?,
+    flags: OcaDevicePropertyDescriptor.Flags
+  ) -> OcaDevicePropertyDescriptor {
     OcaDevicePropertyDescriptor(
       name: name,
       propertyID: propertyID,
       getMethodID: getMethodID,
       setMethodID: setMethodID,
       valueType: valueType,
+      typeName: typeName,
       yPropertyID: vectorComponents?.yPropertyID,
       componentType: vectorComponents?.type,
       flags: flags,

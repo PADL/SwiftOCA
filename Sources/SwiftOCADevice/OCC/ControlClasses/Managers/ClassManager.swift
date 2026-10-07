@@ -82,7 +82,7 @@ public final class OcaClassManager: OcaManager {
         OcaClassPropertyDescriptor(
           propertyID: property.propertyID,
           name: property.name,
-          typeName: Self._ocaTypeName(for: property.valueType),
+          typeName: property.typeName ?? Self._ocaTypeName(for: property.valueType),
           isReadOnly: !property.isSettable
         )
       },
