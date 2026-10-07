@@ -132,8 +132,6 @@ public actor OcaDevice {
 
   /// Every object registered with the device, by object number.
   public internal(set) var objects = [OcaONo: OcaRoot]()
-  /// The handle of the last command `send` made.
-  private var inProcessHandle: OcaUint32 = 0
   var nextObjectNumber: OcaONo = OcaMaximumReservedONo + 1
   var endpoints = [OcaDeviceEndpoint]()
   var logger = Logger(label: "com.padl.SwiftOCADevice")
@@ -302,9 +300,9 @@ public actor OcaDevice {
     ocp2Parameters parameters: [String: Any] = [:],
     from controller: any OcaController
   ) async -> (status: OcaStatus, parameters: [String: any Sendable]?) {
-    inProcessHandle &+= 1
+    // a handle only names the response on the wire, which this one never goes on
     let command = Ocp1Command(
-      handle: inProcessHandle,
+      handle: 0,
       targetONo: objectNumber,
       methodID: methodID,
       parameters: OcaParameters(ocp2Parameters: parameters)
