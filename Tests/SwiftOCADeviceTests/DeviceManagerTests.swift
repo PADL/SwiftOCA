@@ -66,6 +66,10 @@ final class DeviceManagerTests: XCTestCase {
       OcaFirmwareManagerONo,
     ])
 
+    // the device's managers are the device manager and those it lists
+    let objects = await device.managers.map(\.objectNumber)
+    XCTAssertEqual(objects, [OcaDeviceManagerONo] + managers.map(\.objectNumber))
+
     try await device.deregister(object: firmwareManager)
     managers = await deviceManager.managers
     XCTAssertFalse(managers.contains(where: { $0.objectNumber == OcaFirmwareManagerONo }))
