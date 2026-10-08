@@ -193,6 +193,9 @@ public actor OcaDevice {
       await _addManagerDescriptor(for: object)
     }
     classManager = try await OcaClassManager(deviceDelegate: self)
+    for object in objects.values.sorted(by: { $0.objectNumber < $1.objectNumber }) {
+      await classManager.didRegister(object: object)
+    }
   }
 
   public func add(endpoint: OcaDeviceEndpoint) async throws {
@@ -261,6 +264,7 @@ public actor OcaDevice {
       try await rootBlock.add(actionObject: object)
     }
     await _addManagerDescriptor(for: object)
+    await classManager?.didRegister(object: object)
   }
 
   private func _addManagerDescriptor(for object: OcaRoot) async {
@@ -301,6 +305,7 @@ public actor OcaDevice {
       try await owner.delete(actionObject: object)
     }
     objects[object.objectNumber] = nil
+    await classManager?.didDeregister(object: object)
   }
 
   /// Sends an object one of its methods with OCP.2 parameters, as `controller` would over

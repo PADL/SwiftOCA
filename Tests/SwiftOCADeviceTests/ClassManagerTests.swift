@@ -165,7 +165,7 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(descriptor.kind, .struct)
     XCTAssertEqual(descriptor.fields.map(\.name), ["ClassID", "ClassVersion", "Name", "Properties", "Methods", "Events"])
 
-    let all = try await h.classManager.getDatatypes()
+    let all = try await h.classManager.$datatypes._getValue(h.classManager, flags: [])
     XCTAssertEqual(Set(all.map(\.name)).count, all.count, "each datatype once")
     // every type a descriptor names is itself described
     let names = Set(all.map(\.name))
@@ -225,7 +225,7 @@ final class ClassManagerTests: XCTestCase {
     let h = try await makeHarness()
     defer { Task { await h.tearDown() } }
 
-    let classes = try await h.classManager.getControlClasses()
+    let classes = try await h.classManager.$controlClasses._getValue(h.classManager, flags: [])
     let ids = Set(classes.map(\.classID))
     XCTAssertTrue(ids.contains(SwiftOCADevice.OcaGain.classID))
     XCTAssertTrue(ids.contains(SwiftOCA.OcaClassManager.classID))
@@ -235,7 +235,12 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(method.parameters.map(\.name), ["ClassID", "IncludeInherited", "Descriptor"])
     XCTAssertEqual(method.parameters.map(\.typeName), ["OcaClassID", "OcaBoolean", "OcaClassDescriptor"])
     XCTAssertEqual(method.parameters.map(\.direction), [.in, .in, .out])
+    // its lists are properties, read with their getters
+    XCTAssertEqual(own.properties.map(\.name), ["ControlClasses", "Datatypes"])
+    XCTAssertEqual(own.properties.map(\.isReadOnly), [true, true])
     let list = try XCTUnwrap(own.methods.first { $0.name == "GetControlClasses" })
+    XCTAssertEqual(list.methodID, OcaMethodID("3.1"))
+    XCTAssertEqual(list.parameters.map(\.name), ["ControlClasses"])
     XCTAssertEqual(list.parameters.map(\.typeName), ["OcaList<OcaClassDescriptor>"])
     XCTAssertEqual(list.parameters.map(\.direction), [.out])
     // a generic class by its own name

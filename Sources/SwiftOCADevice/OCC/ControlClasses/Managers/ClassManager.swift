@@ -35,74 +35,107 @@ public final class OcaClassManager: OcaManager {
     )
   }
 
+  /// Every class of the device's objects, each once and with only its own elements, in
+  /// the order the device first had an object of it.
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.1"),
+    getMethodID: OcaMethodID("3.1")
+  )
+  public private(set) var controlClasses = OcaList<OcaClassDescriptor>()
+
+  /// Every datatype the classes of the device's objects refer to, each once, by name.
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.2"),
+    getMethodID: OcaMethodID("3.2")
+  )
+  public private(set) var datatypes = OcaList<OcaDatatypeDescriptor>()
+
   @OcaDeviceMethod(SwiftOCA.OcaClassManager.Methods.getControlClass, access: .read)
   func getControlClass(
     classID: OcaClassID,
     includeInherited: OcaBoolean,
     from controller: any OcaController
   ) async throws -> OcaClassDescriptor {
-    for object in await objects() {
-      let lineage = object.deviceClassDescriptors
-      guard let index = lineage.firstIndex(where: { $0.classID == classID }) else { continue }
-      let classes = includeInherited ? Array(lineage[...index]) : [lineage[index]]
-      return Self.descriptor(of: lineage[index], with: classes)
-    }
-    throw Ocp1Error.status(.parameterError)
-  }
-
-  @OcaDeviceMethod(SwiftOCA.OcaClassManager.Methods.getControlClasses, access: .read)
-  func getControlClasses(from controller: any OcaController) async throws -> [OcaClassDescriptor] {
-    var described = [OcaClassDescriptor]()
-    var seen = Set<OcaClassID>()
-    for object in await objects() {
-      for oca in object.deviceClassDescriptors where seen.insert(oca.classID).inserted {
-        described.append(Self.descriptor(of: oca, with: [oca]))
-      }
-    }
-    return described
+    guard let lineage = lineages[classID] else { throw Ocp1Error.status(.parameterError) }
+    return Self.descriptor(of: lineage.last!, with: includeInherited ? lineage : [lineage.last!])
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaClassManager.Methods.getDatatype, access: .read)
   func getDatatype(name: OcaString, from controller: any OcaController) async throws -> OcaDatatypeDescriptor {
-    guard let datatype = await datatypes()[name] else { throw Ocp1Error.status(.parameterError) }
+    guard let datatype = described.described[name] else { throw Ocp1Error.status(.parameterError) }
     return datatype
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaClassManager.Methods.getDatatypes, access: .read)
-  func getDatatypes(from controller: any OcaController) async throws -> [OcaDatatypeDescriptor] {
-    await datatypes().sorted { $0.key < $1.key }.map(\.value)
+  /// The registered objects' Swift classes, each with how many objects it has and its
+  /// OCA classes, root first.
+  private var registered = [ObjectIdentifier: (count: Int, lineage: [OcaDeviceClassDescriptor])]()
+  /// Each OCA class of the device's objects with the classes it derives from, root first.
+  private var lineages = [OcaClassID: [OcaDeviceClassDescriptor]]()
+  private var described = Datatypes()
+
+  /// Called by the device as it registers an object. Only an object of a Swift class the
+  /// device has no other object of can bring classes to describe.
+  func didRegister(object: OcaRoot) {
+    let key = ObjectIdentifier(type(of: object))
+    if let entry = registered[key] {
+      registered[key]!.count = entry.count + 1
+      return
+    }
+    let lineage = object.deviceClassDescriptors
+    registered[key] = (1, lineage)
+    add(lineage: lineage)
   }
 
-  /// Every object registered with the device. Taken in object number order only so that
-  /// repeated calls agree; GetControlClasses promises no order.
-  private func objects() async -> [OcaRoot] {
-    guard let device = deviceDelegate else { return [] }
-    return await device.objects.sorted { $0.key < $1.key }.map(\.value)
+  /// Called by the device as it deregisters an object. When the last object of a Swift
+  /// class goes, the classes and datatypes are described afresh from those that remain.
+  func didDeregister(object: OcaRoot) {
+    let key = ObjectIdentifier(type(of: object))
+    guard let entry = registered[key] else { return }
+    guard entry.count == 1 else {
+      registered[key]!.count = entry.count - 1
+      return
+    }
+    registered[key] = nil
+    lineages = [:]
+    described = Datatypes()
+    controlClasses = []
+    for entry in registered.values {
+      add(lineage: entry.lineage)
+    }
   }
 
-  /// The datatypes the device's classes refer to, by name, and those they refer to in turn.
-  private func datatypes() async -> [String: OcaDatatypeDescriptor] {
-    var datatypes = Datatypes()
-    var seen = Set<OcaClassID>()
-    for object in await objects() {
-      for oca in object.deviceClassDescriptors where seen.insert(oca.classID).inserted {
-        for property in oca.properties {
-          datatypes.add(property.valueType, declared: property.typeName)
-        }
-        for descriptor in oca.methods {
-          for element in Self.elements(of: descriptor.method) {
-            datatypes.add(element.type, declared: element.declared)
-          }
-        }
-        for event in Self.ownEvents(of: oca) {
-          datatypes.add(event.eventDataType, declared: nil)
-        }
+  private func add(lineage: [OcaDeviceClassDescriptor]) {
+    var added = false
+    for index in lineage.indices where lineages[lineage[index].classID] == nil {
+      let oca = lineage[index]
+      lineages[oca.classID] = Array(lineage[...index])
+      controlClasses.append(Self.descriptor(of: oca, with: [oca]))
+      addDatatypes(of: oca)
+      added = true
+    }
+    if added {
+      datatypes = described.described.sorted { $0.key < $1.key }.map(\.value)
+    }
+  }
+
+  /// Adds the datatypes `oca`'s own elements refer to, and those they refer to in turn.
+  private func addDatatypes(of oca: OcaDeviceClassDescriptor) {
+    for property in oca.properties {
+      described.add(property.valueType, declared: property.typeName)
+    }
+    for descriptor in oca.methods {
+      for element in Self.elements(of: descriptor.method) {
+        described.add(element.type, declared: element.declared)
       }
     }
-    for root in Self.rootProperties {
-      datatypes.add(root.type, declared: root.typeName)
+    for event in Self.ownEvents(of: oca) {
+      described.add(event.eventDataType, declared: nil)
     }
-    return datatypes.described
+    if oca.classID == OcaRoot.classID {
+      for root in Self.rootProperties {
+        described.add(root.type, declared: root.typeName)
+      }
+    }
   }
 
   /// OcaRoot's properties, all read only, which OcaRoot answers for itself rather than

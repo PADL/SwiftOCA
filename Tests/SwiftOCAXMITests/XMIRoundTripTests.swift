@@ -48,8 +48,7 @@ final class XMIRoundTripTests: XCTestCase {
     let model = try model()
     let (device, manager) = try await device()
     defer { withExtendedLifetime(device) {} }
-    let controller = RoundTripController()
-    let described = try await manager.getControlClasses(from: controller)
+    let described = manager.controlClasses
     var differences = [String]()
     func compare(_ what: String, _ ours: String, _ model: String) {
       if ours != model { differences.append("\(what): device \(ours), model \(model)") }
@@ -89,7 +88,7 @@ final class XMIRoundTripTests: XCTestCase {
         compare("\(what)", "\(mine.name) \(mine.eventDataTypeName)", "\(event.name) \(event.eventDataTypeName)")
       }
     }
-    let datatypes = try await manager.getDatatypes(from: controller)
+    let datatypes = manager.datatypes
     for datatype in model.datatypes {
       guard let mine = datatypes.first(where: { $0.name == datatype.name }) else {
         differences.append("datatype \(datatype.name): not described by the device"); continue
@@ -148,9 +147,4 @@ final class XMIRoundTripTests: XCTestCase {
       #"datatype OcaPortID fields: device ["Mode: OcaIODirection", "Index: OcaUint16"], model ["Direction: OcaIODirection", "Index: OcaUint16"]"#,
     ])
   }
-}
-
-private actor RoundTripController: OcaController {
-  nonisolated let flags: OcaControllerFlags = [.supportsLocking]
-  func sendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {}
 }
