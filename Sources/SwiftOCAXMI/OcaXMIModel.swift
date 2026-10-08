@@ -43,11 +43,14 @@ public struct OcaXMIModel: Sendable {
       guard let name = element["name"] else { continue }
       let isDeprecated = element["xmi:idref"].map(deprecated.contains) ?? false
         || element.child(named: "properties")?["stereotype"] == "deprecated"
+      let documentation = Self.documentation(element.child(named: "properties")?["documentation"])
       if var controlClass = Self.controlClass(element, named: name, parameters: parameters) {
         controlClass.isDeprecated = isDeprecated
+        controlClass.documentation = documentation
         classes.append(controlClass)
       } else if var datatype = Self.datatype(element, named: name, names: names) {
         datatype.isDeprecated = isDeprecated
+        datatype.documentation = documentation
         datatypes[name] = datatype
       }
     }
@@ -116,6 +119,16 @@ public struct OcaXMIModel: Sendable {
     node.child(named: "stereotype")?["stereotype"] == "deprecated"
   }
 
+  /// An element's documentation, from its `documentation` child or attribute: the
+  /// parser has decoded its entities, and EA's markup, such as `<b>`, is kept as it is.
+  private static func documentation(_ node: XMINode) -> String {
+    documentation(node.child(named: "documentation")?["value"])
+  }
+
+  private static func documentation(_ value: String?) -> String {
+    value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+  }
+
   /// Leaves out a deprecated element whose ID a live one has, which AES70 renames by
   /// deprecating a copy of; marks any other deprecated element so.
   private static func live<Element, ID: Hashable>(
@@ -172,7 +185,8 @@ public struct OcaXMIModel: Sendable {
         name: name,
         typeName: properties?["type"] ?? "",
         isReadOnly: !setters.contains("Set" + name),
-        isStatic: properties?["static"] == "1"
+        isStatic: properties?["static"] == "1",
+        documentation: documentation(attribute)
       ), isDeprecated(attribute))
     }, id: \.propertyID) { $0.isDeprecated = true }
 
@@ -184,24 +198,28 @@ public struct OcaXMIModel: Sendable {
       else {
         continue
       }
-      let types = Dictionary(
-        (operation.child(named: "parameters")?.children(named: "parameter") ?? []).compactMap { p in
-          p["xmi:idref"].flatMap { pid in p.child(named: "properties")?["type"].map { (pid, $0) } }
-        }
-      ) { first, _ in first }
+      let extensionParameters = operation.child(named: "parameters")?.children(named: "parameter") ?? []
+      let types = Dictionary(extensionParameters.compactMap { p in
+        p["xmi:idref"].flatMap { pid in p.child(named: "properties")?["type"].map { (pid, $0) } }
+      }) { first, _ in first }
+      let documentations = Dictionary(extensionParameters.compactMap { p in
+        p["xmi:idref"].map { ($0, documentation(p)) }
+      }) { first, _ in first }
       let declared = parameters[id] ?? []
       switch letter {
       case "m":
         methods.append((OcaClassMethodDescriptor(
           methodID: OcaMethodID(defLevel: defLevel, methodIndex: index),
           name: name,
-          parameters: Self.parameterDescriptors(declared, types: types)
+          parameters: Self.parameterDescriptors(declared, types: types, documentations: documentations),
+          documentation: documentation(operation)
         ), isDeprecated(operation)))
       case "e":
         events.append((OcaClassEventDescriptor(
           eventID: OcaEventID(defLevel: defLevel, eventIndex: index),
           name: name,
-          eventDataTypeName: declared.first.flatMap { types[$0.id] } ?? ""
+          eventDataTypeName: declared.first.flatMap { types[$0.id] } ?? "",
+          documentation: documentation(operation)
         ), isDeprecated(operation)))
       default:
         continue
@@ -222,11 +240,17 @@ public struct OcaXMIModel: Sendable {
   /// inout parameter is taken and returned.
   private static func parameterDescriptors(
     _ declared: [(id: String, parameter: Parameter)],
-    types: [String: String]
+    types: [String: String],
+    documentations: [String: String]
   ) -> [OcaClassParameterDescriptor] {
     func descriptors(_ direction: OcaParameterDirection, _ directions: Set<String>) -> [OcaClassParameterDescriptor] {
       declared.filter { directions.contains($0.parameter.direction) }.map {
-        OcaClassParameterDescriptor(name: $0.parameter.name, typeName: types[$0.id] ?? "", direction: direction)
+        OcaClassParameterDescriptor(
+          name: $0.parameter.name,
+          typeName: types[$0.id] ?? "",
+          direction: direction,
+          documentation: documentations[$0.id] ?? ""
+        )
       }
     }
     return descriptors(.in, ["in", "inout"]) + descriptors(.out, ["out", "inout"])
@@ -263,7 +287,9 @@ public struct OcaXMIModel: Sendable {
         name: name, kind: .enum, baseTypeName: stereotype == "enum" ? "OcaUint8" : "OcaUint16",
         items: live(attributes.compactMap { a in
           a["name"].flatMap { n in
-            a.child(named: "initial")?["body"].flatMap { OcaInt64($0) }.map { (OcaEnumItemDescriptor(name: n, value: $0), isDeprecated(a)) }
+            a.child(named: "initial")?["body"].flatMap { OcaInt64($0) }.map {
+              (OcaEnumItemDescriptor(name: n, value: $0, documentation: documentation(a)), isDeprecated(a))
+            }
           }
         }, id: \.value) { $0.isDeprecated = true }
       )
@@ -271,7 +297,12 @@ public struct OcaXMIModel: Sendable {
       // a deprecated field is kept, not dropped as a twin: it still has its place in the coding
       let fields = attributes.compactMap { a in
         a["name"].map {
-          OcaFieldDescriptor(name: $0, typeName: a.child(named: "properties")?["type"] ?? "", isDeprecated: isDeprecated(a))
+          OcaFieldDescriptor(
+            name: $0,
+            typeName: a.child(named: "properties")?["type"] ?? "",
+            isDeprecated: isDeprecated(a),
+            documentation: documentation(a)
+          )
         }
       }
       // a field typed by a name that is not a datatype's is of one of the struct's parameters

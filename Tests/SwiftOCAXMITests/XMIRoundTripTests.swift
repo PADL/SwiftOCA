@@ -117,7 +117,8 @@ final class XMIRoundTripTests: XCTestCase {
     ])
     let gain = try XCTUnwrap(model.controlClass(OcaClassID("1.1.1.5"), includeInherited: false))
     XCTAssertEqual(gain.properties, [OcaClassPropertyDescriptor(
-      propertyID: OcaPropertyID("4.1"), name: "Gain", typeName: "OcaDB", isReadOnly: false
+      propertyID: OcaPropertyID("4.1"), name: "Gain", typeName: "OcaDB", isReadOnly: false,
+      documentation: "Gain in dB."
     )])
     XCTAssertEqual(gain.methods.map(\.name), ["GetGain", "SetGain"])
     XCTAssertEqual(gain.methods[0].parameters.map(\.direction), [.out, .out, .out])
@@ -134,7 +135,9 @@ final class XMIRoundTripTests: XCTestCase {
     func datatype(_ name: String) throws -> OcaDatatypeDescriptor {
       try XCTUnwrap(model.datatypes.first { $0.name == name }, name)
     }
-    XCTAssertEqual(try datatype("OcaDB"), OcaDatatypeDescriptor(name: "OcaDB", kind: .typedef, baseTypeName: "OcaFloat32"))
+    var db = try datatype("OcaDB")
+    db.documentation = ""
+    XCTAssertEqual(db, OcaDatatypeDescriptor(name: "OcaDB", kind: .typedef, baseTypeName: "OcaFloat32"))
     XCTAssertEqual(try datatype("OcaBoolean").kind, .primitive)
     XCTAssertEqual(try datatype("OcaMuteState").items.map(\.value), [1, 2])
     XCTAssertEqual(try datatype("OcaMuteState").baseTypeName, "OcaUint8")
@@ -155,6 +158,15 @@ final class XMIRoundTripTests: XCTestCase {
     XCTAssertFalse(try datatype("OcaMuteState").isDeprecated)
     XCTAssertEqual(root.methods.filter { $0.methodID == OcaMethodID("1.3") }.map(\.name), ["SetLockNoReadWrite"])
     XCTAssertFalse(root.methods.contains(where: \.isDeprecated))
+
+    // each element's documentation, its entities decoded and EA's markup kept
+    XCTAssertEqual(gain.documentation, "Gain (or attenuation) element.")
+    let setGain = try XCTUnwrap(gain.methods.first { $0.name == "SetGain" })
+    XCTAssertEqual(setGain.documentation, "Sets the value of the <b>Gain </b>property.")
+    XCTAssertEqual(setGain.parameters.map(\.documentation), ["Value to which the gain property shall be set if the method succeeds"])
+    XCTAssertTrue(try datatype("OcaPortID").documentation.hasPrefix("Unique identifier of input or output Port"))
+    XCTAssertTrue(try datatype("OcaPortID").fields[0].documentation.contains("named <b>Mode</b>"))
+    XCTAssertEqual(try datatype("OcaPropertyChangeType").items.first?.documentation, "Current value has changed.")
   }
 
   /// A device's class manager describes the classes and datatypes of the excerpt as the

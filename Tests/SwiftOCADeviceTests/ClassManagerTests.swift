@@ -165,7 +165,7 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(list.typeArguments, ["OcaClassDescriptor"])
     let descriptor = try await h.classManager.getDatatype(name: "OcaClassDescriptor")
     XCTAssertEqual(descriptor.kind, .struct)
-    XCTAssertEqual(descriptor.fields.map(\.name), ["ClassID", "ClassVersion", "Name", "Properties", "Methods", "Events", "IsDeprecated"])
+    XCTAssertEqual(descriptor.fields.map(\.name), ["ClassID", "ClassVersion", "Name", "Properties", "Methods", "Events", "IsDeprecated", "Documentation"])
 
     let all = try await h.classManager.$datatypes._getValue(h.classManager, flags: [])
     XCTAssertEqual(Set(all.map(\.name)).count, all.count, "each datatype once")

@@ -31,6 +31,8 @@ public struct OcaClassDescriptor: Codable, Sendable, Equatable {
   public var events: [OcaClassEventDescriptor]
   /// The model marks it deprecated.
   public var isDeprecated: OcaBoolean
+  /// The model's documentation of it; a device may leave it empty.
+  public var documentation: OcaString
 
   public init(
     classID: OcaClassID,
@@ -39,7 +41,8 @@ public struct OcaClassDescriptor: Codable, Sendable, Equatable {
     properties: [OcaClassPropertyDescriptor],
     methods: [OcaClassMethodDescriptor],
     events: [OcaClassEventDescriptor] = [],
-    isDeprecated: OcaBoolean = false
+    isDeprecated: OcaBoolean = false,
+    documentation: OcaString = ""
   ) {
     self.classID = classID
     self.classVersion = classVersion
@@ -48,6 +51,7 @@ public struct OcaClassDescriptor: Codable, Sendable, Equatable {
     self.methods = methods
     self.events = events
     self.isDeprecated = isDeprecated
+    self.documentation = documentation
   }
 }
 
@@ -58,17 +62,21 @@ public struct OcaClassEventDescriptor: Codable, Sendable, Equatable {
   public var eventDataTypeName: OcaString
   /// The model marks it deprecated.
   public var isDeprecated: OcaBoolean
+  /// The model's documentation of it; a device may leave it empty.
+  public var documentation: OcaString
 
   public init(
     eventID: OcaEventID,
     name: OcaString,
     eventDataTypeName: OcaString,
-    isDeprecated: OcaBoolean = false
+    isDeprecated: OcaBoolean = false,
+    documentation: OcaString = ""
   ) {
     self.eventID = eventID
     self.name = name
     self.eventDataTypeName = eventDataTypeName
     self.isDeprecated = isDeprecated
+    self.documentation = documentation
   }
 }
 
@@ -83,6 +91,8 @@ public struct OcaClassPropertyDescriptor: Codable, Sendable, Equatable {
   public var isStatic: OcaBoolean
   /// The model marks it deprecated.
   public var isDeprecated: OcaBoolean
+  /// The model's documentation of it; a device may leave it empty.
+  public var documentation: OcaString
 
   public init(
     propertyID: OcaPropertyID,
@@ -90,7 +100,8 @@ public struct OcaClassPropertyDescriptor: Codable, Sendable, Equatable {
     typeName: OcaString,
     isReadOnly: OcaBoolean,
     isStatic: OcaBoolean = false,
-    isDeprecated: OcaBoolean = false
+    isDeprecated: OcaBoolean = false,
+    documentation: OcaString = ""
   ) {
     self.propertyID = propertyID
     self.name = name
@@ -98,6 +109,7 @@ public struct OcaClassPropertyDescriptor: Codable, Sendable, Equatable {
     self.isReadOnly = isReadOnly
     self.isStatic = isStatic
     self.isDeprecated = isDeprecated
+    self.documentation = documentation
   }
 }
 
@@ -109,17 +121,21 @@ public struct OcaClassMethodDescriptor: Codable, Sendable, Equatable {
   public var parameters: [OcaClassParameterDescriptor]
   /// The model marks it deprecated.
   public var isDeprecated: OcaBoolean
+  /// The model's documentation of it; a device may leave it empty.
+  public var documentation: OcaString
 
   public init(
     methodID: OcaMethodID,
     name: OcaString,
     parameters: [OcaClassParameterDescriptor],
-    isDeprecated: OcaBoolean = false
+    isDeprecated: OcaBoolean = false,
+    documentation: OcaString = ""
   ) {
     self.methodID = methodID
     self.name = name
     self.parameters = parameters
     self.isDeprecated = isDeprecated
+    self.documentation = documentation
   }
 }
 
@@ -135,11 +151,19 @@ public struct OcaClassParameterDescriptor: Codable, Sendable, Equatable {
   public var name: OcaString
   public var typeName: OcaString
   public var direction: OcaParameterDirection
+  /// The model's documentation of it; a device may leave it empty.
+  public var documentation: OcaString
 
-  public init(name: OcaString, typeName: OcaString, direction: OcaParameterDirection) {
+  public init(
+    name: OcaString,
+    typeName: OcaString,
+    direction: OcaParameterDirection,
+    documentation: OcaString = ""
+  ) {
     self.name = name
     self.typeName = typeName
     self.direction = direction
+    self.documentation = documentation
   }
 }
 
@@ -171,6 +195,8 @@ public struct OcaDatatypeDescriptor: Codable, Sendable, Equatable {
   public var items: [OcaEnumItemDescriptor]
   /// The model marks it deprecated.
   public var isDeprecated: OcaBoolean
+  /// The model's documentation of it; a device may leave it empty.
+  public var documentation: OcaString
 
   public init(
     name: OcaString,
@@ -179,7 +205,8 @@ public struct OcaDatatypeDescriptor: Codable, Sendable, Equatable {
     typeArguments: [OcaString] = [],
     fields: [OcaFieldDescriptor] = [],
     items: [OcaEnumItemDescriptor] = [],
-    isDeprecated: OcaBoolean = false
+    isDeprecated: OcaBoolean = false,
+    documentation: OcaString = ""
   ) {
     self.name = name
     self.kind = kind
@@ -188,6 +215,7 @@ public struct OcaDatatypeDescriptor: Codable, Sendable, Equatable {
     self.fields = fields
     self.items = items
     self.isDeprecated = isDeprecated
+    self.documentation = documentation
   }
 }
 
@@ -197,11 +225,19 @@ public struct OcaFieldDescriptor: Codable, Sendable, Equatable {
   public var typeName: OcaString
   /// The model marks it deprecated.
   public var isDeprecated: OcaBoolean
+  /// The model's documentation of it; a device may leave it empty.
+  public var documentation: OcaString
 
-  public init(name: OcaString, typeName: OcaString, isDeprecated: OcaBoolean = false) {
+  public init(
+    name: OcaString,
+    typeName: OcaString,
+    isDeprecated: OcaBoolean = false,
+    documentation: OcaString = ""
+  ) {
     self.name = name
     self.typeName = typeName
     self.isDeprecated = isDeprecated
+    self.documentation = documentation
   }
 }
 
@@ -211,11 +247,19 @@ public struct OcaEnumItemDescriptor: Codable, Sendable, Equatable {
   public var value: OcaInt64
   /// The model marks it deprecated.
   public var isDeprecated: OcaBoolean
+  /// The model's documentation of it; a device may leave it empty.
+  public var documentation: OcaString
 
-  public init(name: OcaString, value: OcaInt64, isDeprecated: OcaBoolean = false) {
+  public init(
+    name: OcaString,
+    value: OcaInt64,
+    isDeprecated: OcaBoolean = false,
+    documentation: OcaString = ""
+  ) {
     self.name = name
     self.value = value
     self.isDeprecated = isDeprecated
+    self.documentation = documentation
   }
 }
 

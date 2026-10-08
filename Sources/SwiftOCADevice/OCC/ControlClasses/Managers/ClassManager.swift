@@ -150,7 +150,8 @@ public final class OcaClassManager: OcaManager {
   ]
 
   /// `oca` described with the elements of `classes`, which are it and, if asked for,
-  /// the classes it derives from.
+  /// the classes it derives from. Documentation is left empty: the device does not carry
+  /// the model's text, and Swift's doc comments are not it.
   private static func descriptor(
     of oca: OcaDeviceClassDescriptor,
     with classes: [OcaDeviceClassDescriptor]
