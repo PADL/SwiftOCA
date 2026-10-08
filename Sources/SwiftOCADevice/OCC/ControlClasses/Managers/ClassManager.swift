@@ -171,7 +171,7 @@ public final class OcaClassManager: OcaManager {
           name: Ocp2Naming.wireName(property.name),
           typeName: Self.typeName(declared: property.typeName, of: property.valueType),
           isReadOnly: !property.isSettable,
-          isDeprecated: property.flags.contains(.deprecated)
+          isDeprecated: property.deprecation.contains(.property)
         )
       },
       methods: methods(of: classes),
@@ -235,13 +235,13 @@ public final class OcaClassManager: OcaManager {
     if let getMethodID = property.getMethodID {
       accessors.append(OcaClassMethodDescriptor(
         methodID: getMethodID, name: "Get" + name, parameters: gotten,
-        isDeprecated: property.flags.contains(.getterDeprecated)
+        isDeprecated: property.deprecation.contains(.getter)
       ))
     }
     if let setMethodID = property.setMethodID {
       accessors.append(OcaClassMethodDescriptor(
         methodID: setMethodID, name: "Set" + name, parameters: values,
-        isDeprecated: property.flags.contains(.setterDeprecated)
+        isDeprecated: property.deprecation.contains(.setter)
       ))
     }
     return accessors

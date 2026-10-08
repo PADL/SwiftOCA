@@ -141,7 +141,6 @@ struct MemberTable {
     }
   }
 
-  /// Each property declared in `members` with one of `wrappers`, by its name.
   /// The properties declared in `members` with one of `wrappers` given a `deprecated`
   /// argument, each as a dictionary entry from its name to that argument.
   static func deprecatedProperties(
@@ -156,6 +155,7 @@ struct MemberTable {
     }
   }
 
+  /// Each property declared in `members` with one of `wrappers`, by its name.
   private static func wrappedProperties(
     in members: MemberBlockItemListSyntax,
     wrappers: Set<String>

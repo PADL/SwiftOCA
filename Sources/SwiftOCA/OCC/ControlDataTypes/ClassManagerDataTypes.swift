@@ -236,12 +236,12 @@ public extension OcaDatatypeDescribing {
   static var referredTypes: [Any.Type] { [] }
 }
 
-/// A generic datatype coded as an AES70 template: `OcaArray2D<OcaONo>` is
-/// `OcaList2D<OcaONo>`, two counts and then the elements.
 /// A datatype the model marks deprecated.
 @_spi(SwiftOCAPrivate)
 public protocol OcaDeprecatedDatatype {}
 
+/// A generic datatype coded as an AES70 template: `OcaArray2D<OcaONo>` is
+/// `OcaList2D<OcaONo>`, two counts and then the elements.
 @_spi(SwiftOCAPrivate)
 public protocol OcaTemplateDatatype {
   static var templateName: String { get }
