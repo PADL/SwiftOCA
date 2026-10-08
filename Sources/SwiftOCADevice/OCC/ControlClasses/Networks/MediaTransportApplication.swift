@@ -109,7 +109,9 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     getMethodID: OcaMethodID("3.34"),
     ocp2GetName: "Sets"
   )
-  public var endpointCounterSets = OcaMap<OcaID16, OcaCounterSet>()
+  // keyed by endpoint ID, as GetEndpointCounterSets returns it (the model's private
+  // attribute says OcaID16, but its getter and AES70.js say OcaMediaStreamEndpointID)
+  public var endpointCounterSets = OcaMap<OcaMediaStreamEndpointID, OcaCounterSet>()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.13"),
@@ -143,7 +145,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
   }
 
   public func endpointCounterSet(_ id: OcaMediaStreamEndpointID) throws -> OcaCounterSet {
-    guard let counterSet = endpointCounterSets[OcaID16(truncatingIfNeeded: id)] else {
+    guard let counterSet = endpointCounterSets[id] else {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
     return counterSet
@@ -165,9 +167,8 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
   }
 
   public func update(endpointID id: OcaMediaStreamEndpointID, counterSet: OcaCounterSet) {
-    let key = OcaID16(truncatingIfNeeded: id)
-    guard endpointCounterSets[key] != counterSet else { return }
-    endpointCounterSets[key] = counterSet
+    guard endpointCounterSets[id] != counterSet else { return }
+    endpointCounterSets[id] = counterSet
   }
 
   public func insert(
@@ -182,14 +183,14 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     }
     endpointStatuses[endpoint.idInternal] = status
     if let counterSet {
-      endpointCounterSets[OcaID16(truncatingIfNeeded: endpoint.idInternal)] = counterSet
+      endpointCounterSets[endpoint.idInternal] = counterSet
     }
   }
 
   public func remove(endpointID id: OcaMediaStreamEndpointID) {
     endpoints.removeAll { $0.idInternal == id }
     endpointStatuses.removeValue(forKey: id)
-    endpointCounterSets.removeValue(forKey: OcaID16(truncatingIfNeeded: id))
+    endpointCounterSets.removeValue(forKey: id)
   }
 
   public func makeEndpointCounterSetID(endpointID id: OcaMediaStreamEndpointID) throws -> OcaBlob {

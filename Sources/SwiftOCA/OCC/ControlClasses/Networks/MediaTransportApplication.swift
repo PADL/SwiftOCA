@@ -389,7 +389,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
     getMethodID: OcaMethodID("3.34"),
     ocp2GetName: "Sets"
   )
-  public var endpointCounterSets: OcaMapProperty<OcaID16, OcaCounterSet>.PropertyValue
+  public var endpointCounterSets: OcaMapProperty<OcaMediaStreamEndpointID, OcaCounterSet>.PropertyValue
 
   @OcaMethod(
     "3.35",

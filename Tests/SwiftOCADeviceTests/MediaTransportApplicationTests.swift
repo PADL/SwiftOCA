@@ -188,6 +188,27 @@ final class MediaTransportApplicationTests: XCTestCase {
   }
 
   @OcaDevice
+  func testEndpointCounterSetsAreKeyedByTheWholeEndpointID() async throws {
+    let harness = try await CM4TestHarness.make()
+    defer { harness.endpointTask.cancel() }
+    let application = try await makeApplication(harness)
+    let client: SwiftOCA.OcaMediaTransportApplication =
+      try await harness.resolve(Self.applicationONo)
+
+    // two IDs alike in their low 16 bits, which an OcaID16 key would conflate
+    for id: OcaMediaStreamEndpointID in [0x0001_0001, 0x0002_0001] {
+      application.insert(
+        endpoint: OcaMediaStreamEndpoint(idInternal: id, direction: .input, userLabel: "Input \(id)"),
+        counterSet: try OcaCounterSet(id: application.makeEndpointCounterSetID(endpointID: id), counter: [])
+      )
+    }
+    let sets = try await client.$endpointCounterSets._getValue(client, flags: [])
+    XCTAssertEqual(Set(sets.keys), [1, 0x0001_0001, 0x0002_0001])
+    let set = try await client.getEndpointCounterSet(endpointID: 0x0002_0001)
+    XCTAssertEqual(try set.id.decode(OcaMediaStreamEndpointCounterSetID.self).endpointID, 0x0002_0001)
+  }
+
+  @OcaDevice
   func testNetworkInterfaceCounters() async throws {
     let harness = try await CM4TestHarness.make()
     defer { harness.endpointTask.cancel() }
