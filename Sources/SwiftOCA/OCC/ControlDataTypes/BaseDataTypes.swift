@@ -271,7 +271,8 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible,
       }
       return value
     }
-    guard fields.count > 1 else {
+    // OcaRoot's is a single field, 1
+    guard !fields.isEmpty else {
       throw Ocp1Error.objectClassMismatch
     }
     self.fields = fields

@@ -105,11 +105,15 @@ public final class OcaClassManager: OcaManager {
     return datatypes.described
   }
 
-  /// OcaRoot's properties that are not device properties, as the model has them.
+  /// OcaRoot's properties, all read only, which OcaRoot answers for itself rather than
+  /// through device properties.
   private static let rootProperties: [(id: OcaPropertyID, name: String, type: Any.Type, typeName: String, isStatic: Bool)] = [
     (OcaPropertyID("1.1"), "ClassID", OcaClassID.self, "OcaClassID", true),
     (OcaPropertyID("1.2"), "ClassVersion", OcaClassVersionNumber.self, "OcaClassVersionNumber", true),
     (OcaPropertyID("1.3"), "ObjectNumber", OcaONo.self, "OcaONo", false),
+    (OcaPropertyID("1.4"), "Lockable", OcaBoolean.self, "OcaBoolean", false),
+    (OcaPropertyID("1.5"), "Role", OcaString.self, "OcaString", false),
+    (OcaPropertyID("1.6"), "LockState", OcaLockState.self, "OcaLockState", false),
   ]
 
   /// `oca` described with the elements of `classes`, which are it and, if asked for,
@@ -343,11 +347,12 @@ private struct Datatypes {
       add(value)
     case let .enumeration(cases):
       // the integer it is coded as, which AES70's enum and enumlong tell apart
-      let raw = (type as? any RawRepresentable.Type).map { OcaClassManager._ocaTypeName(for: Self.rawType(of: $0)) }
+      let raw = (type as? any RawRepresentable.Type).map { Self.rawType(of: $0) }
       described[name] = OcaDatatypeDescriptor(
-        name: name, kind: .enum, baseTypeName: raw ?? "",
+        name: name, kind: .enum, baseTypeName: raw.map(OcaClassManager._ocaTypeName(for:)) ?? "",
         items: cases.map { OcaEnumItemDescriptor(name: Ocp2Naming.wireName($0.name), value: $0.value) }
       )
+      if let raw { add(raw) }
     case let .rawValue(raw):
       described[name] = OcaDatatypeDescriptor(
         name: name, kind: type is any OptionSet.Type ? .bitset : .typedef,
