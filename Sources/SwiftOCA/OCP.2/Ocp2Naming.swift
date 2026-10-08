@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-// the standard library's own field walk, which Mirror is built on
-@_spi(Reflection) import Swift
 import Synchronization
 
 /// OCP.2 names parameters and fields by the AES70-2A model names. SwiftOCA derives
@@ -67,7 +65,7 @@ package enum Ocp2Naming {
       return cached
     }
     var names = [String]()
-    _forEachField(of: type) { name, _, _, _ in
+    _ocaForEachField(of: type) { name, _ in
       var s = String(cString: name)
       while s.hasPrefix("_") {
         s = String(s.dropFirst())
@@ -83,7 +81,7 @@ package enum Ocp2Naming {
   /// callers that build a table once.
   package static func fields(of type: Any.Type) -> [(name: String, type: Any.Type)] {
     var fields = [(name: String, type: Any.Type)]()
-    _forEachField(of: type) { name, _, fieldType, _ in
+    _ocaForEachField(of: type) { name, fieldType in
       var s = String(cString: name)
       while s.hasPrefix("_") {
         s = String(s.dropFirst())
