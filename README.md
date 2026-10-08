@@ -177,6 +177,6 @@ for try await event in await broker.events {
 
 ## License
 
-Apache License 2.0. See [LICENSE.md](LICENSE.md).
+Apache License 2.0. See [LICENSE](LICENSE). The two FlyingSocks device endpoints, `OcaFlyingSocksStreamDeviceEndpoint.swift` and `OcaFlyingSocksDatagramDeviceEndpoint.swift`, are adapted from [FlyingFox](https://github.com/swhitty/FlyingFox)'s `HTTPServer` and are also under its MIT licence, as their headers say.
 
 Luke Howard <lukeh@lukktone.com>
