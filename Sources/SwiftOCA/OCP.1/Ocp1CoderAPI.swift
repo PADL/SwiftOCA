@@ -185,12 +185,16 @@ extension _Ocp1Encodable {
 /// Only big-endian integers and bytes are written by hand-rolled encoders; the
 /// span bounds-checks every append against the size the encoder declared.
 extension OutputRawSpan {
+  // the span is ~Escapable: a mutating method says what self's lifetime depends on,
+  // which a compiler that does not infer it requires
   @inlinable
+  @_lifetime(self: copy self)
   mutating func append<T: FixedWidthInteger & BitwiseCopyable>(bigEndian value: T) {
     append(value.bigEndian, as: T.self)
   }
 
   @inlinable
+  @_lifetime(self: copy self)
   mutating func append(contentsOf data: Data) {
     withUnsafeMutableBytes { buffer, initializedCount in
       data.withUnsafeBytes { source in
