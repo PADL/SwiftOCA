@@ -28,13 +28,15 @@ public enum OcaTimeProtocol: OcaUint8, Codable, Sendable, CaseIterable {
   case ieee1588_2002 = 5
   case ieee1588_2008 = 6
   case ieee_avb = 7
-  case aes11 = 8
-  case genlock = 9
+  case streamEndpoint = 8
+  case aes11 = 9
+  case genlock = 10
+  case expansionBase = 128
 }
 
 public enum OcaTimeDeliveryMechanism: OcaUint8, Codable, Sendable, CaseIterable {
   case undefined = 0
-  case none = 1
+  case local = 1
   case `private` = 2
   case ntp = 3
   case sntp = 4
@@ -43,7 +45,13 @@ public enum OcaTimeDeliveryMechanism: OcaUint8, Codable, Sendable, CaseIterable 
   case ieee1588v2_1 = 7
   case ieee8021AS = 8 // gPTP
   case streamEndpoint = 9
-  case aes11 = 10
+  case aes11 = 11
+  case terrestrialRadio = 12
+  case gps = 13
+  case galileo = 14
+  case glonass = 15
+  case beidou = 16
+  case inrss = 17
   case expansionBase = 128
 }
 
@@ -53,11 +61,7 @@ public enum OcaTimeReferenceType: OcaUint8, Codable, Sendable, CaseIterable {
   case undefined = 0
   case local = 1
   case `private` = 2
-  case gps = 3
-  case galileo = 4
-  case glonass = 5
-  case beidou = 6
-  case inrss = 7
+  case tai = 3
   case _expansionBase = 128
 }
 

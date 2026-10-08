@@ -78,7 +78,7 @@ public class OcaLockManager: OcaManager {
 
     do {
       try await withThrowingTimeout(
-        of: .seconds(timeout),
+        of: .seconds(Double(timeout)),
         clock: .continuous,
         operation: { @OcaDevice in
           try await withCheckedThrowingContinuation { continuation in

@@ -15,7 +15,31 @@
 //
 
 public typealias OcaDBFS = OcaDB
-public typealias OcaDBr = OcaDB
+/// A level in dB relative to a reference level, `ref`, itself in dB.
+public struct OcaDBr: Codable, Sendable, Hashable, Comparable, ExpressibleByFloatLiteral,
+  ExpressibleByIntegerLiteral
+{
+  public var value: OcaDB
+  public var ref: OcaDBz
+
+  public init(value: OcaDB, ref: OcaDBz = 0) {
+    self.value = value
+    self.ref = ref
+  }
+
+  public init(floatLiteral value: OcaDB) {
+    self.init(value: value)
+  }
+
+  public init(integerLiteral value: Int) {
+    self.init(value: OcaDB(value))
+  }
+
+  /// Ordered by the levels they stand for, so that bounds hold whatever their references.
+  public static func < (lhs: Self, rhs: Self) -> Bool {
+    lhs.value + lhs.ref < rhs.value + rhs.ref
+  }
+}
 public typealias OcaDBu = OcaDB
 public typealias OcaDBV = OcaDB
 public typealias OcaDBz = OcaDB
