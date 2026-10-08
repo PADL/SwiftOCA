@@ -30,7 +30,6 @@ public let OcaTaskManagerONo: OcaONo = 11
 public let OcaCodingManagerONo: OcaONo = 12
 public let OcaDiagnosticManagerONo: OcaONo = 13
 public let OcaLockManagerONo: OcaONo = 14
-// PADL's class manager, which AES70 does not define; 99 is ASCII 'c'
 public let OcaClassManagerONo: OcaONo = 99
 
 public let OcaRootBlockONo: OcaONo = 100
