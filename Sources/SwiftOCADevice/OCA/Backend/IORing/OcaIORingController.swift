@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-#if canImport(IORing)
+#if canImport(IORing) && NonEmbeddedBuild
 
 import AsyncAlgorithms
 import AsyncExtensions

@@ -140,6 +140,7 @@ public extension OcaRoot {
   }
 }
 
+#if NonEmbeddedBuild
 @_spi(SwiftOCAPrivate)
 public extension Ocp2Encoder {
   /// The OCP.2 name the encoder gives a field of a composite datatype, from the name
@@ -154,6 +155,7 @@ public extension Ocp2Encoder {
     Ocp2Naming.fields(of: type)
   }
 }
+#endif
 
 private extension OcaDevicePropertyRepresentable {
   func description(

@@ -122,16 +122,14 @@ public extension OcaController {
         parameterData: encoder.encode(parameters)
       )
       return Ocp1Response(statusCode: statusCode, parameters: parameters)
+    #if NonEmbeddedBuild
     case .ocp2:
-      #if NonEmbeddedBuild
       let object = try Ocp2Encoder().encodeParameters(
         parameters,
         parameterNames: names
       )
       return Ocp1Response(statusCode: statusCode, parameters: OcaParameters(ocp2Parameters: object))
-      #else
-      throw Ocp1Error.unsupportedControlProtocol
-      #endif
+    #endif
     }
   }
 

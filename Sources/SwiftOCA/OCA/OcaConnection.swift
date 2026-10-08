@@ -34,7 +34,7 @@ import Synchronization
 
 package let Ocp1MaximumDatagramPduSize = 1500
 
-#if canImport(IORing)
+#if canImport(IORing) && NonEmbeddedBuild
 public typealias OcaUDPConnection = OcaIORingDatagramConnection
 @available(*, deprecated, renamed: "OcaUDPConnection")
 public typealias Ocp1UDPConnection = OcaUDPConnection

@@ -303,6 +303,7 @@ public actor OcaDevice {
     objects[object.objectNumber] = nil
   }
 
+  #if NonEmbeddedBuild
   /// Sends an object one of its methods with OCP.2 parameters, as `controller` would over
   /// OCP.2, for a bridge to another control protocol: the device decodes the parameters
   /// and makes its access and lock checks as for any controller's command.
@@ -323,6 +324,7 @@ public actor OcaDevice {
     let response = await handleCommand(command, from: controller)
     return (response.statusCode, response.parameters.ocp2Parameters)
   }
+  #endif
 
   public func handleCommand(
     _ command: Ocp1Command,
