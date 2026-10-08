@@ -15,6 +15,7 @@
 //
 
 import SwiftSyntax
+import SwiftSyntaxMacros
 
 /// What a class macro lists from a class body: entries in groups, each `#if` block's under
 /// its own conditions, as the body has them.
@@ -154,6 +155,23 @@ struct MemberTable {
             let deprecated = arguments.first(where: { $0.label?.text == "deprecated" })
       else { return nil }
       return "\"\(name)\": \(deprecated.expression.trimmedDescription)"
+    }
+  }
+
+  /// The properties declared in `members` with one of `wrappers` given `hidden: true`, each
+  /// as a set element; `hidden` must be a Boolean literal, which the macro reads.
+  static func hiddenProperties(
+    in members: MemberBlockItemListSyntax,
+    wrappers: Set<String>
+  ) throws -> [String] {
+    try wrappedProperties(in: members, wrappers: wrappers).compactMap { name, _, attribute in
+      guard case let .argumentList(arguments) = attribute.arguments,
+            let hidden = arguments.first(where: { $0.label?.text == "hidden" })
+      else { return nil }
+      guard let literal = hidden.expression.as(BooleanLiteralExprSyntax.self) else {
+        throw MacroExpansionErrorMessage("`hidden` must be `true` or `false`")
+      }
+      return literal.literal.tokenKind == .keyword(.true) ? "\"\(name)\"" : nil
     }
   }
 

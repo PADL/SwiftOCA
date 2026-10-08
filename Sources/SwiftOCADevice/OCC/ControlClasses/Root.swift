@@ -248,6 +248,10 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   /// the property's name, its parent's first. `@OcaDeviceClass` writes it.
   open class var devicePropertyAccessorNames: [String: OcaPropertyAccessorNames] { [:] }
 
+  /// The device properties declared `hidden`, which introspection leaves out with their
+  /// accessors, its parent's first. `@OcaDeviceClass` writes it.
+  open class var hiddenDeviceProperties: Set<String> { [] }
+
   /// The events the class emits, its parent's first. A class that emits one of its own
   /// overrides this, adding it to its parent's.
   open class var deviceEvents: [OcaDeviceEventDescriptor] {

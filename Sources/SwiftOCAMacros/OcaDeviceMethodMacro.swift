@@ -115,7 +115,7 @@ public struct OcaDeviceMethodMacro: PeerMacro {
           \(raw: arguments.joined(separator: ",\n    "))
         ) { \(raw: closureParameters) in
           \(raw: body.joined(separator: "\n    "))
-        }
+        }\(raw: attribute.argument("hidden").map { ".hidden(\($0.trimmedDescription))" } ?? "")
       }
       """
     )
@@ -221,6 +221,20 @@ public struct OcaDeviceClassMacro: MemberMacro {
           var names = super.devicePropertyAccessorNames
           \(raw: accessorNames.statements(appending: { "names.merge([\($0)]) { _, new in new }" }))
           return names
+        }
+        """
+      )
+    }
+    let hidden = try MemberTable(classDecl) {
+      try MemberTable.hiddenProperties(in: $0, wrappers: propertyWrappers)
+    }
+    if !hidden.entries.isEmpty {
+      members.append(
+        """
+        override \(raw: access)class var hiddenDeviceProperties: Set<String> {
+          var hidden = super.hiddenDeviceProperties
+          \(raw: hidden.statements(appending: { "hidden.formUnion([\($0)])" }))
+          return hidden
         }
         """
       )
