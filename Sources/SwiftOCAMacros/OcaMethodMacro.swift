@@ -219,6 +219,7 @@ struct OcaMethodAttribute {
   let resultType: String?
   let parameterNames: ExprSyntax?
   let resultNames: ExprSyntax?
+  let deprecated: ExprSyntax?
 
   init?(_ attribute: AttributeSyntax) {
     guard case let .argumentList(arguments) = attribute.arguments,
@@ -244,6 +245,7 @@ struct OcaMethodAttribute {
     resultType = type("result")
     parameterNames = argument("parameterNames")
     resultNames = argument("resultNames")
+    deprecated = argument("deprecated")
   }
 
   static func on(_ function: FunctionDeclSyntax) -> Self? {
@@ -345,6 +347,9 @@ private struct ClientMethod {
        let names = Self.typeNames([result], generics: generics)
     {
       arguments.append("resultTypeNames: \(quoted(names))")
+    }
+    if let deprecated = attribute.deprecated {
+      arguments.append("isDeprecated: \(deprecated.trimmedDescription)")
     }
     let type = "OcaMethodDescriptor<\(parametersType), \(resultType)>"
     declarations.append(

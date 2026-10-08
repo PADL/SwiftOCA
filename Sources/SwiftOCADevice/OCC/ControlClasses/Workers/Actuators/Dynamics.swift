@@ -50,7 +50,8 @@ open class OcaDynamics: OcaActuator {
   @OcaBoundedDeviceProperty(
     propertyID: OcaPropertyID("4.4"),
     getMethodID: OcaMethodID("4.5"),
-    setMethodID: OcaMethodID("4.6")
+    setMethodID: OcaMethodID("4.6"),
+    deprecated: .all
   )
   public var ratio = OcaBoundedPropertyValue<OcaFloat32>(value: 1, in: 1...100)
 

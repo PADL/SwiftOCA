@@ -240,6 +240,13 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   /// property's name, its parent's first: `OcaDB` rather than the `Float` it stands for.
   open class var devicePropertyTypeNames: [String: String] { [:] }
 
+  /// What the model deprecates of each device property, by the property's name, its
+  /// parent's first. `@OcaDeviceClass` writes it from the `deprecated` arguments.
+  open class var devicePropertyDeprecations: [String: OcaPropertyDeprecation] { [:] }
+
+  /// Whether the model marks this class deprecated. A class that is overrides it.
+  open class var classIsDeprecated: Bool { false }
+
   /// The events the class emits, its parent's first. A class that emits one of its own
   /// overrides this, adding it to its parent's.
   open class var deviceEvents: [OcaDeviceEventDescriptor] {

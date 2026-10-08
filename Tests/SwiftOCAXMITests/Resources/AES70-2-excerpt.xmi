@@ -436,39 +436,6 @@
 												<type xmi:idref="EAJava_OcaEnumItem"/>
 											</ownedAttribute>
 										</packagedElement>
-<packagedElement xmi:type="uml:Class" xmi:id="EAID_2B30634D_DD2E_403c_A273_40AE837AB997" name="OcaDeviceState" visibility="public">
-									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_A5D004A9_502D_4be0_AEFD_E710E89A8C37" name="Operational" visibility="public" isStatic="true" isReadOnly="true" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
-										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002505_502D_4be0_AEFD_E710E89A8C37" value="1"/>
-										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002506_502D_4be0_AEFD_E710E89A8C37" value="1"/>
-										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002507_502D_4be0_AEFD_E710E89A8C37" value="1"/>
-										<type xmi:idref="EAnone_OcaDeviceState"/>
-									</ownedAttribute>
-									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_079203E4_7AEF_45ad_915B_C2AFDD95AD37" name="Disabled" visibility="public" isStatic="true" isReadOnly="true" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
-										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002507_7AEF_45ad_915B_C2AFDD95AD37" value="1"/>
-										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002508_7AEF_45ad_915B_C2AFDD95AD37" value="1"/>
-										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002509_7AEF_45ad_915B_C2AFDD95AD37" value="2"/>
-										<type xmi:idref="EAnone_OcaDeviceState"/>
-									</ownedAttribute>
-									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_5A1D3636_C1C7_4f02_8BFA_083EEB13D063" name="Error" visibility="public" isStatic="true" isReadOnly="true" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
-										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002509_C1C7_4f02_8BFA_083EEB13D063" value="1"/>
-										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002510_C1C7_4f02_8BFA_083EEB13D063" value="1"/>
-										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002511_C1C7_4f02_8BFA_083EEB13D063" value="4"/>
-										<type xmi:idref="EAnone_OcaDeviceState"/>
-									</ownedAttribute>
-									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_6B5D6B01_68A5_40aa_A1D8_FADD5F4139E4" name="Initializing" visibility="public" isStatic="true" isReadOnly="true" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
-										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002511_68A5_40aa_A1D8_FADD5F4139E4" value="1"/>
-										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002512_68A5_40aa_A1D8_FADD5F4139E4" value="1"/>
-										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002513_68A5_40aa_A1D8_FADD5F4139E4" value="8"/>
-										<type xmi:idref="EAnone_OcaDeviceState"/>
-									</ownedAttribute>
-									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_4B9ECD99_097D_487a_B14B_A83F6B4F6266" name="Updating" visibility="public" isStatic="true" isReadOnly="true" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
-										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002513_097D_487a_B14B_A83F6B4F6266" value="1"/>
-										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002514_097D_487a_B14B_A83F6B4F6266" value="1"/>
-										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002515_097D_487a_B14B_A83F6B4F6266" value="16"/>
-										<type xmi:idref="EAnone_OcaDeviceState"/>
-									</ownedAttribute>
-									<generalization xmi:type="uml:Generalization" xmi:id="EAID_1865EA20_4D1C_4706_A1AE_A425BCC704AA" general="EAID_EC0908BC_4A86_4a2f_8A02_20F684708EED"/>
-								</packagedElement>
 <packagedElement xmi:type="uml:Class" xmi:id="EAID_C42992BD_4558_44d5_AF52_FC6BB25CB9CA" name="OcaPort" visibility="public">
 									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_6D3051A4_8933_4e01_BA9F_0F5BB3107597" name="Owner" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
 										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI001481_8933_4e01_BA9F_0F5BB3107597" value="1"/>
@@ -522,13 +489,145 @@
 											</ownedAttribute>
 										</packagedElement>
 <packagedElement xmi:type="uml:Class" xmi:id="EAID_AD2B9D30_857F_4892_B944_EEFBD9399E85" name="OcaEmptyEventData" visibility="public"/>
+<packagedElement xmi:type="uml:Package" xmi:id="EAPK_EXCERPT_DEPRECATED" name="Deprecated Components" visibility="public">
+<packagedElement xmi:type="uml:Class" xmi:id="EAID_2B30634D_DD2E_403c_A273_40AE837AB997" name="OcaDeviceState" visibility="public">
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_A5D004A9_502D_4be0_AEFD_E710E89A8C37" name="Operational" visibility="public" isStatic="true" isReadOnly="true" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002505_502D_4be0_AEFD_E710E89A8C37" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002506_502D_4be0_AEFD_E710E89A8C37" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002507_502D_4be0_AEFD_E710E89A8C37" value="1"/>
+										<type xmi:idref="EAnone_OcaDeviceState"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_079203E4_7AEF_45ad_915B_C2AFDD95AD37" name="Disabled" visibility="public" isStatic="true" isReadOnly="true" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002507_7AEF_45ad_915B_C2AFDD95AD37" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002508_7AEF_45ad_915B_C2AFDD95AD37" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002509_7AEF_45ad_915B_C2AFDD95AD37" value="2"/>
+										<type xmi:idref="EAnone_OcaDeviceState"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_5A1D3636_C1C7_4f02_8BFA_083EEB13D063" name="Error" visibility="public" isStatic="true" isReadOnly="true" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002509_C1C7_4f02_8BFA_083EEB13D063" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002510_C1C7_4f02_8BFA_083EEB13D063" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002511_C1C7_4f02_8BFA_083EEB13D063" value="4"/>
+										<type xmi:idref="EAnone_OcaDeviceState"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_6B5D6B01_68A5_40aa_A1D8_FADD5F4139E4" name="Initializing" visibility="public" isStatic="true" isReadOnly="true" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002511_68A5_40aa_A1D8_FADD5F4139E4" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002512_68A5_40aa_A1D8_FADD5F4139E4" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002513_68A5_40aa_A1D8_FADD5F4139E4" value="8"/>
+										<type xmi:idref="EAnone_OcaDeviceState"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_4B9ECD99_097D_487a_B14B_A83F6B4F6266" name="Updating" visibility="public" isStatic="true" isReadOnly="true" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002513_097D_487a_B14B_A83F6B4F6266" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002514_097D_487a_B14B_A83F6B4F6266" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002515_097D_487a_B14B_A83F6B4F6266" value="16"/>
+										<type xmi:idref="EAnone_OcaDeviceState"/>
+									</ownedAttribute>
+									<generalization xmi:type="uml:Generalization" xmi:id="EAID_1865EA20_4D1C_4706_A1AE_A425BCC704AA" general="EAID_EC0908BC_4A86_4a2f_8A02_20F684708EED"/>
+								</packagedElement>
+<packagedElement xmi:type="uml:Class" xmi:id="EAID_195B0BCC_C340_433b_95E6_F4C6112150CA" name="OcaDelayExtended" visibility="public" isAbstract="true">
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_CAF4E9FD_3F21_41ee_B738_789EC8E575EC" name="ClassID" visibility="public" isStatic="true" isReadOnly="true" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002241_3F21_41ee_B738_789EC8E575EC" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002242_3F21_41ee_B738_789EC8E575EC" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002243_3F21_41ee_B738_789EC8E575EC" value="1.1.1.7.1"/>
+										<type xmi:idref="EAnone_OcaClassID"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_9606D7C1_2A15_45b0_A220_8CB6AA98BE29" name="ClassVersion" visibility="public" isStatic="true" isReadOnly="true" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002243_2A15_45b0_A220_8CB6AA98BE29" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002244_2A15_45b0_A220_8CB6AA98BE29" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002245_2A15_45b0_A220_8CB6AA98BE29" value="3"/>
+										<type xmi:idref="EAnone_OcaClassVersionNumber"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_460F4C35_03B4_42c3_832B_46DD537D206F" name="DelayValue" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002245_03B4_42c3_832B_46DD537D206F" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002246_03B4_42c3_832B_46DD537D206F" value="1"/>
+										<type xmi:idref="EAnone_OcaDelayValue"/>
+									</ownedAttribute>
+									<ownedOperation xmi:id="EAID_E7C34216_E167_4f8e_88B5_EB124D61BAF7" name="GetDelayValue" visibility="public" concurrency="sequential">
+										<ownedParameter xmi:id="EAID_FB867D3B_70CE_4f01_9F00_7C4C210BB535" name="Value" direction="out" isStream="false" isException="false" isOrdered="0" isUnique="1" type="EAnone_OcaDelayValue"/>
+										<ownedParameter xmi:id="EAID_4356F0E4_E5F0_4a86_96A1_029D6DCFD816" name="minValue" direction="out" isStream="false" isException="false" isOrdered="0" isUnique="1" type="EAnone_OcaDelayValue"/>
+										<ownedParameter xmi:id="EAID_83994218_1BCF_413a_B50A_9DA9F99467C7" name="maxValue" direction="out" isStream="false" isException="false" isOrdered="0" isUnique="1" type="EAnone_OcaDelayValue"/>
+										<ownedParameter xmi:id="EAID_RT000000_E167_4f8e_88B5_EB124D61BAF7" name="return" direction="return" type="EAnone_OcaStatus"/>
+									</ownedOperation>
+									<ownedOperation xmi:id="EAID_26C77741_4821_41cc_A595_B77AE59B0258" name="SetDelayValue" visibility="public" concurrency="sequential">
+										<ownedParameter xmi:id="EAID_500891AF_1F94_4c12_992C_A7DF82B7144A" name="Value" direction="in" isStream="false" isException="false" isOrdered="0" isUnique="1" type="EAnone_OcaDelayValue"/>
+										<ownedParameter xmi:id="EAID_RT000000_4821_41cc_A595_B77AE59B0258" name="return" direction="return" type="EAnone_OcaStatus"/>
+									</ownedOperation>
+									<ownedOperation xmi:id="EAID_A8DC7D03_DBC3_4aa9_B670_E45AD697D43F" name="GetDelayValueConverted" visibility="public">
+										<ownedParameter xmi:id="EAID_2069DB4E_41E0_467d_BE04_D4AF61CE95FA" name="UoM" direction="in" isStream="false" isException="false" isOrdered="0" isUnique="1" type="EAnone_OcaDelayUnit"/>
+										<ownedParameter xmi:id="EAID_50D4EFF4_8AB4_4bff_B853_EDBB51B31BB5" name="Value" direction="out" isStream="false" isException="false" isOrdered="0" isUnique="1" type="EAnone_OcaDelayValue"/>
+										<ownedParameter xmi:id="EAID_RT000000_DBC3_4aa9_B670_E45AD697D43F" name="return" direction="return" type="EAnone_OcaStatus"/>
+									</ownedOperation>
+									<generalization xmi:type="uml:Generalization" xmi:id="EAID_45FA33B1_F3D7_43d0_BE61_DD05B4710754" general="EAID_EF1DAB38_D371_469b_83DC_DE815E2D456B"/>
+								</packagedElement>
+<packagedElement xmi:type="uml:Class" xmi:id="EAID_7A635872_E15F_48ce_9AE8_50F44EAADE88" name="OcaDelayValue" visibility="public">
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_D876670B_6D61_42e3_968B_4B0CE34C8931" name="DelayValue" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002443_6D61_42e3_968B_4B0CE34C8931" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002444_6D61_42e3_968B_4B0CE34C8931" value="1"/>
+										<type xmi:idref="EAnone_OcaFloat32"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_2B90A57C_3715_4625_97D4_88AA793E3972" name="DelayUnit" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002445_3715_4625_97D4_88AA793E3972" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002446_3715_4625_97D4_88AA793E3972" value="1"/>
+										<type xmi:idref="EAnone_OcaDelayUnit"/>
+									</ownedAttribute>
+								</packagedElement>
+<packagedElement xmi:type="uml:Class" xmi:id="EAID_E6A46D56_036C_4cd0_B086_A891B6E8908D" name="OcaDelayUnit" visibility="public" isLeaf="true">
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_768857D7_C81F_4aa6_9704_DD20B596727B" name="Time" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002427_C81F_4aa6_9704_DD20B596727B" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002428_C81F_4aa6_9704_DD20B596727B" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002429_C81F_4aa6_9704_DD20B596727B" value="1"/>
+										<type xmi:idref="EAnone_OcaEnumItem"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_92BE11F8_185F_43f2_8F74_0DEEF9347BA7" name="Distance" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002429_185F_43f2_8F74_0DEEF9347BA7" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002430_185F_43f2_8F74_0DEEF9347BA7" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002431_185F_43f2_8F74_0DEEF9347BA7" value="2"/>
+										<type xmi:idref="EAnone_OcaEnumItem"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_AEEBF837_9017_45a8_B2E4_5624DEE5080E" name="Samples" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002431_9017_45a8_B2E4_5624DEE5080E" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002432_9017_45a8_B2E4_5624DEE5080E" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002433_9017_45a8_B2E4_5624DEE5080E" value="3"/>
+										<type xmi:idref="EAnone_OcaEnumItem"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_C1FB1BE8_4CF4_427f_90C0_4B74E87D5346" name="Microseconds" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002433_4CF4_427f_90C0_4B74E87D5346" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002434_4CF4_427f_90C0_4B74E87D5346" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002435_4CF4_427f_90C0_4B74E87D5346" value="4"/>
+										<type xmi:idref="EAnone_OcaEnumItem"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_31E7464B_06E9_40a2_A699_65707ECAF4EE" name="Milliseconds" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002435_06E9_40a2_A699_65707ECAF4EE" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002436_06E9_40a2_A699_65707ECAF4EE" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002437_06E9_40a2_A699_65707ECAF4EE" value="5"/>
+										<type xmi:idref="EAnone_OcaEnumItem"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_70B543DD_DED2_4d3c_9003_578358E5B338" name="Centimeters" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002437_DED2_4d3c_9003_578358E5B338" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002438_DED2_4d3c_9003_578358E5B338" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002439_DED2_4d3c_9003_578358E5B338" value="6"/>
+										<type xmi:idref="EAnone_OcaEnumItem"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_0460583E_AF2E_43ef_933C_96B8031E8E24" name="Inches" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002439_AF2E_43ef_933C_96B8031E8E24" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002440_AF2E_43ef_933C_96B8031E8E24" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002441_AF2E_43ef_933C_96B8031E8E24" value="7"/>
+										<type xmi:idref="EAnone_OcaEnumItem"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_99DA8955_26F9_4955_AE04_A3E916E4C60A" name="Feet" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002441_26F9_4955_AE04_A3E916E4C60A" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002442_26F9_4955_AE04_A3E916E4C60A" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002443_26F9_4955_AE04_A3E916E4C60A" value="8"/>
+										<type xmi:idref="EAnone_OcaEnumItem"/>
+									</ownedAttribute>
+								</packagedElement>
+</packagedElement>
 </packagedElement>
 </uml:Model>
 <xmi:Extension extender="Enterprise Architect" extenderID="6.5">
 <elements>
 			<element xmi:idref="EAID_4889C2D7_2050_4879_A5F5_0969FFFC6E56" xmi:type="uml:Class" name="OcaRoot" scope="public">
 				<model package="EAPK_6230B773_F753_4cc3_BD69_B10866970F2E" tpos="0" ea_localid="5" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="abstract" isRoot="true" isLeaf="false" isAbstract="true" isActive="false"/>
+				<properties documentation="The abstract root class of which all OCA classes derive. It offers basic OCA functionality such as locking an object and generalized data access." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="abstract" isRoot="true" isLeaf="false" isAbstract="true" isActive="false"/>
 				<project version="3" phase="1.5" created="2011-09-14 15:34:52" modified="2022-12-09 16:37:32" complexity="1"/>
 				<code gentype="C++" genfile="C:\Documents and Settings\c-berrj\Data\EV\54 Networking Stds\OCA\Workspace\2000 Specs\2300 OCC\2330 UML\2331 Drafts\01 OcaRoot.h"/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -538,10 +637,12 @@
 					<tag xmi:id="EAID_7DA26389_8F77_49be_A260_19DE97274868" name="Title" value="Abstract root class for all OCA classes" modelElement="EAID_4889C2D7_2050_4879_A5F5_0969FFFC6E56"/>
 					<tag xmi:id="EAID_811EFC51_0B33_462e_9BE4_38DD3B31AEB8" name="TreeLevel" value="01" modelElement="EAID_4889C2D7_2050_4879_A5F5_0969FFFC6E56"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={B87DEC91-3D9C-4842-92DA-D9DA7BADB3D5}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=abstract;FQName=EPProfile::abstract;@ENDSTEREO;@STEREO;Name=root;GUID={CC7038BC-E1CB-4fe9-9C91-EFDF502928A5};@ENDSTEREO;$DES;$CLT={4889C2D7-2050-4879-A5F5-0969FFFC6E56}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Control Classes" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_09A78701_A41A_461f_B1E0_44B92808868D" name="ClassID" scope="Public">
 						<initial body="1"/>
+						<documentation value="Number that uniquely identifies the class. Note that this differs from the object number, which identifies the instantiated object. This is a class property instead of an object property.  This property will be overridden by each descendant class, in order to specify that class's ClassID."/>
 						<model ea_localid="1" ea_guid="{09A78701-A41A-461f-B1E0-44B92808868D}"/>
 						<properties type="OcaClassID" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -556,6 +657,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_7F1BDEC2_0658_4deb_BBEE_C2CF3BF6D36E" name="ClassVersion" scope="Public">
 						<initial body="3"/>
+						<documentation value="Identifies the interface version of the class. Any change to the class definition leads to a higher class version. This property will be overridden by each descendant class, in order to specify that class's ClassVersion."/>
 						<model ea_localid="2" ea_guid="{7F1BDEC2-0658-4deb-BBEE-C2CF3BF6D36E}"/>
 						<properties type="OcaClassVersionNumber" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -570,6 +672,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_8785B2B1_CC46_4a7d_B638_2A7C5B2DA1BA" name="ObjectNumber" scope="Public">
 						<initial/>
+						<documentation value="The object number that uniquely identifies the instantiated object. This read-only property shall be set at creation of the object. Derived objects can hardcode the object number in its constructor, or offer a constructor with object number parameter for dynamic allocation of object numbers."/>
 						<model ea_localid="3" ea_guid="{8785B2B1-CC46-4a7d-B638-2A7C5B2DA1BA}"/>
 						<properties type="OcaONo" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -584,6 +687,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_6AC508FC_0786_45ef_9382_169ACB9350B3" name="Lockable" scope="Public">
 						<initial/>
+						<documentation value="Read-only property that indicates whether the object is lockable or non-lockable. The property value shall be set during construction of the object."/>
 						<model ea_localid="4" ea_guid="{6AC508FC-0786-45ef-9382-169ACB9350B3}"/>
 						<properties type="OcaBoolean" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -598,6 +702,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_D366B3A2_A647_4c22_B65E_9DC7754D43D9" name="Role" scope="Public">
 						<initial/>
+						<documentation value="Read-only text property that describes object's role in the device. Particularly useful for workers, e.g. &quot;Input 1 Gain&quot;. Value shall not change during the life of the object.   Values beginning with &quot;oca&quot; in any character case are reserved for AES use."/>
 						<model ea_localid="5" ea_guid="{D366B3A2-A647-4c22-B65E-9DC7754D43D9}"/>
 						<properties type="OcaString" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -612,6 +717,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_B8BE9F40_1C17_4cd3_A440_C03E5DC9FDF6" name="LockState" scope="Public">
 						<initial/>
+						<documentation value="Current lock state - none, noWrite, or noReadWrite"/>
 						<model ea_localid="3228" ea_guid="{B8BE9F40-1C17-4cd3-A440-C03E5DC9FDF6}"/>
 						<properties type="OcaLockState" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -635,6 +741,7 @@
 						<code/>
 						<style value="01e01"/>
 						<styleex/>
+						<documentation value="General event that is emitted when a property changes. In each setter method (of derived classes) this event shall be raised with the proper derived event data structure.  "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_DFB9_4f6c_B142_3E65DAADBA0E" visibility="public">
@@ -649,10 +756,12 @@
 								<properties pos="0" type="OcaPropertyChangedEventData" const="false" ea_guid="{F1F173EE-069C-4480-827D-C67A686AC0DE}"/>
 								<style/>
 								<styleex/>
+								<documentation value="The event data of the event holding the property ID and the property value. When raising the property changed event the object must construct a concrete event data structure derived from OcaPropertyChangedEventData that holds the value of the property. "/>
 								<tags/>
 								<xrefs/>
 							</parameter>
 						</parameters>
+						<xrefs value="$XREFPROP=$XID={16FB7935-E92D-479c-ABDD-FCF12CF02C18}$XID;$NAM=Stereotypes$NAM;$TYP=operation property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=event;GUID={4DD89A3C-B5F5-4c16-AE57-836D52384A43};@ENDSTEREO;$DES;$CLT={8C9E7FD5-DFB9-4f6c-B142-3E65DAADBA0E}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 					</operation>
 					<operation xmi:idref="EAID_EFF09F47_EC93_4b8c_A2C3_094BDCD76B71" name="GetClassIdentification" scope="Public">
 						<properties position="1"/>
@@ -663,6 +772,7 @@
 						<code/>
 						<style value="01m01 "/>
 						<styleex/>
+						<documentation value="Gets the class identification, a structure contains the ClassID and ClassVersion. "/>
 						<tags>
 							<tag xmi:id="EAID_6A451DFB_58CB_4819_A88E_8F52B49C02CE" name="ea_guid" value="{EFF09F47-EC93-4b8c-A2C3-094BDCD76B71}"/>
 						</tags>
@@ -679,6 +789,7 @@
 								<properties pos="0" type="OcaClassIdentification" const="false" ea_guid="{554FAD13-A11D-498e-A46D-014C8D0C62E7}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the value of the ClassID and ClassVersion properties if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -694,6 +805,7 @@
 						<code/>
 						<style value="01m02 "/>
 						<styleex/>
+						<documentation value="Gets the value of the Lockable property. "/>
 						<tags>
 							<tag xmi:id="EAID_0C757A6B_95B9_4e77_A677_7E7FEEC46C02" name="ea_guid" value="{156ADF0D-473D-4a2f-ACAF-41A0257ADDA7}"/>
 						</tags>
@@ -710,6 +822,7 @@
 								<properties pos="0" type="OcaBoolean" const="false" ea_guid="{22E5B831-E03F-4710-BD51-AF5F6B216476}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the value of the Lockable property if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -725,6 +838,7 @@
 						<code/>
 						<style value="01m03 n:3"/>
 						<styleex/>
+						<documentation value="Locks the object totally, so that it can only be accessed for reading or writing by the lockholder.  &#xA;&lt;ul&gt;&#xA;	&lt;li&gt;If the object's &lt;b&gt;LockState &lt;/b&gt;is &lt;b&gt;LockNoWrite &lt;/b&gt;by the same lockholder, the lock state is upgraded to LockNoReadWrite.   &lt;/li&gt;&#xA;	&lt;li&gt;If the call is from a session other than the lockholder's, the call fails.&lt;/li&gt;&#xA;&lt;/ul&gt;"/>
 						<tags>
 							<tag xmi:id="EAID_3ACC4CE2_A925_4e20_A817_210955425266" name="ea_guid" value="{A82340A2-74A3-4c1a-9E04-A27EF5DF06B3}"/>
 						</tags>
@@ -749,6 +863,7 @@
 						<code/>
 						<style value="01m04 "/>
 						<styleex/>
+						<documentation value="Unlocks the object so that it can be freely accessed again. This method can only succeed if it is called by the lockholder. "/>
 						<tags>
 							<tag xmi:id="EAID_0D545D04_7491_4bf9_B05C_4995F83364B0" name="ea_guid" value="{69711AA3-D999-4221-96FF-561297C666D2}"/>
 						</tags>
@@ -773,6 +888,7 @@
 						<code/>
 						<style value="01m05 "/>
 						<styleex/>
+						<documentation value="Returns value of Role property. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_B399_45f6_9371_A60F9887865A" visibility="public">
@@ -787,6 +903,7 @@
 								<properties pos="0" type="OcaString" const="false" ea_guid="{3CFEE2F8-37B2-4b4e-AAC3-C324ED484A57}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the value of the Role property if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -802,6 +919,7 @@
 						<code/>
 						<style value="01m06 n:3"/>
 						<styleex/>
+						<documentation value="Locks the object so that it may only be controlled by the lockholder, but others can still retrieve property values.  If &lt;b&gt;LockState&lt;/b&gt; is &lt;b&gt;LockNoReadWrite&lt;/b&gt; by the same lockholder, the lock state is downgraded to &lt;b&gt;LockNoWrite&lt;/b&gt;.  If the call is from a session other than the lockholder's, the call fails.  "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_565D_412f_8731_C3E0E3E8B391" visibility="public">
@@ -824,6 +942,7 @@
 						<code/>
 						<style value="01m07 a:3"/>
 						<styleex/>
+						<documentation value="Returns the current value of the &lt;b&gt;LockState &lt;/b&gt;property."/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_AD6D_4fea_9183_1A9F1686C3E8" visibility="public">
@@ -854,6 +973,7 @@
 						<code/>
 						<style value="01m03 d:3"/>
 						<styleex/>
+						<documentation value="Locks the object totally, so that it can only be accessed for reading or writing by the lockholder.  &#xA;&lt;ul&gt;&#xA;	&lt;li&gt;If the object's &lt;b&gt;LockState &lt;/b&gt;is &lt;b&gt;LockNoWrite &lt;/b&gt;by the same lockholder, the lock state is upgraded to LockNoReadWrite.   &lt;/li&gt;&#xA;	&lt;li&gt;If the call is from a session other than the lockholder's, the call fails.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;In version 3 of this class, this name is deprecated and replaced by &lt;b&gt;SetLockNoReadWrite.&lt;/b&gt;"/>
 						<tags>
 							<tag xmi:id="EAID_3ACC4CE2_A925_4e20_8CF6_BBFF32A9ED07" name="ea_guid" value="{3E02E31A-BF41-43d5-B741-9C90D00597C5}"/>
 						</tags>
@@ -867,6 +987,7 @@
 								<xrefs/>
 							</parameter>
 						</parameters>
+						<xrefs value="$XREFPROP=$XID={241474AC-3306-49e7-921C-F63E9FA0DC35}$XID;$NAM=Stereotypes$NAM;$TYP=operation property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=deprecated;GUID={63221F7D-406C-4ada-B836-8C28919B99B9};@ENDSTEREO;$DES;$CLT={3E02E31A-BF41-43d5-B741-9C90D00597C5}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 					</operation>
 					<operation xmi:idref="EAID_67038E0E_2682_4125_A482_CAACA1A19A96" name="LockReadOnly" scope="Public">
 						<properties position="9"/>
@@ -877,6 +998,7 @@
 						<code/>
 						<style value="01m06 d:3"/>
 						<styleex/>
+						<documentation value="Locks the object so that it may only be controlled by the lockholder, but others can still retrieve property values.  If &lt;b&gt;LockState&lt;/b&gt; is &lt;b&gt;LockNoReadWrite&lt;/b&gt; by the same lockholder, the lock state is downgraded to &lt;b&gt;LockNoWrite&lt;/b&gt;.  If the call is from a session other than the lockholder's, the call fails.    In version 3 of this class, this name is deprecated and replaced by &lt;b&gt;SetLockNoWrite.&lt;/b&gt;"/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_2682_4125_A482_CAACA1A19A96" visibility="public">
@@ -888,6 +1010,7 @@
 								<xrefs/>
 							</parameter>
 						</parameters>
+						<xrefs value="$XREFPROP=$XID={C8397071-EE53-4fbb-A269-B73F30F250AA}$XID;$NAM=Stereotypes$NAM;$TYP=operation property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=deprecated;GUID={63221F7D-406C-4ada-B836-8C28919B99B9};@ENDSTEREO;$DES;$CLT={67038E0E-2682-4125-A482-CAACA1A19A96}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 					</operation>
 				</operations>
 				<links>
@@ -902,7 +1025,7 @@
 			</element>
 			<element xmi:idref="EAID_975623FF_C19A_464f_9F5F_636F4EE114EC" xmi:type="uml:Class" name="OcaWorker" scope="protected">
 				<model package="EAPK_502926AC_CC6B_4010_8E20_BA97904B3494" tpos="0" ea_localid="8" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="protected" stereotype="abstract" isRoot="false" isLeaf="false" isAbstract="true" isActive="false"/>
+				<properties documentation="Abstract base class for classes that represent the device's application and support functions." isSpecification="false" sType="Class" nType="0" scope="protected" stereotype="abstract" isRoot="false" isLeaf="false" isAbstract="true" isActive="false"/>
 				<project version="3" phase="1.5" created="2011-09-14 15:34:53" modified="2023-06-30 01:12:50" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -912,10 +1035,12 @@
 					<tag xmi:id="EAID_E829F179_AA11_40bd_98B4_DAF180AFCC78" name="Title" value="Abstract class from which all Workers inherit" modelElement="EAID_975623FF_C19A_464f_9F5F_636F4EE114EC"/>
 					<tag xmi:id="EAID_CF63A9DD_E461_4b68_8D49_59B2FFAC5BCF" name="TreeLevel" value="02" modelElement="EAID_975623FF_C19A_464f_9F5F_636F4EE114EC"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={127E8671-6C10-441f-8848-ADEBFAC578E6}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=abstract;GUID={5440DC5E-005F-4715-8426-0CABF983E4F3};@ENDSTEREO;@STEREO;Name=controlClass;GUID={7836F006-04EF-4ee4-9510-08D546FDBEEA};@ENDSTEREO;$DES;$CLT={975623FF-C19A-464f-9F5F-636F4EE114EC}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Workers" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_DB94385E_41EF_4e26_B528_FA46FCCFA8A4" name="ClassID" scope="Public">
 						<initial body="1.1"/>
+						<documentation value="Number that uniquely identifies the class. Note that this differs from the object number, which identifies the instantiated object. This is a class property instead of an object property.  This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
 						<model ea_localid="6" ea_guid="{DB94385E-41EF-4e26-B528-FA46FCCFA8A4}"/>
 						<properties type="OcaClassID" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -930,6 +1055,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_9C3EF686_4346_48e9_BD93_53E7D2B0A406" name="ClassVersion" scope="Public">
 						<initial body="3"/>
+						<documentation value="Identifies the interface version of the class. Any change to the class definition leads to a higher class version.  This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
 						<model ea_localid="7" ea_guid="{9C3EF686-4346-48e9-BD93-53E7D2B0A406}"/>
 						<properties type="OcaClassVersionNumber" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -944,6 +1070,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_3AC768CD_1E0E_4e59_BE55_613C98C3DB16" name="Enabled" scope="Public">
 						<initial/>
+						<documentation value="Read/write property that indicates whether the worker object is enabled in the device. If an object is disabled it cannot be used by the application. Note that the behavior of a disabled object depends on the object itself (e.g. a disabled signal generator is silent, a disabled equalizer is flat, etc.)."/>
 						<model ea_localid="8" ea_guid="{3AC768CD-1E0E-4e59-BE55-613C98C3DB16}"/>
 						<properties type="OcaBoolean" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -958,6 +1085,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_4164948E_3AB3_4408_B1BD_B56A58D94DBB" name="Ports" scope="Public">
 						<initial/>
+						<documentation value="The list of (input and output) OCA ports the worker object has.  Note that a worker object can have no ports, in which case the list is empty."/>
 						<model ea_localid="9" ea_guid="{4164948E-3AB3-4408-B1BD-B56A58D94DBB}"/>
 						<properties type="OcaList&lt;OcaPort&gt;" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -972,6 +1100,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_9F0AF1BD_F0F9_4d4c_B007_C08673D74682" name="Label" scope="Public">
 						<initial/>
+						<documentation value="Specific label of the worker. Can be used to provide human readable information about the worker. The label can be get and set over the network."/>
 						<model ea_localid="10" ea_guid="{9F0AF1BD-F0F9-4d4c-B007-C08673D74682}"/>
 						<properties type="OcaString" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -986,6 +1115,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_7A2EC3DD_D426_4cce_AA83_032EE342EE8F" name="Owner" scope="Public">
 						<initial/>
+						<documentation value="Object number of block that contains this worker. Read-only."/>
 						<model ea_localid="11" ea_guid="{7A2EC3DD-D426-4cce-AA83-032EE342EE8F}"/>
 						<properties type="OcaONo" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -1000,6 +1130,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_6E3327C1_171C_43b3_9DE1_5AB613739A1B" name="Latency" scope="Public">
 						<initial/>
+						<documentation value="Processing latency of this object.  Optional.  Readonly or readwrite, depending on implementation."/>
 						<model ea_localid="12" ea_guid="{6E3327C1-171C-43b3-9DE1-5AB613739A1B}"/>
 						<properties type="OcaTimeInterval" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -1014,6 +1145,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_ED94E9FE_277F_4e09_BA5B_B72AD9A66F92" name="PortClockMap" scope="Public">
 						<initial/>
+						<documentation value="&lt;b&gt;Optional property.&lt;/b&gt;  Map that connects OcaMediaClock3 object numbers to input and output OcaPorts and specifies sampling rate converters, if any.   &#xA;OcaPortID = {mode,index}, where mode = Input or Output.   &#xA;Map entries with index=0 are default values, to be used when no entry is found for a given port.  "/>
 						<model ea_localid="2833" ea_guid="{ED94E9FE-277F-4e09-BA5B-B72AD9A66F92}"/>
 						<properties type="OcaMap&lt;OcaPortID,OcaPortClockMapEntry&gt;" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -1037,6 +1169,7 @@
 						<code/>
 						<style value="02m01 "/>
 						<styleex/>
+						<documentation value="Gets the value of the Enabled property. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_D6AA_4f93_8A7F_0720710A765C" visibility="public">
@@ -1051,6 +1184,7 @@
 								<properties pos="0" type="OcaBoolean" const="false" ea_guid="{D77C84A3-DBAF-40de-9785-3A747765FC27}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the value of the Enabled property if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1066,6 +1200,7 @@
 						<code/>
 						<style value="02m02 "/>
 						<styleex/>
+						<documentation value="Sets the value of the Enabled property. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_B339_4620_AADD_7418918FF0EA" visibility="public">
@@ -1080,6 +1215,7 @@
 								<properties pos="0" type="OcaBoolean" const="false" ea_guid="{C4ACC0C2-3484-4709-ADAA-62BC867C665B}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Value to which the Enabled property shall be set if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1095,6 +1231,7 @@
 						<code/>
 						<style value="02m03 "/>
 						<styleex/>
+						<documentation value="Adds an input or output port.. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_238B_48f8_931B_6AB1449B789B" visibility="public">
@@ -1109,6 +1246,7 @@
 								<properties pos="0" type="OcaString" const="false" ea_guid="{C439406E-8C18-4c52-9A10-9AAC0736C3CE}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Text name of the Port."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1116,6 +1254,7 @@
 								<properties pos="1" type="OcaIODirection" const="false" ea_guid="{B0AF88B1-9EA1-4517-9FA5-C7FF50F8CF64}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Specifies whether Port to be added is an Input or Output Port."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1123,6 +1262,7 @@
 								<properties pos="2" type="OcaPortID" const="false" ea_guid="{BD95CE5A-B508-467b-80D4-AE89291EA2BB}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Returned parameter that shall hold the ID the Device has assigned to the Port that was added, if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1138,6 +1278,7 @@
 						<code/>
 						<style value="02m04 "/>
 						<styleex/>
+						<documentation value="Deletes an input or output port.."/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_1484_420e_A75D_23C5817D85CB" visibility="public">
@@ -1152,6 +1293,7 @@
 								<properties pos="0" type="OcaPortID" const="false" ea_guid="{277AA85A-70C1-456b-8DEE-7417B5FD835E}"/>
 								<style/>
 								<styleex/>
+								<documentation value="ID of the port to be deleted."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1167,6 +1309,7 @@
 						<code/>
 						<style value="02m05 "/>
 						<styleex/>
+						<documentation value="Gets the list of ports owned by the Worker object.  "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_4F2A_4fcd_88C4_85474C58FC80" visibility="public">
@@ -1181,6 +1324,7 @@
 								<properties pos="0" type="OcaList&lt;OcaPort&gt;" const="false" ea_guid="{C4B4DA78-8C9B-4e6c-B81D-A4826FD4BC74}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the value of the Ports property if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1196,6 +1340,7 @@
 						<code/>
 						<style value="02m06 "/>
 						<styleex/>
+						<documentation value="Gets the name of the designated port. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_60EB_4bdf_BE48_0BFE6B9112D5" visibility="public">
@@ -1210,6 +1355,7 @@
 								<properties pos="0" type="OcaPortID" const="false" ea_guid="{289233DB-BD83-4e68-B1EE-5DFB6B435B45}"/>
 								<style/>
 								<styleex/>
+								<documentation value="ID of port whose Name is to be retrieved"/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1217,6 +1363,7 @@
 								<properties pos="1" type="OcaString" const="false" ea_guid="{11725E4B-A89D-42c7-ADA5-33301DF8D694}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the name of the identified Port if the method succeeds"/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1232,6 +1379,7 @@
 						<code/>
 						<style value="02m07 "/>
 						<styleex/>
+						<documentation value="Sets the name of the designated port. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_A91C_45a2_8E71_D326150DA18B" visibility="public">
@@ -1246,6 +1394,7 @@
 								<properties pos="0" type="OcaPortID" const="false" ea_guid="{EEFA6F55-D97F-40da-AD1C-064C3FBF7335}"/>
 								<style/>
 								<styleex/>
+								<documentation value="ID of port whose name shall be set"/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1253,6 +1402,7 @@
 								<properties pos="1" type="OcaString" const="false" ea_guid="{20E258C9-1CB9-4f33-A437-1A59BFAE62CA}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Value to which designated Port's name shall be set if method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1268,6 +1418,7 @@
 						<code/>
 						<style value="02m08 "/>
 						<styleex/>
+						<documentation value="Gets the value of the Label property. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_68F7_4035_993B_A3F8CE628C3D" visibility="public">
@@ -1282,6 +1433,7 @@
 								<properties pos="0" type="OcaString" const="false" ea_guid="{8BEA8732-101A-4bf8-91E7-91865BAAB865}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the value of the Label property if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1297,6 +1449,7 @@
 						<code/>
 						<style value="02m09 "/>
 						<styleex/>
+						<documentation value="Sets the value of the Label property. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_F083_411c_B722_B4A45E7C1232" visibility="public">
@@ -1311,6 +1464,7 @@
 								<properties pos="0" type="OcaString" const="false" ea_guid="{93639A01-AFF5-4120-97D4-6BE2BE125E9A}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Value to which designated Port's Label shall be set if method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1326,6 +1480,7 @@
 						<code/>
 						<style value="02m10 "/>
 						<styleex/>
+						<documentation value="Gets the value of the Owner property. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_645A_431f_9735_FA827D13D734" visibility="public">
@@ -1340,6 +1495,7 @@
 								<properties pos="0" type="OcaONo" const="false" ea_guid="{D2F0C1A0-EE29-4e9f-BE7A-5DE1AC5A69D7}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the value of the Owner property if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1355,6 +1511,7 @@
 						<code/>
 						<style value="02m11"/>
 						<styleex/>
+						<documentation value="Gets the value of the Latency property. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_6CEB_4a58_8103_335052F75D87" visibility="public">
@@ -1369,6 +1526,7 @@
 								<properties pos="0" type="OcaTimeInterval" const="false" ea_guid="{88BC30C2-BA71-49f9-B312-B4FEFFFC33B0}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the value of the Owner property if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1384,6 +1542,7 @@
 						<code/>
 						<style value="02m12"/>
 						<styleex/>
+						<documentation value="Sets the value of the Latency property. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_B4CF_44ed_A487_ECBCB7C280B5" visibility="public">
@@ -1398,6 +1557,7 @@
 								<properties pos="0" type="OcaTimeInterval" const="false" ea_guid="{65E4B388-4E56-44b0-9E98-2D67D4321EAE}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Value to which the Latency property shall be set if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1413,6 +1573,7 @@
 						<code/>
 						<style value="02m13 a:2"/>
 						<styleex/>
+						<documentation value="Returns Role Path and ONo Path from the Root Block to this object.    The return value indicates whether the operation succeeded. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_05A4_4385_9BF0_60BAED2E181F" visibility="public">
@@ -1427,6 +1588,7 @@
 								<properties pos="0" type="OcaRolePath" const="false" ea_guid="{43A99050-0FCD-4a99-9996-0E5E5C9D578A}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the Role Path to this object if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1434,6 +1596,7 @@
 								<properties pos="1" type="OcaONoPath" const="false" ea_guid="{A10F6A50-CC86-4b23-84F3-158D8145CB8A}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the Object Path to this object if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1449,6 +1612,7 @@
 						<code/>
 						<style value="02m14 a:3"/>
 						<styleex/>
+						<documentation value="Gets the value of the PortClockMap property."/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_FDC3_485f_A74B_2A74EFDC6B57" visibility="public">
@@ -1463,6 +1627,7 @@
 								<properties pos="0" type="OcaMap&lt;OcaPortID,OcaPortClockMapEntry&gt;" const="false" ea_guid="{7D6314B9-38C9-4f8d-A7FB-1690E7BC909B}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the value of the PortClockMap property if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1478,6 +1643,7 @@
 						<code/>
 						<style value="02m15 a:3"/>
 						<styleex/>
+						<documentation value="Sets the value of the PortClockMap property."/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_27DA_48d5_860B_DED207FD8ADC" visibility="public">
@@ -1492,6 +1658,7 @@
 								<properties pos="0" type="OcaMap&lt;OcaPortID,OcaPortClockMapEntry&gt;" const="false" ea_guid="{DDF5BBE7-406A-43cd-A897-E2A47BF8595B}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Value to which the PortClockMap property shall be set if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1507,6 +1674,7 @@
 						<code/>
 						<style value="02m16 a:3"/>
 						<styleex/>
+						<documentation value="Gets the value of the PortClockMap entry identified by the given PortID."/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_6087_4b74_83AB_0BD4E7F644E4" visibility="public">
@@ -1521,6 +1689,7 @@
 								<properties pos="0" type="OcaPortID" const="false" ea_guid="{3E410AD5-737A-4b53-8E0B-7AA06E7DDF56}"/>
 								<style/>
 								<styleex/>
+								<documentation value="ID of Port twhich the entry is assigned  "/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1528,6 +1697,7 @@
 								<properties pos="1" type="OcaPortClockMapEntry" const="false" ea_guid="{1AD7919F-DA2D-4c9c-86A0-48281157A570}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the value of the identified PortClockMap entry if the method succeeds"/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1543,6 +1713,7 @@
 						<code/>
 						<style value="02m17 a:3"/>
 						<styleex/>
+						<documentation value="Sets an entry in the PortClockMap property.  Adds entry if none already exists for the given port;  replaces entry if it does already exist."/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_0535_4aef_857D_8F9E1DAF0181" visibility="public">
@@ -1557,6 +1728,7 @@
 								<properties pos="0" type="OcaPortID" const="false" ea_guid="{E4E3464B-2B19-44ec-A8BA-39CC86A2A877}"/>
 								<style/>
 								<styleex/>
+								<documentation value="ID of Port to which the new or changed entry shall be assigned  "/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1564,6 +1736,7 @@
 								<properties pos="1" type="OcaPortClockMapEntry" const="false" ea_guid="{5C3516A2-A0FC-4fcf-822C-52572E4D2C4F}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Port Clock Map entry that shall be added or set if method succeeds"/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1579,6 +1752,7 @@
 						<code/>
 						<style value="02m18 a:3"/>
 						<styleex/>
+						<documentation value="Deletes PortClockMap entry identified by the given ID."/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_BED4_4cf3_AAE1_8176A75960EF" visibility="public">
@@ -1593,6 +1767,7 @@
 								<properties pos="0" type="OcaPortID" const="false" ea_guid="{7A4B8DD0-58D0-4df7-A93E-D7E7CE4CFD34}"/>
 								<style/>
 								<styleex/>
+								<documentation value="PortID of ClockMap entry that shall be deleted if method succeeds"/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1619,7 +1794,7 @@
 			</element>
 			<element xmi:idref="EAID_5D51F05A_6B9D_4d47_BD56_CFC6A4921EA2" xmi:type="uml:Class" name="OcaActuator" scope="public">
 				<model package="EAPK_9443C087_E365_4884_8D0A_E8F1DE6943C6" tpos="1" ea_localid="12" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="abstract" isRoot="false" isLeaf="false" isAbstract="true" isActive="false"/>
+				<properties documentation="Abstract base class for all actuators (i.e. classes) that affect the routing and/or content of the audio signal, or provide ancillary control functions such as power)." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="abstract" isRoot="false" isLeaf="false" isAbstract="true" isActive="false"/>
 				<project author="Jeff Berryman" version="3" phase="1.5" created="2012-03-08 18:10:18" modified="2023-06-30 01:11:07" complexity="1" status="Proposed"/>
 				<code gentype="Java"/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -1629,10 +1804,12 @@
 					<tag xmi:id="EAID_F413B200_92FF_4639_97CD_7DC60DC7D6FD" name="Title" value="Abstract class from which all Actuators inherit" modelElement="EAID_5D51F05A_6B9D_4d47_BD56_CFC6A4921EA2"/>
 					<tag xmi:id="EAID_C49406BA_B20B_42ae_B9AD_33C191D4E1E3" name="TreeLevel" value="03" modelElement="EAID_5D51F05A_6B9D_4d47_BD56_CFC6A4921EA2"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={9130C53C-FEF9-455f-AFED-27E42CBE2FC4}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=abstract;GUID={5440DC5E-005F-4715-8426-0CABF983E4F3};@ENDSTEREO;@STEREO;Name=controlClass;@ENDSTEREO;$DES;$CLT={5D51F05A-6B9D-4d47-BD56-CFC6A4921EA2}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Actuators"/>
 				<attributes>
 					<attribute xmi:idref="EAID_FC3238A4_7B98_47b3_A03A_BCD8EE687353" name="ClassID" scope="Public">
 						<initial body="1.1.1"/>
+						<documentation value="This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
 						<model ea_localid="13" ea_guid="{FC3238A4-7B98-47b3-A03A-BCD8EE687353}"/>
 						<properties type="OcaClassID" derived="0" collection="false" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -1647,6 +1824,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_36F294BF_951F_453e_8330_C72228FFB08D" name="ClassVersion" scope="Public">
 						<initial body="3"/>
+						<documentation value="This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
 						<model ea_localid="14" ea_guid="{36F294BF-951F-453e-8330-C72228FFB08D}"/>
 						<properties type="OcaClassVersionNumber" derived="0" collection="false" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -1689,7 +1867,7 @@
 			</element>
 			<element xmi:idref="EAID_09263175_8528_4048_9EAD_9DD52A90AB92" xmi:type="uml:Class" name="OcaGain" scope="public">
 				<model package="EAPK_9443C087_E365_4884_8D0A_E8F1DE6943C6" tpos="5" ea_localid="16" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="controlClass" isRoot="false" isLeaf="false" isAbstract="true" isActive="false"/>
+				<properties documentation="Gain (or attenuation) element." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="controlClass" isRoot="false" isLeaf="false" isAbstract="true" isActive="false"/>
 				<project version="3" phase="1.5" created="2011-09-14 15:34:53" modified="2022-08-02 15:48:35" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -1699,10 +1877,12 @@
 					<tag xmi:id="EAID_1ECB5550_86A2_4879_A592_267390603258" name="Title" value="Gain control (in dB)" modelElement="EAID_09263175_8528_4048_9EAD_9DD52A90AB92"/>
 					<tag xmi:id="EAID_6A8D4199_BE55_4b2b_956F_DFD4852E627D" name="TreeLevel" value="04" modelElement="EAID_09263175_8528_4048_9EAD_9DD52A90AB92"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={15DE173B-AD7A-4d23-8A35-822999C4F432}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=controlClass;@ENDSTEREO;$DES;$CLT={09263175-8528-4048-9EAD-9DD52A90AB92}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Actuators" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_82C06B33_25A7_42b7_9F93_7EC38C7A42D8" name="ClassID" scope="Public">
 						<initial body="1.1.1.5"/>
+						<documentation value="Number that uniquely identifies the class. Note that this differs from the object number, which identifies the instantiated object. This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
 						<model ea_localid="26" ea_guid="{82C06B33-25A7-42b7-9F93-7EC38C7A42D8}"/>
 						<properties type="OcaClassID" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -1717,6 +1897,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_41153E79_A643_4f34_A93D_A949A816638E" name="ClassVersion" scope="Public">
 						<initial body="3"/>
+						<documentation value="Identifies the interface version of the class. Any change to the class definition leads to a higher class version. This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
 						<model ea_localid="27" ea_guid="{41153E79-A643-4f34-A93D-A949A816638E}"/>
 						<properties type="OcaClassVersionNumber" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -1731,6 +1912,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_23F23035_722E_4a1a_8455_6B5DF8E874EA" name="Gain" scope="Public">
 						<initial/>
+						<documentation value="Gain in dB."/>
 						<model ea_localid="28" ea_guid="{23F23035-722E-4a1a-8455-6B5DF8E874EA}"/>
 						<properties type="OcaDB" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -1754,6 +1936,7 @@
 						<code/>
 						<style value="04m01 "/>
 						<styleex/>
+						<documentation value="Gets the value and limits of the &lt;b&gt;Gain &lt;/b&gt;property. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_18C3_4f40_BFF2_0E0CCEF65033" visibility="public">
@@ -1768,6 +1951,7 @@
 								<properties pos="0" type="OcaDB" const="false" ea_guid="{C1AAF208-31B5-4006-BCBF-460D6BAA3E0A}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the value of the Gain property if the method succeeds. "/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1775,13 +1959,17 @@
 								<properties pos="1" type="OcaDB" const="false" ea_guid="{A9F8F5D9-78C2-401e-B644-F0B8F8E9AAAB}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Optional output parameter that shall hold the minimum allowed value of the Gain property if the method is successful.. This parameter shall not be returned when the object has no such minimum. If this is the case, the maxGain parameter shall also not be returned. Therefore the output parameter count will either be 1 or 3."/>
 								<tags/>
+								<xrefs value="$XREFPROP=$XID={E5AFB837-EBD1-4885-ADA5-ADBF42923765}$XID;$NAM=Stereotypes$NAM;$TYP=parameter property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=optional;GUID={B6024398-F053-48bd-98A5-DD0555BBC9FD};@ENDSTEREO;$DES;$CLT={A9F8F5D9-78C2-401e-B644-F0B8F8E9AAAB}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 							</parameter>
 							<parameter xmi:idref="EAID_8FBEF098_9558_463b_A32D_7DF9F8E74471" visibility="public">
 								<properties pos="2" type="OcaDB" const="false" ea_guid="{8FBEF098-9558-463b-A32D-7DF9F8E74471}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Optional output parameter that shall hold the maximum allowed value of the Gain property when the method is successful. This parameter shall not be returned if the object has no such maximum.  If this is the case, the minGain parameter shall also not be returned. Therefore the output parameter count will either be 1 or 3."/>
 								<tags/>
+								<xrefs value="$XREFPROP=$XID={21E35D53-D5D9-4c43-8C2A-978A1F36A2D0}$XID;$NAM=Stereotypes$NAM;$TYP=parameter property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=optional;GUID={B6024398-F053-48bd-98A5-DD0555BBC9FD};@ENDSTEREO;$DES;$CLT={8FBEF098-9558-463b-A32D-7DF9F8E74471}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 							</parameter>
 						</parameters>
 						<xrefs/>
@@ -1795,6 +1983,7 @@
 						<code/>
 						<style value="04m02 "/>
 						<styleex/>
+						<documentation value="Sets the value of the &lt;b&gt;Gain &lt;/b&gt;property. "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_B172_4961_9BD0_EE91C76210A4" visibility="public">
@@ -1809,6 +1998,7 @@
 								<properties pos="0" type="OcaDB" const="false" ea_guid="{394BBD72-69D7-42c5-B188-762177BD33D7}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Value to which the gain property shall be set if the method succeeds"/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1822,7 +2012,7 @@
 			</element>
 			<element xmi:idref="EAID_D70484D6_9827_426c_8027_90A868014119" xmi:type="uml:Class" name="OcaMute" scope="public">
 				<model package="EAPK_9443C087_E365_4884_8D0A_E8F1DE6943C6" tpos="2" ea_localid="13" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="controlClass" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="Signal mute." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="controlClass" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project version="3" phase="1.5" created="2011-09-14 15:34:53" modified="2022-08-02 15:48:35" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -1832,10 +2022,12 @@
 					<tag xmi:id="EAID_2F189C0D_2195_4f3d_9074_029204A48807" name="Title" value="Simple mute - signal on/off." modelElement="EAID_D70484D6_9827_426c_8027_90A868014119"/>
 					<tag xmi:id="EAID_A12267EF_9CBD_4de2_B46F_01C3D3DB24DD" name="TreeLevel" value="04" modelElement="EAID_D70484D6_9827_426c_8027_90A868014119"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={6F4C8E65-5749-4229-A121-FB5FCE3A499D}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=controlClass;GUID={7836F006-04EF-4ee4-9510-08D546FDBEEA};@ENDSTEREO;$DES;$CLT={D70484D6-9827-426c-8027-90A868014119}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Actuators" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_0937279A_567C_4a60_BF41_C94D0660120D" name="ClassID" scope="Public">
 						<initial body="1.1.1.2"/>
+						<documentation value="Number that uniquely identifies the class. Note that this differs from the object number, which identifies the instantiated object. This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
 						<model ea_localid="15" ea_guid="{0937279A-567C-4a60-BF41-C94D0660120D}"/>
 						<properties type="OcaClassID" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -1850,6 +2042,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_B7820716_B59F_49d5_9E15_78B246A7064F" name="ClassVersion" scope="Public">
 						<initial body="3"/>
+						<documentation value="Identifies the interface version of the class. Any change to the class definition leads to a higher class version. This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
 						<model ea_localid="16" ea_guid="{B7820716-B59F-49d5-9E15-78B246A7064F}"/>
 						<properties type="OcaClassVersionNumber" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -1864,6 +2057,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_C29BA04B_FC16_4e16_B554_E57241DACE7E" name="State" scope="Public">
 						<initial body="Unmuted"/>
+						<documentation value="Current state of the mute."/>
 						<model ea_localid="17" ea_guid="{C29BA04B-FC16-4e16-B554-E57241DACE7E}"/>
 						<properties type="OcaMuteState" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -1887,6 +2081,7 @@
 						<code/>
 						<style value="04m01"/>
 						<styleex/>
+						<documentation value="Gets the current mute state (i.e. value of the &lt;b&gt;State &lt;/b&gt;property)."/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_BDB5_4bd0_A922_1A9E0298C76A" visibility="public">
@@ -1901,6 +2096,7 @@
 								<properties pos="0" type="OcaMuteState" const="false" ea_guid="{FCCB1BDF-D2B7-4914-9993-2051583C2CDA}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the mute state (i.e. the value of the State property) if the method succeeds."/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1916,6 +2112,7 @@
 						<code/>
 						<style value="04m02 "/>
 						<styleex/>
+						<documentation value="Sets the mute state (i.e. value of the State property). "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_7B9F_49b0_B4AA_32FFB2DF042D" visibility="public">
@@ -1930,6 +2127,7 @@
 								<properties pos="0" type="OcaMuteState" const="false" ea_guid="{C59C3208-DF13-4b55-B072-8F9C931A1A77}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Value to which the State property shall be set if the method succeeds"/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -1943,7 +2141,7 @@
 			</element>
 			<element xmi:idref="EAID_874E503B_3C16_44cd_8317_4187A2A38D1A" xmi:type="uml:Class" name="OcaSensor" scope="public">
 				<model package="EAPK_44F5AE21_B047_402b_969B_8B3C005A368C" tpos="13" ea_localid="51" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="abstract" isRoot="false" isLeaf="false" isAbstract="true" isActive="false"/>
+				<properties documentation="Abstract base class for all sensor classes. " isSpecification="false" sType="Class" nType="0" scope="public" stereotype="abstract" isRoot="false" isLeaf="false" isAbstract="true" isActive="false"/>
 				<project version="3" phase="1.5" created="2011-09-14 15:34:53" modified="2023-03-10 10:48:47" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -1953,10 +2151,12 @@
 					<tag xmi:id="EAID_4B4368A5_CA33_419d_BDDF_1E8F673BCF8E" name="Title" value="Abstract class from which all Sensors inherit" modelElement="EAID_874E503B_3C16_44cd_8317_4187A2A38D1A"/>
 					<tag xmi:id="EAID_5AA260FF_F6EA_475b_8717_145F75FD8ED6" name="TreeLevel" value="03" modelElement="EAID_874E503B_3C16_44cd_8317_4187A2A38D1A"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={ACC3E890-904C-48c0-BFAA-4FF0A279F134}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=abstract;GUID={5440DC5E-005F-4715-8426-0CABF983E4F3};@ENDSTEREO;@STEREO;Name=controlClass;GUID={7836F006-04EF-4ee4-9510-08D546FDBEEA};@ENDSTEREO;$DES;$CLT={874E503B-3C16-44cd-8317-4187A2A38D1A}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Sensors" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_37C02715_4F34_4702_B79B_2F0F34134F76" name="ClassID" scope="Public">
 						<initial body="1.1.2"/>
+						<documentation value="Number that uniquely identifies the class. Note that this differs from the object number, which identifies the instantiated object. This is a class property instead of an object property.  This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
 						<model ea_localid="162" ea_guid="{37C02715-4F34-4702-B79B-2F0F34134F76}"/>
 						<properties type="OcaClassID" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -1971,6 +2171,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_F54C339A_EC93_4d27_9532_5964F4CF6283" name="ClassVersion" scope="Public">
 						<initial body="3"/>
+						<documentation value="Identifies the interface version of the class. Any change to the class definition leads to a higher class version. This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
 						<model ea_localid="163" ea_guid="{F54C339A-EC93-4d27-9532-5964F4CF6283}"/>
 						<properties type="OcaClassVersionNumber" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -1985,6 +2186,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_CC8DC7A0_CC76_4939_8661_6CFCD13B581F" name="ReadingState" scope="Public">
 						<initial/>
+						<documentation value="Enum that describes whether current reading value is valid and if not, why not.  Readonly."/>
 						<model ea_localid="164" ea_guid="{CC8DC7A0-CC76-4939-8661-6CFCD13B581F}"/>
 						<properties type="OcaSensorReadingState" derived="0" collection="false" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -2008,6 +2210,7 @@
 						<code/>
 						<style value="03m01 "/>
 						<styleex/>
+						<documentation value="Gets the current reading state of the sensor.  "/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_C089_4c44_B2D8_EF9173C84A72" visibility="public">
@@ -2022,6 +2225,7 @@
 								<properties pos="0" type="OcaSensorReadingState" const="false" ea_guid="{B1F59F7E-F370-456e-8394-25834497F964}"/>
 								<style/>
 								<styleex/>
+								<documentation value="Output parameter that shall hold the value of the ReadingState property if the method succeeds&#xA;"/>
 								<tags/>
 								<xrefs/>
 							</parameter>
@@ -2050,7 +2254,7 @@
 			</element>
 			<element xmi:idref="EAID_5F5D44E3_E5D5_463d_9676_139B71D5453A" xmi:type="uml:Class" name="OcaIdentificationSensor" scope="public">
 				<model package="EAPK_44F5AE21_B047_402b_969B_8B3C005A368C" tpos="6" ea_localid="57" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="controlClass" isRoot="false" isLeaf="false" isAbstract="true" isActive="false"/>
+				<properties documentation="Sensor for device identification mechanism.  This sensor shall detect the actuation of some kind of control -- a pushbutton, for instance -- that the user depresses to signal a device identification event to the controller. " isSpecification="false" sType="Class" nType="0" scope="public" stereotype="controlClass" isRoot="false" isLeaf="false" isAbstract="true" isActive="false"/>
 				<project version="3" phase="1.5" created="2011-09-14 15:34:54" modified="2023-06-30 01:12:33" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2060,10 +2264,12 @@
 					<tag xmi:id="EAID_ABDBCC46_EA60_4310_AE38_8E8C4D4F6449" name="Title" value="Sensor that detects actuation of manual device ID functions" modelElement="EAID_5F5D44E3_E5D5_463d_9676_139B71D5453A"/>
 					<tag xmi:id="EAID_E50ADDAB_BB87_40ec_BBD9_C226C722B39B" name="TreeLevel" value="04" modelElement="EAID_5F5D44E3_E5D5_463d_9676_139B71D5453A"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={3B75E6BA-2EB0-4f7d-AF52-30F6436C5051}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=controlClass;@ENDSTEREO;$DES;$CLT={5F5D44E3-E5D5-463d-9676-139B71D5453A}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Sensors" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_60C26D14_A5E0_4a7e_9FC0_C1AEB4334999" name="ClassID" scope="Public">
 						<initial body="1.1.2.6"/>
+						<documentation value="Number that uniquely identifies the class. Note that this differs from the object number, which identifies the instantiated object. This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
 						<model ea_localid="180" ea_guid="{60C26D14-A5E0-4a7e-9FC0-C1AEB4334999}"/>
 						<properties type="OcaClassID" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2078,6 +2284,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_8D89AE0B_5902_4990_9D64_55581A68FA30" name="ClassVersion" scope="Public">
 						<initial body="3"/>
+						<documentation value="Identifies the interface version of the class. Any change to the class definition leads to a higher class version. This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
 						<model ea_localid="181" ea_guid="{8D89AE0B-5902-4990-9D64-55581A68FA30}"/>
 						<properties type="OcaClassVersionNumber" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2101,6 +2308,7 @@
 						<code/>
 						<style value="04e01 "/>
 						<styleex/>
+						<documentation value="Event that shall be raised whenever the Device identification control is activated.  No event data."/>
 						<tags/>
 						<parameters>
 							<parameter xmi:idref="EAID_RETURNID_CAFF_42dd_8364_670B52E93C67" visibility="public">
@@ -2120,6 +2328,7 @@
 								<xrefs/>
 							</parameter>
 						</parameters>
+						<xrefs value="$XREFPROP=$XID={E2F84A24-1DAF-41b0-B4AC-63C91752F2D7}$XID;$NAM=Stereotypes$NAM;$TYP=operation property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=event;GUID={4DD89A3C-B5F5-4c16-AE57-836D52384A43};@ENDSTEREO;$DES;$CLT={FF774705-CAFF-42dd-8364-670B52E93C67}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 					</operation>
 				</operations>
 				<links>
@@ -2128,7 +2337,7 @@
 			</element>
 			<element xmi:idref="EAID_3CFE9AFA_A625_4ef2_A2B4_F3212BEA8838" xmi:type="uml:Class" name="OcaBoolean" scope="public">
 				<model package="EAPK_5779EC2F_AD30_45ed_9A71_EC537B81DACD" tpos="3" ea_localid="116" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="primitive" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="True or false" isSpecification="false" sType="Class" nType="0" scope="public" stereotype="primitive" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project author="Jeff Berryman" version="2.0" phase="1.5" created="2011-10-13 21:12:25" modified="2021-09-22 14:54:41" complexity="1" status="Proposed"/>
 				<code gentype="Java"/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2136,11 +2345,12 @@
 				<tags>
 					<tag xmi:id="EAID_169E7C50_40E8_4d3e_BCB7_0AC9ECD36914" name="Title" value="Boolean" modelElement="EAID_3CFE9AFA_A625_4ef2_A2B4_F3212BEA8838"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={3B0B1571-A0E0-4bab-8E80-33DE18617023}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=primitive;@ENDSTEREO;$DES;$CLT={3CFE9AFA-A625-4ef2-A2B4-F3212BEA8838}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Primitive Datatypes"/>
 			</element>
 			<element xmi:idref="EAID_9F3472ED_1A4B_41e6_B9F9_A0D6AFBA43A1" xmi:type="uml:Class" name="OcaFloat32" scope="public">
 				<model package="EAPK_5779EC2F_AD30_45ed_9A71_EC537B81DACD" tpos="12" ea_localid="125" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="primitive" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="IEEE 32 bit floating-point number" isSpecification="false" sType="Class" nType="0" scope="public" stereotype="primitive" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project author="Jeff Berryman" version="2.0" phase="1.5" created="2011-10-13 21:12:25" modified="2023-03-17 11:13:28" complexity="1" status="Proposed"/>
 				<code gentype="Java"/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2148,6 +2358,7 @@
 				<tags>
 					<tag xmi:id="EAID_8FEDF422_7CD9_4837_996C_C6B423A51072" name="Title" value="32-bit floating-point number" modelElement="EAID_9F3472ED_1A4B_41e6_B9F9_A0D6AFBA43A1"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={6966A42F-648C-45c5-B56A-64286A7BEE6C}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=primitive;@ENDSTEREO;$DES;$CLT={9F3472ED-1A4B-41e6-B9F9-A0D6AFBA43A1}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Primitive Datatypes"/>
 				<links>
 					<Generalization xmi:id="EAID_3A0CE66B_D557_4988_9007_8F0594376823" start="EAID_72C8786D_A993_4b95_86CD_A790D775AD7B" end="EAID_9F3472ED_1A4B_41e6_B9F9_A0D6AFBA43A1"/>
@@ -2160,7 +2371,7 @@
 			</element>
 			<element xmi:idref="EAID_6D01F6AF_B099_49fa_A22A_70C79B7D78F6" xmi:type="uml:Class" name="OcaUint8" scope="public">
 				<model package="EAPK_5779EC2F_AD30_45ed_9A71_EC537B81DACD" tpos="8" ea_localid="121" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="primitive" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="8 bit unsigned integer" isSpecification="false" sType="Class" nType="0" scope="public" stereotype="primitive" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project author="Jeff Berryman" version="2.0" phase="1.5" created="2011-09-25 16:10:23" modified="2022-08-04 17:16:35" complexity="1" status="Proposed"/>
 				<code gentype="Java"/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2168,6 +2379,7 @@
 				<tags>
 					<tag xmi:id="EAID_9D125825_9495_4754_A5B6_8A228C40D123" name="Title" value="Unsigned 8-bit integer" modelElement="EAID_6D01F6AF_B099_49fa_A22A_70C79B7D78F6"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={2B15885E-CD49-400f-A791-CAC7B562CFE5}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=primitive;@ENDSTEREO;$DES;$CLT={6D01F6AF-B099-49fa-A22A-70C79B7D78F6}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Primitive Datatypes"/>
 				<links>
 					<Generalization xmi:id="EAID_663847CD_865B_4b96_A634_DF6581F091B0" start="EAID_BAAD24DE_9D2D_45e6_A2F8_79AAAF653D94" end="EAID_6D01F6AF_B099_49fa_A22A_70C79B7D78F6"/>
@@ -2175,7 +2387,7 @@
 			</element>
 			<element xmi:idref="EAID_B0B923AD_0CB1_4d2d_AC0F_62F9C0F06583" xmi:type="uml:Class" name="OcaUint16" scope="public">
 				<model package="EAPK_5779EC2F_AD30_45ed_9A71_EC537B81DACD" tpos="9" ea_localid="122" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="primitive" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="16  bit unsigned integer" isSpecification="false" sType="Class" nType="0" scope="public" stereotype="primitive" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project author="Jeff Berryman" version="2.0" phase="1.5" created="2011-09-25 16:10:23" modified="2023-02-03 11:25:34" complexity="1" status="Proposed"/>
 				<code gentype="Java"/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2183,6 +2395,7 @@
 				<tags>
 					<tag xmi:id="EAID_53DAB9EB_D4D1_4229_8F48_6731B61022A8" name="Title" value="Unsigned 16-bit integer" modelElement="EAID_B0B923AD_0CB1_4d2d_AC0F_62F9C0F06583"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={6C06D148-A2EA-4d07-AD11-B2DD0991F1EA}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=primitive;@ENDSTEREO;$DES;$CLT={B0B923AD-0CB1-4d2d-AC0F-62F9C0F06583}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Primitive Datatypes"/>
 				<links>
 					<Generalization xmi:id="EAID_1605CD74_C0E7_4830_B202_9F107F659A13" start="EAID_006C8F32_0F62_497b_A15A_352BEDE29615" end="EAID_B0B923AD_0CB1_4d2d_AC0F_62F9C0F06583"/>
@@ -2197,7 +2410,7 @@
 			</element>
 			<element xmi:idref="EAID_7560AA41_CCF2_4d6a_BD52_4EE8CF68701A" xmi:type="uml:Class" name="OcaUint32" scope="public">
 				<model package="EAPK_5779EC2F_AD30_45ed_9A71_EC537B81DACD" tpos="10" ea_localid="123" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="primitive" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="32 bit unsigned integer" isSpecification="false" sType="Class" nType="0" scope="public" stereotype="primitive" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project author="Jeff Berryman" version="2.0" phase="1.5" created="2011-09-25 16:10:23" modified="2023-02-03 11:25:34" complexity="1" status="Proposed"/>
 				<code gentype="Java"/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2205,6 +2418,7 @@
 				<tags>
 					<tag xmi:id="EAID_34412C43_CAB5_4c03_85F3_07A45D2FC2D6" name="Title" value="Unsigned 32-bit integer" modelElement="EAID_7560AA41_CCF2_4d6a_BD52_4EE8CF68701A"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={D84B54CA-C19B-44da-93FD-CFCD60627E0A}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=primitive;@ENDSTEREO;$DES;$CLT={7560AA41-CCF2-4d6a-BD52-4EE8CF68701A}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Primitive Datatypes"/>
 				<links>
 					<Generalization xmi:id="EAID_02E37830_76D7_4f46_9094_5889F70275EF" start="EAID_4BE4A9D5_4CD1_41c2_B89E_BBF4D5873257" end="EAID_7560AA41_CCF2_4d6a_BD52_4EE8CF68701A"/>
@@ -2221,7 +2435,7 @@
 			</element>
 			<element xmi:idref="EAID_A4C891FB_2443_45ac_9086_2974EDC8004A" xmi:type="uml:Class" name="OcaString" scope="public">
 				<model package="EAPK_5779EC2F_AD30_45ed_9A71_EC537B81DACD" tpos="14" ea_localid="127" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="primitive" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="Text string, UTF-8 encoded." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="primitive" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project author="Jeff Berryman" version="2.0" phase="1.5" created="2011-09-25 16:10:23" modified="2023-02-17 08:17:21" complexity="1" status="Proposed"/>
 				<code gentype="Java"/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2229,6 +2443,7 @@
 				<tags>
 					<tag xmi:id="EAID_96418F8A_BF2A_46a5_9BBB_35012126C505" name="Title" value="Variable-length UTF-8 string" modelElement="EAID_A4C891FB_2443_45ac_9086_2974EDC8004A"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={18DB9E38-0BFA-4363-9ADA-8D366F4307B9}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=primitive;@ENDSTEREO;$DES;$CLT={A4C891FB-2443-45ac-9086-2974EDC8004A}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Primitive Datatypes"/>
 				<links>
 					<Generalization xmi:id="EAID_52C9E94E_81A1_4d88_816F_1BC5AAFAD75B" start="EAID_DBCE5D1B_2672_4035_8D71_C6EC1CF62216" end="EAID_A4C891FB_2443_45ac_9086_2974EDC8004A"/>
@@ -2244,7 +2459,7 @@
 			</element>
 			<element xmi:idref="EAID_12998CD7_5C8D_40f8_89F1_6E611C8C7084" xmi:type="uml:Class" name="OcaDB" scope="public">
 				<model package="EAPK_1F9B6733_6C84_47d2_8DF4_2EE9081C911B" tpos="5" ea_localid="2118" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="typedef" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="A ratio expressed in dB.  Typically used for gain settings." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="typedef" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project created="2011-09-14 15:34:56" modified="2022-08-05 17:10:29" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2253,6 +2468,7 @@
 					<tag xmi:id="EAID_E6F988FA_52F6_4b83_8C43_F83A06840600" name="persistence" value="transient" modelElement="EAID_12998CD7_5C8D_40f8_89F1_6E611C8C7084"/>
 					<tag xmi:id="EAID_00108DA9_626B_4d91_9017_0F78CCBC637E" name="Title" value="Decibel (dB) datatype for expressing gains and relative levels" modelElement="EAID_12998CD7_5C8D_40f8_89F1_6E611C8C7084"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={02E8C384-475B-489c-9BC7-A5E22C5B9729}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=typedef;@ENDSTEREO;$DES;$CLT={12998CD7-5C8D-40f8-89F1-6E611C8C7084}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Signal Description Datatypes" persistence="Transient"/>
 				<links>
 					<Generalization xmi:id="EAID_990B6020_F0CD_4e80_9431_91269C71FD63" start="EAID_12998CD7_5C8D_40f8_89F1_6E611C8C7084" end="EAID_9F3472ED_1A4B_41e6_B9F9_A0D6AFBA43A1"/>
@@ -2264,7 +2480,7 @@
 			</element>
 			<element xmi:idref="EAID_51ED815C_6246_4c45_888E_3294E4B16EE9" xmi:type="uml:Class" name="OcaONo" scope="public">
 				<model package="EAPK_91C2B5D9_E3B7_4630_A11C_5CAA16524A5F" tpos="14" ea_localid="522" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="typedef" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="Object number of an OCA object." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="typedef" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project created="2011-09-14 15:34:56" modified="2023-03-17 11:12:03" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2273,6 +2489,7 @@
 					<tag xmi:id="EAID_BE723737_03B3_48e5_8352_3CED66DD73C0" name="persistence" value="transient" modelElement="EAID_51ED815C_6246_4c45_888E_3294E4B16EE9"/>
 					<tag xmi:id="EAID_846A7A52_62C5_42cd_B7E7_E1B45A6ABC49" name="Title" value="Object Number of an OCA object.  Unique within the device." modelElement="EAID_51ED815C_6246_4c45_888E_3294E4B16EE9"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={05165AF0-6FCB-4fcb-A463-8B6F17E98545}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=typedef;GUID={001BB324-AD34-402a-8C03-E0818DFF6A78};@ENDSTEREO;$DES;$CLT={51ED815C-6246-4c45-888E-3294E4B16EE9}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Object Management Datatypes" persistence="Transient"/>
 				<links>
 					<Generalization xmi:id="EAID_854A0372_7001_457b_8856_7A893D4DB7A9" start="EAID_51ED815C_6246_4c45_888E_3294E4B16EE9" end="EAID_7560AA41_CCF2_4d6a_BD52_4EE8CF68701A"/>
@@ -2280,7 +2497,7 @@
 			</element>
 			<element xmi:idref="EAID_9753EF56_E385_41b4_BF62_84AA81E5C14D" xmi:type="uml:Class" name="OcaClassVersionNumber" scope="public">
 				<model package="EAPK_061854F1_F3AB_48cf_95FD_D87F2D3F110D" tpos="6" ea_localid="516" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="typedef" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="Class version number, ascending from &lt;b&gt;1.&lt;/b&gt;" isSpecification="false" sType="Class" nType="0" scope="public" stereotype="typedef" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project created="2011-09-14 15:34:56" modified="2023-03-17 11:12:03" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2289,6 +2506,7 @@
 					<tag xmi:id="EAID_9D443955_FA37_4e4f_8E16_A01F3834594E" name="persistence" value="transient" modelElement="EAID_9753EF56_E385_41b4_BF62_84AA81E5C14D"/>
 					<tag xmi:id="EAID_B0F8F636_E819_451a_B61E_411A57D60A0C" name="Title" value="Version number of an OCA class" modelElement="EAID_9753EF56_E385_41b4_BF62_84AA81E5C14D"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={47C0497E-319D-49ac-9F8C-4C5508AD882D}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=typedef;GUID={001BB324-AD34-402a-8C03-E0818DFF6A78};@ENDSTEREO;$DES;$CLT={9753EF56-E385-41b4-BF62-84AA81E5C14D}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Class Management Datatypes" persistence="Transient"/>
 				<links>
 					<Generalization xmi:id="EAID_B2A38271_10AD_40a0_95CD_2222DACDEB9B" start="EAID_9753EF56_E385_41b4_BF62_84AA81E5C14D" end="EAID_B0B923AD_0CB1_4d2d_AC0F_62F9C0F06583"/>
@@ -2296,7 +2514,7 @@
 			</element>
 			<element xmi:idref="EAID_5BD36D29_02EF_4468_BB2D_B03399EA1425" xmi:type="uml:Class" name="OcaMuteState" scope="public">
 				<model package="EAPK_D61530C7_F63B_4bd8_A0C0_9EACBEED80E2" tpos="14" ea_localid="2119" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="enum" isRoot="true" isLeaf="true" isAbstract="false" isActive="false"/>
+				<properties documentation="Mute states" isSpecification="false" sType="Class" nType="0" scope="public" stereotype="enum" isRoot="true" isLeaf="true" isAbstract="false" isActive="false"/>
 				<project created="2011-09-14 15:34:57" modified="2022-08-05 18:48:30" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2305,6 +2523,7 @@
 					<tag xmi:id="EAID_32292051_7B32_4d2e_8AA9_F84B94F3B7A2" name="persistence" value="transient" modelElement="EAID_5BD36D29_02EF_4468_BB2D_B03399EA1425"/>
 					<tag xmi:id="EAID_62EC91C4_6BF4_4de9_A869_A52CB9559C47" name="Title" value="Enum - muted / unmuted" modelElement="EAID_5BD36D29_02EF_4468_BB2D_B03399EA1425"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={7EF2276D-A883-4c6b-A3DD-39841A053EBB}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=enum;GUID={63A9DBDB-4A01-4d80-918A-F70F3B5BD705};@ENDSTEREO;$DES;$CLT={5BD36D29-02EF-4468-BB2D-B03399EA1425}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Signal Processing Datatypes" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_5E849495_FAB5_43e5_BDC0_943D7DD1BBC7" name="Muted" scope="Public">
@@ -2341,7 +2560,7 @@
 			</element>
 			<element xmi:idref="EAID_2A8FB487_0BE8_4194_AA2B_26FD55CD0AA6" xmi:type="uml:Class" name="OcaLockState" scope="public">
 				<model package="EAPK_1270C8CF_528B_471c_AEED_047E3D47DCED" tpos="26" ea_localid="1269" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="enum" isRoot="true" isLeaf="true" isAbstract="false" isActive="false"/>
+				<properties documentation="Lock state of object" isSpecification="false" sType="Class" nType="0" scope="public" stereotype="enum" isRoot="true" isLeaf="true" isAbstract="false" isActive="false"/>
 				<project created="2011-09-14 15:34:56" modified="2023-06-02 16:41:59" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2350,10 +2569,12 @@
 					<tag xmi:id="EAID_112408E2_0938_4365_801B_88DC4B41E32A" name="persistence" value="transient" modelElement="EAID_2A8FB487_0BE8_4194_AA2B_26FD55CD0AA6"/>
 					<tag xmi:id="EAID_692A0137_2DF2_450a_8AF2_626E1F9C659E" name="Title" value="Standard status return values for Get/Set methods" modelElement="EAID_2A8FB487_0BE8_4194_AA2B_26FD55CD0AA6"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={C42E7B88-145C-4227-9AA1-653250059C65}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=enum;GUID={63A9DBDB-4A01-4d80-918A-F70F3B5BD705};@ENDSTEREO;$DES;$CLT={2A8FB487-0BE8-4194-AA2B-26FD55CD0AA6}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Operating Datatypes" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_A6BA2077_1108_49de_82BE_D239AA5BC362" name="NoLock" scope="Public">
 						<initial body="0"/>
+						<documentation value="Not locked"/>
 						<model ea_localid="2747" ea_guid="{A6BA2077-1108-49de-82BE-D239AA5BC362}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -2368,6 +2589,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_9F62E62D_A04B_49b5_8CA7_4D2C5617C176" name="LockNoWrite" scope="Public">
 						<initial body="1"/>
+						<documentation value="Others may read but not write.  Lockholder may write."/>
 						<model ea_localid="2748" ea_guid="{9F62E62D-A04B-49b5-8CA7-4D2C5617C176}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -2382,6 +2604,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_589CD5B1_751D_4347_A7F0_E0B8746F7231" name="LockNoReadWrite" scope="Public">
 						<initial body="2"/>
+						<documentation value="No one except lockholder may read or write."/>
 						<model ea_localid="2749" ea_guid="{589CD5B1-751D-4347-A7F0-E0B8746F7231}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -2398,7 +2621,7 @@
 			</element>
 			<element xmi:idref="EAID_4E03E849_BB11_4497_AC86_8B126CE0502F" xmi:type="uml:Class" name="OcaSensorReadingState" scope="public">
 				<model package="EAPK_494CC706_C83D_4806_A12E_E42BF61C9D4B" tpos="33" ea_localid="2109" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="enum" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="Enum that describes whether an &lt;b&gt;OcaSensor&lt;/b&gt;'s current reading value can be trusted, and if not, why not." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="enum" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project created="2011-09-14 15:34:56" modified="2022-08-05 18:45:29" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2407,10 +2630,12 @@
 					<tag xmi:id="EAID_ABEBB58F_06CA_4fb7_A13D_A75506EFDE7B" name="persistence" value="transient" modelElement="EAID_4E03E849_BB11_4497_AC86_8B126CE0502F"/>
 					<tag xmi:id="EAID_B44D51A0_4E93_49e4_8FBC_0BB1A088584E" name="Title" value="Enum - states of a sensor reading" modelElement="EAID_4E03E849_BB11_4497_AC86_8B126CE0502F"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={971D8CA4-1EFB-43aa-9C8A-9FBCD5FA1E05}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=enum;GUID={63A9DBDB-4A01-4d80-918A-F70F3B5BD705};@ENDSTEREO;$DES;$CLT={4E03E849-BB11-4497-AC86-8B126CE0502F}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Sensor Datatypes" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_01654A9D_C3AA_402a_97F0_C9B8CE0D13E4" name="Unknown" scope="Public">
 						<initial body="0"/>
+						<documentation value="Cannot determine validity of reading, or this feature is not implemented."/>
 						<model ea_localid="4420" ea_guid="{01654A9D-C3AA-402a-97F0-C9B8CE0D13E4}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2425,6 +2650,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_6CF1F768_FFDF_4c3a_9734_2EC430283F7B" name="Valid" scope="Public">
 						<initial body="1"/>
+						<documentation value="Sensor reading is valid."/>
 						<model ea_localid="4421" ea_guid="{6CF1F768-FFDF-4c3a-9734-2EC430283F7B}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2439,6 +2665,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_BEAC3C46_F82E_4c3f_AEDD_5E0828B639F9" name="Underrange" scope="Public">
 						<initial body="2"/>
+						<documentation value="Sensor is underrange, reading is not valid."/>
 						<model ea_localid="4422" ea_guid="{BEAC3C46-F82E-4c3f-AEDD-5E0828B639F9}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2453,6 +2680,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_7981596C_F9C7_4467_86B1_93A29343EF1D" name="Overrange" scope="Public">
 						<initial body="3"/>
+						<documentation value="Sensor is overrange, reading is not valid."/>
 						<model ea_localid="4423" ea_guid="{7981596C-F9C7-4467-86B1-93A29343EF1D}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2467,6 +2695,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_22748F0F_E8FD_4000_A158_159F4C9194A0" name="Error" scope="Public">
 						<initial body="4"/>
+						<documentation value="Sensor is in an error state, reading is not valid."/>
 						<model ea_localid="4424" ea_guid="{22748F0F-E8FD-4000-A158-159F4C9194A0}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2483,7 +2712,7 @@
 			</element>
 			<element xmi:idref="EAID_18640C31_B323_4866_8D31_86EE7281633D" xmi:type="uml:Class" name="OcaPropertyChangeType" scope="public">
 				<model package="EAPK_09836088_550D_48a2_82E9_2654A7DFBCFC" tpos="1" ea_localid="549" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="enum" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="Enum describing property change type." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="enum" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project author="Jeff Berryman" version="1.0" phase="1.0" created="2012-01-31 11:58:24" modified="2021-09-23 16:12:28" complexity="1" status="Proposed"/>
 				<code gentype="Java"/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2491,10 +2720,12 @@
 				<tags>
 					<tag xmi:id="EAID_E2833607_6DCF_4a55_8691_31477F74CB29" name="Title" value="Enum describing how a property has changed" modelElement="EAID_18640C31_B323_4866_8D31_86EE7281633D"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={A3B71950-5167-482a-A683-03C3ABF1482B}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=enum;GUID={63A9DBDB-4A01-4d80-918A-F70F3B5BD705};@ENDSTEREO;$DES;$CLT={18640C31-B323-4866-8D31-86EE7281633D}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="PropertyChanged Event Datatypes"/>
 				<attributes>
 					<attribute xmi:idref="EAID_F2EB1EA8_A2C9_4a09_AE2F_ECFA6C7894B5" name="CurrentChanged" scope="Public">
 						<initial body="1"/>
+						<documentation value="Current value has changed."/>
 						<model ea_localid="1304" ea_guid="{F2EB1EA8-A2C9-4a09-AE2F-ECFA6C7894B5}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2509,6 +2740,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_438D67BA_885D_4590_B99F_B47CB6F56971" name="MinChanged" scope="Public">
 						<initial body="2"/>
+						<documentation value="Minimum value has changed. Note that datatypes of min and max may not be the same as the datatype of the current value. "/>
 						<model ea_localid="1305" ea_guid="{438D67BA-885D-4590-B99F-B47CB6F56971}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2523,6 +2755,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_2F9BBDE5_74DA_46d7_85D7_75EB4D4D79E4" name="MaxChanged" scope="Public">
 						<initial body="3"/>
+						<documentation value="Maximum value has changed. Note that datatypes of min and max may not be the same as the datatype of the current value."/>
 						<model ea_localid="1306" ea_guid="{2F9BBDE5-74DA-46d7-85D7-75EB4D4D79E4}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2537,6 +2770,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_3F2AFC83_32F3_4f3e_A0C2_B57FF77F3E0F" name="ItemAdded" scope="Public">
 						<initial body="4"/>
+						<documentation value="One or more items of a list, map, or multimap property have been added.  &lt;b&gt;PropertyValue &lt;/b&gt;field of event data contains the entire property value."/>
 						<model ea_localid="1307" ea_guid="{3F2AFC83-32F3-4f3e-A0C2-B57FF77F3E0F}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2551,6 +2785,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_F775C725_9988_49d9_8118_BFB7509D9B6A" name="ItemChanged" scope="Public">
 						<initial body="5"/>
+						<documentation value="One or more items of a list, map, or multimap property have been changed.  &lt;b&gt;PropertyValue &lt;/b&gt;field of event data contains the entire property value."/>
 						<model ea_localid="1308" ea_guid="{F775C725-9988-49d9-8118-BFB7509D9B6A}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2565,6 +2800,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_F8082F57_8130_4b45_8B85_36F1512292F5" name="ItemDeleted" scope="Public">
 						<initial body="6"/>
+						<documentation value="One or more items of a list, map, or multimap property have been deleted.  &lt;b&gt;PropertyValue &lt;/b&gt;field of event data contains the entire property value."/>
 						<model ea_localid="1309" ea_guid="{F8082F57-8130-4b45-8B85-36F1512292F5}"/>
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2584,7 +2820,7 @@
 			</element>
 			<element xmi:idref="EAID_2B30634D_DD2E_403c_A273_40AE837AB997" xmi:type="uml:Class" name="OcaDeviceState" scope="public">
 				<model package="EAPK_D09CB4F9_4E19_4279_B547_EF0FA1796D95" tpos="3" ea_localid="530" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="bitset" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="Bitset defining bit flags that indicate the device states AES70 devices can be in. The state is returned by the device's Device Manager on request.  Any combination of the flags may be returned, unless specified otherwise for the specific flag.  The value 0x0000 indicates the device is fully operational." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="bitset" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project created="2011-09-14 15:34:56" modified="2023-02-03 11:25:34" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2593,10 +2829,12 @@
 					<tag xmi:id="EAID_3DDBE2FA_C034_4c94_85A4_1C8D9B836246" name="persistence" value="transient" modelElement="EAID_2B30634D_DD2E_403c_A273_40AE837AB997"/>
 					<tag xmi:id="EAID_90037066_2BE8_49e6_817E_26513A38D7CD" name="Title" value="Enum of overall device states" modelElement="EAID_2B30634D_DD2E_403c_A273_40AE837AB997"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={C9125514-962B-4151-9816-A4BC0406D2FF}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=bitset;GUID={C1D8F6AD-9C7A-4e85-9E6A-73B67C29ADA4};@ENDSTEREO;@STEREO;Name=deprecated;GUID={62283F48-4820-40a6-A1BE-3A984789221D};@ENDSTEREO;$DES;$CLT={2B30634D-DD2E-403c-A273-40AE837AB997}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Deprecated Management Datatypes" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_A5D004A9_502D_4be0_AEFD_E710E89A8C37" name="Operational" scope="Public">
 						<initial body="1"/>
+						<documentation value="The device is operational. This state 'logically follows' from the fact that the 'Initializing' and 'Updating' flags are not set (since this is not a bit flag itself)."/>
 						<model ea_localid="1244" ea_guid="{A5D004A9-502D-4be0-AEFD-E710E89A8C37}"/>
 						<properties type="OcaDeviceState" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2611,6 +2849,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_079203E4_7AEF_45ad_915B_C2AFDD95AD37" name="Disabled" scope="Public">
 						<initial body="2"/>
+						<documentation value="The device is disabled."/>
 						<model ea_localid="1245" ea_guid="{079203E4-7AEF-45ad-915B-C2AFDD95AD37}"/>
 						<properties type="OcaDeviceState" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2625,6 +2864,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_5A1D3636_C1C7_4f02_8BFA_083EEB13D063" name="Error" scope="Public">
 						<initial body="4"/>
+						<documentation value="The device is in an error state."/>
 						<model ea_localid="1246" ea_guid="{5A1D3636-C1C7-4f02-8BFA-083EEB13D063}"/>
 						<properties type="OcaDeviceState" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2639,6 +2879,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_6B5D6B01_68A5_40aa_A1D8_FADD5F4139E4" name="Initializing" scope="Public">
 						<initial body="8"/>
+						<documentation value="The device is initializing. This bit flag cannot be combined with the 'Updating' flag."/>
 						<model ea_localid="1247" ea_guid="{6B5D6B01-68A5-40aa-A1D8-FADD5F4139E4}"/>
 						<properties type="OcaDeviceState" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2653,6 +2894,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_4B9ECD99_097D_487a_B14B_A83F6B4F6266" name="Updating" scope="Public">
 						<initial body="16"/>
+						<documentation value="The device is upgrading firmware. This flag cannot be combined with the 'Initializing' flag."/>
 						<model ea_localid="1248" ea_guid="{4B9ECD99-097D-487a-B14B-A83F6B4F6266}"/>
 						<properties type="OcaDeviceState" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
 						<coords ordered="0" scale="0"/>
@@ -2672,7 +2914,7 @@
 			</element>
 			<element xmi:idref="EAID_C42992BD_4558_44d5_AF52_FC6BB25CB9CA" xmi:type="uml:Class" name="OcaPort" scope="public">
 				<model package="EAPK_2357A3D5_F1F9_41d7_A279_F881697A1D82" tpos="3" ea_localid="2134" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="struct" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="Representation of an OCA (input or output) port that is used in the signal path representation of an OCA device." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="struct" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project created="2011-09-14 15:34:56" modified="2022-04-15 16:45:05" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2681,10 +2923,12 @@
 					<tag xmi:id="EAID_85213D31_14A2_413c_BF4D_4E501E00DADB" name="persistence" value="transient" modelElement="EAID_C42992BD_4558_44d5_AF52_FC6BB25CB9CA"/>
 					<tag xmi:id="EAID_902221B5_1AE0_4800_A3FD_5CFBAD39E9FD" name="Title" value="Descriptor of particular port in particular object" modelElement="EAID_C42992BD_4558_44d5_AF52_FC6BB25CB9CA"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={279C6BA8-B9F1-4d59-B44F-B3C4B66DD7CA}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=struct;GUID={3DDFC9E2-B77E-48ca-838C-D73A95D0F0F5};@ENDSTEREO;$DES;$CLT={C42992BD-4558-44d5-AF52-FC6BB25CB9CA}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Port Datatypes" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_6D3051A4_8933_4e01_BA9F_0F5BB3107597" name="Owner" scope="Public">
 						<initial/>
+						<documentation value="Object number of the object that owns the port. "/>
 						<model ea_localid="4455" ea_guid="{6D3051A4-8933-4e01-BA9F-0F5BB3107597}"/>
 						<properties type="OcaONo" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -2699,6 +2943,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_074A670B_5CC8_4dba_865D_C6A189778A1A" name="ID" scope="Public">
 						<initial/>
+						<documentation value="ID of the port. "/>
 						<model ea_localid="4456" ea_guid="{074A670B-5CC8-4dba-865D-C6A189778A1A}"/>
 						<properties type="OcaPortID" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -2713,6 +2958,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_AC7B22AC_1042_4b88_BAFC_A822A9034F8C" name="Role" scope="Public">
 						<initial/>
+						<documentation value="Role of the port in the containing object.   Values beginning with &quot;oca&quot; in any character case are reserved for AES use."/>
 						<model ea_localid="4457" ea_guid="{AC7B22AC-1042-4b88-BAFC-A822A9034F8C}"/>
 						<properties type="OcaString" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -2729,7 +2975,7 @@
 			</element>
 			<element xmi:idref="EAID_4FAC767C_08B7_4088_A91A_FDA436BE9D3B" xmi:type="uml:Class" name="OcaPortID" scope="public">
 				<model package="EAPK_2357A3D5_F1F9_41d7_A279_F881697A1D82" tpos="1" ea_localid="2133" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="struct" isRoot="true" isLeaf="true" isAbstract="false" isActive="false"/>
+				<properties documentation="Unique identifier of input or output Port within a given Worker or Block class.  Port numbers are ordinals starting at 1, and there are separate numbering spaces for input and output Ports." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="struct" isRoot="true" isLeaf="true" isAbstract="false" isActive="false"/>
 				<project created="2011-09-14 15:34:56" modified="2022-10-07 15:14:03" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2738,10 +2984,12 @@
 					<tag xmi:id="EAID_85213D31_14A2_413c_8048_3666BF496084" name="persistence" value="transient" modelElement="EAID_4FAC767C_08B7_4088_A91A_FDA436BE9D3B"/>
 					<tag xmi:id="EAID_AF7ED8E8_2078_4c96_80D3_DD49BAE35AD4" name="Title" value="Identifier of OCA port - mode and index" modelElement="EAID_4FAC767C_08B7_4088_A91A_FDA436BE9D3B"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={1D8CA1BB-5A47-4170-9F43-CE50EC6649E0}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=struct;GUID={3DDFC9E2-B77E-48ca-838C-D73A95D0F0F5};@ENDSTEREO;$DES;$CLT={4FAC767C-08B7-4088-A91A-FDA436BE9D3B}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Port Datatypes" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_6E637162_BBDF_4feb_B4E7_613264F1E20F" name="Direction" scope="Public">
 						<initial/>
+						<documentation value="Indicates whether the port is for input or output.&#xA;Before OCA 1.5, was named &lt;b&gt;Mode&lt;/b&gt;, with (now-renamed) datatype &lt;b&gt;OcaPortMode.&lt;/b&gt;"/>
 						<model ea_localid="4453" ea_guid="{6E637162-BBDF-4feb-B4E7-613264F1E20F}"/>
 						<properties type="OcaIODirection" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -2756,6 +3004,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_3C0F13EA_BE34_4d1e_9908_54906D0F1DB3" name="Index" scope="Public">
 						<initial/>
+						<documentation value="Index of port within given input or output set of specified object."/>
 						<model ea_localid="4454" ea_guid="{3C0F13EA-BE34-4d1e-9908-54906D0F1DB3}"/>
 						<properties type="OcaUint16" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -2775,7 +3024,7 @@
 				<templateParameters>
 					<parameter name="DT" xmi:idref="EAID_79E7D0E6_F2EE_4326_B916_03229D82C0DA" type="datatype"/>
 				</templateParameters>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="struct" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="Template class that defines the event data parameter for events that return property values, such as the &lt;b&gt;PropertyChanged &lt;/b&gt;event defined in &lt;b&gt;OcaRoot&lt;/b&gt;, and the &lt;b&gt;PeriodicObservation&lt;/b&gt; event define in &lt;b&gt;OcaNumericObserver.&lt;/b&gt; The template parameter is the datatype of the affected property. " isSpecification="false" sType="Class" nType="0" scope="public" stereotype="struct" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project created="2011-09-14 15:34:56" modified="2023-03-17 11:42:04" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2784,10 +3033,12 @@
 					<tag xmi:id="EAID_B4348AB7_4DF3_46ad_AADC_044A3B091482" name="persistence" value="transient" modelElement="EAID_D69DD2EE_2576_494e_8A9F_21D453A95A11"/>
 					<tag xmi:id="EAID_CF7A6117_6900_4f31_B3F4_831B6B3766CD" name="Title" value="Event data for property-changed event" modelElement="EAID_D69DD2EE_2576_494e_8A9F_21D453A95A11"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={B55A1AC7-15BE-47c2-9343-E49CB3112C35}$XID;$NAM=OwnedMembers$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$BEH={79E7D0E6-F2EE-4326-B916-03229D82C0DA}$BEH;$PAR=0$PAR;$DES=@ELEMENT;GUID={79E7D0E6-F2EE-4326-B916-03229D82C0DA};Name=DT;Type=ClassifierTemplateParameter;ParameteredElementType=datatype;Pos=0;@ENDELEMENT;$DES;$CLT={D69DD2EE-2576-494e-8A9F-21D453A95A11}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;$XREFPROP=$XID={84CD72A9-72D4-443f-B5D9-500CF99D1BE0}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=struct;GUID={3DDFC9E2-B77E-48ca-838C-D73A95D0F0F5};@ENDSTEREO;@STEREO;Name=deprecated;GUID={62283F48-4820-40a6-A1BE-3A984789221D};@ENDSTEREO;$DES;$CLT={D69DD2EE-2576-494e-8A9F-21D453A95A11}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="PropertyChanged Event Datatypes" persistence="Transient"/>
 				<attributes>
 					<attribute xmi:idref="EAID_25A22E68_1973_4540_822C_C1F4F889BF15" name="PropertyID" scope="Public">
 						<initial/>
+						<documentation value="The property ID of the property that has changed."/>
 						<model ea_localid="3679" ea_guid="{25A22E68-1973-4540-822C-C1F4F889BF15}"/>
 						<properties type="OcaPropertyID" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -2802,6 +3053,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_27B94D54_C10E_47b9_8A0E_3545625ADCE3" name="PropertyValue" scope="Public">
 						<initial/>
+						<documentation value="The new, changed, or deleted data.&#xA;- &quot;Affected property&quot; means a property whose addition, change, or deletion has raised this event.&#xA;- &quot;Affected item&quot; means an added, changed, or deleted member of an affected collection property.&#xA;- &quot;DT&quot; is the template parameter &lt;b&gt;DT:datatype.&lt;/b&gt;&#xA;&#xA;The &lt;b&gt;datatype&lt;/b&gt; of this property shall be &lt;b&gt;DT, &lt;/b&gt;except when the value of  &lt;b&gt;ChangeType&lt;/b&gt; is &lt;b&gt;ItemAdded2&lt;/b&gt;, &lt;b&gt;ItemChanged2&lt;/b&gt;, or &lt;b&gt;ItemDeleted2 &lt;/b&gt; and the affected property is an &lt;b&gt;OcaList&lt;/b&gt;, in which case the variant type shall be &lt;b&gt;OcaMap&amp;lt;OcaUint16,DT&amp;gt;, &lt;/b&gt;and the value(s) of the map key(s) shall be the list index value(s) of the affected item(s).&#xA;&#xA;The &lt;b&gt;value&lt;/b&gt; of this property shall be the entire value of the affected property, except when the value of &lt;b&gt;ChangeType&lt;/b&gt; is &lt;b&gt;ItemAdded2&lt;/b&gt;, &lt;b&gt;ItemChanged2&lt;/b&gt;, or &lt;b&gt;ItemDeleted2,&lt;/b&gt; in which case the value shall consist of only the affected item(s).  "/>
 						<model ea_localid="3680" ea_guid="{27B94D54-C10E-47b9-8A0E-3545625ADCE3}"/>
 						<properties type="DT" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -2816,6 +3068,7 @@
 					</attribute>
 					<attribute xmi:idref="EAID_83E98805_CCFE_4e19_B0C2_42FCA56470DD" name="ChangeType" scope="Public">
 						<initial/>
+						<documentation value="Type of change :  Current value, Min, Max, Item changed, Item added, Item deleted"/>
 						<model ea_localid="3681" ea_guid="{83E98805-CCFE-4e19-B0C2-42FCA56470DD}"/>
 						<properties type="OcaPropertyChangeType" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
@@ -2832,7 +3085,7 @@
 			</element>
 			<element xmi:idref="EAID_AD2B9D30_857F_4892_B944_EEFBD9399E85" xmi:type="uml:Class" name="OcaEmptyEventData" scope="public">
 				<model package="EAPK_58FCA319_2FAD_4ff1_B288_CBA4F79A7BF5" tpos="13" ea_localid="1985" ea_eleType="element"/>
-				<properties isSpecification="false" sType="Class" nType="0" scope="public" stereotype="struct" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<properties documentation="Empty notification datatype for events with no notification data.  " isSpecification="false" sType="Class" nType="0" scope="public" stereotype="struct" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
 				<project created="2011-09-14 15:34:56" modified="2023-03-17 11:58:29" complexity="1"/>
 				<code/>
 				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
@@ -2841,7 +3094,374 @@
 					<tag xmi:id="EAID_57546A08_835D_4829_A9E5_A4BEBACF93B1" name="persistence" value="transient" modelElement="EAID_AD2B9D30_857F_4892_B944_EEFBD9399E85"/>
 					<tag xmi:id="EAID_AAE3771A_4FD2_48e2_A57E_49E65F0DF496" name="Title" value="Event data for event OcaNumericObserver.Observation" modelElement="EAID_AD2B9D30_857F_4892_B944_EEFBD9399E85"/>
 				</tags>
+				<xrefs value="$XREFPROP=$XID={58FE8A0F-BD1D-4455-9C89-8FAC0F685929}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=struct;GUID={3DDFC9E2-B77E-48ca-838C-D73A95D0F0F5};@ENDSTEREO;$DES;$CLT={AD2B9D30-857F-4892-B944-EEFBD9399E85}$CLT;$ENDXREF;"/>
 				<extendedProperties tagged="0" package_name="Specific Event Datatypes" persistence="Transient"/>
+			</element>
+			<element xmi:idref="EAID_195B0BCC_C340_433b_95E6_F4C6112150CA" xmi:type="uml:Class" name="OcaDelayExtended" scope="public">
+				<model package="EAPK_13F42D4D_59BB_4223_B15C_5AF08F227C7F" tpos="8" ea_localid="19" ea_eleType="element"/>
+				<properties documentation="Signal delay - extended version.  Allows setting delay value in various units. Note that the inherited property 04p01 DelayTime is also supported by this class and reflects actual achieved delay in seconds.  This class is &lt;b&gt;deprecated&lt;/b&gt; in AES70-2022." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="controlClass" isRoot="false" isLeaf="false" isAbstract="true" isActive="false"/>
+				<project version="3" phase="1.5" created="2011-09-14 15:34:54" modified="2022-09-23 13:12:09" complexity="1"/>
+				<code/>
+				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
+				<modelDocument/>
+				<tags>
+					<tag xmi:id="EAID_9ADEEB3D_2745_45b1_9797_C6C36C42EC87" name="ClassID" value="1.1.1.7.1" modelElement="EAID_195B0BCC_C340_433b_95E6_F4C6112150CA"/>
+					<tag xmi:id="EAID_4EF22134_466F_484e_B2DB_11326965B9D5" name="Title" value="Advanced signal delay (selectable units of measure)" modelElement="EAID_195B0BCC_C340_433b_95E6_F4C6112150CA"/>
+					<tag xmi:id="EAID_E9E499B4_0EB5_4c82_9774_7D292661FACB" name="TreeLevel" value="05" modelElement="EAID_195B0BCC_C340_433b_95E6_F4C6112150CA"/>
+				</tags>
+				<xrefs value="$XREFPROP=$XID={CCEF4DA7-4928-4747-A160-928929FCB653}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=controlClass;@ENDSTEREO;@STEREO;Name=deprecated;GUID={62283F48-4820-40a6-A1BE-3A984789221D};@ENDSTEREO;$DES;$CLT={195B0BCC-C340-433b-95E6-F4C6112150CA}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
+				<extendedProperties tagged="0" package_name="Deprecated Worker Classes" persistence="Transient"/>
+				<attributes>
+					<attribute xmi:idref="EAID_CAF4E9FD_3F21_41ee_B738_789EC8E575EC" name="ClassID" scope="Public">
+						<initial body="1.1.1.7.1"/>
+						<documentation value="Number that uniquely identifies the class. Note that this differs from the object number, which identifies the instantiated object. This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
+						<model ea_localid="36" ea_guid="{CAF4E9FD-3F21-41ee-B738-789EC8E575EC}"/>
+						<properties type="OcaClassID" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="0"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style value="01p01 "/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_9606D7C1_2A15_45b0_A220_8CB6AA98BE29" name="ClassVersion" scope="Public">
+						<initial body="3"/>
+						<documentation value="Identifies the interface version of the class. Any change to the class definition leads to a higher class version. This property is an override of the &lt;b&gt;OcaRoot &lt;/b&gt;property."/>
+						<model ea_localid="37" ea_guid="{9606D7C1-2A15-45b0-A220-8CB6AA98BE29}"/>
+						<properties type="OcaClassVersionNumber" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="frozen"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="1"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style value="01p02"/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_460F4C35_03B4_42c3_832B_46DD537D206F" name="DelayValue" scope="Public">
+						<initial/>
+						<documentation value="Delay value."/>
+						<model ea_localid="38" ea_guid="{460F4C35-03B4-42c3-832B-46DD537D206F}"/>
+						<properties type="OcaDelayValue" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="2"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style value="05p01"/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+				</attributes>
+				<operations>
+					<operation xmi:idref="EAID_E7C34216_E167_4f8e_88B5_EB124D61BAF7" name="GetDelayValue" scope="Public">
+						<properties position="0"/>
+						<stereotype/>
+						<model ea_guid="{E7C34216-E167-4f8e-88B5-EB124D61BAF7}" ea_localid="41"/>
+						<type type="OcaStatus" const="false" static="false" isAbstract="false" synchronised="0" concurrency="Sequential" returnarray="0" pure="0" isQuery="false"/>
+						<behaviour/>
+						<code/>
+						<style value="05m01 "/>
+						<styleex/>
+						<documentation value="Gets the value and limits of the &lt;b&gt;DelayValue &lt;/b&gt;property. "/>
+						<tags/>
+						<parameters>
+							<parameter xmi:idref="EAID_RETURNID_E167_4f8e_88B5_EB124D61BAF7" visibility="public">
+								<properties pos="0" type="OcaStatus" const="false" ea_guid="{RETURNID-E167-4f8e-88B5-EB124D61BAF7}"/>
+								<style/>
+								<styleex/>
+								<documentation/>
+								<tags/>
+								<xrefs/>
+							</parameter>
+							<parameter xmi:idref="EAID_FB867D3B_70CE_4f01_9F00_7C4C210BB535" visibility="public">
+								<properties pos="0" type="OcaDelayValue" const="false" ea_guid="{FB867D3B-70CE-4f01-9F00-7C4C210BB535}"/>
+								<style/>
+								<styleex/>
+								<documentation value="Output parameter that holds the value of the DelayValue property if the method succeeds."/>
+								<tags/>
+								<xrefs/>
+							</parameter>
+							<parameter xmi:idref="EAID_4356F0E4_E5F0_4a86_96A1_029D6DCFD816" visibility="public">
+								<properties pos="1" type="OcaDelayValue" const="false" ea_guid="{4356F0E4-E5F0-4a86-96A1-029D6DCFD816}"/>
+								<style/>
+								<styleex/>
+								<documentation value="Optional output parameter containing the minimum allowed value of the DelayValue property. This parameter may not be returned if the object does not have such a minimum. If this is the case the maxValue parameter will also not be returned. Therefore the output parameter count will either be 1 or 3."/>
+								<tags/>
+								<xrefs value="$XREFPROP=$XID={EEEAAB48-4B79-4737-A2C0-18869F6B3CAD}$XID;$NAM=Stereotypes$NAM;$TYP=parameter property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=optional;GUID={764DF3DA-6559-4c52-BFFF-72B45C2BDFE0};@ENDSTEREO;$DES;$CLT={4356F0E4-E5F0-4a86-96A1-029D6DCFD816}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
+							</parameter>
+							<parameter xmi:idref="EAID_83994218_1BCF_413a_B50A_9DA9F99467C7" visibility="public">
+								<properties pos="2" type="OcaDelayValue" const="false" ea_guid="{83994218-1BCF-413a-B50A-9DA9F99467C7}"/>
+								<style/>
+								<styleex/>
+								<documentation value="Optional output parameter containing the maximum allowed value of the DelayValue property. This parameter may not be returned if the object does not have such a maximum. If this is the case the minValue parameter will also not be returned. Therefore the output parameter count will either be 1 or 3."/>
+								<tags/>
+								<xrefs value="$XREFPROP=$XID={B717D8E6-99DA-4c6d-9879-57563E320C88}$XID;$NAM=Stereotypes$NAM;$TYP=parameter property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=optional;GUID={B6024398-F053-48bd-98A5-DD0555BBC9FD};@ENDSTEREO;$DES;$CLT={83994218-1BCF-413a-B50A-9DA9F99467C7}$CLT;$SUP=&lt;none&gt;$SUP;$ENDXREF;"/>
+							</parameter>
+						</parameters>
+						<xrefs/>
+					</operation>
+					<operation xmi:idref="EAID_26C77741_4821_41cc_A595_B77AE59B0258" name="SetDelayValue" scope="Public">
+						<properties position="1"/>
+						<stereotype/>
+						<model ea_guid="{26C77741-4821-41cc-A595-B77AE59B0258}" ea_localid="42"/>
+						<type type="OcaStatus" const="false" static="false" isAbstract="false" synchronised="0" concurrency="Sequential" returnarray="0" pure="0" isQuery="false"/>
+						<behaviour/>
+						<code/>
+						<style value="05m02 "/>
+						<styleex/>
+						<documentation value="Sets the value of the &lt;b&gt;DelayValue &lt;/b&gt;property. "/>
+						<tags/>
+						<parameters>
+							<parameter xmi:idref="EAID_RETURNID_4821_41cc_A595_B77AE59B0258" visibility="public">
+								<properties pos="0" type="OcaStatus" const="false" ea_guid="{RETURNID-4821-41cc-A595-B77AE59B0258}"/>
+								<style/>
+								<styleex/>
+								<documentation/>
+								<tags/>
+								<xrefs/>
+							</parameter>
+							<parameter xmi:idref="EAID_500891AF_1F94_4c12_992C_A7DF82B7144A" visibility="public">
+								<properties pos="0" type="OcaDelayValue" const="false" ea_guid="{500891AF-1F94-4c12-992C-A7DF82B7144A}"/>
+								<style/>
+								<styleex/>
+								<documentation value="The value to which the DelayValue property must be set."/>
+								<tags/>
+								<xrefs/>
+							</parameter>
+						</parameters>
+						<xrefs/>
+					</operation>
+					<operation xmi:idref="EAID_A8DC7D03_DBC3_4aa9_B670_E45AD697D43F" name="GetDelayValueConverted" scope="Public">
+						<properties position="2"/>
+						<stereotype/>
+						<model ea_guid="{A8DC7D03-DBC3-4aa9-B670-E45AD697D43F}" ea_localid="43"/>
+						<type type="OcaStatus" const="false" static="false" isAbstract="false" synchronised="0" returnarray="0" pure="0" isQuery="false"/>
+						<behaviour/>
+						<code/>
+						<style value="05m03 "/>
+						<styleex/>
+						<documentation value="Get current delay setting, converted to given units.  "/>
+						<tags/>
+						<parameters>
+							<parameter xmi:idref="EAID_RETURNID_DBC3_4aa9_B670_E45AD697D43F" visibility="public">
+								<properties pos="0" type="OcaStatus" const="false" ea_guid="{RETURNID-DBC3-4aa9-B670-E45AD697D43F}"/>
+								<style/>
+								<styleex/>
+								<documentation/>
+								<tags/>
+								<xrefs/>
+							</parameter>
+							<parameter xmi:idref="EAID_2069DB4E_41E0_467d_BE04_D4AF61CE95FA" visibility="public">
+								<properties pos="0" type="OcaDelayUnit" const="false" ea_guid="{2069DB4E-41E0-467d-BE04-D4AF61CE95FA}"/>
+								<style/>
+								<styleex/>
+								<documentation/>
+								<tags/>
+								<xrefs/>
+							</parameter>
+							<parameter xmi:idref="EAID_50D4EFF4_8AB4_4bff_B853_EDBB51B31BB5" visibility="public">
+								<properties pos="1" type="OcaDelayValue" const="false" ea_guid="{50D4EFF4-8AB4-4bff-B853-EDBB51B31BB5}"/>
+								<style/>
+								<styleex/>
+								<documentation/>
+								<tags/>
+								<xrefs/>
+							</parameter>
+						</parameters>
+						<xrefs/>
+					</operation>
+				</operations>
+				<links>
+					<Generalization xmi:id="EAID_45FA33B1_F3D7_43d0_BE61_DD05B4710754" start="EAID_195B0BCC_C340_433b_95E6_F4C6112150CA" end="EAID_EF1DAB38_D371_469b_83DC_DE815E2D456B"/>
+				</links>
+			</element>
+			<element xmi:idref="EAID_7A635872_E15F_48ce_9AE8_50F44EAADE88" xmi:type="uml:Class" name="OcaDelayValue" scope="public">
+				<model package="EAPK_03263B01_273A_45bf_8E63_42863EA1C1C9" tpos="17" ea_localid="2112" ea_eleType="element"/>
+				<properties documentation="Multifield descriptor that defines a delay value element.  This datatype is &lt;b&gt;deprecated&lt;/b&gt; in AES70-2022." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="struct" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<project created="2011-09-14 15:34:57" modified="2022-09-23 13:13:50" complexity="1"/>
+				<code/>
+				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
+				<modelDocument/>
+				<tags>
+					<tag xmi:id="EAID_AD7DE013_177F_4d0b_AC1F_DE15252C2BE2" name="persistence" value="transient" modelElement="EAID_7A635872_E15F_48ce_9AE8_50F44EAADE88"/>
+					<tag xmi:id="EAID_CB837D77_7F1E_429a_8CEC_04320A431780" name="Title" value="{Delay value,Delay Units of Measure}" modelElement="EAID_7A635872_E15F_48ce_9AE8_50F44EAADE88"/>
+				</tags>
+				<xrefs value="$XREFPROP=$XID={E9712162-A4C0-475d-B61A-CB2AC01BEBB5}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=struct;GUID={3DDFC9E2-B77E-48ca-838C-D73A95D0F0F5};@ENDSTEREO;@STEREO;Name=deprecated;GUID={62283F48-4820-40a6-A1BE-3A984789221D};@ENDSTEREO;$DES;$CLT={7A635872-E15F-48ce-9AE8-50F44EAADE88}$CLT;$ENDXREF;"/>
+				<extendedProperties tagged="0" package_name="Deprecated Worker Datatypes" persistence="Transient"/>
+				<attributes>
+					<attribute xmi:idref="EAID_D876670B_6D61_42e3_968B_4B0CE34C8931" name="DelayValue" scope="Public">
+						<initial/>
+						<documentation value="The delay value."/>
+						<model ea_localid="4426" ea_guid="{D876670B-6D61-42e3-968B-4B0CE34C8931}"/>
+						<properties type="OcaFloat32" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="0"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style value="1"/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_2B90A57C_3715_4625_97D4_88AA793E3972" name="DelayUnit" scope="Public">
+						<initial/>
+						<documentation value="The unit of the delay value."/>
+						<model ea_localid="4427" ea_guid="{2B90A57C-3715-4625-97D4-88AA793E3972}"/>
+						<properties type="OcaDelayUnit" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="1"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style value="2"/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+				</attributes>
+			</element>
+			<element xmi:idref="EAID_E6A46D56_036C_4cd0_B086_A891B6E8908D" xmi:type="uml:Class" name="OcaDelayUnit" scope="public">
+				<model package="EAPK_03263B01_273A_45bf_8E63_42863EA1C1C9" tpos="16" ea_localid="2099" ea_eleType="element"/>
+				<properties documentation="Enumeration of types of delay units that are available in AES70.  This enumeration is &lt;b&gt;deprecated&lt;/b&gt; in AES70-2022." isSpecification="false" sType="Class" nType="0" scope="public" stereotype="enum" isRoot="true" isLeaf="true" isAbstract="false" isActive="false"/>
+				<project created="2011-09-14 15:34:57" modified="2022-09-23 13:13:14" complexity="1"/>
+				<code/>
+				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
+				<modelDocument/>
+				<tags>
+					<tag xmi:id="EAID_32292051_7B32_4d2e_AD91_7D8DA4EDED85" name="persistence" value="transient" modelElement="EAID_E6A46D56_036C_4cd0_B086_A891B6E8908D"/>
+					<tag xmi:id="EAID_1A6492CF_511F_43a8_BA2A_CAA76254B420" name="Title" value="Enum - units of measure for signal delay" modelElement="EAID_E6A46D56_036C_4cd0_B086_A891B6E8908D"/>
+				</tags>
+				<xrefs value="$XREFPROP=$XID={DC69CCD9-FE56-42f7-9CEB-02FDD012735E}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=enum;GUID={63A9DBDB-4A01-4d80-918A-F70F3B5BD705};@ENDSTEREO;@STEREO;Name=deprecated;GUID={62283F48-4820-40a6-A1BE-3A984789221D};@ENDSTEREO;$DES;$CLT={E6A46D56-036C-4cd0-B086-A891B6E8908D}$CLT;$ENDXREF;"/>
+				<extendedProperties tagged="0" package_name="Deprecated Worker Datatypes" persistence="Transient"/>
+				<attributes>
+					<attribute xmi:idref="EAID_768857D7_C81F_4aa6_9704_DD20B596727B" name="Time" scope="Public">
+						<initial body="1"/>
+						<documentation value="PTP time value"/>
+						<model ea_localid="4374" ea_guid="{768857D7-C81F-4aa6-9704-DD20B596727B}"/>
+						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="0"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_92BE11F8_185F_43f2_8F74_0DEEF9347BA7" name="Distance" scope="Public">
+						<initial body="2"/>
+						<documentation/>
+						<model ea_localid="4375" ea_guid="{92BE11F8-185F-43f2-8F74-0DEEF9347BA7}"/>
+						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="1"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_AEEBF837_9017_45a8_B2E4_5624DEE5080E" name="Samples" scope="Public">
+						<initial body="3"/>
+						<documentation/>
+						<model ea_localid="4376" ea_guid="{AEEBF837-9017-45a8-B2E4-5624DEE5080E}"/>
+						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="2"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_C1FB1BE8_4CF4_427f_90C0_4B74E87D5346" name="Microseconds" scope="Public">
+						<initial body="4"/>
+						<documentation/>
+						<model ea_localid="4377" ea_guid="{C1FB1BE8-4CF4-427f-90C0-4B74E87D5346}"/>
+						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="3"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_31E7464B_06E9_40a2_A699_65707ECAF4EE" name="Milliseconds" scope="Public">
+						<initial body="5"/>
+						<documentation/>
+						<model ea_localid="4378" ea_guid="{31E7464B-06E9-40a2-A699-65707ECAF4EE}"/>
+						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="4"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_70B543DD_DED2_4d3c_9003_578358E5B338" name="Centimeters" scope="Public">
+						<initial body="6"/>
+						<documentation/>
+						<model ea_localid="4379" ea_guid="{70B543DD-DED2-4d3c-9003-578358E5B338}"/>
+						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="5"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_0460583E_AF2E_43ef_933C_96B8031E8E24" name="Inches" scope="Public">
+						<initial body="7"/>
+						<documentation/>
+						<model ea_localid="4380" ea_guid="{0460583E-AF2E-43ef-933C-96B8031E8E24}"/>
+						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="6"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_99DA8955_26F9_4955_AE04_A3E916E4C60A" name="Feet" scope="Public">
+						<initial body="8"/>
+						<documentation/>
+						<model ea_localid="4381" ea_guid="{99DA8955-26F9-4955-AE04-A3E916E4C60A}"/>
+						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="7"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+				</attributes>
 			</element>
 </elements>
 </xmi:Extension>

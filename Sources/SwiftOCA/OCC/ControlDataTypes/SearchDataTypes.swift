@@ -132,3 +132,7 @@ public struct OcaObjectSearchResult: Codable, Sendable {
     }
   }
 }
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaObjectSearchResult: OcaDeprecatedDatatype {}

@@ -234,7 +234,8 @@ open class OcaMatrix<Member: OcaRoot>: OcaWorker {
   @OcaVectorDeviceProperty(
     xPropertyID: OcaPropertyID("3.1"),
     yPropertyID: OcaPropertyID("3.2"),
-    getMethodID: OcaMethodID("3.1")
+    getMethodID: OcaMethodID("3.1"),
+    deprecated: .property
   )
   public var currentXY = OcaVector2D<OcaMatrixCoordinate>(
     x: OcaMatrixWildcardCoordinate,

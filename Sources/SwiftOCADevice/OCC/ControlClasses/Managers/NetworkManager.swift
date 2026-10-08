@@ -24,13 +24,15 @@ open class OcaNetworkManager: OcaManager {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.3"),
-    getMethodID: OcaMethodID("3.3")
+    getMethodID: OcaMethodID("3.3"),
+    deprecated: .all
   )
   public var controlNetworks = [OcaControlNetwork]()
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.4"),
-    getMethodID: OcaMethodID("3.4")
+    getMethodID: OcaMethodID("3.4"),
+    deprecated: .all
   )
   public var mediaTransportNetworks = [OcaMediaTransportNetwork]()
 

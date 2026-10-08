@@ -62,7 +62,7 @@ struct MemberTable {
   ) -> [String] {
     // a type written with the class's generic parameters is known only at run time
     let generics = Set(classDecl.genericParameterClause?.parameters.map(\.name.text) ?? [])
-    return wrappedProperties(in: members, wrappers: wrappers).compactMap { name, binding in
+    return wrappedProperties(in: members, wrappers: wrappers).compactMap { name, binding, _ in
       guard let type = declaredType(of: binding), !mentions(type, any: generics) else {
         return nil
       }
@@ -136,30 +136,46 @@ struct MemberTable {
     of className: String,
     wrappers: Set<String>
   ) -> [String] {
-    wrappedProperties(in: members, wrappers: wrappers).map { name, _ in
+    wrappedProperties(in: members, wrappers: wrappers).map { name, _, _ in
       "\"\(name)\": \\\(className)._\(name)"
     }
   }
 
   /// Each property declared in `members` with one of `wrappers`, by its name.
+  /// The properties declared in `members` with one of `wrappers` given a `deprecated`
+  /// argument, each as a dictionary entry from its name to that argument.
+  static func deprecatedProperties(
+    in members: MemberBlockItemListSyntax,
+    wrappers: Set<String>
+  ) -> [String] {
+    wrappedProperties(in: members, wrappers: wrappers).compactMap { name, _, attribute in
+      guard case let .argumentList(arguments) = attribute.arguments,
+            let deprecated = arguments.first(where: { $0.label?.text == "deprecated" })
+      else { return nil }
+      return "\"\(name)\": \(deprecated.expression.trimmedDescription)"
+    }
+  }
+
   private static func wrappedProperties(
     in members: MemberBlockItemListSyntax,
     wrappers: Set<String>
-  ) -> [(name: String, binding: PatternBindingSyntax)] {
-    members.flatMap { member -> [(name: String, binding: PatternBindingSyntax)] in
+  ) -> [(name: String, binding: PatternBindingSyntax, attribute: AttributeSyntax)] {
+    members.flatMap { member -> [(name: String, binding: PatternBindingSyntax, attribute: AttributeSyntax)] in
       guard let variable = member.decl.as(VariableDeclSyntax.self),
-            variable.attributes.contains(where: { attribute in
-              guard case let .attribute(attribute) = attribute else { return false }
-              return attribute.attributeName.trimmedDescription.split(separator: ".").last
-                .map { wrappers.contains(String($0)) } ?? false
-            })
+            let attribute = variable.attributes.lazy.compactMap({ element -> AttributeSyntax? in
+              guard case let .attribute(attribute) = element,
+                    let name = attribute.attributeName.trimmedDescription.split(separator: ".").last,
+                    wrappers.contains(String(name))
+              else { return nil }
+              return attribute
+            }).first
       else {
         return []
       }
       return variable.bindings.compactMap { binding in
         binding.pattern.as(IdentifierPatternSyntax.self).map { pattern in
           // a keyword spelled with backticks names a property without them
-          (pattern.identifier.text.filter { $0 != "`" }, binding)
+          (pattern.identifier.text.filter { $0 != "`" }, binding, attribute)
         }
       }
     }

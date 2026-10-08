@@ -37,6 +37,7 @@ open class OcaDelay: OcaActuator {
 @OcaDeviceClass
 open class OcaDelayExtended: OcaDelay {
   override open class var classID: OcaClassID { OcaClassID("1.1.1.7.1") }
+  override open class var classIsDeprecated: Bool { true }
 
   /// delay expressed in an arbitrary unit of measure; the inherited ``delayTime``
   /// property reflects the same delay in seconds

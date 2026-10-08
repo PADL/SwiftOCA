@@ -26,6 +26,9 @@ open class OcaApplicationNetwork: OcaRoot, OcaOwnable, OcaLabelRepresentable {
     1
   }
 
+  // as are OcaControlNetwork and OcaMediaTransportNetwork, which inherit it
+  override open class var classIsDeprecated: Bool { true }
+
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.1"),
     getMethodID: OcaMethodID("2.1"),

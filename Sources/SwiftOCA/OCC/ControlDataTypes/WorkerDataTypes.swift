@@ -206,3 +206,11 @@ public enum OcaSamplingRateConverterType: OcaUint8, Codable, Sendable, CaseItera
   case synchronous = 1
   case asynchronous = 2
 }
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaDelayUnit: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaDelayValue: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaPilotToneDetectorSpec: OcaDeprecatedDatatype {}

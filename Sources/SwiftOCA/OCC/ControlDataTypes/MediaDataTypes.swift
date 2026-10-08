@@ -207,3 +207,19 @@ public struct OcaMediaVolumePosition: Codable, Sendable {
     self.position = position
   }
 }
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaMediaSinkConnector: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaMediaSourceConnector: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaMediaConnectorStatus: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaMediaConnectorState: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaMediaConnectorCommand: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaMediaCoding: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaMediaConnection: OcaDeprecatedDatatype {}

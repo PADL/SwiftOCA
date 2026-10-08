@@ -26,14 +26,16 @@
 /// `parameters` type where one is shared, else one synthesised from the argument names,
 /// as `Methods.SetPortNameParameters`. The body builds it by the arguments' internal
 /// names. `parameterNames` and `resultNames` give the OCP.2 names of a single value, or
-/// where the model names a record's fields differently.
+/// where the model names a record's fields differently. `deprecated` says the model marks
+/// the method deprecated.
 @attached(body)
 public macro OcaMethod(
   _ methodID: String,
   name: String,
   parameters: (any (Codable & Sendable).Type)? = nil,
   parameterNames: [String]? = nil,
-  resultNames: [String]? = nil
+  resultNames: [String]? = nil,
+  deprecated: Bool = false
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaMethodMacro")
 
 /// Declares a client method whose body is written by hand to be the OCA method
@@ -46,7 +48,8 @@ public macro OcaMethodDescriptor(
   parameters: (any (Codable & Sendable).Type)? = nil,
   parameterNames: [String]? = nil,
   result: (any (Codable & Sendable).Type)? = nil,
-  resultNames: [String]? = nil
+  resultNames: [String]? = nil,
+  deprecated: Bool = false
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaMethodDescriptorMacro")
 
 /// Gives a client class its `Methods` namespace: the descriptor of each `@OcaMethod` and
@@ -85,7 +88,8 @@ public struct OcaMethodDescriptor<Parameters, Result>: Sendable {
     parameterTypeNames: [String]?,
     result: (any (Codable & Sendable).Type)?,
     resultNames: [String]?,
-    resultTypeNames: [String]?
+    resultTypeNames: [String]?,
+    isDeprecated: Bool
   ) {
     erased = OcaAnyMethodDescriptor(
       methodID: methodID,
@@ -95,7 +99,8 @@ public struct OcaMethodDescriptor<Parameters, Result>: Sendable {
       parameterNames: parameterNames,
       resultNames: resultNames,
       parameterTypeNames: parameterTypeNames,
-      resultTypeNames: resultTypeNames
+      resultTypeNames: resultTypeNames,
+      isDeprecated: isDeprecated
     )
   }
 }
@@ -109,7 +114,8 @@ public extension OcaMethodDescriptor where Parameters: Codable & Sendable,
     parameterNames: [String]? = nil,
     resultNames: [String]? = nil,
     parameterTypeNames: [String]? = nil,
-    resultTypeNames: [String]? = nil
+    resultTypeNames: [String]? = nil,
+    isDeprecated: Bool = false
   ) {
     self.init(
       methodID,
@@ -119,7 +125,8 @@ public extension OcaMethodDescriptor where Parameters: Codable & Sendable,
       parameterTypeNames: parameterTypeNames,
       result: Result.self,
       resultNames: resultNames,
-      resultTypeNames: resultTypeNames
+      resultTypeNames: resultTypeNames,
+      isDeprecated: isDeprecated
     )
   }
 }
@@ -129,7 +136,8 @@ public extension OcaMethodDescriptor where Parameters: Codable & Sendable, Resul
     _ methodID: OcaMethodID,
     name: String,
     parameterNames: [String]? = nil,
-    parameterTypeNames: [String]? = nil
+    parameterTypeNames: [String]? = nil,
+    isDeprecated: Bool = false
   ) {
     self.init(
       methodID,
@@ -139,7 +147,8 @@ public extension OcaMethodDescriptor where Parameters: Codable & Sendable, Resul
       parameterTypeNames: parameterTypeNames,
       result: nil,
       resultNames: nil,
-      resultTypeNames: nil
+      resultTypeNames: nil,
+      isDeprecated: isDeprecated
     )
   }
 }
@@ -149,7 +158,8 @@ public extension OcaMethodDescriptor where Parameters == Void, Result: Codable &
     _ methodID: OcaMethodID,
     name: String,
     resultNames: [String]? = nil,
-    resultTypeNames: [String]? = nil
+    resultTypeNames: [String]? = nil,
+    isDeprecated: Bool = false
   ) {
     self.init(
       methodID,
@@ -159,13 +169,14 @@ public extension OcaMethodDescriptor where Parameters == Void, Result: Codable &
       parameterTypeNames: nil,
       result: Result.self,
       resultNames: resultNames,
-      resultTypeNames: resultTypeNames
+      resultTypeNames: resultTypeNames,
+      isDeprecated: isDeprecated
     )
   }
 }
 
 public extension OcaMethodDescriptor where Parameters == Void, Result == Void {
-  init(_ methodID: OcaMethodID, name: String) {
+  init(_ methodID: OcaMethodID, name: String, isDeprecated: Bool = false) {
     self.init(
       methodID,
       name: name,
@@ -174,7 +185,8 @@ public extension OcaMethodDescriptor where Parameters == Void, Result == Void {
       parameterTypeNames: nil,
       result: nil,
       resultNames: nil,
-      resultTypeNames: nil
+      resultTypeNames: nil,
+      isDeprecated: isDeprecated
     )
   }
 }
@@ -207,6 +219,8 @@ public struct OcaAnyMethodDescriptor: Sendable {
   /// one for each, where `@OcaClass` could read them from it.
   public let parameterTypeNames: [String]?
   public let resultTypeNames: [String]?
+  /// The model marks the method deprecated.
+  public let isDeprecated: Bool
 
   public init(
     methodID: OcaMethodID,
@@ -217,7 +231,8 @@ public struct OcaAnyMethodDescriptor: Sendable {
     resultNames: [String]?,
     isDescribed: Bool = true,
     parameterTypeNames: [String]? = nil,
-    resultTypeNames: [String]? = nil
+    resultTypeNames: [String]? = nil,
+    isDeprecated: Bool = false
   ) {
     self.methodID = methodID
     self.name = name
@@ -228,6 +243,7 @@ public struct OcaAnyMethodDescriptor: Sendable {
     self.isDescribed = isDescribed
     self.parameterTypeNames = parameterTypeNames
     self.resultTypeNames = resultTypeNames
+    self.isDeprecated = isDeprecated
   }
 
   /// The parameters as OCP.2 sees them: one per field of a record, else the one value.

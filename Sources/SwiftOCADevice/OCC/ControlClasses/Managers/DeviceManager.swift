@@ -29,7 +29,8 @@ open class OcaDeviceManager: OcaManager {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
     getMethodID: OcaMethodID("3.2"),
-    ocp2GetName: "GUID"
+    ocp2GetName: "GUID",
+    deprecated: .all
   )
   public var modelGUID = OcaModelGUID(
     reserved: 0,
@@ -46,7 +47,8 @@ open class OcaDeviceManager: OcaManager {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.3"),
     getMethodID: OcaMethodID("3.6"),
-    ocp2GetName: "Description"
+    ocp2GetName: "Description",
+    deprecated: .all
   )
   public var modelDescription = OcaModelDescription(
     manufacturer: "PADL",
@@ -91,17 +93,19 @@ open class OcaDeviceManager: OcaManager {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.8"),
     getMethodID: OcaMethodID("3.11"),
-    setMethodID: OcaMethodID("3.12")
+    setMethodID: OcaMethodID("3.12"),
+    deprecated: [.getter, .setter]
   )
   public var enabled = true
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.9"),
-    getMethodID: OcaMethodID("3.13")
+    getMethodID: OcaMethodID("3.13"),
+    deprecated: .all
   )
   public var state = OcaDeviceState()
 
-  @OcaDeviceProperty(propertyID: OcaPropertyID("3.10"))
+  @OcaDeviceProperty(propertyID: OcaPropertyID("3.10"), deprecated: .property)
   public var busy = false
 
   @OcaDeviceProperty(
@@ -138,7 +142,8 @@ open class OcaDeviceManager: OcaManager {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.14"),
     getMethodID: OcaMethodID("3.20"),
-    ocp2GetName: "ID"
+    ocp2GetName: "ID",
+    deprecated: .all
   )
   public var deviceRevisionID = ""
 

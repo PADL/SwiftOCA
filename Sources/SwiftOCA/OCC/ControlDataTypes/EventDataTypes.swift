@@ -389,3 +389,11 @@ public struct OcaPropertyChangeSubscription2List: OcaParametersReflectable, Coda
     self.destinationInformation = destinationInformation
   }
 }
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaMediaConnectorStatusChangedEventData: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaMediaSourceConnectorChangedEventData: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaMediaSinkConnectorChangedEventData: OcaDeprecatedDatatype {}

@@ -50,6 +50,8 @@ final class ClassManagerTests: XCTestCase {
     _ = try await SwiftOCADevice.OcaFloat32Actuator(role: "Float", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaLevelSensor(role: "Level", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaMute(role: "Mute", deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaDelayExtended(role: "Delay", deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaTimeSource(role: "Time", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaMatrix<SwiftOCADevice.OcaWorker>(
       rows: 2, columns: 2, deviceDelegate: device, addToRootBlock: false
     )
@@ -163,7 +165,7 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(list.typeArguments, ["OcaClassDescriptor"])
     let descriptor = try await h.classManager.getDatatype(name: "OcaClassDescriptor")
     XCTAssertEqual(descriptor.kind, .struct)
-    XCTAssertEqual(descriptor.fields.map(\.name), ["ClassID", "ClassVersion", "Name", "Properties", "Methods", "Events"])
+    XCTAssertEqual(descriptor.fields.map(\.name), ["ClassID", "ClassVersion", "Name", "Properties", "Methods", "Events", "IsDeprecated"])
 
     let all = try await h.classManager.$datatypes._getValue(h.classManager, flags: [])
     XCTAssertEqual(Set(all.map(\.name)).count, all.count, "each datatype once")
@@ -246,6 +248,51 @@ final class ClassManagerTests: XCTestCase {
     // a generic class by its own name
     XCTAssertTrue(classes.contains { $0.name == "OcaBlock" })
     XCTAssertEqual(ids.count, classes.count, "each class once")
+  }
+
+  func testWhatTheModelDeprecatesIsMarkedSo() async throws {
+    let h = try await makeHarness()
+    defer { Task { await h.tearDown() } }
+
+    func described(_ classID: OcaClassID) async throws -> OcaClassDescriptor {
+      try await h.classManager.getControlClass(classID: classID, includeInherited: false)
+    }
+    func method(_ id: String, of descriptor: OcaClassDescriptor) throws -> OcaClassMethodDescriptor {
+      try XCTUnwrap(descriptor.methods.first { $0.methodID == OcaMethodID(id) }, id)
+    }
+    // a class
+    let delay = try await described(SwiftOCADevice.OcaDelayExtended.classID)
+    XCTAssertTrue(delay.isDeprecated)
+    let gain = try await described(SwiftOCADevice.OcaGain.classID)
+    XCTAssertFalse(gain.isDeprecated)
+
+    // a method, as its @OcaMethod says
+    let subscriptions = try await described(SwiftOCADevice.OcaSubscriptionManager.classID)
+    XCTAssertTrue(try method("3.1", of: subscriptions).isDeprecated, "AddSubscription")
+    XCTAssertFalse(try method("3.8", of: subscriptions).isDeprecated, "AddSubscription2")
+
+    // a property and its accessors, each as its declaration says
+    let manager = try await described(SwiftOCADevice.OcaDeviceManager.classID)
+    let guid = try XCTUnwrap(manager.properties.first { $0.propertyID == OcaPropertyID("3.1") })
+    XCTAssertTrue(guid.isDeprecated)
+    XCTAssertTrue(try method("3.2", of: manager).isDeprecated, "GetModelGUID")
+    let enabled = try XCTUnwrap(manager.properties.first { $0.propertyID == OcaPropertyID("3.8") })
+    XCTAssertFalse(enabled.isDeprecated, "ControlEnabled")
+    XCTAssertTrue(try method("3.11", of: manager).isDeprecated, "GetEnabled")
+    XCTAssertTrue(try method("3.12", of: manager).isDeprecated, "SetEnabled")
+    XCTAssertFalse(try method("3.3", of: manager).isDeprecated, "GetSerialNumber")
+    let time = try await described(SwiftOCADevice.OcaTimeSource.classID)
+    let referenceID = try XCTUnwrap(time.properties.first { $0.propertyID == OcaPropertyID("3.5") })
+    XCTAssertTrue(referenceID.isDeprecated)
+    XCTAssertFalse(try method("3.8", of: time).isDeprecated, "GetReferenceID")
+
+    // a datatype
+    let value = try await h.classManager.getDatatype(name: "OcaDelayValue")
+    XCTAssertTrue(value.isDeprecated)
+    let guidType = try await h.classManager.getDatatype(name: "OcaModelGUID")
+    XCTAssertTrue(guidType.isDeprecated, "described by hand")
+    let mute = try await h.classManager.getDatatype(name: "OcaMuteState")
+    XCTAssertFalse(mute.isDeprecated)
   }
 
   func testAClassNoObjectIsOfIsAParameterError() async throws {

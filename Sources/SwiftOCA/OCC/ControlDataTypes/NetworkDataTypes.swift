@@ -278,3 +278,11 @@ public struct Ocp1NetworkAddress: Codable, Sendable, Equatable {
 }
 
 public typealias OcaAdaptationIdentifier = OcaString
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaNetworkLinkType: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaNetworkControlProtocol: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaNetworkMediaProtocol: OcaDeprecatedDatatype {}

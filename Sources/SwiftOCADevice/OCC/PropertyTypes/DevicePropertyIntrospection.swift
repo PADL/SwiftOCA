@@ -19,6 +19,18 @@ import SwiftOCA
 
 /// What a device property declares about itself, for a bridge that presents an object's
 /// properties through another control protocol and so has to describe them first.
+/// Which of a device property and its accessors the model deprecates. A property is
+/// renamed by deprecating a copy, so its accessors can be deprecated while it is not.
+public struct OcaPropertyDeprecation: OptionSet, Sendable {
+  public let rawValue: UInt8
+  public init(rawValue: UInt8) { self.rawValue = rawValue }
+
+  public static let property = Self(rawValue: 1 << 0)
+  public static let getter = Self(rawValue: 1 << 1)
+  public static let setter = Self(rawValue: 1 << 2)
+  public static let all: Self = [.property, .getter, .setter]
+}
+
 @_spi(SwiftOCAPrivate)
 public struct OcaDevicePropertyDescriptor: Sendable {
   /// The Swift name of the property.
@@ -51,6 +63,10 @@ public struct OcaDevicePropertyDescriptor: Sendable {
     public static let label = Flags(rawValue: 1 << 1)
     /// It is the block that contains the object (`OcaOwnable`).
     public static let owner = Flags(rawValue: 1 << 2)
+    /// The model deprecates the property, its getter, or its setter.
+    public static let deprecated = Flags(rawValue: 1 << 3)
+    public static let getterDeprecated = Flags(rawValue: 1 << 4)
+    public static let setterDeprecated = Flags(rawValue: 1 << 5)
   }
 
   public let flags: Flags
@@ -91,12 +107,17 @@ public extension OcaRoot {
     let label = (self as? any OcaLabelRepresentable).map { type(of: $0).labelPropertyID }
     let owner = (self as? any OcaOwnable).map { type(of: $0).ownerPropertyID }
     let typeNames = type(of: self).devicePropertyTypeNames
+    let deprecations = type(of: self).devicePropertyDeprecations
     return allDevicePropertyKeyPaths.compactMap { name, keyPath in
       guard let property = self[keyPath: keyPath] as? any OcaDevicePropertyRepresentable else { return nil }
       var flags: OcaDevicePropertyDescriptor.Flags = []
       if property is any _OcaBoundedDevicePropertyRepresentable { flags.insert(.bounded) }
       if property.propertyID == label { flags.insert(.label) }
       if property.propertyID == owner { flags.insert(.owner) }
+      let deprecation = deprecations[name] ?? []
+      if deprecation.contains(.property) { flags.insert(.deprecated) }
+      if deprecation.contains(.getter) { flags.insert(.getterDeprecated) }
+      if deprecation.contains(.setter) { flags.insert(.setterDeprecated) }
       return property.description(named: name, typeName: typeNames[name], flags: flags)
     }.sorted { $0.propertyID < $1.propertyID }
   }

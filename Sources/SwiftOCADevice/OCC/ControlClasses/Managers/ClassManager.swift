@@ -170,13 +170,15 @@ public final class OcaClassManager: OcaManager {
           propertyID: property.propertyID,
           name: Ocp2Naming.wireName(property.name),
           typeName: Self.typeName(declared: property.typeName, of: property.valueType),
-          isReadOnly: !property.isSettable
+          isReadOnly: !property.isSettable,
+          isDeprecated: property.flags.contains(.deprecated)
         )
       },
       methods: methods(of: classes),
       events: classes.flatMap(ownEvents(of:)).map {
         OcaClassEventDescriptor(eventID: $0.eventID, name: $0.name, eventDataTypeName: _ocaTypeName(for: $0.eventDataType))
-      }
+      },
+      isDeprecated: oca.type.classIsDeprecated
     )
   }
 
@@ -197,7 +199,8 @@ public final class OcaClassManager: OcaManager {
           OcaClassParameterDescriptor(
             name: $0.name, typeName: Self.typeName(declared: $0.declared, of: $0.type), direction: $0.direction
           )
-        }
+        },
+        isDeprecated: descriptor.method.isDeprecated
       )
     }
     for property in classes.flatMap(\.properties) {
@@ -230,10 +233,16 @@ public final class OcaClassManager: OcaManager {
     }
     var accessors = [OcaClassMethodDescriptor]()
     if let getMethodID = property.getMethodID {
-      accessors.append(OcaClassMethodDescriptor(methodID: getMethodID, name: "Get" + name, parameters: gotten))
+      accessors.append(OcaClassMethodDescriptor(
+        methodID: getMethodID, name: "Get" + name, parameters: gotten,
+        isDeprecated: property.flags.contains(.getterDeprecated)
+      ))
     }
     if let setMethodID = property.setMethodID {
-      accessors.append(OcaClassMethodDescriptor(methodID: setMethodID, name: "Set" + name, parameters: values))
+      accessors.append(OcaClassMethodDescriptor(
+        methodID: setMethodID, name: "Set" + name, parameters: values,
+        isDeprecated: property.flags.contains(.setterDeprecated)
+      ))
     }
     return accessors
   }
@@ -272,7 +281,7 @@ public final class OcaClassManager: OcaManager {
       return describing.datatypeDescriptor.name
     }
     if let template = type as? any OcaTemplateDatatype.Type {
-      return "\(template.templateName)<\(template.templateArguments.map(_ocaTypeName(for:)).joined(separator: ", "))>"
+      return "\(template.templateName)<\(template.templateArguments.map(_ocaTypeName(for:)).joined(separator: ","))>"
     }
     return switch OcaDatatypeKind(of: type) {
     case let .base(base): base.name
@@ -280,7 +289,7 @@ public final class OcaClassManager: OcaManager {
     case .longBlob: "OcaLongBlob"
     case let .optional(wrapped): _ocaTypeName(for: wrapped)
     case let .list(element): "OcaList<\(_ocaTypeName(for: element))>"
-    case let .map(key, value): "OcaMap<\(_ocaTypeName(for: key)), \(_ocaTypeName(for: value))>"
+    case let .map(key, value): "OcaMap<\(_ocaTypeName(for: key)),\(_ocaTypeName(for: value))>"
     // a bounded property's value is of its type, with the bounds beside it
     case let .bounded(value): _ocaTypeName(for: value)
     case .enumeration, .rawValue, .structure, .other: aes70Spelling(of: String(describing: type))
@@ -302,7 +311,8 @@ public final class OcaClassManager: OcaManager {
         word.append(character)
       } else {
         flush()
-        spelled.append(character)
+        // the model writes no space between a template's arguments
+        if character != " " { spelled.append(character) }
       }
     }
     flush()
@@ -336,6 +346,9 @@ private struct Datatypes {
   private mutating func add(_ type: Any.Type) {
     let name = OcaClassManager._ocaTypeName(for: type)
     guard described[name] == nil else { return }
+    defer {
+      if type is any OcaDeprecatedDatatype.Type { described[name]?.isDeprecated = true }
+    }
     if let describing = type as? any OcaDatatypeDescribing.Type {
       described[name] = describing.datatypeDescriptor
       // the types it refers to are the model's names, with no Swift type to describe

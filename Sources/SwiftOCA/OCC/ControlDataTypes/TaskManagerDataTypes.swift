@@ -59,3 +59,13 @@ public struct OcaTask: Codable, Sendable {
   public let duration: OcaTimePTP
   public let applicationSpecificParameters: OcaBlob
 }
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaTaskStatus: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaTaskState: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaTask: OcaDeprecatedDatatype {}
+@_spi(SwiftOCAPrivate)
+extension OcaTaskManagerState: OcaDeprecatedDatatype {}

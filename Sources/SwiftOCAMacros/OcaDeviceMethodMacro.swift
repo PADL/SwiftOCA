@@ -197,6 +197,20 @@ public struct OcaDeviceClassMacro: MemberMacro {
         """
       )
     }
+    let deprecated = MemberTable(classDecl) {
+      MemberTable.deprecatedProperties(in: $0, wrappers: propertyWrappers)
+    }
+    if !deprecated.entries.isEmpty {
+      members.append(
+        """
+        override \(raw: access)class var devicePropertyDeprecations: [String: OcaPropertyDeprecation] {
+          var deprecations = super.devicePropertyDeprecations
+          \(raw: deprecated.statements(appending: { "deprecations.merge([\($0)]) { _, new in new }" }))
+          return deprecations
+        }
+        """
+      )
+    }
     if !propertyTable.entries.isEmpty {
       members.append(
         """
