@@ -20,8 +20,9 @@ import XCTest
 final class DatatypeKindTests: XCTestCase {
   private func name(_ type: Any.Type) -> String {
     switch OcaDatatypeKind(of: type) {
-    case let .base(name): "base \(name)"
-    case let .blob(name): "blob \(name)"
+    case let .base(base): "base \(base.name)"
+    case .blob: "blob"
+    case .longBlob: "long blob"
     case let .optional(wrapped): "optional \(wrapped)"
     case let .list(element): "list \(element)"
     case let .map(key, value): "map \(key) \(value)"
@@ -38,7 +39,8 @@ final class DatatypeKindTests: XCTestCase {
     XCTAssertEqual(name(OcaDB.self), "base OcaFloat32")
     XCTAssertEqual(name(OcaUint8.self), "base OcaUint8")
     XCTAssertEqual(name(OcaString.self), "base OcaString")
-    XCTAssertEqual(name(OcaLongBlob.self), "blob OcaLongBlob")
+    XCTAssertEqual(name(OcaLongBlob.self), "long blob")
+    XCTAssertEqual(name(OcaBlob.self), "blob")
     XCTAssertEqual(name(OcaString?.self), "optional String")
     XCTAssertEqual(name(OcaList<OcaUint16>.self), "list UInt16")
     XCTAssertEqual(name(OcaMap<OcaUint16, OcaString>.self), "map UInt16 String")

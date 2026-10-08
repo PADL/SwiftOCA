@@ -140,7 +140,9 @@ public final class OcaClassManager: OcaManager {
   /// time, so it is named for the type it stands for.
   fileprivate nonisolated static func _ocaTypeName(for type: Any.Type) -> String {
     switch OcaDatatypeKind(of: type) {
-    case let .base(name), let .blob(name): name
+    case let .base(base): base.name
+    case .blob: "OcaBlob"
+    case .longBlob: "OcaLongBlob"
     case let .optional(wrapped): _ocaTypeName(for: wrapped)
     case let .list(element): "OcaList<\(_ocaTypeName(for: element))>"
     case let .map(key, value): "OcaMap<\(_ocaTypeName(for: key)), \(_ocaTypeName(for: value))>"
