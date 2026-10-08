@@ -14,10 +14,14 @@
 // limitations under the License.
 //
 
+#if NonEmbeddedBuild
+
+import FlyingSocks
 import Foundation
 @testable @_spi(SwiftOCAPrivate) import SwiftOCA
 @testable @_spi(SwiftOCAPrivate) import SwiftOCADevice
 import SwiftOCAXMI
+import SwiftOCAXMIDevice
 import XCTest
 
 /// Writes class manager descriptors as XMI and reads them back.
@@ -94,6 +98,69 @@ final class XMIExportTests: XCTestCase {
     XCTAssertEqual(again.datatypes, model.datatypes)
   }
 
+  #if canImport(FlyingFox)
+  @OcaDevice
+  func testTheClassManagerServesItsModel() async throws {
+    let (device, manager) = try await Self.device()
+    defer { withExtendedLifetime(device) {} }
+    var address = sockaddr_in()
+    address.sin_family = sa_family_t(AF_INET)
+    address.sin_addr.s_addr = UInt32(0x7F00_0001).bigEndian
+    #if canImport(Darwin)
+    address.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+    #endif
+    let endpoint = try await OcaFlyingFoxDeviceEndpoint(
+      address: withUnsafeBytes(of: address) { Data($0) },
+      timeout: .seconds(5),
+      device: device
+    )
+    XCTAssertEqual(manager.modelURL, "")
+    await manager.serveModel(on: endpoint)
+    XCTAssertEqual(manager.modelURL, "/aes70/model.xmi")
+    let endpointTask = Task { try await endpoint.run() }
+    defer { endpointTask.cancel() }
+    try await endpoint.httpServer.waitUntilListening(timeout: 5)
+    let listening = await endpoint.httpServer.listeningAddress
+    guard case let .ip4(_, port) = try XCTUnwrap(listening) else {
+      return XCTFail("not listening on IPv4")
+    }
+
+    let (status, contentType, body) = try await Self.get(manager.modelURL, port: port)
+    XCTAssertEqual(status, 200)
+    XCTAssertEqual(contentType, "application/xml; charset=utf-8")
+    let model = try OcaXMIModel(data: body)
+    XCTAssertEqual(model.classes, manager.controlClasses)
+    XCTAssertEqual(model.datatypes, manager.datatypes)
+
+    // what a later object brings is in the next document
+    XCTAssertFalse(model.classes.contains { $0.classID == SwiftOCADevice.OcaPolarity.classID })
+    _ = try await SwiftOCADevice.OcaPolarity(role: "Polarity", deviceDelegate: device)
+    let (_, _, later) = try await Self.get(manager.modelURL, port: port)
+    XCTAssertTrue(try OcaXMIModel(data: later).classes.contains { $0.classID == SwiftOCADevice.OcaPolarity.classID })
+  }
+
+  /// A GET over a plain socket: its status, content type and body.
+  private static func get(_ path: String, port: UInt16) async throws -> (Int, String?, Data) {
+    let socket = try await AsyncSocket.connected(to: .inet(ip4: "127.0.0.1", port: port))
+    defer { try? socket.close() }
+    try await socket.write(Data("GET \(path) HTTP/1.1\r\nHost: 127.0.0.1:\(port)\r\nConnection: close\r\n\r\n".utf8))
+    var head = [UInt8]()
+    while !head.suffix(4).elementsEqual("\r\n\r\n".utf8) {
+      try head.append(await socket.read())
+    }
+    let lines = String(decoding: head, as: UTF8.self).components(separatedBy: "\r\n")
+    let status = lines.first.flatMap { Int($0.split(separator: " ").dropFirst().first ?? "") } ?? 0
+    var headers = [String: String]()
+    for line in lines.dropFirst() {
+      let field = line.split(separator: ":", maxSplits: 1)
+      guard field.count == 2 else { continue }
+      headers[field[0].lowercased()] = field[1].trimmingCharacters(in: .whitespaces)
+    }
+    let length = headers["content-length"].flatMap(Int.init) ?? 0
+    return try await (status, headers["content-type"], Data(socket.read(bytes: length)))
+  }
+  #endif
+
   @OcaDevice
   func testTheSameModelWritesTheSameDocument() async throws {
     let (device, manager) = try await Self.device()
@@ -102,5 +169,9 @@ final class XMIExportTests: XCTestCase {
     let second = OcaXMIExport.document(classes: manager.controlClasses, datatypes: manager.datatypes)
     XCTAssertEqual(first, second)
     XCTAssertTrue(first.contains(#"<uml:Model xmi:type="uml:Model" name="Device""#))
+    // XMI IDs are unique within a document
+    let ids = first.components(separatedBy: #"xmi:id=""#).dropFirst().map { $0.prefix { $0 != "\"" } }
+    XCTAssertEqual(Set(ids).count, ids.count)
   }
 }
+#endif
