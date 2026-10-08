@@ -280,6 +280,8 @@ let CommonTargets: [Target] = [
     swiftSettings: [
       .enableExperimentalFeature("StrictConcurrency"),
       .enableExperimentalFeature("Extern"),
+      // lifetime annotations on OutputRawSpan's mutating methods
+      .enableExperimentalFeature("Lifetimes"),
     ]
   ),
   .target(
