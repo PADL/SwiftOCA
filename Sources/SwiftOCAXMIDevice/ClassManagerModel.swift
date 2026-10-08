@@ -24,9 +24,13 @@ import SwiftOCAXMI
 
 public extension SwiftOCADevice.OcaClassManager {
   /// Serves the device's class model as an XMI document at `path` on `endpoint`, and
-  /// sets ModelURL to it. The document is written again only once the classes or
-  /// datatypes the class manager describes have changed.
-  func serveModel(on endpoint: OcaFlyingFoxDeviceEndpoint, path: String = "/aes70/model.xmi") async {
+  /// sets ModelURL to its URL at `host` once the endpoint's port is known. Serve it once
+  /// per endpoint: a second route for the same path is never reached.
+  func serveModel(
+    on endpoint: OcaFlyingFoxDeviceEndpoint,
+    path: String = "/aes70/model.xmi",
+    host: String = OcaModelURL.defaultHost
+  ) async {
     let model = ModelDocument(self)
     await endpoint.appendRoute(HTTPRoute("GET \(path)")) { _ in
       guard let document = await model.document else { return HTTPResponse(statusCode: .notFound) }
@@ -37,16 +41,45 @@ public extension SwiftOCADevice.OcaClassManager {
         body: document
       )
     }
-    modelURL = path
+    if let port = await endpoint.listeningPort {
+      modelURL = OcaModelURL.url(host: host, port: port, path: path)
+      return
+    }
+    // bound to port 0, so the port is known only once the endpoint is listening
+    Task { [weak self, weak endpoint] in
+      while let endpoint, self != nil, !Task.isCancelled {
+        guard (try? await endpoint.waitUntilListening()) != nil, let port = await endpoint.listeningPort else { continue }
+        self?.modelURL = OcaModelURL.url(host: host, port: port, path: path)
+        return
+      }
+    }
   }
 }
 
-/// The class model's document, kept for as long as what it describes does not change.
+/// How ModelURL names the model: over HTTP, as OcaFlyingFoxDeviceEndpoint serves it.
+public enum OcaModelURL {
+  /// The system's host name, with `.local` added where it has no domain: devices
+  /// advertise themselves with mDNS, so that name resolves on the link the device is on.
+  public static var defaultHost: String {
+    let name = ProcessInfo.processInfo.hostName
+    return name.contains(".") ? name : name + ".local"
+  }
+
+  /// The URL of `path` at `host` and `port`; an IPv6 address is bracketed, as RFC 3986
+  /// writes it.
+  public static func url(host: String, port: UInt16, path: String) -> String {
+    let host = host.contains(":") && !host.hasPrefix("[") ? "[\(host)]" : host
+    return "http://\(host):\(port)\(path.hasPrefix("/") ? path : "/" + path)"
+  }
+}
+
+/// The class model's document, written again only once what it describes has changed.
 @OcaDevice
-private final class ModelDocument: Sendable {
+private final class ModelDocument {
   private weak var classManager: SwiftOCADevice.OcaClassManager?
-  private var described: (classes: [OcaClassDescriptor], datatypes: [OcaDatatypeDescriptor])?
-  private var written = Data()
+  private var classes = [OcaClassDescriptor]()
+  private var datatypes = [OcaDatatypeDescriptor]()
+  private var written: Data?
 
   init(_ classManager: SwiftOCADevice.OcaClassManager) {
     self.classManager = classManager
@@ -55,11 +88,10 @@ private final class ModelDocument: Sendable {
   /// Nil once the class manager has gone.
   var document: Data? {
     guard let classManager else { return nil }
-    let classes = classManager.controlClasses
-    let datatypes = classManager.datatypes
-    if described?.classes != classes || described?.datatypes != datatypes {
+    if written == nil || classes != classManager.controlClasses || datatypes != classManager.datatypes {
+      classes = classManager.controlClasses
+      datatypes = classManager.datatypes
       written = Data(OcaXMIExport.document(classes: classes, datatypes: datatypes).utf8)
-      described = (classes, datatypes)
     }
     return written
   }
