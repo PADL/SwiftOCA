@@ -59,8 +59,8 @@ public final class OcaClassManager: OcaManager {
   )
   public private(set) var datatypes = OcaList<OcaDatatypeDescriptor>()
 
-  /// The path of the device's class model as an XMI document, resolved against the
-  /// address a controller connected to; empty when the model is not served.
+  /// The URL of the device's class model as an XMI document, on the HTTP endpoint that
+  /// serves it; empty when the model is not served.
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.3"),
     getMethodID: OcaMethodID("3.5")

@@ -115,17 +115,23 @@ final class XMIExportTests: XCTestCase {
       device: device
     )
     XCTAssertEqual(manager.modelURL, "")
-    await manager.serveModel(on: endpoint)
-    XCTAssertEqual(manager.modelURL, "/aes70/model.xmi")
+    await manager.serveModel(on: endpoint, host: "127.0.0.1")
+    // bound to port 0, so ModelURL waits for the port the system chooses
+    XCTAssertEqual(manager.modelURL, "")
     let endpointTask = Task { try await endpoint.run() }
     defer { endpointTask.cancel() }
-    try await endpoint.httpServer.waitUntilListening(timeout: 5)
-    let listening = await endpoint.httpServer.listeningAddress
-    guard case let .ip4(_, port) = try XCTUnwrap(listening) else {
-      return XCTFail("not listening on IPv4")
+    try await endpoint.waitUntilListening()
+    let listeningPort = await endpoint.listeningPort
+    let port = try XCTUnwrap(listeningPort)
+    for _ in 0..<500 where manager.modelURL.isEmpty {
+      try await Task.sleep(for: .milliseconds(10))
     }
+    XCTAssertEqual(manager.modelURL, "http://127.0.0.1:\(port)/aes70/model.xmi")
+    // a second time on the same endpoint changes nothing a controller sees
+    await manager.serveModel(on: endpoint, host: "127.0.0.1")
+    XCTAssertEqual(manager.modelURL, "http://127.0.0.1:\(port)/aes70/model.xmi")
 
-    let (status, contentType, body) = try await Self.get(manager.modelURL, port: port)
+    let (status, contentType, body) = try await Self.get(manager.modelURL)
     XCTAssertEqual(status, 200)
     XCTAssertEqual(contentType, "application/xml; charset=utf-8")
     let model = try OcaXMIModel(data: body)
@@ -135,13 +141,16 @@ final class XMIExportTests: XCTestCase {
     // what a later object brings is in the next document
     XCTAssertFalse(model.classes.contains { $0.classID == SwiftOCADevice.OcaPolarity.classID })
     _ = try await SwiftOCADevice.OcaPolarity(role: "Polarity", deviceDelegate: device)
-    let (_, _, later) = try await Self.get(manager.modelURL, port: port)
+    let (_, _, later) = try await Self.get(manager.modelURL)
     XCTAssertTrue(try OcaXMIModel(data: later).classes.contains { $0.classID == SwiftOCADevice.OcaPolarity.classID })
   }
 
-  /// A GET over a plain socket: its status, content type and body.
-  private static func get(_ path: String, port: UInt16) async throws -> (Int, String?, Data) {
-    let socket = try await AsyncSocket.connected(to: .inet(ip4: "127.0.0.1", port: port))
+  /// A GET of an http URL on this host over a plain socket: its status, content type and body.
+  private static func get(_ url: String) async throws -> (Int, String?, Data) {
+    let components = try XCTUnwrap(URLComponents(string: url))
+    let port = try UInt16(XCTUnwrap(components.port))
+    let path = components.path
+    let socket = try await AsyncSocket.connected(to: .inet(ip4: XCTUnwrap(components.host), port: port))
     defer { try? socket.close() }
     try await socket.write(Data("GET \(path) HTTP/1.1\r\nHost: 127.0.0.1:\(port)\r\nConnection: close\r\n\r\n".utf8))
     var head = [UInt8]()
@@ -159,7 +168,49 @@ final class XMIExportTests: XCTestCase {
     let length = headers["content-length"].flatMap(Int.init) ?? 0
     return try await (status, headers["content-type"], Data(socket.read(bytes: length)))
   }
+
+  func testModelURLsAreAbsoluteAndBracketIPv6() {
+    XCTAssertEqual(OcaModelURL.url(host: "127.0.0.1", port: 8080, path: "/aes70/model.xmi"), "http://127.0.0.1:8080/aes70/model.xmi")
+    XCTAssertEqual(OcaModelURL.url(host: "fe80::1", port: 80, path: "model.xmi"), "http://[fe80::1]:80/model.xmi")
+    XCTAssertEqual(OcaModelURL.url(host: "[::1]", port: 80, path: "/m"), "http://[::1]:80/m")
+    XCTAssertTrue(OcaModelURL.defaultHost.contains("."))
+  }
   #endif
+
+  /// What the model's own form cannot say is tagged, and reads back as written; what
+  /// XML cannot hold is replaced, and documentation and method order are as a class
+  /// manager has them.
+  func testWhatOnlyTagsCanSayReadsBack() throws {
+    let datatypes = [
+      OcaDatatypeDescriptor(name: "PadlBig", kind: .enum, baseTypeName: "OcaUint32", items: [
+        OcaEnumItemDescriptor(name: "One", value: 1),
+      ]),
+      OcaDatatypeDescriptor(name: "PadlGain", kind: .typedef, baseTypeName: "OcaFloat32"),
+      OcaDatatypeDescriptor(name: "PadlFlags", kind: .bitset, baseTypeName: "OcaUint32"),
+      OcaDatatypeDescriptor(name: "PadlThing", kind: .struct, fields: [
+        OcaFieldDescriptor(name: "Gain", typeName: "PadlGain"),
+        OcaFieldDescriptor(name: "Trim", typeName: "PadlGain"),
+      ]),
+      OcaDatatypeDescriptor(name: "PadlPair", kind: .struct, typeArguments: ["T"], fields: [
+        OcaFieldDescriptor(name: "First", typeName: "T"),
+        OcaFieldDescriptor(name: "Second", typeName: "T"),
+      ], documentation: "  bell\u{7}and\u{FFFE}  "),
+    ]
+    let classes = [OcaClassDescriptor(classID: "1.1", classVersion: 2, name: "PadlWorker", properties: [], methods: [
+      OcaClassMethodDescriptor(methodID: "2.2", name: "Second", parameters: []),
+      OcaClassMethodDescriptor(methodID: "2.1", name: "First", parameters: []),
+    ])]
+    let model = try OcaXMIModel(data: Data(OcaXMIExport.document(classes: classes, datatypes: datatypes).utf8))
+    var expected = datatypes
+    expected[4].documentation = "bell\u{FFFD}and\u{FFFD}"
+    XCTAssertEqual(model.datatypes, expected.sorted { $0.name < $1.name })
+    XCTAssertEqual(model.classes.first?.methods.map(\.name), ["First", "Second"])
+  }
+
+  func testADocumentXMLCannotHoldIsAnError() {
+    let document = "<?xml version=\"1.0\"?><xmi:XMI xmlns:xmi=\"x\"><a b=\"\u{7}\"/></xmi:XMI>"
+    XCTAssertThrowsError(try OcaXMIModel(data: Data(document.utf8)))
+  }
 
   @OcaDevice
   func testTheSameModelWritesTheSameDocument() async throws {

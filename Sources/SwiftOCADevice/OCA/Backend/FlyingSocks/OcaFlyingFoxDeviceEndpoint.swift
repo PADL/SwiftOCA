@@ -227,6 +227,23 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     await httpServer.appendRoute(route, handler: handler)
   }
 
+  /// The port the endpoint listens on: the one it was given, or for port 0 the one the
+  /// system chose, once it is listening; nil until then.
+  public var listeningPort: UInt16? {
+    get async {
+      if port != 0 { return port }
+      switch await httpServer.listeningAddress {
+      case let .ip4(_, port), let .ip6(_, port): return port
+      default: return nil
+      }
+    }
+  }
+
+  /// Waits until the endpoint is listening, or throws after `timeout`.
+  public func waitUntilListening(timeout: Duration = .seconds(5)) async throws {
+    try await httpServer.waitUntilListening(timeout: timeout.timeInterval)
+  }
+
   public nonisolated var description: String {
     "\(type(of: self))(address: \(address._presentationAddress), timeout: \(timeout))"
   }
