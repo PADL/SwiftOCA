@@ -25,6 +25,7 @@ public enum OcaResetCause: OcaUint8, Sendable, Codable, CaseIterable {
   case internalError = 1
   case upgrade = 2
   case externalRequest = 3
+  case unknown = 255
 }
 
 @OcaClass

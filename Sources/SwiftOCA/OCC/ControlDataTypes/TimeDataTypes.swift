@@ -60,7 +60,8 @@ public struct OcaTime: Codable, Sendable, Comparable {
   }
 }
 
-public typealias OcaTimeInterval = TimeInterval
+/// A duration in seconds, which AES70 codes as an `OcaFloat32`.
+public typealias OcaTimeInterval = OcaFloat32
 
 // TODO: check OcaTimeMode encoding
 public enum OcaTimeMode: OcaUint8, Codable, Sendable, CaseIterable {
