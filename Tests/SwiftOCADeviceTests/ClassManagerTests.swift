@@ -57,7 +57,7 @@ final class ClassManagerTests: XCTestCase {
     try await connection.connect()
     let classManager: SwiftOCA.OcaClassManager = try await connection.resolve(
       object: OcaObjectIdentification(
-        oNo: SwiftOCA.OcaClassManager.objectNumber,
+        oNo: OcaClassManagerONo,
         classIdentification: SwiftOCA.OcaClassManager.classIdentification
       )
     )

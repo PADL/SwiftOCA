@@ -15,7 +15,7 @@
 //
 
 /// A class manager, which AES70 does not define: it describes the classes of the
-/// device's objects. It is PADL's, at the last object number AES70 reserves.
+/// device's objects. It is PADL's, at `OcaClassManagerONo`.
 @OcaClass
 open class OcaClassManager: OcaManager, @unchecked Sendable {
   /// The organisation whose class this is, until it has a standard home.
@@ -24,9 +24,6 @@ open class OcaClassManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID {
     OcaClassID(parent: OcaManager.classID, authority: authority, "1")
   }
-
-  /// The last object number AES70 reserves, which OCA gives no object of its own.
-  public static let objectNumber: OcaONo = OcaMaximumReservedONo
 
   public struct GetControlClassParameters: OcaParametersReflectable {
     public let classID: OcaClassID
@@ -48,6 +45,6 @@ open class OcaClassManager: OcaManager, @unchecked Sendable {
   public func getControlClasses() async throws -> [OcaClassDescriptor]
 
   public convenience init() {
-    self.init(objectNumber: Self.objectNumber)
+    self.init(objectNumber: OcaClassManagerONo)
   }
 }

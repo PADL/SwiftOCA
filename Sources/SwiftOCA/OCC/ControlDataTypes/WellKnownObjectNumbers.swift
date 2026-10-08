@@ -30,6 +30,7 @@ public let OcaTaskManagerONo: OcaONo = 11
 public let OcaCodingManagerONo: OcaONo = 12
 public let OcaDiagnosticManagerONo: OcaONo = 13
 public let OcaLockManagerONo: OcaONo = 14
+public let OcaClassManagerONo: OcaONo = 99
 
 public let OcaRootBlockONo: OcaONo = 100
 
