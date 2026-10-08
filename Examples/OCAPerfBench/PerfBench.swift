@@ -29,7 +29,7 @@ import SwiftOCADevice
 
 /// `OcaTCPDeviceEndpoint` is the portable stream endpoint (FlyingSocks on Darwin,
 /// IORing on Linux); there is no such alias for datagrams, so name one here.
-#if os(Linux)
+#if os(Linux) && NonEmbeddedBuild
 typealias BenchDatagramDeviceEndpoint = OcaIORingDatagramDeviceEndpoint
 #else
 typealias BenchDatagramDeviceEndpoint = OcaFlyingSocksDatagramDeviceEndpoint
@@ -37,9 +37,13 @@ typealias BenchDatagramDeviceEndpoint = OcaFlyingSocksDatagramDeviceEndpoint
 
 /// OCP.1 (default) or OCP.2, selected with BENCH_PROTOCOL=ocp2. Both ends must agree,
 /// so it is threaded into every endpoint and every connection below.
+#if NonEmbeddedBuild
 let benchProtocol: OcaControlProtocol =
   ProcessInfo.processInfo.environment["BENCH_PROTOCOL"] == "ocp2" ? .ocp2 : .ocp1
-let benchProtocolLabel = benchProtocol == .ocp2 ? "ocp2" : "ocp1"
+#else
+let benchProtocol: OcaControlProtocol = .ocp1
+#endif
+let benchProtocolLabel = benchProtocol.rawValue
 
 nonisolated(unsafe) var sink: UInt64 = 0
 
@@ -244,10 +248,12 @@ private func setLabel(_ text: String) throws -> Ocp1Command {
   switch benchProtocol {
   case .ocp1:
     parameters = try OcaParameters(parameterCount: 1, parameterData: Ocp1Encoder().encode(text))
+  #if NonEmbeddedBuild
   case .ocp2:
     parameters = try OcaParameters(
       ocp2Parameters: Ocp2Encoder().encodeParameters(text, parameterNames: ["Label"])
     )
+  #endif
   }
   return Ocp1Command(
     commandSize: 0,

@@ -189,6 +189,7 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
         .reduce(into: [String: Sendable]()) { $0.merge($1) { $1 } }
     }
   }
+  #endif
 
   /// The OCP.2 wire name of a property for the JSON export, derived from its Swift
   /// name with no exceptions: the object number resolves to `ObjectNumber`, which is
@@ -206,6 +207,7 @@ open class OcaRoot: CustomStringConvertible, @unchecked Sendable, _OcaObjectKeyP
     return Ocp2Naming.wireName(name)
   }
 
+  #if NonEmbeddedBuild
   public var jsonObject: [String: any Sendable] {
     get async {
       await getJsonValue(flags: .defaultFlags)

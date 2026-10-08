@@ -103,13 +103,13 @@ public final class OcaClassManager: OcaManager {
   private static func parameters(of method: OcaAnyMethodDescriptor) -> [OcaClassParameterDescriptor] {
     guard let type = method.parametersType else { return [] }
     if type is any OcaParametersReflectable.Type {
-      let fields = Ocp2Encoder.fields(of: type)
+      let fields = Ocp2Naming.fields(of: type)
       let declared = OcaAnyMethodDescriptor.declaredNames(
         method.parameterTypeNames, fieldCount: fields.count, isRecord: true
       )
       return fields.enumerated().map { index, field in
         let name = method.parameterNames.flatMap { index < $0.count ? $0[index] : nil }
-          ?? Ocp2Encoder.fieldName(field.name)
+          ?? Ocp2Naming.wireName(field.name)
         return OcaClassParameterDescriptor(
           name: name,
           typeName: Self.typeName(declared: declared?[index], of: field.type)
