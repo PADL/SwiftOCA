@@ -256,7 +256,7 @@ final class MachPortConnectionTests: XCTestCase {
       address: addressData,
       device: device
     )
-    let socket = try await tcpEndpoint.preparePoolAndSocket()
+    let socket = try await tcpEndpoint.bind()
     let port: UInt16 = try {
       let addr = try socket.sockname()
       switch addr {
@@ -265,7 +265,7 @@ final class MachPortConnectionTests: XCTestCase {
       default: throw Ocp1Error.notConnected
       }
     }()
-    let tcpEndpointTask = Task { try await tcpEndpoint._run(on: socket, pool: tcpEndpoint.pool) }
+    let tcpEndpointTask = Task { try await tcpEndpoint.serve(on: socket) }
     defer { tcpEndpointTask.cancel() }
     try await Task.sleep(for: .milliseconds(100))
 

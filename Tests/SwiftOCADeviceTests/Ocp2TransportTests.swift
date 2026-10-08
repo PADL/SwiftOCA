@@ -107,9 +107,9 @@ private func startStreamEndpoint(
     device: device,
     controlProtocol: .ocp2
   )
-  let socket = try await endpoint.preparePoolAndSocket()
+  let socket = try await endpoint.bind()
   let port = try boundPort(of: socket)
-  return (endpoint, Task { try await endpoint._run(on: socket, pool: endpoint.pool) }, port)
+  return (endpoint, Task { try await endpoint.serve(on: socket) }, port)
 }
 
 private func startDatagramEndpoint(
@@ -122,9 +122,9 @@ private func startDatagramEndpoint(
     device: device,
     controlProtocol: .ocp2
   )
-  let socket = try await endpoint.preparePoolAndSocket()
+  let socket = try await endpoint.bind()
   let port = try boundPort(of: socket)
-  return (endpoint, Task { try await endpoint._run(on: socket, pool: endpoint.pool) }, port)
+  return (endpoint, Task { try await endpoint.serve(on: socket) }, port)
 }
 #endif
 

@@ -59,7 +59,7 @@ private func makeTCPEndpoint(
     timeout: timeout,
     device: device
   )
-  let socket = try await endpoint.preparePoolAndSocket()
+  let socket = try await endpoint.bind()
   let port = try boundPort(of: socket)
   return (endpoint, socket, port)
 }
@@ -88,7 +88,7 @@ final class KeepAliveTests: XCTestCase {
     try await device.initializeDefaultObjects()
 
     let (endpoint, socket, port) = try await makeTCPEndpoint(device: device, timeout: .seconds(3))
-    let endpointTask = Task { try await endpoint._run(on: socket, pool: endpoint.pool) }
+    let endpointTask = Task { try await endpoint.serve(on: socket) }
     defer { endpointTask.cancel() }
 
     try await Task.sleep(for: .milliseconds(100))
@@ -151,7 +151,7 @@ final class KeepAliveTests: XCTestCase {
     try await device.initializeDefaultObjects()
 
     let (endpoint, socket, port) = try await makeTCPEndpoint(device: device, timeout: .seconds(3))
-    let endpointTask = Task { try await endpoint._run(on: socket, pool: endpoint.pool) }
+    let endpointTask = Task { try await endpoint.serve(on: socket) }
     defer { endpointTask.cancel() }
 
     try await Task.sleep(for: .milliseconds(100))
@@ -184,7 +184,7 @@ final class KeepAliveTests: XCTestCase {
     try await device.initializeDefaultObjects()
 
     let (endpoint, socket, port) = try await makeTCPEndpoint(device: device)
-    let endpointTask = Task { try await endpoint._run(on: socket, pool: endpoint.pool) }
+    let endpointTask = Task { try await endpoint.serve(on: socket) }
     defer { endpointTask.cancel() }
 
     try await Task.sleep(for: .milliseconds(100))
@@ -234,7 +234,7 @@ final class KeepAliveTests: XCTestCase {
     try await device.initializeDefaultObjects()
 
     let (endpoint, socket, port) = try await makeTCPEndpoint(device: device, timeout: .seconds(3))
-    let endpointTask = Task { try await endpoint._run(on: socket, pool: endpoint.pool) }
+    let endpointTask = Task { try await endpoint.serve(on: socket) }
     defer { endpointTask.cancel() }
 
     try await Task.sleep(for: .milliseconds(100))
