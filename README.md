@@ -53,6 +53,8 @@ The WebSocket client (WS client) uses Apple's `URLSessionWebSocketTask` and is t
 ### SwiftOCAXMI
 
 * **Class model import**: `OcaXMIModel` reads the AES70-2 class model's XMI and describes its control classes and datatypes with the class manager's descriptors, so a device's own descriptions can be checked against the model.
+* **Class model export**: `OcaXMIExport` writes descriptors back as XMI in the same shape, which `OcaXMIModel` reads back as written. A UML tool can read its UML section; it is not an Enterprise Architect project.
+* **Serving the model** (`SwiftOCAXMIDevice`): `classManager.serveModel(on: endpoint)` serves the device's class model at `/aes70/model.xmi` on an `OcaFlyingFoxDeviceEndpoint` and sets the class manager's ModelURL to that path.
 
 ## Examples
 

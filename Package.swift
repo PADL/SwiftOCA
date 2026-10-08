@@ -249,6 +249,10 @@ let CommonProducts: [Product] = [
     name: "SwiftOCAXMI",
     targets: ["SwiftOCAXMI"]
   ),
+  .library(
+    name: "SwiftOCAXMIDevice",
+    targets: ["SwiftOCAXMIDevice"]
+  ),
 ]
 
 let CommonTargets: [Target] = [
@@ -412,9 +416,28 @@ let CommonTargets: [Target] = [
     ],
     linkerSettings: [] + ASANLinkerSettings
   ),
+  // a device's class manager serving its model; apart so SwiftOCADevice needs no XMI
+  .target(
+    name: "SwiftOCAXMIDevice",
+    dependencies: [
+      "SwiftOCADevice",
+      "SwiftOCAXMI",
+      .product(name: "FlyingFox", package: "FlyingFox", condition: .when(traits: ["NonEmbeddedBuild"])),
+    ],
+    swiftSettings: [
+      .unsafeFlags(ASANSwiftFlags),
+    ],
+    linkerSettings: [] + ASANLinkerSettings
+  ),
   .testTarget(
     name: "SwiftOCAXMITests",
-    dependencies: ["SwiftOCAXMI", "SwiftOCADevice"],
+    dependencies: [
+      "SwiftOCAXMI",
+      "SwiftOCADevice",
+      "SwiftOCAXMIDevice",
+      .product(name: "FlyingFox", package: "FlyingFox", condition: .when(traits: ["NonEmbeddedBuild"])),
+      .product(name: "FlyingSocks", package: "FlyingFox"),
+    ],
     resources: [.copy("Resources")],
     swiftSettings: [
       .unsafeFlags(ASANSwiftFlags),
