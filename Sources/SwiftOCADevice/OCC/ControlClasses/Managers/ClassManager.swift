@@ -94,6 +94,9 @@ public final class OcaClassManager: OcaManager {
             datatypes.add(element.type, declared: element.declared)
           }
         }
+        for event in Self.ownEvents(of: oca) {
+          datatypes.add(event.eventDataType, declared: nil)
+        }
       }
     }
     for root in Self.rootProperties {
@@ -133,18 +136,69 @@ public final class OcaClassManager: OcaManager {
           isReadOnly: !property.isSettable
         )
       },
-      methods: classes.flatMap(\.methods).map { descriptor in
-        OcaClassMethodDescriptor(
-          methodID: descriptor.method.methodID,
-          name: descriptor.method.name,
-          parameters: elements(of: descriptor.method).map {
-            OcaClassParameterDescriptor(
-              name: $0.name, typeName: Self.typeName(declared: $0.declared, of: $0.type), direction: $0.direction
-            )
-          }
-        )
+      methods: methods(of: classes),
+      events: classes.flatMap(ownEvents(of:)).map {
+        OcaClassEventDescriptor(eventID: $0.eventID, name: $0.name, eventDataTypeName: _ocaTypeName(for: $0.eventDataType))
       }
     )
+  }
+
+  /// The events `oca` itself declares, not those of the classes it derives from.
+  private static func ownEvents(of oca: OcaDeviceClassDescriptor) -> [OcaDeviceEventDescriptor] {
+    oca.type.deviceEvents.filter { $0.eventID.defLevel == oca.classID.defLevel }
+  }
+
+  /// The classes' methods in method ID order, their properties' getters and setters
+  /// among them, as the model lists them as operations.
+  private static func methods(of classes: [OcaDeviceClassDescriptor]) -> [OcaClassMethodDescriptor] {
+    var methods = [OcaMethodID: OcaClassMethodDescriptor]()
+    for descriptor in classes.flatMap(\.methods) {
+      methods[descriptor.method.methodID] = OcaClassMethodDescriptor(
+        methodID: descriptor.method.methodID,
+        name: descriptor.method.name,
+        parameters: elements(of: descriptor.method).map {
+          OcaClassParameterDescriptor(
+            name: $0.name, typeName: Self.typeName(declared: $0.declared, of: $0.type), direction: $0.direction
+          )
+        }
+      )
+    }
+    for property in classes.flatMap(\.properties) {
+      for accessor in accessors(of: property) where methods[accessor.methodID] == nil {
+        methods[accessor.methodID] = accessor
+      }
+    }
+    return methods.values.sorted { ($0.methodID.defLevel, $0.methodID.methodIndex) < ($1.methodID.defLevel, $1.methodID.methodIndex) }
+  }
+
+  /// A property's getter and setter: the getter returns its value, and a bounded
+  /// property's range after it; the setter takes its value. A vector's are its components.
+  private static func accessors(of property: OcaDevicePropertyDescriptor) -> [OcaClassMethodDescriptor] {
+    let name = Ocp2Naming.wireName(property.name)
+    let typeName = Self.typeName(declared: property.typeName, of: property.valueType)
+    let values: [OcaClassParameterDescriptor]
+    if let components = property.componentNames, let componentType = property.componentType {
+      let component = _ocaTypeName(for: componentType)
+      values = [components.x, components.y].map {
+        OcaClassParameterDescriptor(name: Ocp2Naming.wireName($0), typeName: component, direction: .in)
+      }
+    } else {
+      values = [OcaClassParameterDescriptor(name: property.ocp2SetName, typeName: typeName, direction: .in)]
+    }
+    var gotten = values.map { OcaClassParameterDescriptor(name: $0.name, typeName: $0.typeName, direction: .out) }
+    if property.flags.contains(.bounded), property.componentNames == nil {
+      gotten = property.ocp2GetNames.map { OcaClassParameterDescriptor(name: $0, typeName: typeName, direction: .out) }
+    } else if property.componentNames == nil, let getName = property.ocp2GetNames.first {
+      gotten = [OcaClassParameterDescriptor(name: getName, typeName: typeName, direction: .out)]
+    }
+    var accessors = [OcaClassMethodDescriptor]()
+    if let getMethodID = property.getMethodID {
+      accessors.append(OcaClassMethodDescriptor(methodID: getMethodID, name: "Get" + name, parameters: gotten))
+    }
+    if let setMethodID = property.setMethodID {
+      accessors.append(OcaClassMethodDescriptor(methodID: setMethodID, name: "Set" + name, parameters: values))
+    }
+    return accessors
   }
 
   /// What a method takes, then what it returns, each with the type its signature names.
@@ -177,6 +231,9 @@ public final class OcaClassManager: OcaManager {
   /// anything else by its own name. A typealias such as `OcaDB` is not known at run
   /// time, so it is named for the type it stands for.
   fileprivate nonisolated static func _ocaTypeName(for type: Any.Type) -> String {
+    if let describing = type as? any OcaDatatypeDescribing.Type {
+      return describing.datatypeDescriptor.name
+    }
     if let template = type as? any OcaTemplateDatatype.Type {
       return "\(template.templateName)<\(template.templateArguments.map(_ocaTypeName(for:)).joined(separator: ", "))>"
     }
@@ -248,6 +305,9 @@ private struct Datatypes {
       for referred in describing.referredDatatypes where described[referred.name] == nil {
         described[referred.name] = referred
       }
+      for referred in describing.referredTypes {
+        add(referred)
+      }
       return
     }
     if let template = type as? any OcaTemplateDatatype.Type {
@@ -282,8 +342,10 @@ private struct Datatypes {
       add(key)
       add(value)
     case let .enumeration(cases):
+      // the integer it is coded as, which AES70's enum and enumlong tell apart
+      let raw = (type as? any RawRepresentable.Type).map { OcaClassManager._ocaTypeName(for: Self.rawType(of: $0)) }
       described[name] = OcaDatatypeDescriptor(
-        name: name, kind: .enum,
+        name: name, kind: .enum, baseTypeName: raw ?? "",
         items: cases.map { OcaEnumItemDescriptor(name: Ocp2Naming.wireName($0.name), value: $0.value) }
       )
     case let .rawValue(raw):
@@ -304,4 +366,6 @@ private struct Datatypes {
       break
     }
   }
+
+  private static func rawType<R: RawRepresentable>(of _: R.Type) -> Any.Type { R.RawValue.self }
 }

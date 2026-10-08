@@ -163,7 +163,7 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(list.typeArguments, ["OcaClassDescriptor"])
     let descriptor = try await h.classManager.getDatatype(name: "OcaClassDescriptor")
     XCTAssertEqual(descriptor.kind, .struct)
-    XCTAssertEqual(descriptor.fields.map(\.name), ["ClassID", "ClassVersion", "Name", "Properties", "Methods"])
+    XCTAssertEqual(descriptor.fields.map(\.name), ["ClassID", "ClassVersion", "Name", "Properties", "Methods", "Events"])
 
     let all = try await h.classManager.getDatatypes()
     XCTAssertEqual(Set(all.map(\.name)).count, all.count, "each datatype once")
@@ -171,8 +171,14 @@ final class ClassManagerTests: XCTestCase {
     let names = Set(all.map(\.name))
     // a fixed length blob's argument is its length, not a type
     let arguments = all.flatMap(\.typeArguments).filter { Int($0) == nil }
-    let referred = all.flatMap { [$0.baseTypeName] + $0.fields.map(\.typeName) } + arguments
+    // a struct's type arguments are its parameters, which its fields may name
+    let referred = all.flatMap { datatype in
+      [datatype.baseTypeName] + datatype.fields.map(\.typeName).filter { !(datatype.kind == .struct && datatype.typeArguments.contains($0)) }
+    } + arguments.filter { argument in !all.contains { $0.kind == .struct && $0.typeArguments.contains(argument) } }
     XCTAssertEqual(Set(referred.filter { !$0.isEmpty }).subtracting(names), [])
+
+    // an enum is coded as the integer it is based on
+    XCTAssertEqual(mute.baseTypeName, "OcaUint8")
 
     // a type coded otherwise than its Swift declaration, described as it is coded
     let members = try await h.classManager.getDatatype(name: "OcaList2D<OcaONo>")
@@ -183,6 +189,36 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(classIDField.kind, .struct)
     let organization = try await h.classManager.getDatatype(name: "OcaBlobFixedLen<3>")
     XCTAssertEqual(organization.kind, .template)
+  }
+
+  func testAClassListsItsEventsAndItsPropertiesAccessorsAsMethods() async throws {
+    let h = try await makeHarness()
+    defer { Task { await h.tearDown() } }
+
+    let root = try await h.classManager.getControlClass(classID: SwiftOCADevice.OcaRoot.classID, includeInherited: false)
+    XCTAssertEqual(root.events, [OcaClassEventDescriptor(
+      eventID: OcaPropertyChangedEventID, name: "PropertyChanged", eventDataTypeName: "OcaPropertyChangedEventData"
+    )])
+    let changed = try await h.classManager.getDatatype(name: "OcaPropertyChangedEventData")
+    XCTAssertEqual(changed.fields.map(\.typeName), ["OcaPropertyID", "DT", "OcaPropertyChangeType"])
+
+    // a class's own events only, unless its ancestors' are asked for
+    let gain = try await h.classManager.getControlClass(classID: SwiftOCADevice.OcaGain.classID, includeInherited: false)
+    XCTAssertEqual(gain.events, [])
+    let inherited = try await h.classManager.getControlClass(classID: SwiftOCADevice.OcaGain.classID, includeInherited: true)
+    XCTAssertEqual(inherited.events.map(\.name), ["PropertyChanged"])
+
+    // a bounded property's getter returns its value and range; its setter takes its value
+    let getGain = try XCTUnwrap(gain.methods.first { $0.name == "GetGain" })
+    XCTAssertEqual(getGain.methodID, OcaMethodID("4.1"))
+    XCTAssertEqual(getGain.parameters.map(\.direction), [.out, .out, .out])
+    XCTAssertEqual(getGain.parameters.map(\.typeName), ["OcaDB", "OcaDB", "OcaDB"])
+    let setGain = try XCTUnwrap(gain.methods.first { $0.name == "SetGain" })
+    XCTAssertEqual(setGain.parameters.map(\.name), ["Gain"])
+    XCTAssertEqual(setGain.parameters.map(\.direction), [.in])
+    // in method ID order
+    let ids = inherited.methods.map { [Int($0.methodID.defLevel), Int($0.methodID.methodIndex)] }
+    XCTAssertEqual(ids, ids.sorted { $0.lexicographicallyPrecedes($1) })
   }
 
   func testEveryClassOfTheDevicesObjectsIsListed() async throws {

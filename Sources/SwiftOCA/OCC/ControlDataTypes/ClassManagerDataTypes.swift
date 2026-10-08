@@ -26,20 +26,37 @@ public struct OcaClassDescriptor: Codable, Sendable, Equatable {
   public var classVersion: OcaClassVersionNumber
   public var name: OcaString
   public var properties: [OcaClassPropertyDescriptor]
+  /// Every method, property accessors included, as the model lists its operations.
   public var methods: [OcaClassMethodDescriptor]
+  public var events: [OcaClassEventDescriptor]
 
   public init(
     classID: OcaClassID,
     classVersion: OcaClassVersionNumber,
     name: OcaString,
     properties: [OcaClassPropertyDescriptor],
-    methods: [OcaClassMethodDescriptor]
+    methods: [OcaClassMethodDescriptor],
+    events: [OcaClassEventDescriptor] = []
   ) {
     self.classID = classID
     self.classVersion = classVersion
     self.name = name
     self.properties = properties
     self.methods = methods
+    self.events = events
+  }
+}
+
+/// An event, by its OCA ID and model name, with the model name of the data it carries.
+public struct OcaClassEventDescriptor: Codable, Sendable, Equatable {
+  public var eventID: OcaEventID
+  public var name: OcaString
+  public var eventDataTypeName: OcaString
+
+  public init(eventID: OcaEventID, name: OcaString, eventDataTypeName: OcaString) {
+    self.eventID = eventID
+    self.name = name
+    self.eventDataTypeName = eventDataTypeName
   }
 }
 
@@ -117,7 +134,9 @@ public enum OcaDatatypeDescriptorKind: OcaUint8, Codable, Sendable, CaseIterable
   case bitset = 6
 }
 
-/// A datatype, by its model name. Only the members its kind has are filled.
+/// A datatype, by its model name. Only the members its kind has are filled: an enum's or
+/// a bitset's `baseTypeName` is the integer it is coded as, and a struct's `typeArguments`
+/// are its type parameters, which its fields may name (`DT`).
 public struct OcaDatatypeDescriptor: Codable, Sendable, Equatable {
   public var name: OcaString
   public var kind: OcaDatatypeDescriptorKind
@@ -172,11 +191,14 @@ public protocol OcaDatatypeDescribing {
   static var datatypeDescriptor: OcaDatatypeDescriptor { get }
   /// The datatypes the descriptor refers to by name, which have no Swift type.
   static var referredDatatypes: [OcaDatatypeDescriptor] { get }
+  /// The Swift types the descriptor refers to, which describe themselves.
+  static var referredTypes: [Any.Type] { get }
 }
 
 @_spi(SwiftOCAPrivate)
 public extension OcaDatatypeDescribing {
   static var referredDatatypes: [OcaDatatypeDescriptor] { [] }
+  static var referredTypes: [Any.Type] { [] }
 }
 
 /// A generic datatype coded as an AES70 template: `OcaArray2D<OcaONo>` is
@@ -245,4 +267,22 @@ extension OcaModelGUID: OcaDatatypeDescribing {
   }
 
   public static var referredDatatypes: [OcaDatatypeDescriptor] { fixedLengthBlobs([1, 3, 4]) }
+}
+
+/// The data of an event that carries none.
+public struct OcaEmptyEventData: Codable, Sendable, Equatable {
+  public init() {}
+}
+
+@_spi(SwiftOCAPrivate)
+extension OcaPropertyChangedEventData: OcaDatatypeDescribing {
+  public static var datatypeDescriptor: OcaDatatypeDescriptor {
+    OcaDatatypeDescriptor(name: "OcaPropertyChangedEventData", kind: .struct, typeArguments: ["DT"], fields: [
+      OcaFieldDescriptor(name: "PropertyID", typeName: "OcaPropertyID"),
+      OcaFieldDescriptor(name: "PropertyValue", typeName: "DT"),
+      OcaFieldDescriptor(name: "ChangeType", typeName: "OcaPropertyChangeType"),
+    ])
+  }
+
+  public static var referredTypes: [Any.Type] { [OcaPropertyID.self, OcaPropertyChangeType.self] }
 }

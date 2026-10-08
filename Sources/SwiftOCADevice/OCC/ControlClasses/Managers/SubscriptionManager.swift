@@ -24,6 +24,21 @@ import SwiftOCA
 @OcaDeviceClass
 public class OcaSubscriptionManager: OcaManager {
   override open class var classID: OcaClassID { OcaClassID("1.3.4") }
+
+  override open class var deviceEvents: [OcaDeviceEventDescriptor] {
+    super.deviceEvents + [
+      OcaDeviceEventDescriptor(
+        eventID: SwiftOCA.OcaSubscriptionManager.NotificationsDisabledEventID,
+        name: "NotificationsDisabled",
+        eventDataType: OcaEmptyEventData.self
+      ),
+      OcaDeviceEventDescriptor(
+        eventID: SwiftOCA.OcaSubscriptionManager.SynchronizeStateEventID,
+        name: "SynchronizeState",
+        eventDataType: OcaObjectListEventData.self
+      ),
+    ]
+  }
   override open class var classVersion: OcaClassVersionNumber { 2 }
 
   @OcaDeviceProperty(propertyID: OcaPropertyID("3.1"))
