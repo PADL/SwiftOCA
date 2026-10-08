@@ -28,7 +28,8 @@ open class OcaSensor: OcaWorker, @unchecked Sendable {
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.1")
+    getMethodID: OcaMethodID("3.1"),
+    ocp2GetName: "State"
   )
-  public var state: OcaProperty<OcaSensorReadingState>.PropertyValue
+  public var readingState: OcaProperty<OcaSensorReadingState>.PropertyValue
 }

@@ -67,7 +67,7 @@ open class OcaDeviceManager: OcaManager, @unchecked Sendable {
     getMethodID: OcaMethodID("3.1"),
     ocp2GetName: "OcaVersion"
   )
-  public var version: OcaProperty<OcaUint16>.PropertyValue
+  public var ocaVersion: OcaProperty<OcaUint16>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.6"),

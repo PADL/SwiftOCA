@@ -43,5 +43,5 @@ open class OcaSwitch: OcaActuator {
     ocp2GetName: "Flags",
     ocp2SetName: "Flags"
   )
-  public var positionEnableds = [OcaBoolean]()
+  public var positionEnable = [OcaBoolean]()
 }

@@ -29,7 +29,7 @@ open class OcaStateSensor: OcaSensor {
     getMethodID: OcaMethodID("4.1"),
     ocp2GetName: "State"
   )
-  public var reading = OcaBoundedPropertyValue<OcaUint16>(value: 0, in: 0...0)
+  public var state = OcaBoundedPropertyValue<OcaUint16>(value: 0, in: 0...0)
 
   /// the first element corresponds to the minimum value of ``reading``
   @OcaDeviceProperty(

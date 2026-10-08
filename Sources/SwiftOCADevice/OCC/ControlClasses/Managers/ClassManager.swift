@@ -18,6 +18,10 @@ import SwiftOCA
 
 /// The device's class manager (see `SwiftOCA.OcaClassManager`). It describes the classes
 /// of the device's objects to a controller from what the device knows of them.
+///
+/// A typedef is named as such only where a declaration records it: a property's type, or a
+/// method's as `@OcaMethod` writes it. Elsewhere, such as a struct's fields, a Swift
+/// typealias is not known at run time, and the typedef is named as the type it stands for.
 @OcaDeviceClass
 public final class OcaClassManager: OcaManager {
   override public class var classID: OcaClassID { SwiftOCA.OcaClassManager.classID }
@@ -182,9 +186,38 @@ public final class OcaClassManager: OcaManager {
     case let .map(key, value): "OcaMap<\(_ocaTypeName(for: key)), \(_ocaTypeName(for: value))>"
     // a bounded property's value is of its type, with the bounds beside it
     case let .bounded(value): _ocaTypeName(for: value)
-    case .enumeration, .rawValue, .structure, .other: String(describing: type)
+    case .enumeration, .rawValue, .structure, .other: aes70Spelling(of: String(describing: type))
     }
   }
+
+  /// A Swift type's name with any Swift base type among its generic arguments spelled as
+  /// AES70 names it: `OcaInterval<UInt16>` is `OcaInterval<OcaUint16>`.
+  private nonisolated static func aes70Spelling(of name: String) -> String {
+    guard name.contains("<") else { return name }
+    var spelled = ""
+    var word = ""
+    func flush() {
+      spelled += swiftBaseNames[word] ?? word
+      word = ""
+    }
+    for character in name {
+      if character.isLetter || character.isNumber {
+        word.append(character)
+      } else {
+        flush()
+        spelled.append(character)
+      }
+    }
+    flush()
+    return spelled
+  }
+
+  private nonisolated static let swiftBaseNames = [
+    "Bool": "OcaBoolean", "String": "OcaString",
+    "Int8": "OcaInt8", "Int16": "OcaInt16", "Int32": "OcaInt32", "Int64": "OcaInt64",
+    "UInt8": "OcaUint8", "UInt16": "OcaUint16", "UInt32": "OcaUint32", "UInt64": "OcaUint64",
+    "Float": "OcaFloat32", "Double": "OcaFloat64",
+  ]
 }
 
 /// The datatypes reached from a set of types, each described as the model has it.

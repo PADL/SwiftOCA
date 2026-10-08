@@ -60,7 +60,7 @@ extension OcaDeviceManager {
   /// `protovers`, in that order. An endpoint's `additions` follow them, as AES70-4
   /// lists `path` after the two, then the device's own records.
   func txtRecords(adding additions: [(String, String)] = []) -> [(String, String)] {
-    [("txtvers", "1"), ("protovers", "\(version)")] + additions + [
+    [("txtvers", "1"), ("protovers", "\(ocaVersion)")] + additions + [
       ("modelGUID", "\(modelGUID)"),
       ("serialNumber", "\(serialNumber)"),
     ]

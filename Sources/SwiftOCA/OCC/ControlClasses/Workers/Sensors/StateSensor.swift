@@ -27,7 +27,7 @@ open class OcaStateSensor: OcaSensor, @unchecked Sendable {
     getMethodID: OcaMethodID("4.1"),
     ocp2GetName: "State"
   )
-  public var reading: OcaBoundedProperty<OcaUint16>.PropertyValue
+  public var state: OcaBoundedProperty<OcaUint16>.PropertyValue
 
   /// the first element corresponds to the minimum value of ``reading``; the setter is
   /// optional and may not be implemented by all devices
