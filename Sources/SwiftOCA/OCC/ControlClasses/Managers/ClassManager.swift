@@ -52,6 +52,14 @@ open class OcaClassManager: OcaManager, @unchecked Sendable {
   )
   public var datatypes: OcaProperty<OcaList<OcaDatatypeDescriptor>>.PropertyValue
 
+  /// The path of the device's class model as an XMI document, resolved against the
+  /// address the controller connected to; empty when the model is not served.
+  @OcaProperty(
+    propertyID: OcaPropertyID("3.3"),
+    getMethodID: OcaMethodID("3.5")
+  )
+  public var modelURL: OcaProperty<OcaString>.PropertyValue
+
   /// One class of an object of the device, with its ancestors' elements if asked for.
   @OcaMethod("3.3", name: "GetControlClass", parameters: GetControlClassParameters.self, resultNames: ["Descriptor"])
   public func getControlClass(classID: OcaClassID, includeInherited: OcaBoolean) async throws -> OcaClassDescriptor
