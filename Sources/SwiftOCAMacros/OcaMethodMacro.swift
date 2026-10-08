@@ -138,7 +138,7 @@ public struct OcaClassMacro: MemberMacro {
     guard !names.isEmpty || !properties.entries.isEmpty else {
       throw MacroExpansionErrorMessage("@OcaClass needs at least one @OcaMethod method or property")
     }
-    if let duplicate = Dictionary(grouping: names) { $0 }.first(where: { $0.value.count > 1 }) {
+    if let duplicate = Dictionary(grouping: names, by: { $0 }).first(where: { $0.value.count > 1 }) {
       throw MacroExpansionErrorMessage(
         "two methods are named '\(duplicate.key)'; each OCA method needs its own name"
       )
