@@ -85,6 +85,8 @@ enum ClientMethodDescriptors {
     (OcaClassManager.self, [
       ("getControlClass", OcaClassManager.Methods.getControlClass.erased),
       ("getControlClasses", OcaClassManager.Methods.getControlClasses.erased),
+      ("getDatatype", OcaClassManager.Methods.getDatatype.erased),
+      ("getDatatypes", OcaClassManager.Methods.getDatatypes.erased),
     ]),
     (OcaCounterNotifier.self, [
       ("getLastUpdate", OcaCounterNotifier.Methods.getLastUpdate.erased),
