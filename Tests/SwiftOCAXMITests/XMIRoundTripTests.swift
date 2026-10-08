@@ -135,9 +135,11 @@ final class XMIRoundTripTests: XCTestCase {
     func datatype(_ name: String) throws -> OcaDatatypeDescriptor {
       try XCTUnwrap(model.datatypes.first { $0.name == name }, name)
     }
-    var db = try datatype("OcaDB")
-    db.documentation = ""
-    XCTAssertEqual(db, OcaDatatypeDescriptor(name: "OcaDB", kind: .typedef, baseTypeName: "OcaFloat32"))
+    let db = try datatype("OcaDB")
+    XCTAssertEqual(db, OcaDatatypeDescriptor(
+      name: "OcaDB", kind: .typedef, baseTypeName: "OcaFloat32", documentation: db.documentation
+    ))
+    XCTAssertFalse(db.documentation.isEmpty)
     XCTAssertEqual(try datatype("OcaBoolean").kind, .primitive)
     XCTAssertEqual(try datatype("OcaMuteState").items.map(\.value), [1, 2])
     XCTAssertEqual(try datatype("OcaMuteState").baseTypeName, "OcaUint8")

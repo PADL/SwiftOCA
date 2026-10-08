@@ -43,7 +43,8 @@ public struct OcaXMIModel: Sendable {
       guard let name = element["name"] else { continue }
       let isDeprecated = element["xmi:idref"].map(deprecated.contains) ?? false
         || element.child(named: "properties")?["stereotype"] == "deprecated"
-      let documentation = Self.documentation(element.child(named: "properties")?["documentation"])
+      // a class's or datatype's documentation is an attribute of its properties
+      let documentation = Self.trimmed(element.child(named: "properties")?["documentation"])
       if var controlClass = Self.controlClass(element, named: name, parameters: parameters) {
         controlClass.isDeprecated = isDeprecated
         controlClass.documentation = documentation
@@ -119,13 +120,13 @@ public struct OcaXMIModel: Sendable {
     node.child(named: "stereotype")?["stereotype"] == "deprecated"
   }
 
-  /// An element's documentation, from its `documentation` child or attribute: the
-  /// parser has decoded its entities, and EA's markup, such as `<b>`, is kept as it is.
+  /// An attribute's, operation's or parameter's documentation, from its `documentation`
+  /// child: the parser has decoded its entities, and EA's markup, such as `<b>`, is kept.
   private static func documentation(_ node: XMINode) -> String {
-    documentation(node.child(named: "documentation")?["value"])
+    trimmed(node.child(named: "documentation")?["value"])
   }
 
-  private static func documentation(_ value: String?) -> String {
+  private static func trimmed(_ value: String?) -> String {
     value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
   }
 
@@ -198,27 +199,25 @@ public struct OcaXMIModel: Sendable {
       else {
         continue
       }
-      let extensionParameters = operation.child(named: "parameters")?.children(named: "parameter") ?? []
-      let types = Dictionary(extensionParameters.compactMap { p in
-        p["xmi:idref"].flatMap { pid in p.child(named: "properties")?["type"].map { (pid, $0) } }
-      }) { first, _ in first }
-      let documentations = Dictionary(extensionParameters.compactMap { p in
-        p["xmi:idref"].map { ($0, documentation(p)) }
-      }) { first, _ in first }
+      let extensionParameters = Dictionary(
+        (operation.child(named: "parameters")?.children(named: "parameter") ?? []).compactMap { p in
+          p["xmi:idref"].map { ($0, p) }
+        }
+      ) { first, _ in first }
       let declared = parameters[id] ?? []
       switch letter {
       case "m":
         methods.append((OcaClassMethodDescriptor(
           methodID: OcaMethodID(defLevel: defLevel, methodIndex: index),
           name: name,
-          parameters: Self.parameterDescriptors(declared, types: types, documentations: documentations),
+          parameters: Self.parameterDescriptors(declared, extensionParameters),
           documentation: documentation(operation)
         ), isDeprecated(operation)))
       case "e":
         events.append((OcaClassEventDescriptor(
           eventID: OcaEventID(defLevel: defLevel, eventIndex: index),
           name: name,
-          eventDataTypeName: declared.first.flatMap { types[$0.id] } ?? "",
+          eventDataTypeName: declared.first.flatMap { extensionParameters[$0.id].flatMap(type) } ?? "",
           documentation: documentation(operation)
         ), isDeprecated(operation)))
       default:
@@ -240,20 +239,24 @@ public struct OcaXMIModel: Sendable {
   /// inout parameter is taken and returned.
   private static func parameterDescriptors(
     _ declared: [(id: String, parameter: Parameter)],
-    types: [String: String],
-    documentations: [String: String]
+    _ extensionParameters: [String: XMINode]
   ) -> [OcaClassParameterDescriptor] {
     func descriptors(_ direction: OcaParameterDirection, _ directions: Set<String>) -> [OcaClassParameterDescriptor] {
       declared.filter { directions.contains($0.parameter.direction) }.map {
         OcaClassParameterDescriptor(
           name: $0.parameter.name,
-          typeName: types[$0.id] ?? "",
+          typeName: extensionParameters[$0.id].flatMap(type) ?? "",
           direction: direction,
-          documentation: documentations[$0.id] ?? ""
+          documentation: extensionParameters[$0.id].map(documentation) ?? ""
         )
       }
     }
     return descriptors(.in, ["in", "inout"]) + descriptors(.out, ["out", "inout"])
+  }
+
+  /// The type an operation's parameter is declared with in the extension section.
+  private static func type(_ parameter: XMINode) -> String? {
+    parameter.child(named: "properties")?["type"]
   }
 
   // MARK: - Datatypes
