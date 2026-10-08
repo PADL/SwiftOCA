@@ -53,7 +53,7 @@ final class DeviceManagerTests: XCTestCase {
     let deviceManager = await device.deviceManager!
 
     var managers = await deviceManager.managers
-    let classManager = SwiftOCA.OcaClassManager.objectNumber
+    let classManager = OcaClassManagerONo
     XCTAssertEqual(managers.map(\.objectNumber), [OcaSecurityManagerONo, OcaSubscriptionManagerONo, classManager])
     XCTAssertEqual(managers.map(\.name), ["SecurityManager", "SubscriptionManager", "ClassManager"])
 

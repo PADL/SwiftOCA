@@ -22,11 +22,9 @@ import SwiftOCA
 public final class OcaClassManager: OcaManager {
   override public class var classID: OcaClassID { SwiftOCA.OcaClassManager.classID }
 
-  public nonisolated static let objectNumber = SwiftOCA.OcaClassManager.objectNumber
-
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
     try await self.init(
-      objectNumber: Self.objectNumber,
+      objectNumber: OcaClassManagerONo,
       role: "ClassManager",
       deviceDelegate: deviceDelegate,
       addToRootBlock: false
