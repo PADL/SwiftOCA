@@ -91,9 +91,11 @@ open class OcaDeviceManager: OcaManager {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.8"),
     getMethodID: OcaMethodID("3.11"),
-    setMethodID: OcaMethodID("3.12")
+    setMethodID: OcaMethodID("3.12"),
+    ocp2GetName: "Enabled",
+    ocp2SetName: "Enabled"
   )
-  public var enabled = true
+  public var controlEnabled = true
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.9"),
