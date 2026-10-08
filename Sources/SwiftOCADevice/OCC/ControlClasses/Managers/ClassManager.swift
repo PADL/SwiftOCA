@@ -161,14 +161,14 @@ public final class OcaClassManager: OcaManager {
 
   /// Adds the datatypes `oca`'s own elements refer to, and those they refer to in turn.
   private func addDatatypes(for oca: OcaDeviceClassDescriptor) {
-    for property in oca.properties {
+    for property in oca.visibleProperties {
       if let componentType = property.componentType {
         described.add(componentType, declared: Self.componentTypeName(declared: property.typeName))
       } else {
         described.add(property.valueType, declared: property.typeName)
       }
     }
-    for descriptor in oca.methods {
+    for descriptor in oca.visibleMethods {
       for element in Self.elements(for: descriptor.method) {
         described.add(element.type, declared: element.declared)
       }
@@ -211,7 +211,7 @@ public final class OcaClassManager: OcaManager {
       classVersion: oca.classVersion,
       // a generic class, such as OcaBlock<OcaRoot>, by the class's own name
       name: String(String(describing: oca.type).prefix { $0 != "<" }),
-      properties: root + classes.flatMap(\.properties).flatMap { property in
+      properties: root + classes.flatMap(\.visibleProperties).flatMap { property in
         // a vector property is two of the model's, X and Y, read and written together
         let components: [(OcaPropertyID, String, Any.Type, String?)] =
           if let yPropertyID = property.yPropertyID, let componentType = property.componentType {
@@ -248,7 +248,7 @@ public final class OcaClassManager: OcaManager {
   /// The classes' methods in method ID order, their properties' getters and setters
   /// among them, as the model lists them as operations.
   private static func methods(for classes: [OcaDeviceClassDescriptor]) -> [OcaClassMethodDescriptor] {
-    let declared = classes.flatMap(\.methods).map { descriptor in
+    let declared = classes.flatMap(\.visibleMethods).map { descriptor in
       (descriptor.method.methodID, OcaClassMethodDescriptor(
         methodID: descriptor.method.methodID,
         name: descriptor.method.name,
@@ -262,7 +262,7 @@ public final class OcaClassManager: OcaManager {
     }
     // a declared method stands in for a property's accessor of the same ID
     let methods = Dictionary(declared) { _, last in last }
-      .merging(classes.flatMap(\.properties).flatMap(accessors(for:)).map { ($0.methodID, $0) }) { kept, _ in kept }
+      .merging(classes.flatMap(\.visibleProperties).flatMap(accessors(for:)).map { ($0.methodID, $0) }) { kept, _ in kept }
     return methods.values.sorted { $0.methodID < $1.methodID }
   }
 

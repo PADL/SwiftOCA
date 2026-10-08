@@ -24,6 +24,20 @@ import SwiftOCAXMI
 import SwiftOCAXMIDevice
 import XCTest
 
+/// A class with a property and a method declared `hidden`.
+@OcaDeviceClass
+private final class _Concealing: SwiftOCADevice.OcaWorker {
+  override class var classID: OcaClassID {
+    OcaClassID(parent: super.classID, authority: OcaClassID.OcaAllianceCompanyID, 3)
+  }
+
+  @OcaDeviceProperty(propertyID: OcaPropertyID("3.1"), getMethodID: OcaMethodID("3.1"), hidden: true)
+  var concealed: OcaUint16 = 0
+
+  @OcaDeviceMethod("3.2", name: "Reveal", access: .read, hidden: true)
+  func reveal(from controller: any OcaController) -> OcaUint32 { 42 }
+}
+
 /// Writes class manager descriptors as XMI and reads them back.
 final class XMIExportTests: XCTestCase {
   /// A device with objects of several kinds of class, among them a deprecated one.
@@ -223,6 +237,20 @@ final class XMIExportTests: XCTestCase {
     // XMI IDs are unique within a document
     let ids = first.components(separatedBy: #"xmi:id=""#).dropFirst().map { $0.prefix { $0 != "\"" } }
     XCTAssertEqual(Set(ids).count, ids.count)
+  }
+
+  @OcaDevice
+  func testHiddenElementsAreNotWritten() async throws {
+    let (device, manager) = try await Self.device()
+    defer { withExtendedLifetime(device) {} }
+    _ = try await _Concealing(role: "Concealing", deviceDelegate: device, addToRootBlock: false)
+    let document = OcaXMIExport.document(classes: manager.controlClasses, datatypes: manager.datatypes)
+    let model = try OcaXMIModel(data: Data(document.utf8))
+    let concealing = try XCTUnwrap(model.classes.first { $0.classID == _Concealing.classID })
+    XCTAssertEqual(concealing.properties, [])
+    XCTAssertEqual(concealing.methods, [])
+    XCTAssertFalse(document.contains("Reveal"))
+    XCTAssertFalse(document.contains("Concealed"))
   }
 }
 #endif

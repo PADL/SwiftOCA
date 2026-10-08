@@ -15,7 +15,7 @@
 //
 
 @_spi(SwiftOCAPrivate) import SwiftOCA
-@testable import SwiftOCADevice
+@testable @_spi(SwiftOCAPrivate) import SwiftOCADevice
 import XCTest
 
 /// A gain whose value's generic argument is inferred, not written.
@@ -27,6 +27,39 @@ private final class InferredGain: SwiftOCADevice.OcaActuator {
     setMethodID: OcaMethodID("4.2")
   )
   var gain = OcaBoundedPropertyValue(value: OcaDB(0), in: -144...20)
+}
+
+/// What only a hidden property holds, so it is a datatype nothing described refers to.
+private struct _Concealed: Codable, Sendable, Equatable {
+  var code: OcaUint32
+}
+
+/// A class with a property and a method declared `hidden`, beside one that is not.
+@OcaDeviceClass
+private final class _Concealing: SwiftOCADevice.OcaWorker {
+  override class var classID: OcaClassID {
+    OcaClassID(parent: super.classID, authority: OcaClassID.OcaAllianceCompanyID, 3)
+  }
+
+  @OcaDeviceProperty(propertyID: OcaPropertyID("3.1"), getMethodID: OcaMethodID("3.1"))
+  var shown: OcaUint16 = 0
+
+  @OcaDeviceProperty(
+    propertyID: OcaPropertyID("3.2"),
+    getMethodID: OcaMethodID("3.2"),
+    setMethodID: OcaMethodID("3.3"),
+    hidden: true
+  )
+  var concealed = _Concealed(code: 7)
+
+  @OcaDeviceMethod("3.4", name: "Reveal", access: .read, hidden: true)
+  func reveal(from controller: any OcaController) -> OcaUint32 { 42 }
+}
+
+private actor _HiddenTestController: OcaController {
+  nonisolated let flags: OcaControllerFlags = [.supportsLocking]
+
+  func sendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {}
 }
 
 /// The class manager seen by a controller, over a connection of its own to a device
@@ -335,6 +368,36 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertTrue(guidType.isDeprecated, "described by hand")
     let mute = try await h.classManager.getDatatype(name: "OcaMuteState")
     XCTAssertFalse(mute.isDeprecated)
+  }
+
+  @OcaDevice
+  func testWhatIsHiddenIsNotDescribedButStillAnswers() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let object = try await _Concealing(role: "Concealing", deviceDelegate: device, addToRootBlock: false)
+    let manager = try await SwiftOCADevice.OcaClassManager(deviceDelegate: device)
+    let controller = _HiddenTestController()
+
+    let own = try XCTUnwrap(manager.controlClasses.first { $0.classID == _Concealing.classID })
+    XCTAssertEqual(own.properties.map(\.name), ["Shown"])
+    XCTAssertEqual(own.methods.map(\.methodID), [OcaMethodID("3.1")], "nor the hidden property's accessors")
+    let inherited = try await manager.getControlClass(
+      classID: _Concealing.classID, includeInherited: true, from: controller
+    )
+    let hidden = [OcaMethodID("3.2"), OcaMethodID("3.3"), OcaMethodID("3.4")]
+    XCTAssertFalse(inherited.methods.contains { hidden.contains($0.methodID) })
+    XCTAssertFalse(inherited.properties.contains { $0.propertyID == OcaPropertyID("3.2") })
+    // a datatype only the hidden property refers to is not described either
+    XCTAssertFalse(manager.datatypes.contains { $0.name.contains("_Concealed") })
+
+    // the device still answers them, and a bridge's descriptors carry the flag
+    let revealed = await device.send(OcaMethodID("3.4"), to: object.objectNumber, from: controller)
+    XCTAssertEqual(revealed.status, .ok)
+    let read = await device.send(OcaMethodID("3.2"), to: object.objectNumber, from: controller)
+    XCTAssertEqual(read.status, .ok)
+    let concealed = try XCTUnwrap(object.devicePropertyDescriptors.first { $0.propertyID == OcaPropertyID("3.2") })
+    XCTAssertTrue(concealed.flags.contains(.hidden))
+    XCTAssertTrue(try XCTUnwrap(object.deviceMethodDescriptors.first { $0.methodID == OcaMethodID("3.4") }).isHidden)
   }
 
   @OcaDevice

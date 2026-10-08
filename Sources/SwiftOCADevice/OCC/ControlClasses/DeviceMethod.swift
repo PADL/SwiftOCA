@@ -42,11 +42,13 @@ import SwiftOCA
 ///
 /// The class lists its methods with `@OcaDeviceClass`, and `OcaRoot.handleCommand`
 /// dispatches to them once a subclass's own `handleCommand` has declined the command, so
-/// a hand-written arm, or a NotImplemented override, still takes precedence.
+/// a hand-written arm, or a NotImplemented override, still takes precedence. `hidden`, in
+/// any form, leaves the method out of introspection; the device still answers it.
 @attached(peer, names: prefixed(_ocaDeviceMethod_))
 public macro OcaDeviceMethod<Parameters, Result>(
   _ method: OcaMethodDescriptor<Parameters, Result>,
-  access: OcaDeviceMethodAccess = .inferred
+  access: OcaDeviceMethodAccess = .inferred,
+  hidden: Bool = false
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")
 
 /// The raw form, for a method that takes the `Ocp1Command` itself and returns the
@@ -54,7 +56,8 @@ public macro OcaDeviceMethod<Parameters, Result>(
 /// arm does.
 @attached(peer, names: prefixed(_ocaDeviceMethod_))
 public macro OcaDeviceMethod<Parameters, Result>(
-  _ method: OcaMethodDescriptor<Parameters, Result>
+  _ method: OcaMethodDescriptor<Parameters, Result>,
+  hidden: Bool = false
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")
 
 /// The form for a method the client has no descriptor for yet: the OCA method `methodID`,
@@ -75,7 +78,8 @@ public macro OcaDeviceMethod(
   name: String,
   access: OcaDeviceMethodAccess = .inferred,
   parameterNames: [String]? = nil,
-  resultNames: [String]? = nil
+  resultNames: [String]? = nil,
+  hidden: Bool = false
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")
 
 /// The raw form with the descriptor's parts given here. `parameters` and `result`
@@ -90,14 +94,15 @@ public macro OcaDeviceMethod(
   parameters: (any (Codable & Sendable).Type)? = nil,
   parameterNames: [String]? = nil,
   result: (any (Codable & Sendable).Type)? = nil,
-  resultNames: [String]? = nil
+  resultNames: [String]? = nil,
+  hidden: Bool = false
 ) = #externalMacro(module: "SwiftOCAMacros", type: "OcaDeviceMethodMacro")
 
 /// Gives a device class its `deviceMethods` table: its parent's, then one entry for each
 /// `@OcaDeviceMethod` method declared in the class body; and its `devicePropertyKeyPaths`
 /// table: its parent's, then the storage of each device property declared in the class body.
 /// A class that declares a device property must have it, or the property is not served.
-@attached(member, names: named(deviceMethods), named(devicePropertyKeyPaths), named(devicePropertyTypeNames), named(devicePropertyDeprecations), named(devicePropertyAccessorNames))
+@attached(member, names: named(deviceMethods), named(devicePropertyKeyPaths), named(devicePropertyTypeNames), named(devicePropertyDeprecations), named(devicePropertyAccessorNames), named(hiddenDeviceProperties))
 public macro OcaDeviceClass() = #externalMacro(
   module: "SwiftOCAMacros",
   type: "OcaDeviceClassMacro"
@@ -137,6 +142,15 @@ public struct OcaDeviceMethodDescriptor: Sendable {
   public var parameters: [OcaParameterDescriptor] { method.parameters }
   public var results: [OcaParameterDescriptor] { method.results }
   public var isDescribed: Bool { method.isDescribed }
+  /// Left out of introspection: the class manager and what is built from it.
+  public private(set) var isHidden = false
+
+  /// The descriptor, hidden if `isHidden`; what `@OcaDeviceMethod(…, hidden:)` writes.
+  public func hidden(_ isHidden: Bool) -> Self {
+    var descriptor = self
+    descriptor.isHidden = isHidden
+    return descriptor
+  }
 
   /// What `@OcaDeviceMethod` writes for a typed method: cast the object, cast the
   /// decoded parameters (`()` when there are none) and call; the result, or nil for none.

@@ -75,6 +75,9 @@ public struct OcaDevicePropertyDescriptor: Sendable {
     public static let label = Flags(rawValue: 1 << 1)
     /// It is the block that contains the object (`OcaOwnable`).
     public static let owner = Flags(rawValue: 1 << 2)
+    /// It is declared `hidden`: introspection leaves it and its accessors out. A bridge
+    /// that describes the object's properties should too.
+    public static let hidden = Flags(rawValue: 1 << 3)
   }
 
   public let flags: Flags
@@ -106,6 +109,18 @@ public struct OcaDeviceClassDescriptor: Sendable {
   /// The methods the class declares with `@OcaDeviceMethod`, in method ID order. Property
   /// accessors are described by the properties, and hand-written arms not at all.
   public let methods: [OcaDeviceMethodDescriptor]
+
+  /// The properties not declared `hidden`, which introspection shows.
+  public var visibleProperties: [OcaDevicePropertyDescriptor] {
+    properties.filter { !$0.flags.contains(.hidden) }
+  }
+
+  /// The methods not declared `hidden`, nor the accessors of a hidden property, which
+  /// are hidden with it.
+  public var visibleMethods: [OcaDeviceMethodDescriptor] {
+    let hidden = Set(properties.filter { $0.flags.contains(.hidden) }.flatMap { [$0.getMethodID, $0.setMethodID] })
+    return methods.filter { !$0.isHidden && !hidden.contains($0.methodID) }
+  }
 }
 
 @_spi(SwiftOCAPrivate)
@@ -119,12 +134,14 @@ public extension OcaRoot {
     let typeNames = type(of: self).devicePropertyTypeNames
     let deprecations = type(of: self).devicePropertyDeprecations
     let accessorNames = type(of: self).devicePropertyAccessorNames
+    let hidden = type(of: self).hiddenDeviceProperties
     return allDevicePropertyKeyPaths.compactMap { name, keyPath in
       guard let property = self[keyPath: keyPath] as? any OcaDevicePropertyRepresentable else { return nil }
       var flags: OcaDevicePropertyDescriptor.Flags = []
       if property is any _OcaBoundedDevicePropertyRepresentable { flags.insert(.bounded) }
       if property.propertyID == label { flags.insert(.label) }
       if property.propertyID == owner { flags.insert(.owner) }
+      if hidden.contains(name) { flags.insert(.hidden) }
       return property.description(
         named: name, typeName: typeNames[name], flags: flags, deprecation: deprecations[name] ?? [],
         accessorNames: accessorNames[name] ?? OcaPropertyAccessorNames()
