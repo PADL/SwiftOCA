@@ -142,9 +142,8 @@ final class XMIRoundTripTests: XCTestCase {
       // not implemented by SwiftOCADevice, so not described
       "OcaWorker method 2.3 AddPort: not described by the device",
       "OcaWorker method 2.4 DeletePort: not described by the device",
-      // SwiftOCA's field names, which OCP.2 sends, are not AES70's; to be renamed
-      #"datatype OcaPort fields: device ["Owner: OcaONo", "Id: OcaPortID", "Name: OcaString"], model ["Owner: OcaONo", "ID: OcaPortID", "Role: OcaString"]"#,
-      #"datatype OcaPortID fields: device ["Mode: OcaIODirection", "Index: OcaUint16"], model ["Direction: OcaIODirection", "Index: OcaUint16"]"#,
+      // OCP.2 upper-cases a Swift name's first letter only; peers match names case-insensitively
+      #"datatype OcaPort fields: device ["Owner: OcaONo", "Id: OcaPortID", "Role: OcaString"], model ["Owner: OcaONo", "ID: OcaPortID", "Role: OcaString"]"#,
     ])
   }
 }
