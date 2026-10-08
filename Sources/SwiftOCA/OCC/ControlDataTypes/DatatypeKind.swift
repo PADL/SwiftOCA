@@ -21,11 +21,13 @@ import Foundation
 /// protocol describes it from.
 @_spi(SwiftOCAPrivate)
 public enum OcaDatatypeKind: Sendable {
-  /// A base type, by its AES70 name: `OcaBoolean`, `OcaInt8` to `OcaUint64`,
-  /// `OcaFloat32`, `OcaFloat64` or `OcaString`.
-  case base(String)
-  /// `OcaBlob` or `OcaLongBlob`, by its AES70 name.
-  case blob(String)
+  /// A base type: `OcaBoolean`, `OcaInt8` to `OcaUint64`, `OcaFloat32`, `OcaFloat64` or
+  /// `OcaString`.
+  case base(OcaBaseDataType)
+  /// `OcaBlob`, with a 16-bit length.
+  case blob
+  /// `OcaLongBlob`, with a 32-bit length.
+  case longBlob
   /// A value that may be absent, which AES70 writes as the type it holds.
   case optional(Any.Type)
   /// `OcaList` of the element type.
@@ -49,7 +51,7 @@ public enum OcaDatatypeKind: Sendable {
     } else if let generic = type as? any OcaKindedGeneric.Type {
       self = generic.kind
     } else if type is any Ocp1TypedBlobRepresentable.Type {
-      self = .blob("OcaBlob")
+      self = .blob
     } else if let enumeration = type as? any (CaseIterable & RawRepresentable).Type,
               let cases = Self.cases(of: enumeration)
     {
@@ -64,23 +66,23 @@ public enum OcaDatatypeKind: Sendable {
   }
 
   private static let bases: [ObjectIdentifier: OcaDatatypeKind] = [
-    ObjectIdentifier(Bool.self): .base("OcaBoolean"),
-    ObjectIdentifier(Int8.self): .base("OcaInt8"),
-    ObjectIdentifier(Int16.self): .base("OcaInt16"),
-    ObjectIdentifier(Int32.self): .base("OcaInt32"),
-    ObjectIdentifier(Int64.self): .base("OcaInt64"),
-    ObjectIdentifier(Int.self): .base("OcaInt64"),
-    ObjectIdentifier(UInt8.self): .base("OcaUint8"),
-    ObjectIdentifier(UInt16.self): .base("OcaUint16"),
-    ObjectIdentifier(UInt32.self): .base("OcaUint32"),
-    ObjectIdentifier(UInt64.self): .base("OcaUint64"),
-    ObjectIdentifier(UInt.self): .base("OcaUint64"),
-    ObjectIdentifier(Float.self): .base("OcaFloat32"),
-    ObjectIdentifier(Double.self): .base("OcaFloat64"),
-    ObjectIdentifier(String.self): .base("OcaString"),
-    ObjectIdentifier(LengthTaggedData16.self): .blob("OcaBlob"),
-    ObjectIdentifier(LengthTaggedData32.self): .blob("OcaLongBlob"),
-    ObjectIdentifier(Data.self): .blob("OcaBlob"),
+    ObjectIdentifier(Bool.self): .base(.ocaBoolean),
+    ObjectIdentifier(Int8.self): .base(.ocaInt8),
+    ObjectIdentifier(Int16.self): .base(.ocaInt16),
+    ObjectIdentifier(Int32.self): .base(.ocaInt32),
+    ObjectIdentifier(Int64.self): .base(.ocaInt64),
+    ObjectIdentifier(Int.self): .base(.ocaInt64),
+    ObjectIdentifier(UInt8.self): .base(.ocaUint8),
+    ObjectIdentifier(UInt16.self): .base(.ocaUint16),
+    ObjectIdentifier(UInt32.self): .base(.ocaUint32),
+    ObjectIdentifier(UInt64.self): .base(.ocaUint64),
+    ObjectIdentifier(UInt.self): .base(.ocaUint64),
+    ObjectIdentifier(Float.self): .base(.ocaFloat32),
+    ObjectIdentifier(Double.self): .base(.ocaFloat64),
+    ObjectIdentifier(String.self): .base(.ocaString),
+    ObjectIdentifier(LengthTaggedData16.self): .blob,
+    ObjectIdentifier(LengthTaggedData32.self): .longBlob,
+    ObjectIdentifier(Data.self): .blob,
   ]
 
   /// An enumeration's cases, where each value is a whole number.
@@ -123,4 +125,29 @@ extension Dictionary: OcaKindedGeneric {
 
 extension OcaBoundedPropertyValue: OcaKindedGeneric {
   fileprivate static var kind: OcaDatatypeKind { .bounded(Value.self) }
+}
+
+@_spi(SwiftOCAPrivate)
+public extension OcaBaseDataType {
+  /// The type's AES70 name, such as `OcaInt16`.
+  var name: String {
+    switch self {
+    case .none: "OcaNotImplemented"
+    case .ocaBoolean: "OcaBoolean"
+    case .ocaInt8: "OcaInt8"
+    case .ocaInt16: "OcaInt16"
+    case .ocaInt32: "OcaInt32"
+    case .ocaInt64: "OcaInt64"
+    case .ocaUint8: "OcaUint8"
+    case .ocaUint16: "OcaUint16"
+    case .ocaUint32: "OcaUint32"
+    case .ocaUint64: "OcaUint64"
+    case .ocaFloat32: "OcaFloat32"
+    case .ocaFloat64: "OcaFloat64"
+    case .ocaString: "OcaString"
+    case .ocaBitString: "OcaBitString"
+    case .ocaBlobFixedLen: "OcaBlobFixedLen"
+    case .ocaBit: "OcaBit"
+    }
+  }
 }
