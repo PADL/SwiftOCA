@@ -22,7 +22,8 @@ import Synchronization
 /// caller. On receipt names are matched case-insensitively, and a single-parameter
 /// object is accepted whatever its member is called, so a peer still using the 2023
 /// model's lower-case spellings (`minGain`, `lockable`), which OCA 1.5B makes
-/// UpperCamelCase, is understood.
+/// UpperCamelCase, is understood. A field the model spells `ID` is sent as `Id`, relying
+/// on the same case-insensitivity rather than special-casing it.
 package enum Ocp2Naming {
   /// The wire name derived from a Swift identifier.
   package static func wireName(_ swiftName: String) -> String {
