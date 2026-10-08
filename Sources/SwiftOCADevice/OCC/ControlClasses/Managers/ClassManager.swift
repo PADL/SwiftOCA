@@ -177,7 +177,10 @@ public final class OcaClassManager: OcaManager {
   /// anything else by its own name. A typealias such as `OcaDB` is not known at run
   /// time, so it is named for the type it stands for.
   fileprivate nonisolated static func _ocaTypeName(for type: Any.Type) -> String {
-    switch OcaDatatypeKind(of: type) {
+    if let template = type as? any OcaTemplateDatatype.Type {
+      return "\(template.templateName)<\(template.templateArguments.map(_ocaTypeName(for:)).joined(separator: ", "))>"
+    }
+    return switch OcaDatatypeKind(of: type) {
     case let .base(base): base.name
     case .blob: "OcaBlob"
     case .longBlob: "OcaLongBlob"
@@ -240,13 +243,21 @@ private struct Datatypes {
     let name = OcaClassManager._ocaTypeName(for: type)
     guard described[name] == nil else { return }
     if let describing = type as? any OcaDatatypeDescribing.Type {
-      let descriptor = describing.datatypeDescriptor
-      described[name] = descriptor
+      described[name] = describing.datatypeDescriptor
       // the types it refers to are the model's names, with no Swift type to describe
-      for referred in [descriptor.baseTypeName] + descriptor.fields.map(\.typeName) where !referred.isEmpty {
-        if described[referred] == nil {
-          described[referred] = OcaDatatypeDescriptor(name: referred, kind: .primitive)
-        }
+      for referred in describing.referredDatatypes where described[referred.name] == nil {
+        described[referred.name] = referred
+      }
+      return
+    }
+    if let template = type as? any OcaTemplateDatatype.Type {
+      described[template.templateName] = OcaDatatypeDescriptor(name: template.templateName, kind: .primitive)
+      described[name] = OcaDatatypeDescriptor(
+        name: name, kind: .template, baseTypeName: template.templateName,
+        typeArguments: template.templateArguments.map(OcaClassManager._ocaTypeName(for:))
+      )
+      for argument in template.templateArguments {
+        add(argument)
       }
       return
     }

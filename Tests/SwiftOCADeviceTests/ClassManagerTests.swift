@@ -50,6 +50,9 @@ final class ClassManagerTests: XCTestCase {
     _ = try await SwiftOCADevice.OcaFloat32Actuator(role: "Float", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaLevelSensor(role: "Level", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaMute(role: "Mute", deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaMatrix<SwiftOCADevice.OcaWorker>(
+      rows: 2, columns: 2, deviceDelegate: device, addToRootBlock: false
+    )
     let made = await device.classManager
     XCTAssertNotNil(made, "the device makes its class manager with its other managers")
     let endpoint = try await OcaLocalDeviceEndpoint(device: device)
@@ -166,8 +169,20 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(Set(all.map(\.name)).count, all.count, "each datatype once")
     // every type a descriptor names is itself described
     let names = Set(all.map(\.name))
-    let referred = all.flatMap { [$0.baseTypeName] + $0.typeArguments + $0.fields.map(\.typeName) }.filter { !$0.isEmpty }
-    XCTAssertEqual(Set(referred).subtracting(names), [])
+    // a fixed length blob's argument is its length, not a type
+    let arguments = all.flatMap(\.typeArguments).filter { Int($0) == nil }
+    let referred = all.flatMap { [$0.baseTypeName] + $0.fields.map(\.typeName) } + arguments
+    XCTAssertEqual(Set(referred.filter { !$0.isEmpty }).subtracting(names), [])
+
+    // a type coded otherwise than its Swift declaration, described as it is coded
+    let members = try await h.classManager.getDatatype(name: "OcaList2D<OcaONo>")
+    XCTAssertEqual(members.kind, .template)
+    XCTAssertEqual(members.baseTypeName, "OcaList2D")
+    XCTAssertEqual(members.typeArguments, ["OcaONo"])
+    let classIDField = try await h.classManager.getDatatype(name: "OcaClassIDField")
+    XCTAssertEqual(classIDField.kind, .struct)
+    let organization = try await h.classManager.getDatatype(name: "OcaBlobFixedLen<3>")
+    XCTAssertEqual(organization.kind, .template)
   }
 
   func testEveryClassOfTheDevicesObjectsIsListed() async throws {

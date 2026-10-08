@@ -170,6 +170,36 @@ public struct OcaEnumItemDescriptor: Codable, Sendable, Equatable {
 @_spi(SwiftOCAPrivate)
 public protocol OcaDatatypeDescribing {
   static var datatypeDescriptor: OcaDatatypeDescriptor { get }
+  /// The datatypes the descriptor refers to by name, which have no Swift type.
+  static var referredDatatypes: [OcaDatatypeDescriptor] { get }
+}
+
+@_spi(SwiftOCAPrivate)
+public extension OcaDatatypeDescribing {
+  static var referredDatatypes: [OcaDatatypeDescriptor] { [] }
+}
+
+/// A generic datatype coded as an AES70 template: `OcaArray2D<OcaONo>` is
+/// `OcaList2D<OcaONo>`, two counts and then the elements.
+@_spi(SwiftOCAPrivate)
+public protocol OcaTemplateDatatype {
+  static var templateName: String { get }
+  static var templateArguments: [Any.Type] { get }
+}
+
+@_spi(SwiftOCAPrivate)
+extension OcaArray2D: OcaTemplateDatatype {
+  public static var templateName: String { "OcaList2D" }
+  public static var templateArguments: [Any.Type] { [Element.self] }
+}
+
+/// A fixed-length blob of `length` bytes, as a datatype descriptor names it.
+private func fixedLengthBlobs(_ lengths: [Int]) -> [OcaDatatypeDescriptor] {
+  [OcaDatatypeDescriptor(name: "OcaBlobFixedLen", kind: .primitive)] + lengths.map {
+    OcaDatatypeDescriptor(
+      name: "OcaBlobFixedLen<\($0)>", kind: .template, baseTypeName: "OcaBlobFixedLen", typeArguments: ["\($0)"]
+    )
+  }
 }
 
 @_spi(SwiftOCAPrivate)
@@ -177,8 +207,21 @@ extension OcaClassID: OcaDatatypeDescribing {
   public static var datatypeDescriptor: OcaDatatypeDescriptor {
     OcaDatatypeDescriptor(name: "OcaClassID", kind: .struct, fields: [
       OcaFieldDescriptor(name: "FieldCount", typeName: "OcaUint16"),
-      OcaFieldDescriptor(name: "Fields", typeName: "OcaArray<OcaClassIDField>"),
+      OcaFieldDescriptor(name: "Fields", typeName: "OcaList<OcaClassIDField>"),
     ])
+  }
+
+  public static var referredDatatypes: [OcaDatatypeDescriptor] {
+    [
+      OcaDatatypeDescriptor(name: "OcaUint16", kind: .primitive),
+      OcaDatatypeDescriptor(name: "OcaList", kind: .primitive),
+      OcaDatatypeDescriptor(
+        name: "OcaList<OcaClassIDField>", kind: .template, baseTypeName: "OcaList", typeArguments: ["OcaClassIDField"]
+      ),
+      OcaDatatypeDescriptor(name: "OcaClassIDField", kind: .struct, fields: [
+        OcaFieldDescriptor(name: "Value", typeName: "OcaUint16"),
+      ]),
+    ]
   }
 }
 
@@ -187,6 +230,8 @@ extension OcaOrganizationID: OcaDatatypeDescribing {
   public static var datatypeDescriptor: OcaDatatypeDescriptor {
     OcaDatatypeDescriptor(name: "OcaOrganizationID", kind: .typedef, baseTypeName: "OcaBlobFixedLen<3>")
   }
+
+  public static var referredDatatypes: [OcaDatatypeDescriptor] { fixedLengthBlobs([3]) }
 }
 
 @_spi(SwiftOCAPrivate)
@@ -198,4 +243,6 @@ extension OcaModelGUID: OcaDatatypeDescribing {
       OcaFieldDescriptor(name: "ModelCode", typeName: "OcaBlobFixedLen<4>"),
     ])
   }
+
+  public static var referredDatatypes: [OcaDatatypeDescriptor] { fixedLengthBlobs([1, 3, 4]) }
 }
