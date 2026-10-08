@@ -50,15 +50,21 @@ final class XMINode {
     let builder = Builder()
     let parser = XMLParser(data: data)
     parser.delegate = builder
-    guard parser.parse(), let root = builder.root else {
-      throw OcaXMIError.malformed(parser.parserError.map { "\($0)" } ?? "no root element")
+    // an error the parser recovers from still loses content, so it fails the document
+    guard parser.parse(), builder.error == nil, let root = builder.root else {
+      throw OcaXMIError.malformed((builder.error ?? parser.parserError).map { "\($0)" } ?? "no root element")
     }
     return root
   }
 
   private final class Builder: NSObject, XMLParserDelegate {
     var root: XMINode?
+    var error: Error?
     private var stack = [XMINode]()
+
+    func parser(_ parser: XMLParser, parseErrorOccurred parseError: Error) {
+      if error == nil { error = parseError }
+    }
 
     func parser(
       _ parser: XMLParser,
