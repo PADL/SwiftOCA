@@ -280,8 +280,8 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(method.parameters.map(\.typeName), ["OcaClassID", "OcaBoolean", "OcaClassDescriptor"])
     XCTAssertEqual(method.parameters.map(\.direction), [.in, .in, .out])
     // its lists are properties, read with their getters
-    XCTAssertEqual(own.properties.map(\.name), ["ControlClasses", "Datatypes"])
-    XCTAssertEqual(own.properties.map(\.isReadOnly), [true, true])
+    XCTAssertEqual(own.properties.map(\.name), ["ControlClasses", "Datatypes", "ModelURL"])
+    XCTAssertEqual(own.properties.map(\.isReadOnly), [true, true, true])
     let list = try XCTUnwrap(own.methods.first { $0.name == "GetControlClasses" })
     XCTAssertEqual(list.methodID, OcaMethodID("3.1"))
     XCTAssertEqual(list.parameters.map(\.name), ["ControlClasses"])
