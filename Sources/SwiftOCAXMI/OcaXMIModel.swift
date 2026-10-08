@@ -234,8 +234,18 @@ public struct OcaXMIModel: Sendable {
 
   // MARK: - Datatypes
 
+  /// A datatype's stereotype. EA writes only the first of several as the property, so a
+  /// deprecated one's kind is the next in its cross-references (`@STEREO;Name=enum;`).
+  private static func kind(of element: XMINode) -> String {
+    let first = element.child(named: "properties")?["stereotype"] ?? ""
+    guard first == "deprecated", let xrefs = element.child(named: "xrefs")?["value"] else { return first }
+    return xrefs.components(separatedBy: "@STEREO;Name=").dropFirst()
+      .compactMap { $0.split(separator: ";").first.map(String.init) }
+      .first { $0 != "deprecated" } ?? first
+  }
+
   private static func datatype(_ element: XMINode, named name: String, names: [String: String]) -> OcaDatatypeDescriptor? {
-    let stereotype = element.child(named: "properties")?["stereotype"] ?? ""
+    let stereotype = kind(of: element)
     let attributes = element.child(named: "attributes")?.children(named: "attribute") ?? []
     let base = (element.child(named: "links")?.children(named: "Generalization") ?? [])
       .first { $0["start"] == element["xmi:idref"] }
@@ -258,6 +268,7 @@ public struct OcaXMIModel: Sendable {
         }, id: \.value) { $0.isDeprecated = true }
       )
     case "struct":
+      // a deprecated field is kept, not dropped as a twin: it still has its place in the coding
       let fields = attributes.compactMap { a in
         a["name"].map {
           OcaFieldDescriptor(name: $0, typeName: a.child(named: "properties")?["type"] ?? "", isDeprecated: isDeprecated(a))

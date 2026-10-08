@@ -620,6 +620,38 @@
 										<type xmi:idref="EAnone_OcaEnumItem"/>
 									</ownedAttribute>
 								</packagedElement>
+<packagedElement xmi:type="uml:Class" xmi:id="EAID_494C37D9_AFD1_46bf_A79D_2A343EF02D45" name="OcaTimeReferenceType" visibility="public">
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_FBA31B51_E1F5_4017_A190_CD202166187E" name="Undefined" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002801_E1F5_4017_A190_CD202166187E" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002802_E1F5_4017_A190_CD202166187E" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002803_E1F5_4017_A190_CD202166187E" value="0"/>
+										<type xmi:idref="EAJava_OcaEnumItem"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_98987704_E422_4f5e_913D_C3EE6F49795D" name="Local" visibility="public" isStatic="true" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002803_E422_4f5e_913D_C3EE6F49795D" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002804_E422_4f5e_913D_C3EE6F49795D" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002805_E422_4f5e_913D_C3EE6F49795D" value="1"/>
+										<type xmi:idref="EAJava_OcaEnumItem"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_69874047_F399_4dae_A118_877B850DADEB" name="Private" visibility="public" isStatic="false" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002805_F399_4dae_A118_877B850DADEB" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002806_F399_4dae_A118_877B850DADEB" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002807_F399_4dae_A118_877B850DADEB" value="2"/>
+										<type xmi:idref="EAJava_OcaEnumItem"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_AFF84B07_5BDC_443c_BD1F_5B4EE8DDD888" name="TAI" visibility="public" isStatic="true" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002807_5BDC_443c_BD1F_5B4EE8DDD888" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002808_5BDC_443c_BD1F_5B4EE8DDD888" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002809_5BDC_443c_BD1F_5B4EE8DDD888" value="3"/>
+										<type xmi:idref="EAJava_OcaEnumItem"/>
+									</ownedAttribute>
+									<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_FC31B249_3966_44d2_91C0_7DE0A3231614" name="ExpansionBase" visibility="public" isStatic="true" isReadOnly="false" isDerived="false" isOrdered="false" isUnique="true" isDerivedUnion="false">
+										<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002809_3966_44d2_91C0_7DE0A3231614" value="1"/>
+										<upperValue xmi:type="uml:LiteralInteger" xmi:id="EAID_LI002810_3966_44d2_91C0_7DE0A3231614" value="1"/>
+										<defaultValue xmi:type="uml:LiteralString" xmi:id="EAID_LI002811_3966_44d2_91C0_7DE0A3231614" value="128"/>
+										<type xmi:idref="EAJava_OcaEnumItem"/>
+									</ownedAttribute>
+								</packagedElement>
 </packagedElement>
 </packagedElement>
 </uml:Model>
@@ -3453,6 +3485,96 @@
 						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" duplicates="0" changeability="changeable"/>
 						<coords ordered="0" scale="0"/>
 						<containment containment="Not Specified" position="7"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+				</attributes>
+			</element>
+			<element xmi:idref="EAID_494C37D9_AFD1_46bf_A79D_2A343EF02D45" xmi:type="uml:Class" name="OcaTimeReferenceType" scope="public">
+				<model package="EAPK_2DC242D9_8B99_45a1_AC64_8ECA97E15802" tpos="3" ea_localid="691" ea_eleType="element"/>
+				<properties documentation="Types of time references.  &lt;b&gt;This datatype is deprecated as of AES70-2023.&lt;/b&gt;" isSpecification="false" sType="Class" nType="0" scope="public" stereotype="deprecated" isRoot="false" isLeaf="false" isAbstract="false" isActive="false"/>
+				<project author="Jeff Berryman" version="1.0" phase="1.0" created="2011-12-15 03:39:45" modified="2023-12-18 14:46:18" complexity="1" status="Proposed"/>
+				<code gentype="Java"/>
+				<style appearance="BackColor=-1;BorderColor=-1;BorderWidth=-1;FontColor=-1;VSwimLanes=1;HSwimLanes=1;BorderStyle=0;"/>
+				<modelDocument/>
+				<tags>
+					<tag xmi:id="EAID_40682305_409B_4bcd_A67D_4E244E2C5DA2" name="Title" value="Enum - media clock {internal,network external}" modelElement="EAID_494C37D9_AFD1_46bf_A79D_2A343EF02D45"/>
+				</tags>
+				<xrefs value="$XREFPROP=$XID={EE3DE3A2-A55F-463e-9390-73462C8615CF}$XID;$NAM=Stereotypes$NAM;$TYP=element property$TYP;$VIS=Public$VIS;$PAR=0$PAR;$DES=@STEREO;Name=deprecated;GUID={2E2028A9-84E2-40e5-9563-14831CC2F42F};@ENDSTEREO;@STEREO;Name=enum;GUID={63A9DBDB-4A01-4d80-918A-F70F3B5BD705};@ENDSTEREO;$DES;$CLT={494C37D9-AFD1-46bf-A79D-2A343EF02D45}$CLT;$ENDXREF;"/>
+				<extendedProperties tagged="0" package_name="Deprecated Time Datatypes"/>
+				<attributes>
+					<attribute xmi:idref="EAID_FBA31B51_E1F5_4017_A190_CD202166187E" name="Undefined" scope="Public">
+						<initial body="0"/>
+						<documentation value="Time reference is undefined."/>
+						<model ea_localid="1619" ea_guid="{FBA31B51-E1F5-4017-A190-CD202166187E}"/>
+						<properties type="OcaEnumItem" derived="0" collection="false" duplicates="0" changeability="changeable"/>
+						<coords ordered="0"/>
+						<containment containment="Not Specified" position="0"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_98987704_E422_4f5e_913D_C3EE6F49795D" name="Local" scope="Public">
+						<initial body="1"/>
+						<documentation value="Time reference is internal to device."/>
+						<model ea_localid="1600" ea_guid="{98987704-E422-4f5e-913D-C3EE6F49795D}"/>
+						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="1"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_69874047_F399_4dae_A118_877B850DADEB" name="Private" scope="Public">
+						<initial body="2"/>
+						<documentation value="Time reference is private to the application."/>
+						<model ea_localid="1618" ea_guid="{69874047-F399-4dae-A118-877B850DADEB}"/>
+						<properties type="OcaEnumItem" derived="0" collection="false" duplicates="0" changeability="changeable"/>
+						<coords ordered="0"/>
+						<containment containment="Not Specified" position="2"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_AFF84B07_5BDC_443c_BD1F_5B4EE8DDD888" name="TAI" scope="Public">
+						<initial body="3"/>
+						<documentation value="Time reference is International Atomic Time"/>
+						<model ea_localid="1601" ea_guid="{AFF84B07-5BDC-443c-BD1F-5B4EE8DDD888}"/>
+						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="3"/>
+						<stereotype/>
+						<bounds lower="1" upper="1"/>
+						<options/>
+						<style/>
+						<styleex value="IsLiteral=0;volatile=0;"/>
+						<tags/>
+						<xrefs/>
+					</attribute>
+					<attribute xmi:idref="EAID_FC31B249_3966_44d2_91C0_7DE0A3231614" name="ExpansionBase" scope="Public">
+						<initial body="128"/>
+						<documentation value="Proprietary time references start here."/>
+						<model ea_localid="3611" ea_guid="{FC31B249-3966-44d2-91C0-7DE0A3231614}"/>
+						<properties type="OcaEnumItem" derived="0" precision="0" collection="false" length="0" static="1" duplicates="0" changeability="changeable"/>
+						<coords ordered="0" scale="0"/>
+						<containment containment="Not Specified" position="4"/>
 						<stereotype/>
 						<bounds lower="1" upper="1"/>
 						<options/>

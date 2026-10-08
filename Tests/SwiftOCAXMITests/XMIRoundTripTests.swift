@@ -39,6 +39,7 @@ final class XMIRoundTripTests: XCTestCase {
     _ = try await SwiftOCADevice.OcaMute(role: "Mute", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaIdentificationSensor(role: "Identify", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaDelayExtended(role: "Delay", deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaTimeSource(role: "Time", deviceDelegate: device)
     let classManager = await device.classManager
     return try (device, XCTUnwrap(classManager))
   }
@@ -146,6 +147,11 @@ final class XMIRoundTripTests: XCTestCase {
     XCTAssertTrue(try XCTUnwrap(model.controlClass(OcaClassID("1.1.1.7.1"), includeInherited: false)).isDeprecated)
     XCTAssertFalse(gain.isDeprecated)
     XCTAssertTrue(try datatype("OcaDelayValue").isDeprecated)
+    // stereotyped deprecated first, so its kind is the second of its stereotypes
+    let reference = try datatype("OcaTimeReferenceType")
+    XCTAssertEqual(reference.kind, .enum)
+    XCTAssertTrue(reference.isDeprecated)
+    XCTAssertFalse(reference.items.isEmpty)
     XCTAssertFalse(try datatype("OcaMuteState").isDeprecated)
     XCTAssertEqual(root.methods.filter { $0.methodID == OcaMethodID("1.3") }.map(\.name), ["SetLockNoReadWrite"])
     XCTAssertFalse(root.methods.contains(where: \.isDeprecated))
