@@ -192,11 +192,14 @@ public struct OcaXMIModel: Sendable {
         return nil
       }
       let properties = attribute.child(named: "properties")
+      // an exported model says so; the AES70-2 model is read only where no setter has its name
+      let readOnly = attribute.child(named: "tags")?.children(named: "tag")
+        .first { $0["name"] == OcaXMIExport.readOnlyTag }?["value"]
       return (OcaClassPropertyDescriptor(
         propertyID: OcaPropertyID(defLevel: defLevel, propertyIndex: index),
         name: name,
         typeName: properties?["type"] ?? "",
-        isReadOnly: !isSettable(name),
+        isReadOnly: readOnly.map { $0 == "true" } ?? !isSettable(name),
         isStatic: properties?["static"] == "1",
         documentation: documentation(attribute)
       ), isDeprecated(attribute))
@@ -307,6 +310,8 @@ public struct OcaXMIModel: Sendable {
           }
         }, id: \.value) { $0.isDeprecated = true }
       )
+    case "template":
+      return templateInstance(name)
     case "struct":
       // a deprecated field is kept, not dropped as a twin: it still has its place in the coding
       let fields = attributes.compactMap { a in
