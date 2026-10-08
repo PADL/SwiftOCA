@@ -1,27 +1,19 @@
 //
-//  OcaFlyingSocksDatagramDeviceEndpoint.swift
+// Copyright (c) 2023-2026 PADL Software Pty Ltd
 //
-//  Copyright (c) 2022 Simon Whitty. All rights reserved.
-//  Portions Copyright (c) 2023-2026 PADL Software Pty Ltd. All rights reserved.
+// Licensed under the Apache License, Version 2.0 (the License);
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
-//  The above copyright notice and this permission notice shall be included in all
-//  copies or substantial portions of the Software.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  SOFTWARE.
-//
+
 
 #if os(macOS) || os(iOS) || !NonEmbeddedBuild
 
@@ -60,7 +52,7 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     Array(_controllers)
   }
 
-  let pool: AsyncSocketPool
+  let pool: any AsyncSocketPool = SocketPool.make()
 
   private let address: SocketAddress
   package let timeout: Duration
@@ -69,7 +61,6 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
   package let logger: Logger
   package nonisolated(unsafe) var enableMessageTracing = false
 
-  private(set) var socket: Socket?
   private var asyncSocket: AsyncSocket?
   #if canImport(dnssd)
   private var _endpointRegistrarTask: Task<(), Error>?
@@ -109,8 +100,6 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     self.controlProtocol = controlProtocol
     self.logger = logger
 
-    pool = Self.defaultPool()
-
     try await device.add(endpoint: self)
   }
 
@@ -122,44 +111,38 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     address.makeStorage()._presentationAddress
   }
 
-  func controller(
+  private func controller(
     for controllerAddress: any SocketAddress,
     interfaceIndex: UInt32?,
     localAddress: (any SocketAddress)?
-  ) async throws -> ControllerType {
-    var controller: ControllerType!
-
-    controller = _controllers.first(where: { $0.matchesPeer(address: controllerAddress) })
-    if controller == nil {
-      controller = OcaFlyingSocksDatagramController(
-        endpoint: self,
-        peerAddress: controllerAddress,
-        interfaceIndex: interfaceIndex,
-        localAddress: localAddress
-      )
-
-      logger.info("datagram controller added", controller: controller)
-      _controllers.insert(controller)
+  ) -> ControllerType {
+    if let controller = _controllers.first(where: { $0.matchesPeer(address: controllerAddress) }) {
+      return controller
     }
-
+    let controller = OcaFlyingSocksDatagramController(
+      endpoint: self,
+      peerAddress: controllerAddress,
+      interfaceIndex: interfaceIndex,
+      localAddress: localAddress
+    )
+    logger.info("datagram controller added", controller: controller)
+    _controllers.insert(controller)
     return controller
   }
 
   public func run() async throws {
-    let socket = try await preparePoolAndSocket()
+    let socket = try await bind()
     logger.info("starting \(type(of: self)) (\(controlProtocol)) on \(presentationAddress)")
+    #if canImport(dnssd)
+    if port != 0 { _endpointRegistrarTask = makeBonjourRegistrarTask(for: device) }
+    defer { _endpointRegistrarTask?.cancel() }
+    #endif
     do {
-      if port != 0 {
-        #if canImport(dnssd)
-        _endpointRegistrarTask = makeBonjourRegistrarTask(for: device)
-        #endif
-      }
-      try await _run(on: socket, pool: pool)
+      try await serve(on: socket)
     } catch {
       try? socket.close()
-      // Cancelling the endpoint cancels the socket pool, which stops its event queue under
-      // the wait in progress, so on Darwin the wait fails with EBADF rather than as a
-      // cancellation. Whatever the pool throws, it is shutdown, not a server error.
+      // cancelling the endpoint stops the pool's event queue under its wait, which on
+      // Darwin then fails with EBADF, so treat whatever it throws as shutdown
       guard !Task.isCancelled else {
         try? await device.remove(endpoint: self)
         throw CancellationError()
@@ -170,22 +153,18 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     try await device.remove(endpoint: self)
   }
 
-  func preparePoolAndSocket() async throws -> Socket {
+  /// Prepares the socket pool and binds a socket to the endpoint's address. Tests call
+  /// this and `serve(on:)` separately, to learn an ephemeral port before serving.
+  func bind() async throws -> Socket {
     do {
       try await pool.prepare()
-      return try makeSocketAndListen()
+      return try makeSocket()
     } catch {
       logger.critical("server error for \(presentationAddress): \(error)")
       throw error
     }
   }
 
-  private func shutdown(timeout: Duration = .seconds(0)) async {
-    #if canImport(dnssd)
-    _endpointRegistrarTask?.cancel()
-    #endif
-    try? socket?.close()
-  }
 
   private nonisolated func unlinkDomainSocket() throws {
     if family == AF_UNIX {
@@ -193,7 +172,7 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     }
   }
 
-  func makeSocketAndListen() throws -> Socket {
+  private func makeSocket() throws -> Socket {
     // a socket file left behind by an earlier endpoint would make bind fail; it must be
     // removed before binding, as unlinking afterwards removes the file clients send to
     try unlinkDomainSocket()
@@ -204,52 +183,36 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     return socket
   }
 
-  private func _receiveMessages() async throws {
-    precondition(asyncSocket != nil)
-
-    repeat {
-      do {
-        for try await messagePdu in asyncSocket!
-          .messages(maxMessageLength: min(maximumPduSize + 1, Ocp1MaximumDatagramPduSize))
-        {
-          let controller = try await controller(
-            for: messagePdu.peerAddress,
-            interfaceIndex: messagePdu.interfaceIndex,
-            localAddress: messagePdu.localAddress
-          )
-          do {
-            try await handle(messagePduData: messagePdu.payload, from: controller)
-          } catch {
-            await unlockAndRemove(controller: controller)
-          }
-        }
-      }
-    } while !Task.isCancelled
-  }
-
-  func _run(on socket: Socket, pool: AsyncSocketPool) async throws {
-    asyncSocket = try AsyncSocket(socket: socket, pool: pool)
-
-    return try await withThrowingTaskGroup(of: Void.self) { group in
-      group.addTask {
-        try await pool.run()
-      }
-      group.addTask {
-        try await self._receiveMessages()
-      }
+  /// Runs the socket pool's event loop alongside the receive loop, until either ends.
+  func serve(on socket: Socket) async throws {
+    let pool = pool
+    let asyncSocket = try AsyncSocket(socket: socket, pool: pool)
+    self.asyncSocket = asyncSocket
+    try await withThrowingTaskGroup(of: Void.self) { group in
+      group.addTask { try await pool.run() }
+      group.addTask { try await self.receiveMessages(from: asyncSocket) }
       try await group.next()
     }
   }
 
-  static func defaultPool(logger: Logging = .disabled) -> AsyncSocketPool {
-    #if canImport(Darwin)
-    return .kQueue(logger: logger)
-    #elseif canImport(CSystemLinux)
-    return .ePoll(logger: logger)
-    #else
-    return .poll(logger: logger)
-    #endif
+  private func receiveMessages(from socket: AsyncSocket) async throws {
+    let maxMessageLength = min(maximumPduSize + 1, Ocp1MaximumDatagramPduSize)
+    while !Task.isCancelled {
+      for try await messagePdu in socket.messages(maxMessageLength: maxMessageLength) {
+        let controller = controller(
+          for: messagePdu.peerAddress,
+          interfaceIndex: messagePdu.interfaceIndex,
+          localAddress: messagePdu.localAddress
+        )
+        do {
+          try await handle(messagePduData: messagePdu.payload, from: controller)
+        } catch {
+          await unlockAndRemove(controller: controller)
+        }
+      }
+    }
   }
+
 
   func sendOcp1EncodedMessage(_ messagePdu: AsyncSocket.Message) async throws {
     guard let asyncSocket else {

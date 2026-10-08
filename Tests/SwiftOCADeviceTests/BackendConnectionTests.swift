@@ -61,7 +61,7 @@ private func makeTCPEndpoint(
     timeout: timeout,
     device: device
   )
-  let socket = try await endpoint.preparePoolAndSocket()
+  let socket = try await endpoint.bind()
   let port = try boundPort(of: socket)
   return (endpoint, socket, port)
 }
@@ -167,7 +167,7 @@ final class FlyingSocksControllerCloseTests: XCTestCase {
   func testClosingAControllerWhileItReadsEndsItsMessageLoop() async throws {
     let device = OcaDevice()
     let (endpoint, listeningSocket, _) = try await makeTCPEndpoint(device: device)
-    let endpointTask = Task { try await endpoint._run(on: listeningSocket, pool: endpoint.pool) }
+    let endpointTask = Task { try await endpoint.serve(on: listeningSocket) }
     defer { endpointTask.cancel() }
 
     var files: [Int32] = [-1, -1]
@@ -218,7 +218,7 @@ final class CFSocketConnectionTests: XCTestCase {
     try await device.initializeDefaultObjects()
 
     let (endpoint, socket, port) = try await makeTCPEndpoint(device: device)
-    let endpointTask = Task { try await endpoint._run(on: socket, pool: endpoint.pool) }
+    let endpointTask = Task { try await endpoint.serve(on: socket) }
     defer { endpointTask.cancel() }
 
     try await Task.sleep(for: .milliseconds(100))
@@ -241,7 +241,7 @@ final class CFSocketConnectionTests: XCTestCase {
     try await device.initializeDefaultObjects()
 
     let (endpoint, socket, port) = try await makeTCPEndpoint(device: device)
-    let endpointTask = Task { try await endpoint._run(on: socket, pool: endpoint.pool) }
+    let endpointTask = Task { try await endpoint.serve(on: socket) }
     defer { endpointTask.cancel() }
 
     try await Task.sleep(for: .milliseconds(100))
@@ -267,7 +267,7 @@ final class CFSocketConnectionTests: XCTestCase {
     try await device.initializeDefaultObjects()
 
     let (endpoint, socket, port) = try await makeTCPEndpoint(device: device, timeout: .seconds(3))
-    let endpointTask = Task { try await endpoint._run(on: socket, pool: endpoint.pool) }
+    let endpointTask = Task { try await endpoint.serve(on: socket) }
     defer { endpointTask.cancel() }
 
     try await Task.sleep(for: .milliseconds(100))
@@ -301,7 +301,7 @@ final class NWConnectionTests: XCTestCase {
     try await device.initializeDefaultObjects()
 
     let (endpoint, socket, port) = try await makeTCPEndpoint(device: device)
-    let endpointTask = Task { try await endpoint._run(on: socket, pool: endpoint.pool) }
+    let endpointTask = Task { try await endpoint.serve(on: socket) }
     defer { endpointTask.cancel() }
 
     try await Task.sleep(for: .milliseconds(100))
@@ -324,7 +324,7 @@ final class NWConnectionTests: XCTestCase {
     try await device.initializeDefaultObjects()
 
     let (endpoint, socket, port) = try await makeTCPEndpoint(device: device)
-    let endpointTask = Task { try await endpoint._run(on: socket, pool: endpoint.pool) }
+    let endpointTask = Task { try await endpoint.serve(on: socket) }
     defer { endpointTask.cancel() }
 
     try await Task.sleep(for: .milliseconds(100))
@@ -350,7 +350,7 @@ final class NWConnectionTests: XCTestCase {
     try await device.initializeDefaultObjects()
 
     let (endpoint, socket, port) = try await makeTCPEndpoint(device: device, timeout: .seconds(3))
-    let endpointTask = Task { try await endpoint._run(on: socket, pool: endpoint.pool) }
+    let endpointTask = Task { try await endpoint.serve(on: socket) }
     defer { endpointTask.cancel() }
 
     try await Task.sleep(for: .milliseconds(100))
