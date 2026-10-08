@@ -87,7 +87,7 @@ Sendable {
     getMethodID: OcaMethodID("2.14"),
     ocp2GetName: "Settings"
   )
-  public var activeNetworkSettings: OcaProperty<OcaBlob>.PropertyValue
+  public var currentAdaptationData: OcaProperty<OcaBlob>.PropertyValue
 
   /// adaptation-specific, e.g. encoded OcaIP4NetworkSettings or MilanNetworkInterfaceAdaptationData
   @OcaProperty(
@@ -97,7 +97,7 @@ Sendable {
     ocp2GetName: "Settings",
     ocp2SetName: "Settings"
   )
-  public var targetNetworkSettings: OcaProperty<OcaBlob>.PropertyValue
+  public var requestedAdaptationData: OcaProperty<OcaBlob>.PropertyValue
 
   /// adaptation-specific, e.g. encoded OcaIP4NetworkSettings or MilanNetworkInterfaceAdaptationData
   @OcaProperty(
@@ -105,7 +105,7 @@ Sendable {
     getMethodID: OcaMethodID("2.17"),
     ocp2GetName: "Pending"
   )
-  public var networkSettingsPending: OcaProperty<OcaBoolean>.PropertyValue
+  public var networkSettingPending: OcaProperty<OcaBoolean>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("2.11"),
