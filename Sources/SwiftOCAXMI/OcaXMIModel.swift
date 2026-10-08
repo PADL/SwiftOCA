@@ -34,6 +34,8 @@ public struct OcaXMIModel: Sendable {
 
   public init(data: Data) throws {
     let root = try XMINode.parse(data)
+    // a document OcaXMIExport wrote says everything it means, so nothing is inferred
+    let exported = root.child(named: "xmi:Documentation")?["exporter"] == OcaXMIExport.exporter
     let parameters = Self.parameters(in: root)
     let deprecated = Self.deprecatedIDs(in: root)
     let elements = root.descendants(named: "xmi:Extension").flatMap { $0.descendants(named: "element") }
@@ -50,7 +52,7 @@ public struct OcaXMIModel: Sendable {
         controlClass.isDeprecated = isDeprecated
         controlClass.documentation = documentation
         classes.append(controlClass)
-      } else if var datatype = Self.datatype(element, named: name, names: names) {
+      } else if var datatype = Self.datatype(element, named: name, names: names, exported: exported) {
         datatype.isDeprecated = isDeprecated
         datatype.documentation = documentation
         datatypes[name] = datatype
@@ -285,10 +287,17 @@ public struct OcaXMIModel: Sendable {
       .first { $0 != "deprecated" } ?? first
   }
 
-  private static func datatype(_ element: XMINode, named name: String, names: [String: String]) -> OcaDatatypeDescriptor? {
+  private static func datatype(
+    _ element: XMINode,
+    named name: String,
+    names: [String: String],
+    exported: Bool
+  ) -> OcaDatatypeDescriptor? {
     let stereotype = kind(of: element)
     let attributes = element.child(named: "attributes")?.children(named: "attribute") ?? []
-    let base = (element.child(named: "links")?.children(named: "Generalization") ?? [])
+    // an exported model tags a base its links or stereotype cannot give
+    let taggedBase = tags(of: element, named: OcaXMIExport.baseTypeTag).first
+    let base = taggedBase ?? (element.child(named: "links")?.children(named: "Generalization") ?? [])
       .first { $0["start"] == element["xmi:idref"] }
       .flatMap { $0["end"] }.flatMap { names[$0] } ?? ""
     switch stereotype {
@@ -298,10 +307,10 @@ public struct OcaXMIModel: Sendable {
       return OcaDatatypeDescriptor(name: name, kind: .typedef, baseTypeName: base)
     case "bitset":
       // AES70's bitsets are OcaBitSet16s, which the model does not always say
-      return OcaDatatypeDescriptor(name: name, kind: .bitset, baseTypeName: base.isEmpty ? "OcaUint16" : base)
+      return OcaDatatypeDescriptor(name: name, kind: .bitset, baseTypeName: taggedBase ?? (base.isEmpty ? "OcaUint16" : base))
     case "enum", "enumlong":
       return OcaDatatypeDescriptor(
-        name: name, kind: .enum, baseTypeName: stereotype == "enum" ? "OcaUint8" : "OcaUint16",
+        name: name, kind: .enum, baseTypeName: taggedBase ?? (stereotype == "enum" ? "OcaUint8" : "OcaUint16"),
         items: live(attributes.compactMap { a in
           a["name"].flatMap { n in
             a.child(named: "initial")?["body"].flatMap { OcaInt64($0) }.map {
@@ -324,15 +333,23 @@ public struct OcaXMIModel: Sendable {
           )
         }
       }
-      // a field typed by a name that is not a datatype's is of one of the struct's parameters
-      var parameters = [String]()
-      for name in fields.map(\.typeName) where !name.hasPrefix("Oca") && !name.contains("<") && !parameters.contains(name) {
-        parameters.append(name)
+      // an exported model tags its parameters; in the AES70-2 model, a field typed by a name
+      // that is not a datatype's is of one of the struct's parameters
+      var parameters = tags(of: element, named: OcaXMIExport.typeArgumentTag)
+      if !exported {
+        for type in fields.map(\.typeName) where !type.hasPrefix("Oca") && !type.contains("<") && !parameters.contains(type) {
+          parameters.append(type)
+        }
       }
       return OcaDatatypeDescriptor(name: name, kind: .struct, typeArguments: parameters, fields: fields)
     default:
       return element["xmi:type"] == "uml:PrimitiveType" ? OcaDatatypeDescriptor(name: name, kind: .primitive) : nil
     }
+  }
+
+  /// The values of an element's tags named `name`, in order.
+  private static func tags(of element: XMINode, named name: String) -> [String] {
+    (element.child(named: "tags")?.children(named: "tag") ?? []).filter { $0["name"] == name }.compactMap { $0["value"] }
   }
 
   /// A template instance, `OcaList<OcaONo>`, from its name.
