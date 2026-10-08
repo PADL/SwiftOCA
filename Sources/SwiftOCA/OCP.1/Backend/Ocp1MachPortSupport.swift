@@ -563,9 +563,13 @@ package final class Ocp1MachPortHandle: Sendable {
       destroyed = true
       return true
     }
-    if shouldDestroy {
-      mach_port_destroy(mach_task_self_, port)
+    guard shouldDestroy else { return }
+    // the name may still hold send rights made by makeSendRight()
+    var sendRefs: mach_port_urefs_t = 0
+    if mach_port_get_refs(mach_task_self_, port, MACH_PORT_RIGHT_SEND, &sendRefs) != KERN_SUCCESS {
+      sendRefs = 0
     }
+    mach_port_destruct(mach_task_self_, port, -mach_port_delta_t(sendRefs), 0)
   }
 
   /// Deallocate a send right obtained via `makeSendRight()` or received
