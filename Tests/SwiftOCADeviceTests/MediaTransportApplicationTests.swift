@@ -99,7 +99,7 @@ final class MediaTransportApplicationTests: XCTestCase {
     application.maxInputEndpoints = 2
     application.maxOutputEndpoints = 1
     application.ports = [
-      OcaPort(owner: Self.applicationONo, id: OcaPortID(mode: .output, index: 1), name: "Ch 1"),
+      OcaPort(owner: Self.applicationONo, id: OcaPortID(direction: .output, index: 1), role: "Ch 1"),
     ]
     let inputCounterSet = try OcaCounterSet(
       id: application.makeEndpointCounterSetID(endpointID: 1),
@@ -139,7 +139,7 @@ final class MediaTransportApplicationTests: XCTestCase {
     XCTAssertEqual(outputStatus.state, .running)
     let counts = try await client.getMaxEndpointCounts()
     XCTAssertEqual(counts, .init(maxOutputCount: 1, maxInputCount: 2))
-    let portName = try await client.getPortName(portID: OcaPortID(mode: .output, index: 1))
+    let portName = try await client.getPortName(portID: OcaPortID(direction: .output, index: 1))
     XCTAssertEqual(portName, "Ch 1")
 
     try await client.setEndpointUserLabel(endpointID: 1, label: "Renamed")

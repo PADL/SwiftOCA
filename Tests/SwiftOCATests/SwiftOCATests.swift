@@ -94,7 +94,7 @@ final class SwiftOCADeviceTests: XCTestCase {
   }
 
   func testSingleFieldOcp1Encoding() throws {
-    let parameters = OcaGetPortNameParameters(portID: OcaPortID(mode: .input, index: 2))
+    let parameters = OcaGetPortNameParameters(portID: OcaPortID(direction: .input, index: 2))
     let encodedParameters: [UInt8] = try Ocp1Encoder().encode(parameters)
     XCTAssertEqual(encodedParameters, [0x01, 0x00, 0x02])
 
@@ -446,7 +446,7 @@ final class SwiftOCADeviceTests: XCTestCase {
       userLabel: "in",
       networkAssignmentIDs: [1],
       channelMapDynamic: true,
-      channelMap: [1: [OcaPortID(mode: .output, index: 1)]],
+      channelMap: [1: [OcaPortID(direction: .output, index: 1)]],
       alignmentLevel: -20.0,
       currentStreamMode: OcaMediaStreamMode(
         frameFormat: .aaf,
@@ -797,7 +797,7 @@ final class SwiftOCADeviceTests: XCTestCase {
       direction: .input,
       connectionState: .running,
       adaptationData: try dante.blob,
-      portMap: [OcaPortID(mode: .output, index: 1)]
+      portMap: [OcaPortID(direction: .output, index: 1)]
     )
     XCTAssertEqual(
       try Ocp1Decoder().decode(OcaChannelEndpoint.self, from: Ocp1Encoder().encode(channelEndpoint) as [UInt8]),
@@ -1055,7 +1055,7 @@ final class SwiftOCADeviceTests: XCTestCase {
   }
 
   func testOcaPortIDEncoding() throws {
-    let portID = OcaPortID(mode: .output, index: 5)
+    let portID = OcaPortID(direction: .output, index: 5)
     let encodedData: [UInt8] = try Ocp1Encoder().encode(portID)
     XCTAssertEqual(encodedData, [0x02, 0x00, 0x05])
 

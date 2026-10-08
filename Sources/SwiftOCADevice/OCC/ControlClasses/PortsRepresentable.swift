@@ -28,14 +28,14 @@ extension OcaPortsRepresentable {
   @OcaDevice
   func firstAvailablePortID(mode: OcaPortMode) -> OcaPortID {
     OcaPortID(
-      mode: mode,
-      index: 1 + (ports.filter { $0.id.mode == mode }.map(\.id.index).max() ?? 0)
+      direction: mode,
+      index: 1 + (ports.filter { $0.id.direction == mode }.map(\.id.index).max() ?? 0)
     )
   }
 
   @OcaDevice
   func portName(of portID: OcaPortID) throws -> OcaString {
-    guard let portName = ports.first(where: { $0.id == portID })?.name else {
+    guard let portName = ports.first(where: { $0.id == portID })?.role else {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
     return portName
@@ -47,7 +47,7 @@ extension OcaPortsRepresentable {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
     let port = ports[index]
-    let newPort = OcaPort(owner: port.owner, id: port.id, name: name)
+    let newPort = OcaPort(owner: port.owner, id: port.id, role: name)
     ports.replaceSubrange(index...index, with: [newPort])
   }
 
@@ -68,14 +68,14 @@ public extension SwiftOCADevice.OcaBlock where ActionObject: OcaPortsRepresentab
       let outputPort = OcaPort(
         owner: objectNumber,
         id: outputs[i].firstAvailablePortID(mode: .output),
-        name: "\(name) [Output Port \(i + 1)]"
+        role: "\(name) [Output Port \(i + 1)]"
       )
       outputs[i].ports.append(outputPort)
 
       let inputPort = OcaPort(
         owner: objectNumber,
         id: inputs[i].firstAvailablePortID(mode: .input),
-        name: "\(name) [Input Port \(i + 1)]"
+        role: "\(name) [Input Port \(i + 1)]"
       )
       inputs[i].ports.append(inputPort)
 

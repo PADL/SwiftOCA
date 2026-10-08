@@ -28,7 +28,7 @@ private final class _PortAddingApplication: SwiftOCADevice.OcaMediaTransportAppl
     mode: OcaPortMode,
     from controller: any OcaController
   ) async throws -> OcaPortID {
-    OcaPortID(mode: mode, index: 7)
+    OcaPortID(direction: mode, index: 7)
   }
 }
 
@@ -39,7 +39,7 @@ final class Ocp2WireNameTests: XCTestCase {
   private static let dynamicsONo: OcaONo = 0x0001_0400
   private static let matrixONo: OcaONo = 0x0001_0500
   private static let applicationONo: OcaONo = 0x0001_0600
-  private static let portID = OcaPortID(mode: .input, index: 1)
+  private static let portID = OcaPortID(direction: .input, index: 1)
 
   /// A device with one object of each shape, served over the OCP.2 local endpoint.
   private struct Fixture {
@@ -70,7 +70,7 @@ final class Ocp2WireNameTests: XCTestCase {
       objectNumber: applicationONo,
       deviceDelegate: device
     )
-    application.ports = [OcaPort(owner: applicationONo, id: portID, name: "In 1")]
+    application.ports = [OcaPort(owner: applicationONo, id: portID, role: "In 1")]
     _ = try await _PortAddingApplication(objectNumber: applicationONo + 3, deviceDelegate: device)
   }
 
@@ -136,7 +136,7 @@ final class Ocp2WireNameTests: XCTestCase {
       fixture,
       targetONo: Self.applicationONo,
       methodID: "3,4",
-      parameters: "{\"PortID\":{\"Mode\":1,\"Index\":1}}"
+      parameters: "{\"PortID\":{\"Direction\":1,\"Index\":1}}"
     )
     XCTAssertEqual(Set(parameters.keys), ["Name"])
     XCTAssertEqual(parameters["Name"] as? String, "In 1")
