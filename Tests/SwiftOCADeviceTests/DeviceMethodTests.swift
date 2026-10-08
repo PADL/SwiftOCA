@@ -50,7 +50,7 @@ final class DeviceMethodTests: XCTestCase {
     try await device.initializeDefaultObjects()
     let worker = try await T(role: "Worker", deviceDelegate: device)
     worker.ports = [
-      OcaPort(owner: worker.objectNumber, id: OcaPortID(mode: .input, index: 1), name: "In 1"),
+      OcaPort(owner: worker.objectNumber, id: OcaPortID(direction: .input, index: 1), role: "In 1"),
     ]
     return worker
   }
@@ -78,14 +78,14 @@ final class DeviceMethodTests: XCTestCase {
 
     let set = try command(
       OcaMethodID("2.7"),
-      SwiftOCA.OcaWorker.SetPortNameParameters(id: OcaPortID(mode: .input, index: 1), name: "Mic"),
+      SwiftOCA.OcaWorker.SetPortNameParameters(id: OcaPortID(direction: .input, index: 1), name: "Mic"),
       on: worker
     )
     let setResponse = try await worker.handleCommand(set, from: controller)
     XCTAssertEqual(setResponse.statusCode, .ok)
-    XCTAssertEqual(worker.ports.first?.name, "Mic")
+    XCTAssertEqual(worker.ports.first?.role, "Mic")
 
-    let get = try command(OcaMethodID("2.6"), OcaPortID(mode: .input, index: 1), on: worker)
+    let get = try command(OcaMethodID("2.6"), OcaPortID(direction: .input, index: 1), on: worker)
     let getResponse = try await worker.handleCommand(get, from: controller)
     XCTAssertEqual(getResponse.parameters.parameterCount, 1)
     let name = try Ocp1Decoder().decode(OcaString.self, from: getResponse.parameters.parameterData)
@@ -102,7 +102,7 @@ final class DeviceMethodTests: XCTestCase {
     // two parameters where GetPortName takes one
     let get = try command(
       OcaMethodID("2.6"),
-      SwiftOCA.OcaWorker.SetPortNameParameters(id: OcaPortID(mode: .input, index: 1), name: "Mic"),
+      SwiftOCA.OcaWorker.SetPortNameParameters(id: OcaPortID(direction: .input, index: 1), name: "Mic"),
       on: worker
     )
     do {

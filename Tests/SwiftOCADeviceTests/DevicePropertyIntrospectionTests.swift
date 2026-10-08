@@ -193,8 +193,8 @@ final class DevicePropertyIntrospectionTests: XCTestCase {
 
   func testFieldNamesFollowTheEncoder() throws {
     XCTAssertEqual(Ocp2Encoder.fieldName("sourcePort"), "SourcePort")
-    let encoded = try XCTUnwrap(Ocp2Encoder().encodeValue(OcaPortID(mode: .input, index: 1))
+    let encoded = try XCTUnwrap(Ocp2Encoder().encodeValue(OcaPortID(direction: .input, index: 1))
       as? [String: Any])
-    XCTAssertEqual(Set(encoded.keys), [Ocp2Encoder.fieldName("mode"), Ocp2Encoder.fieldName("index")])
+    XCTAssertEqual(Set(encoded.keys), [Ocp2Encoder.fieldName("direction"), Ocp2Encoder.fieldName("index")])
   }
 }

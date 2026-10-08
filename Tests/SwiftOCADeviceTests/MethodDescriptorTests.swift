@@ -73,8 +73,8 @@ final class MethodDescriptorTests: XCTestCase {
       role: "Worker",
       deviceDelegate: device
     )
-    let portID = OcaPortID(mode: .input, index: 1)
-    worker.ports = [OcaPort(owner: worker.objectNumber, id: portID, name: "In 1")]
+    let portID = OcaPortID(direction: .input, index: 1)
+    worker.ports = [OcaPort(owner: worker.objectNumber, id: portID, role: "In 1")]
     let store = try await SessionStore(
       objectNumber: Self.agentONo,
       role: "Sessions",
@@ -92,9 +92,9 @@ final class MethodDescriptorTests: XCTestCase {
 
     // SetPortName: two arguments into the shared record
     try await client.setPortName(id: portID, name: "Mic")
-    XCTAssertEqual(worker.ports.first?.name, "Mic")
+    XCTAssertEqual(worker.ports.first?.role, "Mic")
     await XCTAssertThrowsStatus(.parameterOutOfRange) {
-      try await client.setPortName(id: OcaPortID(mode: .output, index: 9), name: "None")
+      try await client.setPortName(id: OcaPortID(direction: .output, index: 9), name: "None")
     }
 
     // GetPath: no parameters, a record result
@@ -135,7 +135,7 @@ final class MethodDescriptorTests: XCTestCase {
     XCTAssertEqual(setPortName.parameters.map(\.name), ["ID", "Name"])
     XCTAssertTrue(setPortName.results.isEmpty)
     let encoded = try Ocp2Encoder().encodeParameters(
-      SwiftOCA.OcaWorker.SetPortNameParameters(id: OcaPortID(mode: .input, index: 1), name: "Mic"),
+      SwiftOCA.OcaWorker.SetPortNameParameters(id: OcaPortID(direction: .input, index: 1), name: "Mic"),
       parameterNames: setPortName.parameterNames
     )
     XCTAssertEqual(Set(encoded.keys), ["ID", "Name"])

@@ -764,7 +764,7 @@ final class HandleCommandArmTests: XCTestCase {
       deviceDelegate: device, addToRootBlock: false
     )
     let controller = ArmTestController()
-    let port = OcaPort(owner: block.objectNumber, id: OcaPortID(mode: .input, index: 1), name: "In")
+    let port = OcaPort(owner: block.objectNumber, id: OcaPortID(direction: .input, index: 1), role: "In")
     let path = OcaSignalPath(sourcePort: port, sinkPort: port)
 
     let added = try await block.handleCommand(try command("3.7", path, on: block), from: controller)

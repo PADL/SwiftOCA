@@ -199,11 +199,11 @@ public enum OcaIODirection: OcaUint8, Codable, Sendable, CaseIterable {
 public typealias OcaPortMode = OcaIODirection
 
 public struct OcaPortID: Codable, Sendable, Hashable {
-  public let mode: OcaPortMode
+  public let direction: OcaPortMode
   public let index: OcaUint16
 
-  public init(mode: OcaPortMode, index: OcaUint16) {
-    self.mode = mode
+  public init(direction: OcaPortMode, index: OcaUint16) {
+    self.direction = direction
     self.index = index
   }
 }
@@ -211,12 +211,12 @@ public struct OcaPortID: Codable, Sendable, Hashable {
 public struct OcaPort: Codable, Sendable, Equatable {
   public let owner: OcaONo
   public let id: OcaPortID
-  public let name: OcaString
+  public let role: OcaString
 
-  public init(owner: OcaONo, id: OcaPortID, name: OcaString) {
+  public init(owner: OcaONo, id: OcaPortID, role: OcaString) {
     self.owner = owner
     self.id = id
-    self.name = name
+    self.role = role
   }
 }
 
