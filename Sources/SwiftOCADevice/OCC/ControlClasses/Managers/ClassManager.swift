@@ -177,7 +177,9 @@ public final class OcaClassManager: OcaManager {
       },
       methods: methods(of: classes),
       events: classes.flatMap(ownEvents(of:)).map {
-        OcaClassEventDescriptor(eventID: $0.eventID, name: $0.name, eventDataTypeName: _ocaTypeName(for: $0.eventDataType))
+        OcaClassEventDescriptor(eventID: $0.eventID, name: $0.name, parameters: [OcaClassParameterDescriptor(
+          name: "EventData", typeName: _ocaTypeName(for: $0.eventDataType), direction: .in
+        )])
       },
       isDeprecated: oca.type.classIsDeprecated
     )

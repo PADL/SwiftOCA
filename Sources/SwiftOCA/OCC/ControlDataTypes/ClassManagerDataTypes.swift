@@ -55,11 +55,12 @@ public struct OcaClassDescriptor: Codable, Sendable, Equatable {
   }
 }
 
-/// An event, by its OCA ID and model name, with the model name of the data it carries.
+/// An event, by its OCA ID and model name. The model makes it an operation whose one `in`
+/// parameter, EventData, is the data it carries.
 public struct OcaClassEventDescriptor: Codable, Sendable, Equatable {
   public var eventID: OcaEventID
   public var name: OcaString
-  public var eventDataTypeName: OcaString
+  public var parameters: [OcaClassParameterDescriptor]
   /// The model marks it deprecated.
   public var isDeprecated: OcaBoolean
   /// The model's documentation of it; a device may leave it empty.
@@ -68,13 +69,13 @@ public struct OcaClassEventDescriptor: Codable, Sendable, Equatable {
   public init(
     eventID: OcaEventID,
     name: OcaString,
-    eventDataTypeName: OcaString,
+    parameters: [OcaClassParameterDescriptor],
     isDeprecated: OcaBoolean = false,
     documentation: OcaString = ""
   ) {
     self.eventID = eventID
     self.name = name
-    self.eventDataTypeName = eventDataTypeName
+    self.parameters = parameters
     self.isDeprecated = isDeprecated
     self.documentation = documentation
   }

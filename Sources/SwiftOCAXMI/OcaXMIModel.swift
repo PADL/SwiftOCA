@@ -60,7 +60,7 @@ public struct OcaXMIModel: Sendable {
     for c in classes {
       used += c.properties.map(\.typeName)
       used += c.methods.flatMap { $0.parameters.map(\.typeName) }
-      used += c.events.map(\.eventDataTypeName)
+      used += c.events.flatMap { $0.parameters.map(\.typeName) }
     }
     for datatype in datatypes.values {
       used += datatype.fields.map(\.typeName) + [datatype.baseTypeName]
@@ -217,7 +217,7 @@ public struct OcaXMIModel: Sendable {
         events.append((OcaClassEventDescriptor(
           eventID: OcaEventID(defLevel: defLevel, eventIndex: index),
           name: name,
-          eventDataTypeName: declared.first.flatMap { extensionParameters[$0.id].flatMap(type) } ?? "",
+          parameters: Self.parameterDescriptors(declared, extensionParameters),
           documentation: documentation(operation)
         ), isDeprecated(operation)))
       default:

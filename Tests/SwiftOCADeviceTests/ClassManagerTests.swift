@@ -199,7 +199,9 @@ final class ClassManagerTests: XCTestCase {
 
     let root = try await h.classManager.getControlClass(classID: SwiftOCADevice.OcaRoot.classID, includeInherited: false)
     XCTAssertEqual(root.events, [OcaClassEventDescriptor(
-      eventID: OcaPropertyChangedEventID, name: "PropertyChanged", eventDataTypeName: "OcaPropertyChangedEventData"
+      eventID: OcaPropertyChangedEventID, name: "PropertyChanged", parameters: [OcaClassParameterDescriptor(
+        name: "EventData", typeName: "OcaPropertyChangedEventData", direction: .in
+      )]
     )])
     let changed = try await h.classManager.getDatatype(name: "OcaPropertyChangedEventData")
     XCTAssertEqual(changed.fields.map(\.typeName), ["OcaPropertyID", "DT", "OcaPropertyChangeType"])

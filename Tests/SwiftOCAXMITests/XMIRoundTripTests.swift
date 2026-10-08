@@ -55,6 +55,9 @@ final class XMIRoundTripTests: XCTestCase {
     func compare(_ what: String, _ ours: String, _ model: String) {
       if ours != model { differences.append("\(what): device \(ours), model \(model)") }
     }
+    func signature(_ parameters: [OcaClassParameterDescriptor]) -> String {
+      parameters.map { "\($0.direction) \($0.name.lowercased()): \($0.typeName)" }.joined(separator: ", ")
+    }
     for modelClass in model.classes {
       guard let ours = described.first(where: { $0.classID == modelClass.classID }) else {
         differences.append("\(modelClass.name): not described by the device")
@@ -79,10 +82,7 @@ final class XMIRoundTripTests: XCTestCase {
           differences.append("\(what): not described by the device"); continue
         }
         compare("\(what) name", mine.name, method.name)
-        func signature(_ m: OcaClassMethodDescriptor) -> String {
-          m.parameters.map { "\($0.direction) \($0.name.lowercased()): \($0.typeName)" }.joined(separator: ", ")
-        }
-        compare("\(what) parameters", signature(mine), signature(method))
+        compare("\(what) parameters", signature(mine.parameters), signature(method.parameters))
         compare("\(what) deprecated", "\(mine.isDeprecated)", "\(method.isDeprecated)")
       }
       for event in modelClass.events {
@@ -90,7 +90,8 @@ final class XMIRoundTripTests: XCTestCase {
         guard let mine = ours.events.first(where: { $0.eventID == event.eventID }) else {
           differences.append("\(what): not described by the device"); continue
         }
-        compare("\(what)", "\(mine.name) \(mine.eventDataTypeName)", "\(event.name) \(event.eventDataTypeName)")
+        compare("\(what) name", mine.name, event.name)
+        compare("\(what) parameters", signature(mine.parameters), signature(event.parameters))
         compare("\(what) deprecated", "\(mine.isDeprecated)", "\(event.isDeprecated)")
       }
     }
@@ -166,6 +167,12 @@ final class XMIRoundTripTests: XCTestCase {
     let setGain = try XCTUnwrap(gain.methods.first { $0.name == "SetGain" })
     XCTAssertEqual(setGain.documentation, "Sets the value of the <b>Gain </b>property.")
     XCTAssertEqual(setGain.parameters.map(\.documentation), ["Value to which the gain property shall be set if the method succeeds"])
+    // an event is an operation whose one parameter, its data, is documented in its own right
+    let changed = try XCTUnwrap(root.events.first)
+    XCTAssertEqual(changed.parameters.map(\.direction), [.in])
+    XCTAssertEqual(changed.parameters.map(\.typeName), ["OcaPropertyChangedEventData"])
+    XCTAssertFalse(changed.documentation.isEmpty)
+    XCTAssertFalse(try XCTUnwrap(changed.parameters.first).documentation.isEmpty)
     XCTAssertTrue(try datatype("OcaPortID").documentation.hasPrefix("Unique identifier of input or output Port"))
     XCTAssertTrue(try datatype("OcaPortID").fields[0].documentation.contains("named <b>Mode</b>"))
     XCTAssertEqual(try datatype("OcaPropertyChangeType").items.first?.documentation, "Current value has changed.")
