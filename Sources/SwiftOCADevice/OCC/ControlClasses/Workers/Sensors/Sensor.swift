@@ -22,7 +22,8 @@ open class OcaSensor: OcaWorker {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.1")
+    getMethodID: OcaMethodID("3.1"),
+    ocp2GetName: "State"
   )
-  public var state: OcaSensorReadingState = .unknown
+  public var readingState: OcaSensorReadingState = .unknown
 }
