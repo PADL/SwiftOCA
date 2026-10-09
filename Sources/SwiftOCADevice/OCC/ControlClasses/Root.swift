@@ -240,6 +240,16 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
   /// property's name, its parent's first: `OcaDB` rather than the `Float` it stands for.
   open class var devicePropertyTypeNames: [String: String] { [:] }
 
+  /// The events the class emits, its parent's first. A class that emits one of its own
+  /// overrides this, adding it to its parent's.
+  open class var deviceEvents: [OcaDeviceEventDescriptor] {
+    [OcaDeviceEventDescriptor(
+      eventID: OcaPropertyChangedEventID,
+      name: "PropertyChanged",
+      eventDataType: OcaPropertyChangedEventData<OcaBoolean>.self
+    )]
+  }
+
   open class var deviceMethods: [OcaDeviceMethodDescriptor] {
     [
       _ocaDeviceMethod_getClassIdentification(Void.self),

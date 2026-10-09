@@ -165,3 +165,16 @@ private extension OcaDevicePropertyRepresentable {
     )
   }
 }
+
+/// An event a device class emits: its ID, its model name and the data it carries.
+public struct OcaDeviceEventDescriptor: Sendable {
+  public let eventID: OcaEventID
+  public let name: String
+  public let eventDataType: any (Codable & Sendable).Type
+
+  public init(eventID: OcaEventID, name: String, eventDataType: any (Codable & Sendable).Type) {
+    self.eventID = eventID
+    self.name = name
+    self.eventDataType = eventDataType
+  }
+}
