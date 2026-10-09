@@ -24,9 +24,10 @@ import Synchronization
 /// model's lower-case spellings (`minGain`, `lockable`), which OCA 1.5B makes
 /// UpperCamelCase, is understood. A field the model spells `ID` is sent as `Id`, relying
 /// on the same case-insensitivity rather than special-casing it.
-package enum Ocp2Naming {
+@_spi(SwiftOCAPrivate)
+public enum Ocp2Naming {
   /// The wire name derived from a Swift identifier.
-  package static func wireName(_ swiftName: String) -> String {
+  public static func wireName(_ swiftName: String) -> String {
     var name = Substring(swiftName)
     while name.hasPrefix("_") {
       name = name.dropFirst()
@@ -80,7 +81,7 @@ package enum Ocp2Naming {
 
   /// Stored properties of `type` with their types, in declaration order; uncached, for
   /// callers that build a table once.
-  package static func fields(of type: Any.Type) -> [(name: String, type: Any.Type)] {
+  public static func fields(of type: Any.Type) -> [(name: String, type: Any.Type)] {
     var fields = [(name: String, type: Any.Type)]()
     _ocaForEachField(of: type) { name, fieldType in
       var s = String(cString: name)

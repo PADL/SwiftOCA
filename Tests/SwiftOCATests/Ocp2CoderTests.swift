@@ -16,7 +16,7 @@
 
 #if NonEmbeddedBuild
 import Foundation
-@testable import SwiftOCA
+@_spi(SwiftOCAPrivate) @testable import SwiftOCA
 import XCTest
 
 /// AES70-4 clause 8 marshaling, and the naming rules SwiftOCA layers on it.
