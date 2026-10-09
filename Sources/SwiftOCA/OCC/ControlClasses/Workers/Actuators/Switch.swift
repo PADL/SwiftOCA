@@ -41,5 +41,5 @@ open class OcaSwitch: OcaActuator, @unchecked Sendable {
     ocp2GetName: "Flags",
     ocp2SetName: "Flags"
   )
-  public var positionEnableds: OcaListProperty<OcaBoolean>.PropertyValue
+  public var positionEnableFlags: OcaListProperty<OcaBoolean>.PropertyValue
 }

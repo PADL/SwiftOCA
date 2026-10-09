@@ -24,7 +24,7 @@ open class OcaMediaClockManager: OcaManager, @unchecked Sendable {
     getMethodID: OcaMethodID("3.2"),
     ocp2GetName: "MediaClockTypes"
   )
-  public var clockTypesSupported: OcaListProperty<OcaMediaClockType>.PropertyValue
+  public var clockSourceTypesSupported: OcaListProperty<OcaMediaClockType>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.2"),
