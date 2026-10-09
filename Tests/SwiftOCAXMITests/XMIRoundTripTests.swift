@@ -39,8 +39,7 @@ final class XMIRoundTripTests: XCTestCase {
     _ = try await SwiftOCADevice.OcaGain(role: "Gain", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaMute(role: "Mute", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaIdentificationSensor(role: "Identify", deviceDelegate: device)
-    let classManager = await device.classManager
-    return try (device, XCTUnwrap(classManager))
+    return try await (device, SwiftOCADevice.OcaClassManager(deviceDelegate: device))
   }
 
   /// What the device describes otherwise than the model, one line for each difference.
@@ -49,8 +48,7 @@ final class XMIRoundTripTests: XCTestCase {
     let model = try model()
     let (device, manager) = try await device()
     defer { withExtendedLifetime(device) {} }
-    let controller = RoundTripController()
-    let described = try await manager.getControlClasses(from: controller)
+    let described = manager.controlClasses
     var differences = [String]()
     func compare(_ what: String, _ ours: String, _ model: String) {
       if ours != model { differences.append("\(what): device \(ours), model \(model)") }
@@ -90,7 +88,7 @@ final class XMIRoundTripTests: XCTestCase {
         compare("\(what)", "\(mine.name) \(mine.eventDataTypeName)", "\(event.name) \(event.eventDataTypeName)")
       }
     }
-    let datatypes = try await manager.getDatatypes(from: controller)
+    let datatypes = manager.datatypes
     for datatype in model.datatypes {
       guard let mine = datatypes.first(where: { $0.name == datatype.name }) else {
         differences.append("datatype \(datatype.name): not described by the device"); continue
@@ -178,10 +176,5 @@ final class XMIRoundTripTests: XCTestCase {
     let writable = Dictionary(uniqueKeysWithValues: thing.properties.map { ($0.name, !$0.isReadOnly) })
     XCTAssertEqual(writable, ["ControlEnabled": true, "LoggingEnabled": true, "Busy": false])
   }
-}
-
-private actor RoundTripController: OcaController {
-  nonisolated let flags: OcaControllerFlags = [.supportsLocking]
-  func sendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {}
 }
 #endif

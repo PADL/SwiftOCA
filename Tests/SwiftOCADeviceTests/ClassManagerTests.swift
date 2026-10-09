@@ -53,8 +53,9 @@ final class ClassManagerTests: XCTestCase {
     _ = try await SwiftOCADevice.OcaMatrix<SwiftOCADevice.OcaWorker>(
       rows: 2, columns: 2, deviceDelegate: device, addToRootBlock: false
     )
-    let made = await device.classManager
-    XCTAssertNotNil(made, "the device makes its class manager with its other managers")
+    // made after most objects, so it describes what the device already has
+    _ = try await SwiftOCADevice.OcaClassManager(deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaIdentificationSensor(role: "Identify", deviceDelegate: device)
     let endpoint = try await OcaLocalDeviceEndpoint(device: device)
     let endpointTask = Task { do { try await endpoint.run() } catch {} }
     let connection = await OcaLocalConnection(endpoint)
@@ -134,7 +135,7 @@ final class ClassManagerTests: XCTestCase {
       "Bool", "String", "Int8", "Int16", "Int32", "Int64",
       "UInt8", "UInt16", "UInt32", "UInt64", "Float", "Double",
     ]
-    let all = try await h.classManager.getDatatypes()
+    let all = try await h.classManager.$datatypes._getValue(h.classManager, flags: [])
     for datatype in all {
       let names = [datatype.name, datatype.baseTypeName] + datatype.typeArguments + datatype.fields.map(\.typeName)
       let words = names.flatMap { $0.split { !$0.isLetter && !$0.isNumber }.map(String.init) }
@@ -204,7 +205,7 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(descriptor.kind, .struct)
     XCTAssertEqual(descriptor.fields.map(\.name), ["ClassID", "ClassVersion", "Name", "Properties", "Methods", "Events"])
 
-    let all = try await h.classManager.getDatatypes()
+    let all = try await h.classManager.$datatypes._getValue(h.classManager, flags: [])
     XCTAssertEqual(Set(all.map(\.name)).count, all.count, "each datatype once")
     // every type a descriptor names is itself described
     let names = Set(all.map(\.name))
@@ -264,7 +265,7 @@ final class ClassManagerTests: XCTestCase {
     let h = try await makeHarness()
     defer { Task { await h.tearDown() } }
 
-    let classes = try await h.classManager.getControlClasses()
+    let classes = try await h.classManager.$controlClasses._getValue(h.classManager, flags: [])
     let ids = Set(classes.map(\.classID))
     XCTAssertTrue(ids.contains(SwiftOCADevice.OcaGain.classID))
     XCTAssertTrue(ids.contains(SwiftOCA.OcaClassManager.classID))
@@ -274,7 +275,12 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(method.parameters.map(\.name), ["ClassID", "IncludeInherited", "Descriptor"])
     XCTAssertEqual(method.parameters.map(\.typeName), ["OcaClassID", "OcaBoolean", "OcaClassDescriptor"])
     XCTAssertEqual(method.parameters.map(\.direction), [.in, .in, .out])
+    // its lists are properties, read with their getters
+    XCTAssertEqual(own.properties.map(\.name), ["ControlClasses", "Datatypes"])
+    XCTAssertEqual(own.properties.map(\.isReadOnly), [true, true])
     let list = try XCTUnwrap(own.methods.first { $0.name == "GetControlClasses" })
+    XCTAssertEqual(list.methodID, OcaMethodID("3.1"))
+    XCTAssertEqual(list.parameters.map(\.name), ["ControlClasses"])
     XCTAssertEqual(list.parameters.map(\.typeName), ["OcaList<OcaClassDescriptor>"])
     XCTAssertEqual(list.parameters.map(\.direction), [.out])
     // a generic class by its own name
@@ -282,15 +288,22 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(ids.count, classes.count, "each class once")
   }
 
-  func testAClassNoObjectIsOfIsAParameterError() async throws {
-    let h = try await makeHarness()
-    defer { Task { await h.tearDown() } }
+  @OcaDevice
+  func testAClassGoesWithItsLastObjectAndTheRestStayInClassIDOrder() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let mute = try await SwiftOCADevice.OcaMute(role: "Mute", deviceDelegate: device)
+    // made after one object and before another: it describes both
+    let manager = try await SwiftOCADevice.OcaClassManager(deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaGain(role: "Gain", deviceDelegate: device)
+    let before = manager.controlClasses.map(\.classID)
+    XCTAssertTrue(before.contains(SwiftOCADevice.OcaMute.classID))
+    XCTAssertTrue(before.contains(SwiftOCADevice.OcaGain.classID))
+    XCTAssertEqual(before, before.sorted { $0.fields.lexicographicallyPrecedes($1.fields) })
 
-    do {
-      _ = try await h.classManager.getControlClass(classID: OcaClassID("1.1.1.99"), includeInherited: false)
-      XCTFail("no object is of the class")
-    } catch let Ocp1Error.status(status) {
-      XCTAssertEqual(status, .parameterError)
-    }
+    try await device.deregister(object: mute)
+    XCTAssertEqual(manager.controlClasses.map(\.classID), before.filter { $0 != SwiftOCADevice.OcaMute.classID })
   }
+
 }
+

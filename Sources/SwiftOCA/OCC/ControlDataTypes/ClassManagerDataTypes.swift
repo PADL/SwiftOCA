@@ -60,8 +60,9 @@ public struct OcaClassEventDescriptor: Codable, Sendable, Equatable {
   }
 }
 
-/// A property, by its OCA ID and model name. It is read only where it has no setter, and
-/// static where it is of the class rather than of an object, as ClassID is.
+/// A property, by its OCA ID and model name; read only where it has no setter, static where
+/// it is of the class (as ClassID is). Unlike IS-12's it has no constraints: a bounded
+/// property's range is the object's, from its getter, like IS-12's runtime constraints.
 public struct OcaClassPropertyDescriptor: Codable, Sendable, Equatable {
   public var propertyID: OcaPropertyID
   public var name: OcaString

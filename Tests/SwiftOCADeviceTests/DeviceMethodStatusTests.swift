@@ -173,6 +173,7 @@ final class DeviceMethodStatusTests: XCTestCase {
   private static func freshDevice() async throws -> OcaDevice {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
+    _ = try await SwiftOCADevice.OcaClassManager(deviceDelegate: device)
     return device
   }
 
