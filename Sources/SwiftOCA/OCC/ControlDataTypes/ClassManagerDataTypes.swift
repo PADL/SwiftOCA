@@ -14,9 +14,10 @@
 // limitations under the License.
 //
 
-// What a class manager says of a device's classes, in OCA's terms. Each corresponds
-// to an MS-05-02 descriptor (NcClassDescriptor, NcPropertyDescriptor,
-// NcMethodDescriptor, NcParameterDescriptor), with OCA's IDs and names.
+// What a class manager says of a device's classes and datatypes, shaped as the AES70-2
+// model describes them: a method's parameters each with a direction, types by their model
+// names, and datatypes as primitives, typedefs, structs, enums and template instances.
+// Each corresponds to an MS-05-02 descriptor, with OCA's IDs and names.
 
 /// A control class: its own properties and methods, or with those of the classes it
 /// derives from too where they were asked for.
@@ -25,61 +26,144 @@ public struct OcaClassDescriptor: Codable, Sendable, Equatable {
   public var classVersion: OcaClassVersionNumber
   public var name: OcaString
   public var properties: [OcaClassPropertyDescriptor]
+  /// Every method, property accessors included, as the model lists its operations.
   public var methods: [OcaClassMethodDescriptor]
+  public var events: [OcaClassEventDescriptor]
 
   public init(
     classID: OcaClassID,
     classVersion: OcaClassVersionNumber,
     name: OcaString,
     properties: [OcaClassPropertyDescriptor],
-    methods: [OcaClassMethodDescriptor]
+    methods: [OcaClassMethodDescriptor],
+    events: [OcaClassEventDescriptor] = []
   ) {
     self.classID = classID
     self.classVersion = classVersion
     self.name = name
     self.properties = properties
     self.methods = methods
+    self.events = events
   }
 }
 
-/// A property, by its OCA ID and model name. It is read only where it has no setter.
+/// An event, by its OCA ID and model name, with the model name of the data it carries.
+public struct OcaClassEventDescriptor: Codable, Sendable, Equatable {
+  public var eventID: OcaEventID
+  public var name: OcaString
+  public var eventDataTypeName: OcaString
+
+  public init(eventID: OcaEventID, name: OcaString, eventDataTypeName: OcaString) {
+    self.eventID = eventID
+    self.name = name
+    self.eventDataTypeName = eventDataTypeName
+  }
+}
+
+/// A property, by its OCA ID and model name. It is read only where it has no setter, and
+/// static where it is of the class rather than of an object, as ClassID is.
 public struct OcaClassPropertyDescriptor: Codable, Sendable, Equatable {
   public var propertyID: OcaPropertyID
   public var name: OcaString
   public var typeName: OcaString
   public var isReadOnly: OcaBoolean
+  public var isStatic: OcaBoolean
 
-  public init(propertyID: OcaPropertyID, name: OcaString, typeName: OcaString, isReadOnly: OcaBoolean) {
+  public init(
+    propertyID: OcaPropertyID,
+    name: OcaString,
+    typeName: OcaString,
+    isReadOnly: OcaBoolean,
+    isStatic: OcaBoolean = false
+  ) {
     self.propertyID = propertyID
     self.name = name
     self.typeName = typeName
     self.isReadOnly = isReadOnly
+    self.isStatic = isStatic
   }
 }
 
-/// A method, by its OCA ID and model name, with its parameters in order and the type of
-/// its result (empty for none).
+/// A method, by its OCA ID and model name, with its parameters in order: what it takes,
+/// then what it returns. Every method also returns an `OcaStatus`, which is not listed.
 public struct OcaClassMethodDescriptor: Codable, Sendable, Equatable {
   public var methodID: OcaMethodID
   public var name: OcaString
   public var parameters: [OcaClassParameterDescriptor]
-  public var resultTypeName: OcaString
 
-  public init(
-    methodID: OcaMethodID,
-    name: OcaString,
-    parameters: [OcaClassParameterDescriptor],
-    resultTypeName: OcaString
-  ) {
+  public init(methodID: OcaMethodID, name: OcaString, parameters: [OcaClassParameterDescriptor]) {
     self.methodID = methodID
     self.name = name
     self.parameters = parameters
-    self.resultTypeName = resultTypeName
   }
 }
 
-/// A method parameter, by its OCP.2 name.
+/// Whether a method takes a parameter, returns it, or both.
+public enum OcaParameterDirection: OcaUint8, Codable, Sendable, CaseIterable {
+  case `in` = 1
+  case out = 2
+  case `inout` = 3
+}
+
+/// A method parameter, by its model name, with the model name of its type.
 public struct OcaClassParameterDescriptor: Codable, Sendable, Equatable {
+  public var name: OcaString
+  public var typeName: OcaString
+  public var direction: OcaParameterDirection
+
+  public init(name: OcaString, typeName: OcaString, direction: OcaParameterDirection) {
+    self.name = name
+    self.typeName = typeName
+    self.direction = direction
+  }
+}
+
+/// The kinds of datatype the AES70-2 model has, by their stereotypes.
+public enum OcaDatatypeDescriptorKind: OcaUint8, Codable, Sendable, CaseIterable {
+  /// A base type, or a blob.
+  case primitive = 1
+  /// Another name for the type `baseTypeName`.
+  case typedef = 2
+  /// A record of named `fields`.
+  case `struct` = 3
+  /// A set of named `items`.
+  case `enum` = 4
+  /// A template, `baseTypeName`, given `typeArguments`: `OcaList<OcaONo>`.
+  case template = 5
+  /// Flags, each a bit of the integer type `baseTypeName`.
+  case bitset = 6
+}
+
+/// A datatype, by its model name. Only the members its kind has are filled: an enum's or
+/// a bitset's `baseTypeName` is the integer it is coded as, and a struct's `typeArguments`
+/// are its type parameters, which its fields may name (`DT`).
+public struct OcaDatatypeDescriptor: Codable, Sendable, Equatable {
+  public var name: OcaString
+  public var kind: OcaDatatypeDescriptorKind
+  public var baseTypeName: OcaString
+  public var typeArguments: [OcaString]
+  public var fields: [OcaFieldDescriptor]
+  public var items: [OcaEnumItemDescriptor]
+
+  public init(
+    name: OcaString,
+    kind: OcaDatatypeDescriptorKind,
+    baseTypeName: OcaString = "",
+    typeArguments: [OcaString] = [],
+    fields: [OcaFieldDescriptor] = [],
+    items: [OcaEnumItemDescriptor] = []
+  ) {
+    self.name = name
+    self.kind = kind
+    self.baseTypeName = baseTypeName
+    self.typeArguments = typeArguments
+    self.fields = fields
+    self.items = items
+  }
+}
+
+/// A field of a struct, by its model name, with the model name of its type.
+public struct OcaFieldDescriptor: Codable, Sendable, Equatable {
   public var name: OcaString
   public var typeName: OcaString
 
@@ -87,4 +171,152 @@ public struct OcaClassParameterDescriptor: Codable, Sendable, Equatable {
     self.name = name
     self.typeName = typeName
   }
+}
+
+/// An item of an enum, by its model name, with its value.
+public struct OcaEnumItemDescriptor: Codable, Sendable, Equatable {
+  public var name: OcaString
+  public var value: OcaInt64
+
+  public init(name: OcaString, value: OcaInt64) {
+    self.name = name
+    self.value = value
+  }
+}
+
+/// A datatype whose Swift declaration is not how it is coded, which says how the model
+/// describes it instead: `OcaClassID`, coded as a count and its fields.
+@_spi(SwiftOCAPrivate)
+public protocol OcaDatatypeDescribing {
+  static var datatypeDescriptor: OcaDatatypeDescriptor { get }
+  /// The datatypes the descriptor refers to by name, which have no Swift type.
+  static var referredDatatypes: [OcaDatatypeDescriptor] { get }
+  /// The Swift types the descriptor refers to, which describe themselves.
+  static var referredTypes: [Any.Type] { get }
+}
+
+@_spi(SwiftOCAPrivate)
+public extension OcaDatatypeDescribing {
+  static var referredDatatypes: [OcaDatatypeDescriptor] { [] }
+  static var referredTypes: [Any.Type] { [] }
+}
+
+/// A generic datatype coded as an AES70 template: `OcaArray2D<OcaONo>` is
+/// `OcaList2D<OcaONo>`, two counts and then the elements.
+@_spi(SwiftOCAPrivate)
+public protocol OcaTemplateDatatype {
+  static var templateName: String { get }
+  static var templateArguments: [Any.Type] { get }
+  /// The template itself: a primitive, or a struct whose fields name its parameters.
+  static var templateDescriptor: OcaDatatypeDescriptor { get }
+  /// The Swift types the template's own fields are of, which describe themselves.
+  static var templateReferredTypes: [Any.Type] { get }
+}
+
+@_spi(SwiftOCAPrivate)
+public extension OcaTemplateDatatype {
+  static var templateDescriptor: OcaDatatypeDescriptor {
+    OcaDatatypeDescriptor(name: templateName, kind: .primitive)
+  }
+
+  static var templateReferredTypes: [Any.Type] { [] }
+}
+
+@_spi(SwiftOCAPrivate)
+extension OcaArray2D: OcaTemplateDatatype {
+  public static var templateName: String { "OcaList2D" }
+  public static var templateArguments: [Any.Type] { [Element.self] }
+}
+
+/// A struct template of one parameter, DT, with these fields.
+private func structTemplate(_ name: String, _ fields: [(String, String)]) -> OcaDatatypeDescriptor {
+  OcaDatatypeDescriptor(
+    name: name, kind: .struct, typeArguments: ["DT"],
+    fields: fields.map { OcaFieldDescriptor(name: $0.0, typeName: $0.1) }
+  )
+}
+
+// Bounds is AES70.js's (2024); the 2023 model has only Min and Max
+@_spi(SwiftOCAPrivate)
+extension OcaInterval: OcaTemplateDatatype {
+  public static var templateName: String { "OcaInterval" }
+  public static var templateArguments: [Any.Type] { [Bound.self] }
+  public static var templateDescriptor: OcaDatatypeDescriptor {
+    structTemplate(templateName, [("Min", "DT"), ("Max", "DT"), ("Bounds", "OcaIntervalBounds")])
+  }
+
+  public static var templateReferredTypes: [Any.Type] { [OcaIntervalBounds.self] }
+}
+
+/// A fixed-length blob of `length` bytes, as a datatype descriptor names it.
+private func fixedLengthBlobs(_ lengths: [Int]) -> [OcaDatatypeDescriptor] {
+  [OcaDatatypeDescriptor(name: "OcaBlobFixedLen", kind: .primitive)] + lengths.map {
+    OcaDatatypeDescriptor(
+      name: "OcaBlobFixedLen<\($0)>", kind: .template, baseTypeName: "OcaBlobFixedLen", typeArguments: ["\($0)"]
+    )
+  }
+}
+
+@_spi(SwiftOCAPrivate)
+extension OcaClassID: OcaDatatypeDescribing {
+  public static var datatypeDescriptor: OcaDatatypeDescriptor {
+    OcaDatatypeDescriptor(name: "OcaClassID", kind: .struct, fields: [
+      OcaFieldDescriptor(name: "FieldCount", typeName: "OcaUint16"),
+      // an array, not a list: its count is FieldCount
+      OcaFieldDescriptor(name: "Fields", typeName: "OcaArray<OcaClassIDField>"),
+    ])
+  }
+
+  public static var referredDatatypes: [OcaDatatypeDescriptor] {
+    [
+      OcaDatatypeDescriptor(name: "OcaUint16", kind: .primitive),
+      OcaDatatypeDescriptor(name: "OcaArray", kind: .primitive),
+      OcaDatatypeDescriptor(
+        name: "OcaArray<OcaClassIDField>", kind: .template, baseTypeName: "OcaArray", typeArguments: ["OcaClassIDField"]
+      ),
+      OcaDatatypeDescriptor(name: "OcaClassIDField", kind: .struct, fields: [
+        OcaFieldDescriptor(name: "Value", typeName: "OcaUint16"),
+      ]),
+    ]
+  }
+}
+
+@_spi(SwiftOCAPrivate)
+extension OcaOrganizationID: OcaDatatypeDescribing {
+  public static var datatypeDescriptor: OcaDatatypeDescriptor {
+    OcaDatatypeDescriptor(name: "OcaOrganizationID", kind: .typedef, baseTypeName: "OcaBlobFixedLen<3>")
+  }
+
+  public static var referredDatatypes: [OcaDatatypeDescriptor] { fixedLengthBlobs([3]) }
+}
+
+@_spi(SwiftOCAPrivate)
+extension OcaModelGUID: OcaDatatypeDescribing {
+  public static var datatypeDescriptor: OcaDatatypeDescriptor {
+    OcaDatatypeDescriptor(name: "OcaModelGUID", kind: .struct, fields: [
+      OcaFieldDescriptor(name: "Reserved", typeName: "OcaBlobFixedLen<1>"),
+      OcaFieldDescriptor(name: "MfrCode", typeName: "OcaBlobFixedLen<3>"),
+      OcaFieldDescriptor(name: "ModelCode", typeName: "OcaBlobFixedLen<4>"),
+    ])
+  }
+
+  public static var referredDatatypes: [OcaDatatypeDescriptor] { fixedLengthBlobs([1, 3, 4]) }
+}
+
+/// The data of an event that carries none.
+public struct OcaEmptyEventData: Codable, Sendable, Equatable {
+  public init() {}
+}
+
+@_spi(SwiftOCAPrivate)
+extension OcaPropertyChangedEventData: OcaDatatypeDescribing {
+  public static var datatypeDescriptor: OcaDatatypeDescriptor {
+    OcaDatatypeDescriptor(name: "OcaPropertyChangedEventData", kind: .struct, typeArguments: ["DT"], fields: [
+      OcaFieldDescriptor(name: "PropertyID", typeName: "OcaPropertyID"),
+      OcaFieldDescriptor(name: "PropertyValue", typeName: "DT"),
+      OcaFieldDescriptor(name: "ChangeType", typeName: "OcaPropertyChangeType"),
+    ])
+  }
+
+  public static var referredTypes: [Any.Type] { [OcaPropertyID.self, OcaPropertyChangeType.self] }
 }

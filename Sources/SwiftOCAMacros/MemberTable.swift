@@ -98,7 +98,7 @@ struct MemberTable {
       return "OcaList<\(aes70Name(of: array.element))>"
     }
     if let dictionary = type.as(DictionaryTypeSyntax.self) {
-      return "OcaMap<\(aes70Name(of: dictionary.key)), \(aes70Name(of: dictionary.value))>"
+      return "OcaMap<\(aes70Name(of: dictionary.key)),\(aes70Name(of: dictionary.value))>"
     }
     if let optional = type.as(OptionalTypeSyntax.self) {
       return aes70Name(of: optional.wrappedType)
@@ -112,14 +112,14 @@ struct MemberTable {
     } ?? []
     switch (identifier.name.text, arguments.count) {
     case ("Array", 1): return "OcaList<\(arguments[0])>"
-    case ("Dictionary", 2): return "OcaMap<\(arguments[0]), \(arguments[1])>"
+    case ("Dictionary", 2): return "OcaMap<\(arguments[0]),\(arguments[1])>"
     case ("Optional", 1): return arguments[0]
     // a bounded property's value is of its type, with the bounds beside it
     case ("OcaBoundedPropertyValue", 1): return arguments[0]
     default: break
     }
     let name = baseNames[identifier.name.text] ?? identifier.name.text
-    return arguments.isEmpty ? name : "\(name)<\(arguments.joined(separator: ", "))>"
+    return arguments.isEmpty ? name : "\(name)<\(arguments.joined(separator: ","))>"
   }
 
   private static let baseNames = [
@@ -127,6 +127,8 @@ struct MemberTable {
     "Int8": "OcaInt8", "Int16": "OcaInt16", "Int32": "OcaInt32", "Int64": "OcaInt64",
     "UInt8": "OcaUint8", "UInt16": "OcaUint16", "UInt32": "OcaUint32", "UInt64": "OcaUint64",
     "Float": "OcaFloat32", "Float32": "OcaFloat32", "Double": "OcaFloat64", "Float64": "OcaFloat64",
+    // coded as the model's template
+    "OcaArray2D": "OcaList2D",
   ]
 
   /// The properties declared in `members` with one of `wrappers`, each as a dictionary

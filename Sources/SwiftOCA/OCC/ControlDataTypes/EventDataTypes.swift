@@ -26,9 +26,13 @@ public enum OcaNotificationDeliveryMode: OcaUint8, Codable, Sendable, CaseIterab
   case lightweight = 2
 }
 
-public struct OcaEventID: Codable, Hashable, Sendable, CustomStringConvertible, _Ocp1Codable {
+public struct OcaEventID: Codable, Hashable, Comparable, Sendable, CustomStringConvertible, _Ocp1Codable {
   public let defLevel: OcaUint16
   public let eventIndex: OcaUint16
+
+  public static func < (lhs: OcaEventID, rhs: OcaEventID) -> Bool {
+    (lhs.defLevel, lhs.eventIndex) < (rhs.defLevel, rhs.eventIndex)
+  }
 
   /// The dotted form, `3.1`, or AES70's with the element's letter, `3e1` or `03e01`.
   public init(_ string: OcaString) {

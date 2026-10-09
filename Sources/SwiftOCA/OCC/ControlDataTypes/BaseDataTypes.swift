@@ -403,11 +403,15 @@ public struct OcaClassID: Codable, Hashable, Sendable, CustomStringConvertible,
   }
 }
 
-public struct OcaMethodID: Codable, Hashable, Sendable, CustomStringConvertible,
+public struct OcaMethodID: Codable, Hashable, Comparable, Sendable, CustomStringConvertible,
   ExpressibleByStringLiteral, _Ocp1Codable
 {
   public let defLevel: OcaUint16
   public let methodIndex: OcaUint16
+
+  public static func < (lhs: OcaMethodID, rhs: OcaMethodID) -> Bool {
+    (lhs.defLevel, lhs.methodIndex) < (rhs.defLevel, rhs.methodIndex)
+  }
 
   public init(defLevel: OcaUint16, methodIndex: OcaUint16) {
     self.defLevel = defLevel

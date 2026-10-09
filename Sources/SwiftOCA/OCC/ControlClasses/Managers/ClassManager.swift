@@ -46,6 +46,16 @@ open class OcaClassManager: OcaManager, @unchecked Sendable {
   @OcaMethod("3.2", name: "GetControlClasses", resultNames: ["Descriptors"])
   public func getControlClasses() async throws -> [OcaClassDescriptor]
 
+  /// A datatype that a class of the device's objects refers to, by its model name, such
+  /// as `OcaDB` or `OcaList<OcaONo>`.
+  @OcaMethod("3.3", name: "GetDatatype", parameterNames: ["Name"], resultNames: ["Descriptor"])
+  public func getDatatype(name: OcaString) async throws -> OcaDatatypeDescriptor
+
+  /// Every datatype the classes of the device's objects refer to, each once, in no
+  /// particular order.
+  @OcaMethod("3.4", name: "GetDatatypes", resultNames: ["Descriptors"])
+  public func getDatatypes() async throws -> [OcaDatatypeDescriptor]
+
   public convenience init() {
     self.init(objectNumber: OcaClassManagerONo)
   }

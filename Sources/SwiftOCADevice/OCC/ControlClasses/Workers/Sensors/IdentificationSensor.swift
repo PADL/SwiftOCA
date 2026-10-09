@@ -19,6 +19,14 @@ import SwiftOCA
 open class OcaIdentificationSensor: OcaSensor {
   override open class var classID: OcaClassID { OcaClassID("1.1.2.6") }
 
+  override open class var deviceEvents: [OcaDeviceEventDescriptor] {
+    super.deviceEvents + [OcaDeviceEventDescriptor(
+      eventID: SwiftOCA.OcaIdentificationSensor.identifyEventID,
+      name: "Identify",
+      eventDataType: OcaEmptyEventData.self
+    )]
+  }
+
   public func identify() async throws {
     let event = OcaEvent(
       emitterONo: objectNumber,
