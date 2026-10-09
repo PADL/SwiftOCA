@@ -157,6 +157,22 @@ struct MemberTable {
     }
   }
 
+  /// The properties declared in `members` with one of `wrappers` given a `getMethodName`
+  /// or `setMethodName` argument, each as an entry from its name to those names.
+  static func accessorNames(
+    in members: MemberBlockItemListSyntax,
+    wrappers: Set<String>
+  ) -> [String] {
+    wrappedProperties(in: members, wrappers: wrappers).compactMap { name, _, attribute in
+      guard case let .argumentList(arguments) = attribute.arguments else { return nil }
+      let names = [("get", "getMethodName"), ("set", "setMethodName")].compactMap { label, argument in
+        arguments.first { $0.label?.text == argument }.map { "\(label): \($0.expression.trimmedDescription)" }
+      }
+      guard !names.isEmpty else { return nil }
+      return "\"\(name)\": OcaPropertyAccessorNames(\(names.joined(separator: ", ")))"
+    }
+  }
+
   /// Each property declared in `members` with one of `wrappers`, by its name.
   private static func wrappedProperties(
     in members: MemberBlockItemListSyntax,

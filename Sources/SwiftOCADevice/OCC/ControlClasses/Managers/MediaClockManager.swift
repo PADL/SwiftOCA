@@ -25,6 +25,7 @@ open class OcaMediaClockManager: OcaManager {
     propertyID: OcaPropertyID("3.1"),
     getMethodID: OcaMethodID("3.2"),
     ocp2GetName: "MediaClockTypes",
+    getMethodName: "GetMediaClockTypesSupported",
     deprecated: .all
   )
   public var clockSourceTypesSupported = [OcaMediaClockType]()

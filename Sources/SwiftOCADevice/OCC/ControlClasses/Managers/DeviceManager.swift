@@ -96,6 +96,8 @@ open class OcaDeviceManager: OcaManager {
     setMethodID: OcaMethodID("3.12"),
     ocp2GetName: "Enabled",
     ocp2SetName: "Enabled",
+    getMethodName: "GetEnabled",
+    setMethodName: "SetEnabled",
     deprecated: [.getter, .setter]
   )
   public var controlEnabled = true
