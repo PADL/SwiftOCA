@@ -40,7 +40,7 @@ public enum OcaDatatypeKind: Sendable {
   case enumeration([(name: String, value: Int64)])
   /// A type written as the raw value of the type given.
   case rawValue(Any.Type)
-  /// A structure coded as its stored properties, which `Ocp2Encoder.fields(of:)` lists.
+  /// A structure coded as its stored properties, which `Ocp2Naming.fields(of:)` lists.
   case structure
   /// A type of none of these kinds, such as a class or one coded by hand.
   case other

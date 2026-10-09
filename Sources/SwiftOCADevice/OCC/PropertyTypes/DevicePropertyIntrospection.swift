@@ -140,23 +140,6 @@ public extension OcaRoot {
   }
 }
 
-#if NonEmbeddedBuild
-@_spi(SwiftOCAPrivate)
-public extension Ocp2Encoder {
-  /// The OCP.2 name the encoder gives a field of a composite datatype, from the name
-  /// of its Swift property or coding key.
-  static func fieldName(_ swiftName: String) -> String {
-    Ocp2Naming.wireName(swiftName)
-  }
-
-  /// The stored properties of a composite datatype and their types, in declaration
-  /// order, read from its metadata: its fields, where its coding is synthesised.
-  static func fields(of type: Any.Type) -> [(name: String, type: Any.Type)] {
-    Ocp2Naming.fields(of: type)
-  }
-}
-#endif
-
 private extension OcaDevicePropertyRepresentable {
   func description(
     named name: String,
