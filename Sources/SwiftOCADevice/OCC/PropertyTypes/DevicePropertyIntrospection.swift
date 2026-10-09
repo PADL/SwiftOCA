@@ -17,6 +17,18 @@
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
+/// The model's names for a device property's getter and setter, where they are not "Get"
+/// and "Set" with the property's name, as `GetEnabled` for ControlEnabled.
+public struct OcaPropertyAccessorNames: Sendable {
+  public let get: String?
+  public let set: String?
+
+  public init(get: String? = nil, set: String? = nil) {
+    self.get = get
+    self.set = set
+  }
+}
+
 /// Which of a device property and its accessors the model deprecates. A property is
 /// renamed by deprecating a copy, so its accessors can be deprecated while it is not.
 public struct OcaPropertyDeprecation: OptionSet, Sendable {
@@ -67,6 +79,7 @@ public struct OcaDevicePropertyDescriptor: Sendable {
 
   public let flags: Flags
   public let deprecation: OcaPropertyDeprecation
+  public let accessorNames: OcaPropertyAccessorNames
   /// For a vector property, the names of its two components: the property's name without
   /// its `XY`, with `X` and `Y` after it. Nil for any other property.
   public let componentNames: (x: String, y: String)?
@@ -105,6 +118,7 @@ public extension OcaRoot {
     let owner = (self as? any OcaOwnable).map { type(of: $0).ownerPropertyID }
     let typeNames = type(of: self).devicePropertyTypeNames
     let deprecations = type(of: self).devicePropertyDeprecations
+    let accessorNames = type(of: self).devicePropertyAccessorNames
     return allDevicePropertyKeyPaths.compactMap { name, keyPath in
       guard let property = self[keyPath: keyPath] as? any OcaDevicePropertyRepresentable else { return nil }
       var flags: OcaDevicePropertyDescriptor.Flags = []
@@ -112,7 +126,8 @@ public extension OcaRoot {
       if property.propertyID == label { flags.insert(.label) }
       if property.propertyID == owner { flags.insert(.owner) }
       return property.description(
-        named: name, typeName: typeNames[name], flags: flags, deprecation: deprecations[name] ?? []
+        named: name, typeName: typeNames[name], flags: flags, deprecation: deprecations[name] ?? [],
+        accessorNames: accessorNames[name] ?? OcaPropertyAccessorNames()
       )
     }.sorted { $0.propertyID < $1.propertyID }
   }
@@ -161,7 +176,8 @@ private extension OcaDevicePropertyRepresentable {
     named name: String,
     typeName: String?,
     flags: OcaDevicePropertyDescriptor.Flags,
-    deprecation: OcaPropertyDeprecation
+    deprecation: OcaPropertyDeprecation,
+    accessorNames: OcaPropertyAccessorNames
   ) -> OcaDevicePropertyDescriptor {
     OcaDevicePropertyDescriptor(
       name: name,
@@ -174,6 +190,7 @@ private extension OcaDevicePropertyRepresentable {
       componentType: vectorComponents?.type,
       flags: flags,
       deprecation: deprecation,
+      accessorNames: accessorNames,
       componentNames: vectorComponents.map { _ in
         let stem = name.hasSuffix("XY") ? String(name.dropLast(2)) : name
         return (stem + "X", stem + "Y")

@@ -161,9 +161,9 @@ enum ClientMethodDescriptors {
     (OcaGroup.self, [
       ("getMembers", OcaGroup.Methods.getMembers.erased),
       ("setMembers", OcaGroup.Methods.setMembers.erased),
-      ("getGroupController", OcaGroup.Methods.getGroupController.erased),
+      ("getGroupControllerONo", OcaGroup.Methods.getGroupControllerONo.erased),
       ("addMember", OcaGroup.Methods.addMember.erased),
-      ("deleteMember", OcaGroup.Methods.deleteMember.erased),
+      ("removeMember", OcaGroup.Methods.removeMember.erased),
     ]),
     (OcaLevelSensor.self, [
       ("getReading", OcaLevelSensor.Methods.getReading.erased),

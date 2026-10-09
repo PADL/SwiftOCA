@@ -211,6 +211,20 @@ public struct OcaDeviceClassMacro: MemberMacro {
         """
       )
     }
+    let accessorNames = MemberTable(classDecl) {
+      MemberTable.accessorNames(in: $0, wrappers: propertyWrappers)
+    }
+    if !accessorNames.entries.isEmpty {
+      members.append(
+        """
+        override \(raw: access)class var devicePropertyAccessorNames: [String: OcaPropertyAccessorNames] {
+          var names = super.devicePropertyAccessorNames
+          \(raw: accessorNames.statements(appending: { "names.merge([\($0)]) { _, new in new }" }))
+          return names
+        }
+        """
+      )
+    }
     if !propertyTable.entries.isEmpty {
       members.append(
         """

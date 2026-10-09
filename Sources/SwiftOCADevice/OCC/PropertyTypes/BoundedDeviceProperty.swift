@@ -60,6 +60,8 @@ public struct OcaBoundedDeviceProperty<
     setMethodID: OcaMethodID? = nil,
     ocp2GetName: String? = nil,
     ocp2SetName: String? = nil,
+    getMethodName: String? = nil,
+    setMethodName: String? = nil,
     deprecated: OcaPropertyDeprecation = []
   ) {
     storage = OcaDeviceProperty(

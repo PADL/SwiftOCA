@@ -277,13 +277,13 @@ public final class OcaClassManager: OcaManager {
     var accessors = [OcaClassMethodDescriptor]()
     if let getMethodID = property.getMethodID {
       accessors.append(OcaClassMethodDescriptor(
-        methodID: getMethodID, name: "Get" + name, parameters: gotten,
+        methodID: getMethodID, name: property.accessorNames.get ?? "Get" + name, parameters: gotten,
         isDeprecated: property.deprecation.contains(.getter)
       ))
     }
     if let setMethodID = property.setMethodID {
       accessors.append(OcaClassMethodDescriptor(
-        methodID: setMethodID, name: "Set" + name, parameters: values,
+        methodID: setMethodID, name: property.accessorNames.set ?? "Set" + name, parameters: values,
         isDeprecated: property.deprecation.contains(.setter)
       ))
     }

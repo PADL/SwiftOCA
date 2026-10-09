@@ -38,21 +38,21 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
     propertyID: OcaPropertyID("3.2"),
     getMethodID: OcaMethodID("3.5")
   )
-  public var groupController: OcaONo = OcaInvalidONo
+  public var groupControllerONo: OcaONo = OcaInvalidONo
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.3"),
     getMethodID: OcaMethodID("3.7"),
     setMethodID: OcaMethodID("3.8")
   )
-  public var aggregationMode: OcaString?
+  public var aggregationRule: OcaString?
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.9"),
     setMethodID: OcaMethodID("3.10")
   )
-  public var saturationMode: OcaString?
+  public var saturationRule: OcaString?
 
   open func set(members: [Member], controller: (any OcaController)? = nil) async throws {
     guard members.allSatisfy({ $0.objectNumber != OcaInvalidONo }) else {
@@ -107,14 +107,14 @@ open class OcaGroup<Member: OcaRoot>: OcaAgent {
     try await add(member: self.member(member), controller: controller)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaGroup.Methods.deleteMember)
-  func deleteMember(member: OcaONo, from controller: any OcaController) async throws {
+  @OcaDeviceMethod(SwiftOCA.OcaGroup.Methods.removeMember)
+  func removeMember(member: OcaONo, from controller: any OcaController) async throws {
     try await delete(member: self.member(member), controller: controller)
   }
 
-  @OcaDeviceMethod(SwiftOCA.OcaGroup.Methods.getGroupController)
-  func getGroupController(from controller: any OcaController) -> OcaONo {
-    groupController
+  @OcaDeviceMethod(SwiftOCA.OcaGroup.Methods.getGroupControllerONo)
+  func getGroupControllerONo(from controller: any OcaController) -> OcaONo {
+    groupControllerONo
   }
 
   /// The member an object number names; resolved once the lock check has passed, so a
@@ -239,7 +239,7 @@ open class _OcaGroupControllerGroup<Member: OcaRoot>: OcaGroup<Member> {
     )
 
     _groupController = try await GroupController(self)
-    groupController = _groupController!.objectNumber
+    groupControllerONo = _groupController!.objectNumber
   }
 
   public required init(from decoder: Decoder) throws {

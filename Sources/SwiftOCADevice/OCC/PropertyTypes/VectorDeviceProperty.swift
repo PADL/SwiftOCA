@@ -60,6 +60,8 @@ public struct OcaVectorDeviceProperty<
     getMethodID: OcaMethodID? = nil,
     setMethodID: OcaMethodID? = nil,
     ocp2GetName: String? = nil,
+    getMethodName: String? = nil,
+    setMethodName: String? = nil,
     deprecated: OcaPropertyDeprecation = []
   ) {
     storage = OcaDeviceProperty(

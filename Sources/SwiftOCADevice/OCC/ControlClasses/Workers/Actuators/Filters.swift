@@ -110,7 +110,9 @@ open class OcaFilterParametric: OcaActuator {
     getMethodID: OcaMethodID("4.7"),
     setMethodID: OcaMethodID("4.8"),
     ocp2GetName: "Gain",
-    ocp2SetName: "Gain"
+    ocp2SetName: "Gain",
+    getMethodName: "GetInbandGain",
+    setMethodName: "SetInbandGain"
   )
   public var inBandGain = OcaBoundedPropertyValue<OcaDB>(value: 0.0, in: -144.0...20.0)
 

@@ -39,30 +39,30 @@ Sendable {
     getMethodID: OcaMethodID("3.5"),
     setMethodID: OcaMethodID("3.6")
   )
-  public var groupController: OcaProperty<OcaONo>.PropertyValue
+  public var groupControllerONo: OcaProperty<OcaONo>.PropertyValue
 
-  @OcaMethod("3.5", name: "GetGroupController", resultNames: ["GroupController"])
-  public func getGroupController() async throws -> OcaONo
+  @OcaMethod("3.5", name: "GetGroupControllerONo", resultNames: ["GroupControllerONo"])
+  public func getGroupControllerONo() async throws -> OcaONo
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.3"),
     getMethodID: OcaMethodID("3.7"),
     setMethodID: OcaMethodID("3.8")
   )
-  public var aggregationMode: OcaProperty<OcaString?>.PropertyValue
+  public var aggregationRule: OcaProperty<OcaString?>.PropertyValue
 
   @OcaProperty(
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.9"),
     setMethodID: OcaMethodID("3.10")
   )
-  public var saturationMode: OcaProperty<OcaString?>.PropertyValue
+  public var saturationRule: OcaProperty<OcaString?>.PropertyValue
 
   @OcaMethod("3.3", name: "AddMember", parameterNames: ["Member"])
   public func addMember(member: OcaONo) async throws
 
-  @OcaMethod("3.4", name: "DeleteMember", parameterNames: ["Member"])
-  public func deleteMember(member: OcaONo) async throws
+  @OcaMethod("3.4", name: "RemoveMember", parameterNames: ["Member"])
+  public func removeMember(member: OcaONo) async throws
 }
 
 public extension OcaGroup {
@@ -109,7 +109,7 @@ public extension OcaGroup {
   func resolveGroupController<T: OcaRoot>() async throws -> T {
     guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
 
-    return try await _groupController.onCompletion(self) { groupControllerObjectNumber in
+    return try await _groupControllerONo.onCompletion(self) { groupControllerObjectNumber in
       let classIdentification = try await connectionDelegate
         .getClassIdentification(objectNumber: groupControllerObjectNumber)
       let objectID = OcaObjectIdentification(

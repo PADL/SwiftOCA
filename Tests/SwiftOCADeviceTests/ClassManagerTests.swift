@@ -354,5 +354,40 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(manager.controlClasses.map(\.classID), before.filter { $0 != SwiftOCADevice.OcaMute.classID })
   }
 
+  @OcaDevice
+  func testAnAccessorIsNamedAsTheModelNamesIt() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    _ = try await SwiftOCADevice.OcaFilterParametric(role: "Filter", deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaGroup<SwiftOCADevice.OcaGain>(role: "Group", deviceDelegate: device)
+    let manager = try await SwiftOCADevice.OcaClassManager(deviceDelegate: device)
+    func methods(of classID: OcaClassID) throws -> [String: String] {
+      let oca = try XCTUnwrap(manager.controlClasses.first { $0.classID == classID })
+      return Dictionary(uniqueKeysWithValues: oca.methods.map { ($0.methodID.description, $0.name) })
+    }
+
+    // not after the property: ControlEnabled's accessors keep their old names
+    let deviceManager = try methods(of: SwiftOCADevice.OcaDeviceManager.classID)
+    XCTAssertEqual(deviceManager["3.11"], "GetEnabled")
+    XCTAssertEqual(deviceManager["3.12"], "SetEnabled")
+    let filter = try methods(of: SwiftOCADevice.OcaFilterParametric.classID)
+    XCTAssertEqual(filter["4.7"], "GetInbandGain")
+    // after the property where the model does
+    let group = try methods(of: SwiftOCADevice.OcaGroup<SwiftOCADevice.OcaGain>.classID)
+    XCTAssertEqual(group["3.7"], "GetAggregationRule")
+    XCTAssertEqual(group["3.5"], "GetGroupControllerONo")
+  }
+
+  func testAClassNoObjectIsOfIsAParameterError() async throws {
+    let h = try await makeHarness()
+    defer { Task { await h.tearDown() } }
+
+    do {
+      _ = try await h.classManager.getControlClass(classID: OcaClassID("1.1.1.99"), includeInherited: false)
+      XCTFail("no object is of the class")
+    } catch let Ocp1Error.status(status) {
+      XCTAssertEqual(status, .parameterError)
+    }
+  }
 }
 
