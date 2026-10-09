@@ -245,6 +245,10 @@ let CommonProducts: [Product] = [
     name: "SwiftOCASecureDevice",
     targets: ["SwiftOCASecureDevice"]
   ),
+  .library(
+    name: "SwiftOCAXMI",
+    targets: ["SwiftOCAXMI"]
+  ),
 ]
 
 let CommonTargets: [Target] = [
@@ -395,6 +399,23 @@ let CommonTargets: [Target] = [
     dependencies: [
       .target(name: "SwiftOCADevice"),
     ],
+    swiftSettings: [
+      .unsafeFlags(ASANSwiftFlags),
+    ],
+    linkerSettings: [] + ASANLinkerSettings
+  ),
+  .target(
+    name: "SwiftOCAXMI",
+    dependencies: ["SwiftOCA"],
+    swiftSettings: [
+      .unsafeFlags(ASANSwiftFlags),
+    ],
+    linkerSettings: [] + ASANLinkerSettings
+  ),
+  .testTarget(
+    name: "SwiftOCAXMITests",
+    dependencies: ["SwiftOCAXMI", "SwiftOCADevice"],
+    resources: [.copy("Resources")],
     swiftSettings: [
       .unsafeFlags(ASANSwiftFlags),
     ],
