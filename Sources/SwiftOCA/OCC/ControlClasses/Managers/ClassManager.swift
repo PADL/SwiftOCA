@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+// the class manager uses Foundation, which embedded builds lack
+#if NonEmbeddedBuild
 /// A class manager, which AES70 does not define: it describes the classes of the
 /// device's objects. It is PADL's, at `OcaClassManagerONo`.
 @OcaClass
@@ -48,3 +50,4 @@ open class OcaClassManager: OcaManager, @unchecked Sendable {
     self.init(objectNumber: OcaClassManagerONo)
   }
 }
+#endif

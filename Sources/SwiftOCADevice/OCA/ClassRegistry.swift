@@ -116,7 +116,9 @@ public class OcaDeviceClassRegistry {
     try register(OcaCodingManager.self)
     try register(OcaDiagnosticManager.self)
     try register(OcaLockManager.self)
+    #if NonEmbeddedBuild
     try register(OcaClassManager.self)
+    #endif
 
     // workers
     try register(OcaWorker.self)
