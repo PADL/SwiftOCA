@@ -44,11 +44,15 @@ public struct OcaXMIModel: Sendable {
       guard let name = element["name"] else { continue }
       let isDeprecated = element["xmi:idref"].map(deprecated.contains) ?? false
         || element.child(named: "properties")?["stereotype"] == "deprecated"
+      // a class's or datatype's documentation is an attribute of its properties
+      let documentation = Self.trimmed(element.child(named: "properties")?["documentation"])
       if var controlClass = Self.controlClass(element, named: name, parameters: parameters) {
         controlClass.isDeprecated = isDeprecated
+        controlClass.documentation = documentation
         classes.append(controlClass)
       } else if var datatype = Self.datatype(element, named: name, names: names) {
         datatype.isDeprecated = isDeprecated
+        datatype.documentation = documentation
         datatypes[name] = datatype
       }
     }
@@ -57,7 +61,7 @@ public struct OcaXMIModel: Sendable {
     for c in classes {
       used += c.properties.map(\.typeName)
       used += c.methods.flatMap { $0.parameters.map(\.typeName) }
-      used += c.events.map(\.eventDataTypeName)
+      used += c.events.flatMap { $0.parameters.map(\.typeName) }
     }
     for datatype in datatypes.values {
       used += datatype.fields.map(\.typeName) + [datatype.baseTypeName]
@@ -118,6 +122,16 @@ public struct OcaXMIModel: Sendable {
   /// Whether the model marks an attribute or operation deprecated.
   private static func isDeprecated(_ node: XMINode) -> Bool {
     node.child(named: "stereotype")?["stereotype"] == "deprecated"
+  }
+
+  /// An attribute's, operation's or parameter's documentation, from its `documentation`
+  /// child: the parser has decoded its entities, and EA's markup, such as `<b>`, is kept.
+  private static func documentation(_ node: XMINode) -> String {
+    trimmed(node.child(named: "documentation")?["value"])
+  }
+
+  private static func trimmed(_ value: String?) -> String {
+    value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
   }
 
   /// Leaves out a deprecated element whose ID a live one has, which AES70 renames by
@@ -183,7 +197,8 @@ public struct OcaXMIModel: Sendable {
         name: name,
         typeName: properties?["type"] ?? "",
         isReadOnly: !isSettable(name),
-        isStatic: properties?["static"] == "1"
+        isStatic: properties?["static"] == "1",
+        documentation: documentation(attribute)
       ), isDeprecated(attribute))
     }, id: \.propertyID) { $0.isDeprecated = true }
 
@@ -195,9 +210,9 @@ public struct OcaXMIModel: Sendable {
       else {
         continue
       }
-      let types = Dictionary(
+      let extensionParameters = Dictionary(
         (operation.child(named: "parameters")?.children(named: "parameter") ?? []).compactMap { p in
-          p["xmi:idref"].flatMap { pid in p.child(named: "properties")?["type"].map { (pid, $0) } }
+          p["xmi:idref"].map { ($0, p) }
         }
       ) { first, _ in first }
       let declared = parameters[id] ?? []
@@ -206,13 +221,15 @@ public struct OcaXMIModel: Sendable {
         methods.append((OcaClassMethodDescriptor(
           methodID: OcaMethodID(defLevel: defLevel, methodIndex: index),
           name: name,
-          parameters: Self.parameterDescriptors(declared, types: types)
+          parameters: Self.parameterDescriptors(declared, extensionParameters),
+          documentation: documentation(operation)
         ), isDeprecated(operation)))
       case "e":
         events.append((OcaClassEventDescriptor(
           eventID: OcaEventID(defLevel: defLevel, eventIndex: index),
           name: name,
-          eventDataTypeName: declared.first.flatMap { types[$0.id] } ?? ""
+          parameters: Self.parameterDescriptors(declared, extensionParameters),
+          documentation: documentation(operation)
         ), isDeprecated(operation)))
       default:
         continue
@@ -233,14 +250,24 @@ public struct OcaXMIModel: Sendable {
   /// inout parameter is taken and returned.
   private static func parameterDescriptors(
     _ declared: [(id: String, parameter: Parameter)],
-    types: [String: String]
+    _ extensionParameters: [String: XMINode]
   ) -> [OcaClassParameterDescriptor] {
     func descriptors(_ direction: OcaParameterDirection, _ directions: Set<String>) -> [OcaClassParameterDescriptor] {
       declared.filter { directions.contains($0.parameter.direction) }.map {
-        OcaClassParameterDescriptor(name: $0.parameter.name, typeName: types[$0.id] ?? "", direction: direction)
+        OcaClassParameterDescriptor(
+          name: $0.parameter.name,
+          typeName: extensionParameters[$0.id].flatMap(type) ?? "",
+          direction: direction,
+          documentation: extensionParameters[$0.id].map(documentation) ?? ""
+        )
       }
     }
     return descriptors(.in, ["in", "inout"]) + descriptors(.out, ["out", "inout"])
+  }
+
+  /// The type an operation's parameter is declared with in the extension section.
+  private static func type(_ parameter: XMINode) -> String? {
+    parameter.child(named: "properties")?["type"]
   }
 
   // MARK: - Datatypes
@@ -274,7 +301,9 @@ public struct OcaXMIModel: Sendable {
         name: name, kind: .enum, baseTypeName: stereotype == "enum" ? "OcaUint8" : "OcaUint16",
         items: live(attributes.compactMap { a in
           a["name"].flatMap { n in
-            a.child(named: "initial")?["body"].flatMap { OcaInt64($0) }.map { (OcaEnumItemDescriptor(name: n, value: $0), isDeprecated(a)) }
+            a.child(named: "initial")?["body"].flatMap { OcaInt64($0) }.map {
+              (OcaEnumItemDescriptor(name: n, value: $0, documentation: documentation(a)), isDeprecated(a))
+            }
           }
         }, id: \.value) { $0.isDeprecated = true }
       )
@@ -282,7 +311,12 @@ public struct OcaXMIModel: Sendable {
       // a deprecated field is kept, not dropped as a twin: it still has its place in the coding
       let fields = attributes.compactMap { a in
         a["name"].map {
-          OcaFieldDescriptor(name: $0, typeName: a.child(named: "properties")?["type"] ?? "", isDeprecated: isDeprecated(a))
+          OcaFieldDescriptor(
+            name: $0,
+            typeName: a.child(named: "properties")?["type"] ?? "",
+            isDeprecated: isDeprecated(a),
+            documentation: documentation(a)
+          )
         }
       }
       // a field typed by a name that is not a datatype's is of one of the struct's parameters

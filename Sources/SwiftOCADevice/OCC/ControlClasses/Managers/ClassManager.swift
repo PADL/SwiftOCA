@@ -187,7 +187,8 @@ public final class OcaClassManager: OcaManager {
   ]
 
   /// `oca` described with the elements of `classes`, which are it and, if asked for,
-  /// the classes it derives from.
+  /// the classes it derives from. Documentation is left empty: the device does not carry
+  /// the model's text, and Swift's doc comments are not it.
   private static func descriptor(
     for oca: OcaDeviceClassDescriptor,
     with classes: [OcaDeviceClassDescriptor]
@@ -223,7 +224,9 @@ public final class OcaClassManager: OcaManager {
       },
       methods: methods(for: classes),
       events: classes.flatMap(ownEvents(for:)).map {
-        OcaClassEventDescriptor(eventID: $0.eventID, name: $0.name, eventDataTypeName: _ocaTypeName(for: $0.eventDataType))
+        OcaClassEventDescriptor(eventID: $0.eventID, name: $0.name, parameters: [OcaClassParameterDescriptor(
+          name: "EventData", typeName: _ocaTypeName(for: $0.eventDataType), direction: .in
+        )])
       },
       isDeprecated: oca.type is any OcaDeprecated.Type
     )
