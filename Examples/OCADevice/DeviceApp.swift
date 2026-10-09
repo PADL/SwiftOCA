@@ -94,6 +94,10 @@ public enum DeviceApp {
 
     let device = OcaDevice.shared
     try await device.initializeDefaultObjects()
+    #if NonEmbeddedBuild
+    // describes the device's classes to controllers that ask (ocacli's class-manager commands)
+    _ = try await OcaClassManager(deviceDelegate: device)
+    #endif
     let deviceManager = await device.deviceManager!
     Task { @OcaDevice in
       deviceManager.deviceName = "OCA Test"

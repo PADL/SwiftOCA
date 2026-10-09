@@ -130,7 +130,8 @@ public actor OcaDevice {
   public private(set) var deviceManager: OcaDeviceManager!
   public private(set) var securityManager: OcaSecurityManager!
   #if NonEmbeddedBuild
-  public private(set) var classManager: OcaClassManager!
+  /// The class manager, if the device has made one (`OcaClassManager(deviceDelegate:)`).
+  public private(set) var classManager: OcaClassManager?
   #endif
 
   /// Every manager of the device: the device manager, then those its `Managers` lists.
@@ -194,9 +195,6 @@ public actor OcaDevice {
     for object in objects.values.sorted(by: { $0.objectNumber < $1.objectNumber }) {
       await _addManagerDescriptor(for: object)
     }
-    #if NonEmbeddedBuild
-    classManager = try await OcaClassManager(deviceDelegate: self)
-    #endif
   }
 
   public func add(endpoint: OcaDeviceEndpoint) async throws {
@@ -265,6 +263,10 @@ public actor OcaDevice {
       try await rootBlock.add(actionObject: object)
     }
     await _addManagerDescriptor(for: object)
+    #if NonEmbeddedBuild
+    if let object = object as? OcaClassManager { classManager = object }
+    await classManager?.didRegister(object: object)
+    #endif
   }
 
   private func _addManagerDescriptor(for object: OcaRoot) async {
@@ -305,6 +307,10 @@ public actor OcaDevice {
       try await owner.delete(actionObject: object)
     }
     objects[object.objectNumber] = nil
+    #if NonEmbeddedBuild
+    await classManager?.didDeregister(object: object)
+    if object === classManager { classManager = nil }
+    #endif
   }
 
   #if NonEmbeddedBuild
