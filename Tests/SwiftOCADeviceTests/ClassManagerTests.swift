@@ -205,7 +205,7 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(list.typeArguments, ["OcaClassDescriptor"])
     let descriptor = try await h.classManager.getDatatype(name: "OcaClassDescriptor")
     XCTAssertEqual(descriptor.kind, .struct)
-    XCTAssertEqual(descriptor.fields.map(\.name), ["ClassID", "ClassVersion", "Name", "Properties", "Methods", "Events", "IsDeprecated"])
+    XCTAssertEqual(descriptor.fields.map(\.name), ["ClassID", "ClassVersion", "Name", "Properties", "Methods", "Events", "IsDeprecated", "Documentation"])
 
     let all = try await h.classManager.$datatypes._getValue(h.classManager, flags: [])
     XCTAssertEqual(Set(all.map(\.name)).count, all.count, "each datatype once")
@@ -239,7 +239,9 @@ final class ClassManagerTests: XCTestCase {
 
     let root = try await h.classManager.getControlClass(classID: SwiftOCADevice.OcaRoot.classID, includeInherited: false)
     XCTAssertEqual(root.events, [OcaClassEventDescriptor(
-      eventID: OcaPropertyChangedEventID, name: "PropertyChanged", eventDataTypeName: "OcaPropertyChangedEventData"
+      eventID: OcaPropertyChangedEventID, name: "PropertyChanged", parameters: [OcaClassParameterDescriptor(
+        name: "EventData", typeName: "OcaPropertyChangedEventData", direction: .in
+      )]
     )])
     let changed = try await h.classManager.getDatatype(name: "OcaPropertyChangedEventData")
     XCTAssertEqual(changed.fields.map(\.typeName), ["OcaPropertyID", "DT", "OcaPropertyChangeType"])
