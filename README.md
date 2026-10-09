@@ -50,6 +50,10 @@ The WebSocket client (WS client) uses Apple's `URLSessionWebSocketTask` and is t
 * **Block navigation**: drill-down sidebar for hierarchical blocks; grid layout for leaf blocks; matrix navigation support.
 * **Bonjour discovery view**: ready-made device browser view for listing and connecting to discovered devices.
 
+### SwiftOCAXMI
+
+* **Class model import**: `OcaXMIModel` reads the AES70-2 class model's XMI and describes its control classes and datatypes with the class manager's descriptors, so a device's own descriptions can be checked against the model.
+
 ## Examples
 
 Sample code can be found in [Examples](Examples):

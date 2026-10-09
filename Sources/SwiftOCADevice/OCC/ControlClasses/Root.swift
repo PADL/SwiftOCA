@@ -481,7 +481,10 @@ open class OcaRoot: CustomStringConvertible, Codable, Sendable, _OcaObjectKeyPat
 
     let classID = try OcaClassID(unsafeString: classIDString)
 
-    guard objectIdentification.classIdentification.classID.isSubclass(of: classID) else {
+    // OcaRoot's ID, "1", which every class descends from, names no object's class
+    guard classID.fields.count > 1,
+          objectIdentification.classIdentification.classID.isSubclass(of: classID)
+    else {
       logger.warning("object class mismatch between \(self) and \(classID)")
       throw Ocp1Error.objectClassMismatch
     }

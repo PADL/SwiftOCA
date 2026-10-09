@@ -1653,9 +1653,9 @@ final class UnsafeStringInitializerTests: XCTestCase {
   }
 
   func testOcaClassIDUnsafeStringSingleComponent() throws {
-    XCTAssertThrowsError(try OcaClassID(unsafeString: "1")) { error in
-      XCTAssertEqual(error as? Ocp1Error, .objectClassMismatch)
-    }
+    // OcaRoot's class ID
+    let classID = try OcaClassID(unsafeString: "1")
+    XCTAssertEqual(classID.fields, [1])
   }
 
   func testOcaClassIDUnsafeStringEmpty() throws {
