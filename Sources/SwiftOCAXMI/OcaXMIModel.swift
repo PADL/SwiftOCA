@@ -35,15 +35,20 @@ public struct OcaXMIModel: Sendable {
   public init(data: Data) throws {
     let root = try XMINode.parse(data)
     let parameters = Self.parameters(in: root)
+    let deprecated = Self.deprecatedIDs(in: root)
     let elements = root.descendants(named: "xmi:Extension").flatMap { $0.descendants(named: "element") }
     let names = Dictionary(elements.compactMap { e in e["xmi:idref"].flatMap { id in e["name"].map { (id, $0) } } }) { first, _ in first }
     var classes = [OcaClassDescriptor]()
     var datatypes = [String: OcaDatatypeDescriptor]()
     for element in elements {
       guard let name = element["name"] else { continue }
-      if let controlClass = Self.controlClass(element, named: name, parameters: parameters) {
+      let isDeprecated = element["xmi:idref"].map(deprecated.contains) ?? false
+        || element.child(named: "properties")?["stereotype"] == "deprecated"
+      if var controlClass = Self.controlClass(element, named: name, parameters: parameters) {
+        controlClass.isDeprecated = isDeprecated
         classes.append(controlClass)
-      } else if let datatype = Self.datatype(element, named: name, names: names) {
+      } else if var datatype = Self.datatype(element, named: name, names: names) {
+        datatype.isDeprecated = isDeprecated
         datatypes[name] = datatype
       }
     }
@@ -102,9 +107,40 @@ public struct OcaXMIModel: Sendable {
     return parameters
   }
 
-  /// An element's ID from its style, `04m02` for method 4.2, with the letter it is of.
+  /// The UML IDs of what the model files under a `Deprecated …` package.
+  private static func deprecatedIDs(in root: XMINode) -> Set<String> {
+    let packages = root.descendants(named: "packagedElement").filter {
+      $0["xmi:type"] == "uml:Package" && $0["name"]?.hasPrefix("Deprecated") == true
+    }
+    return Set(packages.flatMap { $0.descendants(named: "packagedElement" ) }.compactMap { $0["xmi:id"] })
+  }
+
+  /// Whether the model marks an attribute or operation deprecated.
+  private static func isDeprecated(_ node: XMINode) -> Bool {
+    node.child(named: "stereotype")?["stereotype"] == "deprecated"
+  }
+
+  /// Leaves out a deprecated element whose ID a live one has, which AES70 renames by
+  /// deprecating a copy of; marks any other deprecated element so.
+  private static func live<Element, ID: Hashable>(
+    _ elements: [(element: Element, isDeprecated: Bool)],
+    id: (Element) -> ID,
+    marking mark: (inout Element) -> Void
+  ) -> [Element] {
+    let liveIDs = Set(elements.filter { !$0.isDeprecated }.map { id($0.element) })
+    return elements.compactMap { element, isDeprecated in
+      guard isDeprecated else { return element }
+      guard !liveIDs.contains(id(element)) else { return nil }
+      var element = element
+      mark(&element)
+      return element
+    }
+  }
+
+  /// An element's ID from its style, `04m02` for method 4.2, with the letter it is of. A
+  /// documentation code may follow it, `04m02 d:3`.
   private static func elementID(_ node: XMINode) -> (letter: Character, defLevel: UInt16, index: UInt16)? {
-    guard let style = node.child(named: "style")?["value"]?.trimmingCharacters(in: .whitespaces),
+    guard let style = node.child(named: "style")?["value"]?.split(separator: " ").first,
           let letter = style.first(where: \.isLetter),
           let parts = Optional(style.split(separator: letter)), parts.count == 2,
           let level = UInt16(parts[0]), let index = UInt16(parts[1])
@@ -128,31 +164,31 @@ public struct OcaXMIModel: Sendable {
     let operations = element.child(named: "operations")?.children(named: "operation") ?? []
     // what a setter sets, case-insensitively: the model writes SetInbandGain for InBandGain
     let setters = Set(operations.compactMap { $0["name"] }.filter { $0.hasPrefix("Set") }.map { $0.dropFirst(3).lowercased() })
-    let names = Set(attributes.compactMap { $0["name"]?.lowercased() })
-    // SetEnabled sets ControlEnabled: a setter of a suffix of the name that is no other property's
+    let names = Set(attributes.filter { !isDeprecated($0) }.compactMap { $0["name"]?.lowercased() })
+    // SetEnabled sets ControlEnabled: a setter of a suffix of the name that is no live property's
     func isSettable(_ name: String) -> Bool {
       let name = name.lowercased()
       return setters.contains(name) || setters.contains { name.hasSuffix($0) && !names.contains($0) }
     }
 
-    let properties = attributes.compactMap { attribute -> OcaClassPropertyDescriptor? in
+    let properties = live(attributes.compactMap { attribute -> (OcaClassPropertyDescriptor, Bool)? in
       guard let (letter, defLevel, index) = elementID(attribute), letter == "p", defLevel == level,
             let name = attribute["name"]
       else {
         return nil
       }
       let properties = attribute.child(named: "properties")
-      return OcaClassPropertyDescriptor(
+      return (OcaClassPropertyDescriptor(
         propertyID: OcaPropertyID(defLevel: defLevel, propertyIndex: index),
         name: name,
         typeName: properties?["type"] ?? "",
         isReadOnly: !isSettable(name),
         isStatic: properties?["static"] == "1"
-      )
-    }
+      ), isDeprecated(attribute))
+    }, id: \.propertyID) { $0.isDeprecated = true }
 
-    var methods = [OcaClassMethodDescriptor]()
-    var events = [OcaClassEventDescriptor]()
+    var methods = [(element: OcaClassMethodDescriptor, isDeprecated: Bool)]()
+    var events = [(element: OcaClassEventDescriptor, isDeprecated: Bool)]()
     for operation in operations {
       guard let (letter, defLevel, index) = elementID(operation), defLevel == level,
             let name = operation["name"], let id = operation["xmi:idref"]
@@ -167,17 +203,17 @@ public struct OcaXMIModel: Sendable {
       let declared = parameters[id] ?? []
       switch letter {
       case "m":
-        methods.append(OcaClassMethodDescriptor(
+        methods.append((OcaClassMethodDescriptor(
           methodID: OcaMethodID(defLevel: defLevel, methodIndex: index),
           name: name,
           parameters: Self.parameterDescriptors(declared, types: types)
-        ))
+        ), isDeprecated(operation)))
       case "e":
-        events.append(OcaClassEventDescriptor(
+        events.append((OcaClassEventDescriptor(
           eventID: OcaEventID(defLevel: defLevel, eventIndex: index),
           name: name,
           eventDataTypeName: declared.first.flatMap { types[$0.id] } ?? ""
-        ))
+        ), isDeprecated(operation)))
       default:
         continue
       }
@@ -187,8 +223,9 @@ public struct OcaXMIModel: Sendable {
       classVersion: initial("ClassVersion").flatMap(OcaClassVersionNumber.init) ?? 1,
       name: name,
       properties: properties,
-      methods: methods.sorted { $0.methodID < $1.methodID },
-      events: events
+      methods: live(methods, id: \.methodID) { $0.isDeprecated = true }
+        .sorted { $0.methodID < $1.methodID },
+      events: live(events, id: \.eventID) { $0.isDeprecated = true }
     )
   }
 
@@ -208,8 +245,18 @@ public struct OcaXMIModel: Sendable {
 
   // MARK: - Datatypes
 
+  /// A datatype's stereotype. EA writes only the first of several as the property, so a
+  /// deprecated one's kind is the next in its cross-references (`@STEREO;Name=enum;`).
+  private static func kind(of element: XMINode) -> String {
+    let first = element.child(named: "properties")?["stereotype"] ?? ""
+    guard first == "deprecated", let xrefs = element.child(named: "xrefs")?["value"] else { return first }
+    return xrefs.components(separatedBy: "@STEREO;Name=").dropFirst()
+      .compactMap { $0.split(separator: ";").first.map(String.init) }
+      .first { $0 != "deprecated" } ?? first
+  }
+
   private static func datatype(_ element: XMINode, named name: String, names: [String: String]) -> OcaDatatypeDescriptor? {
-    let stereotype = element.child(named: "properties")?["stereotype"] ?? ""
+    let stereotype = kind(of: element)
     let attributes = element.child(named: "attributes")?.children(named: "attribute") ?? []
     let base = (element.child(named: "links")?.children(named: "Generalization") ?? [])
       .first { $0["start"] == element["xmi:idref"] }
@@ -225,13 +272,18 @@ public struct OcaXMIModel: Sendable {
     case "enum", "enumlong":
       return OcaDatatypeDescriptor(
         name: name, kind: .enum, baseTypeName: stereotype == "enum" ? "OcaUint8" : "OcaUint16",
-        items: attributes.compactMap { a in
-          a["name"].flatMap { n in a.child(named: "initial")?["body"].flatMap { OcaInt64($0) }.map { OcaEnumItemDescriptor(name: n, value: $0) } }
-        }
+        items: live(attributes.compactMap { a in
+          a["name"].flatMap { n in
+            a.child(named: "initial")?["body"].flatMap { OcaInt64($0) }.map { (OcaEnumItemDescriptor(name: n, value: $0), isDeprecated(a)) }
+          }
+        }, id: \.value) { $0.isDeprecated = true }
       )
     case "struct":
+      // a deprecated field is kept, not dropped as a twin: it still has its place in the coding
       let fields = attributes.compactMap { a in
-        a["name"].map { OcaFieldDescriptor(name: $0, typeName: a.child(named: "properties")?["type"] ?? "") }
+        a["name"].map {
+          OcaFieldDescriptor(name: $0, typeName: a.child(named: "properties")?["type"] ?? "", isDeprecated: isDeprecated(a))
+        }
       }
       // a field typed by a name that is not a datatype's is of one of the struct's parameters
       var parameters = [String]()

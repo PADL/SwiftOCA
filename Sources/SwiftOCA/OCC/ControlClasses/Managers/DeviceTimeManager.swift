@@ -19,10 +19,10 @@ open class OcaDeviceTimeManager: OcaManager, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.3.10") }
   override open class var classVersion: OcaClassVersionNumber { 3 }
 
-  @OcaMethod("3.1", name: "GetDeviceTimeNTP", resultNames: ["DeviceTime"])
+  @OcaMethod("3.1", name: "GetDeviceTimeNTP", resultNames: ["DeviceTime"], deprecated: true)
   public func getDeviceTimeNTP() async throws -> OcaTimeNTP
 
-  @OcaMethod("3.2", name: "SetDeviceTimeNTP", parameterNames: ["DeviceTime"])
+  @OcaMethod("3.2", name: "SetDeviceTimeNTP", parameterNames: ["DeviceTime"], deprecated: true)
   public func setDeviceTimeNTP(deviceTime: OcaTimeNTP) async throws
 
   @OcaProperty(

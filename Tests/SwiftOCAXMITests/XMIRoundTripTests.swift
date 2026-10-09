@@ -39,6 +39,8 @@ final class XMIRoundTripTests: XCTestCase {
     _ = try await SwiftOCADevice.OcaGain(role: "Gain", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaMute(role: "Mute", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaIdentificationSensor(role: "Identify", deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaDelayExtended(role: "Delay", deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaTimeSource(role: "Time", deviceDelegate: device)
     return try await (device, SwiftOCADevice.OcaClassManager(deviceDelegate: device))
   }
 
@@ -59,6 +61,7 @@ final class XMIRoundTripTests: XCTestCase {
         continue
       }
       compare("\(modelClass.name) name", ours.name, modelClass.name)
+      compare("\(modelClass.name) deprecated", "\(ours.isDeprecated)", "\(modelClass.isDeprecated)")
       for property in modelClass.properties {
         let what = "\(modelClass.name) property \(property.propertyID) \(property.name)"
         guard let mine = ours.properties.first(where: { $0.propertyID == property.propertyID }) else {
@@ -68,6 +71,7 @@ final class XMIRoundTripTests: XCTestCase {
         compare("\(what) type", mine.typeName, property.typeName)
         compare("\(what) read only", "\(mine.isReadOnly)", "\(property.isReadOnly)")
         compare("\(what) static", "\(mine.isStatic)", "\(property.isStatic)")
+        compare("\(what) deprecated", "\(mine.isDeprecated)", "\(property.isDeprecated)")
       }
       for method in modelClass.methods {
         let what = "\(modelClass.name) method \(method.methodID) \(method.name)"
@@ -79,6 +83,7 @@ final class XMIRoundTripTests: XCTestCase {
           m.parameters.map { "\($0.direction) \($0.name.lowercased()): \($0.typeName)" }.joined(separator: ", ")
         }
         compare("\(what) parameters", signature(mine), signature(method))
+        compare("\(what) deprecated", "\(mine.isDeprecated)", "\(method.isDeprecated)")
       }
       for event in modelClass.events {
         let what = "\(modelClass.name) event \(event.eventID) \(event.name)"
@@ -86,6 +91,7 @@ final class XMIRoundTripTests: XCTestCase {
           differences.append("\(what): not described by the device"); continue
         }
         compare("\(what)", "\(mine.name) \(mine.eventDataTypeName)", "\(event.name) \(event.eventDataTypeName)")
+        compare("\(what) deprecated", "\(mine.isDeprecated)", "\(event.isDeprecated)")
       }
     }
     let datatypes = manager.datatypes
@@ -94,8 +100,11 @@ final class XMIRoundTripTests: XCTestCase {
         differences.append("datatype \(datatype.name): not described by the device"); continue
       }
       compare("datatype \(datatype.name)", "\(mine.kind) \(mine.baseTypeName) \(mine.typeArguments)", "\(datatype.kind) \(datatype.baseTypeName) \(datatype.typeArguments)")
-      compare("datatype \(datatype.name) fields", "\(mine.fields.map { "\($0.name): \($0.typeName)" })", "\(datatype.fields.map { "\($0.name): \($0.typeName)" })")
-      compare("datatype \(datatype.name) items", "\(mine.items.map { "\($0.name.lowercased())=\($0.value)" })", "\(datatype.items.map { "\($0.name.lowercased())=\($0.value)" })")
+      compare("datatype \(datatype.name) deprecated", "\(mine.isDeprecated)", "\(datatype.isDeprecated)")
+      func field(_ f: OcaFieldDescriptor) -> String { "\(f.name): \(f.typeName)\(f.isDeprecated ? " deprecated" : "")" }
+      compare("datatype \(datatype.name) fields", "\(mine.fields.map(field))", "\(datatype.fields.map(field))")
+      func item(_ i: OcaEnumItemDescriptor) -> String { "\(i.name.lowercased())=\(i.value)\(i.isDeprecated ? " deprecated" : "")" }
+      compare("datatype \(datatype.name) items", "\(mine.items.map(item))", "\(datatype.items.map(item))")
     }
     return differences
   }
@@ -104,6 +113,7 @@ final class XMIRoundTripTests: XCTestCase {
     let model = try Self.model()
     XCTAssertEqual(model.classes.map(\.name), [
       "OcaRoot", "OcaWorker", "OcaActuator", "OcaGain", "OcaMute", "OcaSensor", "OcaIdentificationSensor",
+      "OcaDelayExtended",
     ])
     let gain = try XCTUnwrap(model.controlClass(OcaClassID("1.1.1.5"), includeInherited: false))
     XCTAssertEqual(gain.properties, [OcaClassPropertyDescriptor(
@@ -132,6 +142,19 @@ final class XMIRoundTripTests: XCTestCase {
     XCTAssertEqual(try datatype("OcaPortID").fields.map(\.name), ["Direction", "Index"])
     XCTAssertEqual(try datatype("OcaPropertyChangedEventData").typeArguments, ["DT"])
     XCTAssertEqual(try datatype("OcaList<OcaPort>").typeArguments, ["OcaPort"])
+
+    // a deprecated element is marked so, unless a live one has its ID: a renamed copy
+    XCTAssertTrue(try XCTUnwrap(model.controlClass(OcaClassID("1.1.1.7.1"), includeInherited: false)).isDeprecated)
+    XCTAssertFalse(gain.isDeprecated)
+    XCTAssertTrue(try datatype("OcaDelayValue").isDeprecated)
+    // stereotyped deprecated first, so its kind is the second of its stereotypes
+    let reference = try datatype("OcaTimeReferenceType")
+    XCTAssertEqual(reference.kind, .enum)
+    XCTAssertTrue(reference.isDeprecated)
+    XCTAssertFalse(reference.items.isEmpty)
+    XCTAssertFalse(try datatype("OcaMuteState").isDeprecated)
+    XCTAssertEqual(root.methods.filter { $0.methodID == OcaMethodID("1.3") }.map(\.name), ["SetLockNoReadWrite"])
+    XCTAssertFalse(root.methods.contains(where: \.isDeprecated))
   }
 
   /// A device's class manager describes the classes and datatypes of the excerpt as the
@@ -142,6 +165,8 @@ final class XMIRoundTripTests: XCTestCase {
       // not implemented by SwiftOCADevice, so not described
       "OcaWorker method 2.3 AddPort: not described by the device",
       "OcaWorker method 2.4 DeletePort: not described by the device",
+      // a typedef of a list is named for its elements
+      "OcaWorker method 2.13 GetPath parameters: device out rolepath: OcaList<OcaString>, out onopath: OcaList<OcaONo>, model out rolepath: OcaRolePath, out onopath: OcaONoPath",
       // OCP.2 upper-cases a Swift name's first letter only; peers match names case-insensitively
       #"datatype OcaPort fields: device ["Owner: OcaONo", "Id: OcaPortID", "Role: OcaString"], model ["Owner: OcaONo", "ID: OcaPortID", "Role: OcaString"]"#,
     ])
@@ -159,6 +184,7 @@ final class XMIRoundTripTests: XCTestCase {
     <attributes>
     <attribute xmi:idref="A0" name="ClassID"><initial body="1.3.9"/></attribute>
     <attribute xmi:idref="A1" name="ControlEnabled"><style value="03p08"/><properties type="OcaBoolean"/></attribute>
+    <attribute xmi:idref="A2" name="Enabled"><style value="03p08"/><stereotype stereotype="deprecated"/><properties type="OcaBoolean"/></attribute>
     <attribute xmi:idref="A3" name="LoggingEnabled"><style value="03p18"/><properties type="OcaBoolean"/></attribute>
     <attribute xmi:idref="A4" name="Busy"><style value="03p10"/><properties type="OcaBoolean"/></attribute>
     </attributes>

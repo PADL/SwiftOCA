@@ -47,3 +47,9 @@ public enum OcaProtocolVersion: OcaUint16, Codable, Sendable, CaseIterable {
   // 2024 revision
   case aes70_2024 = 4
 }
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaApplicationNetworkState: OcaDeprecated {}
+@_spi(SwiftOCAPrivate)
+extension OcaApplicationNetworkCommand: OcaDeprecated {}

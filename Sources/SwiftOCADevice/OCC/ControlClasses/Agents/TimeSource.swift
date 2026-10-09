@@ -48,7 +48,8 @@ open class OcaTimeSource: OcaAgent {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.6"),
-    setMethodID: OcaMethodID("3.7")
+    setMethodID: OcaMethodID("3.7"),
+    deprecated: .all
   )
   public var referenceType: OcaTimeReferenceType = .undefined
 
@@ -57,7 +58,8 @@ open class OcaTimeSource: OcaAgent {
     getMethodID: OcaMethodID("3.8"),
     setMethodID: OcaMethodID("3.9"),
     ocp2GetName: "ID",
-    ocp2SetName: "ID"
+    ocp2SetName: "ID",
+    deprecated: .property
   )
   public var referenceID: OcaString = ""
 

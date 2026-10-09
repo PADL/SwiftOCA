@@ -41,7 +41,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.1")
+    getMethodID: OcaMethodID("3.1"),
+    deprecated: .all
   )
   public var type: OcaONo = OcaInvalidONo
 
@@ -163,7 +164,8 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.4"),
     getMethodID: OcaMethodID("3.11"),
-    ocp2GetName: "Identifier"
+    ocp2GetName: "Identifier",
+    deprecated: .all
   )
   public var mostRecentParamSetIdentifier: OcaLibVolIdentifier = .init(
     library: OcaInvalidONo,

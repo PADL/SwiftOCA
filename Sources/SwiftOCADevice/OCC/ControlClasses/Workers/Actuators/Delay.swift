@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import SwiftOCA
+@_spi(SwiftOCAPrivate) import SwiftOCA
 
 @OcaDeviceClass
 open class OcaDelay: OcaActuator {
@@ -63,3 +63,6 @@ open class OcaDelayExtended: OcaDelay {
     throw Ocp1Error.status(.notImplemented)
   }
 }
+
+@_spi(SwiftOCAPrivate)
+extension OcaDelayExtended: OcaDeprecated {}

@@ -215,13 +215,13 @@ Sendable {
   public func getSignalPathsRecursive() async throws -> OcaMap<OcaUint16, OcaSignalPath>
 
   // 3.12 to 3.14 are the 2018 model's param sets; the device does not answer them
-  @OcaMethod("3.12", name: "ApplyParamSet", parameterNames: ["Identifier"])
+  @OcaMethod("3.12", name: "ApplyParamSet", parameterNames: ["Identifier"], deprecated: true)
   public func applyParamSet(identifier: OcaLibVolIdentifier) async throws
 
-  @OcaMethod("3.13", name: "GetCurrentParamSetData", resultNames: ["Data"])
+  @OcaMethod("3.13", name: "GetCurrentParamSetData", resultNames: ["Data"], deprecated: true)
   public func getCurrentParamSetData() async throws -> OcaLibVolData_ParamSet
 
-  @OcaMethod("3.14", name: "StoreCurrentParamSetData", parameterNames: ["Identifier"])
+  @OcaMethod("3.14", name: "StoreCurrentParamSetData", parameterNames: ["Identifier"], deprecated: true)
   public func storeCurrentParamSetData(identifier: OcaLibVolIdentifier) async throws
 
   private func validate(
