@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import SwiftOCA
+@_spi(SwiftOCAPrivate) import SwiftOCA
 
 @OcaDeviceClass
 open class OcaApplicationNetwork: OcaRoot, OcaOwnable, OcaLabelRepresentable {
@@ -84,3 +84,7 @@ open class OcaApplicationNetwork: OcaRoot, OcaOwnable, OcaLabelRepresentable {
     await path
   }
 }
+
+// as are OcaControlNetwork and OcaMediaTransportNetwork, which inherit it
+@_spi(SwiftOCAPrivate)
+extension OcaApplicationNetwork: OcaDeprecated {}

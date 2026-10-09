@@ -149,3 +149,9 @@ public struct OcaModelGUID: Hashable, Codable, Sendable, CustomStringConvertible
     try modelCodeContainer.encode(modelCode.3)
   }
 }
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaModelGUID: OcaDeprecated {}
+@_spi(SwiftOCAPrivate)
+extension OcaModelDescription: OcaDeprecated {}

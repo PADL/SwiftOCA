@@ -761,3 +761,9 @@ package func _ocp2ElementID(from json: Any) throws -> (OcaUint16, OcaUint16) {
   )
 }
 #endif
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaOPath: OcaDeprecated {}
+@_spi(SwiftOCAPrivate)
+extension OcaLibVolIdentifier: OcaDeprecated {}

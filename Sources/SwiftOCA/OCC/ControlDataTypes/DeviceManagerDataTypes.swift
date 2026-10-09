@@ -106,3 +106,7 @@ public struct OcaDeviceOperationalState: Codable, Equatable, Sendable {
     self.details = details
   }
 }
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaDeviceState: OcaDeprecated {}

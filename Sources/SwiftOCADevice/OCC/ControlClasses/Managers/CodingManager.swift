@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import SwiftOCA
+@_spi(SwiftOCAPrivate) import SwiftOCA
 
 @OcaDeviceClass
 open class OcaCodingManager: OcaManager {
@@ -44,3 +44,6 @@ open class OcaCodingManager: OcaManager {
     )
   }
 }
+
+@_spi(SwiftOCAPrivate)
+extension OcaCodingManager: OcaDeprecated {}

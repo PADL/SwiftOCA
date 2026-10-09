@@ -154,3 +154,9 @@ open class OcaTimeSource: OcaAgent, @unchecked Sendable {
   @OcaMethod("3.11", name: "Reset")
   public func reset() async throws
 }
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaTimeReferenceType: OcaDeprecated {}
+@_spi(SwiftOCAPrivate)
+extension OcaTimeProtocol: OcaDeprecated {}

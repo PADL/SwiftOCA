@@ -60,7 +60,9 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
     }
   }
 
-  @OcaMethod("3.1", name: "AddSubscription", parameters: AddSubscriptionParameters.self)
+  @OcaMethod(
+    "3.1", name: "AddSubscription", parameters: AddSubscriptionParameters.self, deprecated: true
+  )
   func addSubscription(
     event: OcaEvent,
     subscriber: OcaMethod,
@@ -69,7 +71,9 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
     destinationInformation: OcaNetworkAddress
   ) async throws
 
-  @OcaMethod("3.2", name: "RemoveSubscription", parameters: RemoveSubscriptionParameters.self)
+  @OcaMethod(
+    "3.2", name: "RemoveSubscription", parameters: RemoveSubscriptionParameters.self, deprecated: true
+  )
   func removeSubscription(event: OcaEvent, subscriber: OcaMethod) async throws
 
   @OcaMethod("3.3", name: "DisableNotifications")
@@ -81,7 +85,8 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
   @OcaMethod(
     "3.5",
     name: "AddPropertyChangeSubscription",
-    parameters: AddPropertyChangeSubscriptionParameters.self
+    parameters: AddPropertyChangeSubscriptionParameters.self,
+    deprecated: true
   )
   func addPropertyChangeSubscription(
     emitter: OcaONo,
@@ -95,7 +100,8 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
   @OcaMethod(
     "3.6",
     name: "RemovePropertyChangeSubscription",
-    parameters: RemovePropertyChangeSubscriptionParameters.self
+    parameters: RemovePropertyChangeSubscriptionParameters.self,
+    deprecated: true
   )
   func removePropertyChangeSubscription(
     emitter: OcaONo,
@@ -103,7 +109,7 @@ open class OcaSubscriptionManager: OcaManager, @unchecked Sendable {
     subscriber: OcaMethod
   ) async throws
 
-  @OcaMethod("3.7", name: "GetMaximumSubscriberContextLength", resultNames: ["Max"])
+  @OcaMethod("3.7", name: "GetMaximumSubscriberContextLength", resultNames: ["Max"], deprecated: true)
   func getMaximumSubscriberContextLength() async throws -> OcaUint16
 
   public typealias AddSubscription2Parameters = OcaSubscription2

@@ -44,3 +44,7 @@ public enum OcaMediaClockType: OcaUint8, Codable, Sendable, CaseIterable {
   case network = 2
   case external = 3
 }
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaMediaClockType: OcaDeprecated {}

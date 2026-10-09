@@ -40,3 +40,11 @@ public struct OcaLibraryIdentifier: Codable, Sendable {
     self.oNo = oNo
   }
 }
+
+// the model deprecates these
+@_spi(SwiftOCAPrivate)
+extension OcaLibVolType: OcaDeprecated {}
+@_spi(SwiftOCAPrivate)
+extension OcaLibraryIdentifier: OcaDeprecated {}
+@_spi(SwiftOCAPrivate)
+extension OcaLibVolData_ParamSet: OcaDeprecated {}

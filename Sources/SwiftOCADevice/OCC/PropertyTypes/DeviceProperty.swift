@@ -151,13 +151,16 @@ public struct OcaDeviceProperty<Value: Codable & Equatable & Sendable>:
     async
   }
 
+  /// `deprecated` says which of the property and its accessors the model deprecates;
+  /// `@OcaDeviceClass` records it, and the wrapper keeps nothing of it.
   public init(
     wrappedValue: Value,
     propertyID: OcaPropertyID,
     getMethodID: OcaMethodID? = nil,
     setMethodID: OcaMethodID? = nil,
     ocp2GetName: String? = nil,
-    ocp2SetName: String? = nil
+    ocp2SetName: String? = nil,
+    deprecated: OcaPropertyDeprecation = []
   ) {
     subject = AsyncCurrentValueSubject(wrappedValue)
     self.propertyID = propertyID
@@ -172,7 +175,8 @@ public struct OcaDeviceProperty<Value: Codable & Equatable & Sendable>:
     getMethodID: OcaMethodID? = nil,
     setMethodID: OcaMethodID? = nil,
     ocp2GetName: String? = nil,
-    ocp2SetName: String? = nil
+    ocp2SetName: String? = nil,
+    deprecated: OcaPropertyDeprecation = []
   ) where Value: ExpressibleByNilLiteral {
     subject = AsyncCurrentValueSubject(nil)
     self.propertyID = propertyID
