@@ -23,6 +23,7 @@ import SwiftOCADevice
 #if NonEmbeddedBuild
 import SwiftOCASecure
 import SwiftOCASecureDevice
+import SwiftOCAXMIDevice
 #endif
 #if canImport(Darwin)
 import Darwin
@@ -96,7 +97,7 @@ public enum DeviceApp {
     try await device.initializeDefaultObjects()
     #if NonEmbeddedBuild
     // describes the device's classes to controllers that ask (ocacli's class-manager commands)
-    _ = try await OcaClassManager(deviceDelegate: device)
+    let classManager = try await OcaClassManager(deviceDelegate: device)
     #endif
     let deviceManager = await device.deviceManager!
     Task { @OcaDevice in
@@ -155,6 +156,8 @@ public enum DeviceApp {
       address: listenAddress.data,
       controlProtocols: [.ocp1, .ocp2]
     )
+    // the class model as XMI, at the URL the class manager's ModelURL gives
+    await classManager.serveModel(on: webSocketEndpoint)
     #endif
 
     // OCP.2 (AES70-4, JSON) over TCP on its own port, port+3
