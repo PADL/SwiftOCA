@@ -49,4 +49,6 @@ jobs:
             sysctl kernel.io_uring_disabled=0
             swift test --skip-build --filter SwiftOCATests
       - name: Build without NonEmbeddedBuild
-        run: swift build --disable-default-traits
+        # in its own build directory: in the one above, FlyingFox's module from the
+        # trait-on build makes canImport(FlyingFox) true and the link then fails
+        run: swift build --disable-default-traits --scratch-path .build-no-traits
