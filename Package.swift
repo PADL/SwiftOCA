@@ -362,6 +362,7 @@ let CommonTargets: [Target] = [
       "SwiftOCADevice",
       .target(name: "SwiftOCASecure", condition: .when(traits: ["NonEmbeddedBuild"])),
       .target(name: "SwiftOCASecureDevice", condition: .when(traits: ["NonEmbeddedBuild"])),
+      .target(name: "SwiftOCAXMIDevice", condition: .when(traits: ["NonEmbeddedBuild"])),
     ] + OCADevicePlatformDependencies,
     path: "Examples/OCADevice",
     swiftSettings: [
