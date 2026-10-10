@@ -24,12 +24,13 @@ import Foundation
 open class OcaCounterSetAgent: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.19") }
 
-  @OcaProperty(
-    propertyID: OcaPropertyID("3.1"),
-    getMethodID: OcaMethodID("3.1"),
-    setMethodID: OcaMethodID("3.2")
-  )
-  public var counterSet: OcaProperty<OcaCounterSet>.PropertyValue
+  /// The counter set, a private property (AES70-2:2024 §6.8) read and written only through
+  /// these methods.
+  @OcaMethod("3.1", name: "GetCounterSet", resultNames: ["CounterSet"])
+  public func getCounterSet() async throws -> OcaCounterSet
+
+  @OcaMethod("3.2", name: "SetCounterSet", parameterNames: ["CounterSet"])
+  public func setCounterSet(counterSet: OcaCounterSet) async throws
 
   @OcaMethod("3.3", name: "GetCounter", parameterNames: ["ID"], resultNames: ["OcaCounter"])
   public func getCounter(id: OcaID16) async throws -> OcaCounter

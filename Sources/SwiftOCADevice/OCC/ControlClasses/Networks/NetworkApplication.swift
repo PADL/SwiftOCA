@@ -24,8 +24,6 @@ open class OcaNetworkApplication: OcaRoot, OcaOwnable, OcaLabelRepresentable,
 
   override open class var classVersion: OcaClassVersionNumber { 3 }
 
-  override open class var transientPropertyIDs: Set<OcaPropertyID> { ["2.6"] }
-
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("2.1"),
     getMethodID: OcaMethodID("2.1"),
@@ -69,11 +67,32 @@ open class OcaNetworkApplication: OcaRoot, OcaOwnable, OcaLabelRepresentable,
   )
   public var adaptationData: OcaAdaptationData = OcaBlob()
 
-  @OcaDeviceProperty(
-    propertyID: OcaPropertyID("2.6"),
-    getMethodID: OcaMethodID("2.10")
-  )
-  public var counterSet = OcaCounterSet()
+  @_spi(SwiftOCAPrivate)
+  public static var counterSetPropertyID: OcaPropertyID { OcaPropertyID("2.6") }
+
+  /// A private property (AES70-2:2024 §6.8): it raises no PropertyChanged, and a controller
+  /// reads it with GetCounterSet.
+  public var counterSet = OcaCounterSet() {
+    didSet { counterSetsDidChange(formerly: [oldValue]) }
+  }
+
+  @_spi(SwiftOCAPrivate)
+  public let counterSetChanges = OcaCounterSetChanges()
+
+  @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.Methods.getCounterSet)
+  func getCounterSet(from controller: any OcaController) -> OcaCounterSet {
+    counterSet
+  }
+
+  open var allCounterSets: [OcaCounterSet] { [counterSet] }
+
+  open func didRegister() async {
+    counterSetOwnerDidRegister()
+  }
+
+  open func didDeregister() async {
+    counterSetOwnerDidDeregister()
+  }
 
   @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.Methods.attachCounterNotifier)
   open func attachCounterNotifier(
@@ -81,7 +100,8 @@ open class OcaNetworkApplication: OcaRoot, OcaOwnable, OcaLabelRepresentable,
     oNo: OcaONo,
     from controller: any OcaController
   ) async throws {
-    try attach(counterNotifier: oNo, to: counterID)
+    try await ensureCounterNotifier(oNo)
+    try counterSet.attach(notifier: oNo, to: counterID)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.Methods.detachCounterNotifier)
@@ -90,12 +110,12 @@ open class OcaNetworkApplication: OcaRoot, OcaOwnable, OcaLabelRepresentable,
     oNo: OcaONo,
     from controller: any OcaController
   ) async throws {
-    try detach(counterNotifier: oNo, from: counterID)
+    try counterSet.detach(notifier: oNo, from: counterID)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.Methods.resetCounters)
   open func resetCounters(from controller: any OcaController) async throws {
-    resetCounterSet()
+    try reset(&counterSet)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.Methods.getPath)
@@ -105,6 +125,6 @@ open class OcaNetworkApplication: OcaRoot, OcaOwnable, OcaLabelRepresentable,
 
   @OcaDeviceMethod(SwiftOCA.OcaNetworkApplication.Methods.getCounter)
   func getCounter(counterID: OcaID16, from controller: any OcaController) throws -> OcaCounter {
-    try counter(id: counterID)
+    try counterSet.existingCounter(id: counterID)
   }
 }

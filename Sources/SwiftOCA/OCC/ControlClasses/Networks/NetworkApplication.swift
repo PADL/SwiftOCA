@@ -64,11 +64,9 @@ Sendable {
   )
   public var adaptationData: OcaProperty<OcaAdaptationData>.PropertyValue
 
-  @OcaProperty(
-    propertyID: OcaPropertyID("2.6"),
-    getMethodID: OcaMethodID("2.10")
-  )
-  public var counterSet: OcaProperty<OcaCounterSet>.PropertyValue
+  /// The counter set, a private property (AES70-2:2024 §6.8) read only through this method.
+  @OcaMethod("2.10", name: "GetCounterSet", resultNames: ["CounterSet"])
+  public func getCounterSet() async throws -> OcaCounterSet
 
   @OcaMethod("2.11", name: "GetCounter", parameterNames: ["CounterID"], resultNames: ["Counter"])
   public func getCounter(counterID: OcaID16) async throws -> OcaCounter
