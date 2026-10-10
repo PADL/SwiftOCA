@@ -26,7 +26,7 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
 
   override open class var classVersion: OcaClassVersionNumber { 3 }
 
-  override open class var transientPropertyIDs: Set<OcaPropertyID> { ["2.6", "3.11", "3.12"] }
+  override open class var transientPropertyIDs: Set<OcaPropertyID> { ["3.11"] }
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.1"),
@@ -104,14 +104,21 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
   )
   public var endpointStatuses = OcaMediaStreamEndpointStatusMap()
 
-  @OcaDeviceProperty(
-    propertyID: OcaPropertyID("3.12"),
-    getMethodID: OcaMethodID("3.34"),
-    ocp2GetName: "Sets"
-  )
-  // keyed by endpoint ID, as GetEndpointCounterSets returns it (the model's private
-  // attribute says OcaID16, but its getter and AES70.js say OcaMediaStreamEndpointID)
-  public var endpointCounterSets = OcaMap<OcaMediaStreamEndpointID, OcaCounterSet>()
+  /// A private property, as `counterSet` is; a controller reads it with
+  /// GetEndpointCounterSets, keyed by endpoint ID as that returns it (the model's private
+  /// attribute says OcaID16, but its getter and AES70.js say OcaMediaStreamEndpointID).
+  public var endpointCounterSets = OcaMap<OcaMediaStreamEndpointID, OcaCounterSet>() {
+    didSet {
+      for (id, counterSet) in endpointCounterSets where counterSet.id.isEmpty {
+        endpointCounterSets[id]?.id = named(counterSet, endpointID: id).id
+      }
+      counterSetsDidChange(formerly: oldValue.values)
+    }
+  }
+
+  override open var allCounterSets: [OcaCounterSet] {
+    [counterSet] + endpointCounterSets.sorted { $0.key < $1.key }.map(\.value)
+  }
 
   @OcaDeviceProperty(
     propertyID: OcaPropertyID("3.13"),
@@ -167,8 +174,42 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
   }
 
   public func update(endpointID id: OcaMediaStreamEndpointID, counterSet: OcaCounterSet) {
+    let counterSet = named(counterSet, endpointID: id)
     guard endpointCounterSets[id] != counterSet else { return }
     endpointCounterSets[id] = counterSet
+  }
+
+  /// Resets one counter of an endpoint's set, or all of them when `counterID` is nil, which
+  /// its notifiers report whatever their filters; endpoint ID zero means every endpoint.
+  public func resetEndpointCounterSet(
+    endpointID id: OcaMediaStreamEndpointID,
+    counterID: OcaID16? = nil
+  ) throws {
+    var sets = endpointCounterSets
+    if id == 0 {
+      // the model (AES70.js) resets every endpoint's; a counter only some have, as inputs' and
+      // outputs' differ, is reset where it is, and refused only if none has it
+      let ids = sets.keys.sorted().filter { id in
+        counterID.map { sets[id]!.counter(id: $0) != nil } ?? true
+      }
+      guard counterID == nil || !ids.isEmpty else { throw Ocp1Error.status(.parameterOutOfRange) }
+      for id in ids { try reset(&sets[id]!, counter: counterID) }
+    } else {
+      guard sets[id] != nil else { throw Ocp1Error.status(.parameterOutOfRange) }
+      try reset(&sets[id]!, counter: counterID)
+    }
+    endpointCounterSets = sets
+  }
+
+  /// `counterSet` with the endpoint's ID (`makeEndpointCounterSetID`) when it has none;
+  /// encoding two fixed-width integers cannot fail.
+  private func named(_ counterSet: OcaCounterSet, endpointID id: OcaMediaStreamEndpointID) -> OcaCounterSet {
+    guard counterSet.id.isEmpty, let setID = try? makeEndpointCounterSetID(endpointID: id) else {
+      return counterSet
+    }
+    var counterSet = counterSet
+    counterSet.id = setID
+    return counterSet
   }
 
   public func insert(
@@ -306,10 +347,9 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     notifierONo: OcaONo,
     from controller: any OcaController
   ) async throws {
+    try await ensureCounterNotifier(notifierONo)
     var counterSet = try endpointCounterSet(endpointID)
-    guard counterSet.attach(notifier: notifierONo, to: counterID) else {
-      throw Ocp1Error.status(.parameterOutOfRange)
-    }
+    try counterSet.attach(notifier: notifierONo, to: counterID)
     update(endpointID: endpointID, counterSet: counterSet)
   }
 
@@ -321,19 +361,18 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     from controller: any OcaController
   ) async throws {
     var counterSet = try endpointCounterSet(endpointID)
-    guard counterSet.detach(notifier: notifierONo, from: counterID) else {
-      throw Ocp1Error.status(.parameterOutOfRange)
-    }
+    try counterSet.detach(notifier: notifierONo, from: counterID)
     update(endpointID: endpointID, counterSet: counterSet)
   }
 
+  /// Resets one counter, or the whole set when `counterID` is zero.
   @OcaDeviceMethod(Parameters.Methods.resetEndpointCounterSet)
   open func resetEndpointCounterSet(
     endpointID: OcaMediaStreamEndpointID,
     counterID: OcaID16,
     from controller: any OcaController
   ) async throws {
-    throw Ocp1Error.status(.notImplemented)
+    try resetEndpointCounterSet(endpointID: endpointID, counterID: counterID == 0 ? nil : counterID)
   }
 
   // MARK: - Command dispatch
@@ -398,6 +437,11 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     try endpointStatus(id)
   }
 
+  @OcaDeviceMethod(Parameters.Methods.getEndpointCounterSets)
+  func getEndpointCounterSets(from controller: any OcaController) -> OcaMap<OcaMediaStreamEndpointID, OcaCounterSet> {
+    endpointCounterSets
+  }
+
   @OcaDeviceMethod(Parameters.Methods.getEndpointCounterSet)
   func getEndpointCounterSet(endpointID: OcaMediaStreamEndpointID, from controller: any OcaController) throws
     -> OcaCounterSet
@@ -411,9 +455,6 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, OcaPortsRepresen
     counterID: OcaID16,
     from controller: any OcaController
   ) throws -> OcaCounter {
-    guard let counter = try endpointCounterSet(endpointID).counter(id: counterID) else {
-      throw Ocp1Error.status(.parameterOutOfRange)
-    }
-    return counter
+    try endpointCounterSet(endpointID).existingCounter(id: counterID)
   }
 }

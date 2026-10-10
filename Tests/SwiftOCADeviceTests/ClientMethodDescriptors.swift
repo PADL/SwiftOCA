@@ -90,6 +90,8 @@ enum ClientMethodDescriptors {
       ("getLastUpdate", OcaCounterNotifier.Methods.getLastUpdate.erased),
     ]),
     (OcaCounterSetAgent.self, [
+      ("getCounterSet", OcaCounterSetAgent.Methods.getCounterSet.erased),
+      ("setCounterSet", OcaCounterSetAgent.Methods.setCounterSet.erased),
       ("getCounter", OcaCounterSetAgent.Methods.getCounter.erased),
       ("attachCounterNotifier", OcaCounterSetAgent.Methods.attachCounterNotifier.erased),
       ("detachCounterNotifier", OcaCounterSetAgent.Methods.detachCounterNotifier.erased),
@@ -210,6 +212,7 @@ enum ClientMethodDescriptors {
       ("setEndpointAlignmentLevel", OcaMediaTransportApplication.Methods.setEndpointAlignmentLevel.erased),
       ("getEndpointTimeSource", OcaMediaTransportApplication.Methods.getEndpointTimeSource.erased),
       ("setEndpointAdaptationData", OcaMediaTransportApplication.Methods.setEndpointAdaptationData.erased),
+      ("getEndpointCounterSets", OcaMediaTransportApplication.Methods.getEndpointCounterSets.erased),
       ("getEndpointCounterSet", OcaMediaTransportApplication.Methods.getEndpointCounterSet.erased),
       ("getEndpointCounter", OcaMediaTransportApplication.Methods.getEndpointCounter.erased),
       ("attachEndpointCounterNotifier", OcaMediaTransportApplication.Methods.attachEndpointCounterNotifier.erased),
@@ -253,6 +256,7 @@ enum ClientMethodDescriptors {
     ]),
     (OcaNetworkApplication.self, [
       ("getPath", OcaNetworkApplication.Methods.getPath.erased),
+      ("getCounterSet", OcaNetworkApplication.Methods.getCounterSet.erased),
       ("getCounter", OcaNetworkApplication.Methods.getCounter.erased),
       ("attachCounterNotifier", OcaNetworkApplication.Methods.attachCounterNotifier.erased),
       ("detachCounterNotifier", OcaNetworkApplication.Methods.detachCounterNotifier.erased),
@@ -260,6 +264,7 @@ enum ClientMethodDescriptors {
     ]),
     (OcaNetworkInterface.self, [
       ("getPath", OcaNetworkInterface.Methods.getPath.erased),
+      ("getCounterSet", OcaNetworkInterface.Methods.getCounterSet.erased),
       ("getCounter", OcaNetworkInterface.Methods.getCounter.erased),
       ("attachCounterNotifier", OcaNetworkInterface.Methods.attachCounterNotifier.erased),
       ("detachCounterNotifier", OcaNetworkInterface.Methods.detachCounterNotifier.erased),

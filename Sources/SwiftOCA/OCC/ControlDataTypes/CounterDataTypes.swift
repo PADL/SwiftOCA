@@ -48,7 +48,7 @@ public struct OcaCounterSet: Codable, Sendable, Equatable {
   }
 }
 
-public struct OcaCounterUpdate: Codable, Sendable {
+public struct OcaCounterUpdate: Codable, Sendable, Equatable {
   public let counterSetID: OcaCounterSetID
   public let counterID: OcaID16
   public var value: OcaUint64
@@ -106,6 +106,12 @@ public extension OcaCounterSet {
     counter.first { $0.id == id }
   }
 
+  /// The counter with `id`, as GetCounter answers: ParameterOutOfRange if there is none.
+  func existingCounter(id: OcaID16) throws -> OcaCounter {
+    guard let counter = counter(id: id) else { throw Ocp1Error.status(.parameterOutOfRange) }
+    return counter
+  }
+
   private func index(of id: OcaID16) -> Int? {
     counter.firstIndex { $0.id == id }
   }
@@ -131,19 +137,17 @@ public extension OcaCounterSet {
     }
   }
 
-  @discardableResult
-  mutating func attach(notifier oNo: OcaONo, to id: OcaID16) -> Bool {
-    guard let index = index(of: id) else { return false }
+  /// Attaches a notifier, as AttachCounterNotifier does: ParameterOutOfRange if no counter has `id`.
+  mutating func attach(notifier oNo: OcaONo, to id: OcaID16) throws {
+    guard let index = index(of: id) else { throw Ocp1Error.status(.parameterOutOfRange) }
     if !counter[index].notifiers.contains(oNo) {
       counter[index].notifiers.append(oNo)
     }
-    return true
   }
 
-  @discardableResult
-  mutating func detach(notifier oNo: OcaONo, from id: OcaID16) -> Bool {
-    guard let index = index(of: id) else { return false }
+  /// Detaches a notifier, as DetachCounterNotifier does: ParameterOutOfRange if no counter has `id`.
+  mutating func detach(notifier oNo: OcaONo, from id: OcaID16) throws {
+    guard let index = index(of: id) else { throw Ocp1Error.status(.parameterOutOfRange) }
     counter[index].notifiers.removeAll { $0 == oNo }
-    return true
   }
 }

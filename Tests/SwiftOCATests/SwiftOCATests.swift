@@ -612,7 +612,7 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(junk.description, "01")
   }
 
-  func testCounterSetHelpers() {
+  func testCounterSetHelpers() throws {
     var counterSet = OcaCounterSet(counter: [
       OcaCounter(id: 1, value: 5, initialValue: 0, role: "LINK_UP", notifiers: []),
       OcaCounter(id: 2, value: 0, initialValue: 0, role: "LINK_DOWN", notifiers: []),
@@ -622,11 +622,14 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(counterSet.counter(id: 1)?.value, 6)
     XCTAssertTrue(counterSet.set(counter: 2, value: 9))
     XCTAssertFalse(counterSet.set(counter: 3, value: 9))
-    XCTAssertTrue(counterSet.attach(notifier: 4096, to: 1))
-    XCTAssertTrue(counterSet.attach(notifier: 4096, to: 1))
-    XCTAssertEqual(counterSet.counter(id: 1)?.notifiers, [4096])
-    XCTAssertTrue(counterSet.detach(notifier: 4096, from: 1))
+    try counterSet.attach(notifier: 4096, to: 1)
+    try counterSet.attach(notifier: 4096, to: 1)
+    XCTAssertEqual(try counterSet.existingCounter(id: 1).notifiers, [4096])
+    XCTAssertThrowsError(try counterSet.attach(notifier: 4096, to: 3))
+    try counterSet.detach(notifier: 4096, from: 1)
     XCTAssertEqual(counterSet.counter(id: 1)?.notifiers, [] as [OcaONo])
+    XCTAssertThrowsError(try counterSet.detach(notifier: 4096, from: 3))
+    XCTAssertThrowsError(try counterSet.existingCounter(id: 3))
     counterSet.reset(counter: 2)
     XCTAssertEqual(counterSet.counter(id: 2)?.value, 0)
     XCTAssertEqual(counterSet.counter(id: 1)?.value, 6)

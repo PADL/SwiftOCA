@@ -85,6 +85,7 @@ final class ClassManagerTests: XCTestCase {
     _ = try await SwiftOCADevice.OcaMute(role: "Mute", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaDelayExtended(role: "Delay", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaTimeSource(role: "Time", deviceDelegate: device)
+    _ = try await SwiftOCADevice.OcaCounterNotifier(role: "Counters", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaMatrix<SwiftOCADevice.OcaWorker>(
       rows: 2, columns: 2, deviceDelegate: device, addToRootBlock: false
     )
@@ -284,6 +285,9 @@ final class ClassManagerTests: XCTestCase {
     XCTAssertEqual(gain.events, [])
     let inherited = try await h.classManager.getControlClass(classID: SwiftOCADevice.OcaGain.classID, includeInherited: true)
     XCTAssertEqual(inherited.events.map(\.name), ["PropertyChanged"])
+    let notifier = try await h.classManager.getControlClass(classID: SwiftOCADevice.OcaCounterNotifier.classID, includeInherited: false)
+    XCTAssertEqual(notifier.events.map { ($0.eventID.description, $0.name, $0.parameters.first?.typeName) }.map { "\($0.0) \($0.1) \($0.2 ?? "")" },
+                   ["3.1 CounterUpdate OcaCounterUpdateEventData"])
 
     // a bounded property's getter returns its value and range; its setter takes its value
     let getGain = try XCTUnwrap(gain.methods.first { $0.name == "GetGain" })

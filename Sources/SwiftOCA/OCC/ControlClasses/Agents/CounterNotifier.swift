@@ -24,6 +24,8 @@ import Foundation
 open class OcaCounterNotifier: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.18") }
 
+  public static let counterUpdateEventID = OcaEventID(defLevel: 3, eventIndex: 1)
+
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
     getMethodID: OcaMethodID("3.2"),
