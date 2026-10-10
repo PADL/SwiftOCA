@@ -24,13 +24,17 @@ import Foundation
 open class OcaCounterNotifier: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { OcaClassID("1.2.18") }
 
+  public static let counterUpdateEventID = OcaEventID(defLevel: 3, eventIndex: 1)
+
   @OcaProperty(
     propertyID: OcaPropertyID("3.1"),
     getMethodID: OcaMethodID("3.2"),
-    setMethodID: OcaMethodID("3.3")
+    setMethodID: OcaMethodID("3.3"),
+    ocp2GetName: "Parameters",
+    ocp2SetName: "Parameters"
   )
   public var filterParameters: OcaProperty<OcaCounterNotifierFilterParameters>.PropertyValue
 
-  @OcaMethod("3.1", name: "GetLastUpdate", resultNames: ["LastUpdate"])
+  @OcaMethod("3.1", name: "GetLastUpdate", resultNames: ["Notifications"])
   public func getLastUpdate() async throws -> OcaList<OcaCounterUpdate>
 }

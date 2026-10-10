@@ -22,4 +22,17 @@ public enum OcaRelationalOperator: OcaUint8, Codable, Sendable, CaseIterable {
   case greaterThanOrEqual = 4
   case lessThan = 5
   case lessThanOrEqual = 6
+
+  /// Whether `lhs` stands in this relation to `rhs`; `.none` holds of anything.
+  public func holds<T: Comparable>(_ lhs: T, _ rhs: T) -> Bool {
+    switch self {
+    case .none: true
+    case .equality: lhs == rhs
+    case .inequality: lhs != rhs
+    case .greaterThan: lhs > rhs
+    case .greaterThanOrEqual: lhs >= rhs
+    case .lessThan: lhs < rhs
+    case .lessThanOrEqual: lhs <= rhs
+    }
+  }
 }
