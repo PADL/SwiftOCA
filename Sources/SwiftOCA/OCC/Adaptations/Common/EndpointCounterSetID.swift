@@ -33,3 +33,15 @@ public struct OcaMediaStreamEndpointCounterSetID: Ocp1TypedBlobRepresentable, Se
     self.endpointID = endpointID
   }
 }
+
+/// Contents of `OcaCounterSet.ID` for a counter set held by a device property, unique
+/// within the device as AES70-2 requires: the owner's object number and the property's ID.
+public struct OcaPropertyCounterSetID: Ocp1TypedBlobRepresentable, Sendable, Equatable {
+  public var ownerONo: OcaONo
+  public var propertyID: OcaPropertyID
+
+  public init(ownerONo: OcaONo, propertyID: OcaPropertyID) {
+    self.ownerONo = ownerONo
+    self.propertyID = propertyID
+  }
+}

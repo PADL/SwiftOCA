@@ -176,10 +176,17 @@ final class MediaTransportApplicationTests: XCTestCase {
 
     let counter = try await client.getEndpointCounter(endpointID: 1, counterID: 1)
     XCTAssertEqual(counter.value, 3)
-    try await client.attachEndpointCounterNotifier(endpointID: 1, counterID: 1, notifierONo: 4096)
+    // only a counter notifier of the device's may be attached
+    await XCTAssertThrowsStatus(.parameterOutOfRange) {
+      try await client.attachEndpointCounterNotifier(endpointID: 1, counterID: 1, notifierONo: Self.applicationONo)
+    }
+    let notifier = try await SwiftOCADevice.OcaCounterNotifier(
+      objectNumber: 0x0001_0F00, deviceDelegate: harness.device, addToRootBlock: false
+    )
+    try await client.attachEndpointCounterNotifier(endpointID: 1, counterID: 1, notifierONo: notifier.objectNumber)
     let attached = try await client.getEndpointCounterSet(endpointID: 1)
-    XCTAssertEqual(attached.counter(id: 1)?.notifiers, [4096])
-    try await client.detachEndpointCounterNotifier(endpointID: 1, counterID: 1, notifierONo: 4096)
+    XCTAssertEqual(attached.counter(id: 1)?.notifiers, [notifier.objectNumber])
+    try await client.detachEndpointCounterNotifier(endpointID: 1, counterID: 1, notifierONo: notifier.objectNumber)
     let detached = try await client.getEndpointCounterSet(endpointID: 1)
     XCTAssertEqual(detached.counter(id: 1)?.notifiers, [])
     let counterSetID = try detached.id.decode(OcaMediaStreamEndpointCounterSetID.self)
@@ -202,7 +209,7 @@ final class MediaTransportApplicationTests: XCTestCase {
         counterSet: try OcaCounterSet(id: application.makeEndpointCounterSetID(endpointID: id), counter: [])
       )
     }
-    let sets = try await client.$endpointCounterSets._getValue(client, flags: [])
+    let sets = try await client.getEndpointCounterSets()
     XCTAssertEqual(Set(sets.keys), [1, 0x0001_0001, 0x0002_0001])
     let set = try await client.getEndpointCounterSet(endpointID: 0x0002_0001)
     XCTAssertEqual(try set.id.decode(OcaMediaStreamEndpointCounterSetID.self).endpointID, 0x0002_0001)
@@ -228,8 +235,14 @@ final class MediaTransportApplicationTests: XCTestCase {
     try interface.increment(counter: OcaNetworkInterfaceCounterID.linkDown)
     let linkDown = try await client.getCounter(counterID: 2)
     XCTAssertEqual(linkDown.value, 1)
-    try await client.attachCounterNotifier(counterID: 1, oNo: 4096)
-    XCTAssertEqual(interface.counterSet.counter(id: 1)?.notifiers, [4096])
+    await XCTAssertThrowsStatus(.parameterOutOfRange) {
+      try await client.attachCounterNotifier(counterID: 1, oNo: 0x0001_0F01)
+    }
+    let notifier = try await SwiftOCADevice.OcaCounterNotifier(
+      objectNumber: 0x0001_0F01, deviceDelegate: harness.device, addToRootBlock: false
+    )
+    try await client.attachCounterNotifier(counterID: 1, oNo: notifier.objectNumber)
+    XCTAssertEqual(interface.counterSet.counter(id: 1)?.notifiers, [notifier.objectNumber])
     try await client.resetCounters()
     let reset = try await client.getCounter(counterID: 2)
     XCTAssertEqual(reset.value, 0)

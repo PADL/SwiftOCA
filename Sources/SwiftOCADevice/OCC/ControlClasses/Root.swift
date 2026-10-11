@@ -679,6 +679,16 @@ private final class OcaDevicePropertyKeyPathCache: Sendable {
   }
 }
 
+/// An object the device tells of its own registration: once registered, with the device's
+/// other objects to be found, and once deregistered. Neither throws: the object is
+/// registered, or gone, by then. A subclass overriding either must call `super`, or the class's
+/// own handling, a counter set owner's for one, is lost.
+@OcaDevice
+public protocol OcaRegistrationObserving: OcaRoot {
+  func didRegister() async
+  func didDeregister() async
+}
+
 @OcaDevice
 public protocol OcaOwnable: OcaRoot {
   var owner: OcaONo { get set }

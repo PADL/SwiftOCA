@@ -211,6 +211,8 @@ public enum DeviceApp {
     let matrixONo: OcaONo = 10001
     let firstActuatorONo: OcaONo = 10010
     let gainONo: OcaONo = 10020
+    let counterNotifierONo: OcaONo = 10030
+    let counterSetAgentONo: OcaONo = 10031
 
     let matrix = try await SwiftOCADevice
       .OcaMatrix<MyBooleanActuator>(
@@ -252,6 +254,26 @@ public enum DeviceApp {
     )
     try await block.add(actionObject: gain)
 
+    // counts the gain's changes; a controller subscribing to the notifier hears each one
+    let counterNotifier = try await SwiftOCADevice.OcaCounterNotifier(
+      objectNumber: counterNotifierONo,
+      role: "Gain Change Notifier",
+      deviceDelegate: device
+    )
+    let counterSetAgent = try await SwiftOCADevice.OcaCounterSetAgent(
+      objectNumber: counterSetAgentONo,
+      role: "Gain Changes",
+      deviceDelegate: device
+    )
+    await Task { @OcaDevice in
+      counterNotifier.filterParameters = OcaCounterNotifierFilterParameters(
+        threshold: 0, operator: .none, period: 0, countDelta: 1
+      )
+      counterSetAgent.counterSet = OcaCounterSet(counter: [OcaCounter(
+        id: 1, value: 0, initialValue: 0, role: "GainChanges", notifiers: [counterNotifierONo]
+      )])
+    }.value
+
     #if NonEmbeddedBuild
     try await serializeDeserialize(device.rootBlock)
     #endif
@@ -265,8 +287,11 @@ public enum DeviceApp {
     #endif
 
     Task { @OcaDevice in
+      var isFirst = true // the current gain, not a change
       for try await value in gain.$gain {
         print("gain set to \(value)!")
+        if !isFirst { try? counterSetAgent.increment(counter: 1) }
+        isFirst = false
       }
     }
 

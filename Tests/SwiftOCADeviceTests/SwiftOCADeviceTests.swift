@@ -851,18 +851,18 @@ final class HandleCommandArmTests: XCTestCase {
   @OcaDevice
   func testAPropertyWithNoValueIsNullOverOcp2() async throws {
     let device = try await makeDevice()
-    let agent = try await SwiftOCADevice.OcaCounterSetAgent(deviceDelegate: device, addToRootBlock: false)
-    XCTAssertNil(agent.counterSet)
+    let worker = try await SwiftOCADevice.OcaWorker(deviceDelegate: device, addToRootBlock: false)
+    XCTAssertNil(worker.latency)
     do {
-      _ = try await agent.handleCommand(try command("3.1", on: agent), from: ArmTestController())
+      _ = try await worker.handleCommand(try command("2.11", on: worker), from: ArmTestController())
       XCTFail("encoded no value over OCP.1")
     } catch Ocp1Error.status(.parameterOutOfRange) {}
 
     let get = Ocp1Command(
-      handle: 1, targetONo: agent.objectNumber, methodID: OcaMethodID("3.1"),
+      handle: 1, targetONo: worker.objectNumber, methodID: OcaMethodID("2.11"),
       parameters: OcaParameters(ocp2Parameters: [:])
     )
-    let response = try await agent.handleCommand(get, from: Ocp2ArmTestController())
+    let response = try await worker.handleCommand(get, from: Ocp2ArmTestController())
     XCTAssertEqual(response.statusCode, .ok)
     let values = try XCTUnwrap(response.parameters.ocp2Parameters)
     XCTAssertEqual(values.count, 1)

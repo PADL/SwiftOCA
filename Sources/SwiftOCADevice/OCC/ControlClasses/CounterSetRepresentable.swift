@@ -16,23 +16,41 @@
 
 import SwiftOCA
 
-/// Shared handling for classes that own an `OcaCounterSet` device property
-/// (OcaNetworkInterface, OcaNetworkApplication and their subclasses). Mutations go
-/// through the property wrapper, which notifies subscribers.
+/// Shared handling for SwiftOCADevice's classes that own an `OcaCounterSet` (OcaNetworkInterface,
+/// OcaNetworkApplication, OcaCounterSetAgent); others subclass them. AES70-2:2024 §6.8 makes
+/// the set a private property, raising no PropertyChanged; the class signals its notifiers in
+/// `didSet`.
 @OcaDevice
-public protocol OcaCounterSetRepresentable: OcaRoot {
+public protocol OcaCounterSetRepresentable: OcaRoot, OcaRegistrationObserving {
+  /// The model's ID of the private property holding the counter set, which names the set
+  /// when the device gives it no ID of its own.
+  @_spi(SwiftOCAPrivate)
+  static var counterSetPropertyID: OcaPropertyID { get }
+  /// The object's own counter set, the one its GetCounterSet and Attach/Detach methods
+  /// reach and `set(counter:value:)` and `increment(counter:by:)` change.
   var counterSet: OcaCounterSet { get set }
+  /// Every counter set whose notifiers the object signals: `counterSet`, and any others, such
+  /// as an application's endpoints'. Read as the object registers, maybe before a subclass's
+  /// init ends, an override must not depend on state assigned after super.init.
+  var allCounterSets: [OcaCounterSet] { get }
+  /// What the object has still to signal its notifiers; `OcaCounterSetChanges()` will do.
+  @_spi(SwiftOCAPrivate)
+  var counterSetChanges: OcaCounterSetChanges { get }
+}
+
+/// The changes to an object's counter sets its notifiers have not yet been signalled, and the
+/// notifiers to signal: those the changed sets name, and named before, so that a detached
+/// notifier hears of it.
+@_spi(SwiftOCAPrivate) @OcaDevice
+public final class OcaCounterSetChanges {
+  fileprivate(set) var isPending = false
+  fileprivate var resets = Set<OcaCounterKey>()
+  fileprivate var notifiers = Set<OcaONo>()
+
+  public nonisolated init() {}
 }
 
 public extension OcaCounterSetRepresentable {
-  @OcaDevice
-  func counter(id: OcaID16) throws -> OcaCounter {
-    guard let counter = counterSet.counter(id: id) else {
-      throw Ocp1Error.status(.parameterOutOfRange)
-    }
-    return counter
-  }
-
   @OcaDevice
   func set(counter id: OcaID16, value: OcaUint64) throws {
     guard counterSet.set(counter: id, value: value) else {
@@ -46,23 +64,73 @@ public extension OcaCounterSetRepresentable {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
   }
+}
 
-  @OcaDevice
-  func attach(counterNotifier oNo: OcaONo, to id: OcaID16) throws {
-    guard counterSet.attach(notifier: oNo, to: id) else {
+extension OcaCounterSetRepresentable {
+  /// Signals the notifiers that `newValue`, the object's counter sets that changed, name, and
+  /// that `oldValue`, the sets they replace, named. The changes of one turn are signalled together.
+  func counterSetsDidChange(
+    _ newValue: some Sequence<OcaCounterSet>,
+    oldValue: some Sequence<OcaCounterSet> = [OcaCounterSet]()
+  ) {
+    nameCounterSet()
+    counterSetChanges.notifiers.formUnion(newValue.lazy.flatMap(\.counter).flatMap(\.notifiers))
+    counterSetChanges.notifiers.formUnion(oldValue.lazy.flatMap(\.counter).flatMap(\.notifiers))
+    guard !counterSetChanges.isPending else { return }
+    // most sets name no notifier, and need no task; one attaching names itself
+    guard !counterSetChanges.notifiers.isEmpty else {
+      counterSetChanges.resets = []
+      return
+    }
+    counterSetChanges.isPending = true
+    Task { await signalNotifiers() }
+  }
+
+  private func signalNotifiers() async {
+    // one hop to the device, after which the changes made meanwhile are signalled too
+    let objects = await deviceDelegate?.objects ?? [:]
+    // an owner not registered, or no longer, holds no counters
+    let counterSets = objects[objectNumber] === self ? allCounterSets : []
+    for case let notifier as OcaCounterNotifier in counterSetChanges.notifiers.compactMap({ objects[$0] }) {
+      notifier.counterSetsDidChange(for: self, counterSets: counterSets, resetting: counterSetChanges.resets)
+    }
+    counterSetChanges.notifiers = []
+    counterSetChanges.resets = []
+    counterSetChanges.isPending = false
+  }
+
+  /// Resets the counter `id` of `counterSet`, one of the object's, or all of them, which
+  /// notifiers report whatever their filters.
+  func reset(_ counterSet: inout OcaCounterSet, counter id: OcaID16? = nil) throws {
+    if let id, counterSet.counter(id: id) == nil { throw Ocp1Error.status(.parameterOutOfRange) }
+    counterSetChanges.resets.formUnion(
+      counterSet.counter.filter { id == nil || $0.id == id }
+        .map { OcaCounterKey(counterSetID: counterSet.id, counterID: $0.id) }
+    )
+    counterSet.reset(counter: id)
+  }
+
+  /// Refuses an object number other than a counter notifier's on the object's device, the only
+  /// ones Attach takes, so that a controller cannot grow a counter's notifiers without bound.
+  func ensureCounterNotifier(_ oNo: OcaONo) async throws {
+    guard await deviceDelegate?.objects[oNo] is OcaCounterNotifier else {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
   }
 
-  @OcaDevice
-  func detach(counterNotifier oNo: OcaONo, from id: OcaID16) throws {
-    guard counterSet.detach(notifier: oNo, from: id) else {
-      throw Ocp1Error.status(.parameterOutOfRange)
-    }
+  /// Gives a counter set left without an ID, however it was set, one unique within the
+  /// device, from the property that holds it. Encoding two fixed-width integers cannot fail.
+  private func nameCounterSet() {
+    guard counterSet.id.isEmpty,
+          let id = try? OcaPropertyCounterSetID(ownerONo: objectNumber, propertyID: Self.counterSetPropertyID).blob,
+          !id.isEmpty
+    else { return }
+    counterSet.id = id
   }
 
-  @OcaDevice
-  func resetCounterSet() {
-    counterSet.reset(counter: nil)
+  /// For an owner's `didRegister` and `didDeregister`: names the counter set, and has the
+  /// notifiers its sets name read them, or find the owner gone and forget its counters.
+  func counterSetOwnerRegistrationDidChange() {
+    counterSetsDidChange(allCounterSets)
   }
 }

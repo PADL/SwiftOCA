@@ -267,6 +267,7 @@ public actor OcaDevice {
     if let object = object as? OcaClassManager { classManager = object }
     await classManager?.didRegister(object: object)
     #endif
+    await (object as? any OcaRegistrationObserving)?.didRegister()
   }
 
   private func _addManagerDescriptor(for object: OcaRoot) async {
@@ -311,6 +312,7 @@ public actor OcaDevice {
     await classManager?.didDeregister(object: object)
     if object === classManager { classManager = nil }
     #endif
+    await (object as? any OcaRegistrationObserving)?.didDeregister()
   }
 
   #if NonEmbeddedBuild

@@ -384,12 +384,10 @@ open class OcaMediaTransportApplication: OcaNetworkApplication, @unchecked Senda
 
   // MARK: - Endpoint counters
 
-  @OcaProperty(
-    propertyID: OcaPropertyID("3.12"),
-    getMethodID: OcaMethodID("3.34"),
-    ocp2GetName: "Sets"
-  )
-  public var endpointCounterSets: OcaMapProperty<OcaMediaStreamEndpointID, OcaCounterSet>.PropertyValue
+  /// The endpoints' counter sets, a private property (AES70-2:2024 §6.8) read only through
+  /// this method.
+  @OcaMethod("3.34", name: "GetEndpointCounterSets", resultNames: ["Sets"])
+  public func getEndpointCounterSets() async throws -> OcaMap<OcaMediaStreamEndpointID, OcaCounterSet>
 
   @OcaMethod(
     "3.35",

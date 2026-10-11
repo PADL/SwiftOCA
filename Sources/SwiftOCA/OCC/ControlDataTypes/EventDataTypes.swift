@@ -311,7 +311,13 @@ public struct OcaGroupException: Codable, Sendable {
   }
 }
 
-public typealias OcaCounterUpdateEventData = OcaList<OcaCounterUpdate>
+public struct OcaCounterUpdateEventData: Codable, Sendable, Equatable {
+  public let updates: OcaList<OcaCounterUpdate>
+
+  public init(updates: OcaList<OcaCounterUpdate>) {
+    self.updates = updates
+  }
+}
 
 @_spi(SwiftOCAPrivate)
 public typealias OcaAnyPropertyChangedEventData = OcaPropertyChangedEventData<Data>
