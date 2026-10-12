@@ -26,7 +26,6 @@ import FoundationEssentials
 import Foundation
 #endif
 import SwiftOCA
-import Synchronization
 
 /// A remote WebSocket endpoint
 package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
@@ -44,7 +43,7 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
   private let _messages: AsyncThrowingChannel<Ocp1MessageList, Error>
   private var receiveMessageTask: Task<(), Never>?
   private let output: AsyncChannel<WSFrame>
-  private nonisolated let isClosed = Atomic(false)
+  private var isClosed = false
   package var endpoint: OcaFlyingFoxDeviceEndpoint?
   package nonisolated let identifier: String
   package let controlProtocol: OcaControlProtocol
@@ -164,18 +163,18 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
   /// more than one frame waits here however far behind the peer is. The wait ends with
   /// `notConnected` once the connection has gone, whichever side ended it.
   private func send(_ frame: WSFrame) async throws {
-    guard !isClosed.load(ordering: .acquiring) else { throw Ocp1Error.notConnected }
+    guard !isClosed else { throw Ocp1Error.notConnected }
     await output.send(frame)
     // a finished channel or a cancelled task resumes the send without delivering
-    guard !isClosed.load(ordering: .acquiring) else { throw Ocp1Error.notConnected }
+    guard !isClosed else { throw Ocp1Error.notConnected }
     try Task.checkCancellation()
   }
 
   /// Ends sending: a send waiting on the handoff resumes and throws, and later ones throw at
   /// once. The server calls this when its connection has ended, before the controller is
   /// removed, so that no sender hangs on a socket nothing will write to again.
-  nonisolated func endSending() {
-    isClosed.store(true, ordering: .releasing)
+  func endSending() {
+    isClosed = true
     output.finish()
   }
 
@@ -193,7 +192,7 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
     receiveMessageTask?.cancel()
     keepAliveTask?.cancel()
     _messages.finish()
-    endSending()
+    output.finish()
   }
 
   package nonisolated var description: String {

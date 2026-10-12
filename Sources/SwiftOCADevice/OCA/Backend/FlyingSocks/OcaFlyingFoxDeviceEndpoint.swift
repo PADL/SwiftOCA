@@ -138,7 +138,7 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
 
     /// Nothing will be written again: free any sender first, then let the controller go.
     func end() {
-      controller.endSending()
+      Task { [controller] in await controller.endSending() }
       task.cancel()
     }
 
