@@ -234,6 +234,12 @@ final class NotificationScopeTests: XCTestCase {
     let emitters = (0..<40).map { OcaONo(8100 + $0) }
     let received = Mutex([OcaONo]())
     for emitterONo in emitters {
+      // a controller's command cannot subscribe to an object that is not there
+      _ = try await SwiftOCADevice.OcaRoot(
+        objectNumber: emitterONo,
+        deviceDelegate: device,
+        addToRootBlock: false
+      )
       _ = try await connection.addSubscription(event: event(emitterONo)) { event, _ in
         received.withLock { $0.append(event.emitterONo) }
       }
