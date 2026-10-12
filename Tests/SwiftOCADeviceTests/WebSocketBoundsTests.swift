@@ -102,17 +102,22 @@ private func firstController(
   throw Ocp1Error.notConnected
 }
 
+private let event = OcaEvent(emitterONo: 4242, eventID: OcaEventID(defLevel: 1, eventIndex: 1))
+
+/// Raises `count` notifications of the event, each carrying its index.
+private func notify(_ device: OcaDevice, count: Int) async throws {
+  for index in 0..<count {
+    try await device.notifySubscribers(event, parameters: Data([UInt8(index)]))
+  }
+}
+
 final class WebSocketBoundsTests: XCTestCase {
-  private static let event = OcaEvent(
-    emitterONo: 4242,
-    eventID: OcaEventID(defLevel: 1, eventIndex: 1)
-  )
 
   private func subscribe(_ controller: OcaController, on device: OcaDevice) async throws {
     let manager = await device.subscriptionManager
     let subscriptionManager = try XCTUnwrap(manager)
     try await subscriptionManager.addSubscription(.subscription2(OcaSubscription2(
-      event: Self.event,
+      event: event,
       notificationDeliveryMode: .normal,
       destinationInformation: OcaNetworkAddress()
     )), for: controller)
@@ -137,7 +142,7 @@ final class WebSocketBoundsTests: XCTestCase {
     var sent = 0
     while await !endpoint.controllers.isEmpty, ContinuousClock.now < deadline {
       let started = ContinuousClock.now
-      try? await device.notifySubscribers(Self.event, parameters: parameters)
+      try? await device.notifySubscribers(event, parameters: parameters)
       let waited = ContinuousClock.now - started
       XCTAssertLessThan(waited, timeout * 4, "notification \(sent) waited \(waited) on the peer")
       sent += 1
@@ -160,11 +165,7 @@ final class WebSocketBoundsTests: XCTestCase {
     try await subscribe(firstController(of: endpoint), on: device)
 
     let count = 100
-    let notifier = Task {
-      for index in 0..<count {
-        try await device.notifySubscribers(Self.event, parameters: Data([UInt8(index)]))
-      }
-    }
+    let notifier = Task { try await notify(device, count: count) }
     try await Task.sleep(for: .milliseconds(200))
 
     var received = [UInt8]()
