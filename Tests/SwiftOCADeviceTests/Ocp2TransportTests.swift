@@ -285,6 +285,115 @@ final class Ocp2UDPTests: XCTestCase {
     let controllers = await fixture.endpoint.controllers
     XCTAssertEqual((controllers.first as? any Ocp1ControllerInternal)?.connectionPrefix, OcaJsonUdpConnectionPrefix)
   }
+
+  /// Waits until the endpoint holds `count` controllers, or gives up.
+  private func controllerCount(
+    of fixture: UDPFixture,
+    toReach count: Int,
+    within timeout: Duration = .seconds(2)
+  ) async throws -> Int {
+    let deadline = ContinuousClock.now + timeout
+    var controllers = await fixture.endpoint.controllers
+    while ContinuousClock.now < deadline, controllers.count != count {
+      try await Task.sleep(for: .milliseconds(25))
+      controllers = await fixture.endpoint.controllers
+    }
+    return controllers.count
+  }
+
+  /// A datagram peer asking for no heartbeat is not kept forever: it gets the default
+  /// and is expired like any other once it goes silent.
+  func testDatagramKeepAliveOfZeroStillExpires() async throws {
+    let fixture = try await UDPFixture()
+    defer { fixture.tearDown() }
+
+    let peer = try RawDatagramPeer()
+    defer { peer.close() }
+    try peer.send("{\"ProtocolVersion\":1,\"KeepAlive\":{\"HeartbeatTimeout\":0}}\n", to: fixture.port)
+    let count = try await controllerCount(of: fixture, toReach: 1)
+    XCTAssertEqual(count, 1)
+
+    let controllers = await fixture.endpoint.controllers
+    let controller = try XCTUnwrap(controllers.first as? DatagramDeviceEndpoint.ControllerType)
+    let heartbeatTime = await controller.heartbeatTime
+    XCTAssertEqual(heartbeatTime, Ocp1DefaultDatagramHeartbeatTime)
+
+    let remaining = try await controllerCount(
+      of: fixture,
+      toReach: 0,
+      within: Ocp1DefaultDatagramHeartbeatTime * 3 + .seconds(2)
+    )
+    XCTAssertEqual(remaining, 0, "silent datagram controller with heartbeat 0 was not expired")
+  }
+
+  func testDatagramHeartbeatIsCapped() async throws {
+    let fixture = try await UDPFixture()
+    defer { fixture.tearDown() }
+
+    let peer = try RawDatagramPeer()
+    defer { peer.close() }
+    try peer.send("{\"ProtocolVersion\":1,\"KeepAlive\":{\"HeartbeatTimeout\":3600000}}\n", to: fixture.port)
+    let count = try await controllerCount(of: fixture, toReach: 1)
+    XCTAssertEqual(count, 1)
+
+    let controllers = await fixture.endpoint.controllers
+    let controller = try XCTUnwrap(controllers.first as? DatagramDeviceEndpoint.ControllerType)
+    let heartbeatTime = await controller.heartbeatTime
+    XCTAssertEqual(heartbeatTime, Ocp1MaximumDatagramHeartbeatTime)
+  }
+
+  /// One datagram makes a controller, so the table is capped; a peer arriving when it is
+  /// full is refused rather than an established controller evicted.
+  func testDatagramControllersAreCapped() async throws {
+    let fixture = try await UDPFixture()
+    defer { fixture.tearDown() }
+
+    let peers = try (0...OcaMaximumDatagramControllers).map { _ in try RawDatagramPeer() }
+    defer { for peer in peers { peer.close() } }
+    for peer in peers {
+      try peer.send("{\"ProtocolVersion\":1,\"KeepAlive\":{\"HeartbeatTimeout\":60000}}\n", to: fixture.port)
+    }
+    let count = try await controllerCount(of: fixture, toReach: OcaMaximumDatagramControllers, within: .seconds(5))
+    XCTAssertEqual(count, OcaMaximumDatagramControllers)
+
+    try await Task.sleep(for: .milliseconds(250))
+    let settled = await fixture.endpoint.controllers.count
+    XCTAssertEqual(settled, OcaMaximumDatagramControllers, "the controller cap did not hold")
+  }
+
+  /// A datagram peer's session opens on a KeepAlive; a command sent before one leaves nothing behind.
+  func testDatagramCommandBeforeKeepAliveIsDropped() async throws {
+    let fixture = try await UDPFixture()
+    defer { fixture.tearDown() }
+
+    let peer = try RawDatagramPeer()
+    defer { peer.close() }
+    try peer.send(
+      "{\"ProtocolVersion\":1,\"Commands\":[{\"Handle\":1,\"TargetONo\":1,\"MethodID\":[1,1]}]}\n",
+      to: fixture.port
+    )
+    try await Task.sleep(for: .milliseconds(250))
+    let controllers = await fixture.endpoint.controllers
+    XCTAssertTrue(controllers.isEmpty, "a command before any KeepAlive left a datagram controller behind")
+  }
+}
+
+/// A UDP peer that writes raw PDUs, as another implementation or a spoofed datagram would.
+private struct RawDatagramPeer {
+  private let socket: Socket
+
+  init() throws {
+    socket = try Socket(domain: AF_INET, type: .datagram)
+    try socket.bind(to: .inet(ip4: "127.0.0.1", port: 0))
+  }
+
+  func send(_ text: String, to port: UInt16) throws {
+    _ = try socket.send(Array(text.utf8), to: .inet(ip4: "127.0.0.1", port: port))
+  }
+
+  func close() {
+    try? socket.close()
+  }
 }
 
 // MARK: - TCP

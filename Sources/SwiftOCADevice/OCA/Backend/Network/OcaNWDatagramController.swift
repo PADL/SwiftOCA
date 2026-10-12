@@ -65,7 +65,7 @@ package actor OcaNWDatagramController: Ocp1ControllerInternal,
     _messages.eraseToAnyAsyncSequence()
   }
 
-  package var heartbeatTime = Duration.seconds(1) {
+  package var heartbeatTime = Ocp1DefaultDatagramHeartbeatTime {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }

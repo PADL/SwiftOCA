@@ -204,6 +204,14 @@ open class OcaNWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   private func run(connection: NWConnection) async {
+    // the datagram is dropped rather than an established controller evicted for a stranger
+    guard _controllers.count < OcaMaximumDatagramControllers else {
+      logger.warning(
+        "datagram controller table at cap (\(OcaMaximumDatagramControllers)); refusing \(connection.endpoint)"
+      )
+      connection.cancel()
+      return
+    }
     let connectionLogger = logger
     let controller = OcaNWDatagramController(endpoint: self, connection: connection)
     let endpointRef = self

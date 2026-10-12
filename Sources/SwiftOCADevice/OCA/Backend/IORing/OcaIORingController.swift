@@ -269,7 +269,7 @@ package actor OcaIORingDatagramController: OcaIORingControllerPrivate,
     self.peerAddress = peerAddress
   }
 
-  package var heartbeatTime = Duration.seconds(1) {
+  package var heartbeatTime = Ocp1DefaultDatagramHeartbeatTime {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }

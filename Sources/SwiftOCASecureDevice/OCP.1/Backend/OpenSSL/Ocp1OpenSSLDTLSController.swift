@@ -77,7 +77,7 @@ package actor Ocp1OpenSSLDTLSController: Ocp1ControllerInternal,
     AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
   }
 
-  package var heartbeatTime = Duration.seconds(1) {
+  package var heartbeatTime = Ocp1DefaultDatagramHeartbeatTime {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }

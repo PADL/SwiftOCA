@@ -116,7 +116,27 @@ package extension Ocp1ControllerInternal {
 /// that a PDU of several messages is not fragmented.
 package let Ocp1MaximumDatagramSendPduSize = Ocp1MaximumDatagramPduSize - 48
 
+/// The heartbeat a datagram controller starts with, and gets when it asks for none.
+package let Ocp1DefaultDatagramHeartbeatTime = Duration.seconds(1)
+
+/// The longest heartbeat a datagram controller may ask for, so that a peer that has
+/// gone away is forgotten within three minutes rather than days.
+package let Ocp1MaximumDatagramHeartbeatTime = Duration.seconds(60)
+
+/// How many controllers a datagram endpoint keeps at once. Each one is made by a single
+/// datagram, so without a cap one spoofed packet per source address grows the table.
+package let OcaMaximumDatagramControllers = 64
+
 package extension Ocp1ControllerInternal {
+  /// AES70-3 has a datagram peer keep sending keepalives, so for one, zero (which on a
+  /// stream means none) becomes the default and the heartbeat is capped. A stream
+  /// controller keeps what it asked for.
+  private func effectiveHeartbeatTime(_ requested: Duration) -> Duration {
+    guard self is Ocp1ControllerDatagramSemantics else { return requested }
+    guard requested != .zero else { return Ocp1DefaultDatagramHeartbeatTime }
+    return min(requested, Ocp1MaximumDatagramHeartbeatTime)
+  }
+
   /// handle a single message
   private func _handle<Endpoint: OcaDeviceEndpointPrivate>(
     for endpoint: Endpoint,
@@ -144,9 +164,9 @@ package extension Ocp1ControllerInternal {
         parameters: commandResponse.parameters
       )
     case let keepAlive as Ocp1KeepAlive1:
-      heartbeatTime = .seconds(keepAlive.heartBeatTime)
+      heartbeatTime = effectiveHeartbeatTime(.seconds(keepAlive.heartBeatTime))
     case let keepAlive as Ocp1KeepAlive2:
-      heartbeatTime = .milliseconds(keepAlive.heartBeatTime)
+      heartbeatTime = effectiveHeartbeatTime(.milliseconds(keepAlive.heartBeatTime))
     case is Ocp2DeviceReset:
       endpoint.logger.info("device reset requested by \(controller); not supported")
     default:
