@@ -87,20 +87,31 @@ public class OcaSubscriptionManager: OcaManager {
     if subscribers[emitterONo]?.isEmpty == true { subscribers[emitterONo] = nil }
   }
 
-  /// The controller's subscriptions to the emitter's events. A controller is known by
+  /// The most subscriptions one controller may hold by its commands, over every emitter.
+  /// In-process callers are not held to it: an NMOS bridge subscribes to every property.
+  package nonisolated static let maximumSubscriptionsPerController = 4096
+
+  /// How many subscriptions the controller holds, over every emitter. This walks every
+  /// emitter, so a command counts once and not for each subscription it adds.
+  func subscriptionCount(for controller: any OcaController) -> Int {
+    let id = ObjectIdentifier(controller)
+    return subscribers.values.reduce(0) { count, entries in
+      guard let entry = entries[id], entry.controller === controller else { return count }
+      return count + entry.subscriptions.count
+    }
+  }
+
+  /// What is kept of the controller's subscriptions to the emitter. A controller is known by
   /// its identity, which a later one may be given once it has gone; what was kept for
   /// the one that went is not the later one's, and is dropped here.
-  private func subscriptions(
-    of controller: any OcaController,
-    to emitterONo: OcaONo
-  ) -> Set<OcaSubscriptionManagerSubscription> {
+  private func entry(for controller: any OcaController, to emitterONo: OcaONo) -> Entry? {
     let id = ObjectIdentifier(controller)
-    guard let entry = subscribers[emitterONo]?[id] else { return [] }
+    guard let entry = subscribers[emitterONo]?[id] else { return nil }
     guard entry.controller != nil else {
       remove(id, from: emitterONo)
-      return []
+      return nil
     }
-    return entry.subscriptions
+    return entry
   }
 
   /// Whether the controller holds any subscription to the emitter's events.
@@ -108,45 +119,18 @@ public class OcaSubscriptionManager: OcaManager {
     _ controller: any OcaController,
     toEventsFrom emitterONo: OcaONo
   ) -> Bool {
-    !subscriptions(of: controller, to: emitterONo).isEmpty
-  }
-
-  /// Subscriptions are kept per emitter. EV1 and EV2 subscriptions are independent: a
-  /// controller could subscribe to some events with EV1 and others with EV2, unusual as
-  /// that would be. So a matching subscription is one with the same event, property (for
-  /// a property changed event), subscriber and version.
-  private static func find(
-    _ event: OcaEvent,
-    property: OcaPropertyID? = nil,
-    subscriber: OcaMethod? = nil,
-    version: OcaSubscriptionManagerSubscription.EventVersion,
-    in subscriptions: Set<OcaSubscriptionManagerSubscription>
-  ) -> [OcaSubscriptionManagerSubscription] {
-    precondition(property == nil || event.eventID == OcaPropertyChangedEventID)
-    return subscriptions.filter { subscription in
-      subscription.event == event &&
-        (subscriber == nil ? true : subscription.subscriber == subscriber) &&
-        subscription.property == property &&
-        subscription.version == version
-    }
+    entry(for: controller, to: emitterONo) != nil
   }
 
   /// Subscribes the controller, as its commands to this object do. A controller within
   /// the device's own process can be subscribed here without sending itself a command.
+  /// One the controller already holds (see `canonicalized()`) throws
+  /// `alreadySubscribedToEvent`. The caller is trusted: neither the emitter nor
+  /// `maximumSubscriptionsPerController` is checked, as they are for a command.
   public func addSubscription(
     _ subscription: OcaSubscriptionManagerSubscription,
     for controller: any OcaController
   ) throws {
-    let emitterONo = subscription.event.emitterONo
-    var subscriptions = subscriptions(of: controller, to: emitterONo)
-    guard Self.find(
-      subscription.event,
-      subscriber: subscription.subscriber,
-      version: subscription.version,
-      in: subscriptions
-    ).isEmpty else {
-      throw Ocp1Error.alreadySubscribedToEvent(subscription.event)
-    }
     guard subscription.subscriberContext.count <= Int(Self.maximumSubscriberContextLength) else {
       throw Ocp1Error.status(.parameterOutOfRange)
     }
@@ -157,45 +141,28 @@ public class OcaSubscriptionManager: OcaManager {
       // lightweight/fast notifications
       throw Ocp1Error.status(.parameterError)
     }
-    subscriptions.insert(subscription)
-    subscribers[emitterONo, default: [:]][ObjectIdentifier(controller)] =
-      Entry(controller: controller, subscriptions: subscriptions)
+    guard held(subscription, by: controller) == nil else {
+      throw Ocp1Error.alreadySubscribedToEvent(subscription.event)
+    }
+    subscribers[subscription.event.emitterONo, default: [:]][
+      ObjectIdentifier(controller),
+      default: Entry(controller: controller, subscriptions: [])
+    ].subscriptions.insert(subscription)
   }
 
+  /// Removes the controller's subscription with the same `canonicalized()` form as
+  /// `subscription`, if it holds one. Nothing is kept for a controller with no
+  /// subscription to an emitter, nor for an emitter nobody subscribes to.
   public func removeSubscription(
     _ subscription: OcaSubscriptionManagerSubscription,
     for controller: any OcaController
   ) {
-    remove([subscription], of: controller, from: subscription.event.emitterONo)
-  }
-
-  private func removeSubscription(
-    _ event: OcaEvent,
-    subscriber: OcaMethod,
-    for controller: any OcaController
-  ) {
-    let subscriptions = Self.find(
-      event,
-      subscriber: subscriber,
-      version: .ev1,
-      in: subscriptions(of: controller, to: event.emitterONo)
-    )
-    remove(subscriptions, of: controller, from: event.emitterONo)
-  }
-
-  /// Nothing is kept for a controller with no subscription to an emitter, nor for an
-  /// emitter nobody subscribes to: what is here is who to notify.
-  private func remove(
-    _ removed: [OcaSubscriptionManagerSubscription],
-    of controller: any OcaController,
-    from emitterONo: OcaONo
-  ) {
-    let subscriptions = subscriptions(of: controller, to: emitterONo).subtracting(removed)
+    let emitterONo = subscription.event.emitterONo
     let id = ObjectIdentifier(controller)
-    if subscriptions.isEmpty {
+    guard let held = held(subscription, by: controller) else { return }
+    subscribers[emitterONo]?[id]?.subscriptions.remove(held)
+    if subscribers[emitterONo]?[id]?.subscriptions.isEmpty == true {
       remove(id, from: emitterONo)
-    } else {
-      subscribers[emitterONo]?[id]?.subscriptions = subscriptions
     }
   }
 
@@ -205,6 +172,66 @@ public class OcaSubscriptionManager: OcaManager {
     for emitterONo in subscribers.keys where subscribers[emitterONo]?[id] != nil {
       remove(id, from: emitterONo)
     }
+  }
+
+  /// The controller's subscription with the same `canonicalized()` form as `subscription`.
+  /// The search is of its subscriptions to one emitter, which are few.
+  private func held(
+    _ subscription: OcaSubscriptionManagerSubscription,
+    by controller: any OcaController
+  ) -> OcaSubscriptionManagerSubscription? {
+    let canonical = subscription.canonicalized()
+    return entry(for: controller, to: subscription.event.emitterONo)?
+      .subscriptions.first { $0.canonicalized() == canonical }
+  }
+
+  /// Subscribes the controller on its command. One to an object that is not there is
+  /// refused, then one over `maximumSubscriptionsPerController`, then one it already
+  /// holds. `count` is how many it holds, taken once a command.
+  private func addSubscription(
+    _ subscription: OcaSubscriptionManagerSubscription,
+    from controller: any OcaController,
+    holding count: Int? = nil
+  ) async throws {
+    // the one await comes first, so the count, the search and the insert are one turn
+    guard let _: OcaRoot = await deviceDelegate?
+      .resolve(objectNumber: subscription.event.emitterONo)
+    else {
+      throw Ocp1Error.status(.badONo)
+    }
+    // before the search for a duplicate, so a long list from a controller at the limit
+    // searches nothing
+    guard (count ?? subscriptionCount(for: controller)) < Self.maximumSubscriptionsPerController
+    else {
+      throw Ocp1Error.status(.outOfMemory)
+    }
+    do {
+      try addSubscription(subscription, for: controller)
+    } catch Ocp1Error.alreadySubscribedToEvent(_) {
+      throw Ocp1Error.status(.invalidRequest)
+    }
+  }
+
+  /// Statuses for a list of subscriptions, each added as its own command would be.
+  private func addSubscriptions(
+    _ subscriptions: [OcaSubscriptionManagerSubscription],
+    from controller: any OcaController
+  ) async -> [OcaStatus] {
+    var statuses = [OcaStatus]()
+    statuses.reserveCapacity(subscriptions.count)
+    var count = subscriptionCount(for: controller)
+    for subscription in subscriptions {
+      do {
+        try await addSubscription(subscription, from: controller, holding: count)
+        count += 1
+        statuses.append(.ok)
+      } catch let Ocp1Error.status(status) {
+        statuses.append(status)
+      } catch {
+        statuses.append(.deviceError)
+      }
+    }
+    return statuses
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.Methods.addSubscription, access: .read)
@@ -223,7 +250,7 @@ public class OcaSubscriptionManager: OcaManager {
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
     )
-    try addSubscription(.subscription(subscription), for: controller)
+    try await addSubscription(.subscription(subscription), from: controller)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.Methods.removeSubscription, access: .read)
@@ -232,7 +259,15 @@ public class OcaSubscriptionManager: OcaManager {
     subscriber: OcaMethod,
     from controller: any OcaController
   ) async throws {
-    removeSubscription(event, subscriber: subscriber, for: controller)
+    // EV1 subscriptions are told apart by event and subscriber alone (see canonicalized())
+    let subscription = OcaSubscription(
+      event: event,
+      subscriber: subscriber,
+      subscriberContext: OcaBlob(),
+      notificationDeliveryMode: .normal,
+      destinationInformation: OcaNetworkAddress()
+    )
+    removeSubscription(.subscription(subscription), for: controller)
   }
 
   @OcaDeviceMethod(
@@ -256,7 +291,7 @@ public class OcaSubscriptionManager: OcaManager {
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
     )
-    try addSubscription(.propertyChangeSubscription(subscription), for: controller)
+    try await addSubscription(.propertyChangeSubscription(subscription), from: controller)
   }
 
   @OcaDeviceMethod(
@@ -269,11 +304,15 @@ public class OcaSubscriptionManager: OcaManager {
     subscriber: OcaMethod,
     from controller: any OcaController
   ) async throws {
-    removeSubscription(
-      OcaEvent(emitterONo: emitter, eventID: OcaPropertyChangedEventID),
+    let subscription = OcaPropertyChangeSubscription(
+      emitter: emitter,
+      property: property,
       subscriber: subscriber,
-      for: controller
+      subscriberContext: OcaBlob(),
+      notificationDeliveryMode: .normal,
+      destinationInformation: OcaNetworkAddress()
     )
+    removeSubscription(.propertyChangeSubscription(subscription), for: controller)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.Methods.disableNotifications, access: .write)
@@ -298,7 +337,7 @@ public class OcaSubscriptionManager: OcaManager {
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
     )
-    try addSubscription(.subscription2(subscription), for: controller)
+    try await addSubscription(.subscription2(subscription), from: controller)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.Methods.removeSubscription2, access: .read)
@@ -333,7 +372,7 @@ public class OcaSubscriptionManager: OcaManager {
       notificationDeliveryMode: notificationDeliveryMode,
       destinationInformation: destinationInformation
     )
-    try addSubscription(.propertyChangeSubscription2(subscription), for: controller)
+    try await addSubscription(.propertyChangeSubscription2(subscription), from: controller)
   }
 
   @OcaDeviceMethod(
@@ -364,28 +403,14 @@ public class OcaSubscriptionManager: OcaManager {
     destinationInformation: OcaNetworkAddress,
     from controller: any OcaController
   ) async throws -> [OcaStatus] {
-
-    return events.map { event in
-      let returnedStatus: OcaStatus
-
-      do {
-        let subscription2 = OcaSubscription2(
-          event: event,
-          notificationDeliveryMode: notificationDeliveryMode,
-          destinationInformation: destinationInformation
-        )
-        try addSubscription(.subscription2(subscription2), for: controller)
-        returnedStatus = .ok
-      } catch Ocp1Error.alreadySubscribedToEvent(_) {
-        returnedStatus = .invalidRequest
-      } catch let Ocp1Error.status(status) {
-        returnedStatus = status
-      } catch {
-        returnedStatus = .deviceError
-      }
-
-      return returnedStatus
+    let subscriptions = events.map { event in
+      OcaSubscriptionManagerSubscription.subscription2(OcaSubscription2(
+        event: event,
+        notificationDeliveryMode: notificationDeliveryMode,
+        destinationInformation: destinationInformation
+      ))
     }
+    return await addSubscriptions(subscriptions, from: controller)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaSubscriptionManager.Methods.removeSubscription2List, access: .read)
@@ -422,33 +447,17 @@ public class OcaSubscriptionManager: OcaManager {
       throw Ocp1Error.status(.invalidRequest)
     }
 
-    var returnedStatuses = [OcaStatus]()
-    returnedStatuses.reserveCapacity(emitters.count)
-
-    for i in 0..<emitters.count {
-      let returnedStatus: OcaStatus
-
-      do {
-        let propertyChangeSubscription2 = OcaPropertyChangeSubscription2(
-          emitter: emitters[i],
-          property: properties[i],
+    let subscriptions = zip(emitters, properties).map { emitter, property in
+      OcaSubscriptionManagerSubscription.propertyChangeSubscription2(
+        OcaPropertyChangeSubscription2(
+          emitter: emitter,
+          property: property,
           notificationDeliveryMode: notificationDeliveryMode,
           destinationInformation: destinationInformation
         )
-        try addSubscription(.propertyChangeSubscription2(propertyChangeSubscription2), for: controller)
-        returnedStatus = .ok
-      } catch Ocp1Error.alreadySubscribedToEvent(_) {
-        returnedStatus = .invalidRequest
-      } catch let Ocp1Error.status(status) {
-        returnedStatus = status
-      } catch {
-        returnedStatus = .deviceError
-      }
-
-      returnedStatuses.append(returnedStatus)
+      )
     }
-
-    return returnedStatuses
+    return await addSubscriptions(subscriptions, from: controller)
   }
 
   @OcaDeviceMethod(
@@ -636,6 +645,47 @@ public enum OcaSubscriptionManagerSubscription: Codable, Equatable, Hashable, Se
       propertyChangeSubscription.destinationInformation
     case let .propertyChangeSubscription2(propertyChangeSubscription):
       propertyChangeSubscription.destinationInformation
+    }
+  }
+
+  /// A subscription is told apart by what its remove method names; `canonicalized()` drops
+  /// the rest. EV1 drops the context, delivery mode and destination; EV2 drops the
+  /// destination of normal delivery, which goes down the controller's own connection.
+  func canonicalized() -> Self {
+    switch self {
+    case let .subscription(subscription):
+      .subscription(OcaSubscription(
+        event: subscription.event,
+        subscriber: subscription.subscriber,
+        subscriberContext: OcaBlob(),
+        notificationDeliveryMode: .normal,
+        destinationInformation: OcaNetworkAddress()
+      ))
+    case let .propertyChangeSubscription(subscription):
+      .propertyChangeSubscription(OcaPropertyChangeSubscription(
+        emitter: subscription.emitter,
+        property: subscription.property,
+        subscriber: subscription.subscriber,
+        subscriberContext: OcaBlob(),
+        notificationDeliveryMode: .normal,
+        destinationInformation: OcaNetworkAddress()
+      ))
+    case let .subscription2(subscription) where subscription.notificationDeliveryMode == .normal:
+      .subscription2(OcaSubscription2(
+        event: subscription.event,
+        notificationDeliveryMode: .normal,
+        destinationInformation: OcaNetworkAddress()
+      ))
+    case let .propertyChangeSubscription2(subscription)
+      where subscription.notificationDeliveryMode == .normal:
+      .propertyChangeSubscription2(OcaPropertyChangeSubscription2(
+        emitter: subscription.emitter,
+        property: subscription.property,
+        notificationDeliveryMode: .normal,
+        destinationInformation: OcaNetworkAddress()
+      ))
+    case .subscription2, .propertyChangeSubscription2:
+      self
     }
   }
 }
