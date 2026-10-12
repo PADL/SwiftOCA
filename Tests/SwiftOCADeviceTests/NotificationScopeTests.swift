@@ -332,7 +332,7 @@ final class NotificationScopeTests: XCTestCase {
   /// What is pending for a controller does not keep it: one that goes meanwhile is sent nothing.
   func testWhatIsPendingDoesNotKeepAControllerThatHasGone() async throws {
     var controller: RecordingController? = RecordingController()
-    weak var gone = controller
+    weak let gone = controller
     let device = try await makeDevice(subscribing: controller!, to: [8121])
     let raised = event(8121)
 

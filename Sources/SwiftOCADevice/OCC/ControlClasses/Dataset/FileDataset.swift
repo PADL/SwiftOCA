@@ -298,7 +298,8 @@ final class OcaFileDataset: OcaDataset, OcaCompressibleDataset, @unchecked Senda
       permissions: [.ownerReadWrite, .groupRead, .otherRead]
     )
     #else
-    try FileManager.default.createFile(
+    // FileHandle's open below reports a file that could not be made
+    _ = try FileManager.default.createFile(
       atPath: dirEntry.absolutePath,
       contents: nil,
       attributes: nil

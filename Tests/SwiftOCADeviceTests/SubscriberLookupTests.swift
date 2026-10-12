@@ -218,7 +218,7 @@ final class SubscriberLookupTests: XCTestCase {
   func testAnExpiredControllerIsReleased() async throws {
     let (device, manager) = try await makeDevice()
     var controller: CountingController? = CountingController()
-    weak var expired = controller
+    weak let expired = controller
     try await manager.addSubscription(subscription(to: event(7012)), for: XCTUnwrap(controller))
     try await device.expire(controller: XCTUnwrap(controller))
     controller = nil

@@ -23,6 +23,14 @@ import Glibc
 import Android
 #elseif canImport(WinSDK)
 import WinSDK
+
+// unlink reports through the C runtime's errno, not the Winsock code that
+// WinSDKCompat's errno returns; Swift cannot import ucrt's errno macro
+private var errno: CInt {
+  var value: CInt = 0
+  _ = _get_errno(&value)
+  return value
+}
 #endif
 
 /// Removes the socket file at `path`, if there is one: before binding, one left behind by
@@ -37,8 +45,12 @@ package func unlinkSocketFile(at path: String) throws {
     throw Errno(rawValue: errno)
   }
   guard st.st_mode & mode_t(S_IFMT) == mode_t(S_IFSOCK) else { return }
+  let result = unlink(path)
+  #else
+  // ucrt deprecates the POSIX spelling
+  let result = _unlink(path)
   #endif
-  if unlink(path) < 0, errno != ENOENT {
+  if result < 0, errno != ENOENT {
     throw Errno(rawValue: errno)
   }
 }

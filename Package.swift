@@ -372,11 +372,6 @@ let CommonTargets: [Target] = [
 
   ),
   .executableTarget(
-    name: "OCAPerfBench",
-    dependencies: ["SwiftOCA", "SwiftOCADevice"],
-    path: "Examples/OCAPerfBench"
-  ),
-  .executableTarget(
     name: "OCAEventBenchmark",
     dependencies: [
       "SwiftOCA",
@@ -481,6 +476,19 @@ let CommonTargets: [Target] = [
   ),
 ]
 
+// the benchmark measures with getrusage and POSIX sockets, which Windows lacks
+#if os(Windows)
+let PerfBenchTargets: [Target] = []
+#else
+let PerfBenchTargets: [Target] = [
+  .executableTarget(
+    name: "OCAPerfBench",
+    dependencies: ["SwiftOCA", "SwiftOCADevice"],
+    path: "Examples/OCAPerfBench"
+  ),
+]
+#endif
+
 let package = Package(
   name: "SwiftOCA",
   platforms: [
@@ -493,5 +501,5 @@ let package = Package(
     .init(name: "NonEmbeddedBuild", description: "Default build footprint"),
   ],
   dependencies: CommonPackageDependencies + PlatformPackageDependencies,
-  targets: CommonTargets + PlatformTargets + AndroidTargets
+  targets: CommonTargets + PlatformTargets + AndroidTargets + PerfBenchTargets
 )
