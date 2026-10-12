@@ -26,11 +26,15 @@ public class OcaLockManager: OcaManager {
     let target: OcaONo
   }
 
-  // only ever touched on the OcaDevice actor
-  private final class LockWaiter: @unchecked Sendable {
+  @OcaDevice
+  private final class LockWaiter {
     private var continuation: CheckedContinuation<(), Error>?
     private var result: Result<(), Error>?
     var task: Task<(), Never>?
+
+    var isGranted: Bool {
+      if case .success = result { true } else { false }
+    }
 
     // false if the wait ended before the call could suspend, which resumes it at once
     func suspend(_ continuation: CheckedContinuation<(), Error>) -> Bool {
@@ -97,6 +101,8 @@ public class OcaLockManager: OcaManager {
 
     let lockWaiterID = LockWaiterID(controller: controller.id, target: target.objectNumber)
     let lockWaiter = LockWaiter()
+    let wanted: LockState = type == .lockNoWrite
+      ? .lockedNoWrite(controller.id) : .lockedNoReadWrite(controller.id)
 
     // a second wait by the same controller on the same target replaces the first
     abort(lockWaiterID)
@@ -122,12 +128,16 @@ public class OcaLockManager: OcaManager {
                   .filter({ $0.lockState == .noLock })
                 {
                   guard !Task.isCancelled else { break }
-                  if await target.setLockState(to: type, controller: controller) {
-                    if !lockWaiter.didLock() {
-                      _ = await target.setLockState(to: .noLock, controller: controller)
-                    }
-                    break
+                  let before = target.lockState
+                  guard await target.setLockState(to: type, controller: controller) else {
+                    continue
                   }
+                  // the wait ended during the lock's own notification: give back only
+                  // the lock this wait took, not one the controller holds in its own right
+                  if !lockWaiter.didLock(), before == .unlocked, target.lockState == wanted {
+                    _ = await target.setLockState(to: .noLock, controller: controller)
+                  }
+                  break
                 }
               }
             }
@@ -139,6 +149,8 @@ public class OcaLockManager: OcaManager {
           lockWaiter.didAbort(with: Ocp1Error.status(.timeout))
         }
       )
+    } catch where lockWaiter.isGranted {
+      // the lock was taken as the deadline passed or the call was cancelled; it is held
     } catch Ocp1Error.responseTimeout {
       throw Ocp1Error.status(.timeout)
     }
