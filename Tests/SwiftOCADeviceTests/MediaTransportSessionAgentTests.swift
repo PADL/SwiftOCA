@@ -224,7 +224,7 @@ final class MediaTransportSessionAgentTests: XCTestCase {
     defer { harness.endpointTask.cancel() }
     let agent = try await makeAgent(harness)
 
-    let serialized = try await agent.serialize()
+    let serialized = try agent.serialize()
     XCTAssertNotNil(serialized["3.2"])
     XCTAssertNil(serialized["3.3"])
   }

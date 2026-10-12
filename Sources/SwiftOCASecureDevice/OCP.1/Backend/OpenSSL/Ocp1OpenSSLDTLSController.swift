@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 import AsyncExtensions
-public import IORing
+import IORing
 internal import IORingUtils
 import SocketAddress
 @_spi(SwiftOCAPrivate)

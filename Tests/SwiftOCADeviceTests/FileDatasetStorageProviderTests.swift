@@ -106,7 +106,7 @@ final class FileDatasetStorageProviderTests: XCTestCase {
     let targetA: OcaONo = 10001
     let targetB: OcaONo = 10002
 
-    try await provider.construct(
+    _ = try await provider.construct(
       classID: SwiftOCADevice.OcaDataset.classID,
       targetONo: targetA,
       datasetONo: nil,
@@ -117,7 +117,7 @@ final class FileDatasetStorageProviderTests: XCTestCase {
       controller: nil
     )
 
-    try await provider.construct(
+    _ = try await provider.construct(
       classID: SwiftOCADevice.OcaDataset.classID,
       targetONo: targetB,
       datasetONo: nil,
@@ -149,7 +149,7 @@ final class FileDatasetStorageProviderTests: XCTestCase {
     )
     await device.setDatasetStorageProvider(provider)
 
-    try await provider.construct(
+    _ = try await provider.construct(
       classID: SwiftOCADevice.OcaDataset.classID,
       targetONo: OcaRootBlockONo,
       datasetONo: nil,
@@ -160,7 +160,7 @@ final class FileDatasetStorageProviderTests: XCTestCase {
       controller: nil
     )
 
-    try await provider.construct(
+    _ = try await provider.construct(
       classID: SwiftOCADevice.OcaDataset.classID,
       targetONo: OcaRootBlockONo,
       datasetONo: nil,

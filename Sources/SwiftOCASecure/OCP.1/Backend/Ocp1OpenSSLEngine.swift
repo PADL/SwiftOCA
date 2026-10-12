@@ -1041,7 +1041,7 @@ package actor Ocp1OpenSSLEngine {
           case SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
             return nil
           default:
-            throw Ocp1OpenSSLError(code: err, detail: Self.collectErrorMessages())
+            throw Ocp1OpenSSLError(code: err, detail: detail)
           }
         }
       }
@@ -1052,6 +1052,7 @@ package actor Ocp1OpenSSLEngine {
         SSL_read(ssl, buf.baseAddress, CInt(buf.count))
       }
       let err = n > 0 ? 0 : SSL_get_error(ssl, n)
+      let detail = Self.diagnostics(for: err)
       try await drainOutbound(write: networkWrite)
       if n > 0 {
         return Data(buffer.prefix(Int(n)))
@@ -1062,7 +1063,7 @@ package actor Ocp1OpenSSLEngine {
       case SSL_ERROR_ZERO_RETURN:
         throw Ocp1Error.notConnected
       default:
-        throw Ocp1OpenSSLError(code: err, detail: Self.collectErrorMessages())
+        throw Ocp1OpenSSLError(code: err, detail: detail)
       }
     }
   }
@@ -1142,7 +1143,7 @@ package actor Ocp1OpenSSLEngine {
     read networkRead: @Sendable (Int) async throws -> Data,
     write networkWrite: @Sendable (Data) async throws -> Void
   ) async throws {
-    guard let ssl else { throw Ocp1Error.notConnected }
+    guard ssl != nil else { throw Ocp1Error.notConnected }
     switch err {
     case SSL_ERROR_WANT_READ:
       let chunk = try await networkRead(Self.readBufferSize)

@@ -82,6 +82,8 @@ package func reencodeAsValidJSONObject<Value: Codable>(_ value: some Codable) th
 /// Re-encode `value` into JSONSerialization-safe types; non-finite numbers
 /// come back as their string spelling.
 package func reencodeAsValidJSONObject(_ value: some Codable) throws -> any Sendable {
+  // AnyDecodable only offers `Any`; the compiler refuses `as` here and `as?`
+  // on a marker protocol, so the forced cast (a no-op at run time) stays.
   try JSONDecoder().decode(AnyDecodable.self, from: _jsonEncoder().encode(value))
     .value as! any Sendable
 }
