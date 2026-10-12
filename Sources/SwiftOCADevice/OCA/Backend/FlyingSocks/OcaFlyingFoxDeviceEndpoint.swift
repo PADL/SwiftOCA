@@ -110,8 +110,8 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
           await controller.handle(for: endpoint)
         }
       }
-      let outlet = Outlet(output, task: task)
-      return AsyncStream(unfolding: { await outlet.next() }, onCancel: { task.cancel() })
+      let outlet = Outlet(output, controller: controller, task: task)
+      return AsyncStream(unfolding: { await outlet.next() }, onCancel: { outlet.end() })
     }
   }
 
@@ -119,10 +119,16 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   /// once the connection has ended, however it ended, which is when the controller ends.
   private final class Outlet: @unchecked Sendable {
     private var frames: AsyncChannel<WSFrame>.Iterator
+    private let controller: OcaFlyingFoxController
     private let task: Task<(), Never>
 
-    init(_ output: AsyncChannel<WSFrame>, task: Task<(), Never>) {
+    init(
+      _ output: AsyncChannel<WSFrame>,
+      controller: OcaFlyingFoxController,
+      task: Task<(), Never>
+    ) {
       frames = output.makeAsyncIterator()
+      self.controller = controller
       self.task = task
     }
 
@@ -130,8 +136,14 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
       await frames.next()
     }
 
-    deinit {
+    /// Nothing will be written again: free any sender first, then let the controller go.
+    func end() {
+      controller.endSending()
       task.cancel()
+    }
+
+    deinit {
+      end()
     }
   }
 

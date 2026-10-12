@@ -26,6 +26,7 @@ import FoundationEssentials
 import Foundation
 #endif
 import SwiftOCA
+import Synchronization
 
 /// A remote WebSocket endpoint
 package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
@@ -43,9 +44,7 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
   private let _messages: AsyncThrowingChannel<Ocp1MessageList, Error>
   private var receiveMessageTask: Task<(), Never>?
   private let output: AsyncChannel<WSFrame>
-  private let deadlines = DeadlineTimer()
-  private let timeout: Duration
-  private var isClosed = false
+  private nonisolated let isClosed = Atomic(false)
   package var endpoint: OcaFlyingFoxDeviceEndpoint?
   package nonisolated let identifier: String
   package let controlProtocol: OcaControlProtocol
@@ -79,11 +78,9 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
       ocp2: OcaJsonWebSocketTcpConnectionPrefix
     )
     let maximumPduSize = endpoint?.maximumPduSize ?? OcaControlProtocol.defaultMaximumPduSize
-    let timeout = endpoint?.timeout ?? OcaDevice.DefaultTimeout
-    self.timeout = timeout
     let messagesChannel = AsyncThrowingChannel<Ocp1MessageList, Error>()
     _messages = messagesChannel
-    receiveMessageTask = Task { [deadlines] in
+    receiveMessageTask = Task {
       // consecutive frame payloads are a byte stream (AES70-3 8.4.3.4.4, AES70-4
       // 10.4.3.4.4), so one stream reader spans frames: a frame may hold several
       // PDUs, or part of one
@@ -92,10 +89,10 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
         maximumPduSize: maximumPduSize
       )
       nonisolated(unsafe) var frames = FrameReader(frames, text: usesTextFrames)
-      // a pong or a close frame is bounded like a PDU: the controller is on its way out
-      // if the peer does not take it, so a reply that fails is not reported
+      // a pong or a close frame takes the same handoff as a PDU, so a peer that pings
+      // without reading stalls only its own reader, in its own socket
       let reply: @Sendable (WSFrame) async -> () = { frame in
-        try? await Self.send(frame, to: output, within: timeout, deadlines: deadlines)
+        await output.send(frame)
       }
       /// Each failure sends one close frame. AES70-3 8.4.3.4.4: on OCP.1 a text frame
       /// closes with 1011 (UNEXPECTED), a malformed message with 1007 (BAD_DATA).
@@ -150,7 +147,8 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
   }
 
   /// Zero until the controller negotiates one, as on the other stream transports: SwiftOCA's
-  /// WebSocket client sends no keepalives. A peer that stops reading is expired by `send`.
+  /// WebSocket client sends no keepalives. A peer that stops reading is expired by the write
+  /// backlog budget, since a send here waits on the socket.
   package var heartbeatTime = Duration.seconds(0) {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
@@ -163,34 +161,27 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
   }
 
   /// Hands `frame` to the server, which takes it only when it is about to write it, so no
-  /// more than one frame waits here however far behind the peer is. A peer that has not
-  /// taken it within the endpoint's timeout has stopped reading, and is expired.
+  /// more than one frame waits here however far behind the peer is. The wait ends with
+  /// `notConnected` once the connection has gone, whichever side ended it.
   private func send(_ frame: WSFrame) async throws {
-    guard !isClosed else { throw Ocp1Error.notConnected }
-    do {
-      try await Self.send(frame, to: output, within: timeout, deadlines: deadlines)
-    } catch Ocp1Error.responseTimeout {
-      endpoint?.logger.info("expired controller: not reading for \(timeout)", controller: self)
-      await endpoint?.unlockAndRemove(controller: self)
-      throw Ocp1Error.notConnected
-    }
+    guard !isClosed.load(ordering: .acquiring) else { throw Ocp1Error.notConnected }
+    await output.send(frame)
+    guard !isClosed.load(ordering: .acquiring) else { throw Ocp1Error.notConnected }
   }
 
-  private static func send(
-    _ frame: WSFrame,
-    to output: AsyncChannel<WSFrame>,
-    within timeout: Duration,
-    deadlines: DeadlineTimer
-  ) async throws {
-    try await deadlines.withThrowingTimeout(of: timeout) { await output.send(frame) }
+  /// Ends sending: a send waiting on the handoff resumes and throws, and later ones throw at
+  /// once. The server calls this when its connection has ended, before the controller is
+  /// removed, so that no sender hangs on a socket nothing will write to again.
+  nonisolated func endSending() {
+    isClosed.store(true, ordering: .releasing)
+    output.finish()
   }
 
   package func close() async {
-    isClosed = true
+    endSending()
     receiveMessageTask?.cancel()
     receiveMessageTask = nil
     _messages.finish()
-    output.finish()
 
     keepAliveTask?.cancel()
     keepAliveTask = nil
@@ -200,7 +191,7 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
     receiveMessageTask?.cancel()
     keepAliveTask?.cancel()
     _messages.finish()
-    output.finish()
+    endSending()
   }
 
   package nonisolated var description: String {
@@ -237,21 +228,27 @@ private struct FrameReader {
       guard let frame = try await frames.next() else {
         throw Ocp1Error.notConnected
       }
+      // RFC 6455 5.2 and 5.5: no extension is negotiated, and a control frame is not
+      // fragmented and carries at most 125 bytes. FlyingFox has unmasked the payload
+      // and does not say whether the peer masked it, so that is not checked here.
+      guard !frame.rsv1, !frame.rsv2, !frame.rsv3 else { throw WSProtocolError() }
       var opcode = frame.opcode
       switch opcode {
+      case .ping, .pong, .close:
+        guard frame.fin, frame.payload.count <= 125 else { throw WSProtocolError() }
+      default:
+        break
+      }
+      switch opcode {
       case .ping:
-        guard frame.payload.count <= 125 else { throw WSProtocolError() }
         var pong = frame
         pong.opcode = .pong
-        pong.mask = nil
         await reply(pong)
         continue
       case .pong:
         continue
       case .close:
-        var echo = frame
-        echo.mask = nil
-        await reply(echo)
+        await reply(Self.closeFrame(echoing: frame.payload))
         throw Ocp1Error.notConnected
       case .continuation:
         guard let first = fragmented else { throw WSProtocolError() }
@@ -268,6 +265,23 @@ private struct FrameReader {
       if frame.payload.isEmpty { continue }
       return frame.payload
     }
+  }
+
+  /// The close frame to answer a peer's with (RFC 6455 5.5.1): its own status code, or
+  /// none if it sent none. A one-byte payload, a code that only an endpoint may report
+  /// to itself (1005, 1006, 1015), or a reason that is not UTF-8 (7.4.1) is answered 1002.
+  private static func closeFrame(echoing payload: Data) -> WSFrame {
+    guard payload.count != 1 else { return .close(code: .protocolError) }
+    guard payload.count >= 2 else {
+      return WSFrame(fin: true, opcode: .close, mask: nil, payload: Data())
+    }
+    let code = payload.prefix(2).reduce(UInt16(0)) { $0 << 8 | UInt16($1) }
+    guard ![1005, 1006, 1015].contains(code),
+          let reason = String(validating: payload.dropFirst(2), as: UTF8.self)
+    else {
+      return .close(code: .protocolError)
+    }
+    return .close(code: WSCloseCode(code, reason: reason))
   }
 }
 

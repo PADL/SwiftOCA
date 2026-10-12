@@ -104,15 +104,55 @@ private func firstController(
 
 private let event = OcaEvent(emitterONo: 4242, eventID: OcaEventID(defLevel: 1, eventIndex: 1))
 
-/// Raises `count` notifications of the event, each carrying its index.
+/// Enough per notification to fill the loopback socket buffers within a few sends.
+private let largeParameters = Data(count: 64 * 1024)
+
+/// Raises `count` large notifications of the event, each ending in its index.
 private func notify(_ device: OcaDevice, count: Int) async throws {
   for index in 0..<count {
-    try await device.notifySubscribers(event, parameters: Data([UInt8(index)]))
+    var parameters = largeParameters
+    parameters[parameters.count - 1] = UInt8(index)
+    try await device.notifySubscribers(event, parameters: parameters)
+  }
+}
+
+/// Raises large notifications while `endpoint` has a controller, counting those that
+/// returned, so that a test can see the sender held up on a peer that has stopped reading.
+private actor Notifier {
+  private(set) var sent = 0
+
+  func run(_ device: OcaDevice, until endpoint: OcaFlyingFoxDeviceEndpoint) async {
+    while await !endpoint.controllers.isEmpty {
+      try? await device.notifySubscribers(event, parameters: largeParameters)
+      sent += 1
+    }
+  }
+
+  /// Waits until no notification has returned for `quietFor`, or throws after `deadline`.
+  func waitUntilStalled(quietFor: Duration, deadline: Duration) async throws {
+    let started = ContinuousClock.now
+    var last = (sent: sent, at: started)
+    while ContinuousClock.now - last.at < quietFor {
+      guard ContinuousClock.now - started < deadline else { throw Ocp1Error.responseTimeout }
+      try await Task.sleep(for: .milliseconds(20))
+      if sent != last.sent { last = (sent, .now) }
+    }
+  }
+}
+
+/// Waits until `endpoint` has `count` controllers, or throws after five seconds.
+private func waitForControllers(
+  of endpoint: OcaFlyingFoxDeviceEndpoint,
+  count: Int
+) async throws {
+  let deadline = ContinuousClock.now + .seconds(5)
+  while await endpoint.controllers.count != count {
+    guard ContinuousClock.now < deadline else { throw Ocp1Error.responseTimeout }
+    try await Task.sleep(for: .milliseconds(10))
   }
 }
 
 final class WebSocketBoundsTests: XCTestCase {
-
   private func subscribe(_ controller: OcaController, on device: OcaDevice) async throws {
     let manager = await device.subscriptionManager
     let subscriptionManager = try XCTUnwrap(manager)
@@ -123,38 +163,65 @@ final class WebSocketBoundsTests: XCTestCase {
     )), for: controller)
   }
 
-  /// A subscribed peer that stops reading is held up in its socket, not in memory: once
-  /// the socket is full, a notification waits no longer than the endpoint's timeout, and the
-  /// controller is then expired.
-  func testPeerThatStopsReadingIsExpired() async throws {
+  /// A subscribed peer that stops reading holds the sender up in its socket, not in
+  /// memory: once the socket is full no further notification returns. When the peer's
+  /// connection then goes, the waiting sender returns at once and the controller is removed.
+  func testPeerThatStopsReadingHoldsUpOnlyItsSocket() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
-    let timeout = Duration.milliseconds(500)
-    let (endpoint, endpointTask, port) = try await makeWSEndpoint(device: device, timeout: timeout)
+    let (endpoint, endpointTask, port) = try await makeWSEndpoint(device: device)
     defer { endpointTask.cancel() }
 
     let webSocket = try await RawWebSocket(port: port, protocols: ["AES70-OCP.1"])
     try await subscribe(firstController(of: endpoint), on: device)
 
-    // enough per notification to fill the loopback buffers in a few hundred sends
-    let parameters = Data(count: 64 * 1024)
-    let deadline = ContinuousClock.now + .seconds(60)
-    var sent = 0
-    while await !endpoint.controllers.isEmpty, ContinuousClock.now < deadline {
-      let started = ContinuousClock.now
-      try? await device.notifySubscribers(event, parameters: parameters)
-      let waited = ContinuousClock.now - started
-      XCTAssertLessThan(waited, timeout * 4, "notification \(sent) waited \(waited) on the peer")
-      sent += 1
-    }
-    let controllers = await endpoint.controllers
-    XCTAssertTrue(controllers.isEmpty, "a peer that stopped reading was not expired after \(sent) sends")
-    XCTAssertGreaterThan(sent, 1, "the first notification should have been taken")
-    await webSocket.close()
+    let notifier = Notifier()
+    let sending = Task { await notifier.run(device, until: endpoint) }
+    try await notifier.waitUntilStalled(quietFor: .milliseconds(500), deadline: .seconds(20))
+    let sentBeforeStall = await notifier.sent
+    XCTAssertGreaterThan(sentBeforeStall, 0, "the socket should have taken the first frames")
+    XCTAssertLessThan(sentBeforeStall, 1000, "notifications were buffered beyond the socket")
+
+    let closed = ContinuousClock.now
+    try webSocket.socket.close()
+    await sending.value
+    let released = ContinuousClock.now - closed
+    XCTAssertLessThan(released, .seconds(2), "the sender waited \(released) after the peer went")
+    try await waitForControllers(of: endpoint, count: 0)
   }
 
-  /// Notifications are not dropped for a peer that falls behind within the timeout: every
-  /// one arrives, in order, once it reads again.
+  /// A peer that pings without reading stalls only its own reader: another peer is served
+  /// meanwhile, and the controller is removed once the pinging peer's connection goes.
+  func testPingFloodFromANonReadingPeerStallsOnlyItself() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let (endpoint, endpointTask, port) = try await makeWSEndpoint(device: device)
+    defer { endpointTask.cancel() }
+
+    let flooder = try await RawWebSocket(port: port, protocols: ["AES70-OCP.1"])
+    let other = try await RawWebSocket(port: port, protocols: ["AES70-OCP.1"])
+    try await waitForControllers(of: endpoint, count: 2)
+    let flood = Task {
+      for _ in 0..<5000 {
+        try await flooder.send(opcode: 0x9, Data(count: 125))
+      }
+    }
+    try await Task.sleep(for: .milliseconds(300))
+
+    try await other.send(opcode: 0x2, getDeviceNamePdu(handle: 1))
+    let responses = try await other.ocp1Responses(for: [1])
+    XCTAssertEqual(responses[1]?.statusCode, .ok)
+    let controllers = await endpoint.controllers
+    XCTAssertEqual(controllers.count, 2, "the pinging peer should not have been expired")
+
+    flood.cancel()
+    try flooder.socket.close()
+    try await waitForControllers(of: endpoint, count: 1)
+    await other.close()
+  }
+
+  /// Notifications are not dropped for a peer that falls behind: every one arrives, in
+  /// order, once it reads again, though together they are far more than its socket holds.
   func testPeerThatFallsBehindMissesNothing() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
@@ -182,6 +249,7 @@ final class WebSocketBoundsTests: XCTestCase {
       let (messageType, messages) = try OcaControlProtocol.ocp1.decodePdu(pdu)
       XCTAssertEqual(messageType, .ocaNtf2)
       for case let notification as Ocp1Notification2 in messages {
+        XCTAssertEqual(notification.data.count, largeParameters.count)
         received.append(try XCTUnwrap(notification.data.last))
       }
     }
@@ -223,13 +291,46 @@ final class WebSocketBoundsTests: XCTestCase {
     XCTAssertEqual(opcode, 0xA)
     XCTAssertEqual(String(decoding: payload, as: UTF8.self), "ping")
 
+    // RFC 6455 5.4: a control frame may arrive in the middle of a fragmented message
     let pdu = try getDeviceNamePdu(handle: 7)
     try await webSocket.send(opcode: 0x2, fin: false, pdu.prefix(5))
+    try await webSocket.send(opcode: 0x9, Data("mid".utf8))
     try await webSocket.send(opcode: 0x0, fin: false, Data())
     try await webSocket.send(opcode: 0x0, pdu.dropFirst(5))
+    let (midOpcode, midPayload) = try await webSocket.receive()
+    XCTAssertEqual(midOpcode, 0xA)
+    XCTAssertEqual(String(decoding: midPayload, as: UTF8.self), "mid")
     let responses = try await webSocket.ocp1Responses(for: [7])
     XCTAssertEqual(responses[7]?.statusCode, .ok)
     await webSocket.close()
+  }
+
+  /// RFC 6455 5.5 and 5.5.1: a peer's close frame is answered with its own code, or with
+  /// 1002 when it is malformed: over 125 bytes, one byte, a code only an endpoint may
+  /// report to itself, or a reason that is not UTF-8. Control frames are not fragmented.
+  func testCloseFramesAreAnsweredPerRFC6455() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let (_, endpointTask, port) = try await makeWSEndpoint(device: device)
+    defer { endpointTask.cancel() }
+
+    let cases: [(name: String, fin: Bool, payload: Data, expected: UInt16?)] = [
+      ("normal closure", true, Data([0x03, 0xE8]), 1000),
+      ("going away with a reason", true, Data([0x03, 0xE9]) + Data("bye".utf8), 1001),
+      ("no code", true, Data(), nil),
+      ("over 125 bytes", true, Data([0x03, 0xE8]) + Data(count: 124), 1002),
+      ("one byte", true, Data([0x03]), 1002),
+      ("1005 reserved", true, Data([0x03, 0xED]), 1002),
+      ("invalid UTF-8 reason", true, Data([0x03, 0xE8, 0xFF]), 1002),
+      ("fragmented control frame", false, Data([0x03, 0xE8]), 1002),
+    ]
+    for (name, fin, payload, expected) in cases {
+      let webSocket = try await RawWebSocket(port: port, protocols: ["AES70-OCP.1"])
+      try await webSocket.send(opcode: 0x8, fin: fin, payload)
+      let closeCode = try await webSocket.closeCode()
+      XCTAssertEqual(closeCode, expected, name)
+      try webSocket.socket.close()
+    }
   }
 
   /// RFC 6455 5.4: a continuation frame outside a fragmented message closes with 1002.
