@@ -1449,16 +1449,4 @@ private func stableCount(_ count: @Sendable () -> Int) async -> Int {
     last = current
   }
 }
-
-private func waitUntil(
-  timeout: Duration = .seconds(5),
-  until condition: @Sendable () async -> Bool
-) async -> Bool {
-  let deadline = ContinuousClock.now + timeout
-  while ContinuousClock.now < deadline {
-    if await condition() { return true }
-    try? await Task.sleep(for: .milliseconds(25))
-  }
-  return await condition()
-}
 #endif

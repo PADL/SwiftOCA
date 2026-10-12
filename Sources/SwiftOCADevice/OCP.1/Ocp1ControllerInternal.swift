@@ -58,7 +58,7 @@ package struct Ocp1MessageList: Sendable {
 // OcaControllerPrivate should eventually be merged into OcaController once we are ready to
 // support out-of-tree endpoints
 
-package protocol Ocp1ControllerInternal: OcaController {
+package protocol Ocp1ControllerInternal: OcaControllerQueuedSending {
   associatedtype Endpoint: OcaDeviceEndpointPrivate
 
   nonisolated var connectionPrefix: String { get }
@@ -238,9 +238,10 @@ package extension Ocp1ControllerInternal {
     lastMessageReceivedTime + (heartbeatTime * 3) < now
   }
 
+  // queued, so that a peer that has stopped reading cannot keep the staleness check from running
   private func sendKeepAlive() async throws {
-    try await sendMessage(
-      Ocp1KeepAlive.keepAlive(interval: heartbeatTime),
+    try await queueMessages(
+      [Ocp1KeepAlive.keepAlive(interval: heartbeatTime)],
       type: .ocaKeepAlive
     )
   }
@@ -298,16 +299,7 @@ package extension Ocp1ControllerInternal {
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType
   ) async throws {
-    lastMessageSentTime = .now
-
-    // on a packet transport, several messages may need more than one PDU
-    let pdus = if messages.count > 1, let maximumSendPduSize {
-      try controlProtocol
-        .encodePdus(messages, type: messageType, maximumSize: maximumSendPduSize)
-    } else {
-      try [controlProtocol.encodePdu(messages, type: messageType)]
-    }
-    for data in pdus {
+    for data in try encodePdus(messages, type: messageType) {
       if let writeQueue {
         try await writeQueue.serialised { [self] in
           try await sendOcp1EncodedData(data)
@@ -316,6 +308,39 @@ package extension Ocp1ControllerInternal {
         try await sendOcp1EncodedData(data)
       }
     }
+  }
+
+  /// Without a write queue, a datagram transport, a send is a single call that does not
+  /// wait on the peer, so it is made here.
+  func queueMessages(
+    _ messages: [Ocp1Message],
+    type messageType: OcaMessageType
+  ) async throws {
+    guard let writeQueue else {
+      try await sendMessages(messages, type: messageType)
+      return
+    }
+    let wasOverBudget = writeQueue.isOverBudget
+    do {
+      for data in try encodePdus(messages, type: messageType) {
+        try writeQueue.enqueue(bytes: data.count, maximumBacklogBytes: OcaMaximumWriteBacklogBytes) { [self] in
+          try await sendOcp1EncodedData(data)
+        }
+      }
+    } catch Ocp1Error.writeBacklogExceeded {
+      // the first refusal expires the controller; the rest, until it is gone, say nothing
+      if !wasOverBudget {
+        endpoint?.logger.info("expired controller: \(writeQueue.backlogBytes) bytes not taken", controller: self)
+        await endpoint?.unlockAndRemove(controller: self as! Endpoint.ControllerType)
+      }
+      throw Ocp1Error.notConnected
+    }
+  }
+
+  /// The PDUs carrying `messages`: on a packet transport, several may need more than one.
+  private func encodePdus(_ messages: [Ocp1Message], type messageType: OcaMessageType) throws -> [Data] {
+    lastMessageSentTime = .now
+    return try controlProtocol.encodePdus(messages, type: messageType, maximumSize: maximumSendPduSize)
   }
 }
 

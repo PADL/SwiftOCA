@@ -46,6 +46,23 @@ private actor SlowController: OcaController {
   }
 }
 
+/// A controller with a transport of its own to queue on, whose peer has stopped reading:
+/// `sendMessages` never returns, while `queueMessages` takes the message and returns.
+private actor StalledQueuedController: OcaControllerQueuedSending {
+  nonisolated let flags: OcaControllerFlags = []
+  private(set) var queued = 0
+  private(set) var sent = 0
+
+  func sendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {
+    sent += 1
+    try? await Task.sleep(for: .seconds(3600))
+  }
+
+  func queueMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {
+    queued += 1
+  }
+}
+
 private final class MockEndpoint: OcaDeviceEndpoint, @unchecked Sendable {
   let controllers: [OcaController]
 
@@ -126,5 +143,35 @@ final class NotificationFanOutTests: XCTestCase {
     if let first = entries.min(), let last = entries.max() {
       XCTAssertLessThan(last - first, delay, "controllers were entered \(last - first) apart")
     }
+  }
+
+  /// A controller that can queue is never waited on: its stalled peer holds up neither the
+  /// setter raising the event nor the other controllers, sent at once or from a scope.
+  func testAStalledPeerIsQueuedToNotWaitedOn() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let event = makeEvent()
+    let stalled = StalledQueuedController()
+    let other = SlowController(delay: .zero)
+    let manager = await device.subscriptionManager
+    let subscriptionManager = try XCTUnwrap(manager)
+    for controller in [stalled, other] as [OcaController] {
+      try await subscriptionManager.addSubscription(subscription(for: event), for: controller)
+    }
+    try await device.add(endpoint: MockEndpoint(controllers: [stalled, other]))
+
+    let started = ContinuousClock.now
+    try await device.notifySubscribers(event, parameters: Data())
+    await device.withCoalescedNotifications {
+      try? await device.notifySubscribers(event, parameters: Data())
+      try? await device.notifySubscribers(event, parameters: Data())
+    }
+    XCTAssertLessThan(ContinuousClock.now - started, .seconds(1), "a stalled peer was waited on")
+    let queued = await stalled.queued
+    let sent = await stalled.sent
+    XCTAssertEqual(queued, 2, "the direct send and the scope's batch")
+    XCTAssertEqual(sent, 0)
+    let others = await other.sendCount
+    XCTAssertEqual(others, 2)
   }
 }

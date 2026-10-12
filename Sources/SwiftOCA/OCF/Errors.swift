@@ -80,6 +80,8 @@ public enum Ocp1Error: Error, Equatable {
   /// an OCP.1-only API was used on an OCP.2 connection, or vice versa
   case unsupportedControlProtocol
   case unknownServiceType
+  /// a peer's unread notifications passed what a connection may hold for it
+  case writeBacklogExceeded
 
   // encoding errors
   case nilNotEncodable

@@ -27,6 +27,8 @@ package final class Ocp1WriteQueue {
   private var isBusy = false
   private var waiters = [UnsafeContinuation<Void, Never>]()
   private var head = 0
+  private var backlog = [(bytes: Int, body: @Sendable () async throws -> Void)]()
+  private var drain: Task<(), Never>?
 
   package init() {}
 
@@ -34,6 +36,13 @@ package final class Ocp1WriteQueue {
   package var pending: Int {
     waiters.count - head
   }
+
+  /// What `enqueue` has taken and not yet handed to the transport, in bytes.
+  package private(set) var backlogBytes = 0
+
+  /// Whether `enqueue` has refused a write: the peer has stopped reading, and the owner is
+  /// to go. Every later `enqueue` is refused too, without a second word.
+  package private(set) var isOverBudget = false
 
   private func acquire(isolation: isolated (any Actor)?) async {
     guard isBusy else {
@@ -80,5 +89,41 @@ package final class Ocp1WriteQueue {
     defer { release() }
     try Task.checkCancellation()
     return try await Task { try await body() }.value
+  }
+
+  /// Queues `body`, a write of `bytes`, to run after the writes before it, without waiting
+  /// for it: a notification the device must not wait on a peer for. Throws once
+  /// `maximumBacklogBytes` wait unwritten, a peer that has stopped reading, dropping what
+  /// waited, as the owner is to go; a write to an empty backlog is always taken, however
+  /// large. One drain task runs while there is a backlog, so a burst costs no task per
+  /// write. Call it from the owner's isolation, as `serialised`.
+  package func enqueue(
+    bytes: Int,
+    maximumBacklogBytes: Int,
+    isolation: isolated (any Actor)? = #isolation,
+    _ body: @escaping @Sendable () async throws -> Void
+  ) throws {
+    guard !isOverBudget, backlog.isEmpty || backlogBytes + bytes <= maximumBacklogBytes else {
+      isOverBudget = true
+      backlog = []
+      backlogBytes = 0
+      throw Ocp1Error.writeBacklogExceeded
+    }
+    backlog.append((bytes, body))
+    backlogBytes += bytes
+    startDraining(isolation: isolation)
+  }
+
+  private func startDraining(isolation: isolated (any Actor)?) {
+    guard drain == nil else { return }
+    drain = Task {
+      while !backlog.isEmpty {
+        let next = backlog.removeFirst()
+        backlogBytes -= next.bytes
+        // a failed write is the connection's to report; the ones behind it are tried
+        try? await serialised(isolation: isolation, next.body)
+      }
+      drain = nil
+    }
   }
 }
