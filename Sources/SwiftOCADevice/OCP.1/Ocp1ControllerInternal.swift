@@ -116,6 +116,14 @@ package extension Ocp1ControllerInternal {
 /// that a PDU of several messages is not fragmented.
 package let Ocp1MaximumDatagramSendPduSize = Ocp1MaximumDatagramPduSize - 48
 
+/// The longest heartbeat a datagram controller gets, whatever it asks for, so that a peer
+/// that has gone away is forgotten within three minutes rather than days.
+package let Ocp1MaximumDatagramHeartbeatTime = Duration.seconds(60)
+
+/// The most datagram controllers one endpoint keeps; one datagram makes a controller, so
+/// without a bound a spoofed packet per source address grows the table. Per endpoint.
+package let OcaMaximumDatagramControllers = 64
+
 package extension Ocp1ControllerInternal {
   /// handle a single message
   private func _handle<Endpoint: OcaDeviceEndpointPrivate>(
@@ -125,13 +133,23 @@ package extension Ocp1ControllerInternal {
     let controller = self as! Endpoint.ControllerType
     var response: Ocp1Response?
 
-    if let datagramController = self as? Ocp1ControllerDatagramSemantics {
+    let datagramController = self as? Ocp1ControllerDatagramSemantics
+    if let datagramController {
       if message is Ocp1KeepAlive1 || message is Ocp1KeepAlive2 {
         await datagramController.didOpen()
       } else if await datagramController.isOpen == false {
         endpoint.logger.info("received non-keepalive message \(message) before open")
         throw Ocp1Error.invalidMessageType
       }
+    }
+
+    // AES70-3 has a datagram peer keep sending keepalives, so for one, zero (none, on a
+    // stream) means the longest heartbeat allowed: expiry stays armed and the peer is kept
+    // for three minutes rather than forever. A stream controller keeps what it asked for.
+    func clamped(_ requested: Duration) -> Duration {
+      guard datagramController != nil else { return requested }
+      guard requested != .zero else { return Ocp1MaximumDatagramHeartbeatTime }
+      return min(requested, Ocp1MaximumDatagramHeartbeatTime)
     }
 
     switch message {
@@ -144,9 +162,9 @@ package extension Ocp1ControllerInternal {
         parameters: commandResponse.parameters
       )
     case let keepAlive as Ocp1KeepAlive1:
-      heartbeatTime = .seconds(keepAlive.heartBeatTime)
+      heartbeatTime = clamped(.seconds(keepAlive.heartBeatTime))
     case let keepAlive as Ocp1KeepAlive2:
-      heartbeatTime = .milliseconds(keepAlive.heartBeatTime)
+      heartbeatTime = clamped(.milliseconds(keepAlive.heartBeatTime))
     case is Ocp2DeviceReset:
       endpoint.logger.info("device reset requested by \(controller); not supported")
     default:

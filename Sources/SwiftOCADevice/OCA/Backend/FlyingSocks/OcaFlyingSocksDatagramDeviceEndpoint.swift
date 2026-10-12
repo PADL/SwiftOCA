@@ -111,14 +111,16 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     address.makeStorage()._presentationAddress
   }
 
+  /// `nil` while the table is full: a new peer is ignored until a controller expires.
   private func controller(
     for controllerAddress: any SocketAddress,
     interfaceIndex: UInt32?,
     localAddress: (any SocketAddress)?
-  ) -> ControllerType {
+  ) -> ControllerType? {
     if let controller = _controllers.first(where: { $0.matchesPeer(address: controllerAddress) }) {
       return controller
     }
+    guard _controllers.count < OcaMaximumDatagramControllers else { return nil }
     let controller = OcaFlyingSocksDatagramController(
       endpoint: self,
       peerAddress: controllerAddress,
@@ -127,6 +129,11 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     )
     logger.info("datagram controller added", controller: controller)
     _controllers.insert(controller)
+    if _controllers.count == OcaMaximumDatagramControllers {
+      logger.warning(
+        "reached datagram controller limit (\(OcaMaximumDatagramControllers)), ignoring new peers pending expiry"
+      )
+    }
     return controller
   }
 
@@ -199,11 +206,11 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     let maxMessageLength = min(maximumPduSize + 1, Ocp1MaximumDatagramPduSize)
     while !Task.isCancelled {
       for try await messagePdu in socket.messages(maxMessageLength: maxMessageLength) {
-        let controller = controller(
+        guard let controller = controller(
           for: messagePdu.peerAddress,
           interfaceIndex: messagePdu.interfaceIndex,
           localAddress: messagePdu.localAddress
-        )
+        ) else { continue }
         do {
           try await handle(messagePduData: messagePdu.payload, from: controller)
         } catch {

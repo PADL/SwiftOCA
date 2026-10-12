@@ -85,6 +85,10 @@ open class OcaNWStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
   package func makeTCPOptions() -> NWProtocolTCP.Options {
     let options = NWProtocolTCP.Options()
     options.noDelay = true
+    options.enableKeepalive = true
+    options.keepaliveIdle = Int(OcaTcpKeepAlive.idle.components.seconds)
+    options.keepaliveInterval = Int(OcaTcpKeepAlive.interval.components.seconds)
+    options.keepaliveCount = OcaTcpKeepAlive.count
     return options
   }
 

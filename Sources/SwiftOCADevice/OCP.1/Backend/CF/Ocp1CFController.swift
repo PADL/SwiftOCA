@@ -131,6 +131,9 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
         ocp2: OcaJsonTcpConnectionPrefix
       )
     }
+    if peerAddress.family != AF_LOCAL {
+      try? OcaTcpKeepAlive.apply { try socket.setIntegerOption(level: $0, option: $1, to: $2) }
+    }
 
     let maximumPduSize = endpoint.maximumPduSize
     receiveMessageTask = Task { [weak self] in

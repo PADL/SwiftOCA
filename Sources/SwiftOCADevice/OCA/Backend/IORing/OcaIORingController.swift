@@ -125,6 +125,9 @@ package actor OcaIORingStreamController: OcaIORingControllerPrivate, CustomStrin
         ocp2: OcaJsonTcpConnectionPrefix
       )
     }
+    if peerAddress.family != AF_LOCAL {
+      try? OcaTcpKeepAlive.apply { try socket.setIntegerOption(level: $0, option: $1, to: $2) }
+    }
 
     let controlProtocol = endpoint.controlProtocol
     let maximumPduSize = endpoint.maximumPduSize
@@ -203,6 +206,12 @@ package actor OcaIORingStreamController: OcaIORingControllerPrivate, CustomStrin
 
   package nonisolated var identifier: String {
     (try? peerAddress.presentationAddress) ?? "unknown"
+  }
+
+  /// An integer option of the connection's socket; tests read keepalive settings back.
+  package nonisolated func socketOption(level: CInt, name: CInt) throws -> CInt {
+    guard let socket else { throw Errno.badFileDescriptor }
+    return try socket.getIntegerOption(level: level, option: name)
   }
 }
 
