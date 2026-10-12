@@ -49,6 +49,7 @@ package actor OcaFlyingSocksDatagramController: Ocp1ControllerInternal,
   package var lastMessageSentTime = ContinuousClock.recentPast
 
   package private(set) var isOpen: Bool = false
+  package private(set) var hasReceivedCommand = false
   package weak var endpoint: OcaFlyingSocksDatagramDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
 
@@ -95,6 +96,10 @@ package actor OcaFlyingSocksDatagramController: Ocp1ControllerInternal,
 
   package func didOpen() {
     isOpen = true
+  }
+
+  package func didReceiveCommand() {
+    hasReceivedCommand = true
   }
 
   package nonisolated var identifier: String {

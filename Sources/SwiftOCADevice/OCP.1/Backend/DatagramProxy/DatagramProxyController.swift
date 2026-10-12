@@ -37,6 +37,7 @@ package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1Contr
   package var lastMessageSentTime = ContinuousClock.recentPast
 
   package private(set) var isOpen: Bool = false
+  package private(set) var hasReceivedCommand = false
   package weak var endpoint: DatagramProxyDeviceEndpoint<T>?
   package let controlProtocol: OcaControlProtocol
 
@@ -81,5 +82,9 @@ package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1Contr
 
   package func didOpen() {
     isOpen = true
+  }
+
+  package func didReceiveCommand() {
+    hasReceivedCommand = true
   }
 }

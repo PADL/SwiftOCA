@@ -59,6 +59,7 @@ package actor Ocp1OpenSSLDTLSController: Ocp1ControllerInternal,
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package private(set) var isOpen: Bool = false
+  package private(set) var hasReceivedCommand = false
   package weak var endpoint: Ocp1OpenSSLDTLSDeviceEndpoint?
 
   /// Used by the endpoint's idle GC; DTLS over UDP has no close signal,
@@ -170,6 +171,10 @@ package actor Ocp1OpenSSLDTLSController: Ocp1ControllerInternal,
 
   package func didOpen() {
     isOpen = true
+  }
+
+  package func didReceiveCommand() {
+    hasReceivedCommand = true
   }
 
   package nonisolated var description: String {

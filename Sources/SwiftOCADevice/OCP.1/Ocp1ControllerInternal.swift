@@ -105,7 +105,13 @@ package protocol Ocp1ControllerInternal: OcaControllerQueuedSending {
 package protocol Ocp1ControllerDatagramSemantics: Actor {
   var isOpen: Bool { get }
 
+  /// Whether the peer has issued a command. A controller that has is never evicted to
+  /// make room in a full table; one that has only sent keepalives may be.
+  var hasReceivedCommand: Bool { get }
+
   func didOpen()
+
+  func didReceiveCommand()
 }
 
 package extension Ocp1ControllerInternal {
@@ -116,24 +122,21 @@ package extension Ocp1ControllerInternal {
 /// that a PDU of several messages is not fragmented.
 package let Ocp1MaximumDatagramSendPduSize = Ocp1MaximumDatagramPduSize - 48
 
-/// The heartbeat a datagram controller starts with, and gets when it asks for none.
+/// The heartbeat a datagram controller starts with, until its first KeepAlive says otherwise.
 package let Ocp1DefaultDatagramHeartbeatTime = Duration.seconds(1)
 
-/// The longest heartbeat a datagram controller may ask for, so that a peer that has
-/// gone away is forgotten within three minutes rather than days.
+/// The longest heartbeat a datagram controller gets, whatever it asks for, so that a peer
+/// that has gone away is forgotten within three minutes rather than days.
 package let Ocp1MaximumDatagramHeartbeatTime = Duration.seconds(60)
-
-/// How many controllers a datagram endpoint keeps at once. Each one is made by a single
-/// datagram, so without a cap one spoofed packet per source address grows the table.
-package let OcaMaximumDatagramControllers = 64
 
 package extension Ocp1ControllerInternal {
   /// AES70-3 has a datagram peer keep sending keepalives, so for one, zero (which on a
-  /// stream means none) becomes the default and the heartbeat is capped. A stream
-  /// controller keeps what it asked for.
+  /// stream means none) is taken as the longest heartbeat allowed rather than as never:
+  /// the peer is given the full three minutes, not expired after a few seconds, and
+  /// expiry stays armed. A stream controller keeps what it asked for.
   private func effectiveHeartbeatTime(_ requested: Duration) -> Duration {
     guard self is Ocp1ControllerDatagramSemantics else { return requested }
-    guard requested != .zero else { return Ocp1DefaultDatagramHeartbeatTime }
+    guard requested != .zero else { return Ocp1MaximumDatagramHeartbeatTime }
     return min(requested, Ocp1MaximumDatagramHeartbeatTime)
   }
 
@@ -145,7 +148,8 @@ package extension Ocp1ControllerInternal {
     let controller = self as! Endpoint.ControllerType
     var response: Ocp1Response?
 
-    if let datagramController = self as? Ocp1ControllerDatagramSemantics {
+    let datagramController = self as? Ocp1ControllerDatagramSemantics
+    if let datagramController {
       if message is Ocp1KeepAlive1 || message is Ocp1KeepAlive2 {
         await datagramController.didOpen()
       } else if await datagramController.isOpen == false {
@@ -156,6 +160,7 @@ package extension Ocp1ControllerInternal {
 
     switch message {
     case let command as Ocp1Command:
+      await datagramController?.didReceiveCommand()
       endpoint.logger.command(command, on: controller)
       let commandResponse = await endpoint.device.handleCommand(command, from: controller)
       response = Ocp1Response(

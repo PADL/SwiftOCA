@@ -60,6 +60,7 @@ package actor OcaNWDatagramController: Ocp1ControllerInternal,
   private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
   private var connectionClosed = false
   package private(set) var isOpen: Bool = false
+  package private(set) var hasReceivedCommand = false
 
   package var messages: AnyAsyncSequence<Ocp1MessageList> {
     _messages.eraseToAnyAsyncSequence()
@@ -110,6 +111,10 @@ package actor OcaNWDatagramController: Ocp1ControllerInternal,
 
   package func didOpen() {
     isOpen = true
+  }
+
+  package func didReceiveCommand() {
+    hasReceivedCommand = true
   }
 
   deinit {

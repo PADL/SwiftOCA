@@ -241,6 +241,7 @@ package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerD
   package var lastMessageSentTime = ContinuousClock.recentPast
 
   package private(set) var isOpen: Bool = false
+  package private(set) var hasReceivedCommand = false
   package weak var endpoint: Ocp1CFDatagramDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
 
@@ -275,6 +276,10 @@ package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerD
 
   package func didOpen() {
     isOpen = true
+  }
+
+  package func didReceiveCommand() {
+    hasReceivedCommand = true
   }
 }
 

@@ -301,29 +301,41 @@ final class Ocp2UDPTests: XCTestCase {
     return controllers.count
   }
 
-  /// A datagram peer asking for no heartbeat is not kept forever: it gets the default
-  /// and is expired like any other once it goes silent.
-  func testDatagramKeepAliveOfZeroStillExpires() async throws {
+  private func eventually(_ condition: () async -> Bool) async -> Bool {
+    let deadline = ContinuousClock.now + .seconds(5)
+    while ContinuousClock.now < deadline {
+      if await condition() { return true }
+      try? await Task.sleep(for: .milliseconds(25))
+    }
+    return false
+  }
+
+  private func datagramControllers(of fixture: UDPFixture) async -> [DatagramDeviceEndpoint.ControllerType] {
+    await fixture.endpoint.controllers.compactMap { $0 as? DatagramDeviceEndpoint.ControllerType }
+  }
+
+  private func controllerIdentifiers(of fixture: UDPFixture) async -> [String] {
+    await datagramControllers(of: fixture).map(\.identifier)
+  }
+
+  /// A datagram peer asking for no heartbeat is not kept forever: AES70-3 has it keep
+  /// sending keepalives, so it gets the longest heartbeat allowed, with expiry armed.
+  func testDatagramKeepAliveOfZeroIsBounded() async throws {
     let fixture = try await UDPFixture()
     defer { fixture.tearDown() }
 
     let peer = try RawDatagramPeer()
     defer { peer.close() }
-    try peer.send("{\"ProtocolVersion\":1,\"KeepAlive\":{\"HeartbeatTimeout\":0}}\n", to: fixture.port)
+    try peer.sendKeepAlive(0, to: fixture.port)
     let count = try await controllerCount(of: fixture, toReach: 1)
     XCTAssertEqual(count, 1)
 
-    let controllers = await fixture.endpoint.controllers
-    let controller = try XCTUnwrap(controllers.first as? DatagramDeviceEndpoint.ControllerType)
+    let controllers = await datagramControllers(of: fixture)
+    let controller = try XCTUnwrap(controllers.first)
     let heartbeatTime = await controller.heartbeatTime
-    XCTAssertEqual(heartbeatTime, Ocp1DefaultDatagramHeartbeatTime)
-
-    let remaining = try await controllerCount(
-      of: fixture,
-      toReach: 0,
-      within: Ocp1DefaultDatagramHeartbeatTime * 3 + .seconds(2)
-    )
-    XCTAssertEqual(remaining, 0, "silent datagram controller with heartbeat 0 was not expired")
+    XCTAssertEqual(heartbeatTime, Ocp1MaximumDatagramHeartbeatTime)
+    let armed = await controller.keepAliveTask != nil
+    XCTAssertTrue(armed, "expiry was not armed for a datagram controller with heartbeat 0")
   }
 
   func testDatagramHeartbeatIsCapped() async throws {
@@ -332,33 +344,29 @@ final class Ocp2UDPTests: XCTestCase {
 
     let peer = try RawDatagramPeer()
     defer { peer.close() }
-    try peer.send("{\"ProtocolVersion\":1,\"KeepAlive\":{\"HeartbeatTimeout\":3600000}}\n", to: fixture.port)
+    try peer.sendKeepAlive(3_600_000, to: fixture.port)
     let count = try await controllerCount(of: fixture, toReach: 1)
     XCTAssertEqual(count, 1)
 
-    let controllers = await fixture.endpoint.controllers
-    let controller = try XCTUnwrap(controllers.first as? DatagramDeviceEndpoint.ControllerType)
+    let controllers = await datagramControllers(of: fixture)
+    let controller = try XCTUnwrap(controllers.first)
     let heartbeatTime = await controller.heartbeatTime
     XCTAssertEqual(heartbeatTime, Ocp1MaximumDatagramHeartbeatTime)
   }
 
-  /// One datagram makes a controller, so the table is capped; a peer arriving when it is
-  /// full is refused rather than an established controller evicted.
-  func testDatagramControllersAreCapped() async throws {
+  func testSilentDatagramControllerIsExpired() async throws {
     let fixture = try await UDPFixture()
     defer { fixture.tearDown() }
 
-    let peers = try (0...OcaMaximumDatagramControllers).map { _ in try RawDatagramPeer() }
-    defer { for peer in peers { peer.close() } }
-    for peer in peers {
-      try peer.send("{\"ProtocolVersion\":1,\"KeepAlive\":{\"HeartbeatTimeout\":60000}}\n", to: fixture.port)
-    }
-    let count = try await controllerCount(of: fixture, toReach: OcaMaximumDatagramControllers, within: .seconds(5))
-    XCTAssertEqual(count, OcaMaximumDatagramControllers)
+    let peer = try RawDatagramPeer()
+    defer { peer.close() }
+    try peer.sendKeepAlive(200, to: fixture.port)
+    let count = try await controllerCount(of: fixture, toReach: 1)
+    XCTAssertEqual(count, 1)
 
-    try await Task.sleep(for: .milliseconds(250))
-    let settled = await fixture.endpoint.controllers.count
-    XCTAssertEqual(settled, OcaMaximumDatagramControllers, "the controller cap did not hold")
+    // three missed heartbeats and the controller is gone
+    let remaining = try await controllerCount(of: fixture, toReach: 0, within: .seconds(3))
+    XCTAssertEqual(remaining, 0, "silent datagram controller was not expired")
   }
 
   /// A datagram peer's session opens on a KeepAlive; a command sent before one leaves nothing behind.
@@ -368,27 +376,129 @@ final class Ocp2UDPTests: XCTestCase {
 
     let peer = try RawDatagramPeer()
     defer { peer.close() }
-    try peer.send(
-      "{\"ProtocolVersion\":1,\"Commands\":[{\"Handle\":1,\"TargetONo\":1,\"MethodID\":[1,1]}]}\n",
-      to: fixture.port
-    )
+    try peer.sendCommand(to: fixture.port)
     try await Task.sleep(for: .milliseconds(250))
     let controllers = await fixture.endpoint.controllers
     XCTAssertTrue(controllers.isEmpty, "a command before any KeepAlive left a datagram controller behind")
+  }
+
+  /// One datagram makes a controller, so the table is capped. A newcomer to a full table
+  /// takes the place of the KeepAlive-only peer silent longest, never of one that has
+  /// issued a command, and the peers the table holds go on being served.
+  func testFullTableEvictsTheKeepAliveOnlyPeerSilentLongest() async throws {
+    let fixture = try await UDPFixture()
+    defer { fixture.tearDown() }
+
+    let active = try RawDatagramPeer()
+    defer { active.close() }
+    try await active.command(port: fixture.port)
+    let idle = try (1..<OcaMaximumDatagramControllers).map { _ in try RawDatagramPeer() }
+    defer { for peer in idle { peer.close() } }
+    for peer in idle {
+      try peer.sendKeepAlive(60000, to: fixture.port)
+    }
+    let count = try await controllerCount(of: fixture, toReach: OcaMaximumDatagramControllers, within: .seconds(5))
+    XCTAssertEqual(count, OcaMaximumDatagramControllers)
+
+    let newcomer = try RawDatagramPeer()
+    defer { newcomer.close() }
+    try newcomer.sendKeepAlive(60000, to: fixture.port)
+    let admitted = await eventually { await controllerIdentifiers(of: fixture).contains(newcomer.identifier) }
+    XCTAssertTrue(admitted, "a newcomer was refused while KeepAlive-only peers held the table")
+    let identifiers = await controllerIdentifiers(of: fixture)
+    XCTAssertEqual(identifiers.count, OcaMaximumDatagramControllers, "the controller cap did not hold")
+    XCTAssertFalse(identifiers.contains(idle[0].identifier), "the idle peer silent longest was not the one evicted")
+    XCTAssertTrue(identifiers.contains(active.identifier), "a peer that had issued a command was evicted")
+
+    try await active.command(port: fixture.port)
+  }
+
+  /// With every peer in a full table having issued a command, a newcomer is refused.
+  func testFullTableOfCommandingPeersRefusesNewcomers() async throws {
+    let fixture = try await UDPFixture()
+    defer { fixture.tearDown() }
+
+    let peers = try (0..<OcaMaximumDatagramControllers).map { _ in try RawDatagramPeer() }
+    defer { for peer in peers { peer.close() } }
+    for peer in peers {
+      try peer.sendKeepAlive(60000, to: fixture.port)
+      try peer.sendCommand(to: fixture.port)
+    }
+    let commanded = await eventually {
+      let controllers = await datagramControllers(of: fixture)
+      guard controllers.count == OcaMaximumDatagramControllers else { return false }
+      for controller in controllers {
+        guard await controller.hasReceivedCommand else { return false }
+      }
+      return true
+    }
+    XCTAssertTrue(commanded, "not every peer's command was seen")
+
+    let newcomer = try RawDatagramPeer()
+    defer { newcomer.close() }
+    try newcomer.sendKeepAlive(60000, to: fixture.port)
+    try await Task.sleep(for: .milliseconds(250))
+    let identifiers = await controllerIdentifiers(of: fixture)
+    XCTAssertEqual(identifiers.count, OcaMaximumDatagramControllers, "the controller cap did not hold")
+    XCTAssertFalse(identifiers.contains(newcomer.identifier), "a newcomer displaced a peer that had issued a command")
+
+    // a peer the full table holds is still served, KeepAlive and command alike
+    _ = try await peers[0].receiveResponses()
+    try await peers[0].command(port: fixture.port)
   }
 }
 
 /// A UDP peer that writes raw PDUs, as another implementation or a spoofed datagram would.
 private struct RawDatagramPeer {
   private let socket: Socket
+  let port: UInt16
 
   init() throws {
     socket = try Socket(domain: AF_INET, type: .datagram)
     try socket.bind(to: .inet(ip4: "127.0.0.1", port: 0))
+    try socket.setFlags(.nonBlocking)
+    port = try boundPort(of: socket)
   }
+
+  /// How the device names this peer's controller.
+  var identifier: String { "127.0.0.1:\(port)" }
 
   func send(_ text: String, to port: UInt16) throws {
     _ = try socket.send(Array(text.utf8), to: .inet(ip4: "127.0.0.1", port: port))
+  }
+
+  func sendKeepAlive(_ heartbeatTimeout: Int, to port: UInt16) throws {
+    try send("{\"ProtocolVersion\":1,\"KeepAlive\":{\"HeartbeatTimeout\":\(heartbeatTimeout)}}\n", to: port)
+  }
+
+  /// GetClassIdentification on the device manager.
+  func sendCommand(to port: UInt16) throws {
+    try send("{\"ProtocolVersion\":1,\"Commands\":[{\"Handle\":1,\"TargetONo\":1,\"MethodID\":[1,1]}]}\n", to: port)
+  }
+
+  /// The device's next Responses PDU; its KeepAlives are passed over.
+  func receiveResponses(within timeout: Duration = .seconds(2)) async throws -> [[String: Any]] {
+    let deadline = ContinuousClock.now + timeout
+    while ContinuousClock.now < deadline {
+      do {
+        let (_, bytes) = try socket.receive(length: 4096)
+        if let object = try JSONSerialization.jsonObject(with: Data(bytes)) as? [String: Any],
+           let responses = object["Responses"] as? [[String: Any]] {
+          return responses
+        }
+      } catch SocketError.blocked {
+        try await Task.sleep(for: .milliseconds(10))
+      }
+    }
+    throw Ocp1Error.responseTimeout
+  }
+
+  /// Does what a live controller does: a KeepAlive, then a command that gets answered.
+  func command(port: UInt16) async throws {
+    try sendKeepAlive(60000, to: port)
+    try sendCommand(to: port)
+    let responses = try await receiveResponses()
+    XCTAssertEqual(responses.first?["StatusCode"] as? String, "OK")
   }
 
   func close() {

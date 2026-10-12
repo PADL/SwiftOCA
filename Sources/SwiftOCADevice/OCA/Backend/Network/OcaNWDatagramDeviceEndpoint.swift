@@ -55,6 +55,7 @@ open class OcaNWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
   private var listener: NWListener?
   private let queue: DispatchQueue
   private var _controllers: [OcaNWDatagramController] = []
+  private let admission = OcaDatagramControllerAdmission()
   private var _boundWaiters: [CheckedContinuation<UInt16, Error>] = []
   #if canImport(dnssd)
   private var _endpointRegistrarTask: Task<(), Error>?
@@ -204,16 +205,19 @@ open class OcaNWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   private func run(connection: NWConnection) async {
-    // the datagram is dropped rather than an established controller evicted for a stranger
-    guard _controllers.count < OcaMaximumDatagramControllers else {
-      logger.warning(
-        "datagram controller table at cap (\(OcaMaximumDatagramControllers)); refusing \(connection.endpoint)"
-      )
+    guard await admission.admit(
+      peer: "\(connection.endpoint)",
+      to: self,
+      among: _controllers
+    ) else {
       connection.cancel()
       return
     }
     let connectionLogger = logger
     let controller = OcaNWDatagramController(endpoint: self, connection: connection)
+    // the place is taken here, not when `handle(for:)` adds the controller after a hop,
+    // so that a burst of new peers cannot pass the cap together
+    _controllers.append(controller)
     let endpointRef = self
     connection.stateUpdateHandler = { state in
       switch state {
@@ -237,7 +241,9 @@ open class OcaNWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   package func add(controller: OcaNWDatagramController) async {
-    _controllers.append(controller)
+    if !_controllers.contains(where: { $0 === controller }) {
+      _controllers.append(controller)
+    }
   }
 
   package func remove(controller: OcaNWDatagramController) async {

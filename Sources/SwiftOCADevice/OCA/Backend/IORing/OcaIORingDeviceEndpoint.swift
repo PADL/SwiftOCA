@@ -347,18 +347,18 @@ public class OcaIORingDatagramDeviceEndpoint: OcaIORingDeviceEndpoint,
     )
   }
 
-  /// `nil` when the controller table is full: the datagram is dropped rather than an
-  /// established controller evicted to make room for a stranger.
-  func controller(for controllerAddress: AnySocketAddress) -> ControllerType? {
+  private let admission = OcaDatagramControllerAdmission()
+
+  /// `nil` when the table is full and no KeepAlive-only controller can make way.
+  func controller(for controllerAddress: AnySocketAddress) async -> ControllerType? {
     if let controller = _controllers[controllerAddress] {
       return controller
     }
-    guard _controllers.count < OcaMaximumDatagramControllers else {
-      logger.warning(
-        "datagram controller table at cap (\(OcaMaximumDatagramControllers)); refusing \(controllerAddress._presentationAddress)"
-      )
-      return nil
-    }
+    guard await admission.admit(
+      peer: controllerAddress._presentationAddress,
+      to: self,
+      among: _controllers.values
+    ) else { return nil }
     let controller = OcaIORingDatagramController(
       endpoint: self,
       peerAddress: controllerAddress
@@ -397,7 +397,7 @@ public class OcaIORingDatagramDeviceEndpoint: OcaIORingDeviceEndpoint,
           var controller: ControllerType?
 
           do {
-            controller = try self.controller(for: AnySocketAddress(bytes: messagePdu.name))
+            controller = try await self.controller(for: AnySocketAddress(bytes: messagePdu.name))
             guard let controller else { continue }
             try await handle(messagePduData: messagePdu.buffer, from: controller)
           } catch {

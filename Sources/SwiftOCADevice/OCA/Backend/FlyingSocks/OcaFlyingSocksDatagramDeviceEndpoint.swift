@@ -111,22 +111,22 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     address.makeStorage()._presentationAddress
   }
 
-  /// `nil` when the controller table is full: the datagram is dropped rather than an
-  /// established controller evicted to make room for a stranger.
+  private let admission = OcaDatagramControllerAdmission()
+
+  /// `nil` when the table is full and no KeepAlive-only controller can make way.
   private func controller(
     for controllerAddress: any SocketAddress,
     interfaceIndex: UInt32?,
     localAddress: (any SocketAddress)?
-  ) -> ControllerType? {
+  ) async -> ControllerType? {
     if let controller = _controllers.first(where: { $0.matchesPeer(address: controllerAddress) }) {
       return controller
     }
-    guard _controllers.count < OcaMaximumDatagramControllers else {
-      logger.warning(
-        "datagram controller table at cap (\(OcaMaximumDatagramControllers)); refusing \(controllerAddress.makeStorage()._presentationAddress)"
-      )
-      return nil
-    }
+    guard await admission.admit(
+      peer: controllerAddress.makeStorage()._presentationAddress,
+      to: self,
+      among: _controllers
+    ) else { return nil }
     let controller = OcaFlyingSocksDatagramController(
       endpoint: self,
       peerAddress: controllerAddress,
@@ -207,7 +207,7 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     let maxMessageLength = min(maximumPduSize + 1, Ocp1MaximumDatagramPduSize)
     while !Task.isCancelled {
       for try await messagePdu in socket.messages(maxMessageLength: maxMessageLength) {
-        guard let controller = controller(
+        guard let controller = await controller(
           for: messagePdu.peerAddress,
           interfaceIndex: messagePdu.interfaceIndex,
           localAddress: messagePdu.localAddress
