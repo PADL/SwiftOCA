@@ -26,35 +26,56 @@ public class OcaLockManager: OcaManager {
     let target: OcaONo
   }
 
-  private final class LockWaiter: @unchecked
-  Sendable {
-    private let continuation: CheckedContinuation<(), Error>
+  // only ever touched on the OcaDevice actor
+  private final class LockWaiter: @unchecked Sendable {
+    private var continuation: CheckedContinuation<(), Error>?
+    private var result: Result<(), Error>?
     var task: Task<(), Never>?
 
-    init(continuation: CheckedContinuation<(), Error>) {
+    // false if the wait ended before the call could suspend, which resumes it at once
+    func suspend(_ continuation: CheckedContinuation<(), Error>) -> Bool {
+      if let result {
+        continuation.resume(with: result)
+        return false
+      }
       self.continuation = continuation
+      return true
     }
 
-    func didLock() {
-      continuation.resume(returning: ())
+    // false if the wait had already ended, so the lock just taken is not wanted
+    @discardableResult
+    func didLock() -> Bool {
+      finish(with: .success(()))
     }
 
-    func didAbort() {
-      continuation.resume(throwing: CancellationError())
+    func didAbort(with error: Error = CancellationError()) {
+      finish(with: .failure(error))
     }
 
-    deinit {
+    // resumes the waiting call at most once and ends the task either way
+    @discardableResult
+    private func finish(with result: Result<(), Error>) -> Bool {
+      guard self.result == nil else { return false }
+      self.result = result
+      continuation?.resume(with: result)
+      continuation = nil
       task?.cancel()
+      task = nil
+      return true
     }
   }
 
   private var lockWaiters = [LockWaiterID: LockWaiter]()
 
+  var lockWaiterCount: Int { lockWaiters.count }
+
+  private func abort(_ lockWaiterID: LockWaiterID, with error: Error = CancellationError()) {
+    lockWaiters.removeValue(forKey: lockWaiterID)?.didAbort(with: error)
+  }
+
   func remove(controller: OcaController) {
-    for kv in lockWaiters.filter({ kv in
-      kv.key.controller == controller.id
-    }) {
-      lockWaiters.removeValue(forKey: kv.key)
+    for lockWaiterID in lockWaiters.keys where lockWaiterID.controller == controller.id {
+      abort(lockWaiterID)
     }
   }
 
@@ -75,49 +96,63 @@ public class OcaLockManager: OcaManager {
     }
 
     let lockWaiterID = LockWaiterID(controller: controller.id, target: target.objectNumber)
+    let lockWaiter = LockWaiter()
+
+    // a second wait by the same controller on the same target replaces the first
+    abort(lockWaiterID)
+    lockWaiters[lockWaiterID] = lockWaiter
+    defer {
+      if lockWaiters[lockWaiterID] === lockWaiter {
+        lockWaiters.removeValue(forKey: lockWaiterID)
+      }
+      lockWaiter.didAbort()
+    }
 
     do {
       try await withThrowingTimeout(
         of: .seconds(Double(timeout)),
         clock: .continuous,
         operation: { @OcaDevice in
-          try await withCheckedThrowingContinuation { continuation in
-            let lockWaiter = LockWaiter(continuation: continuation)
-            Task { @OcaDevice in self.lockWaiters[lockWaiterID] = lockWaiter }
+          try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+              guard lockWaiter.suspend(continuation) else { return }
 
-            lockWaiter.task = Task {
-              for await _ in target.lockStateSubject
-                .filter({ $0.lockState == .noLock })
-              {
-                if await target.setLockState(to: type, controller: controller) {
-                  lockWaiter.didLock()
-                  break
+              lockWaiter.task = Task { @OcaDevice in
+                for await _ in target.lockStateSubject
+                  .filter({ $0.lockState == .noLock })
+                {
+                  guard !Task.isCancelled else { break }
+                  if await target.setLockState(to: type, controller: controller) {
+                    if !lockWaiter.didLock() {
+                      _ = await target.setLockState(to: .noLock, controller: controller)
+                    }
+                    break
+                  }
                 }
               }
             }
+          } onCancel: {
+            Task { @OcaDevice in lockWaiter.didAbort() }
           }
         },
-        onTimeout: { @OcaDevice [self] in
-          lockWaiters[lockWaiterID]?.didAbort()
+        onTimeout: { @OcaDevice in
+          lockWaiter.didAbort(with: Ocp1Error.status(.timeout))
         }
       )
     } catch Ocp1Error.responseTimeout {
       throw Ocp1Error.status(.timeout)
     }
-
-    lockWaiters.removeValue(forKey: lockWaiterID)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaLockManager.Methods.abortWaits, access: .unchecked)
   private func abortWaits(oNo: OcaONo, from controller: any OcaController) async throws {
     let lockWaiterID = LockWaiterID(controller: controller.id, target: oNo)
 
-    guard let lockWaiter = lockWaiters[lockWaiterID] else {
+    guard lockWaiters[lockWaiterID] != nil else {
       throw Ocp1Error.status(.invalidRequest)
     }
 
-    lockWaiter.didAbort()
-    lockWaiters.removeValue(forKey: lockWaiterID)
+    abort(lockWaiterID)
   }
 
   public convenience init(deviceDelegate: OcaDevice? = nil) async throws {
