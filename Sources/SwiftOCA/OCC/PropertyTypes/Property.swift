@@ -232,8 +232,9 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
   ) -> PropertyValue {
     switch subject.value {
     case .initial:
+      // a failed fetch is already cached in the subject and logged by _getValue
       Task {
-        try await _getValue(object)
+        try? await _getValue(object)
       }
     default:
       break
@@ -345,7 +346,7 @@ public struct OcaProperty<Value: Codable & Sendable>: Codable, Sendable,
       if flags.contains(.subscribeEvents) {
         let isSubscribed = await (try? object.isSubscribed) ?? false
         if !isSubscribed {
-          Task { try await object.subscribe() }
+          Task { try? await object.subscribe() }
         }
       }
 

@@ -24,7 +24,7 @@ import FoundationEssentials
 import Foundation
 #endif
 import Glibc
-public import IORing
+import IORing
 internal import IORingUtils
 import SocketAddress
 @_spi(SwiftOCAPrivate)
@@ -136,7 +136,7 @@ package actor Ocp1OpenSSLStreamController: Ocp1ControllerInternal, CustomStringC
     if firstMessageTask == nil { return }
     firstMessageTask = nil
     if lastMessageReceivedTime > createdAt { return }
-    if let endpoint = await endpoint {
+    if let endpoint {
       endpoint.logger.warning(
         "TLS peer \(identifier) did not send a message within first-message deadline; closing"
       )

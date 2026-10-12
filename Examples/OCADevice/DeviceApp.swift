@@ -288,11 +288,13 @@ public enum DeviceApp {
 
     Task { @OcaDevice in
       var isFirst = true // the current gain, not a change
-      for try await value in gain.$gain {
-        print("gain set to \(value)!")
-        if !isFirst { try? counterSetAgent.increment(counter: 1) }
-        isFirst = false
-      }
+      do {
+        for try await value in gain.$gain {
+          print("gain set to \(value)!")
+          if !isFirst { try? counterSetAgent.increment(counter: 1) }
+          isFirst = false
+        }
+      } catch {}
     }
 
     #if NonEmbeddedBuild

@@ -106,7 +106,7 @@ final class Ocp2LoopbackTests: XCTestCase {
     XCTAssertEqual(harness.connection.controlProtocol, .ocp2)
     let controllers = await harness.endpoint.controllers
     XCTAssertEqual(controllers.count, 1)
-    let controllerProtocol = await controllers.first?.controlProtocol
+    let controllerProtocol = controllers.first?.controlProtocol
     XCTAssertEqual(controllerProtocol, .ocp2)
 
     // GetClassIdentification (1.1): a parameter record response

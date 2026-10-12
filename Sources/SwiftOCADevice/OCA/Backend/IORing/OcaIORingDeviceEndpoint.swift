@@ -194,12 +194,11 @@ public final class OcaIORingStreamDeviceEndpoint: OcaIORingDeviceEndpoint,
           for try await client in clients {
             Task { [weak self] in
               guard let self else { return }
-              let controller =
-                try await OcaIORingStreamController(
-                  endpoint: self,
-                  socket: client,
-                  notificationSocket: notificationSocket
-                )
+              guard let controller = try? await OcaIORingStreamController(
+                endpoint: self,
+                socket: client,
+                notificationSocket: notificationSocket
+              ) else { return }
               await controller.handle(for: self)
             }
           }

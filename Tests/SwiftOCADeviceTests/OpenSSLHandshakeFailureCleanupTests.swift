@@ -59,7 +59,7 @@ final class OpenSSLHandshakeFailureCleanupTests: XCTestCase {
     let serverTask = Task { try await endpoint.run() }
     defer {
       serverTask.cancel()
-      _ = try? Task { try? await serverTask.value }
+      _ = Task { try? await serverTask.value }
     }
     try await Task.sleep(for: .milliseconds(100))
 

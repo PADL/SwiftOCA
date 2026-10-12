@@ -26,10 +26,10 @@ import Foundation
 import Glibc
 
 #if swift(>=6.0)
-public import IORing
+import IORing
 internal import IORingUtils
 #else
-public import IORing
+import IORing
 @_implementationOnly import IORingUtils
 #endif
 

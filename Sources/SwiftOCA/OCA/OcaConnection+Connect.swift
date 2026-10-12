@@ -437,7 +437,7 @@ extension OcaConnection {
   package nonisolated func deviceAddressesDidChange() {
     guard _connectionState.value != .notConnected else { return }
     Task { [weak self] in
-      try await self?.onMonitorError(id: -1, Ocp1Error.deviceAddressChanged)
+      try? await self?.onMonitorError(id: -1, Ocp1Error.deviceAddressChanged)
     }
   }
 
