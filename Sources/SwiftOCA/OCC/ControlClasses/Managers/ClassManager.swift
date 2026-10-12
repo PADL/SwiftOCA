@@ -23,8 +23,9 @@ open class OcaClassManager: OcaManager, @unchecked Sendable {
   /// The organisation whose class this is, until it has a standard home.
   public static let authority = OcaOrganizationID((0x0A, 0xE9, 0x1B))
 
+  // 2, not 1: PADL's 1.3.<PADL>.1 is AES70Orchestrator's OcaCoordinator
   override open class var classID: OcaClassID {
-    OcaClassID(parent: OcaManager.classID, authority: authority, "1")
+    OcaClassID(parent: OcaManager.classID, authority: authority, "2")
   }
 
   public struct GetControlClassParameters: OcaParametersReflectable {
