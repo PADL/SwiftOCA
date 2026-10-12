@@ -35,6 +35,17 @@ public protocol OcaControllerLightweightNotifying: OcaController {
   ) async throws
 }
 
+/// A controller whose own transport can take a message without the sender waiting on the
+/// peer, so that the device never waits on one controller's socket to notify another.
+package protocol OcaControllerQueuedSending: OcaController {
+  /// Queues `messages` behind those before them, returning at once; a controller whose peer
+  /// has stopped reading is expired once its backlog passes `OcaMaximumWriteBacklogBytes`.
+  func queueMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws
+}
+
+/// The most unsent notification bytes a controller holds for a peer before it is expired.
+package let OcaMaximumWriteBacklogBytes = 1 << 20
+
 /// A notification built for a controller, ready to be sent to it.
 private struct OcaNotificationMessage: Sendable {
   let message: any Ocp1Message
@@ -44,6 +55,16 @@ private struct OcaNotificationMessage: Sendable {
 }
 
 extension OcaController {
+  /// Queues `messages` where the controller can, so that the device does not wait on its
+  /// peer; a controller from outside the package, with no queue, is sent them as before.
+  func queueOrSendMessages(_ messages: [Ocp1Message], type messageType: OcaMessageType) async throws {
+    if let queued = self as? any OcaControllerQueuedSending {
+      try await queued.queueMessages(messages, type: messageType)
+    } else {
+      try await sendMessages(messages, type: messageType)
+    }
+  }
+
   /// One notification for each of `subscriptions` that the event matches.
   fileprivate nonisolated func notifications(
     of event: OcaEvent,
@@ -121,7 +142,7 @@ extension OcaController {
         try await (self as! OcaControllerLightweightNotifying)
           .sendMessage(notification.message, type: notification.type, to: destination)
       } else {
-        try await sendMessage(notification.message, type: notification.type)
+        try await queueOrSendMessages([notification.message], type: notification.type)
       }
     }
   }
@@ -199,7 +220,7 @@ struct OcaPendingNotifications: Sendable {
         group.addTask {
           do {
             for batch in batches {
-              try await controller.sendMessages(batch.messages, type: batch.type)
+              try await controller.queueOrSendMessages(batch.messages, type: batch.type)
             }
           } catch Ocp1Error.notConnected {
             // a controller on its way out

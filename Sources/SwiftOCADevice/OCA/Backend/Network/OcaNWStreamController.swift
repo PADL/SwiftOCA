@@ -44,8 +44,9 @@ package actor OcaNWStreamController: Ocp1ControllerInternal, CustomStringConvert
   }
 
   package var keepAliveTask: Task<(), Error>?
-  /// NWConnection takes the whole content per send and orders them internally.
-  package let writeQueue: Ocp1WriteQueue? = nil
+  /// NWConnection takes whole PDUs and orders them, so the queue is not for framing: it
+  /// holds the notification backlog, whose bound expires a peer that has stopped reading.
+  package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: OcaNWStreamDeviceEndpoint?

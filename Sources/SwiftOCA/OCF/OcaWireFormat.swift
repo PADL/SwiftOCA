@@ -101,12 +101,14 @@ package extension OcaControlProtocol {
   }
 
   /// Encodes the messages, in order, into PDUs of at most `maximumSize`: as few as
-  /// possible for OCP.1. A message larger than that still gets a PDU of its own.
+  /// possible for OCP.1. A message larger than that still gets a PDU of its own. With no
+  /// maximum, a stream transport's, they go in one PDU.
   func encodePdus(
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType,
-    maximumSize: Int
+    maximumSize: Int?
   ) throws -> [Data] {
+    guard let maximumSize else { return try [encodePdu(messages, type: messageType)] }
     switch self {
     case .ocp1:
       // a message's size is known before it is encoded: fill each PDU, and encode it once
