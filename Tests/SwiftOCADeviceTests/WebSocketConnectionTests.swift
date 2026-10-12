@@ -526,9 +526,9 @@ extension WebSocketConnectionTests {
     let server = try HTTPServer(address: .inet(ip4: "127.0.0.1", port: 0), timeout: 5)
     await server.appendRoute("GET /") { request in
       await offered.append(request.headers[OcaFlyingFoxDeviceEndpoint.webSocketProtocolHeader])
-      return try await WebSocketHTTPHandler
-        .webSocket(OcaFlyingFoxDeviceEndpoint.Handler(endpoint, controlProtocol: .ocp1, peer: nil))
-        .handleRequest(request)
+      return try await WebSocketHTTPHandler(
+        handler: OcaFlyingFoxDeviceEndpoint.Handler(endpoint, controlProtocol: .ocp1, peer: nil)
+      ).handleRequest(request)
     }
     let serverTask = Task { try await server.run() }
     defer { serverTask.cancel() }
@@ -597,20 +597,14 @@ extension WebSocketConnectionTests {
 /// would not, including an empty one, which a `WSMessage` cannot express, and to see the
 /// close codes the client sends back.
 private final class FrameInjector: WSHandler, @unchecked Sendable {
-  private let handler: MessageFrameWSHandler
+  private let handler: OcaFlyingFoxDeviceEndpoint.Handler
   private let lock = NSLock()
   private var framesOut: AsyncStream<WSFrame>.Continuation?
   private let closeCodes: AsyncStream<UInt16>
   private let closeCodesIn: AsyncStream<UInt16>.Continuation
 
   init(_ endpoint: OcaFlyingFoxDeviceEndpoint, controlProtocol: OcaControlProtocol) {
-    handler = MessageFrameWSHandler(
-      handler: OcaFlyingFoxDeviceEndpoint.Handler(
-        endpoint,
-        controlProtocol: controlProtocol,
-        peer: nil
-      )
-    )
+    handler = OcaFlyingFoxDeviceEndpoint.Handler(endpoint, controlProtocol: controlProtocol, peer: nil)
     (closeCodes, closeCodesIn) = AsyncStream.makeStream()
   }
 

@@ -558,8 +558,9 @@ struct RawWebSocket {
     }.first
   }
 
-  func send(opcode: UInt8, _ payload: Data) async throws {
-    var frame = Data([0x80 | opcode])
+  /// Sends one frame; `fin` false begins a fragmented message, continued with opcode 0.
+  func send(opcode: UInt8, fin: Bool = true, _ payload: Data) async throws {
+    var frame = Data([(fin ? 0x80 : 0) | opcode])
     switch payload.count {
     case ..<126:
       frame.append(0x80 | UInt8(payload.count))
