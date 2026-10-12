@@ -26,6 +26,9 @@ import Darwin
 /// suite, which reports as a crash with no failing test rather than as a
 /// failure. Setting the disposition is the application's business, not the
 /// library's, and for these tests the runner is the application.
+/// Windows has no SIGPIPE: a send to a closed socket fails with an error instead.
 let ignoreSIGPIPEOnce: Void = {
+  #if !os(Windows)
   signal(SIGPIPE, SIG_IGN)
+  #endif
 }()

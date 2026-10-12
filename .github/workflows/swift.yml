@@ -52,3 +52,23 @@ jobs:
         # in its own build directory: in the one above, FlyingFox's module from the
         # trait-on build makes canImport(FlyingFox) true and the link then fails
         run: swift build --disable-default-traits --scratch-path .build-no-traits
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Swift
+        uses: compnerd/gha-setup-swift@v0.5.0
+        with:
+          swift-version: swift-6.4.0-release
+          swift-build: 6.4.0-RELEASE
+      - name: Version
+        run: swift --version
+      # the native build system, as on Linux and Darwin: swift-build, the Windows
+      # default, leaves OcaDevice.shared unresolved when linking the XMI tests
+      - name: Build
+        run: swift build --build-tests --build-system native
+      - name: Test
+        run: swift test --skip-build --build-system native --filter SwiftOCATests
+        timeout-minutes: 5

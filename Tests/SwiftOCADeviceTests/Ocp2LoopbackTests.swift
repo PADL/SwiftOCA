@@ -265,7 +265,7 @@ final class Ocp2LoopbackTests: XCTestCase {
       )
     )
 
-    try await clientBlock.lockReadOnly()
+    try await clientBlock.setLockNoWrite()
     let lockState = try await clientBlock.$lockState._getValue(clientBlock, flags: [])
     XCTAssertEqual(lockState, .lockNoWrite)
     let deviceLocked = await { @OcaDevice in deviceBlock.lockState.lockState }()
