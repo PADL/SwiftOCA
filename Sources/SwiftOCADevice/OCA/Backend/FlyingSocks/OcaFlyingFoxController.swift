@@ -166,7 +166,9 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
   private func send(_ frame: WSFrame) async throws {
     guard !isClosed.load(ordering: .acquiring) else { throw Ocp1Error.notConnected }
     await output.send(frame)
+    // a finished channel or a cancelled task resumes the send without delivering
     guard !isClosed.load(ordering: .acquiring) else { throw Ocp1Error.notConnected }
+    try Task.checkCancellation()
   }
 
   /// Ends sending: a send waiting on the handoff resumes and throws, and later ones throw at
@@ -268,21 +270,28 @@ private struct FrameReader {
   }
 
   /// The close frame to answer a peer's with (RFC 6455 5.5.1): its own status code, or
-  /// none if it sent none. A one-byte payload, a code that only an endpoint may report
-  /// to itself (1005, 1006, 1015), or a reason that is not UTF-8 (7.4.1) is answered 1002.
+  /// none if it sent none. A one-byte payload, a code a peer may not send (7.4: not one
+  /// defined, or 3000-4999), or a reason that is not UTF-8 is answered 1002.
   private static func closeFrame(echoing payload: Data) -> WSFrame {
     guard payload.count != 1 else { return .close(code: .protocolError) }
     guard payload.count >= 2 else {
       return WSFrame(fin: true, opcode: .close, mask: nil, payload: Data())
     }
     let code = payload.prefix(2).reduce(UInt16(0)) { $0 << 8 | UInt16($1) }
-    guard ![1005, 1006, 1015].contains(code),
+    guard Self.sendableCloseCodes.contains { $0.contains(code) },
           let reason = String(validating: payload.dropFirst(2), as: UTF8.self)
     else {
       return .close(code: .protocolError)
     }
     return .close(code: WSCloseCode(code, reason: reason))
   }
+
+  /// RFC 6455 7.4.1's defined codes less 1004-1006 and 1015, which only an endpoint
+  /// reports to itself, with 1012-1014 as IANA has since registered, and 7.4.2's
+  /// application range.
+  private static let sendableCloseCodes: [ClosedRange<UInt16>] = [
+    1000...1003, 1007...1014, 3000...4999,
+  ]
 }
 
 #endif

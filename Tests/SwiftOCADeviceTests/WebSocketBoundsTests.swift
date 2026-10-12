@@ -117,26 +117,44 @@ private func notify(_ device: OcaDevice, count: Int) async throws {
 }
 
 /// Raises large notifications while `endpoint` has a controller, counting those that
-/// returned, so that a test can see the sender held up on a peer that has stopped reading.
+/// returned and the longest any took, so that a test can see whether the sender was held up
+/// on a peer that has stopped reading.
 private actor Notifier {
   private(set) var sent = 0
+  private(set) var longestWait = Duration.zero
 
   func run(_ device: OcaDevice, until endpoint: OcaFlyingFoxDeviceEndpoint) async {
     while await !endpoint.controllers.isEmpty {
+      let started = ContinuousClock.now
       try? await device.notifySubscribers(event, parameters: largeParameters)
+      longestWait = max(longestWait, ContinuousClock.now - started)
       sent += 1
     }
   }
 
-  /// Waits until no notification has returned for `quietFor`, or throws after `deadline`.
-  func waitUntilStalled(quietFor: Duration, deadline: Duration) async throws {
+  enum Outcome {
+    /// the endpoint expired the controller while its peer was still connected
+    case expired
+    /// no notification has returned for a while: the sender is held up on the peer
+    case stalled
+  }
+
+  /// Waits until `endpoint` has no controller, or no notification has returned for
+  /// `quietFor`; throws after `deadline`.
+  func waitUntilExpiredOrStalled(
+    _ endpoint: OcaFlyingFoxDeviceEndpoint,
+    quietFor: Duration,
+    deadline: Duration
+  ) async throws -> Outcome {
     let started = ContinuousClock.now
     var last = (sent: sent, at: started)
     while ContinuousClock.now - last.at < quietFor {
       guard ContinuousClock.now - started < deadline else { throw Ocp1Error.responseTimeout }
+      if await endpoint.controllers.isEmpty { return .expired }
       try await Task.sleep(for: .milliseconds(20))
       if sent != last.sent { last = (sent, .now) }
     }
+    return .stalled
   }
 }
 
@@ -163,10 +181,12 @@ final class WebSocketBoundsTests: XCTestCase {
     )), for: controller)
   }
 
-  /// A subscribed peer that stops reading holds the sender up in its socket, not in
-  /// memory: once the socket is full no further notification returns. When the peer's
-  /// connection then goes, the waiting sender returns at once and the controller is removed.
-  func testPeerThatStopsReadingHoldsUpOnlyItsSocket() async throws {
+  /// A subscribed peer that stops reading is held in its socket, not in memory, and is
+  /// expired by the write backlog budget (`OcaMaximumWriteBacklogBytes`, #181) while still
+  /// connected, with no notification having waited on it. Until #181 lands the sender
+  /// stalls on the full socket instead; then the peer's connection going must free it at
+  /// once and remove the controller. Drop the `.stalled` arm on the rebase onto #181.
+  func testPeerThatStopsReadingIsExpiredByTheBacklogBudget() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
     let (endpoint, endpointTask, port) = try await makeWSEndpoint(device: device)
@@ -177,17 +197,30 @@ final class WebSocketBoundsTests: XCTestCase {
 
     let notifier = Notifier()
     let sending = Task { await notifier.run(device, until: endpoint) }
-    try await notifier.waitUntilStalled(quietFor: .milliseconds(500), deadline: .seconds(20))
-    let sentBeforeStall = await notifier.sent
-    XCTAssertGreaterThan(sentBeforeStall, 0, "the socket should have taken the first frames")
-    XCTAssertLessThan(sentBeforeStall, 1000, "notifications were buffered beyond the socket")
+    let outcome = try await notifier.waitUntilExpiredOrStalled(
+      endpoint,
+      quietFor: .milliseconds(500),
+      deadline: .seconds(20)
+    )
+    let sent = await notifier.sent
+    XCTAssertGreaterThan(sent, 0, "the socket should have taken the first frames")
+    // the socket holds a few frames and the budget a few more: never thousands
+    XCTAssertLessThan(sent, 100, "notifications were buffered beyond the socket and budget")
 
-    let closed = ContinuousClock.now
-    try webSocket.socket.close()
-    await sending.value
-    let released = ContinuousClock.now - closed
-    XCTAssertLessThan(released, .seconds(2), "the sender waited \(released) after the peer went")
+    switch outcome {
+    case .expired:
+      await sending.value
+      let longestWait = await notifier.longestWait
+      XCTAssertLessThan(longestWait, .seconds(1), "a notification waited \(longestWait) on the peer")
+    case .stalled:
+      let closed = ContinuousClock.now
+      try webSocket.socket.close()
+      await sending.value
+      let released = ContinuousClock.now - closed
+      XCTAssertLessThan(released, .seconds(2), "the sender waited \(released) after the peer went")
+    }
     try await waitForControllers(of: endpoint, count: 0)
+    try? webSocket.socket.close()
   }
 
   /// A peer that pings without reading stalls only its own reader: another peer is served
@@ -221,7 +254,8 @@ final class WebSocketBoundsTests: XCTestCase {
   }
 
   /// Notifications are not dropped for a peer that falls behind: every one arrives, in
-  /// order, once it reads again, though together they are far more than its socket holds.
+  /// order, once it reads again, though together they are more than its socket holds (and
+  /// less than the write backlog budget, which would expire it).
   func testPeerThatFallsBehindMissesNothing() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
@@ -231,7 +265,7 @@ final class WebSocketBoundsTests: XCTestCase {
     let webSocket = try await RawWebSocket(port: port, protocols: ["AES70-OCP.1"])
     try await subscribe(firstController(of: endpoint), on: device)
 
-    let count = 100
+    let count = 10
     let notifier = Task { try await notify(device, count: count) }
     try await Task.sleep(for: .milliseconds(200))
 
@@ -321,6 +355,10 @@ final class WebSocketBoundsTests: XCTestCase {
       ("over 125 bytes", true, Data([0x03, 0xE8]) + Data(count: 124), 1002),
       ("one byte", true, Data([0x03]), 1002),
       ("1005 reserved", true, Data([0x03, 0xED]), 1002),
+      ("1004 reserved", true, Data([0x03, 0xEC]), 1002),
+      ("999 below the defined codes", true, Data([0x03, 0xE7]), 1002),
+      ("2000 unassigned", true, Data([0x07, 0xD0]), 1002),
+      ("4000 application", true, Data([0x0F, 0xA0]), 4000),
       ("invalid UTF-8 reason", true, Data([0x03, 0xE8, 0xFF]), 1002),
       ("fragmented control frame", false, Data([0x03, 0xE8]), 1002),
     ]
