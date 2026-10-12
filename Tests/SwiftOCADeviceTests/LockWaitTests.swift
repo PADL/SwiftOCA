@@ -166,4 +166,63 @@ final class LockWaitTests: XCTestCase {
     try await unlockAndSettle(fixture)
     XCTAssertEqual(fixture.object.lockState, .unlocked)
   }
+
+  @OcaDevice
+  func testACancelledCallersWaiterIsGone() async throws {
+    let fixture = try await makeFixture()
+    let waiting = try await startWaiting(fixture)
+
+    waiting.cancel()
+    do {
+      _ = try await waiting.value
+      XCTFail("the cancelled wait returned")
+    } catch is CancellationError {}
+    XCTAssertEqual(fixture.lockManager.lockWaiterCount, 0)
+
+    try await unlockAndSettle(fixture)
+    XCTAssertEqual(fixture.object.lockState, .unlocked)
+  }
+
+  @OcaDevice
+  func testASecondWaitOnTheSameTargetReplacesTheFirst() async throws {
+    let fixture = try await makeFixture()
+    let first = try await startWaiting(fixture)
+
+    let second = Task { @OcaDevice in try await Self.lockWait(fixture, timeout: 30) }
+    do {
+      _ = try await first.value
+      XCTFail("the replaced wait returned")
+    } catch is CancellationError {}
+    XCTAssertEqual(fixture.lockManager.lockWaiterCount, 1)
+
+    try await fixture.object.unlock(from: fixture.holder)
+    let granted = try await second.value
+    XCTAssertEqual(granted.statusCode, .ok)
+    XCTAssertEqual(fixture.object.lockState, .lockedNoReadWrite(fixture.waiter.id))
+    XCTAssertEqual(fixture.lockManager.lockWaiterCount, 0)
+  }
+
+  /// Which way a grant at the deadline goes cannot be ordered from here, so this runs the
+  /// race and checks that the reply and the lock state agree whichever side won.
+  @OcaDevice
+  func testTheReplyAgreesWithTheLockStateWhenGrantedAtTheDeadline() async throws {
+    let fixture = try await makeFixture()
+
+    for _ in 0..<20 {
+      let waiting = Task { @OcaDevice in try await Self.lockWait(fixture, timeout: 0.02) }
+      try await Task.sleep(for: .milliseconds(20))
+      try? await fixture.object.unlock(from: fixture.holder)
+
+      do {
+        _ = try await waiting.value
+        XCTAssertEqual(fixture.object.lockState, .lockedNoReadWrite(fixture.waiter.id))
+        try await fixture.object.unlock(from: fixture.waiter)
+      } catch Ocp1Error.status(.timeout) {
+        let givenBack = await eventually { fixture.object.lockState == .unlocked }
+        XCTAssertTrue(givenBack, "told timeout but holding the lock")
+      }
+      XCTAssertEqual(fixture.lockManager.lockWaiterCount, 0)
+      try await fixture.object.setLockNoReadWrite(from: fixture.holder)
+    }
+  }
 }
