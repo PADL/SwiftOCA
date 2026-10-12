@@ -163,9 +163,9 @@ package actor OcaIORingStreamController: OcaIORingControllerPrivate, CustomStrin
     keepAliveTask?.cancel()
     keepAliveTask = nil
 
-    // take and drop the socket reference so no new reads can start;
-    // cancelling the receive task will cancel any pending io_uring read
-    _ = _takeSocket()
+    // shut the socket down, so a write still in flight to a peer that stopped reading fails
+    // and lets go of its reference, and the peer sees the end; then cancel the read
+    try? _takeSocket()?.shutdown()
     receiveMessageTask?.cancel()
 
     if let receiveMessageTask {
