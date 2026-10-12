@@ -204,6 +204,11 @@ open class OcaNWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   private func run(connection: NWConnection) async {
+    // a full table ignores a new peer until a controller expires
+    guard _controllers.count < OcaMaximumDatagramControllers else {
+      connection.cancel()
+      return
+    }
     let connectionLogger = logger
     let controller = OcaNWDatagramController(endpoint: self, connection: connection)
     let endpointRef = self
@@ -230,6 +235,11 @@ open class OcaNWDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   package func add(controller: OcaNWDatagramController) async {
     _controllers.append(controller)
+    if _controllers.count == OcaMaximumDatagramControllers {
+      logger.warning(
+        "reached datagram controller limit (\(OcaMaximumDatagramControllers)), ignoring new peers pending expiry"
+      )
+    }
   }
 
   package func remove(controller: OcaNWDatagramController) async {

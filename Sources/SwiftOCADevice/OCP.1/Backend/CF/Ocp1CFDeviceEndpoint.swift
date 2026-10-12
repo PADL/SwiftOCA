@@ -211,20 +211,23 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
     _controllers.map(\.1)
   }
 
-  func controller(for controllerAddress: AnySocketAddress) -> ControllerType {
-    var controller: ControllerType!
-
-    controller = _controllers[controllerAddress]
-    if controller == nil {
-      controller = Ocp1CFDatagramController(
-        endpoint: self,
-        peerAddress: controllerAddress
-      )
-
-      logger.info("datagram controller added", controller: controller)
-      _controllers[controllerAddress] = controller
+  /// `nil` while the table is full: a new peer is ignored until a controller expires.
+  func controller(for controllerAddress: AnySocketAddress) -> ControllerType? {
+    if let controller = _controllers[controllerAddress] {
+      return controller
     }
-
+    guard _controllers.count < OcaMaximumDatagramControllers else { return nil }
+    let controller = Ocp1CFDatagramController(
+      endpoint: self,
+      peerAddress: controllerAddress
+    )
+    logger.info("datagram controller added", controller: controller)
+    _controllers[controllerAddress] = controller
+    if _controllers.count == OcaMaximumDatagramControllers {
+      logger.warning(
+        "reached datagram controller limit (\(OcaMaximumDatagramControllers)), ignoring new peers pending expiry"
+      )
+    }
     return controller
   }
 
@@ -235,7 +238,7 @@ public class Ocp1CFDatagramDeviceEndpoint: Ocp1CFDeviceEndpoint,
     repeat {
       do {
         for try await messagePdu in socket!.receivedMessages {
-          let controller = controller(for: AnySocketAddress(messagePdu.0))
+          guard let controller = controller(for: AnySocketAddress(messagePdu.0)) else { continue }
           do {
             try await handle(messagePduData: messagePdu.1, from: controller)
           } catch {

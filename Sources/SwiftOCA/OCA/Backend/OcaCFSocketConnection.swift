@@ -417,6 +417,20 @@ Sendable, CustomStringConvertible, Hashable {
     (try? cfSocket.peerName) ?? "unknown"
   }
 
+  /// Sets an integer option on the underlying socket.
+  package func setIntegerOption(level: CInt, option: CInt, to value: CInt) throws {
+    var value = value
+    try Errno.throwingGlobalErrno {
+      setsockopt(
+        self.cfSocket.nativeHandle,
+        level,
+        option,
+        &value,
+        socklen_t(MemoryLayout<CInt>.size)
+      )
+    }
+  }
+
   public func close() {
     continuation.finish()
     if let runLoopSource {

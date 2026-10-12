@@ -70,6 +70,9 @@ package actor OcaFlyingSocksStreamController: Ocp1ControllerInternal, CustomStri
         for: BoolSocketOption(name: TCP_NODELAY),
         level: CInt(IPPROTO_TCP)
       )
+      try? OcaTcpKeepAlive.apply {
+        try socket.socket.setValue($2, for: Int32SocketOption(name: $1), level: $0)
+      }
     }
     address = Self.makeIdentifier(from: socket.socket)
     self.endpoint = endpoint
@@ -125,6 +128,11 @@ package actor OcaFlyingSocksStreamController: Ocp1ControllerInternal, CustomStri
 
   private nonisolated var fileDescriptor: Socket.FileDescriptor {
     socket.socket.file
+  }
+
+  /// An integer option of the connection's socket; tests read keepalive settings back.
+  package nonisolated func socketOption(level: CInt, name: CInt) throws -> CInt {
+    try socket.socket.getValue(for: Int32SocketOption(level: level, name: name))
   }
 }
 
