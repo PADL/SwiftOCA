@@ -31,7 +31,9 @@ import Glibc
 #endif
 
 /// A remote controller
-package actor OcaFlyingSocksDatagramController: Ocp1ControllerInternal {
+package actor OcaFlyingSocksDatagramController: Ocp1ControllerInternal,
+  Ocp1ControllerDatagramSemantics
+{
   package nonisolated var flags: OcaControllerFlags { .supportsLocking }
   package nonisolated var connectionPrefix: String {
     controlProtocol.connectionPrefix(ocp1: OcaUdpConnectionPrefix, ocp2: OcaJsonUdpConnectionPrefix)
@@ -67,7 +69,7 @@ package actor OcaFlyingSocksDatagramController: Ocp1ControllerInternal {
     self.localAddress = localAddress
   }
 
-  package var heartbeatTime = Duration.seconds(1) {
+  package var heartbeatTime = Ocp1DefaultDatagramHeartbeatTime {
     didSet {
       heartbeatTimeDidChange(from: oldValue)
     }
