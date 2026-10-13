@@ -16,6 +16,7 @@
 
 #if canImport(FlyingFox)
 
+import AsyncAlgorithms
 import AsyncExtensions
 import FlyingFox
 import FlyingSocks
@@ -66,7 +67,10 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   private var _endpointRegistrarTask: Task<(), Error>?
   #endif
 
-  final class Handler: WSMessageHandler, @unchecked
+  /// Frames pass straight between the socket and the controller: the server takes one only
+  /// when it is about to write it, and the controller reads one only when it wants a PDU,
+  /// so a peer that stops reading, or floods, holds up itself and nothing else.
+  final class Handler: WSHandler, @unchecked
   Sendable {
     package weak var endpoint: OcaFlyingFoxDeviceEndpoint?
     /// the peer the WebSocket upgrade came from, for logging
@@ -90,25 +94,56 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
       }
     }
 
-    func makeMessages(for client: AsyncStream<WSMessage>) async throws
-      -> AsyncStream<WSMessage>
+    func makeFrames(for client: AsyncThrowingStream<WSFrame, any Error>) async throws
+      -> AsyncStream<WSFrame>
     {
-      AsyncStream<WSMessage> { continuation in
-        let controller = OcaFlyingFoxController(
-          endpoint: endpoint,
-          controlProtocol: controlProtocol,
-          identifier: identifier,
-          inputStream: client,
-          outputStream: continuation
-        )
-
-        let task = Task { @OcaDevice in
-          if let endpoint {
-            await controller.handle(for: endpoint)
-          }
+      let output = AsyncChannel<WSFrame>()
+      let controller = OcaFlyingFoxController(
+        endpoint: endpoint,
+        controlProtocol: controlProtocol,
+        identifier: identifier,
+        frames: client,
+        output: output
+      )
+      let task = Task { @OcaDevice in
+        if let endpoint {
+          await controller.handle(for: endpoint)
         }
-        continuation.onTermination = { @Sendable _ in task.cancel() }
       }
+      let outlet = Outlet(output, controller: controller, task: task)
+      return AsyncStream(unfolding: { await outlet.next() }, onCancel: { outlet.end() })
+    }
+  }
+
+  /// The controller's frames as the server pulls them. The server lets go of the stream
+  /// once the connection has ended, however it ended, which is when the controller ends.
+  private final class Outlet: @unchecked Sendable {
+    private var frames: AsyncChannel<WSFrame>.Iterator
+    private let controller: OcaFlyingFoxController
+    private let task: Task<(), Never>
+
+    init(
+      _ output: AsyncChannel<WSFrame>,
+      controller: OcaFlyingFoxController,
+      task: Task<(), Never>
+    ) {
+      frames = output.makeAsyncIterator()
+      self.controller = controller
+      self.task = task
+    }
+
+    func next() async -> WSFrame? {
+      await frames.next()
+    }
+
+    /// Nothing will be written again: free any sender first, then let the controller go.
+    func end() {
+      Task { [controller] in await controller.endSending() }
+      task.cancel()
+    }
+
+    deinit {
+      end()
     }
   }
 
@@ -192,9 +227,9 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
           return HTTPResponse(statusCode: .badRequest)
         }
         // one handler per upgrade, so the controller knows its peer
-        var response = try await WebSocketHTTPHandler
-          .webSocket(Handler(self, controlProtocol: controlProtocol, peer: request.remoteAddress))
-          .handleRequest(request)
+        var response = try await WebSocketHTTPHandler(
+          handler: Handler(self, controlProtocol: controlProtocol, peer: request.remoteAddress)
+        ).handleRequest(request)
         // RFC 6455 4.2.2: echo the subprotocol we speak if the client offered it
         if let subprotocol = controlProtocol.webSocketSubprotocol,
            response.statusCode == .switchingProtocols, offered.contains(subprotocol)
