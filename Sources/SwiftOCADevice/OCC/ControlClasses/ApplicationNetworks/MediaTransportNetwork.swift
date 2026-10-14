@@ -148,7 +148,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
   @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.setSinkConnectorPinMap)
   open func setSinkConnectorPinMap(
     connectorID: OcaMediaConnectorID,
-    channelPinMap: [OcaUint16: [OcaPortID]],
+    channelPinMap: OcaMultiMap<OcaUint16, OcaPortID>,
     from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)

@@ -48,7 +48,7 @@ open class OcaMediaClock3: OcaAgent, @unchecked Sendable {
     getMethodID: OcaMethodID("3.7"),
     ocp2GetName: "Rates"
   )
-  public var supportedRates: OcaMultiMapProperty<OcaONo, OcaMediaClockRate>.PropertyValue
+  public var supportedRates: OcaMapProperty<OcaONo, [OcaMediaClockRate]>.PropertyValue
 
   public struct GetCurrentRateParameters: OcaParametersReflectable {
     public let rate: OcaMediaClockRate

@@ -372,6 +372,7 @@ public final class OcaClassManager: OcaManager {
     case let .optional(wrapped): _ocaTypeName(for: wrapped)
     case let .list(element): "OcaList<\(_ocaTypeName(for: element))>"
     case let .map(key, value): "OcaMap<\(_ocaTypeName(for: key)),\(_ocaTypeName(for: value))>"
+    case let .multiMap(key, value): "OcaMultiMap<\(_ocaTypeName(for: key)),\(_ocaTypeName(for: value))>"
     // a bounded property's value is of its type, with the bounds beside it
     case let .bounded(value): _ocaTypeName(for: value)
     case .enumeration, .rawValue, .structure, .other: String(describing: type)
@@ -418,6 +419,17 @@ private struct Datatypes {
     }
   }
 
+  /// An instance of the `OcaMap` or `OcaMultiMap` template, and its key and value types.
+  private mutating func add(map template: String, named name: String, key: Any.Type, value: Any.Type) {
+    described[template] = OcaDatatypeDescriptor(name: template, kind: .primitive)
+    described[name] = OcaDatatypeDescriptor(
+      name: name, kind: .template, baseTypeName: template,
+      typeArguments: [OcaClassManager._ocaTypeName(for: key), OcaClassManager._ocaTypeName(for: value)]
+    )
+    add(key)
+    add(value)
+  }
+
   private mutating func add(_ type: Any.Type) {
     let name = OcaClassManager._ocaTypeName(for: type)
     guard described[name] == nil else { return }
@@ -455,13 +467,9 @@ private struct Datatypes {
       )
       add(element)
     case let .map(key, value):
-      described["OcaMap"] = OcaDatatypeDescriptor(name: "OcaMap", kind: .primitive)
-      described[name] = OcaDatatypeDescriptor(
-        name: name, kind: .template, baseTypeName: "OcaMap",
-        typeArguments: [OcaClassManager._ocaTypeName(for: key), OcaClassManager._ocaTypeName(for: value)]
-      )
-      add(key)
-      add(value)
+      add(map: "OcaMap", named: name, key: key, value: value)
+    case let .multiMap(key, value):
+      add(map: "OcaMultiMap", named: name, key: key, value: value)
     case let .enumeration(cases):
       // the integer it is coded as, which AES70's enum and enumlong tell apart
       let raw = (type as? any RawRepresentable.Type).map { Self.rawType(for: $0) }

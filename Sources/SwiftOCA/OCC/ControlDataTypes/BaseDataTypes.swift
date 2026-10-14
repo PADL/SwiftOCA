@@ -49,7 +49,6 @@ public typealias Ocp1List = Array
 
 public typealias OcaList = Ocp1List
 public typealias OcaMap = Dictionary
-public typealias OcaMultiMap<K: Hashable, V> = OcaMap<K, [V]>
 
 public typealias OcaNamePath = OcaList<OcaString>
 public typealias OcaONoPath = OcaList<OcaONo>

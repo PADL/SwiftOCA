@@ -130,6 +130,27 @@ extension Dictionary: _Ocp1CoderSpecial where Key: Codable, Value: Codable {
   }
 }
 
+extension OcaMultiMap: _Ocp1CoderSpecial where K: Codable, V: Codable {
+  /// One item per value, as an `OcaMap`'s are: not each key's values as a list.
+  static func _ocp1Encode(_ value: Self, into encoder: Ocp1EncoderImpl) throws {
+    try encoder.encodeCount(value.itemCount, of: Self.self)
+    try value.forEachItem { key, element in
+      try encoder.encode(key)
+      try encoder.encode(element)
+    }
+  }
+
+  static func _ocp1Decode(from decoder: Ocp1DecoderImpl) throws -> Self {
+    let count = try decoder.decodeCount(of: Self.self)
+    var multiMap = Self()
+    for _ in 0..<count {
+      let key = try decoder.decode(K.self)
+      try multiMap.append(decoder.decode(V.self), forKey: key)
+    }
+    return multiMap
+  }
+}
+
 extension Ocp1BlobRepresentable {
   static func _ocp1Encode(_ value: Self, into encoder: Ocp1EncoderImpl) throws {
     try encoder.encodeBlob(value.blobData, lengthTagWidth: lengthTagWidth)

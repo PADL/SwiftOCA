@@ -284,8 +284,12 @@ final class Ocp2CoderTests: XCTestCase {
       ["left": 1, "right": 2]
     )
 
+    // a pair per value (AES70-4 8.8), the key repeated
     let multi: OcaMultiMap<OcaUint16, OcaString> = [1: ["a", "b"]]
     let multiEncoded = try Ocp2Encoder().encodeValue(multi)
+    let multiPairs = try XCTUnwrap(multiEncoded as? [[Any]])
+    XCTAssertEqual(multiPairs.map { $0[0] as? Int }, [1, 1])
+    XCTAssertEqual(multiPairs.map { $0[1] as? String }, ["a", "b"])
     XCTAssertEqual(
       try Ocp2Decoder().decodeValue(OcaMultiMap<OcaUint16, OcaString>.self, from: multiEncoded),
       multi

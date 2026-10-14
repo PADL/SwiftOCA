@@ -26,6 +26,7 @@ final class DatatypeKindTests: XCTestCase {
     case let .optional(wrapped): "optional \(wrapped)"
     case let .list(element): "list \(element)"
     case let .map(key, value): "map \(key) \(value)"
+    case let .multiMap(key, value): "multimap \(key) \(value)"
     case let .bounded(value): "bounded \(value)"
     case let .enumeration(cases): "enumeration \(cases.count)"
     case let .rawValue(raw): "raw \(raw)"
@@ -44,6 +45,7 @@ final class DatatypeKindTests: XCTestCase {
     XCTAssertEqual(name(OcaString?.self), "optional String")
     XCTAssertEqual(name(OcaList<OcaUint16>.self), "list UInt16")
     XCTAssertEqual(name(OcaMap<OcaUint16, OcaString>.self), "map UInt16 String")
+    XCTAssertEqual(name(OcaMultiMap<OcaUint16, OcaString>.self), "multimap UInt16 String")
     XCTAssertEqual(name(OcaBoundedPropertyValue<OcaDB>.self), "bounded Float")
     XCTAssertEqual(name(OcaMuteState.self), "enumeration \(OcaMuteState.allCases.count)")
     XCTAssertEqual(name(OcaPort.self), "structure")

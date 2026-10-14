@@ -34,6 +34,8 @@ public enum OcaDatatypeKind: Sendable {
   case list(Any.Type)
   /// `OcaMap` of the key and value types.
   case map(key: Any.Type, value: Any.Type)
+  /// `OcaMultiMap` of the key and value types.
+  case multiMap(key: Any.Type, value: Any.Type)
   /// A bounded property's value, of the type given, with its bounds beside it.
   case bounded(Any.Type)
   /// An enumeration, with each case's name and value.
@@ -121,6 +123,10 @@ extension Set: OcaKindedGeneric {
 
 extension Dictionary: OcaKindedGeneric {
   fileprivate static var kind: OcaDatatypeKind { .map(key: Key.self, value: Value.self) }
+}
+
+extension OcaMultiMap: OcaKindedGeneric {
+  fileprivate static var kind: OcaDatatypeKind { .multiMap(key: K.self, value: V.self) }
 }
 
 extension OcaBoundedPropertyValue: OcaKindedGeneric {

@@ -168,7 +168,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
 
   public struct SetSinkConnectorPinMapParameters: OcaParametersReflectable {
     public let connectorID: OcaMediaConnectorID
-    public let channelPinMap: [OcaUint16: [OcaPortID]]
+    public let channelPinMap: OcaMultiMap<OcaUint16, OcaPortID>
   }
 
   @OcaMethod(
@@ -178,7 +178,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, @unchecked Sendable 
   )
   public func setSinkConnectorPinMap(
     connectorID: OcaMediaConnectorID,
-    channelPinMap: [OcaUint16: [OcaPortID]]
+    channelPinMap: OcaMultiMap<OcaUint16, OcaPortID>
   ) async throws
 
   public struct SetConnectorConnectionParameters: OcaParametersReflectable {

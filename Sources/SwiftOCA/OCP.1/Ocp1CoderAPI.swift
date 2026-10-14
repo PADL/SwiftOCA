@@ -30,15 +30,16 @@ extension Array: Ocp1ListRepresentable where Element: Codable {
   typealias Element = Element
 }
 
-protocol Ocp1MapRepresentable<Key, Value>: Collection, Codable {
-  associatedtype Key: Codable & Hashable
-  associatedtype Value: Codable
+/// A map, marshaled as its items: a key with one value each.
+protocol Ocp1MapRepresentable<MapKey, MapValue>: Collection, Codable {
+  associatedtype MapKey: Codable & Hashable
+  associatedtype MapValue: Codable
 
   #if NonEmbeddedBuild
   /// OCP.2 marshals a map as an array of `[key, value]` pairs.
   init(ocp2State: Ocp2DecodingState, json: Any, codingPath: [any CodingKey]) throws
   #endif
-  func withMapItems(_ block: (Key, Value) throws -> ()) rethrows
+  func withMapItems(_ block: (MapKey, MapValue) throws -> ()) rethrows
 }
 
 extension Dictionary: Ocp1MapRepresentable where Key: Codable & Hashable, Value: Codable {
@@ -65,6 +66,29 @@ extension Dictionary: Ocp1MapRepresentable where Key: Codable & Hashable, Value:
     for (key, value) in self {
       try block(key, value)
     }
+  }
+}
+
+extension OcaMultiMap: Ocp1MapRepresentable where K: Codable, V: Codable {
+  #if NonEmbeddedBuild
+  init(ocp2State state: Ocp2DecodingState, json: Any, codingPath: [any CodingKey]) throws {
+    guard let items = json as? [Any] else {
+      throw Ocp1Error.status(.badFormat)
+    }
+    self.init()
+    for item in items {
+      guard let pair = item as? [Any], pair.count == 2 else {
+        throw Ocp1Error.status(.badFormat)
+      }
+      let key = try state.decode(K.self, from: pair[0], codingPath: codingPath)
+      let value = try state.decode(V.self, from: pair[1], codingPath: codingPath)
+      append(value, forKey: key)
+    }
+  }
+  #endif
+
+  func withMapItems(_ block: (K, V) throws -> ()) rethrows {
+    try forEachItem(block)
   }
 }
 

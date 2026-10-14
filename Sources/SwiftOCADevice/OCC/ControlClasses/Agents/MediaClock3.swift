@@ -51,7 +51,7 @@ open class OcaMediaClock3: OcaAgent {
     getMethodID: OcaMethodID("3.7"),
     ocp2GetName: "Rates"
   )
-  public var supportedRates: OcaMultiMap<OcaONo, OcaMediaClockRate> = [:]
+  public var supportedRates: OcaMap<OcaONo, [OcaMediaClockRate]> = [:]
 
   open func set(currentRate: OcaMediaClockRate, timeSource: OcaTimeSource) async throws {
     self.currentRate = currentRate

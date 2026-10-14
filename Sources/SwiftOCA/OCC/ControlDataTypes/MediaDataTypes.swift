@@ -146,7 +146,7 @@ public struct OcaMediaSourceConnector: Codable, Sendable {
   public let connection: OcaMediaConnection
   public let availableCodings: OcaList<OcaMediaCoding>
   public let pinCount: OcaUint16
-  public let channelPinMap: OcaMultiMap<OcaUint16, OcaPortID>
+  public let channelPinMap: OcaMap<OcaUint16, OcaPortID>
   public let alignmentLevel: OcaDBFS
   public let currentCoding: OcaMediaCoding
 
@@ -156,7 +156,7 @@ public struct OcaMediaSourceConnector: Codable, Sendable {
     connection: OcaMediaConnection,
     availableCodings: OcaList<OcaMediaCoding>,
     pinCount: OcaUint16,
-    channelPinMap: OcaMultiMap<OcaUint16, OcaPortID>,
+    channelPinMap: OcaMap<OcaUint16, OcaPortID>,
     alignmentLevel: OcaDBFS,
     currentCoding: OcaMediaCoding
   ) {
