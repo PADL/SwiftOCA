@@ -51,11 +51,6 @@ private func makeDTLSConnection(
 }
 
 final class OpenSSLDTLSConnectionTests: XCTestCase {
-  override class func setUp() {
-    super.setUp()
-    _ = ignoreSIGPIPEOnce
-  }
-
   private static let testIdentity = OcaPreSharedKeyIdentityHint
   private static let testKey = Data(repeating: 0x42, count: 32)
 

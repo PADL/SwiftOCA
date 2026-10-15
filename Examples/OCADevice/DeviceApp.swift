@@ -281,8 +281,12 @@ public enum DeviceApp {
     let controlNetwork = try await SwiftOCADevice.OcaControlNetwork(deviceDelegate: device)
     Task { @OcaDevice in controlNetwork.state = .running }
 
-    #if !os(Windows)
-    // Windows has no SIGPIPE; write failures surface as socket errors instead.
+    #if !os(Windows) && !os(Linux)
+    // A write to a controller that has gone raises SIGPIPE where a backend writes without
+    // asking otherwise: the CF backend's write(2) on Android, and on Darwin, sockets accepted
+    // from a listener with SO_NOSIGPIPE are trusted to inherit it but this is not tested.
+    // On Linux, IORing, FlyingSocks and the TLS backends all send with MSG_NOSIGNAL; Windows
+    // has no SIGPIPE.
     signal(SIGPIPE, SIG_IGN)
     #endif
 

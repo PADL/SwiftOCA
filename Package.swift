@@ -111,7 +111,7 @@ PlatformTargetDependencies += [
 ]
 
 #if os(Linux)
-PlatformPackageDependencies += [.package(url: "https://github.com/PADL/IORingSwift", from: "2.2.0")]
+PlatformPackageDependencies += [.package(url: "https://github.com/PADL/IORingSwift", from: "2.3.0")]
 OCADevicePlatformDependencies += [.product(name: "IORing", package: "IORingSwift")]
 
 PlatformTargetDependencies += [
