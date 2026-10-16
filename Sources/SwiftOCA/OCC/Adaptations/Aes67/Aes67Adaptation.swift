@@ -44,3 +44,38 @@ public enum Aes67Adaptation {
     2103
   )
 }
+
+public extension Aes67Adaptation {
+  /// Selects the stream a ConfigureEndpointFromSDP call names, following AES70-21 §10.2.4
+  /// Table 18 (single-stream SDP) and Table 19 (multistream SDP).
+  ///
+  /// - Parameters:
+  ///   - streamID: the call's StreamID parameter, an SDP Stream Source ID (`<ssrc-id>`).
+  ///   - ssrcIDs: the `<ssrc-id>` of each media description of the SDP string, in order,
+  ///     or zero for a media description without one.
+  /// - Returns: the index into `ssrcIDs` of the selected media description. Its
+  ///   `<ssrc-id>` is the value the endpoint's AdaptationData.StreamID takes.
+  /// - Throws: `Ocp1Error.status(.badFormat)` for an SDP string with no media
+  ///   descriptions, or a multistream one in which a media description has no `<ssrc-id>`;
+  ///   `Ocp1Error.status(.parameterError)` when `streamID` does not select a stream.
+  static func selectStream(streamID: OcaUint32, ssrcIDs: [OcaUint32]) throws -> Int {
+    switch ssrcIDs.count {
+    case 0:
+      throw Ocp1Error.status(.badFormat)
+    case 1:
+      // Table 18: only two nonzero values that differ fail
+      let ssrcID = ssrcIDs[0]
+      guard streamID == 0 || ssrcID == 0 || streamID == ssrcID else {
+        throw Ocp1Error.status(.parameterError)
+      }
+      return 0
+    default:
+      // Table 19: every stream needs an <ssrc-id>, and StreamID must name one of them
+      guard !ssrcIDs.contains(0) else { throw Ocp1Error.status(.badFormat) }
+      guard streamID != 0, let index = ssrcIDs.firstIndex(of: streamID) else {
+        throw Ocp1Error.status(.parameterError)
+      }
+      return index
+    }
+  }
+}

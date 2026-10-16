@@ -55,13 +55,14 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
   public struct ConfigureEndpointFromSDPParameters: OcaParametersReflectable {
     public let endpointID: OcaMediaStreamEndpointID
     public let sdpString: OcaSDPString
-    /// UDP port of the stream within a multistream SDP; zero for a single stream.
-    public let streamID: OcaUint16
+    /// SDP Stream Source ID (`<ssrc-id>`, RFC 5576) of the stream within a multistream
+    /// SDP; zero for a single-stream SDP.
+    public let streamID: OcaUint32
 
     public init(
       endpointID: OcaMediaStreamEndpointID,
       sdpString: OcaSDPString,
-      streamID: OcaUint16
+      streamID: OcaUint32
     ) {
       self.endpointID = endpointID
       self.sdpString = sdpString
@@ -98,7 +99,10 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
   ) async throws -> PresentationTimeOffsetConstraints
 
   // the draft spells the SDP string's name in capitals
-  /// Optional in AES70-21 §10.2.4; sets the endpoint's AdaptationData.ActiveSDP.
+  /// Optional in AES70-21 §10.2.4; sets the endpoint's AdaptationData.ActiveSDP and
+  /// AdaptationData.StreamID. `streamID` is the `<ssrc-id>` selecting a stream of a
+  /// multistream SDP (Tables 18 and 19; see `Aes67Adaptation.selectStream`). An empty
+  /// SDP string closes the endpoint's connection.
   @OcaMethod(
     "4.5",
     name: "ConfigureEndpointFromSDP",
@@ -108,7 +112,7 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
   public func configureEndpointFromSDP(
     endpointID: OcaMediaStreamEndpointID,
     sdpString: OcaSDPString,
-    streamID: OcaUint16 = 0
+    streamID: OcaUint32 = 0
   ) async throws
 }
 
