@@ -724,6 +724,46 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertNil(MilanStreamFormat(mediaStreamMode: .undefined))
   }
 
+  func testAes67ConfigureEndpointFromSDPStreamID() throws {
+    // AES70-21 draft 2026-10-09: StreamID is the OcaUint32 <ssrc-id>
+    let parameters = Aes67OcaMediaTransportApplication.ConfigureEndpointFromSDPParameters(
+      endpointID: 1,
+      sdpString: "v=0",
+      streamID: 0xDEAD_BEEF
+    )
+    XCTAssertEqual(
+      try Ocp1Encoder().encode(parameters) as [UInt8],
+      [0x00, 0x00, 0x00, 0x01, 0x00, 0x03] + Array("v=0".utf8) + [0xDE, 0xAD, 0xBE, 0xEF]
+    )
+
+    func status(_ body: () throws -> Int) -> OcaStatus? {
+      do {
+        _ = try body()
+        return nil
+      } catch let Ocp1Error.status(thrown) {
+        return thrown
+      } catch {
+        return .deviceError
+      }
+    }
+
+    // Table 18: single-stream SDP
+    XCTAssertEqual(try Aes67Adaptation.selectStream(streamID: 0, ssrcIDs: [0]), 0)
+    XCTAssertEqual(try Aes67Adaptation.selectStream(streamID: 0, ssrcIDs: [7]), 0)
+    XCTAssertEqual(try Aes67Adaptation.selectStream(streamID: 7, ssrcIDs: [0]), 0)
+    XCTAssertEqual(try Aes67Adaptation.selectStream(streamID: 7, ssrcIDs: [7]), 0)
+    XCTAssertEqual(status { try Aes67Adaptation.selectStream(streamID: 8, ssrcIDs: [7]) }, .parameterError)
+
+    // Table 19: multistream SDP
+    XCTAssertEqual(try Aes67Adaptation.selectStream(streamID: 9, ssrcIDs: [7, 9]), 1)
+    XCTAssertEqual(status { try Aes67Adaptation.selectStream(streamID: 0, ssrcIDs: [7, 0]) }, .badFormat)
+    XCTAssertEqual(status { try Aes67Adaptation.selectStream(streamID: 7, ssrcIDs: [7, 0]) }, .badFormat)
+    XCTAssertEqual(status { try Aes67Adaptation.selectStream(streamID: 0, ssrcIDs: [7, 9]) }, .parameterError)
+    XCTAssertEqual(status { try Aes67Adaptation.selectStream(streamID: 8, ssrcIDs: [7, 9]) }, .parameterError)
+
+    XCTAssertEqual(status { try Aes67Adaptation.selectStream(streamID: 0, ssrcIDs: []) }, .badFormat)
+  }
+
   func testAes67AndDanteAdaptationDataEncoding() throws {
     let ipParameters = Aes67EndpointIPParameters(
       networkAssignmentID: 1,
@@ -737,9 +777,12 @@ final class SwiftOCADeviceTests: XCTestCase {
       ipParameters: [ipParameters],
       payloadType: 96,
       transmissionCapabilities: [.unicastCapable, .multicastCapable],
-      presentationTimeOffset: 1e-3
+      presentationTimeOffset: 1e-3,
+      streamID: 0x1234_5678
     )
     XCTAssertEqual(try aes67.blob.decode(Aes67EndpointAdaptationData.self), aes67)
+    // StreamID (OcaUint32) follows ActiveSDP, here the empty string
+    XCTAssertEqual(try Array(aes67.blob.suffix(6)), [0x00, 0x00, 0x12, 0x34, 0x56, 0x78])
     XCTAssertEqual(
       try Ocp1Encoder().encode(Aes67StreamTransmissionCapabilities([.unicastCapable, .defaultSecurityCapable])) as [UInt8],
       [0x00, 0x09]

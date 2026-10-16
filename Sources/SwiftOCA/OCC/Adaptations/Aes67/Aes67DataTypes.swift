@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Datatypes defined by AES70-21 (draft 2026-09-19): Tables 7, 8, 9 and 18 to 21.
+// Datatypes defined by AES70-21 (draft 2026-10-09): Tables 7, 8, 17 and 20 to 23.
 
 /// Aes67StreamTransmissionCapabilities (OcaBitSet16)
 public struct Aes67StreamTransmissionCapabilities: OptionSet, Codable, Sendable, Hashable {
@@ -76,6 +76,9 @@ public struct Aes67EndpointAdaptationData: Ocp1TypedBlobRepresentable, Sendable,
   public var mediaInfo: OcaString
   /// Set by ConfigureEndpointFromSDP.
   public var activeSDP: OcaSDPString
+  /// The SDP Stream Source ID (`<ssrc-id>`, RFC 5576) of the stream within a multistream
+  /// SDP; zero for a single-stream SDP. Set by ConfigureEndpointFromSDP.
+  public var streamID: OcaUint32
 
   public init(
     ipParameters: [Aes67EndpointIPParameters] = [],
@@ -87,7 +90,8 @@ public struct Aes67EndpointAdaptationData: Ocp1TypedBlobRepresentable, Sendable,
     transmissionCapabilities: Aes67StreamTransmissionCapabilities = [],
     presentationTimeOffset: OcaTimeInterval = 0,
     mediaInfo: OcaString = "",
-    activeSDP: OcaSDPString = ""
+    activeSDP: OcaSDPString = "",
+    streamID: OcaUint32 = 0
   ) {
     self.ipParameters = ipParameters
     self.payloadType = payloadType
@@ -99,6 +103,7 @@ public struct Aes67EndpointAdaptationData: Ocp1TypedBlobRepresentable, Sendable,
     self.presentationTimeOffset = presentationTimeOffset
     self.mediaInfo = mediaInfo
     self.activeSDP = activeSDP
+    self.streamID = streamID
   }
 }
 

@@ -70,13 +70,16 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  /// Optional (AES70-21 §10.2.4). A nonzero stream ID selects the stream of a multistream
-  /// SDP by UDP port; on success the endpoint's ActiveSDP is the given SDP.
+  /// Optional (AES70-21 §10.2.4). `streamID` is the SDP Stream Source ID (`<ssrc-id>`)
+  /// selecting the stream of a multistream SDP; `Aes67Adaptation.selectStream` applies the
+  /// draft's Tables 18 and 19. On success the endpoint's AdaptationData.ActiveSDP is the
+  /// given SDP and AdaptationData.StreamID the selected stream's `<ssrc-id>`. An empty SDP
+  /// string closes any connection through the endpoint and sets its status to NotReady.
   @OcaDeviceMethod(Aes67Parameters.Methods.configureEndpointFromSDP)
   open func configureEndpointFromSDP(
     endpointID: OcaMediaStreamEndpointID,
     sdpString: OcaSDPString,
-    streamID: OcaUint16,
+    streamID: OcaUint32,
     from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
