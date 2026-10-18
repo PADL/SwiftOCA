@@ -29,7 +29,7 @@ public struct OcaControllerFlags: OptionSet, Sendable {
   public static let isLocal = Self(rawValue: 1 << 2)
 }
 
-public protocol OcaController: Actor {
+public protocol OcaController: AnyObject, Sendable {
   nonisolated var flags: OcaControllerFlags { get }
 
   /// Authenticated peer identity; `.anonymous` for plaintext transports.
