@@ -31,8 +31,8 @@ import Glibc
 #endif
 
 /// A remote controller
-package actor OcaFlyingSocksDatagramController: Ocp1ControllerInternal,
-  Ocp1ControllerDatagramSemantics
+package actor OcaFlyingSocksDatagramController: OcaControllerInternal,
+  OcaControllerDatagramSemantics
 {
   package nonisolated var flags: OcaControllerFlags { .supportsLocking }
   package nonisolated var connectionPrefix: String {
@@ -43,7 +43,7 @@ package actor OcaFlyingSocksDatagramController: Ocp1ControllerInternal,
   let interfaceIndex: UInt32?
   let localAddress: (any SocketAddress)?
   package var keepAliveTask: Task<(), Error>?
-  package let writeQueue: Ocp1WriteQueue? = nil
+  package let writeQueue: OcaWriteQueue? = nil
   package nonisolated let maximumSendPduSize: Int? = Ocp1MaximumDatagramSendPduSize
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
@@ -52,8 +52,8 @@ package actor OcaFlyingSocksDatagramController: Ocp1ControllerInternal,
   package weak var endpoint: OcaFlyingSocksDatagramDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
 
-  package var messages: AnyAsyncSequence<Ocp1MessageList> {
-    AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
+  package var messages: AnyAsyncSequence<OcaMessageList> {
+    AsyncEmptySequence<OcaMessageList>().eraseToAnyAsyncSequence()
   }
 
   init(

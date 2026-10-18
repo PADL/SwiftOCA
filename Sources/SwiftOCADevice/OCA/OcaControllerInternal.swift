@@ -31,7 +31,7 @@ package let OcaMaximumConcurrentPdus = 32
 /// any handler could take, and small enough to add to an instant without overflow.
 private let OcaExpirySuspension = Duration.seconds(365 * 24 * 60 * 60)
 
-package struct Ocp1MessageList: Sendable {
+package struct OcaMessageList: Sendable {
   let responseRequired: Bool
   let messages: [Ocp1Message]
 
@@ -58,7 +58,7 @@ package struct Ocp1MessageList: Sendable {
 // OcaControllerPrivate should eventually be merged into OcaController once we are ready to
 // support out-of-tree endpoints
 
-package protocol Ocp1ControllerInternal: OcaControllerQueuedSending, Actor {
+package protocol OcaControllerInternal: OcaControllerQueuedSending, Actor {
   associatedtype Endpoint: OcaDeviceEndpointPrivate
 
   nonisolated var connectionPrefix: String { get }
@@ -69,7 +69,7 @@ package protocol Ocp1ControllerInternal: OcaControllerQueuedSending, Actor {
   var endpoint: Endpoint? { get }
 
   /// a sequence of message lists, indicating whether a response is required
-  var messages: AnyAsyncSequence<Ocp1MessageList> { get }
+  var messages: AnyAsyncSequence<OcaMessageList> { get }
 
   /// last message sent time
   var lastMessageSentTime: ContinuousClock.Instant { get set }
@@ -85,7 +85,7 @@ package protocol Ocp1ControllerInternal: OcaControllerQueuedSending, Actor {
 
   /// `nil` for datagram transports, which write whole PDUs. Stream transports resume a
   /// write from an offset, which is what lets two concurrent writers interleave.
-  var writeQueue: Ocp1WriteQueue? { get }
+  var writeQueue: OcaWriteQueue? { get }
 
   /// The largest PDU a packet transport can send; `nil` (the default) for a stream.
   nonisolated var maximumSendPduSize: Int? { get }
@@ -102,13 +102,13 @@ package protocol Ocp1ControllerInternal: OcaControllerQueuedSending, Actor {
 /// When using UDP, the Controller sends a Keep-alive message to the Device before sending other
 /// messages. A Device using UDP ignores all messages received from a Controller prior to receipt of
 /// a Keep-alive message from that Controller.
-package protocol Ocp1ControllerDatagramSemantics: Actor {
+package protocol OcaControllerDatagramSemantics: Actor {
   var isOpen: Bool { get }
 
   func didOpen()
 }
 
-package extension Ocp1ControllerInternal {
+package extension OcaControllerInternal {
   nonisolated var maximumSendPduSize: Int? { nil }
 }
 
@@ -124,7 +124,7 @@ package let Ocp1MaximumDatagramHeartbeatTime = Duration.seconds(60)
 /// without a bound a spoofed packet per source address grows the table. Per endpoint.
 package let OcaMaximumDatagramControllers = 64
 
-package extension Ocp1ControllerInternal {
+package extension OcaControllerInternal {
   /// handle a single message
   private func _handle<Endpoint: OcaDeviceEndpointPrivate>(
     for endpoint: Endpoint,
@@ -133,7 +133,7 @@ package extension Ocp1ControllerInternal {
     let controller = self as! Endpoint.ControllerType
     var response: Ocp1Response?
 
-    let datagramController = self as? Ocp1ControllerDatagramSemantics
+    let datagramController = self as? OcaControllerDatagramSemantics
     if let datagramController {
       if message is Ocp1KeepAlive1 || message is Ocp1KeepAlive2 {
         await datagramController.didOpen()
@@ -182,7 +182,7 @@ package extension Ocp1ControllerInternal {
   /// handle a list of messages
   func handle(
     for endpoint: some OcaDeviceEndpointPrivate,
-    messageList: Ocp1MessageList
+    messageList: OcaMessageList
   ) async throws {
     // Record transport activity before command execution: one slow command must
     // not make a controller look stale while later keepalives are being received.
@@ -309,8 +309,8 @@ package extension Ocp1ControllerInternal {
     }
   }
 
-  func decodeMessages(from messagePduData: Data) throws -> Ocp1MessageList {
-    try Ocp1MessageList(messagePduData: messagePduData, controlProtocol: controlProtocol)
+  func decodeMessages(from messagePduData: Data) throws -> OcaMessageList {
+    try OcaMessageList(messagePduData: messagePduData, controlProtocol: controlProtocol)
   }
 
   func sendMessages(
@@ -371,9 +371,9 @@ extension OcaDevice {
     reader: any OcaPduReader,
     controlProtocol: OcaControlProtocol,
     read: (_ count: Int, _ awaitingAllRead: Bool) async throws -> Data
-  ) async throws -> Ocp1MessageList {
+  ) async throws -> OcaMessageList {
     let messagePduData = try await reader.nextPdu(read: read)
-    return try Ocp1MessageList(messagePduData: messagePduData, controlProtocol: controlProtocol)
+    return try OcaMessageList(messagePduData: messagePduData, controlProtocol: controlProtocol)
   }
 
   /// OCP.1-only convenience for backends with an exact-length read: OCP.1 always
@@ -382,7 +382,7 @@ extension OcaDevice {
   package static func receiveMessages(
     reader: Ocp1PduReader,
     _ read: ReadCallback
-  ) async throws -> Ocp1MessageList {
+  ) async throws -> OcaMessageList {
     try await _receiveMessages(
       reader: reader,
       controlProtocol: .ocp1,
@@ -394,19 +394,19 @@ extension OcaDevice {
     reader: any OcaPduReader,
     controlProtocol: OcaControlProtocol,
     read: (_ count: Int, _ awaitingAllRead: Bool) async throws -> Data
-  ) async throws -> Ocp1MessageList {
+  ) async throws -> OcaMessageList {
     try await _receiveMessages(reader: reader, controlProtocol: controlProtocol, read: read)
   }
 }
 
-package protocol Ocp1ControllerInternalLightweightNotifyingInternal: OcaControllerLightweightNotifying {
+package protocol OcaControllerInternalLightweightNotifyingInternal: OcaControllerLightweightNotifying {
   func sendOcp1EncodedData(
     _ data: Data,
     to destinationAddress: OcaNetworkAddress
   ) async throws
 }
 
-package extension Ocp1ControllerInternalLightweightNotifyingInternal {
+package extension OcaControllerInternalLightweightNotifyingInternal {
   func sendMessage(
     _ message: Ocp1Message,
     type messageType: OcaMessageType,

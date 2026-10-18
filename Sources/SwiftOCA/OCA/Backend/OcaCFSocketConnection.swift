@@ -450,8 +450,8 @@ Sendable, CustomStringConvertible, Hashable {
 @available(*, deprecated, renamed: "OcaCFSocketConnection")
 public typealias Ocp1CFSocketConnection = OcaCFSocketConnection
 
-public class OcaCFSocketConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
-  package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
+public class OcaCFSocketConnection: OcaConnection, OcaMutableSocketAddressConnection {
+  package let _deviceAddressState: Mutex<OcaDeviceAddressState>
   fileprivate var _socket: _CFSocketWrapper?
   fileprivate var _type: Int32 {
     fatalError("must be implemented by subclass")
@@ -461,7 +461,7 @@ public class OcaCFSocketConnection: OcaConnection, Ocp1MutableSocketAddressConne
     deviceAddresses: [AnySocketAddress],
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
-    _deviceAddressState = Mutex(Ocp1DeviceAddressState(addresses: deviceAddresses))
+    _deviceAddressState = Mutex(OcaDeviceAddressState(addresses: deviceAddresses))
     super.init(options: options)
   }
 
