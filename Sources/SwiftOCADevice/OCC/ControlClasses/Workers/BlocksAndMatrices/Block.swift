@@ -353,11 +353,9 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
       containers = found.compactMap { $0 as? any OcaBlockContainer }
     }
 
-    var results = [OcaObjectSearchResult]()
-    for member in found {
-      await results.append(member.makeSearchResult(with: resultFlags))
-    }
-    return results
+    return await found.async.map { member in
+      await member.makeSearchResult(with: resultFlags)
+    }.collect()
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaBlock.Methods.findActionObjectsByLabelRecursive)
