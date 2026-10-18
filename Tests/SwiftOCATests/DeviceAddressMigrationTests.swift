@@ -42,7 +42,7 @@ struct DeviceAddressMigrationTests {
   func migratesWhenTheConnectedAddressIsWithdrawn() throws {
     let a = try Self.address("10.10.32.3")
     let b = try Self.address("10.10.33.252")
-    let state = Ocp1DeviceAddressState(addresses: [a], connectedAddress: a)
+    let state = OcaDeviceAddressState(addresses: [a], connectedAddress: a)
 
     #expect(state.requiresMigration(replacingWith: [b]))
   }
@@ -51,7 +51,7 @@ struct DeviceAddressMigrationTests {
   func doesNotMigrateWhenASecondaryAddressIsAdded() throws {
     let a = try Self.address("10.10.32.3")
     let b = try Self.address("10.10.33.252")
-    let state = Ocp1DeviceAddressState(addresses: [a], connectedAddress: a)
+    let state = OcaDeviceAddressState(addresses: [a], connectedAddress: a)
 
     #expect(!state.requiresMigration(replacingWith: [a, b]))
   }
@@ -60,7 +60,7 @@ struct DeviceAddressMigrationTests {
   func doesNotMigrateWhenASecondaryAddressIsWithdrawn() throws {
     let a = try Self.address("10.10.32.3")
     let b = try Self.address("10.10.33.252")
-    let state = Ocp1DeviceAddressState(addresses: [a, b], connectedAddress: a)
+    let state = OcaDeviceAddressState(addresses: [a, b], connectedAddress: a)
 
     #expect(!state.requiresMigration(replacingWith: [a]))
   }
@@ -71,7 +71,7 @@ struct DeviceAddressMigrationTests {
     let b = try Self.address("10.10.33.252")
     // connected to the non-preferred candidate, as happens when the preferred
     // one was unreachable at connect time
-    let state = Ocp1DeviceAddressState(addresses: [a, b], connectedAddress: b)
+    let state = OcaDeviceAddressState(addresses: [a, b], connectedAddress: b)
 
     #expect(!state.requiresMigration(replacingWith: [b, a]))
   }
@@ -81,7 +81,7 @@ struct DeviceAddressMigrationTests {
     // nothing to preserve: the decision is left to deviceAddressesDidChange(),
     // which no-ops unless a connection is live
     let a = try Self.address("10.10.32.3")
-    let state = Ocp1DeviceAddressState(addresses: [a], connectedAddress: nil)
+    let state = OcaDeviceAddressState(addresses: [a], connectedAddress: nil)
 
     #expect(state.requiresMigration(replacingWith: [try Self.address("10.10.33.252")]))
   }

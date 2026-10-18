@@ -29,7 +29,7 @@ import SwiftOCA
 import Synchronization
 
 /// Remote controller via Network.framework; shared by plaintext TCP and TLS.
-package actor OcaNWStreamController: Ocp1ControllerInternal, CustomStringConvertible {
+package actor OcaNWStreamController: OcaControllerInternal, CustomStringConvertible {
   package nonisolated let flags: OcaControllerFlags
   package nonisolated let connectionPrefix: String
   package nonisolated let identifier: String
@@ -46,17 +46,17 @@ package actor OcaNWStreamController: Ocp1ControllerInternal, CustomStringConvert
   package var keepAliveTask: Task<(), Error>?
   /// NWConnection takes whole PDUs and orders them, so the queue is not for framing: it
   /// holds the notification backlog, whose bound expires a peer that has stopped reading.
-  package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
+  package let writeQueue: OcaWriteQueue? = OcaWriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: OcaNWStreamDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
 
   private let connection: NWConnection
-  private let _messages: AsyncThrowingChannel<Ocp1MessageList, Error>
+  private let _messages: AsyncThrowingChannel<OcaMessageList, Error>
   private var connectionClosed = false
 
-  package var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<OcaMessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 
@@ -147,8 +147,8 @@ private extension OcaNWStreamController {
     timeout: Duration,
     controlProtocol: OcaControlProtocol,
     maximumPduSize: Int
-  ) -> AsyncThrowingChannel<Ocp1MessageList, Error> {
-    let channel = AsyncThrowingChannel<Ocp1MessageList, Error>()
+  ) -> AsyncThrowingChannel<OcaMessageList, Error> {
+    let channel = AsyncThrowingChannel<OcaMessageList, Error>()
     // one timer for every read on the connection, rather than a sleep per message that the
     // runtime would keep for the whole timeout after the message arrived
     let deadlines = DeadlineTimer()
@@ -169,7 +169,7 @@ private extension OcaNWStreamController {
           let watchdog = deadlines.watchdog(for: timeout) {
             channel.fail(Ocp1Error.responseTimeout)
           }
-          let messages: Ocp1MessageList
+          let messages: OcaMessageList
           do {
             messages = try await OcaDevice.asyncReceiveMessages(
               reader: reader,

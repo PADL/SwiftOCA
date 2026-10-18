@@ -22,8 +22,8 @@ import Foundation
 #endif
 import SwiftOCA
 
-package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1ControllerInternal,
-  Ocp1ControllerDatagramSemantics,
+package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: OcaControllerInternal,
+  OcaControllerDatagramSemantics,
   CustomStringConvertible
 {
   package nonisolated var flags: OcaControllerFlags { .supportsLocking }
@@ -31,7 +31,7 @@ package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1Contr
 
   let peerID: T
   package var keepAliveTask: Task<(), Error>?
-  package let writeQueue: Ocp1WriteQueue? = nil
+  package let writeQueue: OcaWriteQueue? = nil
   package nonisolated let maximumSendPduSize: Int?
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
@@ -40,8 +40,8 @@ package actor DatagramProxyController<T: DatagramProxyPeerIdentifier>: Ocp1Contr
   package weak var endpoint: DatagramProxyDeviceEndpoint<T>?
   package let controlProtocol: OcaControlProtocol
 
-  package var messages: AnyAsyncSequence<Ocp1MessageList> {
-    AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
+  package var messages: AnyAsyncSequence<OcaMessageList> {
+    AsyncEmptySequence<OcaMessageList>().eraseToAnyAsyncSequence()
   }
 
   init(with peerID: T, endpoint: DatagramProxyDeviceEndpoint<T>) {

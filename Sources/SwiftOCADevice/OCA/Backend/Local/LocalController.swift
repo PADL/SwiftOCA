@@ -22,7 +22,7 @@ import Foundation
 #endif
 import SwiftOCA
 
-package actor OcaLocalController: Ocp1ControllerInternal {
+package actor OcaLocalController: OcaControllerInternal {
   package nonisolated var flags: OcaControllerFlags { [.supportsLocking, .isLocal] }
   package nonisolated var connectionPrefix: String { _connectionPrefix }
   private nonisolated let _connectionPrefix: String
@@ -31,7 +31,7 @@ package actor OcaLocalController: Ocp1ControllerInternal {
   package var lastMessageSentTime = ContinuousClock.recentPast
   package var heartbeatTime = Duration.seconds(0)
   package var keepAliveTask: Task<(), Error>?
-  package let writeQueue: Ocp1WriteQueue? = nil
+  package let writeQueue: OcaWriteQueue? = nil
 
   package weak var endpoint: OcaLocalDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
@@ -45,10 +45,10 @@ package actor OcaLocalController: Ocp1ControllerInternal {
     )
   }
 
-  package var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<OcaMessageList> {
     let controlProtocol = endpoint!.controlProtocol
     return endpoint!.requestChannel.map { data in
-      try Ocp1MessageList(messagePduData: data, controlProtocol: controlProtocol)
+      try OcaMessageList(messagePduData: data, controlProtocol: controlProtocol)
     }.eraseToAnyAsyncSequence()
   }
 

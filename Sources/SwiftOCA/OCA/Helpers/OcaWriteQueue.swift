@@ -23,7 +23,7 @@
 /// per PDU to guard a `Bool` and an array. The transports submit their I/O to an executor of
 /// their own regardless (`IORing` is an actor), so there is nothing to gain by moving the
 /// bookkeeping off the caller's.
-package final class Ocp1WriteQueue {
+package final class OcaWriteQueue {
   private var isBusy = false
   private var waiters = [UnsafeContinuation<Void, Never>]()
   private var head = 0
