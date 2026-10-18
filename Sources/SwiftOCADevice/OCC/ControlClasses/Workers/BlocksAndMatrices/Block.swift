@@ -326,12 +326,29 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     resultFlags: OcaActionObjectSearchResultFlags,
     from controller: any OcaController
   ) async throws -> [OcaObjectSearchResult] {
+    // Descend through the blocks the path names, so that only the blocks along it are
+    // searched rather than every object above its depth. An object's role path comes from
+    // its owners, which are the blocks containing it for any that is ownable; the few
+    // found are checked against it, as one that is not ownable has its role alone.
+    guard let leafRole = searchPath.last else { return [] }
+    var containers: [any OcaBlockContainer] = [self]
+    for role in searchPath.dropLast() {
+      containers = containers.flatMap { container in
+        container.actionObjects.compactMap { member -> (any OcaBlockContainer)? in
+          member.role == role ? member as? any OcaBlockContainer : nil
+        }
+      }
+    }
+    let found = containers.flatMap { container in
+      container.actionObjects.filter { $0.role == leafRole } as [OcaRoot]
+    }
+
     let selfRolePath = await rolePath
-    return await filterRecursive(maxDepth: searchPath.count) { member, _ in
-      await member.rolePath == selfRolePath + searchPath
-    }.async.map { member in
-      await member.makeSearchResult(with: resultFlags)
-    }.collect()
+    var results = [OcaObjectSearchResult]()
+    for member in found where await member.rolePath == selfRolePath + searchPath {
+      await results.append(member.makeSearchResult(with: resultFlags))
+    }
+    return results
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaBlock.Methods.findActionObjectsByLabelRecursive)
