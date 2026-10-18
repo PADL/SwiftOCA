@@ -45,9 +45,9 @@ fileprivate extension Errno {
 /// OCP.1 DTLS-secured UDP connection. Connected SOCK_DGRAM socket so each
 /// receive returns one peer datagram, which we deposit into the engine's
 /// rbio for SSL_read to drain one DTLS record at a time.
-public final class Ocp1OpenSSLDTLSConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
+public final class Ocp1OpenSSLDTLSConnection: OcaConnection, OcaMutableSocketAddressConnection {
   private let _ring: IORing
-  package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
+  package let _deviceAddressState: Mutex<OcaDeviceAddressState>
   private let _socket: Mutex<Socket?> = .init(nil)
   private let _credential: Ocp1TLSCredential
   private let _engine: Ocp1OpenSSLEngine
@@ -62,7 +62,7 @@ public final class Ocp1OpenSSLDTLSConnection: OcaConnection, Ocp1MutableSocketAd
   override public var heartbeatTime: Duration { .seconds(1) }
 
   private init(
-    addressState: Ocp1DeviceAddressState,
+    addressState: OcaDeviceAddressState,
     credential: Ocp1TLSCredential,
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
@@ -101,7 +101,7 @@ public final class Ocp1OpenSSLDTLSConnection: OcaConnection, Ocp1MutableSocketAd
     ring: IORing = .shared
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(deviceAddress.socketAddress)]),
+      addressState: OcaDeviceAddressState(addresses: [AnySocketAddress(deviceAddress.socketAddress)]),
       credential: credential,
       hostname: sniHostname,
       trustRoots: trustRoots,
@@ -123,7 +123,7 @@ public final class Ocp1OpenSSLDTLSConnection: OcaConnection, Ocp1MutableSocketAd
     ring: IORing = .shared
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(
+      addressState: OcaDeviceAddressState(
         addresses: deviceAddresses.compactMap { try? $0.socketAddress }.map { AnySocketAddress($0) }
       ),
       credential: credential,
@@ -147,7 +147,7 @@ public final class Ocp1OpenSSLDTLSConnection: OcaConnection, Ocp1MutableSocketAd
     ring: IORing = .shared
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      addressState: OcaDeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
       credential: credential,
       hostname: host,
       trustRoots: trustRoots,

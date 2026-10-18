@@ -69,8 +69,8 @@ private extension SocketAddress {
 @available(*, deprecated, renamed: "OcaNWConnection")
 public typealias Ocp1NWConnection = OcaNWConnection
 
-open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
-  package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
+open class OcaNWConnection: OcaConnection, OcaMutableSocketAddressConnection {
+  package let _deviceAddressState: Mutex<OcaDeviceAddressState>
   package var _queue: DispatchQueue!
   package var _nwConnection: NWConnection!
 
@@ -94,7 +94,7 @@ open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
   }
 
   package init(
-    addressState: Ocp1DeviceAddressState,
+    addressState: OcaDeviceAddressState,
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     _deviceAddressState = Mutex(addressState)
@@ -125,7 +125,7 @@ open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(
+      addressState: OcaDeviceAddressState(
         addresses: [AnySocketAddress(bytes: Array(deviceAddress))]
       ),
       options: options
@@ -137,7 +137,7 @@ open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(
+      addressState: OcaDeviceAddressState(
         addresses: deviceAddresses.compactMap { try? AnySocketAddress(bytes: Array($0)) }
       ),
       options: options
@@ -153,7 +153,7 @@ open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(
+      addressState: OcaDeviceAddressState(networkAddress: Ocp1NetworkAddress(
         address: host,
         port: port
       )),
@@ -166,7 +166,7 @@ open class OcaNWConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(
+      addressState: OcaDeviceAddressState(addresses: [AnySocketAddress(
         family: sa_family_t(AF_LOCAL),
         presentationAddress: path
       )]),

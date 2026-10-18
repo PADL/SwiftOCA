@@ -28,7 +28,7 @@ import Foundation
 import SwiftOCA
 
 /// A remote WebSocket endpoint
-package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConvertible {
+package actor OcaFlyingFoxController: OcaControllerInternal, CustomStringConvertible {
   package nonisolated var flags: OcaControllerFlags {
     .supportsLocking
   }
@@ -41,7 +41,7 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
   private nonisolated let _usesTextFrames: Bool
 
 
-  private let _messages: AsyncThrowingChannel<Ocp1MessageList, Error>
+  private let _messages: AsyncThrowingChannel<OcaMessageList, Error>
   private var receiveMessageTask: Task<(), Never>?
   private let outputStream: AsyncStream<WSMessage>.Continuation
   package var endpoint: OcaFlyingFoxDeviceEndpoint?
@@ -49,11 +49,11 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
   package let controlProtocol: OcaControlProtocol
 
   package var keepAliveTask: Task<(), Error>?
-  package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
+  package let writeQueue: OcaWriteQueue? = OcaWriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
 
-  package var messages: AsyncExtensions.AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AsyncExtensions.AnyAsyncSequence<OcaMessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 
@@ -75,7 +75,7 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
       ocp2: OcaJsonWebSocketTcpConnectionPrefix
     )
     let maximumPduSize = endpoint?.maximumPduSize ?? OcaControlProtocol.defaultMaximumPduSize
-    let messagesChannel = AsyncThrowingChannel<Ocp1MessageList, Error>()
+    let messagesChannel = AsyncThrowingChannel<OcaMessageList, Error>()
     _messages = messagesChannel
     receiveMessageTask = Task { [inputStream] in
       // consecutive frame payloads are a byte stream (AES70-3 8.4.3.4.4, AES70-4
@@ -119,7 +119,7 @@ package actor OcaFlyingFoxController: Ocp1ControllerInternal, CustomStringConver
           return
         }
         do {
-          let messageList = try Ocp1MessageList(
+          let messageList = try OcaMessageList(
             messagePduData: pdu,
             controlProtocol: controlProtocol
           )

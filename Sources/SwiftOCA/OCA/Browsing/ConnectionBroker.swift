@@ -404,7 +404,7 @@ public actor OcaConnectionBroker {
     // Keep a live connection's candidate addresses current; the setter ignores
     // an unchanged set and migrates only when the address in use disappears.
     try? withDeviceConnection(deviceIdentifier) { existingConnection in
-      if let mutableConnection = existingConnection as? Ocp1MutableSocketAddressConnection {
+      if let mutableConnection = existingConnection as? OcaMutableSocketAddressConnection {
         mutableConnection.deviceAddressData = try device.addresses
       }
     }

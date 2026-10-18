@@ -25,7 +25,7 @@ import XCTest
 /// Owns a write queue, as a connection or controller does, over a transport that holds each
 /// write until released, as a peer that has stopped reading would.
 private actor StalledTransport {
-  let queue = Ocp1WriteQueue()
+  let queue = OcaWriteQueue()
   private(set) var written = [Int]()
   private(set) var entered = 0
   private var release: CheckedContinuation<Void, Never>?

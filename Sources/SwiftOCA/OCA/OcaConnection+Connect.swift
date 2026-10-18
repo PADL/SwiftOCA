@@ -324,7 +324,7 @@ extension OcaConnection {
 
     try await disconnectDevice()
 
-    (self as? any Ocp1MutableSocketAddressConnection)?._clearConnectedDeviceAddress()
+    (self as? any OcaMutableSocketAddressConnection)?._clearConnectedDeviceAddress()
 
     if clearObjectCache {
       await self.clearObjectCache()

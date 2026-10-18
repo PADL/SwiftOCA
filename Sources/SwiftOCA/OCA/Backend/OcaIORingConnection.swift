@@ -54,9 +54,9 @@ package extension Errno {
 @available(*, deprecated, renamed: "OcaIORingConnection")
 public typealias Ocp1IORingConnection = OcaIORingConnection
 
-public class OcaIORingConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
+public class OcaIORingConnection: OcaConnection, OcaMutableSocketAddressConnection {
   fileprivate let _ring: IORing
-  package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
+  package let _deviceAddressState: Mutex<OcaDeviceAddressState>
   fileprivate var _socket: Socket?
   fileprivate var _type: Int32 {
     fatalError("must be implemented by subclass")
@@ -72,7 +72,7 @@ public class OcaIORingConnection: OcaConnection, Ocp1MutableSocketAddressConnect
     ring: IORing = .shared
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(
+      addressState: OcaDeviceAddressState(
         addresses: [AnySocketAddress(deviceAddress.socketAddress)]
       ),
       options: options,
@@ -86,7 +86,7 @@ public class OcaIORingConnection: OcaConnection, Ocp1MutableSocketAddressConnect
     ring: IORing = .shared
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(
+      addressState: OcaDeviceAddressState(
         addresses: deviceAddresses.compactMap { try? $0.socketAddress }.map { AnySocketAddress($0) }
       ),
       options: options,
@@ -103,7 +103,7 @@ public class OcaIORingConnection: OcaConnection, Ocp1MutableSocketAddressConnect
     ring: IORing = .shared
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(
+      addressState: OcaDeviceAddressState(networkAddress: Ocp1NetworkAddress(
         address: host,
         port: port
       )),
@@ -118,7 +118,7 @@ public class OcaIORingConnection: OcaConnection, Ocp1MutableSocketAddressConnect
     ring: IORing = .shared
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(sockaddr_un(
+      addressState: OcaDeviceAddressState(addresses: [AnySocketAddress(sockaddr_un(
         family: sa_family_t(AF_LOCAL),
         presentationAddress: path
       ))]),
@@ -128,7 +128,7 @@ public class OcaIORingConnection: OcaConnection, Ocp1MutableSocketAddressConnect
   }
 
   fileprivate init(
-    addressState: Ocp1DeviceAddressState,
+    addressState: OcaDeviceAddressState,
     options: OcaConnectionOptions,
     ring: IORing = .shared
   ) throws {
@@ -182,7 +182,7 @@ public final class OcaIORingDatagramConnection: OcaIORingConnection {
   }
 
   override fileprivate init(
-    addressState: Ocp1DeviceAddressState,
+    addressState: OcaDeviceAddressState,
     options: OcaConnectionOptions,
     ring: IORing
   ) throws {
@@ -246,7 +246,7 @@ public final class OcaIORingDomainSocketDatagramConnection: OcaIORingConnection 
   }
 
   override fileprivate init(
-    addressState: Ocp1DeviceAddressState,
+    addressState: OcaDeviceAddressState,
     options: OcaConnectionOptions,
     ring: IORing
   ) throws {

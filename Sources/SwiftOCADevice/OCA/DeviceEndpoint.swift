@@ -32,7 +32,7 @@ package enum OcaMessageDirection {
 }
 
 package protocol OcaDeviceEndpointPrivate: OcaDeviceEndpoint {
-  associatedtype ControllerType: Ocp1ControllerInternal
+  associatedtype ControllerType: OcaControllerInternal
 
   nonisolated var device: OcaDevice { get }
   nonisolated var timeout: Duration { get }

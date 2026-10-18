@@ -37,7 +37,7 @@ import struct SystemPackage.Errno
 /// Remote controller connected via TLS-wrapped TCP on Linux. The endpoint
 /// hands off the post-handshake engine; from here all bytes route through
 /// the engine's BIO pair.
-package actor Ocp1OpenSSLStreamController: Ocp1ControllerInternal, CustomStringConvertible {
+package actor Ocp1OpenSSLStreamController: OcaControllerInternal, CustomStringConvertible {
   package nonisolated let flags: OcaControllerFlags
   package nonisolated let connectionPrefix: String
   package nonisolated let identifier: String
@@ -46,7 +46,7 @@ package actor Ocp1OpenSSLStreamController: Ocp1ControllerInternal, CustomStringC
   package nonisolated let peerIdentity: OcaPeerIdentity
 
   package var keepAliveTask: Task<(), Error>?
-  package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
+  package let writeQueue: OcaWriteQueue? = OcaWriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: Ocp1OpenSSLStreamDeviceEndpoint?
@@ -55,14 +55,14 @@ package actor Ocp1OpenSSLStreamController: Ocp1ControllerInternal, CustomStringC
   /// The receive task captures its own reference at init.
   private var _stream: (any Ocp1ByteStream)?
   private let engine: Ocp1OpenSSLEngine
-  private let _messages = AsyncThrowingChannel<Ocp1MessageList, Error>()
+  private let _messages = AsyncThrowingChannel<OcaMessageList, Error>()
   private var receiveMessageTask: Task<(), Never>?
   /// Closes the connection if no message arrives within the endpoint's
   /// `firstMessageDeadline`; cancelled on the first inbound message.
   private var firstMessageTask: Task<(), Never>?
   private let createdAt: ContinuousClock.Instant = .now
 
-  package var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<OcaMessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 

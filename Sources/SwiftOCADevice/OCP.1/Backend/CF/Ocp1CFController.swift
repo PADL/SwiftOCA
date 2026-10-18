@@ -41,8 +41,8 @@ import Glibc
 import Android
 #endif
 
-protocol Ocp1CFControllerPrivate: Ocp1ControllerInternal,
-  Ocp1ControllerInternalLightweightNotifyingInternal, Actor,
+protocol Ocp1CFControllerPrivate: OcaControllerInternal,
+  OcaControllerInternalLightweightNotifyingInternal, Actor,
   Equatable, Hashable
 {
   nonisolated var peerAddress: AnySocketAddress { get }
@@ -87,17 +87,17 @@ package actor Ocp1CFStreamController: Ocp1CFControllerPrivate, CustomStringConve
   let peerAddress: AnySocketAddress
   var receiveMessageTask: Task<(), Never>?
   package var keepAliveTask: Task<(), Error>?
-  package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
+  package let writeQueue: OcaWriteQueue? = OcaWriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: Ocp1CFStreamDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
 
-  package var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<OcaMessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 
-  private let _messages = AsyncThrowingChannel<Ocp1MessageList, Error>()
+  private let _messages = AsyncThrowingChannel<OcaMessageList, Error>()
   private let _socket: Mutex<_CFSocketWrapper?>
   let notificationSocket: _CFSocketWrapper
 
@@ -229,7 +229,7 @@ private extension Ocp1NetworkAddress {
   }
 }
 
-package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerDatagramSemantics {
+package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, OcaControllerDatagramSemantics {
   package nonisolated var flags: OcaControllerFlags { .supportsLocking }
 
   package nonisolated var connectionPrefix: String {
@@ -238,7 +238,7 @@ package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerD
 
   let peerAddress: AnySocketAddress
   package var keepAliveTask: Task<(), Error>?
-  package let writeQueue: Ocp1WriteQueue? = nil
+  package let writeQueue: OcaWriteQueue? = nil
   package nonisolated let maximumSendPduSize: Int? = Ocp1MaximumDatagramSendPduSize
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
@@ -247,8 +247,8 @@ package actor Ocp1CFDatagramController: Ocp1CFControllerPrivate, Ocp1ControllerD
   package weak var endpoint: Ocp1CFDatagramDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
 
-  package var messages: AnyAsyncSequence<Ocp1MessageList> {
-    AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
+  package var messages: AnyAsyncSequence<OcaMessageList> {
+    AsyncEmptySequence<OcaMessageList>().eraseToAnyAsyncSequence()
   }
 
   init(

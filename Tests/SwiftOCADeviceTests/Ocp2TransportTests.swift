@@ -283,7 +283,7 @@ final class Ocp2UDPTests: XCTestCase {
     XCTAssertEqual(deviceValue, -3.5)
 
     let controllers = await fixture.endpoint.controllers
-    XCTAssertEqual((controllers.first as? any Ocp1ControllerInternal)?.connectionPrefix, OcaJsonUdpConnectionPrefix)
+    XCTAssertEqual((controllers.first as? any OcaControllerInternal)?.connectionPrefix, OcaJsonUdpConnectionPrefix)
   }
 
   /// Waits until the endpoint holds `count` controllers, or gives up.
@@ -625,7 +625,7 @@ final class Ocp2TCPTests: XCTestCase {
     XCTAssertEqual(controllers.count, 1)
     let controllerProtocol = controllers.first?.controlProtocol
     XCTAssertEqual(controllerProtocol, .ocp2)
-    XCTAssertEqual((controllers.first as? any Ocp1ControllerInternal)?.connectionPrefix, OcaJsonTcpConnectionPrefix)
+    XCTAssertEqual((controllers.first as? any OcaControllerInternal)?.connectionPrefix, OcaJsonTcpConnectionPrefix)
 
     // the device sends its own keep-alives at the negotiated interval
     var received = Data()
