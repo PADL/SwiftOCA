@@ -247,7 +247,7 @@ public final class Ocp1NWSecureTCPConnection: OcaNWConnection {
   private let trustRoots: Ocp1TLSTrustRoots?
 
   private init(
-    addressState: Ocp1DeviceAddressState,
+    addressState: OcaDeviceAddressState,
     credential: Ocp1TLSCredential,
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
@@ -287,7 +287,7 @@ public final class Ocp1NWSecureTCPConnection: OcaNWConnection {
   ) throws {
     let address = try AnySocketAddress(bytes: Array(deviceAddress))
     try self.init(
-      addressState: Ocp1DeviceAddressState(addresses: [address]),
+      addressState: OcaDeviceAddressState(addresses: [address]),
       credential: credential,
       hostname: sniHostname,
       trustRoots: trustRoots,
@@ -308,7 +308,7 @@ public final class Ocp1NWSecureTCPConnection: OcaNWConnection {
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      addressState: OcaDeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
       credential: credential,
       hostname: host,
       trustRoots: trustRoots,
@@ -327,7 +327,7 @@ public final class Ocp1NWSecureTCPConnection: OcaNWConnection {
       presentationAddress: path
     )
     try self.init(
-      addressState: Ocp1DeviceAddressState(addresses: [address]),
+      addressState: OcaDeviceAddressState(addresses: [address]),
       credential: credential,
       hostname: nil,
       trustRoots: nil,
@@ -389,7 +389,7 @@ public final class Ocp1NWSecureUDPConnection: OcaNWConnection {
   }
 
   private init(
-    addressState: Ocp1DeviceAddressState,
+    addressState: OcaDeviceAddressState,
     credential: Ocp1TLSCredential,
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
@@ -427,7 +427,7 @@ public final class Ocp1NWSecureUDPConnection: OcaNWConnection {
   ) throws {
     let address = try AnySocketAddress(bytes: Array(deviceAddress))
     try self.init(
-      addressState: Ocp1DeviceAddressState(addresses: [address]),
+      addressState: OcaDeviceAddressState(addresses: [address]),
       credential: credential,
       hostname: sniHostname,
       trustRoots: trustRoots,
@@ -448,7 +448,7 @@ public final class Ocp1NWSecureUDPConnection: OcaNWConnection {
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      addressState: OcaDeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
       credential: credential,
       hostname: host,
       trustRoots: trustRoots,

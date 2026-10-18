@@ -33,12 +33,12 @@ import WinSDK
 #endif
 
 /// A remote controller
-package actor OcaFlyingSocksStreamController: Ocp1ControllerInternal, CustomStringConvertible {
+package actor OcaFlyingSocksStreamController: OcaControllerInternal, CustomStringConvertible {
   package nonisolated let flags: OcaControllerFlags
   package nonisolated let connectionPrefix: String
 
   package var keepAliveTask: Task<(), Error>?
-  package let writeQueue: Ocp1WriteQueue? = Ocp1WriteQueue()
+  package let writeQueue: OcaWriteQueue? = OcaWriteQueue()
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
   package weak var endpoint: OcaFlyingSocksStreamDeviceEndpoint?
@@ -46,9 +46,9 @@ package actor OcaFlyingSocksStreamController: Ocp1ControllerInternal, CustomStri
 
   private let address: String
   private let socket: AsyncSocket
-  private let _messages: AsyncThrowingChannel<Ocp1MessageList, Error>
+  private let _messages: AsyncThrowingChannel<OcaMessageList, Error>
 
-  package var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<OcaMessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 
@@ -177,7 +177,7 @@ private extension OcaFlyingSocksStreamController {
 }
 
 private extension AsyncThrowingChannel
-  where Element == Ocp1MessageList,
+  where Element == OcaMessageList,
   Failure == Error
 {
   static func decodingMessages(
@@ -208,7 +208,7 @@ private extension AsyncThrowingChannel
           let watchdog = deadlines.watchdog(for: timeout) {
             channel.fail(Ocp1Error.responseTimeout)
           }
-          let messages: Ocp1MessageList
+          let messages: OcaMessageList
           do {
             messages = try await OcaDevice.asyncReceiveMessages(
               reader: reader,

@@ -418,7 +418,7 @@ open class OcaConnection: CustomStringConvertible {
   var reconnectTask: Task<(), Error>?
   /// Serialises transport writes where a PDU can be written partially and resumed from
   /// an offset. Datagram transports write whole PDUs and bypass it.
-  let writeQueue = Ocp1WriteQueue()
+  let writeQueue = OcaWriteQueue()
 
   var batcher: OcaMessageBatcher!
 
@@ -519,7 +519,7 @@ extension OcaConnection: Hashable {
 /// bundled into one value so a backend declares a single `Mutex`-protected cell
 /// and the presentation accessors observe a consistent snapshot under one lock.
 /// A `struct` (not a class) so the `Mutex` owns and protects the value.
-package struct Ocp1DeviceAddressState: Sendable {
+package struct OcaDeviceAddressState: Sendable {
   /// Candidate addresses, in preference order.
   package var addresses: [AnySocketAddress]
   /// The candidate the current session connected to (`nil` while disconnected),
@@ -557,18 +557,18 @@ package struct Ocp1DeviceAddressState: Sendable {
 
 /// A mutable connection that targets one or more resolved socket addresses (as
 /// opposed to, say, a Mach port or a WebSocket URL). Conformers declare only the
-/// single `Mutex`-protected ``Ocp1DeviceAddressState`` cell plus the per-candidate
+/// single `Mutex`-protected ``OcaDeviceAddressState`` cell plus the per-candidate
 /// connect; this extension derives ``deviceAddresses``, tracks the candidate
 /// actually connected to, resolves an optional hostname, and drives first-reachable
 /// connect — so the address-handling lives here, not on the base `OcaConnection`.
 ///
 /// `package` for now: an internal mechanism shared by the package's socket
 /// backends, not yet public API.
-package protocol Ocp1MutableSocketAddressConnection: OcaConnection {
+package protocol OcaMutableSocketAddressConnection: OcaConnection {
   /// Single store for the candidate addresses, the connected candidate, and an
   /// optional hostname. A `Mutex` (not actor isolation) because the accessors are
   /// read and written `nonisolated`, off the `@OcaConnectionActor` actor.
-  nonisolated var _deviceAddressState: Mutex<Ocp1DeviceAddressState> { get }
+  nonisolated var _deviceAddressState: Mutex<OcaDeviceAddressState> { get }
 
   /// Establish the underlying transport to a single resolved candidate. Called
   /// by ``_connectFirstReachableDeviceAddress()`` for each address in turn;
@@ -577,7 +577,7 @@ package protocol Ocp1MutableSocketAddressConnection: OcaConnection {
   func _connectDevice(to deviceAddress: AnySocketAddress) async throws
 }
 
-package extension Ocp1MutableSocketAddressConnection {
+package extension OcaMutableSocketAddressConnection {
   /// The candidate device addresses, in preference order. A hostname can resolve
   /// to several addresses (e.g. an IPv4 and an IPv6 ULA) and only some may be
   /// reachable at any moment; `connectDevice()` tries them in order and connects
@@ -648,7 +648,7 @@ package extension Ocp1MutableSocketAddressConnection {
   }
 }
 
-package extension Ocp1MutableSocketAddressConnection {
+package extension OcaMutableSocketAddressConnection {
   /// The address currently in use: the connected candidate while connected,
   /// otherwise the preferred (first) candidate, read under one lock. Use this —
   /// not `deviceAddresses.first` — for any accessor that describes the live

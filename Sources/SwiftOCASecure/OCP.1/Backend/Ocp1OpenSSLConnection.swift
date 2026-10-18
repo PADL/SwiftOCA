@@ -44,9 +44,9 @@ fileprivate extension Errno {
 
 /// OCP.1 TLS-secured TCP connection. The socket is owned on the Swift side;
 /// `Ocp1OpenSSLEngine` only sees the memory BIO pair we pump.
-public final class Ocp1OpenSSLConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
+public final class Ocp1OpenSSLConnection: OcaConnection, OcaMutableSocketAddressConnection {
   private let _ring: IORing
-  package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
+  package let _deviceAddressState: Mutex<OcaDeviceAddressState>
   private let _socket: Mutex<Socket?> = .init(nil)
   private let _credential: Ocp1TLSCredential
   private let _engine: Ocp1OpenSSLEngine
@@ -59,7 +59,7 @@ public final class Ocp1OpenSSLConnection: OcaConnection, Ocp1MutableSocketAddres
   override public var hasTransportLayerSecurity: Bool { true }
 
   private init(
-    addressState: Ocp1DeviceAddressState,
+    addressState: OcaDeviceAddressState,
     credential: Ocp1TLSCredential,
     hostname: String?,
     trustRoots: Ocp1TLSTrustRoots?,
@@ -97,7 +97,7 @@ public final class Ocp1OpenSSLConnection: OcaConnection, Ocp1MutableSocketAddres
     ring: IORing = .shared
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(deviceAddress.socketAddress)]),
+      addressState: OcaDeviceAddressState(addresses: [AnySocketAddress(deviceAddress.socketAddress)]),
       credential: credential,
       hostname: sniHostname,
       trustRoots: trustRoots,
@@ -119,7 +119,7 @@ public final class Ocp1OpenSSLConnection: OcaConnection, Ocp1MutableSocketAddres
     ring: IORing = .shared
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(
+      addressState: OcaDeviceAddressState(
         addresses: deviceAddresses.compactMap { try? $0.socketAddress }.map { AnySocketAddress($0) }
       ),
       credential: credential,
@@ -143,7 +143,7 @@ public final class Ocp1OpenSSLConnection: OcaConnection, Ocp1MutableSocketAddres
     ring: IORing = .shared
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
+      addressState: OcaDeviceAddressState(networkAddress: Ocp1NetworkAddress(address: host, port: port)),
       credential: credential,
       hostname: host,
       trustRoots: trustRoots,
@@ -160,7 +160,7 @@ public final class Ocp1OpenSSLConnection: OcaConnection, Ocp1MutableSocketAddres
     ring: IORing = .shared
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(addresses: [AnySocketAddress(sockaddr_un(
+      addressState: OcaDeviceAddressState(addresses: [AnySocketAddress(sockaddr_un(
         family: sa_family_t(AF_LOCAL),
         presentationAddress: path
       ))]),

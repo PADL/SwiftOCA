@@ -263,15 +263,15 @@ private final class ConnectionSocketPool: AsyncSocketPool {
 @available(*, deprecated, renamed: "OcaFlyingSocksConnection")
 public typealias Ocp1FlyingSocksConnection = OcaFlyingSocksConnection
 
-public class OcaFlyingSocksConnection: OcaConnection, Ocp1MutableSocketAddressConnection {
+public class OcaFlyingSocksConnection: OcaConnection, OcaMutableSocketAddressConnection {
   // The bare `AnySocketAddress` here is the PADL struct (selectively imported
   // above); `FlyingSocks.AnySocketAddress` stays fully qualified everywhere else.
-  package let _deviceAddressState: Mutex<Ocp1DeviceAddressState>
+  package let _deviceAddressState: Mutex<OcaDeviceAddressState>
   fileprivate var _asyncSocket: AsyncSocket?
   private var _socketPool: ConnectionSocketPool?
 
   package init(
-    addressState: Ocp1DeviceAddressState,
+    addressState: OcaDeviceAddressState,
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     _deviceAddressState = Mutex(addressState)
@@ -284,7 +284,7 @@ public class OcaFlyingSocksConnection: OcaConnection, Ocp1MutableSocketAddressCo
   ) throws {
     // Drop any candidate that won't parse rather than discarding the whole list.
     try self.init(
-      addressState: Ocp1DeviceAddressState(
+      addressState: OcaDeviceAddressState(
         addresses: deviceAddresses.compactMap { try? AnySocketAddress(bytes: Array($0)) }
       ),
       options: options
@@ -306,7 +306,7 @@ public class OcaFlyingSocksConnection: OcaConnection, Ocp1MutableSocketAddressCo
     options: OcaConnectionOptions = OcaConnectionOptions()
   ) throws {
     try self.init(
-      addressState: Ocp1DeviceAddressState(networkAddress: Ocp1NetworkAddress(
+      addressState: OcaDeviceAddressState(networkAddress: Ocp1NetworkAddress(
         address: host,
         port: port
       )),

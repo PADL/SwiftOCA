@@ -22,7 +22,7 @@ import Foundation
 import Logging
 import SwiftOCA
 
-extension Ocp1ControllerInternal {
+extension OcaControllerInternal {
   package nonisolated var loggerMetadata: Logger.Metadata {
     ["CONTROLLER": "\(connectionPrefix)/\(identifier)"]
   }
@@ -43,7 +43,7 @@ private func _ocp1TraceDescription(_ message: Any) -> String {
 extension OcaDeviceEndpointPrivate {
   package nonisolated func traceMessage(
     _ message: some Any,
-    controller: any Ocp1ControllerInternal,
+    controller: any OcaControllerInternal,
     direction: OcaMessageDirection
   ) {
     guard enableMessageTracing, logger.logLevel <= .trace else { return }
@@ -55,19 +55,19 @@ extension OcaDeviceEndpointPrivate {
 }
 
 extension Logger {
-  package func info(_ message: String, controller: any Ocp1ControllerInternal) {
+  package func info(_ message: String, controller: any OcaControllerInternal) {
     info("\(message)", metadata: controller.loggerMetadata)
   }
 
-  package func command(_ command: Ocp1Command, on controller: any Ocp1ControllerInternal) {
+  package func command(_ command: Ocp1Command, on controller: any OcaControllerInternal) {
     trace("command \(_ocp1TraceDescription(command))", metadata: controller.loggerMetadata)
   }
 
-  package func response(_ response: Ocp1Response, on controller: any Ocp1ControllerInternal) {
+  package func response(_ response: Ocp1Response, on controller: any OcaControllerInternal) {
     trace("response \(response)", metadata: controller.loggerMetadata)
   }
 
-  package func error(_ error: Error, controller: any Ocp1ControllerInternal) {
+  package func error(_ error: Error, controller: any OcaControllerInternal) {
     warning("error \(error)", metadata: controller.loggerMetadata)
   }
 }

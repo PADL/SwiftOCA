@@ -30,8 +30,8 @@ import Synchronization
 /// Per-peer remote controller for Network.framework's UDP (plain or DTLS)
 /// path. NWListener demuxes datagrams to per-peer NWConnections for us;
 /// each `receiveMessage` yields one whole datagram for decode.
-package actor OcaNWDatagramController: Ocp1ControllerInternal,
-  Ocp1ControllerDatagramSemantics,
+package actor OcaNWDatagramController: OcaControllerInternal,
+  OcaControllerDatagramSemantics,
   CustomStringConvertible
 {
   package nonisolated let flags: OcaControllerFlags
@@ -49,7 +49,7 @@ package actor OcaNWDatagramController: Ocp1ControllerInternal,
   }
 
   package var keepAliveTask: Task<(), Error>?
-  package let writeQueue: Ocp1WriteQueue? = nil
+  package let writeQueue: OcaWriteQueue? = nil
   package nonisolated let maximumSendPduSize: Int? = Ocp1MaximumDatagramSendPduSize
   package var lastMessageReceivedTime = ContinuousClock.recentPast
   package var lastMessageSentTime = ContinuousClock.recentPast
@@ -57,11 +57,11 @@ package actor OcaNWDatagramController: Ocp1ControllerInternal,
   package let controlProtocol: OcaControlProtocol
 
   private let connection: NWConnection
-  private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
+  private let _messages: AsyncThrowingStream<OcaMessageList, Error>
   private var connectionClosed = false
   package private(set) var isOpen: Bool = false
 
-  package var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<OcaMessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 
@@ -151,11 +151,11 @@ private extension OcaNWDatagramController {
     on connection: NWConnection,
     controlProtocol: OcaControlProtocol,
     maximumPduSize: Int
-  ) -> AsyncThrowingStream<Ocp1MessageList, Error> {
-    return AsyncThrowingStream { () async throws -> Ocp1MessageList? in
+  ) -> AsyncThrowingStream<OcaMessageList, Error> {
+    return AsyncThrowingStream { () async throws -> OcaMessageList? in
       let pdu = try await connection.receiveOneDatagram()
       try controlProtocol.validatePacketPdu(pdu, maximumPduSize: maximumPduSize)
-      return try Ocp1MessageList(messagePduData: pdu, controlProtocol: controlProtocol)
+      return try OcaMessageList(messagePduData: pdu, controlProtocol: controlProtocol)
     }
   }
 }

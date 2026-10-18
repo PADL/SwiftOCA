@@ -23,7 +23,7 @@ import Foundation
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
-package actor Ocp1MachPortController: Ocp1ControllerInternal {
+package actor Ocp1MachPortController: OcaControllerInternal {
   package nonisolated var flags: OcaControllerFlags { [.supportsLocking, .isLocal] }
   package nonisolated var connectionPrefix: String { OcaMachPortConnectionPrefix }
 
@@ -36,7 +36,7 @@ package actor Ocp1MachPortController: Ocp1ControllerInternal {
   }
 
   package var keepAliveTask: Task<(), Error>?
-  package let writeQueue: Ocp1WriteQueue? = nil
+  package let writeQueue: OcaWriteQueue? = nil
 
   package weak var endpoint: Ocp1MachPortDeviceEndpoint?
   package let controlProtocol: OcaControlProtocol
@@ -45,7 +45,7 @@ package actor Ocp1MachPortController: Ocp1ControllerInternal {
   private let receiveHandle: Ocp1MachPortHandle
   /// send right to the client's receive port
   private let clientSendPort: mach_port_t
-  private let _messages: AsyncThrowingStream<Ocp1MessageList, Error>
+  private let _messages: AsyncThrowingStream<OcaMessageList, Error>
 
   package nonisolated let identifier: String
 
@@ -61,7 +61,7 @@ package actor Ocp1MachPortController: Ocp1ControllerInternal {
     self.clientSendPort = clientSendPort
     self.identifier = identifier
 
-    let (stream, continuation) = AsyncThrowingStream<Ocp1MessageList, Error>.makeStream()
+    let (stream, continuation) = AsyncThrowingStream<OcaMessageList, Error>.makeStream()
     _messages = stream
 
     let handle = receiveHandle
@@ -73,7 +73,7 @@ package actor Ocp1MachPortController: Ocp1ControllerInternal {
           let envelope = try handle.receive()
           switch envelope.kind {
           case .data:
-            let messageList = try Ocp1MessageList(messagePduData: envelope.payload)
+            let messageList = try OcaMessageList(messagePduData: envelope.payload)
             continuation.yield(messageList)
           case .disconnect:
             continuation.finish(throwing: Ocp1Error.notConnected)
@@ -88,7 +88,7 @@ package actor Ocp1MachPortController: Ocp1ControllerInternal {
     }
   }
 
-  package var messages: AnyAsyncSequence<Ocp1MessageList> {
+  package var messages: AnyAsyncSequence<OcaMessageList> {
     _messages.eraseToAnyAsyncSequence()
   }
 

@@ -37,8 +37,8 @@ import Synchronization
 /// Per-peer DTLS controller. The endpoint demuxes inbound datagrams by peer
 /// address and pushes each through `ingestDatagram`; the shared UDP socket
 /// is owned by the endpoint, so there's no per-controller receive loop.
-package actor Ocp1OpenSSLDTLSController: Ocp1ControllerInternal,
-  Ocp1ControllerDatagramSemantics,
+package actor Ocp1OpenSSLDTLSController: OcaControllerInternal,
+  OcaControllerDatagramSemantics,
   CustomStringConvertible
 {
   package nonisolated let flags: OcaControllerFlags
@@ -53,7 +53,7 @@ package actor Ocp1OpenSSLDTLSController: Ocp1ControllerInternal,
   }
 
   package var keepAliveTask: Task<(), Error>?
-  package let writeQueue: Ocp1WriteQueue? = nil
+  package let writeQueue: OcaWriteQueue? = nil
   /// leaves room for the DTLS record overhead (up to 93 bytes)
   package nonisolated let maximumSendPduSize: Int? = Ocp1MaximumDatagramSendPduSize - 128
   package var lastMessageReceivedTime = ContinuousClock.recentPast
@@ -73,8 +73,8 @@ package actor Ocp1OpenSSLDTLSController: Ocp1ControllerInternal,
 
   /// Endpoint feeds messages directly via `handle(messagePduData:from:)`;
   /// no per-controller stream to consume.
-  package var messages: AnyAsyncSequence<Ocp1MessageList> {
-    AsyncEmptySequence<Ocp1MessageList>().eraseToAnyAsyncSequence()
+  package var messages: AnyAsyncSequence<OcaMessageList> {
+    AsyncEmptySequence<OcaMessageList>().eraseToAnyAsyncSequence()
   }
 
   package var heartbeatTime = Duration.seconds(1) {

@@ -365,7 +365,7 @@ final class OcaMessageBatcherTests: XCTestCase {
     XCTAssertEqual(currentCount, 0)
   }
 
-  /// The timer must not deliver its own batch under cancellation. `Ocp1WriteQueue` drops a PDU
+  /// The timer must not deliver its own batch under cancellation. `OcaWriteQueue` drops a PDU
   /// whose task is already cancelled, so a batch sent that way never reaches the wire and the
   /// command behind it times out.
   @OcaConnectionActor
