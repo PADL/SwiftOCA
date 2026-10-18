@@ -33,6 +33,8 @@ final class RolePathSearchTests: XCTestCase {
   private var outerGain: SwiftOCADevice.OcaGain!
   private var innerGain: SwiftOCADevice.OcaGain!
   private var rootGain: SwiftOCADevice.OcaGain!
+  private var twins: [SwiftOCADevice.OcaGain]!
+  private var rootPlain: SwiftOCADevice.OcaRoot!
 
   override func setUp() async throws {
     device = OcaDevice()
@@ -58,6 +60,32 @@ final class RolePathSearchTests: XCTestCase {
     )
     try await inner.add(actionObject: innerGain)
     rootGain = try await SwiftOCADevice.OcaGain(role: "Gain", deviceDelegate: device)
+
+    // two members of one block with one role
+    twins = []
+    for _ in 0..<2 {
+      let twin = try await SwiftOCADevice.OcaGain(
+        role: "Twin",
+        deviceDelegate: device,
+        addToRootBlock: false
+      )
+      try await outer.add(actionObject: twin)
+      twins.append(twin)
+    }
+
+    // an object that is not ownable has its role alone for a role path, wherever it is
+    rootPlain = try await SwiftOCADevice.OcaRoot(
+      role: "Plain",
+      deviceDelegate: device,
+      addToRootBlock: false
+    )
+    try await device.rootBlock.add(actionObject: rootPlain)
+    let innerPlain = try await SwiftOCADevice.OcaRoot(
+      role: "Plain",
+      deviceDelegate: device,
+      addToRootBlock: false
+    )
+    try await inner.add(actionObject: innerPlain)
   }
 
   private func search(
@@ -90,11 +118,26 @@ final class RolePathSearchTests: XCTestCase {
     XCTAssertEqual(gainOfOuter, [outerGain.objectNumber])
   }
 
+  func testMembersWithOneRoleAreAllFoundInOrder() async throws {
+    let found = try await search(["Outer", "Twin"])
+    XCTAssertEqual(found, twins.map(\.objectNumber))
+  }
+
+  func testAnObjectThatIsNotOwnableIsNamedByItsRoleAlone() async throws {
+    // its role path is ["Plain"], so it is found by that from the root block, and the one
+    // in Inner is not found by the path to Inner
+    let fromRoot = try await search(["Plain"])
+    let throughInner = try await search(["Outer", "Inner", "Plain"])
+    XCTAssertEqual(fromRoot, [rootPlain.objectNumber])
+    XCTAssertEqual(throughInner, [])
+  }
+
   func testPathsThatNameNothing() async throws {
     let empty = try await search([])
     let missing = try await search(["Outer", "Nothing"])
     let tooDeep = try await search(["Outer", "Gain", "Gain"])
     let skipping = try await search(["Inner", "Gain"])
+    // an empty path names nothing, the block searched included
     XCTAssertEqual(empty, [])
     XCTAssertEqual(missing, [])
     XCTAssertEqual(tooDeep, [])
