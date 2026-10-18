@@ -326,26 +326,35 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     resultFlags: OcaActionObjectSearchResultFlags,
     from controller: any OcaController
   ) async throws -> [OcaObjectSearchResult] {
-    // Descend through the blocks the path names, so that only the blocks along it are
-    // searched rather than every object above its depth. An object's role path comes from
-    // its owners, which are the blocks containing it for any that is ownable; the few
-    // found are checked against it, as one that is not ownable has its role alone.
-    guard let leafRole = searchPath.last else { return [] }
-    var containers: [any OcaBlockContainer] = [self]
-    for role in searchPath.dropLast() {
-      containers = containers.flatMap { container in
-        container.actionObjects.compactMap { member -> (any OcaBlockContainer)? in
-          member.role == role ? member as? any OcaBlockContainer : nil
-        }
+    // An object's role path is the roles of its owners, outermost first, then its own. An
+    // ownable object's owner is the block that contains it: add(actionObject:) makes it so.
+    // So rather than build the role path of every object, follow the path down from this
+    // block, one role at a time, through the blocks it names.
+    //
+    // A member is on the path if the block it was found in owns it. One that is not ownable
+    // has its own role alone for a role path, wherever it is, so it is on the path only as
+    // the path's first role, searched from the root block.
+    func isOnPath(_ member: OcaRoot, in container: any OcaBlockContainer, depth: Int) -> Bool {
+      if let member = member as? OcaOwnable {
+        member.owner == container.objectNumber
+      } else {
+        depth == 0 && objectNumber == OcaRootBlockONo
       }
     }
-    let found = containers.flatMap { container in
-      container.actionObjects.filter { $0.role == leafRole } as [OcaRoot]
+
+    var found: [OcaRoot] = []
+    var containers: [any OcaBlockContainer] = [self]
+    for (depth, role) in searchPath.enumerated() {
+      found = containers.flatMap { container in
+        container.actionObjects.filter { member in
+          member.role == role && isOnPath(member, in: container, depth: depth)
+        } as [OcaRoot]
+      }
+      containers = found.compactMap { $0 as? any OcaBlockContainer }
     }
 
-    let selfRolePath = await rolePath
     var results = [OcaObjectSearchResult]()
-    for member in found where await member.rolePath == selfRolePath + searchPath {
+    for member in found {
       await results.append(member.makeSearchResult(with: resultFlags))
     }
     return results
