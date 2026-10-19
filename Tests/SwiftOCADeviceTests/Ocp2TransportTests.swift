@@ -324,7 +324,7 @@ final class Ocp2UDPTests: XCTestCase {
     let controllers = await datagramControllers(of: fixture)
     let controller = try XCTUnwrap(controllers.first)
     let heartbeatTime = await controller.heartbeatTime
-    XCTAssertEqual(heartbeatTime, Ocp1MaximumDatagramHeartbeatTime)
+    XCTAssertEqual(heartbeatTime, Ocp1MaximumHeartbeatTime)
     let armed = await controller.keepAliveTask != nil
     XCTAssertTrue(armed, "expiry was not armed for a datagram controller with heartbeat 0")
   }
@@ -342,7 +342,7 @@ final class Ocp2UDPTests: XCTestCase {
     let controllers = await datagramControllers(of: fixture)
     let controller = try XCTUnwrap(controllers.first)
     let heartbeatTime = await controller.heartbeatTime
-    XCTAssertEqual(heartbeatTime, Ocp1MaximumDatagramHeartbeatTime)
+    XCTAssertEqual(heartbeatTime, Ocp1MaximumHeartbeatTime)
   }
 
   func testSilentDatagramControllerIsExpired() async throws {
