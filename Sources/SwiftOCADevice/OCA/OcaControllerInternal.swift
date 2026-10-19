@@ -116,9 +116,9 @@ package extension OcaControllerInternal {
 /// that a PDU of several messages is not fragmented.
 package let Ocp1MaximumDatagramSendPduSize = Ocp1MaximumDatagramPduSize - 48
 
-/// The longest heartbeat a datagram controller gets, whatever it asks for, so that a peer
-/// that has gone away is forgotten within three minutes rather than days.
-package let Ocp1MaximumDatagramHeartbeatTime = Duration.seconds(60)
+/// The longest heartbeat a controller gets, whatever it asks for, so that a peer that has
+/// gone away, or gone silent, is forgotten within three minutes rather than days.
+package let Ocp1MaximumHeartbeatTime = Duration.seconds(60)
 
 /// The most datagram controllers one endpoint keeps; one datagram makes a controller, so
 /// without a bound a spoofed packet per source address grows the table. Per endpoint.
@@ -145,11 +145,13 @@ package extension OcaControllerInternal {
 
     // AES70-3 has a datagram peer keep sending keepalives, so for one, zero (none, on a
     // stream) means the longest heartbeat allowed: expiry stays armed and the peer is kept
-    // for three minutes rather than forever. A stream controller keeps what it asked for.
+    // for three minutes rather than forever. A stream controller asking for none gets none;
+    // once it has a heartbeat its reads stop timing out, so that too is bounded.
     func clamped(_ requested: Duration) -> Duration {
-      guard datagramController != nil else { return requested }
-      guard requested != .zero else { return Ocp1MaximumDatagramHeartbeatTime }
-      return min(requested, Ocp1MaximumDatagramHeartbeatTime)
+      guard requested != .zero else {
+        return datagramController != nil ? Ocp1MaximumHeartbeatTime : .zero
+      }
+      return min(requested, Ocp1MaximumHeartbeatTime)
     }
 
     switch message {
