@@ -145,8 +145,8 @@ package extension OcaControllerInternal {
 
     // AES70-3 has a datagram peer keep sending keepalives, so for one, zero (none, on a
     // stream) means the longest heartbeat allowed: expiry stays armed and the peer is kept
-    // for three minutes rather than forever. A stream controller asking for none gets none;
-    // once it has a heartbeat its reads stop timing out, so that too is bounded.
+    // for three minutes rather than forever. A stream controller asking for none gets none,
+    // and one asking for more gets the longest, so that a silent one is still forgotten.
     func clamped(_ requested: Duration) -> Duration {
       guard requested != .zero else {
         return datagramController != nil ? Ocp1MaximumHeartbeatTime : .zero

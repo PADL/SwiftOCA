@@ -46,7 +46,6 @@ package actor OcaFlyingSocksStreamController: OcaControllerInternal, CustomStrin
 
   private let address: String
   private let socket: AsyncSocket
-  private let idleTimeout: OcaStreamIdleTimeout
   private let _messages: AsyncThrowingChannel<OcaMessageList, Error>
 
   package var messages: AnyAsyncSequence<OcaMessageList> {
@@ -79,10 +78,8 @@ package actor OcaFlyingSocksStreamController: OcaControllerInternal, CustomStrin
     self.endpoint = endpoint
     controlProtocol = endpoint.controlProtocol
     self.socket = socket
-    idleTimeout = OcaStreamIdleTimeout(endpoint.timeout)
     _messages = AsyncThrowingChannel.decodingMessages(
       from: socket.bytes,
-      idleTimeout: idleTimeout,
       controlProtocol: endpoint.controlProtocol,
       maximumPduSize: endpoint.maximumPduSize
     )
@@ -90,7 +87,6 @@ package actor OcaFlyingSocksStreamController: OcaControllerInternal, CustomStrin
 
   package var heartbeatTime = Duration.seconds(0) {
     didSet {
-      idleTimeout.heartbeatTimeDidChange(to: heartbeatTime)
       heartbeatTimeDidChange(from: oldValue)
     }
   }
@@ -185,14 +181,10 @@ private extension AsyncThrowingChannel
 {
   static func decodingMessages(
     from bytes: some AsyncBufferedSequence<UInt8> & Sendable,
-    idleTimeout: OcaStreamIdleTimeout,
     controlProtocol: OcaControlProtocol,
     maximumPduSize: Int
   ) -> Self {
     let channel = Self()
-    // one timer for every read on the connection, rather than a sleep per message that the
-    // runtime would keep for the whole timeout after the message arrived
-    let deadlines = DeadlineTimer()
 
     Task {
       // one iterator and one reader for the life of the connection, owned by this task: the
@@ -205,48 +197,29 @@ private extension AsyncThrowingChannel
 
       do {
         repeat {
-          // a timeout fails the stream from a watchdog, rather than moving the read, and
-          // with it the reader, into a task of its own
-          let timeout = idleTimeout.duration
-          let deadline = ContinuousClock.now + timeout
-          let watchdog = deadlines.watchdog(for: timeout) {
-            // a heartbeat agreed while the read waited expires the controller instead
-            if idleTimeout.isEnabled {
-              channel.fail(Ocp1Error.responseTimeout)
+          // reads don't time out, as on the other backends: a controller that agrees a
+          // heartbeat is expired after three missed heartbeats (AES70-3 6.4.2), and one that
+          // agrees none, a valid state on a stream, is kept until its connection closes
+          let messages = try await OcaDevice.asyncReceiveMessages(
+            reader: reader,
+            controlProtocol: controlProtocol,
+            read: { count, awaitingAllRead in
+              var nremain = count
+              var buffer = Data()
+              buffer.reserveCapacity(count)
+
+              repeat {
+                let read = try await iterator.nextBuffer(suggested: nremain)
+                guard let read, !read.isEmpty else {
+                  throw Ocp1Error.notConnected // EOF on zero bytes
+                }
+                buffer += read
+                nremain -= read.count
+              } while awaitingAllRead && nremain > 0
+
+              return buffer
             }
-          }
-          let messages: OcaMessageList
-          do {
-            messages = try await OcaDevice.asyncReceiveMessages(
-              reader: reader,
-              controlProtocol: controlProtocol,
-              read: { count, awaitingAllRead in
-                var nremain = count
-                var buffer = Data()
-                buffer.reserveCapacity(count)
-
-                repeat {
-                  let read = try await iterator.nextBuffer(suggested: nremain)
-                  guard let read, !read.isEmpty else {
-                    throw Ocp1Error.notConnected // EOF on zero bytes
-                  }
-                  buffer += read
-                  nremain -= read.count
-                } while awaitingAllRead && nremain > 0
-
-                return buffer
-              }
-            )
-          } catch {
-            watchdog?.cancel()
-            throw error
-          }
-          watchdog?.cancel()
-          // the stream has failed if the watchdog fired, and nothing else ends this task
-          // until the socket is closed: stop reading, rather than drop what arrives
-          if watchdog != nil, idleTimeout.isEnabled, ContinuousClock.now >= deadline {
-            throw Ocp1Error.responseTimeout
-          }
+          )
           await channel.send(messages)
         } while true
       } catch Ocp1Error.pduTooShort {

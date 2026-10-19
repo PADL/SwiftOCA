@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// io_uring's stream reads have no idle timeout; FlyingSocks' and Network's do.
+// FlyingSocks' and Network's stream reads used to time out; io_uring's never have.
 #if !canImport(IORing)
 
 #if canImport(FoundationEssentials)
@@ -76,9 +76,9 @@ enum StreamBackend: CaseIterable {
   }
 }
 
-/// A controller's reads time out after the endpoint's timeout only until it agrees a
-/// heartbeat; from then, three missed heartbeats expire it.
-final class StreamIdleTimeoutTests: XCTestCase {
+/// A stream controller's reads don't time out: one that agrees a heartbeat is expired after
+/// three missed heartbeats, and one that agrees none is kept until its connection closes.
+final class StreamReadTimeoutTests: XCTestCase {
   private static let timeout = Duration.seconds(1)
 
   /// A peer whose writes throw, rather than raise SIGPIPE, once the device has dropped it.
@@ -95,8 +95,8 @@ final class StreamIdleTimeoutTests: XCTestCase {
     try OcaControlProtocol.ocp1.encodePdu([Ocp1KeepAlive1(heartBeatTime: seconds)], type: .ocaKeepAlive)
   }
 
-  /// A controller whose heartbeat is the read timeout, and whose keepalives arrive a little
-  /// late, as a timer's do, is kept.
+  /// A controller whose heartbeat is the endpoint's timeout, and whose keepalives arrive a
+  /// little late, as a timer's do, is kept.
   func testLateKeepAlivesWithinThreeHeartbeatsKeepTheController() async throws {
     for backend in StreamBackend.allCases {
       let (endpoint, endpointTask, port) = try await backend.start(timeout: Self.timeout)
@@ -113,14 +113,15 @@ final class StreamIdleTimeoutTests: XCTestCase {
         try await Task.sleep(for: Self.timeout * 1.5)
         guard (try? peer.write(keepAlive)) != nil else { break }
       }
-      // a drop is reported, and the controller removed, a little after the read times out
+      // a drop would be reported, and the controller removed, a little after a read timed out
       let dropped = await waitUntil(timeout: Self.timeout / 2) { await endpoint.controllers.isEmpty }
       XCTAssertFalse(dropped, "\(backend): a controller keeping its heartbeat was dropped")
     }
   }
 
-  /// A controller that never agrees a heartbeat and goes silent is still dropped.
-  func testASilentControllerWithoutAHeartbeatTimesOut() async throws {
+  /// A controller that never agrees a heartbeat, a valid state on a stream, is kept while it
+  /// is silent.
+  func testASilentControllerWithoutAHeartbeatIsKept() async throws {
     for backend in StreamBackend.allCases {
       let (endpoint, endpointTask, port) = try await backend.start(timeout: Self.timeout)
       defer { endpointTask.cancel() }
@@ -130,12 +131,13 @@ final class StreamIdleTimeoutTests: XCTestCase {
       let connected = await waitUntil { await endpoint.controllers.count == 1 }
       XCTAssertTrue(connected, "\(backend): the peer's controller was not added")
 
-      let removed = await waitUntil(timeout: Self.timeout * 3) { await endpoint.controllers.isEmpty }
-      XCTAssertTrue(removed, "\(backend): a silent controller without a heartbeat was kept")
+      let dropped = await waitUntil(timeout: Self.timeout * 3) { await endpoint.controllers.isEmpty }
+      XCTAssertFalse(dropped, "\(backend): a silent controller without a heartbeat was dropped")
     }
   }
 
-  /// A stream controller's heartbeat is capped, as its reads no longer time out once it has one.
+  /// A stream controller's heartbeat is capped, so that one that goes silent is expired within
+  /// three minutes.
   func testStreamHeartbeatIsCapped() async throws {
     for backend in StreamBackend.allCases {
       let (endpoint, endpointTask, port) = try await backend.start(timeout: Self.timeout)
