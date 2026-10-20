@@ -375,7 +375,8 @@ open class OcaConnection: CustomStringConvertible {
 
   var subscriptions = [OcaEvent: EventSubscriptions]()
   nonisolated(unsafe) var logger = Logger(label: "com.padl.SwiftOCA")
-  var connectionID = 0
+  /// Incremented each time a connection is established, including on reconnection.
+  public internal(set) var connectionID = 0
 
   private var continuousClockReference = ContinuousClockReference()
 
