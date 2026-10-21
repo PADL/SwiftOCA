@@ -38,7 +38,7 @@ func withDatasetSizeCap<T>(_ body: () throws -> T) throws -> T {
   let SQLITE_FULL: Int32 = 13
   do {
     return try body()
-  } catch let SQLite.Result.error(_, code, _) where code == SQLITE_FULL {
+  } catch let SQLite.Result.error(_, code) where code == SQLITE_FULL {
     throw Ocp1Error.arrayOrDataTooBig
   }
 }

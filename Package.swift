@@ -223,7 +223,7 @@ let CommonPackageDependencies: [Package.Dependency] = [
   .package(url: "https://github.com/sideeffect-io/AsyncExtensions", from: "0.7.0"),
   .package(url: "https://github.com/Flight-School/AnyCodable", from: "0.6.7"),
   .package(url: "https://github.com/1024jp/GzipSwift", from: "6.1.0"),
-  .package(url: "https://github.com/stephencelis/SQLite.swift.git", from: "0.16.0"),
+  .package(url: "https://github.com/stephencelis/SQLite.swift.git", from: "0.17.0"),
   // 602 is what swift-binary-parsing pins; the range lets a newer graph take a newer one
   .package(url: "https://github.com/swiftlang/swift-syntax.git", "602.0.0"..<"605.0.0"),
 ]
