@@ -31,19 +31,22 @@ import Foundation
 /// hands over a whole frame, and consecutive binary frames are a byte stream that
 /// may hold several PDUs, or part of one (AES70-3 8.4.3.4.4). The bytes past the
 /// PDU are kept for the next.
-package final class Ocp1PduReader: OcaPduReader {
+@_spi(SwiftOCAPrivate)
+public final class Ocp1PduReader: OcaPduReader {
   private let preservesPduBoundaries: Bool
   private let maximumPduSize: Int
   /// bytes read on a stream transport but not yet returned, from `offset`
   private var buffer = Data()
   private var offset = 0
 
-  package init(preservesPduBoundaries: Bool, maximumPduSize: Int) {
+  @_spi(SwiftOCAPrivate)
+  public init(preservesPduBoundaries: Bool, maximumPduSize: Int) {
     self.preservesPduBoundaries = preservesPduBoundaries
     self.maximumPduSize = maximumPduSize
   }
 
-  package func nextPdu(
+  @_spi(SwiftOCAPrivate)
+  public func nextPdu(
     read: (_ count: Int, _ awaitingAllRead: Bool) async throws -> Data
   ) async throws -> Data {
     guard preservesPduBoundaries else {
