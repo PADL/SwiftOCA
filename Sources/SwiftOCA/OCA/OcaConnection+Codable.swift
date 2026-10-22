@@ -37,11 +37,16 @@ package extension OcaConnection {
     }
     return Ocp1Header(pduType: messageType, messageCount: messageCount, pduSize: headerPduSize)
   }
+}
 
+/// The PDU codec, for peers that use OCP.1 framing without a connection (a private
+/// control socket, say).
+extension OcaConnection {
   /// Encodes a whole PDU in a single pass. Every message knows its encoded size
   /// up front, so the PDU is allocated once at its exact size and each size field
   /// is written in place rather than patched afterwards.
-  nonisolated static func encodeOcp1MessagePdu(
+  @_spi(SwiftOCAPrivate)
+  public nonisolated static func encodeOcp1MessagePdu(
     _ messages: [Ocp1Message],
     type messageType: OcaMessageType
   ) throws -> Data {
@@ -65,14 +70,17 @@ package extension OcaConnection {
   /// that declares more bytes (or more messages) than it delivers throws rather
   /// than trapping — both matter because `data` here is unvalidated input
   /// straight off the wire.
-  nonisolated static func decodeOcp1MessagePdu(
+  @_spi(SwiftOCAPrivate)
+  public nonisolated static func decodeOcp1MessagePdu(
     from data: Data
   ) throws -> (OcaMessageType, [Ocp1Message]) {
     try Ocp1Error.mapping {
       try data.withParserSpan { try _decodeOcp1MessagePdu(&$0) }
     }
   }
+}
 
+package extension OcaConnection {
   private nonisolated static func _decodeOcp1MessagePdu(
     _ input: inout ParserSpan
   ) throws -> (OcaMessageType, [Ocp1Message]) {
