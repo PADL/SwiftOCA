@@ -705,11 +705,12 @@ package extension CFSocket {
     CFSocketInvalidate(self)
   }
 
+  /// Sets the bits of `flags` that lie within `mask`, clearing the rest of `mask`.
   func set(flags: Int32, mask: Int32) throws {
-    var flags = try Errno.throwingGlobalErrno { fcntl(self.nativeHandle, F_GETFL, 0) }
-    flags &= ~mask
-    flags |= mask
-    try Errno.throwingGlobalErrno { fcntl(self.nativeHandle, F_SETFL, flags) }
+    var newFlags = try Errno.throwingGlobalErrno { fcntl(self.nativeHandle, F_GETFL, 0) }
+    newFlags &= ~mask
+    newFlags |= flags & mask
+    try Errno.throwingGlobalErrno { fcntl(self.nativeHandle, F_SETFL, newFlags) }
   }
 
   func get(flag: Int32) throws -> Bool {
@@ -722,12 +723,12 @@ package extension CFSocket {
   }
 
   func setBlocking(_ enabled: Bool) throws {
-    try set(flag: O_NONBLOCK, to: enabled)
+    try set(flag: O_NONBLOCK, to: !enabled)
   }
 
   var isBlocking: Bool {
     get throws {
-      try get(flag: O_NONBLOCK)
+      try !get(flag: O_NONBLOCK)
     }
   }
 }
