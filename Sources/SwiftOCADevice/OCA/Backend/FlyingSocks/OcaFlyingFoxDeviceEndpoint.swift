@@ -36,6 +36,41 @@ import Android
 import WinSDK
 #endif
 
+/// FlyingFox's log, in the endpoint's. Its server logs the `CancellationError` that a
+/// cancelled run ends with as critical; from a cancelled task, that is the endpoint
+/// stopping as asked, so it is logged at debug.
+private struct OcaFlyingFoxLogger: FlyingSocks.Logging {
+  let logger: Logger
+
+  func logDebug(_ debug: @autoclosure () -> String) {
+    logger.debug("\(debug())")
+  }
+
+  func logInfo(_ info: @autoclosure () -> String) {
+    logger.info("\(info())")
+  }
+
+  func logWarning(_ warning: @autoclosure () -> String) {
+    logger.warning("\(warning())")
+  }
+
+  func logError(_ error: @autoclosure () -> String) {
+    if Task.isCancelled {
+      logger.debug("\(error())")
+    } else {
+      logger.error("\(error())")
+    }
+  }
+
+  func logCritical(_ critical: @autoclosure () -> String) {
+    if Task.isCancelled {
+      logger.debug("\(critical())")
+    } else {
+      logger.critical("\(critical())")
+    }
+  }
+}
+
 @available(*, deprecated, renamed: "OcaFlyingFoxDeviceEndpoint")
 public typealias Ocp1FlyingFoxDeviceEndpoint = OcaFlyingFoxDeviceEndpoint
 
@@ -173,7 +208,8 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
 
     httpServer = HTTPServer(
       address: address,
-      timeout: timeout.timeInterval
+      timeout: timeout.timeInterval,
+      logger: OcaFlyingFoxLogger(logger: logger)
     )
 
     // one route per path; the protocols sharing it are told apart by the subprotocol.
