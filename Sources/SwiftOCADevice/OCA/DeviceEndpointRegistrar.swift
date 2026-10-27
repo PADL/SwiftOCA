@@ -43,8 +43,8 @@ public protocol OcaBonjourRegistrableDeviceEndpoint: OcaDeviceEndpoint {
     txtRecordAdditions: [(String, String)]
   )] { get }
   /// The address the endpoint is bound to, which says where its services are announced:
-  /// a wildcard on every interface, a specific address only on the interface holding it,
-  /// a loopback or non-IP address nowhere. Defaults to nil, every interface.
+  /// a wildcard on every interface, a specific address only on the interface holding it
+  /// (nowhere if none does), a loopback or non-IP address nowhere. Defaults to nil, every interface.
   var bonjourListenAddress: OcaBonjourListenAddress? { get }
 }
 
@@ -91,11 +91,8 @@ extension OcaBonjourRegistrableDeviceEndpoint {
       let scope = listenAddress.map { bonjourAdvertisingScope(for: $0) } ?? .anyInterface
       let presentationAddress = listenAddress?._presentationAddress ?? "*"
       guard let interfaceIndex = scope.interfaceIndex else {
-        logger.debug("not advertising \(presentationAddress): loopback or non-IP address")
+        logger.debug("not advertising \(presentationAddress): no interface it can be reached on")
         return
-      }
-      if scope == .noAddress {
-        logger.warning("no interface holds \(presentationAddress); advertising on every interface")
       }
       // one registration per service, all cancelled with the task
       try await withThrowingTaskGroup(of: Void.self) { group in

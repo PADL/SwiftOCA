@@ -55,10 +55,10 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     XCTAssertEqual(bonjourAdvertisingScope(for: storage("2001:db8::8"), lookup: { _ in 3 }), .interface(3))
   }
 
-  func testAnAddressNoInterfaceHoldsIsEveryInterfaceWithAWarning() {
+  func testAnAddressNoInterfaceHoldsIsNotAdvertised() {
     let scope = bonjourAdvertisingScope(for: storage("10.10.32.8"), lookup: { _ in nil })
     XCTAssertEqual(scope, .noAddress)
-    XCTAssertEqual(scope.interfaceIndex, 0)
+    XCTAssertNil(scope.interfaceIndex)
   }
 
   func testAScopedLinkLocalAddressIsItsScopesInterface() {
@@ -72,13 +72,13 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("127.1.2.3")), .unreachable)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::1")), .unreachable)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::ffff:127.0.0.1")), .unreachable)
-    XCTAssertEqual(bonjourAdvertisingScope(for: storage("127.0.0.1"), lookup: { _ in 1 }), .nowhere)
-    XCTAssertEqual(bonjourAdvertisingScope(for: storage("::1"), lookup: { _ in 1 }), .nowhere)
+    XCTAssertEqual(bonjourAdvertisingScope(for: storage("127.0.0.1"), lookup: { _ in 1 }), .noAddress)
+    XCTAssertEqual(bonjourAdvertisingScope(for: storage("::1"), lookup: { _ in 1 }), .noAddress)
   }
 
   func testDomainSocketsAreNotAdvertised() {
     XCTAssertEqual(OcaBonjourListenAddressClass(unixStorage()), .unreachable)
-    XCTAssertEqual(bonjourAdvertisingScope(for: unixStorage(), lookup: { _ in 1 }), .nowhere)
+    XCTAssertEqual(bonjourAdvertisingScope(for: unixStorage(), lookup: { _ in 1 }), .noAddress)
   }
 
   func testTheLoopbackInterfaceHoldsTheLoopbackAddress() {
