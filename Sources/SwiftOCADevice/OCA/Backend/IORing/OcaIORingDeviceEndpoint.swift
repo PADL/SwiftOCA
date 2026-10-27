@@ -47,7 +47,7 @@ public typealias Ocp1IORingDeviceEndpoint = OcaIORingDeviceEndpoint
 open class OcaIORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
-  package nonisolated let address: any SocketAddress
+  public nonisolated let address: any SocketAddress
   package nonisolated let timeout: Duration
   package nonisolated let device: OcaDevice
   package nonisolated let logger: Logger

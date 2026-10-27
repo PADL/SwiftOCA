@@ -45,7 +45,7 @@ import Android
 public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
-  let address: any SocketAddress
+  public nonisolated let address: any SocketAddress
   package let timeout: Duration
   package let device: OcaDevice
   package let logger: Logger
