@@ -79,26 +79,23 @@ extension OcaBonjourRegistrableDeviceEndpoint {
   // (endpoint → task → self), preventing the deinit-based cancel from
   // ever firing and the mDNS goodbye from being sent on shutdown.
   // Reads the advertised services, port and address synchronously here so the
-  // Task closure only captures the extracted values plus `device`.
+  // Task closure only captures the extracted values plus `device`; the interface
+  // the address is on is looked up when the task runs.
   package func makeBonjourRegistrarTask(for device: OcaDevice) -> Task<(), Error> {
     let services = advertisedServices
     let port = port
     let listenAddress = bonjourListenAddress
-    let presentationAddress = listenAddress?._presentationAddress ?? "*"
-    var noInterface = false
-    let interfaceIndex: UInt32? = if let listenAddress {
-      bonjourInterfaceIndex(for: listenAddress, onNoInterface: { _ in noInterface = true })
-    } else {
-      UInt32(kDNSServiceInterfaceIndexAny)
-    }
-    return Task { [noInterface] in
+    return Task {
       let logger = await device.logger
-      guard let interfaceIndex else {
+      // resolved when the task runs, off the endpoint's executor
+      let scope = listenAddress.map { bonjourAdvertisingScope(for: $0) } ?? .everyInterface
+      let presentationAddress = listenAddress?._presentationAddress ?? "*"
+      guard let interfaceIndex = scope.interfaceIndex else {
         logger.debug("not advertising \(presentationAddress): loopback or non-IP address")
         return
       }
-      if noInterface {
-        logger.debug("no interface holds \(presentationAddress), advertising on every interface")
+      if scope == .unheldAddress {
+        logger.warning("no interface holds \(presentationAddress); advertising on every interface")
       }
       // one registration per service, all cancelled with the task
       try await withThrowingTaskGroup(of: Void.self) { group in

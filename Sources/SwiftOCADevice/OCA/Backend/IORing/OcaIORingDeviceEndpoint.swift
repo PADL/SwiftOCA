@@ -133,7 +133,7 @@ open class OcaIORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   }
 
   #if canImport(dnssd)
-  public nonisolated var bonjourListenAddress: OcaBonjourListenAddress? {
+  open nonisolated var bonjourListenAddress: OcaBonjourListenAddress? {
     address
   }
   #endif

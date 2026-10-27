@@ -19,6 +19,7 @@ import Darwin
 #elseif canImport(Glibc)
 import Glibc
 #endif
+#if !canImport(WinSDK)
 import SocketAddress
 @testable import SwiftOCADevice
 import XCTest
@@ -41,8 +42,8 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("0.0.0.0")), .wildcard)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::")), .wildcard)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::ffff:0.0.0.0")), .wildcard)
-    XCTAssertEqual(bonjourInterfaceIndex(for: storage("0.0.0.0"), lookup: { _ in 7 }), 0)
-    XCTAssertEqual(bonjourInterfaceIndex(for: storage("::"), lookup: { _ in 7 }), 0)
+    XCTAssertEqual(bonjourAdvertisingScope(for: storage("0.0.0.0"), lookup: { _ in 7 }), .everyInterface)
+    XCTAssertEqual(bonjourAdvertisingScope(for: storage("::"), lookup: { _ in 7 }), .everyInterface)
   }
 
   func testSpecificAddressesAreTheirInterface() {
@@ -50,19 +51,20 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("fe80::1")), .specific)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("2001:db8::8")), .specific)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::ffff:10.10.32.8")), .specific)
-    XCTAssertEqual(bonjourInterfaceIndex(for: storage("10.10.32.8"), lookup: { _ in 7 }), 7)
-    XCTAssertEqual(bonjourInterfaceIndex(for: storage("2001:db8::8"), lookup: { _ in 3 }), 3)
+    XCTAssertEqual(bonjourAdvertisingScope(for: storage("10.10.32.8"), lookup: { _ in 7 }), .interface(7))
+    XCTAssertEqual(bonjourAdvertisingScope(for: storage("2001:db8::8"), lookup: { _ in 3 }), .interface(3))
   }
 
-  func testAnAddressNoInterfaceHoldsIsEveryInterface() {
-    var unheld: String?
-    let index = bonjourInterfaceIndex(
-      for: storage("10.10.32.8"),
-      lookup: { _ in nil },
-      onNoInterface: { unheld = $0._presentationAddress }
-    )
-    XCTAssertEqual(index, 0)
-    XCTAssertNotNil(unheld)
+  func testAnAddressNoInterfaceHoldsIsEveryInterfaceWithAWarning() {
+    let scope = bonjourAdvertisingScope(for: storage("10.10.32.8"), lookup: { _ in nil })
+    XCTAssertEqual(scope, .unheldAddress)
+    XCTAssertEqual(scope.interfaceIndex, 0)
+  }
+
+  func testAScopedLinkLocalAddressIsItsScopesInterface() {
+    var address = try! sockaddr_in6(family: sa_family_t(AF_INET6), presentationAddress: "fe80::1")
+    address.sin6_scope_id = 5
+    XCTAssertEqual(bonjourAdvertisingScope(for: address, lookup: { _ in XCTFail("no lookup"); return 9 }), .interface(5))
   }
 
   func testLoopbackAddressesAreNotAdvertised() {
@@ -70,13 +72,13 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("127.1.2.3")), .unreachable)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::1")), .unreachable)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::ffff:127.0.0.1")), .unreachable)
-    XCTAssertNil(bonjourInterfaceIndex(for: storage("127.0.0.1"), lookup: { _ in 1 }))
-    XCTAssertNil(bonjourInterfaceIndex(for: storage("::1"), lookup: { _ in 1 }))
+    XCTAssertEqual(bonjourAdvertisingScope(for: storage("127.0.0.1"), lookup: { _ in 1 }), .nowhere)
+    XCTAssertEqual(bonjourAdvertisingScope(for: storage("::1"), lookup: { _ in 1 }), .nowhere)
   }
 
   func testDomainSocketsAreNotAdvertised() {
     XCTAssertEqual(OcaBonjourListenAddressClass(unixStorage()), .unreachable)
-    XCTAssertNil(bonjourInterfaceIndex(for: unixStorage(), lookup: { _ in 1 }))
+    XCTAssertEqual(bonjourAdvertisingScope(for: unixStorage(), lookup: { _ in 1 }), .nowhere)
   }
 
   func testTheLoopbackInterfaceHoldsTheLoopbackAddress() {
@@ -86,5 +88,8 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     XCTAssertNotEqual(index, 0)
     XCTAssertNil(interfaceIndex(holding: storage("192.0.2.254")))
     XCTAssertNil(interfaceIndex(holding: unixStorage()))
+    // an IPv4-mapped address is found as its IPv4 address
+    XCTAssertEqual(interfaceIndex(holding: storage("::ffff:127.0.0.1")), index)
   }
 }
+#endif
