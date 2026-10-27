@@ -19,35 +19,22 @@ import Darwin
 #elseif canImport(Glibc)
 import Glibc
 #endif
+import SocketAddress
 @testable import SwiftOCADevice
 import XCTest
 
 /// Where an endpoint's DNS-SD services are announced, from the address it is bound to.
 final class BonjourAdvertisingInterfaceTests: XCTestCase {
-  private func storage(_ presentationAddress: String) -> sockaddr_storage {
-    var storage = sockaddr_storage()
-    withUnsafeMutableBytes(of: &storage) { raw in
-      if presentationAddress.contains(":") {
-        var sin6 = sockaddr_in6()
-        sin6.sin6_family = sa_family_t(AF_INET6)
-        sin6.sin6_port = UInt16(65000).bigEndian
-        XCTAssertEqual(inet_pton(AF_INET6, presentationAddress, &sin6.sin6_addr), 1)
-        raw.storeBytes(of: sin6, as: sockaddr_in6.self)
-      } else {
-        var sin = sockaddr_in()
-        sin.sin_family = sa_family_t(AF_INET)
-        sin.sin_port = UInt16(65000).bigEndian
-        XCTAssertEqual(inet_pton(AF_INET, presentationAddress, &sin.sin_addr), 1)
-        raw.storeBytes(of: sin, as: sockaddr_in.self)
-      }
+  private func storage(_ presentationAddress: String) -> OcaBonjourListenAddress {
+    if presentationAddress.contains(":") {
+      try! sockaddr_in6(family: sa_family_t(AF_INET6), presentationAddress: presentationAddress)
+    } else {
+      try! sockaddr_in(family: sa_family_t(AF_INET), presentationAddress: "\(presentationAddress):65000")
     }
-    return storage
   }
 
-  private func unixStorage() -> sockaddr_storage {
-    var storage = sockaddr_storage()
-    storage.ss_family = sa_family_t(AF_UNIX)
-    return storage
+  private func unixStorage() -> OcaBonjourListenAddress {
+    try! sockaddr_un(family: sa_family_t(AF_LOCAL), presentationAddress: "/var/run/inferno.socket")
   }
 
   func testWildcardAddressesAreEveryInterface() {

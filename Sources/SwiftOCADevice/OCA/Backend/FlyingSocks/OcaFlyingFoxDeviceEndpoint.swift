@@ -354,7 +354,7 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   #if canImport(dnssd)
-  public nonisolated var bonjourListenAddress: sockaddr_storage? {
+  public nonisolated var bonjourListenAddress: OcaBonjourListenAddress? {
     address
   }
   #endif

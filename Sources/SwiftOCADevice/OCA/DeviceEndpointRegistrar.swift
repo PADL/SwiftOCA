@@ -45,13 +45,13 @@ public protocol OcaBonjourRegistrableDeviceEndpoint: OcaDeviceEndpoint {
   /// The address the endpoint is bound to, which says where its services are announced:
   /// a wildcard on every interface, a specific address only on the interface holding it,
   /// a loopback or non-IP address nowhere. Defaults to nil, every interface.
-  var bonjourListenAddress: sockaddr_storage? { get }
+  var bonjourListenAddress: OcaBonjourListenAddress? { get }
 }
 
 public extension OcaBonjourRegistrableDeviceEndpoint {
   var txtRecordAdditions: [(String, String)] { [] }
 
-  var bonjourListenAddress: sockaddr_storage? { nil }
+  var bonjourListenAddress: OcaBonjourListenAddress? { nil }
 
   var advertisedServices: [(
     serviceType: OcaNetworkAdvertisingServiceType,

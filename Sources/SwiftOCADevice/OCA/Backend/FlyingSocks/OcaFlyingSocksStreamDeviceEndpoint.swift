@@ -219,7 +219,7 @@ public final class OcaFlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   #if canImport(dnssd)
-  public nonisolated var bonjourListenAddress: sockaddr_storage? {
+  public nonisolated var bonjourListenAddress: OcaBonjourListenAddress? {
     address.makeStorage()
   }
   #endif

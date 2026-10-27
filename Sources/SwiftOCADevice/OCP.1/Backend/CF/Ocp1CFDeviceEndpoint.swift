@@ -108,8 +108,8 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   }
 
   #if canImport(dnssd)
-  public nonisolated var bonjourListenAddress: sockaddr_storage? {
-    makeSockaddrStorage(address)
+  public nonisolated var bonjourListenAddress: OcaBonjourListenAddress? {
+    address
   }
   #endif
 
