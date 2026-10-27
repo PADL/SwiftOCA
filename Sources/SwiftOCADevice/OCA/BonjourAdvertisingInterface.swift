@@ -44,11 +44,20 @@ package extension OcaBonjourListenAddressClass {
     }
     if host.allSatisfy({ $0 == 0 }) {
       self = .wildcard
-    } else if host.count == 4 ? host[0] == 127 : host[0..<15].allSatisfy({ $0 == 0 }) && host[15] == 1 {
+    } else if isLoopback(host) {
       self = .unreachable
     } else {
       self = .specific
     }
+  }
+}
+
+/// 127.0.0.0/8 for a 4-byte host address, ::1 for a 16-byte one.
+private func isLoopback(_ host: [UInt8]) -> Bool {
+  switch host.count {
+  case 4: host[0] == 127
+  case 16: host[0..<15].allSatisfy { $0 == 0 } && host[15] == 1
+  default: false
   }
 }
 
@@ -85,7 +94,11 @@ package func bonjourAdvertisingScope(
     return .noAddress
   case .specific:
     if let scope = ipv6ScopeID(of: address) { return .interface(scope) }
+    #if canImport(WinSDK)
+    return .anyInterface // no interface lookup here: as before, every interface
+    #else
     return lookup(address).map { .interface($0) } ?? .noAddress
+    #endif
   }
 }
 
@@ -102,7 +115,9 @@ package func interfaceIndex(holding address: any SocketAddress) -> UInt32? {
   defer { freeifaddrs(ifaddrs) }
 
   for ifa in sequence(first: ifaddrs, next: { $0?.pointee.ifa_next }) {
-    guard let ifa, let ifaAddr = ifa.pointee.ifa_addr, hostAddressBytes(of: ifaAddr) == host else { continue }
+    guard let ifa, let ifaAddr = ifa.pointee.ifa_addr,
+          hostAddressBytes(of: ifaAddr) == host
+    else { continue }
     let index = if_nametoindex(ifa.pointee.ifa_name)
     if index != 0 { return index }
   }

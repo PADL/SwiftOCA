@@ -107,7 +107,6 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     (try? address.port) ?? 0
   }
 
-
   public func run() async throws {
     if port != 0 {
       #if canImport(dnssd)

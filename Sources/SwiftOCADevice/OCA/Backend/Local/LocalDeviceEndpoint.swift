@@ -22,14 +22,6 @@ import FoundationEssentials
 import Foundation
 #endif
 import Logging
-#if canImport(Darwin)
-import Darwin
-#elseif canImport(Glibc)
-import Glibc
-#elseif canImport(Android)
-import Android
-#endif
-import SocketAddress
 import SwiftOCA
 
 @OcaDevice
@@ -41,9 +33,6 @@ public final class OcaLocalDeviceEndpoint: OcaDeviceEndpointPrivate {
   package let logger: Logger
   package let controlProtocol: OcaControlProtocol
   package nonisolated(unsafe) var enableMessageTracing = false
-
-  /// An in-process endpoint has no socket address: an all-zero one, not announced.
-  public nonisolated var address: any SocketAddress { sockaddr_storage() }
 
   public var controllers: [OcaController] {
     [controller]

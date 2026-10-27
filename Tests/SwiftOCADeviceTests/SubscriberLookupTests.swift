@@ -22,14 +22,6 @@ import Foundation
 @_spi(SwiftOCAPrivate) import SwiftOCA
 @testable import SwiftOCADevice
 import XCTest
-#if canImport(Darwin)
-import Darwin
-#elseif canImport(Glibc)
-import Glibc
-#elseif canImport(Android)
-import Android
-#endif
-import SocketAddress
 
 private actor CountingController: OcaController {
   nonisolated let flags: OcaControllerFlags = []
@@ -57,8 +49,6 @@ private actor CountingEndpoint: OcaDeviceEndpoint {
   private(set) var askCount = 0
 
   init(_ list: [OcaController]) { self.list = list }
-
-  nonisolated var address: any SocketAddress { sockaddr_storage() }
 
   var controllers: [OcaController] {
     askCount += 1

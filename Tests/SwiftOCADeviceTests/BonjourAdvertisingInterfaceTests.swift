@@ -30,7 +30,10 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     if presentationAddress.contains(":") {
       try! sockaddr_in6(family: sa_family_t(AF_INET6), presentationAddress: presentationAddress)
     } else {
-      try! sockaddr_in(family: sa_family_t(AF_INET), presentationAddress: "\(presentationAddress):65000")
+      try! sockaddr_in(
+        family: sa_family_t(AF_INET),
+        presentationAddress: "\(presentationAddress):65000"
+      )
     }
   }
 
@@ -42,7 +45,10 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("0.0.0.0")), .wildcard)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::")), .wildcard)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::ffff:0.0.0.0")), .wildcard)
-    XCTAssertEqual(bonjourAdvertisingScope(for: storage("0.0.0.0"), lookup: { _ in 7 }), .anyInterface)
+    XCTAssertEqual(
+      bonjourAdvertisingScope(for: storage("0.0.0.0"), lookup: { _ in 7 }),
+      .anyInterface
+    )
     XCTAssertEqual(bonjourAdvertisingScope(for: storage("::"), lookup: { _ in 7 }), .anyInterface)
   }
 
@@ -51,8 +57,14 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("fe80::1")), .specific)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("2001:db8::8")), .specific)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::ffff:10.10.32.8")), .specific)
-    XCTAssertEqual(bonjourAdvertisingScope(for: storage("10.10.32.8"), lookup: { _ in 7 }), .interface(7))
-    XCTAssertEqual(bonjourAdvertisingScope(for: storage("2001:db8::8"), lookup: { _ in 3 }), .interface(3))
+    XCTAssertEqual(
+      bonjourAdvertisingScope(for: storage("10.10.32.8"), lookup: { _ in 7 }),
+      .interface(7)
+    )
+    XCTAssertEqual(
+      bonjourAdvertisingScope(for: storage("2001:db8::8"), lookup: { _ in 3 }),
+      .interface(3)
+    )
   }
 
   func testAnAddressNoInterfaceHoldsIsNotAdvertised() {
@@ -61,10 +73,13 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     XCTAssertNil(scope.interfaceIndex)
   }
 
-  func testAScopedLinkLocalAddressIsItsScopesInterface() {
-    var address = try! sockaddr_in6(family: sa_family_t(AF_INET6), presentationAddress: "fe80::1")
+  func testAScopedLinkLocalAddressIsItsScopesInterface() throws {
+    var address = try sockaddr_in6(family: sa_family_t(AF_INET6), presentationAddress: "fe80::1")
     address.sin6_scope_id = 5
-    XCTAssertEqual(bonjourAdvertisingScope(for: address, lookup: { _ in XCTFail("no lookup"); return 9 }), .interface(5))
+    XCTAssertEqual(
+      bonjourAdvertisingScope(for: address, lookup: { _ in XCTFail("no lookup"); return 9 }),
+      .interface(5)
+    )
   }
 
   func testLoopbackAddressesAreNotAdvertised() {
@@ -72,7 +87,10 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("127.1.2.3")), .unreachable)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::1")), .unreachable)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::ffff:127.0.0.1")), .unreachable)
-    XCTAssertEqual(bonjourAdvertisingScope(for: storage("127.0.0.1"), lookup: { _ in 1 }), .noAddress)
+    XCTAssertEqual(
+      bonjourAdvertisingScope(for: storage("127.0.0.1"), lookup: { _ in 1 }),
+      .noAddress
+    )
     XCTAssertEqual(bonjourAdvertisingScope(for: storage("::1"), lookup: { _ in 1 }), .noAddress)
   }
 

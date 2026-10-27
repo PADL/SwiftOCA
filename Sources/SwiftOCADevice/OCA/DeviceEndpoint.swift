@@ -20,6 +20,15 @@ import FoundationEssentials
 import Foundation
 #endif
 import Logging
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#elseif canImport(Android)
+import Android
+#elseif canImport(WinSDK)
+import WinSDK
+#endif
 import SocketAddress
 import SwiftOCA
 
@@ -28,6 +37,12 @@ public protocol OcaDeviceEndpoint: AnyObject, Sendable {
   /// The address the endpoint is bound to; DNS-SD announces its services only on the interface
   /// holding it (every interface for a wildcard, none for loopback or a non-IP address).
   nonisolated var address: any SocketAddress { get }
+}
+
+public extension OcaDeviceEndpoint {
+  /// No socket address (an all-zero one, which DNS-SD does not announce): the default for an
+  /// endpoint that is not bound to a socket, such as a Mach port or an in-process endpoint.
+  nonisolated var address: any SocketAddress { sockaddr_storage() }
 }
 
 package enum OcaMessageDirection {

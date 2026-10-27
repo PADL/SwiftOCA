@@ -353,7 +353,6 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     (try? storage.port) ?? 0
   }
 
-
   private nonisolated var socketPath: String? {
     storage.ss_family == sa_family_t(AF_LOCAL) ? storage._presentationAddress : nil
   }

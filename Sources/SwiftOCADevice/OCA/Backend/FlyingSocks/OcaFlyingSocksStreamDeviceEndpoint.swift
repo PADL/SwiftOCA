@@ -42,7 +42,6 @@ import WinSDK
 public typealias Ocp1FlyingSocksStreamDeviceEndpoint = OcaFlyingSocksStreamDeviceEndpoint
 
 @OcaDevice
-
 public final class OcaFlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
   OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible

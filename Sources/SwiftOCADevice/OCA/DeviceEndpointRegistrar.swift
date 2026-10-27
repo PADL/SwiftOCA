@@ -28,6 +28,7 @@ import Android
 import Dispatch
 import dnssd
 import Logging
+import SocketAddress
 
 /// A helper class for advertising OCP.1 endpoints using Bonjour
 
@@ -46,7 +47,6 @@ public protocol OcaBonjourRegistrableDeviceEndpoint: OcaDeviceEndpoint {
 
 public extension OcaBonjourRegistrableDeviceEndpoint {
   var txtRecordAdditions: [(String, String)] { [] }
-
 
   var advertisedServices: [(
     serviceType: OcaNetworkAdvertisingServiceType,
@@ -74,28 +74,19 @@ extension OcaBonjourRegistrableDeviceEndpoint {
   // (endpoint → task → self), preventing the deinit-based cancel from
   // ever firing and the mDNS goodbye from being sent on shutdown.
   // Reads the advertised services, port and address synchronously here so the
-  // Task closure only captures the extracted values plus `device`; the interface
-  // the address is on is looked up when the task runs.
+  // Task closure only captures the extracted values plus `device`.
   package func makeBonjourRegistrarTask(for device: OcaDevice) -> Task<(), Error> {
     let services = advertisedServices
     let port = port
     let listenAddress = address
     return Task {
-      let logger = await device.logger
-      // resolved when the task runs, off the endpoint's executor
-      let scope = bonjourAdvertisingScope(for: listenAddress)
-      let presentationAddress = listenAddress._presentationAddress
-      guard let interfaceIndex = scope.interfaceIndex else {
-        logger.debug("not advertising \(presentationAddress): no interface it can be reached on")
-        return
-      }
       // one registration per service, all cancelled with the task
       try await withThrowingTaskGroup(of: Void.self) { group in
         for service in services {
           group.addTask {
             try await runBonjourEndpointRegistrar(
               serviceType: service.serviceType,
-              interfaceIndex: interfaceIndex,
+              address: listenAddress,
               port: port,
               txtRecordAdditions: service.txtRecordAdditions,
               for: device
@@ -111,7 +102,7 @@ extension OcaBonjourRegistrableDeviceEndpoint {
 @OcaDevice
 package func runBonjourEndpointRegistrar(
   serviceType: OcaNetworkAdvertisingServiceType,
-  interfaceIndex: UInt32 = UInt32(kDNSServiceInterfaceIndexAny),
+  address: (any SocketAddress)? = nil,
   port: UInt16,
   txtRecordAdditions: [(String, String)] = [],
   for device: OcaDevice
@@ -126,6 +117,13 @@ package func runBonjourEndpointRegistrar(
     for try await deviceName in deviceManager.$deviceName {
       try Task.checkCancellation()
       await dnsServiceRegistration?.deregister()
+      dnsServiceRegistration = nil
+      // the interface holding the address, looked up again at each registration
+      let scope = address.map { bonjourAdvertisingScope(for: $0) } ?? .anyInterface
+      guard let interfaceIndex = scope.interfaceIndex else {
+        logger.debug("not advertising \(address?._presentationAddress ?? "*"): not reachable")
+        continue
+      }
       dnsServiceRegistration = try? await DNSServiceRegistration(
         interfaceIndex: interfaceIndex,
         name: deviceName,

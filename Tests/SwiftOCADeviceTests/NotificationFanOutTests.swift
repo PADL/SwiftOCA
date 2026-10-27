@@ -22,14 +22,6 @@ import Foundation
 @testable import SwiftOCADevice
 @_spi(SwiftOCAPrivate) import SwiftOCA
 import XCTest
-#if canImport(Darwin)
-import Darwin
-#elseif canImport(Glibc)
-import Glibc
-#elseif canImport(Android)
-import Android
-#endif
-import SocketAddress
 
 /// Stands in for a controller whose socket is slow. `sendMessages` is an `OcaController`
 /// requirement, so the fan-out reaches this rather than a real transport.
@@ -73,8 +65,6 @@ private actor StalledQueuedController: OcaControllerQueuedSending {
 
 private final class MockEndpoint: OcaDeviceEndpoint, @unchecked Sendable {
   let controllers: [OcaController]
-
-  nonisolated var address: any SocketAddress { sockaddr_storage() }
 
   init(controllers: [OcaController]) {
     self.controllers = controllers

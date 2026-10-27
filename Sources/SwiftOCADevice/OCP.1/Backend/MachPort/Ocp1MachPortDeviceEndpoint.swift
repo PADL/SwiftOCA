@@ -21,7 +21,6 @@ import AsyncExtensions
 import Darwin.Mach
 import Foundation
 import Logging
-import SocketAddress
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
@@ -63,9 +62,6 @@ public final class Ocp1MachPortDeviceEndpoint: OcaDeviceEndpointPrivate, CustomS
 
     try await device.add(endpoint: self)
   }
-
-  /// A Mach port has no socket address: an all-zero one, which DNS-SD does not announce.
-  public nonisolated var address: any SocketAddress { sockaddr_storage() }
 
   public nonisolated var description: String {
     "\(type(of: self))(serviceName: \(serviceName))"

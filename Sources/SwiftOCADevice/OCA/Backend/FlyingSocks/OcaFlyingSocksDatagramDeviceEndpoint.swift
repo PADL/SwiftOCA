@@ -40,7 +40,6 @@ import Android
 public typealias Ocp1FlyingSocksDatagramDeviceEndpoint = OcaFlyingSocksDatagramDeviceEndpoint
 
 @OcaDevice
-
 public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
   OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible

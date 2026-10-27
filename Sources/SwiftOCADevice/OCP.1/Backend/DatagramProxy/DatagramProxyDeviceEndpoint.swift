@@ -22,14 +22,6 @@ import FoundationEssentials
 import Foundation
 #endif
 import Logging
-#if canImport(Darwin)
-import Darwin
-#elseif canImport(Glibc)
-import Glibc
-#elseif canImport(Android)
-import Android
-#endif
-import SocketAddress
 import SwiftOCA
 
 public typealias DatagramProxyPeerIdentifier = Equatable & Hashable & Sendable
@@ -42,9 +34,6 @@ public class DatagramProxyDeviceEndpoint<
 
   /// Default buffer capacity for input/output streams
   public nonisolated static var defaultBufferCapacity: Int { 64 }
-
-  /// A proxied transport has no socket address of its own: an all-zero one, not announced.
-  public nonisolated var address: any SocketAddress { sockaddr_storage() }
 
   public var controllers: [OcaController] {
     _controllers.values.map { $0 }

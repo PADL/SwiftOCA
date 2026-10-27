@@ -132,7 +132,6 @@ open class OcaIORingDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     (try? address.port) ?? 0
   }
 
-
   open func run() async throws {
     if port != 0 {
       #if canImport(dnssd)

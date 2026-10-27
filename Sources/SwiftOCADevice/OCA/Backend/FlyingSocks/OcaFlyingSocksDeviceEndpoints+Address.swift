@@ -29,19 +29,25 @@ import WinSDK
 import SocketAddress
 
 #if canImport(FlyingFox)
-extension OcaFlyingFoxDeviceEndpoint {
-  public nonisolated var address: any SocketAddress { storage }
+public extension OcaFlyingFoxDeviceEndpoint {
+  nonisolated var address: any SocketAddress {
+    storage
+  }
 }
 #endif
 
 #if os(macOS) || os(iOS) || os(Windows) || !NonEmbeddedBuild
-extension OcaFlyingSocksStreamDeviceEndpoint {
-  public nonisolated var address: any SocketAddress { addressStorage }
+public extension OcaFlyingSocksStreamDeviceEndpoint {
+  nonisolated var address: any SocketAddress {
+    addressStorage
+  }
 }
 #endif
 
 #if os(macOS) || os(iOS) || !NonEmbeddedBuild
-extension OcaFlyingSocksDatagramDeviceEndpoint {
-  public nonisolated var address: any SocketAddress { addressStorage }
+public extension OcaFlyingSocksDatagramDeviceEndpoint {
+  nonisolated var address: any SocketAddress {
+    addressStorage
+  }
 }
 #endif
