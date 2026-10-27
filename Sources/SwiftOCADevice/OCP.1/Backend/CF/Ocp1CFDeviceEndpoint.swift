@@ -107,6 +107,12 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     (try? address.port) ?? 0
   }
 
+  #if canImport(dnssd)
+  public nonisolated var bonjourListenAddress: sockaddr_storage? {
+    makeSockaddrStorage(address)
+  }
+  #endif
+
   public func run() async throws {
     if port != 0 {
       #if canImport(dnssd)

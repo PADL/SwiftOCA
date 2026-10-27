@@ -218,6 +218,12 @@ public final class OcaFlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
     address.port
   }
 
+  #if canImport(dnssd)
+  public nonisolated var bonjourListenAddress: sockaddr_storage? {
+    address.makeStorage()
+  }
+  #endif
+
   package func add(controller: ControllerType) async {
     _controllers.append(controller)
   }

@@ -42,10 +42,16 @@ public protocol OcaBonjourRegistrableDeviceEndpoint: OcaDeviceEndpoint {
     serviceType: OcaNetworkAdvertisingServiceType,
     txtRecordAdditions: [(String, String)]
   )] { get }
+  /// The address the endpoint is bound to, which says where its services are announced:
+  /// a wildcard on every interface, a specific address only on the interface holding it,
+  /// a loopback or non-IP address nowhere. Defaults to nil, every interface.
+  var bonjourListenAddress: sockaddr_storage? { get }
 }
 
 public extension OcaBonjourRegistrableDeviceEndpoint {
   var txtRecordAdditions: [(String, String)] { [] }
+
+  var bonjourListenAddress: sockaddr_storage? { nil }
 
   var advertisedServices: [(
     serviceType: OcaNetworkAdvertisingServiceType,
@@ -72,18 +78,35 @@ extension OcaBonjourRegistrableDeviceEndpoint {
   // the returned task strongly would otherwise form a retain cycle
   // (endpoint → task → self), preventing the deinit-based cancel from
   // ever firing and the mDNS goodbye from being sent on shutdown.
-  // Reads the advertised services and port synchronously here so the Task
-  // closure only captures the extracted values plus `device`.
+  // Reads the advertised services, port and address synchronously here so the
+  // Task closure only captures the extracted values plus `device`.
   package func makeBonjourRegistrarTask(for device: OcaDevice) -> Task<(), Error> {
     let services = advertisedServices
     let port = port
-    return Task {
+    let listenAddress = bonjourListenAddress
+    let presentationAddress = listenAddress?._presentationAddress ?? "*"
+    var noInterface = false
+    let interfaceIndex: UInt32? = if let listenAddress {
+      bonjourInterfaceIndex(for: listenAddress, onNoInterface: { _ in noInterface = true })
+    } else {
+      UInt32(kDNSServiceInterfaceIndexAny)
+    }
+    return Task { [noInterface] in
+      let logger = await device.logger
+      guard let interfaceIndex else {
+        logger.debug("not advertising \(presentationAddress): loopback or non-IP address")
+        return
+      }
+      if noInterface {
+        logger.debug("no interface holds \(presentationAddress), advertising on every interface")
+      }
       // one registration per service, all cancelled with the task
       try await withThrowingTaskGroup(of: Void.self) { group in
         for service in services {
           group.addTask {
             try await runBonjourEndpointRegistrar(
               serviceType: service.serviceType,
+              interfaceIndex: interfaceIndex,
               port: port,
               txtRecordAdditions: service.txtRecordAdditions,
               for: device
@@ -99,6 +122,7 @@ extension OcaBonjourRegistrableDeviceEndpoint {
 @OcaDevice
 package func runBonjourEndpointRegistrar(
   serviceType: OcaNetworkAdvertisingServiceType,
+  interfaceIndex: UInt32 = UInt32(kDNSServiceInterfaceIndexAny),
   port: UInt16,
   txtRecordAdditions: [(String, String)] = [],
   for device: OcaDevice
@@ -114,6 +138,7 @@ package func runBonjourEndpointRegistrar(
       try Task.checkCancellation()
       await dnsServiceRegistration?.deregister()
       dnsServiceRegistration = try? await DNSServiceRegistration(
+        interfaceIndex: interfaceIndex,
         name: deviceName,
         regType: serviceType.rawValue,
         port: port,

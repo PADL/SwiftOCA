@@ -353,6 +353,12 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     (try? address.port) ?? 0
   }
 
+  #if canImport(dnssd)
+  public nonisolated var bonjourListenAddress: sockaddr_storage? {
+    address
+  }
+  #endif
+
   private nonisolated var socketPath: String? {
     address.ss_family == sa_family_t(AF_LOCAL) ? address._presentationAddress : nil
   }
