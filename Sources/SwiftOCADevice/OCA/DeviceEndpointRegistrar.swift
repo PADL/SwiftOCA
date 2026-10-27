@@ -88,7 +88,7 @@ extension OcaBonjourRegistrableDeviceEndpoint {
     return Task {
       let logger = await device.logger
       // resolved when the task runs, off the endpoint's executor
-      let scope = listenAddress.map { bonjourAdvertisingScope(for: $0) } ?? .everyInterface
+      let scope = listenAddress.map { bonjourAdvertisingScope(for: $0) } ?? .anyInterface
       let presentationAddress = listenAddress?._presentationAddress ?? "*"
       guard let interfaceIndex = scope.interfaceIndex else {
         logger.debug("not advertising \(presentationAddress): loopback or non-IP address")

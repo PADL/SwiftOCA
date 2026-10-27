@@ -42,8 +42,8 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("0.0.0.0")), .wildcard)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::")), .wildcard)
     XCTAssertEqual(OcaBonjourListenAddressClass(storage("::ffff:0.0.0.0")), .wildcard)
-    XCTAssertEqual(bonjourAdvertisingScope(for: storage("0.0.0.0"), lookup: { _ in 7 }), .everyInterface)
-    XCTAssertEqual(bonjourAdvertisingScope(for: storage("::"), lookup: { _ in 7 }), .everyInterface)
+    XCTAssertEqual(bonjourAdvertisingScope(for: storage("0.0.0.0"), lookup: { _ in 7 }), .anyInterface)
+    XCTAssertEqual(bonjourAdvertisingScope(for: storage("::"), lookup: { _ in 7 }), .anyInterface)
   }
 
   func testSpecificAddressesAreTheirInterface() {

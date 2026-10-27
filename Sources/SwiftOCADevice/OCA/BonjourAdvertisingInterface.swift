@@ -59,8 +59,8 @@ package extension OcaBonjourListenAddressClass {
 
 /// Where to announce the services of an endpoint bound to a given address.
 package enum OcaBonjourAdvertisingScope: Equatable {
-  /// every interface (`kDNSServiceInterfaceIndexAny`): a wildcard address
-  case everyInterface
+  /// any interface (`kDNSServiceInterfaceIndexAny`): a wildcard address
+  case anyInterface
   /// the interface with this index, which holds the address
   case interface(UInt32)
   /// a specific address that no interface holds: announced on every interface, with a warning
@@ -71,7 +71,7 @@ package enum OcaBonjourAdvertisingScope: Equatable {
   /// The DNS-SD interface index to register on; nil for `nowhere`.
   package var interfaceIndex: UInt32? {
     switch self {
-    case .everyInterface, .unheldAddress: 0
+    case .anyInterface, .unheldAddress: 0
     case let .interface(index): index
     case .nowhere: nil
     }
@@ -87,7 +87,7 @@ package func bonjourAdvertisingScope(
 ) -> OcaBonjourAdvertisingScope {
   switch OcaBonjourListenAddressClass(address) {
   case .wildcard:
-    return .everyInterface
+    return .anyInterface
   case .unreachable:
     return .nowhere
   case .specific:
