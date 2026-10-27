@@ -57,7 +57,7 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
 
   func testAnAddressNoInterfaceHoldsIsEveryInterfaceWithAWarning() {
     let scope = bonjourAdvertisingScope(for: storage("10.10.32.8"), lookup: { _ in nil })
-    XCTAssertEqual(scope, .unheldAddress)
+    XCTAssertEqual(scope, .noAddress)
     XCTAssertEqual(scope.interfaceIndex, 0)
   }
 

@@ -94,7 +94,7 @@ extension OcaBonjourRegistrableDeviceEndpoint {
         logger.debug("not advertising \(presentationAddress): loopback or non-IP address")
         return
       }
-      if scope == .unheldAddress {
+      if scope == .noAddress {
         logger.warning("no interface holds \(presentationAddress); advertising on every interface")
       }
       // one registration per service, all cancelled with the task

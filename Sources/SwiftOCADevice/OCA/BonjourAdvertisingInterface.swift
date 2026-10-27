@@ -63,15 +63,15 @@ package enum OcaBonjourAdvertisingScope: Equatable {
   case anyInterface
   /// the interface with this index, which holds the address
   case interface(UInt32)
-  /// a specific address that no interface holds: announced on every interface, with a warning
-  case unheldAddress
+  /// a specific address that no interface holds (no address): announced on any interface, with a warning
+  case noAddress
   /// nowhere: a loopback or non-IP address
   case nowhere
 
   /// The DNS-SD interface index to register on; nil for `nowhere`.
   package var interfaceIndex: UInt32? {
     switch self {
-    case .anyInterface, .unheldAddress: 0
+    case .anyInterface, .noAddress: 0
     case let .interface(index): index
     case .nowhere: nil
     }
@@ -92,7 +92,7 @@ package func bonjourAdvertisingScope(
     return .nowhere
   case .specific:
     if let scope = ipv6ScopeID(of: address) { return .interface(scope) }
-    return lookup(address).map { .interface($0) } ?? .unheldAddress
+    return lookup(address).map { .interface($0) } ?? .noAddress
   }
 }
 
