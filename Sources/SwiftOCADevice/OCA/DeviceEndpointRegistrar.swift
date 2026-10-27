@@ -42,16 +42,11 @@ public protocol OcaBonjourRegistrableDeviceEndpoint: OcaDeviceEndpoint {
     serviceType: OcaNetworkAdvertisingServiceType,
     txtRecordAdditions: [(String, String)]
   )] { get }
-  /// The address the endpoint is bound to, which says where its services are announced:
-  /// a wildcard on every interface, a specific address only on the interface holding it
-  /// (nowhere if none does), a loopback or non-IP address nowhere. Defaults to nil, every interface.
-  var bonjourListenAddress: OcaBonjourListenAddress? { get }
 }
 
 public extension OcaBonjourRegistrableDeviceEndpoint {
   var txtRecordAdditions: [(String, String)] { [] }
 
-  var bonjourListenAddress: OcaBonjourListenAddress? { nil }
 
   var advertisedServices: [(
     serviceType: OcaNetworkAdvertisingServiceType,
@@ -84,12 +79,12 @@ extension OcaBonjourRegistrableDeviceEndpoint {
   package func makeBonjourRegistrarTask(for device: OcaDevice) -> Task<(), Error> {
     let services = advertisedServices
     let port = port
-    let listenAddress = bonjourListenAddress
+    let listenAddress = address
     return Task {
       let logger = await device.logger
       // resolved when the task runs, off the endpoint's executor
-      let scope = listenAddress.map { bonjourAdvertisingScope(for: $0) } ?? .anyInterface
-      let presentationAddress = listenAddress?._presentationAddress ?? "*"
+      let scope = bonjourAdvertisingScope(for: listenAddress)
+      let presentationAddress = listenAddress._presentationAddress
       guard let interfaceIndex = scope.interfaceIndex else {
         logger.debug("not advertising \(presentationAddress): no interface it can be reached on")
         return

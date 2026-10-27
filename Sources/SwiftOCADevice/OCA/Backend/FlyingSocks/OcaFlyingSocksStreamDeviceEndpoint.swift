@@ -42,6 +42,7 @@ import WinSDK
 public typealias Ocp1FlyingSocksStreamDeviceEndpoint = OcaFlyingSocksStreamDeviceEndpoint
 
 @OcaDevice
+
 public final class OcaFlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
   OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
@@ -54,7 +55,7 @@ public final class OcaFlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   let pool: any AsyncSocketPool = SocketPool.make()
 
-  private let address: any SocketAddress
+  private let socketAddress: FlyingSocks.AnySocketAddress
   package let timeout: Duration
   package let device: OcaDevice
   package let logger: Logger
@@ -68,7 +69,7 @@ public final class OcaFlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
 
 
   private nonisolated var family: sa_family_t {
-    address.family
+    socketAddress.family
   }
 
   public convenience init(
@@ -95,7 +96,7 @@ public final class OcaFlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
     controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaFlyingSocksStreamDeviceEndpoint")
   ) async throws {
-    let address = sockaddr_un.unix(path: path).makeStorage()
+    let address = FlyingSocks.AnySocketAddress(sockaddr_un.unix(path: path).makeStorage())
     try await self.init(
       address: address,
       timeout: timeout,
@@ -106,13 +107,13 @@ public final class OcaFlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   private init(
-    address: some SocketAddress,
+    address: FlyingSocks.AnySocketAddress,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaFlyingSocksStreamDeviceEndpoint")
   ) async throws {
-    self.address = address
+    socketAddress = address
     self.timeout = timeout
     self.device = device
     self.controlProtocol = controlProtocol
@@ -126,7 +127,7 @@ public final class OcaFlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   private nonisolated var presentationAddress: String {
-    address.makeStorage()._presentationAddress
+    socketAddress.makeStorage()._presentationAddress
   }
 
   public func run() async throws {
@@ -180,8 +181,8 @@ public final class OcaFlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
     #if canImport(Darwin)
     try socket.setValue(true, for: .noSIGPIPE)
     #endif
-    if address.family == sa_family_t(AF_INET6) { try socket.setIPv6Only() }
-    try socket.bind(to: address)
+    if socketAddress.family == sa_family_t(AF_INET6) { try socket.setIPv6Only() }
+    try socket.bind(to: socketAddress)
     try socket.listen()
     return socket
   }
@@ -215,14 +216,13 @@ public final class OcaFlyingSocksStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   public nonisolated var port: UInt16 {
-    address.port
+    socketAddress.port
   }
 
-  #if canImport(dnssd)
-  public nonisolated var bonjourListenAddress: OcaBonjourListenAddress? {
-    address.makeStorage()
+  /// The bound address as a `sockaddr_storage`, for `address` (`+Address.swift`).
+  nonisolated var addressStorage: sockaddr_storage {
+    socketAddress.makeStorage()
   }
-  #endif
 
   package func add(controller: ControllerType) async {
     _controllers.append(controller)

@@ -20,10 +20,14 @@ import FoundationEssentials
 import Foundation
 #endif
 import Logging
+import SocketAddress
 import SwiftOCA
 
 public protocol OcaDeviceEndpoint: AnyObject, Sendable {
   var controllers: [OcaController] { get async }
+  /// The address the endpoint is bound to; DNS-SD announces its services only on the interface
+  /// holding it (every interface for a wildcard, none for loopback or a non-IP address).
+  nonisolated var address: any SocketAddress { get }
 }
 
 package enum OcaMessageDirection {

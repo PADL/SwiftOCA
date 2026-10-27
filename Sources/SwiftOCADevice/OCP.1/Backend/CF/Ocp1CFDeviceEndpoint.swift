@@ -45,7 +45,7 @@ import Android
 public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
 {
-  let address: any SocketAddress
+  public nonisolated let address: any SocketAddress
   package let timeout: Duration
   package let device: OcaDevice
   package let logger: Logger
@@ -107,11 +107,6 @@ public class Ocp1CFDeviceEndpoint: OcaBonjourRegistrableDeviceEndpoint,
     (try? address.port) ?? 0
   }
 
-  #if canImport(dnssd)
-  public nonisolated var bonjourListenAddress: OcaBonjourListenAddress? {
-    address
-  }
-  #endif
 
   public func run() async throws {
     if port != 0 {

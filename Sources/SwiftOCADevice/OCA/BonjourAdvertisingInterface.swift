@@ -25,11 +25,6 @@ import WinSDK
 #endif
 import SocketAddress
 
-/// The address a device endpoint is bound to, as the SocketAddress package models it. An alias,
-/// so that endpoints built on other socket libraries (FlyingSocks has a `SocketAddress` of its own)
-/// can name it unambiguously.
-public typealias OcaBonjourListenAddress = any SocketAddress
-
 /// What an endpoint's bound address says about where its DNS-SD services may be announced.
 package enum OcaBonjourListenAddressClass: Equatable {
   /// an unspecified (wildcard) address: every interface
@@ -42,7 +37,7 @@ package enum OcaBonjourListenAddressClass: Equatable {
 
 package extension OcaBonjourListenAddressClass {
   /// Classifies `address`, an IPv4, IPv6 or other socket address.
-  init(_ address: OcaBonjourListenAddress) {
+  init(_ address: any SocketAddress) {
     guard let host = hostAddressBytes(of: address) else {
       self = .unreachable
       return
@@ -80,8 +75,8 @@ package enum OcaBonjourAdvertisingScope: Equatable {
 /// address with a scope is announced on that scope's interface; `lookup` finds the
 /// interface holding any other specific address.
 package func bonjourAdvertisingScope(
-  for address: OcaBonjourListenAddress,
-  lookup: (OcaBonjourListenAddress) -> UInt32? = interfaceIndex(holding:)
+  for address: any SocketAddress,
+  lookup: (any SocketAddress) -> UInt32? = interfaceIndex(holding:)
 ) -> OcaBonjourAdvertisingScope {
   switch OcaBonjourListenAddressClass(address) {
   case .wildcard:
@@ -96,7 +91,7 @@ package func bonjourAdvertisingScope(
 
 /// The index of the interface holding `address`, an IPv4 or IPv6 address, from
 /// `getifaddrs()` and `if_nametoindex()`; nil if no interface holds it.
-package func interfaceIndex(holding address: OcaBonjourListenAddress) -> UInt32? {
+package func interfaceIndex(holding address: any SocketAddress) -> UInt32? {
   #if canImport(WinSDK)
   return nil
   #else
@@ -117,7 +112,7 @@ package func interfaceIndex(holding address: OcaBonjourListenAddress) -> UInt32?
 
 /// The host part of an IPv4 address (4 bytes) or IPv6 address (16 bytes) in network order,
 /// an IPv4-mapped IPv6 address as its IPv4 address; nil for any other family.
-private func hostAddressBytes(of address: OcaBonjourListenAddress) -> [UInt8]? {
+private func hostAddressBytes(of address: any SocketAddress) -> [UInt8]? {
   address.withSockAddr { sa, _ in hostAddressBytes(of: sa) }
 }
 
@@ -142,7 +137,7 @@ private func hostAddressBytes(of sa: UnsafePointer<sockaddr>) -> [UInt8]? {
 }
 
 /// The scope (interface index) of a scoped IPv6 address, or nil.
-private func ipv6ScopeID(of address: OcaBonjourListenAddress) -> UInt32? {
+private func ipv6ScopeID(of address: any SocketAddress) -> UInt32? {
   address.withSockAddr { sa, _ in
     guard Int32(sa.pointee.sa_family) == AF_INET6 else { return nil }
     let scope = UnsafeRawPointer(sa).load(as: sockaddr_in6.self).sin6_scope_id

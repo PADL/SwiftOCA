@@ -24,6 +24,7 @@ import Foundation
 #endif
 import Logging
 import Network
+import SocketAddress
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 import Synchronization
@@ -116,6 +117,14 @@ open class OcaNWStreamDeviceEndpoint: OcaDeviceEndpointPrivate,
 
   public nonisolated var description: String {
     "\(type(of: self))(port: \(_port.rawValue), timeout: \(timeout))"
+  }
+
+  /// Network listens on its port on every address: the IPv6 wildcard.
+  public nonisolated var address: any SocketAddress {
+    var any = sockaddr_in6()
+    any.sin6_family = sa_family_t(AF_INET6)
+    any.sin6_port = port.bigEndian
+    return any
   }
 
   public nonisolated var port: UInt16 {

@@ -26,7 +26,7 @@ import XCTest
 
 /// Where an endpoint's DNS-SD services are announced, from the address it is bound to.
 final class BonjourAdvertisingInterfaceTests: XCTestCase {
-  private func storage(_ presentationAddress: String) -> OcaBonjourListenAddress {
+  private func storage(_ presentationAddress: String) -> any SocketAddress {
     if presentationAddress.contains(":") {
       try! sockaddr_in6(family: sa_family_t(AF_INET6), presentationAddress: presentationAddress)
     } else {
@@ -34,7 +34,7 @@ final class BonjourAdvertisingInterfaceTests: XCTestCase {
     }
   }
 
-  private func unixStorage() -> OcaBonjourListenAddress {
+  private func unixStorage() -> any SocketAddress {
     try! sockaddr_un(family: sa_family_t(AF_LOCAL), presentationAddress: "/var/run/inferno.socket")
   }
 

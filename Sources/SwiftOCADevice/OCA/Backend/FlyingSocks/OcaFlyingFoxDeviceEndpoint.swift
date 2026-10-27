@@ -95,7 +95,7 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   package nonisolated(unsafe) var enableMessageTracing = false
 
   private(set) var httpServer: HTTPServer!
-  private let address: sockaddr_storage
+  nonisolated let storage: sockaddr_storage
   private var _controllers = [OcaFlyingFoxController]()
   #if canImport(dnssd)
   private var _endpointRegistrarTask: Task<(), Error>?
@@ -184,7 +184,7 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   ) async throws {
     guard !controlProtocols.isEmpty else { throw Ocp1Error.unsupportedControlProtocol }
     self.device = device
-    self.address = address
+    storage = address
     self.timeout = timeout
     self.paths = Dictionary(uniqueKeysWithValues: controlProtocols.map { controlProtocol in
       let path = paths[controlProtocol] ?? "/"
@@ -195,13 +195,13 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
     // FIXME: API impedance mismatch
     let address: FlyingSocks.SocketAddress
 
-    switch self.address.ss_family {
+    switch storage.ss_family {
     case sa_family_t(AF_INET):
-      address = try sockaddr_in.make(from: self.address)
+      address = try sockaddr_in.make(from: storage)
     case sa_family_t(AF_INET6):
-      address = try sockaddr_in6.make(from: self.address)
+      address = try sockaddr_in6.make(from: storage)
     case sa_family_t(AF_LOCAL):
-      address = try sockaddr_un.make(from: self.address)
+      address = try sockaddr_un.make(from: storage)
     default:
       throw Ocp1Error.unknownServiceType
     }
@@ -281,7 +281,7 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   public nonisolated var description: String {
-    "\(type(of: self))(address: \(address._presentationAddress), timeout: \(timeout))"
+    "\(type(of: self))(address: \(storage._presentationAddress), timeout: \(timeout))"
   }
 
   public func run() async throws {
@@ -350,17 +350,12 @@ public final class OcaFlyingFoxDeviceEndpoint: OcaDeviceEndpointPrivate,
   }
 
   public nonisolated var port: UInt16 {
-    (try? address.port) ?? 0
+    (try? storage.port) ?? 0
   }
 
-  #if canImport(dnssd)
-  public nonisolated var bonjourListenAddress: OcaBonjourListenAddress? {
-    address
-  }
-  #endif
 
   private nonisolated var socketPath: String? {
-    address.ss_family == sa_family_t(AF_LOCAL) ? address._presentationAddress : nil
+    storage.ss_family == sa_family_t(AF_LOCAL) ? storage._presentationAddress : nil
   }
 
   package func add(controller: OcaFlyingFoxController) async {

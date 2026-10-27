@@ -40,6 +40,7 @@ import Android
 public typealias Ocp1FlyingSocksDatagramDeviceEndpoint = OcaFlyingSocksDatagramDeviceEndpoint
 
 @OcaDevice
+
 public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivate,
   OcaBonjourRegistrableDeviceEndpoint,
   CustomStringConvertible
@@ -54,7 +55,7 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
 
   let pool: any AsyncSocketPool = SocketPool.make()
 
-  private let address: SocketAddress
+  private let socketAddress: FlyingSocks.AnySocketAddress
   package let timeout: Duration
   package let device: OcaDevice
   package let controlProtocol: OcaControlProtocol
@@ -67,7 +68,7 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
   #endif
 
   private nonisolated var family: sa_family_t {
-    address.family
+    socketAddress.family
   }
 
   public convenience init(
@@ -88,13 +89,13 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
   }
 
   private init(
-    address: SocketAddress,
+    address: FlyingSocks.AnySocketAddress,
     timeout: Duration = OcaDevice.DefaultTimeout,
     device: OcaDevice = OcaDevice.shared,
     controlProtocol: OcaControlProtocol = .ocp1,
     logger: Logger = Logger(label: "com.padl.SwiftOCADevice.OcaFlyingSocksDatagramDeviceEndpoint")
   ) async throws {
-    self.address = address
+    socketAddress = address
     self.timeout = timeout
     self.device = device
     self.controlProtocol = controlProtocol
@@ -108,7 +109,7 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
   }
 
   private nonisolated var presentationAddress: String {
-    address.makeStorage()._presentationAddress
+    socketAddress.makeStorage()._presentationAddress
   }
 
   /// `nil` while the table is full: a new peer is ignored until a controller expires.
@@ -185,8 +186,8 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
     try unlinkDomainSocket()
     let socket = try Socket(domain: Int32(family), type: .datagram)
     try socket.setValue(true, for: .localAddressReuse)
-    if address.family == sa_family_t(AF_INET6) { try socket.setIPv6Only() }
-    try socket.bind(to: address)
+    if socketAddress.family == sa_family_t(AF_INET6) { try socket.setIPv6Only() }
+    try socket.bind(to: socketAddress)
     return socket
   }
 
@@ -233,14 +234,13 @@ public final class OcaFlyingSocksDatagramDeviceEndpoint: OcaDeviceEndpointPrivat
   }
 
   public nonisolated var port: UInt16 {
-    address.port
+    socketAddress.port
   }
 
-  #if canImport(dnssd)
-  public nonisolated var bonjourListenAddress: OcaBonjourListenAddress? {
-    address.makeStorage()
+  /// The bound address as a `sockaddr_storage`, for `address` (`+Address.swift`).
+  nonisolated var addressStorage: sockaddr_storage {
+    socketAddress.makeStorage()
   }
-  #endif
 
   package func add(controller: ControllerType) async {}
 
