@@ -24,7 +24,7 @@
 //   PROFILE <count> round trips in <seconds>s <transport>
 
 import Foundation
-import SwiftOCA
+@_spi(SwiftOCAPrivate) import SwiftOCA
 import SwiftOCADevice
 
 /// `OcaTCPDeviceEndpoint` is the portable stream endpoint (FlyingSocks on Darwin,
