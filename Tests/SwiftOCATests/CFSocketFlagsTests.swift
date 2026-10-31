@@ -33,12 +33,7 @@ import Android
 @Suite struct CFSocketFlagsTests {
   private static func withSocket(_ body: (CFSocket, CInt) throws -> ()) throws {
     var fds: [CInt] = [-1, -1]
-    #if canImport(Glibc)
-    let type = CInt(SOCK_STREAM.rawValue)
-    #else
-    let type = SOCK_STREAM
-    #endif
-    try #require(socketpair(AF_UNIX, type, 0, &fds) == 0)
+    try #require(socketpair(AF_UNIX, SwiftOCA.SOCK_STREAM, 0, &fds) == 0)
     defer {
       close(fds[0])
       close(fds[1])
