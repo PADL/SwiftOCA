@@ -43,6 +43,17 @@ public final class OcaLocalDeviceEndpoint: OcaDeviceEndpointPrivate {
   /// channel for sending responses to the in-process controller
   let responseChannel = AsyncChannel<Data>()
 
+  /// PDUs for the in-process controller, for one that isn't an `OcaLocalConnection`, as
+  /// across a language boundary.
+  public nonisolated var responses: AsyncChannel<Data> {
+    responseChannel
+  }
+
+  /// Hands a PDU from the in-process controller to the device, waiting until it's taken.
+  public nonisolated func deliver(request: Data) async {
+    await requestChannel.send(request)
+  }
+
   private var controller: OcaLocalController!
 
   package func add(controller: ControllerType) async {}
