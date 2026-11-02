@@ -59,6 +59,24 @@ public struct OcaConstructionParameter: Codable, Sendable {
   }
 }
 
+package extension Dictionary<OcaUint16, OcaSignalPath> {
+  /// The signal paths of several blocks, by object number, as one map. A block's indices
+  /// mean nothing outside it, so they are numbered from 1, in the order of the blocks' object
+  /// numbers and then of their indices. A device and a controller's fallback both do this,
+  /// so that they agree.
+  init(mergingBlocks blocks: [OcaONo: Self]) throws {
+    let signalPaths = blocks.sorted { $0.key < $1.key }.flatMap { block in
+      block.value.sorted { $0.key < $1.key }.map(\.value)
+    }
+    guard signalPaths.count <= OcaUint16.max else {
+      throw Ocp1Error.status(.bufferOverflow)
+    }
+    self.init(uniqueKeysWithValues: signalPaths.enumerated().map { index, signalPath in
+      (OcaUint16(index + 1), signalPath)
+    })
+  }
+}
+
 @OcaClass
 open class OcaBlock: OcaWorker, @unchecked
 Sendable {
@@ -211,8 +229,32 @@ Sendable {
   @OcaMethod("3.8", name: "DeleteSignalPath", parameterNames: ["Index"])
   public func deleteSignalPath(index: OcaUint16) async throws
 
+  // the property's getter, as the device declares it
+  @OcaMethod("3.9", name: "GetSignalPaths", resultNames: ["Members"])
+  public func getSignalPaths() async throws -> OcaMap<OcaUint16, OcaSignalPath>
+
   @OcaMethod("3.10", name: "GetSignalPathsRecursive", resultNames: ["SignalPaths"])
   public func getSignalPathsRecursive() async throws -> OcaMap<OcaUint16, OcaSignalPath>
+
+  /// a controller-side implementation of `getSignalPathsRecursive()` for devices that do not
+  /// implement `GetSignalPathsRecursive()`, asking one block at a time
+  public func getSignalPathsRecursiveFallback() async throws -> OcaMap<OcaUint16, OcaSignalPath> {
+    guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
+
+    var blocks = try await [objectNumber: getSignalPaths()]
+    for member in try await getActionObjectsRecursiveFallback() {
+      let object = member.memberObjectIdentification
+      guard object.classIdentification.isSubclass(of: OcaBlock.classIdentification) else {
+        continue
+      }
+      let block: OcaBlock = try await connectionDelegate.resolve(
+        object: object,
+        owner: member.containerObjectNumber
+      )
+      blocks[object.oNo] = try await block.getSignalPaths()
+    }
+    return try OcaMap(mergingBlocks: blocks)
+  }
 
   // 3.12 to 3.14 are the 2018 model's param sets; the device does not answer them
   @OcaMethod("3.12", name: "ApplyParamSet", parameterNames: ["Identifier"], deprecated: true)
@@ -597,6 +639,22 @@ public extension OcaBlock {
     }
 
     return containerMembers
+  }
+
+  /// `getSignalPathsRecursive()`, or `getSignalPathsRecursiveFallback()` on a device that does
+  /// not implement it: the two give the same answer
+  @OcaConnectionActor
+  func resolveSignalPathsRecursive() async throws -> OcaMap<OcaUint16, OcaSignalPath> {
+    guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
+    do {
+      /// don't use recursive methods with UDP because they can exceed the minimum PDU size
+      guard !connectionDelegate.isDatagram else {
+        throw Ocp1Error.status(.notImplemented)
+      }
+      return try await getSignalPathsRecursive()
+    } catch Ocp1Error.status(.notImplemented), Ocp1Error.status(.badMethod) {
+      return try await getSignalPathsRecursiveFallback()
+    }
   }
 
   @OcaConnectionActor
