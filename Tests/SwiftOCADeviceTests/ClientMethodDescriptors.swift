@@ -64,6 +64,7 @@ enum ClientMethodDescriptors {
       ("getActionObjectsRecursive", OcaBlock.Methods.getActionObjectsRecursive.erased),
       ("addSignalPath", OcaBlock.Methods.addSignalPath.erased),
       ("deleteSignalPath", OcaBlock.Methods.deleteSignalPath.erased),
+      ("getSignalPaths", OcaBlock.Methods.getSignalPaths.erased),
       ("getSignalPathsRecursive", OcaBlock.Methods.getSignalPathsRecursive.erased),
       ("applyParamSet", OcaBlock.Methods.applyParamSet.erased),
       ("getCurrentParamSetData", OcaBlock.Methods.getCurrentParamSetData.erased),

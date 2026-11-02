@@ -15,6 +15,11 @@
 //
 
 import AsyncExtensions
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
@@ -23,6 +28,7 @@ public protocol OcaBlockContainer: OcaRoot {
   associatedtype ActionObject: OcaRoot
 
   var actionObjects: [ActionObject] { get }
+  var signalPaths: OcaMap<OcaUint16, OcaSignalPath> { get }
   #if NonEmbeddedBuild
   var datasetObjects: [OcaDataset] {
     get async throws
@@ -277,7 +283,26 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   func getSignalPathsRecursive(from controller: any OcaController) async throws
     -> OcaMap<OcaUint16, OcaSignalPath>
   {
-    throw Ocp1Error.status(.notImplemented)
+    var blocks = [objectNumber: signalPaths]
+    await applyRecursive { (member: OcaRoot, _) in
+      if let block = member as? any OcaBlockContainer {
+        blocks[block.objectNumber] = block.signalPaths
+      }
+    }
+    let signalPaths = try OcaMap(mergingBlocks: blocks)
+
+    // AES70-2: an answer over the implementation limit is a BufferOverflow
+    let parameterData: Data = try Ocp1Encoder().encode(signalPaths)
+    let pduSize = OcaConnection.MinimumPduSize + Ocp1Response(
+      parameters: OcaParameters(parameterCount: 1, parameterData: parameterData)
+    ).encodedSize
+    let maximumPduSize = (controller as? any OcaControllerInternal)?.maximumSendPduSize
+      ?? OcaControlProtocol.defaultMaximumPduSize
+    guard pduSize <= maximumPduSize else {
+      throw Ocp1Error.status(.bufferOverflow)
+    }
+
+    return signalPaths
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaBlock.Methods.findActionObjectsByRole)
