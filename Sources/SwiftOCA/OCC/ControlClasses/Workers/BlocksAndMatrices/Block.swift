@@ -186,10 +186,7 @@ Sendable {
   private func _getActionObjectsRecursiveFallback(
     _ blockMembers: inout Set<OcaBlockMember>
   ) async throws {
-    let actionObjects = try await $actionObjects._getValue(
-      self,
-      flags: [.returnCachedValue, .cacheValue]
-    )
+    let actionObjects = try await $actionObjects._getValue(self, flags: [.cacheValue])
 
     for actionObject in actionObjects {
       blockMembers
@@ -239,19 +236,11 @@ Sendable {
   /// a controller-side implementation of `getSignalPathsRecursive()` for devices that do not
   /// implement `GetSignalPathsRecursive()`, asking one block at a time
   public func getSignalPathsRecursiveFallback() async throws -> OcaMap<OcaUint16, OcaSignalPath> {
-    guard let connectionDelegate else { throw Ocp1Error.noConnectionDelegate }
-
     var blocks = try await [objectNumber: getSignalPaths()]
-    for member in try await getActionObjectsRecursiveFallback() {
-      let object = member.memberObjectIdentification
-      guard object.classIdentification.isSubclass(of: OcaBlock.classIdentification) else {
-        continue
+    for member in try await resolveActionObjectsRecursive() {
+      if let block = member.memberObject as? OcaBlock {
+        blocks[block.objectNumber] = try await block.getSignalPaths()
       }
-      let block: OcaBlock = try await connectionDelegate.resolve(
-        object: object,
-        owner: member.containerObjectNumber
-      )
-      blocks[object.oNo] = try await block.getSignalPaths()
     }
     return try OcaMap(mergingBlocks: blocks)
   }
@@ -631,7 +620,8 @@ public extension OcaBlock {
       )
     }
 
-    for container in connectionDelegate.objects.compactMap({ $0.value as? OcaBlock }) {
+    // only these blocks are answered for: any other keeps its members
+    for container in [self] + containerMembers.compactMap({ $0.memberObject as? OcaBlock }) {
       container._set(actionObjects: containerMembers.filter {
         $0.containerObjectNumber == container.objectNumber
       }.map(\.memberObject.objectIdentification))

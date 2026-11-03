@@ -15,11 +15,6 @@
 //
 
 import AsyncExtensions
-#if canImport(FoundationEssentials)
-import FoundationEssentials
-#else
-import Foundation
-#endif
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 
@@ -289,20 +284,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         blocks[block.objectNumber] = block.signalPaths
       }
     }
-    let signalPaths = try OcaMap(mergingBlocks: blocks)
-
-    // AES70-2: an answer over the implementation limit is a BufferOverflow
-    let parameterData: Data = try Ocp1Encoder().encode(signalPaths)
-    let pduSize = OcaConnection.MinimumPduSize + Ocp1Response(
-      parameters: OcaParameters(parameterCount: 1, parameterData: parameterData)
-    ).encodedSize
-    let maximumPduSize = (controller as? any OcaControllerInternal)?.maximumSendPduSize
-      ?? OcaControlProtocol.defaultMaximumPduSize
-    guard pduSize <= maximumPduSize else {
-      throw Ocp1Error.status(.bufferOverflow)
-    }
-
-    return signalPaths
+    return try OcaMap(mergingBlocks: blocks)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaBlock.Methods.findActionObjectsByRole)
