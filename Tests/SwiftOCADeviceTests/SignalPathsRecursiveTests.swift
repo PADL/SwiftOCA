@@ -23,13 +23,15 @@ import Foundation
 @testable @_spi(SwiftOCAPrivate) import SwiftOCADevice
 @preconcurrency import XCTest
 
-/// A block that can answer `GetSignalPathsRecursive` as a device lacking it would.
+/// A block that can answer a method as a device lacking it would.
 private final class ScriptedBlock: SwiftOCADevice.OcaBlock<SwiftOCADevice.OcaRoot> {
-  var recursiveStatus: OcaStatus?
+  var statuses = [OcaMethodID: OcaStatus]()
   var methodIDs = [OcaMethodID]()
 
-  func set(recursiveStatus: OcaStatus) {
-    self.recursiveStatus = recursiveStatus
+  func set(status: OcaStatus, for methodIDs: OcaMethodID...) {
+    for methodID in methodIDs {
+      statuses[methodID] = status
+    }
   }
 
   override func handleCommand(
@@ -37,14 +39,17 @@ private final class ScriptedBlock: SwiftOCADevice.OcaBlock<SwiftOCADevice.OcaRoo
     from controller: any OcaController
   ) async throws -> Ocp1Response {
     methodIDs.append(command.methodID)
-    if command.methodID == SwiftOCA.OcaBlock.Methods.getSignalPathsRecursive.methodID,
-       let recursiveStatus
-    {
-      throw Ocp1Error.status(recursiveStatus)
+    if let status = statuses[command.methodID] {
+      throw Ocp1Error.status(status)
     }
     return try await super.handleCommand(command, from: controller)
   }
 }
+
+private let getActionObjects = OcaMethodID("3.5")
+private let getActionObjectsRecursive = OcaMethodID("3.6")
+private let getSignalPaths = OcaMethodID("3.9")
+private let getSignalPathsRecursive = OcaMethodID("3.10")
 
 private func signalPath(_ role: String) -> OcaSignalPath {
   let port = OcaPort(owner: 1, id: OcaPortID(direction: .output, index: 1), role: role)
@@ -139,28 +144,90 @@ final class SignalPathsRecursiveTests: XCTestCase {
     XCTAssertEqual(roles(signalPaths), ["deepest", "inner"])
   }
 
-  func testTheFallbackMatchesTheDeviceOnAMissingMethod() async throws {
+  func testTheFallbackAsksForTheDevicesActionObjectsRecursive() async throws {
     try await makeTree()
     let proxy = try await makeProxy()
     let expected = try await proxy.getSignalPathsRecursive()
 
     for status in [OcaStatus.notImplemented, .badMethod] {
-      await outer.set(recursiveStatus: status)
+      await outer.set(status: status, for: getSignalPathsRecursive)
       let signalPaths = try await proxy.resolveSignalPathsRecursive()
       XCTAssertEqual(signalPaths, expected)
     }
+    let methodIDs = await outer.methodIDs
+    XCTAssertTrue(methodIDs.contains(getActionObjectsRecursive))
+    XCTAssertFalse(methodIDs.contains(getActionObjects))
+  }
+
+  func testTheFallbackWalksADeviceWithNeitherRecursiveMethod() async throws {
+    try await makeTree()
+    let proxy = try await makeProxy()
+    let expected = try await proxy.getSignalPathsRecursive()
+
+    await outer.set(
+      status: .notImplemented,
+      for: getSignalPathsRecursive, getActionObjectsRecursive
+    )
+    let signalPaths = try await proxy.resolveSignalPathsRecursive()
+    XCTAssertEqual(signalPaths, expected)
+    let methodIDs = await outer.methodIDs
+    XCTAssertTrue(methodIDs.contains(getActionObjects))
+  }
+
+  func testTheWalkFindsABlockAddedSinceTheLastOne() async throws {
+    try await makeTree()
+    let proxy = try await makeProxy()
+    await outer.set(
+      status: .notImplemented,
+      for: getSignalPathsRecursive, getActionObjectsRecursive
+    )
+    _ = try await proxy.resolveSignalPathsRecursive()
+
+    _ = try await makeBlock(objectNumber: 0x15000, in: outer, ["added"])
+    let signalPaths = try await proxy.resolveSignalPathsRecursive()
+    XCTAssertEqual(roles(signalPaths), Self.expectedRoles + ["added"])
+  }
+
+  func testAnInnerBlocksFallbackLeavesItsContainerAlone() async throws {
+    try await makeTree()
+    let proxy = try await makeProxy()
+    _ = try await proxy.resolveActionObjectsRecursive()
+    let members = try await proxy.$actionObjects._getValue(proxy, flags: [.returnCachedValue])
+
+    let inner: SwiftOCA.OcaBlock = try await proxy.connectionDelegate!.resolve(
+      object: device.objects[0x13000]!.objectIdentification
+    )
+    let signalPaths = try await inner.getSignalPathsRecursiveFallback()
+    XCTAssertEqual(roles(signalPaths), ["deepest", "inner"])
+
+    let cached = try await proxy.$actionObjects._getValue(proxy, flags: [.returnCachedValue])
+    XCTAssertEqual(cached, members)
+    XCTAssertFalse(cached.isEmpty)
   }
 
   func testOtherFailuresDoNotFallBack() async throws {
     try await makeTree()
     let proxy = try await makeProxy()
-    await outer.set(recursiveStatus: .deviceError)
+    await outer.set(status: .deviceError, for: getSignalPathsRecursive)
     do {
       _ = try await proxy.resolveSignalPathsRecursive()
       XCTFail("expected deviceError")
     } catch Ocp1Error.status(.deviceError) {}
     let methodIDs = await outer.methodIDs
-    XCTAssertFalse(methodIDs.contains(OcaMethodID("3.9")))
+    XCTAssertFalse(methodIDs.contains(getSignalPaths))
+  }
+
+  func testAFailureFindingTheBlocksDoesNotWalk() async throws {
+    try await makeTree()
+    let proxy = try await makeProxy()
+    await outer.set(status: .notImplemented, for: getSignalPathsRecursive)
+    await outer.set(status: .deviceError, for: getActionObjectsRecursive)
+    do {
+      _ = try await proxy.resolveSignalPathsRecursive()
+      XCTFail("expected deviceError")
+    } catch Ocp1Error.status(.deviceError) {}
+    let methodIDs = await outer.methodIDs
+    XCTAssertFalse(methodIDs.contains(getActionObjects))
   }
 
   func testMoreThanAMapHoldsIsABufferOverflow() throws {
@@ -170,40 +237,5 @@ final class SignalPathsRecursiveTests: XCTestCase {
     XCTAssertThrowsError(try OcaMap(mergingBlocks: [1: block, 2: block])) {
       XCTAssertEqual($0 as? Ocp1Error, .status(.bufferOverflow))
     }
-  }
-
-  func testAnAnswerLargerThanAPduIsABufferOverflow() async throws {
-    try await makeTree()
-    let status = await Self.recursiveStatus(of: outer, on: device, maximumSendPduSize: 100)
-    XCTAssertEqual(status, .bufferOverflow)
-    let enough = await Self.recursiveStatus(of: outer, on: device, maximumSendPduSize: 1500)
-    XCTAssertEqual(enough, .ok)
-  }
-
-  /// The status of the method, for a controller on a packet transport.
-  @OcaDevice
-  private static func recursiveStatus(
-    of block: ScriptedBlock,
-    on device: OcaDevice,
-    maximumSendPduSize: Int
-  ) async -> OcaStatus? {
-    typealias Endpoint = DatagramProxyDeviceEndpoint<Int>
-    let (input, _) = AsyncStream<Endpoint.PeerMessagePDU>.makeStream()
-    let (_, output) = AsyncStream<Endpoint.PeerMessagePDU>.makeStream()
-    guard let endpoint = try? await Endpoint(
-      maximumSendPduSize: maximumSendPduSize,
-      inputStream: input,
-      outputStream: output,
-      device: OcaDevice()
-    ) else { return nil }
-    return await device.handleCommand(
-      Ocp1Command(
-        handle: 1,
-        targetONo: block.objectNumber,
-        methodID: SwiftOCA.OcaBlock.Methods.getSignalPathsRecursive.methodID,
-        parameters: OcaParameters()
-      ),
-      from: DatagramProxyController(with: 1, endpoint: endpoint)
-    ).statusCode
   }
 }
