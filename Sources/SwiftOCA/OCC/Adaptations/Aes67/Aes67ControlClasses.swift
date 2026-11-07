@@ -55,18 +55,21 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
   public struct ConfigureEndpointFromSDPParameters: OcaParametersReflectable {
     public let endpointID: OcaMediaStreamEndpointID
     public let sdpString: OcaSDPString
-    /// SDP Stream Source ID (`<ssrc-id>`, RFC 5576) of the stream within a multistream
-    /// SDP; zero for a single-stream SDP.
-    public let streamID: OcaUint32
+    /// The kind of `mediaID`; `.none` only for an SDP with one media description.
+    public let mediaIDType: Aes67MediaIDType
+    /// The media description of `sdpString` to configure, as `mediaIDType` identifies it.
+    public let mediaID: OcaString
 
     public init(
       endpointID: OcaMediaStreamEndpointID,
       sdpString: OcaSDPString,
-      streamID: OcaUint32
+      mediaIDType: Aes67MediaIDType,
+      mediaID: OcaString
     ) {
       self.endpointID = endpointID
       self.sdpString = sdpString
-      self.streamID = streamID
+      self.mediaIDType = mediaIDType
+      self.mediaID = mediaID
     }
   }
 
@@ -99,20 +102,20 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
   ) async throws -> PresentationTimeOffsetConstraints
 
   // the draft spells the SDP string's name in capitals
-  /// Optional in AES70-21 §10.2.4; sets the endpoint's AdaptationData.ActiveSDP and
-  /// AdaptationData.StreamID. `streamID` is the `<ssrc-id>` selecting a stream of a
-  /// multistream SDP (Tables 18 and 19; see `Aes67Adaptation.selectStream`). An empty
-  /// SDP string closes the endpoint's connection.
+  /// Optional in AES70-21 §10.2.4; sets the endpoint's AdaptationData.ActiveSDP, MediaIDType
+  /// and MediaID. `mediaIDType` and `mediaID` select the media description of a multi-media
+  /// SDP (see `MediaStreamSDP.selectStream`). An empty SDP string closes the connection.
   @OcaMethod(
     "4.5",
     name: "ConfigureEndpointFromSDP",
     parameters: ConfigureEndpointFromSDPParameters.self,
-    parameterNames: ["EndpointID", "SDPString", "StreamID"]
+    parameterNames: ["EndpointID", "SDPString", "MediaIDType", "MediaID"]
   )
   public func configureEndpointFromSDP(
     endpointID: OcaMediaStreamEndpointID,
     sdpString: OcaSDPString,
-    streamID: OcaUint32 = 0
+    mediaIDType: Aes67MediaIDType = .none,
+    mediaID: OcaString = ""
   ) async throws
 }
 
