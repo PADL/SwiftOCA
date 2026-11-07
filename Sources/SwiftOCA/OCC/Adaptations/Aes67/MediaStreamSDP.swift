@@ -171,7 +171,7 @@ public extension MediaStreamSDP {
 
   /// AES70-21 §10.2.4 media description selection: the session section with the one media
   /// section `mediaIDType` and `mediaID` name. `.none` takes the only media section, and is
-  /// refused for a description with more than one; otherwise `mediaID` must name one.
+  /// refused for a description with more than one; otherwise `mediaID` must name exactly one.
   /// - Throws: `Ocp1Error.status(.badFormat)` for a description with no media section,
   ///   `.parameterError` when the identifier selects none.
   static func selectStream(
@@ -186,11 +186,13 @@ public extension MediaStreamSDP {
       guard media.count == 1 else { throw Ocp1Error.status(.parameterError) }
       index = 0
     } else {
+      // an identifier that more than one media description has selects none
       let wanted = canonical(mediaID, as: mediaIDType)
-      guard let wanted, let found = media.indices.first(where: {
+      let found = media.indices.filter {
         identifier(mediaIDType, of: media[$0], at: $0, session: session) == wanted
-      }) else { throw Ocp1Error.status(.parameterError) }
-      index = found
+      }
+      guard wanted != nil, found.count == 1 else { throw Ocp1Error.status(.parameterError) }
+      index = found[0]
     }
     return (session + media[index]).joined(separator: "\r\n") + "\r\n"
   }
@@ -221,7 +223,7 @@ public extension MediaStreamSDP {
     case .portNo: port(of: section).map(String.init)
     case .transportAddress4:
       // the media section's connection line, else the session's (RFC 4566 §5.7)
-      (ip4Address(in: section) ?? ip4Address(in: session)).flatMap { address in
+      ip4Address(in: section.contains { $0.hasPrefix("c=") } ? section : session).flatMap { address in
         port(of: section).map { "\(address):\($0)" }
       }
     case .none, .transportAddress6: nil
@@ -324,16 +326,9 @@ public extension MediaStreamSDP {
               let payloadType = UInt8(fields[3]) else { return nil }
         media = (port, payloadType)
       case "a=":
-        Self.parse(
-          attribute: value,
-          rtpmap: &rtpmap,
-          packetTime: &packetTime,
-          grandmasterID: &grandmasterID,
-          domain: &domain,
-          clockOffset: &clockOffset,
-          direction: &direction,
-          sourceAddress: &sourceAddress
-        )
+        Self.parse(attribute: value, rtpmap: &rtpmap, packetTime: &packetTime,
+                   grandmasterID: &grandmasterID, domain: &domain,
+                   clockOffset: &clockOffset, direction: &direction, sourceAddress: &sourceAddress)
       default:
         break
       }

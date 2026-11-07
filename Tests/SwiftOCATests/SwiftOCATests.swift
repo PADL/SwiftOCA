@@ -808,6 +808,13 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertEqual(status(pair, .transportAddress4, "239.0.0.9:5004"), .parameterError)
     XCTAssertEqual(status(pair, .transportAddress4, "239.0.0.1"), .parameterError)
     XCTAssertEqual(status(pair, .transportAddress6, "[ff3e::1]:5004"), .parameterError)
+    // an identifier two media descriptions share selects neither
+    let samePort = session + first + second.replacingOccurrences(of: "5006/1", with: "5004")
+    XCTAssertEqual(status(samePort, .portNo, "5004"), .parameterError)
+    XCTAssertEqual(select(samePort, .mid, "secondary"), session + second.replacingOccurrences(of: "5006/1", with: "5004"))
+    // a media section's own connection line, IPv6 here, is not the session's
+    let ip6 = session + "m=audio 5004 RTP/AVP 97\r\nc=IN IP6 ff3e::1\r\n"
+    XCTAssertNil(MediaStreamSDP.mediaID(.transportAddress4, ofStreamAt: 0, in: ip6))
 
     XCTAssertEqual(MediaStreamSDP.mediaID(.mid, ofStreamAt: 1, in: pair), "secondary")
     XCTAssertEqual(MediaStreamSDP.mediaID(.ordinal, ofStreamAt: 0, in: pair), "1")
