@@ -14,7 +14,8 @@
 // limitations under the License.
 //
 
-// Datatypes defined by AES70-21 (draft 2026-10-09): Tables 7, 8, 17 and 20 to 23.
+// Datatypes defined by AES70-21 (draft 2026-10-29): Tables 7, 8, 17 and 18 to 21, and
+// Aes67MediaIDType (§10.2.4).
 
 /// Aes67StreamTransmissionCapabilities (OcaBitSet16)
 public struct Aes67StreamTransmissionCapabilities: OptionSet, Codable, Sendable, Hashable {
@@ -28,6 +29,26 @@ public struct Aes67StreamTransmissionCapabilities: OptionSet, Codable, Sendable,
   public static let multicastCapable = Aes67StreamTransmissionCapabilities(rawValue: 1 << 1)
   public static let insecureCapable = Aes67StreamTransmissionCapabilities(rawValue: 1 << 2)
   public static let defaultSecurityCapable = Aes67StreamTransmissionCapabilities(rawValue: 1 << 3)
+}
+
+/// What kind of identifier Aes67EndpointAdaptationData.MediaID and ConfigureEndpointFromSDP's
+/// MediaID are (AES70-21 §10.2.4). The draft gives no width; it is an OcaUint8, as AES70-3
+/// marshals its enumerations.
+public enum Aes67MediaIDType: OcaUint8, Codable, Sendable, CaseIterable {
+  /// No identifier: the SDP has one media description, whatever its identity.
+  case none = 0
+  /// The media description's position in the SDP, 1-based, in decimal.
+  case ordinal = 1
+  /// Its `a=label` value (RFC 4574).
+  case label = 2
+  /// Its `a=mid` value (RFC 5888).
+  case mid = 3
+  /// Its `m=` UDP port, in decimal.
+  case portNo = 4
+  /// `<IPv4 address>:<port>` of its connection address and `m=` port.
+  case transportAddress4 = 5
+  /// `[<IPv6 address>]:<port>`; reserved, AES67 has no IPv6.
+  case transportAddress6 = 6
 }
 
 /// IP parameters of an endpoint on one network assignment. DSCP and COS of -1 leave the
@@ -76,9 +97,11 @@ public struct Aes67EndpointAdaptationData: Ocp1TypedBlobRepresentable, Sendable,
   public var mediaInfo: OcaString
   /// Set by ConfigureEndpointFromSDP.
   public var activeSDP: OcaSDPString
-  /// The SDP Stream Source ID (`<ssrc-id>`, RFC 5576) of the stream within a multistream
-  /// SDP; zero for a single-stream SDP. Set by ConfigureEndpointFromSDP.
-  public var streamID: OcaUint32
+  /// The kind of `mediaID`. Set by ConfigureEndpointFromSDP.
+  public var mediaIDType: Aes67MediaIDType
+  /// The media description of `activeSDP` in effect, as `mediaIDType` identifies it.
+  /// Set by ConfigureEndpointFromSDP.
+  public var mediaID: OcaString
 
   public init(
     ipParameters: [Aes67EndpointIPParameters] = [],
@@ -91,7 +114,8 @@ public struct Aes67EndpointAdaptationData: Ocp1TypedBlobRepresentable, Sendable,
     presentationTimeOffset: OcaTimeInterval = 0,
     mediaInfo: OcaString = "",
     activeSDP: OcaSDPString = "",
-    streamID: OcaUint32 = 0
+    mediaIDType: Aes67MediaIDType = .none,
+    mediaID: OcaString = ""
   ) {
     self.ipParameters = ipParameters
     self.payloadType = payloadType
@@ -103,7 +127,8 @@ public struct Aes67EndpointAdaptationData: Ocp1TypedBlobRepresentable, Sendable,
     self.presentationTimeOffset = presentationTimeOffset
     self.mediaInfo = mediaInfo
     self.activeSDP = activeSDP
-    self.streamID = streamID
+    self.mediaIDType = mediaIDType
+    self.mediaID = mediaID
   }
 }
 

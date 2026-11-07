@@ -724,21 +724,60 @@ final class SwiftOCADeviceTests: XCTestCase {
     XCTAssertNil(MilanStreamFormat(mediaStreamMode: .undefined))
   }
 
-  func testAes67ConfigureEndpointFromSDPStreamID() throws {
-    // AES70-21 draft 2026-10-09: StreamID is the OcaUint32 <ssrc-id>
+  func testAes67ConfigureEndpointFromSDPMediaID() throws {
+    // AES70-21 draft 2026-10-29: MediaIDType (OcaUint8) and MediaID (OcaString)
     let parameters = Aes67OcaMediaTransportApplication.ConfigureEndpointFromSDPParameters(
       endpointID: 1,
       sdpString: "v=0",
-      streamID: 0xDEAD_BEEF
+      mediaIDType: .mid,
+      mediaID: "a"
     )
     XCTAssertEqual(
       try Ocp1Encoder().encode(parameters) as [UInt8],
-      [0x00, 0x00, 0x00, 0x01, 0x00, 0x03] + Array("v=0".utf8) + [0xDE, 0xAD, 0xBE, 0xEF]
+      [0x00, 0x00, 0x00, 0x01, 0x00, 0x03] + Array("v=0".utf8) + [0x03, 0x00, 0x01, 0x61]
     )
+    XCTAssertEqual(Aes67MediaIDType.allCases.map(\.rawValue), Array(0...6))
+  }
 
-    func status(_ body: () throws -> Int) -> OcaStatus? {
+  func testAes67EndpointAdaptationDataMatchesStatusbarAes70() throws {
+    // the record and bytes of statusbar aes70's ocp1_aes67_test (output_record())
+    let record = Aes67EndpointAdaptationData(
+      ipParameters: [Aes67EndpointIPParameters(
+        networkAssignmentID: 1,
+        sourceAddress: "10.10.32.5",
+        destinationAddress: "239.69.5.1",
+        destinationPort: 5004
+      )],
+      payloadType: 98,
+      rtpTimestampOffset: 0x1234_5678,
+      remoteEndpointName: OcaBlob(Array("Out".utf8)),
+      remoteControlType: "NONE",
+      transmissionCapabilities: [.unicastCapable, .multicastCapable, .insecureCapable],
+      activeSDP: "v=0\r\n",
+      mediaIDType: .mid,
+      mediaID: "a"
+    )
+    let hex = "0001000100" + "0a31302e31302e33322e35000a3233392e36392e352e310000" +
+      "00138cffff621234567800000000" + "00034f757400044e4f4e4500070000000000000005763d300d0a" +
+      "03000161"
+    let expected = stride(from: 0, to: hex.count, by: 2).map {
+      UInt8(hex.dropFirst($0).prefix(2), radix: 16)!
+    }
+    XCTAssertEqual(try Array(record.blob), expected)
+  }
+
+  func testAes67SelectStreamByMediaID() {
+    let session = "v=0\r\no=- 1 1 IN IP4 10.0.0.1\r\ns=Pair\r\nc=IN IP4 239.0.0.9/32\r\nt=0 0\r\n"
+    let first = "m=audio 5004 RTP/AVP 97\r\nc=IN IP4 239.0.0.1/32\r\na=mid:primary\r\na=label:L1\r\n"
+    let second = "m=audio 5006/1 RTP/AVP 97\r\na=mid:secondary\r\na=label:L2\r\n"
+    let pair = session + first + second
+
+    func select(_ sdp: String, _ type: Aes67MediaIDType, _ id: String) -> String? {
+      try? MediaStreamSDP.selectStream(in: sdp, mediaIDType: type, mediaID: id)
+    }
+    func status(_ sdp: String, _ type: Aes67MediaIDType, _ id: String) -> OcaStatus? {
       do {
-        _ = try body()
+        _ = try MediaStreamSDP.selectStream(in: sdp, mediaIDType: type, mediaID: id)
         return nil
       } catch let Ocp1Error.status(thrown) {
         return thrown
@@ -747,21 +786,41 @@ final class SwiftOCADeviceTests: XCTestCase {
       }
     }
 
-    // Table 18: single-stream SDP
-    XCTAssertEqual(try Aes67Adaptation.selectStream(streamID: 0, ssrcIDs: [0]), 0)
-    XCTAssertEqual(try Aes67Adaptation.selectStream(streamID: 0, ssrcIDs: [7]), 0)
-    XCTAssertEqual(try Aes67Adaptation.selectStream(streamID: 7, ssrcIDs: [0]), 0)
-    XCTAssertEqual(try Aes67Adaptation.selectStream(streamID: 7, ssrcIDs: [7]), 0)
-    XCTAssertEqual(status { try Aes67Adaptation.selectStream(streamID: 8, ssrcIDs: [7]) }, .parameterError)
+    // one media description: None ignores MediaID; any other type must name it
+    XCTAssertEqual(select(session + first, .none, "anything"), session + first)
+    XCTAssertEqual(select(session + first, .mid, "primary"), session + first)
+    XCTAssertEqual(status(session + first, .mid, "secondary"), .parameterError)
+    XCTAssertEqual(status(session, .none, ""), .badFormat)
 
-    // Table 19: multistream SDP
-    XCTAssertEqual(try Aes67Adaptation.selectStream(streamID: 9, ssrcIDs: [7, 9]), 1)
-    XCTAssertEqual(status { try Aes67Adaptation.selectStream(streamID: 0, ssrcIDs: [7, 0]) }, .badFormat)
-    XCTAssertEqual(status { try Aes67Adaptation.selectStream(streamID: 7, ssrcIDs: [7, 0]) }, .badFormat)
-    XCTAssertEqual(status { try Aes67Adaptation.selectStream(streamID: 0, ssrcIDs: [7, 9]) }, .parameterError)
-    XCTAssertEqual(status { try Aes67Adaptation.selectStream(streamID: 8, ssrcIDs: [7, 9]) }, .parameterError)
+    // several: None is refused, and the identifier must name one
+    XCTAssertEqual(status(pair, .none, ""), .parameterError)
+    XCTAssertEqual(select(pair, .ordinal, "2"), session + second)
+    XCTAssertEqual(select(pair, .ordinal, "01"), session + first)
+    XCTAssertEqual(status(pair, .ordinal, "3"), .parameterError)
+    XCTAssertEqual(status(pair, .ordinal, "0"), .parameterError)
+    XCTAssertEqual(select(pair, .label, "L2"), session + second)
+    XCTAssertEqual(select(pair, .mid, "primary"), session + first)
+    XCTAssertEqual(select(pair, .portNo, "5006"), session + second)
+    XCTAssertEqual(status(pair, .portNo, "5008"), .parameterError)
+    // the media section's connection address, else the session's
+    XCTAssertEqual(select(pair, .transportAddress4, "239.0.0.1:5004"), session + first)
+    XCTAssertEqual(select(pair, .transportAddress4, "239.0.0.9:5006"), session + second)
+    XCTAssertEqual(status(pair, .transportAddress4, "239.0.0.9:5004"), .parameterError)
+    XCTAssertEqual(status(pair, .transportAddress4, "239.0.0.1"), .parameterError)
+    XCTAssertEqual(status(pair, .transportAddress6, "[ff3e::1]:5004"), .parameterError)
 
-    XCTAssertEqual(status { try Aes67Adaptation.selectStream(streamID: 0, ssrcIDs: []) }, .badFormat)
+    XCTAssertEqual(MediaStreamSDP.mediaID(.mid, ofStreamAt: 1, in: pair), "secondary")
+    XCTAssertEqual(MediaStreamSDP.mediaID(.ordinal, ofStreamAt: 0, in: pair), "1")
+    XCTAssertEqual(
+      MediaStreamSDP.mediaID(.transportAddress4, ofStreamAt: 1, in: pair),
+      "239.0.0.9:5006"
+    )
+    XCTAssertNil(MediaStreamSDP.mediaID(.mid, ofStreamAt: 2, in: pair))
+    XCTAssertNil(MediaStreamSDP.mediaID(
+      .mid,
+      ofStreamAt: 0,
+      in: session + "m=audio 5004 RTP/AVP 97\r\n"
+    ))
   }
 
   func testAes67AndDanteAdaptationDataEncoding() throws {
@@ -778,11 +837,12 @@ final class SwiftOCADeviceTests: XCTestCase {
       payloadType: 96,
       transmissionCapabilities: [.unicastCapable, .multicastCapable],
       presentationTimeOffset: 1e-3,
-      streamID: 0x1234_5678
+      mediaIDType: .ordinal,
+      mediaID: "2"
     )
     XCTAssertEqual(try aes67.blob.decode(Aes67EndpointAdaptationData.self), aes67)
-    // StreamID (OcaUint32) follows ActiveSDP, here the empty string
-    XCTAssertEqual(try Array(aes67.blob.suffix(6)), [0x00, 0x00, 0x12, 0x34, 0x56, 0x78])
+    // MediaIDType (OcaUint8) and MediaID (OcaString) follow ActiveSDP, here the empty string
+    XCTAssertEqual(try Array(aes67.blob.suffix(6)), [0x00, 0x00, 0x01, 0x00, 0x01, 0x32])
     XCTAssertEqual(
       try Ocp1Encoder().encode(Aes67StreamTransmissionCapabilities([.unicastCapable, .defaultSecurityCapable])) as [UInt8],
       [0x00, 0x09]

@@ -169,32 +169,97 @@ public extension MediaStreamSDP {
     return media.map { (session + $0).joined(separator: "\r\n") + "\r\n" }
   }
 
-  /// AES70-21 §10.2.4 stream selection: the session section with the one media section
-  /// `streamID`, an SDP Stream Source ID (`<ssrc-id>`, RFC 5576), selects, following the
-  /// draft's Tables 18 and 19. A single stream is selected unless it and a nonzero stream
-  /// ID name different `<ssrc-id>`s; each stream of a multistream description needs an
-  /// `<ssrc-id>`, and a nonzero stream ID must name one of them.
-  static func selectStream(in sdpString: OcaSDPString, streamID: OcaUint32) throws -> OcaSDPString {
+  /// AES70-21 §10.2.4 media description selection: the session section with the one media
+  /// section `mediaIDType` and `mediaID` name. `.none` takes the only media section, and is
+  /// refused for a description with more than one; otherwise `mediaID` must name one.
+  /// - Throws: `Ocp1Error.status(.badFormat)` for a description with no media section,
+  ///   `.parameterError` when the identifier selects none.
+  static func selectStream(
+    in sdpString: OcaSDPString,
+    mediaIDType: Aes67MediaIDType,
+    mediaID: OcaString
+  ) throws -> OcaSDPString {
     let (session, media) = sections(of: sdpString)
-    let index = try Aes67Adaptation.selectStream(streamID: streamID, ssrcIDs: media.map(ssrcID(of:)))
+    guard !media.isEmpty else { throw Ocp1Error.status(.badFormat) }
+    let index: Int
+    if mediaIDType == .none {
+      guard media.count == 1 else { throw Ocp1Error.status(.parameterError) }
+      index = 0
+    } else {
+      let wanted = canonical(mediaID, as: mediaIDType)
+      guard let wanted, let found = media.indices.first(where: {
+        identifier(mediaIDType, of: media[$0], at: $0, session: session) == wanted
+      }) else { throw Ocp1Error.status(.parameterError) }
+      index = found
+    }
     return (session + media[index]).joined(separator: "\r\n") + "\r\n"
   }
 
-  /// The `<ssrc-id>` of each stream of a description, in order; zero for a stream without.
-  static func ssrcIDs(in sdpString: OcaSDPString) -> [OcaUint32] {
-    sections(of: sdpString).media.map(ssrcID(of:))
+  /// The identifier of `type` that the media section at `index` (from zero) of a description
+  /// has, as AES70-21 §10.2.4 spells it; nil when it has none, and for `.none` and
+  /// `.transportAddress6`, which AES67 does not use.
+  static func mediaID(
+    _ type: Aes67MediaIDType,
+    ofStreamAt index: Int,
+    in sdpString: OcaSDPString
+  ) -> OcaString? {
+    let (session, media) = sections(of: sdpString)
+    guard media.indices.contains(index) else { return nil }
+    return identifier(type, of: media[index], at: index, session: session)
   }
 
-  /// A media section's `<ssrc-id>`: that of its first "a=ssrc:" line (RFC 5576 §4.1),
-  /// or zero when it has none.
-  private static func ssrcID(of section: [Substring]) -> OcaUint32 {
-    for line in section where line.hasPrefix("a=ssrc:") {
-      // a=ssrc:<ssrc-id> <attribute>[:<value>]
-      if let id = line.dropFirst(7).split(separator: " ", maxSplits: 1).first.flatMap({ OcaUint32($0) }) {
-        return id
+  private static func identifier(
+    _ type: Aes67MediaIDType,
+    of section: [Substring],
+    at index: Int,
+    session: [Substring]
+  ) -> OcaString? {
+    switch type {
+    case .ordinal: String(index + 1)
+    case .label: attribute("label", in: section)
+    case .mid: attribute("mid", in: section)
+    case .portNo: port(of: section).map(String.init)
+    case .transportAddress4:
+      // the media section's connection line, else the session's (RFC 4566 §5.7)
+      (ip4Address(in: section) ?? ip4Address(in: session)).flatMap { address in
+        port(of: section).map { "\(address):\($0)" }
       }
+    case .none, .transportAddress6: nil
     }
-    return 0
+  }
+
+  /// `mediaID` as `identifier` spells it: numbers in decimal without leading zeros.
+  private static func canonical(_ mediaID: OcaString, as type: Aes67MediaIDType) -> OcaString? {
+    switch type {
+    case .ordinal, .portNo:
+      return UInt(mediaID).map(String.init)
+    case .transportAddress4:
+      guard let colon = mediaID.lastIndex(of: ":"),
+            let port = UInt16(mediaID[mediaID.index(after: colon)...]) else { return nil }
+      return "\(mediaID[..<colon]):\(port)"
+    default:
+      return mediaID
+    }
+  }
+
+  /// The value of a section's first `a=<name>:<value>` attribute.
+  private static func attribute(_ name: String, in section: [Substring]) -> OcaString? {
+    let prefix = "a=\(name):"
+    return section.first { $0.hasPrefix(prefix) }.map { String($0.dropFirst(prefix.count)) }
+  }
+
+  /// A media section's `m=` port: `m=<media> <port>[/<count>] <proto> <fmt>`.
+  private static func port(of section: [Substring]) -> UInt16? {
+    let fields = section.first?.dropFirst(2).split(separator: " ") ?? []
+    return fields.count > 1 ? fields[1].split(separator: "/").first.flatMap { UInt16($0) } : nil
+  }
+
+  /// The address of a section's `c=IN IP4 <address>[/<ttl>]` line.
+  private static func ip4Address(in section: [Substring]) -> OcaString? {
+    guard let line = section.first(where: { $0.hasPrefix("c=") }) else { return nil }
+    let fields = line.dropFirst(2).split(separator: " ")
+    guard fields.count >= 3, fields[1] == "IP4" else { return nil }
+    return fields[2].split(separator: "/").first.map(String.init)
   }
 
   private static func sections(
@@ -259,9 +324,16 @@ public extension MediaStreamSDP {
               let payloadType = UInt8(fields[3]) else { return nil }
         media = (port, payloadType)
       case "a=":
-        Self.parse(attribute: value, rtpmap: &rtpmap, packetTime: &packetTime,
-                   grandmasterID: &grandmasterID, domain: &domain,
-                   clockOffset: &clockOffset, direction: &direction, sourceAddress: &sourceAddress)
+        Self.parse(
+          attribute: value,
+          rtpmap: &rtpmap,
+          packetTime: &packetTime,
+          grandmasterID: &grandmasterID,
+          domain: &domain,
+          clockOffset: &clockOffset,
+          direction: &direction,
+          sourceAddress: &sourceAddress
+        )
       default:
         break
       }

@@ -70,21 +70,19 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  /// Optional (AES70-21 §10.2.4). `streamID` is the SDP Stream Source ID (`<ssrc-id>`)
-  /// selecting the stream of a multistream SDP; `Aes67Adaptation.selectStream` applies the
-  /// draft's Tables 18 and 19. On success the endpoint's AdaptationData.ActiveSDP is the
-  /// given SDP and AdaptationData.StreamID the selected stream's `<ssrc-id>`. An empty SDP
-  /// string closes any connection through the endpoint and sets its status to NotReady.
+  /// Optional (AES70-21 §10.2.4). `MediaStreamSDP.selectStream` picks the media description
+  /// `mediaIDType` and `mediaID` name; on success AdaptationData.ActiveSDP, MediaIDType and
+  /// MediaID take the call's values. An empty SDP string closes the connection (NotReady).
   @OcaDeviceMethod(Aes67Parameters.Methods.configureEndpointFromSDP)
   open func configureEndpointFromSDP(
     endpointID: OcaMediaStreamEndpointID,
     sdpString: OcaSDPString,
-    streamID: OcaUint32,
+    mediaIDType: Aes67MediaIDType,
+    mediaID: OcaString,
     from controller: any OcaController
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
-
 }
 
 /// AES70-21 (draft) Aes67OcaMediaTransportSessionAgent: SIP parameter records per session
@@ -153,7 +151,6 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent {
   ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
-
 }
 
 /// AES70-21 (draft) Aes67StreamEndpointRegistry: the Stream Source Registry, keyed by
@@ -178,12 +175,18 @@ open class Aes67StreamEndpointRegistry: OcaAgent {
   }
 
   @OcaDeviceMethod(Aes67Parameters.Methods.getRegistryEntry)
-  open func getRegistryEntry(idExternal: OcaBlob, from controller: any OcaController) async throws -> Aes67StreamEndpointDescriptor {
+  open func getRegistryEntry(
+    idExternal: OcaBlob,
+    from controller: any OcaController
+  ) async throws -> Aes67StreamEndpointDescriptor {
     try registry[registryIndex(idExternal: idExternal)]
   }
 
   @OcaDeviceMethod(Aes67Parameters.Methods.addRegistryEntry)
-  open func addRegistryEntry(entry: Aes67StreamEndpointDescriptor, from controller: any OcaController) async throws {
+  open func addRegistryEntry(
+    entry: Aes67StreamEndpointDescriptor,
+    from controller: any OcaController
+  ) async throws {
     guard !registry.contains(where: { $0.idExternal == entry.idExternal }) else {
       throw Ocp1Error.status(.invalidRequest)
     }
@@ -192,19 +195,28 @@ open class Aes67StreamEndpointRegistry: OcaAgent {
   }
 
   @OcaDeviceMethod(Aes67Parameters.Methods.setRegistryEntry)
-  open func setRegistryEntry(entry: Aes67StreamEndpointDescriptor, from controller: any OcaController) async throws {
+  open func setRegistryEntry(
+    entry: Aes67StreamEndpointDescriptor,
+    from controller: any OcaController
+  ) async throws {
     try registry[registryIndex(idExternal: entry.idExternal)] = entry
     try await notifyRegistryChanged(.itemChanged, entry: entry)
   }
 
   @OcaDeviceMethod(Aes67Parameters.Methods.deleteRegistryEntry)
-  open func deleteRegistryEntry(idExternal: OcaBlob, from controller: any OcaController) async throws {
+  open func deleteRegistryEntry(
+    idExternal: OcaBlob,
+    from controller: any OcaController
+  ) async throws {
     let entry = try registry.remove(at: registryIndex(idExternal: idExternal))
     try await notifyRegistryChanged(.itemDeleted, entry: entry)
   }
 
   @OcaDeviceMethod(Aes67Parameters.Methods.addRegistryEntriesFromSDP)
-  open func addRegistryEntriesFromSDP(sdpString: OcaSDPString, from controller: any OcaController) async throws {
+  open func addRegistryEntriesFromSDP(
+    sdpString: OcaSDPString,
+    from controller: any OcaController
+  ) async throws {
     throw Ocp1Error.status(.notImplemented)
   }
 
