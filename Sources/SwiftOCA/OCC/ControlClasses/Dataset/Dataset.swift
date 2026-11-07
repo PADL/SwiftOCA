@@ -136,6 +136,11 @@ Sendable {
   public struct GetDataSetSizesParameters: OcaParametersReflectable {
     public let currentSize: OcaUint64
     public let maxSize: OcaUint64
+
+    public init(currentSize: OcaUint64, maxSize: OcaUint64) {
+      self.currentSize = currentSize
+      self.maxSize = maxSize
+    }
   }
 
   @OcaMethod("2.15", name: "GetDatasetSizes")

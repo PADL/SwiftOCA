@@ -35,4 +35,40 @@ final class DatasetClassTests: XCTestCase {
       XCTAssertEqual(error as? Ocp1Error, .objectClassMismatch)
     }
   }
+
+  /// GetDatasetSizes is dispatched to the dataset's own `getDataSetSizes`, so a subclass's
+  /// override answers it.
+  func testGetDatasetSizesIsAnsweredByASubclassOverride() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let endpoint = try await OcaLocalDeviceEndpoint(device: device)
+    let oNo: OcaONo = 10001
+    _ = try await SizedDataset(
+      owner: OcaRootBlockONo, name: "Sized", type: "application/octet-stream", objectNumber: oNo,
+      deviceDelegate: device, addToRootBlock: true
+    )
+
+    let connection = await OcaLocalConnection(endpoint)
+    let endpointTask = Task { try? await endpoint.run() }
+    try await connection.connect()
+
+    let dataset: SwiftOCA.OcaDataset = try await connection.resolve(
+      object: OcaObjectIdentification(
+        oNo: oNo,
+        classIdentification: SwiftOCA.OcaDataset.classIdentification
+      )
+    )
+    let sizes = try await dataset.getDatasetSizes()
+    XCTAssertEqual(sizes.currentSize, 42)
+    XCTAssertEqual(sizes.maxSize, 4096)
+
+    try await connection.disconnect()
+    endpointTask.cancel()
+  }
+}
+
+private final class SizedDataset: SwiftOCADevice.OcaDataset, @unchecked Sendable {
+  override func getDataSetSizes() async throws -> (OcaUint64, OcaUint64) {
+    (42, 4096)
+  }
 }

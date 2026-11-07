@@ -245,6 +245,14 @@ Sendable {
     throw Ocp1Error.status(.notImplemented)
   }
 
+  @OcaDeviceMethod(SwiftOCA.OcaDataset.Methods.getDatasetSizes, access: .read)
+  func getDatasetSizes(from controller: any OcaController) async throws
+    -> SwiftOCA.OcaDataset.GetDataSetSizesParameters
+  {
+    let (currentSize, maxSize) = try await getDataSetSizes()
+    return .init(currentSize: currentSize, maxSize: maxSize)
+  }
+
   @OcaDeviceMethod(SwiftOCA.OcaDataset.Methods.openRead, access: .read)
   func openRead(requestedLockState: OcaLockState, from controller: any OcaController) async throws
     -> SwiftOCA.OcaDataset.OpenReadParameters
