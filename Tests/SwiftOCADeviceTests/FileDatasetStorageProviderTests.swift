@@ -437,6 +437,44 @@ final class FileDatasetStorageProviderTests: XCTestCase {
     endpointTask.cancel()
   }
 
+  func testGetDatasetSizesIsAnsweredOverTheWire() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let endpoint = try await OcaLocalDeviceEndpoint(device: device)
+
+    let provider = try OcaFileDatasetStorageProvider(
+      basePath: basePath,
+      maxDatasetSize: 1024,
+      deviceDelegate: device
+    )
+    await device.setDatasetStorageProvider(provider)
+
+    let connection = await OcaLocalConnection(endpoint)
+    let endpointTask = Task { try? await endpoint.run() }
+    try await connection.connect()
+
+    let contents = Data("{\"hello\":\"world\"}".utf8)
+    let oNo = try await connection.rootBlock.constructDataset(
+      classID: SwiftOCA.OcaDataset.classID,
+      name: "sizes_test",
+      type: OcaParamDatasetMimeType,
+      maxSize: 1024,
+      initialContents: .init(contents)
+    )
+    let dataset: SwiftOCA.OcaDataset = try await connection.resolve(
+      object: OcaObjectIdentification(
+        oNo: oNo,
+        classIdentification: SwiftOCA.OcaDataset.classIdentification
+      )
+    )
+    let sizes = try await dataset.getDatasetSizes()
+    XCTAssertEqual(sizes.currentSize, OcaUint64(contents.count))
+    XCTAssertEqual(sizes.maxSize, 1024)
+
+    try await connection.disconnect()
+    endpointTask.cancel()
+  }
+
   func testEndToEndPatchDataset() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
