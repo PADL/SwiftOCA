@@ -17,7 +17,8 @@
 #if canImport(dnssd)
 
 @_spi(SwiftOCAPrivate) import SwiftOCA
-@_spi(SwiftOCAPrivate) import SwiftOCADevice
+@testable @_spi(SwiftOCAPrivate) import SwiftOCADevice
+import Logging
 import XCTest
 
 /// Exercises registration, browsing and resolution against whichever DNS-SD responder
@@ -98,6 +99,37 @@ final class DNSServiceRegistrationTests: XCTestCase {
     } catch {
       XCTAssertEqual(error as? DNSServiceError, .badReference)
     }
+  }
+
+  /// A service of the caller's type follows the device's name, and goes when cancelled.
+  func testARegistrarFollowsTheDeviceName() async throws {
+    let device = OcaDevice()
+    try await device.initializeDefaultObjects()
+    let deviceManager = await device.deviceManager!
+    let name = "SwiftOCA registrar \(UInt32.random(in: 0...UInt32.max))"
+    await { @OcaDevice in deviceManager.deviceName = name }()
+    let browse = try DNSServiceDiscovery.browse(regType: Self.regType)
+    let registrar = Task { @OcaDevice in
+      await runDNSServiceRegistrar(
+        regType: Self.regType,
+        port: 49153,
+        txtRecord: [("txtvers", "1")],
+        deviceManager: deviceManager,
+        logger: Logger(label: "test")
+      )
+    }
+    guard await first(of: browse, where: { $0.isAdded && $0.name == name }) != nil else {
+      registrar.cancel()
+      throw XCTSkip("no DNS-SD responder reported the registered service")
+    }
+    let renamed = name + " renamed"
+    await { @OcaDevice in deviceManager.deviceName = renamed }()
+    let found = await first(of: browse, where: { $0.isAdded && $0.name == renamed })
+    XCTAssertNotNil(found)
+    registrar.cancel()
+    await registrar.value
+    let removed = await first(of: browse, where: { !$0.isAdded && $0.name == renamed })
+    XCTAssertNotNil(removed)
   }
 }
 
