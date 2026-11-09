@@ -101,6 +101,32 @@ final class DNSServiceRegistrationTests: XCTestCase {
     }
   }
 
+  /// The last reference going deallocates the registration, which withdraws the service.
+  func testADroppedRegistrationIsDeallocatedAndWithdrawn() async throws {
+    let name = "SwiftOCA dropped \(UInt32.random(in: 0...UInt32.max))"
+    let browse = try DNSServiceDiscovery.browse(regType: Self.regType)
+    weak var dropped: DNSServiceRegistration?
+    do {
+      let registration: DNSServiceRegistration
+      do {
+        registration = try await DNSServiceRegistration(
+          name: name,
+          regType: Self.regType,
+          port: 49154
+        )
+      } catch {
+        throw XCTSkip("no DNS-SD responder to register with: \(error)")
+      }
+      dropped = registration
+      guard await first(of: browse, where: { $0.isAdded && $0.name == name }) != nil else {
+        throw XCTSkip("the DNS-SD responder did not report the registered service")
+      }
+    }
+    XCTAssertNil(dropped)
+    let removed = await first(of: browse, where: { !$0.isAdded && $0.name == name })
+    XCTAssertNotNil(removed)
+  }
+
   /// A service of the caller's type follows the device's name, and goes when cancelled.
   func testARegistrarFollowsTheDeviceName() async throws {
     let deviceManager = try await OcaDeviceManager(deviceDelegate: nil)

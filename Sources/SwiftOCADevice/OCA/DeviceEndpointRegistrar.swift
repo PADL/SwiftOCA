@@ -133,10 +133,8 @@ package func runBonjourEndpointRegistrar(
       )
     }
   } catch {
-    // Deregister synchronously on cancel/error so mDNSResponder emits the
-    // goodbye while it (and we) are still around — actor deinit fires
-    // DNSServiceRefDeallocate too, but only when the local var unwinds,
-    // which can race a fast shutdown.
+    // deregistered at once, so the responder sends its goodbye before a fast shutdown;
+    // deinit would deallocate sdRef too, but only once the last reference goes
     await dnsServiceRegistration?.deregister()
     throw error
   }
@@ -203,7 +201,8 @@ public actor DNSServiceRegistration {
         UInt16(txtRecordBufferPointer.count),
         txtRecordBufferPointer.baseAddress,
         DNSServiceRegisterBlock_Thunk,
-        Unmanaged.passRetained(self).toOpaque()
+        // unretained: deinit deallocates sdRef, after which no callback can arrive
+        Unmanaged.passUnretained(self).toOpaque()
       )
     }
 
@@ -265,7 +264,7 @@ private func DNSServiceRegisterBlock_Thunk(
   _ context: UnsafeMutableRawPointer?
 ) {
   let service = Unmanaged<DNSServiceRegistration>.fromOpaque(context!)
-    .takeRetainedValue()
+    .takeUnretainedValue()
 
   let name = name != nil ? String(cString: name!) : nil
   let regType = regType != nil ? String(cString: regType!) : nil
