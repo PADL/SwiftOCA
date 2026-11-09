@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-
 @_spi(SwiftOCAPrivate)
 import SwiftOCA
 import Logging
@@ -23,13 +22,13 @@ import Logging
 /// name, registering it again whenever the device is renamed, until the task is cancelled.
 ///
 /// A registration that fails, because no DNS-SD responder is running yet say, is logged and
-/// retried, waiting `retryDelay`'s lower bound at first and twice as long each time after, up
-/// to its upper bound. It never ends the caller's service: this returns only when cancelled
-/// or when the name stops changing for good. Without DNS-SD it waits to be cancelled.
+/// retried under the device's latest name, waiting `retryDelay`'s lower bound at first and
+/// twice as long each time after, up to its upper bound. It never ends the caller's service:
+/// this returns only when cancelled. Without DNS-SD it waits to be cancelled.
 @_spi(SwiftOCAPrivate)
 @OcaDevice
-public func runDNSServiceRegistrar(
-  regType: String,
+public func advertiseDNSService(
+  serviceType: String,
   port: UInt16,
   txtRecord: [(String, String)],
   deviceManager: OcaDeviceManager,
@@ -38,17 +37,23 @@ public func runDNSServiceRegistrar(
 ) async {
   #if canImport(dnssd)
   var registration: DNSServiceRegistration?
+  var registeredName: String?
   do {
-    for try await deviceName in deviceManager.$deviceName {
+    for try await _ in deviceManager.$deviceName {
+      // renames made while a registration was retried have been registered already
+      guard deviceManager.deviceName != registeredName else { continue }
       await registration?.deregister()
       registration = nil
       var delay = retryDelay.lowerBound
       while registration == nil {
         try Task.checkCancellation()
+        // the latest name, which may have changed since the registration began failing
+        let name = deviceManager.deviceName
         do {
-          registration = try await DNSServiceRegistration(name: deviceName, regType: regType, port: port, txtRecord: txtRecord)
+          registration = try await DNSServiceRegistration(name: name, regType: serviceType, port: port, txtRecord: txtRecord)
+          registeredName = name
         } catch {
-          logger.warning("could not advertise \(regType) on port \(port), retrying: \(error)")
+          logger.warning("could not advertise \(serviceType) on port \(port), retrying: \(error)")
           try await Task.sleep(for: delay)
           delay = min(delay * 2, retryDelay.upperBound)
         }
