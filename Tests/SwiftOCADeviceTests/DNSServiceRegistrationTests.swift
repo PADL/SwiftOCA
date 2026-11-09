@@ -17,7 +17,7 @@
 #if canImport(dnssd)
 
 @_spi(SwiftOCAPrivate) import SwiftOCA
-@testable @_spi(SwiftOCAPrivate) import SwiftOCADevice
+@_spi(SwiftOCAPrivate) import SwiftOCADevice
 import Logging
 import XCTest
 
@@ -103,15 +103,13 @@ final class DNSServiceRegistrationTests: XCTestCase {
 
   /// A service of the caller's type follows the device's name, and goes when cancelled.
   func testARegistrarFollowsTheDeviceName() async throws {
-    let device = OcaDevice()
-    try await device.initializeDefaultObjects()
-    let deviceManager = await device.deviceManager!
+    let deviceManager = try await OcaDeviceManager(deviceDelegate: nil)
     let name = "SwiftOCA registrar \(UInt32.random(in: 0...UInt32.max))"
     await { @OcaDevice in deviceManager.deviceName = name }()
     let browse = try DNSServiceDiscovery.browse(regType: Self.regType)
     let registrar = Task { @OcaDevice in
-      await runDNSServiceRegistrar(
-        regType: Self.regType,
+      await advertiseDNSService(
+        serviceType: Self.regType,
         port: 49153,
         txtRecord: [("txtvers", "1")],
         deviceManager: deviceManager,
