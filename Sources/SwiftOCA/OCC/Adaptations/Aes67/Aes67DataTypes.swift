@@ -196,8 +196,8 @@ public struct Aes67StreamEndpointDescriptor: Codable, Sendable, Equatable {
   /// OcaAdaptationData in the draft, an OcaBlob on the wire as OcaTypedBlob is. Its
   /// IPParameters is unused in a registry entry: `addresses` replaces it.
   public var adaptationData: OcaTypedBlob<Aes67EndpointAdaptationData>
-  /// The SDP describing this endpoint, if available. One that describes more than one
-  /// stream needs `mediaIDType` and `mediaID` to identify this endpoint's.
+  /// This endpoint's SDP, or empty. When it has more than one stream, `mediaIDType` and
+  /// `mediaID` say which is this endpoint's.
   public var sdpString: OcaSDPString
   /// The kind of `mediaID`; `.none` when `sdpString` describes one stream.
   public var mediaIDType: Aes67MediaIDType
