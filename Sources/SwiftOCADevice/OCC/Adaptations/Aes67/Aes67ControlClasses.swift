@@ -70,9 +70,11 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication {
     throw Ocp1Error.status(.notImplemented)
   }
 
-  /// Optional (AES70-21 §10.2.4). `MediaStreamSDP.selectStream` picks the media description
-  /// `mediaIDType` and `mediaID` name; on success AdaptationData.ActiveSDP, MediaIDType and
-  /// MediaID take the call's values. An empty SDP string closes the connection (NotReady).
+  /// Optional (AES70-21 §10.2.4). Configures the endpoint from the media description
+  /// `MediaStreamSDP.selectStream` picks by `mediaIDType` and `mediaID`, sets
+  /// AdaptationData.ActiveSDP, MediaIDType and MediaID, and leaves the endpoint Ready without
+  /// starting it: `applyEndpointCommand` starts it. An empty SDP string closes any connection
+  /// and leaves it NotReady.
   @OcaDeviceMethod(Aes67Parameters.Methods.configureEndpointFromSDP)
   open func configureEndpointFromSDP(
     endpointID: OcaMediaStreamEndpointID,

@@ -102,9 +102,11 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
   ) async throws -> PresentationTimeOffsetConstraints
 
   // the draft spells the SDP string's name in capitals
-  /// Optional in AES70-21 §10.2.4; sets the endpoint's AdaptationData.ActiveSDP, MediaIDType
-  /// and MediaID. `mediaIDType` and `mediaID` select the media description of a multi-media
-  /// SDP (see `MediaStreamSDP.selectStream`). An empty SDP string closes the connection.
+  /// Optional in AES70-21 §10.2.4; configures the endpoint and sets its AdaptationData.ActiveSDP,
+  /// MediaIDType and MediaID. `mediaIDType` and `mediaID` select the media description of a
+  /// multi-media SDP (see `MediaStreamSDP.selectStream`). On success the endpoint is Ready but
+  /// not started: start it with `applyEndpointCommand` (`.start`). An empty SDP string closes
+  /// any connection and leaves the endpoint NotReady.
   @OcaMethod(
     "4.5",
     name: "ConfigureEndpointFromSDP",
