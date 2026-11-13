@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Datatypes defined by AES70-21 (draft 2026-10-29): Tables 7, 8, 17 and 18 to 21, and
-// Aes67MediaIDType (§10.2.4).
+// Datatypes defined by AES70-21 (draft 2026-11-12): Tables 7, 8, 17 and 19 to 22, and
+// Aes67MediaIDType (§10.2.5).
 
 /// Aes67StreamTransmissionCapabilities (OcaBitSet16)
 public struct Aes67StreamTransmissionCapabilities: OptionSet, Codable, Sendable, Hashable {
@@ -32,7 +32,7 @@ public struct Aes67StreamTransmissionCapabilities: OptionSet, Codable, Sendable,
 }
 
 /// What kind of identifier Aes67EndpointAdaptationData.MediaID and ConfigureEndpointFromSDP's
-/// MediaID are (AES70-21 §10.2.4). The draft gives no width; it is an OcaUint8, as AES70-3
+/// MediaID are (AES70-21 §10.2.5). The draft gives no width; it is an OcaUint8, as AES70-3
 /// marshals its enumerations.
 public enum Aes67MediaIDType: OcaUint8, Codable, Sendable, CaseIterable {
   /// No identifier: the SDP has one media description, whatever its identity.
@@ -184,7 +184,7 @@ public struct Aes67StreamTransportAddress: Codable, Sendable, Equatable {
   }
 }
 
-/// Element of Aes67StreamEndpointRegistry.Registry.
+/// Element of Aes67StreamEndpointRegistry.Registry (AES70-21 §10.3.1).
 public struct Aes67StreamEndpointDescriptor: Codable, Sendable, Equatable {
   public var idExternal: OcaBlob
   public var addresses: [Aes67StreamTransportAddress]
@@ -193,8 +193,16 @@ public struct Aes67StreamEndpointDescriptor: Codable, Sendable, Equatable {
   public var streamMode: OcaMediaStreamMode
   public var securityType: OcaSecurityType
   public var streamCastMode: OcaMediaStreamCastMode
+  /// OcaAdaptationData in the draft, an OcaBlob on the wire as OcaTypedBlob is. Its
+  /// IPParameters is unused in a registry entry: `addresses` replaces it.
   public var adaptationData: OcaTypedBlob<Aes67EndpointAdaptationData>
+  /// The SDP describing this endpoint, if available. One that describes more than one
+  /// stream needs `mediaIDType` and `mediaID` to identify this endpoint's.
   public var sdpString: OcaSDPString
+  /// The kind of `mediaID`; `.none` when `sdpString` describes one stream.
+  public var mediaIDType: Aes67MediaIDType
+  /// This endpoint's media description in `sdpString`, as `mediaIDType` identifies it.
+  public var mediaID: OcaString
   public var sipString: OcaString
   public var infoSource: OcaBlob
   public var timestamp: OcaTime
@@ -209,6 +217,8 @@ public struct Aes67StreamEndpointDescriptor: Codable, Sendable, Equatable {
     streamCastMode: OcaMediaStreamCastMode,
     adaptationData: OcaTypedBlob<Aes67EndpointAdaptationData> = OcaTypedBlob(),
     sdpString: OcaSDPString = "",
+    mediaIDType: Aes67MediaIDType = .none,
+    mediaID: OcaString = "",
     sipString: OcaString = "",
     infoSource: OcaBlob = OcaBlob(),
     timestamp: OcaTime
@@ -222,6 +232,8 @@ public struct Aes67StreamEndpointDescriptor: Codable, Sendable, Equatable {
     self.streamCastMode = streamCastMode
     self.adaptationData = adaptationData
     self.sdpString = sdpString
+    self.mediaIDType = mediaIDType
+    self.mediaID = mediaID
     self.sipString = sipString
     self.infoSource = infoSource
     self.timestamp = timestamp
@@ -237,6 +249,8 @@ public struct Aes67StreamEndpointDescriptor: Codable, Sendable, Equatable {
       lhs.streamCastMode == rhs.streamCastMode &&
       lhs.adaptationData == rhs.adaptationData &&
       lhs.sdpString == rhs.sdpString &&
+      lhs.mediaIDType == rhs.mediaIDType &&
+      lhs.mediaID == rhs.mediaID &&
       lhs.sipString == rhs.sipString &&
       lhs.infoSource == rhs.infoSource &&
       lhs.timestamp == rhs.timestamp

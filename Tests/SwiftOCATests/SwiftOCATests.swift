@@ -872,6 +872,24 @@ final class SwiftOCADeviceTests: XCTestCase {
       timestamp: OcaTime(seconds: 1, nanoseconds: 0)
     )
     XCTAssertEqual(try entry.adaptationData.content, aes67)
+    // MediaIDType (OcaUint8) and MediaID (OcaString) follow SDPString, then SIPString and
+    // InfoSource, here empty, and TimeStamp
+    var multistream = entry
+    multistream.sdpString = "s"
+    multistream.mediaIDType = .mid
+    multistream.mediaID = "a"
+    let multistreamEncoded: [UInt8] = try Ocp1Encoder().encode(multistream)
+    let timestampCount = try (Ocp1Encoder().encode(multistream.timestamp) as [UInt8]).count
+    XCTAssertEqual(
+      Array(multistreamEncoded.dropLast(timestampCount).suffix(11)),
+      [0x00, 0x01, 0x73, 0x03, 0x00, 0x01, 0x61, 0x00, 0x00, 0x00, 0x00]
+    )
+    XCTAssertEqual(
+      try Ocp1Decoder().decode(Aes67StreamEndpointDescriptor.self, from: multistreamEncoded),
+      multistream
+    )
+    XCTAssertEqual(entry.mediaIDType, .none)
+    XCTAssertEqual(entry.mediaID, "")
     // OcaVariant<OcaIP4Address, OcaIP6Address>: the alternative's index, then the string
     XCTAssertEqual(
       try Ocp1Encoder().encode(entry.addresses[0]) as [UInt8],
