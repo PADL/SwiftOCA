@@ -198,7 +198,7 @@ public extension MediaStreamSDP {
   }
 
   /// The identifier of `type` that the media section at `index` (from zero) of a description
-  /// has, as AES70-21 §10.2.4 spells it; nil when it has none, and for `.none` and
+  /// has, as AES70-21 §10.2.5 spells it; nil when it has none, and for `.none` and
   /// `.transportAddress6`, which AES67 does not use.
   static func mediaID(
     _ type: Aes67MediaIDType,

@@ -255,10 +255,15 @@ final class Ocp2CoderTests: XCTestCase {
       ),
       streamCastMode: .multicast,
       adaptationData: Aes67EndpointAdaptationData(payloadType: 96).typedBlob,
+      sdpString: "v=0\r\n",
+      mediaIDType: .label,
+      mediaID: "main",
       timestamp: OcaTime(seconds: 1, nanoseconds: 0)
     )
     let plain = try XCTUnwrap(Ocp2Encoder().encodeValue(entry) as? [String: Any])
     XCTAssertTrue(plain["AdaptationData"] is String)
+    XCTAssertEqual(plain["MediaIDType"] as? Int, 2)
+    XCTAssertEqual(plain["MediaID"] as? String, "main")
     let rich = try XCTUnwrap(structured.encodeValue(entry) as? [String: Any])
     let adaptationData = try XCTUnwrap(rich["AdaptationData"] as? [String: Any])
     XCTAssertEqual(adaptationData["PayloadType"] as? Int, 96)

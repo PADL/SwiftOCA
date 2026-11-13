@@ -21,7 +21,12 @@
 final class Aes67StreamEndpointRegistryTests: XCTestCase {
   private static let registryONo: OcaONo = 0x0001_0030
 
-  private static func entry(_ name: String, port: OcaUint16) -> Aes67StreamEndpointDescriptor {
+  private static func entry(
+    _ name: String,
+    port: OcaUint16,
+    sdpString: OcaSDPString = "",
+    mediaID: OcaString? = nil
+  ) -> Aes67StreamEndpointDescriptor {
     Aes67StreamEndpointDescriptor(
       idExternal: OcaBlob(Array(name.utf8)),
       addresses: [Aes67StreamTransportAddress(ipAddress: .ip4("239.1.2.3"), port: port)],
@@ -34,9 +39,19 @@ final class Aes67StreamEndpointRegistryTests: XCTestCase {
         packetTime: 1e-3
       ),
       streamCastMode: .multicast,
+      sdpString: sdpString,
+      mediaIDType: mediaID == nil ? .none : .mid,
+      mediaID: mediaID ?? "",
       timestamp: OcaTime(seconds: 1, nanoseconds: 0)
     )
   }
+
+  /// Two streams in one description, told apart by a=mid.
+  private static let twoStreamSDP: OcaSDPString = [
+    "v=0", "o=- 1 1 IN IP4 10.0.0.1", "s=pair", "t=0 0",
+    "m=audio 5010 RTP/AVP 96", "c=IN IP4 239.1.2.3/32", "a=rtpmap:96 L24/48000/8", "a=mid:main",
+    "m=audio 5012 RTP/AVP 96", "c=IN IP4 239.1.2.4/32", "a=rtpmap:96 L24/48000/2", "a=mid:aux",
+  ].joined(separator: "\r\n") + "\r\n"
 
   @OcaDevice
   func testRegistryEntriesAreKeyedByExternalID() async throws {
@@ -62,10 +77,26 @@ final class Aes67StreamEndpointRegistryTests: XCTestCase {
       try await client.addRegistryEntry(entry: Self.entry("stage right", port: 5008))
     }
 
-    try await client.setRegistryEntry(entry: Self.entry("stage right", port: 5010))
+    let multistream = Self.entry(
+      "stage right",
+      port: 5010,
+      sdpString: Self.twoStreamSDP,
+      mediaID: "main"
+    )
+    try await client.setRegistryEntry(entry: multistream)
     let stageRight = try await client
       .getRegistryEntry(idExternal: OcaBlob(Array("stage right".utf8)))
-    XCTAssertEqual(stageRight.addresses.first?.port, 5010)
+    XCTAssertEqual(stageRight, multistream)
+    XCTAssertEqual(stageRight.mediaIDType, .mid)
+    XCTAssertEqual(stageRight.mediaID, "main")
+    XCTAssertEqual(
+      try MediaStreamSDP.selectStream(
+        in: stageRight.sdpString,
+        mediaIDType: stageRight.mediaIDType,
+        mediaID: stageRight.mediaID
+      ),
+      MediaStreamSDP.streams(in: Self.twoStreamSDP)[0]
+    )
 
     try await client.deleteRegistryEntry(idExternal: OcaBlob(Array("stage left".utf8)))
     XCTAssertEqual(registry.registry.map(\.idExternal), [OcaBlob(Array("stage right".utf8))])
