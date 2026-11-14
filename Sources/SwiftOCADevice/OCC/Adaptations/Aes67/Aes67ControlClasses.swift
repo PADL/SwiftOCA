@@ -178,6 +178,16 @@ open class Aes67StreamEndpointRegistry: OcaAgent {
     return index
   }
 
+  /// Refuses an entry whose SDP describes several streams without naming its own with
+  /// MediaIDType and MediaID (AES70-21 Table 19). The legs of an ST 2022-7 stream, an
+  /// RFC 7104 DUP group, are one stream.
+  private static func validate(entry: Aes67StreamEndpointDescriptor) throws {
+    guard entry.mediaIDType != .none || MediaStreamSDP.streamLegs(in: entry.sdpString).count <= 1
+    else {
+      throw Ocp1Error.status(.parameterError)
+    }
+  }
+
   @OcaDeviceMethod(Aes67Parameters.Methods.getRegistryEntry)
   open func getRegistryEntry(idExternal: OcaBlob, from controller: any OcaController) async throws -> Aes67StreamEndpointDescriptor {
     try registry[registryIndex(idExternal: idExternal)]
@@ -185,6 +195,7 @@ open class Aes67StreamEndpointRegistry: OcaAgent {
 
   @OcaDeviceMethod(Aes67Parameters.Methods.addRegistryEntry)
   open func addRegistryEntry(entry: Aes67StreamEndpointDescriptor, from controller: any OcaController) async throws {
+    try Self.validate(entry: entry)
     guard !registry.contains(where: { $0.idExternal == entry.idExternal }) else {
       throw Ocp1Error.status(.invalidRequest)
     }
@@ -194,6 +205,7 @@ open class Aes67StreamEndpointRegistry: OcaAgent {
 
   @OcaDeviceMethod(Aes67Parameters.Methods.setRegistryEntry)
   open func setRegistryEntry(entry: Aes67StreamEndpointDescriptor, from controller: any OcaController) async throws {
+    try Self.validate(entry: entry)
     try registry[registryIndex(idExternal: entry.idExternal)] = entry
     try await notifyRegistryChanged(.itemChanged, entry: entry)
   }
