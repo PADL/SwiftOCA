@@ -53,6 +53,54 @@ final class Aes67StreamEndpointRegistryTests: XCTestCase {
     "m=audio 5012 RTP/AVP 96", "c=IN IP4 239.1.2.4/32", "a=rtpmap:96 L24/48000/2", "a=mid:aux",
   ].joined(separator: "\r\n") + "\r\n"
 
+  /// An ST 2022-7 pair, an RFC 7104 DUP group: one stream on two legs.
+  private static let redundantSDP: OcaSDPString = [
+    "v=0", "o=- 2 1 IN IP4 10.0.0.1", "s=redundant", "t=0 0", "a=group:DUP p s",
+    "m=audio 5020 RTP/AVP 96", "c=IN IP4 239.1.3.1/32", "a=rtpmap:96 L24/48000/8", "a=mid:p",
+    "m=audio 5020 RTP/AVP 96", "c=IN IP4 239.2.3.1/32", "a=rtpmap:96 L24/48000/8", "a=mid:s",
+  ].joined(separator: "\r\n") + "\r\n"
+
+  @OcaDevice
+  func testMultistreamEntriesNeedAMediaID() async throws {
+    let harness = try await CM4TestHarness.make()
+    defer { harness.endpointTask.cancel() }
+    let registry = try await SwiftOCADevice.Aes67StreamEndpointRegistry(
+      objectNumber: Self.registryONo,
+      role: "Stream Source Registry",
+      deviceDelegate: harness.device,
+      addToRootBlock: true
+    )
+    let client: SwiftOCA.Aes67StreamEndpointRegistry = try await harness.resolve(Self.registryONo)
+
+    // AES70-21 Table 19: an SDP with several streams names this entry's
+    let unnamed = Self.entry("pair", port: 5010, sdpString: Self.twoStreamSDP)
+    await XCTAssertThrowsStatus(.parameterError) {
+      try await client.addRegistryEntry(entry: unnamed)
+    }
+    XCTAssertTrue(registry.registry.isEmpty)
+    try await client.addRegistryEntry(
+      entry: Self.entry("pair", port: 5010, sdpString: Self.twoStreamSDP, mediaID: "main")
+    )
+    await XCTAssertThrowsStatus(.parameterError) {
+      try await client.setRegistryEntry(entry: unnamed)
+    }
+    XCTAssertEqual(registry.registry.first?.mediaID, "main")
+
+    // the two legs of a redundant stream are one stream, so need no MediaID
+    let redundant = Self.entry("redundant", port: 5020, sdpString: Self.redundantSDP)
+    try await client.addRegistryEntry(entry: redundant)
+    try await client.setRegistryEntry(entry: redundant)
+    // one beside another stream does
+    let mixed = Self.redundantSDP +
+      "m=audio 5022 RTP/AVP 96\r\nc=IN IP4 239.1.3.2/32\r\na=mid:x\r\n"
+    await XCTAssertThrowsStatus(.parameterError) {
+      try await client.setRegistryEntry(
+        entry: Self.entry("redundant", port: 5020, sdpString: mixed)
+      )
+    }
+    XCTAssertEqual(registry.registry.map(\.sdpString), [Self.twoStreamSDP, Self.redundantSDP])
+  }
+
   @OcaDevice
   func testRegistryEntriesAreKeyedByExternalID() async throws {
     let harness = try await CM4TestHarness.make()

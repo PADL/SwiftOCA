@@ -830,6 +830,35 @@ final class SwiftOCADeviceTests: XCTestCase {
     ))
   }
 
+  func testAes67StreamLegsGroupRedundantPairs() {
+    let session = "v=0\r\no=- 1 1 IN IP4 10.0.0.1\r\ns=Pair\r\nt=0 0\r\n"
+    func media(_ port: Int, mid: String?) -> String {
+      "m=audio \(port) RTP/AVP 97\r\nc=IN IP4 239.0.0.1/32\r\n" +
+        (mid.map { "a=mid:\($0)\r\n" } ?? "")
+    }
+    let dup = "a=group:DUP p s\r\n"
+
+    XCTAssertEqual(MediaStreamSDP.streamLegs(in: session), [])
+    XCTAssertEqual(MediaStreamSDP.streamLegs(in: session + media(5004, mid: nil)), [[0]])
+    // the legs of an RFC 7104 DUP group are one stream
+    XCTAssertEqual(
+      MediaStreamSDP.streamLegs(in: session + dup + media(5004, mid: "p") + media(5006, mid: "s")),
+      [[0, 1]]
+    )
+    // without the group, or for a mid the group does not list, they are streams of their own
+    XCTAssertEqual(
+      MediaStreamSDP.streamLegs(in: session + media(5004, mid: "p") + media(5006, mid: "s")),
+      [[0], [1]]
+    )
+    XCTAssertEqual(
+      MediaStreamSDP.streamLegs(
+        in: session + dup + media(5002, mid: "x") + media(5004, mid: "p") + media(5006, mid: nil)
+          + media(5008, mid: "s")
+      ),
+      [[0], [1, 3], [2]]
+    )
+  }
+
   func testAes67AndDanteAdaptationDataEncoding() throws {
     let ipParameters = Aes67EndpointIPParameters(
       networkAssignmentID: 1,
