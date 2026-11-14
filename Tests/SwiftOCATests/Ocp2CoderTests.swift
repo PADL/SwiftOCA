@@ -258,12 +258,33 @@ final class Ocp2CoderTests: XCTestCase {
       sdpString: "v=0\r\n",
       mediaIDType: .label,
       mediaID: "main",
+      sipString: "sip:main@example.com",
       timestamp: OcaTime(seconds: 1, nanoseconds: 0)
     )
     let plain = try XCTUnwrap(Ocp2Encoder().encodeValue(entry) as? [String: Any])
     XCTAssertTrue(plain["AdaptationData"] is String)
     XCTAssertEqual(plain["MediaIDType"] as? Int, 2)
     XCTAssertEqual(plain["MediaID"] as? String, "main")
+    // member names as AES70-21 Table 19 spells them, not as derived from the Swift names
+    XCTAssertNotNil(plain["IDExternal"])
+    XCTAssertEqual(plain["SDPString"] as? String, "v=0\r\n")
+    XCTAssertEqual(plain["SIPString"] as? String, "sip:main@example.com")
+    XCTAssertNotNil(plain["TimeStamp"])
+    for derived in ["IdExternal", "SdpString", "SipString", "Timestamp"] {
+      XCTAssertNil(plain[derived], derived)
+    }
+    // a peer using the derived spellings is still understood
+    var derived = plain
+    for (exact, spelling) in [
+      ("IDExternal", "IdExternal"), ("SDPString", "SdpString"),
+      ("SIPString", "SipString"), ("TimeStamp", "Timestamp"),
+    ] {
+      derived[spelling] = derived.removeValue(forKey: exact)
+    }
+    XCTAssertEqual(
+      try Ocp2Decoder().decodeValue(Aes67StreamEndpointDescriptor.self, from: derived),
+      entry
+    )
     let rich = try XCTUnwrap(structured.encodeValue(entry) as? [String: Any])
     let adaptationData = try XCTUnwrap(rich["AdaptationData"] as? [String: Any])
     XCTAssertEqual(adaptationData["PayloadType"] as? Int, 96)
