@@ -126,7 +126,7 @@ final class MediaRecorderPlayerTests: XCTestCase {
     let player = try await resolvePlayer(connection, oNo)
 
     // the track functions need a volume open
-    await assertStatus(.invalidRequest) { try await player.setTrackFunctions(functions: [1]) }
+    await assertStatus(.invalidRequest) { try await player.setTrackFunctions(functions: [.playInPlayMode]) }
     await assertStatus(.notImplemented) { try await player.open(
       datasetONo: 20001,
       accessMode: .record,
@@ -141,9 +141,9 @@ final class MediaRecorderPlayerTests: XCTestCase {
     let value3 = try await player.$trackCount._getValue(player, flags: [])
     XCTAssertEqual(value3, 2)
 
-    try await player.setTrackFunctions(functions: [OcaMediaTrackFunctionPlayInPlayMode, 0])
+    try await player.setTrackFunctions(functions: [.playInPlayMode, []])
     let value4 = try await player.$trackFunctions._getValue(player, flags: [])
-    XCTAssertEqual(value4, [1, 0])
+    XCTAssertEqual(value4, [.playInPlayMode, []])
 
     try await player.setPosition(position: .samples(480))
     let value5 = try await player.getPosition()
