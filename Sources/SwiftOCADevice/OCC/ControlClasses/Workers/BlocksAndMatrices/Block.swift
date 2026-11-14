@@ -461,18 +461,19 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     return actionObjects
   }
 
-  private func notifySubscribers(
-    datasetObjects: [OcaDataset],
-    changeType: OcaPropertyChangeType
-  ) async throws {
+  /// Sends DatasetObjects (3.7), the whole list as GetDatasetObjects returns it, after a
+  /// change of `changeType`. The block's own dataset methods send it; an owner whose
+  /// storage changes otherwise calls it.
+  public func notifyDatasetObjectsChanged(_ changeType: OcaPropertyChangeType) async {
+    guard let datasetObjects = try? await datasetObjects.map(\.objectIdentification) else { return }
     let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-    let parameters = OcaPropertyChangedEventData<[OcaDataset]>(
+    let parameters = OcaPropertyChangedEventData<[OcaObjectIdentification]>(
       propertyID: OcaPropertyID("3.7"),
       propertyValue: datasetObjects,
       changeType: changeType
     )
 
-    try await deviceDelegate?.notifySubscribers(
+    try? await deviceDelegate?.notifySubscribers(
       event,
       parameters: parameters
     )
@@ -488,7 +489,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
 
     try await provider.delete(targetONo: objectNumber, datasetONo: object.objectNumber)
-    try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemDeleted)
+    await notifyDatasetObjectsChanged(.itemDeleted)
   }
 
   open func resolve(paramDataset oNo: OcaONo) async throws -> OcaDataset {
@@ -528,7 +529,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     do {
       let dataset = try await provider.resolve(targetONo: objectNumber, datasetONo: oNo)
       try await dataset.storeParameters(object: self, controller: controller)
-      try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemChanged)
+      await notifyDatasetObjectsChanged(.itemChanged)
     } catch {
       await deviceDelegate?.logger
         .warning("failed to store current parameter data into \(oNo.oNoString): \(error)")
@@ -575,7 +576,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         initialContents: initialContents,
         controller: controller
       )
-      try? await notifySubscribers(datasetObjects: datasetObjects, changeType: .itemAdded)
+      await notifyDatasetObjectsChanged(.itemAdded)
       return oNo
     } catch {
       await deviceDelegate?.logger
@@ -611,10 +612,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         newMaxSize: newMaxSize,
         controller: controller
       )
-      try? await targetBlock.notifySubscribers(
-        datasetObjects: targetBlock.datasetObjects,
-        changeType: .itemAdded
-      )
+      await targetBlock.notifyDatasetObjectsChanged(.itemAdded)
       return oNo
     } catch {
       await deviceDelegate?.logger
@@ -639,23 +637,15 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     type: OcaMimeType,
     typeComparisonType: OcaStringComparisonType
   ) async throws -> [OcaDataset] {
-    guard typeComparisonType == .exact else {
-      throw Ocp1Error.status(.parameterError)
+    guard let provider = await deviceDelegate?.datasetStorageProvider else {
+      return []
     }
-
-    switch type {
-    case OcaParamDatasetMimeType:
-      guard let provider = await deviceDelegate?.datasetStorageProvider else {
-        return []
-      }
-      return try await provider.find(
-        targetONo: objectNumber,
-        name: name,
-        nameComparisonType: nameComparisonType
-      )
-    default:
-      throw Ocp1Error.unknownDatasetMimeType
-    }
+    // the provider searches by name; the type is matched here
+    return try await provider.find(
+      targetONo: objectNumber,
+      name: name,
+      nameComparisonType: nameComparisonType
+    ).filter { typeComparisonType.compare($0.type, type) }
   }
 
   open func findDatasetsRecursive(
@@ -681,6 +671,23 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   @OcaDeviceMethod(SwiftOCA.OcaBlock.Methods.deleteSignalPath)
   func deleteSignalPath(index: OcaUint16, from controller: any OcaController) async throws {
     try await delete(signalPathAt: index)
+  }
+
+  /// DeleteMember: a dataset of the block is deleted from its storage. The block's action
+  /// objects are the device's to add and remove, so deleting one is refused
+  /// `NotImplemented`; an object that is neither is `ParameterOutOfRange`.
+  @OcaDeviceMethod(SwiftOCA.OcaBlock.Methods.deleteMember)
+  open func deleteMember(objectNumber: OcaONo, from controller: any OcaController) async throws {
+    #if NonEmbeddedBuild
+    if let dataset = try await datasetObjects.first(where: { $0.objectNumber == objectNumber }) {
+      try await delete(datasetObject: dataset)
+      return
+    }
+    #endif
+    guard !actionObjects.contains(where: { $0.objectNumber == objectNumber }) else {
+      throw Ocp1Error.status(.notImplemented)
+    }
+    throw Ocp1Error.status(.parameterOutOfRange)
   }
 
   #if NonEmbeddedBuild
