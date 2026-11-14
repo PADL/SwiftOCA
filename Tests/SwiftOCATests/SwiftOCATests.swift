@@ -915,6 +915,15 @@ final class SwiftOCADeviceTests: XCTestCase {
       try Ocp1Decoder().decode(Aes67RegistryChangedEventData.self, from: Ocp1Encoder().encode(event) as Data),
       event
     )
+    // the entry's MediaIDType and MediaID survive the event
+    let changed = Aes67RegistryChangedEventData(changeType: .itemChanged, entry: multistream)
+    let changedDecoded = try Ocp1Decoder().decode(
+      Aes67RegistryChangedEventData.self,
+      from: Ocp1Encoder().encode(changed) as Data
+    )
+    XCTAssertEqual(changedDecoded, changed)
+    XCTAssertEqual(changedDecoded.entry.mediaIDType, .mid)
+    XCTAssertEqual(changedDecoded.entry.mediaID, "a")
 
     let dante = DanteChannelEndpointAdaptationData(
       remoteAddress: DanteChannelAddress(device: "console", channel: "01"),

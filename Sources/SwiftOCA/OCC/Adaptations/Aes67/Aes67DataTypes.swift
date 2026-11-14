@@ -207,6 +207,25 @@ public struct Aes67StreamEndpointDescriptor: Codable, Sendable, Equatable {
   public var infoSource: OcaBlob
   public var timestamp: OcaTime
 
+  /// OCP.2 member names as Table 19 spells them, where deriving them from the Swift names
+  /// would not; OCP.1 is positional, so unaffected.
+  enum CodingKeys: String, CodingKey {
+    case idExternal = "IDExternal"
+    case addresses
+    case direction
+    case alignmentLevel
+    case streamMode
+    case securityType
+    case streamCastMode
+    case adaptationData
+    case sdpString = "SDPString"
+    case mediaIDType
+    case mediaID
+    case sipString = "SIPString"
+    case infoSource
+    case timestamp = "TimeStamp"
+  }
+
   public init(
     idExternal: OcaBlob,
     addresses: [Aes67StreamTransportAddress],
