@@ -169,23 +169,6 @@ public extension MediaStreamSDP {
     return media.map { (session + $0).joined(separator: "\r\n") + "\r\n" }
   }
 
-  /// The media descriptions of each stream, by index into `streams(in:)`: the members of an
-  /// RFC 7104 DUP group, found by their a=mid (RFC 5888), are the legs of one ST 2022-7
-  /// stream; any other media description is a stream by itself.
-  static func streamLegs(in sdpString: OcaSDPString) -> [[Int]] {
-    let (session, media) = sections(of: sdpString)
-    let mids = media.map { attribute("mid", in: $0) }
-    let groups = session.filter { $0.hasPrefix("a=group:DUP ") }
-      .map { Set($0.split(separator: " ").dropFirst().map(String.init)) }
-    var legs = [[Int]]()
-    for index in media.indices where !legs.joined().contains(index) {
-      let group = mids[index].flatMap { mid in groups.first { $0.contains(mid) } } ?? []
-      let others = (index + 1..<media.count).filter { mids[$0].map(group.contains) ?? false }
-      legs.append([index] + others)
-    }
-    return legs
-  }
-
   /// AES70-21 §10.2.4 media description selection: the session section with the one media
   /// section `mediaIDType` and `mediaID` name. `.none` takes the only media section, and is
   /// refused for a description with more than one; otherwise `mediaID` must name exactly one.
