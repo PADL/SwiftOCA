@@ -72,9 +72,10 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     changeType: OcaPropertyChangeType
   ) async throws {
     let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
-    let parameters = OcaPropertyChangedEventData<[ActionObject]>(
+    // as GetActionObjects returns them, and the client's actionObjects decodes them
+    let parameters = OcaPropertyChangedEventData<[OcaObjectIdentification]>(
       propertyID: OcaPropertyID("3.2"),
-      propertyValue: actionObjects,
+      propertyValue: actionObjects.map(\.objectIdentification),
       changeType: changeType
     )
 

@@ -122,6 +122,48 @@ final class PropertySubscriptionTests: XCTestCase {
     try await harness.connection.disconnect()
   }
 
+  /// A block's ActionObjects event carries object identifications, as GetActionObjects
+  /// returns them, so the client's subscribed property follows a member added.
+  func testABlocksActionObjectsEventIsDecodedByTheClient() async throws {
+    let harness = try await makeHarness()
+    defer { harness.endpointTask.cancel() }
+
+    let (deviceBlock, clientBlock) = try await makeBlockPair(
+      harness,
+      objectNumber: 0x0001_0003,
+      role: "Members"
+    )
+    await clientBlock.$actionObjects.subscribe(clientBlock)
+    let registered = await awaitObjectSubscription(clientBlock)
+    XCTAssertTrue(registered)
+
+    let gain = try await SwiftOCADevice.OcaGain(
+      objectNumber: 0x0001_0004,
+      role: "Gain",
+      deviceDelegate: harness.device,
+      addToRootBlock: false
+    )
+    try await deviceBlock.add(actionObject: gain)
+    let expected = [OcaObjectIdentification(oNo: 0x0001_0004, classIdentification: SwiftOCADevice.OcaGain.classIdentification)]
+    let seen = Flag()
+    let consumer = Task {
+      for try await result in clientBlock.$actionObjects.async {
+        if case let .success(value) = result, value as? [OcaObjectIdentification] == expected {
+          seen.set()
+          return
+        }
+      }
+    }
+    defer { consumer.cancel() }
+    let deadline = ContinuousClock.now + .seconds(5)
+    while !seen.isSet, ContinuousClock.now < deadline {
+      try? await Task.sleep(for: .milliseconds(25))
+    }
+    XCTAssertTrue(seen.isSet, "the client did not decode the ActionObjects event")
+
+    try await harness.connection.disconnect()
+  }
+
   /// Regression: another component's subscription to the same event must not
   /// stop this object registering its own handler. `_getValue()` skips
   /// `subscribe()` when `isSubscribed`, which once meant "the connection has
