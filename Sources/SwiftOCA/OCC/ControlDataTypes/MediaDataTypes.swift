@@ -191,20 +191,65 @@ public enum OcaMediaAccessMode: OcaUint8, Codable, Sendable, CaseIterable {
   case record = 2
 }
 
-public typealias OcaMediaTrackFunction = OcaBitSet16
+/// What a track does in an `OcaMediaRecorderPlayer`'s play and record modes: a bit set,
+/// coded as an `OcaBitSet16`.
+public struct OcaMediaTrackFunction: OptionSet, Codable, Sendable, Hashable, CustomStringConvertible {
+  public static let playInPlayMode = OcaMediaTrackFunction(rawValue: 1 << 0)
+  public static let playInRecordMode = OcaMediaTrackFunction(rawValue: 1 << 1)
+  public static let recordInRecordMode = OcaMediaTrackFunction(rawValue: 1 << 2)
+
+  public let rawValue: OcaBitSet16
+
+  public init(rawValue: OcaBitSet16) {
+    self.rawValue = rawValue
+  }
+
+  static let descriptions: [(Self, String)] = [
+    (.playInPlayMode, "PlayInPlayMode"),
+    (.playInRecordMode, "PlayInRecordMode"),
+    (.recordInRecordMode, "RecordInRecordMode"),
+  ]
+
+  public var description: String {
+    Self.descriptions.filter { contains($0.0) }.map(\.1).joined(separator: ", ")
+  }
+}
 
 public enum OcaMediaVolumePositionType: OcaUint16, Codable, Sendable, CaseIterable {
   case samples = 0
   case seconds = 1
 }
 
-public struct OcaMediaVolumePosition: Codable, Sendable {
+/// A position in a media volume: a sample count, or a time in floating-point seconds. The
+/// model's `Position` is an `OcaUint64` either way, so a time travels as the bit pattern of
+/// an IEEE 754 binary64 value; `samples(_:)` and `seconds(_:)` make each.
+public struct OcaMediaVolumePosition: Codable, Sendable, Hashable {
   public let positionType: OcaMediaVolumePositionType
   public let position: OcaUint64
 
   public init(positionType: OcaMediaVolumePositionType, position: OcaUint64) {
     self.positionType = positionType
     self.position = position
+  }
+
+  /// `samples` samples from the start.
+  public static func samples(_ samples: OcaUint64) -> Self {
+    Self(positionType: .samples, position: samples)
+  }
+
+  /// `seconds` from the start.
+  public static func seconds(_ seconds: OcaFloat64) -> Self {
+    Self(positionType: .seconds, position: seconds.bitPattern)
+  }
+
+  /// The sample count, nil for a time.
+  public var samples: OcaUint64? {
+    positionType == .samples ? position : nil
+  }
+
+  /// The time in seconds, nil for a sample count.
+  public var seconds: OcaFloat64? {
+    positionType == .seconds ? OcaFloat64(bitPattern: position) : nil
   }
 }
 
