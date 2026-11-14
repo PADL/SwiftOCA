@@ -53,7 +53,7 @@ final class Aes67StreamEndpointRegistryTests: XCTestCase {
     "m=audio 5012 RTP/AVP 96", "c=IN IP4 239.1.2.4/32", "a=rtpmap:96 L24/48000/2", "a=mid:aux",
   ].joined(separator: "\r\n") + "\r\n"
 
-  /// An ST 2022-7 pair, an RFC 7104 DUP group: one stream on two legs.
+  /// An ST 2022-7 pair, an RFC 7104 DUP group: two media descriptions.
   private static let redundantSDP: OcaSDPString = [
     "v=0", "o=- 2 1 IN IP4 10.0.0.1", "s=redundant", "t=0 0", "a=group:DUP p s",
     "m=audio 5020 RTP/AVP 96", "c=IN IP4 239.1.3.1/32", "a=rtpmap:96 L24/48000/8", "a=mid:p",
@@ -86,18 +86,15 @@ final class Aes67StreamEndpointRegistryTests: XCTestCase {
     }
     XCTAssertEqual(registry.registry.first?.mediaID, "main")
 
-    // the two legs of a redundant stream are one stream, so need no MediaID
-    let redundant = Self.entry("redundant", port: 5020, sdpString: Self.redundantSDP)
-    try await client.addRegistryEntry(entry: redundant)
-    try await client.setRegistryEntry(entry: redundant)
-    // one beside another stream does
-    let mixed = Self.redundantSDP +
-      "m=audio 5022 RTP/AVP 96\r\nc=IN IP4 239.1.3.2/32\r\na=mid:x\r\n"
+    // a redundant pair is two media descriptions, so each leg names its own too
     await XCTAssertThrowsStatus(.parameterError) {
-      try await client.setRegistryEntry(
-        entry: Self.entry("redundant", port: 5020, sdpString: mixed)
+      try await client.addRegistryEntry(
+        entry: Self.entry("redundant", port: 5020, sdpString: Self.redundantSDP)
       )
     }
+    try await client.addRegistryEntry(
+      entry: Self.entry("redundant/s", port: 5020, sdpString: Self.redundantSDP, mediaID: "s")
+    )
     XCTAssertEqual(registry.registry.map(\.sdpString), [Self.twoStreamSDP, Self.redundantSDP])
   }
 

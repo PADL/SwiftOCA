@@ -178,11 +178,10 @@ open class Aes67StreamEndpointRegistry: OcaAgent {
     return index
   }
 
-  /// Refuses an entry whose SDP describes several streams without naming its own with
-  /// MediaIDType and MediaID (AES70-21 Table 19). The legs of an ST 2022-7 stream, an
-  /// RFC 7104 DUP group, are one stream.
+  /// Refuses an entry whose SDP has more than one media description without naming its
+  /// own with MediaIDType and MediaID (AES70-21 Table 19).
   private static func validate(entry: Aes67StreamEndpointDescriptor) throws {
-    guard entry.mediaIDType != .none || MediaStreamSDP.streamLegs(in: entry.sdpString).count <= 1
+    guard entry.mediaIDType != .none || MediaStreamSDP.streams(in: entry.sdpString).count <= 1
     else {
       throw Ocp1Error.status(.parameterError)
     }
