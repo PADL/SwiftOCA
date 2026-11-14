@@ -124,6 +124,8 @@ public class OcaDeviceClassRegistry {
     try register(OcaWorker.self)
     try register(OcaBlock<OcaRoot>.self)
     try register(OcaMatrix<OcaWorker>.self)
+    try register(OcaDatasetWorker.self)
+    try register(OcaMediaRecorderPlayer.self)
 
     // actuators
     try register(OcaActuator.self)
