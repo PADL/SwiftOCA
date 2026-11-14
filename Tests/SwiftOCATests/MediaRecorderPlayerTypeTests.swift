@@ -50,9 +50,24 @@ import Testing
     #expect(OcaMediaPlayOption.repeatInterval.rawValue == 2)
     #expect(OcaMediaAccessMode.record.rawValue == 2)
     #expect(OcaMediaVolumePositionType.seconds.rawValue == 1)
-    #expect(OcaMediaTrackFunctionPlayInPlayMode == 1)
-    #expect(OcaMediaTrackFunctionPlayInRecordMode == 2)
-    #expect(OcaMediaTrackFunctionRecordInRecordMode == 4)
+    #expect(OcaMediaTrackFunction.playInPlayMode.rawValue == 1)
+    #expect(OcaMediaTrackFunction.playInRecordMode.rawValue == 2)
+    #expect(OcaMediaTrackFunction.recordInRecordMode.rawValue == 4)
+    #expect(OcaMediaTrackFunction([.playInPlayMode, .recordInRecordMode]).description == "PlayInPlayMode, RecordInRecordMode")
+  }
+
+  /// A list of track functions is coded as it was as `OcaBitSet16`s: a count, then each a
+  /// bare 16-bit value, in OCP.1 and in JSON.
+  @Test func trackFunctionsAreCodedAsBareBitsets() throws {
+    let functions: [OcaMediaTrackFunction] = [.playInPlayMode, [], [.playInPlayMode, .playInRecordMode, .recordInRecordMode]]
+    let bitsets: [OcaBitSet16] = [1, 0, 7]
+    let encoded: Data = try Ocp1Encoder().encode(functions)
+    #expect(encoded == Data([0x00, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x07]))
+    #expect(encoded == (try Ocp1Encoder().encode(bitsets) as Data))
+    #expect(try Ocp1Decoder().decode([OcaMediaTrackFunction].self, from: encoded) == functions)
+    let json = try JSONEncoder().encode(functions)
+    #expect(String(decoding: json, as: UTF8.self) == "[1,0,7]")
+    #expect(try JSONDecoder().decode([OcaMediaTrackFunction].self, from: json) == functions)
   }
 
   @Test func theMethodsHaveTheModelsIDsAndNames() {
