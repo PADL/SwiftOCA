@@ -105,8 +105,9 @@ open class Aes67OcaMediaTransportApplication: OcaMediaTransportApplication, @unc
   /// Optional in AES70-21 §10.2.4; configures the endpoint and sets its AdaptationData.ActiveSDP,
   /// MediaIDType and MediaID. `mediaIDType` and `mediaID` select the media description of a
   /// multi-media SDP (see `MediaStreamSDP.selectStream`). On success the endpoint is Ready but
-  /// not started: start it with `applyEndpointCommand` (`.start`). An empty SDP string closes
-  /// any connection and leaves the endpoint NotReady.
+  /// not started: start it with `applyEndpointCommand` (`.connectAndStart`, or `.connect` then
+  /// `.start`; AES70-21 Annex D.5 and F.2). An empty SDP string closes any connection and
+  /// leaves the endpoint NotReady.
   @OcaMethod(
     "4.5",
     name: "ConfigureEndpointFromSDP",
@@ -163,7 +164,7 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @u
     }
   }
 
-  // named as the draft's pseudocode names them (§10.4.1): Rec, ParameterKey, ParameterValue
+  // named as the draft's pseudocode names them (§10.5.2): Rec, ParameterKey, ParameterValue
   @OcaMethod(
     "4.1",
     name: "GetSIPParameterRecord",
@@ -211,7 +212,7 @@ open class Aes67OcaMediaTransportSessionAgent: OcaMediaTransportSessionAgent, @u
 }
 
 /// Controller proxy for AES70-21's Aes67StreamEndpointRegistry (1.2.A.2102), the Stream
-/// Source Registry. Entries are keyed by IDExternal (§10.3.2).
+/// Source Registry. Entries are keyed by IDExternal (§10.3.3).
 @OcaClass
 open class Aes67StreamEndpointRegistry: OcaAgent, @unchecked Sendable {
   override open class var classID: OcaClassID { Aes67Adaptation.streamEndpointRegistryClassID }
@@ -242,7 +243,7 @@ open class Aes67StreamEndpointRegistry: OcaAgent, @unchecked Sendable {
   @OcaMethod("3.5", name: "DeleteRegistryEntry", parameterNames: ["IDExternal"])
   public func deleteRegistryEntry(idExternal: OcaBlob) async throws
 
-  /// Optional in AES70-21 §10.3.3: the device builds entries from the SDP.
+  /// Optional in AES70-21 §10.3.4: the device builds entries from the SDP.
   @OcaMethod("3.6", name: "AddRegistryEntriesFromSDP", parameterNames: ["SDPString"])
   public func addRegistryEntriesFromSDP(sdpString: OcaSDPString) async throws
 }
