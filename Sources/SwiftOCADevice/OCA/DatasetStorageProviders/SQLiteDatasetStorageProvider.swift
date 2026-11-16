@@ -235,7 +235,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
       ))
     }
 
-    let dataset = try await OcaSQLiteDataset(
+    _ = try await OcaSQLiteDataset(
       db: _db,
       datasetONo: oNo,
       targetONo: targetONo,
@@ -244,8 +244,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
       maxSize: maxDatasetSize ?? .max,
       deviceDelegate: deviceDelegate
     )
-
-    _ = dataset
+    await notifyDatasetObjectsChanged(for: targetONo, .itemAdded, device: deviceDelegate)
 
     return oNo
   }
@@ -296,6 +295,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
         colData <- newData
       ))
     }
+    await notifyDatasetObjectsChanged(for: newTargetONo, .itemAdded, device: deviceDelegate)
 
     return newONo
   }
@@ -306,7 +306,7 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
       query = query.filter(colTargetONo == Int64(targetONo) || colTargetONo == nil)
     }
 
-    guard try db.run(query.delete()) > 0 else {
+    guard let row = try db.pluck(query.select(colTargetONo)), try db.run(query.delete()) > 0 else {
       throw Ocp1Error.unknownDataset
     }
 
@@ -314,6 +314,13 @@ public actor OcaSQLiteDatasetStorageProvider: OcaDatasetStorageProvider {
     // delete moves pages and truncates the file, costing extra flash writes. The
     // dataset ONo space is small and bounded, so freed pages are simply reused.
     try? await deviceDelegate?.deregister(objectNumber: datasetONo)
+    if let rowTargetONo = row[colTargetONo] {
+      await notifyDatasetObjectsChanged(
+        for: OcaONo(rowTargetONo),
+        .itemDeleted,
+        device: deviceDelegate
+      )
+    }
   }
 }
 

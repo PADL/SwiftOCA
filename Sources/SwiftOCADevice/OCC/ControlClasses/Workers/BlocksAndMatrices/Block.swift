@@ -31,6 +31,8 @@ public protocol OcaBlockContainer: OcaRoot {
   var globalType: OcaGlobalTypeIdentifier? {
     get
   }
+  /// Sends DatasetObjects (3.7) after a change of `changeType` to the datasets.
+  func notifyDatasetObjectsChanged(_ changeType: OcaPropertyChangeType) async
   #endif
 }
 
@@ -463,8 +465,9 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
   }
 
   /// Sends DatasetObjects (3.7), the whole list as GetDatasetObjects returns it, after a
-  /// change of `changeType`. The block's own dataset methods send it; an owner whose
-  /// storage changes otherwise calls it.
+  /// change of `changeType`. The storage provider calls it, through
+  /// `OcaDatasetStorageProvider.notifyDatasetObjectsChanged(for:_:device:)`, after every
+  /// change to the block's datasets; the block's own dataset methods do not.
   public func notifyDatasetObjectsChanged(_ changeType: OcaPropertyChangeType) async {
     guard let datasetObjects = try? await datasetObjects.map(\.objectIdentification) else { return }
     let event = OcaEvent(emitterONo: objectNumber, eventID: OcaPropertyChangedEventID)
@@ -490,7 +493,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
 
     try await provider.delete(targetONo: objectNumber, datasetONo: object.objectNumber)
-    await notifyDatasetObjectsChanged(.itemDeleted)
   }
 
   open func resolve(paramDataset oNo: OcaONo) async throws -> OcaDataset {
@@ -530,7 +532,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     do {
       let dataset = try await provider.resolve(targetONo: objectNumber, datasetONo: oNo)
       try await dataset.storeParameters(object: self, controller: controller)
-      await notifyDatasetObjectsChanged(.itemChanged)
     } catch {
       await deviceDelegate?.logger
         .warning("failed to store current parameter data into \(oNo.oNoString): \(error)")
@@ -567,7 +568,7 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
 
     do {
-      let oNo = try await provider.construct(
+      return try await provider.construct(
         classID: classID,
         targetONo: objectNumber,
         datasetONo: desiredDatasetONo,
@@ -577,8 +578,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         initialContents: initialContents,
         controller: controller
       )
-      await notifyDatasetObjectsChanged(.itemAdded)
-      return oNo
     } catch {
       await deviceDelegate?.logger
         .warning("failed to construct dataset object \(name) type \(type): \(error)")
@@ -599,12 +598,12 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
     }
 
     // validate the target block actually exists
-    guard let targetBlock = await deviceDelegate?.objects[targetBlockONo] as? Self else {
+    guard await deviceDelegate?.objects[targetBlockONo] is Self else {
       throw Ocp1Error.status(.badONo)
     }
 
     do {
-      let oNo = try await provider.duplicate(
+      return try await provider.duplicate(
         oldDatasetONo: oldONo,
         oldTargetONo: objectNumber,
         newDatasetONo: desiredDatasetONo,
@@ -613,8 +612,6 @@ open class OcaBlock<ActionObject: OcaRoot>: OcaWorker, OcaBlockContainer {
         newMaxSize: newMaxSize,
         controller: controller
       )
-      await targetBlock.notifyDatasetObjectsChanged(.itemAdded)
-      return oNo
     } catch {
       await deviceDelegate?.logger
         .warning(

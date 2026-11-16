@@ -193,6 +193,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
       from: controller
     )
     try await dataset.close(handle: handle, from: controller)
+    await notifyDatasetObjectsChanged(for: targetONo, .itemAdded, device: deviceDelegate)
 
     return oNo
   }
@@ -222,6 +223,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     try checkTotalSize(adding: OcaUint64(oldSize))
     // FIXME: need to rewrite target object number
     try fileManager.copyItem(at: oldDirEntry.url, to: newDirEntry.url)
+    await notifyDatasetObjectsChanged(for: newTargetONo, .itemAdded, device: deviceDelegate)
     return newONo
   }
 
@@ -239,6 +241,7 @@ public actor OcaFileDatasetStorageProvider: OcaDatasetStorageProvider {
     )
     try fileManager.removeItem(at: dirEntry.url)
     try? await deviceDelegate?.deregister(objectNumber: datasetONo)
+    await notifyDatasetObjectsChanged(for: dirEntry.target, .itemDeleted, device: deviceDelegate)
   }
 }
 

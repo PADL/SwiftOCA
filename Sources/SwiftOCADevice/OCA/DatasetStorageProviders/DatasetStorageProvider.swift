@@ -18,6 +18,8 @@
 
 import SwiftOCA
 
+/// The storage of the device's datasets. The provider owns it, so it announces every change
+/// to a block's datasets with `notifyDatasetObjectsChanged(for:_:device:)`; OcaBlock does not.
 public protocol OcaDatasetStorageProvider: Actor {
   /// enumerate data objects in a block. This may include dataset objects that are not associated
   /// with the specific block,
@@ -61,6 +63,32 @@ public protocol OcaDatasetStorageProvider: Actor {
   ) async throws -> OcaONo
 
   func delete(targetONo: OcaONo?, datasetONo: OcaONo) async throws
+}
+
+public extension OcaDatasetStorageProvider {
+  /// Sends DatasetObjects (3.7) for the block `targetONo` of `device` after a `changeType`
+  /// change to its datasets: `itemAdded`, `itemChanged` (a replacement or new contents) or
+  /// `itemDeleted`. A provider must call it after every change it makes to a block's datasets,
+  /// by any path, OcaBlock's own dataset methods included: the block sends none. Nothing is
+  /// sent when `device` is nil or `targetONo` is not one of its blocks.
+  func notifyDatasetObjectsChanged(
+    for targetONo: OcaONo,
+    _ changeType: OcaPropertyChangeType,
+    device: OcaDevice?
+  ) async {
+    await device?.notifyDatasetObjectsChanged(for: targetONo, changeType)
+  }
+}
+
+extension OcaDevice {
+  /// Sends the block `targetONo`'s DatasetObjects, if it is a block of this device.
+  func notifyDatasetObjectsChanged(
+    for targetONo: OcaONo,
+    _ changeType: OcaPropertyChangeType
+  ) async {
+    guard let block = objects[targetONo] as? any OcaBlockContainer else { return }
+    await block.notifyDatasetObjectsChanged(changeType)
+  }
 }
 
 #endif
