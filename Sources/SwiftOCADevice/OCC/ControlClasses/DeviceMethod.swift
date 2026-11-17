@@ -220,7 +220,7 @@ public struct OcaDeviceMethodDescriptor: Sendable {
         name: name,
         parametersType: parameters,
         resultType: result,
-        parameterNames: parameters.flatMap { Self.names(of: $0, argumentNames, parameterNames) },
+        parameterNames: parameters.flatMap { Self.names(for: $0, argumentNames, parameterNames) },
         resultNames: resultNames
       ),
       access: access,
@@ -367,7 +367,7 @@ public struct OcaDeviceMethodDescriptor: Sendable {
   /// The OCP.2 names a record's fields answer to: explicit names, else none, as a record
   /// names its own fields; a single value is named by the method's argument.
   private static func names(
-    of type: Any.Type,
+    for type: Any.Type,
     _ argumentNames: [String],
     _ parameterNames: [String]?
   ) -> [String]? {

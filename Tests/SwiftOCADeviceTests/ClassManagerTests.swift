@@ -336,7 +336,7 @@ final class ClassManagerTests: XCTestCase {
     func described(_ classID: OcaClassID) async throws -> OcaClassDescriptor {
       try await h.classManager.getControlClass(classID: classID, includeInherited: false)
     }
-    func method(_ id: String, of descriptor: OcaClassDescriptor) throws -> OcaClassMethodDescriptor {
+    func method(_ id: String, for descriptor: OcaClassDescriptor) throws -> OcaClassMethodDescriptor {
       try XCTUnwrap(descriptor.methods.first { $0.methodID == OcaMethodID(id) }, id)
     }
     // a class
@@ -347,23 +347,23 @@ final class ClassManagerTests: XCTestCase {
 
     // a method, as its @OcaMethod says
     let subscriptions = try await described(SwiftOCADevice.OcaSubscriptionManager.classID)
-    XCTAssertTrue(try method("3.1", of: subscriptions).isDeprecated, "AddSubscription")
-    XCTAssertFalse(try method("3.8", of: subscriptions).isDeprecated, "AddSubscription2")
+    XCTAssertTrue(try method("3.1", for: subscriptions).isDeprecated, "AddSubscription")
+    XCTAssertFalse(try method("3.8", for: subscriptions).isDeprecated, "AddSubscription2")
 
     // a property and its accessors, each as its declaration says
     let manager = try await described(SwiftOCADevice.OcaDeviceManager.classID)
     let guid = try XCTUnwrap(manager.properties.first { $0.propertyID == OcaPropertyID("3.1") })
     XCTAssertTrue(guid.isDeprecated)
-    XCTAssertTrue(try method("3.2", of: manager).isDeprecated, "GetModelGUID")
+    XCTAssertTrue(try method("3.2", for: manager).isDeprecated, "GetModelGUID")
     let enabled = try XCTUnwrap(manager.properties.first { $0.propertyID == OcaPropertyID("3.8") })
     XCTAssertFalse(enabled.isDeprecated, "ControlEnabled")
-    XCTAssertTrue(try method("3.11", of: manager).isDeprecated, "GetEnabled")
-    XCTAssertTrue(try method("3.12", of: manager).isDeprecated, "SetEnabled")
-    XCTAssertFalse(try method("3.3", of: manager).isDeprecated, "GetSerialNumber")
+    XCTAssertTrue(try method("3.11", for: manager).isDeprecated, "GetEnabled")
+    XCTAssertTrue(try method("3.12", for: manager).isDeprecated, "SetEnabled")
+    XCTAssertFalse(try method("3.3", for: manager).isDeprecated, "GetSerialNumber")
     let time = try await described(SwiftOCADevice.OcaTimeSource.classID)
     let referenceID = try XCTUnwrap(time.properties.first { $0.propertyID == OcaPropertyID("3.5") })
     XCTAssertTrue(referenceID.isDeprecated)
-    XCTAssertFalse(try method("3.8", of: time).isDeprecated, "GetReferenceID")
+    XCTAssertFalse(try method("3.8", for: time).isDeprecated, "GetReferenceID")
 
     // a datatype
     let value = try await h.classManager.getDatatype(name: "OcaDelayValue")
@@ -428,19 +428,19 @@ final class ClassManagerTests: XCTestCase {
     _ = try await SwiftOCADevice.OcaFilterParametric(role: "Filter", deviceDelegate: device)
     _ = try await SwiftOCADevice.OcaGroup<SwiftOCADevice.OcaGain>(role: "Group", deviceDelegate: device)
     let manager = try await SwiftOCADevice.OcaClassManager(deviceDelegate: device)
-    func methods(of classID: OcaClassID) throws -> [String: String] {
+    func methods(for classID: OcaClassID) throws -> [String: String] {
       let oca = try XCTUnwrap(manager.controlClasses.first { $0.classID == classID })
       return Dictionary(uniqueKeysWithValues: oca.methods.map { ($0.methodID.description, $0.name) })
     }
 
     // not after the property: ControlEnabled's accessors keep their old names
-    let deviceManager = try methods(of: SwiftOCADevice.OcaDeviceManager.classID)
+    let deviceManager = try methods(for: SwiftOCADevice.OcaDeviceManager.classID)
     XCTAssertEqual(deviceManager["3.11"], "GetEnabled")
     XCTAssertEqual(deviceManager["3.12"], "SetEnabled")
-    let filter = try methods(of: SwiftOCADevice.OcaFilterParametric.classID)
+    let filter = try methods(for: SwiftOCADevice.OcaFilterParametric.classID)
     XCTAssertEqual(filter["4.7"], "GetInbandGain")
     // after the property where the model does
-    let group = try methods(of: SwiftOCADevice.OcaGroup<SwiftOCADevice.OcaGain>.classID)
+    let group = try methods(for: SwiftOCADevice.OcaGroup<SwiftOCADevice.OcaGain>.classID)
     XCTAssertEqual(group["3.7"], "GetAggregationRule")
     XCTAssertEqual(group["3.5"], "GetGroupControllerONo")
   }

@@ -75,7 +75,7 @@ open class OcaWorker: OcaRoot, OcaOwnable, OcaPortsRepresentable, OcaPortClockMa
 
   @OcaDeviceMethod(SwiftOCA.OcaWorker.Methods.getPortName)
   func getPortName(portID: OcaPortID, from controller: any OcaController) throws -> OcaString {
-    try portName(of: portID)
+    try portName(for: portID)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaWorker.Methods.setPortName)

@@ -467,7 +467,7 @@ public enum DNSServiceDiscovery {
       deadline.cancel()
     }
     if addresses.isEmpty {
-      addresses = _systemAddresses(of: hostname)
+      addresses = _systemAddresses(for: hostname)
     }
     // a stable partition: IPv6 presentation addresses are the ones with a colon
     return addresses.filter { !$0.contains(":") } + addresses.filter { $0.contains(":") }
@@ -597,7 +597,7 @@ func _numericHost(_ address: UnsafePointer<sockaddr>) -> String? {
   return String(decoding: host.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
 }
 
-private func _systemAddresses(of hostname: String) -> [String] {
+private func _systemAddresses(for hostname: String) -> [String] {
   var hints = addrinfo()
   hints.ai_family = AF_UNSPEC
   hints.ai_socktype = SOCK_STREAM

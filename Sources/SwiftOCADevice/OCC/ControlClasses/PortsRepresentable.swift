@@ -34,7 +34,7 @@ extension OcaPortsRepresentable {
   }
 
   @OcaDevice
-  func portName(of portID: OcaPortID) throws -> OcaString {
+  func portName(for portID: OcaPortID) throws -> OcaString {
     guard let portName = ports.first(where: { $0.id == portID })?.role else {
       throw Ocp1Error.status(.parameterOutOfRange)
     }

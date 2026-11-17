@@ -32,7 +32,7 @@ private actor RecordingController: OcaControllerLightweightNotifying {
   private(set) var sends = [[OcaONo]]()
   private(set) var lightweightSends = [OcaONo]()
 
-  private func emitter(of message: Ocp1Message) -> OcaONo {
+  private func emitter(for message: Ocp1Message) -> OcaONo {
     (message as? Ocp1Notification2)?.event.emitterONo ?? OcaInvalidONo
   }
 
@@ -45,7 +45,7 @@ private actor RecordingController: OcaControllerLightweightNotifying {
     type messageType: OcaMessageType,
     to destinationAddress: OcaNetworkAddress
   ) async throws {
-    lightweightSends.append(emitter(of: message))
+    lightweightSends.append(emitter(for: message))
   }
 }
 

@@ -55,11 +55,11 @@ public enum OcaDatatypeKind: Sendable {
     } else if type is any Ocp1TypedBlobRepresentable.Type {
       self = .blob
     } else if let enumeration = type as? any (CaseIterable & RawRepresentable).Type,
-              let cases = Self.cases(of: enumeration)
+              let cases = Self.cases(for: enumeration)
     {
       self = .enumeration(cases)
     } else if let raw = type as? any RawRepresentable.Type {
-      self = .rawValue(Self.rawType(of: raw))
+      self = .rawValue(Self.rawType(for: raw))
     } else if type is any Codable.Type, !(type is AnyClass) {
       self = .structure
     } else {
@@ -89,7 +89,7 @@ public enum OcaDatatypeKind: Sendable {
 
   /// An enumeration's cases, where each value is a whole number.
   private static func cases<E: CaseIterable & RawRepresentable>(
-    of type: E.Type
+    for type: E.Type
   ) -> [(name: String, value: Int64)]? {
     var cases = [(name: String, value: Int64)]()
     for item in type.allCases {
@@ -101,7 +101,7 @@ public enum OcaDatatypeKind: Sendable {
     return cases.isEmpty ? nil : cases
   }
 
-  private static func rawType<R: RawRepresentable>(of type: R.Type) -> Any.Type { R.RawValue.self }
+  private static func rawType<R: RawRepresentable>(for type: R.Type) -> Any.Type { R.RawValue.self }
 }
 
 /// A generic type whose kind is made from its parameters.

@@ -49,7 +49,7 @@ public struct Ocp2Decoder {
     }
 
     if type is OcaParametersReflectable.Type {
-      let fieldNames = Ocp2Naming.fieldNames(of: type)
+      let fieldNames = Ocp2Naming.fieldNames(for: type)
       let names = Ocp2Naming.parameterNames(explicit: parameterNames, fieldNames: fieldNames)
       let frame = Ocp2NamingFrame(parameterNames: names, fieldNames: fieldNames)
       return try T(from: Ocp2DecoderImpl(state: state, json: object, codingPath: [], frame: frame))
@@ -144,7 +144,7 @@ final class Ocp2DecodingState {
        let enumType = erasedCast(type, to: (any CaseIterable.Type).self)
     {
       // an enumeration spelled by name: match the Swift case name
-      if let value = Self.enumCase(named: string, of: enumType) as? T {
+      if let value = Self.enumCase(named: string, for: enumType) as? T {
         return value
       }
       throw Ocp1Error.status(.parameterOutOfRange)
@@ -152,7 +152,7 @@ final class Ocp2DecodingState {
     return try T(from: Ocp2DecoderImpl(state: self, json: json, codingPath: codingPath, frame: nil))
   }
 
-  private static func enumCase(named name: String, of type: any CaseIterable.Type) -> Any? {
+  private static func enumCase(named name: String, for type: any CaseIterable.Type) -> Any? {
     func cases(_ type: (some CaseIterable).Type) -> [Any] {
       type.allCases.map { $0 }
     }

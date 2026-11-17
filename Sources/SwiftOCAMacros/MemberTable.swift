@@ -58,16 +58,16 @@ struct MemberTable {
   /// as a dictionary entry from its name to that type's AES70 name.
   static func propertyTypeNames(
     in members: MemberBlockItemListSyntax,
-    of classDecl: ClassDeclSyntax,
+    for classDecl: ClassDeclSyntax,
     wrappers: Set<String>
   ) -> [String] {
     // a type written with the class's generic parameters is known only at run time
     let generics = Set(classDecl.genericParameterClause?.parameters.map(\.name.text) ?? [])
     return wrappedProperties(in: members, wrappers: wrappers).compactMap { name, binding, _ in
-      guard let type = declaredType(of: binding), !mentions(type, any: generics) else {
+      guard let type = declaredType(for: binding), !mentions(type, any: generics) else {
         return nil
       }
-      return "\"\(name)\": \"\(aes70Name(of: type))\""
+      return "\"\(name)\": \"\(aes70Name(for: type))\""
     }
   }
 
@@ -75,7 +75,7 @@ struct MemberTable {
   /// value is made with where its generic arguments are written out
   /// (`OcaBoundedPropertyValue<OcaDB>(...)`): inferred ones are not in the source, and a
   /// type without any is named as well by the run time.
-  private static func declaredType(of binding: PatternBindingSyntax) -> TypeSyntax? {
+  private static func declaredType(for binding: PatternBindingSyntax) -> TypeSyntax? {
     if let annotation = binding.typeAnnotation { return annotation.type }
     guard let call = binding.initializer?.value.as(FunctionCallExprSyntax.self),
           call.calledExpression.is(GenericSpecializationExprSyntax.self)
@@ -94,22 +94,22 @@ struct MemberTable {
 
   /// A type as written, named as AES70 names it: a typealias such as `OcaDB` as it is,
   /// a Swift base type by its AES70 name, and a collection by AES70's template.
-  static func aes70Name(of type: TypeSyntax) -> String {
+  static func aes70Name(for type: TypeSyntax) -> String {
     if let array = type.as(ArrayTypeSyntax.self) {
-      return "OcaList<\(aes70Name(of: array.element))>"
+      return "OcaList<\(aes70Name(for: array.element))>"
     }
     if let dictionary = type.as(DictionaryTypeSyntax.self) {
-      return "OcaMap<\(aes70Name(of: dictionary.key)),\(aes70Name(of: dictionary.value))>"
+      return "OcaMap<\(aes70Name(for: dictionary.key)),\(aes70Name(for: dictionary.value))>"
     }
     if let optional = type.as(OptionalTypeSyntax.self) {
-      return aes70Name(of: optional.wrappedType)
+      return aes70Name(for: optional.wrappedType)
     }
     if let unwrapped = type.as(ImplicitlyUnwrappedOptionalTypeSyntax.self) {
-      return aes70Name(of: unwrapped.wrappedType)
+      return aes70Name(for: unwrapped.wrappedType)
     }
     guard let identifier = type.as(IdentifierTypeSyntax.self) else { return type.trimmedDescription }
     let arguments = identifier.genericArgumentClause?.arguments.compactMap {
-      $0.argument.as(TypeSyntax.self).map(aes70Name(of:))
+      $0.argument.as(TypeSyntax.self).map(aes70Name(for:))
     } ?? []
     switch (identifier.name.text, arguments.count) {
     case ("Array", 1): return "OcaList<\(arguments[0])>"
@@ -136,7 +136,7 @@ struct MemberTable {
   /// entry from its name to the key path of its wrapper's storage in `className`.
   static func propertyKeyPaths(
     in members: MemberBlockItemListSyntax,
-    of className: String,
+    for className: String,
     wrappers: Set<String>
   ) -> [String] {
     wrappedProperties(in: members, wrappers: wrappers).map { name, _, _ in

@@ -47,7 +47,7 @@ public struct Ocp2Encoder {
     let state = Ocp2EncodingState(userInfo: userInfo, structuredTypedBlobs: structuredTypedBlobs)
 
     if type(of: value) is OcaParametersReflectable.Type {
-      let fieldNames = Ocp2Naming.fieldNames(of: type(of: value))
+      let fieldNames = Ocp2Naming.fieldNames(for: type(of: value))
       let names = Ocp2Naming.parameterNames(explicit: parameterNames, fieldNames: fieldNames)
       let node = Ocp2EncodingNode()
       node.frame = Ocp2NamingFrame(parameterNames: names, fieldNames: fieldNames)

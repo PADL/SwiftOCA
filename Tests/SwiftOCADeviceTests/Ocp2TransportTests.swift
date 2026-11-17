@@ -288,7 +288,7 @@ final class Ocp2UDPTests: XCTestCase {
 
   /// Waits until the endpoint holds `count` controllers, or gives up.
   private func controllerCount(
-    of fixture: UDPFixture,
+    for fixture: UDPFixture,
     toReach count: Int,
     within timeout: Duration = .seconds(2)
   ) async throws -> Int {
@@ -301,12 +301,12 @@ final class Ocp2UDPTests: XCTestCase {
     return controllers.count
   }
 
-  private func datagramControllers(of fixture: UDPFixture) async -> [DatagramDeviceEndpoint.ControllerType] {
+  private func datagramControllers(for fixture: UDPFixture) async -> [DatagramDeviceEndpoint.ControllerType] {
     await fixture.endpoint.controllers.compactMap { $0 as? DatagramDeviceEndpoint.ControllerType }
   }
 
-  private func controllerIdentifiers(of fixture: UDPFixture) async -> [String] {
-    await datagramControllers(of: fixture).map(\.identifier)
+  private func controllerIdentifiers(for fixture: UDPFixture) async -> [String] {
+    await datagramControllers(for: fixture).map(\.identifier)
   }
 
   /// A datagram peer asking for no heartbeat is not kept forever: AES70-3 has it keep
@@ -318,10 +318,10 @@ final class Ocp2UDPTests: XCTestCase {
     let peer = try RawDatagramPeer()
     defer { peer.close() }
     try peer.sendKeepAlive(0, to: fixture.port)
-    let count = try await controllerCount(of: fixture, toReach: 1)
+    let count = try await controllerCount(for: fixture, toReach: 1)
     XCTAssertEqual(count, 1)
 
-    let controllers = await datagramControllers(of: fixture)
+    let controllers = await datagramControllers(for: fixture)
     let controller = try XCTUnwrap(controllers.first)
     let heartbeatTime = await controller.heartbeatTime
     XCTAssertEqual(heartbeatTime, Ocp1MaximumHeartbeatTime)
@@ -336,10 +336,10 @@ final class Ocp2UDPTests: XCTestCase {
     let peer = try RawDatagramPeer()
     defer { peer.close() }
     try peer.sendKeepAlive(3_600_000, to: fixture.port)
-    let count = try await controllerCount(of: fixture, toReach: 1)
+    let count = try await controllerCount(for: fixture, toReach: 1)
     XCTAssertEqual(count, 1)
 
-    let controllers = await datagramControllers(of: fixture)
+    let controllers = await datagramControllers(for: fixture)
     let controller = try XCTUnwrap(controllers.first)
     let heartbeatTime = await controller.heartbeatTime
     XCTAssertEqual(heartbeatTime, Ocp1MaximumHeartbeatTime)
@@ -352,11 +352,11 @@ final class Ocp2UDPTests: XCTestCase {
     let peer = try RawDatagramPeer()
     defer { peer.close() }
     try peer.sendKeepAlive(200, to: fixture.port)
-    let count = try await controllerCount(of: fixture, toReach: 1)
+    let count = try await controllerCount(for: fixture, toReach: 1)
     XCTAssertEqual(count, 1)
 
     // three missed heartbeats and the controller is gone
-    let remaining = try await controllerCount(of: fixture, toReach: 0, within: .seconds(3))
+    let remaining = try await controllerCount(for: fixture, toReach: 0, within: .seconds(3))
     XCTAssertEqual(remaining, 0, "silent datagram controller was not expired")
   }
 
@@ -384,14 +384,14 @@ final class Ocp2UDPTests: XCTestCase {
     for peer in peers {
       try peer.sendKeepAlive(60000, to: fixture.port)
     }
-    let count = try await controllerCount(of: fixture, toReach: OcaMaximumDatagramControllers, within: .seconds(5))
+    let count = try await controllerCount(for: fixture, toReach: OcaMaximumDatagramControllers, within: .seconds(5))
     XCTAssertEqual(count, OcaMaximumDatagramControllers)
 
     let newcomer = try RawDatagramPeer()
     defer { newcomer.close() }
     try newcomer.sendKeepAlive(60000, to: fixture.port)
     try await Task.sleep(for: .milliseconds(250))
-    let identifiers = await controllerIdentifiers(of: fixture)
+    let identifiers = await controllerIdentifiers(for: fixture)
     XCTAssertEqual(identifiers.count, OcaMaximumDatagramControllers, "the controller cap did not hold")
     XCTAssertFalse(identifiers.contains(newcomer.identifier), "a newcomer was added to a full table")
 
@@ -1068,7 +1068,7 @@ private func buildDeepHierarchy(_ device: OcaDevice, depth: Int) async throws {
 
 /// Every object number reachable from the device's root block.
 @OcaDevice
-private func recursiveMemberONos(of device: OcaDevice) async -> Set<OcaONo> {
+private func recursiveMemberONos(for device: OcaDevice) async -> Set<OcaONo> {
   Set(await device.rootBlock!.mapRecursive { member, _ in member.objectNumber })
 }
 
@@ -1094,11 +1094,11 @@ final class Ocp2LargeHierarchyTests: XCTestCase {
   )
 
   private func assertRecursiveMembers(
-    of fixture: TCPFixture,
+    for fixture: TCPFixture,
     file: StaticString = #filePath,
     line: UInt = #line
   ) async throws {
-    let expected = await recursiveMemberONos(of: fixture.device)
+    let expected = await recursiveMemberONos(for: fixture.device)
     let connection = try await makeStreamConnection(port: fixture.port, options: Self.options)
     try await connection.connect()
 
@@ -1114,21 +1114,21 @@ final class Ocp2LargeHierarchyTests: XCTestCase {
     let fixture = try await TCPFixture()
     defer { fixture.tearDown() }
     try await buildWideHierarchy(fixture.device, blocks: Self.wideBlocks, perBlock: Self.gainsPerBlock)
-    try await assertRecursiveMembers(of: fixture)
+    try await assertRecursiveMembers(for: fixture)
   }
 
   func testDeepHierarchyOverTCP() async throws {
     let fixture = try await TCPFixture()
     defer { fixture.tearDown() }
     try await buildDeepHierarchy(fixture.device, depth: Self.depth)
-    try await assertRecursiveMembers(of: fixture)
+    try await assertRecursiveMembers(for: fixture)
   }
 
   func testWideHierarchyOverWebSocket() async throws {
     let device = OcaDevice()
     try await device.initializeDefaultObjects()
     try await buildWideHierarchy(device, blocks: Self.wideBlocks, perBlock: Self.gainsPerBlock)
-    let expected = await recursiveMemberONos(of: device)
+    let expected = await recursiveMemberONos(for: device)
     let (_, endpointTask, port) = try await makeWSEndpoint(device: device)
     defer { endpointTask.cancel() }
 

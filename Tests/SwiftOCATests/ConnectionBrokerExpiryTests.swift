@@ -45,7 +45,7 @@ private actor EventCollector {
 
   func append(_ event: OcaConnectionBroker.Event) { events.append(event) }
 
-  func removals(of deviceIdentifier: OcaConnectionBroker.DeviceIdentifier) -> Int {
+  func removals(for deviceIdentifier: OcaConnectionBroker.DeviceIdentifier) -> Int {
     events.filter { $0.eventType == .deviceRemoved && $0.deviceIdentifier == deviceIdentifier }
       .count
   }
@@ -113,12 +113,12 @@ struct ConnectionBrokerExpiryTests {
 
     try await broker._onBrowseResult(.removed(info))
     try await Task.sleep(for: .milliseconds(400))
-    #expect(await collector.removals(of: deviceIdentifier) == 0)
+    #expect(await collector.removals(for: deviceIdentifier) == 0)
 
     // once the connection actually dies, the pending expiry may remove it
     await setConnectionState(connection, .notConnected)
     try await Task.sleep(for: .milliseconds(400))
-    #expect(await collector.removals(of: deviceIdentifier) == 1)
+    #expect(await collector.removals(for: deviceIdentifier) == 1)
   }
 
   @Test
@@ -137,7 +137,7 @@ struct ConnectionBrokerExpiryTests {
     try await broker._onBrowseResult(.added(Self.mockInfo(name: "MockDevice-Dante")))
     try await Task.sleep(for: .milliseconds(400))
 
-    #expect(await collector.removals(of: deviceIdentifier) == 0)
+    #expect(await collector.removals(for: deviceIdentifier) == 0)
     #expect(await broker.registeredDevices == [deviceIdentifier])
   }
 
@@ -176,8 +176,8 @@ struct ConnectionBrokerExpiryTests {
     try await Task.sleep(for: .milliseconds(400))
 
     #expect(await broker.registeredDevices == [kept])
-    #expect(await collector.removals(of: kept) == 0)
-    #expect(await collector.removals(of: gone) == 1)
+    #expect(await collector.removals(for: kept) == 0)
+    #expect(await collector.removals(for: gone) == 1)
     // rediscovered with its connection in place, so updated rather than added again
     let eventsAfterReset = await collector.events.dropFirst(eventsBeforeReset)
     let keptEvents: [OcaConnectionBroker.EventType] = eventsAfterReset

@@ -279,7 +279,7 @@ public struct OcaXMIModel: Sendable {
 
   /// A datatype's stereotype. EA writes only the first of several as the property, so a
   /// deprecated one's kind is the next in its cross-references (`@STEREO;Name=enum;`).
-  private static func kind(of element: XMINode) -> String {
+  private static func kind(for element: XMINode) -> String {
     let first = element.child(named: "properties")?["stereotype"] ?? ""
     guard first == "deprecated", let xrefs = element.child(named: "xrefs")?["value"] else { return first }
     return xrefs.components(separatedBy: "@STEREO;Name=").dropFirst()
@@ -293,10 +293,10 @@ public struct OcaXMIModel: Sendable {
     names: [String: String],
     exported: Bool
   ) -> OcaDatatypeDescriptor? {
-    let stereotype = kind(of: element)
+    let stereotype = kind(for: element)
     let attributes = element.child(named: "attributes")?.children(named: "attribute") ?? []
     // an exported model tags a base its links or stereotype cannot give
-    let taggedBase = tags(of: element, named: OcaXMIExport.baseTypeTag).first
+    let taggedBase = tags(for: element, named: OcaXMIExport.baseTypeTag).first
     let base = taggedBase ?? (element.child(named: "links")?.children(named: "Generalization") ?? [])
       .first { $0["start"] == element["xmi:idref"] }
       .flatMap { $0["end"] }.flatMap { names[$0] } ?? ""
@@ -335,7 +335,7 @@ public struct OcaXMIModel: Sendable {
       }
       // an exported model tags its parameters; in the AES70-2 model, a field typed by a name
       // that is not a datatype's is of one of the struct's parameters
-      var parameters = tags(of: element, named: OcaXMIExport.typeArgumentTag)
+      var parameters = tags(for: element, named: OcaXMIExport.typeArgumentTag)
       if !exported {
         for type in fields.map(\.typeName) where !type.hasPrefix("Oca") && !type.contains("<") && !parameters.contains(type) {
           parameters.append(type)
@@ -348,7 +348,7 @@ public struct OcaXMIModel: Sendable {
   }
 
   /// The values of an element's tags named `name`, in order.
-  private static func tags(of element: XMINode, named name: String) -> [String] {
+  private static func tags(for element: XMINode, named name: String) -> [String] {
     (element.child(named: "tags")?.children(named: "tag") ?? []).filter { $0["name"] == name }.compactMap { $0["value"] }
   }
 

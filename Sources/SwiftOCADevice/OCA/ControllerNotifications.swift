@@ -67,7 +67,7 @@ extension OcaController {
 
   /// One notification for each of `subscriptions` that the event matches.
   fileprivate nonisolated func notifications(
-    of event: OcaEvent,
+    for event: OcaEvent,
     parameters eventParameters: OcaEventParameters,
     subscriptions: Set<OcaSubscriptionManagerSubscription>
   ) throws -> [OcaNotificationMessage] {
@@ -133,7 +133,7 @@ extension OcaController {
     subscriptions: Set<OcaSubscriptionManagerSubscription>
   ) async throws {
     let notifications = try notifications(
-      of: event,
+      for: event,
       parameters: eventParameters,
       subscriptions: subscriptions
     )
@@ -172,7 +172,7 @@ struct OcaPendingNotifications: Sendable {
 
   var isEmpty: Bool { pending.isEmpty }
 
-  private mutating func index(of controller: any OcaController) -> Int {
+  private mutating func index(for controller: any OcaController) -> Int {
     if let index = pending.firstIndex(where: { $0.controller === controller }) { return index }
     pending.append(Pending(controller: controller))
     return pending.endIndex - 1
@@ -188,14 +188,14 @@ struct OcaPendingNotifications: Sendable {
   ) throws -> Bool {
     var lightweight = false
     let notifications = try controller.notifications(
-      of: event,
+      for: event,
       parameters: parameters,
       subscriptions: subscriptions
     )
     var index: Int?
     for notification in notifications {
       if notification.destination == nil {
-        if index == nil { index = self.index(of: controller) }
+        if index == nil { index = self.index(for: controller) }
         pending[index!].append(notification)
       } else {
         lightweight = true
