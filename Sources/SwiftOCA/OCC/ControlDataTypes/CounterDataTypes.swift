@@ -117,21 +117,21 @@ public extension OcaCounterSet {
     return counter
   }
 
-  private func index(of id: OcaID16) -> Int? {
+  private func index(for id: OcaID16) -> Int? {
     counter.firstIndex { $0.id == id }
   }
 
   /// Sets a counter's value, returning false if no counter has that ID.
   @discardableResult
   mutating func set(counter id: OcaID16, value: OcaUint64) -> Bool {
-    guard let index = index(of: id) else { return false }
+    guard let index = index(for: id) else { return false }
     counter[index].value = value
     return true
   }
 
   @discardableResult
   mutating func increment(counter id: OcaID16, by delta: OcaUint64 = 1) -> Bool {
-    guard let index = index(of: id) else { return false }
+    guard let index = index(for: id) else { return false }
     counter[index].value &+= delta
     return true
   }
@@ -144,7 +144,7 @@ public extension OcaCounterSet {
 
   /// Attaches a notifier, as AttachCounterNotifier does: ParameterOutOfRange if no counter has `id`.
   mutating func attach(notifier oNo: OcaONo, to id: OcaID16) throws {
-    guard let index = index(of: id) else { throw Ocp1Error.status(.parameterOutOfRange) }
+    guard let index = index(for: id) else { throw Ocp1Error.status(.parameterOutOfRange) }
     if !counter[index].notifiers.contains(oNo) {
       counter[index].notifiers.append(oNo)
     }
@@ -152,7 +152,7 @@ public extension OcaCounterSet {
 
   /// Detaches a notifier, as DetachCounterNotifier does: ParameterOutOfRange if no counter has `id`.
   mutating func detach(notifier oNo: OcaONo, from id: OcaID16) throws {
-    guard let index = index(of: id) else { throw Ocp1Error.status(.parameterOutOfRange) }
+    guard let index = index(for: id) else { throw Ocp1Error.status(.parameterOutOfRange) }
     counter[index].notifiers.removeAll { $0 == oNo }
   }
 }

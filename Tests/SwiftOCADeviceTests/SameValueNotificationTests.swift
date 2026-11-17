@@ -102,7 +102,7 @@ final class SameValueNotificationTests: XCTestCase {
       deviceDelegate: harness.device,
       addToRootBlock: true
     )
-    let (labelChanges, task) = await countChanges(of: deviceGain, propertyID: Self.labelID)
+    let (labelChanges, task) = await countChanges(for: deviceGain, propertyID: Self.labelID)
     defer { task.cancel() }
 
     let initial = await wait { labelChanges.value == 1 }
@@ -131,8 +131,8 @@ final class SameValueNotificationTests: XCTestCase {
       addToRootBlock: true
     )
     await { @OcaDevice in deviceGain.label = "label" }()
-    let (labelChanges, labelTask) = await countChanges(of: deviceGain, propertyID: Self.labelID)
-    let (gainChanges, gainTask) = await countChanges(of: deviceGain, propertyID: Self.gainID)
+    let (labelChanges, labelTask) = await countChanges(for: deviceGain, propertyID: Self.labelID)
+    let (gainChanges, gainTask) = await countChanges(for: deviceGain, propertyID: Self.gainID)
     defer { labelTask.cancel(); gainTask.cancel() }
     let initial = await wait { labelChanges.value == 1 && gainChanges.value == 1 }
     XCTAssertTrue(initial)
@@ -189,7 +189,7 @@ final class SameValueNotificationTests: XCTestCase {
       objectNumber: 0x0001_0505,
       deviceDelegate: harness.device
     )
-    let (changes, task) = await countChanges(of: sensor, propertyID: OcaPropertyID("5.1"))
+    let (changes, task) = await countChanges(for: sensor, propertyID: OcaPropertyID("5.1"))
     defer { task.cancel() }
     let initial = await wait { changes.value == 1 }
     XCTAssertTrue(initial)
@@ -224,7 +224,7 @@ final class SameValueNotificationTests: XCTestCase {
   }
 
   private func countChanges(
-    of object: SwiftOCADevice.OcaRoot,
+    for object: SwiftOCADevice.OcaRoot,
     propertyID: OcaPropertyID
   ) async -> (Counter, Task<(), Never>) {
     let counter = Counter()

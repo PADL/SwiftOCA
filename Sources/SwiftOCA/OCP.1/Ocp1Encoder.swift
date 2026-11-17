@@ -200,7 +200,7 @@ final class Ocp1EncoderImpl: Encoder, SingleValueEncodingContainer {
 
   /// Writes the count of a list or map: an `Int32` for an `Ocp1LongList`, otherwise
   /// a `UInt16`.
-  func encodeCount(_ count: Int, of type: Any.Type) throws {
+  func encodeCount(_ count: Int, for type: Any.Type) throws {
     if _ocp1IsLongList(type) {
       // FIXME: can't support 2^32 length because on 32-bit platforms count is Int32
       guard let count = Int32(exactly: count) else {

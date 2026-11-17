@@ -51,7 +51,7 @@ final class ClientMethodDescriptorTests: XCTestCase {
     for (_, type) in OcaDeviceClassRegistry.shared.registeredClasses {
       for method in type.deviceMethods {
         // the entry belongs to the class that declares it, which may be a parent
-        guard let owner = Self.declaringClass(of: method.methodID, in: type) else { continue }
+        guard let owner = Self.declaringClass(for: method.methodID, in: type) else { continue }
         let key = "\(Self.className(owner)).\(method.methodID)"
         guard seen.insert(key).inserted else { continue }
         let descriptor = client[Self.className(owner)]?
@@ -94,7 +94,7 @@ final class ClientMethodDescriptorTests: XCTestCase {
   /// The class in `type`'s lineage whose class ID is at the method's definition level.
   @OcaDevice
   private static func declaringClass(
-    of methodID: OcaMethodID,
+    for methodID: OcaMethodID,
     in type: SwiftOCADevice.OcaRoot.Type
   ) -> SwiftOCADevice.OcaRoot.Type? {
     var current: SwiftOCADevice.OcaRoot.Type? = type

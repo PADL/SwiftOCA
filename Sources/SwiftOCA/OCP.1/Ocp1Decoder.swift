@@ -195,7 +195,7 @@ final class Ocp1DecoderImpl: Decoder, SingleValueDecodingContainer {
 
   /// Reads the count of a list or map: an `Int32` for an `Ocp1LongList`, otherwise a
   /// `UInt16`.
-  func decodeCount(of type: Any.Type) throws -> Int {
+  func decodeCount(for type: Any.Type) throws -> Int {
     // FIXME: can't support 2^32 length because on 32-bit platforms count is Int32
     let count = if _ocp1IsLongList(type) {
       try Int(readInteger(Int32.self))

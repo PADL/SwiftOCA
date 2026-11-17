@@ -115,7 +115,7 @@ final class FlyingSocksEndpointCancellationTests: XCTestCase {
       address: localhostAddress(port: 0),
       device: device
     )
-    try await assertCancellingRun(of: endpoint, on: device) { try await endpoint.run() }
+    try await assertCancellingRun(for: endpoint, on: device) { try await endpoint.run() }
   }
 
   func testCancellingDatagramEndpointRunRemovesIt() async throws {
@@ -124,11 +124,11 @@ final class FlyingSocksEndpointCancellationTests: XCTestCase {
       address: localhostAddress(port: 0),
       device: device
     )
-    try await assertCancellingRun(of: endpoint, on: device) { try await endpoint.run() }
+    try await assertCancellingRun(for: endpoint, on: device) { try await endpoint.run() }
   }
 
   private func assertCancellingRun(
-    of endpoint: any OcaDeviceEndpoint,
+    for endpoint: any OcaDeviceEndpoint,
     on device: OcaDevice,
     _ run: @escaping @Sendable () async throws -> ()
   ) async throws {

@@ -133,7 +133,7 @@ public struct OcaClassMacro: MemberMacro {
     }
     let className = classDecl.name.text
     let properties = MemberTable(classDecl) {
-      MemberTable.propertyKeyPaths(in: $0, of: className, wrappers: propertyWrappers)
+      MemberTable.propertyKeyPaths(in: $0, for: className, wrappers: propertyWrappers)
     }
     guard !names.isEmpty || !properties.entries.isEmpty else {
       throw MacroExpansionErrorMessage("@OcaClass needs at least one @OcaMethod method or property")
@@ -161,7 +161,7 @@ public struct OcaClassMacro: MemberMacro {
       // OcaRoot has no parent to extend, which a class body does not say
       let isRoot = className == "OcaRoot"
       let statements = properties.statements(appending: { "keyPaths.merge([\($0)]) { _, new in new }" })
-      if let actor = globalActor(of: classDecl), !isRoot {
+      if let actor = globalActor(for: classDecl), !isRoot {
         // Swift forms a key path to an actor's storage only on that actor; forming one
         // reads nothing, so the table is made there and the closure called from anywhere
         members.append(
@@ -194,7 +194,7 @@ public struct OcaClassMacro: MemberMacro {
 
   /// The global actor a class is isolated to, by the attribute naming it: one whose name
   /// ends in `Actor`, such as `@MainActor`, as a macro cannot tell a global actor otherwise.
-  private static func globalActor(of classDecl: ClassDeclSyntax) -> String? {
+  private static func globalActor(for classDecl: ClassDeclSyntax) -> String? {
     classDecl.attributes.lazy.compactMap { element -> String? in
       guard case let .attribute(attribute) = element else { return nil }
       let name = attribute.attributeName.trimmedDescription
@@ -296,7 +296,7 @@ private struct ClientMethod {
     else {
       return nil
     }
-    return types.map(MemberTable.aes70Name(of:))
+    return types.map(MemberTable.aes70Name(for:))
   }
 
   /// The record synthesised for a method of several parameters given no record.

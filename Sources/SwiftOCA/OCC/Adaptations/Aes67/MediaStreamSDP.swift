@@ -165,7 +165,7 @@ public extension MediaStreamSDP {
   /// The session section followed by each media section, one description per stream, so
   /// a multistream description such as an ST 2022-7 pair can be read a stream at a time.
   static func streams(in sdpString: OcaSDPString) -> [OcaSDPString] {
-    let (session, media) = sections(of: sdpString)
+    let (session, media) = sections(for: sdpString)
     return media.map { (session + $0).joined(separator: "\r\n") + "\r\n" }
   }
 
@@ -179,7 +179,7 @@ public extension MediaStreamSDP {
     mediaIDType: Aes67MediaIDType,
     mediaID: OcaString
   ) throws -> OcaSDPString {
-    let (session, media) = sections(of: sdpString)
+    let (session, media) = sections(for: sdpString)
     guard !media.isEmpty else { throw Ocp1Error.status(.badFormat) }
     let index: Int
     if mediaIDType == .none {
@@ -189,7 +189,7 @@ public extension MediaStreamSDP {
       // an identifier that more than one media description has selects none
       let wanted = canonical(mediaID, as: mediaIDType)
       let found = media.indices.filter {
-        identifier(mediaIDType, of: media[$0], at: $0, session: session) == wanted
+        identifier(mediaIDType, for: media[$0], at: $0, session: session) == wanted
       }
       guard wanted != nil, found.count == 1 else { throw Ocp1Error.status(.parameterError) }
       index = found[0]
@@ -205,14 +205,14 @@ public extension MediaStreamSDP {
     ofStreamAt index: Int,
     in sdpString: OcaSDPString
   ) -> OcaString? {
-    let (session, media) = sections(of: sdpString)
+    let (session, media) = sections(for: sdpString)
     guard media.indices.contains(index) else { return nil }
-    return identifier(type, of: media[index], at: index, session: session)
+    return identifier(type, for: media[index], at: index, session: session)
   }
 
   private static func identifier(
     _ type: Aes67MediaIDType,
-    of section: [Substring],
+    for section: [Substring],
     at index: Int,
     session: [Substring]
   ) -> OcaString? {
@@ -220,11 +220,11 @@ public extension MediaStreamSDP {
     case .ordinal: String(index + 1)
     case .label: attribute("label", in: section)
     case .mid: attribute("mid", in: section)
-    case .portNo: port(of: section).map(String.init)
+    case .portNo: port(for: section).map(String.init)
     case .transportAddress4:
       // the media section's connection line, else the session's (RFC 4566 §5.7)
       ip4Address(in: section.contains { $0.hasPrefix("c=") } ? section : session).flatMap { address in
-        port(of: section).map { "\(address):\($0)" }
+        port(for: section).map { "\(address):\($0)" }
       }
     case .none, .transportAddress6: nil
     }
@@ -251,7 +251,7 @@ public extension MediaStreamSDP {
   }
 
   /// A media section's `m=` port: `m=<media> <port>[/<count>] <proto> <fmt>`.
-  private static func port(of section: [Substring]) -> UInt16? {
+  private static func port(for section: [Substring]) -> UInt16? {
     let fields = section.first?.dropFirst(2).split(separator: " ") ?? []
     return fields.count > 1 ? fields[1].split(separator: "/").first.flatMap { UInt16($0) } : nil
   }
@@ -265,7 +265,7 @@ public extension MediaStreamSDP {
   }
 
   private static func sections(
-    of sdpString: OcaSDPString
+    for sdpString: OcaSDPString
   ) -> (session: [Substring], media: [[Substring]]) {
     var session = [Substring]()
     var media = [[Substring]]()

@@ -61,7 +61,7 @@ public enum Ocp2Naming {
 
   /// Stored-property names of `type` in declaration order (leading `_` stripped, so
   /// a property wrapper's storage reads as the property).
-  package static func fieldNames(of type: Any.Type) -> [String] {
+  package static func fieldNames(for type: Any.Type) -> [String] {
     let key = ObjectIdentifier(type)
     if let cached = _fieldNameCache.withLock({ $0[key] }) {
       return cached

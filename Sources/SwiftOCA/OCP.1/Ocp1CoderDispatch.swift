@@ -74,7 +74,7 @@ extension Data: _Ocp1CoderSpecial {
 
 extension Array: _Ocp1CoderSpecial where Element: Codable {
   static func _ocp1Encode(_ value: [Element], into encoder: Ocp1EncoderImpl) throws {
-    try encoder.encodeCount(value.count, of: Self.self)
+    try encoder.encodeCount(value.count, for: Self.self)
     // the element type is looked up once, not per element
     if let special = _ocp1CoderSpecialType(Element.self) {
       for element in value {
@@ -88,7 +88,7 @@ extension Array: _Ocp1CoderSpecial where Element: Codable {
   }
 
   static func _ocp1Decode(from decoder: Ocp1DecoderImpl) throws -> [Element] {
-    let count = try decoder.decodeCount(of: Self.self)
+    let count = try decoder.decodeCount(for: Self.self)
     var array = [Element]()
     // the count is untrusted, so reserve no more than the input could hold
     array.reserveCapacity(Swift.min(count, decoder.remainingCount))
@@ -107,7 +107,7 @@ extension Array: _Ocp1CoderSpecial where Element: Codable {
 
 extension Dictionary: _Ocp1CoderSpecial where Key: Codable, Value: Codable {
   static func _ocp1Encode(_ value: [Key: Value], into encoder: Ocp1EncoderImpl) throws {
-    try encoder.encodeCount(value.count, of: Self.self)
+    try encoder.encodeCount(value.count, for: Self.self)
     for (key, element) in value {
       try encoder.encode(key)
       try encoder.encode(element)
@@ -115,7 +115,7 @@ extension Dictionary: _Ocp1CoderSpecial where Key: Codable, Value: Codable {
   }
 
   static func _ocp1Decode(from decoder: Ocp1DecoderImpl) throws -> [Key: Value] {
-    let count = try decoder.decodeCount(of: Self.self)
+    let count = try decoder.decodeCount(for: Self.self)
     var dictionary = [Key: Value]()
     dictionary.reserveCapacity(Swift.min(count, decoder.remainingCount))
     for _ in 0..<count {
@@ -133,7 +133,7 @@ extension Dictionary: _Ocp1CoderSpecial where Key: Codable, Value: Codable {
 extension OcaMultiMap: _Ocp1CoderSpecial where K: Codable, V: Codable {
   /// One item per value, as an `OcaMap`'s are: not each key's values as a list.
   static func _ocp1Encode(_ value: Self, into encoder: Ocp1EncoderImpl) throws {
-    try encoder.encodeCount(value.itemCount, of: Self.self)
+    try encoder.encodeCount(value.itemCount, for: Self.self)
     try value.forEachItem { key, element in
       try encoder.encode(key)
       try encoder.encode(element)
@@ -141,7 +141,7 @@ extension OcaMultiMap: _Ocp1CoderSpecial where K: Codable, V: Codable {
   }
 
   static func _ocp1Decode(from decoder: Ocp1DecoderImpl) throws -> Self {
-    let count = try decoder.decodeCount(of: Self.self)
+    let count = try decoder.decodeCount(for: Self.self)
     var multiMap = Self()
     for _ in 0..<count {
       let key = try decoder.decode(K.self)

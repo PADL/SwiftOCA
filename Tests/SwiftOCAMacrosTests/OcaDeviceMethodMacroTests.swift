@@ -124,12 +124,12 @@ private let macros: [String: any Macro.Type] = [
       """
       @OcaDeviceMethod("2.6", name: "GetPortName", access: .read, resultNames: ["Name"])
       func getPortName(_ portID: OcaPortID, from controller: any OcaController) async throws -> OcaString {
-        try portName(of: portID)
+        try portName(for: portID)
       }
       """,
       expandedSource: """
       func getPortName(_ portID: OcaPortID, from controller: any OcaController) async throws -> OcaString {
-        try portName(of: portID)
+        try portName(for: portID)
       }
 
       static func _ocaDeviceMethod_getPortName(_: OcaPortID.Type) -> OcaDeviceMethodDescriptor {

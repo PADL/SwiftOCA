@@ -197,7 +197,7 @@ open class OcaMediaTransportNetwork: OcaApplicationNetwork, OcaPortsRepresentabl
 
   @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.getPortName)
   func getPortName(portID: OcaPortID, from controller: any OcaController) throws -> OcaString {
-    try portName(of: portID)
+    try portName(for: portID)
   }
 
   @OcaDeviceMethod(SwiftOCA.OcaMediaTransportNetwork.Methods.setPortName)

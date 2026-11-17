@@ -120,7 +120,7 @@ final class DeviceMethodStatusTests: XCTestCase {
         for probe in probes {
           // a fresh object for each, as a probe may change the object it hits
           let object = try await makeObject(type, device: device)
-          statuses.append(await status(of: object, methodID, probe))
+          statuses.append(await status(for: object, methodID, probe))
         }
         guard statuses.contains(where: { $0 != "notImplemented" }) else { continue }
         let fields = zip(probes, statuses).map { "\"\($0.name)\":\"\($1)\"" }
@@ -131,7 +131,7 @@ final class DeviceMethodStatusTests: XCTestCase {
   }
 
   @OcaDevice
-  private static func status(of object: SwiftOCADevice.OcaRoot, _ methodID: OcaMethodID, _ probe: Probe) async
+  private static func status(for object: SwiftOCADevice.OcaRoot, _ methodID: OcaMethodID, _ probe: Probe) async
     -> String
   {
     let holder = ProbeController(protocol: .ocp1)

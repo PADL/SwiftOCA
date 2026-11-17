@@ -328,12 +328,12 @@ public final class OcaClassManager: OcaManager {
 
   /// The argument a vector property's components are declared with, from its type's name.
   fileprivate nonisolated static func componentTypeName(declared: String?) -> String? {
-    declared.flatMap(templateArguments(of:))?.first
+    declared.flatMap(templateArguments(for:))?.first
   }
 
   /// The arguments of a template instance's name, `OcaMap<OcaONo,OcaList<OcaString>>`
   /// giving `OcaONo` and `OcaList<OcaString>`; nil for a name that is not one.
-  fileprivate nonisolated static func templateArguments(of name: String) -> [String]? {
+  fileprivate nonisolated static func templateArguments(for name: String) -> [String]? {
     guard let open = name.firstIndex(of: "<"), name.hasSuffix(">") else { return nil }
     var arguments = [String]()
     var argument = ""
@@ -391,7 +391,7 @@ private struct Datatypes {
     guard name != own else { return add(type) }
     guard described[name] == nil else { return }
     if let template = type as? any OcaTemplateDatatype.Type,
-       let arguments = OcaClassManager.templateArguments(of: name)
+       let arguments = OcaClassManager.templateArguments(for: name)
     {
       // an instance declared with typedef arguments, OcaVector2D<OcaMatrixCoordinate>:
       // each such argument is a typedef of the run-time one

@@ -156,7 +156,7 @@ public struct OcaDeviceClassMacro: MemberMacro {
     }
     let methodTable = MemberTable(classDecl, methods)
     let propertyTable = MemberTable(classDecl) {
-      MemberTable.propertyKeyPaths(in: $0, of: className, wrappers: propertyWrappers)
+      MemberTable.propertyKeyPaths(in: $0, for: className, wrappers: propertyWrappers)
     }
     guard Set(methodTable.entries).count == methodTable.entries.count else {
       throw MacroExpansionErrorMessage("@OcaDeviceMethod methods need distinct names")
@@ -184,7 +184,7 @@ public struct OcaDeviceClassMacro: MemberMacro {
       )
     }
     let typeNames = MemberTable(classDecl) {
-      MemberTable.propertyTypeNames(in: $0, of: classDecl, wrappers: propertyWrappers)
+      MemberTable.propertyTypeNames(in: $0, for: classDecl, wrappers: propertyWrappers)
     }
     if !typeNames.entries.isEmpty {
       members.append(

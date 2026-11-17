@@ -97,10 +97,10 @@ private struct Writer {
   private mutating func umlClass(_ c: OcaClassDescriptor) {
     let id = Self.classID(c.classID)
     lines.append("<packagedElement xmi:type=\"uml:Class\" xmi:id=\(quoted(id)) name=\(quoted(c.name)) visibility=\"public\">")
-    if let parent = parent(of: c) {
+    if let parent = parent(for: c) {
       lines.append("<generalization xmi:type=\"uml:Generalization\" xmi:id=\(quoted(id + "_G")) general=\(quoted(Self.classID(parent)))/>")
     }
-    for (name, value, typeName) in Self.identity(of: c) where !Self.isRoot(c) {
+    for (name, value, typeName) in Self.identity(for: c) where !Self.isRoot(c) {
       lines.append("<ownedAttribute xmi:type=\"uml:Property\" xmi:id=\(quoted(id + "_" + name)) name=\(quoted(name)) visibility=\"public\" isStatic=\"true\" isReadOnly=\"true\"\(typeAttribute(typeName))>")
       lines.append("<defaultValue xmi:type=\"uml:LiteralString\" xmi:id=\(quoted(id + "_" + name + "_V")) value=\(quoted(value))/>")
       lines.append("</ownedAttribute>")
@@ -130,9 +130,9 @@ private struct Writer {
 
   private mutating func umlDatatype(_ d: OcaDatatypeDescriptor) {
     let id = Self.datatypeID(d.name)
-    let type = Self.umlType(of: d)
+    let type = Self.umlType(for: d)
     lines.append("<packagedElement xmi:type=\(quoted(type)) xmi:id=\(quoted(id)) name=\(quoted(d.name)) visibility=\"public\">")
-    if let base = base(of: d) {
+    if let base = base(for: d) {
       lines.append("<generalization xmi:type=\"uml:Generalization\" xmi:id=\(quoted(id + "_G")) general=\(quoted(Self.datatypeID(base)))/>")
     }
     for (index, f) in d.fields.enumerated() {
@@ -151,7 +151,7 @@ private struct Writer {
     lines.append("<element xmi:idref=\(quoted(id)) xmi:type=\"uml:Class\" name=\(quoted(c.name)) scope=\"public\">")
     lines.append("<properties documentation=\(quoted(trimmed(c.documentation))) sType=\"Class\" scope=\"public\" stereotype=\"controlClass\"/>")
     lines.append("<attributes>")
-    for (name, value, typeName) in Self.identity(of: c) where !Self.isRoot(c) {
+    for (name, value, typeName) in Self.identity(for: c) where !Self.isRoot(c) {
       lines.append("<attribute xmi:idref=\(quoted(id + "_" + name)) name=\(quoted(name)) scope=\"Public\">")
       lines.append("<initial body=\(quoted(value))/>")
       lines.append("<properties type=\(quoted(typeName)) static=\"1\"/>")
@@ -162,7 +162,7 @@ private struct Writer {
       let pid = Self.propertyID(c, p)
       lines.append("<attribute xmi:idref=\(quoted(pid)) name=\(quoted(p.name)) scope=\"Public\">")
       // OcaRoot's own ClassID and ClassVersion carry the class's values
-      if Self.isRoot(c), let value = Self.identity(of: c).first(where: { $0.name == p.name })?.value {
+      if Self.isRoot(c), let value = Self.identity(for: c).first(where: { $0.name == p.name })?.value {
         lines.append("<initial body=\(quoted(value))/>")
       }
       documentation(p.documentation)
@@ -187,7 +187,7 @@ private struct Writer {
       )
     }
     lines.append("</operations>")
-    if let parent = parent(of: c) {
+    if let parent = parent(for: c) {
       lines.append("<links><Generalization xmi:id=\(quoted(id + "_L")) start=\(quoted(id)) end=\(quoted(Self.classID(parent)))/></links>")
     }
     lines.append("</element>")
@@ -221,8 +221,8 @@ private struct Writer {
 
   private mutating func extensionDatatype(_ d: OcaDatatypeDescriptor) {
     let id = Self.datatypeID(d.name)
-    lines.append("<element xmi:idref=\(quoted(id)) xmi:type=\(quoted(Self.umlType(of: d))) name=\(quoted(d.name)) scope=\"public\">")
-    lines.append("<properties documentation=\(quoted(trimmed(d.documentation))) sType=\"Class\" scope=\"public\" stereotype=\(quoted(Self.stereotype(of: d)))/>")
+    lines.append("<element xmi:idref=\(quoted(id)) xmi:type=\(quoted(Self.umlType(for: d))) name=\(quoted(d.name)) scope=\"public\">")
+    lines.append("<properties documentation=\(quoted(trimmed(d.documentation))) sType=\"Class\" scope=\"public\" stereotype=\(quoted(Self.stereotype(for: d)))/>")
     if !d.fields.isEmpty || !d.items.isEmpty {
       lines.append("<attributes>")
       for (index, f) in d.fields.enumerated() {
@@ -241,7 +241,7 @@ private struct Writer {
       }
       lines.append("</attributes>")
     }
-    if let base = base(of: d) {
+    if let base = base(for: d) {
       lines.append("<links><Generalization xmi:id=\(quoted(id + "_L")) start=\(quoted(id)) end=\(quoted(Self.datatypeID(base)))/></links>")
     }
     var tags = [(name: String, value: String)]()
@@ -272,19 +272,19 @@ private struct Writer {
 
   /// The class ID and version every class carries: OcaRoot has them as its own
   /// properties, and the model redeclares them in every other class.
-  private static func identity(of c: OcaClassDescriptor) -> [(name: String, value: String, typeName: String)] {
+  private static func identity(for c: OcaClassDescriptor) -> [(name: String, value: String, typeName: String)] {
     [("ClassID", c.classID.description, "OcaClassID"), ("ClassVersion", "\(c.classVersion)", "OcaClassVersionNumber")]
   }
 
   private static func isRoot(_ c: OcaClassDescriptor) -> Bool { c.classID.defLevel == 1 }
 
   /// The class `c` derives from, where the document has it.
-  private func parent(of c: OcaClassDescriptor) -> OcaClassID? {
+  private func parent(for c: OcaClassDescriptor) -> OcaClassID? {
     c.classID.parent.flatMap { classIDs.contains($0) ? $0 : nil }
   }
 
   /// The type a typedef or bitset stands for, where the document has it.
-  private func base(of d: OcaDatatypeDescriptor) -> String? {
+  private func base(for d: OcaDatatypeDescriptor) -> String? {
     switch d.kind {
     case .typedef, .bitset: datatypeNames.contains(d.baseTypeName) ? d.baseTypeName : nil
     default: nil
@@ -296,7 +296,7 @@ private struct Writer {
   private func needsBaseTypeTag(_ d: OcaDatatypeDescriptor) -> Bool {
     switch d.kind {
     case .enum: d.baseTypeName != "OcaUint8" && d.baseTypeName != "OcaUint16"
-    case .typedef, .bitset: base(of: d) == nil
+    case .typedef, .bitset: base(for: d) == nil
     default: false
     }
   }
@@ -305,7 +305,7 @@ private struct Writer {
     datatypeNames.contains(typeName) ? " type=\(quoted(Self.datatypeID(typeName)))" : ""
   }
 
-  private static func umlType(of d: OcaDatatypeDescriptor) -> String {
+  private static func umlType(for d: OcaDatatypeDescriptor) -> String {
     switch d.kind {
     case .primitive: "uml:PrimitiveType"
     case .enum: "uml:Enumeration"
@@ -313,7 +313,7 @@ private struct Writer {
     }
   }
 
-  private static func stereotype(of d: OcaDatatypeDescriptor) -> String {
+  private static func stereotype(for d: OcaDatatypeDescriptor) -> String {
     switch d.kind {
     case .primitive: "primitive"
     case .typedef: "typedef"

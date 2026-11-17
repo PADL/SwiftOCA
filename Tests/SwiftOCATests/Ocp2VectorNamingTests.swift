@@ -25,7 +25,7 @@ import XCTest
 /// wrapper's own naming in isolation.
 final class Ocp2VectorNamingTests: XCTestCase {
   func testReflectionFindsTheVectorFields() {
-    XCTAssertEqual(Ocp2Naming.fieldNames(of: OcaVector2D<OcaMatrixCoordinate>.self), ["x", "y"])
+    XCTAssertEqual(Ocp2Naming.fieldNames(for: OcaVector2D<OcaMatrixCoordinate>.self), ["x", "y"])
   }
 
   func testEncoderFlattensTheVectorUnderItsFieldNames() throws {

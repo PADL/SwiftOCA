@@ -28,7 +28,7 @@ final class DNSServiceRegistrationTests: XCTestCase {
 
   /// The first value of `stream`, or nil if none arrives in time.
   private func first<T: Sendable>(
-    of stream: AsyncStream<T>,
+    for stream: AsyncStream<T>,
     within timeout: Duration = .seconds(5),
     where predicate: @escaping @Sendable (T) -> Bool = { _ in true }
   ) async -> T? {
@@ -48,7 +48,7 @@ final class DNSServiceRegistrationTests: XCTestCase {
   }
 
   private func resolve(_ found: DNSServiceBrowseResult) async -> DNSServiceResolution? {
-    await first(of: DNSServiceDiscovery.resolve(
+    await first(for: DNSServiceDiscovery.resolve(
       name: found.name,
       regType: found.regType,
       domain: found.domain
@@ -70,7 +70,7 @@ final class DNSServiceRegistrationTests: XCTestCase {
     }
 
     let browse = try DNSServiceDiscovery.browse(regType: Self.regType)
-    guard let found = await first(of: browse, where: { $0.isAdded && $0.name == name }) else {
+    guard let found = await first(for: browse, where: { $0.isAdded && $0.name == name }) else {
       await registration.deregister()
       throw XCTSkip("the DNS-SD responder did not report the registered service")
     }
@@ -90,7 +90,7 @@ final class DNSServiceRegistrationTests: XCTestCase {
     XCTAssertEqual(updated?.txtRecords, ["txtvers": "1", "ver_slf": "1"])
 
     await registration.deregister()
-    let removed = await first(of: browse, where: { !$0.isAdded && $0.name == name })
+    let removed = await first(for: browse, where: { !$0.isAdded && $0.name == name })
     XCTAssertNotNil(removed)
 
     do {
@@ -118,12 +118,12 @@ final class DNSServiceRegistrationTests: XCTestCase {
         throw XCTSkip("no DNS-SD responder to register with: \(error)")
       }
       dropped = registration
-      guard await first(of: browse, where: { $0.isAdded && $0.name == name }) != nil else {
+      guard await first(for: browse, where: { $0.isAdded && $0.name == name }) != nil else {
         throw XCTSkip("the DNS-SD responder did not report the registered service")
       }
     }
     XCTAssertNil(dropped)
-    let removed = await first(of: browse, where: { !$0.isAdded && $0.name == name })
+    let removed = await first(for: browse, where: { !$0.isAdded && $0.name == name })
     XCTAssertNotNil(removed)
   }
 
@@ -142,17 +142,17 @@ final class DNSServiceRegistrationTests: XCTestCase {
         logger: Logger(label: "test")
       )
     }
-    guard await first(of: browse, where: { $0.isAdded && $0.name == name }) != nil else {
+    guard await first(for: browse, where: { $0.isAdded && $0.name == name }) != nil else {
       registrar.cancel()
       throw XCTSkip("no DNS-SD responder reported the registered service")
     }
     let renamed = name + " renamed"
     await { @OcaDevice in deviceManager.deviceName = renamed }()
-    let found = await first(of: browse, where: { $0.isAdded && $0.name == renamed })
+    let found = await first(for: browse, where: { $0.isAdded && $0.name == renamed })
     XCTAssertNotNil(found)
     registrar.cancel()
     await registrar.value
-    let removed = await first(of: browse, where: { !$0.isAdded && $0.name == renamed })
+    let removed = await first(for: browse, where: { !$0.isAdded && $0.name == renamed })
     XCTAssertNotNil(removed)
   }
 }
